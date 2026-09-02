@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import {
   useCallback,
   useEffect,
@@ -14,7 +15,6 @@ import {
   useBackendComputedStore,
   useSimStore,
   useStandingsWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { buildVisibleRows } from '@ui/widgets/StandingsWidget/standings-utils';
 import { computeClassSof } from '@utils/driver';
@@ -43,13 +43,11 @@ const WHEEL_STEP_ROWS = 3;
 export const StandingsContent = observer(() => {
   const { driverEntries: driverEntriesFrame } = useBackendComputedStore();
   const sim = useSimStore();
-  const widgetSettings = useWidgetSettingsStore();
   const standingsWidget = useStandingsWidgetStore();
   const appSettings = useAppSettingsStore();
   const { allClassGroups } = standingsWidget;
 
-  const settings =
-    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
   const driverEntries = standingsWidget.orderedEntries;
 

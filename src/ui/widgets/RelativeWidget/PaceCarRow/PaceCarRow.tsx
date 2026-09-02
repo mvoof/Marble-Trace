@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -9,10 +10,7 @@ import { formatCarNumber } from '@utils/driver';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './PaceCarRow.module.scss';
-import {
-  useBackendComputedStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useBackendComputedStore } from '@store/root-store-context';
 
 interface PaceCarRowProps {
   driver: PaceCarRowEntry;
@@ -21,10 +19,8 @@ interface PaceCarRowProps {
 
 export const PaceCarRow = observer(({ driver, index }: PaceCarRowProps) => {
   const { relativeEntries } = useBackendComputedStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<RelativeWidgetSettings>('relative');
+  const settings = useWidgetSettings<RelativeWidgetSettings>('relative');
 
   const player = relativeEntries.find((entry) => entry.isPlayer) ?? null;
   const relativeGap = player ? computeRelativeGap(driver, player) : 0;

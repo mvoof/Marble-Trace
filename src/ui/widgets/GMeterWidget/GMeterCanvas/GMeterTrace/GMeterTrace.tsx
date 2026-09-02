@@ -377,7 +377,7 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
     (scheduleDraw) => {
       const dynamics = telemetry.carDynamics;
       const settings =
-        widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
+        widgetSettings.getSettings<GMeterWidgetSettings>(widgetId);
       const fontScale =
         widgetSettings.getWidget(widgetId)?.userSettings.fontScale ?? 1;
       const canvas = canvasRef.current;

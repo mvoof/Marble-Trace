@@ -1,3 +1,4 @@
+import { useWidgetInstanceId } from '@ui/hooks/useWidgetSettings';
 import { useRef, useCallback } from 'react';
 
 import type { InputTraceSettings } from '@/types/widget-settings';
@@ -28,6 +29,7 @@ const NO_FRAME_CONSUMED = -1;
 export const CanvasTrace = () => {
   const telemetry = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
+  const instanceId = useWidgetInstanceId('input-trace');
   const inputTrace = useInputTraceWidgetStore();
   const appSettings = useAppSettingsStore();
 
@@ -53,7 +55,7 @@ export const CanvasTrace = () => {
     (scheduleDraw) => {
       const inputs = telemetry.carInputs;
       const settings =
-        widgetSettings.getSettings<InputTraceSettings>('input-trace');
+        widgetSettings.getSettings<InputTraceSettings>(instanceId);
       const state = bufferStateRef.current;
 
       if (!state) return;
@@ -114,10 +116,10 @@ export const CanvasTrace = () => {
 
   const redrawOnResize = useCallback(() => {
     const currentSettings =
-      widgetSettings.getSettings<InputTraceSettings>('input-trace');
+      widgetSettings.getSettings<InputTraceSettings>(instanceId);
 
     draw(currentSettings, appSettings.appSettings.steeringLock);
-  }, [widgetSettings, appSettings, draw]);
+  }, [widgetSettings, instanceId, appSettings, draw]);
 
   useCanvasAutoResize(canvasRef, redrawOnResize);
 

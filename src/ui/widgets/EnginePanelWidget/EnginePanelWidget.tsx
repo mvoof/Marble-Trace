@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { cloneElement, type ReactElement } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
@@ -5,11 +6,7 @@ import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
 import { getCellDividers } from '@utils/canvas';
 import { EngineCell, type EngineCellProps } from './EngineCell';
 import { AbsCell } from './AbsCell';
-import {
-  usePlayerStore,
-  useUnitsStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
 import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
 import type { UnitSystem } from '@/types';
 
@@ -42,10 +39,8 @@ const formatTempInt = (celsius: number | null, system: UnitSystem): string => {
 export const EnginePanelWidget = observer(() => {
   const playerStore = usePlayerStore();
   const unitsStore = useUnitsStore();
-  const widgetSettingsStore = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettingsStore.getSettings<EnginePanelWidgetSettings>('engine-panel');
+  const settings = useWidgetSettings<EnginePanelWidgetSettings>('engine-panel');
   const carStatus = playerStore.carStatus;
   const system = unitsStore.unitSystem;
 

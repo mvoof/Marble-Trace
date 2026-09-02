@@ -21,7 +21,7 @@ import { useUnitsStore } from '@store/root-store-context';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['proximity-radar', 'radar-bar'];
@@ -87,13 +87,14 @@ const ScopeReadout = observer(
 
 const ScopeCard = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('proximity-radar');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<ProximityRadarSettings>('proximity-radar');
+    widgetSettings.getSettings<ProximityRadarSettings>(panelWidgetId);
 
   const update = (partial: Partial<ProximityRadarSettings>) => {
-    widgetSettings.updateUserSettings('proximity-radar', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

@@ -9,7 +9,7 @@ import {
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['relative-map'];
@@ -18,13 +18,14 @@ const { ColorRow, SwitchRow } = panelRows<LinearMapWidgetSettings>();
 
 export const LinearMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('relative-map');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<LinearMapWidgetSettings>('relative-map');
+    widgetSettings.getSettings<LinearMapWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<LinearMapWidgetSettings>) => {
-    widgetSettings.updateUserSettings('relative-map', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

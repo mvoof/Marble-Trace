@@ -1,16 +1,13 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import type { InputTraceSettings } from '@/types/widget-settings';
 
 import { Bar } from './Bar/Bar';
 
 import styles from './InputBars.module.scss';
-import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const InputBars = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
-
-  const settings =
-    widgetSettings.getSettings<InputTraceSettings>('input-trace');
+  const settings = useWidgetSettings<InputTraceSettings>('input-trace');
 
   if (!settings.showThrottle && !settings.showBrake && !settings.showClutch) {
     return null;

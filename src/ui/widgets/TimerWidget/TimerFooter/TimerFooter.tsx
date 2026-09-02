@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { resolveSessionLaps } from '@utils/telemetry-format';
@@ -10,7 +11,6 @@ import {
   useCarsStore,
   useSessionStore,
   useStandingsWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 
@@ -21,14 +21,13 @@ export const TimerFooter = observer(() => {
   const { session, sessionInfo } = useSessionStore();
   const { carIdx, leaderBestLapTime } = useCarsStore();
   const standingsWidget = useStandingsWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   const {
     showLaps,
     showPosition,
     useLivePositions,
     classPositionInMulticlass,
-  } = widgetSettings.getSettings<TimerWidgetSettings>('timer');
+  } = useWidgetSettings<TimerWidgetSettings>('timer');
 
   if (!showLaps && !showPosition) {
     return null;

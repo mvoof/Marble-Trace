@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useRef, type WheelEvent } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +7,6 @@ import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 import {
   useAppSettingsStore,
   useStreamChatWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { ScrollIndicator } from '@ui/shared/ScrollIndicator/ScrollIndicator';
 import { ChatMessageRow } from '../ChatMessageRow/ChatMessageRow';
@@ -20,10 +20,8 @@ const WHEEL_STEP_MESSAGES = 3;
 export const ChatMessageList = observer(() => {
   const chatWidget = useStreamChatWidgetStore();
   const appSettings = useAppSettingsStore();
-  const widgetSettings = useWidgetSettingsStore();
   const { t } = useTranslation('widgets');
-  const settings =
-    widgetSettings.getSettings<StreamChatWidgetSettings>('stream-chat');
+  const settings = useWidgetSettings<StreamChatWidgetSettings>('stream-chat');
   const listRef = useRef<HTMLDivElement>(null);
 
   useFittingRowCount(listRef, chatWidget);

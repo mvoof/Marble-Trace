@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { convertTemp, formatSpeed, speedUnit } from '@utils/telemetry-format';
@@ -9,7 +10,6 @@ import {
   useEnvironmentStore,
   useSessionStore,
   useUnitsStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 const formatForecastTime = (timeSec: number): string => {
@@ -23,10 +23,8 @@ export const ForecastBlock = observer(() => {
   const { weatherForecast } = useEnvironmentStore();
   const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const { showForecast } =
-    widgetSettings.getSettings<WeatherWidgetSettings>('weather');
+  const { showForecast } = useWidgetSettings<WeatherWidgetSettings>('weather');
 
   if (!showForecast) {
     return null;

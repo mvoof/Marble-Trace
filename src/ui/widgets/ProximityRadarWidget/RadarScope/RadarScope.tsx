@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -6,11 +7,7 @@ import type { UnitSystem } from '@/types';
 import type { ProximityRadarSettings } from '@/types/widget-settings';
 import { useProximityRadarData } from '@ui/hooks/useProximityRadarData';
 import { formatDistance } from '@utils/telemetry-format';
-import {
-  useAppSettingsStore,
-  useUnitsStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
 import {
   DESIGN_SIZE_PX,
   SCOPE_INK,
@@ -42,7 +39,6 @@ export const RadarScope = observer(() => {
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const units = useUnitsStore();
   const appSettings = useAppSettingsStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   const { proximity, nearbyCars, visible } = useProximityRadarData(
     'proximity-radar',
@@ -57,8 +53,7 @@ export const RadarScope = observer(() => {
     carLength: appSettings.appSettings.carLength,
   });
 
-  const settings =
-    widgetSettings.getSettings<ProximityRadarSettings>('proximity-radar');
+  const settings = useWidgetSettings<ProximityRadarSettings>('proximity-radar');
 
   const settingsRef = useRef(settings);
   const unitSystemRef = useRef(units.unitSystem);

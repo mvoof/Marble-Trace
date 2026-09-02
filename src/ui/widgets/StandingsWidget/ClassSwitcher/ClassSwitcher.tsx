@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -9,18 +10,15 @@ import styles from './ClassSwitcher.module.scss';
 import {
   useAppSettingsStore,
   useStandingsWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 const FLASH_DURATION_MS = 300;
 
 export const ClassSwitcher = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
   const standingsWidget = useStandingsWidgetStore();
   const appSettings = useAppSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
   const { allClassGroups } = standingsWidget;
   const activeIndex = standingsWidget.activeClassIndex;
 

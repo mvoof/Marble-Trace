@@ -1,11 +1,9 @@
-﻿import { observer } from 'mobx-react-lite';
+﻿import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { observer } from 'mobx-react-lite';
 
 import { useWallClock } from '../useWallClock';
 import { formatSimDate, formatSimTime } from '@utils/timer-utils';
-import {
-  useSessionStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useSessionStore } from '@store/root-store-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 
 import { TimerItem } from '../TimerItem/TimerItem';
@@ -17,10 +15,9 @@ import {
 
 export const TimerRow = observer(() => {
   const { session, sessionInfo } = useSessionStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   const { showWallClock, showSimTime, showPcDate, showSimDate } =
-    widgetSettings.getSettings<TimerWidgetSettings>('timer');
+    useWidgetSettings<TimerWidgetSettings>('timer');
 
   const wallClock = useWallClock();
 

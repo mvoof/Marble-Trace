@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
@@ -13,14 +14,10 @@ import { ServiceFooter } from './ServiceFooter/ServiceFooter';
 
 import styles from './PitServiceWidget.module.scss';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
-import {
-  usePitServiceWidgetStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { usePitServiceWidgetStore } from '@store/root-store-context';
 import { useWidgetAutoHide } from '@ui/hooks/useWidgetAutoHide';
 
 export const PitServiceWidget = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
   const pitService = usePitServiceWidgetStore();
 
   const {
@@ -33,7 +30,7 @@ export const PitServiceWidget = observer(() => {
     showRepairs,
     showFooter,
     alwaysVisible,
-  } = widgetSettings.getSettings<PitServiceWidgetSettings>('pit-service');
+  } = useWidgetSettings<PitServiceWidgetSettings>('pit-service');
 
   // Hiding through the auto-hide store rather than returning null: the
   // container paints the background, so a null child would leave an empty

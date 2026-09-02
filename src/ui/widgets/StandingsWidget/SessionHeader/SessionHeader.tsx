@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Flag, Trophy, Users } from 'lucide-react';
 
@@ -22,7 +23,6 @@ import {
   useCarsStore,
   useSessionStore,
   useStandingsWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 // Matches the icon size the footer's stat pills use.
@@ -40,10 +40,8 @@ export const SessionHeader = observer(() => {
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
   const standingsWidget = useStandingsWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
   if (!settings.showSessionHeader) {
     return null;

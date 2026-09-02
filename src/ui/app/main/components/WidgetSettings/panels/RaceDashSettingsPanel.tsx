@@ -12,7 +12,7 @@ import { Card } from './Card';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { useUnitsStore } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['race-dash'];
@@ -22,13 +22,14 @@ const { ColorRow, SwitchRow } = panelRows<RaceDashWidgetSettings>();
 export const RaceDashSettingsPanel = observer(() => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('race-dash');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
+    widgetSettings.getSettings<RaceDashWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<RaceDashWidgetSettings>) => {
-    widgetSettings.updateUserSettings('race-dash', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

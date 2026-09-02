@@ -1,8 +1,8 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
-import { useWidgetSettingsStore } from '@store/root-store-context';
 
 import { EngineCluster } from './EngineCluster/EngineCluster';
 import { GearReadout } from './GearReadout/GearReadout';
@@ -21,11 +21,10 @@ import { useStripFit } from './use-strip-fit';
 import styles from './InvisibleDashWidget.module.scss';
 
 export const InvisibleDashWidget = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
   const { stripRef, fit } = useStripFit();
 
   const settings =
-    widgetSettings.getSettings<InvisibleDashWidgetSettings>('invisible-dash');
+    useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
 
   const isProjection = settings.renderMode === 'projection';
   const { transform, opacity, scale } = computeDepthTransform(settings.depth);

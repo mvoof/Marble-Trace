@@ -1,9 +1,7 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  usePlayerStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { usePlayerStore } from '@store/root-store-context';
 import {
   advanceDeltaLatch,
   formatDelta,
@@ -25,9 +23,8 @@ const DELTA_CLASS = {
 
 export const DeltaLive = observer(() => {
   const { lapTiming } = usePlayerStore();
-  const widgetSettings = useWidgetSettingsStore();
   const { reference, hideWhenNoReference, showGauge } =
-    widgetSettings.getSettings<DeltaWidgetSettings>('delta');
+    useWidgetSettings<DeltaWidgetSettings>('delta');
 
   const liveDelta = getGameDelta(lapTiming, reference);
   const deltaOk = isGameDeltaOk(lapTiming, reference);

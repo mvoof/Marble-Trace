@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Sun, CloudSun, Cloud, CloudRain } from 'lucide-react';
 
@@ -12,7 +13,6 @@ import {
   useEnvironmentStore,
   useSessionStore,
   useUnitsStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 import styles from './WeatherHeader.module.scss';
@@ -28,9 +28,8 @@ const ICON_SIZE_PX = 20;
 
 export const WeatherHeader = observer(() => {
   const units = useUnitsStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getSettings<WeatherWidgetSettings>('weather');
+  const settings = useWidgetSettings<WeatherWidgetSettings>('weather');
   const { showAirTemp, showCompass } = settings;
 
   if (!showAirTemp) {

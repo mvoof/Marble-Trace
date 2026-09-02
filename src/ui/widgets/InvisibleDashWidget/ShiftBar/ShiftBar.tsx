@@ -1,8 +1,8 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
 import type { RpmZone } from '@utils/car-signals';
-import { useWidgetSettingsStore } from '@store/root-store-context';
 
 import { shiftBarColor } from '../invisible-dash-utils';
 
@@ -16,10 +16,8 @@ interface ShiftBarProps {
 const FULL_PERCENT = 100;
 
 export const ShiftBar = observer(({ pct, zone }: ShiftBarProps) => {
-  const widgetSettings = useWidgetSettingsStore();
-
   const settings =
-    widgetSettings.getSettings<InvisibleDashWidgetSettings>('invisible-dash');
+    useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
 
   return (
     <span className={styles.track}>

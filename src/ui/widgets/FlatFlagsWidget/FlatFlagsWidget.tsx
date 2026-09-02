@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { useWidgetAutoHide } from '@ui/hooks/useWidgetAutoHide';
@@ -6,17 +7,12 @@ import { FlagList } from './FlagList/FlagList';
 
 import styles from './FlatFlagsWidget.module.scss';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
-import {
-  useFlagsStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useFlagsStore } from '@store/root-store-context';
 
 export const FlatFlagsWidget = observer(() => {
   const flags = useFlagsStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const { alwaysShow } =
-    widgetSettings.getSettings<FlagDisplaySettings>('flat-flags');
+  const { alwaysShow } = useWidgetSettings<FlagDisplaySettings>('flat-flags');
 
   const hasContent = alwaysShow || flags.displayFlags.length > 0;
 

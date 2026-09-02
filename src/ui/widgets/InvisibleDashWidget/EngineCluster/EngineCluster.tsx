@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
@@ -7,7 +8,6 @@ import {
   usePlayerStore,
   useSessionStore,
   useUnitsStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 import { zoneDigitColor } from '../invisible-dash-utils';
@@ -21,10 +21,9 @@ export const EngineCluster = observer(() => {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   const settings =
-    widgetSettings.getSettings<InvisibleDashWidgetSettings>('invisible-dash');
+    useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
 
   if (!settings.showSpeed && !settings.showRpm && !settings.showShiftBar) {
     return null;

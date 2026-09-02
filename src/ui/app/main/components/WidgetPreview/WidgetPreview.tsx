@@ -5,6 +5,7 @@ import { RootStore } from '@store/root-store';
 import { RootStoreContext, useUnitsStore } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
+import { widgetTypeOf } from '@utils/widget-instance';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameStyle } from '@ui/app/widget-frame';
@@ -53,6 +54,12 @@ export const WidgetPreview = observer(
 
     const widget = editor.getWidget(widgetId);
 
+    // The preview world holds one record per widget, seeded from the catalog,
+    // so a copy is mirrored onto its type's record there rather than added
+    // beside it: the preview shows what this copy looks like, and only ever one
+    // widget at a time.
+    const previewId = widget ? widgetTypeOf(widget) : widgetId;
+
     // Read the change token so the effect re-mirrors on any settings change.
     const mutationToken = editor.getChangeToken();
 
@@ -61,7 +68,7 @@ export const WidgetPreview = observer(
 
       previewStore.widgetSettings.applySettingsSync([
         {
-          id: widget.id,
+          id: previewId,
           label: widget.label,
           description: widget.description,
           designWidth: widget.designWidth,
@@ -73,9 +80,9 @@ export const WidgetPreview = observer(
           userSettings: { ...widget.userSettings },
         },
       ]);
-    }, [previewStore, widget, mutationToken]);
+    }, [previewStore, widget, previewId, mutationToken]);
 
-    const Widget = componentForWidget(widgetId);
+    const Widget = componentForWidget(previewId);
 
     if (!widget || !Widget) {
       return <div className={styles.empty}>{t('widgetPreview.noPreview')}</div>;
@@ -105,7 +112,7 @@ export const WidgetPreview = observer(
             }}
           >
             <ErrorBoundary>
-              <WidgetIdContext.Provider value={widgetId}>
+              <WidgetIdContext.Provider value={previewId}>
                 <Widget />
               </WidgetIdContext.Provider>
             </ErrorBoundary>

@@ -1,10 +1,8 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
-import {
-  useCloseBattleWidgetStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useCloseBattleWidgetStore } from '@store/root-store-context';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import { BattleAxis } from './BattleAxis';
 import { BattleRow } from './BattleRow';
@@ -13,10 +11,8 @@ import styles from './CloseBattleWidget.module.scss';
 
 export const CloseBattleWidget = observer(() => {
   const closeBattle = useCloseBattleWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
+  const settings = useWidgetSettings<CloseBattleWidgetSettings>('close-battle');
 
   // Nobody in the threshold means nothing to fight over: the axis alone is
   // permanent noise on the screen, so the widget leaves entirely.

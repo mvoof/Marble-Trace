@@ -10,7 +10,7 @@ import { Card } from './Card';
 
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 const MIN_WINDOW_METERS = 50;
 const MAX_WINDOW_METERS = 500;
@@ -24,12 +24,14 @@ const { ColorRow, SwitchRow } = panelRows<CoachWidgetSettings>();
 
 export const CoachSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('coach');
   const { t } = useTranslation('widgets');
 
-  const settings = widgetSettings.getSettings<CoachWidgetSettings>('coach');
+  const settings =
+    widgetSettings.getSettings<CoachWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<CoachWidgetSettings>) => {
-    widgetSettings.updateUserSettings('coach', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

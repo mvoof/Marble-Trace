@@ -10,7 +10,7 @@ import {
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 const MIN_ZOOM_LEVEL = 1.5;
 const MAX_ZOOM_LEVEL = 10;
@@ -24,13 +24,14 @@ const { ColorRow, SwitchRow } = panelRows<TrackMapWidgetSettings>();
 
 export const TrackMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('track-map');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
+    widgetSettings.getSettings<TrackMapWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<TrackMapWidgetSettings>) => {
-    widgetSettings.updateUserSettings('track-map', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

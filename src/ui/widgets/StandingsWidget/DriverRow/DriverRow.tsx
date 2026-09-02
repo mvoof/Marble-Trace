@@ -1,4 +1,5 @@
-﻿import type { CSSProperties } from 'react';
+﻿import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import { formatLapTime } from '@utils/telemetry-format';
 import {
@@ -32,7 +33,6 @@ import styles from './DriverRow.module.scss';
 import {
   useStandingsWidgetStore,
   useSessionStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 interface DriverRowProps {
@@ -46,11 +46,9 @@ export const DriverRow = observer(
   ({ carIdx, index, startsPlayerWindow = false }: DriverRowProps) => {
     const standingsWidget = useStandingsWidgetStore();
     const session = useSessionStore();
-    const widgetSettings = useWidgetSettingsStore();
 
     const driver = standingsWidget.driverMap.get(carIdx);
-    const settings =
-      widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+    const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
     const gridTemplate = buildGridTemplate(settings);
 
     if (!driver) {

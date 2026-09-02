@@ -3,19 +3,21 @@ import { useWidgetAutoHide } from './useWidgetAutoHide';
 import {
   useBackendComputedStore,
   useRadarWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 
 export const useProximityRadarData = (
   widgetId: 'proximity-radar' | 'radar-bar',
   searchRadius: number
 ) => {
   const computed = useBackendComputedStore();
-  const widgetSettings = useWidgetSettingsStore();
   const radarStore = useRadarWidgetStore();
 
   const proximity = computed.proximity;
-  const radarSettings = widgetSettings.getSettings<RadarSettings>(widgetId);
+  // `widgetId` is the widget *type* the caller is; the copy actually being
+  // rendered comes from the mount context, so two radars on two screens keep
+  // their own range and their own colors.
+  const radarSettings = useWidgetSettings<RadarSettings>(widgetId);
 
   const nearbyCars =
     proximity?.nearbyCars.filter((car) => car.clearance <= searchRadius) ?? [];

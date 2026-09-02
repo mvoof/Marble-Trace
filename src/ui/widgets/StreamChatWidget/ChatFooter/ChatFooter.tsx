@@ -1,13 +1,11 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Activity } from 'lucide-react';
 
 import type { ChatPresence } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
-import {
-  useStreamChatWidgetStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useStreamChatWidgetStore } from '@store/root-store-context';
 import { PlatformGlyph } from '../PlatformGlyph/PlatformGlyph';
 
 import styles from './ChatFooter.module.scss';
@@ -25,11 +23,9 @@ const formatCount = (value: number, locale: string) =>
 
 export const ChatFooter = observer(() => {
   const chatWidget = useStreamChatWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
   const { t, i18n } = useTranslation('widgets');
 
-  const settings =
-    widgetSettings.getSettings<StreamChatWidgetSettings>('stream-chat');
+  const settings = useWidgetSettings<StreamChatWidgetSettings>('stream-chat');
   const total = chatWidget.totalViewers;
 
   return (

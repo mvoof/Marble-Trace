@@ -1,9 +1,9 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import {
   useCloseBattleWidgetStore,
   useUnitsStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import {
@@ -24,11 +24,9 @@ import styles from './BattleAxis.module.scss';
  */
 export const BattleAxis = observer(() => {
   const closeBattle = useCloseBattleWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
   const units = useUnitsStore();
 
-  const settings =
-    widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
+  const settings = useWidgetSettings<CloseBattleWidgetSettings>('close-battle');
 
   const axisRange = closeBattle.axisRange;
 

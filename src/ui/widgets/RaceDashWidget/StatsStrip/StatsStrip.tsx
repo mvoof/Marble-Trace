@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { positionBandColor } from '../race-dash-utils';
@@ -10,7 +11,6 @@ import {
   usePlayerStore,
   useSessionStore,
   useStandingsWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 import styles from './StatsStrip.module.scss';
@@ -20,10 +20,8 @@ export const StatsStrip = observer(() => {
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
   const standingsWidget = useStandingsWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
+  const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');
 
   const currentLap = player.lapTiming?.lap;
   const { position } = standingsWidget.playerPositionInfo(

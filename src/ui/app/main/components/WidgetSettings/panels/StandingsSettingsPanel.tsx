@@ -11,7 +11,7 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { SettingSwitchGroup } from './SettingSwitchGroup';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 import {
   NAME_COLUMN_MAX_PX,
   NAME_COLUMN_MIN_PX,
@@ -39,13 +39,14 @@ const { SwitchRow, ColorRow } = panelRows<StandingsWidgetSettings>();
 
 export const StandingsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('standings');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+    widgetSettings.getSettings<StandingsWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<StandingsWidgetSettings>) => {
-    widgetSettings.updateUserSettings('standings', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

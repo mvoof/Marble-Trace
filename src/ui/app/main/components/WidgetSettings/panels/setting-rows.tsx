@@ -41,6 +41,21 @@ interface RowProps {
   hex?: boolean;
 }
 
+/**
+ * The id of the widget record this panel is editing.
+ *
+ * A panel names the widget it configures in `PANEL_WIDGET_IDS`, but that is a
+ * *type* — and since a layout may hold several copies of a widget, the record
+ * being edited is one of them and is not addressed by that string. Reading the
+ * id from the panel context is what points a panel at the copy the user
+ * selected instead of always at the original.
+ *
+ * `fallbackId` is that type, used only where no panel context exists: Storybook,
+ * and previews that render a panel outside the settings page.
+ */
+export const usePanelWidgetId = (fallbackId: string): string =>
+  use(PanelWidgetContext) ?? fallbackId;
+
 const useBoundSetting = (settingKey: string) => {
   const widgetId = use(PanelWidgetContext);
   const editor = useWidgetEditor();

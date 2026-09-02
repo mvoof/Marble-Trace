@@ -1,11 +1,9 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { formatBrand, formatCarNumber } from '@utils/driver';
-import {
-  useUnitsStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useUnitsStore } from '@store/root-store-context';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import {
   battleDistanceParts,
@@ -46,10 +44,9 @@ interface BattleRowProps {
 export const BattleRow = observer(
   ({ opponent, topPct, stackIndex }: BattleRowProps) => {
     const units = useUnitsStore();
-    const widgetSettings = useWidgetSettingsStore();
 
     const settings =
-      widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
+      useWidgetSettings<CloseBattleWidgetSettings>('close-battle');
 
     const { entry } = opponent;
 

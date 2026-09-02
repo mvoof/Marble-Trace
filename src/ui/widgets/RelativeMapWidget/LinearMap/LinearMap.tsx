@@ -1,4 +1,5 @@
-﻿import { useRef, useState, useEffect } from 'react';
+﻿import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { TRACK_SURFACE_ON_TRACK } from '@utils/driver';
 import { parseClassColor } from '@utils/colors';
@@ -15,7 +16,6 @@ import {
   useCarsStore,
   usePaceCarStore,
   useSessionStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const LinearMap = observer(() => {
@@ -23,11 +23,9 @@ export const LinearMap = observer(() => {
   const { carPositions } = useCarsStore();
   const sessionStore = useSessionStore();
   const { sessionInfo } = sessionStore;
-  const widgetSettings = useWidgetSettingsStore();
   const paceCarStore = usePaceCarStore();
 
-  const settings =
-    widgetSettings.getSettings<LinearMapWidgetSettings>('relative-map');
+  const settings = useWidgetSettings<LinearMapWidgetSettings>('relative-map');
   const entries = computed.relativeEntries;
   const player = entries.find((entry) => entry.isPlayer) ?? null;
   const isHorizontal = settings.orientation === 'horizontal';

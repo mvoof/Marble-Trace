@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
@@ -22,10 +23,7 @@ import type { DriverEntry } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './DriverRow.module.scss';
-import {
-  useBackendComputedStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useBackendComputedStore } from '@store/root-store-context';
 
 interface DriverRowProps {
   driver: DriverEntry;
@@ -35,10 +33,8 @@ interface DriverRowProps {
 export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
   const computed = useBackendComputedStore();
   const { relativeEntries } = computed;
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<RelativeWidgetSettings>('relative');
+  const settings = useWidgetSettings<RelativeWidgetSettings>('relative');
 
   const player = relativeEntries.find((entry) => entry.isPlayer) ?? null;
 

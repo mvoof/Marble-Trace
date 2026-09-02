@@ -9,18 +9,21 @@ import type {
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { usePanelWidgetId } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['g-meter'];
 
 export const GMeterSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('g-meter');
   const { t } = useTranslation('widgets');
 
-  const settings = widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
+  const settings =
+    widgetSettings.getSettings<GMeterWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<GMeterWidgetSettings>) => {
-    widgetSettings.updateUserSettings('g-meter', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

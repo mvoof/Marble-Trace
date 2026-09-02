@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { formatFuel } from '@utils/telemetry-format';
@@ -5,7 +6,6 @@ import {
   useBackendComputedStore,
   usePlayerStore,
   useUnitsStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
   NO_FUEL_DATA_PLACEHOLDER,
@@ -25,9 +25,8 @@ export const FuelStatsRow = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { carStatus } = usePlayerStore();
   const { unitSystem } = useUnitsStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
+  const settings = useWidgetSettings<FuelWidgetSettings>('fuel');
   const visibleKeys = getVisibleFuelStatKeys(settings);
 
   if (visibleKeys.length === 0) {

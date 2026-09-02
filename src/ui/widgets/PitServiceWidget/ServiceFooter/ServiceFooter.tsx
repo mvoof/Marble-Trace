@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import styles from './ServiceFooter.module.scss';
@@ -11,7 +12,6 @@ import {
   usePitServiceWidgetStore,
   usePlayerStore,
   useStandingsWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 const STATE_LABEL = {
@@ -28,10 +28,9 @@ export const ServiceFooter = observer(() => {
   const { pitService } = usePlayerStore();
   const pitServiceWidget = usePitServiceWidgetStore();
   const standingsWidget = useStandingsWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   const { useLivePositions, classPositionInMulticlass, showProjectedPosition } =
-    widgetSettings.getSettings<PitServiceWidgetSettings>('pit-service');
+    useWidgetSettings<PitServiceWidgetSettings>('pit-service');
 
   const stops = pitStops?.playerStops ?? 0;
 

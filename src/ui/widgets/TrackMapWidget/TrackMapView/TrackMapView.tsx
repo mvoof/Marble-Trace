@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -22,7 +23,6 @@ import {
   useCarsStore,
   usePaceCarStore,
   useSessionStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export interface TrackData {
@@ -52,12 +52,10 @@ export const TrackMapView = observer(
     const { sessionInfo } = sessionStore;
     const { carPositions } = useCarsStore();
     const computed = useBackendComputedStore();
-    const widgetSettings = useWidgetSettingsStore();
     const paceCarStore = usePaceCarStore();
     const { dragMode } = useAppSettingsStore();
 
-    const rawSettings =
-      widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
+    const rawSettings = useWidgetSettings<TrackMapWidgetSettings>('track-map');
 
     const showSectors = rawSettings.showSectors ?? true;
     const showSectorsOnMap = rawSettings.showSectorsOnMap ?? showSectors;

@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
@@ -8,7 +9,6 @@ import styles from './FuelNextStop.module.scss';
 import {
   useBackendComputedStore,
   usePlayerStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 const NO_LAP_PLACEHOLDER = '--';
@@ -16,9 +16,8 @@ const NO_LAP_PLACEHOLDER = '--';
 export const FuelNextStop = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { lapTiming } = usePlayerStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
+  const settings = useWidgetSettings<FuelWidgetSettings>('fuel');
 
   if (!settings.showNextStopForecast) {
     return null;

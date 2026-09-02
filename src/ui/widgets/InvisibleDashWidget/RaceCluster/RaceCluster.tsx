@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
@@ -7,7 +8,6 @@ import {
   usePlayerStore,
   useSessionStore,
   useStandingsWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 import type { BackdropStyle, CurvatureStyle } from '../invisible-dash-utils';
@@ -28,10 +28,9 @@ export const RaceCluster = observer(({ backdrop, curve }: RaceClusterProps) => {
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
   const standingsWidget = useStandingsWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   const settings =
-    widgetSettings.getSettings<InvisibleDashWidgetSettings>('invisible-dash');
+    useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
 
   if (!settings.showPosition && !settings.showLap) {
     return null;

@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -9,11 +10,7 @@ import { usePitState } from '@ui/hooks/usePitState';
 import type { PitState } from '@ui/hooks/usePitState';
 
 import styles from './RpmLightsWidget.module.scss';
-import {
-  usePlayerStore,
-  useSessionStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { usePlayerStore, useSessionStore } from '@store/root-store-context';
 
 const LED_COUNT = 22;
 
@@ -124,7 +121,6 @@ const getPitLedColor = (
 export const RpmLightsWidget = observer(() => {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
-  const widgetSettings = useWidgetSettingsStore();
   const { pitState, showPitAssist } = usePitState();
 
   const effectivePitState: PitState = showPitAssist ? pitState : 'normal';
@@ -136,7 +132,7 @@ export const RpmLightsWidget = observer(() => {
     rpmColorShift,
     rpmColorLimit,
     ledShape,
-  } = widgetSettings.getSettings<RpmLightsWidgetSettings>('rpm-lights');
+  } = useWidgetSettings<RpmLightsWidgetSettings>('rpm-lights');
 
   const isPitMode = effectivePitState !== 'normal';
 

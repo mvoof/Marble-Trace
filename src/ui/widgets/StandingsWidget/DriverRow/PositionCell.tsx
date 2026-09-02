@@ -1,11 +1,9 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { ArrowBigUp, ArrowBigDown } from 'lucide-react';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import {
-  useStandingsWidgetStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useStandingsWidgetStore } from '@store/root-store-context';
 
 import styles from './DriverRow.module.scss';
 
@@ -17,11 +15,9 @@ interface PositionCellProps {
 
 export const PositionCell = observer(({ carIdx }: PositionCellProps) => {
   const standingsWidget = useStandingsWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   const driver = standingsWidget.driverMap.get(carIdx);
-  const settings =
-    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
   if (!driver) {
     return null;
