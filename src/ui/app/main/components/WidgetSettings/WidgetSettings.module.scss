@@ -115,6 +115,15 @@
   display: block;
 }
 
+// A setting that only says how its parent's value is written, not whether it is
+// shown. It joins the parent's block — the Card draws its rule between blocks,
+// so the pair reads as one setting with an option rather than two settings.
+.fieldSubRow {
+  margin-top: rem(14);
+  padding-left: rem(14);
+  border-left: 1px solid $sys-border-sub;
+}
+
 .fieldRow {
   display: flex;
   align-items: center;

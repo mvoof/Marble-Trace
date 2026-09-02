@@ -8,11 +8,30 @@
   border-radius: radius(md);
   padding: sp(xxxs) sp(sm);
   font-family: $font-mono;
-  font-size: fs(xxs);
+  // Matches the session header's own stats, so a class header and the bar above
+  // it read at one size.
+  font-size: fs(sm);
   letter-spacing: 0.05em;
   line-height: 1;
   flex-shrink: 0;
   color: $widget-text-secondary;
+}
+
+// No box at all: the value is spelled out at the row's own scale, and the icon's
+// color is what separates one reading from the next.
+.pillInline {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  // The footer keeps the smaller size — it sits under the rows, not beside them.
+  font-size: fs(xxs);
+
+  // A single weight across the strip — the value is held apart from its label by
+  // color, and the boxed variant is the one that still leans on bold.
+  .value {
+    font-weight: 400;
+  }
 }
 
 .pillPulse {

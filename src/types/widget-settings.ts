@@ -328,6 +328,12 @@ export interface StandingsWidgetSettings {
   showSessionTime: boolean;
   showWeather: boolean;
   showSOF: boolean;
+  /**
+   * Round the SOF to a thousand ("6.1k") instead of spelling it out ("6148").
+   * Applies to the session header and to the per-class headers alike — the same
+   * number in two places must not be written two ways.
+   */
+  abbreviateSof: boolean;
   showTotalDrivers: boolean;
   /**
    * Width of the driver-name column in design px (before `--wfs`). The column is
@@ -339,7 +345,19 @@ export interface StandingsWidgetSettings {
   showBrand: boolean;
   showTire: boolean;
   showLicBadge: boolean;
+  /**
+   * Spell the license out ("A 4.99") or drop the class letter and keep the
+   * safety rating alone ("4.99"). The letter is what the badge's color already
+   * says, so dropping it costs the column nothing but its width.
+   */
+  showLicenseLetter: boolean;
   showIRating: boolean;
+  /**
+   * Round the iRating to a thousand ("9.9k") instead of spelling it out ("9873").
+   * The full value needs a wider column, so this widens the table the way
+   * toggling a column does.
+   */
+  abbreviateIRating: boolean;
   /** Projected iR change column (Elo-based estimate, not real SDK data) */
   showIrChange: boolean;
   /** Player-only pit stop counter (counted on the frontend) */
@@ -388,7 +406,11 @@ export interface RelativeWidgetSettings {
    */
   nameColumnWidth: number;
   showLicBadge: boolean;
+  /** Keep the class letter in the SR badge ("A 4.99") or the rating alone ("4.99"). */
+  showLicenseLetter: boolean;
   showIRating: boolean;
+  /** Round the iRating to a thousand ("9.9k") or spell it out ("9873"), which widens the column. */
+  abbreviateIRating: boolean;
   showPitIndicator: boolean;
   abbreviateNames: boolean;
   /** Driver's profile country flag, in its own column before the name. */

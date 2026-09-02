@@ -170,13 +170,16 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
       {settings.showLicBadge ? (
         <div className={styles.colLic}>
-          <LicBadge licString={driver.licString} />
+          <LicBadge
+            licString={driver.licString}
+            showLetter={settings.showLicenseLetter}
+          />
         </div>
       ) : null}
 
       {settings.showIRating ? (
         <div className={styles.colIr}>
-          <span>{formatIr(driver.iRating)}</span>
+          <span>{formatIr(driver.iRating, settings.abbreviateIRating)}</span>
         </div>
       ) : null}
 

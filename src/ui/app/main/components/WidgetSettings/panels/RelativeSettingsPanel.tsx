@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Switch, Segmented, Slider } from 'antd';
+import { Segmented, Slider } from 'antd';
 import type {
   RowPadding,
   RelativeWidgetSettings,
@@ -8,6 +8,7 @@ import type {
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
+import { SettingSwitchGroup } from './SettingSwitchGroup';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows } from './setting-rows';
 import {
@@ -17,6 +18,15 @@ import {
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['relative'];
+
+interface RelativeColumnSwitch {
+  titleKey: string;
+  descKey: string;
+  value: boolean;
+  onChange: (next: boolean) => void;
+  /** Options that only say how this column's value is written. */
+  sub?: RelativeColumnSwitch[];
+}
 
 const { ColorRow, SwitchRow } = panelRows<RelativeWidgetSettings>();
 
@@ -38,18 +48,34 @@ export const RelativeSettingsPanel = observer(() => {
     });
   };
 
-  const dataColumns = [
+  const dataColumns: RelativeColumnSwitch[] = [
     {
       titleKey: 'settingsPanels.relative.licenseBadge',
       descKey: 'settingsPanels.relative.licenseBadgeDesc',
       value: settings.showLicBadge,
       onChange: (v: boolean) => update({ showLicBadge: v }),
+      sub: [
+        {
+          titleKey: 'settingsPanels.relative.licenseLetter',
+          descKey: 'settingsPanels.relative.licenseLetterDesc',
+          value: settings.showLicenseLetter,
+          onChange: (v: boolean) => update({ showLicenseLetter: v }),
+        },
+      ],
     },
     {
       titleKey: 'settingsPanels.relative.iRating',
       descKey: 'settingsPanels.relative.iRatingDesc',
       value: settings.showIRating,
       onChange: (v: boolean) => update({ showIRating: v }),
+      sub: [
+        {
+          titleKey: 'settingsPanels.relative.abbreviateIRating',
+          descKey: 'settingsPanels.relative.abbreviateIRatingDesc',
+          value: settings.abbreviateIRating,
+          onChange: (v: boolean) => update({ abbreviateIRating: v }),
+        },
+      ],
     },
     {
       titleKey: 'settingsPanels.relative.pitIndicator',
@@ -149,11 +175,19 @@ export const RelativeSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.relative.dataColumns')}>
         {dataColumns.map((item) => (
-          <div key={item.titleKey} className={styles.fieldGroup}>
-            <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
-              <Switch checked={item.value} onChange={item.onChange} />
-            </SettingRow>
-          </div>
+          <SettingSwitchGroup
+            key={item.titleKey}
+            title={t(item.titleKey)}
+            desc={t(item.descKey)}
+            checked={item.value}
+            onChange={item.onChange}
+            sub={item.sub?.map((option) => ({
+              title: t(option.titleKey),
+              desc: t(option.descKey),
+              checked: option.value,
+              onChange: option.onChange,
+            }))}
+          />
         ))}
       </Card>
 

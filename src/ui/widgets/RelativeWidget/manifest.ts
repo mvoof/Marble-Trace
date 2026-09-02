@@ -14,14 +14,25 @@ import {
 
 const resolveRelativeLayout =
   makeExactColumnLayoutResolver<RelativeWidgetSettings>(
-    ['showLicBadge', 'showIRating', 'showCountryFlag', 'nameColumnWidth'],
+    [
+      'showLicBadge',
+      // Change a column's width rather than its presence, so the table is
+      // re-measured for them exactly as for a column being toggled.
+      'showLicenseLetter',
+      'abbreviateIRating',
+      'showIRating',
+      'showCountryFlag',
+      'nameColumnWidth',
+    ],
     computeRelativeDesignWidth
   );
 
 const RELATIVE_COLUMN_DEFAULTS = {
   nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
   showLicBadge: true,
+  showLicenseLetter: true,
   showIRating: true,
+  abbreviateIRating: true,
   showCountryFlag: false,
 };
 const RELATIVE_DESIGN_WIDTH = computeRelativeDesignWidth(

@@ -16,6 +16,10 @@ const resolveStandingsLayout =
   makeExactColumnLayoutResolver<StandingsWidgetSettings>(
     [
       'showLicBadge',
+      // Both change a column's width rather than its presence, so the table has
+      // to be re-measured for them exactly as it is for a column being toggled.
+      'showLicenseLetter',
+      'abbreviateIRating',
       'showIRating',
       'showIrChange',
       'showLapsCompleted',
@@ -35,7 +39,9 @@ const STANDINGS_COLUMN_DEFAULTS = {
   showBrand: true,
   showTire: true,
   showLicBadge: true,
+  showLicenseLetter: true,
   showIRating: true,
+  abbreviateIRating: true,
   showIrChange: true,
   showLapsCompleted: true,
 };
@@ -77,6 +83,7 @@ export const STANDINGS_MANIFEST: WidgetManifest = {
     showSessionTime: true,
     showWeather: true,
     showSOF: true,
+    abbreviateSof: true,
     showTotalDrivers: true,
     showPitStops: true,
     showIncidentsBadge: true,

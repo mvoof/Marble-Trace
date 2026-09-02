@@ -124,10 +124,13 @@
   justify-content: flex-end;
 }
 
-// Name cell — overflow truncation
+// Name cell — overflow truncation. The right padding is the gap between the
+// status badges that end the cell (PIT, OUT, TOW) and the license badge in the
+// column after it: at the grid's own 2px they read as one run of badges.
 .nameCell {
   overflow: hidden;
   gap: sp(xs);
+  padding-right: sp(sm);
 }
 
 // Position number

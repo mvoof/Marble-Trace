@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { Trophy, Users } from 'lucide-react';
+import { Flag, Trophy, Users } from 'lucide-react';
 
 import { formatIRating } from '@utils/driver';
 import { resolveSessionLaps } from '@utils/telemetry-format';
@@ -84,15 +84,13 @@ export const SessionHeader = observer(() => {
   const isLapLimited = isLapLimitedSession(currentSession?.sessionLaps);
   const lapProgress = buildLapProgress(leaderLap, totalLaps, !isLapLimited);
 
+  // Whether anything precedes the SOF in the left group — a rule with nothing on
+  // its left would read as the edge of a missing item.
+  const hasSessionStat = Boolean(currentSession) || settings.showTotalDrivers;
+
   return (
     <div className={styles.sessionHeader}>
       <div className={styles.sessionLeft}>
-        {trackName && <span className={styles.trackName}>{trackName}</span>}
-
-        {trackName && currentSession && (
-          <span className={styles.divider} aria-hidden="true" />
-        )}
-
         {currentSession && (
           <span
             className={`${styles.sessionType} ${SESSION_TYPE_CLASS[resolveSessionColorKey(currentSession.sessionType)]}`}
@@ -103,41 +101,54 @@ export const SessionHeader = observer(() => {
           </span>
         )}
 
-        {settings.showTotalDrivers && (
-          <>
-            <span className={styles.divider} aria-hidden="true" />
+        {currentSession && settings.showTotalDrivers && (
+          <span className={styles.divider} aria-hidden="true" />
+        )}
 
-            <span className={styles.stat}>
-              <Users size={STAT_ICON_SIZE_PX} className={styles.statIcon} />
-              <span className={styles.statValue}>{driverEntries.length}</span>
-            </span>
-          </>
+        {settings.showTotalDrivers && (
+          <span className={styles.stat}>
+            <Users
+              size={STAT_ICON_SIZE_PX}
+              className={`${styles.statIcon} ${styles.statIconField}`}
+            />
+
+            <span className={styles.statValue}>{driverEntries.length}</span>
+          </span>
+        )}
+
+        {showSof && hasSessionStat && (
+          <span className={styles.divider} aria-hidden="true" />
         )}
 
         {showSof && (
-          <>
-            <span className={styles.divider} aria-hidden="true" />
+          <span className={styles.stat}>
+            <Trophy
+              size={STAT_ICON_SIZE_PX}
+              className={`${styles.statIcon} ${styles.statIconAccent}`}
+            />
 
-            <span className={styles.stat}>
-              <Trophy
-                size={STAT_ICON_SIZE_PX}
-                className={`${styles.statIcon} ${styles.statIconAccent}`}
-              />
+            <span className={styles.statLabel}>SOF</span>
 
-              <span className={styles.statValue}>
-                {formatIRating(overallSof)}
-              </span>
+            <span className={styles.statValue}>
+              {formatIRating(overallSof, settings.abbreviateSof)}
             </span>
-          </>
+          </span>
         )}
+      </div>
+
+      <div className={styles.sessionCenter}>
+        {trackName && <span className={styles.trackName}>{trackName}</span>}
       </div>
 
       <div className={styles.sessionRight}>
         {lapProgress && (
           <span
-            className={`${styles.laps} ${isLapLimited ? styles.lapsLead : styles.lapsMuted} ${lapProgress.isFinalLap ? styles.lapsFinal : ''}`}
+            className={`${styles.laps} ${isLapLimited ? '' : styles.lapsMuted} ${lapProgress.isFinalLap ? styles.lapsFinal : ''}`}
           >
-            <span className={styles.statLabel}>LAP</span>
+            <Flag
+              size={STAT_ICON_SIZE_PX}
+              className={`${styles.statIcon} ${styles.statIconProgress}`}
+            />
 
             <span
               className={styles.lapsValue}

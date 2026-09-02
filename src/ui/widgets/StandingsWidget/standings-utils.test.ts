@@ -311,3 +311,53 @@ describe('name column width', () => {
     expect(template).not.toContain('fr');
   });
 });
+
+describe('columns sized by their format', () => {
+  const settingsWith = (partial: Partial<StandingsWidgetSettings>) =>
+    ({
+      nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
+      showPosChange: false,
+      showIrChange: false,
+      showLapsCompleted: false,
+      showBrand: false,
+      showTire: false,
+      showLicBadge: true,
+      showLicenseLetter: true,
+      showIRating: true,
+      abbreviateIRating: true,
+      ...partial,
+    }) as unknown as StandingsWidgetSettings;
+
+  it('widens the table when the iRating is spelled out', () => {
+    const abbreviated = computeStandingsDesignWidth(settingsWith({}));
+    const full = computeStandingsDesignWidth(
+      settingsWith({ abbreviateIRating: false })
+    );
+
+    expect(full).toBeGreaterThan(abbreviated);
+  });
+
+  it('narrows the table when the license letter is dropped', () => {
+    const withLetter = computeStandingsDesignWidth(settingsWith({}));
+    const withoutLetter = computeStandingsDesignWidth(
+      settingsWith({ showLicenseLetter: false })
+    );
+
+    expect(withoutLetter).toBeLessThan(withLetter);
+  });
+
+  // A format only pays for itself while its column is on screen.
+  it('costs nothing while the column it formats is hidden', () => {
+    const hidden = { showIRating: false, showLicBadge: false };
+
+    expect(computeStandingsDesignWidth(settingsWith(hidden))).toBe(
+      computeStandingsDesignWidth(
+        settingsWith({
+          ...hidden,
+          abbreviateIRating: false,
+          showLicenseLetter: false,
+        })
+      )
+    );
+  });
+});

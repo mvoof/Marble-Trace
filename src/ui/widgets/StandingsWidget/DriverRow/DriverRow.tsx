@@ -218,14 +218,17 @@ export const DriverRow = observer(
 
         {settings.showLicBadge && (
           <div className={`${styles.cell} ${styles.cellRating}`}>
-            <LicBadge licString={driver.licString} />
+            <LicBadge
+              licString={driver.licString}
+              showLetter={settings.showLicenseLetter}
+            />
           </div>
         )}
 
         {settings.showIRating && (
           <div className={`${styles.cell} ${styles.cellRight}`}>
             <span className={`${styles.irValue} ${dimClass}`}>
-              {formatIr(driver.iRating)}
+              {formatIr(driver.iRating, settings.abbreviateIRating)}
             </span>
           </div>
         )}
