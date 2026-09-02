@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for the report! Logs and screenshots help the most.
-        For questions and setup help, use [Discord](https://discord.gg/GVaRsHbjxV) instead.
+        For questions and setup help, use [Discord](https://discord.gg/MW3g4xHCnE) instead.
 
   - type: textarea
     id: summary
