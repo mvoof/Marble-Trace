@@ -81,7 +81,9 @@ export const SteeringWheel = observer(() => {
   const rotation = `rotate(${-rawAngle}rad)`;
 
   // A traced wheel turns as a whole, so it replaces both the groove it would
-  // hide and the rim marker it already reads as.
+  // hide and the rim marker it already reads as — gt-round and flat-bottom
+  // are radially symmetric enough that the marker is drawn into their own
+  // SVG instead (see wheels/gt-round.svg, wheels/flat-bottom-wheel.svg).
   if (WheelArt) {
     return (
       <div className={styles.container}>
