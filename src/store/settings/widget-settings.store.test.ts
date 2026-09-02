@@ -645,3 +645,65 @@ describe('a layout with no monitors is not written to', () => {
     expect(saved.y).toBe(222);
   });
 });
+
+describe('the overlay reports only what it edited', () => {
+  const MONITOR = {
+    name: 'DISPLAY1',
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  let rootStore: RootStore;
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.widgetSettings.setLayouts(
+      [
+        {
+          id: 'layout-race',
+          name: 'Race',
+          createdAt: Date.now(),
+          monitors: [MONITOR],
+          widgets: [],
+        },
+      ],
+      'layout-race'
+    );
+    rootStore.widgetSettings.drainTouchedWidgets();
+  });
+
+  it('drains a patch of the edited widgets, not the whole layout', () => {
+    const store = rootStore.widgetSettings;
+
+    store.updatePosition('fuel', 640, 480);
+    store.updateSize('fuel', 300, 200);
+    store.setWidgetEnabled('timer', false);
+
+    const drained = store.drainTouchedWidgets();
+
+    expect(drained.everyWidget).toBe(false);
+    expect(drained.widgets.map((widget) => widget.id).sort()).toEqual([
+      'fuel',
+      'timer',
+    ]);
+  });
+
+  it('drains nothing when nothing was edited', () => {
+    const store = rootStore.widgetSettings;
+
+    store.updatePosition('fuel', 10, 20);
+    store.drainTouchedWidgets();
+
+    expect(store.drainTouchedWidgets().widgets).toEqual([]);
+  });
+
+  it('reports the whole map when a layout is installed wholesale', () => {
+    const store = rootStore.widgetSettings;
+
+    store.loadLayout('layout-race');
+
+    const drained = store.drainTouchedWidgets();
+
+    expect(drained.everyWidget).toBe(true);
+    expect(drained.widgets.length).toBe(store.allWidgets.length);
+  });
+});

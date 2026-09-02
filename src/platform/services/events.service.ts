@@ -41,6 +41,10 @@ type SessionLayoutMap = Record<SessionContext, string | null>;
 
 // Widget lists always travel with the monitor they belong to. Without it an
 // edit made on one screen would overwrite the widgets of another.
+//
+// Main pushes the whole active layout; an overlay answers with a patch of the
+// widgets it actually edited, so the two directions carry the same shape but
+// very different amounts of it.
 export interface MonitorWidgetsPayload {
   monitorName: string;
   widgets: WidgetDefaultConfig[];
