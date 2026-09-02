@@ -773,7 +773,24 @@ export type WidgetSpecificSettings =
   | CoachWidgetSettings
   | StreamChatWidgetSettings;
 export interface WidgetMeta {
+  /**
+   * Unique *instance* id. A layout may hold several copies of the same widget —
+   * one on the monitor being raced on, another on a stream screen with its own
+   * columns and its own scale — and each copy is a record of its own, keyed by
+   * this.
+   *
+   * For the one copy a widget ships with, this stays the manifest id, which is
+   * what makes `type` optional: a file written before copies existed reads back
+   * unchanged, its id doubling as its type. Nothing has to migrate.
+   */
   id: string;
+  /**
+   * Which widget this is a copy of — the manifest id, and with it the
+   * component, the shipped defaults and the layout resolver. Absent means the
+   * record is the original copy and `id` names the type; always read it through
+   * `widgetTypeOf` rather than reaching for either field directly.
+   */
+  type?: string;
   label: string;
   description?: string;
   designWidth: number;
@@ -927,7 +944,11 @@ export interface SavedLayout {
   /**
    * Every widget of the layout, positioned in virtual-desktop space. The
    * monitor a widget belongs to follows from its centre point, so dragging it
-   * over an edge reassigns it. Exactly one instance of each widget per layout.
+   * over an edge reassigns it.
+   *
+   * A widget may appear more than once: each entry is an independent copy with
+   * its own geometry, its own settings and its own enabled flag, keyed by its
+   * instance `id` and pointing at the shared manifest through `type`.
    */
   widgets: WidgetDefaultConfig[];
 }

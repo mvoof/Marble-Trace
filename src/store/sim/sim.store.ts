@@ -6,6 +6,7 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 import { listenTo, type UnlistenFn } from '@platform/services/events.service';
+import { widgetTypeOf } from '@utils/widget-instance';
 
 import {
   getConnectionStatus,
@@ -214,7 +215,7 @@ export class SimStore {
     for (const widget of this.root.widgetSettings.allWidgets) {
       if (!widget.userSettings.enabled) continue;
 
-      const manifest = WIDGET_BY_ID.get(widget.id);
+      const manifest = WIDGET_BY_ID.get(widgetTypeOf(widget));
 
       for (const event of manifest?.telemetryEvents ?? []) {
         requested.add(event);
