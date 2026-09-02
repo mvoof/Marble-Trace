@@ -64,9 +64,18 @@ export const PaceCarRow = observer(({ driver, index }: PaceCarRowProps) => {
         <span className={styles.carNumber}>#{formattedCarNumber}</span>
       </div>
 
-      {settings.showCountryFlag && <div />}
+      {settings.showCountryFlag && <div className={styles.flagCell} />}
 
-      <span className={styles.centerLabel}>{driver.userName}</span>
+      <span
+        className={[
+          styles.centerLabel,
+          settings.showCountryFlag ? styles.centerLabelWithFlag : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        {driver.userName}
+      </span>
 
       <div className={styles.gapBlock}>
         <span className={styles.gap}>{gapStr}</span>
