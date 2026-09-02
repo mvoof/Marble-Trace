@@ -1,4 +1,4 @@
-﻿import { useRef, useCallback, useLayoutEffect } from 'react';
+import { useRef, useCallback, useLayoutEffect } from 'react';
 
 import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
 import { resizeCanvasToDpr } from '@utils/canvas';
@@ -158,11 +158,12 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
   const drawTrace = useCallback(
     (
       canvas: HTMLCanvasElement,
-      mode: GMeterWidgetSettings['displayMode'],
-      scale: number,
+      settings: GMeterWidgetSettings,
       color: string,
       overload: number
     ) => {
+      const mode = settings.displayMode;
+      const scale = settings.scale;
       const { width: currentWidth, height: currentHeight } = dimsRef.current;
       const ctx = resizeCanvasToDpr(canvas, currentWidth, currentHeight);
 
@@ -176,15 +177,17 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
 
       ctx.clearRect(0, 0, currentWidth, currentHeight);
 
-      drawQuadrantTint(
-        ctx,
-        cx,
-        cy,
-        radius,
-        state.smoothedLatG,
-        state.smoothedLonG,
-        color
-      );
+      if (settings.showQuadrantTint !== false) {
+        drawQuadrantTint(
+          ctx,
+          cx,
+          cy,
+          radius,
+          state.smoothedLatG,
+          state.smoothedLonG,
+          color
+        );
+      }
 
       const envelope = state.gEnvelope;
 
@@ -275,16 +278,18 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
 
       drawOverloadArcs(ctx, cx, cy, radius, overload);
 
-      drawQuadrantValues(
-        ctx,
-        cx,
-        cy,
-        radius,
-        currentWidth,
-        state.smoothedLatG,
-        state.smoothedLonG,
-        color
-      );
+      if (settings.showValues !== false) {
+        drawQuadrantValues(
+          ctx,
+          cx,
+          cy,
+          radius,
+          currentWidth,
+          state.smoothedLatG,
+          state.smoothedLonG,
+          color
+        );
+      }
     },
     []
   );
@@ -373,13 +378,7 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
       const overload = computeOverload(rawDist, settings.scale);
 
       scheduleDraw(() => {
-        drawTrace(
-          canvas,
-          settings.displayMode,
-          settings.scale,
-          color,
-          overload
-        );
+        drawTrace(canvas, settings, color, overload);
       });
     },
     [telemetry, widgetSettings, drawTrace, width, height]

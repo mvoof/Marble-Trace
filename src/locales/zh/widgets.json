@@ -176,7 +176,11 @@
       "colorMode": "颜色模式",
       "mono": "单色",
       "simple": "简单",
-      "advanced": "高级"
+      "advanced": "高级",
+      "showValues": "数字读数",
+      "showValuesDesc": "在当前象限显示 G 值数字。",
+      "showQuadrantTint": "象限高亮",
+      "showQuadrantTintDesc": "高亮受 G 力作用的象限。"
     },
     "inputTrace": {
       "dataChannels": "数据通道",

@@ -41,14 +41,14 @@ export const computeOverload = (dist: number, scale: number): number => {
 
 /**
  * The quadrant the load points into, as the direction its diagonal runs in.
- * Canvas y grows downward, so a positive `lonG` (acceleration) is up.
+ * Canvas y grows downward, so a positive `lonG` is down (below `cy`).
  */
 export const quadrantDiagonal = (
   latG: number,
   lonG: number
 ): { dx: number; dy: number } => ({
   dx: latG >= 0 ? Math.SQRT1_2 : -Math.SQRT1_2,
-  dy: lonG >= 0 ? -Math.SQRT1_2 : Math.SQRT1_2,
+  dy: lonG >= 0 ? Math.SQRT1_2 : -Math.SQRT1_2,
 });
 
 export const COLOR_TURN = '#3b82f6';

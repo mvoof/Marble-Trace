@@ -183,7 +183,12 @@ describe('v3 — the g-meter becomes a round dial', () => {
         id: 'g-meter',
         designWidth: 240,
         designHeight: 240,
-        userSettings: { currentWidth: 240, currentHeight: 240, x: 12 },
+        userSettings: {
+          currentWidth: 240,
+          currentHeight: 240,
+          borderColor: 'transparent',
+          x: 12,
+        },
       },
     ]);
   });
@@ -205,7 +210,11 @@ describe('v3 — the g-meter becomes a round dial', () => {
         id: 'g-meter',
         designWidth: 240,
         designHeight: 240,
-        userSettings: { currentWidth: 360, currentHeight: 360 },
+        userSettings: {
+          currentWidth: 360,
+          currentHeight: 360,
+          borderColor: 'transparent',
+        },
       },
     ]);
   });

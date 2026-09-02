@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Segmented } from 'antd';
+import { Switch, Segmented } from 'antd';
 import type {
   GMeterColorMode,
   GMeterDisplayMode,
@@ -8,6 +8,7 @@ import type {
 } from '@/types/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
+import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
 // Widget ids this panel configures — read by the panel registry.
@@ -75,6 +76,30 @@ export const GMeterSettingsPanel = observer(() => {
           ]}
           onChange={(v) => update({ colorMode: v as GMeterColorMode })}
         />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <SettingRow
+          title={t('settingsPanels.gMeter.showValues')}
+          desc={t('settingsPanels.gMeter.showValuesDesc')}
+        >
+          <Switch
+            checked={settings.showValues !== false}
+            onChange={(v) => update({ showValues: v })}
+          />
+        </SettingRow>
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <SettingRow
+          title={t('settingsPanels.gMeter.showQuadrantTint')}
+          desc={t('settingsPanels.gMeter.showQuadrantTintDesc')}
+        >
+          <Switch
+            checked={settings.showQuadrantTint !== false}
+            onChange={(v) => update({ showQuadrantTint: v })}
+          />
+        </SettingRow>
       </div>
     </Card>
   );

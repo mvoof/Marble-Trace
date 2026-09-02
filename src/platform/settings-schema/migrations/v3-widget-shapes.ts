@@ -209,6 +209,7 @@ const squareGMeter = (
     designHeight: G_METER_SIDE_PX,
     userSettings: {
       ...settings,
+      borderColor: 'transparent',
       currentWidth: side,
       currentHeight: side,
     },

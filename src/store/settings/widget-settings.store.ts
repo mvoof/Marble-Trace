@@ -451,6 +451,8 @@ export class WidgetSettingsStore {
   }
 
   getWidget(id: string): WidgetDefaultConfig | undefined {
+    void this.syncToken;
+    void this.changeToken;
     return this.widgets.get(id);
   }
 
@@ -1172,6 +1174,9 @@ export class WidgetSettingsStore {
   getSettings<SpecificSettings extends WidgetSpecificSettings>(
     widgetId: string
   ): BaseUserSettings & SpecificSettings {
+    void this.syncToken;
+    void this.changeToken;
+
     const widget = this.getWidget(widgetId);
 
     const defaultConfig = DEFAULT_WIDGETS.find(
