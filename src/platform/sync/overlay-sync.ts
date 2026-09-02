@@ -56,6 +56,8 @@ export const initOverlaySync = async (root: RootStore) => {
         void emitWidgetSettingsToMain({
           monitorName,
           widgets: root.widgetSettings.allWidgets,
+          layoutId:
+            root.widgetSettings.syncedLayoutId ?? root.layouts.activeLayoutId,
         });
       },
       { delay: 100 }

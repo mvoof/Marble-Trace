@@ -138,6 +138,14 @@ export class WidgetSettingsStore {
   // those external edits (the layout editor preview) can still react to it.
   syncToken = 0;
 
+  /**
+   * Overlay side: the layout id of the last widget list main pushed here. It
+   * travels back on every echo so main can tell whether the window is still
+   * speaking for the layout that is active now — an echo in flight across a
+   * layout switch otherwise lands in the wrong layout record.
+   */
+  syncedLayoutId: string | null = null;
+
   // When true the editor is showing a layout that is NOT the overlay-active one.
   // The overlay-sync reaction skips emitting while this flag is set so the
   // overlay keeps displaying the previously-active layout.

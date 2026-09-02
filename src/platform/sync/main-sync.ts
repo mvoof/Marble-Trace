@@ -51,7 +51,8 @@ let mainSyncRefCount = 0;
 const pushActiveLayout = (root: RootStore) =>
   emitActiveLayoutToOverlays(
     root.layouts.activeLayout?.monitors ?? [],
-    root.widgetSettings.allWidgets
+    root.widgetSettings.allWidgets,
+    root.layouts.activeLayoutId
   );
 
 /** Values the overlay windows mirror. Requires a hydrated settings store. */
@@ -396,6 +397,16 @@ export const initMainSync = async (root: RootStore) => {
         closeRequestedUnlisten,
       ] = await Promise.all([
         listenTo<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
+          // An overlay speaks for the layout it is rendering. A list emitted
+          // just before a layout switch — or while the editor previews another
+          // layout — still carries the old id, and writing it into the layout
+          // that switched in would copy one layout's widgets over another's.
+          const { layoutId } = e.payload;
+
+          if (layoutId != null && layoutId !== root.layouts.activeLayoutId) {
+            return;
+          }
+
           // An overlay window only ever speaks for the widgets on its own
           // screen; taking the rest of its list would overwrite the other
           // monitors with a stale copy.
