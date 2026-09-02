@@ -75,6 +75,30 @@ export const SessionFooter = observer(() => {
   return (
     <div className={styles.sessionFooter}>
       <div className={styles.footerLeft}>
+        {showWeather && airCelsius !== null && airStr && (
+          <StatPill
+            icon={Thermometer}
+            iconColor={getAirTempColor(airCelsius)}
+            label="AIR"
+            variant={PILL_VARIANT}
+          >
+            {airStr}
+          </StatPill>
+        )}
+
+        {showWeather && trkCelsius !== null && trkStr && (
+          <StatPill
+            icon={Thermometer}
+            iconColor={getTrackTempColor(trkCelsius)}
+            label="TRACK"
+            variant={PILL_VARIANT}
+          >
+            {trkStr}
+          </StatPill>
+        )}
+      </div>
+
+      <div className={styles.footerCenter}>
         {showPitStops && (
           <StatPill
             icon={Wrench}
@@ -103,28 +127,6 @@ export const SessionFooter = observer(() => {
       </div>
 
       <div className={styles.footerRight}>
-        {showWeather && airCelsius !== null && airStr && (
-          <StatPill
-            icon={Thermometer}
-            iconColor={getAirTempColor(airCelsius)}
-            label="AIR"
-            variant={PILL_VARIANT}
-          >
-            {airStr}
-          </StatPill>
-        )}
-
-        {showWeather && trkCelsius !== null && trkStr && (
-          <StatPill
-            icon={Thermometer}
-            iconColor={getTrackTempColor(trkCelsius)}
-            label="TRACK"
-            variant={PILL_VARIANT}
-          >
-            {trkStr}
-          </StatPill>
-        )}
-
         {showWeather && wetnessInfo && (
           <StatPill
             icon={Waves}

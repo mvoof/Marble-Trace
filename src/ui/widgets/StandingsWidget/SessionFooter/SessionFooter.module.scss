@@ -3,9 +3,12 @@
   // A peer of the rows above it, not a second header — but the text still needs
   // room to sit off both edges, so the strip is one line with air, not a squeeze.
   padding: sp(xxs) sp(md);
-  display: flex;
+  // Mirrors the header's three tracks: the player's own numbers hold the centre
+  // under the rows, and the track conditions frame them from both edges.
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
+  column-gap: sp(sm);
   border-top: 1px solid $widget-row-border;
   font-family: $font-mono;
   text-transform: uppercase;
@@ -16,12 +19,25 @@
 
 .footerLeft {
   display: flex;
-  gap: sp(lg);
+  gap: sp(md);
   align-items: center;
+  justify-self: start;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.footerCenter {
+  display: flex;
+  gap: sp(md);
+  align-items: center;
+  justify-content: center;
 }
 
 .footerRight {
   display: flex;
-  gap: sp(lg);
+  gap: sp(md);
   align-items: center;
+  justify-self: end;
+  min-width: 0;
+  overflow: hidden;
 }
