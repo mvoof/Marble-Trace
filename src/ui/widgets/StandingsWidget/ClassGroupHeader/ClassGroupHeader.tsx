@@ -57,9 +57,11 @@ export const ClassGroupHeader = observer(
         </div>
 
         <div className={styles.pills}>
-          <StatPill icon={Trophy} iconColor={classColor} label="SOF">
-            {formatIRating(classSof, settings.abbreviateSof)}
-          </StatPill>
+          {settings.showSOF && (
+            <StatPill icon={Trophy} iconColor={classColor} label="SOF">
+              {formatIRating(classSof, settings.abbreviateSof)}
+            </StatPill>
+          )}
 
           <StatPill icon={Users}>{totalDrivers}</StatPill>
         </div>
