@@ -3,21 +3,14 @@ import { useRef, useCallback, useLayoutEffect } from 'react';
 import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
 import { resizeCanvasToDpr } from '@utils/canvas';
 import {
-  COLOR_OVERLOAD,
   COLOR_TURN,
   ENVELOPE_SPREAD,
   FADING_DECAY,
   G_CONSTANT,
   RADIUS_RATIO,
-  OUTER_ARC_CENTERS,
-  OUTER_ARC_HALF_SWEEP,
-  OUTER_ARC_RADIUS_RATIO,
-  QUADRANT_VALUE_RADIUS_RATIO,
   SMOOTHING,
   TRACE_LENGTH,
   computeColor,
-  computeOverload,
-  quadrantDiagonal,
 } from '@ui/widgets/GMeterWidget/g-meter-utils';
 import type { EnvelopePoint, TrailPoint } from '@ui/widgets/GMeterWidget/types';
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
@@ -28,71 +21,101 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
-const QUADRANT_TINT_ALPHA = 0.07;
-const OVERLOAD_ARC_WIDTH_PX = 3;
-const VALUE_BASE_WIDTH_PX = 240;
-const VALUE_BASE_SIZE_PX = 15;
+const BADGE_BASE_WIDTH_PX = 240;
+const BADGE_FONT_SIZE_PX = 12;
+const BADGE_PILL_W_PX = 38;
+const BADGE_PILL_H_PX = 18;
+const BADGE_CORNER_R_PX = 4;
 
-// The lit quadrant is cut off by the outer ring: the plate is a circle, so a
-// square wash would run past the rim the widget is clipped to.
-const drawQuadrantTint = (
+interface AxisPeaks {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
+const drawStyledBadge = (
   ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  radius: number,
-  latG: number,
-  lonG: number,
-  color: string
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+  isActive: boolean,
+  activeColor: string,
+  text: string,
+  rotateRad: number,
+  pipOnBottom: boolean,
+  fontSize: number
 ) => {
-  const { dx, dy } = quadrantDiagonal(latG, lonG);
-  const start = Math.atan2(dy, dx) - Math.PI / 4;
-
   ctx.save();
-  ctx.globalAlpha = QUADRANT_TINT_ALPHA;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy);
-  ctx.arc(cx, cy, radius, start, start + Math.PI / 2);
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.restore();
-};
+  ctx.translate(x, y);
 
-// Past the outer ring the dot is clamped, so the arcs carry the news: the load
-// no longer fits the chosen scale.
-const drawOverloadArcs = (
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  radius: number,
-  overload: number
-) => {
-  if (overload <= 0) return;
+  if (rotateRad !== 0) {
+    ctx.rotate(rotateRad);
+  }
 
-  const arcRadius = radius * OUTER_ARC_RADIUS_RATIO;
+  const halfW = w / 2;
+  const halfH = h / 2;
 
-  ctx.save();
-  ctx.globalAlpha = 0.4 + overload * 0.6;
-  ctx.strokeStyle = COLOR_OVERLOAD;
-  ctx.lineWidth = OVERLOAD_ARC_WIDTH_PX;
-  ctx.lineCap = 'round';
-
-  OUTER_ARC_CENTERS.forEach((center) => {
+  // Active glow
+  if (isActive) {
+    ctx.save();
+    ctx.shadowColor = activeColor;
+    ctx.shadowBlur = 8;
     ctx.beginPath();
-    ctx.arc(
-      cx,
-      cy,
-      arcRadius,
-      center - OUTER_ARC_HALF_SWEEP,
-      center + OUTER_ARC_HALF_SWEEP
-    );
-    ctx.stroke();
-  });
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(-halfW, -halfH, w, h, r);
+    } else {
+      ctx.rect(-halfW, -halfH, w, h);
+    }
+    ctx.fillStyle = activeColor;
+    ctx.globalAlpha = 0.2;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Dark plate background
+  ctx.beginPath();
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(-halfW, -halfH, w, h, r);
+  } else {
+    ctx.rect(-halfW, -halfH, w, h);
+  }
+  ctx.fillStyle = isActive
+    ? 'rgba(12, 14, 18, 0.96)'
+    : 'rgba(18, 20, 26, 0.88)';
+  ctx.fill();
+
+  // Border outline
+  ctx.lineWidth = isActive ? 1.5 : 1;
+  ctx.strokeStyle = isActive ? activeColor : 'rgba(75, 80, 92, 0.5)';
+  ctx.stroke();
+
+  // Outer accent bar / pip
+  const pipW = Math.round(w * 0.5);
+  const pipH = 2.5;
+  const pipY = pipOnBottom ? halfH - pipH : -halfH;
+  ctx.beginPath();
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(-pipW / 2, pipY, pipW, pipH, 1);
+  } else {
+    ctx.rect(-pipW / 2, pipY, pipW, pipH);
+  }
+  ctx.fillStyle = isActive ? activeColor : 'rgba(90, 95, 108, 0.5)';
+  ctx.fill();
+
+  // Typography
+  ctx.font = `700 ${fontSize}px 'Rajdhani', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = isActive ? '#ffffff' : 'rgba(175, 180, 192, 0.85)';
+  ctx.fillText(text, 0, pipOnBottom ? -1 : 1);
 
   ctx.restore();
 };
 
-const drawQuadrantValues = (
+const drawAxisBadges = (
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
@@ -100,25 +123,87 @@ const drawQuadrantValues = (
   canvasWidth: number,
   latG: number,
   lonG: number,
+  peaks: AxisPeaks,
   color: string
 ) => {
-  const { dx, dy } = quadrantDiagonal(latG, lonG);
-  const distance = radius * QUADRANT_VALUE_RADIUS_RATIO;
-  const fontSize = Math.round(
-    VALUE_BASE_SIZE_PX * (canvasWidth / VALUE_BASE_WIDTH_PX)
+  const scaleRatio = canvasWidth / BADGE_BASE_WIDTH_PX;
+  const fontSize = Math.max(10, Math.round(BADGE_FONT_SIZE_PX * scaleRatio));
+  const pillW = Math.round(BADGE_PILL_W_PX * scaleRatio);
+  const pillH = Math.round(BADGE_PILL_H_PX * scaleRatio);
+  const pillR = Math.max(2, Math.round(BADGE_CORNER_R_PX * scaleRatio));
+  const badgeDist = radius * 1.14;
+
+  // Top (Brake / Decel): active when lonG < -0.08
+  const isTopActive = lonG < -0.08;
+  const topVal = isTopActive ? Math.abs(lonG) : peaks.top;
+  drawStyledBadge(
+    ctx,
+    cx,
+    cy - badgeDist,
+    pillW,
+    pillH,
+    pillR,
+    isTopActive,
+    color,
+    topVal.toFixed(2),
+    0,
+    false,
+    fontSize
   );
 
-  ctx.save();
-  ctx.font = `500 ${fontSize}px 'Consolas', monospace`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = color;
-  ctx.fillText(
-    `${Math.abs(latG).toFixed(2)} / ${Math.abs(lonG).toFixed(2)}`,
-    cx + dx * distance,
-    cy + dy * distance
+  // Bottom (Accel): active when lonG > 0.08
+  const isBottomActive = lonG > 0.08;
+  const bottomVal = isBottomActive ? lonG : peaks.bottom;
+  drawStyledBadge(
+    ctx,
+    cx,
+    cy + badgeDist,
+    pillW,
+    pillH,
+    pillR,
+    isBottomActive,
+    color,
+    bottomVal.toFixed(2),
+    0,
+    true,
+    fontSize
   );
-  ctx.restore();
+
+  // Left (Left Turn): active when latG < -0.08
+  const isLeftActive = latG < -0.08;
+  const leftVal = isLeftActive ? Math.abs(latG) : peaks.left;
+  drawStyledBadge(
+    ctx,
+    cx - badgeDist,
+    cy,
+    pillW,
+    pillH,
+    pillR,
+    isLeftActive,
+    color,
+    leftVal.toFixed(2),
+    -Math.PI / 2,
+    false,
+    fontSize
+  );
+
+  // Right (Right Turn): active when latG > 0.08
+  const isRightActive = latG > 0.08;
+  const rightVal = isRightActive ? latG : peaks.right;
+  drawStyledBadge(
+    ctx,
+    cx + badgeDist,
+    cy,
+    pillW,
+    pillH,
+    pillR,
+    isRightActive,
+    color,
+    rightVal.toFixed(2),
+    Math.PI / 2,
+    false,
+    fontSize
+  );
 };
 
 interface GMeterTraceProps {
@@ -147,6 +232,10 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
   const stateRef = useRef({
     smoothedLatG: 0,
     smoothedLonG: 0,
+    peakTop: 0,
+    peakBottom: 0,
+    peakLeft: 0,
+    peakRight: 0,
     gEnvelope: Array.from(
       { length: 360 },
       (): EnvelopePoint => ({ r: 0, color: COLOR_TURN })
@@ -159,8 +248,7 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
     (
       canvas: HTMLCanvasElement,
       settings: GMeterWidgetSettings,
-      color: string,
-      overload: number
+      color: string
     ) => {
       const mode = settings.displayMode;
       const scale = settings.scale;
@@ -176,18 +264,6 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
       const state = stateRef.current;
 
       ctx.clearRect(0, 0, currentWidth, currentHeight);
-
-      if (settings.showQuadrantTint !== false) {
-        drawQuadrantTint(
-          ctx,
-          cx,
-          cy,
-          radius,
-          state.smoothedLatG,
-          state.smoothedLonG,
-          color
-        );
-      }
 
       const envelope = state.gEnvelope;
 
@@ -276,20 +352,22 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
           : COLOR_TURN;
       ctx.fill();
 
-      drawOverloadArcs(ctx, cx, cy, radius, overload);
-
-      if (settings.showValues !== false) {
-        drawQuadrantValues(
-          ctx,
-          cx,
-          cy,
-          radius,
-          currentWidth,
-          state.smoothedLatG,
-          state.smoothedLonG,
-          color
-        );
-      }
+      drawAxisBadges(
+        ctx,
+        cx,
+        cy,
+        radius,
+        currentWidth,
+        state.smoothedLatG,
+        state.smoothedLonG,
+        {
+          top: state.peakTop,
+          bottom: state.peakBottom,
+          left: state.peakLeft,
+          right: state.peakRight,
+        },
+        color
+      );
     },
     []
   );
@@ -316,6 +394,10 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
         state.gHistory = [];
         state.smoothedLatG = 0;
         state.smoothedLonG = 0;
+        state.peakTop = 0;
+        state.peakBottom = 0;
+        state.peakLeft = 0;
+        state.peakRight = 0;
       }
 
       state.lastScale = settings.scale;
@@ -324,7 +406,6 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
       state.smoothedLonG += (rawLon - state.smoothedLonG) * SMOOTHING;
 
       let dist = Math.sqrt(state.smoothedLatG ** 2 + state.smoothedLonG ** 2);
-      const rawDist = dist;
       const maxG = settings.scale;
 
       if (dist > maxG) {
@@ -333,6 +414,19 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
         state.smoothedLatG *= ratio;
         state.smoothedLonG *= ratio;
         dist = maxG;
+      }
+
+      if (state.smoothedLonG < 0) {
+        state.peakTop = Math.max(state.peakTop, Math.abs(state.smoothedLonG));
+      }
+      if (state.smoothedLonG > 0) {
+        state.peakBottom = Math.max(state.peakBottom, state.smoothedLonG);
+      }
+      if (state.smoothedLatG < 0) {
+        state.peakLeft = Math.max(state.peakLeft, Math.abs(state.smoothedLatG));
+      }
+      if (state.smoothedLatG > 0) {
+        state.peakRight = Math.max(state.peakRight, state.smoothedLatG);
       }
 
       const color = computeColor(
@@ -363,6 +457,10 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
         for (let index = 0; index < 360; index++) {
           state.gEnvelope[index].r *= FADING_DECAY;
         }
+        state.peakTop *= FADING_DECAY;
+        state.peakBottom *= FADING_DECAY;
+        state.peakLeft *= FADING_DECAY;
+        state.peakRight *= FADING_DECAY;
       }
 
       state.gHistory.push({
@@ -375,10 +473,8 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
         state.gHistory.shift();
       }
 
-      const overload = computeOverload(rawDist, settings.scale);
-
       scheduleDraw(() => {
-        drawTrace(canvas, settings, color, overload);
+        drawTrace(canvas, settings, color);
       });
     },
     [telemetry, widgetSettings, drawTrace, width, height]

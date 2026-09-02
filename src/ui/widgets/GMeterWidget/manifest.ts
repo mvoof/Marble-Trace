@@ -31,7 +31,5 @@ export const G_METER_MANIFEST: WidgetManifest = {
     displayMode: 'fading',
     scale: 4,
     colorMode: 'advanced',
-    showValues: true,
-    showQuadrantTint: true,
   },
 };

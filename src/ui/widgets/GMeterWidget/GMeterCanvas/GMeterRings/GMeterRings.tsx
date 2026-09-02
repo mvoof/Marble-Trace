@@ -3,9 +3,6 @@ import { observer } from 'mobx-react-lite';
 
 import {
   AXIS_OVERHANG,
-  OUTER_ARC_CENTERS,
-  OUTER_ARC_HALF_SWEEP,
-  OUTER_ARC_RADIUS_RATIO,
   RADIUS_RATIO,
   RING_LABEL_ANGLE,
   RING_LABEL_GAP_PX,
@@ -19,8 +16,7 @@ import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/Widg
 
 const RING_COLOR = 'rgba(42,43,48,0.8)';
 const OUTER_RING_COLOR = 'rgba(72,74,82,1)';
-const AXIS_COLOR = 'rgba(58,59,64,0.8)';
-const ARC_COLOR = 'rgba(58,59,64,0.7)';
+const AXIS_COLOR = 'rgba(64,66,74,0.85)';
 const RING_LABEL_COLOR = 'rgba(120,120,130,0.7)';
 const LABEL_BASE_WIDTH_PX = 240;
 const LABEL_BASE_SIZE_PX = 13;
@@ -107,27 +103,6 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
     ctx.lineTo(cx + axisReach, cy);
     ctx.strokeStyle = AXIS_COLOR;
     ctx.stroke();
-
-    // The four outer arcs are the frame at rest and the over-range warning when
-    // the trace layer lights them, so they are drawn here even while dim.
-    const arcRadius = radius * OUTER_ARC_RADIUS_RATIO;
-
-    ctx.strokeStyle = ARC_COLOR;
-    ctx.lineCap = 'round';
-
-    OUTER_ARC_CENTERS.forEach((center) => {
-      ctx.beginPath();
-      ctx.arc(
-        cx,
-        cy,
-        arcRadius,
-        center - OUTER_ARC_HALF_SWEEP,
-        center + OUTER_ARC_HALF_SWEEP
-      );
-      ctx.stroke();
-    });
-
-    ctx.lineCap = 'butt';
   }, [width, height, scale, fontScale]);
 
   return (

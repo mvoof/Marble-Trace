@@ -666,8 +666,6 @@ export interface GMeterWidgetSettings {
   displayMode: GMeterDisplayMode;
   scale: 2 | 3 | 4 | 5;
   colorMode: GMeterColorMode;
-  showValues?: boolean;
-  showQuadrantTint?: boolean;
 }
 
 export interface EnginePanelWidgetSettings {

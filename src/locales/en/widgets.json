@@ -176,11 +176,7 @@
       "colorMode": "Color Mode",
       "mono": "Mono",
       "simple": "Simple",
-      "advanced": "Advanced",
-      "showValues": "Digital Values",
-      "showValuesDesc": "Show numeric G-force values in the active quadrant.",
-      "showQuadrantTint": "Quadrant Highlight",
-      "showQuadrantTintDesc": "Highlight the quadrant receiving G-force load."
+      "advanced": "Advanced"
     },
     "inputTrace": {
       "dataChannels": "Data Channels",

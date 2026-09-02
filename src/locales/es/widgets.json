@@ -176,11 +176,7 @@
       "colorMode": "Modo de color",
       "mono": "Mono",
       "simple": "Simple",
-      "advanced": "Avanzado",
-      "showValues": "Valores digitales",
-      "showValuesDesc": "Mostrar valores numéricos de fuerza G en el cuadrante activo.",
-      "showQuadrantTint": "Resaltado de cuadrante",
-      "showQuadrantTintDesc": "Resaltar el cuadrante que recibe la carga de fuerza G."
+      "advanced": "Avanzado"
     },
     "inputTrace": {
       "dataChannels": "Canales de datos",
