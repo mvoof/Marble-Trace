@@ -36,8 +36,10 @@ const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
   { px: 40, show: true }, // carNum — class-colored badge, right after pos
   { px: 22, show: settings.showCountryFlag }, // country flag, right before the name
   { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
-  { px: 60, show: settings.showLicBadge }, // lic badge
-  { px: 36, show: settings.showIRating }, // iRating
+  // Both widths follow the format the value is written in — see the same pair in
+  // Standings, which the two widgets keep aligned so their SR columns match.
+  { px: settings.showLicenseLetter ? 60 : 42, show: settings.showLicBadge },
+  { px: settings.abbreviateIRating ? 36 : 48, show: settings.showIRating },
   { px: 56, show: true }, // gap
 ];
 

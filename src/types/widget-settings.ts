@@ -406,7 +406,11 @@ export interface RelativeWidgetSettings {
    */
   nameColumnWidth: number;
   showLicBadge: boolean;
+  /** Keep the class letter in the SR badge ("A 4.99") or the rating alone ("4.99"). */
+  showLicenseLetter: boolean;
   showIRating: boolean;
+  /** Round the iRating to a thousand ("9.9k") or spell it out ("9873"), which widens the column. */
+  abbreviateIRating: boolean;
   showPitIndicator: boolean;
   abbreviateNames: boolean;
   /** Driver's profile country flag, in its own column before the name. */

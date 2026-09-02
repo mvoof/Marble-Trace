@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Switch, Segmented, Slider } from 'antd';
+import { Segmented, Slider } from 'antd';
 import type {
   RowPadding,
   StandingsViewMode,
@@ -9,6 +9,7 @@ import type {
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
+import { SettingSwitchGroup } from './SettingSwitchGroup';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows } from './setting-rows';
 import {
@@ -50,6 +51,28 @@ export const StandingsSettingsPanel = observer(() => {
     });
   };
 
+  // Options that qualify a switch rather than stand beside it — translated here
+  // and handed to the group, which hides them while their parent is off.
+  const buildSubSwitches = (item: {
+    readonly titleKey: string;
+    readonly descKey: string;
+    readonly value: boolean;
+    readonly key: keyof StandingsWidgetSettings;
+    readonly sub?: readonly {
+      readonly titleKey: string;
+      readonly descKey: string;
+      readonly value: boolean;
+      readonly key: keyof StandingsWidgetSettings;
+    }[];
+  }) =>
+    item.sub?.map((option) => ({
+      title: t(option.titleKey),
+      desc: t(option.descKey),
+      checked: option.value,
+      onChange: (next: boolean) =>
+        update({ [option.key]: next } as Partial<StandingsWidgetSettings>),
+    }));
+
   const dataColumns = [
     {
       titleKey: 'settingsPanels.standings.positionChange',
@@ -80,24 +103,28 @@ export const StandingsSettingsPanel = observer(() => {
       descKey: 'settingsPanels.standings.licenseBadgeDesc',
       value: settings.showLicBadge,
       key: 'showLicBadge',
-    },
-    {
-      titleKey: 'settingsPanels.standings.licenseLetter',
-      descKey: 'settingsPanels.standings.licenseLetterDesc',
-      value: settings.showLicenseLetter,
-      key: 'showLicenseLetter',
+      sub: [
+        {
+          titleKey: 'settingsPanels.standings.licenseLetter',
+          descKey: 'settingsPanels.standings.licenseLetterDesc',
+          value: settings.showLicenseLetter,
+          key: 'showLicenseLetter',
+        },
+      ],
     },
     {
       titleKey: 'settingsPanels.standings.iRating',
       descKey: 'settingsPanels.standings.iRatingDesc',
       value: settings.showIRating,
       key: 'showIRating',
-    },
-    {
-      titleKey: 'settingsPanels.standings.abbreviateIRating',
-      descKey: 'settingsPanels.standings.abbreviateIRatingDesc',
-      value: settings.abbreviateIRating,
-      key: 'abbreviateIRating',
+      sub: [
+        {
+          titleKey: 'settingsPanels.standings.abbreviateIRating',
+          descKey: 'settingsPanels.standings.abbreviateIRatingDesc',
+          value: settings.abbreviateIRating,
+          key: 'abbreviateIRating',
+        },
+      ],
     },
     {
       titleKey: 'settingsPanels.standings.iRatingDelta',
@@ -167,12 +194,14 @@ export const StandingsSettingsPanel = observer(() => {
       descKey: 'settingsPanels.standings.sofDesc',
       value: settings.showSOF,
       key: 'showSOF',
-    },
-    {
-      titleKey: 'settingsPanels.standings.abbreviateSof',
-      descKey: 'settingsPanels.standings.abbreviateSofDesc',
-      value: settings.abbreviateSof,
-      key: 'abbreviateSof',
+      sub: [
+        {
+          titleKey: 'settingsPanels.standings.abbreviateSof',
+          descKey: 'settingsPanels.standings.abbreviateSofDesc',
+          value: settings.abbreviateSof,
+          key: 'abbreviateSof',
+        },
+      ],
     },
     {
       titleKey: 'settingsPanels.standings.totalDriversCount',
@@ -387,40 +416,40 @@ export const StandingsSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.relative.dataColumns')}>
         {dataColumns.map((item) => (
-          <div key={item.key} className={styles.fieldGroup}>
-            <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
-              <Switch
-                checked={item.value}
-                onChange={(v) => update({ [item.key]: v })}
-              />
-            </SettingRow>
-          </div>
+          <SettingSwitchGroup
+            key={item.key}
+            title={t(item.titleKey)}
+            desc={t(item.descKey)}
+            checked={item.value}
+            onChange={(v) => update({ [item.key]: v })}
+            sub={buildSubSwitches(item)}
+          />
         ))}
       </Card>
 
       <Card title={t('settingsPanels.standings.headerInfo')}>
         {headerInfo.map((item) => (
-          <div key={item.key} className={styles.fieldGroup}>
-            <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
-              <Switch
-                checked={item.value}
-                onChange={(v) => update({ [item.key]: v })}
-              />
-            </SettingRow>
-          </div>
+          <SettingSwitchGroup
+            key={item.key}
+            title={t(item.titleKey)}
+            desc={t(item.descKey)}
+            checked={item.value}
+            onChange={(v) => update({ [item.key]: v })}
+            sub={buildSubSwitches(item)}
+          />
         ))}
       </Card>
 
       <Card title={t('settingsPanels.standings.footerInfo')}>
         {footerInfo.map((item) => (
-          <div key={item.key} className={styles.fieldGroup}>
-            <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
-              <Switch
-                checked={item.value}
-                onChange={(v) => update({ [item.key]: v })}
-              />
-            </SettingRow>
-          </div>
+          <SettingSwitchGroup
+            key={item.key}
+            title={t(item.titleKey)}
+            desc={t(item.descKey)}
+            checked={item.value}
+            onChange={(v) => update({ [item.key]: v })}
+            sub={buildSubSwitches(item)}
+          />
         ))}
       </Card>
     </>
