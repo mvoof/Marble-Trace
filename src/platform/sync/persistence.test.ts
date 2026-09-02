@@ -99,3 +99,64 @@ describe('restoreLayoutWidgets', () => {
     expect(chatFrom(restored).userSettings.enabled).toBe(true);
   });
 });
+
+describe('restoring a layout that holds copies of a widget', () => {
+  const copyOfChat = (
+    id: string,
+    userSettings: Record<string, unknown>
+  ): WidgetDefaultConfig =>
+    ({
+      ...shippedChat(),
+      id,
+      type: CHAT_ID,
+      userSettings,
+    }) as unknown as WidgetDefaultConfig;
+
+  it('keeps every copy, each with its own settings', () => {
+    const restored = restoreLayoutWidgets([
+      savedChat({ ...settingsBag(shippedChat()), enabled: true, x: 10 }),
+      copyOfChat('stream-chat-2', {
+        ...settingsBag(shippedChat()),
+        enabled: true,
+        x: 2000,
+      }),
+    ]);
+
+    const copies = restored.filter(
+      (widget) => (widget.type ?? widget.id) === CHAT_ID
+    );
+
+    expect(copies.map((widget) => widget.userSettings.x)).toEqual([10, 2000]);
+  });
+
+  // A widget whose only copy sits on a stream screen is still a widget the file
+  // has seen: putting the original back beside it would add a widget to the
+  // overlay that the user never asked for.
+  it('does not add the original back beside a lone copy', () => {
+    const restored = restoreLayoutWidgets([
+      copyOfChat('stream-chat-2', {
+        ...settingsBag(shippedChat()),
+        enabled: true,
+      }),
+    ]);
+
+    const copies = restored.filter(
+      (widget) => (widget.type ?? widget.id) === CHAT_ID
+    );
+
+    expect(copies).toHaveLength(1);
+    expect(copies[0]!.id).toBe('stream-chat-2');
+  });
+
+  it('repairs a copy against its type, not against its own id', () => {
+    const shipped = settingsBag(shippedChat());
+
+    const restored = restoreLayoutWidgets([
+      copyOfChat('stream-chat-2', { enabled: true }),
+    ]);
+
+    const copy = restored.find((widget) => widget.id === 'stream-chat-2')!;
+
+    expect(settingsBag(copy)[FLAG]).toBe(shipped[FLAG]);
+  });
+});

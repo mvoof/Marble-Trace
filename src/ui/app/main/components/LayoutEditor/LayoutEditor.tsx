@@ -33,6 +33,7 @@ import {
   Lock,
   Unlock,
   BringToFront,
+  Copy,
   SendToBack,
   Undo2,
   Redo2,
@@ -892,6 +893,40 @@ export const LayoutEditor = observer(
                         options={moveTargetOptions}
                         popupMatchSelectWidth={200}
                         style={{ width: 56 }}
+                      />
+                    </Tooltip>
+                  )}
+
+                  <Tooltip title={t('layoutEditor.duplicateWidget')}>
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<Copy size={12} />}
+                      onClick={() => {
+                        const copyId = widgetSettings.duplicateWidget(
+                          selectedWidget.id
+                        );
+
+                        // Selection follows the copy: it is offset from the
+                        // widget it came from and on top, so it is the one the
+                        // user is about to place.
+                        if (copyId !== null) {
+                          setSelectedWidgetId(copyId);
+                        }
+                      }}
+                    />
+                  </Tooltip>
+
+                  {selectedWidget.type !== undefined && (
+                    <Tooltip title={t('layoutEditor.deleteWidgetCopy')}>
+                      <Button
+                        size="small"
+                        type="text"
+                        icon={<Trash2 size={12} />}
+                        onClick={() => {
+                          widgetSettings.removeWidgetCopy(selectedWidget.id);
+                          setSelectedWidgetId(null);
+                        }}
                       />
                     </Tooltip>
                   )}

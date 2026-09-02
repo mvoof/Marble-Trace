@@ -71,6 +71,8 @@
     "unlockAspectRatio": "Снять фиксацию пропорций",
     "bringToFront": "На передний план",
     "sendToBack": "На задний план",
+    "duplicateWidget": "Дублировать виджет",
+    "deleteWidgetCopy": "Удалить копию",
     "quickPlacement": "Быстрое размещение",
     "backgroundImageAria": "Фоновое изображение раскладки",
     "undoTooltip": "Отменить (Ctrl+Z)",

@@ -71,6 +71,8 @@
     "unlockAspectRatio": "解锁宽高比",
     "bringToFront": "置于顶层",
     "sendToBack": "置于底层",
+    "duplicateWidget": "复制小组件",
+    "deleteWidgetCopy": "删除副本",
     "quickPlacement": "快速定位",
     "backgroundImageAria": "布局背景图片",
     "undoTooltip": "撤销 (Ctrl+Z)",

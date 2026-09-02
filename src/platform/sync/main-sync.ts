@@ -114,7 +114,9 @@ const registerBroadcastReactions = (
  * hydration and after `ensureDefaultLayout` — otherwise it resolves the session
  * context against an empty layout list.
  */
-const registerLayoutAutoSwitchReaction = (root: RootStore): IReactionDisposer =>
+export const registerLayoutAutoSwitchReaction = (
+  root: RootStore
+): IReactionDisposer =>
   reaction(
     () => ({
       isConnected: root.sim.isConnected,

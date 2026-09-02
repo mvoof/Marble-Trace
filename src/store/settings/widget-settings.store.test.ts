@@ -707,3 +707,140 @@ describe('the overlay reports only what it edited', () => {
     expect(drained.widgets.length).toBe(store.allWidgets.length);
   });
 });
+
+describe('several copies of one widget in a layout', () => {
+  let rootStore: RootStore;
+
+  const MONITOR = {
+    name: 'DISPLAY1',
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  const STREAM_SCREEN = {
+    name: 'Stream',
+    bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
+    kind: 'remote' as const,
+    slug: 'stream',
+  };
+
+  const layout = (id: string) => ({
+    id,
+    name: id,
+    createdAt: Date.now(),
+    monitors: [MONITOR, STREAM_SCREEN],
+    widgets: [],
+  });
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.widgetSettings.setLayouts(
+      [layout('layout-race'), layout('layout-garage')],
+      'layout-race'
+    );
+  });
+
+  it('gives a copy its own id and points it back at the original', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+    const copy = store.getWidget(copyId)!;
+
+    expect(copyId).not.toBe('standings');
+    expect(copy.type).toBe('standings');
+    expect(store.widgetsOfType('standings')).toHaveLength(2);
+  });
+
+  it('leaves the original alone when the copy is edited', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.updateUserSettings(copyId, { fontScale: 2 });
+
+    expect(store.getWidget(copyId)!.userSettings.fontScale).toBe(2);
+    expect(store.getWidget('standings')!.userSettings.fontScale).not.toBe(2);
+  });
+
+  it('hides a copy without hiding the widget it was copied from', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.setWidgetEnabled(copyId, false);
+
+    expect(store.getWidget(copyId)!.userSettings.enabled).toBe(false);
+    expect(store.getWidget('standings')!.userSettings.enabled).toBe(true);
+  });
+
+  // The whole point of the split: the original's id doubles as its type, so a
+  // settings file written before copies existed needs no migration.
+  it('keeps a file that predates copies readable as the original', () => {
+    const store = rootStore.widgetSettings;
+
+    store.setWidgets([
+      {
+        ...store.getWidget('standings')!,
+        userSettings: { ...store.getWidget('standings')!.userSettings, x: 42 },
+      },
+    ]);
+
+    const restored = store.getWidget('standings')!;
+
+    expect(restored.type).toBeUndefined();
+    expect(restored.userSettings.x).toBe(42);
+  });
+
+  it('survives the round trip through a layout switch', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.updateUserSettings(copyId, { x: 2200 });
+    store.selectLayout('layout-garage');
+    store.selectLayout('layout-race');
+
+    expect(store.getWidget(copyId)?.userSettings.x).toBe(2200);
+    expect(store.widgetsOfType('standings')).toHaveLength(2);
+  });
+
+  it('never merges two copies onto one record when the layout is installed', () => {
+    const store = rootStore.widgetSettings;
+
+    store.duplicateWidget('standings');
+    store.duplicateWidget('standings');
+
+    // Reinstalling the layout's own list is what a layout switch does, and it
+    // used to be where a second copy quietly disappeared.
+    store.setWidgets(
+      store.activeLayout!.widgets.map((widget) => ({ ...widget }))
+    );
+
+    expect(store.widgetsOfType('standings')).toHaveLength(3);
+  });
+
+  it('deletes a copy but refuses to delete the original', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.removeWidgetCopy('standings');
+    expect(store.getWidget('standings')).toBeDefined();
+
+    store.removeWidgetCopy(copyId);
+    expect(store.getWidget(copyId)).toBeUndefined();
+  });
+
+  it('counts the widget as in the layout while any copy of it is', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.setWidgetEnabled('standings', false);
+
+    expect(store.isWidgetInActiveLayout('standings')).toBe(true);
+
+    store.setWidgetEnabled(copyId, false);
+
+    expect(store.isWidgetInActiveLayout('standings')).toBe(false);
+  });
+});

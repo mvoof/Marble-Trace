@@ -71,6 +71,8 @@
     "unlockAspectRatio": "Unlock aspect ratio",
     "bringToFront": "Bring to front",
     "sendToBack": "Send to back",
+    "duplicateWidget": "Duplicate widget",
+    "deleteWidgetCopy": "Delete copy",
     "quickPlacement": "Quick placement",
     "backgroundImageAria": "Layout background image",
     "undoTooltip": "Undo (Ctrl+Z)",

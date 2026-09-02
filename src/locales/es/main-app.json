@@ -71,6 +71,8 @@
     "unlockAspectRatio": "Desbloquear la relación de aspecto",
     "bringToFront": "Traer al frente",
     "sendToBack": "Enviar al fondo",
+    "duplicateWidget": "Duplicar widget",
+    "deleteWidgetCopy": "Eliminar copia",
     "quickPlacement": "Colocación rápida",
     "backgroundImageAria": "Imagen de fondo del diseño",
     "undoTooltip": "Deshacer (Ctrl+Z)",
