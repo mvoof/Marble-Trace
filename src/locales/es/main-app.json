@@ -161,13 +161,13 @@
     "remoteNoDevice": "sin dispositivo"
   },
   "layoutWidgetPanel": {
+    "back": "Atrás",
     "onMonitor": "en {{monitor}}",
     "offScreen": "Fuera de las pantallas",
     "copyTooltip": "Una copia: con sus propios ajustes, lugar e interruptor",
     "originalTooltip": "El original del que salen las copias de este diseño",
     "deleteCopyConfirm": "¿Eliminar esta copia?",
-    "deleteCopyOk": "Eliminar",
-    "closeSettings": "Cerrar ajustes"
+    "deleteCopyOk": "Eliminar"
   },
   "widgetWorkbench": {
     "scenario": "Escenario",

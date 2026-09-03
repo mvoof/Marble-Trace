@@ -161,13 +161,13 @@
     "remoteNoDevice": "no device"
   },
   "layoutWidgetPanel": {
+    "back": "Back",
     "onMonitor": "on {{monitor}}",
     "offScreen": "Off every screen",
     "copyTooltip": "A copy — its own settings, place and switch",
     "originalTooltip": "The original this layout's copies were made from",
     "deleteCopyConfirm": "Delete this copy?",
-    "deleteCopyOk": "Delete",
-    "closeSettings": "Close settings"
+    "deleteCopyOk": "Delete"
   },
   "widgetWorkbench": {
     "scenario": "Scenario",

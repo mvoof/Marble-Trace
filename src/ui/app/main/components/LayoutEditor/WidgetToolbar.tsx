@@ -65,249 +65,257 @@ export const WidgetToolbar = observer(
 
     return (
       <div
-        className={`${styles.bar} ${fullscreen ? styles.barFullscreen : ''}`}
+        className={`${styles.bar} ${fullscreen ? `${styles.barWide} ${styles.barFullscreen}` : ''}`}
       >
         <span className={styles.widgetName}>{getWidgetLabel(t, widget)}</span>
 
-        <span className={styles.coordLabel}>X</span>
-        <InputNumber
-          size="small"
-          className={styles.coordInput}
-          value={widget.userSettings.x}
-          onFocus={() => widgetSettings.pushUndo()}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              widgetSettings.updatePosition(
-                widget.id,
-                value,
-                widget.userSettings.y
-              );
-            }
-          }}
-        />
-        <span className={styles.coordLabel}>Y</span>
-        <InputNumber
-          size="small"
-          className={styles.coordInput}
-          value={widget.userSettings.y}
-          onFocus={() => widgetSettings.pushUndo()}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              widgetSettings.updatePosition(
-                widget.id,
-                widget.userSettings.x,
-                value
-              );
-            }
-          }}
-        />
-        <span className={styles.coordLabel}>W</span>
-        <InputNumber
-          size="small"
-          className={styles.coordInput}
-          min={10}
-          value={widget.userSettings.currentWidth}
-          onFocus={() => widgetSettings.pushUndo()}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              if (isRatioLocked && widget.userSettings.currentHeight > 0) {
-                const ratio =
-                  widget.userSettings.currentWidth /
-                  widget.userSettings.currentHeight;
-                const newHeight = Math.max(10, Math.round(value / ratio));
-
-                widgetSettings.updateSize(widget.id, value, newHeight);
-              } else {
-                widgetSettings.updateSize(
+        <div className={styles.coordGrid}>
+          <span className={styles.coordLabel}>X</span>
+          <InputNumber
+            size="small"
+            className={styles.coordInput}
+            value={widget.userSettings.x}
+            onFocus={() => widgetSettings.pushUndo()}
+            onChange={(value) => {
+              if (typeof value === 'number') {
+                widgetSettings.updatePosition(
                   widget.id,
                   value,
-                  widget.userSettings.currentHeight
+                  widget.userSettings.y
                 );
-              }
-            }
-          }}
-        />
-        <span className={styles.coordLabel}>H</span>
-        <InputNumber
-          size="small"
-          className={styles.coordInput}
-          min={10}
-          value={widget.userSettings.currentHeight}
-          onFocus={() => widgetSettings.pushUndo()}
-          onChange={(value) => {
-            if (typeof value === 'number') {
-              if (isRatioLocked && widget.userSettings.currentWidth > 0) {
-                const ratio =
-                  widget.userSettings.currentWidth /
-                  widget.userSettings.currentHeight;
-                const newWidth = Math.max(10, Math.round(value * ratio));
-
-                widgetSettings.updateSize(widget.id, newWidth, value);
-              } else {
-                widgetSettings.updateSize(
-                  widget.id,
-                  widget.userSettings.currentWidth,
-                  value
-                );
-              }
-            }
-          }}
-        />
-
-        <Tooltip
-          title={
-            isRatioLocked
-              ? t('layoutEditor.unlockAspectRatio')
-              : t('layoutEditor.lockAspectRatio')
-          }
-        >
-          <Button
-            size="small"
-            type="text"
-            icon={isRatioLocked ? <Lock size={12} /> : <Unlock size={12} />}
-            onClick={onToggleRatioLock}
-          />
-        </Tooltip>
-
-        {moveTargetOptions.length > 0 && (
-          <Tooltip title={t('layoutEditor.moveToMonitor')}>
-            <Select
-              size="small"
-              value={null}
-              placeholder={<MonitorUp size={12} />}
-              onChange={(monitorName: string) =>
-                widgetSettings.moveWidgetToMonitor(widget.id, monitorName)
-              }
-              options={moveTargetOptions}
-              popupMatchSelectWidth={200}
-              style={{ width: 56 }}
-            />
-          </Tooltip>
-        )}
-
-        <Tooltip title={t('layoutEditor.duplicateWidget')}>
-          <Button
-            size="small"
-            type="text"
-            icon={<Copy size={12} />}
-            onClick={() => {
-              const copyId = widgetSettings.duplicateWidget(widget.id);
-
-              // Selection follows the copy: it is offset from the
-              // widget it came from and on top, so it is the one the
-              // user is about to place.
-              if (copyId !== null) {
-                onSelectWidget(copyId);
               }
             }}
           />
-        </Tooltip>
+          <span className={styles.coordLabel}>Y</span>
+          <InputNumber
+            size="small"
+            className={styles.coordInput}
+            value={widget.userSettings.y}
+            onFocus={() => widgetSettings.pushUndo()}
+            onChange={(value) => {
+              if (typeof value === 'number') {
+                widgetSettings.updatePosition(
+                  widget.id,
+                  widget.userSettings.x,
+                  value
+                );
+              }
+            }}
+          />
+          <span className={styles.coordLabel}>W</span>
+          <InputNumber
+            size="small"
+            className={styles.coordInput}
+            min={10}
+            value={widget.userSettings.currentWidth}
+            onFocus={() => widgetSettings.pushUndo()}
+            onChange={(value) => {
+              if (typeof value === 'number') {
+                if (isRatioLocked && widget.userSettings.currentHeight > 0) {
+                  const ratio =
+                    widget.userSettings.currentWidth /
+                    widget.userSettings.currentHeight;
+                  const newHeight = Math.max(10, Math.round(value / ratio));
 
-        {widget.type !== undefined && (
-          <Tooltip title={t('layoutEditor.deleteWidgetCopy')}>
+                  widgetSettings.updateSize(widget.id, value, newHeight);
+                } else {
+                  widgetSettings.updateSize(
+                    widget.id,
+                    value,
+                    widget.userSettings.currentHeight
+                  );
+                }
+              }
+            }}
+          />
+          <span className={styles.coordLabel}>H</span>
+          <InputNumber
+            size="small"
+            className={styles.coordInput}
+            min={10}
+            value={widget.userSettings.currentHeight}
+            onFocus={() => widgetSettings.pushUndo()}
+            onChange={(value) => {
+              if (typeof value === 'number') {
+                if (isRatioLocked && widget.userSettings.currentWidth > 0) {
+                  const ratio =
+                    widget.userSettings.currentWidth /
+                    widget.userSettings.currentHeight;
+                  const newWidth = Math.max(10, Math.round(value * ratio));
+
+                  widgetSettings.updateSize(widget.id, newWidth, value);
+                } else {
+                  widgetSettings.updateSize(
+                    widget.id,
+                    widget.userSettings.currentWidth,
+                    value
+                  );
+                }
+              }
+            }}
+          />
+        </div>
+
+        <div className={styles.actions}>
+          <Tooltip
+            title={
+              isRatioLocked
+                ? t('layoutEditor.unlockAspectRatio')
+                : t('layoutEditor.lockAspectRatio')
+            }
+          >
             <Button
               size="small"
               type="text"
-              icon={<Trash2 size={12} />}
+              icon={isRatioLocked ? <Lock size={12} /> : <Unlock size={12} />}
+              onClick={onToggleRatioLock}
+            />
+          </Tooltip>
+
+          {moveTargetOptions.length > 0 && (
+            <Tooltip title={t('layoutEditor.moveToMonitor')}>
+              <Select
+                size="small"
+                value={null}
+                placeholder={<MonitorUp size={12} />}
+                onChange={(monitorName: string) =>
+                  widgetSettings.moveWidgetToMonitor(widget.id, monitorName)
+                }
+                options={moveTargetOptions}
+                popupMatchSelectWidth={200}
+                style={{ width: 56 }}
+              />
+            </Tooltip>
+          )}
+
+          <Tooltip title={t('layoutEditor.duplicateWidget')}>
+            <Button
+              size="small"
+              type="text"
+              icon={<Copy size={12} />}
               onClick={() => {
-                widgetSettings.removeWidgetCopy(widget.id);
-                onSelectWidget(null);
+                const copyId = widgetSettings.duplicateWidget(widget.id);
+
+                // Selection follows the copy: it is offset from the
+                // widget it came from and on top, so it is the one the
+                // user is about to place.
+                if (copyId !== null) {
+                  onSelectWidget(copyId);
+                }
               }}
             />
           </Tooltip>
-        )}
 
-        <Tooltip title={t('layoutEditor.bringToFront')}>
-          <Button
-            size="small"
-            type="text"
-            icon={<BringToFront size={12} />}
-            onClick={() => widgetSettings.bringToFront(widget.id)}
-          />
-        </Tooltip>
+          {widget.type !== undefined && (
+            <Tooltip title={t('layoutEditor.deleteWidgetCopy')}>
+              <Button
+                size="small"
+                type="text"
+                icon={<Trash2 size={12} />}
+                onClick={() => {
+                  widgetSettings.removeWidgetCopy(widget.id);
+                  onSelectWidget(null);
+                }}
+              />
+            </Tooltip>
+          )}
 
-        <Tooltip title={t('layoutEditor.sendToBack')}>
-          <Button
-            size="small"
-            type="text"
-            icon={<SendToBack size={12} />}
-            onClick={() => widgetSettings.sendToBack(widget.id)}
-          />
-        </Tooltip>
-
-        <Popover
-          trigger="click"
-          placement="bottom"
-          getPopupContainer={popupContainer}
-          content={
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 32px)',
-                gap: '4px',
-              }}
-            >
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowUpLeft size={14} />}
-                onClick={() => onSnap('topLeft')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowUp size={14} />}
-                onClick={() => onSnap('topCenter')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowUpRight size={14} />}
-                onClick={() => onSnap('topRight')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowLeft size={14} />}
-                onClick={() => onSnap('midLeft')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<Maximize2 size={14} />}
-                onClick={() => onSnap('center')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowRight size={14} />}
-                onClick={() => onSnap('midRight')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowDownLeft size={14} />}
-                onClick={() => onSnap('bottomLeft')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowDown size={14} />}
-                onClick={() => onSnap('bottomCenter')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowDownRight size={14} />}
-                onClick={() => onSnap('bottomRight')}
-              />
-            </div>
-          }
-        >
-          <Tooltip title={t('layoutEditor.quickPlacement')}>
-            <Button size="small" type="text" icon={<LayoutGrid size={14} />} />
+          <Tooltip title={t('layoutEditor.bringToFront')}>
+            <Button
+              size="small"
+              type="text"
+              icon={<BringToFront size={12} />}
+              onClick={() => widgetSettings.bringToFront(widget.id)}
+            />
           </Tooltip>
-        </Popover>
+
+          <Tooltip title={t('layoutEditor.sendToBack')}>
+            <Button
+              size="small"
+              type="text"
+              icon={<SendToBack size={12} />}
+              onClick={() => widgetSettings.sendToBack(widget.id)}
+            />
+          </Tooltip>
+
+          <Popover
+            trigger="click"
+            placement="bottom"
+            getPopupContainer={popupContainer}
+            content={
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 32px)',
+                  gap: '4px',
+                }}
+              >
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowUpLeft size={14} />}
+                  onClick={() => onSnap('topLeft')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowUp size={14} />}
+                  onClick={() => onSnap('topCenter')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowUpRight size={14} />}
+                  onClick={() => onSnap('topRight')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowLeft size={14} />}
+                  onClick={() => onSnap('midLeft')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<Maximize2 size={14} />}
+                  onClick={() => onSnap('center')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowRight size={14} />}
+                  onClick={() => onSnap('midRight')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowDownLeft size={14} />}
+                  onClick={() => onSnap('bottomLeft')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowDown size={14} />}
+                  onClick={() => onSnap('bottomCenter')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowDownRight size={14} />}
+                  onClick={() => onSnap('bottomRight')}
+                />
+              </div>
+            }
+          >
+            <Tooltip title={t('layoutEditor.quickPlacement')}>
+              <Button
+                size="small"
+                type="text"
+                icon={<LayoutGrid size={14} />}
+              />
+            </Tooltip>
+          </Popover>
+        </div>
       </div>
     );
   }

@@ -426,14 +426,6 @@ export const LayoutEditor = observer(
       widgetSettings.updatePosition(selectedWidget.id, x, y);
     };
 
-    // The settings card floats out of the widget panel, so it survives the
-    // drawer sliding away in fullscreen unless it is closed with it.
-    useEffect(() => {
-      if (isFullscreen && !isPanelOpen) {
-        setEditingWidgetId(null);
-      }
-    }, [isFullscreen, isPanelOpen]);
-
     const popupContainer = () => rootRef.current ?? document.body;
 
     const handleToggleRatioLock = () => {
@@ -866,19 +858,6 @@ export const LayoutEditor = observer(
             </div>
           </header>
 
-          {selectedWidget && !isFullscreen && (
-            <WidgetToolbar
-              widget={selectedWidget}
-              isRatioLocked={!!lockedRatios[selectedWidget.id]}
-              onToggleRatioLock={handleToggleRatioLock}
-              moveTargetOptions={moveTargetOptions}
-              onSelectWidget={setSelectedWidgetId}
-              onSnap={handleSnap}
-              popupContainer={popupContainer}
-              fullscreen={false}
-            />
-          )}
-
           <div
             className={`${styles.body} ${isFullscreen ? styles.bodyFullscreen : ''}`}
           >
@@ -908,6 +887,20 @@ export const LayoutEditor = observer(
                 editingWidgetId={editingWidgetId}
                 onSelectWidget={handleSelectWidget}
                 onEditWidget={setEditingWidgetId}
+                widgetTools={
+                  selectedWidget && (
+                    <WidgetToolbar
+                      widget={selectedWidget}
+                      isRatioLocked={!!lockedRatios[selectedWidget.id]}
+                      onToggleRatioLock={handleToggleRatioLock}
+                      moveTargetOptions={moveTargetOptions}
+                      onSelectWidget={setSelectedWidgetId}
+                      onSnap={handleSnap}
+                      popupContainer={popupContainer}
+                      fullscreen={false}
+                    />
+                  )
+                }
               />
             </aside>
 

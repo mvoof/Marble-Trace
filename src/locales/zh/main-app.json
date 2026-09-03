@@ -159,13 +159,13 @@
     "remoteNoDevice": "无设备"
   },
   "layoutWidgetPanel": {
+    "back": "返回",
     "onMonitor": "在 {{monitor}}",
     "offScreen": "不在任何屏幕上",
     "copyTooltip": "副本——拥有自己的设置、位置和开关",
     "originalTooltip": "此布局中副本的来源原件",
     "deleteCopyConfirm": "删除此副本？",
-    "deleteCopyOk": "删除",
-    "closeSettings": "关闭设置"
+    "deleteCopyOk": "删除"
   },
   "widgetWorkbench": {
     "scenario": "场景",

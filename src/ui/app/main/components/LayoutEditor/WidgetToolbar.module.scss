@@ -19,6 +19,22 @@
   white-space: nowrap;
 }
 
+// Two columns, so the box reads as X/Y over W/H however narrow the plaque is.
+.coordGrid {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr;
+  align-items: center;
+  gap: sp(xxs);
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: sp(xxs);
+}
+
 .coordLabel {
   color: #5e626d;
   font-family: $font-mono;
@@ -27,11 +43,25 @@
 }
 
 .coordInput {
-  width: 64px;
+  width: 100%;
+  min-width: 56px;
 }
 
 // Fullscreen: floats at the bottom of the canvas, opposite the layout toolbar
 // at the top, so the two never fight for the same strip of screen.
+// A wide bar has no reason to stack: one row of fields, one row of buttons
+// beside it, the way it reads on the toolbar of a maximised window.
+.barWide {
+  .coordGrid {
+    display: flex;
+    width: auto;
+  }
+
+  .coordInput {
+    width: 64px;
+  }
+}
+
 .barFullscreen {
   position: absolute;
   left: 50%;
