@@ -1,7 +1,11 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { mergeWithDefaults } from '@store/deep-merge';
 import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-catalog';
-import { nextInstanceId, widgetTypeOf } from '@utils/widget-instance';
+import {
+  nextInstanceId,
+  widgetTypeFromId,
+  widgetTypeOf,
+} from '@utils/widget-instance';
 import {
   setFuelAvgWindowSilent,
   setPitWarningLapsSilent,
@@ -467,6 +471,67 @@ export class WidgetSettingsStore {
         setPitWarningLapsSilent(settings.pitWarningLaps);
         setFuelAvgWindowSilent(settings.fuelAvgWindow);
       }
+    });
+  }
+
+  /**
+   * Installs a widget list a window received from elsewhere.
+   *
+   * `applySettingsSync` patches records it already holds and can express
+   * neither a copy that appeared nor one that was deleted — which is the whole
+   * of what a layout does once a widget may have copies.
+   *
+   * So this adopts the list: a widget already here is patched, one that is new
+   * is installed beside it, one the list no longer names is dropped. What it
+   * deliberately does *not* do is run the list through `setWidgets`: that fills
+   * a widget the list left out with its shipped default, which is right for a
+   * layout being loaded and catastrophic for a list arriving over an event —
+   * the receiver would answer with a default-placed widget, and the window that
+   * sent it would take that answer for an edit.
+   *
+   * A sync, like `applySettingsSync`, moves `syncToken` and not `changeToken`:
+   * a window that was told something has nothing to report back.
+   */
+  syncWidgetSet(widgets: WidgetDefaultConfig[]) {
+    runInAction(() => {
+      const known = this.widgets;
+
+      const adopted = widgets.map((incoming) => {
+        const existing = known.get(incoming.id);
+
+        if (!existing) {
+          const installed: WidgetDefaultConfig = {
+            ...incoming,
+            userSettings: { ...incoming.userSettings },
+          };
+
+          applyDerivedDesignWidth(widgetTypeOf(incoming), installed);
+
+          return installed;
+        }
+
+        Object.assign(existing.userSettings, incoming.userSettings);
+        existing.designWidth = deriveWidgetDesignWidth(
+          widgetTypeOf(incoming),
+          existing.userSettings,
+          incoming.designWidth
+        );
+        existing.designHeight = incoming.designHeight;
+
+        return existing;
+      });
+
+      const layout = this.widgetOwner;
+
+      if (layout) {
+        layout.widgets = adopted;
+      } else {
+        this.detachedWidgets = new Map(
+          adopted.map((widget) => [widget.id, widget])
+        );
+      }
+
+      this.syncToken++;
     });
   }
 
@@ -1343,7 +1408,7 @@ export class WidgetSettingsStore {
     // A copy asks by its own id, so the shipped defaults are found through its
     // type; a caller naming a type directly still lands on the right record,
     // since the original copy's id is its type.
-    const type = widget ? widgetTypeOf(widget) : widgetId;
+    const type = widget ? widgetTypeOf(widget) : widgetTypeFromId(widgetId);
     const defaultConfig = DEFAULT_WIDGETS.find(
       (defaultWidget) => defaultWidget.id === type
     );

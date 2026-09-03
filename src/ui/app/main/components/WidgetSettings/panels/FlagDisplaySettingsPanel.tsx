@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Slider } from 'antd';
 import { FlagDisplaySettings } from '@/types/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import { widgetTypeOf } from '@utils/widget-instance';
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows } from './setting-rows';
@@ -13,9 +14,12 @@ export const PANEL_WIDGET_IDS = ['led-flags', 'flat-flags'];
 const { SwitchRow } = panelRows<FlagDisplaySettings>();
 
 export const FlagDisplaySettingsPanel = observer(
-  ({ widgetId }: { widgetId: 'led-flags' | 'flat-flags' }) => {
+  ({ widgetId }: { widgetId: string }) => {
     const widgetSettings = useWidgetEditor();
     const { t } = useTranslation('widgets');
+    const widgetType = widgetTypeOf(
+      widgetSettings.getWidget(widgetId) ?? { id: widgetId }
+    );
     const settings = widgetSettings.getSettings<FlagDisplaySettings>(widgetId);
 
     const update = (partial: Partial<FlagDisplaySettings>) => {
@@ -55,7 +59,7 @@ export const FlagDisplaySettingsPanel = observer(
           </div>
         )}
 
-        {widgetId === 'led-flags' && (
+        {widgetType === 'led-flags' && (
           <>
             <div className={styles.fieldGroup}>
               <SwitchRow

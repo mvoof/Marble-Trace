@@ -21,6 +21,7 @@ import { useUnitsStore } from '@store/root-store-context';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { widgetTypeOf } from '@utils/widget-instance';
 import { panelRows, usePanelWidgetId } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
@@ -269,8 +270,11 @@ const ScopeCard = observer(() => {
 });
 
 export const RadarSettingsPanel = observer(
-  ({ widgetId }: { widgetId: 'proximity-radar' | 'radar-bar' }) => {
+  ({ widgetId }: { widgetId: string }) => {
     const widgetSettings = useWidgetEditor();
+    const widgetType = widgetTypeOf(
+      widgetSettings.getWidget(widgetId) ?? { id: widgetId }
+    );
     const { t } = useTranslation('widgets');
     const settings = widgetSettings.getSettings<RadarSettings>(widgetId);
 
@@ -340,7 +344,7 @@ export const RadarSettingsPanel = observer(
           </Row>
         </Card>
 
-        {widgetId === 'proximity-radar' && <ScopeCard />}
+        {widgetType === 'proximity-radar' && <ScopeCard />}
 
         <Card title={t('settingsPanels.radar.qualifying')}>
           <Row gutter={24} className={styles.fieldGroup}>

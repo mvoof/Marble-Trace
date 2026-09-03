@@ -159,7 +159,7 @@ export const setupOverlayListeners = async (
         root.widgetSettings.applyMonitorsSync(e.payload.monitors);
       }
 
-      root.widgetSettings.applySettingsSync(e.payload.widgets);
+      root.widgetSettings.syncWidgetSet(e.payload.widgets);
     })
   );
 

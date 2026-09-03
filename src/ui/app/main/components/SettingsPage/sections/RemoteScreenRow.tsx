@@ -41,21 +41,6 @@ export const RemoteScreenRow = observer(
 
     const isStream = screen.purpose === 'stream';
 
-    // Every widget standing on this screen, offered one at a time: a browser
-    // source per widget is how a streamer arranges them in their own scene
-    // instead of laying the screen out here.
-    const screenWidgets = widgetSettings.widgetsOnMonitorNamed(screen.name);
-
-    const handleCopyWidget = (widgetId: string) => {
-      const separator = url.includes('?') ? '&' : '?';
-
-      void navigator.clipboard
-        .writeText(`${url}${separator}widget=${encodeURIComponent(widgetId)}`)
-        .then(() => {
-          message.success(t('settingsPage.remote.urlCopied'));
-        });
-    };
-
     const handleCopy = () => {
       void navigator.clipboard.writeText(url).then(() => {
         message.success(t('settingsPage.remote.urlCopied'));
@@ -181,19 +166,6 @@ export const RemoteScreenRow = observer(
               >
                 {t('settingsPage.remote.copyUrl')}
               </Button>
-
-              {isStream &&
-                screenWidgets.map((widget) => (
-                  <Button
-                    key={widget.id}
-                    size="small"
-                    icon={<Copy size={ICON_SIZE} />}
-                    disabled={!url}
-                    onClick={() => handleCopyWidget(widget.id)}
-                  >
-                    {widget.label}
-                  </Button>
-                ))}
 
               {mismatched && (
                 <Tooltip title={t('settingsPage.remote.fitToDeviceTooltip')}>

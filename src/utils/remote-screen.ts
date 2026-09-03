@@ -32,6 +32,18 @@ export const cloneMonitor = (monitor: LayoutMonitor): LayoutMonitor => ({
 });
 
 /** Common device sizes offered when adding a screen, in logical pixels. */
+/**
+ * The slug a widget's own stream URL is served from.
+ *
+ * A `?widget=` URL narrows a screen to one widget's rectangle, which used to
+ * mean the widget had to stand on a remote screen before it could be streamed
+ * at all. This pseudo-screen carries every widget of the active layout instead,
+ * so any of them — the ones on the game monitor included — has a URL that works
+ * the moment the server is running. It is published like a screen and read like
+ * one, but it is never listed as one: nothing opens it whole.
+ */
+export const WIDGET_SOURCE_SLUG = '__widgets';
+
 export const REMOTE_SCREEN_PRESETS = [
   { label: 'Tablet 10" landscape', width: 1280, height: 800 },
   { label: 'Tablet 10" portrait', width: 800, height: 1280 },

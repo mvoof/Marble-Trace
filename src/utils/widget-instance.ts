@@ -38,3 +38,14 @@ export const nextInstanceId = (
 
   return `${type}-${ordinal}`;
 };
+
+/**
+ * The widget type an instance id belongs to, for the one caller that has an id
+ * and no record: settings looked up for a copy a store has not been handed yet.
+ *
+ * Copies are named `<type>-<n>` by `nextInstanceId`, so the ordinal comes off
+ * again here. An id that is already a type is returned untouched, and a type
+ * that genuinely ends in a number is only ever reached when no record for the
+ * id exists — the record, when there is one, always answers first.
+ */
+export const widgetTypeFromId = (id: string): string => id.replace(/-\d+$/, '');

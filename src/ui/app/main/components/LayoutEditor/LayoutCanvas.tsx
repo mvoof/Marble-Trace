@@ -126,22 +126,10 @@ const mirrorAllWidgets = (
   }));
 
   // The preview world starts as the shipped catalog — one record per widget —
-  // so a layout holding a copy has records it has never heard of, and
-  // `applySettingsSync` skips what it cannot find by id. Installing the list
-  // whenever the set of records changes is what puts a copy on the canvas at
-  // all; after that the cheaper per-field sync carries every edit.
-  const known = previewStore.widgetSettings.widgets;
-  const isSameSet =
-    known.size === mirrored.length &&
-    mirrored.every((widget) => known.has(widget.id));
-
-  if (!isSameSet) {
-    previewStore.widgetSettings.setWidgets(mirrored);
-
-    return;
-  }
-
-  previewStore.widgetSettings.applySettingsSync(mirrored);
+  // so a layout holding a copy has records it has never heard of. `syncWidgetSet`
+  // reinstalls the list whenever the set of records changes, and patches it
+  // field by field the rest of the time.
+  previewStore.widgetSettings.syncWidgetSet(mirrored);
 };
 
 // One screen of the layout, drawn in desktop coordinates behind the widgets.

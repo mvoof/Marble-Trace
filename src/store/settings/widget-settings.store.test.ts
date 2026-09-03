@@ -830,6 +830,63 @@ describe('several copies of one widget in a layout', () => {
     expect(store.getWidget(copyId)).toBeUndefined();
   });
 
+  // What an overlay window and a remote screen do with the list main sends
+  // them. Before copies existed the set never changed, so a per-field patch was
+  // enough; now an arrival and a deletion both have to land.
+  it('installs a copy a synced list carries and drops one it has lost', () => {
+    const store = rootStore.widgetSettings;
+
+    const incoming = store.allWidgets.map((widget) => ({
+      ...widget,
+      userSettings: { ...widget.userSettings },
+    }));
+
+    const copy = {
+      ...incoming[0],
+      id: 'standings-2',
+      type: 'standings',
+      userSettings: { ...incoming[0].userSettings, x: 1234 },
+    };
+
+    store.syncWidgetSet([...incoming, copy]);
+
+    expect(store.getWidget('standings-2')?.userSettings.x).toBe(1234);
+
+    store.syncWidgetSet(incoming);
+
+    expect(store.getWidget('standings-2')).toBeUndefined();
+  });
+
+  // The reset this cost once: a receiver that filled a widget the list left out
+  // with its shipped default answered back with a default-placed widget, and
+  // the window that had sent the list took that answer for an edit.
+  it('adopts a synced list without inventing defaults or reporting an edit', () => {
+    const store = rootStore.widgetSettings;
+
+    store.updateUserSettings('standings', { x: 1500 });
+
+    const before = store.changeToken;
+    const standings = {
+      ...store.getWidget('standings')!,
+      userSettings: { ...store.getWidget('standings')!.userSettings },
+    };
+
+    store.syncWidgetSet([standings]);
+
+    expect(store.allWidgets).toHaveLength(1);
+    expect(store.getWidget('standings')!.userSettings.x).toBe(1500);
+    expect(store.changeToken).toBe(before);
+  });
+
+  // The crash a copy caused in the editor: a store handed an id it holds no
+  // record for used to answer with nothing at all, and every widget reads its
+  // settings without checking.
+  it('answers with the defaults of the type behind a copy id it has no record of', () => {
+    const store = rootStore.widgetSettings;
+
+    expect(store.getSettings('standings-7')).toBeDefined();
+  });
+
   it('counts the widget as in the layout while any copy of it is', () => {
     const store = rootStore.widgetSettings;
 

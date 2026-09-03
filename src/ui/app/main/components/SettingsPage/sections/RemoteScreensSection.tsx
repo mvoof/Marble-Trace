@@ -21,6 +21,7 @@ import {
 } from '@store/root-store-context';
 import type { RemoteServerInfo } from '@/types/bindings';
 import { RemoteScreenRow } from './RemoteScreenRow';
+import { WidgetStreamLinks } from './WidgetStreamLinks';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
@@ -304,6 +305,8 @@ export const RemoteScreensSection = observer(() => {
           />
         ))}
       </div>
+
+      {remoteEnabled && <WidgetStreamLinks screenUrl={screenUrl} />}
     </SettingsCard>
   );
 });

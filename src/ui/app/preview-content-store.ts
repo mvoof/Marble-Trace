@@ -20,7 +20,10 @@ export const mirrorWidgetsIntoPreview = (
   source: WidgetDefaultConfig[],
   previewStore: RootStore
 ) => {
-  previewStore.widgetSettings.applySettingsSync(
+  // The whole set rather than a patch: the preview world starts as the shipped
+  // catalog, so a layout holding a copy has records it has never heard of, and
+  // a patch would leave the copy drawing another widget's settings.
+  previewStore.widgetSettings.syncWidgetSet(
     source.map((widget) => ({
       ...widget,
       userSettings: { ...widget.userSettings },

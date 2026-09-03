@@ -8,7 +8,7 @@ import {
 } from '@platform/services/remote.service';
 import { resolveAppLanguage } from '@store/settings/app-settings.store';
 import { widgetsOnMonitor } from '@store/settings/virtual-desktop';
-import { isRemoteMonitor } from '@utils/remote-screen';
+import { isRemoteMonitor, WIDGET_SOURCE_SLUG } from '@utils/remote-screen';
 import type { RootStore } from '@store/root-store';
 import type { RemoteScreenSnapshot } from '@/types/remote';
 import type { RemoteDevice } from '@/types/bindings';
@@ -57,7 +57,40 @@ const snapshotFor = (
   };
 };
 
+/**
+ * The pseudo-screen every widget's own stream URL reads from: the whole layout,
+ * under a reserved slug. A solo page takes one widget out of it and draws that
+ * widget's rectangle, so a widget standing on the game monitor is streamable
+ * without being moved anywhere.
+ */
+const widgetSourceSnapshot = (root: RootStore): RemoteScreenSnapshot | null => {
+  const layout = root.layouts.activeLayout;
+
+  if (!layout) return null;
+
+  return {
+    slug: WIDGET_SOURCE_SLUG,
+    name: layout.name,
+    bounds: { x: 0, y: 0, width: 0, height: 0 },
+    widgets: root.widgetSettings.allWidgets,
+    units: root.units.unitSystem,
+    language: root.appSettings.appSettings.language,
+    steeringLock: root.appSettings.appSettings.steeringLock,
+    layoutName: layout.name,
+    purpose: 'stream',
+  };
+};
+
 const publishAll = (root: RootStore) => {
+  const widgetSource = widgetSourceSnapshot(root);
+
+  if (widgetSource) {
+    void publishRemoteSnapshot(WIDGET_SOURCE_SLUG, widgetSource).catch(
+      (error: unknown) =>
+        console.error('[remote-publish] failed to publish snapshot:', error)
+    );
+  }
+
   for (const monitor of root.layouts.activeRemoteScreens) {
     const slug = monitor.slug;
 

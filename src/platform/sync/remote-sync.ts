@@ -37,7 +37,7 @@ export const initRemoteSync = (
       screen.setSnapshot(snapshot);
       root.units.setSystem(snapshot.units);
       root.appSettings.setSteeringLock(snapshot.steeringLock);
-      root.widgetSettings.applySettingsSync(snapshot.widgets);
+      root.widgetSettings.syncWidgetSet(snapshot.widgets);
     });
 
     root.appSettings.setLanguage(snapshot.language);

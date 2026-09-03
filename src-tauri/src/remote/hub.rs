@@ -232,6 +232,11 @@ impl RemoteHub {
     pub fn screens(&self) -> Vec<(String, String)> {
         let mut screens: Vec<(String, String)> = lock_or_recover(&self.snapshots)
             .iter()
+            // A slug starting with `__` is a pseudo-screen: the frontend
+            // publishes one holding every widget of the layout, so that a
+            // widget's own `?widget=` URL works wherever the widget stands.
+            // Nothing opens it whole, so nothing lists it.
+            .filter(|(slug, _)| !slug.starts_with("__"))
             .map(|(slug, snapshot)| {
                 let name = snapshot
                     .get("name")
