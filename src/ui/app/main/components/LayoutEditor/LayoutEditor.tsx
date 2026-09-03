@@ -517,25 +517,14 @@ export const LayoutEditor = observer(
             )}
 
             {isFullscreen && (
-              <>
-                <Tooltip title={t('layoutEditor.toggleWidgetPanel')}>
-                  <Button
-                    size="small"
-                    type={isPanelOpen ? 'primary' : 'text'}
-                    icon={<PanelLeft size={14} />}
-                    onClick={() => setIsPanelOpen((open) => !open)}
-                  />
-                </Tooltip>
-
-                <Tooltip title={t('layoutEditor.toggleInspector')}>
-                  <Button
-                    size="small"
-                    type={isInspectorOpen ? 'primary' : 'text'}
-                    icon={<PanelRight size={14} />}
-                    onClick={() => setIsInspectorOpen((open) => !open)}
-                  />
-                </Tooltip>
-              </>
+              <Tooltip title={t('layoutEditor.toggleWidgetPanel')}>
+                <Button
+                  size="small"
+                  type={isPanelOpen ? 'primary' : 'text'}
+                  icon={<PanelLeft size={14} />}
+                  onClick={() => setIsPanelOpen((open) => !open)}
+                />
+              </Tooltip>
             )}
 
             <div className={styles.layoutControls}>
@@ -864,6 +853,19 @@ export const LayoutEditor = observer(
                 style={{ minWidth: 150 }}
                 popupMatchSelectWidth={false}
               />
+
+              {/* Last on the bar, above the panel it opens: the toggle sits on
+                  the side the drawer comes from. */}
+              {isFullscreen && (
+                <Tooltip title={t('layoutEditor.toggleInspector')}>
+                  <Button
+                    size="small"
+                    type={isInspectorOpen ? 'primary' : 'text'}
+                    icon={<PanelRight size={14} />}
+                    onClick={() => setIsInspectorOpen((open) => !open)}
+                  />
+                </Tooltip>
+              )}
             </div>
           </header>
 
