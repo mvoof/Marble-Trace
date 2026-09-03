@@ -707,3 +707,251 @@ describe('the overlay reports only what it edited', () => {
     expect(drained.widgets.length).toBe(store.allWidgets.length);
   });
 });
+
+describe('several copies of one widget in a layout', () => {
+  let rootStore: RootStore;
+
+  const MONITOR = {
+    name: 'DISPLAY1',
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  const STREAM_SCREEN = {
+    name: 'Stream',
+    bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
+    kind: 'remote' as const,
+    slug: 'stream',
+  };
+
+  const layout = (id: string) => ({
+    id,
+    name: id,
+    createdAt: Date.now(),
+    monitors: [MONITOR, STREAM_SCREEN],
+    widgets: [],
+  });
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.widgetSettings.setLayouts(
+      [layout('layout-race'), layout('layout-garage')],
+      'layout-race'
+    );
+  });
+
+  it('gives a copy its own id and points it back at the original', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+    const copy = store.getWidget(copyId)!;
+
+    expect(copyId).not.toBe('standings');
+    expect(copy.type).toBe('standings');
+    expect(store.widgetsOfType('standings')).toHaveLength(2);
+  });
+
+  it('leaves the original alone when the copy is edited', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.updateUserSettings(copyId, { fontScale: 2 });
+
+    expect(store.getWidget(copyId)!.userSettings.fontScale).toBe(2);
+    expect(store.getWidget('standings')!.userSettings.fontScale).not.toBe(2);
+  });
+
+  it('hides a copy without hiding the widget it was copied from', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.setWidgetEnabled(copyId, false);
+
+    expect(store.getWidget(copyId)!.userSettings.enabled).toBe(false);
+    expect(store.getWidget('standings')!.userSettings.enabled).toBe(true);
+  });
+
+  // The whole point of the split: the original's id doubles as its type, so a
+  // settings file written before copies existed needs no migration.
+  it('keeps a file that predates copies readable as the original', () => {
+    const store = rootStore.widgetSettings;
+
+    store.setWidgets([
+      {
+        ...store.getWidget('standings')!,
+        userSettings: { ...store.getWidget('standings')!.userSettings, x: 42 },
+      },
+    ]);
+
+    const restored = store.getWidget('standings')!;
+
+    expect(restored.type).toBeUndefined();
+    expect(restored.userSettings.x).toBe(42);
+  });
+
+  it('survives the round trip through a layout switch', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.updateUserSettings(copyId, { x: 2200 });
+    store.selectLayout('layout-garage');
+    store.selectLayout('layout-race');
+
+    expect(store.getWidget(copyId)?.userSettings.x).toBe(2200);
+    expect(store.widgetsOfType('standings')).toHaveLength(2);
+  });
+
+  it('never merges two copies onto one record when the layout is installed', () => {
+    const store = rootStore.widgetSettings;
+
+    store.duplicateWidget('standings');
+    store.duplicateWidget('standings');
+
+    // Reinstalling the layout's own list is what a layout switch does, and it
+    // used to be where a second copy quietly disappeared.
+    store.setWidgets(
+      store.activeLayout!.widgets.map((widget) => ({ ...widget }))
+    );
+
+    expect(store.widgetsOfType('standings')).toHaveLength(3);
+  });
+
+  it('deletes a copy but refuses to delete the original', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.removeWidgetCopy('standings');
+    expect(store.getWidget('standings')).toBeDefined();
+
+    store.removeWidgetCopy(copyId);
+    expect(store.getWidget(copyId)).toBeUndefined();
+  });
+
+  // What an overlay window and a remote screen do with the list main sends
+  // them. Before copies existed the set never changed, so a per-field patch was
+  // enough; now an arrival and a deletion both have to land.
+  it('installs a copy a synced list carries and drops one it has lost', () => {
+    const store = rootStore.widgetSettings;
+
+    const incoming = store.allWidgets.map((widget) => ({
+      ...widget,
+      userSettings: { ...widget.userSettings },
+    }));
+
+    const copy = {
+      ...incoming[0],
+      id: 'standings-2',
+      type: 'standings',
+      userSettings: { ...incoming[0].userSettings, x: 1234 },
+    };
+
+    store.syncWidgetSet([...incoming, copy]);
+
+    expect(store.getWidget('standings-2')?.userSettings.x).toBe(1234);
+
+    store.syncWidgetSet(incoming);
+
+    expect(store.getWidget('standings-2')).toBeUndefined();
+  });
+
+  // The reset this cost once: a receiver that filled a widget the list left out
+  // with its shipped default answered back with a default-placed widget, and
+  // the window that had sent the list took that answer for an edit.
+  it('adopts a synced list without inventing defaults or reporting an edit', () => {
+    const store = rootStore.widgetSettings;
+
+    store.updateUserSettings('standings', { x: 1500 });
+
+    const before = store.changeToken;
+    const standings = {
+      ...store.getWidget('standings')!,
+      userSettings: { ...store.getWidget('standings')!.userSettings },
+    };
+
+    store.syncWidgetSet([standings]);
+
+    expect(store.allWidgets).toHaveLength(1);
+    expect(store.getWidget('standings')!.userSettings.x).toBe(1500);
+    expect(store.changeToken).toBe(before);
+  });
+
+  // The crash a copy caused in the editor: a store handed an id it holds no
+  // record for used to answer with nothing at all, and every widget reads its
+  // settings without checking.
+  it('answers with the defaults of the type behind a copy id it has no record of', () => {
+    const store = rootStore.widgetSettings;
+
+    expect(store.getSettings('standings-7')).toBeDefined();
+  });
+
+  it('counts the widget as in the layout while any copy of it is', () => {
+    const store = rootStore.widgetSettings;
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.setWidgetEnabled('standings', false);
+
+    expect(store.isWidgetInActiveLayout('standings')).toBe(true);
+
+    store.setWidgetEnabled(copyId, false);
+
+    expect(store.isWidgetInActiveLayout('standings')).toBe(false);
+  });
+});
+
+describe('a screen added to a layout', () => {
+  let rootStore: RootStore;
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.widgetSettings.setLayouts(
+      [
+        {
+          id: 'layout-race',
+          name: 'Race',
+          createdAt: 0,
+          monitors: [
+            {
+              name: 'DISPLAY1',
+              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+            },
+          ],
+          widgets: [],
+        },
+      ],
+      'layout-race'
+    );
+  });
+
+  const screenNamed = (name: string) =>
+    rootStore.widgetSettings.activeLayout!.monitors.find(
+      (monitor) => monitor.name === name
+    )!;
+
+  // The only thing that separates a browser source from a tablet: what the page
+  // paints behind the widgets. Everything else about the screen is the same.
+  it('carries the background it was created with', () => {
+    rootStore.widgetSettings.addRemoteScreen(
+      'Stream',
+      1920,
+      1080,
+      'transparent'
+    );
+
+    expect(screenNamed('Stream').background).toBe('transparent');
+  });
+
+  it('leaves the ground to the default until it is set', () => {
+    rootStore.widgetSettings.addRemoteScreen('Tablet', 1280, 800);
+
+    expect(screenNamed('Tablet').background).toBeUndefined();
+    expect(screenNamed('Tablet').fittedToDevice).toBeFalsy();
+
+    rootStore.widgetSettings.setRemoteScreenBackground('Tablet', 'transparent');
+
+    expect(screenNamed('Tablet').background).toBe('transparent');
+  });
+});

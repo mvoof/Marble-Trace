@@ -53,6 +53,7 @@ const snapshotFor = (
     language: root.appSettings.appSettings.language,
     steeringLock: root.appSettings.appSettings.steeringLock,
     layoutName: layout.name,
+    background: monitor.background,
   };
 };
 
@@ -116,6 +117,8 @@ export const registerRemotePublishing = (root: RootStore) => {
     const settings = root.appSettings.appSettings;
 
     if (!settings.remoteEnabled) {
+      runInAction(() => root.remoteDevices.setServerError(''));
+
       await stopRemoteServer().catch((error: unknown) =>
         console.error('[remote-publish] failed to stop server:', error)
       );
@@ -138,11 +141,20 @@ export const registerRemotePublishing = (root: RootStore) => {
         language: resolveAppLanguage(settings.language),
       });
 
+      runInAction(() => root.remoteDevices.setServerError(''));
+
       // The server starts with an empty cache, so a device that reconnects
       // before the next layout edit still gets its screen.
       publishAll(root);
     } catch (error) {
-      console.error('[remote-publish] failed to start server:', error);
+      // Shown in settings, not only logged: the usual cause is a port another
+      // program holds, and there is nothing about "not running" that tells the
+      // user to go and change the port.
+      runInAction(() =>
+        root.remoteDevices.setServerError(
+          error instanceof Error ? error.message : String(error)
+        )
+      );
     }
   };
 
@@ -163,6 +175,7 @@ export const registerRemotePublishing = (root: RootStore) => {
           settings.remoteToken,
           settings.remoteTelemetryHz,
           settings.language,
+          root.remoteDevices.restartToken,
         ] as const;
       },
       () => void applyServerState(),

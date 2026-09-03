@@ -30,10 +30,13 @@ export interface WidgetSpot {
 }
 
 /**
- * What the F9 picker offers on one screen: everything not already drawn there.
- * A widget enabled on another monitor is kept in the list with that monitor's
- * name, so the picker offers to move it instead of pretending a second copy
- * could exist.
+ * What the F9 picker offers on one screen: every widget record not already
+ * drawn there, copies included — each is listed on its own, since each is
+ * placed and enabled on its own.
+ *
+ * A record enabled on another monitor is kept in the list with that monitor's
+ * name, so the picker offers to move that one rather than silently making
+ * another copy: duplicating is a deliberate action in the layout editor.
  */
 export const pickableWidgetsForMonitor = (
   allWidgets: WidgetDefaultConfig[],

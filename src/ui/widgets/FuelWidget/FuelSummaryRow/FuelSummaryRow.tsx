@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { formatFuel } from '@utils/telemetry-format';
@@ -7,7 +8,6 @@ import type { FuelWidgetSettings } from '@/types/widget-settings';
 import {
   useBackendComputedStore,
   useUnitsStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
   NO_FUEL_DATA_PLACEHOLDER,
@@ -29,9 +29,8 @@ const LAPS_STATUS_CLASSES: Record<FuelLapsStatus, string> = {
 export const FuelSummaryRow = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { unitSystem } = useUnitsStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
+  const settings = useWidgetSettings<FuelWidgetSettings>('fuel');
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
   const shortage = fuel?.shortage ?? null;

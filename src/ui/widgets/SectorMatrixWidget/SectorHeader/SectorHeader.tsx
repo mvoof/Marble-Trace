@@ -1,8 +1,8 @@
-﻿import { observer } from 'mobx-react-lite';
+﻿import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { observer } from 'mobx-react-lite';
 import {
   usePlayerStore,
   useBackendComputedStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { formatLapTime } from '@utils/telemetry-format';
 import { getGameDelta } from '@utils/delta-utils';
@@ -18,10 +18,8 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
   const { lapTiming } = usePlayerStore();
   const { lapDelta } = useBackendComputedStore();
 
-  const widgetSettings = useWidgetSettingsStore();
-
   const { showPredicted } =
-    widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
+    useWidgetSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
   const lapNum = lapTiming?.lap ?? null;
 

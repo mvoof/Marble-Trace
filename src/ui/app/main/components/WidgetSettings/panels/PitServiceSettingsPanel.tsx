@@ -10,7 +10,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 import { useUnitsStore } from '@store/root-store-context';
 import {
   displayDistanceToMeters,
@@ -93,11 +93,12 @@ const distanceScale = (
 
 export const PitServiceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('pit-service');
   const { t } = useTranslation('widgets');
   const units = useUnitsStore();
 
   const settings =
-    widgetSettings.getSettings<PitServiceWidgetSettings>('pit-service');
+    widgetSettings.getSettings<PitServiceWidgetSettings>(panelWidgetId);
 
   // Both distances are stored in meters and shown in whatever the app is set
   // to: a driver on imperial reads and drags feet, and the file still holds the
@@ -119,7 +120,7 @@ export const PitServiceSettingsPanel = observer(() => {
   });
 
   const update = (partial: Partial<PitServiceWidgetSettings>) => {
-    widgetSettings.updateUserSettings('pit-service', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

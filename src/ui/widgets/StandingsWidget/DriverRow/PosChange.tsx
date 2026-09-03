@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
@@ -7,7 +8,6 @@ import styles from './DriverRow.module.scss';
 import {
   useSessionStore,
   useStandingsWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 interface PosChangeProps {
@@ -16,12 +16,10 @@ interface PosChangeProps {
 
 export const PosChange = observer(({ carIdx }: PosChangeProps) => {
   const standingsWidget = useStandingsWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
   const { session } = useSessionStore();
 
   const driver = standingsWidget.driverMap.get(carIdx);
-  const settings =
-    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
   if (!driver) {
     return null;

@@ -71,6 +71,8 @@
     "unlockAspectRatio": "Desbloquear la relación de aspecto",
     "bringToFront": "Traer al frente",
     "sendToBack": "Enviar al fondo",
+    "duplicateWidget": "Duplicar widget",
+    "deleteWidgetCopy": "Eliminar copia",
     "quickPlacement": "Colocación rápida",
     "backgroundImageAria": "Imagen de fondo del diseño",
     "undoTooltip": "Deshacer (Ctrl+Z)",
@@ -95,14 +97,28 @@
     "moveToMonitor": "Mover a otro monitor",
     "allMonitors": "Todos los monitores",
     "removeMonitor": "Quitar el monitor del diseño",
-    "addRemoteScreen": "Pantalla remota",
-    "addRemoteScreenTooltip": "Añadir un móvil o una tablet como pantalla de este diseño",
+    "addRemoteScreen": "Añadir pantalla",
+    "addRemoteScreenTooltip": "Añade otra pantalla a este diseño: una tablet, un móvil o un Browser Source en OBS",
     "addRemoteScreenConfirm": "Añadir pantalla",
     "remoteScreenNamePlaceholder": "Nombre de la pantalla, p. ej. Tablet del volante",
     "remoteScreenDefaultName": "Pantalla remota",
     "remoteScreenTag": "remota",
     "arrangeRemoteScreens": "Ordenar las pantallas remotas",
-    "arrangeRemoteScreensTooltip": "Coloca las pantallas remotas en filas bajo el escritorio, widgets incluidos"
+    "arrangeRemoteScreensTooltip": "Coloca las pantallas remotas en filas bajo el escritorio, widgets incluidos",
+    "addRemoteScreenHint": "La pantalla la dibuja lo que abra el enlace: una tablet de tu red o un Browser Source en OBS. Para OBS pon el fondo transparente y da a la fuente el mismo tamaño — el primero que se conecta informa del suyo, y ajustarse a él mueve todos los widgets de la pantalla.",
+    "remoteScreenTransparent": "Fondo transparente (para OBS)",
+    "remoteScreenPresetGroup": {
+      "monitor": "Monitor / lienzo de directo",
+      "tablet": "Tablet",
+      "phone": "Móvil"
+    },
+    "inspectorTitle": "Widget",
+    "inspectorActions": "Acciones del editor",
+    "toggleInspector": "Panel del widget",
+    "duplicate": "Duplicar",
+    "layerOrder": "Orden de capas",
+    "moveToMonitorPlaceholder": "Elige una pantalla",
+    "quickPlacementDesc": "Coloca el widget en una esquina, un borde o el centro de su pantalla."
   },
   "layoutList": {
     "moduleLabel": "Diseños",
@@ -152,8 +168,12 @@
     "remoteNoDevice": "sin dispositivo"
   },
   "layoutWidgetPanel": {
-    "back": "Atrás",
-    "onMonitor": "en {{monitor}}"
+    "onMonitor": "en {{monitor}}",
+    "offScreen": "Fuera de las pantallas",
+    "copyTooltip": "Una copia: con sus propios ajustes, lugar e interruptor",
+    "originalTooltip": "El original del que salen las copias de este diseño",
+    "deleteCopyConfirm": "¿Eliminar esta copia?",
+    "deleteCopyOk": "Eliminar"
   },
   "widgetWorkbench": {
     "scenario": "Escenario",
@@ -448,6 +468,7 @@
       "screensEmpty": "Todavía no hay pantallas remotas. Añade una en el editor de diseños, junto a los monitores.",
       "serverOffline": "El servidor no está en marcha",
       "copyUrl": "Copiar enlace",
+      "obsHint": "Añade esta dirección en OBS como Browser Source con tamaño {{width}}×{{height}}. Pon el fondo de la pantalla en transparente para dejar en antena solo los widgets.",
       "urlCopied": "Enlace copiado",
       "deviceOnline": "Dispositivo conectado",
       "deviceReports": "El dispositivo informa de {{width}}×{{height}} de página útil, en una pantalla de {{screenWidth}}×{{screenHeight}}.",
@@ -460,7 +481,10 @@
       "hideToken": "Ocultar",
       "copyToken": "Copiar el token",
       "tokenCopied": "Token copiado",
-      "qrHidden": "Código QR oculto"
+      "qrHidden": "Código QR oculto",
+      "backgroundLabel": "Fondo",
+      "backgroundTransparent": "transparente",
+      "retryStart": "Reintentar"
     },
     "companions": {
       "add": "Añadir",

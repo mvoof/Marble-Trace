@@ -11,7 +11,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 import { useAppSettingsStore } from '@store/root-store-context';
 
 // Widget ids this panel configures — read by the panel registry.
@@ -25,6 +25,7 @@ const STYLES_WITH_MARKER: SteeringWheelStyle[] = ['gt-round', 'flat-bottom'];
 
 export const InputTraceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('input-trace');
   const appSettings = useAppSettingsStore();
   const { t } = useTranslation('widgets');
 
@@ -34,10 +35,10 @@ export const InputTraceSettingsPanel = observer(() => {
   const steeringLock = appSettings.appSettings.steeringLock;
 
   const settings =
-    widgetSettings.getSettings<InputTraceSettings>('input-trace');
+    widgetSettings.getSettings<InputTraceSettings>(panelWidgetId);
 
   const update = (partial: Partial<InputTraceSettings>) => {
-    widgetSettings.updateUserSettings('input-trace', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

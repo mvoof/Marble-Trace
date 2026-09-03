@@ -88,17 +88,14 @@ pub fn local_ip() -> String {
         .unwrap_or_else(|_| Ipv4Addr::LOCALHOST.to_string())
 }
 
-/// Binds the server and runs it until `shutdown` resolves.
+/// Takes the port the server will run on.
 ///
-/// `lan` decides the bind address: with it off the server is reachable from the
-/// host only, which is the safe default for a machine on an untrusted network.
-pub async fn serve(
-    app: AppHandle,
-    hub: Arc<RemoteHub>,
-    port: u16,
-    lan: bool,
-    shutdown: tokio::sync::oneshot::Receiver<()>,
-) -> Result<(), String> {
+/// Separate from `serve` so a clash surfaces to the caller as a value rather
+/// than inside a spawned task: the command retries it, and hands what is left
+/// of the failure to the settings UI. `lan` decides the bind address — with it
+/// off the server is reachable from the host only, which is the safe default
+/// for a machine on an untrusted network.
+pub async fn bind(port: u16, lan: bool) -> Result<TcpListener, String> {
     let host = if lan {
         Ipv4Addr::UNSPECIFIED
     } else {
@@ -107,17 +104,27 @@ pub async fn serve(
 
     let addr = SocketAddr::from((host, port));
 
-    let listener = TcpListener::bind(addr)
+    TcpListener::bind(addr)
         .await
-        .map_err(|error| format!("failed to bind {addr}: {error}"))?;
+        .map_err(|error| format!("failed to bind {addr}: {error}"))
+}
 
-    let bound = listener
+/// Runs the server on an already bound listener until `shutdown` resolves.
+///
+/// `generation` is the caller's claim on the hub: the flags are cleared on the
+/// way out only while this is still the server that owns them.
+pub async fn serve(
+    app: AppHandle,
+    hub: Arc<RemoteHub>,
+    listener: TcpListener,
+    lan: bool,
+    generation: u64,
+    shutdown: tokio::sync::oneshot::Receiver<()>,
+) -> Result<(), String> {
+    let addr = listener
         .local_addr()
-        .map(|value| value.port())
-        .unwrap_or(port);
-
-    hub.port.store(bound, Ordering::Relaxed);
-    hub.running.store(true, Ordering::Relaxed);
+        .map(|value| value.to_string())
+        .unwrap_or_else(|_| String::from("?"));
 
     let dev = cfg!(debug_assertions);
 
@@ -149,9 +156,11 @@ pub async fn serve(
     .await
     .map_err(|error| format!("remote server stopped: {error}"));
 
-    hub.running.store(false, Ordering::Relaxed);
-    hub.port.store(0, Ordering::Relaxed);
-    hub.clear();
+    if hub.generation.load(Ordering::Relaxed) == generation {
+        hub.running.store(false, Ordering::Relaxed);
+        hub.port.store(0, Ordering::Relaxed);
+        hub.clear();
+    }
 
     result
 }

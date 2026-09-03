@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -30,7 +31,7 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
   const widgetId = useContext(WidgetIdContext);
   const widgetSettings = useWidgetSettingsStore();
 
-  const { scale } = widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
+  const { scale } = useWidgetSettings<GMeterWidgetSettings>('g-meter');
   const fontScale =
     widgetSettings.getWidget(widgetId)?.userSettings.fontScale ?? 1;
   const canvasRef = useRef<HTMLCanvasElement>(null);

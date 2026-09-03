@@ -27,6 +27,7 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { componentForWidget } from '@ui/widgets/registry';
+import { widgetTypeOf } from '@utils/widget-instance';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import {
@@ -119,12 +120,16 @@ const mirrorAllWidgets = (
   source: WidgetDefaultConfig[],
   previewStore: RootStore
 ) => {
-  previewStore.widgetSettings.applySettingsSync(
-    source.map((widget) => ({
-      ...widget,
-      userSettings: { ...widget.userSettings },
-    }))
-  );
+  const mirrored = source.map((widget) => ({
+    ...widget,
+    userSettings: { ...widget.userSettings },
+  }));
+
+  // The preview world starts as the shipped catalog — one record per widget —
+  // so a layout holding a copy has records it has never heard of. `syncWidgetSet`
+  // reinstalls the list whenever the set of records changes, and patches it
+  // field by field the rest of the time.
+  previewStore.widgetSettings.syncWidgetSet(mirrored);
 };
 
 // One screen of the layout, drawn in desktop coordinates behind the widgets.
@@ -684,7 +689,10 @@ export const LayoutCanvas = observer(
                 }}
               >
                 {widgetSettings.enabledWidgetIds.map((id) => {
-                  const Widget = componentForWidget(id);
+                  const widget = widgetSettings.getWidget(id);
+                  const Widget = widget
+                    ? componentForWidget(widgetTypeOf(widget))
+                    : undefined;
 
                   if (!Widget) {
                     return null;

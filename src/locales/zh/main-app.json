@@ -71,6 +71,8 @@
     "unlockAspectRatio": "解锁宽高比",
     "bringToFront": "置于顶层",
     "sendToBack": "置于底层",
+    "duplicateWidget": "复制小组件",
+    "deleteWidgetCopy": "删除副本",
     "quickPlacement": "快速定位",
     "backgroundImageAria": "布局背景图片",
     "undoTooltip": "撤销 (Ctrl+Z)",
@@ -95,14 +97,28 @@
     "moveToMonitor": "移动到显示器",
     "allMonitors": "所有显示器",
     "removeMonitor": "从布局中移除显示器",
-    "addRemoteScreen": "远程屏幕",
-    "addRemoteScreenTooltip": "将手机或平板添加为此布局的一个屏幕",
+    "addRemoteScreen": "添加屏幕",
+    "addRemoteScreenTooltip": "为此布局添加另一个屏幕——平板、手机或 OBS 中的浏览器源",
     "addRemoteScreenConfirm": "添加屏幕",
     "remoteScreenNamePlaceholder": "屏幕名称，例如“方向盘平板”",
     "remoteScreenDefaultName": "远程屏幕",
     "remoteScreenTag": "远程",
     "arrangeRemoteScreens": "整理远程屏幕",
-    "arrangeRemoteScreensTooltip": "将远程屏幕连同其挂件排列在桌面下方的多行中"
+    "arrangeRemoteScreensTooltip": "将远程屏幕连同其挂件排列在桌面下方的多行中",
+    "addRemoteScreenHint": "任何打开该链接的设备都会渲染此屏幕：网络中的平板，或 OBS 的浏览器源。用于 OBS 时请将背景设为透明，并把源设成相同尺寸——第一个连接的会上报自己的尺寸，按它调整会移动该屏幕上的所有挂件。",
+    "remoteScreenTransparent": "透明背景（用于 OBS）",
+    "remoteScreenPresetGroup": {
+      "monitor": "显示器 / 直播画布",
+      "tablet": "平板",
+      "phone": "手机"
+    },
+    "inspectorTitle": "小部件",
+    "inspectorActions": "编辑器操作",
+    "toggleInspector": "小部件面板",
+    "duplicate": "复制",
+    "layerOrder": "图层顺序",
+    "moveToMonitorPlaceholder": "选择屏幕",
+    "quickPlacementDesc": "把小部件放到所在屏幕的角落、边缘或中央。"
   },
   "layoutList": {
     "moduleLabel": "布局",
@@ -150,8 +166,12 @@
     "remoteNoDevice": "无设备"
   },
   "layoutWidgetPanel": {
-    "back": "返回",
-    "onMonitor": "在 {{monitor}}"
+    "onMonitor": "在 {{monitor}}",
+    "offScreen": "不在任何屏幕上",
+    "copyTooltip": "副本——拥有自己的设置、位置和开关",
+    "originalTooltip": "此布局中副本的来源原件",
+    "deleteCopyConfirm": "删除此副本？",
+    "deleteCopyOk": "删除"
   },
   "widgetWorkbench": {
     "scenario": "场景",
@@ -446,6 +466,7 @@
       "screensEmpty": "尚无远程屏幕。请在布局编辑器中的显示器旁添加一个。",
       "serverOffline": "服务器未运行",
       "copyUrl": "复制链接",
+      "obsHint": "在 OBS 中将此地址添加为浏览器源，尺寸 {{width}}×{{height}}。把屏幕背景设为透明，画面上就只剩下小部件。",
       "urlCopied": "链接已复制",
       "deviceOnline": "设备已连接",
       "deviceReports": "设备报告可用区域 {{width}}×{{height}}，屏幕为 {{screenWidth}}×{{screenHeight}}。",
@@ -458,7 +479,10 @@
       "hideToken": "隐藏",
       "copyToken": "复制令牌",
       "tokenCopied": "令牌已复制",
-      "qrHidden": "二维码已隐藏"
+      "qrHidden": "二维码已隐藏",
+      "backgroundLabel": "背景",
+      "backgroundTransparent": "透明",
+      "retryStart": "重试"
     },
     "companions": {
       "add": "添加",

@@ -1,16 +1,14 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { StatCell } from './StatCell';
 
 import styles from './StatsGrid.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
-import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const StatsGrid = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
-
   const { showWind, showHumidity, showTrackWetness, showTrackTemp } =
-    widgetSettings.getSettings<WeatherWidgetSettings>('weather');
+    useWidgetSettings<WeatherWidgetSettings>('weather');
 
   const hasStats =
     showWind || showHumidity || showTrackWetness || showTrackTemp;

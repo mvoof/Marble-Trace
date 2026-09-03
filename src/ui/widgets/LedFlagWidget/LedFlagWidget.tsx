@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -8,10 +9,7 @@ import {
 } from '@ui/widgets/LedFlagWidget/led-flag-utils';
 import { SingleLed } from './SingleLed/SingleLed';
 import { LedMatrix } from './LedMatrix/LedMatrix';
-import {
-  useWidgetSettingsStore,
-  useFlagsStore,
-} from '@store/root-store-context';
+import { useFlagsStore } from '@store/root-store-context';
 import { useWidgetAutoHide } from '@ui/hooks/useWidgetAutoHide';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
 
@@ -19,10 +17,9 @@ import styles from './LedFlagWidget.module.scss';
 
 export const LedFlagWidget = observer(() => {
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const widgetSettings = useWidgetSettingsStore();
   const flags = useFlagsStore();
   const { split, forceSingleLed, alwaysShow } =
-    widgetSettings.getSettings<FlagDisplaySettings>('led-flags');
+    useWidgetSettings<FlagDisplaySettings>('led-flags');
 
   const hasContent = alwaysShow || flags.ledDisplayFlag !== 'none';
 

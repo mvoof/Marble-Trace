@@ -114,7 +114,9 @@ const registerBroadcastReactions = (
  * hydration and after `ensureDefaultLayout` — otherwise it resolves the session
  * context against an empty layout list.
  */
-const registerLayoutAutoSwitchReaction = (root: RootStore): IReactionDisposer =>
+export const registerLayoutAutoSwitchReaction = (
+  root: RootStore
+): IReactionDisposer =>
   reaction(
     () => ({
       isConnected: root.sim.isConnected,
@@ -199,6 +201,22 @@ const registerAppSettingsSaveReactions = (
   ),
   reaction(
     () => root.appSettings.appSettings.lastUpdateCheck,
+    () => {
+      void onSave();
+    }
+  ),
+  // The remote block is read by `registerRemotePublishing`, which restarts the
+  // server on a change but never writes - without this the port, the token and
+  // the rate survive only until the app is closed some way other than the
+  // window's own close handler.
+  reaction(
+    () => [
+      root.appSettings.appSettings.remoteEnabled,
+      root.appSettings.appSettings.remotePort,
+      root.appSettings.appSettings.remoteLan,
+      root.appSettings.appSettings.remoteToken,
+      root.appSettings.appSettings.remoteTelemetryHz,
+    ],
     () => {
       void onSave();
     }

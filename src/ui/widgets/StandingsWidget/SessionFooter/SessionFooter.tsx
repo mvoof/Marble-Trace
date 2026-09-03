@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Wrench, Thermometer, Waves, TriangleAlert } from 'lucide-react';
 
@@ -15,7 +16,6 @@ import {
   useEnvironmentStore,
   useSessionStore,
   useUnitsStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 // Boxed chips would make the strip taller than the rows it sits under, which is
@@ -28,10 +28,8 @@ export const SessionFooter = observer(() => {
   const { sessionInfo } = useSessionStore();
   const { environment } = useEnvironmentStore();
   const { unitSystem } = useUnitsStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
   const showWeather = settings.showWeather;
   const showPitStops = settings.showPitStops;

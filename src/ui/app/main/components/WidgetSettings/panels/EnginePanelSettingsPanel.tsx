@@ -6,7 +6,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['engine-panel'];
@@ -15,13 +15,14 @@ const { SwitchRow } = panelRows<EnginePanelWidgetSettings>();
 
 export const EnginePanelSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('engine-panel');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<EnginePanelWidgetSettings>('engine-panel');
+    widgetSettings.getSettings<EnginePanelWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<EnginePanelWidgetSettings>) => {
-    widgetSettings.updateUserSettings('engine-panel', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

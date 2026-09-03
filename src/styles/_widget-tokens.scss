@@ -24,24 +24,23 @@ $race-lilac: #8b5cf6; // violet-500 · SOF · elite tier
 $race-purple: #a855f7; // purple-500 · best lap (delta)
 $race-neutral: #9ca3af; // gray-400   · rookie · inert
 
-// Text — contrast-color() is a native CSS runtime function; Sass passes it through as-is.
-// --widget-bg is set inline by WidgetContainer.tsx.
-$widget-text-primary: contrast-color(var(--widget-bg));
+// Text — var(--widget-text-color, #ffffff) ensures reliable contrast and fallback in all environments (including OBS CEF).
+$widget-text-primary: var(--widget-text-color, #ffffff);
 $widget-text-secondary: color-mix(
   in srgb,
-  contrast-color(var(--widget-bg)) 55%,
+  var(--widget-text-color, #ffffff) 55%,
   transparent
 );
 $widget-text-muted: color-mix(
   in srgb,
-  contrast-color(var(--widget-bg)) 35%,
+  var(--widget-text-color, #ffffff) 35%,
   transparent
 );
 // Small uppercase captions sitting next to a large value. Secondary is tuned
 // for running text and goes muddy at caption size, so labels get their own step.
 $widget-label: color-mix(
   in srgb,
-  contrast-color(var(--widget-bg)) 82%,
+  var(--widget-text-color, #ffffff) 82%,
   transparent
 );
 $widget-text-accent: $race-green;

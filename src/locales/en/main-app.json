@@ -71,6 +71,8 @@
     "unlockAspectRatio": "Unlock aspect ratio",
     "bringToFront": "Bring to front",
     "sendToBack": "Send to back",
+    "duplicateWidget": "Duplicate widget",
+    "deleteWidgetCopy": "Delete copy",
     "quickPlacement": "Quick placement",
     "backgroundImageAria": "Layout background image",
     "undoTooltip": "Undo (Ctrl+Z)",
@@ -95,14 +97,28 @@
     "moveToMonitor": "Move to monitor",
     "allMonitors": "All monitors",
     "removeMonitor": "Remove monitor from layout",
-    "addRemoteScreen": "Remote screen",
-    "addRemoteScreenTooltip": "Add a phone or tablet as a screen of this layout",
+    "addRemoteScreen": "Add screen",
+    "addRemoteScreenTooltip": "Add another screen to this layout — a tablet, a phone, or a browser source in OBS",
     "addRemoteScreenConfirm": "Add screen",
     "remoteScreenNamePlaceholder": "Screen name, e.g. Wheel tablet",
     "remoteScreenDefaultName": "Remote screen",
     "remoteScreenTag": "remote",
     "arrangeRemoteScreens": "Tidy remote screens",
-    "arrangeRemoteScreensTooltip": "Lay the remote screens out in rows under the desktop, widgets included"
+    "arrangeRemoteScreensTooltip": "Lay the remote screens out in rows under the desktop, widgets included",
+    "addRemoteScreenHint": "Anything that opens the link renders this screen: a tablet on your network, or a Browser Source in OBS. Make the ground transparent for OBS, and size the source to match — the first one that connects reports its own size, and fitting to it moves every widget on the screen.",
+    "remoteScreenTransparent": "Transparent background (for OBS)",
+    "remoteScreenPresetGroup": {
+      "monitor": "Monitor / stream canvas",
+      "tablet": "Tablet",
+      "phone": "Phone"
+    },
+    "inspectorTitle": "Widget",
+    "inspectorActions": "Editor actions",
+    "toggleInspector": "Widget panel",
+    "duplicate": "Duplicate",
+    "layerOrder": "Layer order",
+    "moveToMonitorPlaceholder": "Choose a screen",
+    "quickPlacementDesc": "Puts the widget in a corner, an edge or the centre of its screen."
   },
   "layoutList": {
     "moduleLabel": "Layouts",
@@ -152,8 +168,12 @@
     "remoteNoDevice": "no device"
   },
   "layoutWidgetPanel": {
-    "back": "Back",
-    "onMonitor": "on {{monitor}}"
+    "onMonitor": "on {{monitor}}",
+    "offScreen": "Off every screen",
+    "copyTooltip": "A copy — its own settings, place and switch",
+    "originalTooltip": "The original this layout's copies were made from",
+    "deleteCopyConfirm": "Delete this copy?",
+    "deleteCopyOk": "Delete"
   },
   "widgetWorkbench": {
     "scenario": "Scenario",
@@ -448,6 +468,7 @@
       "screensEmpty": "No remote screens yet. Add one in the layout editor, next to the monitors.",
       "serverOffline": "Server not running",
       "copyUrl": "Copy link",
+      "obsHint": "Add this address in OBS as a Browser Source sized {{width}}×{{height}}. Set the screen background to transparent to keep only the widgets on air.",
       "urlCopied": "Link copied",
       "deviceOnline": "Device connected",
       "deviceReports": "Device reports {{width}}×{{height}} of usable page, on a {{screenWidth}}×{{screenHeight}} display.",
@@ -460,7 +481,10 @@
       "hideToken": "Hide",
       "copyToken": "Copy token",
       "tokenCopied": "Token copied",
-      "qrHidden": "QR code hidden"
+      "qrHidden": "QR code hidden",
+      "backgroundLabel": "Background",
+      "backgroundTransparent": "transparent",
+      "retryStart": "Try again"
     },
     "companions": {
       "add": "Add",

@@ -13,7 +13,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 const WIDGET_ID = 'invisible-dash';
 
@@ -27,13 +27,17 @@ const { ColorRow, SwitchRow } = panelRows<InvisibleDashWidgetSettings>();
 
 export const InvisibleDashSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId(WIDGET_ID);
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<InvisibleDashWidgetSettings>(WIDGET_ID);
+    widgetSettings.getSettings<InvisibleDashWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<InvisibleDashWidgetSettings>) => {
-    widgetSettings.updateUserSettings(WIDGET_ID, { ...settings, ...partial });
+    widgetSettings.updateUserSettings(panelWidgetId, {
+      ...settings,
+      ...partial,
+    });
   };
 
   const isProjection = settings.renderMode === 'projection';

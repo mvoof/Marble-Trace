@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { CSSProperties } from 'react';
 
 import { observer } from 'mobx-react-lite';
@@ -7,7 +8,6 @@ import type { CoachInactiveReason } from '@ui/widgets/CoachWidget/driving-coach.
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 import styles from './CallRow.module.scss';
@@ -58,9 +58,8 @@ const signed = (value: number, digits: number): string =>
 export const CallRow = observer(() => {
   const coach = useDrivingCoachWidgetStore();
   const trace = useCoachWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getSettings<CoachWidgetSettings>('coach');
+  const settings = useWidgetSettings<CoachWidgetSettings>('coach');
 
   const inactiveReason = coach.inactiveReason;
   const advisory = coach.displayedAdvisory;

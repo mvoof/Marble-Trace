@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Trophy, Users } from 'lucide-react';
 
@@ -5,7 +6,6 @@ import { formatIRating } from '@utils/driver';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { StatPill } from '@ui/shared/StatPill/StatPill';
-import { useWidgetSettingsStore } from '@store/root-store-context';
 import styles from './ClassGroupHeader.module.scss';
 
 /** Marks the class header rows, which scroll the classes rather than the drivers. */
@@ -32,10 +32,7 @@ export const ClassGroupHeader = observer(
     paginationLabel,
     isScrollTarget = false,
   }: ClassGroupHeaderProps) => {
-    const widgetSettings = useWidgetSettingsStore();
-
-    const settings =
-      widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+    const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
     return (
       <div

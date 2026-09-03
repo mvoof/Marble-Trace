@@ -5,6 +5,6 @@
 .carNumber {
   font-family: $font-widget;
   font-weight: 700;
-  fill: contrast-color(var(--car-dot-bg, #18181b));
+  fill: var(--car-dot-text, #ffffff);
   pointer-events: none;
 }

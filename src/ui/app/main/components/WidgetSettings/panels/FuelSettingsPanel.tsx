@@ -10,7 +10,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 interface StatColumnRow {
   key: keyof Pick<
@@ -36,12 +36,14 @@ const { SwitchRow } = panelRows<FuelWidgetSettings>();
 
 export const FuelSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('fuel');
   const { t } = useTranslation('widgets');
 
-  const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
+  const settings =
+    widgetSettings.getSettings<FuelWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<FuelWidgetSettings>) => {
-    widgetSettings.updateUserSettings('fuel', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

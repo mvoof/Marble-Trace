@@ -23,6 +23,14 @@ export interface RemoteScreenSnapshot {
   steeringLock: number;
   /** Name of the layout these widgets came from, shown while connecting. */
   layoutName: string;
+  /**
+   * What the page paints behind the widgets: any CSS color, or `'transparent'`
+   * for a browser source that has to composite over the game capture. Absent
+   * means the dark default, and a transparent screen also keeps its status
+   * messages off the canvas — a card mid-reconnect is worse on a broadcast than
+   * nothing at all.
+   */
+  background?: string;
 }
 
 /**

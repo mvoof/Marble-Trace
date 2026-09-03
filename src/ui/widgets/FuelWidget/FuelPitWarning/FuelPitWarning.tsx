@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { PitWarningHeader } from './PitWarningHeader/PitWarningHeader';
@@ -6,10 +7,7 @@ import { PitWarningFill } from './PitWarningFill/PitWarningFill';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import { ReservedSlot } from '@ui/shared/ReservedSlot/ReservedSlot';
 import styles from './FuelPitWarning.module.scss';
-import {
-  useBackendComputedStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useBackendComputedStore } from '@store/root-store-context';
 
 /**
  * The header row, the separator, the fill's amount cell and its footer, plus
@@ -20,9 +18,8 @@ const PIT_WARNING_HEIGHT_PX = 120;
 
 export const FuelPitWarning = observer(() => {
   const { fuel } = useBackendComputedStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
+  const settings = useWidgetSettings<FuelWidgetSettings>('fuel');
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
 

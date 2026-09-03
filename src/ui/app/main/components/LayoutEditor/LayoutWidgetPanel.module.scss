@@ -1,3 +1,9 @@
+.root {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+}
+
 .list {
   display: flex;
   flex-direction: column;
@@ -56,22 +62,61 @@
   white-space: nowrap;
 }
 
-.detail {
+.screenGroup {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
+  gap: sp(xxs);
+  margin-bottom: sp(sm);
 }
 
-.backButton {
-  align-self: flex-start;
-  margin-bottom: sp(sm);
+// Sticky so the screen a row belongs to is still named after scrolling past
+// its heading — the list is long and the answer it has to give is "where".
+.screenHeading {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  padding: sp(xxs) sp(sm);
+  background: #0f1013;
   color: #8b8e98;
 }
 
-.detailBody {
-  flex: 1 1 0;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: sp(xs);
+.screenName {
+  font-family: $font-widget;
+  font-size: fs(xxs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.screenSize {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  color: #5e626d;
+}
+
+.copyTag {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: sp(xxs);
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  color: #c7cad2;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: radius(sm);
+  padding: 0 sp(xxs);
+  white-space: nowrap;
+}
+
+// The original of a widget that has copies: named, but quieter than the copies
+// — it is the row that was always there.
+.originalTag {
+  @extend .copyTag;
+
+  color: #5e626d;
+  background: none;
+  border-color: rgba(255, 255, 255, 0.06);
 }

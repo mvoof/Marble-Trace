@@ -49,6 +49,12 @@ pub struct RemoteHub {
     min_interval_us: AtomicU64,
     pub running: AtomicBool,
     pub port: AtomicU16,
+    /// Bumped once per started server. A server task clears `running` and
+    /// `port` on its way out only while it is still the current generation:
+    /// a listener shutting down slowly must not switch off the one that
+    /// replaced it, which is how the settings UI ends up claiming the server
+    /// is stopped while the port is still held.
+    pub generation: AtomicU64,
     /// Empty means the server was started without one and accepts any client.
     pub token: Mutex<String>,
     /// Language for the server-rendered pages, resolved by the frontend.
@@ -72,6 +78,7 @@ impl Default for RemoteHub {
             min_interval_us: AtomicU64::new(1_000_000 / DEFAULT_TELEMETRY_HZ as u64),
             running: AtomicBool::new(false),
             port: AtomicU16::new(0),
+            generation: AtomicU64::new(0),
             token: Mutex::new(String::new()),
             language: Mutex::new(String::from("en")),
             devices: Mutex::new(HashMap::new()),

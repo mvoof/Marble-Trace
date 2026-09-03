@@ -1,11 +1,8 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
-import {
-  useSessionStore,
-  useSimStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useSessionStore, useSimStore } from '@store/root-store-context';
 import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import { SectorHeader } from './SectorHeader/SectorHeader';
 import { SectorGrid } from './SectorGrid/SectorGrid';
@@ -14,10 +11,9 @@ import { SectorFooter } from './SectorFooter/SectorFooter';
 export const SectorMatrixWidget = observer(() => {
   const { sessionInfo } = useSessionStore();
   const sim = useSimStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   const { showSectors } =
-    widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
+    useWidgetSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
   const sectorCount = sessionInfo?.sectors.length || 3;
   const hasData = sim.isConnected && sessionInfo != null;

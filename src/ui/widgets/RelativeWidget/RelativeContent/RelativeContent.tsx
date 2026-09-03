@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -15,7 +16,6 @@ import {
   usePaceCarStore,
   useSessionStore,
   useSimStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
@@ -26,11 +26,10 @@ export const RelativeContent = observer(() => {
   const sim = useSimStore();
   const { carIdx } = useCarsStore();
   const { sessionInfo } = useSessionStore();
-  const widgetSettings = useWidgetSettingsStore();
   const paceCarStore = usePaceCarStore();
 
   const { rowPadding, paceCarShowInPits } =
-    widgetSettings.getSettings<RelativeWidgetSettings>('relative');
+    useWidgetSettings<RelativeWidgetSettings>('relative');
 
   const paceCarEntries = buildPaceCarRowEntries(
     carIdx,

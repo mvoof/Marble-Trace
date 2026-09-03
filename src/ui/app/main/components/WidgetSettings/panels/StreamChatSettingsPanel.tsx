@@ -6,6 +6,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { usePanelWidgetId } from './setting-rows';
 
 const WIDGET_ID = 'stream-chat';
 
@@ -22,13 +23,14 @@ export const PANEL_WIDGET_IDS = ['stream-chat'];
 
 export const StreamChatSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId(WIDGET_ID);
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<StreamChatWidgetSettings>(WIDGET_ID);
+    widgetSettings.getSettings<StreamChatWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<StreamChatWidgetSettings>) => {
-    widgetSettings.updateUserSettings(WIDGET_ID, {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

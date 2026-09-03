@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Droplets, Thermometer, Waves, Wind } from 'lucide-react';
 
@@ -30,7 +31,6 @@ import {
   useEnvironmentStore,
   useSessionStore,
   useUnitsStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export type StatCellType =
@@ -73,10 +73,9 @@ export const StatCell = observer(({ type }: StatCellProps) => {
   const { sessionInfo } = useSessionStore();
   const { environment: env } = useEnvironmentStore();
   const units = useUnitsStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   const settingKey = STAT_CELL_SETTING_KEY[type];
-  const settings = widgetSettings.getSettings<WeatherWidgetSettings>('weather');
+  const settings = useWidgetSettings<WeatherWidgetSettings>('weather');
 
   if (!settings[settingKey]) {
     return null;

@@ -1,0 +1,77 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: sp(lg);
+  text-align: center;
+  color: #5e626d;
+  font-size: fs(xs);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  flex: 0 0 auto;
+  padding-bottom: sp(xs);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.name {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #e0e0e0;
+  font-family: $font-widget;
+  font-size: fs(sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copyTag {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: sp(xxs);
+  padding: 0 sp(xxs);
+  color: #c7cad2;
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: radius(sm);
+  white-space: nowrap;
+}
+
+.body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: sp(sm) sp(xs) 0 0;
+}
+
+.moveSelect {
+  min-width: 120px;
+}
+
+.buttonPair {
+  display: flex;
+  gap: sp(xxs);
+}
+
+// Laid out as the screen it places onto: three by three, each button where the
+// widget it moves will land.
+.snapGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 28px);
+  gap: sp(xxs);
+}

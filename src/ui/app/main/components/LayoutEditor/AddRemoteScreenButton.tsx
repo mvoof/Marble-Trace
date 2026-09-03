@@ -1,24 +1,39 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Button, Flex, Input, InputNumber, Modal, Select, Tooltip } from 'antd';
+import {
+  Button,
+  Flex,
+  Input,
+  InputNumber,
+  Modal,
+  Switch,
+  Typography,
+  Select,
+  Tooltip,
+} from 'antd';
 import { TabletSmartphone } from 'lucide-react';
 
-import { REMOTE_SCREEN_PRESETS } from '@utils/remote-screen';
+import { REMOTE_SCREEN_PRESET_GROUPS } from '@utils/remote-screen';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
 const ICON_SIZE = 12;
 const MIN_SIDE = 240;
 const MAX_SIDE = 4096;
 
-const DEFAULT_PRESET = REMOTE_SCREEN_PRESETS[0];
+const DEFAULT_PRESET = REMOTE_SCREEN_PRESET_GROUPS[0].presets[0];
 
 /**
- * Adds a device screen to the layout.
+ * Adds a screen to the layout.
  *
- * The size is picked here and stored with the layout rather than read from the
- * device: the editor has to work with the tablet switched off and in another
- * room, so the screen needs bounds of its own long before anything connects.
+ * One kind of screen, whoever opens it: a tablet in the garage and a browser
+ * source in OBS read the same page, and the only thing that differs is what it
+ * paints behind the widgets. So the dialog asks for a name, a size and whether
+ * the ground is transparent — never for what the screen is *for*.
+ *
+ * The size is stored with the layout rather than read from whatever connects:
+ * the editor has to work with the tablet switched off and in another room, so
+ * the screen needs bounds of its own long before anything opens it.
  */
 export const AddRemoteScreenButton = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
@@ -26,18 +41,27 @@ export const AddRemoteScreenButton = observer(() => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
+  const [transparent, setTransparent] = useState(false);
   const [width, setWidth] = useState<number>(DEFAULT_PRESET.width);
   const [height, setHeight] = useState<number>(DEFAULT_PRESET.height);
 
-  const presetOptions = REMOTE_SCREEN_PRESETS.map((preset) => ({
-    value: `${preset.width}x${preset.height}`,
-    label: `${preset.label} · ${preset.width}×${preset.height}`,
+  const presetOptions = REMOTE_SCREEN_PRESET_GROUPS.map((group) => ({
+    label: t(`layoutEditor.remoteScreenPresetGroup.${group.id}`),
+    options: group.presets.map((preset) => ({
+      value: `${preset.width}x${preset.height}`,
+      label: `${preset.label} · ${preset.width}×${preset.height}`,
+    })),
   }));
 
   const handleConfirm = () => {
     const trimmed = name.trim() || t('layoutEditor.remoteScreenDefaultName');
 
-    widgetSettings.addRemoteScreen(trimmed, width, height);
+    widgetSettings.addRemoteScreen(
+      trimmed,
+      width,
+      height,
+      transparent ? 'transparent' : undefined
+    );
 
     setIsOpen(false);
     setName('');
@@ -67,6 +91,7 @@ export const AddRemoteScreenButton = observer(() => {
         open={isOpen}
         title={t('layoutEditor.addRemoteScreen')}
         okText={t('layoutEditor.addRemoteScreenConfirm')}
+        cancelText={t('layoutEditor.cancel')}
         onOk={handleConfirm}
         onCancel={() => setIsOpen(false)}
       >
@@ -79,7 +104,7 @@ export const AddRemoteScreenButton = observer(() => {
 
           <Select
             options={presetOptions}
-            defaultValue={presetOptions[0].value}
+            value={`${width}x${height}`}
             onChange={handlePreset}
           />
 
@@ -88,7 +113,7 @@ export const AddRemoteScreenButton = observer(() => {
               min={MIN_SIDE}
               max={MAX_SIDE}
               value={width}
-              addonBefore="W"
+              prefix="W"
               onChange={(value) => value !== null && setWidth(value)}
             />
 
@@ -96,10 +121,22 @@ export const AddRemoteScreenButton = observer(() => {
               min={MIN_SIDE}
               max={MAX_SIDE}
               value={height}
-              addonBefore="H"
+              prefix="H"
               onChange={(value) => value !== null && setHeight(value)}
             />
           </Flex>
+
+          <Flex align="center" gap={12}>
+            <Switch checked={transparent} onChange={setTransparent} />
+
+            <Typography.Text>
+              {t('layoutEditor.remoteScreenTransparent')}
+            </Typography.Text>
+          </Flex>
+
+          <Typography.Text type="secondary">
+            {t('layoutEditor.addRemoteScreenHint')}
+          </Typography.Text>
         </Flex>
       </Modal>
     </>

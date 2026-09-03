@@ -10,7 +10,7 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { SettingSwitchGroup } from './SettingSwitchGroup';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 import {
   NAME_COLUMN_MAX_PX,
   NAME_COLUMN_MIN_PX,
@@ -36,13 +36,14 @@ const NAME_COLUMN_SLIDER_WIDTH_PX = 160;
 
 export const RelativeSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('relative');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<RelativeWidgetSettings>('relative');
+    widgetSettings.getSettings<RelativeWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<RelativeWidgetSettings>) => {
-    widgetSettings.updateUserSettings('relative', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

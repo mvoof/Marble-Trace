@@ -60,6 +60,18 @@ export interface MonitorWidgetsPayload {
    * so a window that only knew its own name could not place anything.
    */
   monitors?: LayoutMonitor[];
+  /**
+   * Whether `widgets` is the whole layout or only the widgets the sender just
+   * touched.
+   *
+   * Main pushes the layout entire; an overlay reports a drag, which is one
+   * widget. The two travel under the same event name and a window hears its
+   * own message as well as the other side's, so a receiver that took a patch
+   * for a set deleted every widget it was not being told about — which is
+   * exactly what a drag looked like: everything vanished but the widget under
+   * the cursor, and came back the moment main pushed the layout again.
+   */
+  complete?: boolean;
 }
 
 export const listenTo = <PayloadType>(
@@ -206,6 +218,7 @@ export const emitActiveLayoutToOverlays = async (
       widgets,
       monitors,
       layoutId,
+      complete: true,
     } satisfies MonitorWidgetsPayload);
   }
 };

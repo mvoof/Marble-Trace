@@ -1,7 +1,7 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
-import { useWidgetSettingsStore } from '@store/root-store-context';
 import type { InputTraceSettings } from '@/types/widget-settings';
 import { InputBars } from './InputBars/InputBars';
 import { CanvasTrace } from './CanvasTrace/CanvasTrace';
@@ -10,9 +10,7 @@ import { SteeringWheel } from './SteeringWheel/SteeringWheel';
 import styles from './InputTraceWidget.module.scss';
 
 export const InputTraceWidget = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
-  const settings =
-    widgetSettings.getSettings<InputTraceSettings>('input-trace');
+  const settings = useWidgetSettings<InputTraceSettings>('input-trace');
 
   const barsEffectivelyHidden =
     !settings.showThrottle && !settings.showBrake && !settings.showClutch;

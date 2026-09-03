@@ -9,7 +9,7 @@ use tokio::sync::oneshot;
 use tracing::{info, warn};
 
 use super::hub::RemoteHub;
-use super::server::{local_ip, screen_url, serve, token_of};
+use super::server::{bind, local_ip, screen_url, serve, token_of};
 use crate::model::remote::{RemoteDevice, RemoteServerConfig, RemoteServerInfo};
 use crate::utils::lock_or_recover;
 
@@ -28,6 +28,13 @@ pub struct RemoteState {
 /// Generous: it only ever costs anything when the server is being restarted,
 /// and giving up early turns into a bind error the user has to understand.
 const SHUTDOWN_GRACE: std::time::Duration = std::time::Duration::from_secs(3);
+
+/// A port released by a listener that has only just been asked to stop is not
+/// free the instant the request returns, so a restart takes the address a few
+/// times before calling it occupied. Long enough to outlast a graceful
+/// shutdown, short enough that a genuinely taken port is reported quickly.
+const BIND_ATTEMPTS: u32 = 12;
+const BIND_RETRY_DELAY: std::time::Duration = std::time::Duration::from_millis(150);
 
 impl RemoteState {
     fn info(&self, lan: bool) -> RemoteServerInfo {
@@ -60,46 +67,61 @@ pub async fn start_remote_server(
     *lock_or_recover(&hub.token) = config.token.clone();
     *lock_or_recover(&hub.language) = config.language.clone();
 
+    // Bound here rather than inside the spawned task, so a port clash is a
+    // value the settings UI can show instead of a server that silently never
+    // came up — and so a failure leaves nothing half-started behind.
+    let listener = bind_with_retry(config.port, config.lan).await?;
+
+    let bound = listener
+        .local_addr()
+        .map(|value| value.port())
+        .unwrap_or(config.port);
+
+    let generation = hub.generation.fetch_add(1, Ordering::Relaxed) + 1;
+
+    hub.port.store(bound, Ordering::Relaxed);
+    hub.running.store(true, Ordering::Relaxed);
+
     let (tx, rx) = oneshot::channel();
     let (stopped_tx, stopped_rx) = oneshot::channel();
 
-    // Bind before returning so a port clash surfaces as a command error the
-    // settings UI can show, instead of a server that silently never came up.
-    let listener_hub = Arc::clone(&hub);
-    let (ready_tx, ready_rx) = oneshot::channel::<Result<(), String>>();
+    let server_hub = Arc::clone(&hub);
 
     tauri::async_runtime::spawn(async move {
-        let result = serve(app, listener_hub, config.port, config.lan, rx).await;
-
-        match result {
+        match serve(app, server_hub, listener, config.lan, generation, rx).await {
             Ok(()) => info!("remote: server stopped"),
-            Err(error) => {
-                warn!("remote: {}", error);
-
-                let _ = ready_tx.send(Err(error));
-                let _ = stopped_tx.send(());
-
-                return;
-            }
+            Err(error) => warn!("remote: {}", error),
         }
 
-        let _ = ready_tx.send(Ok(()));
         let _ = stopped_tx.send(());
     });
-
-    // `serve` only reports back early on a bind failure; a healthy server keeps
-    // running, so a short wait is enough to tell the two apart.
-    let bind_check = tokio::time::timeout(std::time::Duration::from_millis(400), ready_rx).await;
-
-    if let Ok(Ok(Err(error))) = bind_check {
-        return Err(error);
-    }
 
     LAN_MODE.store(config.lan, Ordering::Relaxed);
     *lock_or_recover(&state.shutdown) = Some(tx);
     *lock_or_recover(&state.stopped) = Some(stopped_rx);
 
     Ok(state.info(config.lan))
+}
+
+async fn bind_with_retry(port: u16, lan: bool) -> Result<tokio::net::TcpListener, String> {
+    let mut last = String::new();
+
+    for attempt in 0..BIND_ATTEMPTS {
+        match bind(port, lan).await {
+            Ok(listener) => return Ok(listener),
+            Err(error) => {
+                last = error;
+
+                if attempt + 1 < BIND_ATTEMPTS {
+                    tokio::time::sleep(BIND_RETRY_DELAY).await;
+                }
+            }
+        }
+    }
+
+    warn!("remote: {}", last);
+
+    Err(last)
 }
 
 #[tauri::command]
@@ -174,17 +196,24 @@ async fn stop_and_wait(state: &State<'_, RemoteState>) {
     let signal = lock_or_recover(&state.shutdown).take();
     let stopped = lock_or_recover(&state.stopped).take();
 
-    let Some(signal) = signal else {
+    if let Some(signal) = signal {
+        let _ = signal.send(());
+    }
+
+    let Some(mut stopped) = stopped else {
         return;
     };
 
-    let _ = signal.send(());
-
-    let Some(stopped) = stopped else {
-        return;
-    };
-
-    if tokio::time::timeout(SHUTDOWN_GRACE, stopped).await.is_err() {
+    if tokio::time::timeout(SHUTDOWN_GRACE, &mut stopped)
+        .await
+        .is_err()
+    {
         warn!("remote: previous server did not stop within the grace period");
+
+        // Put the handle back rather than dropping it: that task is still
+        // alive and still holds the port, and this receiver is the only thing
+        // left that can wait for it. Dropped here, every later start binds
+        // against a listener nothing can stop or even see.
+        *lock_or_recover(&state.stopped) = Some(stopped);
     }
 }

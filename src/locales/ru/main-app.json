@@ -71,6 +71,8 @@
     "unlockAspectRatio": "Снять фиксацию пропорций",
     "bringToFront": "На передний план",
     "sendToBack": "На задний план",
+    "duplicateWidget": "Дублировать виджет",
+    "deleteWidgetCopy": "Удалить копию",
     "quickPlacement": "Быстрое размещение",
     "backgroundImageAria": "Фоновое изображение раскладки",
     "undoTooltip": "Отменить (Ctrl+Z)",
@@ -95,14 +97,28 @@
     "moveToMonitor": "Перенести на монитор",
     "allMonitors": "Все мониторы",
     "removeMonitor": "Убрать монитор из раскладки",
-    "addRemoteScreen": "Внешний экран",
-    "addRemoteScreenTooltip": "Добавить телефон или планшет как экран этой раскладки",
+    "addRemoteScreen": "Добавить экран",
+    "addRemoteScreenTooltip": "Добавить этой раскладке ещё один экран — планшет, телефон или Browser Source в OBS",
     "addRemoteScreenConfirm": "Добавить экран",
     "remoteScreenNamePlaceholder": "Название экрана, например «Планшет на руле»",
     "remoteScreenDefaultName": "Внешний экран",
     "remoteScreenTag": "внешний",
     "arrangeRemoteScreens": "Разложить внешние экраны",
-    "arrangeRemoteScreensTooltip": "Разложить внешние экраны рядами под рабочим столом вместе с их виджетами"
+    "arrangeRemoteScreensTooltip": "Разложить внешние экраны рядами под рабочим столом вместе с их виджетами",
+    "addRemoteScreenHint": "Экран рисует всё, что откроет ссылку: планшет в вашей сети или Browser Source в OBS. Для OBS сделайте фон прозрачным и задайте источнику тот же размер — первый подключившийся сообщает свой, и подгонка под него сдвинет все виджеты экрана.",
+    "remoteScreenTransparent": "Прозрачный фон (для OBS)",
+    "remoteScreenPresetGroup": {
+      "monitor": "Монитор / холст стрима",
+      "tablet": "Планшет",
+      "phone": "Телефон"
+    },
+    "inspectorTitle": "Виджет",
+    "inspectorActions": "Действия редактора",
+    "toggleInspector": "Панель виджета",
+    "duplicate": "Дублировать",
+    "layerOrder": "Порядок слоёв",
+    "moveToMonitorPlaceholder": "Выберите экран",
+    "quickPlacementDesc": "Ставит виджет в угол, к краю или в центр его экрана."
   },
   "layoutList": {
     "moduleLabel": "Раскладки",
@@ -156,8 +172,12 @@
     "remoteNoDevice": "нет устройства"
   },
   "layoutWidgetPanel": {
-    "back": "Назад",
-    "onMonitor": "на {{monitor}}"
+    "onMonitor": "на {{monitor}}",
+    "offScreen": "Вне экранов",
+    "copyTooltip": "Копия — со своими настройками, местом и переключателем",
+    "originalTooltip": "Оригинал, с которого сделаны копии в этой раскладке",
+    "deleteCopyConfirm": "Удалить эту копию?",
+    "deleteCopyOk": "Удалить"
   },
   "widgetWorkbench": {
     "scenario": "Сценарий",
@@ -452,6 +472,7 @@
       "screensEmpty": "Внешних экранов пока нет. Добавьте экран в редакторе раскладок, рядом с мониторами.",
       "serverOffline": "Сервер не запущен",
       "copyUrl": "Копировать ссылку",
+      "obsHint": "Добавьте этот адрес как Browser Source в OBS с размером {{width}}×{{height}}. Сделайте фон экрана прозрачным, чтобы в эфир попали только виджеты.",
       "urlCopied": "Ссылка скопирована",
       "deviceOnline": "Устройство подключено",
       "deviceReports": "Устройство сообщает {{width}}×{{height}} полезной области на экране {{screenWidth}}×{{screenHeight}}.",
@@ -464,7 +485,10 @@
       "hideToken": "Скрыть",
       "copyToken": "Копировать токен",
       "tokenCopied": "Токен скопирован",
-      "qrHidden": "QR-код скрыт"
+      "qrHidden": "QR-код скрыт",
+      "backgroundLabel": "Фон",
+      "backgroundTransparent": "прозрачный",
+      "retryStart": "Повторить"
     },
     "companions": {
       "add": "Добавить",

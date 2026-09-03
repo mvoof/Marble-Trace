@@ -2,13 +2,22 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Row, Col, ColorPicker, Slider } from 'antd';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
+import { widgetTypeOf } from '@utils/widget-instance';
 import styles from './WidgetSettings.module.scss';
 import { Card, PanelWidgetProvider } from './panels/Card';
 import { useWidgetEditor } from './WidgetEditorContext';
 import { settingsPanelForWidget } from './panels/panel-registry';
 
 export const WidgetSettings = observer(
-  ({ widgetId }: { widgetId: string | null }) => {
+  ({
+    widgetId,
+    hideHeader = false,
+  }: {
+    widgetId: string | null;
+    /** The layout editor's inspector names the widget in its own header, above
+     *  the actions; a second title under it would say the same thing twice. */
+    hideHeader?: boolean;
+  }) => {
     const widgetSettings = useWidgetEditor();
     const { t } = useTranslation('main-app');
 
@@ -29,17 +38,24 @@ export const WidgetSettings = observer(
     }
 
     const userSettings = widget.userSettings;
-    const SettingsPanel = settingsPanelForWidget(widgetId);
+
+    // Panels and the aesthetics exclusion below belong to the widget, not to
+    // the copy — a copy's id is its own, and looking either up by it would
+    // leave a copy with nothing but the common settings.
+    const widgetType = widgetTypeOf(widget);
+    const SettingsPanel = settingsPanelForWidget(widgetType);
 
     return (
       <PanelWidgetProvider widgetId={widgetId}>
         <div className={`${styles.animateFadeIn} ${styles.settingsRoot}`}>
-          <header className={styles.header}>
-            <span className={styles.moduleLabel}>
-              {t('widgetSettings.moduleConfig')}
-            </span>
-            <h1 className={styles.title}>{getWidgetLabel(t, widget)}</h1>
-          </header>
+          {!hideHeader && (
+            <header className={styles.header}>
+              <span className={styles.moduleLabel}>
+                {t('widgetSettings.moduleConfig')}
+              </span>
+              <h1 className={styles.title}>{getWidgetLabel(t, widget)}</h1>
+            </header>
+          )}
 
           <Card title={t('widgetSettings.layoutAndDimensions')}>
             <Row gutter={[24, 24]}>
@@ -155,7 +171,7 @@ export const WidgetSettings = observer(
             </Row>
           </Card>
 
-          {!['radar-bar', 'led-flags', 'flat-flags'].includes(widgetId) && (
+          {!['radar-bar', 'led-flags', 'flat-flags'].includes(widgetType) && (
             <Card title={t('widgetSettings.aesthetics')}>
               <Row gutter={[24, 24]}>
                 <Col span={12}>

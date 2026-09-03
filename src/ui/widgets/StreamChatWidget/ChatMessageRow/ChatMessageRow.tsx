@@ -1,9 +1,9 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 
 import type { ChatMessage } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
-import { useWidgetSettingsStore } from '@store/root-store-context';
 import { PlatformGlyph } from '../PlatformGlyph/PlatformGlyph';
 
 import styles from './ChatMessageRow.module.scss';
@@ -20,10 +20,8 @@ const BADGE_CLASS: Record<string, string> = {
 };
 
 export const ChatMessageRow = observer(({ message }: ChatMessageRowProps) => {
-  const widgetSettings = useWidgetSettingsStore();
   const { t } = useTranslation('widgets');
-  const settings =
-    widgetSettings.getSettings<StreamChatWidgetSettings>('stream-chat');
+  const settings = useWidgetSettings<StreamChatWidgetSettings>('stream-chat');
 
   const stripeClass =
     message.platform === 'twitch' ? styles.stripeTwitch : styles.stripeYoutube;

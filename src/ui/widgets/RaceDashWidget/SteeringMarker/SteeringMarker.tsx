@@ -1,9 +1,7 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import {
-  usePlayerStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { usePlayerStore } from '@store/root-store-context';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import { steeringAngleDeg, wrapToHalfTurn } from '@utils/car-signals';
 import {
@@ -38,10 +36,8 @@ const TRAIL_OPACITY = 0.22;
  */
 export const SteeringMarker = observer(() => {
   const { carDynamics } = usePlayerStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
+  const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');
 
   if (!settings.showSteeringMarker) {
     return null;

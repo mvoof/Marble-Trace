@@ -9,17 +9,23 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { getDeltaReferenceDesc } from './shared';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { usePanelWidgetId } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['delta'];
 
 export const DeltaSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('delta');
   const { t } = useTranslation('widgets');
-  const settings = widgetSettings.getSettings<DeltaWidgetSettings>('delta');
+  const settings =
+    widgetSettings.getSettings<DeltaWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<DeltaWidgetSettings>) => {
-    widgetSettings.updateUserSettings('delta', { ...settings, ...partial });
+    widgetSettings.updateUserSettings(panelWidgetId, {
+      ...settings,
+      ...partial,
+    });
   };
 
   return (

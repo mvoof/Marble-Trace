@@ -37,6 +37,64 @@ const ICON_SIZE = 14;
 /** Stands in for the token while it is covered. */
 const MASK = '•'.repeat(12);
 
+interface CommittedNumberProps {
+  value: number;
+  min: number;
+  max: number;
+  disabled: boolean;
+  /** Unit label drawn inside the field. */
+  suffix?: string;
+  onCommit: (value: number) => void;
+}
+
+/**
+ * A number field that reports only a finished value.
+ *
+ * `InputNumber` fires `onChange` per keystroke, so typing a port walks through
+ * every prefix of it — and each one restarts the remote server on a port the
+ * user never asked for. The draft is held locally and committed on blur or
+ * Enter, clamped to the range the plain `min`/`max` only enforce on blur.
+ */
+const CommittedNumberInput = observer(
+  ({ value, min, max, disabled, suffix, onCommit }: CommittedNumberProps) => {
+    const [draft, setDraft] = useState<number | null>(value);
+
+    // A value changed anywhere but in this field — a reset, a sync — still has
+    // to show up here.
+    useEffect(() => {
+      setDraft(value);
+    }, [value]);
+
+    const commit = () => {
+      if (draft === null) {
+        setDraft(value);
+
+        return;
+      }
+
+      const clamped = Math.min(max, Math.max(min, Math.round(draft)));
+
+      setDraft(clamped);
+
+      if (clamped !== value) onCommit(clamped);
+    };
+
+    return (
+      <InputNumber
+        size="small"
+        min={min}
+        max={max}
+        suffix={suffix}
+        value={draft}
+        disabled={disabled}
+        onChange={setDraft}
+        onBlur={commit}
+        onPressEnter={commit}
+      />
+    );
+  }
+);
+
 export const RemoteScreensSection = observer(() => {
   const appSettings = useAppSettingsStore();
   const layouts = useLayoutsStore();
@@ -53,6 +111,7 @@ export const RemoteScreensSection = observer(() => {
 
   const settings = appSettings.appSettings;
   const { remoteEnabled } = settings;
+  const { serverError } = remoteDevices;
 
   useEffect(() => {
     if (!remoteEnabled) {
@@ -81,7 +140,12 @@ export const RemoteScreensSection = observer(() => {
       cancelled = true;
       clearInterval(timer);
     };
-  }, [remoteEnabled, settings.remotePort, settings.remoteLan]);
+  }, [
+    remoteEnabled,
+    settings.remotePort,
+    settings.remoteLan,
+    remoteDevices.restartToken,
+  ]);
 
   // Built from what the server reports, not from the stored settings: the two
   // differ for as long as it takes a changed port or token to restart the
@@ -126,7 +190,17 @@ export const RemoteScreensSection = observer(() => {
           )}
 
           {remoteEnabled && info && !info.running && (
-            <Tag color="red">{t('settingsPage.remote.stopped')}</Tag>
+            <>
+              <Tag color="red">{t('settingsPage.remote.stopped')}</Tag>
+
+              <Button
+                size="small"
+                icon={<RefreshCw size={ICON_SIZE} />}
+                onClick={() => remoteDevices.requestRestart()}
+              >
+                {t('settingsPage.remote.retryStart')}
+              </Button>
+            </>
           )}
 
           {remoteEnabled && info?.running && info.clientCount > 0 && (
@@ -135,6 +209,10 @@ export const RemoteScreensSection = observer(() => {
             </Tag>
           )}
         </Flex>
+
+        {remoteEnabled && info && !info.running && serverError && (
+          <div className={styles.remoteServerError}>{serverError}</div>
+        )}
       </div>
 
       <div className={styles.fieldGroup}>
@@ -147,27 +225,21 @@ export const RemoteScreensSection = observer(() => {
         </div>
 
         <Flex align="center" gap={12}>
-          <InputNumber
-            size="small"
+          <CommittedNumberInput
             min={MIN_PORT}
             max={MAX_PORT}
             value={settings.remotePort}
             disabled={!remoteEnabled}
-            onChange={(value) => {
-              if (value !== null) appSettings.setRemotePort(value);
-            }}
+            onCommit={(value) => appSettings.setRemotePort(value)}
           />
 
-          <InputNumber
-            size="small"
+          <CommittedNumberInput
             min={MIN_HZ}
             max={MAX_HZ}
-            addonAfter="Hz"
+            suffix="Hz"
             value={settings.remoteTelemetryHz}
             disabled={!remoteEnabled}
-            onChange={(value) => {
-              if (value !== null) appSettings.setRemoteTelemetryHz(value);
-            }}
+            onCommit={(value) => appSettings.setRemoteTelemetryHz(value)}
           />
         </Flex>
       </div>

@@ -21,7 +21,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 const ROW_COUNTS = [1, 2, 3];
 
@@ -48,14 +48,15 @@ const { SwitchRow, ColorRow } = panelRows<CloseBattleWidgetSettings>();
 
 export const CloseBattleSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('close-battle');
   const units = useUnitsStore();
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
+    widgetSettings.getSettings<CloseBattleWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<CloseBattleWidgetSettings>) => {
-    widgetSettings.updateUserSettings('close-battle', {
+    widgetSettings.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

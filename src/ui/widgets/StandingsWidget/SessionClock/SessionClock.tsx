@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Timer } from 'lucide-react';
 
@@ -10,10 +11,7 @@ import {
   type ClockUrgency,
 } from '@utils/timer-utils';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import {
-  useSessionStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useSessionStore } from '@store/root-store-context';
 
 import styles from './SessionClock.module.scss';
 
@@ -32,10 +30,8 @@ const ICON_SIZE_PX = 11;
 
 export const SessionClock = observer(() => {
   const { session, sessionInfo } = useSessionStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
   if (!settings.showSessionTime) {
     return null;

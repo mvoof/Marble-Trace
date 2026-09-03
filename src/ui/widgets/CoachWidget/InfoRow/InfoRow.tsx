@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { CoachWidgetSettings } from '@/types/widget-settings';
@@ -6,7 +7,6 @@ import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,
   useUnitsStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 import styles from './InfoRow.module.scss';
@@ -22,9 +22,8 @@ export const InfoRow = observer(() => {
   const coach = useDrivingCoachWidgetStore();
   const trace = useCoachWidgetStore();
   const units = useUnitsStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getSettings<CoachWidgetSettings>('coach');
+  const settings = useWidgetSettings<CoachWidgetSettings>('coach');
 
   const showsAnything =
     settings.showSpeed ||

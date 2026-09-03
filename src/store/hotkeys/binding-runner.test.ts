@@ -23,6 +23,10 @@ interface TestRoot {
   widgetSettings: {
     isWidgetInActiveLayout: (id: string) => boolean;
     getWidget: (id: string) => { userSettings: { enabled: boolean } };
+    firstWidgetOfType: (type: string) => {
+      id: string;
+      userSettings: { enabled: boolean };
+    };
     setWidgetEnabled: (id: string, enabled: boolean) => void;
   };
   pitServiceWidget: { panel: { toggleManualShow: () => void } };
@@ -40,6 +44,10 @@ const makeRoot = (widgetsInLayout: string[]): TestRoot => ({
     isWidgetInActiveLayout: (id: string) => widgetsInLayout.includes(id),
     getWidget: (id: string) => ({
       userSettings: { enabled: widgetsInLayout.includes(id) },
+    }),
+    firstWidgetOfType: (type: string) => ({
+      id: type,
+      userSettings: { enabled: widgetsInLayout.includes(type) },
     }),
     setWidgetEnabled: vi.fn(),
   },

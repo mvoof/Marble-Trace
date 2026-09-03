@@ -1,9 +1,9 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   useAppSettingsStore,
   useBackendComputedStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { getDeltaToPreviousBest } from '@utils/delta-utils';
 import type { DeltaWidgetSettings } from '@/types/widget-settings';
@@ -13,11 +13,10 @@ import styles from './DeltaWidget.module.scss';
 
 export const DeltaWidget = observer(() => {
   const lapStore = useBackendComputedStore();
-  const widgetSettings = useWidgetSettingsStore();
   const { dragMode } = useAppSettingsStore();
 
   const { showLapFlash, flashDuration } =
-    widgetSettings.getSettings<DeltaWidgetSettings>('delta');
+    useWidgetSettings<DeltaWidgetSettings>('delta');
 
   const lap = lapStore.lastCompletedLap;
   const lapNum = lap?.lapNum ?? null;

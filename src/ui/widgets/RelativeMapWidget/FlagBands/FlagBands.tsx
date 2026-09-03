@@ -1,11 +1,9 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
 import { projectFlagZoneToWindow } from '@utils/flag-zones';
-import {
-  useIncidentsWidgetStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useIncidentsWidgetStore } from '@store/root-store-context';
 
 import styles from './FlagBands.module.scss';
 
@@ -25,10 +23,8 @@ const BAND_COLOR = '#eab308';
 export const FlagBands = observer(
   ({ playerLapDistPct, isHorizontal }: FlagBandsProps) => {
     const incidentsStore = useIncidentsWidgetStore();
-    const widgetSettings = useWidgetSettingsStore();
 
-    const settings =
-      widgetSettings.getSettings<LinearMapWidgetSettings>('relative-map');
+    const settings = useWidgetSettings<LinearMapWidgetSettings>('relative-map');
 
     if (!(settings.showIncidentZones ?? true)) {
       return null;

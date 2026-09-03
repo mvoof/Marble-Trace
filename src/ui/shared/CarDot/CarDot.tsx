@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import styles from './CarDot.module.scss';
 import { ChevronIcon, CrownIcon } from './MarkerIcons';
 import { carDotRect, type CarDotShape } from '@utils/canvas';
+import { getContrastTextColor } from '@utils/colors';
 
 interface CarDotProps {
   carNumber: string;
@@ -42,10 +43,14 @@ export const CarDot = observer(
       : r;
     const markerY = -outerRadius - MARKER_GAP_TO_SCALE * scale;
 
+    const bg = isPlayer ? playerColor : '#18181b';
+    const textColor = getContrastTextColor(bg);
+
     return (
       <g
         style={{
-          ['--car-dot-bg' as string]: isPlayer ? playerColor : '#18181b',
+          ['--car-dot-bg' as string]: bg,
+          ['--car-dot-text' as string]: textColor,
         }}
       >
         {rect === null ? (

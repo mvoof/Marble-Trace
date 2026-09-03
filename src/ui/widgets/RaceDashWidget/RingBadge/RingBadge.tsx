@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
@@ -10,11 +11,7 @@ import {
   rpmFillColor,
   rpmNumberColor,
 } from '../race-dash-utils';
-import {
-  usePlayerStore,
-  useSessionStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { usePlayerStore, useSessionStore } from '@store/root-store-context';
 import { RpmComb } from '../RpmComb/RpmComb';
 import { SteeringMarker } from '../SteeringMarker/SteeringMarker';
 import { ARC_SWEEP_DEG, RING_SIZE, ringArcPath } from './ring-geometry';
@@ -27,10 +24,8 @@ const SHIFT_FLASH_MS = 220;
 export const RingBadge = observer(() => {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
+  const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');
 
   const gear = carDynamics?.gear ?? 0;
   const rpm = carDynamics?.rpm ?? 0;

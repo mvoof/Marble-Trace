@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -8,10 +9,7 @@ import { getColorClass, type ColorStyles } from '../led-matrix-utils';
 
 import styles from './LedMatrix.module.scss';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
-import {
-  useFlagsStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useFlagsStore } from '@store/root-store-context';
 
 interface LedMatrixProps {
   diodesPerBlock: number;
@@ -21,9 +19,8 @@ interface LedMatrixProps {
 export const LedMatrix = observer(
   ({ diodesPerBlock, splitRows = 18 }: LedMatrixProps) => {
     const flags = useFlagsStore();
-    const widgetSettings = useWidgetSettingsStore();
     const { alwaysShow, animate, split } =
-      widgetSettings.getSettings<FlagDisplaySettings>('led-flags');
+      useWidgetSettings<FlagDisplaySettings>('led-flags');
     const { ledDisplayFlag: flag, blinkOn } = flags;
 
     if (!alwaysShow && flag === 'none') {

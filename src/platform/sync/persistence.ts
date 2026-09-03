@@ -5,6 +5,7 @@ import {
   settingsFileExists as settingsFileExistsCommand,
 } from '@platform/services/settings.service';
 import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-catalog';
+import { widgetTypeOf } from '@utils/widget-instance';
 import type { UnitSystem } from '@/types';
 import type {
   SavedLayout,
@@ -60,7 +61,11 @@ const restoreWidgets = (
   const result: WidgetDefaultConfig[] = [];
 
   for (const saved of savedWidgets) {
-    const widgetDefaults = defaultById.get(saved.id);
+    // By type, not by id: a copy's id names the copy, and the shape being
+    // repaired here — design size, locked ratio, shipped settings — belongs to
+    // the widget it is a copy of.
+    const savedType = widgetTypeOf(saved);
+    const widgetDefaults = defaultById.get(savedType);
 
     if (!widgetDefaults) continue;
 
@@ -92,7 +97,7 @@ const restoreWidgets = (
     // dead space at the right edge of every row. The widget keeps the size the
     // user gave it — `currentWidth` is rescaled by the same factor, so `--wfs`,
     // and with it the text, does not move.
-    const deriveDesignWidth = WIDGET_BY_ID.get(saved.id)?.deriveDesignWidth;
+    const deriveDesignWidth = WIDGET_BY_ID.get(savedType)?.deriveDesignWidth;
     let normalizedDesignWidth: number | null = null;
 
     if (!hasLockedRatio && deriveDesignWidth) {
@@ -119,7 +124,9 @@ const restoreWidgets = (
       : (saved.designHeight ?? widgetDefaults.designHeight);
 
     result.push({
-      id: widgetDefaults.id,
+      // The copy keeps its own identity; everything else is the widget's.
+      id: saved.id,
+      ...(saved.type === undefined ? {} : { type: saved.type }),
       label: widgetDefaults.label,
       description: widgetDefaults.description,
       designWidth,
@@ -128,9 +135,12 @@ const restoreWidgets = (
     });
   }
 
-  const savedIds = new Set(savedWidgets.map((widget) => widget.id));
+  // A widget is unseen when the file holds no copy of it at all — one whose
+  // only copy sits on a stream screen is still seen, and adding the original
+  // back beside it would put a widget on the overlay nobody asked for.
+  const savedTypes = new Set(savedWidgets.map(widgetTypeOf));
   const unseenWidgets = DEFAULT_WIDGETS.filter(
-    (widget) => !savedIds.has(widget.id)
+    (widget) => !savedTypes.has(widget.id)
   );
 
   return [...result, ...unseenWidgets];

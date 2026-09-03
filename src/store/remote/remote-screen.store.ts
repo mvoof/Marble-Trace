@@ -1,11 +1,14 @@
 import { makeAutoObservable } from 'mobx';
 
-import type { MonitorBounds } from '@/types/widget-settings';
+import type {
+  MonitorBounds,
+  WidgetDefaultConfig,
+} from '@/types/widget-settings';
 import type {
   RemoteConnectionState,
   RemoteScreenSnapshot,
 } from '@/types/remote';
-import { fitScale } from '@utils/remote-screen';
+import { DEFAULT_REMOTE_BACKGROUND, fitScale } from '@utils/remote-screen';
 
 /**
  * State of the browser tab a remote screen runs in: which screen it is, whether
@@ -28,6 +31,20 @@ export class RemoteScreenStore {
     this.slug = slug;
 
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  /** What the page paints behind the widgets, as the screen was set up. */
+  get background(): string {
+    return this.snapshot?.background ?? DEFAULT_REMOTE_BACKGROUND;
+  }
+
+  /**
+   * Painted for an encoder rather than for a person: nothing behind the
+   * widgets, and so nowhere to put a status card either — one mid-reconnect is
+   * worse on a broadcast than nothing at all.
+   */
+  get isTransparent(): boolean {
+    return this.background === 'transparent';
   }
 
   setConnection(state: RemoteConnectionState) {
@@ -53,7 +70,7 @@ export class RemoteScreenStore {
     return this.snapshot !== null;
   }
 
-  get enabledWidgets() {
+  get enabledWidgets(): WidgetDefaultConfig[] {
     return (this.snapshot?.widgets ?? []).filter(
       (widget) => widget.userSettings.enabled
     );

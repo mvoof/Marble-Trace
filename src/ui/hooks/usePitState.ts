@@ -3,8 +3,8 @@ import {
   useSessionStore,
   useTrackMapWidgetStore,
   useUnitsStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import {
   formatSpeed,
@@ -62,12 +62,11 @@ export const usePitState = (): PitStateResult => {
   const player = usePlayerStore();
   const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();
-  const widgetSettings = useWidgetSettingsStore();
   const trackMap = useTrackMapWidgetStore();
   const isPitLaneRecording = trackMap.isPitLaneRecording;
 
   const { pitSpeedLimitOverride, showPitAssist, boxCueDistM, nearLimitDelta } =
-    widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
+    useWidgetSettings<RaceDashWidgetSettings>('race-dash');
   const system = units.unitSystem;
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
 

@@ -1,6 +1,6 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
 import type { InputTraceSettings } from '@/types/widget-settings';
 
 import { getContrastTextColor } from '@utils/colors';
@@ -11,7 +11,6 @@ import styles from './Bar.module.scss';
 import {
   useInputTraceWidgetStore,
   usePlayerStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { InputChannel } from '@ui/widgets/InputTraceWidget/input-trace.widget';
 
@@ -25,12 +24,9 @@ interface BarProps {
 }
 
 const getChannelColor = (
-  widgetSettings: WidgetSettingsStore,
+  settings: InputTraceSettings,
   channel: BarChannel
 ): string => {
-  const settings =
-    widgetSettings.getSettings<InputTraceSettings>('input-trace');
-
   if (channel === 'throttle') return settings.throttleColor;
   if (channel === 'brake') return settings.brakeColor;
 
@@ -51,10 +47,8 @@ export const Bar = observer(
     const trackRef = useRef<HTMLDivElement>(null);
     const labelRef = useRef<HTMLSpanElement>(null);
     const { carInputs } = usePlayerStore();
-    const widgetSettings = useWidgetSettingsStore();
     const inputTrace = useInputTraceWidgetStore();
-    const settings =
-      widgetSettings.getSettings<InputTraceSettings>('input-trace');
+    const settings = useWidgetSettings<InputTraceSettings>('input-trace');
     const showValue = settings.showInputValues;
     const coverPoint = useValueCoverPoint(trackRef, labelRef, showValue);
 
@@ -70,7 +64,7 @@ export const Bar = observer(
 
     const color = isAbsActive
       ? settings.absColor
-      : getChannelColor(widgetSettings, channel);
+      : getChannelColor(settings, channel);
 
     return (
       <div className={styles.verticalContainer}>

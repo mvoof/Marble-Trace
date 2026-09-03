@@ -1,9 +1,10 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { App, Button, Flex, QRCode, Tag, Tooltip } from 'antd';
+import { App, Button, ColorPicker, Flex, QRCode, Tag, Tooltip } from 'antd';
 import { Copy, Maximize2, EyeOff } from 'lucide-react';
 
 import { useWidgetSettingsStore } from '@store/root-store-context';
+import { DEFAULT_REMOTE_BACKGROUND } from '@utils/remote-screen';
 import type { RemoteDevice } from '@/types/bindings';
 import type { LayoutMonitor } from '@/types/widget-settings';
 import styles from '../SettingsPage.module.scss';
@@ -38,6 +39,13 @@ export const RemoteScreenRow = observer(
     const widgetSettings = useWidgetSettingsStore();
     const { message } = App.useApp();
     const { t } = useTranslation('main-app');
+
+    const background = screen.background ?? DEFAULT_REMOTE_BACKGROUND;
+    const isTransparent = background === 'transparent';
+
+    const handleBackground = (color: string) => {
+      widgetSettings.setRemoteScreenBackground(screen.name, color);
+    };
 
     const handleCopy = () => {
       void navigator.clipboard.writeText(url).then(() => {
@@ -81,6 +89,9 @@ export const RemoteScreenRow = observer(
               a camera. The lowest correction level keeps the modules as large
               as possible, which is what matters on a screen nobody is going to
               smudge. */}
+          {/* A stream screen is opened by OBS on this machine, so there is
+              nothing to point a camera at — the address is copied, never
+              scanned. */}
           {url && !revealed ? (
             <div
               className={rowStyles.qrPlaceholder}
@@ -123,6 +134,38 @@ export const RemoteScreenRow = observer(
                   : maskToken(url)
                 : t('settingsPage.remote.serverOffline')}
             </span>
+
+            {/* The one thing that differs between a tablet and a browser
+                source: what the page paints behind the widgets. */}
+            <Flex align="center" gap={8} wrap>
+              <span className={styles.fieldDesc}>
+                {t('settingsPage.remote.backgroundLabel')}
+              </span>
+
+              <ColorPicker
+                value={isTransparent ? null : background}
+                allowClear
+                onChange={(color) =>
+                  handleBackground(color ? color.toRgbString() : 'transparent')
+                }
+                onClear={() => handleBackground('transparent')}
+              />
+
+              <span className={styles.fieldDesc}>
+                {isTransparent
+                  ? t('settingsPage.remote.backgroundTransparent')
+                  : background}
+              </span>
+            </Flex>
+
+            {isTransparent && (
+              <span className={styles.fieldDesc}>
+                {t('settingsPage.remote.obsHint', {
+                  width: screen.bounds.width,
+                  height: screen.bounds.height,
+                })}
+              </span>
+            )}
 
             {reported && (
               <span className={styles.fieldDesc}>

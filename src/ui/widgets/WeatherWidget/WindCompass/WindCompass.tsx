@@ -1,3 +1,4 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import CarIcon from '@assets/car-icon.svg?react';
@@ -6,13 +7,9 @@ import { WindArrow } from './WindArrow/WindArrow';
 
 import styles from './WindCompass.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
-import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const WindCompass = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
-
-  const { showCompass } =
-    widgetSettings.getSettings<WeatherWidgetSettings>('weather');
+  const { showCompass } = useWidgetSettings<WeatherWidgetSettings>('weather');
 
   if (!showCompass) {
     return null;

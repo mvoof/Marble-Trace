@@ -2,6 +2,11 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { mergeWithDefaults } from '@store/deep-merge';
 import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-catalog';
 import {
+  nextInstanceId,
+  widgetTypeFromId,
+  widgetTypeOf,
+} from '@utils/widget-instance';
+import {
   setFuelAvgWindowSilent,
   setPitWarningLapsSilent,
 } from '@platform/services/settings.service';
@@ -56,6 +61,10 @@ import {
 import type { RootStore } from '@store/root-store';
 
 const LAYOUT_TOAST_DURATION_MS = 3000;
+
+// How far a duplicate lands from the widget it was copied from, so the two
+// are visibly separate the moment the copy appears.
+const DUPLICATE_OFFSET_PX = 24;
 
 export type { PickableWidget };
 
@@ -204,7 +213,7 @@ export class WidgetSettingsStore {
     const capabilities = this.root?.sim.capabilities;
 
     for (const widget of this.widgets.values()) {
-      const config = WIDGET_BY_ID.get(widget.id);
+      const config = WIDGET_BY_ID.get(widgetTypeOf(widget));
       const reqs = config?.requiredCapabilities;
 
       if (!reqs || reqs.length === 0) {
@@ -256,21 +265,29 @@ export class WidgetSettingsStore {
    * follows the overlay: previewing a layout without the pit-service widget must
    * not switch off automatic pit orders for the layout the driver is racing.
    */
-  isWidgetInActiveLayout(widgetId: string): boolean {
+  isWidgetInActiveLayout(widgetType: string): boolean {
     const live = this.liveEnabledWidgetIds ?? this.enabledWidgetIds;
 
-    return live.includes(widgetId);
+    // Addressed by type, not by copy: a binding belongs to the widget, so it
+    // fires while any copy of it is on screen. Which copies it then reaches is
+    // the action's own business.
+    return live.some(
+      (id) => widgetTypeOf(this.getWidget(id) ?? { id }) === widgetType
+    );
   }
 
   cycleStandingsViewMode() {
-    const settings = this.getSettings<StandingsWidgetSettings>('standings');
     const order: StandingsViewMode[] = ['all', 'grouped', 'cycling'];
-    const currentIdx = order.indexOf(settings.viewMode);
-    const nextIdx = (currentIdx + 1) % order.length;
 
-    this.updateUserSettings('standings', {
-      viewMode: order[nextIdx],
-    });
+    // Every copy, each advanced from where it stands: a hotkey means the widget,
+    // and a copy left behind on a stream screen showing a mode nobody chose is
+    // worse than all of them moving together.
+    for (const widget of this.widgetsOfType('standings')) {
+      const settings = this.getSettings<StandingsWidgetSettings>(widget.id);
+      const nextIdx = (order.indexOf(settings.viewMode) + 1) % order.length;
+
+      this.updateUserSettings(widget.id, { viewMode: order[nextIdx] });
+    }
   }
 
   setSessionLayout(context: SessionContext, layoutId: string | null) {
@@ -384,27 +401,51 @@ export class WidgetSettingsStore {
    */
   setWidgets(widgets: WidgetDefaultConfig[]) {
     runInAction(() => {
-      const normalized = DEFAULT_WIDGETS.map((defaultWidget) => {
-        const savedWidget = widgets.find(
-          (widget) => widget.id === defaultWidget.id
+      const normalized = DEFAULT_WIDGETS.flatMap((defaultWidget) => {
+        // Every copy of this widget the saved list holds, in the order it held
+        // them. Walking the catalog rather than the saved list is what keeps
+        // the shipped order stable and groups a widget's copies together; a
+        // saved record whose type this build no longer ships is visited by
+        // nothing here and so drops out, exactly as a removed widget did
+        // before copies existed.
+        const savedCopies = widgets.filter(
+          (widget) => widgetTypeOf(widget) === defaultWidget.id
         );
 
-        const installed: WidgetDefaultConfig = savedWidget
-          ? {
-              ...mergeWithDefaults(defaultWidget, savedWidget),
-              userSettings: mergeWithDefaults(
-                defaultWidget.userSettings,
-                savedWidget.userSettings ?? {}
-              ),
-            }
-          : {
-              ...defaultWidget,
-              userSettings: { ...defaultWidget.userSettings },
-            };
+        if (savedCopies.length === 0) {
+          const installed: WidgetDefaultConfig = {
+            ...defaultWidget,
+            userSettings: { ...defaultWidget.userSettings },
+          };
 
-        applyDerivedDesignWidth(defaultWidget.id, installed);
+          applyDerivedDesignWidth(defaultWidget.id, installed);
 
-        return installed;
+          return [installed];
+        }
+
+        return savedCopies.map((savedWidget) => {
+          const installed: WidgetDefaultConfig = {
+            ...mergeWithDefaults(defaultWidget, savedWidget),
+            // Merged from the saved record, not from the default: `id` is the
+            // copy's own key and `type` is what points back here, and taking
+            // either from the manifest would collapse every copy onto the
+            // original.
+            id: savedWidget.id,
+            type: savedWidget.type,
+            userSettings: mergeWithDefaults(
+              defaultWidget.userSettings,
+              savedWidget.userSettings ?? {}
+            ),
+          };
+
+          if (installed.type === undefined) {
+            delete installed.type;
+          }
+
+          applyDerivedDesignWidth(defaultWidget.id, installed);
+
+          return installed;
+        });
       });
 
       const layout = this.widgetOwner;
@@ -419,7 +460,9 @@ export class WidgetSettingsStore {
 
       this.bumpMutation();
 
-      const fuel = this.widgets.get('fuel');
+      // The backend keeps one copy of these two, so the original widget speaks
+      // for them however many copies of it the layout holds.
+      const fuel = this.firstWidgetOfType('fuel');
 
       if (fuel) {
         const settings = fuel.userSettings as unknown as FuelWidgetSettings;
@@ -427,6 +470,81 @@ export class WidgetSettingsStore {
         setPitWarningLapsSilent(settings.pitWarningLaps);
         setFuelAvgWindowSilent(settings.fuelAvgWindow);
       }
+    });
+  }
+
+  /**
+   * Installs a widget list a window received from elsewhere.
+   *
+   * `applySettingsSync` patches records it already holds and can express
+   * neither a copy that appeared nor one that was deleted — which is the whole
+   * of what a layout does once a widget may have copies.
+   *
+   * So this adopts the list: a widget already here is patched, one that is new
+   * is installed beside it, one the list no longer names is dropped. What it
+   * deliberately does *not* do is run the list through `setWidgets`: that fills
+   * a widget the list left out with its shipped default, which is right for a
+   * layout being loaded and catastrophic for a list arriving over an event —
+   * the receiver would answer with a default-placed widget, and the window that
+   * sent it would take that answer for an edit.
+   *
+   * A sync, like `applySettingsSync`, moves `syncToken` and not `changeToken`:
+   * a window that was told something has nothing to report back.
+   */
+  syncWidgetSet(widgets: WidgetDefaultConfig[]) {
+    const known = this.widgets;
+
+    // The set is what this is for, and the set almost never changes: a drag
+    // syncs on every mouse move, and rebuilding the collection each time
+    // rerenders every widget's content — canvases and all — while the user is
+    // only moving one of them. Same ids, same order: patch in place.
+    const isUnchanged =
+      known.size === widgets.length &&
+      widgets.every((widget) => known.has(widget.id));
+
+    if (isUnchanged) {
+      this.applySettingsSync(widgets);
+
+      return;
+    }
+
+    runInAction(() => {
+      const adopted = widgets.map((incoming) => {
+        const existing = known.get(incoming.id);
+
+        if (!existing) {
+          const installed: WidgetDefaultConfig = {
+            ...incoming,
+            userSettings: { ...incoming.userSettings },
+          };
+
+          applyDerivedDesignWidth(widgetTypeOf(incoming), installed);
+
+          return installed;
+        }
+
+        Object.assign(existing.userSettings, incoming.userSettings);
+        existing.designWidth = deriveWidgetDesignWidth(
+          widgetTypeOf(incoming),
+          existing.userSettings,
+          incoming.designWidth
+        );
+        existing.designHeight = incoming.designHeight;
+
+        return existing;
+      });
+
+      const layout = this.widgetOwner;
+
+      if (layout) {
+        layout.widgets = adopted;
+      } else {
+        this.detachedWidgets = new Map(
+          adopted.map((widget) => [widget.id, widget])
+        );
+      }
+
+      this.syncToken++;
     });
   }
 
@@ -439,7 +557,7 @@ export class WidgetSettingsStore {
 
         Object.assign(existing.userSettings, incoming.userSettings);
         existing.designWidth = deriveWidgetDesignWidth(
-          incoming.id,
+          widgetTypeOf(incoming),
           existing.userSettings,
           incoming.designWidth
         );
@@ -456,9 +574,103 @@ export class WidgetSettingsStore {
     return this.widgets.get(id);
   }
 
+  /**
+   * Every copy of one widget in this layout, in catalog order.
+   *
+   * The counterpart to `getWidget`, which addresses a single copy: this
+   * addresses the widget itself, for the callers that mean "wherever this is on
+   * screen" — a hotkey, the telemetry mask, the layout gate.
+   */
+  widgetsOfType(type: string): WidgetDefaultConfig[] {
+    void this.syncToken;
+    void this.changeToken;
+
+    return this.allWidgets.filter((widget) => widgetTypeOf(widget) === type);
+  }
+
+  /**
+   * The copy that speaks for a widget where only one answer is possible: a
+   * setting the backend keeps once, or a widget store, which is one per app and
+   * so cannot be per copy. The original copy comes first in catalog order, so
+   * this is it until the user deletes it.
+   */
+  firstWidgetOfType(type: string): WidgetDefaultConfig | undefined {
+    return this.widgetsOfType(type)[0];
+  }
+
   setWidgetEnabled(id: string, enabled: boolean) {
     this.pushUndo();
     this.updateUserSettings(id, { enabled });
+  }
+
+  /**
+   * Makes an independent copy of a widget and returns its instance id.
+   *
+   * The copy carries the source's settings as its starting point and then owns
+   * them: changing its columns, its scale or its enabled flag leaves the
+   * original alone. It is offset slightly so it does not land exactly under the
+   * widget it came from, and lifted to the top so it is the one being dragged.
+   *
+   * Placed straight into the layout record rather than through `setWidgets`,
+   * which normalizes a whole list — there is nothing to repair in a record
+   * copied from one that was normalized when the layout was installed.
+   */
+  duplicateWidget(id: string): string | null {
+    const source = this.getWidget(id);
+
+    if (!source) return null;
+
+    const layout = this.widgetOwner;
+
+    if (!layout) return null;
+
+    this.pushUndo();
+
+    const copy: WidgetDefaultConfig = {
+      ...source,
+      id: nextInstanceId(widgetTypeOf(source), this.widgets.keys()),
+      type: widgetTypeOf(source),
+      userSettings: {
+        ...source.userSettings,
+        x: source.userSettings.x + DUPLICATE_OFFSET_PX,
+        y: source.userSettings.y + DUPLICATE_OFFSET_PX,
+        zIndex: topZIndex(this.allWidgets, id) + 1,
+      },
+    };
+
+    // Right after the widget it came from, so a widget's copies stay together
+    // in the list and in settings.json.
+    layout.widgets.splice(
+      layout.widgets.findIndex((widget) => widget.id === id) + 1,
+      0,
+      copy
+    );
+
+    this.bumpMutation();
+
+    return copy.id;
+  }
+
+  /**
+   * Removes a copy from the layout for good.
+   *
+   * Only a copy: the original is the record the shipped defaults are merged
+   * into, and deleting it would have `setWidgets` recreate it on the next load
+   * anyway. Switching the original off is what `setWidgetEnabled` is for.
+   */
+  removeWidgetCopy(id: string) {
+    const widget = this.getWidget(id);
+
+    if (!widget || widget.type === undefined) return;
+
+    const layout = this.widgetOwner;
+
+    if (!layout) return;
+
+    this.pushUndo();
+
+    layout.widgets = layout.widgets.filter((entry) => entry.id !== id);
+    this.bumpMutation();
   }
 
   /**
@@ -542,10 +754,11 @@ export class WidgetSettingsStore {
 
     if (!widget) return;
 
+    const type = widgetTypeOf(widget);
     let resolvedPartial = partial;
 
     if (
-      id === 'fuel' &&
+      type === 'fuel' &&
       'barWidth' in partial &&
       partial.barWidth !== undefined
     ) {
@@ -559,17 +772,17 @@ export class WidgetSettingsStore {
 
     Object.assign(widget.userSettings, resolvedPartial);
 
-    applyLayoutResize(id, widget, prevSettings, widget.userSettings);
+    applyLayoutResize(type, widget, prevSettings, widget.userSettings);
 
     this.bumpMutation(id);
 
-    if (id === 'fuel' && 'pitWarningLaps' in resolvedPartial) {
+    if (type === 'fuel' && 'pitWarningLaps' in resolvedPartial) {
       setPitWarningLapsSilent(
         (resolvedPartial as FuelWidgetSettings).pitWarningLaps
       );
     }
 
-    if (id === 'fuel' && 'fuelAvgWindow' in resolvedPartial) {
+    if (type === 'fuel' && 'fuelAvgWindow' in resolvedPartial) {
       setFuelAvgWindowSilent(
         (resolvedPartial as FuelWidgetSettings).fuelAvgWindow
       );
@@ -603,6 +816,79 @@ export class WidgetSettingsStore {
     if (!layout) return;
 
     this.setWidgets(layout.widgets);
+  }
+
+  /**
+   * The enabled widgets standing on one named screen of the active layout.
+   *
+   * `ownMonitorWidgets` answers the same question for the window asking; this
+   * answers it about a screen the caller names, which is what the settings page
+   * needs to list a remote screen's widgets without being one.
+   */
+  widgetsOnMonitorNamed(monitorName: string): WidgetDefaultConfig[] {
+    return widgetsOnMonitor(
+      this.enabledWidgets,
+      monitorName,
+      this.activeLayout?.monitors ?? []
+    );
+  }
+
+  /**
+   * Every widget of the active layout, grouped by the screen it stands on.
+   *
+   * The editor lists widgets this way because a layout now spreads over screens
+   * that are nothing alike — the one being raced on, a tablet, a browser source
+   * — and "which screen is this on" is the first thing the list has to answer.
+   * A widget whose centre falls on no screen comes back under a null monitor
+   * rather than being dropped: it is exactly the one the user has lost.
+   */
+  get widgetsByScreen(): {
+    monitor: LayoutMonitor | null;
+    widgets: WidgetDefaultConfig[];
+  }[] {
+    const monitors = this.activeLayout?.monitors ?? [];
+    const groups = monitors.map((monitor) => ({
+      monitor: monitor as LayoutMonitor | null,
+      widgets: [] as WidgetDefaultConfig[],
+    }));
+
+    const offScreen: WidgetDefaultConfig[] = [];
+
+    for (const widget of this.allWidgets) {
+      const owner = monitorForWidget(widget, monitors);
+      const group = groups.find((entry) => entry.monitor === owner);
+
+      if (group) {
+        group.widgets.push(widget);
+      } else {
+        offScreen.push(widget);
+      }
+    }
+
+    const populated = groups.filter((group) => group.widgets.length > 0);
+
+    if (offScreen.length > 0) {
+      populated.push({ monitor: null, widgets: offScreen });
+    }
+
+    return populated;
+  }
+
+  /**
+   * Which copy of its widget this record is, counting from one, and how many
+   * copies there are in the layout. `1 of 1` is a widget with no copies at all.
+   */
+  copyOrdinalOf(widgetId: string): { ordinal: number; total: number } {
+    const widget = this.getWidget(widgetId);
+
+    if (!widget) return { ordinal: 1, total: 1 };
+
+    const copies = this.widgetsOfType(widgetTypeOf(widget));
+
+    return {
+      ordinal: copies.findIndex((entry) => entry.id === widgetId) + 1,
+      total: copies.length,
+    };
   }
 
   // Widgets drawn by this overlay window: the ones whose centre falls on its
@@ -940,7 +1226,12 @@ export class WidgetSettingsStore {
    * it gets its own widget set — but the machine has no display behind it, so
    * it is parked in free desktop space and never gets an overlay window.
    */
-  addRemoteScreen(name: string, width: number, height: number) {
+  addRemoteScreen(
+    name: string,
+    width: number,
+    height: number,
+    background?: string
+  ) {
     const layout = this.activeLayout;
 
     if (!layout) return;
@@ -955,8 +1246,22 @@ export class WidgetSettingsStore {
       kind: 'remote',
       slug,
       bounds: nextRemoteBounds(layout.monitors, width, height),
+      ...(background ? { background } : {}),
     });
 
+    this.bumpMutation();
+  }
+
+  /** What a remote screen paints behind its widgets: a CSS color, or
+   *  `'transparent'` for a browser source compositing over a game capture. */
+  setRemoteScreenBackground(monitorName: string, background: string) {
+    const monitor = this.activeLayout?.monitors.find(
+      (candidate) => candidate.name === monitorName
+    );
+
+    if (!monitor) return;
+
+    monitor.background = background;
     this.bumpMutation();
   }
 
@@ -1179,8 +1484,12 @@ export class WidgetSettingsStore {
 
     const widget = this.getWidget(widgetId);
 
+    // A copy asks by its own id, so the shipped defaults are found through its
+    // type; a caller naming a type directly still lands on the right record,
+    // since the original copy's id is its type.
+    const type = widget ? widgetTypeOf(widget) : widgetTypeFromId(widgetId);
     const defaultConfig = DEFAULT_WIDGETS.find(
-      (defaultWidget) => defaultWidget.id === widgetId
+      (defaultWidget) => defaultWidget.id === type
     );
     const defaultSettings = defaultConfig?.userSettings as
       | (BaseUserSettings & SpecificSettings)

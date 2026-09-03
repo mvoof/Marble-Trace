@@ -1,10 +1,8 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { TrackMapWidgetSettings } from '@/types/widget-settings';
-import {
-  useIncidentsWidgetStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useIncidentsWidgetStore } from '@store/root-store-context';
 
 import { FlagZoneStripes } from './FlagZoneStripes';
 
@@ -22,10 +20,8 @@ interface FlagZonesProps {
 export const FlagZones = observer(
   ({ svgPath, pathLength, strokeWidth }: FlagZonesProps) => {
     const incidentsStore = useIncidentsWidgetStore();
-    const widgetSettings = useWidgetSettingsStore();
 
-    const settings =
-      widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
+    const settings = useWidgetSettings<TrackMapWidgetSettings>('track-map');
 
     if (!(settings.showIncidentZones ?? true)) {
       return null;

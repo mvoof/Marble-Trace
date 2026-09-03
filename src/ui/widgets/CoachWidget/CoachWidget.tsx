@@ -1,7 +1,7 @@
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
-import { useWidgetSettingsStore } from '@store/root-store-context';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 
 import { CallRow } from './CallRow/CallRow';
@@ -18,9 +18,7 @@ import styles from './CoachWidget.module.scss';
  * box hanging.
  */
 export const CoachWidget = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
-
-  const settings = widgetSettings.getSettings<CoachWidgetSettings>('coach');
+  const settings = useWidgetSettings<CoachWidgetSettings>('coach');
 
   return (
     <WidgetPanel gap={0} minWidth={0} className={styles.root}>

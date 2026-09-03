@@ -1,10 +1,7 @@
-﻿import type { CSSProperties } from 'react';
+﻿import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  usePlayerStore,
-  useUnitsStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
 import type { InputTraceSettings } from '@/types/widget-settings';
 import { steeringAngleDeg } from '@utils/car-signals';
 import Logo from '@assets/logo.svg?react';
@@ -13,11 +10,9 @@ import styles from './SteeringWheel.module.scss';
 
 const WheelCenter = observer(() => {
   const telemetry = usePlayerStore();
-  const widgetSettings = useWidgetSettingsStore();
   const units = useUnitsStore();
 
-  const settings =
-    widgetSettings.getSettings<InputTraceSettings>('input-trace');
+  const settings = useWidgetSettings<InputTraceSettings>('input-trace');
   const rawAngle = telemetry.carDynamics?.steering_wheel_angle ?? 0;
   const angleDegrees = Math.round(steeringAngleDeg(rawAngle));
   const gear = telemetry.carDynamics?.gear ?? 0;
@@ -68,10 +63,8 @@ const WheelCenter = observer(() => {
 
 export const SteeringWheel = observer(() => {
   const telemetry = usePlayerStore();
-  const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<InputTraceSettings>('input-trace');
+  const settings = useWidgetSettings<InputTraceSettings>('input-trace');
 
   if (!settings.showSteering) {
     return null;
