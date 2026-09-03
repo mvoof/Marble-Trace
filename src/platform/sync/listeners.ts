@@ -159,7 +159,13 @@ export const setupOverlayListeners = async (
         root.widgetSettings.applyMonitorsSync(e.payload.monitors);
       }
 
-      root.widgetSettings.syncWidgetSet(e.payload.widgets);
+      // Only a list that claims to be the whole layout may remove a widget;
+      // anything else is a patch of what its sender just edited.
+      if (e.payload.complete) {
+        root.widgetSettings.syncWidgetSet(e.payload.widgets);
+      } else {
+        root.widgetSettings.applySettingsSync(e.payload.widgets);
+      }
     })
   );
 
