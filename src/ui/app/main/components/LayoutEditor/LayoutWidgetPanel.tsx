@@ -32,11 +32,15 @@ interface LayoutWidgetPanelProps {
   editingWidgetId: string | null;
   onSelectWidget: (id: string) => void;
   onEditWidget: (id: string | null) => void;
-  /** Tools for the selected widget, floated beside its row. */
-  widgetTools?: ReactNode;
+  /** Tools for the selected widget, floated beside its row. Takes the grip
+   *  handler so the plaque itself can be dragged out of the way. */
+  widgetTools?: (onGrip: (event: React.PointerEvent) => void) => ReactNode;
 }
 
 const ICON_SIZE = 14;
+
+/** Just clear of the panel's right edge, where the plaque starts out. */
+const PLAQUE_LEFT = 288;
 
 const WidgetRow = observer(
   ({
@@ -204,6 +208,53 @@ export const LayoutWidgetPanel = observer(
     const toolsRef = useRef<HTMLDivElement>(null);
     const rowsRef = useRef(new Map<string, HTMLDivElement>());
     const [toolsTop, setToolsTop] = useState(0);
+    // Where the user put the plaque, once they have moved it. Until then it
+    // follows the selected row; after, it stays where it was left — the reason
+    // to move it is that it was covering the widget being worked on.
+    const [dragged, setDragged] = useState<{
+      top: number;
+      left: number;
+    } | null>(null);
+    const dragRef = useRef<{ pointerTop: number; pointerLeft: number } | null>(
+      null
+    );
+
+    const handleGrip = useCallback((event: React.PointerEvent) => {
+      const plaque = toolsRef.current;
+      const root = rootRef.current;
+
+      if (!plaque || !root) return;
+
+      const plaqueBox = plaque.getBoundingClientRect();
+      const rootBox = root.getBoundingClientRect();
+
+      dragRef.current = {
+        pointerTop: event.clientY - plaqueBox.top,
+        pointerLeft: event.clientX - plaqueBox.left,
+      };
+
+      const move = (moveEvent: PointerEvent) => {
+        const grab = dragRef.current;
+
+        if (!grab) return;
+
+        setDragged({
+          top: moveEvent.clientY - rootBox.top - grab.pointerTop,
+          left: moveEvent.clientX - rootBox.left - grab.pointerLeft,
+        });
+      };
+
+      const stop = () => {
+        dragRef.current = null;
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', stop);
+      };
+
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', stop);
+
+      event.preventDefault();
+    }, []);
 
     const handleAnchor = useCallback(
       (widgetId: string, row: HTMLDivElement | null) => {
@@ -222,7 +273,7 @@ export const LayoutWidgetPanel = observer(
       const list = listRef.current;
       const root = rootRef.current;
 
-      if (!selectedWidgetId || !widgetTools || !list || !root) {
+      if (!selectedWidgetId || !widgetTools || dragged || !list || !root) {
         return;
       }
 
@@ -255,7 +306,7 @@ export const LayoutWidgetPanel = observer(
         observer.disconnect();
         list.removeEventListener('scroll', place);
       };
-    }, [selectedWidgetId, widgetTools]);
+    }, [selectedWidgetId, widgetTools, dragged]);
 
     if (editingWidgetId) {
       return (
@@ -305,10 +356,15 @@ export const LayoutWidgetPanel = observer(
           <div
             ref={toolsRef}
             className={styles.toolsPlaque}
-            // Data-driven placement: the plaque sits level with its own row.
-            style={{ top: toolsTop }}
+            // Data-driven placement: level with its own row until dragged, and
+            // wherever it was dropped after that.
+            style={
+              dragged
+                ? { top: dragged.top, left: dragged.left }
+                : { top: toolsTop, left: PLAQUE_LEFT }
+            }
           >
-            {widgetTools}
+            {widgetTools(handleGrip)}
           </div>
         )}
       </div>

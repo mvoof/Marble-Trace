@@ -111,7 +111,8 @@
       "monitor": "Monitor / lienzo de directo",
       "tablet": "Tablet",
       "phone": "Móvil"
-    }
+    },
+    "moveToolbar": "Mover la barra"
   },
   "layoutList": {
     "moduleLabel": "Diseños",

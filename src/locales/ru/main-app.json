@@ -111,7 +111,8 @@
       "monitor": "Монитор / холст стрима",
       "tablet": "Планшет",
       "phone": "Телефон"
-    }
+    },
+    "moveToolbar": "Переместить панель"
   },
   "layoutList": {
     "moduleLabel": "Раскладки",

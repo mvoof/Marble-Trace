@@ -88,13 +88,14 @@
 // it belongs to by where it stands.
 .toolsPlaque {
   position: absolute;
-  left: calc(100% + #{sp(sm)});
   z-index: 20;
-  // An explicit width, not a max: placed past the right edge of the panel, a
-  // shrink-to-fit box has no room left in its containing block and collapses
-  // to one control per line.
-  width: 300px;
-  padding: sp(xs);
+  // `left` is set from JS along with `top` — the plaque is dragged in both
+  // axes once the user picks it up.
+  // An explicit width, not a shrink-to-fit one: placed past the right edge of
+  // the panel, a shrink-to-fit box has no room left in its containing block
+  // and squeezes every control onto its own line.
+  width: 40px;
+  padding: sp(xxs);
   background: #0f1013;
   border: 1px solid #2a2c32;
   border-radius: radius(lg);

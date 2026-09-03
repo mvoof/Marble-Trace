@@ -111,7 +111,8 @@
       "monitor": "显示器 / 直播画布",
       "tablet": "平板",
       "phone": "手机"
-    }
+    },
+    "moveToolbar": "移动工具栏"
   },
   "layoutList": {
     "moduleLabel": "布局",

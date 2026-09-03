@@ -111,7 +111,8 @@
       "monitor": "Monitor / stream canvas",
       "tablet": "Tablet",
       "phone": "Phone"
-    }
+    },
+    "moveToolbar": "Move the toolbar"
   },
   "layoutList": {
     "moduleLabel": "Layouts",

@@ -1,78 +1,50 @@
+// A column of icons, not a bar: the plaque floats over the canvas, and a wide
+// one hides the widget it is there to work on.
 .bar {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  flex: 0 0 auto;
-  gap: sp(xxs);
-  row-gap: sp(xs);
-  padding: sp(xxs) sp(xs);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: radius(md);
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.widgetName {
-  color: #c8ccd6;
-  font-size: fs(xs);
-  font-weight: 600;
-  margin-right: sp(xs);
-  white-space: nowrap;
-}
-
-// Two columns, so the box reads as X/Y over W/H however narrow the plaque is.
-.coordGrid {
-  display: grid;
-  grid-template-columns: auto 1fr auto 1fr;
+  flex-direction: column;
   align-items: center;
   gap: sp(xxs);
-  width: 100%;
 }
 
-.actions {
+.grip {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: sp(xxs);
-}
-
-.coordLabel {
-  color: #5e626d;
-  font-family: $font-mono;
-  font-size: fs(xs);
-  margin-left: sp(xxs);
-}
-
-.coordInput {
+  justify-content: center;
   width: 100%;
-  min-width: 56px;
-}
+  padding: sp(xxs) 0;
+  border: none;
+  border-radius: radius(sm);
+  background: none;
+  color: #5e626d;
+  cursor: grab;
 
-// Fullscreen: floats at the bottom of the canvas, opposite the layout toolbar
-// at the top, so the two never fight for the same strip of screen.
-// A wide bar has no reason to stack: one row of fields, one row of buttons
-// beside it, the way it reads on the toolbar of a maximised window.
-.barWide {
-  .coordGrid {
-    display: flex;
-    width: auto;
+  &:hover {
+    color: #c8ccd6;
+    background: rgba(255, 255, 255, 0.06);
   }
 
-  .coordInput {
-    width: 64px;
+  &:active {
+    cursor: grabbing;
   }
 }
 
+// Fullscreen has no widget list to stand beside, so the plaque becomes a bar
+// again and floats at the bottom of the canvas, opposite the layout toolbar.
 .barFullscreen {
   position: absolute;
   left: 50%;
   bottom: sp(xl);
   z-index: 40;
+  flex-direction: row;
   max-width: calc(100% - #{sp(xl)});
+  flex-wrap: wrap;
   justify-content: center;
-  transform: translateX(-50%);
+  gap: sp(xs);
   padding: sp(xs) sp(sm);
   background: rgba(11, 12, 16, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: radius(lg);
   backdrop-filter: blur(6px);
+  transform: translateX(-50%);
 }

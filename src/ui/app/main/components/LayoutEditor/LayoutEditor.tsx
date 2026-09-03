@@ -887,9 +887,10 @@ export const LayoutEditor = observer(
                 editingWidgetId={editingWidgetId}
                 onSelectWidget={handleSelectWidget}
                 onEditWidget={setEditingWidgetId}
-                widgetTools={
+                widgetTools={(onGrip) =>
                   selectedWidget && (
                     <WidgetToolbar
+                      onGrip={onGrip}
                       widget={selectedWidget}
                       isRatioLocked={!!lockedRatios[selectedWidget.id]}
                       onToggleRatioLock={handleToggleRatioLock}
