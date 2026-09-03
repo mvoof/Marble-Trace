@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { WidgetUserSettings } from '@/types/widget-settings';
+import { getContrastTextColor } from '@utils/colors';
 
 // Widgets whose plate is not a plain rounded rectangle need the frame that
 // hosts them (overlay container, widget preview, layout editor) to clip with
@@ -63,6 +64,9 @@ export const widgetFrameStyle = ({
 
   const borderColor = userSettings.borderColor ?? DEFAULT_WIDGET_BORDER;
   const isPlateless = transparentContainer || hidden;
+  const textColor = isPlateless
+    ? '#ffffff'
+    : getContrastTextColor(backgroundColor);
 
   return {
     ...(autoHeight ? { height: 'auto' } : undefined),
@@ -77,6 +81,7 @@ export const widgetFrameStyle = ({
     ['--font-scale']: userSettings.fontScale ?? 1,
     ['--widget-bg']: backgroundColor,
     ['--widget-border']: borderColor,
+    ['--widget-text-color']: textColor,
   } as CSSProperties;
 };
 

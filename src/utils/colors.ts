@@ -17,13 +17,36 @@ const LUMINANCE_MIDPOINT = 0.6;
 const CONTRAST_DARK = '#111111';
 const CONTRAST_LIGHT = '#ffffff';
 
-/**
- * Pick a legible text color (near-black or white) for a label drawn on top of
- * the given background hex. Uses relative luminance so a bright fill (e.g. the
- * yellow safety-car diamond) gets dark text and a dark fill gets light text.
- */
 export const getContrastTextColor = (background: string): string => {
-  const hex = parseClassColor(background).slice(1);
+  if (!background || background === 'transparent') {
+    return CONTRAST_LIGHT;
+  }
+
+  const rgbaMatch = background.match(
+    /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)$/i
+  );
+
+  if (rgbaMatch) {
+    const alpha = rgbaMatch[4] !== undefined ? parseFloat(rgbaMatch[4]) : 1;
+
+    if (alpha < 0.3) {
+      return CONTRAST_LIGHT;
+    }
+
+    const red = parseInt(rgbaMatch[1], 10) / 255;
+    const green = parseInt(rgbaMatch[2], 10) / 255;
+    const blue = parseInt(rgbaMatch[3], 10) / 255;
+    const luminance = 0.299 * red + 0.587 * green + 0.114 * blue;
+
+    return luminance >= LUMINANCE_MIDPOINT ? CONTRAST_DARK : CONTRAST_LIGHT;
+  }
+
+  const hexCandidate = background.replace('0x', '').replace('#', '');
+  const isValidHex = /^[0-9a-f]{6,8}$/i.test(hexCandidate);
+  const hex = isValidHex
+    ? hexCandidate.slice(0, 6)
+    : parseClassColor(undefined).slice(1);
+
   const red = parseInt(hex.slice(0, 2), 16) / 255;
   const green = parseInt(hex.slice(2, 4), 16) / 255;
   const blue = parseInt(hex.slice(4, 6), 16) / 255;
