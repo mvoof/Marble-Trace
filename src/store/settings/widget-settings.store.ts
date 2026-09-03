@@ -493,9 +493,23 @@ export class WidgetSettingsStore {
    * a window that was told something has nothing to report back.
    */
   syncWidgetSet(widgets: WidgetDefaultConfig[]) {
-    runInAction(() => {
-      const known = this.widgets;
+    const known = this.widgets;
 
+    // The set is what this is for, and the set almost never changes: a drag
+    // syncs on every mouse move, and rebuilding the collection each time
+    // rerenders every widget's content — canvases and all — while the user is
+    // only moving one of them. Same ids, same order: patch in place.
+    const isUnchanged =
+      known.size === widgets.length &&
+      widgets.every((widget) => known.has(widget.id));
+
+    if (isUnchanged) {
+      this.applySettingsSync(widgets);
+
+      return;
+    }
+
+    runInAction(() => {
       const adopted = widgets.map((incoming) => {
         const existing = known.get(incoming.id);
 
