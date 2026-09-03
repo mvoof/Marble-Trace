@@ -133,11 +133,7 @@ export const RemoteScreensSection = observer(() => {
 
           {remoteEnabled && info && !info.running && (
             <>
-              <Tag color="red">
-                {serverError
-                  ? t('settingsPage.remote.serverError', { error: serverError })
-                  : t('settingsPage.remote.stopped')}
-              </Tag>
+              <Tag color="red">{t('settingsPage.remote.stopped')}</Tag>
 
               <Button
                 size="small"
@@ -155,6 +151,10 @@ export const RemoteScreensSection = observer(() => {
             </Tag>
           )}
         </Flex>
+
+        {remoteEnabled && info && !info.running && serverError && (
+          <div className={styles.remoteServerError}>{serverError}</div>
+        )}
       </div>
 
       <div className={styles.fieldGroup}>

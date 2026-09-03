@@ -484,7 +484,6 @@
       "qrHidden": "Código QR oculto",
       "backgroundLabel": "Fondo",
       "backgroundTransparent": "transparente",
-      "serverError": "No está en marcha: {{error}}",
       "retryStart": "Reintentar"
     },
     "companions": {

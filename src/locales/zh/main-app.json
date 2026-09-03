@@ -482,7 +482,6 @@
       "qrHidden": "二维码已隐藏",
       "backgroundLabel": "背景",
       "backgroundTransparent": "透明",
-      "serverError": "未运行：{{error}}",
       "retryStart": "重试"
     },
     "companions": {

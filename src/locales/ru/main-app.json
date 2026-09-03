@@ -488,7 +488,6 @@
       "qrHidden": "QR-код скрыт",
       "backgroundLabel": "Фон",
       "backgroundTransparent": "прозрачный",
-      "serverError": "Не запущен: {{error}}",
       "retryStart": "Повторить"
     },
     "companions": {

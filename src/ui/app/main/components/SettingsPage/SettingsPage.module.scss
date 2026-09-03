@@ -250,6 +250,14 @@
   color: #ff4d4f;
 }
 
+.remoteServerError {
+  margin-top: rem(8);
+  font-size: rem(12);
+  line-height: 1.4;
+  color: #ff4d4f;
+  overflow-wrap: anywhere;
+}
+
 .errorIcon {
   margin-right: 4px;
   vertical-align: middle;

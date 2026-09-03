@@ -484,7 +484,6 @@
       "qrHidden": "QR code hidden",
       "backgroundLabel": "Background",
       "backgroundTransparent": "transparent",
-      "serverError": "Not running: {{error}}",
       "retryStart": "Try again"
     },
     "companions": {
