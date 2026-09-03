@@ -466,7 +466,7 @@
       "screensEmpty": "Внешних экранов пока нет. Добавьте экран в редакторе раскладок, рядом с мониторами.",
       "serverOffline": "Сервер не запущен",
       "copyUrl": "Копировать ссылку",
-      "obsHint": "Добавьте этот адрес как Browser Source в OBS с размером {{width}}×{{height}}. Ссылки на виджеты ниже дают отдельный виджет — чтобы разместить его в сцене самостоятельно.",
+      "obsHint": "Добавьте этот адрес как Browser Source в OBS с размером {{width}}×{{height}}. Сделайте фон экрана прозрачным, чтобы в эфир попали только виджеты.",
       "urlCopied": "Ссылка скопирована",
       "deviceOnline": "Устройство подключено",
       "deviceReports": "Устройство сообщает {{width}}×{{height}} полезной области на экране {{screenWidth}}×{{screenHeight}}.",
@@ -480,10 +480,10 @@
       "copyToken": "Копировать токен",
       "tokenCopied": "Токен скопирован",
       "qrHidden": "QR-код скрыт",
-      "widgetLinksTitle": "Ссылки на виджеты",
-      "widgetLinksDesc": "Адрес Browser Source для каждого виджета, где бы он ни стоял в раскладке. Страница рисует только этот виджет на прозрачном фоне.",
       "backgroundLabel": "Фон",
-      "backgroundTransparent": "прозрачный"
+      "backgroundTransparent": "прозрачный",
+      "serverError": "Не запущен: {{error}}",
+      "retryStart": "Повторить"
     },
     "companions": {
       "add": "Добавить",

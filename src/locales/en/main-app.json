@@ -462,7 +462,7 @@
       "screensEmpty": "No remote screens yet. Add one in the layout editor, next to the monitors.",
       "serverOffline": "Server not running",
       "copyUrl": "Copy link",
-      "obsHint": "Add this URL as a Browser Source in OBS, sized {{width}}×{{height}}. Widget links below place a single widget in the scene on its own.",
+      "obsHint": "Add this address in OBS as a Browser Source sized {{width}}×{{height}}. Set the screen background to transparent to keep only the widgets on air.",
       "urlCopied": "Link copied",
       "deviceOnline": "Device connected",
       "deviceReports": "Device reports {{width}}×{{height}} of usable page, on a {{screenWidth}}×{{screenHeight}} display.",
@@ -476,10 +476,10 @@
       "copyToken": "Copy token",
       "tokenCopied": "Token copied",
       "qrHidden": "QR code hidden",
-      "widgetLinksTitle": "Widget links",
-      "widgetLinksDesc": "A browser-source address per widget, wherever it stands in the layout. The page draws that widget alone, on a transparent background.",
       "backgroundLabel": "Background",
-      "backgroundTransparent": "transparent"
+      "backgroundTransparent": "transparent",
+      "serverError": "Not running: {{error}}",
+      "retryStart": "Try again"
     },
     "companions": {
       "add": "Add",

@@ -462,7 +462,7 @@
       "screensEmpty": "Todavía no hay pantallas remotas. Añade una en el editor de diseños, junto a los monitores.",
       "serverOffline": "El servidor no está en marcha",
       "copyUrl": "Copiar enlace",
-      "obsHint": "Añade esta dirección como Browser Source en OBS con tamaño {{width}}×{{height}}. Los enlaces de widgets de abajo colocan un widget suelto en la escena.",
+      "obsHint": "Añade esta dirección en OBS como Browser Source con tamaño {{width}}×{{height}}. Pon el fondo de la pantalla en transparente para dejar en antena solo los widgets.",
       "urlCopied": "Enlace copiado",
       "deviceOnline": "Dispositivo conectado",
       "deviceReports": "El dispositivo informa de {{width}}×{{height}} de página útil, en una pantalla de {{screenWidth}}×{{screenHeight}}.",
@@ -476,10 +476,10 @@
       "copyToken": "Copiar el token",
       "tokenCopied": "Token copiado",
       "qrHidden": "Código QR oculto",
-      "widgetLinksTitle": "Enlaces de widgets",
-      "widgetLinksDesc": "Una dirección de Browser Source por widget, esté donde esté en el diseño. La página dibuja solo ese widget, sobre un fondo transparente.",
       "backgroundLabel": "Fondo",
-      "backgroundTransparent": "transparente"
+      "backgroundTransparent": "transparente",
+      "serverError": "No está en marcha: {{error}}",
+      "retryStart": "Reintentar"
     },
     "companions": {
       "add": "Añadir",

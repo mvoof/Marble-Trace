@@ -30,18 +30,6 @@ export const cloneMonitor = (monitor: LayoutMonitor): LayoutMonitor => ({
   ...(monitor.background ? { background: monitor.background } : {}),
 });
 
-/**
- * The slug a widget's own stream URL is served from.
- *
- * A `?widget=` URL narrows a screen to one widget's rectangle, which used to
- * mean the widget had to stand on a remote screen before it could be streamed
- * at all. This pseudo-screen carries every widget of the active layout instead,
- * so any of them — the ones on the game monitor included — has a URL that works
- * the moment the server is running. It is published like a screen and read like
- * one, but it is never listed as one: nothing opens it whole.
- */
-export const WIDGET_SOURCE_SLUG = '__widgets';
-
 /** What a remote screen paints behind its widgets unless told otherwise. */
 export const DEFAULT_REMOTE_BACKGROUND = '#000000';
 

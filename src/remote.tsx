@@ -31,12 +31,7 @@ const slugFromLocation = (): string => {
 const params = new URLSearchParams(window.location.search);
 const token = params.get('t') ?? '';
 
-// `?widget=<instance id>` turns the page into that one widget's own rectangle,
-// which is how a widget becomes a single OBS browser source.
-const screenStore = new RemoteScreenStore(
-  slugFromLocation(),
-  params.get('widget') ?? ''
-);
+const screenStore = new RemoteScreenStore(slugFromLocation());
 
 // `skipInit` matters: the init path opens Tauri channels — the telemetry
 // stream, the settings file, the chat connectors — none of which a browser

@@ -27,29 +27,14 @@ export class RemoteScreenStore {
   viewportWidth = 0;
   viewportHeight = 0;
 
-  /**
-   * One widget instead of the whole screen, when the page was opened with
-   * `?widget=<instance id>`.
-   *
-   * That is how a widget reaches OBS as a source of its own: the page becomes
-   * the widget's own rectangle with nothing around it, so the streamer places
-   * and scales it in their scene rather than laying the screen out here. Empty
-   * means the whole screen, which is what a tablet opens.
-   */
-  readonly soloWidgetId: string;
-
-  constructor(slug: string, soloWidgetId = '') {
+  constructor(slug: string) {
     this.slug = slug;
-    this.soloWidgetId = soloWidgetId;
 
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  /** What the page paints behind the widgets. A solo widget is always
-   *  transparent — nothing but a browser source asks for one. */
+  /** What the page paints behind the widgets, as the screen was set up. */
   get background(): string {
-    if (this.soloWidgetId !== '') return 'transparent';
-
     return this.snapshot?.background ?? DEFAULT_REMOTE_BACKGROUND;
   }
 
@@ -76,53 +61,16 @@ export class RemoteScreenStore {
   }
 
   get bounds(): MonitorBounds | null {
-    const solo = this.soloWidget;
-
-    // The widget's own rectangle, in the same virtual-desktop coordinates the
-    // screen uses — the canvas shifts by the origin either way, so a solo
-    // widget lands at 0,0 with no padding around it.
-    if (solo) {
-      return {
-        x: solo.userSettings.x,
-        y: solo.userSettings.y,
-        width: solo.userSettings.currentWidth,
-        height: solo.userSettings.currentHeight,
-      };
-    }
-
     return this.snapshot?.bounds ?? null;
-  }
-
-  private get soloWidget(): WidgetDefaultConfig | null {
-    if (this.soloWidgetId === '') return null;
-
-    return (
-      this.snapshot?.widgets.find(
-        (widget) => widget.id === this.soloWidgetId
-      ) ?? null
-    );
   }
 
   /** True once there is something to draw — a socket that is up but has not
    * delivered a snapshot yet still shows the waiting screen. */
   get isReady(): boolean {
-    if (this.soloWidgetId !== '') {
-      return this.soloWidget !== null;
-    }
-
     return this.snapshot !== null;
   }
 
   get enabledWidgets(): WidgetDefaultConfig[] {
-    const solo = this.soloWidget;
-
-    // A solo widget is drawn whether or not the layout has it switched on: the
-    // streamer asked for this one by its id, and a blank source with no
-    // explanation is the worst answer to that.
-    if (this.soloWidgetId !== '') {
-      return solo ? [solo] : [];
-    }
-
     return (this.snapshot?.widgets ?? []).filter(
       (widget) => widget.userSettings.enabled
     );

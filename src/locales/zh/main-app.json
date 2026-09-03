@@ -460,7 +460,7 @@
       "screensEmpty": "尚无远程屏幕。请在布局编辑器中的显示器旁添加一个。",
       "serverOffline": "服务器未运行",
       "copyUrl": "复制链接",
-      "obsHint": "在 OBS 中将此地址添加为浏览器源，尺寸 {{width}}×{{height}}。下面的挂件链接可单独把一个挂件放进场景。",
+      "obsHint": "在 OBS 中将此地址添加为浏览器源，尺寸 {{width}}×{{height}}。把屏幕背景设为透明，画面上就只剩下小部件。",
       "urlCopied": "链接已复制",
       "deviceOnline": "设备已连接",
       "deviceReports": "设备报告可用区域 {{width}}×{{height}}，屏幕为 {{screenWidth}}×{{screenHeight}}。",
@@ -474,10 +474,10 @@
       "copyToken": "复制令牌",
       "tokenCopied": "令牌已复制",
       "qrHidden": "二维码已隐藏",
-      "widgetLinksTitle": "挂件链接",
-      "widgetLinksDesc": "每个挂件都有一个浏览器源地址，无论它在布局中的哪个位置。页面只绘制该挂件，背景透明。",
       "backgroundLabel": "背景",
-      "backgroundTransparent": "透明"
+      "backgroundTransparent": "透明",
+      "serverError": "未运行：{{error}}",
+      "retryStart": "重试"
     },
     "companions": {
       "add": "添加",

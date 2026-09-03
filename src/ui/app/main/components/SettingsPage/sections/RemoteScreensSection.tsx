@@ -21,7 +21,6 @@ import {
 } from '@store/root-store-context';
 import type { RemoteServerInfo } from '@/types/bindings';
 import { RemoteScreenRow } from './RemoteScreenRow';
-import { WidgetStreamLinks } from './WidgetStreamLinks';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
@@ -54,6 +53,7 @@ export const RemoteScreensSection = observer(() => {
 
   const settings = appSettings.appSettings;
   const { remoteEnabled } = settings;
+  const { serverError } = remoteDevices;
 
   useEffect(() => {
     if (!remoteEnabled) {
@@ -82,7 +82,12 @@ export const RemoteScreensSection = observer(() => {
       cancelled = true;
       clearInterval(timer);
     };
-  }, [remoteEnabled, settings.remotePort, settings.remoteLan]);
+  }, [
+    remoteEnabled,
+    settings.remotePort,
+    settings.remoteLan,
+    remoteDevices.restartToken,
+  ]);
 
   // Built from what the server reports, not from the stored settings: the two
   // differ for as long as it takes a changed port or token to restart the
@@ -127,7 +132,21 @@ export const RemoteScreensSection = observer(() => {
           )}
 
           {remoteEnabled && info && !info.running && (
-            <Tag color="red">{t('settingsPage.remote.stopped')}</Tag>
+            <>
+              <Tag color="red">
+                {serverError
+                  ? t('settingsPage.remote.serverError', { error: serverError })
+                  : t('settingsPage.remote.stopped')}
+              </Tag>
+
+              <Button
+                size="small"
+                icon={<RefreshCw size={ICON_SIZE} />}
+                onClick={() => remoteDevices.requestRestart()}
+              >
+                {t('settingsPage.remote.retryStart')}
+              </Button>
+            </>
           )}
 
           {remoteEnabled && info?.running && info.clientCount > 0 && (
@@ -305,8 +324,6 @@ export const RemoteScreensSection = observer(() => {
           />
         ))}
       </div>
-
-      {remoteEnabled && <WidgetStreamLinks screenUrl={screenUrl} />}
     </SettingsCard>
   );
 });
