@@ -14,12 +14,19 @@
   // preview controls are pushed to the right edge by their own auto margin.
   justify-content: flex-start;
   gap: sp(md);
+  row-gap: sp(xs);
   flex: 0 0 auto;
+  // The bar carries more tools than fit a window that is not maximised, and a
+  // tool the user cannot see is a tool they do not have. Every group wraps
+  // onto as many rows as the width needs rather than running off the edge.
+  flex-wrap: wrap;
 }
 
 .layoutControls {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: sp(xxs);
   gap: sp(xxs);
 }
 
@@ -34,7 +41,12 @@
 .previewControls {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: sp(sm);
+  row-gap: sp(xs);
+  // Pushed to the right edge only while the bar is still one row: once it
+  // wraps, an auto margin would strand the group against the far edge with a
+  // hole beside it.
   margin-left: auto;
 }
 
@@ -58,6 +70,8 @@
 .coords {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: sp(xxs);
   gap: sp(xxs);
 }
 
@@ -90,6 +104,10 @@
   justify-content: flex-start;
   gap: sp(sm);
   transform: translateX(-50%);
+  // Never wider than the screen it floats over: past that the panel would
+  // centre itself with its ends cut off on both sides.
+  max-width: calc(100% - #{sp(xl)});
+  justify-content: center;
   padding: sp(xs) sp(sm);
   background: rgba(11, 12, 16, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -114,22 +132,25 @@
 .panel {
   flex: 0 0 280px;
   min-height: 0;
-  overflow: hidden;
+  // Visible, not hidden: the settings card floats out of the panel and over
+  // the canvas beside it.
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
 
 .panelDrawer {
   position: absolute;
-  // Sit below the floating toolbar (toolbar top + its height).
-  top: 56px;
+  // Below the floating toolbar, whatever height it wrapped to — measured, not
+  // assumed, since the bar takes a second row as soon as the window narrows.
+  top: var(--editor-toolbar-bottom, 56px);
   left: sp(md);
   bottom: sp(sm);
   z-index: 30;
   width: 280px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   padding: sp(sm);
   background: rgba(11, 12, 16, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.08);

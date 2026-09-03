@@ -1,10 +1,16 @@
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Switch, Button, Popconfirm, Tooltip } from 'antd';
 import {
   Settings2,
-  ArrowLeft,
+  X,
   Copy,
   Monitor,
   TabletSmartphone,
@@ -33,18 +39,24 @@ const WidgetRow = observer(
   ({
     widget,
     isSelected,
+    isEditing,
     onSelectWidget,
     onEditWidget,
+    onAnchor,
   }: {
     widget: WidgetDefaultConfig;
     isSelected: boolean;
+    isEditing: boolean;
     onSelectWidget: (id: string) => void;
-    onEditWidget: (id: string) => void;
+    onEditWidget: (id: string | null) => void;
+    /** Reports the row element, so the settings card can line itself up with
+     *  the row it belongs to. */
+    onAnchor: (widgetId: string, row: HTMLDivElement | null) => void;
   }) => {
     const widgetSettings = useWidgetSettingsStore();
     const { t } = useTranslation('main-app');
     const isAvailable = widgetSettings.availableWidgetIds.includes(widget.id);
-    const rowRef = useRef<HTMLDivElement>(null);
+    const rowRef = useRef<HTMLDivElement | null>(null);
 
     // A copy is a record of its own everywhere — its own settings, its own
     // place, its own enabled flag — so the row has to say which one it is
@@ -69,10 +81,13 @@ const WidgetRow = observer(
 
     return (
       <div
-        ref={rowRef}
+        ref={(node) => {
+          rowRef.current = node;
+          onAnchor(widget.id, node);
+        }}
         className={`${styles.row} ${isSelected ? styles.selected : ''} ${
-          !isAvailable ? styles.disabled : ''
-        }`}
+          isEditing ? styles.editing : ''
+        } ${!isAvailable ? styles.disabled : ''}`}
       >
         <Switch
           size="small"
@@ -106,9 +121,9 @@ const WidgetRow = observer(
 
         <Button
           size="small"
-          type="text"
+          type={isEditing ? 'primary' : 'text'}
           icon={<Settings2 size={ICON_SIZE} />}
-          onClick={() => onEditWidget(widget.id)}
+          onClick={() => onEditWidget(isEditing ? null : widget.id)}
         />
 
         {/* Only a copy: deleting the original would have the next layout load
@@ -163,9 +178,17 @@ const ScreenHeading = observer(
   }
 );
 
-// Master-detail widget panel for the layout editor. The list shows every widget
-// (presence toggle = visibility in the active layout). Clicking the gear opens
-// that widget's settings inline with a back affordance, keeping the canvas live.
+/**
+ * The layout editor's widget list: every widget of the layout, grouped by the
+ * screen it stands on, with its presence toggle, its copies named, and its
+ * settings.
+ *
+ * The settings open in a card floating beside the row they belong to rather
+ * than replacing the list. Editing a widget is one move in a session spent
+ * moving between widgets, and a panel that swaps itself out for a settings
+ * page loses the list — and with it which screen the widget was on and what
+ * else stands there — for the whole of it.
+ */
 export const LayoutWidgetPanel = observer(
   ({
     selectedWidgetId,
@@ -176,46 +199,120 @@ export const LayoutWidgetPanel = observer(
     const widgetSettings = useWidgetSettingsStore();
     const { t } = useTranslation('main-app');
 
-    if (editingWidgetId) {
-      return (
-        <div className={styles.detail}>
-          <Button
-            type="text"
-            size="small"
-            icon={<ArrowLeft size={14} />}
-            className={styles.backButton}
-            onClick={() => onEditWidget(null)}
-          >
-            {t('layoutWidgetPanel.back')}
-          </Button>
+    const rootRef = useRef<HTMLDivElement>(null);
+    const listRef = useRef<HTMLDivElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const rowsRef = useRef(new Map<string, HTMLDivElement>());
+    const [cardTop, setCardTop] = useState(0);
 
-          <div className={styles.detailBody}>
-            <WidgetSettings widgetId={editingWidgetId} />
-          </div>
-        </div>
-      );
-    }
+    const handleAnchor = useCallback(
+      (widgetId: string, row: HTMLDivElement | null) => {
+        if (row) {
+          rowsRef.current.set(widgetId, row);
+        } else {
+          rowsRef.current.delete(widgetId);
+        }
+      },
+      []
+    );
+
+    // Followed rather than measured once: the list scrolls under the card, and
+    // the card has to stay level with its row while it does.
+    useLayoutEffect(() => {
+      const list = listRef.current;
+      const root = rootRef.current;
+
+      if (!editingWidgetId || !list || !root) {
+        return;
+      }
+
+      const place = () => {
+        const row = rowsRef.current.get(editingWidgetId);
+
+        if (!row) return;
+
+        const offset =
+          row.getBoundingClientRect().top - root.getBoundingClientRect().top;
+        const height = cardRef.current?.offsetHeight ?? 0;
+        const room = root.clientHeight - height;
+
+        setCardTop(Math.max(0, room > 0 ? Math.min(offset, room) : 0));
+      };
+
+      place();
+
+      const observer = new ResizeObserver(place);
+
+      observer.observe(root);
+
+      if (cardRef.current) {
+        observer.observe(cardRef.current);
+      }
+
+      list.addEventListener('scroll', place);
+
+      return () => {
+        observer.disconnect();
+        list.removeEventListener('scroll', place);
+      };
+    }, [editingWidgetId]);
+
+    const editingWidget = editingWidgetId
+      ? widgetSettings.getWidget(editingWidgetId)
+      : undefined;
 
     return (
-      <div className={styles.list}>
-        {widgetSettings.widgetsByScreen.map((group) => (
-          <div
-            className={styles.screenGroup}
-            key={group.monitor?.name ?? 'off-screen'}
-          >
-            <ScreenHeading monitor={group.monitor} />
+      <div className={styles.root} ref={rootRef}>
+        <div className={styles.list} ref={listRef}>
+          {widgetSettings.widgetsByScreen.map((group) => (
+            <div
+              className={styles.screenGroup}
+              key={group.monitor?.name ?? 'off-screen'}
+            >
+              <ScreenHeading monitor={group.monitor} />
 
-            {group.widgets.map((widget) => (
-              <WidgetRow
-                key={widget.id}
-                widget={widget}
-                isSelected={selectedWidgetId === widget.id}
-                onSelectWidget={onSelectWidget}
-                onEditWidget={onEditWidget}
-              />
-            ))}
+              {group.widgets.map((widget) => (
+                <WidgetRow
+                  key={widget.id}
+                  widget={widget}
+                  isSelected={selectedWidgetId === widget.id}
+                  isEditing={editingWidgetId === widget.id}
+                  onSelectWidget={onSelectWidget}
+                  onEditWidget={onEditWidget}
+                  onAnchor={handleAnchor}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {editingWidgetId && editingWidget && (
+          <div
+            ref={cardRef}
+            className={styles.settingsCard}
+            // Data-driven placement: the card sits level with its own row.
+            style={{ top: cardTop }}
+          >
+            <div className={styles.settingsHeader}>
+              <span className={styles.settingsTitle}>
+                {getWidgetLabel(t, editingWidget)}
+              </span>
+
+              <Tooltip title={t('layoutWidgetPanel.closeSettings')}>
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<X size={ICON_SIZE} />}
+                  onClick={() => onEditWidget(null)}
+                />
+              </Tooltip>
+            </div>
+
+            <div className={styles.settingsBody}>
+              <WidgetSettings widgetId={editingWidgetId} hideHeader />
+            </div>
           </div>
-        ))}
+        )}
       </div>
     );
   }

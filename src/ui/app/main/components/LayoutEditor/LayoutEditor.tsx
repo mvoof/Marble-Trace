@@ -4,11 +4,9 @@ import { useTranslation } from 'react-i18next';
 import {
   Button,
   Input,
-  InputNumber,
   Popconfirm,
   Select,
   Tooltip,
-  Popover,
   ConfigProvider,
 } from 'antd';
 import type { InputRef } from 'antd';
@@ -17,7 +15,6 @@ import {
   Plus,
   Pencil,
   Play,
-  Trash2,
   Check,
   X,
   Image,
@@ -27,26 +24,12 @@ import {
   Maximize,
   Minimize,
   Monitor,
-  MonitorUp,
   PanelLeft,
   PanelLeftClose,
-  Lock,
-  Unlock,
-  BringToFront,
-  Copy,
-  SendToBack,
   Undo2,
   Redo2,
-  ArrowUpLeft,
-  ArrowUp,
-  ArrowUpRight,
-  Maximize2,
-  ArrowRight,
-  ArrowDownLeft,
-  ArrowDown,
-  ArrowDownRight,
-  LayoutGrid,
   Rows3,
+  Trash2,
 } from 'lucide-react';
 import {
   useAppSettingsStore,
@@ -66,23 +49,15 @@ import {
 import { isRemoteMonitor } from '@utils/remote-screen';
 import { AddRemoteScreenButton } from './AddRemoteScreenButton';
 import { monitorForWidget } from '@store/settings/virtual-desktop';
+import { useToolbarBottom } from './use-toolbar-bottom';
+import { WidgetToolbar } from './WidgetToolbar';
+import type { SnapPosition } from './snap-position';
 import styles from './LayoutEditor.module.scss';
 
 const SNAP_MARGIN = 8;
 
 // Sentinel for the picker entry that zooms the canvas out to the whole desktop.
 const ALL_MONITORS = '__all__';
-
-type SnapPosition =
-  | 'topLeft'
-  | 'topCenter'
-  | 'topRight'
-  | 'midLeft'
-  | 'center'
-  | 'midRight'
-  | 'bottomLeft'
-  | 'bottomCenter'
-  | 'bottomRight';
 
 const SCENARIO_OPTIONS = PREVIEW_SCENARIOS.map((scenario) => ({
   value: scenario.id,
@@ -451,6 +426,25 @@ export const LayoutEditor = observer(
       widgetSettings.updatePosition(selectedWidget.id, x, y);
     };
 
+    // The settings card floats out of the widget panel, so it survives the
+    // drawer sliding away in fullscreen unless it is closed with it.
+    useEffect(() => {
+      if (isFullscreen && !isPanelOpen) {
+        setEditingWidgetId(null);
+      }
+    }, [isFullscreen, isPanelOpen]);
+
+    const popupContainer = () => rootRef.current ?? document.body;
+
+    const handleToggleRatioLock = () => {
+      if (!selectedWidget) return;
+
+      setLockedRatios((prev) => ({
+        ...prev,
+        [selectedWidget.id]: !prev[selectedWidget.id],
+      }));
+    };
+
     const handleSelectWidget = (id: string) => {
       setSelectedWidgetId(id === '' ? null : id);
       setEditingWidgetId(null);
@@ -502,6 +496,8 @@ export const LayoutEditor = observer(
       }
     };
 
+    const toolbarRef = useToolbarBottom(rootRef);
+
     if (activeMode === 'list') {
       return <LayoutList onOpenEditor={handleOpenEditorWithId} />;
     }
@@ -515,6 +511,7 @@ export const LayoutEditor = observer(
           ref={rootRef}
         >
           <header
+            ref={toolbarRef}
             className={`${styles.toolbar} ${
               isFullscreen ? styles.toolbarFullscreen : ''
             }`}
@@ -745,294 +742,6 @@ export const LayoutEditor = observer(
             </Tooltip>
 
             <div className={styles.previewControls}>
-              {selectedWidget && (
-                <div className={styles.coords}>
-                  <span className={styles.coordLabel}>X</span>
-                  <InputNumber
-                    size="small"
-                    className={styles.coordInput}
-                    value={selectedWidget.userSettings.x}
-                    onFocus={() => widgetSettings.pushUndo()}
-                    onChange={(value) => {
-                      if (typeof value === 'number') {
-                        widgetSettings.updatePosition(
-                          selectedWidget.id,
-                          value,
-                          selectedWidget.userSettings.y
-                        );
-                      }
-                    }}
-                  />
-                  <span className={styles.coordLabel}>Y</span>
-                  <InputNumber
-                    size="small"
-                    className={styles.coordInput}
-                    value={selectedWidget.userSettings.y}
-                    onFocus={() => widgetSettings.pushUndo()}
-                    onChange={(value) => {
-                      if (typeof value === 'number') {
-                        widgetSettings.updatePosition(
-                          selectedWidget.id,
-                          selectedWidget.userSettings.x,
-                          value
-                        );
-                      }
-                    }}
-                  />
-                  <span className={styles.coordLabel}>W</span>
-                  <InputNumber
-                    size="small"
-                    className={styles.coordInput}
-                    min={10}
-                    value={selectedWidget.userSettings.currentWidth}
-                    onFocus={() => widgetSettings.pushUndo()}
-                    onChange={(value) => {
-                      if (typeof value === 'number') {
-                        if (
-                          lockedRatios[selectedWidget.id] &&
-                          selectedWidget.userSettings.currentHeight > 0
-                        ) {
-                          const ratio =
-                            selectedWidget.userSettings.currentWidth /
-                            selectedWidget.userSettings.currentHeight;
-                          const newHeight = Math.max(
-                            10,
-                            Math.round(value / ratio)
-                          );
-
-                          widgetSettings.updateSize(
-                            selectedWidget.id,
-                            value,
-                            newHeight
-                          );
-                        } else {
-                          widgetSettings.updateSize(
-                            selectedWidget.id,
-                            value,
-                            selectedWidget.userSettings.currentHeight
-                          );
-                        }
-                      }
-                    }}
-                  />
-                  <span className={styles.coordLabel}>H</span>
-                  <InputNumber
-                    size="small"
-                    className={styles.coordInput}
-                    min={10}
-                    value={selectedWidget.userSettings.currentHeight}
-                    onFocus={() => widgetSettings.pushUndo()}
-                    onChange={(value) => {
-                      if (typeof value === 'number') {
-                        if (
-                          lockedRatios[selectedWidget.id] &&
-                          selectedWidget.userSettings.currentWidth > 0
-                        ) {
-                          const ratio =
-                            selectedWidget.userSettings.currentWidth /
-                            selectedWidget.userSettings.currentHeight;
-                          const newWidth = Math.max(
-                            10,
-                            Math.round(value * ratio)
-                          );
-
-                          widgetSettings.updateSize(
-                            selectedWidget.id,
-                            newWidth,
-                            value
-                          );
-                        } else {
-                          widgetSettings.updateSize(
-                            selectedWidget.id,
-                            selectedWidget.userSettings.currentWidth,
-                            value
-                          );
-                        }
-                      }
-                    }}
-                  />
-
-                  <Tooltip
-                    title={
-                      lockedRatios[selectedWidget.id]
-                        ? t('layoutEditor.unlockAspectRatio')
-                        : t('layoutEditor.lockAspectRatio')
-                    }
-                  >
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={
-                        lockedRatios[selectedWidget.id] ? (
-                          <Lock size={12} />
-                        ) : (
-                          <Unlock size={12} />
-                        )
-                      }
-                      onClick={() => {
-                        setLockedRatios((prev) => ({
-                          ...prev,
-                          [selectedWidget.id]: !prev[selectedWidget.id],
-                        }));
-                      }}
-                    />
-                  </Tooltip>
-
-                  {moveTargetOptions.length > 0 && (
-                    <Tooltip title={t('layoutEditor.moveToMonitor')}>
-                      <Select
-                        size="small"
-                        value={null}
-                        placeholder={<MonitorUp size={12} />}
-                        onChange={(monitorName: string) =>
-                          widgetSettings.moveWidgetToMonitor(
-                            selectedWidget.id,
-                            monitorName
-                          )
-                        }
-                        options={moveTargetOptions}
-                        popupMatchSelectWidth={200}
-                        style={{ width: 56 }}
-                      />
-                    </Tooltip>
-                  )}
-
-                  <Tooltip title={t('layoutEditor.duplicateWidget')}>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={<Copy size={12} />}
-                      onClick={() => {
-                        const copyId = widgetSettings.duplicateWidget(
-                          selectedWidget.id
-                        );
-
-                        // Selection follows the copy: it is offset from the
-                        // widget it came from and on top, so it is the one the
-                        // user is about to place.
-                        if (copyId !== null) {
-                          setSelectedWidgetId(copyId);
-                        }
-                      }}
-                    />
-                  </Tooltip>
-
-                  {selectedWidget.type !== undefined && (
-                    <Tooltip title={t('layoutEditor.deleteWidgetCopy')}>
-                      <Button
-                        size="small"
-                        type="text"
-                        icon={<Trash2 size={12} />}
-                        onClick={() => {
-                          widgetSettings.removeWidgetCopy(selectedWidget.id);
-                          setSelectedWidgetId(null);
-                        }}
-                      />
-                    </Tooltip>
-                  )}
-
-                  <Tooltip title={t('layoutEditor.bringToFront')}>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={<BringToFront size={12} />}
-                      onClick={() =>
-                        widgetSettings.bringToFront(selectedWidget.id)
-                      }
-                    />
-                  </Tooltip>
-
-                  <Tooltip title={t('layoutEditor.sendToBack')}>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={<SendToBack size={12} />}
-                      onClick={() =>
-                        widgetSettings.sendToBack(selectedWidget.id)
-                      }
-                    />
-                  </Tooltip>
-
-                  <Popover
-                    trigger="click"
-                    placement="bottom"
-                    getPopupContainer={() => rootRef.current || document.body}
-                    content={
-                      <div
-                        style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(3, 32px)',
-                          gap: '4px',
-                        }}
-                      >
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<ArrowUpLeft size={14} />}
-                          onClick={() => handleSnap('topLeft')}
-                        />
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<ArrowUp size={14} />}
-                          onClick={() => handleSnap('topCenter')}
-                        />
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<ArrowUpRight size={14} />}
-                          onClick={() => handleSnap('topRight')}
-                        />
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<ArrowLeft size={14} />}
-                          onClick={() => handleSnap('midLeft')}
-                        />
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<Maximize2 size={14} />}
-                          onClick={() => handleSnap('center')}
-                        />
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<ArrowRight size={14} />}
-                          onClick={() => handleSnap('midRight')}
-                        />
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<ArrowDownLeft size={14} />}
-                          onClick={() => handleSnap('bottomLeft')}
-                        />
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<ArrowDown size={14} />}
-                          onClick={() => handleSnap('bottomCenter')}
-                        />
-                        <Button
-                          size="small"
-                          type="text"
-                          icon={<ArrowDownRight size={14} />}
-                          onClick={() => handleSnap('bottomRight')}
-                        />
-                      </div>
-                    }
-                  >
-                    <Tooltip title={t('layoutEditor.quickPlacement')}>
-                      <Button
-                        size="small"
-                        type="text"
-                        icon={<LayoutGrid size={14} />}
-                      />
-                    </Tooltip>
-                  </Popover>
-                </div>
-              )}
-
               <input
                 ref={(node) => {
                   backgroundInputRef.current = node;
@@ -1157,6 +866,19 @@ export const LayoutEditor = observer(
             </div>
           </header>
 
+          {selectedWidget && !isFullscreen && (
+            <WidgetToolbar
+              widget={selectedWidget}
+              isRatioLocked={!!lockedRatios[selectedWidget.id]}
+              onToggleRatioLock={handleToggleRatioLock}
+              moveTargetOptions={moveTargetOptions}
+              onSelectWidget={setSelectedWidgetId}
+              onSnap={handleSnap}
+              popupContainer={popupContainer}
+              fullscreen={false}
+            />
+          )}
+
           <div
             className={`${styles.body} ${isFullscreen ? styles.bodyFullscreen : ''}`}
           >
@@ -1208,6 +930,19 @@ export const LayoutEditor = observer(
                 }
                 focusedMonitorName={focusedMonitorName}
               />
+
+              {selectedWidget && isFullscreen && (
+                <WidgetToolbar
+                  widget={selectedWidget}
+                  isRatioLocked={!!lockedRatios[selectedWidget.id]}
+                  onToggleRatioLock={handleToggleRatioLock}
+                  moveTargetOptions={moveTargetOptions}
+                  onSelectWidget={setSelectedWidgetId}
+                  onSnap={handleSnap}
+                  popupContainer={popupContainer}
+                  fullscreen
+                />
+              )}
             </main>
           </div>
         </div>

@@ -165,13 +165,13 @@
     "remoteNoDevice": "нет устройства"
   },
   "layoutWidgetPanel": {
-    "back": "Назад",
     "onMonitor": "на {{monitor}}",
     "offScreen": "Вне экранов",
     "copyTooltip": "Копия — со своими настройками, местом и переключателем",
     "originalTooltip": "Оригинал, с которого сделаны копии в этой раскладке",
     "deleteCopyConfirm": "Удалить эту копию?",
-    "deleteCopyOk": "Удалить"
+    "deleteCopyOk": "Удалить",
+    "closeSettings": "Закрыть настройки"
   },
   "widgetWorkbench": {
     "scenario": "Сценарий",

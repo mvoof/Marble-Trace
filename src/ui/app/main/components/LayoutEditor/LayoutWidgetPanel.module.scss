@@ -1,3 +1,9 @@
+.root {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+}
+
 .list {
   display: flex;
   flex-direction: column;
@@ -28,6 +34,13 @@
   opacity: 0.5;
 }
 
+// The row whose settings card is open: the card sits away from the list, so
+// the row has to say which one it belongs to.
+.editing {
+  background: #1d1f25;
+  border-color: #3a6ea5;
+}
+
 .label {
   flex: 1 1 auto;
   min-width: 0;
@@ -56,21 +69,45 @@
   white-space: nowrap;
 }
 
-.detail {
+// Floats beside the list, level with the row it belongs to, so the list it was
+// opened from stays on screen and the next widget is one click away.
+.settingsCard {
+  position: absolute;
+  left: calc(100% + #{sp(sm)});
+  z-index: 20;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
+  width: 340px;
+  max-height: 100%;
+  padding: sp(sm);
+  background: #0f1013;
+  border: 1px solid #2a2c32;
+  border-radius: radius(lg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
 }
 
-.backButton {
-  align-self: flex-start;
-  margin-bottom: sp(sm);
-  color: #8b8e98;
+.settingsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(sm);
+  flex: 0 0 auto;
+  margin-bottom: sp(xs);
 }
 
-.detailBody {
-  flex: 1 1 0;
+.settingsTitle {
+  color: #e0e0e0;
+  font-size: fs(sm);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settingsBody {
+  // `auto`, not a zero basis: the card has no height of its own, and a flex
+  // basis of zero would collapse the settings to nothing.
+  flex: 0 1 auto;
   min-height: 0;
   overflow-y: auto;
   padding-right: sp(xs);

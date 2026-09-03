@@ -1,0 +1,48 @@
+.bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+  gap: sp(xxs);
+  row-gap: sp(xs);
+  padding: sp(xxs) sp(xs);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: radius(md);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.widgetName {
+  color: #c8ccd6;
+  font-size: fs(xs);
+  font-weight: 600;
+  margin-right: sp(xs);
+  white-space: nowrap;
+}
+
+.coordLabel {
+  color: #5e626d;
+  font-family: $font-mono;
+  font-size: fs(xs);
+  margin-left: sp(xxs);
+}
+
+.coordInput {
+  width: 64px;
+}
+
+// Fullscreen: floats at the bottom of the canvas, opposite the layout toolbar
+// at the top, so the two never fight for the same strip of screen.
+.barFullscreen {
+  position: absolute;
+  left: 50%;
+  bottom: sp(xl);
+  z-index: 40;
+  max-width: calc(100% - #{sp(xl)});
+  justify-content: center;
+  transform: translateX(-50%);
+  padding: sp(xs) sp(sm);
+  background: rgba(11, 12, 16, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: radius(lg);
+  backdrop-filter: blur(6px);
+}
