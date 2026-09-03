@@ -112,7 +112,13 @@
       "tablet": "Tablet",
       "phone": "Phone"
     },
-    "moveToolbar": "Move the toolbar"
+    "inspectorTitle": "Widget",
+    "inspectorActions": "Editor actions",
+    "toggleInspector": "Widget panel",
+    "duplicate": "Duplicate",
+    "layerOrder": "Layer order",
+    "moveToMonitorPlaceholder": "Choose a screen",
+    "quickPlacementDesc": "Puts the widget in a corner, an edge or the centre of its screen."
   },
   "layoutList": {
     "moduleLabel": "Layouts",
@@ -162,7 +168,6 @@
     "remoteNoDevice": "no device"
   },
   "layoutWidgetPanel": {
-    "back": "Back",
     "onMonitor": "on {{monitor}}",
     "offScreen": "Off every screen",
     "copyTooltip": "A copy — its own settings, place and switch",

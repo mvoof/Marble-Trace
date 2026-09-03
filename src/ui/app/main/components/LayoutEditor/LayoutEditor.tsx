@@ -26,6 +26,8 @@ import {
   Monitor,
   PanelLeft,
   PanelLeftClose,
+  PanelRight,
+  PanelRightClose,
   Undo2,
   Redo2,
   Rows3,
@@ -50,7 +52,7 @@ import { isRemoteMonitor } from '@utils/remote-screen';
 import { AddRemoteScreenButton } from './AddRemoteScreenButton';
 import { monitorForWidget } from '@store/settings/virtual-desktop';
 import { useToolbarBottom } from './use-toolbar-bottom';
-import { WidgetToolbar } from './WidgetToolbar';
+import { WidgetInspector } from './WidgetInspector';
 import type { SnapPosition } from './snap-position';
 import styles from './LayoutEditor.module.scss';
 
@@ -151,7 +153,6 @@ export const LayoutEditor = observer(
     const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(
       null
     );
-    const [editingWidgetId, setEditingWidgetId] = useState<string | null>(null);
     const [scenarioId, setScenarioId] = useState(DEFAULT_PREVIEW_SCENARIO_ID);
 
     // Which screen fills the canvas. Null shows every monitor of the layout at
@@ -177,6 +178,7 @@ export const LayoutEditor = observer(
     const rootRef = useRef<HTMLDivElement | null>(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
+    const [isInspectorOpen, setIsInspectorOpen] = useState(false);
 
     const [lockedRatios, setLockedRatios] = useState<Record<string, boolean>>(
       {}
@@ -197,7 +199,6 @@ export const LayoutEditor = observer(
       if (prevActiveIdRef.current !== activeId) {
         prevActiveIdRef.current = activeId;
         setSelectedWidgetId(null);
-        setEditingWidgetId(null);
       }
     }, [activeId]);
 
@@ -426,8 +427,6 @@ export const LayoutEditor = observer(
       widgetSettings.updatePosition(selectedWidget.id, x, y);
     };
 
-    const popupContainer = () => rootRef.current ?? document.body;
-
     const handleToggleRatioLock = () => {
       if (!selectedWidget) return;
 
@@ -439,7 +438,6 @@ export const LayoutEditor = observer(
 
     const handleSelectWidget = (id: string) => {
       setSelectedWidgetId(id === '' ? null : id);
-      setEditingWidgetId(null);
     };
 
     const handleCreate = () => {
@@ -519,14 +517,25 @@ export const LayoutEditor = observer(
             )}
 
             {isFullscreen && (
-              <Tooltip title={t('layoutEditor.toggleWidgetPanel')}>
-                <Button
-                  size="small"
-                  type={isPanelOpen ? 'primary' : 'text'}
-                  icon={<PanelLeft size={14} />}
-                  onClick={() => setIsPanelOpen((open) => !open)}
-                />
-              </Tooltip>
+              <>
+                <Tooltip title={t('layoutEditor.toggleWidgetPanel')}>
+                  <Button
+                    size="small"
+                    type={isPanelOpen ? 'primary' : 'text'}
+                    icon={<PanelLeft size={14} />}
+                    onClick={() => setIsPanelOpen((open) => !open)}
+                  />
+                </Tooltip>
+
+                <Tooltip title={t('layoutEditor.toggleInspector')}>
+                  <Button
+                    size="small"
+                    type={isInspectorOpen ? 'primary' : 'text'}
+                    icon={<PanelRight size={14} />}
+                    onClick={() => setIsInspectorOpen((open) => !open)}
+                  />
+                </Tooltip>
+              </>
             )}
 
             <div className={styles.layoutControls}>
@@ -884,24 +893,7 @@ export const LayoutEditor = observer(
 
               <LayoutWidgetPanel
                 selectedWidgetId={selectedWidgetId}
-                editingWidgetId={editingWidgetId}
                 onSelectWidget={handleSelectWidget}
-                onEditWidget={setEditingWidgetId}
-                widgetTools={(onGrip) =>
-                  selectedWidget && (
-                    <WidgetToolbar
-                      onGrip={onGrip}
-                      widget={selectedWidget}
-                      isRatioLocked={!!lockedRatios[selectedWidget.id]}
-                      onToggleRatioLock={handleToggleRatioLock}
-                      moveTargetOptions={moveTargetOptions}
-                      onSelectWidget={setSelectedWidgetId}
-                      onSnap={handleSnap}
-                      popupContainer={popupContainer}
-                      fullscreen={false}
-                    />
-                  )
-                }
               />
             </aside>
 
@@ -924,20 +916,44 @@ export const LayoutEditor = observer(
                 }
                 focusedMonitorName={focusedMonitorName}
               />
-
-              {selectedWidget && isFullscreen && (
-                <WidgetToolbar
-                  widget={selectedWidget}
-                  isRatioLocked={!!lockedRatios[selectedWidget.id]}
-                  onToggleRatioLock={handleToggleRatioLock}
-                  moveTargetOptions={moveTargetOptions}
-                  onSelectWidget={setSelectedWidgetId}
-                  onSnap={handleSnap}
-                  popupContainer={popupContainer}
-                  fullscreen
-                />
-              )}
             </main>
+
+            <aside
+              className={`${
+                isFullscreen ? styles.inspectorDrawer : styles.inspector
+              } ${
+                isFullscreen && isInspectorOpen
+                  ? styles.inspectorDrawerOpen
+                  : ''
+              }`}
+            >
+              {isFullscreen && (
+                <div className={styles.panelDrawerHeader}>
+                  <span className={styles.panelDrawerTitle}>
+                    {t('layoutEditor.inspectorTitle')}
+                  </span>
+                  <Tooltip title={t('layoutEditor.hidePanel')}>
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<PanelRightClose size={16} />}
+                      onClick={() => setIsInspectorOpen(false)}
+                    />
+                  </Tooltip>
+                </div>
+              )}
+
+              <WidgetInspector
+                selectedWidgetId={selectedWidgetId}
+                isRatioLocked={
+                  selectedWidgetId ? !!lockedRatios[selectedWidgetId] : false
+                }
+                onToggleRatioLock={handleToggleRatioLock}
+                moveTargetOptions={moveTargetOptions}
+                onSelectWidget={setSelectedWidgetId}
+                onSnap={handleSnap}
+              />
+            </aside>
           </div>
         </div>
       </ConfigProvider>

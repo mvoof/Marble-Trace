@@ -130,11 +130,9 @@
 }
 
 .panel {
-  flex: 0 0 280px;
+  flex: 0 0 260px;
   min-height: 0;
-  // Visible, not hidden: the settings card floats out of the panel and over
-  // the canvas beside it.
-  overflow: visible;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -176,6 +174,40 @@
   color: #e0e0e0;
   font-size: fs(sm);
   font-weight: 600;
+}
+
+// The inspector holds its width whether or not a widget is selected: a column
+// that comes and goes would rescale the canvas on every click.
+.inspector {
+  flex: 0 0 320px;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+// Fullscreen mirrors the widget list: an overlay drawer, on the other side.
+.inspectorDrawer {
+  position: absolute;
+  top: var(--editor-toolbar-bottom, 56px);
+  right: sp(md);
+  bottom: sp(sm);
+  z-index: 30;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: sp(sm);
+  background: rgba(11, 12, 16, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: radius(lg);
+  backdrop-filter: blur(6px);
+  transform: translateX(calc(100% + #{sp(md)}));
+  transition: transform 0.2s ease;
+}
+
+.inspectorDrawerOpen {
+  transform: translateX(0);
 }
 
 .canvas {

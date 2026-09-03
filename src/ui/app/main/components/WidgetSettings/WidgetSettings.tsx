@@ -9,7 +9,15 @@ import { useWidgetEditor } from './WidgetEditorContext';
 import { settingsPanelForWidget } from './panels/panel-registry';
 
 export const WidgetSettings = observer(
-  ({ widgetId }: { widgetId: string | null }) => {
+  ({
+    widgetId,
+    hideHeader = false,
+  }: {
+    widgetId: string | null;
+    /** The layout editor's inspector names the widget in its own header, above
+     *  the actions; a second title under it would say the same thing twice. */
+    hideHeader?: boolean;
+  }) => {
     const widgetSettings = useWidgetEditor();
     const { t } = useTranslation('main-app');
 
@@ -40,12 +48,14 @@ export const WidgetSettings = observer(
     return (
       <PanelWidgetProvider widgetId={widgetId}>
         <div className={`${styles.animateFadeIn} ${styles.settingsRoot}`}>
-          <header className={styles.header}>
-            <span className={styles.moduleLabel}>
-              {t('widgetSettings.moduleConfig')}
-            </span>
-            <h1 className={styles.title}>{getWidgetLabel(t, widget)}</h1>
-          </header>
+          {!hideHeader && (
+            <header className={styles.header}>
+              <span className={styles.moduleLabel}>
+                {t('widgetSettings.moduleConfig')}
+              </span>
+              <h1 className={styles.title}>{getWidgetLabel(t, widget)}</h1>
+            </header>
+          )}
 
           <Card title={t('widgetSettings.layoutAndDimensions')}>
             <Row gutter={[24, 24]}>

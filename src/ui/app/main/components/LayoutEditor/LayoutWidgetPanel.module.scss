@@ -62,48 +62,6 @@
   white-space: nowrap;
 }
 
-.detail {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-
-.backButton {
-  align-self: flex-start;
-  margin-bottom: sp(sm);
-  color: #8b8e98;
-}
-
-.detailBody {
-  flex: 1 1 0;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: sp(xs);
-}
-
-// The tools for the selected widget: a plaque floating beside the list, level
-// with the row it acts on, rather than a strip of the editor toolbar. It never
-// competes for width with the layout controls above, and it says which widget
-// it belongs to by where it stands.
-.toolsPlaque {
-  position: absolute;
-  z-index: 20;
-  // `left` is set from JS along with `top` — the plaque is dragged in both
-  // axes once the user picks it up.
-  // An explicit width, not a shrink-to-fit one: placed past the right edge of
-  // the panel, a shrink-to-fit box has no room left in its containing block
-  // and squeezes every control onto its own line.
-  width: 40px;
-  // No padding of its own: the drag handle spans the plaque edge to edge.
-  padding: 0;
-  overflow: hidden;
-  background: #0f1013;
-  border: 1px solid #2a2c32;
-  border-radius: radius(lg);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
-}
-
 .screenGroup {
   display: flex;
   flex-direction: column;

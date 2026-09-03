@@ -112,7 +112,13 @@
       "tablet": "Tablet",
       "phone": "Móvil"
     },
-    "moveToolbar": "Mover la barra"
+    "inspectorTitle": "Widget",
+    "inspectorActions": "Acciones del editor",
+    "toggleInspector": "Panel del widget",
+    "duplicate": "Duplicar",
+    "layerOrder": "Orden de capas",
+    "moveToMonitorPlaceholder": "Elige una pantalla",
+    "quickPlacementDesc": "Coloca el widget en una esquina, un borde o el centro de su pantalla."
   },
   "layoutList": {
     "moduleLabel": "Diseños",
@@ -162,7 +168,6 @@
     "remoteNoDevice": "sin dispositivo"
   },
   "layoutWidgetPanel": {
-    "back": "Atrás",
     "onMonitor": "en {{monitor}}",
     "offScreen": "Fuera de las pantallas",
     "copyTooltip": "Una copia: con sus propios ajustes, lugar e interruptor",

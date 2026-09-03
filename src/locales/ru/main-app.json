@@ -112,7 +112,13 @@
       "tablet": "Планшет",
       "phone": "Телефон"
     },
-    "moveToolbar": "Переместить панель"
+    "inspectorTitle": "Виджет",
+    "inspectorActions": "Действия редактора",
+    "toggleInspector": "Панель виджета",
+    "duplicate": "Дублировать",
+    "layerOrder": "Порядок слоёв",
+    "moveToMonitorPlaceholder": "Выберите экран",
+    "quickPlacementDesc": "Ставит виджет в угол, к краю или в центр его экрана."
   },
   "layoutList": {
     "moduleLabel": "Раскладки",
@@ -166,7 +172,6 @@
     "remoteNoDevice": "нет устройства"
   },
   "layoutWidgetPanel": {
-    "back": "Назад",
     "onMonitor": "на {{monitor}}",
     "offScreen": "Вне экранов",
     "copyTooltip": "Копия — со своими настройками, местом и переключателем",
