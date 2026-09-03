@@ -113,7 +113,7 @@ export const AddRemoteScreenButton = observer(() => {
               min={MIN_SIDE}
               max={MAX_SIDE}
               value={width}
-              addonBefore="W"
+              prefix="W"
               onChange={(value) => value !== null && setWidth(value)}
             />
 
@@ -121,7 +121,7 @@ export const AddRemoteScreenButton = observer(() => {
               min={MIN_SIDE}
               max={MAX_SIDE}
               value={height}
-              addonBefore="H"
+              prefix="H"
               onChange={(value) => value !== null && setHeight(value)}
             />
           </Flex>
