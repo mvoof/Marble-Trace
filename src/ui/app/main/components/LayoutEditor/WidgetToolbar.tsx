@@ -12,7 +12,7 @@ import {
   ArrowUpRight,
   BringToFront,
   Copy,
-  GripVertical,
+  GripHorizontal,
   LayoutGrid,
   Lock,
   Maximize2,
@@ -89,166 +89,172 @@ export const WidgetToolbar = observer(
               aria-label={t('layoutEditor.moveToolbar')}
               onPointerDown={onGrip}
             >
-              <GripVertical size={GRIP_SIZE} />
+              <GripHorizontal size={GRIP_SIZE} />
             </button>
           </Tooltip>
         )}
 
-        <Tooltip
-          title={
-            isRatioLocked
-              ? t('layoutEditor.unlockAspectRatio')
-              : t('layoutEditor.lockAspectRatio')
-          }
-        >
-          <Button
-            size="small"
-            type="text"
-            icon={isRatioLocked ? <Lock size={12} /> : <Unlock size={12} />}
-            onClick={onToggleRatioLock}
-          />
-        </Tooltip>
-
-        {moveTargetOptions.length > 0 && (
-          <Tooltip title={t('layoutEditor.moveToMonitor')}>
-            <Select
-              size="small"
-              value={null}
-              placeholder={<MonitorUp size={12} />}
-              onChange={(monitorName: string) =>
-                widgetSettings.moveWidgetToMonitor(widget.id, monitorName)
-              }
-              options={moveTargetOptions}
-              popupMatchSelectWidth={200}
-              // Data-driven: the column is only as wide as an icon button.
-              style={{ width: fullscreen ? WIDE_SELECT : NARROW_SELECT }}
-            />
-          </Tooltip>
-        )}
-
-        <Tooltip title={t('layoutEditor.duplicateWidget')}>
-          <Button
-            size="small"
-            type="text"
-            icon={<Copy size={12} />}
-            onClick={() => {
-              const copyId = widgetSettings.duplicateWidget(widget.id);
-
-              // Selection follows the copy: it is offset from the
-              // widget it came from and on top, so it is the one the
-              // user is about to place.
-              if (copyId !== null) {
-                onSelectWidget(copyId);
-              }
-            }}
-          />
-        </Tooltip>
-
-        {widget.type !== undefined && (
-          <Tooltip title={t('layoutEditor.deleteWidgetCopy')}>
+        <div className={styles.tools}>
+          <Tooltip
+            title={
+              isRatioLocked
+                ? t('layoutEditor.unlockAspectRatio')
+                : t('layoutEditor.lockAspectRatio')
+            }
+          >
             <Button
               size="small"
               type="text"
-              icon={<Trash2 size={12} />}
+              icon={isRatioLocked ? <Lock size={12} /> : <Unlock size={12} />}
+              onClick={onToggleRatioLock}
+            />
+          </Tooltip>
+
+          {moveTargetOptions.length > 0 && (
+            <Tooltip title={t('layoutEditor.moveToMonitor')}>
+              <Select
+                size="small"
+                value={null}
+                placeholder={<MonitorUp size={12} />}
+                onChange={(monitorName: string) =>
+                  widgetSettings.moveWidgetToMonitor(widget.id, monitorName)
+                }
+                options={moveTargetOptions}
+                popupMatchSelectWidth={200}
+                // Data-driven: the column is only as wide as an icon button.
+                style={{ width: fullscreen ? WIDE_SELECT : NARROW_SELECT }}
+              />
+            </Tooltip>
+          )}
+
+          <Tooltip title={t('layoutEditor.duplicateWidget')}>
+            <Button
+              size="small"
+              type="text"
+              icon={<Copy size={12} />}
               onClick={() => {
-                widgetSettings.removeWidgetCopy(widget.id);
-                onSelectWidget(null);
+                const copyId = widgetSettings.duplicateWidget(widget.id);
+
+                // Selection follows the copy: it is offset from the
+                // widget it came from and on top, so it is the one the
+                // user is about to place.
+                if (copyId !== null) {
+                  onSelectWidget(copyId);
+                }
               }}
             />
           </Tooltip>
-        )}
 
-        <Tooltip title={t('layoutEditor.bringToFront')}>
-          <Button
-            size="small"
-            type="text"
-            icon={<BringToFront size={12} />}
-            onClick={() => widgetSettings.bringToFront(widget.id)}
-          />
-        </Tooltip>
+          {widget.type !== undefined && (
+            <Tooltip title={t('layoutEditor.deleteWidgetCopy')}>
+              <Button
+                size="small"
+                type="text"
+                icon={<Trash2 size={12} />}
+                onClick={() => {
+                  widgetSettings.removeWidgetCopy(widget.id);
+                  onSelectWidget(null);
+                }}
+              />
+            </Tooltip>
+          )}
 
-        <Tooltip title={t('layoutEditor.sendToBack')}>
-          <Button
-            size="small"
-            type="text"
-            icon={<SendToBack size={12} />}
-            onClick={() => widgetSettings.sendToBack(widget.id)}
-          />
-        </Tooltip>
-
-        <Popover
-          trigger="click"
-          placement="right"
-          getPopupContainer={popupContainer}
-          content={
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 32px)',
-                gap: '4px',
-              }}
-            >
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowUpLeft size={14} />}
-                onClick={() => onSnap('topLeft')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowUp size={14} />}
-                onClick={() => onSnap('topCenter')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowUpRight size={14} />}
-                onClick={() => onSnap('topRight')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowLeft size={14} />}
-                onClick={() => onSnap('midLeft')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<Maximize2 size={14} />}
-                onClick={() => onSnap('center')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowRight size={14} />}
-                onClick={() => onSnap('midRight')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowDownLeft size={14} />}
-                onClick={() => onSnap('bottomLeft')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowDown size={14} />}
-                onClick={() => onSnap('bottomCenter')}
-              />
-              <Button
-                size="small"
-                type="text"
-                icon={<ArrowDownRight size={14} />}
-                onClick={() => onSnap('bottomRight')}
-              />
-            </div>
-          }
-        >
-          <Tooltip title={t('layoutEditor.quickPlacement')}>
-            <Button size="small" type="text" icon={<LayoutGrid size={14} />} />
+          <Tooltip title={t('layoutEditor.bringToFront')}>
+            <Button
+              size="small"
+              type="text"
+              icon={<BringToFront size={12} />}
+              onClick={() => widgetSettings.bringToFront(widget.id)}
+            />
           </Tooltip>
-        </Popover>
+
+          <Tooltip title={t('layoutEditor.sendToBack')}>
+            <Button
+              size="small"
+              type="text"
+              icon={<SendToBack size={12} />}
+              onClick={() => widgetSettings.sendToBack(widget.id)}
+            />
+          </Tooltip>
+
+          <Popover
+            trigger="click"
+            placement="right"
+            getPopupContainer={popupContainer}
+            content={
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 32px)',
+                  gap: '4px',
+                }}
+              >
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowUpLeft size={14} />}
+                  onClick={() => onSnap('topLeft')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowUp size={14} />}
+                  onClick={() => onSnap('topCenter')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowUpRight size={14} />}
+                  onClick={() => onSnap('topRight')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowLeft size={14} />}
+                  onClick={() => onSnap('midLeft')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<Maximize2 size={14} />}
+                  onClick={() => onSnap('center')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowRight size={14} />}
+                  onClick={() => onSnap('midRight')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowDownLeft size={14} />}
+                  onClick={() => onSnap('bottomLeft')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowDown size={14} />}
+                  onClick={() => onSnap('bottomCenter')}
+                />
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<ArrowDownRight size={14} />}
+                  onClick={() => onSnap('bottomRight')}
+                />
+              </div>
+            }
+          >
+            <Tooltip title={t('layoutEditor.quickPlacement')}>
+              <Button
+                size="small"
+                type="text"
+                icon={<LayoutGrid size={14} />}
+              />
+            </Tooltip>
+          </Popover>
+        </div>
       </div>
     );
   }

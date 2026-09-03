@@ -208,16 +208,11 @@ export const LayoutWidgetPanel = observer(
     const toolsRef = useRef<HTMLDivElement>(null);
     const rowsRef = useRef(new Map<string, HTMLDivElement>());
     const [toolsTop, setToolsTop] = useState(0);
-    // Where the user put the plaque, once they have moved it. Until then it
-    // follows the selected row; after, it stays where it was left — the reason
-    // to move it is that it was covering the widget being worked on.
-    const [dragged, setDragged] = useState<{
-      top: number;
-      left: number;
-    } | null>(null);
-    const dragRef = useRef<{ pointerTop: number; pointerLeft: number } | null>(
-      null
-    );
+    // How far the user pulled the plaque off its row, once they have moved it.
+    // Vertical only: it rides a rail along the edge of the list, so it stays
+    // beside the widget it acts on while clearing whatever it was covering.
+    const [draggedTop, setDraggedTop] = useState<number | null>(null);
+    const dragRef = useRef<number | null>(null);
 
     const handleGrip = useCallback((event: React.PointerEvent) => {
       const plaque = toolsRef.current;
@@ -228,20 +223,17 @@ export const LayoutWidgetPanel = observer(
       const plaqueBox = plaque.getBoundingClientRect();
       const rootBox = root.getBoundingClientRect();
 
-      dragRef.current = {
-        pointerTop: event.clientY - plaqueBox.top,
-        pointerLeft: event.clientX - plaqueBox.left,
-      };
+      dragRef.current = event.clientY - plaqueBox.top;
 
       const move = (moveEvent: PointerEvent) => {
-        const grab = dragRef.current;
+        const grabbedAt = dragRef.current;
 
-        if (!grab) return;
+        if (grabbedAt === null) return;
 
-        setDragged({
-          top: moveEvent.clientY - rootBox.top - grab.pointerTop,
-          left: moveEvent.clientX - rootBox.left - grab.pointerLeft,
-        });
+        const room = root.clientHeight - plaqueBox.height;
+        const top = moveEvent.clientY - rootBox.top - grabbedAt;
+
+        setDraggedTop(Math.max(0, room > 0 ? Math.min(top, room) : 0));
       };
 
       const stop = () => {
@@ -273,7 +265,13 @@ export const LayoutWidgetPanel = observer(
       const list = listRef.current;
       const root = rootRef.current;
 
-      if (!selectedWidgetId || !widgetTools || dragged || !list || !root) {
+      if (
+        !selectedWidgetId ||
+        !widgetTools ||
+        draggedTop !== null ||
+        !list ||
+        !root
+      ) {
         return;
       }
 
@@ -306,7 +304,7 @@ export const LayoutWidgetPanel = observer(
         observer.disconnect();
         list.removeEventListener('scroll', place);
       };
-    }, [selectedWidgetId, widgetTools, dragged]);
+    }, [selectedWidgetId, widgetTools, draggedTop]);
 
     if (editingWidgetId) {
       return (
@@ -356,13 +354,9 @@ export const LayoutWidgetPanel = observer(
           <div
             ref={toolsRef}
             className={styles.toolsPlaque}
-            // Data-driven placement: level with its own row until dragged, and
-            // wherever it was dropped after that.
-            style={
-              dragged
-                ? { top: dragged.top, left: dragged.left }
-                : { top: toolsTop, left: PLAQUE_LEFT }
-            }
+            // Data-driven placement: level with its own row until pulled off
+            // it, and wherever it was left on the rail after that.
+            style={{ top: draggedTop ?? toolsTop, left: PLAQUE_LEFT }}
           >
             {widgetTools(handleGrip)}
           </div>

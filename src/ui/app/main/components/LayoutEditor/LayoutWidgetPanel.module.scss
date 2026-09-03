@@ -95,7 +95,9 @@
   // the panel, a shrink-to-fit box has no room left in its containing block
   // and squeezes every control onto its own line.
   width: 40px;
-  padding: sp(xxs);
+  // No padding of its own: the drag handle spans the plaque edge to edge.
+  padding: 0;
+  overflow: hidden;
   background: #0f1013;
   border: 1px solid #2a2c32;
   border-radius: radius(lg);
