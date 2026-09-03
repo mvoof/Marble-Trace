@@ -833,6 +833,64 @@ export class WidgetSettingsStore {
     );
   }
 
+  /**
+   * Every widget of the active layout, grouped by the screen it stands on.
+   *
+   * The editor lists widgets this way because a layout now spreads over screens
+   * that are nothing alike — the one being raced on, a tablet, a browser source
+   * — and "which screen is this on" is the first thing the list has to answer.
+   * A widget whose centre falls on no screen comes back under a null monitor
+   * rather than being dropped: it is exactly the one the user has lost.
+   */
+  get widgetsByScreen(): {
+    monitor: LayoutMonitor | null;
+    widgets: WidgetDefaultConfig[];
+  }[] {
+    const monitors = this.activeLayout?.monitors ?? [];
+    const groups = monitors.map((monitor) => ({
+      monitor: monitor as LayoutMonitor | null,
+      widgets: [] as WidgetDefaultConfig[],
+    }));
+
+    const offScreen: WidgetDefaultConfig[] = [];
+
+    for (const widget of this.allWidgets) {
+      const owner = monitorForWidget(widget, monitors);
+      const group = groups.find((entry) => entry.monitor === owner);
+
+      if (group) {
+        group.widgets.push(widget);
+      } else {
+        offScreen.push(widget);
+      }
+    }
+
+    const populated = groups.filter((group) => group.widgets.length > 0);
+
+    if (offScreen.length > 0) {
+      populated.push({ monitor: null, widgets: offScreen });
+    }
+
+    return populated;
+  }
+
+  /**
+   * Which copy of its widget this record is, counting from one, and how many
+   * copies there are in the layout. `1 of 1` is a widget with no copies at all.
+   */
+  copyOrdinalOf(widgetId: string): { ordinal: number; total: number } {
+    const widget = this.getWidget(widgetId);
+
+    if (!widget) return { ordinal: 1, total: 1 };
+
+    const copies = this.widgetsOfType(widgetTypeOf(widget));
+
+    return {
+      ordinal: copies.findIndex((entry) => entry.id === widgetId) + 1,
+      total: copies.length,
+    };
+  }
+
   // Widgets drawn by this overlay window: the ones whose centre falls on its
   // monitor. Dragging a widget over an edge hands it to the neighbour.
   get ownMonitorWidgets(): WidgetDefaultConfig[] {

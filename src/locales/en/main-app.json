@@ -162,7 +162,12 @@
   },
   "layoutWidgetPanel": {
     "back": "Back",
-    "onMonitor": "on {{monitor}}"
+    "onMonitor": "on {{monitor}}",
+    "offScreen": "Off every screen",
+    "copyTooltip": "A copy — its own settings, place and switch",
+    "originalTooltip": "The original this layout's copies were made from",
+    "deleteCopyConfirm": "Delete this copy?",
+    "deleteCopyOk": "Delete"
   },
   "widgetWorkbench": {
     "scenario": "Scenario",
