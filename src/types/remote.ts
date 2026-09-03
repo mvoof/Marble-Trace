@@ -24,12 +24,13 @@ export interface RemoteScreenSnapshot {
   /** Name of the layout these widgets came from, shown while connecting. */
   layoutName: string;
   /**
-   * Whether this screen is being painted for a person or for a stream encoder.
-   * A stream screen paints no background of its own and keeps its status
-   * messages off the canvas — a black rectangle mid-reconnect is worse on a
-   * broadcast than nothing at all. Absent means a device.
+   * What the page paints behind the widgets: any CSS color, or `'transparent'`
+   * for a browser source that has to composite over the game capture. Absent
+   * means the dark default, and a transparent screen also keeps its status
+   * messages off the canvas — a card mid-reconnect is worse on a broadcast than
+   * nothing at all.
    */
-  purpose?: 'device' | 'stream';
+  background?: string;
 }
 
 /**

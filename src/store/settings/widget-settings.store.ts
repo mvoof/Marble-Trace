@@ -30,7 +30,6 @@ import type {
   WidgetSpecificSettings,
   WidgetUserSettings,
   SessionContext,
-  RemoteScreenPurpose,
 } from '@/types/widget-settings';
 import { emitLayoutActivated } from '@platform/services/events.service';
 import { DEFAULT_LAYOUT_RESOLUTION } from '@store/settings/layout-resolution';
@@ -1173,7 +1172,7 @@ export class WidgetSettingsStore {
     name: string,
     width: number,
     height: number,
-    purpose: RemoteScreenPurpose = 'device'
+    background?: string
   ) {
     const layout = this.activeLayout;
 
@@ -1188,15 +1187,23 @@ export class WidgetSettingsStore {
       name,
       kind: 'remote',
       slug,
-      purpose,
       bounds: nextRemoteBounds(layout.monitors, width, height),
-      // A stream screen is the canvas the user is broadcasting at, and they
-      // chose it here. Marking it fitted is what stops the first browser source
-      // that connects from reporting its own size and reshuffling a layout that
-      // was already built for 1920×1080.
-      fittedToDevice: purpose === 'stream',
+      ...(background ? { background } : {}),
     });
 
+    this.bumpMutation();
+  }
+
+  /** What a remote screen paints behind its widgets: a CSS color, or
+   *  `'transparent'` for a browser source compositing over a game capture. */
+  setRemoteScreenBackground(monitorName: string, background: string) {
+    const monitor = this.activeLayout?.monitors.find(
+      (candidate) => candidate.name === monitorName
+    );
+
+    if (!monitor) return;
+
+    monitor.background = background;
     this.bumpMutation();
   }
 

@@ -908,9 +908,6 @@ export interface MonitorBounds {
  * machine can have screens a layout ignores. Bounds are kept even while the
  * monitor is unplugged, so the editor can still show and edit that area.
  */
-/** Who opens a remote screen's URL: a person's device, or an OBS browser source. */
-export type RemoteScreenPurpose = 'device' | 'stream';
-
 export interface LayoutMonitor {
   name: string;
   bounds: MonitorBounds;
@@ -925,18 +922,15 @@ export interface LayoutMonitor {
   /** Remote screens only: the URL segment the device is opened at. */
   slug?: string;
   /**
-   * Remote screens only: who opens that URL.
+   * Remote screens only: what the page paints behind the widgets — any CSS
+   * color, or `'transparent'`.
    *
-   * `'device'` is a tablet or a phone — it reports its viewport and the screen
-   * is fitted to it once. `'stream'` is a browser source inside OBS: the size
-   * is the canvas the user is streaming at and must not move, so the screen is
-   * created already fitted, and the page paints on nothing instead of on black
-   * so the overlay composites over the game capture below it.
-   *
-   * Absent means `'device'`, so screens created before streaming existed keep
-   * behaving exactly as they did.
+   * One screen serves both readers: a tablet wants a ground of its own, and an
+   * OBS browser source wants none so the widgets composite over the game
+   * capture below them. That is the only difference between the two, so it is a
+   * setting rather than a kind of screen. Absent means the dark default.
    */
-  purpose?: RemoteScreenPurpose;
+  background?: string;
   /**
    * Remote screens only: a device has already reported its size and the screen
    * was matched to it. The first connection fits the screen automatically —

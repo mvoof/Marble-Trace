@@ -98,17 +98,20 @@
     "allMonitors": "Todos los monitores",
     "removeMonitor": "Quitar el monitor del diseño",
     "addRemoteScreen": "Añadir pantalla",
-    "addRemoteScreenTooltip": "Añade otra pantalla a este diseño: una tablet o una virtual",
+    "addRemoteScreenTooltip": "Añade otra pantalla a este diseño: una tablet, un móvil o un Browser Source en OBS",
     "addRemoteScreenConfirm": "Añadir pantalla",
     "remoteScreenNamePlaceholder": "Nombre de la pantalla, p. ej. Tablet del volante",
-    "remoteScreenPurposeDevice": "Dispositivo",
-    "remoteScreenPurposeStream": "Pantalla virtual",
-    "remoteScreenPurposeDeviceHint": "Una tableta o un móvil de tu red abre esta pantalla en un navegador.",
-    "remoteScreenPurposeStreamHint": "Una pantalla que tu sistema no tiene: OBS la abre como Browser Source. Fondo transparente y el tamaño se mantiene como lo definas.",
     "remoteScreenDefaultName": "Pantalla remota",
     "remoteScreenTag": "remota",
     "arrangeRemoteScreens": "Ordenar las pantallas remotas",
-    "arrangeRemoteScreensTooltip": "Coloca las pantallas remotas en filas bajo el escritorio, widgets incluidos"
+    "arrangeRemoteScreensTooltip": "Coloca las pantallas remotas en filas bajo el escritorio, widgets incluidos",
+    "addRemoteScreenHint": "La pantalla la dibuja lo que abra el enlace: una tablet de tu red o un Browser Source en OBS. Para OBS pon el fondo transparente y da a la fuente el mismo tamaño — el primero que se conecta informa del suyo, y ajustarse a él mueve todos los widgets de la pantalla.",
+    "remoteScreenTransparent": "Fondo transparente (para OBS)",
+    "remoteScreenPresetGroup": {
+      "monitor": "Monitor / lienzo de directo",
+      "tablet": "Tablet",
+      "phone": "Móvil"
+    }
   },
   "layoutList": {
     "moduleLabel": "Diseños",
@@ -454,7 +457,7 @@
       "screensEmpty": "Todavía no hay pantallas remotas. Añade una en el editor de diseños, junto a los monitores.",
       "serverOffline": "El servidor no está en marcha",
       "copyUrl": "Copiar enlace",
-      "obsHint": "Añade esta URL como Browser Source en OBS, con tamaño {{width}}×{{height}}. Copia un widget concreto abajo para colocarlo solo en la escena.",
+      "obsHint": "Añade esta dirección como Browser Source en OBS con tamaño {{width}}×{{height}}. Los enlaces de widgets de abajo colocan un widget suelto en la escena.",
       "urlCopied": "Enlace copiado",
       "deviceOnline": "Dispositivo conectado",
       "deviceReports": "El dispositivo informa de {{width}}×{{height}} de página útil, en una pantalla de {{screenWidth}}×{{screenHeight}}.",
@@ -469,7 +472,9 @@
       "tokenCopied": "Token copiado",
       "qrHidden": "Código QR oculto",
       "widgetLinksTitle": "Enlaces de widgets",
-      "widgetLinksDesc": "Una dirección de Browser Source por widget, esté donde esté en el diseño. La página dibuja solo ese widget, sobre un fondo transparente."
+      "widgetLinksDesc": "Una dirección de Browser Source por widget, esté donde esté en el diseño. La página dibuja solo ese widget, sobre un fondo transparente.",
+      "backgroundLabel": "Fondo",
+      "backgroundTransparent": "transparente"
     },
     "companions": {
       "add": "Añadir",

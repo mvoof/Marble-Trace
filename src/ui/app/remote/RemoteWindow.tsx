@@ -43,7 +43,9 @@ export const RemoteWindow = observer(() => {
   }, [screen]);
 
   return (
-    <div className={screen.isStream ? styles.windowStream : styles.window}>
+    // Data-driven on purpose: the ground is a per-screen colour the user picks,
+    // which no class can carry.
+    <div className={styles.window} style={{ background: screen.background }}>
       {screen.isReady && <RemoteCanvas />}
 
       <RemoteStatusOverlay />

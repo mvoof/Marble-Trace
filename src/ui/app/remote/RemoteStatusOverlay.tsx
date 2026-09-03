@@ -14,10 +14,11 @@ const ICON_SIZE = 28;
 export const RemoteStatusOverlay = observer(() => {
   const screen = useRemoteScreenStore();
 
-  // Nothing at all on a stream. Every card below is a plate of solid colour,
+  // Nothing at all on a transparent screen — which is one opened by a browser
+  // source. Every card below is a plate of solid colour,
   // and a viewer seeing "Reconnecting…" across the broadcast is worse than a
   // widget that is briefly not there — the streamer reads the app for that.
-  if (screen.isStream) {
+  if (screen.isTransparent) {
     return null;
   }
 

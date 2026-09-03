@@ -8,7 +8,7 @@ import type {
   RemoteConnectionState,
   RemoteScreenSnapshot,
 } from '@/types/remote';
-import { fitScale } from '@utils/remote-screen';
+import { DEFAULT_REMOTE_BACKGROUND, fitScale } from '@utils/remote-screen';
 
 /**
  * State of the browser tab a remote screen runs in: which screen it is, whether
@@ -45,13 +45,21 @@ export class RemoteScreenStore {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
+  /** What the page paints behind the widgets. A solo widget is always
+   *  transparent — nothing but a browser source asks for one. */
+  get background(): string {
+    if (this.soloWidgetId !== '') return 'transparent';
+
+    return this.snapshot?.background ?? DEFAULT_REMOTE_BACKGROUND;
+  }
+
   /**
-   * Painted for an encoder rather than for a person: no ground of its own, and
-   * no status card. A solo widget is always that — nothing but OBS asks for
-   * one — whatever the screen it was taken from is marked as.
+   * Painted for an encoder rather than for a person: nothing behind the
+   * widgets, and so nowhere to put a status card either — one mid-reconnect is
+   * worse on a broadcast than nothing at all.
    */
-  get isStream(): boolean {
-    return this.soloWidgetId !== '' || this.snapshot?.purpose === 'stream';
+  get isTransparent(): boolean {
+    return this.background === 'transparent';
   }
 
   setConnection(state: RemoteConnectionState) {

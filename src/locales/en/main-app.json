@@ -98,17 +98,20 @@
     "allMonitors": "All monitors",
     "removeMonitor": "Remove monitor from layout",
     "addRemoteScreen": "Add screen",
-    "addRemoteScreenTooltip": "Add another screen to this layout — a tablet, or a virtual one",
+    "addRemoteScreenTooltip": "Add another screen to this layout — a tablet, a phone, or a browser source in OBS",
     "addRemoteScreenConfirm": "Add screen",
     "remoteScreenNamePlaceholder": "Screen name, e.g. Wheel tablet",
-    "remoteScreenPurposeDevice": "Device",
-    "remoteScreenPurposeStream": "Virtual screen",
-    "remoteScreenPurposeDeviceHint": "A tablet or phone on your network opens this screen in a browser.",
-    "remoteScreenPurposeStreamHint": "A screen your system does not have: OBS opens it as a Browser Source. Transparent background, and the size stays where you set it.",
     "remoteScreenDefaultName": "Remote screen",
     "remoteScreenTag": "remote",
     "arrangeRemoteScreens": "Tidy remote screens",
-    "arrangeRemoteScreensTooltip": "Lay the remote screens out in rows under the desktop, widgets included"
+    "arrangeRemoteScreensTooltip": "Lay the remote screens out in rows under the desktop, widgets included",
+    "addRemoteScreenHint": "Anything that opens the link renders this screen: a tablet on your network, or a Browser Source in OBS. Make the ground transparent for OBS, and size the source to match — the first one that connects reports its own size, and fitting to it moves every widget on the screen.",
+    "remoteScreenTransparent": "Transparent background (for OBS)",
+    "remoteScreenPresetGroup": {
+      "monitor": "Monitor / stream canvas",
+      "tablet": "Tablet",
+      "phone": "Phone"
+    }
   },
   "layoutList": {
     "moduleLabel": "Layouts",
@@ -454,7 +457,7 @@
       "screensEmpty": "No remote screens yet. Add one in the layout editor, next to the monitors.",
       "serverOffline": "Server not running",
       "copyUrl": "Copy link",
-      "obsHint": "Add this URL as a Browser Source in OBS, sized {{width}}×{{height}}. Copy a single widget below to place it in the scene on its own.",
+      "obsHint": "Add this URL as a Browser Source in OBS, sized {{width}}×{{height}}. Widget links below place a single widget in the scene on its own.",
       "urlCopied": "Link copied",
       "deviceOnline": "Device connected",
       "deviceReports": "Device reports {{width}}×{{height}} of usable page, on a {{screenWidth}}×{{screenHeight}} display.",
@@ -469,7 +472,9 @@
       "tokenCopied": "Token copied",
       "qrHidden": "QR code hidden",
       "widgetLinksTitle": "Widget links",
-      "widgetLinksDesc": "A browser-source address per widget, wherever it stands in the layout. The page draws that widget alone, on a transparent background."
+      "widgetLinksDesc": "A browser-source address per widget, wherever it stands in the layout. The page draws that widget alone, on a transparent background.",
+      "backgroundLabel": "Background",
+      "backgroundTransparent": "transparent"
     },
     "companions": {
       "add": "Add",

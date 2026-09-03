@@ -53,7 +53,7 @@ const snapshotFor = (
     language: root.appSettings.appSettings.language,
     steeringLock: root.appSettings.appSettings.steeringLock,
     layoutName: layout.name,
-    purpose: monitor.purpose,
+    background: monitor.background,
   };
 };
 
@@ -77,7 +77,7 @@ const widgetSourceSnapshot = (root: RootStore): RemoteScreenSnapshot | null => {
     language: root.appSettings.appSettings.language,
     steeringLock: root.appSettings.appSettings.steeringLock,
     layoutName: layout.name,
-    purpose: 'stream',
+    background: 'transparent',
   };
 };
 

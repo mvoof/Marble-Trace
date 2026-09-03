@@ -98,17 +98,20 @@
     "allMonitors": "Все мониторы",
     "removeMonitor": "Убрать монитор из раскладки",
     "addRemoteScreen": "Добавить экран",
-    "addRemoteScreenTooltip": "Добавить этой раскладке ещё один экран — планшет или виртуальный",
+    "addRemoteScreenTooltip": "Добавить этой раскладке ещё один экран — планшет, телефон или Browser Source в OBS",
     "addRemoteScreenConfirm": "Добавить экран",
     "remoteScreenNamePlaceholder": "Название экрана, например «Планшет на руле»",
-    "remoteScreenPurposeDevice": "Устройство",
-    "remoteScreenPurposeStream": "Виртуальный экран",
-    "remoteScreenPurposeDeviceHint": "Планшет или телефон в вашей сети открывает этот экран в браузере.",
-    "remoteScreenPurposeStreamHint": "Экран, которого нет в системе: его открывает OBS как Browser Source. Прозрачный фон, размер остаётся тем, который вы задали.",
     "remoteScreenDefaultName": "Внешний экран",
     "remoteScreenTag": "внешний",
     "arrangeRemoteScreens": "Разложить внешние экраны",
-    "arrangeRemoteScreensTooltip": "Разложить внешние экраны рядами под рабочим столом вместе с их виджетами"
+    "arrangeRemoteScreensTooltip": "Разложить внешние экраны рядами под рабочим столом вместе с их виджетами",
+    "addRemoteScreenHint": "Экран рисует всё, что откроет ссылку: планшет в вашей сети или Browser Source в OBS. Для OBS сделайте фон прозрачным и задайте источнику тот же размер — первый подключившийся сообщает свой, и подгонка под него сдвинет все виджеты экрана.",
+    "remoteScreenTransparent": "Прозрачный фон (для OBS)",
+    "remoteScreenPresetGroup": {
+      "monitor": "Монитор / холст стрима",
+      "tablet": "Планшет",
+      "phone": "Телефон"
+    }
   },
   "layoutList": {
     "moduleLabel": "Раскладки",
@@ -458,7 +461,7 @@
       "screensEmpty": "Внешних экранов пока нет. Добавьте экран в редакторе раскладок, рядом с мониторами.",
       "serverOffline": "Сервер не запущен",
       "copyUrl": "Копировать ссылку",
-      "obsHint": "Добавьте этот адрес как Browser Source в OBS с размером {{width}}×{{height}}. Кнопки ниже копируют отдельный виджет — чтобы разместить его в сцене самостоятельно.",
+      "obsHint": "Добавьте этот адрес как Browser Source в OBS с размером {{width}}×{{height}}. Ссылки на виджеты ниже дают отдельный виджет — чтобы разместить его в сцене самостоятельно.",
       "urlCopied": "Ссылка скопирована",
       "deviceOnline": "Устройство подключено",
       "deviceReports": "Устройство сообщает {{width}}×{{height}} полезной области на экране {{screenWidth}}×{{screenHeight}}.",
@@ -473,7 +476,9 @@
       "tokenCopied": "Токен скопирован",
       "qrHidden": "QR-код скрыт",
       "widgetLinksTitle": "Ссылки на виджеты",
-      "widgetLinksDesc": "Адрес Browser Source для каждого виджета, где бы он ни стоял в раскладке. Страница рисует только этот виджет на прозрачном фоне."
+      "widgetLinksDesc": "Адрес Browser Source для каждого виджета, где бы он ни стоял в раскладке. Страница рисует только этот виджет на прозрачном фоне.",
+      "backgroundLabel": "Фон",
+      "backgroundTransparent": "прозрачный"
     },
     "companions": {
       "add": "Добавить",

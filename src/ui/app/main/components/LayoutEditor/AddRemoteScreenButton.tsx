@@ -7,32 +7,33 @@ import {
   Input,
   InputNumber,
   Modal,
-  Segmented,
+  Switch,
   Typography,
   Select,
   Tooltip,
 } from 'antd';
 import { TabletSmartphone } from 'lucide-react';
 
-import {
-  REMOTE_SCREEN_PRESETS,
-  STREAM_SCREEN_PRESETS,
-} from '@utils/remote-screen';
+import { REMOTE_SCREEN_PRESET_GROUPS } from '@utils/remote-screen';
 import { useWidgetSettingsStore } from '@store/root-store-context';
-import type { RemoteScreenPurpose } from '@/types/widget-settings';
 
 const ICON_SIZE = 12;
 const MIN_SIDE = 240;
 const MAX_SIDE = 4096;
 
-const DEFAULT_PRESET = REMOTE_SCREEN_PRESETS[0];
+const DEFAULT_PRESET = REMOTE_SCREEN_PRESET_GROUPS[0].presets[0];
 
 /**
- * Adds a device screen to the layout.
+ * Adds a screen to the layout.
  *
- * The size is picked here and stored with the layout rather than read from the
- * device: the editor has to work with the tablet switched off and in another
- * room, so the screen needs bounds of its own long before anything connects.
+ * One kind of screen, whoever opens it: a tablet in the garage and a browser
+ * source in OBS read the same page, and the only thing that differs is what it
+ * paints behind the widgets. So the dialog asks for a name, a size and whether
+ * the ground is transparent — never for what the screen is *for*.
+ *
+ * The size is stored with the layout rather than read from whatever connects:
+ * the editor has to work with the tablet switched off and in another room, so
+ * the screen needs bounds of its own long before anything opens it.
  */
 export const AddRemoteScreenButton = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
@@ -40,33 +41,27 @@ export const AddRemoteScreenButton = observer(() => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
-  const [purpose, setPurpose] = useState<RemoteScreenPurpose>('device');
+  const [transparent, setTransparent] = useState(false);
   const [width, setWidth] = useState<number>(DEFAULT_PRESET.width);
   const [height, setHeight] = useState<number>(DEFAULT_PRESET.height);
 
-  const presets =
-    purpose === 'stream' ? STREAM_SCREEN_PRESETS : REMOTE_SCREEN_PRESETS;
-
-  const presetOptions = presets.map((preset) => ({
-    value: `${preset.width}x${preset.height}`,
-    label: `${preset.label} · ${preset.width}×${preset.height}`,
+  const presetOptions = REMOTE_SCREEN_PRESET_GROUPS.map((group) => ({
+    label: t(`layoutEditor.remoteScreenPresetGroup.${group.id}`),
+    options: group.presets.map((preset) => ({
+      value: `${preset.width}x${preset.height}`,
+      label: `${preset.label} · ${preset.width}×${preset.height}`,
+    })),
   }));
-
-  // Switching what the screen is for switches what sizes make sense for it, so
-  // the size follows the choice rather than keeping a tablet's on a broadcast.
-  const handlePurpose = (next: RemoteScreenPurpose) => {
-    const [first] =
-      next === 'stream' ? STREAM_SCREEN_PRESETS : REMOTE_SCREEN_PRESETS;
-
-    setPurpose(next);
-    setWidth(first.width);
-    setHeight(first.height);
-  };
 
   const handleConfirm = () => {
     const trimmed = name.trim() || t('layoutEditor.remoteScreenDefaultName');
 
-    widgetSettings.addRemoteScreen(trimmed, width, height, purpose);
+    widgetSettings.addRemoteScreen(
+      trimmed,
+      width,
+      height,
+      transparent ? 'transparent' : undefined
+    );
 
     setIsOpen(false);
     setName('');
@@ -96,6 +91,7 @@ export const AddRemoteScreenButton = observer(() => {
         open={isOpen}
         title={t('layoutEditor.addRemoteScreen')}
         okText={t('layoutEditor.addRemoteScreenConfirm')}
+        cancelText={t('layoutEditor.cancel')}
         onOk={handleConfirm}
         onCancel={() => setIsOpen(false)}
       >
@@ -105,28 +101,6 @@ export const AddRemoteScreenButton = observer(() => {
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
-
-          <Segmented<RemoteScreenPurpose>
-            block
-            value={purpose}
-            onChange={handlePurpose}
-            options={[
-              {
-                value: 'device',
-                label: t('layoutEditor.remoteScreenPurposeDevice'),
-              },
-              {
-                value: 'stream',
-                label: t('layoutEditor.remoteScreenPurposeStream'),
-              },
-            ]}
-          />
-
-          <Typography.Text type="secondary">
-            {purpose === 'stream'
-              ? t('layoutEditor.remoteScreenPurposeStreamHint')
-              : t('layoutEditor.remoteScreenPurposeDeviceHint')}
-          </Typography.Text>
 
           <Select
             options={presetOptions}
@@ -151,6 +125,18 @@ export const AddRemoteScreenButton = observer(() => {
               onChange={(value) => value !== null && setHeight(value)}
             />
           </Flex>
+
+          <Flex align="center" gap={12}>
+            <Switch checked={transparent} onChange={setTransparent} />
+
+            <Typography.Text>
+              {t('layoutEditor.remoteScreenTransparent')}
+            </Typography.Text>
+          </Flex>
+
+          <Typography.Text type="secondary">
+            {t('layoutEditor.addRemoteScreenHint')}
+          </Typography.Text>
         </Flex>
       </Modal>
     </>

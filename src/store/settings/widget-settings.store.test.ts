@@ -902,7 +902,7 @@ describe('several copies of one widget in a layout', () => {
   });
 });
 
-describe('a screen added for a stream', () => {
+describe('a screen added to a layout', () => {
   let rootStore: RootStore;
 
   beforeEach(() => {
@@ -926,29 +926,32 @@ describe('a screen added for a stream', () => {
     );
   });
 
-  const streamScreen = () =>
+  const screenNamed = (name: string) =>
     rootStore.widgetSettings.activeLayout!.monitors.find(
-      (monitor) => monitor.name === 'Stream'
+      (monitor) => monitor.name === name
     )!;
 
-  // The size is the canvas being broadcast at, and the user chose it here.
-  // Marking it fitted is what stops the first browser source that connects
-  // from reporting its own size and reshuffling a finished layout.
-  it('is created already fitted, so OBS cannot resize it', () => {
-    rootStore.widgetSettings.addRemoteScreen('Stream', 1920, 1080, 'stream');
+  // The only thing that separates a browser source from a tablet: what the page
+  // paints behind the widgets. Everything else about the screen is the same.
+  it('carries the background it was created with', () => {
+    rootStore.widgetSettings.addRemoteScreen(
+      'Stream',
+      1920,
+      1080,
+      'transparent'
+    );
 
-    expect(streamScreen().purpose).toBe('stream');
-    expect(streamScreen().fittedToDevice).toBe(true);
+    expect(screenNamed('Stream').background).toBe('transparent');
   });
 
-  it('leaves a device screen open to being fitted, as before', () => {
+  it('leaves the ground to the default until it is set', () => {
     rootStore.widgetSettings.addRemoteScreen('Tablet', 1280, 800);
 
-    const tablet = rootStore.widgetSettings.activeLayout!.monitors.find(
-      (monitor) => monitor.name === 'Tablet'
-    )!;
+    expect(screenNamed('Tablet').background).toBeUndefined();
+    expect(screenNamed('Tablet').fittedToDevice).toBeFalsy();
 
-    expect(tablet.purpose).toBe('device');
-    expect(tablet.fittedToDevice).toBeFalsy();
+    rootStore.widgetSettings.setRemoteScreenBackground('Tablet', 'transparent');
+
+    expect(screenNamed('Tablet').background).toBe('transparent');
   });
 });

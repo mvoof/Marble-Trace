@@ -25,13 +25,11 @@ export const cloneMonitor = (monitor: LayoutMonitor): LayoutMonitor => ({
   ...(monitor.kind ? { kind: monitor.kind } : {}),
   ...(monitor.slug ? { slug: monitor.slug } : {}),
   ...(monitor.fittedToDevice ? { fittedToDevice: true } : {}),
-  // Dropped here, a stream screen would come back as a device screen: it would
-  // paint on black and let the first browser source that connects resize the
-  // layout the user had already built.
-  ...(monitor.purpose ? { purpose: monitor.purpose } : {}),
+  // Dropped here, a screen built for a browser source would come back painting
+  // on black, and the widgets would sit on a black rectangle in the scene.
+  ...(monitor.background ? { background: monitor.background } : {}),
 });
 
-/** Common device sizes offered when adding a screen, in logical pixels. */
 /**
  * The slug a widget's own stream URL is served from.
  *
@@ -44,27 +42,49 @@ export const cloneMonitor = (monitor: LayoutMonitor): LayoutMonitor => ({
  */
 export const WIDGET_SOURCE_SLUG = '__widgets';
 
-export const REMOTE_SCREEN_PRESETS = [
-  { label: 'Tablet 10" landscape', width: 1280, height: 800 },
-  { label: 'Tablet 10" portrait', width: 800, height: 1280 },
-  { label: 'iPad landscape', width: 1180, height: 820 },
-  { label: 'iPad portrait', width: 820, height: 1180 },
-  { label: 'Phone landscape', width: 844, height: 390 },
-  { label: 'Phone portrait', width: 390, height: 844 },
-] as const;
+/** What a remote screen paints behind its widgets unless told otherwise. */
+export const DEFAULT_REMOTE_BACKGROUND = '#000000';
 
 /**
- * Canvases people stream at, offered when a screen is created for OBS.
+ * Sizes offered when adding a screen, grouped by what is opening it.
  *
- * Deliberately not the device list: a browser source is sized to the broadcast
- * canvas, not to any physical panel, and 1080p is what almost every stream is
- * encoded at whatever the streamer is playing on.
+ * One list rather than one per kind of screen: a screen is a screen, and the
+ * only thing that differs between a tablet and a browser source is what the
+ * page paints behind the widgets. Monitor sizes are the broadcast canvases,
+ * which is what a browser source is sized to — not to any physical panel.
  */
-export const STREAM_SCREEN_PRESETS = [
-  { label: '1080p', width: 1920, height: 1080 },
-  { label: '1440p', width: 2560, height: 1440 },
-  { label: '720p', width: 1280, height: 720 },
+export const REMOTE_SCREEN_PRESET_GROUPS = [
+  {
+    id: 'monitor',
+    presets: [
+      { label: '1080p', width: 1920, height: 1080 },
+      { label: '1440p', width: 2560, height: 1440 },
+      { label: '720p', width: 1280, height: 720 },
+    ],
+  },
+  {
+    id: 'tablet',
+    presets: [
+      { label: 'Tablet 10" landscape', width: 1280, height: 800 },
+      { label: 'Tablet 10" portrait', width: 800, height: 1280 },
+      { label: 'iPad landscape', width: 1180, height: 820 },
+      { label: 'iPad portrait', width: 820, height: 1180 },
+    ],
+  },
+  {
+    id: 'phone',
+    presets: [
+      { label: 'Phone landscape', width: 844, height: 390 },
+      { label: 'Phone portrait', width: 390, height: 844 },
+    ],
+  },
 ] as const;
+
+export const REMOTE_SCREEN_PRESETS: readonly {
+  label: string;
+  width: number;
+  height: number;
+}[] = REMOTE_SCREEN_PRESET_GROUPS.flatMap((group) => [...group.presets]);
 
 /** Gap left between the desktop and a remote screen placed beside it. */
 const REMOTE_SCREEN_GAP = 200;

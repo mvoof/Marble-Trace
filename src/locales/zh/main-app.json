@@ -98,17 +98,20 @@
     "allMonitors": "所有显示器",
     "removeMonitor": "从布局中移除显示器",
     "addRemoteScreen": "添加屏幕",
-    "addRemoteScreenTooltip": "为此布局添加另一个屏幕——平板或虚拟屏幕",
+    "addRemoteScreenTooltip": "为此布局添加另一个屏幕——平板、手机或 OBS 中的浏览器源",
     "addRemoteScreenConfirm": "添加屏幕",
     "remoteScreenNamePlaceholder": "屏幕名称，例如“方向盘平板”",
-    "remoteScreenPurposeDevice": "设备",
-    "remoteScreenPurposeStream": "虚拟屏幕",
-    "remoteScreenPurposeDeviceHint": "网络中的平板或手机在浏览器中打开此屏幕。",
-    "remoteScreenPurposeStreamHint": "系统中并不存在的屏幕：由 OBS 作为浏览器源打开。背景透明，尺寸保持你设定的值。",
     "remoteScreenDefaultName": "远程屏幕",
     "remoteScreenTag": "远程",
     "arrangeRemoteScreens": "整理远程屏幕",
-    "arrangeRemoteScreensTooltip": "将远程屏幕连同其挂件排列在桌面下方的多行中"
+    "arrangeRemoteScreensTooltip": "将远程屏幕连同其挂件排列在桌面下方的多行中",
+    "addRemoteScreenHint": "任何打开该链接的设备都会渲染此屏幕：网络中的平板，或 OBS 的浏览器源。用于 OBS 时请将背景设为透明，并把源设成相同尺寸——第一个连接的会上报自己的尺寸，按它调整会移动该屏幕上的所有挂件。",
+    "remoteScreenTransparent": "透明背景（用于 OBS）",
+    "remoteScreenPresetGroup": {
+      "monitor": "显示器 / 直播画布",
+      "tablet": "平板",
+      "phone": "手机"
+    }
   },
   "layoutList": {
     "moduleLabel": "布局",
@@ -452,7 +455,7 @@
       "screensEmpty": "尚无远程屏幕。请在布局编辑器中的显示器旁添加一个。",
       "serverOffline": "服务器未运行",
       "copyUrl": "复制链接",
-      "obsHint": "在 OBS 中将此地址添加为浏览器源，尺寸 {{width}}×{{height}}。下方可复制单个小组件，以便单独放入场景。",
+      "obsHint": "在 OBS 中将此地址添加为浏览器源，尺寸 {{width}}×{{height}}。下面的挂件链接可单独把一个挂件放进场景。",
       "urlCopied": "链接已复制",
       "deviceOnline": "设备已连接",
       "deviceReports": "设备报告可用区域 {{width}}×{{height}}，屏幕为 {{screenWidth}}×{{screenHeight}}。",
@@ -467,7 +470,9 @@
       "tokenCopied": "令牌已复制",
       "qrHidden": "二维码已隐藏",
       "widgetLinksTitle": "挂件链接",
-      "widgetLinksDesc": "每个挂件都有一个浏览器源地址，无论它在布局中的哪个位置。页面只绘制该挂件，背景透明。"
+      "widgetLinksDesc": "每个挂件都有一个浏览器源地址，无论它在布局中的哪个位置。页面只绘制该挂件，背景透明。",
+      "backgroundLabel": "背景",
+      "backgroundTransparent": "透明"
     },
     "companions": {
       "add": "添加",

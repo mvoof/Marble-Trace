@@ -25,7 +25,7 @@ const widget = (
 
 const snapshot = (
   widgets: WidgetDefaultConfig[],
-  purpose?: 'device' | 'stream'
+  background?: string
 ): RemoteScreenSnapshot =>
   ({
     slug: 'stream',
@@ -36,24 +36,25 @@ const snapshot = (
     language: 'en',
     steeringLock: 900,
     layoutName: 'Race',
-    purpose,
+    background,
   }) as RemoteScreenSnapshot;
 
-describe('a remote screen opened for a stream', () => {
-  it('paints for an encoder when the screen says so', () => {
+describe('what a remote screen paints behind its widgets', () => {
+  it('contributes no ground when the screen was set transparent', () => {
     const screen = new RemoteScreenStore('stream');
 
-    screen.setSnapshot(snapshot([widget('standings')], 'stream'));
+    screen.setSnapshot(snapshot([widget('standings')], 'transparent'));
 
-    expect(screen.isStream).toBe(true);
+    expect(screen.isTransparent).toBe(true);
   });
 
-  it('paints for a person by default', () => {
+  it('paints a ground of its own by default', () => {
     const screen = new RemoteScreenStore('tablet');
 
     screen.setSnapshot(snapshot([widget('standings')]));
 
-    expect(screen.isStream).toBe(false);
+    expect(screen.isTransparent).toBe(false);
+    expect(screen.background).toBe('#000000');
   });
 });
 
@@ -85,11 +86,11 @@ describe('a remote screen opened for one widget', () => {
     const screen = new RemoteScreenStore('stream', 'standings-2');
 
     screen.setSnapshot(
-      snapshot([widget('standings-2', { enabled: false })], 'device')
+      snapshot([widget('standings-2', { enabled: false })], '#101010')
     );
 
     expect(screen.enabledWidgets).toHaveLength(1);
-    expect(screen.isStream).toBe(true);
+    expect(screen.isTransparent).toBe(true);
   });
 
   it('waits rather than drawing the whole screen when the widget is gone', () => {

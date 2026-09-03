@@ -4,9 +4,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  // The device is the frame here, not a transparent hole over a game: an
-  // explicit ground keeps the letterbox from showing the browser's own.
-  background: #000;
+  // The ground is set inline from the screen's own setting: a device wants one
+  // so the letterbox does not show the browser's, a browser source wants none.
   overflow: hidden;
   // A widget screen is watched, never scrolled — a stray drag must not pull
   // the layout out of view.
@@ -18,8 +17,3 @@
 // Painted into an encoder, not onto a device: OBS composites this over the game
 // capture below it, so the page must contribute no ground at all. Anything
 // opaque here would be a black plate across the whole scene.
-.windowStream {
-  @extend .window;
-
-  background: transparent;
-}
