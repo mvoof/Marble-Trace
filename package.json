@@ -3,6 +3,7 @@
   "description": "iRacing Telemetry Overlay",
   "private": true,
   "version": "0.22.1",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "repository": {
     "url": "https://github.com/mvoof/Marble-Trace"

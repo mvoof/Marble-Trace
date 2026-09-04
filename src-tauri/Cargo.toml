@@ -3,7 +3,7 @@ name = "marble-trace"
 version = "0.22.1"
 description = "Marble Trace - iRacing Telemetry Overlay"
 authors = ["mvoof"]
-license = "MIT"
+license = "GPL-3.0-or-later"
 repository = ""
 edition = "2021"
 
