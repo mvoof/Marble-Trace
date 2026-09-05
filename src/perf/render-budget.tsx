@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { runInAction, spy } from 'mobx';
+import { observable, runInAction, spy } from 'mobx';
+import { observer } from 'mobx-react-lite';
 
 import { RootStore } from '@store/root-store';
 import { RootStoreContext } from '@store/root-store-context';
@@ -72,19 +73,83 @@ const bumpWakeUp = (counts: Map<string, number>, componentName: string) => {
 };
 
 /**
- * `spy` is compiled out of a production MobX build, so a config that ever set
- * `NODE_ENV=production` would leave every counter at zero and every budget
- * passing. That failure is silent, so it is checked rather than trusted.
+ * Records every observer wake-up into `counts` until the returned function is
+ * called. The probe and the burst share it, so the probe proves the path the
+ * measurement actually uses rather than a simpler one beside it.
  */
-const assertSpyIsLive = (componentWakeUps: Map<string, number>) => {
-  if (componentWakeUps.size > 0) {
+const countWakeUpsInto = (counts: Map<string, number>): (() => void) =>
+  spy((event) => {
+    if (event.type !== 'reaction') {
+      return;
+    }
+
+    if (!event.name.startsWith(OBSERVER_REACTION_PREFIX)) {
+      return;
+    }
+
+    bumpWakeUp(counts, componentNameOf(event.name));
+  });
+
+const PROBE_COMPONENT_NAME = 'RenderBudgetProbe';
+
+const probeValue = observable.box(0);
+
+const RenderBudgetProbe = observer(function RenderBudgetProbe() {
+  return <span>{probeValue.get()}</span>;
+});
+
+/**
+ * Proves the counter can still count, before anything is measured with it.
+ *
+ * Two silent failures are possible, and both end the same way — every counter
+ * reads zero and every budget "passes". `spy` is compiled out of a production
+ * MobX build, so a config that ever set `NODE_ENV=production` would report
+ * nothing; and the reaction an `observer` creates is named by mobx-react-lite,
+ * so a release that renamed it would slip past `OBSERVER_REACTION_PREFIX` and
+ * attribute nothing.
+ *
+ * So the probe goes through the whole path rather than half of it: a named
+ * observer component is mounted, woken once, and its wake-up has to come back
+ * attributed *by that name*. Looking at the counts of the subtree under test
+ * would not do — a subtree that wakes nothing is the goal of this work, and a
+ * widget drawn entirely on canvas reaches it, so zero has to stay reportable.
+ */
+const assertCounterIsLive = async () => {
+  const container = document.createElement('div');
+
+  document.body.appendChild(container);
+
+  const root = createRoot(container);
+
+  await act(async () => {
+    root.render(<RenderBudgetProbe />);
+  });
+
+  const probeWakeUps = new Map<string, number>();
+  const stopCounting = countWakeUpsInto(probeWakeUps);
+
+  await act(async () => {
+    runInAction(() => probeValue.set(probeValue.get() + 1));
+  });
+
+  stopCounting();
+
+  await act(async () => {
+    root.unmount();
+  });
+
+  container.remove();
+
+  if ((probeWakeUps.get(PROBE_COMPONENT_NAME) ?? 0) > 0) {
     return;
   }
 
   throw new Error(
-    'Render budget: MobX spy reported no reactions at all. Either the subtree ' +
-      'under test reads nothing observable, or this ran against a production ' +
-      'MobX build, where spy is a no-op and every budget passes with zero.'
+    `Render budget: the counter did not attribute a wake-up to its own ` +
+      `${PROBE_COMPONENT_NAME}, which certainly woke. Either this ran against ` +
+      'a production MobX build, where spy is a no-op, or mobx-react-lite no ' +
+      `longer names an observer's reaction '${OBSERVER_REACTION_PREFIX}<Name>'. ` +
+      'Either way every budget would pass with zero.'
   );
 };
 
@@ -114,6 +179,13 @@ export const measureRenderBudget = async <Frame,>({
   afterBurst,
   afterMount,
 }: MeasureRenderBudgetOptions<Frame>): Promise<RenderBudgetReport> => {
+  const globalScope = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
+  const previousActEnvironment = globalScope.IS_REACT_ACT_ENVIRONMENT;
+
+  globalScope.IS_REACT_ACT_ENVIRONMENT = true;
+
+  await assertCounterIsLive();
+
   const store = new RootStore({ skipInit: true });
 
   seedScenario(store, scenarioId);
@@ -122,11 +194,6 @@ export const measureRenderBudget = async <Frame,>({
   const container = document.createElement('div');
 
   document.body.appendChild(container);
-
-  const globalScope = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
-  const previousActEnvironment = globalScope.IS_REACT_ACT_ENVIRONMENT;
-
-  globalScope.IS_REACT_ACT_ENVIRONMENT = true;
 
   const root = createRoot(container);
 
@@ -144,17 +211,7 @@ export const measureRenderBudget = async <Frame,>({
   // costs, not what putting the widget on screen costs once.
   const componentWakeUps = new Map<string, number>();
 
-  const stopSpying = spy((event) => {
-    if (event.type !== 'reaction') {
-      return;
-    }
-
-    if (!event.name.startsWith(OBSERVER_REACTION_PREFIX)) {
-      return;
-    }
-
-    bumpWakeUp(componentWakeUps, componentNameOf(event.name));
-  });
+  const stopSpying = countWakeUpsInto(componentWakeUps);
 
   const frames = burst(store);
 
@@ -183,7 +240,6 @@ export const measureRenderBudget = async <Frame,>({
   container.remove();
   globalScope.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
 
-  assertSpyIsLive(componentWakeUps);
   assertComponentsAreNamed(componentWakeUps);
 
   return {
@@ -206,6 +262,35 @@ export interface RenderBudget {
 }
 
 /**
+ * A component that woke but is in no table has no budget at all, which is the
+ * hole a new sub-component would fall through: it would cost sixty wake-ups a
+ * frame and nothing would say so. The table has to name everything that woke.
+ */
+const assertEveryWakerIsBudgeted = (
+  report: RenderBudgetReport,
+  budgets: Record<string, RenderBudget>
+) => {
+  const unbudgeted = Object.entries(report.wakeUps).filter(
+    ([componentName]) => budgets[componentName] === undefined
+  );
+
+  if (unbudgeted.length === 0) {
+    return;
+  }
+
+  const lines = unbudgeted.map(
+    ([componentName, actual]) => `${componentName}: ${actual}`
+  );
+
+  throw new Error(
+    `Render budget: components woke that the table does not list, over ` +
+      `${report.frames} frames:\n  ${lines.join('\n  ')}\n\n` +
+      'Add a row for each — with a target beside the number if it is above ' +
+      'where it should be. See docs/rendering.md.'
+  );
+};
+
+/**
  * Asserts every component in the table against its budget, and throws with the
  * component, its budget and its actual count named in the message.
  */
@@ -213,6 +298,8 @@ export const assertRenderBudgets = (
   report: RenderBudgetReport,
   budgets: Record<string, RenderBudget>
 ) => {
+  assertEveryWakerIsBudgeted(report, budgets);
+
   const overspent = Object.entries(budgets)
     .map(([componentName, budget]) => ({
       componentName,

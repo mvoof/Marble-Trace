@@ -23,7 +23,7 @@ const PCT = 100;
  * speed itself — "how much more can I give it" is the question being asked, and
  * a raw speed answers it only after the driver does the subtraction.
  */
-export const PitSpeedPlate = observer(() => {
+export const PitSpeedPlate = observer(function PitSpeedPlate() {
   const player = usePlayerStore();
   const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();

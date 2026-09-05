@@ -6,7 +6,7 @@ import { GMeterTrace } from './GMeterTrace/GMeterTrace';
 
 import styles from './GMeterCanvas.module.scss';
 
-export const GMeterCanvas = observer(() => {
+export const GMeterCanvas = observer(function GMeterCanvas() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 

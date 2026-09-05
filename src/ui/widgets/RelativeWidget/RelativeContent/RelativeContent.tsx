@@ -21,7 +21,7 @@ import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './RelativeContent.module.scss';
 
-export const RelativeContent = observer(() => {
+export const RelativeContent = observer(function RelativeContent() {
   const computed = useBackendComputedStore();
   const sim = useSimStore();
   const { carIdx } = useCarsStore();

@@ -33,7 +33,10 @@ interface ReservedSlotProps {
  * Only for blocks that hide themselves on **telemetry**. A block switched off in
  * the settings is off in the editor too — there is nothing to reconcile.
  */
-export const ReservedSlot = observer(({ height, label }: ReservedSlotProps) => {
+export const ReservedSlot = observer(function ReservedSlot({
+  height,
+  label,
+}: ReservedSlotProps) {
   const appSettings = useAppSettingsStore();
 
   const isPlacing = appSettings.dragMode;

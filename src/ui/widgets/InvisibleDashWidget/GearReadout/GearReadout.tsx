@@ -9,7 +9,7 @@ import { formatGear, zoneDigitColor } from '../invisible-dash-utils';
 
 import styles from './GearReadout.module.scss';
 
-export const GearReadout = observer(() => {
+export const GearReadout = observer(function GearReadout() {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
 

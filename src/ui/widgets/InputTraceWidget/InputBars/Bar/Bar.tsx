@@ -42,57 +42,59 @@ const CHANNEL_VISIBILITY_KEY: Record<
   throttle: 'showThrottle',
 };
 
-export const Bar = observer(
-  ({ channel, width = 'md', rounded = true }: BarProps) => {
-    const trackRef = useRef<HTMLDivElement>(null);
-    const labelRef = useRef<HTMLSpanElement>(null);
-    const { carInputs } = usePlayerStore();
-    const inputTrace = useInputTraceWidgetStore();
-    const settings = useWidgetSettings<InputTraceSettings>('input-trace');
-    const showValue = settings.showInputValues;
-    const coverPoint = useValueCoverPoint(trackRef, labelRef, showValue);
+export const Bar = observer(function Bar({
+  channel,
+  width = 'md',
+  rounded = true,
+}: BarProps) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLSpanElement>(null);
+  const { carInputs } = usePlayerStore();
+  const inputTrace = useInputTraceWidgetStore();
+  const settings = useWidgetSettings<InputTraceSettings>('input-trace');
+  const showValue = settings.showInputValues;
+  const coverPoint = useValueCoverPoint(trackRef, labelRef, showValue);
 
-    if (!settings[CHANNEL_VISIBILITY_KEY[channel]]) {
-      return null;
-    }
-
-    const clamped = Math.max(0, Math.min(1, inputTrace.smoothed[channel]));
-    const isAbsActive =
-      channel === 'brake' && (carInputs?.brake_abs_active ?? false);
-
-    const valueText = `${Math.round(clamped * 100)}`;
-
-    const color = isAbsActive
-      ? settings.absColor
-      : getChannelColor(settings, channel);
-
-    return (
-      <div className={styles.verticalContainer}>
-        <div
-          ref={trackRef}
-          className={`${styles.verticalTrack} ${styles[`trackWidth-${width}`]}${
-            !rounded ? ` ${styles.noRadius}` : ''
-          }`}
-        >
-          <div
-            className={`${styles.verticalFill}${!rounded ? ` ${styles.noRadius}` : ''}`}
-            style={{ height: `${clamped * 100}%`, background: color }}
-          />
-        </div>
-
-        {showValue && (
-          <span
-            ref={labelRef}
-            className={styles.value}
-            style={{
-              color:
-                clamped >= coverPoint ? getContrastTextColor(color) : undefined,
-            }}
-          >
-            {valueText}
-          </span>
-        )}
-      </div>
-    );
+  if (!settings[CHANNEL_VISIBILITY_KEY[channel]]) {
+    return null;
   }
-);
+
+  const clamped = Math.max(0, Math.min(1, inputTrace.smoothed[channel]));
+  const isAbsActive =
+    channel === 'brake' && (carInputs?.brake_abs_active ?? false);
+
+  const valueText = `${Math.round(clamped * 100)}`;
+
+  const color = isAbsActive
+    ? settings.absColor
+    : getChannelColor(settings, channel);
+
+  return (
+    <div className={styles.verticalContainer}>
+      <div
+        ref={trackRef}
+        className={`${styles.verticalTrack} ${styles[`trackWidth-${width}`]}${
+          !rounded ? ` ${styles.noRadius}` : ''
+        }`}
+      >
+        <div
+          className={`${styles.verticalFill}${!rounded ? ` ${styles.noRadius}` : ''}`}
+          style={{ height: `${clamped * 100}%`, background: color }}
+        />
+      </div>
+
+      {showValue && (
+        <span
+          ref={labelRef}
+          className={styles.value}
+          style={{
+            color:
+              clamped >= coverPoint ? getContrastTextColor(color) : undefined,
+          }}
+        >
+          {valueText}
+        </span>
+      )}
+    </div>
+  );
+});

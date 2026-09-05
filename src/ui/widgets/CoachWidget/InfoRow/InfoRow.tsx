@@ -18,7 +18,7 @@ const NO_VALUE_TEXT = '—';
  * of the two stored references is in use. All optional — the curves carry the
  * shape, this row carries the values for anyone who wants them.
  */
-export const InfoRow = observer(() => {
+export const InfoRow = observer(function InfoRow() {
   const coach = useDrivingCoachWidgetStore();
   const trace = useCoachWidgetStore();
   const units = useUnitsStore();

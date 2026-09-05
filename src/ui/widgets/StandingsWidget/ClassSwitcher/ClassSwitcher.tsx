@@ -14,7 +14,7 @@ import {
 
 const FLASH_DURATION_MS = 300;
 
-export const ClassSwitcher = observer(() => {
+export const ClassSwitcher = observer(function ClassSwitcher() {
   const standingsWidget = useStandingsWidgetStore();
   const appSettings = useAppSettingsStore();
 

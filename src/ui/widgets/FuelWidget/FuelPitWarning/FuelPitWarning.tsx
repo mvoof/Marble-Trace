@@ -16,7 +16,7 @@ import { useBackendComputedStore } from '@store/root-store-context';
  */
 const PIT_WARNING_HEIGHT_PX = 120;
 
-export const FuelPitWarning = observer(() => {
+export const FuelPitWarning = observer(function FuelPitWarning() {
   const { fuel } = useBackendComputedStore();
 
   const settings = useWidgetSettings<FuelWidgetSettings>('fuel');

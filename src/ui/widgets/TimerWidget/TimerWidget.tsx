@@ -6,7 +6,7 @@ import { TimerDisplay } from './TimerDisplay/TimerDisplay';
 import { TimerFooter } from './TimerFooter/TimerFooter';
 import { TimerHeader } from './TimerHeader/TimerHeader';
 
-export const TimerWidget = observer(() => {
+export const TimerWidget = observer(function TimerWidget() {
   return (
     <WidgetPanel direction="column" gap={0} minWidth={180}>
       <TimerHeader />

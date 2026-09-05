@@ -21,7 +21,7 @@ import styles from './RingBadge.module.scss';
 const MIN_VISIBLE_ARC_DEG = 0.5;
 const SHIFT_FLASH_MS = 220;
 
-export const RingBadge = observer(() => {
+export const RingBadge = observer(function RingBadge() {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
 

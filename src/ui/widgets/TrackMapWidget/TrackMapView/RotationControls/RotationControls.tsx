@@ -13,8 +13,12 @@ interface RotateButtonProps {
   children: React.ReactNode;
 }
 
-const RotateButton = observer(
-  ({ title, onClick, children }: RotateButtonProps) => (
+const RotateButton = observer(function RotateButton({
+  title,
+  onClick,
+  children,
+}: RotateButtonProps) {
+  return (
     <button
       type="button"
       className={styles.rotateButton}
@@ -27,27 +31,24 @@ const RotateButton = observer(
     >
       {children}
     </button>
-  )
-);
+  );
+});
 
-export const RotationControls = observer(
-  ({ onRotate }: RotationControlsProps) => {
-    return (
-      <div className={styles.rotationControls}>
-        <RotateButton
-          title="Rotate 90° Counter-Clockwise"
-          onClick={() => onRotate('ccw')}
-        >
-          <RotateCcw />
-        </RotateButton>
+export const RotationControls = observer(function RotationControls({
+  onRotate,
+}: RotationControlsProps) {
+  return (
+    <div className={styles.rotationControls}>
+      <RotateButton
+        title="Rotate 90° Counter-Clockwise"
+        onClick={() => onRotate('ccw')}
+      >
+        <RotateCcw />
+      </RotateButton>
 
-        <RotateButton
-          title="Rotate 90° Clockwise"
-          onClick={() => onRotate('cw')}
-        >
-          <RotateCw />
-        </RotateButton>
-      </div>
-    );
-  }
-);
+      <RotateButton title="Rotate 90° Clockwise" onClick={() => onRotate('cw')}>
+        <RotateCw />
+      </RotateButton>
+    </div>
+  );
+});

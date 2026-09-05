@@ -34,7 +34,7 @@ const TRAIL_OPACITY = 0.22;
  * than one turn of lock. A faint trail back to 12 o'clock shows how far into
  * the current turn the wheel is.
  */
-export const SteeringMarker = observer(() => {
+export const SteeringMarker = observer(function SteeringMarker() {
   const { carDynamics } = usePlayerStore();
 
   const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');

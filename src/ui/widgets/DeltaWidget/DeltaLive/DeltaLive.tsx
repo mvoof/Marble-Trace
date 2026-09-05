@@ -21,7 +21,7 @@ const DELTA_CLASS = {
   neutral: styles.neutral,
 };
 
-export const DeltaLive = observer(() => {
+export const DeltaLive = observer(function DeltaLive() {
   const { lapTiming } = usePlayerStore();
   const { reference, hideWhenNoReference, showGauge } =
     useWidgetSettings<DeltaWidgetSettings>('delta');

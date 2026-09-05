@@ -8,7 +8,7 @@ import Logo from '@assets/logo.svg?react';
 import { getWheelArt } from './WheelArt';
 import styles from './SteeringWheel.module.scss';
 
-const WheelCenter = observer(() => {
+const WheelCenter = observer(function WheelCenter() {
   const telemetry = usePlayerStore();
   const units = useUnitsStore();
 
@@ -61,7 +61,7 @@ const WheelCenter = observer(() => {
   }
 });
 
-export const SteeringWheel = observer(() => {
+export const SteeringWheel = observer(function SteeringWheel() {
   const telemetry = usePlayerStore();
 
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');

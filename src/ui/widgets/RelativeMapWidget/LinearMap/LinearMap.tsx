@@ -18,7 +18,7 @@ import {
   useSessionStore,
 } from '@store/root-store-context';
 
-export const LinearMap = observer(() => {
+export const LinearMap = observer(function LinearMap() {
   const computed = useBackendComputedStore();
   const { carPositions } = useCarsStore();
   const sessionStore = useSessionStore();

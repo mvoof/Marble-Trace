@@ -17,7 +17,7 @@ import styles from './EngineCluster.module.scss';
 
 const RPM_PERCENT_BASE = 100;
 
-export const EngineCluster = observer(() => {
+export const EngineCluster = observer(function EngineCluster() {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();

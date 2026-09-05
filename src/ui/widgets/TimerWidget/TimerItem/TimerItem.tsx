@@ -9,13 +9,17 @@ interface TimerItemProps {
   children: ReactNode;
 }
 
-export const TimerItem = observer(
-  ({ label, align = 'left', children }: TimerItemProps) => (
+export const TimerItem = observer(function TimerItem({
+  label,
+  align = 'left',
+  children,
+}: TimerItemProps) {
+  return (
     <span
       className={align === 'right' ? styles.clockItemRight : styles.clockItem}
     >
       <span className={styles.label}>{label}</span>
       <span className={styles.value}>{children}</span>
     </span>
-  )
-);
+  );
+});

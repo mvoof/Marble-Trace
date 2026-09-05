@@ -24,7 +24,10 @@ const FILL_CLASS = {
   neutral: styles.neutral,
 };
 
-export const DeltaGauge = observer(({ delta, range }: Props) => {
+export const DeltaGauge = observer(function DeltaGauge({
+  delta,
+  range,
+}: Props) {
   const [autoRange, setAutoRange] = useState<number>(DELTA_GAUGE_RANGES[0]);
 
   const resolvedAutoRange =

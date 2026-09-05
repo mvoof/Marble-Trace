@@ -7,7 +7,7 @@ import { usePlayerStore, useSessionStore } from '@store/root-store-context';
 
 import styles from './RpmValue.module.scss';
 
-export const RpmValue = observer(() => {
+export const RpmValue = observer(function RpmValue() {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
 

@@ -22,7 +22,7 @@ import styles from './BattleAxis.module.scss';
  * centred on it: a car behind must light the road behind, and a full circle
  * would claim both sides at once.
  */
-export const BattleAxis = observer(() => {
+export const BattleAxis = observer(function BattleAxis() {
   const closeBattle = useCloseBattleWidgetStore();
   const units = useUnitsStore();
 

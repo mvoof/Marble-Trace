@@ -23,7 +23,10 @@ interface RaceClusterProps {
   curve?: CurvatureStyle;
 }
 
-export const RaceCluster = observer(({ backdrop, curve }: RaceClusterProps) => {
+export const RaceCluster = observer(function RaceCluster({
+  backdrop,
+  curve,
+}: RaceClusterProps) {
   const player = usePlayerStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();

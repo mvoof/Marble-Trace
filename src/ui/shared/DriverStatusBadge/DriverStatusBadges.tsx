@@ -29,41 +29,39 @@ export interface DriverStatusBadgesProps {
  * same order with the same precedence — a disqualification hides the rest, and
  * a tow hides "out".
  */
-export const DriverStatusBadges = observer(
-  ({
-    flagType,
-    isTowed,
-    isOut,
-    isOffTrack,
-    isPit,
-    pitState,
-    isFinished = false,
-    showPit = true,
-  }: DriverStatusBadgesProps) => {
-    if (flagType === 'dq') {
-      return <DriverStatusBadge status="dnf" />;
-    }
-
-    return (
-      <>
-        {isTowed && <DriverStatusBadge status="tow" />}
-
-        {isOut && !isTowed && !isFinished && <DriverStatusBadge status="out" />}
-
-        {isOffTrack && !isFinished && <DriverStatusBadge status="off_track" />}
-
-        {showPit && isPit && !isFinished && (
-          <DriverStatusBadge
-            status={
-              pitState === 'in'
-                ? 'pit_in'
-                : pitState === 'exit'
-                  ? 'pit_exit'
-                  : 'pit'
-            }
-          />
-        )}
-      </>
-    );
+export const DriverStatusBadges = observer(function DriverStatusBadges({
+  flagType,
+  isTowed,
+  isOut,
+  isOffTrack,
+  isPit,
+  pitState,
+  isFinished = false,
+  showPit = true,
+}: DriverStatusBadgesProps) {
+  if (flagType === 'dq') {
+    return <DriverStatusBadge status="dnf" />;
   }
-);
+
+  return (
+    <>
+      {isTowed && <DriverStatusBadge status="tow" />}
+
+      {isOut && !isTowed && !isFinished && <DriverStatusBadge status="out" />}
+
+      {isOffTrack && !isFinished && <DriverStatusBadge status="off_track" />}
+
+      {showPit && isPit && !isFinished && (
+        <DriverStatusBadge
+          status={
+            pitState === 'in'
+              ? 'pit_in'
+              : pitState === 'exit'
+                ? 'pit_exit'
+                : 'pit'
+          }
+        />
+      )}
+    </>
+  );
+});

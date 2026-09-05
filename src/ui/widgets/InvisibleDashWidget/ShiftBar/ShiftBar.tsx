@@ -15,7 +15,10 @@ interface ShiftBarProps {
 
 const FULL_PERCENT = 100;
 
-export const ShiftBar = observer(({ pct, zone }: ShiftBarProps) => {
+export const ShiftBar = observer(function ShiftBar({
+  pct,
+  zone,
+}: ShiftBarProps) {
   const settings =
     useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
 

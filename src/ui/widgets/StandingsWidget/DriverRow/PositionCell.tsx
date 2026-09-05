@@ -13,7 +13,9 @@ interface PositionCellProps {
   carIdx: number;
 }
 
-export const PositionCell = observer(({ carIdx }: PositionCellProps) => {
+export const PositionCell = observer(function PositionCell({
+  carIdx,
+}: PositionCellProps) {
   const standingsWidget = useStandingsWidgetStore();
 
   const driver = standingsWidget.driverMap.get(carIdx);

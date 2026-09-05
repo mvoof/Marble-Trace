@@ -29,7 +29,7 @@ interface FlagItemProps {
   flag: FlagType;
 }
 
-export const FlagItem = observer(({ flag }: FlagItemProps) => {
+export const FlagItem = observer(function FlagItem({ flag }: FlagItemProps) {
   const { blinkOn } = useFlagsStore();
   const isBlinkOff = BLINK_FLAGS.has(flag) && !blinkOn;
 

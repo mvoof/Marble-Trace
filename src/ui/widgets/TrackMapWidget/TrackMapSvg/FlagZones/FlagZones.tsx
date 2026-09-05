@@ -17,25 +17,27 @@ interface FlagZonesProps {
  * per-frame car rendering never re-runs the zone geometry, and so it reads its
  * own settings instead of arriving as three more props.
  */
-export const FlagZones = observer(
-  ({ svgPath, pathLength, strokeWidth }: FlagZonesProps) => {
-    const incidentsStore = useIncidentsWidgetStore();
+export const FlagZones = observer(function FlagZones({
+  svgPath,
+  pathLength,
+  strokeWidth,
+}: FlagZonesProps) {
+  const incidentsStore = useIncidentsWidgetStore();
 
-    const settings = useWidgetSettings<TrackMapWidgetSettings>('track-map');
+  const settings = useWidgetSettings<TrackMapWidgetSettings>('track-map');
 
-    if (!(settings.showIncidentZones ?? true)) {
-      return null;
-    }
-
-    return (
-      <FlagZoneStripes
-        zones={incidentsStore.zones}
-        svgPath={svgPath}
-        pathLength={pathLength}
-        strokeWidth={strokeWidth}
-        blink={settings.blinkIncidentZones ?? true}
-        zoneStyle={settings.flagZoneStyle ?? 'filled'}
-      />
-    );
+  if (!(settings.showIncidentZones ?? true)) {
+    return null;
   }
-);
+
+  return (
+    <FlagZoneStripes
+      zones={incidentsStore.zones}
+      svgPath={svgPath}
+      pathLength={pathLength}
+      strokeWidth={strokeWidth}
+      blink={settings.blinkIncidentZones ?? true}
+      zoneStyle={settings.flagZoneStyle ?? 'filled'}
+    />
+  );
+});

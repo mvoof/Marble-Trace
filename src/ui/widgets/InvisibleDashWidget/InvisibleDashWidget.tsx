@@ -20,7 +20,7 @@ import { useStripFit } from './use-strip-fit';
 
 import styles from './InvisibleDashWidget.module.scss';
 
-export const InvisibleDashWidget = observer(() => {
+export const InvisibleDashWidget = observer(function InvisibleDashWidget() {
   const { stripRef, fit } = useStripFit();
 
   const settings =

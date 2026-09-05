@@ -26,7 +26,7 @@ const LAPS_STATUS_CLASSES: Record<FuelLapsStatus, string> = {
   danger: styles.valueDanger,
 };
 
-export const FuelSummaryRow = observer(() => {
+export const FuelSummaryRow = observer(function FuelSummaryRow() {
   const { fuel } = useBackendComputedStore();
   const { unitSystem } = useUnitsStore();
 

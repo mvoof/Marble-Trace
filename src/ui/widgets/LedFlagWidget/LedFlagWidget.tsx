@@ -13,7 +13,7 @@ import type { FlagDisplaySettings } from '@/types/widget-settings';
 
 import styles from './LedFlagWidget.module.scss';
 
-export const LedFlagWidget = observer(() => {
+export const LedFlagWidget = observer(function LedFlagWidget() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { split, forceSingleLed } =
     useWidgetSettings<FlagDisplaySettings>('led-flags');

@@ -24,7 +24,7 @@ const colsForCount = (count: number): number => {
   return 5;
 };
 
-export const SectorGrid = observer(({ sectorCount }: Props) => {
+export const SectorGrid = observer(function SectorGrid({ sectorCount }: Props) {
   const { lapTiming } = usePlayerStore();
   const { lapDelta } = useBackendComputedStore();
 

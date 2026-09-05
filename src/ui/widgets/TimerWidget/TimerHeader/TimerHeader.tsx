@@ -16,7 +16,7 @@ const SESSION_LABEL_CLASS: Record<SessionColorKey, string> = {
   other: styles.sessionOther,
 };
 
-export const TimerHeader = observer(() => {
+export const TimerHeader = observer(function TimerHeader() {
   const { session, sessionInfo } = useSessionStore();
 
   const { showSessionType } = useWidgetSettings<TimerWidgetSettings>('timer');

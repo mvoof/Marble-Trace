@@ -149,6 +149,67 @@ WindArrow   target 1   current 60   debt
 
 Recording the current value alone would quietly make sixty wake-ups the norm.
 
+### How a target is chosen
+
+A budget is what the component costs today. A target is what it should cost once
+the rule is applied to it, and it is read off the burst rather than argued:
+
+- **one wake per burst** for a component whose output follows a value that
+  changes every tick — the burst moves it sixty times, and the rule says one
+  element, written through the bypass or lifted out of the re-rendering parent,
+  is enough;
+- **one wake per row** for a component drawn once per car, where each row's own
+  numbers really do change;
+- **zero** for a component that renders nothing the burst changed. It wakes
+  because it reads a frame, not a field — the class ticket 07 is about.
+
+Targets are the basis of a follow-up ticket, not a second contract: only the
+budget column fails the build.
+
+The table has to name **everything that woke**, not only what someone thought
+worth pinning: a component missing from it would have no budget at all, which is
+the hole a new sub-component would otherwise fall straight through. A wake-up
+attributed to a name the table does not list fails the test on its own.
+
+### Where the budgets stand
+
+Every widget whose manifest declares a hot field has one `*.perf.test.tsx` in
+its folder, and the table lives in that file. Coverage is derived from the
+manifests by `src/perf/budget-coverage.perf.test.tsx`, so a widget that starts
+declaring a hot field without a perf test fails the suite.
+
+| widget            | worst row today      | state                                    |
+| ----------------- | -------------------- | ---------------------------------------- |
+| `close-battle`    | `BattleRow` 2        | within budget                            |
+| `g-meter`         | —                    | nothing wakes: it is all canvas          |
+| `coach`           | `InfoRow` 60         | debt                                     |
+| `engine-panel`    | `AbsCell` 60         | debt                                     |
+| `input-trace`     | `Bar` 180            | debt                                     |
+| `invisible-dash`  | `EngineCluster` 60   | debt                                     |
+| `pit-service`     | `PitSpeedPlate` 60   | debt                                     |
+| `proximity-radar` | `RadarScope` 60      | debt                                     |
+| `race-dash`       | `RaceDashWidget` 60  | debt                                     |
+| `radar-bar`       | `RadarBar` 120       | debt                                     |
+| `relative`        | `DriverRow` 180      | debt                                     |
+| `relative-map`    | `LinearMap` 60       | debt                                     |
+| `rpm-lights`      | `RpmLightsWidget` 61 | debt                                     |
+| `sector-matrix`   | `SectorGrid` 60      | debt                                     |
+| `standings`       | `DriverRow` 300      | debt                                     |
+| `timer`           | `TimerFooter` 60     | debt                                     |
+| `track-map`       | `TrackMapSvg` 61     | debt                                     |
+| `weather`         | `WindArrow` 60       | debt; the ring beside it is already at 0 |
+
+The compass ring is the one that has had the rule applied: `RotatingRing`,
+`RingGeometry` and `WindCompass` are all at 0, and `WindArrow` next to them is
+what the rest of the table still looks like.
+
+### Attribution needs named components
+
+The counter keys on the component's debug name, so every `observer` in a widget
+is declared as `observer(function Name() { … })`. That is the one place the
+repo's arrow-function rule does not apply, and the harness refuses to report
+rather than mis-attribute if it finds an anonymous one.
+
 ## Not done yet, on purpose
 
 Telemetry frames are stored as whole `observable.ref` values, so a component

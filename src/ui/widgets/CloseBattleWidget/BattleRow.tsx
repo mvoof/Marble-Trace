@@ -42,133 +42,134 @@ interface BattleRowProps {
  * therefore transforms — composited, and cheap enough to transition, which is
  * what turns the 10 Hz proximity frame into continuous motion.
  */
-export const BattleRow = observer(
-  ({ opponent, topPct, stackIndex }: BattleRowProps) => {
-    const units = useUnitsStore();
+export const BattleRow = observer(function BattleRow({
+  opponent,
+  topPct,
+  stackIndex,
+}: BattleRowProps) {
+  const units = useUnitsStore();
 
-    const settings =
-      useWidgetSettings<CloseBattleWidgetSettings>('close-battle');
+  const settings = useWidgetSettings<CloseBattleWidgetSettings>('close-battle');
 
-    const { entry } = opponent;
+  const { entry } = opponent;
 
-    // The lap column follows the setting alone, never whether anyone happens to
-    // be lapped right now. It is what the widget's width is calculated from —
-    // and that width is a design constant, so a column that opened the moment a
-    // car went a lap down would leave its share of the plate to the name column
-    // until then, and shift every number on the row when it arrived.
-    const showLaps = settings.showLapGap;
+  // The lap column follows the setting alone, never whether anyone happens to
+  // be lapped right now. It is what the widget's width is calculated from —
+  // and that width is a design constant, so a column that opened the moment a
+  // car went a lap down would leave its share of the plate to the name column
+  // until then, and shift every number on the row when it arrived.
+  const showLaps = settings.showLapGap;
 
-    const scale = settings.scaleByDistance ? plateScale(opponent.clearance) : 1;
+  const scale = settings.scaleByDistance ? plateScale(opponent.clearance) : 1;
 
-    const gapClass = opponent.isAhead ? styles.gapAhead : styles.gapBehind;
+  const gapClass = opponent.isAhead ? styles.gapAhead : styles.gapBehind;
 
-    const distance = battleDistanceParts(opponent.clearance, units.isMetric);
-    const gap = battleGapParts(opponent.gapSeconds);
+  const distance = battleDistanceParts(opponent.clearance, units.isMetric);
+  const gap = battleGapParts(opponent.gapSeconds);
 
-    const { givenName, surname } = battleDriverName(
-      entry.userName,
-      settings.nameMode
-    );
+  const { givenName, surname } = battleDriverName(
+    entry.userName,
+    settings.nameMode
+  );
 
-    // Two reasons a plate fades, and they do different things. The user's own
-    // opacity fades the plate itself and leaves the numbers on it at full
-    // strength -- a translucent row is still a row you read at a glance.
-    // Dimming another class is the opposite on purpose: it pushes the whole
-    // row back, text included, because that row is not the one you are racing.
-    const isDimmed = settings.otherClass === 'dim' && opponent.isOtherClass;
+  // Two reasons a plate fades, and they do different things. The user's own
+  // opacity fades the plate itself and leaves the numbers on it at full
+  // strength -- a translucent row is still a row you read at a glance.
+  // Dimming another class is the opposite on purpose: it pushes the whole
+  // row back, text included, because that row is not the one you are racing.
+  const isDimmed = settings.otherClass === 'dim' && opponent.isOtherClass;
 
-    return (
+  return (
+    <div
+      className={styles.slot}
+      style={
+        {
+          transform: `translateY(${topPct}%)`,
+          '--stack-index': stackIndex,
+        } as CSSProperties
+      }
+    >
       <div
-        className={styles.slot}
+        className={styles.plate}
         style={
           {
-            transform: `translateY(${topPct}%)`,
+            '--plate-scale': scale,
             '--stack-index': stackIndex,
           } as CSSProperties
         }
       >
         <div
-          className={styles.plate}
+          className={[
+            styles.row,
+            settings.showClassBadge ? '' : styles.rowNoClass,
+            settings.showDistance ? '' : styles.rowNoDistance,
+            showLaps ? styles.rowLaps : '',
+            settings.showBrand ? styles.rowBrand : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           style={
             {
-              '--plate-scale': scale,
-              '--stack-index': stackIndex,
+              opacity: isDimmed ? OTHER_CLASS_DIM : undefined,
+              '--widget-bg-opacity': settings.plateOpacity,
             } as CSSProperties
           }
         >
-          <div
-            className={[
-              styles.row,
-              settings.showClassBadge ? '' : styles.rowNoClass,
-              settings.showDistance ? '' : styles.rowNoDistance,
-              showLaps ? styles.rowLaps : '',
-              settings.showBrand ? styles.rowBrand : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-            style={
-              {
-                opacity: isDimmed ? OTHER_CLASS_DIM : undefined,
-                '--widget-bg-opacity': settings.plateOpacity,
-              } as CSSProperties
-            }
-          >
-            <span className={styles.carNumber}>
-              {formatCarNumber(entry.carNumber)}
-            </span>
+          <span className={styles.carNumber}>
+            {formatCarNumber(entry.carNumber)}
+          </span>
 
-            {settings.showClassBadge && (
-              <span className={styles.classSlab}>
-                <span
-                  className={styles.className}
-                  style={{
-                    backgroundColor: entry.carClassColor,
-                    color: getContrastTextColor(entry.carClassColor),
-                  }}
-                >
-                  <span className={styles.classLabel}>
-                    {entry.carClassShortName}
-                  </span>
+          {settings.showClassBadge && (
+            <span className={styles.classSlab}>
+              <span
+                className={styles.className}
+                style={{
+                  backgroundColor: entry.carClassColor,
+                  color: getContrastTextColor(entry.carClassColor),
+                }}
+              >
+                <span className={styles.classLabel}>
+                  {entry.carClassShortName}
                 </span>
               </span>
-            )}
-
-            {settings.showBrand && (
-              <span className={styles.brand} title={entry.carScreenName}>
-                {formatBrand(entry.carScreenName)}
-              </span>
-            )}
-
-            <span className={styles.identity}>
-              <span className={styles.name}>
-                {givenName && (
-                  <span className={styles.givenName}>{givenName} </span>
-                )}
-                <span className={styles.surname}>{surname}</span>
-              </span>
             </span>
+          )}
 
-            {settings.showDistance && (
-              <span className={styles.distance}>
-                <span className={styles.distanceValue}>{distance.value}</span>
-                <span className={styles.distanceUnit}>{distance.unit}</span>
-              </span>
-            )}
-
-            {showLaps && (
-              <span className={styles.laps}>
-                {opponent.lapsApart > 0 ? `${opponent.lapsApart}L` : ''}
-              </span>
-            )}
-
-            <span className={`${styles.gap} ${gapClass}`}>
-              <span className={styles.gapWhole}>{gap.whole}</span>
-              <span className={styles.gapPoint}>.</span>
-              <span className={styles.gapFraction}>{gap.fraction}</span>
+          {settings.showBrand && (
+            <span className={styles.brand} title={entry.carScreenName}>
+              {formatBrand(entry.carScreenName)}
             </span>
-          </div>
+          )}
+
+          <span className={styles.identity}>
+            <span className={styles.name}>
+              {givenName && (
+                <span className={styles.givenName}>{givenName} </span>
+              )}
+              <span className={styles.surname}>{surname}</span>
+            </span>
+          </span>
+
+          {settings.showDistance && (
+            <span className={styles.distance}>
+              <span className={styles.distanceValue}>{distance.value}</span>
+              <span className={styles.distanceUnit}>{distance.unit}</span>
+            </span>
+          )}
+
+          {showLaps && (
+            <span className={styles.laps}>
+              {opponent.lapsApart > 0 ? `${opponent.lapsApart}L` : ''}
+            </span>
+          )}
+
+          <span className={`${styles.gap} ${gapClass}`}>
+            <span className={styles.gapWhole}>{gap.whole}</span>
+            <span className={styles.gapPoint}>.</span>
+            <span className={styles.gapFraction}>{gap.fraction}</span>
+          </span>
         </div>
       </div>
-    );
-  }
-);
+    </div>
+  );
+});

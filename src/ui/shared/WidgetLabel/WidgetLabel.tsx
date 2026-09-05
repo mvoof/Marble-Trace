@@ -10,13 +10,13 @@ interface WidgetLabelProps {
   uppercase?: boolean;
 }
 
-export const WidgetLabel = observer(
-  ({
-    children,
-    className,
-    mono = false,
-    uppercase = true,
-  }: WidgetLabelProps) => (
+export const WidgetLabel = observer(function WidgetLabel({
+  children,
+  className,
+  mono = false,
+  uppercase = true,
+}: WidgetLabelProps) {
+  return (
     <span
       className={[
         styles.label,
@@ -27,5 +27,5 @@ export const WidgetLabel = observer(
     >
       {children}
     </span>
-  )
-);
+  );
+});

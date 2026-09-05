@@ -8,7 +8,7 @@ import {
   useTrackMapWidgetStore,
 } from '@store/root-store-context';
 
-export const TrackMapContent = observer(() => {
+export const TrackMapContent = observer(function TrackMapContent() {
   const sessionData = useSessionStore();
   const trackMapWidget = useTrackMapWidgetStore();
 

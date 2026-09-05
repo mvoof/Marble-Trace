@@ -21,7 +21,7 @@ const STATUS_CLASS: Record<ChatPresence['status'], string> = {
 const formatCount = (value: number, locale: string) =>
   value.toLocaleString(locale);
 
-export const ChatFooter = observer(() => {
+export const ChatFooter = observer(function ChatFooter() {
   const chatWidget = useStreamChatWidgetStore();
   const { t, i18n } = useTranslation('widgets');
 

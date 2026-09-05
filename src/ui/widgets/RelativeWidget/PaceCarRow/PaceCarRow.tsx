@@ -17,7 +17,10 @@ interface PaceCarRowProps {
   index: number;
 }
 
-export const PaceCarRow = observer(({ driver, index }: PaceCarRowProps) => {
+export const PaceCarRow = observer(function PaceCarRow({
+  driver,
+  index,
+}: PaceCarRowProps) {
   const { relativeEntries } = useBackendComputedStore();
 
   const settings = useWidgetSettings<RelativeWidgetSettings>('relative');

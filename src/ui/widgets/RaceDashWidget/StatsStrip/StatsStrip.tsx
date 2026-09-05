@@ -15,7 +15,7 @@ import {
 
 import styles from './StatsStrip.module.scss';
 
-export const StatsStrip = observer(() => {
+export const StatsStrip = observer(function StatsStrip() {
   const player = usePlayerStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();

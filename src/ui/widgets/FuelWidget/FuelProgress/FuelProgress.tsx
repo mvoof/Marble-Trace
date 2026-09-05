@@ -10,7 +10,7 @@ import {
   useUnitsStore,
 } from '@store/root-store-context';
 
-export const FuelProgress = observer(() => {
+export const FuelProgress = observer(function FuelProgress() {
   const { carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
   const { unitSystem } = useUnitsStore();

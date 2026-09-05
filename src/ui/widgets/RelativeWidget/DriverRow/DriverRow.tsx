@@ -30,7 +30,10 @@ interface DriverRowProps {
   index: number;
 }
 
-export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
+export const DriverRow = observer(function DriverRow({
+  driver,
+  index,
+}: DriverRowProps) {
   const computed = useBackendComputedStore();
   const { relativeEntries } = computed;
 

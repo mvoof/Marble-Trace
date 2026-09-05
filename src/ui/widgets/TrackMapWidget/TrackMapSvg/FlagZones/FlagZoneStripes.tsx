@@ -33,159 +33,157 @@ const OUTLINE_RAIL_RATIO = 0.22;
  * stripes follow the track's curvature for free, and a car dot — drawn after
  * this layer — is never covered by them.
  */
-export const FlagZoneStripes = observer(
-  ({
-    zones,
-    svgPath,
-    pathLength,
-    strokeWidth,
-    blink,
-    zoneStyle,
-  }: FlagZoneStripesProps) => {
-    const uniqueId = useId();
-    const patternId = `${uniqueId}-pattern`;
-    const maskId = `${uniqueId}-mask`;
+export const FlagZoneStripes = observer(function FlagZoneStripes({
+  zones,
+  svgPath,
+  pathLength,
+  strokeWidth,
+  blink,
+  zoneStyle,
+}: FlagZoneStripesProps) {
+  const uniqueId = useId();
+  const patternId = `${uniqueId}-pattern`;
+  const maskId = `${uniqueId}-mask`;
 
-    if (zones.length === 0 || pathLength === 0) {
+  if (zones.length === 0 || pathLength === 0) {
+    return null;
+  }
+
+  const tileSize = strokeWidth * TILE_SIZE_RATIO;
+  const segments = zones.flatMap((zone, zoneIndex) =>
+    splitFlagZoneAtStartFinish(zone).map((segment, segmentIndex) => ({
+      key: `${zoneIndex}-${segmentIndex}`,
+      isActive: zone.isActive,
+      startDist: segment.startPct * pathLength,
+      length: (segment.endPct - segment.startPct) * pathLength,
+    }))
+  );
+
+  // A zone whose car has recovered is still information — marbles and a slow
+  // rejoin outlive the spin — but it stops flashing and steps back. That is
+  // per zone: one car still stranded must not drag every cleared marker back
+  // up to full strength with it, so the two states are two layers.
+  const activeSegments = segments.filter((segment) => segment.isActive);
+  const clearedSegments = segments.filter((segment) => !segment.isActive);
+
+  // Outline style keeps the same pattern, colour and opacity and only takes
+  // the middle out: a mask paints the full surface width, then knocks the
+  // inner part back out, leaving a rail along each edge of the track. Masking
+  // rather than covering matters — the sector arc runs underneath, and
+  // painting the centre back over would erase its colour.
+  const isOutline = zoneStyle === 'outline';
+  const innerWidth = strokeWidth * (1 - 2 * OUTLINE_RAIL_RATIO);
+
+  const renderLayer = (
+    layerSegments: typeof segments,
+    layerIsActive: boolean
+  ) => {
+    if (layerSegments.length === 0) {
       return null;
     }
 
-    const tileSize = strokeWidth * TILE_SIZE_RATIO;
-    const segments = zones.flatMap((zone, zoneIndex) =>
-      splitFlagZoneAtStartFinish(zone).map((segment, segmentIndex) => ({
-        key: `${zoneIndex}-${segmentIndex}`,
-        isActive: zone.isActive,
-        startDist: segment.startPct * pathLength,
-        length: (segment.endPct - segment.startPct) * pathLength,
-      }))
+    const layerClass = [
+      styles.zoneLayer,
+      layerIsActive ? '' : styles.zoneLayerCleared,
+      blink && layerIsActive ? styles.zoneLayerBlink : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return (
+      <g className={layerClass}>
+        {/* The glow is an inner wash, so the outline style does without it. */}
+        {!isOutline &&
+          layerSegments.map((segment) => (
+            <path
+              key={`glow-${segment.key}`}
+              d={svgPath}
+              fill="none"
+              stroke={BAR_COLOR}
+              strokeWidth={strokeWidth * GLOW_WIDTH_RATIO}
+              strokeLinecap="butt"
+              strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
+              className={styles.zoneGlow}
+            />
+          ))}
+
+        <g mask={isOutline ? `url(#${maskId})` : undefined}>
+          {layerSegments.map((segment) => (
+            <path
+              key={`surface-${segment.key}`}
+              d={svgPath}
+              fill="none"
+              stroke={`url(#${patternId})`}
+              strokeWidth={strokeWidth}
+              strokeLinecap="butt"
+              strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
+              className={styles.zoneSurface}
+            />
+          ))}
+        </g>
+      </g>
     );
+  };
 
-    // A zone whose car has recovered is still information — marbles and a slow
-    // rejoin outlive the spin — but it stops flashing and steps back. That is
-    // per zone: one car still stranded must not drag every cleared marker back
-    // up to full strength with it, so the two states are two layers.
-    const activeSegments = segments.filter((segment) => segment.isActive);
-    const clearedSegments = segments.filter((segment) => !segment.isActive);
+  return (
+    <g pointerEvents="none">
+      <defs>
+        <pattern
+          id={patternId}
+          width={tileSize}
+          height={tileSize}
+          patternUnits="userSpaceOnUse"
+          patternTransform="rotate(45)"
+        >
+          <rect
+            width={tileSize}
+            height={tileSize}
+            fill={GAP_COLOR}
+            opacity={GAP_OPACITY}
+          />
+          <rect width={tileSize / 2} height={tileSize} fill={BAR_COLOR} />
+          <animateTransform
+            attributeName="patternTransform"
+            type="translate"
+            from="0 0"
+            to={`${tileSize} 0`}
+            dur="1.6s"
+            repeatCount="indefinite"
+            additive="sum"
+          />
+        </pattern>
 
-    // Outline style keeps the same pattern, colour and opacity and only takes
-    // the middle out: a mask paints the full surface width, then knocks the
-    // inner part back out, leaving a rail along each edge of the track. Masking
-    // rather than covering matters — the sector arc runs underneath, and
-    // painting the centre back over would erase its colour.
-    const isOutline = zoneStyle === 'outline';
-    const innerWidth = strokeWidth * (1 - 2 * OUTLINE_RAIL_RATIO);
-
-    const renderLayer = (
-      layerSegments: typeof segments,
-      layerIsActive: boolean
-    ) => {
-      if (layerSegments.length === 0) {
-        return null;
-      }
-
-      const layerClass = [
-        styles.zoneLayer,
-        layerIsActive ? '' : styles.zoneLayerCleared,
-        blink && layerIsActive ? styles.zoneLayerBlink : '',
-      ]
-        .filter(Boolean)
-        .join(' ');
-
-      return (
-        <g className={layerClass}>
-          {/* The glow is an inner wash, so the outline style does without it. */}
-          {!isOutline &&
-            layerSegments.map((segment) => (
+        {isOutline && (
+          <mask id={maskId} maskUnits="userSpaceOnUse">
+            {segments.map((segment) => (
               <path
-                key={`glow-${segment.key}`}
+                key={`show-${segment.key}`}
                 d={svgPath}
                 fill="none"
-                stroke={BAR_COLOR}
-                strokeWidth={strokeWidth * GLOW_WIDTH_RATIO}
-                strokeLinecap="butt"
-                strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
-                className={styles.zoneGlow}
-              />
-            ))}
-
-          <g mask={isOutline ? `url(#${maskId})` : undefined}>
-            {layerSegments.map((segment) => (
-              <path
-                key={`surface-${segment.key}`}
-                d={svgPath}
-                fill="none"
-                stroke={`url(#${patternId})`}
+                stroke="#ffffff"
                 strokeWidth={strokeWidth}
                 strokeLinecap="butt"
                 strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
-                className={styles.zoneSurface}
               />
             ))}
-          </g>
-        </g>
-      );
-    };
 
-    return (
-      <g pointerEvents="none">
-        <defs>
-          <pattern
-            id={patternId}
-            width={tileSize}
-            height={tileSize}
-            patternUnits="userSpaceOnUse"
-            patternTransform="rotate(45)"
-          >
-            <rect
-              width={tileSize}
-              height={tileSize}
-              fill={GAP_COLOR}
-              opacity={GAP_OPACITY}
-            />
-            <rect width={tileSize / 2} height={tileSize} fill={BAR_COLOR} />
-            <animateTransform
-              attributeName="patternTransform"
-              type="translate"
-              from="0 0"
-              to={`${tileSize} 0`}
-              dur="1.6s"
-              repeatCount="indefinite"
-              additive="sum"
-            />
-          </pattern>
+            {segments.map((segment) => (
+              <path
+                key={`hide-${segment.key}`}
+                d={svgPath}
+                fill="none"
+                stroke="#000000"
+                strokeWidth={innerWidth}
+                strokeLinecap="butt"
+                strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
+              />
+            ))}
+          </mask>
+        )}
+      </defs>
 
-          {isOutline && (
-            <mask id={maskId} maskUnits="userSpaceOnUse">
-              {segments.map((segment) => (
-                <path
-                  key={`show-${segment.key}`}
-                  d={svgPath}
-                  fill="none"
-                  stroke="#ffffff"
-                  strokeWidth={strokeWidth}
-                  strokeLinecap="butt"
-                  strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
-                />
-              ))}
-
-              {segments.map((segment) => (
-                <path
-                  key={`hide-${segment.key}`}
-                  d={svgPath}
-                  fill="none"
-                  stroke="#000000"
-                  strokeWidth={innerWidth}
-                  strokeLinecap="butt"
-                  strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
-                />
-              ))}
-            </mask>
-          )}
-        </defs>
-
-        {renderLayer(clearedSegments, false)}
-        {renderLayer(activeSegments, true)}
-      </g>
-    );
-  }
-);
+      {renderLayer(clearedSegments, false)}
+      {renderLayer(activeSegments, true)}
+    </g>
+  );
+});

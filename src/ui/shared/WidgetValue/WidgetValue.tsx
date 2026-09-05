@@ -11,8 +11,14 @@ interface WidgetValueProps {
   unitClassName?: string;
 }
 
-export const WidgetValue = observer(
-  ({ value, unit, color, className, unitClassName }: WidgetValueProps) => (
+export const WidgetValue = observer(function WidgetValue({
+  value,
+  unit,
+  color,
+  className,
+  unitClassName,
+}: WidgetValueProps) {
+  return (
     <span
       className={`${styles.root} ${className ?? ''}`}
       style={color ? { color } : undefined}
@@ -23,5 +29,5 @@ export const WidgetValue = observer(
         <span className={`${styles.unit} ${unitClassName ?? ''}`}>{unit}</span>
       )}
     </span>
-  )
-);
+  );
+});

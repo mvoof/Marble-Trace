@@ -5,7 +5,7 @@ import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
 
 import styles from './SpeedReadout.module.scss';
 
-export const SpeedReadout = observer(() => {
+export const SpeedReadout = observer(function SpeedReadout() {
   const { carDynamics } = usePlayerStore();
   const units = useUnitsStore();
 

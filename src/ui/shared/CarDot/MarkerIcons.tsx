@@ -8,7 +8,9 @@ interface CrownIconProps extends MarkerIconProps {
   color: string;
 }
 
-export const ChevronIcon = observer(({ scale }: MarkerIconProps) => {
+export const ChevronIcon = observer(function ChevronIcon({
+  scale,
+}: MarkerIconProps) {
   return (
     <g transform={`scale(${scale})`}>
       <path
@@ -35,7 +37,10 @@ export const ChevronIcon = observer(({ scale }: MarkerIconProps) => {
 
 ChevronIcon.displayName = 'ChevronIcon';
 
-export const CrownIcon = observer(({ scale, color }: CrownIconProps) => {
+export const CrownIcon = observer(function CrownIcon({
+  scale,
+  color,
+}: CrownIconProps) {
   return (
     <g transform={`scale(${scale})`}>
       {/* Crown body */}

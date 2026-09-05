@@ -16,7 +16,7 @@ import styles from './PitServiceWidget.module.scss';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { usePitServiceWidgetStore } from '@store/root-store-context';
 
-export const PitServiceWidget = observer(() => {
+export const PitServiceWidget = observer(function PitServiceWidget() {
   const pitService = usePitServiceWidgetStore();
 
   const {

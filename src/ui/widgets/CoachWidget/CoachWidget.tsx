@@ -17,7 +17,7 @@ import styles from './CoachWidget.module.scss';
  * is autoHeight, so the plate follows the content instead of leaving an empty
  * box hanging.
  */
-export const CoachWidget = observer(() => {
+export const CoachWidget = observer(function CoachWidget() {
   const settings = useWidgetSettings<CoachWidgetSettings>('coach');
 
   return (

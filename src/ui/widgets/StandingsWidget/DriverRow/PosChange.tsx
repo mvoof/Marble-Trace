@@ -14,7 +14,9 @@ interface PosChangeProps {
   carIdx: number;
 }
 
-export const PosChange = observer(({ carIdx }: PosChangeProps) => {
+export const PosChange = observer(function PosChange({
+  carIdx,
+}: PosChangeProps) {
   const standingsWidget = useStandingsWidgetStore();
   const { session } = useSessionStore();
 

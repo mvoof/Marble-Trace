@@ -12,27 +12,28 @@ export interface AbsCellProps {
 // Separate from the root on purpose: `brake_abs_active` lives in the 60 Hz
 // carInputs frame, and reading it in EnginePanelWidget would re-render every
 // cell at physics rate.
-export const AbsCell = observer(
-  ({ dividerRight = false, dividerTop = false }: AbsCellProps) => {
-    const { carStatus, carInputs } = usePlayerStore();
+export const AbsCell = observer(function AbsCell({
+  dividerRight = false,
+  dividerTop = false,
+}: AbsCellProps) {
+  const { carStatus, carInputs } = usePlayerStore();
 
-    const dcAbs = carStatus?.dc_abs ?? null;
-    const absActive = carInputs?.brake_abs_active ?? false;
+  const dcAbs = carStatus?.dc_abs ?? null;
+  const absActive = carInputs?.brake_abs_active ?? false;
 
-    const formattedAbs = dcAbs !== null ? Math.round(dcAbs).toString() : '--';
+  const formattedAbs = dcAbs !== null ? Math.round(dcAbs).toString() : '--';
 
-    return (
-      <EngineCell
-        label="ABS"
-        className={absActive ? styles.absActive : ''}
-        dividerRight={dividerRight}
-        dividerTop={dividerTop}
-      >
-        <WidgetValue
-          value={formattedAbs}
-          className={`${styles.value} ${styles.yellowValue}`}
-        />
-      </EngineCell>
-    );
-  }
-);
+  return (
+    <EngineCell
+      label="ABS"
+      className={absActive ? styles.absActive : ''}
+      dividerRight={dividerRight}
+      dividerTop={dividerTop}
+    >
+      <WidgetValue
+        value={formattedAbs}
+        className={`${styles.value} ${styles.yellowValue}`}
+      />
+    </EngineCell>
+  );
+});

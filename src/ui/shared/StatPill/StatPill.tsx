@@ -38,18 +38,18 @@ interface StatPillProps {
   className?: string;
 }
 
-export const StatPill = observer(
-  ({
-    children,
-    icon: Icon,
-    iconTone = 'muted',
-    iconColor,
-    label,
-    valueDanger = false,
-    pulse = false,
-    variant = 'chip',
-    className,
-  }: StatPillProps) => (
+export const StatPill = observer(function StatPill({
+  children,
+  icon: Icon,
+  iconTone = 'muted',
+  iconColor,
+  label,
+  valueDanger = false,
+  pulse = false,
+  variant = 'chip',
+  className,
+}: StatPillProps) {
+  return (
     <span
       className={[
         styles.pill,
@@ -74,5 +74,5 @@ export const StatPill = observer(
         {children}
       </span>
     </span>
-  )
-);
+  );
+});

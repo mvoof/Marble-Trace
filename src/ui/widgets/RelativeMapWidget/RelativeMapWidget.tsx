@@ -5,8 +5,10 @@ import { LinearMap } from './LinearMap/LinearMap';
 
 import styles from './RelativeMapWidget.module.scss';
 
-export const RelativeMapWidget = observer(() => (
-  <WidgetPanel className={styles.linearMapWidget} gap={0} minWidth={0}>
-    <LinearMap />
-  </WidgetPanel>
-));
+export const RelativeMapWidget = observer(function RelativeMapWidget() {
+  return (
+    <WidgetPanel className={styles.linearMapWidget} gap={0} minWidth={0}>
+      <LinearMap />
+    </WidgetPanel>
+  );
+});

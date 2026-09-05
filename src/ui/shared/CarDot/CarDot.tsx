@@ -23,81 +23,79 @@ const NUMBER_FONT_TO_RADIUS = 1.2; // car number font size inside the circle
 const NUMBER_DY_TO_FONT = 0.4; // vertical nudge to visually center text (SVG dy is from baseline)
 const MARKER_GAP_TO_SCALE = 8; // gap between the marker icon and the dot outline
 
-export const CarDot = observer(
-  ({
-    carNumber,
-    carClassColor,
-    isPlayer,
-    radius = 10,
-    shape = 'circle',
-    label,
-    playerColor = '#18181b',
-  }: CarDotProps) => {
-    const r = isPlayer ? radius * PLAYER_RADIUS_SCALE : radius;
-    const fontSize = radius * NUMBER_FONT_TO_RADIUS;
-    const scale = radius / 10;
-    const rect = carDotRect(shape, r);
-    // The diamond's corner, not its edge, is what the marker has to clear.
-    const outerRadius = rect
-      ? rect.halfSide * (rect.rotationDeg === 0 ? 1 : Math.SQRT2)
-      : r;
-    const markerY = -outerRadius - MARKER_GAP_TO_SCALE * scale;
+export const CarDot = observer(function CarDot({
+  carNumber,
+  carClassColor,
+  isPlayer,
+  radius = 10,
+  shape = 'circle',
+  label,
+  playerColor = '#18181b',
+}: CarDotProps) {
+  const r = isPlayer ? radius * PLAYER_RADIUS_SCALE : radius;
+  const fontSize = radius * NUMBER_FONT_TO_RADIUS;
+  const scale = radius / 10;
+  const rect = carDotRect(shape, r);
+  // The diamond's corner, not its edge, is what the marker has to clear.
+  const outerRadius = rect
+    ? rect.halfSide * (rect.rotationDeg === 0 ? 1 : Math.SQRT2)
+    : r;
+  const markerY = -outerRadius - MARKER_GAP_TO_SCALE * scale;
 
-    const bg = isPlayer ? playerColor : '#18181b';
-    const textColor = getContrastTextColor(bg);
+  const bg = isPlayer ? playerColor : '#18181b';
+  const textColor = getContrastTextColor(bg);
 
-    return (
-      <g
-        style={{
-          ['--car-dot-bg' as string]: bg,
-          ['--car-dot-text' as string]: textColor,
-        }}
+  return (
+    <g
+      style={{
+        ['--car-dot-bg' as string]: bg,
+        ['--car-dot-text' as string]: textColor,
+      }}
+    >
+      {rect === null ? (
+        <circle
+          r={r}
+          className={styles.carCircle}
+          stroke={carClassColor}
+          strokeWidth={radius * STROKE_TO_RADIUS}
+        />
+      ) : (
+        <rect
+          x={-rect.halfSide}
+          y={-rect.halfSide}
+          width={rect.halfSide * 2}
+          height={rect.halfSide * 2}
+          rx={rect.cornerRadius}
+          ry={rect.cornerRadius}
+          transform={`rotate(${rect.rotationDeg})`}
+          className={styles.carCircle}
+          stroke={carClassColor}
+          strokeWidth={radius * STROKE_TO_RADIUS}
+        />
+      )}
+
+      <text
+        textAnchor="middle"
+        dy={`${NUMBER_DY_TO_FONT}em`}
+        style={{ fontSize: `calc(${fontSize}px * var(--font-scale, 1))` }}
+        className={styles.carNumber}
       >
-        {rect === null ? (
-          <circle
-            r={r}
-            className={styles.carCircle}
-            stroke={carClassColor}
-            strokeWidth={radius * STROKE_TO_RADIUS}
-          />
-        ) : (
-          <rect
-            x={-rect.halfSide}
-            y={-rect.halfSide}
-            width={rect.halfSide * 2}
-            height={rect.halfSide * 2}
-            rx={rect.cornerRadius}
-            ry={rect.cornerRadius}
-            transform={`rotate(${rect.rotationDeg})`}
-            className={styles.carCircle}
-            stroke={carClassColor}
-            strokeWidth={radius * STROKE_TO_RADIUS}
-          />
-        )}
+        {carNumber}
+      </text>
 
-        <text
-          textAnchor="middle"
-          dy={`${NUMBER_DY_TO_FONT}em`}
-          style={{ fontSize: `calc(${fontSize}px * var(--font-scale, 1))` }}
-          className={styles.carNumber}
-        >
-          {carNumber}
-        </text>
+      {label === 'YOU' && (
+        <g transform={`translate(0, ${markerY})`}>
+          <ChevronIcon scale={scale} />
+        </g>
+      )}
 
-        {label === 'YOU' && (
-          <g transform={`translate(0, ${markerY})`}>
-            <ChevronIcon scale={scale} />
-          </g>
-        )}
-
-        {label === 'P1' && (
-          <g transform={`translate(0, ${markerY})`}>
-            <CrownIcon scale={scale} color={carClassColor} />
-          </g>
-        )}
-      </g>
-    );
-  }
-);
+      {label === 'P1' && (
+        <g transform={`translate(0, ${markerY})`}>
+          <CrownIcon scale={scale} color={carClassColor} />
+        </g>
+      )}
+    </g>
+  );
+});
 
 CarDot.displayName = 'CarDot';

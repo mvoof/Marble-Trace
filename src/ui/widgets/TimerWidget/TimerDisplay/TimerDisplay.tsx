@@ -11,7 +11,7 @@ import { useSessionStore } from '@store/root-store-context';
 import { FixedDigits } from '../FixedDigits/FixedDigits';
 import styles from './TimerDisplay.module.scss';
 
-export const TimerDisplay = observer(() => {
+export const TimerDisplay = observer(function TimerDisplay() {
   const { session, sessionInfo } = useSessionStore();
 
   const sessionState = session?.session_state ?? null;

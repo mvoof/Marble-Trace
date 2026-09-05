@@ -11,7 +11,7 @@ import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';
 import styles from './DeltaWidget.module.scss';
 
-export const DeltaWidget = observer(() => {
+export const DeltaWidget = observer(function DeltaWidget() {
   const lapStore = useBackendComputedStore();
   const { dragMode } = useAppSettingsStore();
 

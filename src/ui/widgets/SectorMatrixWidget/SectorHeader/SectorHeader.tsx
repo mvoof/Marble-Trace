@@ -14,7 +14,9 @@ interface Props {
   sectorCount: number;
 }
 
-export const SectorHeader = observer(({ sectorCount }: Props) => {
+export const SectorHeader = observer(function SectorHeader({
+  sectorCount,
+}: Props) {
   const { lapTiming } = usePlayerStore();
   const { lapDelta } = useBackendComputedStore();
 

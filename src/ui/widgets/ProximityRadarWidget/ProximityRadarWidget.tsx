@@ -5,8 +5,10 @@ import { RadarScope } from './RadarScope/RadarScope';
 
 import styles from './ProximityRadarWidget.module.scss';
 
-export const ProximityRadarWidget = observer(() => (
-  <WidgetPanel className={styles.root} minWidth={90} gap={0}>
-    <RadarScope />
-  </WidgetPanel>
-));
+export const ProximityRadarWidget = observer(function ProximityRadarWidget() {
+  return (
+    <WidgetPanel className={styles.root} minWidth={90} gap={0}>
+      <RadarScope />
+    </WidgetPanel>
+  );
+});

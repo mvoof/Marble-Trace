@@ -13,7 +13,7 @@ import {
   NO_TIME_DATA_PLACEHOLDER,
 } from '@utils/telemetry-format';
 
-export const TimerRow = observer(() => {
+export const TimerRow = observer(function TimerRow() {
   const { session, sessionInfo } = useSessionStore();
 
   const { showWallClock, showSimTime, showPcDate, showSimDate } =

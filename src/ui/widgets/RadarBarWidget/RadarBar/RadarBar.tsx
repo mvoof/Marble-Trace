@@ -14,7 +14,7 @@ interface RadarBarProps {
   side: 'left' | 'right';
 }
 
-export const RadarBar = observer(({ side }: RadarBarProps) => {
+export const RadarBar = observer(function RadarBar({ side }: RadarBarProps) {
   const units = useUnitsStore();
   const appSettings = useAppSettingsStore();
   const { unitSystem: system } = units;

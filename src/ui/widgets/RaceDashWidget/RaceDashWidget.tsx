@@ -9,7 +9,7 @@ import { StatsStrip } from './StatsStrip/StatsStrip';
 
 import styles from './RaceDashWidget.module.scss';
 
-export const RaceDashWidget = observer(() => {
+export const RaceDashWidget = observer(function RaceDashWidget() {
   const { pitState, showPitAssist } = usePitState();
 
   const isPitMode = showPitAssist && pitState !== 'normal';

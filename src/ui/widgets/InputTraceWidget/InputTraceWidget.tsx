@@ -9,7 +9,7 @@ import { SteeringWheel } from './SteeringWheel/SteeringWheel';
 
 import styles from './InputTraceWidget.module.scss';
 
-export const InputTraceWidget = observer(() => {
+export const InputTraceWidget = observer(function InputTraceWidget() {
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
 
   const barsEffectivelyHidden =

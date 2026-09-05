@@ -15,7 +15,7 @@ const UNKNOWN_COMPOUND = '—';
  * wide. They keep their words rather than taking icons — the row is wide enough
  * for them, and a guessed pictogram for "windshield" is a worse label.
  */
-export const OrderChips = observer(() => {
+export const OrderChips = observer(function OrderChips() {
   const widget = usePitServiceWidgetStore();
   const { pitService } = usePlayerStore();
 

@@ -25,7 +25,7 @@ const TICK_COUNT = 30;
  * printed shift and redline bands of the fill arc, so the zone boundaries are
  * visible before the driver reaches them.
  */
-export const RpmComb = observer(() => {
+export const RpmComb = observer(function RpmComb() {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
 

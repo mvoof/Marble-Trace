@@ -17,7 +17,7 @@ import type { TimerWidgetSettings } from '@/types/widget-settings';
 import { FixedDigits } from '../FixedDigits/FixedDigits';
 import styles from './TimerFooter.module.scss';
 
-export const TimerFooter = observer(() => {
+export const TimerFooter = observer(function TimerFooter() {
   const { session, sessionInfo } = useSessionStore();
   const { carIdx, leaderBestLapTime } = useCarsStore();
   const standingsWidget = useStandingsWidgetStore();

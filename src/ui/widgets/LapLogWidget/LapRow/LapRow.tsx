@@ -20,8 +20,15 @@ const DELTA_CLASS: Record<DeltaVariant, string> = {
   best: styles.deltaBest,
 };
 
-export const LapRow = observer(
-  ({ lapLabel, time, deltaLabel, deltaVariant, isLive, isBest }: Props) => (
+export const LapRow = observer(function LapRow({
+  lapLabel,
+  time,
+  deltaLabel,
+  deltaVariant,
+  isLive,
+  isBest,
+}: Props) {
+  return (
     <div
       className={`${styles.row} ${isLive ? styles.rowLive : ''} ${isBest ? styles.rowBest : ''}`}
     >
@@ -48,5 +55,5 @@ export const LapRow = observer(
         </span>
       )}
     </div>
-  )
-);
+  );
+});

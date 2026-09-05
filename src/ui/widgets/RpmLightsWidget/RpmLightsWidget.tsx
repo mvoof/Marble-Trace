@@ -118,7 +118,7 @@ const getPitLedColor = (
   return LED_OFF;
 };
 
-export const RpmLightsWidget = observer(() => {
+export const RpmLightsWidget = observer(function RpmLightsWidget() {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
   const { pitState, showPitAssist } = usePitState();

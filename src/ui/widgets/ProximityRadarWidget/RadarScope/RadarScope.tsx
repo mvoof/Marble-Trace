@@ -32,7 +32,7 @@ import styles from './RadarScope.module.scss';
  */
 const SEARCH_RADIUS_M = 40;
 
-export const RadarScope = observer(() => {
+export const RadarScope = observer(function RadarScope() {
   // A ref would be null on the first render — the scope renders nothing until
   // there is traffic — and an effect keyed on a ref never learns that the
   // canvas arrived. State makes the mount itself the dependency.

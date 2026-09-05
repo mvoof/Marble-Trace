@@ -3,7 +3,7 @@ import { usePlayerStore } from '@store/root-store-context';
 import { formatLapTime } from '@utils/telemetry-format';
 import styles from './SectorFooter.module.scss';
 
-export const SectorFooter = observer(() => {
+export const SectorFooter = observer(function SectorFooter() {
   const { lapTiming } = usePlayerStore();
 
   const lastLapTime = lapTiming?.lap_last_lap_time ?? null;

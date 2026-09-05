@@ -40,7 +40,7 @@ import styles from './StandingsContent.module.scss';
 // rather than crawling a single row at a time.
 const WHEEL_STEP_ROWS = 3;
 
-export const StandingsContent = observer(() => {
+export const StandingsContent = observer(function StandingsContent() {
   const { driverEntries: driverEntriesFrame } = useBackendComputedStore();
   const sim = useSimStore();
   const standingsWidget = useStandingsWidgetStore();

@@ -9,7 +9,7 @@ import { BattleRow } from './BattleRow';
 
 import styles from './CloseBattleWidget.module.scss';
 
-export const CloseBattleWidget = observer(() => {
+export const CloseBattleWidget = observer(function CloseBattleWidget() {
   const closeBattle = useCloseBattleWidgetStore();
 
   const settings = useWidgetSettings<CloseBattleWidgetSettings>('close-battle');
