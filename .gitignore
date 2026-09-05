@@ -44,3 +44,10 @@ storybook-static
 # Local python env for scripts/trace-wheel-svg.py
 .venv/
 __pycache__/
+
+# Agent scratch space (specs, tickets, wayfinding maps)
+.scratch/
+
+# Render-budget runs in browser mode (npm run test:perf)
+**/__screenshots__/
+.vitest-attachments/

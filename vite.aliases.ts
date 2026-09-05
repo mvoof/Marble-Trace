@@ -61,3 +61,16 @@ export const createStorybookAliases = (): AliasEntry[] => [
   })),
   ...createLayerAliases(),
 ];
+
+/**
+ * The `@use` block prepended to every SCSS module, so a component never imports
+ * the token files by hand. Shared by `vite.config.ts`, the Storybook config and
+ * the perf test config — a widget that renders in any of them needs the tokens.
+ */
+export const SCSS_ADDITIONAL_DATA = `
+  @use "@/styles/functions" as *;
+  @use "@/styles/variables" as *;
+  @use "@/styles/widget-tokens" as *;
+  @use "@/styles/sys-tokens" as *;
+  @use "@/styles/opacity" as *;
+`;

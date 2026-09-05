@@ -26,6 +26,11 @@ Before creating an issue please ensure that the problem is not [already reported
 3. **Make Changes**
    Implement your feature or fix the bug. Be sure to follow the project's coding style and add tests if necessary.
 
+   If you are touching a widget that reads telemetry, read
+   [docs/rendering.md](docs/rendering.md) first — the overlay renders under a
+   60 Hz feed, and widgets that read it carry render budgets — run them with
+   `npm run test:perf`.
+
 4. **Commit Changes**
 
    Before committing, ensure your code is clean and functional:

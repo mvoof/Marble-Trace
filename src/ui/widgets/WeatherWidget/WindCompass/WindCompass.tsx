@@ -2,13 +2,14 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import CarIcon from '@assets/car-icon.svg?react';
+import { RingGeometry } from './RingGeometry/RingGeometry';
 import { RotatingRing } from './RotatingRing/RotatingRing';
 import { WindArrow } from './WindArrow/WindArrow';
 
 import styles from './WindCompass.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 
-export const WindCompass = observer(() => {
+export const WindCompass = observer(function WindCompass() {
   const { showCompass } = useWidgetSettings<WeatherWidgetSettings>('weather');
 
   if (!showCompass) {
@@ -24,7 +25,9 @@ export const WindCompass = observer(() => {
           viewBox="-110 -110 220 220"
           className={styles.compassSvg}
         >
-          <RotatingRing />
+          <RotatingRing>
+            <RingGeometry />
+          </RotatingRing>
 
           <WindArrow />
 

@@ -1,6 +1,9 @@
 import type { StorybookConfig } from '@storybook/react-vite';
 import svgr from 'vite-plugin-svgr';
-import { createStorybookAliases } from '../vite.aliases.ts';
+import {
+  createStorybookAliases,
+  SCSS_ADDITIONAL_DATA,
+} from '../vite.aliases.ts';
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx)'],
@@ -23,13 +26,7 @@ const config: StorybookConfig = {
     config.css = config.css ?? {};
     config.css.preprocessorOptions = {
       scss: {
-        additionalData: `
-          @use "@/styles/functions" as *;
-          @use "@/styles/variables" as *;
-          @use "@/styles/widget-tokens" as *;
-          @use "@/styles/sys-tokens" as *;
-          @use "@/styles/opacity" as *;
-        `,
+        additionalData: SCSS_ADDITIONAL_DATA,
       },
     };
 

@@ -28,6 +28,7 @@
     "build-storybook": "storybook build",
     "cargo:format": "cd src-tauri && cargo fmt",
     "test": "vitest run",
+    "test:perf": "vitest run --config vitest.perf.config.ts",
     "prepare": "lefthook install"
   },
   "dependencies": {

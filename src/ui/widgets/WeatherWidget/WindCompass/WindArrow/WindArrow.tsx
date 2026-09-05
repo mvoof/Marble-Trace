@@ -13,7 +13,7 @@ import {
 } from '@store/root-store-context';
 
 // Re-renders at 60 Hz — driven by carDynamics.yaw updating at physics rate
-export const WindArrow = observer(() => {
+export const WindArrow = observer(function WindArrow() {
   const { sessionInfo } = useSessionStore();
   const { environment: env } = useEnvironmentStore();
   const { carDynamics } = usePlayerStore();
