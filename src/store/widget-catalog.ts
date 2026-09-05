@@ -74,3 +74,10 @@ export const DEFAULT_WIDGETS: WidgetDefaultConfig[] = WIDGETS.map(
     return Object.fromEntries(allowedEntries) as WidgetDefaultConfig;
   }
 );
+
+// The same records addressed by id. `getSettings` resolves a widget's shipped
+// defaults on every render of every widget — a linear scan there was measured
+// at 2688 calls a second while racing.
+export const DEFAULT_WIDGET_BY_ID = new Map(
+  DEFAULT_WIDGETS.map((defaultWidget) => [defaultWidget.id, defaultWidget])
+);

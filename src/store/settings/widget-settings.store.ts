@@ -1,6 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { mergeWithDefaults } from '@store/deep-merge';
-import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-catalog';
+import {
+  DEFAULT_WIDGETS,
+  DEFAULT_WIDGET_BY_ID,
+  WIDGET_BY_ID,
+} from '@store/widget-catalog';
 import {
   nextInstanceId,
   widgetTypeFromId,
@@ -1488,9 +1492,7 @@ export class WidgetSettingsStore {
     // type; a caller naming a type directly still lands on the right record,
     // since the original copy's id is its type.
     const type = widget ? widgetTypeOf(widget) : widgetTypeFromId(widgetId);
-    const defaultConfig = DEFAULT_WIDGETS.find(
-      (defaultWidget) => defaultWidget.id === type
-    );
+    const defaultConfig = DEFAULT_WIDGET_BY_ID.get(type);
     const defaultSettings = defaultConfig?.userSettings as
       | (BaseUserSettings & SpecificSettings)
       | undefined;

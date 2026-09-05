@@ -112,7 +112,7 @@ export class RootStore {
     this.inputTraceWidget = new InputTraceWidgetStore(this);
     this.streamChatWidget = new StreamChatWidgetStore(this);
     this.sim = new SimStore(this);
-    this.widgetAutoHide = new WidgetAutoHideStore();
+    this.widgetAutoHide = new WidgetAutoHideStore(this);
     this.bindings = new BindingsStore(new ActionRegistry(DEFAULT_WIDGETS));
     this.deviceInput = new DeviceInputStore();
     this.bindingsUi = new BindingsUiStore();

@@ -279,7 +279,7 @@ export const WidgetContainer = observer(
               style={frameStyle}
             >
               <WidgetIdContext.Provider value={widgetId}>
-                {children}
+                {shouldHide ? null : children}
               </WidgetIdContext.Provider>
             </div>
           </ErrorBoundary>

@@ -1,7 +1,6 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { useWidgetAutoHide } from '@ui/hooks/useWidgetAutoHide';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { FlagList } from './FlagList/FlagList';
 
@@ -15,8 +14,6 @@ export const FlatFlagsWidget = observer(() => {
   const { alwaysShow } = useWidgetSettings<FlagDisplaySettings>('flat-flags');
 
   const hasContent = alwaysShow || flags.displayFlags.length > 0;
-
-  useWidgetAutoHide(hasContent);
 
   if (!hasContent) {
     return null;

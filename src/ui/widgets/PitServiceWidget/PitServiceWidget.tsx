@@ -15,7 +15,6 @@ import { ServiceFooter } from './ServiceFooter/ServiceFooter';
 import styles from './PitServiceWidget.module.scss';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { usePitServiceWidgetStore } from '@store/root-store-context';
-import { useWidgetAutoHide } from '@ui/hooks/useWidgetAutoHide';
 
 export const PitServiceWidget = observer(() => {
   const pitService = usePitServiceWidgetStore();
@@ -29,13 +28,7 @@ export const PitServiceWidget = observer(() => {
     showTires,
     showRepairs,
     showFooter,
-    alwaysVisible,
   } = useWidgetSettings<PitServiceWidgetSettings>('pit-service');
-
-  // Hiding through the auto-hide store rather than returning null: the
-  // container paints the background, so a null child would leave an empty
-  // dark plate on track.
-  useWidgetAutoHide(alwaysVisible || pitService.panel.isVisible);
 
   const rail = showPitApproach ? (
     <PitApproachRail
