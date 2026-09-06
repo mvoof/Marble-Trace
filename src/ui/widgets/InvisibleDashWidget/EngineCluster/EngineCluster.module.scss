@@ -16,6 +16,7 @@
 // Both numbers reserve their widest reading, so a digit rolling over never
 // shifts the column — and with it the gear digit standing next to it.
 .rpm {
+  color: var(--dash-rpm-color, inherit);
   min-width: 5ch;
   font-size: wfs(26 * $ss);
   line-height: 1;

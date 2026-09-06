@@ -10,20 +10,12 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | AbsCell            | 60     | debt (target 0) |
- * | EngineCell         | 60     | debt (target 0) |
+ * | AbsCell            | 0      | ok    |
+ * | EngineCell         | 0      | ok    |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  AbsCell: {
-    budget: 60,
-    target: 0,
-    note: 'Debt: the ABS setting did not change during the burst.',
-  },
-  EngineCell: {
-    budget: 60,
-    target: 0,
-    note: 'Debt: the engine map did not change during the burst.',
-  },
+  AbsCell: { budget: 0 },
+  EngineCell: { budget: 0 },
 };
 
 describe('EnginePanelWidget render budget', () => {

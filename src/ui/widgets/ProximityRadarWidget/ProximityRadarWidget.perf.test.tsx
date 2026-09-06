@@ -10,14 +10,10 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | RadarScope         | 60     | debt (target 1) |
+ * | RadarScope         | 0      | ok    |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  RadarScope: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: the scope re-renders per proximity frame.',
-  },
+  RadarScope: { budget: 0 },
 };
 
 describe('ProximityRadarWidget render budget', () => {

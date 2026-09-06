@@ -1,3 +1,11 @@
 .windArrowGroup {
   transition: transform 0.05s linear;
+  transform: rotate(var(--wind-bearing, 0deg));
+}
+
+// The icon points inward: flipped about the middle of its own body, which sits
+// -105px out from the centre and is 55px tall (-105 + 55 / 2).
+.windArrowIcon {
+  transform: rotate(180deg);
+  transform-origin: 0 -77.5px;
 }

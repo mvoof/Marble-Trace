@@ -10,14 +10,10 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | RadarBar           | 120    | debt (target 2) |
+ * | RadarBar           | 2      | ok    |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  RadarBar: {
-    budget: 120,
-    target: 2,
-    note: 'Debt: both side bars re-render per proximity frame.',
-  },
+  RadarBar: { budget: 2 },
 };
 
 describe('RadarBarWidget render budget', () => {

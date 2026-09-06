@@ -204,6 +204,61 @@ export class StandingsWidgetStore {
     );
   }
 
+  /** Whether the standings frame carries the player at all, as a stable flag. */
+  get hasPlayerEntry(): boolean {
+    return this.playerEntry !== null;
+  }
+
+  /** The sim's own position, which only refreshes at the start/finish line. */
+  get playerOfficialPosition(): number | null {
+    return this.root.player.lapTiming?.player_car_position ?? null;
+  }
+
+  /**
+   * The on-track order's position, falling back to the official one whenever the
+   * standings frame has no entry for the player yet.
+   */
+  get playerLivePosition(): number | null {
+    return this.playerEntry?.livePosition || this.playerOfficialPosition;
+  }
+
+  /** The field the overall position is counted against. */
+  get overallFieldTotal(): number | null {
+    const entries = this.root.backendComputed.driverEntries?.entries ?? [];
+
+    return this.root.session.competingCarCount || entries.length || null;
+  }
+
+  /** How many cars share the player's class. */
+  get playerClassTotal(): number | null {
+    const entry = this.playerEntry;
+
+    if (!entry) {
+      return null;
+    }
+
+    const entries = this.root.backendComputed.driverEntries?.entries ?? [];
+
+    return (
+      entries.filter((other) => other.carClassId === entry.carClassId).length ||
+      null
+    );
+  }
+
+  get playerOfficialClassPosition(): number | null {
+    return this.playerEntry?.classPosition || null;
+  }
+
+  get playerLiveClassPosition(): number | null {
+    const entry = this.playerEntry;
+
+    if (!entry) {
+      return null;
+    }
+
+    return entry.liveClassPosition || entry.classPosition || null;
+  }
+
   /**
    * Player's overall position for the readouts outside the table. Live follows the
    * on-track order, official is the sim's own number, which only refreshes at the
@@ -212,19 +267,11 @@ export class StandingsWidgetStore {
    * readout is not tied to the standings table's own setting.
    */
   playerPosition(useLivePositions: boolean): number | null {
-    const official = this.root.player.lapTiming?.player_car_position ?? null;
-
     if (!useLivePositions) {
-      return official;
+      return this.playerOfficialPosition;
     }
 
-    const entry = this.playerEntry;
-
-    if (!entry) {
-      return official;
-    }
-
-    return entry.livePosition || official;
+    return this.playerLivePosition;
   }
 
   /** More than one car class is entered, so a class position is a different number. */
@@ -245,34 +292,26 @@ export class StandingsWidgetStore {
    * outside the table. `byClass` only takes effect in a multiclass field — with a
    * single class the class position is the overall one anyway. Falls back to the
    * overall numbers whenever the standings frame has no entry for the player yet.
+   *
+   * Every branch reads a computed that resolves to a primitive, so a caller wakes
+   * when its own number changes rather than on every standings frame.
    */
   playerPositionInfo(
     useLivePositions: boolean,
     byClass: boolean
   ): { position: number | null; total: number | null } {
-    const entries = this.root.backendComputed.driverEntries?.entries ?? [];
-    const overallTotal =
-      this.root.session.competingCarCount || entries.length || null;
-    const entry = this.playerEntry;
-
-    if (!byClass || !this.isMultiClass || !entry) {
+    if (!byClass || !this.isMultiClass || !this.hasPlayerEntry) {
       return {
         position: this.playerPosition(useLivePositions),
-        total: overallTotal,
+        total: this.overallFieldTotal,
       };
     }
 
-    const classTotal = entries.filter(
-      (other) => other.carClassId === entry.carClassId
-    ).length;
-
-    const classRank = useLivePositions
-      ? entry.liveClassPosition || entry.classPosition
-      : entry.classPosition;
-
     return {
-      position: classRank || null,
-      total: classTotal || null,
+      position: useLivePositions
+        ? this.playerLiveClassPosition
+        : this.playerOfficialClassPosition,
+      total: this.playerClassTotal,
     };
   }
 

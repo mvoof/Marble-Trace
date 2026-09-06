@@ -10,14 +10,10 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | TimerFooter        | 60     | debt (target 1) |
+ * | TimerFooter        | 1      | ok    |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  TimerFooter: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: the footer wakes per entries frame.',
-  },
+  TimerFooter: { budget: 1 },
 };
 
 describe('TimerWidget render budget', () => {

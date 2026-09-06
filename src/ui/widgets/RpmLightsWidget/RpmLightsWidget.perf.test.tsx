@@ -10,14 +10,14 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | RpmLightsWidget    | 61     | debt (target 1) |
+ * | RpmLightsWidget    | 0      | ok    |
+ * | RpmBar             | 0      | ok    |
+ * | PitBar             | 0      | ok, and unmounted off pit road |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  RpmLightsWidget: {
-    budget: 61,
-    target: 1,
-    note: 'Debt: the widget root reads rpm, so the whole tree wakes with it.',
-  },
+  RpmLightsWidget: { budget: 0 },
+  RpmBar: { budget: 0 },
+  PitBar: { budget: 0 },
 };
 
 describe('RpmLightsWidget render budget', () => {

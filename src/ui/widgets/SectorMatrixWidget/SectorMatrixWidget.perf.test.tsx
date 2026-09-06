@@ -10,20 +10,12 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | SectorHeader       | 60     | debt (target 1) |
- * | SectorGrid         | 60     | debt (target 1) |
+ * | SectorHeader       | 1      | ok    |
+ * | SectorGrid         | 1      | ok    |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  SectorHeader: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: the header wakes per lap-delta frame.',
-  },
-  SectorGrid: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: the grid wakes per lap-delta frame.',
-  },
+  SectorHeader: { budget: 1 },
+  SectorGrid: { budget: 1 },
 };
 
 describe('SectorMatrixWidget render budget', () => {

@@ -63,6 +63,7 @@ $rail-glide: 120ms;
   top: 0;
   bottom: 0;
   left: 0;
+  width: var(--rail-fill, 0%);
   background: rgba($race-blue, 0.35);
   // The lane progress lands in steps, one telemetry frame at a time; a bar that
   // catches up over a frame's worth of time reads as the car rolling.
@@ -85,6 +86,7 @@ $rail-glide: 120ms;
   position: absolute;
   top: 0;
   bottom: 0;
+  left: var(--rail-brake-left, 0%);
   width: 2px;
   background: $race-red;
 }
@@ -93,6 +95,7 @@ $rail-glide: 120ms;
   position: absolute;
   top: 0;
   bottom: 0;
+  left: var(--rail-fill, 0%);
   width: 2px;
   transform: translateX(-1px);
   background: $widget-text-primary;

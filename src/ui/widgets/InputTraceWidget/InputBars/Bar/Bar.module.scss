@@ -33,7 +33,8 @@
 .verticalFill {
   display: block;
   width: 100%;
-  background: $widget-text-accent;
+  height: var(--bar-fill, 0%);
+  background: var(--bar-color, #{$widget-text-accent});
   border-radius: $bar-border-radius;
 }
 
@@ -58,7 +59,8 @@
   line-height: 1;
 
   // The color on the empty track; once the fill reaches the digits they are
-  // repainted by getContrastTextColor() against the bar's own color.
-  color: $widget-text-primary;
+  // repainted by getContrastTextColor() against the bar's own color, which
+  // arrives as the custom property below.
+  color: var(--bar-value-color, #{$widget-text-primary});
   pointer-events: none;
 }

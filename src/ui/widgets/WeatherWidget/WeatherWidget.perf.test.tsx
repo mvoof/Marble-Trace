@@ -10,14 +10,10 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | WindArrow          | 60     | debt (target 1) |
+ * | WindArrow          | 1      | ok    |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  WindArrow: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: reads the heading in render; the same row as WindCompass.perf.test.tsx.',
-  },
+  WindArrow: { budget: 1 },
 };
 
 describe('WeatherWidget render budget', () => {

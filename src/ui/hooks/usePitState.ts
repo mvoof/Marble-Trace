@@ -1,4 +1,5 @@
 import {
+  usePitServiceWidgetStore,
   usePlayerStore,
   useSessionStore,
   useTrackMapWidgetStore,
@@ -63,6 +64,7 @@ export const usePitState = (): PitStateResult => {
   const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();
   const trackMap = useTrackMapWidgetStore();
+  const pitService = usePitServiceWidgetStore();
   const isPitLaneRecording = trackMap.isPitLaneRecording;
 
   const { pitSpeedLimitOverride, showPitAssist, boxCueDistM, nearLimitDelta } =
@@ -133,15 +135,6 @@ export const usePitState = (): PitStateResult => {
 
   const trackLengthM = sessionInfo?.trackLengthM ?? 0;
   const pitInPct = trackMap.trackShape?.pitInPct ?? null;
-  const pitExitPct = trackMap.trackShape?.pitExitPct ?? null;
-  const pitboxPct = sessionInfo?.driverPitTrkPct ?? null;
-
-  const pitLaneLengthM = (() => {
-    if (pitInPct === null || pitExitPct === null || trackLengthM <= 0)
-      return null;
-
-    return ((pitExitPct - pitInPct + 1) % 1) * trackLengthM;
-  })();
 
   const distToPitEntryM = (() => {
     const lapDistPct = player.lapTiming?.lap_dist_pct;
@@ -155,20 +148,6 @@ export const usePitState = (): PitStateResult => {
     }
 
     return ((pitInPct - lapDistPct + 1) % 1) * trackLengthM;
-  })();
-
-  const pitboxLanePct = (() => {
-    if (pitInPct === null || pitExitPct === null || pitboxPct === null)
-      return null;
-
-    const laneLengthPct = (pitExitPct - pitInPct + 1) % 1;
-
-    if (laneLengthPct <= 0) return null;
-
-    return Math.min(
-      Math.max(((pitboxPct - pitInPct + 1) % 1) / laneLengthPct, 0),
-      1
-    );
   })();
 
   return {
@@ -187,8 +166,8 @@ export const usePitState = (): PitStateResult => {
     distMode: player.pitTargetType,
     distM: player.pitTargetDistM,
     pitLaneProgressPct: player.pitLaneProgressPct,
-    pitLaneLengthM,
-    pitboxLanePct,
+    pitLaneLengthM: pitService.pitLaneLengthM,
+    pitboxLanePct: pitService.pitboxLanePct,
     showPitAssist,
     boxCueDistM,
     nearLimitDelta,

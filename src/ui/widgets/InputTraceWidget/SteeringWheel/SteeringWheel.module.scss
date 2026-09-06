@@ -41,6 +41,7 @@ $groove-px: 8;
 
 .rotator {
   position: absolute;
+  transform: rotate(var(--steering-angle, 0rad));
   width: 100%;
   height: 100%;
   border-radius: 50%;
@@ -158,6 +159,7 @@ $groove-px: 8;
    clip the drawn dial's rotator uses. */
 .artRotator {
   position: absolute;
+  transform: rotate(var(--steering-angle, 0rad));
   width: 100%;
   height: 100%;
   display: flex;

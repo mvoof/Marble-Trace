@@ -122,6 +122,45 @@ export class PitServiceWidgetStore {
     return distM !== null && distM <= revealM;
   }
 
+  /**
+   * The pit lane's length in meters, or null on a track whose lane has not been
+   * recorded yet. Owned here rather than derived per widget: the rail and the
+   * race dash both draw against it, and two answers would be one too many.
+   */
+  get pitLaneLengthM(): number | null {
+    const pitInPct = this.root.trackMapWidget.trackShape?.pitInPct ?? null;
+    const pitExitPct = this.root.trackMapWidget.trackShape?.pitExitPct ?? null;
+    const trackLengthM = this.root.session.sessionInfo?.trackLengthM ?? 0;
+
+    if (pitInPct === null || pitExitPct === null || trackLengthM <= 0) {
+      return null;
+    }
+
+    return ((pitExitPct - pitInPct + 1) % 1) * trackLengthM;
+  }
+
+  /** Where the player's stall sits along the lane, 0..1, or null off a recorded lane. */
+  get pitboxLanePct(): number | null {
+    const pitInPct = this.root.trackMapWidget.trackShape?.pitInPct ?? null;
+    const pitExitPct = this.root.trackMapWidget.trackShape?.pitExitPct ?? null;
+    const pitboxPct = this.root.session.sessionInfo?.driverPitTrkPct ?? null;
+
+    if (pitInPct === null || pitExitPct === null || pitboxPct === null) {
+      return null;
+    }
+
+    const laneLengthPct = (pitExitPct - pitInPct + 1) % 1;
+
+    if (laneLengthPct <= 0) {
+      return null;
+    }
+
+    return Math.min(
+      Math.max(((pitboxPct - pitInPct + 1) % 1) / laneLengthPct, 0),
+      1
+    );
+  }
+
   /** The sim's pit limiter flag, straight off the engine warning bitmask. */
   get isLimiterOn(): boolean {
     return (

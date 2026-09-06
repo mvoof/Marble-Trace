@@ -18,22 +18,18 @@ import { WindCompass } from './WindCompass';
  * | RotatingRing | 0      | ok    |
  * | RingGeometry | 0      | ok    |
  * | WindCompass  | 0      | ok    |
- * | WindArrow    | 60     | debt (target 1) |
+ * | WindArrow    | 1      | ok    |
  *
  * `RotatingRing` sends the heading to the DOM through `useReactiveDomWrite`, so
  * a burst of headings wakes React not once; its geometry is created by
- * `WindCompass`, which the heading does not re-render either. `WindArrow` still
- * reads the heading in render and is the remaining debt here.
+ * `WindCompass`, which the heading does not re-render either. `WindArrow` sends
+ * its bearing the same way and only re-renders for the wind's own speed.
  */
 const BUDGETS: Record<string, RenderBudget> = {
   RotatingRing: { budget: 0 },
   RingGeometry: { budget: 0 },
   WindCompass: { budget: 0 },
-  WindArrow: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: predates the rendering rule — reads the heading in render. Ticket 06.',
-  },
+  WindArrow: { budget: 1 },
 };
 
 const BURST_FRAMES = 60;

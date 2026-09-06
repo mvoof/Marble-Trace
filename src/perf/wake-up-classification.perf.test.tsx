@@ -41,27 +41,37 @@ const CANVAS_ONLY_WIDGET_IDS = new Set(['g-meter']);
  * A canvas inside an otherwise-DOM widget counts as no change, which is why
  * `proximity-radar` and `radar-bar` read `same` — see the record for what that
  * costs the classification.
+ *
+ * A widget on the reactive-DOM bypass reads `same` for the same reason, and it
+ * is the same blind spot rather than a new one: its numbers still move every
+ * frame, they simply no longer move through React, and the write lands on the
+ * animation frame after this one reads the markup. That is the rendering rule
+ * working, not a widget that stopped changing — which is why the table below is
+ * now almost entirely `same`, and why what it argues about (per-field
+ * observables) is untouched by it. `track-map` is the one still rendering a
+ * frame's worth of markup per frame, and it is the debt `docs/rendering.md`
+ * still lists.
  */
 type RenderingClass = 'same' | 'partial' | 'every-frame';
 
 const RENDERING_CLASSES: Record<string, RenderingClass> = {
   'close-battle': 'same',
-  coach: 'partial',
+  coach: 'same',
   'engine-panel': 'same',
-  'input-trace': 'partial',
-  'invisible-dash': 'every-frame',
+  'input-trace': 'same',
+  'invisible-dash': 'same',
   'pit-service': 'same',
   'proximity-radar': 'same',
-  'race-dash': 'every-frame',
+  'race-dash': 'same',
   'radar-bar': 'same',
   relative: 'same',
   'relative-map': 'same',
-  'rpm-lights': 'partial',
-  'sector-matrix': 'partial',
+  'rpm-lights': 'same',
+  'sector-matrix': 'same',
   standings: 'same',
   timer: 'same',
   'track-map': 'every-frame',
-  weather: 'every-frame',
+  weather: 'same',
 };
 
 /** Below this share of the burst, a widget drew the same thing throughout. */

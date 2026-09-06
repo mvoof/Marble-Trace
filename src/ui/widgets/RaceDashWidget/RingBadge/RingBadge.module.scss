@@ -42,6 +42,10 @@
 // shadow/filter. A static sector so shifting reads from geometry rather
 // than a color that only appears once the driver is already past the point
 // to react.
+.fillArc {
+  stroke: none;
+}
+
 .trackDim {
   stroke: rgba(255, 255, 255, 0.045);
 }
@@ -180,7 +184,7 @@
   font-size: wfs(52);
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: $widget-text-primary;
+  color: var(--ring-gear-color, #{$widget-text-primary});
 }
 
 .blinkPulse {

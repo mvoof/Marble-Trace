@@ -192,30 +192,32 @@ its folder, and the table lives in that file. Coverage is derived from the
 manifests by `src/perf/budget-coverage.perf.test.tsx`, so a widget that starts
 declaring a hot field without a perf test fails the suite.
 
-| widget            | worst row today      | state                                    |
-| ----------------- | -------------------- | ---------------------------------------- |
-| `close-battle`    | `BattleRow` 2        | within budget                            |
-| `g-meter`         | —                    | nothing wakes: it is all canvas          |
-| `coach`           | `InfoRow` 60         | debt                                     |
-| `engine-panel`    | `AbsCell` 60         | debt                                     |
-| `input-trace`     | `Bar` 180            | debt                                     |
-| `invisible-dash`  | `EngineCluster` 60   | debt                                     |
-| `pit-service`     | `PitSpeedPlate` 60   | debt                                     |
-| `proximity-radar` | `RadarScope` 60      | debt                                     |
-| `race-dash`       | `RaceDashWidget` 60  | debt                                     |
-| `radar-bar`       | `RadarBar` 120       | debt                                     |
-| `relative`        | `DriverRow` 180      | debt                                     |
-| `relative-map`    | `LinearMap` 60       | debt                                     |
-| `rpm-lights`      | `RpmLightsWidget` 61 | debt                                     |
-| `sector-matrix`   | `SectorGrid` 60      | debt                                     |
-| `standings`       | `DriverRow` 300      | debt                                     |
-| `timer`           | `TimerFooter` 60     | debt                                     |
-| `track-map`       | `TrackMapSvg` 61     | debt                                     |
-| `weather`         | `WindArrow` 60       | debt; the ring beside it is already at 0 |
+| widget            | worst row today     | state                                     |
+| ----------------- | ------------------- | ----------------------------------------- |
+| `close-battle`    | `BattleRow` 2       | within budget                             |
+| `g-meter`         | —                   | nothing wakes: it is all canvas           |
+| `coach`           | `InfoRow` 1         | within budget                             |
+| `engine-panel`    | `AbsCell` 0         | within budget                             |
+| `input-trace`     | `Bar` 3             | within budget                             |
+| `invisible-dash`  | `EngineCluster` 1   | within budget                             |
+| `pit-service`     | `PitApproachRail` 1 | within budget                             |
+| `proximity-radar` | `RadarScope` 0      | within budget                             |
+| `race-dash`       | `RingBadge` 1       | within budget                             |
+| `radar-bar`       | `RadarBar` 2        | within budget                             |
+| `relative`        | `DriverRow` 180     | debt                                      |
+| `relative-map`    | `LinearMap` 60      | debt                                      |
+| `rpm-lights`      | `RpmLightsWidget` 0 | within budget                             |
+| `sector-matrix`   | `SectorGrid` 1      | within budget                             |
+| `standings`       | `DriverRow` 300     | debt                                      |
+| `timer`           | `TimerFooter` 1     | within budget                             |
+| `track-map`       | `TrackMapSvg` 61    | debt                                      |
+| `weather`         | `WindArrow` 1       | within budget; the ring beside it is at 0 |
 
-The compass ring is the one that has had the rule applied: `RotatingRing`,
-`RingGeometry` and `WindCompass` are all at 0, and `WindArrow` next to them is
-what the rest of the table still looks like.
+Every widget above but the four list-shaped ones has had the rule applied. What
+is left in debt — `relative`, `relative-map`, `standings` and `track-map` — is
+the same shape of problem in all four: a row or a dot is handed the per-car
+entry as a prop, and that entry object is replaced on every frame. Their fix is
+the identity/position split described in the tickets, not another bypass.
 
 ### Attribution needs named components
 

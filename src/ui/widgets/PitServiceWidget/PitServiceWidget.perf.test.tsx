@@ -10,20 +10,16 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | PitSpeedPlate      | 60     | debt (target 1) |
- * | PitApproachRail    | 60     | debt (target 1) |
+ * | PitSpeedPlate      | 0      | ok    |
+ * | PitSpeedGauge      | 0      | ok    |
+ * | PitLimiterRow      | 0      | ok, and unmounted with the limiter off |
+ * | PitApproachRail    | 1      | ok    |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  PitSpeedPlate: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: re-renders for the speed instead of writing it.',
-  },
-  PitApproachRail: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: re-renders for the approach distance.',
-  },
+  PitSpeedPlate: { budget: 0 },
+  PitSpeedGauge: { budget: 0 },
+  PitLimiterRow: { budget: 0 },
+  PitApproachRail: { budget: 1 },
 };
 
 describe('PitServiceWidget render budget', () => {

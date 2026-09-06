@@ -3,41 +3,54 @@ import { observer } from 'mobx-react-lite';
 
 import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
 import { computeRpmZoneState } from '@utils/car-signals';
+import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { usePlayerStore, useSessionStore } from '@store/root-store-context';
 
 import { formatGear, zoneDigitColor } from '../invisible-dash-utils';
 
 import styles from './GearReadout.module.scss';
 
+const GEAR_COLOR_PROPERTY = '--dash-gear-color';
+
+/**
+ * The gear, and the zone colour it is painted in. The gear changes with the
+ * shift and the zone with the revs, both off the 60 Hz dynamics frame, so both
+ * are written straight to the digit. See `docs/rendering.md`.
+ */
 export const GearReadout = observer(function GearReadout() {
-  const { carDynamics, carStatus } = usePlayerStore();
-  const { sessionInfo } = useSessionStore();
+  const player = usePlayerStore();
+  const sessionStore = useSessionStore();
 
   const settings =
     useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
+
+  const gearRef = useReactiveDomWrite<HTMLSpanElement>(
+    (element, scheduleWrite) => {
+      const gear = player.carDynamics?.gear ?? 0;
+      const { zone } = computeRpmZoneState(
+        Math.round(player.carDynamics?.rpm ?? 0),
+        sessionStore.sessionInfo,
+        player.carStatus,
+        gear
+      );
+
+      const gearColor = settings.colorizeGearByZone
+        ? zoneDigitColor(zone, settings)
+        : null;
+
+      const gearText = formatGear(gear);
+
+      scheduleWrite(() => {
+        element.style.setProperty(GEAR_COLOR_PROPERTY, gearColor ?? '');
+        element.textContent = gearText;
+      });
+    },
+    [player, sessionStore, settings]
+  );
 
   if (!settings.showGear) {
     return null;
   }
 
-  const gear = carDynamics?.gear ?? 0;
-  const { zone } = computeRpmZoneState(
-    Math.round(carDynamics?.rpm ?? 0),
-    sessionInfo,
-    carStatus,
-    gear
-  );
-
-  const gearColor = settings.colorizeGearByZone
-    ? zoneDigitColor(zone, settings)
-    : null;
-
-  return (
-    <span
-      className={styles.gear}
-      style={gearColor ? { color: gearColor } : undefined}
-    >
-      {formatGear(gear)}
-    </span>
-  );
+  return <span ref={gearRef} className={styles.gear} />;
 });

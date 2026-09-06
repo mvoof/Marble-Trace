@@ -10,44 +10,20 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | RaceDashWidget     | 60     | debt (target 1) |
- * | RingBadge          | 60     | debt (target 1) |
- * | SteeringMarker     | 60     | debt (target 1) |
- * | StatsStrip         | 60     | debt (target 1) |
- * | SpeedReadout       | 60     | debt (target 1) |
- * | RpmValue           | 60     | debt (target 1) |
+ * | RaceDashWidget | 1 | ok |
+ * | RingBadge | 1 | ok |
+ * | SteeringMarker | 1 | ok |
+ * | StatsStrip | 1 | ok |
+ * | SpeedReadout | 1 | ok |
+ * | RpmValue | 1 | ok |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  RaceDashWidget: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: the widget root reads a hot field, against the rule.',
-  },
-  RingBadge: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: re-renders for the gear ring.',
-  },
-  SteeringMarker: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: re-renders for the wheel angle instead of writing it.',
-  },
-  StatsStrip: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: the strip wakes for the numbers inside it.',
-  },
-  SpeedReadout: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: re-renders every frame for one number.',
-  },
-  RpmValue: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: re-renders every frame for one number.',
-  },
+  RaceDashWidget: { budget: 1 },
+  RingBadge: { budget: 1 },
+  SteeringMarker: { budget: 1 },
+  StatsStrip: { budget: 1 },
+  SpeedReadout: { budget: 1 },
+  RpmValue: { budget: 1 },
 };
 
 describe('RaceDashWidget render budget', () => {

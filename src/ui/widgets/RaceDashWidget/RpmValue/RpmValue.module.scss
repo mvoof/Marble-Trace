@@ -4,7 +4,7 @@
   font-weight: 700;
   line-height: 0.95;
   font-variant-numeric: tabular-nums;
-  color: $widget-text-primary;
+  color: var(--rpm-value-color, #{$widget-text-primary});
 }
 
 .blinkPulse {

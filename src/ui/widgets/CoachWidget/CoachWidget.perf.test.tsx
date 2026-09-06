@@ -10,14 +10,10 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | InfoRow            | 60     | debt (target 1) |
+ * | InfoRow            | 1      | ok    |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  InfoRow: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: the row wakes per dynamics frame.',
-  },
+  InfoRow: { budget: 1 },
 };
 
 describe('CoachWidget render budget', () => {

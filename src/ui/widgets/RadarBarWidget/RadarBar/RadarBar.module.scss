@@ -17,6 +17,14 @@
   align-items: center;
   justify-content: center;
   opacity: 0.95;
+  top: var(--radar-pill-top, 0%);
+  height: var(--radar-pill-height, 0%);
+  background-color: var(--radar-pill-color, transparent);
+}
+
+// The car alongside has left the bar's range: the pill is gone, the bar stays.
+.pillEmpty {
+  display: none;
 }
 
 .pillText {
@@ -28,4 +36,5 @@
   white-space: nowrap;
   text-shadow: 0 0 4px rgba(0, 0, 0, $opacity-heavy);
   transform-origin: center;
+  transform: rotate(var(--radar-text-rotation, 0deg));
 }

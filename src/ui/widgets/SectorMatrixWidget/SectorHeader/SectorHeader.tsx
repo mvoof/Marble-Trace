@@ -18,7 +18,7 @@ export const SectorHeader = observer(function SectorHeader({
   sectorCount,
 }: Props) {
   const { lapTiming } = usePlayerStore();
-  const { lapDelta } = useBackendComputedStore();
+  const { currentSectorIdx } = useBackendComputedStore();
 
   const { showPredicted } =
     useWidgetSettings<SectorMatrixWidgetSettings>('sector-matrix');
@@ -36,8 +36,6 @@ export const SectorHeader = observer(function SectorHeader({
     bestLapTime !== null && bestLapTime > 0 && liveDelta !== null
       ? bestLapTime + liveDelta
       : null;
-
-  const currentSectorIdx = lapDelta?.currentSectorIdx ?? 0;
 
   return (
     <div className={styles.root}>

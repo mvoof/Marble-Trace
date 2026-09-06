@@ -1,78 +1,167 @@
-﻿import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
 import type { InputTraceSettings } from '@/types/widget-settings';
 import { steeringAngleDeg } from '@utils/car-signals';
+import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import Logo from '@assets/logo.svg?react';
 import { getWheelArt } from './WheelArt';
 import styles from './SteeringWheel.module.scss';
 
+/** The custom property the wheel turns on; both rotators rotate by it in CSS. */
+const STEERING_ANGLE_PROPERTY = '--steering-angle';
+
+const MARKER_COLOR_PROPERTY = '--steering-marker-color';
+
+const NEUTRAL_GEAR_LABEL = 'N';
+const REVERSE_GEAR_LABEL = 'R';
+
+const gearLabelOf = (gear: number): string => {
+  if (gear === 0) {
+    return NEUTRAL_GEAR_LABEL;
+  }
+
+  if (gear === -1) {
+    return REVERSE_GEAR_LABEL;
+  }
+
+  return String(gear);
+};
+
+/**
+ * What the wheel's hub reads: the gear, the speed, the steering angle, or the
+ * logo. Every one of them but the logo moves on every physics tick, so the
+ * markup is rendered once per display mode and the numbers are written into it.
+ * See `docs/rendering.md`.
+ */
 const WheelCenter = observer(function WheelCenter() {
   const telemetry = usePlayerStore();
   const units = useUnitsStore();
 
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
-  const rawAngle = telemetry.carDynamics?.steering_wheel_angle ?? 0;
-  const angleDegrees = Math.round(steeringAngleDeg(rawAngle));
-  const gear = telemetry.carDynamics?.gear ?? 0;
-  const speed = telemetry.carDynamics?.speed ?? 0;
-  const gearLabel = gear === 0 ? 'N' : gear === -1 ? 'R' : String(gear);
+  const display = settings.steeringCenterDisplay;
 
-  switch (settings.steeringCenterDisplay) {
-    case 'none':
-      return null;
+  const centerRef = useReactiveDomWrite<HTMLSpanElement>(
+    (element, scheduleWrite) => {
+      const carDynamics = telemetry.carDynamics;
 
-    case 'gear':
-      return <span className={styles.centerText}>{gearLabel}</span>;
+      const text = (() => {
+        if (display === 'gear') {
+          return gearLabelOf(carDynamics?.gear ?? 0);
+        }
 
-    case 'speed':
-      return (
-        <span className={styles.centerText}>
-          {Math.round(speed * units.speedFactor)}
-        </span>
-      );
+        if (display === 'speed') {
+          return Math.round(
+            (carDynamics?.speed ?? 0) * units.speedFactor
+          ).toString();
+        }
 
-    case 'angle':
-      return (
-        <span className={`${styles.centerText} ${styles.centerAngle}`}>
-          <span className={styles.centerNum}>{angleDegrees}</span>
-          <span className={styles.centerUnit}>°</span>
-        </span>
-      );
+        return Math.round(
+          steeringAngleDeg(carDynamics?.steering_wheel_angle ?? 0)
+        ).toString();
+      })();
 
-    case 'speed-gear':
-      return (
-        <div className={styles.speedGear}>
-          <span className={styles.speedGearSpeed}>
-            {Math.round(speed * units.speedFactor)}
-          </span>
-          <div className={styles.speedGearDivider} />
-          <span className={styles.speedGearGear}>{gearLabel}</span>
-        </div>
-      );
+      const speedText = Math.round(
+        (carDynamics?.speed ?? 0) * units.speedFactor
+      ).toString();
+      const gearText = gearLabelOf(carDynamics?.gear ?? 0);
 
-    default:
-      return (
-        <div className={styles.logoWrapper}>
-          <Logo className={styles.logo} />
-        </div>
-      );
+      scheduleWrite(() => {
+        if (display === 'speed-gear') {
+          const speed = element.querySelector(`.${styles.speedGearSpeed}`);
+          const gear = element.querySelector(`.${styles.speedGearGear}`);
+
+          if (speed instanceof HTMLElement) {
+            speed.textContent = speedText;
+          }
+
+          if (gear instanceof HTMLElement) {
+            gear.textContent = gearText;
+          }
+
+          return;
+        }
+
+        if (display === 'angle') {
+          const number = element.querySelector(`.${styles.centerNum}`);
+
+          if (number instanceof HTMLElement) {
+            number.textContent = text;
+          }
+
+          return;
+        }
+
+        element.textContent = text;
+      });
+    },
+    [telemetry, units, display]
+  );
+
+  if (display === 'none') {
+    return null;
   }
+
+  if (display === 'gear' || display === 'speed') {
+    return <span ref={centerRef} className={styles.centerText} />;
+  }
+
+  if (display === 'angle') {
+    return (
+      <span
+        ref={centerRef}
+        className={`${styles.centerText} ${styles.centerAngle}`}
+      >
+        <span className={styles.centerNum} />
+        <span className={styles.centerUnit}>°</span>
+      </span>
+    );
+  }
+
+  if (display === 'speed-gear') {
+    return (
+      <span ref={centerRef} className={styles.speedGear}>
+        <span className={styles.speedGearSpeed} />
+        <span className={styles.speedGearDivider} />
+        <span className={styles.speedGearGear} />
+      </span>
+    );
+  }
+
+  return (
+    <div className={styles.logoWrapper}>
+      <Logo className={styles.logo} />
+    </div>
+  );
 });
 
+/**
+ * The wheel itself. The steering angle changes on every physics tick and turns
+ * one element, which is exactly the case the reactive-DOM primitive is for: the
+ * rim, the marker and the traced art are the same element objects for as long as
+ * the wheel is mounted.
+ */
 export const SteeringWheel = observer(function SteeringWheel() {
   const telemetry = usePlayerStore();
 
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
+  const WheelArt = getWheelArt(settings.steeringWheelStyle);
+
+  const rotatorRef = useReactiveDomWrite<HTMLDivElement>(
+    (element, scheduleWrite) => {
+      const rawAngle = telemetry.carDynamics?.steering_wheel_angle ?? 0;
+
+      scheduleWrite(() => {
+        element.style.setProperty(STEERING_ANGLE_PROPERTY, `${-rawAngle}rad`);
+      });
+    },
+    [telemetry, settings.steeringWheelStyle, settings.showSteering]
+  );
 
   if (!settings.showSteering) {
     return null;
   }
-
-  const rawAngle = telemetry.carDynamics?.steering_wheel_angle ?? 0;
-  const WheelArt = getWheelArt(settings.steeringWheelStyle);
-  const rotation = `rotate(${-rawAngle}rad)`;
 
   // A traced wheel turns as a whole, so it replaces both the groove it would
   // hide and the rim marker it already reads as — gt-round and flat-bottom
@@ -83,11 +172,11 @@ export const SteeringWheel = observer(function SteeringWheel() {
       <div className={styles.container}>
         <div className={styles.dial}>
           <div
+            ref={rotatorRef}
             className={styles.artRotator}
             style={
               {
-                transform: rotation,
-                '--steering-marker-color': settings.steeringMarkerColor,
+                [MARKER_COLOR_PROPERTY]: settings.steeringMarkerColor,
               } as CSSProperties
             }
           >
@@ -115,7 +204,7 @@ export const SteeringWheel = observer(function SteeringWheel() {
       <div className={styles.dial}>
         <div className={styles.groove} />
 
-        <div className={styles.rotator} style={{ transform: rotation }}>
+        <div ref={rotatorRef} className={styles.rotator}>
           <div className={styles.indicatorMarker} />
         </div>
 

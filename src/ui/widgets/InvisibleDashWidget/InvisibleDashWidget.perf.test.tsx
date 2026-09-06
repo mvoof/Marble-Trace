@@ -10,32 +10,16 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | EngineCluster      | 60     | debt (target 1) |
- * | ShiftBar           | 45     | debt (target 1) |
- * | GearReadout        | 60     | debt (target 1) |
- * | RaceCluster        | 60     | debt (target 1) |
+ * | EngineCluster | 1 | ok |
+ * | ShiftBar | 1 | ok |
+ * | GearReadout | 1 | ok |
+ * | RaceCluster | 1 | ok |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  EngineCluster: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: the cluster wakes for the numbers inside it.',
-  },
-  ShiftBar: {
-    budget: 45,
-    target: 1,
-    note: 'Debt: re-renders for the shift level instead of writing it.',
-  },
-  GearReadout: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: re-renders every frame for one number.',
-  },
-  RaceCluster: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: the cluster wakes for the numbers inside it.',
-  },
+  EngineCluster: { budget: 1 },
+  ShiftBar: { budget: 1 },
+  GearReadout: { budget: 1 },
+  RaceCluster: { budget: 1 },
 };
 
 describe('InvisibleDashWidget render budget', () => {

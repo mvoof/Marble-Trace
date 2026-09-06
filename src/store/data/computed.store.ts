@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable } from 'mobx';
+import { computed, makeAutoObservable, observable } from 'mobx';
 
 import type {
   DriverEntriesFrame,
@@ -48,7 +48,46 @@ export class BackendComputedStore {
       lapDelta: observable.ref,
       lapHistory: observable.ref,
       lastCompletedLap: observable.ref,
+      // The lap-delta frame is replaced on every tick while its sector arrays
+      // change once a sector. Compared by content, they wake a widget when a
+      // sector is actually posted rather than sixty times a second.
+      sectorTimes: computed.struct,
+      sectorDeltas: computed.struct,
     });
+  }
+
+  /**
+   * Whether a proximity frame has arrived at all, as a stable flag. A widget
+   * that only needs to know the radar has data reads this rather than the frame
+   * itself, which is replaced on every tick.
+   */
+  get hasProximity(): boolean {
+    return this.proximity !== null;
+  }
+
+  /** The sector the car is in, off a lap-delta frame replaced on every tick. */
+  get currentSectorIdx(): number {
+    return this.lapDelta?.currentSectorIdx ?? 0;
+  }
+
+  /** Sector times for the lap so far, compared by content. */
+  get sectorTimes(): (number | null)[] {
+    return this.lapDelta?.sectorTimes ?? [];
+  }
+
+  /** Per-sector deltas against the personal best, compared by content. */
+  get sectorDeltas(): (number | null)[] {
+    return this.lapDelta?.sectorDeltas ?? [];
+  }
+
+  /** The spotter's left call, as a stable flag off the proximity frame. */
+  get spotterLeft(): boolean {
+    return this.proximity?.spotterLeft ?? false;
+  }
+
+  /** The spotter's right call, as a stable flag off the proximity frame. */
+  get spotterRight(): boolean {
+    return this.proximity?.spotterRight ?? false;
   }
 
   /**
