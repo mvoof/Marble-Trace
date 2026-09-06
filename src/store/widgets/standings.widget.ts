@@ -6,7 +6,7 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { DriverEntry } from '@/types/bindings';
+import type { CarIdentity } from '@/types/car-identity';
 import type { DriverGroup } from '@/types';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { computeClassSof, hasSetALap } from '@utils/driver';
@@ -125,10 +125,11 @@ export class StandingsWidgetStore {
 
     this.disposers.push(
       reaction(
-        () => this.root.backendComputed.driverEntries,
-        (frame) => {
-          const entries = frame?.entries ?? [];
-
+        // Identities, not the frame: the order and the position flashes are
+        // decided by fields that change once a lap, so this ran sixty times a
+        // second to reach the same answer. See `docs/rendering.md`.
+        () => this.root.backendComputed.driverIdentities,
+        (entries) => {
           this.settleOrder(entries);
           this.trackPositionChanges(entries);
         }
@@ -187,18 +188,18 @@ export class StandingsWidgetStore {
   }
 
   /** Rank a car holds under the active ordering — overall. */
-  rankOf(entry: DriverEntry): number {
+  rankOf(entry: CarIdentity): number {
     return this.useTrackOrder ? entry.livePosition : entry.position;
   }
 
   /** Rank a car holds under the active ordering — within its class. */
-  classRankOf(entry: DriverEntry): number {
+  classRankOf(entry: CarIdentity): number {
     return this.useTrackOrder ? entry.liveClassPosition : entry.classPosition;
   }
 
-  get playerEntry(): DriverEntry | null {
+  get playerEntry(): CarIdentity | null {
     return (
-      this.root.backendComputed.driverEntries?.entries.find(
+      this.root.backendComputed.driverIdentities.find(
         (entry) => entry.isPlayer
       ) ?? null
     );
@@ -224,7 +225,7 @@ export class StandingsWidgetStore {
 
   /** The field the overall position is counted against. */
   get overallFieldTotal(): number | null {
-    const entries = this.root.backendComputed.driverEntries?.entries ?? [];
+    const entries = this.root.backendComputed.driverIdentities;
 
     return this.root.session.competingCarCount || entries.length || null;
   }
@@ -237,7 +238,7 @@ export class StandingsWidgetStore {
       return null;
     }
 
-    const entries = this.root.backendComputed.driverEntries?.entries ?? [];
+    const entries = this.root.backendComputed.driverIdentities;
 
     return (
       entries.filter((other) => other.carClassId === entry.carClassId).length ||
@@ -276,7 +277,7 @@ export class StandingsWidgetStore {
 
   /** More than one car class is entered, so a class position is a different number. */
   get isMultiClass(): boolean {
-    const entries = this.root.backendComputed.driverEntries?.entries ?? [];
+    const entries = this.root.backendComputed.driverIdentities;
 
     if (entries.length === 0) {
       return false;
@@ -347,7 +348,7 @@ export class StandingsWidgetStore {
   // Holds back a car's new position until it has survived ORDER_SETTLE_MS, so
   // the table only reorders once a pass has actually stuck. Cars seen for the
   // first time settle immediately — the opening order must not fade in.
-  private settleOrder(entries: DriverEntry[]) {
+  private settleOrder(entries: CarIdentity[]) {
     const now = performance.now();
     const next = new Map(this.settledPositions);
     const seen = new Set<number>();
@@ -404,7 +405,7 @@ export class StandingsWidgetStore {
   // Arrows read the raw frame, not the settled order: the flash is the instant
   // signal that a place changed hands, while the row itself only slides once the
   // swap has held.
-  private trackPositionChanges(entries: DriverEntry[]) {
+  private trackPositionChanges(entries: CarIdentity[]) {
     for (const entry of entries) {
       const previous = this.previousPositions.get(entry.carIdx);
       const current = this.rankOf(entry);
@@ -427,8 +428,8 @@ export class StandingsWidgetStore {
    * sessions — cars still without a lap, dropped when the user asked for it. The
    * player's own row always stays: the widget is unusable without it.
    */
-  private get visibleEntries(): DriverEntry[] {
-    const entries = this.root.backendComputed.driverEntries?.entries ?? [];
+  private get visibleEntries(): CarIdentity[] {
+    const entries = this.root.backendComputed.driverIdentities;
 
     const settings =
       this.root.widgetSettings.getSettings<StandingsWidgetSettings>(
@@ -461,7 +462,7 @@ export class StandingsWidgetStore {
   }
 
   /** Field ordered by the debounced positions — the order the table renders. */
-  get orderedEntries(): DriverEntry[] {
+  get orderedEntries(): CarIdentity[] {
     const entries = this.visibleEntries;
 
     const positions = this.settledPositions;
@@ -529,23 +530,19 @@ export class StandingsWidgetStore {
     );
   }
 
-  get driverMap(): Map<number, DriverEntry> {
-    if (!this.root.backendComputed.driverEntries) return new Map();
-
+  get driverMap(): Map<number, CarIdentity> {
     return new Map(
-      this.root.backendComputed.driverEntries.entries.map((entry) => [
+      this.root.backendComputed.driverIdentities.map((entry) => [
         entry.carIdx,
         entry,
       ])
     );
   }
 
-  get classLeaders(): Map<number, DriverEntry> {
-    const result = new Map<number, DriverEntry>();
+  get classLeaders(): Map<number, CarIdentity> {
+    const result = new Map<number, CarIdentity>();
 
-    if (!this.root.backendComputed.driverEntries) return result;
-
-    for (const entry of this.root.backendComputed.driverEntries.entries) {
+    for (const entry of this.root.backendComputed.driverIdentities) {
       if (this.classRankOf(entry) === 1) {
         result.set(entry.carClassId, entry);
       }
@@ -554,11 +551,9 @@ export class StandingsWidgetStore {
     return result;
   }
 
-  get overallLeader(): DriverEntry | null {
-    if (!this.root.backendComputed.driverEntries) return null;
-
+  get overallLeader(): CarIdentity | null {
     return (
-      this.root.backendComputed.driverEntries.entries.find(
+      this.root.backendComputed.driverIdentities.find(
         (entry) => this.rankOf(entry) === 1
       ) ?? null
     );
@@ -569,7 +564,7 @@ export class StandingsWidgetStore {
 
     if (entries.length === 0) return [];
 
-    const classMap = new Map<number, DriverEntry[]>();
+    const classMap = new Map<number, CarIdentity[]>();
 
     for (const driver of entries) {
       const existing = classMap.get(driver.carClassId);
@@ -614,9 +609,7 @@ export class StandingsWidgetStore {
   get classBestLapMap(): Map<number, number> {
     const result = new Map<number, number>();
 
-    if (!this.root.backendComputed.driverEntries) return result;
-
-    for (const entry of this.root.backendComputed.driverEntries.entries) {
+    for (const entry of this.root.backendComputed.driverIdentities) {
       if (!(entry.bestLapTime > 0)) continue;
 
       const current = result.get(entry.carClassId);

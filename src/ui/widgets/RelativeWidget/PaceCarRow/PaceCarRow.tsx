@@ -5,35 +5,67 @@ import {
   computeRelativeGap,
   buildRelativeGridTemplate,
 } from '@ui/widgets/RelativeWidget/relative-utils';
-import type { PaceCarRowEntry } from '@ui/widgets/RelativeWidget/relative-utils';
 import { formatCarNumber } from '@utils/driver';
+import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './PaceCarRow.module.scss';
-import { useBackendComputedStore } from '@store/root-store-context';
+import {
+  useBackendComputedStore,
+  useRelativeWidgetStore,
+} from '@store/root-store-context';
 
 interface PaceCarRowProps {
-  driver: PaceCarRowEntry;
+  carIdx: number;
   index: number;
 }
 
+/**
+ * The pace car's own row. Its gap moves every tick and is written straight to
+ * its span; the rest of the row is the roster entry, which does not move.
+ */
 export const PaceCarRow = observer(function PaceCarRow({
-  driver,
+  carIdx,
   index,
 }: PaceCarRowProps) {
-  const { relativeEntries } = useBackendComputedStore();
+  const computed = useBackendComputedStore();
+  const relativeWidget = useRelativeWidgetStore();
 
   const settings = useWidgetSettings<RelativeWidgetSettings>('relative');
 
-  const player = relativeEntries.find((entry) => entry.isPlayer) ?? null;
-  const relativeGap = player ? computeRelativeGap(driver, player) : 0;
+  const driver = relativeWidget.paceCarRowOf(carIdx);
 
-  const gapStr =
-    relativeGap > 0
-      ? `+${relativeGap.toFixed(1)}`
-      : relativeGap < 0
-        ? relativeGap.toFixed(1)
-        : '0.0';
+  const gapRef = useReactiveDomWrite<HTMLSpanElement>(
+    (element, scheduleWrite) => {
+      const paceCar = relativeWidget.paceCarRowOf(carIdx);
+      const livePlayer =
+        computed.relativeEntries.find((entry) => entry.isPlayer) ?? null;
+
+      if (!paceCar) {
+        return;
+      }
+
+      const relativeGap = livePlayer
+        ? computeRelativeGap(paceCar, livePlayer)
+        : 0;
+
+      const gapText =
+        relativeGap > 0
+          ? `+${relativeGap.toFixed(1)}`
+          : relativeGap < 0
+            ? relativeGap.toFixed(1)
+            : '0.0';
+
+      scheduleWrite(() => {
+        element.textContent = gapText;
+      });
+    },
+    [computed, relativeWidget, carIdx]
+  );
+
+  if (!driver) {
+    return null;
+  }
 
   const gridTemplate = buildRelativeGridTemplate(settings);
   const formattedCarNumber = formatCarNumber(driver.carNumber);
@@ -77,7 +109,7 @@ export const PaceCarRow = observer(function PaceCarRow({
       </span>
 
       <div className={styles.gapBlock}>
-        <span className={styles.gap}>{gapStr}</span>
+        <span ref={gapRef} className={styles.gap} />
       </div>
     </div>
   );

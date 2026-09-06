@@ -30,7 +30,9 @@ import { IrChangeCell } from './IrChangeCell';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
+import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import {
+  useBackendComputedStore,
   useStandingsWidgetStore,
   useSessionStore,
 } from '@store/root-store-context';
@@ -49,10 +51,59 @@ export const DriverRow = observer(function DriverRow({
 }: DriverRowProps) {
   const standingsWidget = useStandingsWidgetStore();
   const session = useSessionStore();
+  const computed = useBackendComputedStore();
 
   const driver = standingsWidget.driverMap.get(carIdx);
   const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
   const gridTemplate = buildGridTemplate(settings);
+
+  // The gap is the row's one moving number: it is measured against the leader's
+  // live entry and changes on every tick, so it is written straight to its span
+  // while the rest of the row is rendered from the identity above. See
+  // `docs/rendering.md`.
+  const gapRef = useReactiveDomWrite<HTMLSpanElement>(
+    (element, scheduleWrite) => {
+      const liveDriver = computed.driverEntryOf(carIdx);
+
+      if (!liveDriver) {
+        return;
+      }
+
+      const byClass = settings.viewMode !== 'all';
+      const leaderIdentity = byClass
+        ? (standingsWidget.classLeaders.get(liveDriver.carClassId) ?? null)
+        : standingsWidget.overallLeader;
+      const liveLeader = leaderIdentity
+        ? computed.driverEntryOf(leaderIdentity.carIdx)
+        : null;
+
+      const sessions = session.sessionInfo?.sessions;
+      const isRaceSession =
+        sessions?.[session.sessionInfo?.currentSessionNum ?? 0]?.sessionType ===
+        'Race';
+
+      const leads =
+        (byClass ? liveDriver.liveClassPosition : liveDriver.livePosition) ===
+        1;
+
+      const gapInfo = getStandingsGap(
+        liveDriver,
+        liveLeader,
+        isRaceSession,
+        leads,
+        calculateLapsBehind(liveLeader, liveDriver)
+      );
+
+      scheduleWrite(() => {
+        const isMuted = gapInfo.isLeader || gapInfo.isEmpty;
+
+        element.classList.toggle(styles.gapLeader, isMuted);
+        element.classList.toggle(styles.gapValue, !isMuted);
+        element.textContent = gapInfo.value;
+      });
+    },
+    [computed, standingsWidget, session, settings, carIdx]
+  );
 
   if (!driver) {
     return null;
@@ -83,11 +134,6 @@ export const DriverRow = observer(function DriverRow({
 
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
-  const useClassPos = settings.viewMode !== 'all';
-
-  const isLeader =
-    (useClassPos ? driver.liveClassPosition : driver.livePosition) === 1;
-
   const rowClass = [
     styles.driverRow,
     settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
@@ -117,18 +163,6 @@ export const DriverRow = observer(function DriverRow({
 
   const formattedCarNumber = formatCarNumber(driver.carNumber);
 
-  // Get leader of current class/group from cached store for gap/deficit calculation
-  const leader = useClassPos
-    ? (standingsWidget.classLeaders.get(driver.carClassId) ?? null)
-    : standingsWidget.overallLeader;
-
-  const lapsBehind = calculateLapsBehind(leader, driver);
-
-  const sessionInfoData = session.sessionInfo;
-  const sessions = sessionInfoData?.sessions;
-  const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
-  const isRace = currentSession?.sessionType === 'Race';
-
   const classBest = standingsWidget.classBestLapMap.get(driver.carClassId);
   const isClassBestLap =
     driver.bestLapTime > 0 &&
@@ -137,19 +171,9 @@ export const DriverRow = observer(function DriverRow({
 
   const bestLap = resolveBestLapDisplay(driver);
 
-  const gapInfo = getStandingsGap(driver, leader, isRace, isLeader, lapsBehind);
-
   // One switch mutes every informational column at once, so the row's accent
   // is left to the position, the name and the best lap.
   const dimClass = settings.dimSecondaryColumns ? styles.cellDimmed : '';
-
-  const gapContent = gapInfo.isLeader ? (
-    <span className={`${styles.gapLeader} ${dimClass}`}>{gapInfo.value}</span>
-  ) : gapInfo.isEmpty ? (
-    <span className={`${styles.gapLeader} ${dimClass}`}>{gapInfo.value}</span>
-  ) : (
-    <span className={`${styles.gapValue} ${dimClass}`}>{gapInfo.value}</span>
-  );
 
   return (
     <div
@@ -242,7 +266,9 @@ export const DriverRow = observer(function DriverRow({
         </div>
       )}
 
-      <div className={`${styles.cell} ${styles.cellRight}`}>{gapContent}</div>
+      <div className={`${styles.cell} ${styles.cellRight}`}>
+        <span ref={gapRef} className={dimClass} />
+      </div>
 
       <div className={`${styles.cell} ${styles.cellRight}`}>
         <span className={`${styles.lastLap} ${dimClass}`}>

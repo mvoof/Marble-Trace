@@ -9,8 +9,6 @@ interface StartFinishMarkerProps {
   trackCenterY: number;
   /** Keeps the marker at a constant on-screen size when the map is zoomed. */
   scale?: number;
-  /** Rotation applied to the whole map, compensated so the flag stays upright. */
-  screenRotation?: number;
 }
 
 export const StartFinishMarker = observer(function StartFinishMarker({
@@ -20,7 +18,6 @@ export const StartFinishMarker = observer(function StartFinishMarker({
   trackCenterX,
   trackCenterY,
   scale = 1,
-  screenRotation = 0,
 }: StartFinishMarkerProps) {
   // Convert angle to radians to calculate the local Y-axis direction in global coordinates
   const rad = (angle * Math.PI) / 180;
@@ -56,50 +53,54 @@ export const StartFinishMarker = observer(function StartFinishMarker({
       {/* Checkered flag HUD icon */}
       <g transform={`translate(0, ${offset})`}>
         {/* Counter-rotate by -angle to stay upright relative to screen */}
-        <g
-          transform={`rotate(${-angle - screenRotation})`}
-          className="transition-transform duration-500 ease-in-out"
-        >
-          <g className={styles.flagContainer}>
-            {/* 2x2 Chess cells (20x20px total size) */}
-            <rect
-              x="-10"
-              y="-10"
-              width="10"
-              height="10"
-              className={styles.flagWhite}
-            />
-            <rect
-              x="0"
-              y="-10"
-              width="10"
-              height="10"
-              className={styles.flagDark}
-            />
-            <rect
-              x="-10"
-              y="0"
-              width="10"
-              height="10"
-              className={styles.flagDark}
-            />
-            <rect
-              x="0"
-              y="0"
-              width="10"
-              height="10"
-              className={styles.flagWhite}
-            />
+        {/* The map's own rotation is undone from a variable the draw reaction
+            writes, so heading-up mode keeps the flag upright without a render. */}
+        <g className={styles.screenUpright}>
+          <g
+            transform={`rotate(${-angle})`}
+            className="transition-transform duration-500 ease-in-out"
+          >
+            <g className={styles.flagContainer}>
+              {/* 2x2 Chess cells (20x20px total size) */}
+              <rect
+                x="-10"
+                y="-10"
+                width="10"
+                height="10"
+                className={styles.flagWhite}
+              />
+              <rect
+                x="0"
+                y="-10"
+                width="10"
+                height="10"
+                className={styles.flagDark}
+              />
+              <rect
+                x="-10"
+                y="0"
+                width="10"
+                height="10"
+                className={styles.flagDark}
+              />
+              <rect
+                x="0"
+                y="0"
+                width="10"
+                height="10"
+                className={styles.flagWhite}
+              />
 
-            {/* Outer rounded frame */}
-            <rect
-              x="-11"
-              y="-11"
-              width="22"
-              height="22"
-              className={styles.flagBorder}
-              rx="2"
-            />
+              {/* Outer rounded frame */}
+              <rect
+                x="-11"
+                y="-11"
+                width="22"
+                height="22"
+                className={styles.flagBorder}
+                rx="2"
+              />
+            </g>
           </g>
         </g>
       </g>

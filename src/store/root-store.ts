@@ -5,6 +5,7 @@ import { IncidentsWidgetStore } from './widgets/incidents.widget';
 import { PaceCarStore } from './widgets/pace-car.widget';
 import { RadarWidgetStore } from './widgets/radar.widget';
 import { CloseBattleWidgetStore } from '@ui/widgets/CloseBattleWidget/close-battle.widget';
+import { RelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.widget';
 import { PitServiceWidgetStore } from '@ui/widgets/PitServiceWidget/pit-service.widget';
 import { StandingsWidgetStore } from './widgets/standings.widget';
 import { TrackMapWidgetStore } from '@ui/widgets/TrackMapWidget/track-map.widget';
@@ -54,6 +55,7 @@ export class RootStore {
   incidentsWidget: IncidentsWidgetStore;
   radar: RadarWidgetStore;
   closeBattleWidget: CloseBattleWidgetStore;
+  relativeWidget: RelativeWidgetStore;
   standingsWidget: StandingsWidgetStore;
   pitServiceWidget: PitServiceWidgetStore;
   trackMapWidget: TrackMapWidgetStore;
@@ -100,6 +102,7 @@ export class RootStore {
     this.incidentsWidget = new IncidentsWidgetStore(this);
     this.radar = new RadarWidgetStore(this);
     this.closeBattleWidget = new CloseBattleWidgetStore(this);
+    this.relativeWidget = new RelativeWidgetStore(this);
     this.standingsWidget = new StandingsWidgetStore(this);
     this.pitServiceWidget = new PitServiceWidgetStore(this);
     // A preview store shows a sample track: turning that map must not write an

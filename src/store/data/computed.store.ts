@@ -13,6 +13,8 @@ import type {
   ProximityFrame,
   RelativeFrame,
 } from '@/types/bindings';
+import type { CarIdentity } from '@/types/car-identity';
+import { carIdentityOf } from '@utils/car-identity';
 
 export class BackendComputedStore {
   proximity: ProximityFrame | null = null;
@@ -53,6 +55,12 @@ export class BackendComputedStore {
       // sector is actually posted rather than sixty times a second.
       sectorTimes: computed.struct,
       sectorDeltas: computed.struct,
+      // The per-car frames are replaced on every tick, but all a row or a dot
+      // draws apart from four numbers stays put for a whole lap. Compared by
+      // content, these wake a widget when a car actually changes rather than
+      // sixty times a second — see `docs/rendering.md`.
+      driverIdentities: computed.struct,
+      relativeIdentities: computed.struct,
     });
   }
 
@@ -103,6 +111,27 @@ export class BackendComputedStore {
     }
 
     return this.slowCarClassCount;
+  }
+
+  /** The standings field as it is drawn, without the numbers that move. */
+  get driverIdentities(): CarIdentity[] {
+    return (this.driverEntries?.entries ?? []).map(carIdentityOf);
+  }
+
+  /**
+   * One car's live entry, moving numbers and all. Read inside a reaction that
+   * writes to the DOM — a component that reads it in render wakes on every tick.
+   */
+  driverEntryOf(carIdx: number): DriverEntry | null {
+    return (
+      this.driverEntries?.entries.find((entry) => entry.carIdx === carIdx) ??
+      null
+    );
+  }
+
+  /** The relative field as it is drawn, without the numbers that move. */
+  get relativeIdentities(): CarIdentity[] {
+    return this.relativeEntries.map(carIdentityOf);
   }
 
   get relativeEntries(): DriverEntry[] {

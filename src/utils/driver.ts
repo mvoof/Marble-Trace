@@ -1,4 +1,4 @@
-import type { DriverEntry } from '@/types/bindings';
+import type { CarIdentity } from '@/types/car-identity';
 import { TrackSurface as TrackSurfaceType } from '@/types/bindings';
 import { TrackSurface, type FlagType } from '@/types';
 
@@ -104,7 +104,7 @@ export const parseDriverFlags = (rawFlags: number): FlagType => {
  * Lives here rather than with the Standings widget because the standings store
  * needs it too, and a store must not reach into the UI layer.
  */
-export const computeClassSof = (drivers: DriverEntry[]): number => {
+export const computeClassSof = (drivers: CarIdentity[]): number => {
   if (drivers.length === 0) return 0;
 
   const total = drivers.reduce((sum, driver) => sum + driver.iRating, 0);

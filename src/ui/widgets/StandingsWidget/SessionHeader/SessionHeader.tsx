@@ -36,7 +36,7 @@ const SESSION_TYPE_CLASS: Record<SessionColorKey, string> = {
 };
 
 export const SessionHeader = observer(function SessionHeader() {
-  const { driverEntries: driverEntriesFrame } = useBackendComputedStore();
+  const { driverIdentities } = useBackendComputedStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
   const standingsWidget = useStandingsWidgetStore();
@@ -48,8 +48,7 @@ export const SessionHeader = observer(function SessionHeader() {
   }
 
   const sessionInfoData = sessionInfo;
-  const driverEntries = driverEntriesFrame?.entries ?? [];
-  const overallSof = computeClassSof(driverEntries);
+  const overallSof = computeClassSof(driverIdentities);
 
   // Per-class headers own the SOF in those view modes.
   const showSof =
@@ -64,8 +63,8 @@ export const SessionHeader = observer(function SessionHeader() {
   const trackName = sessionInfo?.trackDisplayName ?? '';
 
   const leaderLap =
-    driverEntries.length > 0
-      ? Math.max(...driverEntries.map((entry) => entry.lap))
+    driverIdentities.length > 0
+      ? Math.max(...driverIdentities.map((entry) => entry.lap))
       : null;
 
   const totalLaps = currentSession?.sessionLaps
@@ -110,7 +109,7 @@ export const SessionHeader = observer(function SessionHeader() {
               className={`${styles.statIcon} ${styles.statIconField}`}
             />
 
-            <span className={styles.statValue}>{driverEntries.length}</span>
+            <span className={styles.statValue}>{driverIdentities.length}</span>
           </span>
         )}
 

@@ -8,7 +8,7 @@ import {
 import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@/types';
-import type { DriverEntry } from '@/types/bindings';
+import type { CarIdentity } from '@/types/car-identity';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
   useAppSettingsStore,
@@ -41,7 +41,7 @@ import styles from './StandingsContent.module.scss';
 const WHEEL_STEP_ROWS = 3;
 
 export const StandingsContent = observer(function StandingsContent() {
-  const { driverEntries: driverEntriesFrame } = useBackendComputedStore();
+  const { driverIdentities } = useBackendComputedStore();
   const sim = useSimStore();
   const standingsWidget = useStandingsWidgetStore();
   const appSettings = useAppSettingsStore();
@@ -164,7 +164,7 @@ export const StandingsContent = observer(function StandingsContent() {
   }, [standingsWidget, boundsSignature, groupKeysSignature, visibleClassCount]);
 
   const visibleRows = (
-    drivers: DriverEntry[],
+    drivers: CarIdentity[],
     maxRows: number,
     scrollOffset = 0
   ) =>
@@ -256,10 +256,7 @@ export const StandingsContent = observer(function StandingsContent() {
     };
   };
 
-  const hasData =
-    sim.isConnected &&
-    driverEntriesFrame != null &&
-    driverEntriesFrame.entries.length > 0;
+  const hasData = sim.isConnected && driverIdentities.length > 0;
 
   return (
     <>

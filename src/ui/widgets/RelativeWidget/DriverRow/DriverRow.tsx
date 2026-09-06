@@ -19,27 +19,100 @@ import {
   buildRelativeGridTemplate,
   resolveRowPosition,
 } from '@ui/widgets/RelativeWidget/relative-utils';
-import type { DriverEntry } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
+import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 
 import styles from './DriverRow.module.scss';
 import { useBackendComputedStore } from '@store/root-store-context';
 
 interface DriverRowProps {
-  driver: DriverEntry;
+  carIdx: number;
   index: number;
 }
 
+/**
+ * One car of the strip. Everything it draws but the gap changes at most once a
+ * lap, so the row is rendered from the identity and the gap — which moves every
+ * tick, along with the lapped-and-lapping colouring that rides on it — is
+ * written straight to its span. See `docs/rendering.md`.
+ */
 export const DriverRow = observer(function DriverRow({
-  driver,
+  carIdx,
   index,
 }: DriverRowProps) {
   const computed = useBackendComputedStore();
-  const { relativeEntries } = computed;
 
   const settings = useWidgetSettings<RelativeWidgetSettings>('relative');
 
-  const player = relativeEntries.find((entry) => entry.isPlayer) ?? null;
+  const driver = computed.relativeIdentities.find(
+    (identity) => identity.carIdx === carIdx
+  );
+
+  const gapRef = useReactiveDomWrite<HTMLSpanElement>(
+    (element, scheduleWrite) => {
+      const entries = computed.relativeEntries;
+      const liveDriver = entries.find((entry) => entry.carIdx === carIdx);
+      const livePlayer = entries.find((entry) => entry.isPlayer) ?? null;
+
+      if (!liveDriver) {
+        return;
+      }
+
+      const relativeGap = livePlayer
+        ? computeRelativeGap(liveDriver, livePlayer)
+        : 0;
+
+      const gapText =
+        relativeGap > 0
+          ? `+${relativeGap.toFixed(1)}`
+          : relativeGap < 0
+            ? relativeGap.toFixed(1)
+            : '0.0';
+
+      const gapClass = liveDriver.isPlayer
+        ? styles.f2Player
+        : relativeGap > 0
+          ? styles.f2Positive
+          : relativeGap < 0
+            ? styles.f2Negative
+            : styles.f2Player;
+
+      const lapDiff = livePlayer
+        ? liveDriver.lap +
+          liveDriver.lapDistPct -
+          (livePlayer.lap + livePlayer.lapDistPct)
+        : 0;
+
+      scheduleWrite(() => {
+        element.classList.remove(
+          styles.f2Player,
+          styles.f2Positive,
+          styles.f2Negative
+        );
+        element.classList.add(gapClass);
+        element.textContent = liveDriver.isPlayer ? '-' : gapText;
+
+        const row = element.closest('[data-relative-row]');
+        const name = row?.querySelector(`.${styles.driverName}`);
+
+        if (name instanceof HTMLElement) {
+          name.classList.toggle(
+            styles.driverNameLappedBehind,
+            !liveDriver.isPlayer && lapDiff < -0.5
+          );
+          name.classList.toggle(
+            styles.driverNameLappingUs,
+            !liveDriver.isPlayer && lapDiff > 0.5
+          );
+        }
+      });
+    },
+    [computed, carIdx]
+  );
+
+  if (!driver) {
+    return null;
+  }
 
   const isOut = driver.trackSurface === 'NotInWorld';
   const isOffTrack = !isOut && driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
@@ -52,31 +125,6 @@ export const DriverRow = observer(function DriverRow({
   const flagType = parseDriverFlags(driver.rawFlags);
 
   const position = resolveRowPosition(driver, settings.useLivePositions);
-
-  const relativeGap = player ? computeRelativeGap(driver, player) : 0;
-
-  const lapDiff = player
-    ? driver.lap + driver.lapDistPct - (player.lap + player.lapDistPct)
-    : 0;
-
-  const isLappedBehind = !driver.isPlayer && lapDiff < -0.5;
-
-  const isLappingUs = !driver.isPlayer && lapDiff > 0.5;
-
-  const f2TimeStr =
-    relativeGap > 0
-      ? `+${relativeGap.toFixed(1)}`
-      : relativeGap < 0
-        ? relativeGap.toFixed(1)
-        : '0.0';
-
-  const f2Class = driver.isPlayer
-    ? styles.f2Player
-    : relativeGap > 0
-      ? styles.f2Positive
-      : relativeGap < 0
-        ? styles.f2Negative
-        : styles.f2Player;
 
   const rowClass = [
     styles.driverRow,
@@ -145,8 +193,6 @@ export const DriverRow = observer(function DriverRow({
           className={[
             styles.driverName,
             driver.isPlayer ? styles.driverNamePlayer : '',
-            isLappedBehind ? styles.driverNameLappedBehind : '',
-            isLappingUs ? styles.driverNameLappingUs : '',
           ]
             .filter(Boolean)
             .join(' ')}
@@ -183,9 +229,7 @@ export const DriverRow = observer(function DriverRow({
       ) : null}
 
       <div className={styles.f2Block}>
-        <span className={`${styles.f2Time} ${f2Class}`}>
-          {driver.isPlayer ? '-' : f2TimeStr}
-        </span>
+        <span ref={gapRef} className={styles.f2Time} />
       </div>
     </div>
   );

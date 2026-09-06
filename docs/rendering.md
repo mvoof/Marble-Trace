@@ -204,20 +204,50 @@ declaring a hot field without a perf test fails the suite.
 | `proximity-radar` | `RadarScope` 0      | within budget                             |
 | `race-dash`       | `RingBadge` 1       | within budget                             |
 | `radar-bar`       | `RadarBar` 2        | within budget                             |
-| `relative`        | `DriverRow` 180     | debt                                      |
-| `relative-map`    | `LinearMap` 60      | debt                                      |
+| `relative`        | `DriverRow` 3       | within budget                             |
+| `relative-map`    | `LinearMap` 1       | within budget                             |
 | `rpm-lights`      | `RpmLightsWidget` 0 | within budget                             |
 | `sector-matrix`   | `SectorGrid` 1      | within budget                             |
-| `standings`       | `DriverRow` 300     | debt                                      |
+| `standings`       | `DriverRow` 5       | within budget                             |
 | `timer`           | `TimerFooter` 1     | within budget                             |
-| `track-map`       | `TrackMapSvg` 61    | debt                                      |
+| `track-map`       | `TrackMapSvg` 1     | within budget                             |
 | `weather`         | `WindArrow` 1       | within budget; the ring beside it is at 0 |
 
-Every widget above but the four list-shaped ones has had the rule applied. What
-is left in debt — `relative`, `relative-map`, `standings` and `track-map` — is
-the same shape of problem in all four: a row or a dot is handed the per-car
-entry as a prop, and that entry object is replaced on every frame. Their fix is
-the identity/position split described in the tickets, not another bypass.
+Every widget above has had the rule applied. The four list-shaped ones —
+`relative`, `relative-map`, `standings` and `track-map` — were the same shape of
+problem in all four: a row or a dot was handed the per-car entry as a prop, and
+that entry object is replaced on every frame. They were fixed by the
+identity/position split rather than by another bypass: `CarIdentity`
+(`src/types/car-identity.ts`) is the entry without its four moving fields, the
+store exposes it as a `computed.struct` list that stays the same object for a
+whole lap, and the numbers that do move are read by `carIdx` inside the
+reaction that writes them.
+
+## The overlay's own number
+
+A per-widget budget cannot say whether the work paid off. It answers "does this
+component wake for something it does not draw", and the sum of them answers
+less than it looks: the sanctioned bypass takes a widget's wake-ups to zero
+while its per-frame work carries on outside React, so optimising the sum
+optimises the counter.
+
+`src/perf/overlay-cost.perf.test.tsx` is the number that does not move that way.
+It mounts every hot widget together, replays the same one-second burst, and
+counts two things — observer wake-ups, and DOM mutations under a
+`MutationObserver`, which a bypass write lands in exactly as a React commit
+does.
+
+|                   | before this work | after     |
+| ----------------- | ---------------- | --------- |
+| observer wake-ups | 2049             | 4-6       |
+| DOM mutations     | 4518             | 1200-2200 |
+
+Bytes allocated is the number all of this was really about, and it is not in the
+file: `performance.memory` in headless Chromium is bucketed coarsely enough that
+a whole burst reads as a zero delta. The mutation count stands in for it, since
+producing those mutations is what most of that allocation was being spent on.
+The two are asserted very differently — wake-ups tightly, mutations as a coarse
+tripwire — and the test says why.
 
 ### Attribution needs named components
 
@@ -242,5 +272,5 @@ or a 10 Hz field the burst advances at 60 Hz and writes past the quantization
 and repeat-suppression that already drop it on the wire.
 
 `src/perf/wake-up-classification.perf.test.tsx` is that measurement, kept
-runnable and pinned so the record cannot rot. The remaining work is the debt
-column above, not the store's shape.
+runnable and pinned so the record cannot rot. What was left after it was the
+debt column above, not the store's shape — and that column is now empty.

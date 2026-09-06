@@ -10,30 +10,18 @@ import { expectWidgetRenderBudget } from '@/perf/widget-budget';
  *
  * | component          | budget | state |
  * | ------------------ | ------ | ----- |
- * | TrackMapView       | 60     | debt (target 1) |
- * | TrackMapSvg        | 61     | debt (target 1) |
- * | CarDot             | 59     | debt (target 1) |
+ * | TrackMapView | 1 | ok |
+ * | TrackMapSvg | 1 | ok |
+ * | CarDot | 1 | ok |
  * | FlagZones          | 1      | ok |
  * | FlagZoneStripes    | 1      | ok |
  * | CrownIcon          | 1      | ok |
  * | ChevronIcon        | 1      | ok |
  */
 const BUDGETS: Record<string, RenderBudget> = {
-  TrackMapView: {
-    budget: 60,
-    target: 1,
-    note: 'Debt: the view wakes per positions frame.',
-  },
-  TrackMapSvg: {
-    budget: 61,
-    target: 1,
-    note: 'Debt: the whole svg wakes per positions frame.',
-  },
-  CarDot: {
-    budget: 59,
-    target: 1,
-    note: 'Debt: the dot re-renders instead of writing its transform.',
-  },
+  TrackMapView: { budget: 1 },
+  TrackMapSvg: { budget: 1 },
+  CarDot: { budget: 1 },
   FlagZones: { budget: 1 },
   FlagZoneStripes: { budget: 1 },
   CrownIcon: { budget: 1 },

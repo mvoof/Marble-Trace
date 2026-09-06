@@ -47,10 +47,8 @@ const CANVAS_ONLY_WIDGET_IDS = new Set(['g-meter']);
  * frame, they simply no longer move through React, and the write lands on the
  * animation frame after this one reads the markup. That is the rendering rule
  * working, not a widget that stopped changing — which is why the table below is
- * now almost entirely `same`, and why what it argues about (per-field
- * observables) is untouched by it. `track-map` is the one still rendering a
- * frame's worth of markup per frame, and it is the debt `docs/rendering.md`
- * still lists.
+ * now entirely `same`, and why what it argues about (per-field observables) is
+ * untouched by it.
  */
 type RenderingClass = 'same' | 'partial' | 'every-frame';
 
@@ -70,7 +68,7 @@ const RENDERING_CLASSES: Record<string, RenderingClass> = {
   'sector-matrix': 'same',
   standings: 'same',
   timer: 'same',
-  'track-map': 'every-frame',
+  'track-map': 'same',
   weather: 'same',
 };
 

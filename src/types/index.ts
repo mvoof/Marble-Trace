@@ -1,4 +1,4 @@
-import type { DriverEntry } from './bindings';
+import type { CarIdentity } from './car-identity';
 
 export type FlagType =
   | 'none'
@@ -33,7 +33,7 @@ export type DriverGroup = {
   classColor: string;
   totalDrivers: number;
   classSof: number;
-  drivers: DriverEntry[];
+  drivers: CarIdentity[];
   /** Index of the first row of the "around the player" block, or -1 when there is none. */
   windowStartIndex: number;
 };

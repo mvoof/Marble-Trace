@@ -1,8 +1,9 @@
+import type { CarIdentity } from '@/types/car-identity';
 import type { DriverEntry } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 
 export interface VisibleRows {
-  drivers: DriverEntry[];
+  drivers: CarIdentity[];
   /** Index of the first row of the "around the player" block, or -1 when there is none. */
   windowStartIndex: number;
 }
@@ -21,7 +22,7 @@ export const maxScrollOffset = (totalDrivers: number, maxRows: number) =>
  * `requestedBehind` both 0) or a contiguous window of that many cars around them.
  */
 export const buildVisibleRows = (
-  drivers: DriverEntry[],
+  drivers: CarIdentity[],
   maxRows: number,
   requestedAhead: number,
   requestedBehind: number,
@@ -228,7 +229,7 @@ export interface BestLapDisplay {
  * the whole time the column would otherwise sit empty. The qualifying time
  * stands in there, marked so it is never read as a lap set in this session.
  */
-export const resolveBestLapDisplay = (driver: DriverEntry): BestLapDisplay => {
+export const resolveBestLapDisplay = (driver: CarIdentity): BestLapDisplay => {
   if (driver.bestLapTime > 0) {
     return { time: driver.bestLapTime, isQualifying: false };
   }
