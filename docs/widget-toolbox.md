@@ -67,22 +67,22 @@ No React, no stores, no Tauri. Importable from any layer.
 
 ## `src/ui/shared/` — components used by two or more widgets
 
-| Component           | Reach for it when                                                                                                            |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `CarDot`            | Drawing a car marker on a map or a radar — class color, shape per class, contrast label, plus the chevron and crown markers. |
-| `CountryFlag`       | Showing a driver's flag from a country code (see `driver-flair.ts` for the id → code step).                                  |
-| `DriverFlagBadge`   | Showing a waved flag against a driver — blue, meatball, black.                                                               |
-| `DriverStatusBadge` | Showing a driver's state, and `DriverStatusBadges` for the whole row of them.                                                |
-| `ErrorBoundary.tsx` | Wrapping a subtree that may throw, so one widget cannot take the overlay down with it.                                       |
-| `NoDataPlaceholder` | The widget has nothing to show yet — the standard "NO DATA" plate instead of an empty box.                                   |
-| `RatingBadge`       | Showing a licence class and safety rating (`LicBadge`).                                                                      |
-| `ReservedSlot`      | Holding the height a block will occupy while it is absent, so placing the widget in the editor shows its real size.          |
-| `ScrollIndicator`   | A list is taller than its window — the thumb, driven by `scrollThumbFor` in `canvas.ts`.                                     |
-| `StatPill`          | A labelled figure with an icon, boxed (`chip`) or bare (`inline`), toned muted / accent / warning / danger.                  |
-| `TireBadge`         | Showing a tire compound.                                                                                                     |
-| `WidgetLabel`       | A widget's small caption text — uppercase and mono are props, not new classes.                                               |
-| `WidgetPanel`       | **The root element of every widget.** Never a bare `<div>`; it carries direction, gap, min width, fit and edge inset.        |
-| `WidgetValue`       | The primary number of a block, with its unit and an optional data-driven color.                                              |
+| Component           | Reach for it when                                                                                                                                                                                                                                          |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CarDot`            | Drawing a car marker on a map or a radar — class color, shape per class, contrast label, plus the chevron and crown markers.                                                                                                                               |
+| `CountryFlag`       | Showing a driver's flag from a country code (see `driver-flair.ts` for the id → code step).                                                                                                                                                                |
+| `DriverFlagBadge`   | Showing a waved flag against a driver — blue, meatball, black.                                                                                                                                                                                             |
+| `DriverStatusBadge` | Showing a driver's state, and `DriverStatusBadges` for the whole row of them.                                                                                                                                                                              |
+| `ErrorBoundary.tsx` | Wrapping a subtree that may throw, so one widget cannot take the overlay down with it.                                                                                                                                                                     |
+| `NoDataPlaceholder` | The widget has nothing to show yet — the standard "NO DATA" plate instead of an empty box.                                                                                                                                                                 |
+| `RatingBadge`       | Showing a licence class and safety rating (`LicBadge`).                                                                                                                                                                                                    |
+| `ReservedSlot`      | Holding the height a block will occupy while it is absent, so placing the widget in the editor shows its real size.                                                                                                                                        |
+| `ScrollIndicator`   | A list is taller than its window — the thumb, driven by `scrollThumbFor` in `canvas.ts`.                                                                                                                                                                   |
+| `StatPill`          | A labelled figure with an icon, boxed (`chip`) or bare (`inline`), toned muted / accent / warning / danger.                                                                                                                                                |
+| `TireBadge`         | Showing a tire compound.                                                                                                                                                                                                                                   |
+| `WidgetLabel`       | A widget's small caption text — uppercase and mono are props, not new classes.                                                                                                                                                                             |
+| `WidgetPanel`       | **The root element of every widget.** Never a bare `<div>`; it carries direction, gap, fit and edge inset. Watch `minWidth`: it **defaults to 200**, applied as `calc(200px * var(--wfs))`, so a narrower widget is silently pinned — pass `minWidth={0}`. |
+| `WidgetValue`       | The primary number of a block, with its unit and an optional data-driven color.                                                                                                                                                                            |
 
 ---
 
