@@ -382,7 +382,9 @@
       "sourceSession": "会话（YAML）",
       "rowCount": "{{count}} 行",
       "waitingSession": "等待会话数据…",
-      "showAll": "显示其余 {{count}} 项"
+      "showAll": "显示其余 {{count}} 项",
+      "collapseRow": "折叠",
+      "expandRow": "展开"
     },
     "developerTools": {
       "title": "开发者工具",

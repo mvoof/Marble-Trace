@@ -32,12 +32,13 @@ export const WeatherHeader = observer(function WeatherHeader() {
   const settings = useWidgetSettings<WeatherWidgetSettings>('weather');
   const { showAirTemp, showCompass } = settings;
 
+  const { sessionInfo } = useSessionStore();
+  const { environment } = useEnvironmentStore();
+
   if (!showAirTemp) {
     return null;
   }
 
-  const { sessionInfo } = useSessionStore();
-  const { environment } = useEnvironmentStore();
   const { unitSystem } = units;
   const tUnit = tempUnit(unitSystem);
 

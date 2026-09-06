@@ -154,5 +154,6 @@ export class RootStore {
     this.standingsWidget.dispose();
     this.flags.dispose();
     this.sim.dispose();
+    this.radar.dispose();
   }
 }

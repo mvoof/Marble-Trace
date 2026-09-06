@@ -56,6 +56,25 @@ jobs:
       - name: Run Tests
         run: npm run test
 
+      # Render budgets need a real browser (see `vitest.perf.config.ts`), so the
+      # download is cached on the lockfile and only paid for when it changes.
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
+
+      - name: Install Chromium System Dependencies
+        run: npx playwright install-deps chromium
+
+      - name: Run Render Budgets
+        run: npm run test:perf
+
   rust-checks:
     name: Rust
     needs: check-changes

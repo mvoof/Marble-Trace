@@ -86,14 +86,27 @@ frames carry per-car arrays, and their problem is width, not rate.
 
 Two layers, deliberately different in kind.
 
-**Static — `react-doctor`.** Generic React anti-patterns, architecture,
-accessibility. Available as an agent skill while code is written; running it in
-`diff` mode on pull requests is still to be set up. Either way it knows nothing
-about which of our fields are hot, so it cannot check the rule above.
+**Static — `oxlint`, with `react-doctor` as an occasional sweep.** `oxlint` runs
+on every commit and every pull request and is the blocking half; it carries
+`react-hooks/rules-of-hooks`, which is the one class of React defect here worth
+stopping a commit for. `react-doctor` is deliberately **not** in continuous
+integration — it is an agent skill, run by hand when a widget has been reworked,
+for the two things `oxlint` has no rule for: discarded MobX disposers and the
+accessibility checks outside its `jsx-a11y` set. `docs/agents/react-doctor.md`
+has the reasoning.
+
+It knows nothing about which of our fields are hot, so **it cannot check the
+rule above** — and the budgets cannot check what it checks. Neither layer
+covers the other; a green scan says nothing about a render budget. Which of its
+rules are switched off, and why each one was, is `doctor.config.mjs`.
 
 **Runtime — render budgets.** One `*.perf.test.tsx` beside each widget whose
 manifest declares a hot field. The test replays a fixed burst of frames through
-a real store and asserts how many times each component woke.
+a real store and asserts how many times each component woke. `npm run test:perf`
+locally; in continuous integration it is the _Run Render Budgets_ step of the
+frontend job in `.github/workflows/reusable-quality.yml`, which fails the build
+when a component goes over. It stays out of `npm test` and out of the pre-commit
+hook — it needs a real browser, which those must not wait for.
 
 ## Measuring
 
@@ -127,8 +140,9 @@ right); nothing that exists only for tests may be added there.
 
 They are their own command, `npm run test:perf`, with its own config
 (`vitest.perf.config.ts`). They are deliberately not part of `npm test` and not
-part of `pre-commit`, which stays fast; making them a blocking pull-request step
-filtered to frontend changes is still to do.
+part of `pre-commit`, which stays fast; on a pull request they are the blocking
+_Run Render Budgets_ step of the frontend job, which the existing path filters
+skip when nothing on the frontend changed.
 
 ## Budgets
 
@@ -210,14 +224,21 @@ is declared as `observer(function Name() { … })`. That is the one place the
 repo's arrow-function rule does not apply, and the harness refuses to report
 rather than mis-attribute if it finds an anonymous one.
 
-## Not done yet, on purpose
+## Per-field observables: asked and answered
 
 Telemetry frames are stored as whole `observable.ref` values, so a component
 reading one field of a frame wakes on every change to that frame — including
 fields it never reads. Splitting frames into per-field observables (with or
-without a delta on the wire) would fix that class, but per-field proxies over
-63-car arrays may cost more than they save.
+without a delta on the wire) was the obvious fix for that class.
 
-That decision waits for data, and the counter above produces it for free: a
-component of that class shows far more wake-ups than its own field has changes.
-Nothing on the wire gets touched before those numbers exist.
+It was measured and it is **not** being done:
+`docs/adr/0001-per-field-telemetry-observables.md` has the numbers and the
+reasoning. Two thirds of the wake-ups in a burst produce a single rendering, but
+none of them turn out to be a component reading the wrong field — they are a
+canvas the markup cannot see, a value the widget's own formatting rounds away,
+or a 10 Hz field the burst advances at 60 Hz and writes past the quantization
+and repeat-suppression that already drop it on the wire.
+
+`src/perf/wake-up-classification.perf.test.tsx` is that measurement, kept
+runnable and pinned so the record cannot rot. The remaining work is the debt
+column above, not the store's shape.

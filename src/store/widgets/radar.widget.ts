@@ -1,4 +1,5 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
+import type { IReactionDisposer } from 'mobx';
 
 import type { RadarSettings } from '@/types/widget-settings';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
@@ -25,6 +26,8 @@ export class RadarWidgetStore {
     ReturnType<typeof setTimeout> | null
   > = { 'proximity-radar': null, 'radar-bar': null };
 
+  private disposers: IReactionDisposer[] = [];
+
   constructor(private readonly root: RootStore) {
     makeAutoObservable(this);
   }
@@ -36,37 +39,39 @@ export class RadarWidgetStore {
   }
 
   private watch(widgetType: RadarWidgetType) {
-    reaction(
-      () => ({
-        hasNearby: this.hasNearbyFor(widgetType),
-        hideDelay: this.hideDelayFor(widgetType),
-      }),
-      ({ hasNearby, hideDelay }) => {
-        const pendingHide = this.hideTimers[widgetType];
+    this.disposers.push(
+      reaction(
+        () => ({
+          hasNearby: this.hasNearbyFor(widgetType),
+          hideDelay: this.hideDelayFor(widgetType),
+        }),
+        ({ hasNearby, hideDelay }) => {
+          const pendingHide = this.hideTimers[widgetType];
 
-        if (hasNearby) {
-          if (pendingHide) {
-            clearTimeout(pendingHide);
-            this.hideTimers[widgetType] = null;
-          }
-
-          action(() => {
-            this.visible[widgetType] = true;
-          })();
-        } else {
-          if (pendingHide) {
-            return;
-          }
-
-          this.hideTimers[widgetType] = setTimeout(
-            action(() => {
-              this.visible[widgetType] = false;
+          if (hasNearby) {
+            if (pendingHide) {
+              clearTimeout(pendingHide);
               this.hideTimers[widgetType] = null;
-            }),
-            hideDelay * 1000
-          );
+            }
+
+            action(() => {
+              this.visible[widgetType] = true;
+            })();
+          } else {
+            if (pendingHide) {
+              return;
+            }
+
+            this.hideTimers[widgetType] = setTimeout(
+              action(() => {
+                this.visible[widgetType] = false;
+                this.hideTimers[widgetType] = null;
+              }),
+              hideDelay * 1000
+            );
+          }
         }
-      }
+      )
     );
   }
 
@@ -137,5 +142,15 @@ export class RadarWidgetStore {
     }
 
     this.visible = noneVisible();
+  }
+
+  dispose() {
+    this.reset();
+
+    for (const disposeReaction of this.disposers) {
+      disposeReaction();
+    }
+
+    this.disposers = [];
   }
 }

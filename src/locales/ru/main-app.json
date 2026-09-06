@@ -388,7 +388,9 @@
       "sourceSession": "Сессия (YAML)",
       "rowCount": "Строк: {{count}}",
       "waitingSession": "Ожидание данных сессии…",
-      "showAll": "Показать остальные ({{count}})"
+      "showAll": "Показать остальные ({{count}})",
+      "collapseRow": "Свернуть",
+      "expandRow": "Развернуть"
     },
     "developerTools": {
       "title": "Инструменты разработчика",

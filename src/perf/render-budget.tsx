@@ -66,6 +66,12 @@ export interface MeasureRenderBudgetOptions<Frame> {
    * the first paint shows.
    */
   afterMount?: (container: HTMLElement) => void;
+  /**
+   * Runs after every frame of the burst, with the still-mounted subtree. This
+   * is where the wake-up classification reads what the frame actually changed
+   * on screen; a budget test has no use for it.
+   */
+  afterFrame?: (container: HTMLElement, frameIndex: number) => void;
 }
 
 const bumpWakeUp = (counts: Map<string, number>, componentName: string) => {
@@ -178,6 +184,7 @@ export const measureRenderBudget = async <Frame,>({
   scenarioId,
   afterBurst,
   afterMount,
+  afterFrame,
 }: MeasureRenderBudgetOptions<Frame>): Promise<RenderBudgetReport> => {
   const globalScope = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
   const previousActEnvironment = globalScope.IS_REACT_ACT_ENVIRONMENT;
@@ -197,54 +204,77 @@ export const measureRenderBudget = async <Frame,>({
 
   const root = createRoot(container);
 
-  await act(async () => {
-    root.render(
-      <RootStoreContext.Provider value={store}>
-        {ui(store)}
-      </RootStoreContext.Provider>
-    );
-  });
-
-  afterMount?.(container);
-
-  // Counting starts after the first mount: the budget is about what the burst
-  // costs, not what putting the widget on screen costs once.
   const componentWakeUps = new Map<string, number>();
 
-  const stopSpying = countWakeUpsInto(componentWakeUps);
+  let stopSpying: (() => void) | undefined;
+  let frameCount = 0;
 
-  const frames = burst(store);
-
+  // Everything from the mount on is wrapped: a burst that throws must still
+  // unmount, or the failing test leaves a live React root and a raised act flag
+  // behind, turning one failure into every later failure in the file.
   try {
-    for (const frame of frames) {
+    await act(async () => {
+      root.render(
+        <RootStoreContext.Provider value={store}>
+          {ui(store)}
+        </RootStoreContext.Provider>
+      );
+    });
+
+    afterMount?.(container);
+
+    // Let layout settle before counting. A widget that measures itself with a
+    // ResizeObserver renders again when the first measurement lands, and
+    // whether that falls inside the burst is a matter of timing rather than of
+    // telemetry — counted, it is noise in every budget it reaches.
+    await act(async () => {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
+
+    // Counting starts after the first mount: the budget is about what the burst
+    // costs, not what putting the widget on screen costs once.
+    stopSpying = countWakeUpsInto(componentWakeUps);
+
+    const frames = burst(store);
+
+    frameCount = frames.length;
+
+    for (const [frameIndex, frame] of frames.entries()) {
       await act(async () => {
         runInAction(() => applyFrame(store, frame));
       });
+
+      afterFrame?.(container, frameIndex);
     }
-  } finally {
+
     stopSpying();
+    stopSpying = undefined;
+
+    // The bypass writes inside `requestAnimationFrame`, so the last frame of
+    // the burst has not landed yet when the loop above ends.
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+
+    afterBurst?.(container);
+  } finally {
+    stopSpying?.();
+
+    await act(async () => {
+      root.unmount();
+    });
+
+    container.remove();
+    globalScope.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
   }
-
-  // The bypass writes inside `requestAnimationFrame`, so the last frame of the
-  // burst has not landed yet when the loop above ends.
-  await new Promise<void>((resolve) => {
-    requestAnimationFrame(() => resolve());
-  });
-
-  afterBurst?.(container);
-
-  await act(async () => {
-    root.unmount();
-  });
-
-  container.remove();
-  globalScope.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
 
   assertComponentsAreNamed(componentWakeUps);
 
   return {
     wakeUps: Object.fromEntries(componentWakeUps),
-    frames: frames.length,
+    frames: frameCount,
   };
 };
 

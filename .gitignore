@@ -51,3 +51,6 @@ __pycache__/
 # Render-budget runs in browser mode (npm run test:perf)
 **/__screenshots__/
 .vitest-attachments/
+
+# React Doctor writes its report here when asked for one.
+react-doctor.json
