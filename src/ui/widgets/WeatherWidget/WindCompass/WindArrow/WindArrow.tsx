@@ -26,6 +26,22 @@ const ARROW_BASE_RADIUS = 105;
 const ARROW_HEIGHT = 55;
 
 /**
+ * The icon points outward, so it is flipped about the middle of its own body,
+ * which sits `ARROW_BASE_RADIUS` out from the centre and is `ARROW_HEIGHT`
+ * tall.
+ *
+ * The flip goes on a wrapping `<g>`, never on the icon itself. The icon is a
+ * nested `<svg>`, and transforming one of those is an SVG 2 feature: the CEF
+ * that OBS ships drops it silently, whether it arrives as CSS or as an
+ * attribute. The arrow then kept the direction it was drawn in and pointed
+ * away from the car on a stream screen, while its position — which comes from
+ * `x`/`y` and the rotation of the group above — stayed correct, and every
+ * ordinary browser drew the whole thing right. A `<g>` transform is SVG 1.1
+ * and is understood everywhere; the compass ring turns on one already.
+ */
+const ARROW_FLIP = `rotate(180 0 ${-ARROW_BASE_RADIUS + ARROW_HEIGHT / 2})`;
+
+/**
  * Points at the wind relative to the car. The bearing follows the car's heading,
  * a hot field that changes on every physics tick, so it goes to the DOM through
  * the reactive-DOM primitive and wakes React not at all; only the wind's own
@@ -64,14 +80,15 @@ export const WindArrow = observer(function WindArrow() {
 
   return (
     <g ref={groupRef} className={styles.windArrowGroup} pointerEvents="none">
-      <WindArrowIcon
-        x="-14"
-        y={-ARROW_BASE_RADIUS}
-        width="28"
-        height={ARROW_HEIGHT}
-        className={styles.windArrowIcon}
-        style={{ color: arrowColor }}
-      />
+      <g transform={ARROW_FLIP}>
+        <WindArrowIcon
+          x="-14"
+          y={-ARROW_BASE_RADIUS}
+          width="28"
+          height={ARROW_HEIGHT}
+          style={{ color: arrowColor }}
+        />
+      </g>
     </g>
   );
 });
