@@ -4,7 +4,7 @@ The answer to "does this already exist?", read rather than grepped.
 
 Every module under `src/utils/`, every component under `src/ui/shared/` and
 every hook under `src/ui/hooks/` is listed here with one line saying when to
-reach for it. The list is checked by `docs/widget-toolbox.test.ts`: a module in
+reach for it. The list is checked by `src/docs/widget-toolbox.test.ts`: a module in
 the tree and not on this page fails `npm test`, so the page cannot quietly go
 stale. What the line beside an entry _says_ is written by hand and is the whole
 value of the page — nothing can infer it, and nothing tests it.

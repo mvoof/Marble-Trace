@@ -12,8 +12,8 @@ import { describe, expect, it } from 'vitest';
  * a lie.
  */
 
-const DOCS_DIR = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(DOCS_DIR, '..');
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
+const DOCS_DIR = join(REPO_ROOT, 'docs');
 
 const catalogue = readFileSync(join(DOCS_DIR, 'widget-toolbox.md'), 'utf8');
 

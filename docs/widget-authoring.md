@@ -211,7 +211,7 @@ helper belongs.
 
 Read it. The cost of not reading it is a fifth lap-time formatter.
 
-> _Enforced by:_ `docs/widget-toolbox.test.ts` keeps the catalogue complete — a
+> _Enforced by:_ `src/docs/widget-toolbox.test.ts` keeps the catalogue complete — a
 > module in the tree and not on the page fails `npm test`. Nothing stops you
 > writing a duplicate helper.
 

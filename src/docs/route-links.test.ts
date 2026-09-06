@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
  * has to resolve, and this checks it rather than someone.
  */
 
-const DOCS_DIR = dirname(fileURLToPath(import.meta.url));
+const DOCS_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../docs');
 
 const PAGES = ['widget-authoring.md', 'widget-toolbox.md'];
 
