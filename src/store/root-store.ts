@@ -93,7 +93,7 @@ export class RootStore {
     this.referenceLap = new ReferenceLapStore();
     this.chat = new ChatStore();
     this.backendComputed = new BackendComputedStore();
-    this.widgetDefaults = new WidgetDefaultsStore();
+    this.widgetDefaults = new WidgetDefaultsStore(this);
     this.settingsMutations = new SettingsMutationLog();
     this.layouts = new LayoutsStore(this.settingsMutations);
     this.widgetSettings = new WidgetSettingsStore(

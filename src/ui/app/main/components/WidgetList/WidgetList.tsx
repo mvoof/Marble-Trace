@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useWidgetDefaultsStore } from '@store/root-store-context';
 import { getWidgetLabel, getWidgetDescription } from '@ui/app/widget-i18n';
 import styles from './WidgetList.module.scss';
 
@@ -15,10 +15,10 @@ const WidgetListItem = observer(
     isActive: boolean;
     onSelect: (id: string) => void;
   }) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const widgetDefaults = useWidgetDefaultsStore();
     const { t } = useTranslation('main-app');
 
-    const isAvailable = widgetSettings.availableWidgetIds.includes(widget.id);
+    const isAvailable = widgetDefaults.availableWidgetIds.includes(widget.id);
 
     return (
       <button
@@ -61,11 +61,11 @@ export const WidgetList = observer(
     selectedId: string | null;
     onSelect: (id: string) => void;
   }) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const widgetDefaults = useWidgetDefaultsStore();
 
     return (
       <div className={styles.list}>
-        {widgetSettings.allWidgets.map((widget) => (
+        {widgetDefaults.catalogWidgets.map((widget) => (
           <WidgetListItem
             key={widget.id}
             widget={widget}

@@ -1,10 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { mergeWithDefaults } from '@store/deep-merge';
-import {
-  DEFAULT_WIDGETS,
-  DEFAULT_WIDGET_BY_ID,
-  WIDGET_BY_ID,
-} from '@store/widget-catalog';
+import { DEFAULT_WIDGETS, DEFAULT_WIDGET_BY_ID } from '@store/widget-catalog';
 import {
   nextInstanceId,
   widgetTypeFromId,
@@ -17,6 +13,7 @@ import {
 import { resolveMonitorByName } from '@platform/sync/overlay-resolution';
 import type { LayoutsStore } from '@store/settings/layouts.store';
 import type { SettingsMutationLog } from '@store/settings/mutation-log';
+import { availableWidgetIdsOf } from '@store/settings/widget-availability';
 import {
   applyDerivedDesignWidth,
   applyLayoutResize,
@@ -227,31 +224,10 @@ export class WidgetSettingsStore {
   }
 
   get availableWidgetIds(): string[] {
-    const ids: string[] = [];
-    const capabilities = this.root?.sim.capabilities;
-
-    for (const widget of this.widgets.values()) {
-      const config = WIDGET_BY_ID.get(widgetTypeOf(widget));
-      const reqs = config?.requiredCapabilities;
-
-      if (!reqs || reqs.length === 0) {
-        ids.push(widget.id);
-        continue;
-      }
-
-      if (!capabilities) {
-        ids.push(widget.id);
-        continue;
-      }
-
-      const met = reqs.every((req) => capabilities[req] === true);
-
-      if (met) {
-        ids.push(widget.id);
-      }
-    }
-
-    return ids;
+    return availableWidgetIdsOf(
+      this.widgets.values(),
+      this.root?.sim.capabilities
+    );
   }
 
   get enabledWidgetIds(): string[] {
