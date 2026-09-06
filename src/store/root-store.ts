@@ -14,7 +14,8 @@ import { CoachWidgetStore } from '@ui/widgets/CoachWidget/coach.widget';
 import { InputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.widget';
 import { WidgetSettingsStore } from './settings/widget-settings.store';
 import { WidgetDefaultsStore } from './settings/widget-defaults.store';
-import type { LayoutsStore } from './settings/layouts.store';
+import { LayoutsStore } from './settings/layouts.store';
+import { SettingsMutationLog } from './settings/mutation-log';
 import { AppSettingsStore } from './settings/app-settings.store';
 import { CompanionAppsStore } from './settings/companion-apps.store';
 import { UnitsStore } from './settings/units.store';
@@ -66,6 +67,8 @@ export class RootStore {
   widgetSettings: WidgetSettingsStore;
   widgetDefaults: WidgetDefaultsStore;
   layouts: LayoutsStore;
+  /** What every settings write marks itself in — see `SettingsMutationLog`. */
+  settingsMutations: SettingsMutationLog;
   appSettings: AppSettingsStore;
   companionApps: CompanionAppsStore;
   twitchAuth: TwitchAuthStore;
@@ -91,8 +94,13 @@ export class RootStore {
     this.chat = new ChatStore();
     this.backendComputed = new BackendComputedStore();
     this.widgetDefaults = new WidgetDefaultsStore();
-    this.widgetSettings = new WidgetSettingsStore(this);
-    this.layouts = this.widgetSettings.layoutRecords;
+    this.settingsMutations = new SettingsMutationLog();
+    this.layouts = new LayoutsStore(this.settingsMutations);
+    this.widgetSettings = new WidgetSettingsStore(
+      this.settingsMutations,
+      this.layouts,
+      this
+    );
     this.appSettings = new AppSettingsStore();
     this.companionApps = new CompanionAppsStore(this);
     this.twitchAuth = new TwitchAuthStore(this);

@@ -12,6 +12,7 @@ import {
   isDisplayMonitor,
   isRemoteMonitor,
 } from '@utils/remote-screen';
+import type { SettingsMutationLog } from '@store/settings/mutation-log';
 import type {
   LayoutMonitor,
   SavedLayout,
@@ -66,8 +67,18 @@ export class LayoutsStore {
     Garage: null,
   };
 
-  constructor() {
-    makeAutoObservable(this, {}, { autoBind: true });
+  /**
+   * Every write below marks itself in the log, so a caller cannot make one that
+   * never reaches disk. A layout write always marks the whole widget map: the
+   * records it changes are what the widgets stand on, and after one of them
+   * moves no patch describes where they are.
+   */
+  constructor(private readonly mutations: SettingsMutationLog) {
+    makeAutoObservable<LayoutsStore, 'mutations'>(
+      this,
+      { mutations: false },
+      { autoBind: true }
+    );
   }
 
   get activeLayout(): SavedLayout | undefined {
@@ -84,14 +95,18 @@ export class LayoutsStore {
     if (activeLayoutId !== undefined) {
       this.activeLayoutId = activeLayoutId;
     }
+
+    this.mutations.recordEveryWidget();
   }
 
   setActiveLayoutId(id: string | null) {
     this.activeLayoutId = id;
+    this.mutations.recordEveryWidget();
   }
 
   setSessionLayout(context: SessionContext, layoutId: string | null) {
     this.sessionLayouts[context] = layoutId;
+    this.mutations.recordEveryWidget();
   }
 
   setSessionLayouts(layouts: Partial<Record<SessionContext, string | null>>) {
@@ -102,6 +117,8 @@ export class LayoutsStore {
       Garage: null,
       ...layouts,
     };
+
+    this.mutations.recordEveryWidget();
   }
 
   /** Creates an empty layout record and returns its id. */
@@ -119,6 +136,8 @@ export class LayoutsStore {
         backgroundImages: {},
       },
     ];
+
+    this.mutations.recordEveryWidget();
 
     return id;
   }
@@ -156,11 +175,13 @@ export class LayoutsStore {
     if (!layout) return;
 
     layout.name = name.trim();
+    this.mutations.recordEveryWidget();
   }
 
   /** Drops the record. The caller decides what becomes active afterwards. */
   removeLayout(id: string) {
     this.layouts = this.layouts.filter((layout) => layout.id !== id);
+    this.mutations.recordEveryWidget();
   }
 
   setLayoutWidgets(id: string, widgets: WidgetDefaultConfig[]) {
@@ -169,6 +190,7 @@ export class LayoutsStore {
     if (!layout || layout.monitors.length === 0) return;
 
     layout.widgets = widgets;
+    this.mutations.recordEveryWidget();
   }
 
   async cloneLayout(id: string): Promise<string | undefined> {
@@ -209,6 +231,7 @@ export class LayoutsStore {
 
     runInAction(() => {
       this.layouts = [...this.layouts, cloned];
+      this.mutations.recordEveryWidget();
     });
 
     return newId;
@@ -246,6 +269,7 @@ export class LayoutsStore {
     if (!layout) return;
 
     layout.monitors = monitors.map(cloneMonitor);
+    this.mutations.recordEveryWidget();
   }
 
   /**
@@ -265,6 +289,7 @@ export class LayoutsStore {
     // on the layout's copy — but `kind` and `slug` have to survive it, or a
     // remote screen would come back as a display with no device behind it.
     layout.monitors = [...layout.monitors, cloneMonitor(monitor)];
+    this.mutations.recordEveryWidget();
   }
 
   /**
@@ -305,6 +330,7 @@ export class LayoutsStore {
     );
 
     delete layout.backgroundImages?.[monitorName];
+    this.mutations.recordEveryWidget();
 
     return layout;
   }
@@ -378,6 +404,8 @@ export class LayoutsStore {
         return placeWidgetOnMonitor(widget, from, to);
       });
     }
+
+    this.mutations.recordEveryWidget();
   }
 
   // ── Background images ───────────────────────────────────────────────────
@@ -401,6 +429,7 @@ export class LayoutsStore {
     }
 
     layout.backgroundImages = images;
+    this.mutations.recordEveryWidget();
   }
 
   /** Convenience that paints (or clears) every monitor of the active layout. */

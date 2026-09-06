@@ -15,7 +15,8 @@ import {
   setPitWarningLapsSilent,
 } from '@platform/services/settings.service';
 import { resolveMonitorByName } from '@platform/sync/overlay-resolution';
-import { LayoutsStore } from '@store/settings/layouts.store';
+import type { LayoutsStore } from '@store/settings/layouts.store';
+import type { SettingsMutationLog } from '@store/settings/mutation-log';
 import {
   applyDerivedDesignWidth,
   applyLayoutResize,
@@ -121,12 +122,14 @@ export class WidgetSettingsStore {
   readonly history = new WidgetHistory();
 
   /**
-   * The saved layout records. Owned here so the two always construct together,
-   * and exposed on RootStore as `root.layouts` for call sites that only need
-   * the records. Everything below that reads or writes a layout goes through
-   * it — this store keeps only the live working copy the overlay renders.
+   * The saved layout records, handed in rather than created here: both stores
+   * write into the same `SettingsMutationLog`, and that shared log — not shared
+   * construction — is what keeps them in step. Exposed on RootStore as
+   * `root.layouts` for call sites that only need the records. Everything below
+   * that reads or writes a layout goes through it — this store keeps only the
+   * live working copy the overlay renders.
    */
-  readonly layoutRecords = new LayoutsStore();
+  readonly layoutRecords: LayoutsStore;
 
   // Monitors physically attached right now, refreshed by the arrangement
   // watcher. The editor offers these as screens a layout can be spread onto.
@@ -143,13 +146,17 @@ export class WidgetSettingsStore {
 
   // Incremented on every settings mutation. Reactions use this as a cheap
   // change trigger instead of subscribing to every field across all widgets.
-  changeToken = 0;
+  get changeToken(): number {
+    return this.mutations.changeToken;
+  }
 
   // Incremented when settings arrive from the other window (overlay drag / F9).
   // Kept separate from changeToken so cross-window sync does NOT re-trigger the
   // emit/commit reactions (which would loop), while UI that needs to reflect
   // those external edits (the layout editor preview) can still react to it.
-  syncToken = 0;
+  get syncToken(): number {
+    return this.mutations.syncToken;
+  }
 
   /**
    * Overlay side: the layout id of the last widget list main pushed here. It
@@ -182,11 +189,18 @@ export class WidgetSettingsStore {
 
   private layoutToastTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private readonly root?: RootStore) {
-    makeAutoObservable<WidgetSettingsStore, 'layoutToastTimer'>(
+  constructor(
+    private readonly mutations: SettingsMutationLog,
+    layoutRecords: LayoutsStore,
+    private readonly root?: RootStore
+  ) {
+    this.layoutRecords = layoutRecords;
+
+    makeAutoObservable<WidgetSettingsStore, 'layoutToastTimer' | 'mutations'>(
       this,
       {
         layoutToastTimer: false,
+        mutations: false,
       },
       {
         autoBind: true,
@@ -296,12 +310,10 @@ export class WidgetSettingsStore {
 
   setSessionLayout(context: SessionContext, layoutId: string | null) {
     this.layoutRecords.setSessionLayout(context, layoutId);
-    this.bumpMutation();
   }
 
   setSessionLayouts(layouts: Partial<Record<SessionContext, string | null>>) {
     this.layoutRecords.setSessionLayouts(layouts);
-    this.bumpMutation();
   }
 
   pushUndo() {
@@ -351,17 +363,12 @@ export class WidgetSettingsStore {
    * patch of exactly these widgets — a full list is both wasteful and unsafe,
    * since a window's copy of the other screens is stale by construction.
    */
-  private touchedWidgetIds = new Set<string>();
-  private touchedEveryWidget = false;
-
   private bumpMutation(widgetId?: string) {
     if (widgetId === undefined) {
-      this.touchedEveryWidget = true;
+      this.mutations.recordEveryWidget();
     } else {
-      this.touchedWidgetIds.add(widgetId);
+      this.mutations.recordWidget(widgetId);
     }
-
-    this.changeToken++;
   }
 
   /**
@@ -373,11 +380,7 @@ export class WidgetSettingsStore {
     everyWidget: boolean;
     widgets: WidgetDefaultConfig[];
   } {
-    const everyWidget = this.touchedEveryWidget;
-    const ids = this.touchedWidgetIds;
-
-    this.touchedEveryWidget = false;
-    this.touchedWidgetIds = new Set<string>();
+    const { everyWidget, widgetIds } = this.mutations.drain();
 
     if (everyWidget) {
       return { everyWidget, widgets: this.allWidgets };
@@ -385,7 +388,7 @@ export class WidgetSettingsStore {
 
     return {
       everyWidget,
-      widgets: [...ids]
+      widgets: widgetIds
         .map((id) => this.widgets.get(id))
         .filter(
           (widget): widget is WidgetDefaultConfig => widget !== undefined
@@ -548,7 +551,7 @@ export class WidgetSettingsStore {
         );
       }
 
-      this.syncToken++;
+      this.mutations.recordSynced();
     });
   }
 
@@ -568,7 +571,7 @@ export class WidgetSettingsStore {
         existing.designHeight = incoming.designHeight;
       }
 
-      this.syncToken++;
+      this.mutations.recordSynced();
     });
   }
 
@@ -962,7 +965,7 @@ export class WidgetSettingsStore {
       }
     }
 
-    this.syncToken++;
+    this.mutations.recordSynced();
   }
 
   // Explicit "move to monitor" action. Dragging across an edge in the editor
@@ -1211,7 +1214,6 @@ export class WidgetSettingsStore {
 
   renameLayout(id: string, name: string) {
     this.layoutRecords.renameLayout(id, name);
-    this.bumpMutation();
   }
 
   /**
@@ -1221,7 +1223,6 @@ export class WidgetSettingsStore {
    */
   addMonitor(monitor: LayoutMonitor) {
     this.layoutRecords.addMonitor(monitor);
-    this.bumpMutation();
   }
 
   /**
@@ -1427,20 +1428,14 @@ export class WidgetSettingsStore {
 
   setMonitorBackground(monitorName: string, image: string | undefined) {
     this.layoutRecords.setMonitorBackground(monitorName, image);
-    this.bumpMutation();
   }
 
   setActiveLayoutBackground(image: string | undefined) {
     this.layoutRecords.setActiveLayoutBackground(image);
-    this.bumpMutation();
   }
 
   async cloneLayout(id: string) {
-    const newId = await this.layoutRecords.cloneLayout(id);
-
-    runInAction(() => this.bumpMutation());
-
-    return newId;
+    return this.layoutRecords.cloneLayout(id);
   }
 
   /** Records plus the live widgets they moved — see `LayoutsStore` for the maths. */
