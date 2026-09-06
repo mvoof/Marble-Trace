@@ -705,7 +705,7 @@ export class WidgetSettingsStore {
    */
   addWidgetToMonitor(id: string, monitorName: string) {
     const widget = this.getWidget(id);
-    const monitor = this.monitorByName(monitorName);
+    const monitor = this.layoutRecords.monitorByName(monitorName);
 
     if (!widget || !monitor) return;
 
@@ -1100,7 +1100,12 @@ export class WidgetSettingsStore {
     });
   }
 
-  get activeLayout(): SavedLayout | undefined {
+  /**
+   * The layout the live widgets came from. Private on purpose: a caller that
+   * wants the record asks `root.layouts`, and what this store exposes is the
+   * working copy, not the record behind it.
+   */
+  private get activeLayout(): SavedLayout | undefined {
     return this.layoutRecords.activeLayout;
   }
 
@@ -1221,10 +1226,6 @@ export class WidgetSettingsStore {
    * `layoutRecords` directly: `bumpMutation` is what triggers the debounced save,
    * so a record edited behind the facade's back would never reach disk.
    */
-  addMonitor(monitor: LayoutMonitor) {
-    this.layoutRecords.addMonitor(monitor);
-  }
-
   /**
    * Adds a device screen to the active layout. It is a monitor in every way
    * that matters for the layout — widgets belong to it by their centre point,
@@ -1426,14 +1427,6 @@ export class WidgetSettingsStore {
     this.bumpMutation();
   }
 
-  setMonitorBackground(monitorName: string, image: string | undefined) {
-    this.layoutRecords.setMonitorBackground(monitorName, image);
-  }
-
-  setActiveLayoutBackground(image: string | undefined) {
-    this.layoutRecords.setActiveLayoutBackground(image);
-  }
-
   async cloneLayout(id: string) {
     return this.layoutRecords.cloneLayout(id);
   }
@@ -1449,30 +1442,6 @@ export class WidgetSettingsStore {
     }
 
     this.bumpMutation();
-  }
-
-  monitorByName(monitorName: string): LayoutMonitor | undefined {
-    return this.layoutRecords.monitorByName(monitorName);
-  }
-
-  get desktopBounds() {
-    return this.layoutRecords.desktopBounds;
-  }
-
-  get activeMonitorNames(): string[] {
-    return this.layoutRecords.activeMonitorNames;
-  }
-
-  get layouts(): SavedLayout[] {
-    return this.layoutRecords.layouts;
-  }
-
-  get activeLayoutId(): string | null {
-    return this.layoutRecords.activeLayoutId;
-  }
-
-  get sessionLayouts(): Record<SessionContext, string | null> {
-    return this.layoutRecords.sessionLayouts;
   }
 
   getSettings<SpecificSettings extends WidgetSpecificSettings>(

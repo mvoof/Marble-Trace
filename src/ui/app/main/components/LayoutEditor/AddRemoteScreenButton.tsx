@@ -15,7 +15,10 @@ import {
 import { TabletSmartphone } from 'lucide-react';
 
 import { REMOTE_SCREEN_PRESET_GROUPS } from '@utils/remote-screen';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import {
+  useLayoutsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 const ICON_SIZE = 12;
 const MIN_SIDE = 240;
@@ -37,6 +40,7 @@ const DEFAULT_PRESET = REMOTE_SCREEN_PRESET_GROUPS[0].presets[0];
  */
 export const AddRemoteScreenButton = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
+  const layouts = useLayoutsStore();
   const { t } = useTranslation('main-app');
 
   const [isOpen, setIsOpen] = useState(false);
@@ -80,7 +84,7 @@ export const AddRemoteScreenButton = observer(() => {
         <Button
           size="small"
           icon={<TabletSmartphone size={ICON_SIZE} />}
-          disabled={!widgetSettings.activeLayout}
+          disabled={!layouts.activeLayout}
           onClick={() => setIsOpen(true)}
         >
           {t('layoutEditor.addRemoteScreen')}

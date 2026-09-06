@@ -15,12 +15,14 @@ import {
   useAppSettingsStore,
   useBindingsStore,
   useSimStore,
+  useLayoutsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const OverlayCanvas = observer(() => {
   const appSettings = useAppSettingsStore();
   const widgetSettings = useWidgetSettingsStore();
+  const layouts = useLayoutsStore();
   const bindings = useBindingsStore();
   const simStore = useSimStore();
   const { t } = useTranslation('main-app');
@@ -63,7 +65,7 @@ export const OverlayCanvas = observer(() => {
   };
 
   const ownBounds = widgetSettings.ownMonitorName
-    ? widgetSettings.monitorByName(widgetSettings.ownMonitorName)?.bounds
+    ? layouts.monitorByName(widgetSettings.ownMonitorName)?.bounds
     : undefined;
 
   const monitorOffset = {

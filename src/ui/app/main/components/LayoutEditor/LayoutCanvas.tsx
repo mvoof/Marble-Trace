@@ -24,6 +24,7 @@ import {
   useSessionStore,
   useTrackMapWidgetStore,
   useUnitsStore,
+  useLayoutsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { componentForWidget } from '@ui/widgets/registry';
@@ -247,8 +248,9 @@ export const LayoutCanvas = observer(
     focusedMonitorName = null,
   }: LayoutCanvasProps) => {
     const widgetSettings = useWidgetSettingsStore();
+    const layouts = useLayoutsStore();
     const units = useUnitsStore();
-    const monitors = widgetSettings.activeLayout?.monitors ?? [];
+    const monitors = layouts.activeLayout?.monitors ?? [];
     const focusedMonitor = focusedMonitorName
       ? monitors.find((monitor) => monitor.name === focusedMonitorName)
       : undefined;
@@ -533,7 +535,7 @@ export const LayoutCanvas = observer(
       document.addEventListener('mouseup', onMouseUp);
     };
 
-    const backgroundImages = widgetSettings.activeLayout?.backgroundImages;
+    const backgroundImages = layouts.activeLayout?.backgroundImages;
     // In overview every monitor paints its own image inside its rectangle; the
     // stage itself only carries one when a single monitor fills it.
     const rawBackground = focusedMonitor

@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import {
   useAppSettingsStore,
+  useLayoutsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
@@ -83,6 +84,7 @@ export const LayoutEditor = observer(
     onModeChange?: (mode: 'list' | 'editor') => void;
   }) => {
     const widgetSettings = useWidgetSettingsStore();
+    const layouts = useLayoutsStore();
     const appSettings = useAppSettingsStore();
     const { t } = useTranslation('main-app');
 
@@ -104,7 +106,7 @@ export const LayoutEditor = observer(
     const [prevActiveId, setPrevActiveId] = useState<string | null>(null);
 
     const handleOpenEditorWithId = (id: string) => {
-      const currentActiveId = widgetSettings.activeLayoutId;
+      const currentActiveId = layouts.activeLayoutId;
 
       if (id !== currentActiveId) {
         widgetSettings.switchEditorLayout(id);
@@ -184,8 +186,8 @@ export const LayoutEditor = observer(
       {}
     );
 
-    const activeId = widgetSettings.activeLayoutId;
-    const activeLayout = widgetSettings.activeLayout;
+    const activeId = layouts.activeLayoutId;
+    const activeLayout = layouts.activeLayout;
     const monitors = widgetSettings.attachedMonitors;
 
     // Background images belong to a screen, so setting one needs a screen in
@@ -247,9 +249,7 @@ export const LayoutEditor = observer(
         const extension = (file.name.split('.').pop() ?? 'png').toLowerCase();
         const bytes = new Uint8Array(await file.arrayBuffer());
         const previous = backgroundTargetName
-          ? widgetSettings.activeLayout?.backgroundImages?.[
-              backgroundTargetName
-            ]
+          ? layouts.activeLayout?.backgroundImages?.[backgroundTargetName]
           : undefined;
 
         const fileName = await saveBackgroundImage(activeId, bytes, extension);
@@ -259,7 +259,7 @@ export const LayoutEditor = observer(
         }
 
         if (backgroundTargetName) {
-          widgetSettings.setMonitorBackground(backgroundTargetName, fileName);
+          layouts.setMonitorBackground(backgroundTargetName, fileName);
         }
       } catch (error) {
         console.error('Failed to save background image:', error);
@@ -274,7 +274,7 @@ export const LayoutEditor = observer(
       void deleteBackgroundImage(
         activeLayout?.backgroundImages?.[backgroundTargetName]
       );
-      widgetSettings.setMonitorBackground(backgroundTargetName, undefined);
+      layouts.setMonitorBackground(backgroundTargetName, undefined);
     };
 
     const handleDeleteLayout = () => {
@@ -283,7 +283,7 @@ export const LayoutEditor = observer(
       }
 
       for (const image of Object.values(
-        widgetSettings.activeLayout?.backgroundImages ?? {}
+        layouts.activeLayout?.backgroundImages ?? {}
       )) {
         void deleteBackgroundImage(image);
       }
@@ -291,7 +291,7 @@ export const LayoutEditor = observer(
       widgetSettings.deleteLayout(activeId);
     };
 
-    const layoutOptions = widgetSettings.layouts.map((layout) => ({
+    const layoutOptions = layouts.layouts.map((layout) => ({
       value: layout.id,
       label: layout.name,
     }));
@@ -370,7 +370,7 @@ export const LayoutEditor = observer(
       if (!monitor) return;
 
       if (!layoutMonitorNames.has(name)) {
-        widgetSettings.addMonitor({
+        layouts.addMonitor({
           name: monitor.name,
           bounds: monitor.bounds,
         });
@@ -397,7 +397,7 @@ export const LayoutEditor = observer(
           : selectedWidget.userSettings.currentHeight;
       // Widget coordinates are virtual-desktop wide, so the corners are those
       // of the screen the widget currently sits on, not of the desktop box.
-      const monitors = widgetSettings.activeLayout?.monitors ?? [];
+      const monitors = layouts.activeLayout?.monitors ?? [];
       const screen = monitorForWidget(selectedWidget, monitors)?.bounds ?? {
         x: 0,
         y: 0,
@@ -592,14 +592,14 @@ export const LayoutEditor = observer(
                     value={activeId ?? undefined}
                     onChange={(id) => {
                       const trueActiveId =
-                        prevActiveId ?? widgetSettings.activeLayoutId;
+                        prevActiveId ?? layouts.activeLayoutId;
 
                       if (id === trueActiveId) {
                         widgetSettings.loadLayout(id);
                         setPrevActiveId(null);
                       } else {
                         if (prevActiveId === null) {
-                          setPrevActiveId(widgetSettings.activeLayoutId);
+                          setPrevActiveId(layouts.activeLayoutId);
                         }
 
                         widgetSettings.switchEditorLayout(id);

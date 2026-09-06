@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { RootStore } from '../root-store';
 import type { CapabilitiesPayload } from '@/types/bindings';
+import type { LayoutsStore } from './layouts.store';
 import type { WidgetSettingsStore } from './widget-settings.store';
 
 const FULL_CAPABILITIES: CapabilitiesPayload = {
@@ -114,11 +115,9 @@ describe('WidgetSettingsStore session layouts', () => {
     rootStore.widgetSettings.setSessionLayout('Practice', 'layout-practice');
     rootStore.widgetSettings.setSessionLayout('Race', 'layout-race');
 
-    expect(rootStore.widgetSettings.sessionLayouts.Practice).toBe(
-      'layout-practice'
-    );
-    expect(rootStore.widgetSettings.sessionLayouts.Race).toBe('layout-race');
-    expect(rootStore.widgetSettings.sessionLayouts.Qualify).toBeNull();
+    expect(rootStore.layouts.sessionLayouts.Practice).toBe('layout-practice');
+    expect(rootStore.layouts.sessionLayouts.Race).toBe('layout-race');
+    expect(rootStore.layouts.sessionLayouts.Qualify).toBeNull();
   });
 
   it('returns correct currentSessionType based on sessionInfo', () => {
@@ -344,7 +343,7 @@ describe('WidgetSettingsStore remote screen geometry', () => {
   });
 
   const remoteBounds = () =>
-    rootStore.widgetSettings.activeLayout?.monitors.find(
+    rootStore.layouts.activeLayout?.monitors.find(
       (monitor) => monitor.name === 'Tablet'
     )?.bounds;
 
@@ -550,7 +549,7 @@ describe('the active layout owns the widgets', () => {
 
     store.updatePosition('fuel', 640, 480);
 
-    const stored = store.activeLayout!.widgets.find(
+    const stored = rootStore.layouts.activeLayout!.widgets.find(
       (widget) => widget.id === 'fuel'
     )!.userSettings;
 
@@ -576,7 +575,7 @@ describe('the active layout owns the widgets', () => {
 
     store.updatePosition('fuel', 640, 480);
 
-    const other = store.layouts
+    const other = rootStore.layouts.layouts
       .find((entry) => entry.id === 'layout-garage')!
       .widgets.find((widget) => widget.id === 'fuel');
 
@@ -593,8 +592,9 @@ describe('the active layout owns the widgets', () => {
 
     expect(store.getWidget('fuel')!.userSettings.x).toBe(before);
     expect(
-      store.activeLayout!.widgets.find((widget) => widget.id === 'fuel')!
-        .userSettings.x
+      rootStore.layouts.activeLayout!.widgets.find(
+        (widget) => widget.id === 'fuel'
+      )!.userSettings.x
     ).toBe(before);
   });
 
@@ -603,7 +603,7 @@ describe('the active layout owns the widgets', () => {
 
     store.selectLayout(null);
 
-    expect(store.activeLayout).toBeUndefined();
+    expect(rootStore.layouts.activeLayout).toBeUndefined();
     expect(store.getWidget('fuel')).toBeDefined();
   });
 });
@@ -638,7 +638,7 @@ describe('a layout with no monitors is not written to', () => {
 
     store.loadLayout('layout-screenless');
 
-    const saved = store.layouts[0].widgets.find(
+    const saved = rootStore.layouts.layouts[0].widgets.find(
       (widget) => widget.id === 'fuel'
     )!.userSettings;
 
@@ -813,7 +813,7 @@ describe('several copies of one widget in a layout', () => {
     // Reinstalling the layout's own list is what a layout switch does, and it
     // used to be where a second copy quietly disappeared.
     store.setWidgets(
-      store.activeLayout!.widgets.map((widget) => ({ ...widget }))
+      rootStore.layouts.activeLayout!.widgets.map((widget) => ({ ...widget }))
     );
 
     expect(store.widgetsOfType('standings')).toHaveLength(3);
@@ -928,7 +928,7 @@ describe('a screen added to a layout', () => {
   });
 
   const screenNamed = (name: string) =>
-    rootStore.widgetSettings.activeLayout!.monitors.find(
+    rootStore.layouts.activeLayout!.monitors.find(
       (monitor) => monitor.name === name
     )!;
 
@@ -1004,8 +1004,13 @@ describe('every settings write leaves its mark', () => {
   type WriteCase = {
     name: string;
     /** Runs before the measurement, so the case measures one write only. */
-    setup?: (store: WidgetSettingsStore) => void;
-    run: (store: WidgetSettingsStore) => void;
+    setup?: (store: WidgetSettingsStore, layouts: LayoutsStore) => void;
+    /**
+     * Layout records are written through `layouts` now, the live widget map
+     * through `store` — which of the two a write goes through is itself part of
+     * what this table pins.
+     */
+    run: (store: WidgetSettingsStore, layouts: LayoutsStore) => void;
     expected: WriteMark;
   };
 
@@ -1120,14 +1125,15 @@ describe('every settings write leaves its mark', () => {
     },
     {
       name: 'switchEditorLayout',
-      setup: (store) => store.setLayouts([...store.layouts, SECOND_LAYOUT]),
+      setup: (store, layouts) =>
+        store.setLayouts([...layouts.layouts, SECOND_LAYOUT]),
       run: (store) => store.switchEditorLayout(SECOND_LAYOUT.id),
       expected: { token: 'change', touched: 'every' },
     },
     {
       name: 'activateEditorLayout',
-      setup: (store) => {
-        store.setLayouts([...store.layouts, SECOND_LAYOUT]);
+      setup: (store, layouts) => {
+        store.setLayouts([...layouts.layouts, SECOND_LAYOUT]);
         store.switchEditorLayout(SECOND_LAYOUT.id);
       },
       run: (store) => store.activateEditorLayout(),
@@ -1145,7 +1151,8 @@ describe('every settings write leaves its mark', () => {
     },
     {
       name: 'deleteLayout',
-      setup: (store) => store.setLayouts([...store.layouts, SECOND_LAYOUT]),
+      setup: (store, layouts) =>
+        store.setLayouts([...layouts.layouts, SECOND_LAYOUT]),
       run: (store) => store.deleteLayout(SECOND_LAYOUT.id),
       expected: { token: 'change', touched: 'every' },
     },
@@ -1153,8 +1160,8 @@ describe('every settings write leaves its mark', () => {
     // Monitors and remote screens.
     {
       name: 'addMonitor',
-      run: (store) =>
-        store.addMonitor({
+      run: (_store, layouts) =>
+        layouts.addMonitor({
           name: 'DISPLAY2',
           bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
         }),
@@ -1162,8 +1169,8 @@ describe('every settings write leaves its mark', () => {
     },
     {
       name: 'removeMonitor',
-      setup: (store) =>
-        store.addMonitor({
+      setup: (_store, layouts) =>
+        layouts.addMonitor({
           name: 'DISPLAY2',
           bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
         }),
@@ -1172,12 +1179,13 @@ describe('every settings write leaves its mark', () => {
     },
     {
       name: 'setMonitorBackground',
-      run: (store) => store.setMonitorBackground(DISPLAY.name, 'image.png'),
+      run: (_store, layouts) =>
+        layouts.setMonitorBackground(DISPLAY.name, 'image.png'),
       expected: { token: 'change', touched: 'every' },
     },
     {
       name: 'setActiveLayoutBackground',
-      run: (store) => store.setActiveLayoutBackground('image.png'),
+      run: (_store, layouts) => layouts.setActiveLayoutBackground('image.png'),
       expected: { token: 'change', touched: 'every' },
     },
     {
@@ -1279,7 +1287,7 @@ describe('every settings write leaves its mark', () => {
       'layout-race'
     );
 
-    setup?.(store);
+    setup?.(store, rootStore.layouts);
 
     // Everything above is arrangement, not the write under test.
     store.drainTouchedWidgets();
@@ -1287,7 +1295,7 @@ describe('every settings write leaves its mark', () => {
     const changeBefore = store.changeToken;
     const syncBefore = store.syncToken;
 
-    run(store);
+    run(store, rootStore.layouts);
 
     const drained = store.drainTouchedWidgets();
 
