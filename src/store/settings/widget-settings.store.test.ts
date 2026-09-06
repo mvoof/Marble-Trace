@@ -87,7 +87,9 @@ describe('WidgetSettingsStore capabilities gating', () => {
   });
 });
 
-describe('WidgetSettingsStore session layouts', () => {
+// The mapping itself is a layout record and is pinned in `layouts.store.test.ts`;
+// what is left here is which session the sim is actually in.
+describe('the session a layout would be picked for', () => {
   let rootStore: RootStore;
 
   beforeEach(() => {
@@ -109,15 +111,6 @@ describe('WidgetSettingsStore session layouts', () => {
         widgets: [],
       },
     ]);
-  });
-
-  it('correctly sets and maps session layouts', () => {
-    rootStore.widgetSettings.setSessionLayout('Practice', 'layout-practice');
-    rootStore.widgetSettings.setSessionLayout('Race', 'layout-race');
-
-    expect(rootStore.layouts.sessionLayouts.Practice).toBe('layout-practice');
-    expect(rootStore.layouts.sessionLayouts.Race).toBe('layout-race');
-    expect(rootStore.layouts.sessionLayouts.Qualify).toBeNull();
   });
 
   it('returns correct currentSessionType based on sessionInfo', () => {
@@ -1157,16 +1150,9 @@ describe('every settings write leaves its mark', () => {
       expected: { token: 'change', touched: 'every' },
     },
 
-    // Monitors and remote screens.
-    {
-      name: 'addMonitor',
-      run: (_store, layouts) =>
-        layouts.addMonitor({
-          name: 'DISPLAY2',
-          bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
-        }),
-      expected: { token: 'change', touched: 'every' },
-    },
+    // Monitors and remote screens. The record-level writes are pinned in
+    // `layouts.store.test.ts`; what is here composes a record with the widgets
+    // standing on it.
     {
       name: 'removeMonitor',
       setup: (_store, layouts) =>
@@ -1175,17 +1161,6 @@ describe('every settings write leaves its mark', () => {
           bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
         }),
       run: (store) => store.removeMonitor('layout-race', 'DISPLAY2'),
-      expected: { token: 'change', touched: 'every' },
-    },
-    {
-      name: 'setMonitorBackground',
-      run: (_store, layouts) =>
-        layouts.setMonitorBackground(DISPLAY.name, 'image.png'),
-      expected: { token: 'change', touched: 'every' },
-    },
-    {
-      name: 'setActiveLayoutBackground',
-      run: (_store, layouts) => layouts.setActiveLayoutBackground('image.png'),
       expected: { token: 'change', touched: 'every' },
     },
     {
