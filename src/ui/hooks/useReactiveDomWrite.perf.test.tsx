@@ -75,6 +75,31 @@ const CountingWrites = observer(function CountingWrites() {
   return <div data-testid="target" ref={elementRef} />;
 });
 
+const lateMount = observable({ isShown: false, level: 1 });
+
+/**
+ * The shape almost every consumer has: the component draws nothing until the
+ * value it shows is on screen, so the first commit carries no element at all.
+ */
+const ShownLate = observer(function ShownLate() {
+  const elementRef = useReactiveDomWrite<HTMLDivElement>(
+    (element, scheduleWrite) => {
+      const level = lateMount.level;
+
+      scheduleWrite(() =>
+        element.style.setProperty(FIRST_PROPERTY, `${level}`)
+      );
+    },
+    []
+  );
+
+  if (!lateMount.isShown) {
+    return null;
+  }
+
+  return <div data-testid="target" ref={elementRef} />;
+});
+
 describe('useReactiveDomWrite', () => {
   it('keeps every write scheduled in one run', async () => {
     const container = document.createElement('div');
@@ -127,6 +152,48 @@ describe('useReactiveDomWrite', () => {
 
     expect(writeCounts).toEqual({ first: 1, second: 1 });
     expect(readProperties(container)).toEqual({ first: '30', second: '31' });
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it('starts writing when the element appears, not when the component mounts', async () => {
+    const container = document.createElement('div');
+    document.body.append(container);
+    const root = createRoot(container);
+
+    runInAction(() => {
+      lateMount.isShown = false;
+      lateMount.level = 1;
+    });
+
+    await act(async () => {
+      root.render(<ShownLate />);
+    });
+
+    expect(container.querySelector('[data-testid="target"]')).toBeNull();
+
+    await act(async () => {
+      runInAction(() => {
+        lateMount.isShown = true;
+      });
+    });
+
+    // Synchronous, like every first run: the element is on screen carrying
+    // none of the value yet, and a deferred write would paint one frame of the
+    // stylesheet's fallback first.
+    expect(readProperties(container).first).toBe('1');
+
+    runInAction(() => {
+      lateMount.level = 2;
+    });
+
+    await nextFrame();
+    await nextFrame();
+
+    expect(readProperties(container).first).toBe('2');
 
     await act(async () => {
       root.unmount();

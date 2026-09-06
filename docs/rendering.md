@@ -69,6 +69,13 @@ already does exactly this for canvas widgets. What to write — a style property
 a custom property, an attribute — is the caller's decision, not the
 primitive's.
 
+The autorun follows the **element**, not the component. Most of these
+components return `null` until what they draw is on screen — a spotter call, a
+driver row, a setting switched on — so the ref is attached several commits after
+the component mounts, and a primitive that looked for the element once would
+never write anything for the rest of that mount. Attaching starts the run,
+detaching disposes it.
+
 Use it only for hot fields, and only through that primitive. A hand-rolled
 `useRef` plus `requestAnimationFrame` is the same idea without the review
 signal: the shared primitive is what `grep` finds and what tells a reviewer the
