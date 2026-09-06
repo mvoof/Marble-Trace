@@ -5,13 +5,13 @@ Storybook.
 
 ## Files
 
-| File                         | Contents                                                                            |
-| ---------------------------- | ----------------------------------------------------------------------------------- |
-| `iracing-1784964111621.json` | iRacing telemetry snapshot — realistic multi-car session (drivers, classes, timing) |
+| File                                       | Contents                                                                            |
+| ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `telemetry-snapshot-2026-09-01_23-20.json` | iRacing telemetry snapshot — realistic multi-car session (drivers, classes, timing) |
 
 The snapshot is loaded by the neutral preview fixture
-`src/store/preview/sample-telemetry.ts` (globbed as `iracing-*.json`) and shared
-by both the in-app widget preview and Storybook.
+`src/store/preview/sample-telemetry.ts` (globbed as `telemetry-snapshot-*.json`,
+first match wins) and shared by both the in-app widget preview and Storybook.
 
 > [!NOTE]
 > Specific states (flags, radar traffic, rain, table badges) and the track map
@@ -24,6 +24,9 @@ by both the in-app widget preview and Storybook.
 
 1. Launch iRacing and join a session
 2. Launch Marble Trace (`npm run tauri dev`)
-3. Go to **Settings → Dev Tools → Capture Snapshot**
-4. A JSON file will be downloaded
-5. Place it in this folder (e.g. `test-data/gt3-race.json`)
+3. Go to **Settings → Maintenance → Developer Tools → Save Snapshot JSON**
+4. The file is written to `diagnostics/` next to the settings file, and the
+   folder is revealed
+5. Move it here, keeping the `telemetry-snapshot-*.json` name, and remove the
+   previous one — the glob takes the first match, so two snapshots make the
+   fixture ambiguous
