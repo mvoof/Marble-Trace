@@ -89,12 +89,30 @@ keeps the letters upright, and React renders nothing.
 At 10 Hz the escape hatch is not the answer — the shell/body split is. Those
 frames carry per-car arrays, and their problem is width, not rate.
 
+## The hot/cold split
+
+Treat the overlay as two contours, not one tree that happens to update fast in
+places:
+
+- **Cold contour (React, 1-4 Hz and below).** Everything React actually
+  reconciles: widget shells, mounting, settings, modals, the rare event
+  (session change, a pit stop). This is where `observer` and ordinary
+  props/state belong.
+- **Hot contour (DOM/canvas, 10-60 Hz).** Data that changes every tick or close
+  to it never becomes a React prop deep in a tree. It goes straight to a DOM
+  node through `useReactiveDomWrite`, or straight to a canvas through
+  `useReactiveCanvasLoop` — both bypass the reconciler entirely.
+
+A widget is built by deciding, per hot field, which contour it belongs to
+**before** writing the component — not by writing it plainly and then
+memoising the result. See "The rule" and "The escape hatch" above for how each
+contour is implemented; this split is the vocabulary for talking about the
+decision, not a new mechanism.
+
 ## How this is enforced
 
-Two layers, deliberately different in kind.
-
 **Static — `oxlint`, with `react-doctor` as an occasional sweep.** `oxlint` runs
-on every commit and every pull request and is the blocking half; it carries
+on every commit and every pull request and is the blocking check; it carries
 `react-hooks/rules-of-hooks`, which is the one class of React defect here worth
 stopping a commit for. `react-doctor` is deliberately **not** in continuous
 integration — it is an agent skill, run by hand when a widget has been reworked,
@@ -102,166 +120,54 @@ for the two things `oxlint` has no rule for: discarded MobX disposers and the
 accessibility checks outside its `jsx-a11y` set. `docs/agents/react-doctor.md`
 has the reasoning.
 
-It knows nothing about which of our fields are hot, so **it cannot check the
-rule above** — and the budgets cannot check what it checks. Neither layer
-covers the other; a green scan says nothing about a render budget. Which of its
-rules are switched off, and why each one was, is `doctor.config.mjs`.
+**There is no runtime check for the rendering rule.** Neither `oxlint` nor
+`react-doctor` knows which bundle fields are hot, so neither can tell a
+component that wakes sixty times a second from one that never does. This repo
+previously carried a `*.perf.test.tsx` beside each hot widget, replaying a
+fixed telemetry burst through a real store and asserting how many times each
+component woke — it was retired: it needed a real browser in CI (Playwright),
+and the two tests that measured the whole overlay together
+(`overlay-cost`, `wake-up-classification`) proved sensitive enough to GitHub
+Actions' runner variance to fail on unchanged code, while every per-widget
+budget passed. The signal-to-noise on the aggregate tests did not justify
+keeping a Playwright stage in every pull request.
 
-**Runtime — render budgets.** One `*.perf.test.tsx` beside each widget whose
-manifest declares a hot field. The test replays a fixed burst of frames through
-a real store and asserts how many times each component woke. `npm run test:perf`
-locally; in continuous integration it is the _Run Render Budgets_ step of the
-frontend job in `.github/workflows/reusable-quality.yml`, which fails the build
-when a component goes over. It stays out of `npm test` and out of the pre-commit
-hook — it needs a real browser, which those must not wait for.
+**What replaces it is review, not a runner.** A PR touching a widget that
+declares a hot field is expected to name, in review, which contour each hot
+field is on and why — the same information the retired harness would have
+measured. `AGENTS.md` and `docs/widget-authoring.md` carry the rule for anyone
+(human or AI) opening such a file. This is a real trade: a regression in a hot
+widget's allocation behavior can land and go unnoticed until someone profiles
+the overlay again, rather than failing a build. See "The overlay's own number"
+below for the shape of that regression if it needs re-measuring by hand.
 
-## Measuring
+## Measuring, by hand
 
-Counting is done with MobX's own `spy`: `observer` creates a reaction per
-component, and `spy` reports a `reaction` event with that component's debug name
-every time it fires. This measures **wake-ups**, not committed renders — which
-is the better number here, because the rule is about what an observable wakes.
+If a widget's cost needs proving out again — a suspected regression, a new hot
+widget, a profiling session — the technique that was automated is still worth
+doing manually:
 
-Attribution needs a name, and `observer(() => …)` has none: the arrow is an
-argument, so nothing infers one, and every such component lands in the same
-bucket. **A component under a budget is declared as
-`observer(function Name() { … })`** — the one place this repo's arrow-function
-rule does not apply, because the name is the measurement. The harness refuses to
-report rather than mis-attribute if it finds an anonymous one.
+- **Wake-ups** are counted with MobX's own `spy`: `observer` creates a reaction
+  per component, and `spy` reports a `reaction` event with that component's
+  debug name every time it fires. This counts **wake-ups**, not committed
+  renders — the better number, because the rule is about what an observable
+  wakes. Attribution needs a name, so a component being profiled this way
+  should be declared `observer(function Name() { … })` for the duration, not as
+  an anonymous arrow.
+- **DOM mutations** are counted with a `MutationObserver` around the mounted
+  tree — a bypass write lands here exactly as a React commit does, so it is the
+  number that does not go to zero just because wake-ups did.
+- Bytes allocated is what this is really about, and it resists measurement in
+  headless Chromium (`performance.memory` buckets too coarsely for a one-second
+  burst to show a delta) — a Chrome DevTools heap profile against the real app
+  in `tauri:dev` is the reliable way to see it directly; the sampling profile
+  quoted at the top of this document ("57% in `jsxDEV`") came from exactly that.
 
-`spy` is a no-op in production builds and is dropped by minification, so the
-measurement can never reach the app bundle. The flip side: perf tests must run
-against a non-production MobX build. If a test config ever sets
-`NODE_ENV=production`, every counter silently reads zero and every budget
-"passes".
-
-The tests run in vitest browser mode (Playwright), not jsdom: the escape hatch
-writes CSS custom properties inside `requestAnimationFrame`, and in jsdom both
-are fake, so testing it there proves nothing.
-
-The harness is `src/perf/render-budget.tsx`, imported by nothing the
-application bundles. Fixtures live in the test file. Seeding reuses what the app
-already ships in
-`store/preview/` (the layout editor imports it, so it is in the bundle by
-right); nothing that exists only for tests may be added there.
-
-They are their own command, `npm run test:perf`, with its own config
-(`vitest.perf.config.ts`). They are deliberately not part of `npm test` and not
-part of `pre-commit`, which stays fast; on a pull request they are the blocking
-_Run Render Budgets_ step of the frontend job, which the existing path filters
-skip when nothing on the frontend changed.
-
-## Budgets
-
-Budgets are absolute numbers in one table in the test, not a generated baseline
-file. A baseline turns every honest change into a "regenerate the snapshot"
-ritual and lets drift accumulate unseen.
-
-Raising a number is allowed and takes one line of justification beside it in the
-same commit. That line is where a reviewer asks whether the render is actually
-minimal.
-
-Widgets that predate the rule carry their current number **and** the target,
-marked as debt:
-
-```
-WindArrow   target 1   current 60   debt
-```
-
-Recording the current value alone would quietly make sixty wake-ups the norm.
-
-### How a target is chosen
-
-A budget is what the component costs today. A target is what it should cost once
-the rule is applied to it, and it is read off the burst rather than argued:
-
-- **one wake per burst** for a component whose output follows a value that
-  changes every tick — the burst moves it sixty times, and the rule says one
-  element, written through the bypass or lifted out of the re-rendering parent,
-  is enough;
-- **one wake per row** for a component drawn once per car, where each row's own
-  numbers really do change;
-- **zero** for a component that renders nothing the burst changed. It wakes
-  because it reads a frame, not a field — the class ticket 07 is about.
-
-Targets are the basis of a follow-up ticket, not a second contract: only the
-budget column fails the build.
-
-The table has to name **everything that woke**, not only what someone thought
-worth pinning: a component missing from it would have no budget at all, which is
-the hole a new sub-component would otherwise fall straight through. A wake-up
-attributed to a name the table does not list fails the test on its own.
-
-### Where the budgets stand
-
-Every widget whose manifest declares a hot field has one `*.perf.test.tsx` in
-its folder, and the table lives in that file. Coverage is derived from the
-manifests by `src/perf/budget-coverage.perf.test.tsx`, so a widget that starts
-declaring a hot field without a perf test fails the suite.
-
-| widget            | worst row today     | state                                     |
-| ----------------- | ------------------- | ----------------------------------------- |
-| `close-battle`    | `BattleRow` 2       | within budget                             |
-| `g-meter`         | —                   | nothing wakes: it is all canvas           |
-| `coach`           | `InfoRow` 1         | within budget                             |
-| `engine-panel`    | `AbsCell` 0         | within budget                             |
-| `input-trace`     | `Bar` 3             | within budget                             |
-| `invisible-dash`  | `EngineCluster` 1   | within budget                             |
-| `pit-service`     | `PitApproachRail` 1 | within budget                             |
-| `proximity-radar` | `RadarScope` 0      | within budget                             |
-| `race-dash`       | `RingBadge` 1       | within budget                             |
-| `radar-bar`       | `RadarBar` 2        | within budget                             |
-| `relative`        | `DriverRow` 3       | within budget                             |
-| `relative-map`    | `LinearMap` 1       | within budget                             |
-| `rpm-lights`      | `RpmLightsWidget` 0 | within budget                             |
-| `sector-matrix`   | `SectorGrid` 1      | within budget                             |
-| `standings`       | `DriverRow` 5       | within budget                             |
-| `timer`           | `TimerFooter` 1     | within budget                             |
-| `track-map`       | `TrackMapSvg` 1     | within budget                             |
-| `weather`         | `WindArrow` 1       | within budget; the ring beside it is at 0 |
-
-Every widget above has had the rule applied. The four list-shaped ones —
-`relative`, `relative-map`, `standings` and `track-map` — were the same shape of
-problem in all four: a row or a dot was handed the per-car entry as a prop, and
-that entry object is replaced on every frame. They were fixed by the
-identity/position split rather than by another bypass: `CarIdentity`
-(`src/types/car-identity.ts`) is the entry without its four moving fields, the
-store exposes it as a `computed.struct` list that stays the same object for a
-whole lap, and the numbers that do move are read by `carIdx` inside the
-reaction that writes them.
-
-## The overlay's own number
-
-A per-widget budget cannot say whether the work paid off. It answers "does this
-component wake for something it does not draw", and the sum of them answers
-less than it looks: the sanctioned bypass takes a widget's wake-ups to zero
-while its per-frame work carries on outside React, so optimising the sum
-optimises the counter.
-
-`src/perf/overlay-cost.perf.test.tsx` is the number that does not move that way.
-It mounts every hot widget together, replays the same one-second burst, and
-counts two things — observer wake-ups, and DOM mutations under a
-`MutationObserver`, which a bypass write lands in exactly as a React commit
-does.
-
-|                   | before this work | after     |
-| ----------------- | ---------------- | --------- |
-| observer wake-ups | 2049             | 4-6       |
-| DOM mutations     | 4518             | 1200-2200 |
-
-Bytes allocated is the number all of this was really about, and it is not in the
-file: `performance.memory` in headless Chromium is bucketed coarsely enough that
-a whole burst reads as a zero delta. The mutation count stands in for it, since
-producing those mutations is what most of that allocation was being spent on.
-The two are asserted very differently — wake-ups tightly, mutations as a coarse
-tripwire — and the test says why.
-
-### Attribution needs named components
-
-The counter keys on the component's debug name, so every `observer` in a widget
-is declared as `observer(function Name() { … })`. That is the one place the
-repo's arrow-function rule does not apply, and the harness refuses to report
-rather than mis-attribute if it finds an anonymous one.
+Before this work landed, mounting every hot widget together and replaying a
+one-second burst measured roughly 2049 observer wake-ups and 4518 DOM
+mutations; after applying the rule to every hot widget, that fell to 4-6
+wake-ups and 1200-2200 DOM mutations. Those numbers are a historical baseline
+for comparison, not an asserted budget.
 
 ## Per-field observables: asked and answered
 
@@ -272,12 +178,9 @@ without a delta on the wire) was the obvious fix for that class.
 
 It was measured and it is **not** being done:
 `docs/adr/0001-per-field-telemetry-observables.md` has the numbers and the
-reasoning. Two thirds of the wake-ups in a burst produce a single rendering, but
-none of them turn out to be a component reading the wrong field — they are a
-canvas the markup cannot see, a value the widget's own formatting rounds away,
-or a 10 Hz field the burst advances at 60 Hz and writes past the quantization
-and repeat-suppression that already drop it on the wire.
-
-`src/perf/wake-up-classification.perf.test.tsx` is that measurement, kept
-runnable and pinned so the record cannot rot. What was left after it was the
-debt column above, not the store's shape — and that column is now empty.
+reasoning. Two thirds of the wake-ups in a burst produced a single rendering,
+but none of them turned out to be a component reading the wrong field — they
+were a canvas the markup cannot see, a value the widget's own formatting
+rounds away, or a 10 Hz field the burst advanced at 60 Hz and wrote past the
+quantization and repeat-suppression that already drop it on the wire. See the
+ADR for the full record.

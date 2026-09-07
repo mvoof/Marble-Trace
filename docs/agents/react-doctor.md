@@ -1,8 +1,8 @@
 # React Doctor
 
 The **static** layer of the rendering work: generic React and JavaScript
-anti-patterns, architecture, accessibility. The runtime layer beside it is the
-render budgets — `docs/rendering.md` describes both together.
+anti-patterns, architecture, accessibility. `docs/rendering.md` covers the
+hot/cold rendering rule this tool cannot check.
 
 ## Running it
 
@@ -37,12 +37,9 @@ with no accessible name went unreported by every other check.
 
 **It cannot enforce this project's rendering rule.** It does not know which
 telemetry fields are hot, so it cannot tell a component that wakes sixty times a
-second from one that never does. That is what the render budgets measure
-(`*.perf.test.tsx`, `npm run test:perf`), and those in turn check nothing the
-scanner checks: a component can be textbook React and still rebuild a tree
-sixty times a second, and it can trip three of these rules and cost nothing.
-
-Neither layer covers the other. A clean scan is not a passing budget.
+second from one that never does. There is no runtime check for that rule at
+all — see `docs/rendering.md` — so a component can be textbook React and still
+rebuild a tree sixty times a second, and a clean scan says nothing about it.
 
 ## Which rules are off
 

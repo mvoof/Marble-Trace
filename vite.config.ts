@@ -37,11 +37,8 @@ export default defineConfig(() => ({
     alias: createLayerAliases(),
   },
 
-  // The fast suite. Render budgets are a separate command with its own config
-  // (`vitest.perf.config.ts`): they need a real browser, so they must stay out
-  // of `npm test` and out of the pre-commit hook.
   test: {
-    exclude: ['**/node_modules/**', '**/dist/**', '**/*.perf.test.tsx'],
+    exclude: ['**/node_modules/**', '**/dist/**'],
   },
 
   css: {

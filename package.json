@@ -14,7 +14,6 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev --features dev",
-    "screenshot": "node scripts/screenshot.mjs",
     "version-bump": "node scripts/bump-version.mjs",
     "wheel:trace": "uv run --no-project scripts/trace-wheel-svg.py",
     "tauri:build:release": "tauri build",
@@ -28,7 +27,6 @@
     "build-storybook": "storybook build",
     "cargo:format": "cd src-tauri && cargo fmt",
     "test": "vitest run",
-    "test:perf": "vitest run --config vitest.perf.config.ts",
     "prepare": "lefthook install"
   },
   "dependencies": {

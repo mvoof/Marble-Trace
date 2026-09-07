@@ -38,8 +38,8 @@ Before creating an issue please ensure that the problem is not [already reported
 
    If you are touching a widget that reads telemetry, read
    [docs/rendering.md](docs/rendering.md) first — the overlay renders under a
-   60 Hz feed, and widgets that read it carry render budgets — run them with
-   `npm run test:perf`.
+   60 Hz feed, and a component that reads a hot field has to follow the
+   hot/cold split described there.
 
 4. **Commit Changes**
 

@@ -5,7 +5,7 @@ order.
 
 Everything here is already written down somewhere — the layer rules in
 [`AGENTS.md`](../AGENTS.md), the store layers and the bundle in
-[architecture.md](architecture.md), the render budgets in
+[architecture.md](architecture.md), the hot/cold rendering split in
 [rendering.md](rendering.md), the migrations in
 [settings-schema.md](settings-schema.md). None of those answers the question you
 start with: _what do I do first, and how do I know when I am done?_ This does.
@@ -13,13 +13,13 @@ Where a rule lives elsewhere, this page links to it and does not restate it —
 two copies of a rule is one rule and one lie.
 
 The steps are ordered **by cost, not by file layout**. The expensive decisions
-come first, because reversing one late invalidates the panel, the stories and
-the budget written against it. The mechanical files come last, because redoing
-them is cheap.
+come first, because reversing one late invalidates the panel and the stories
+written against it. The mechanical files come last, because redoing them is
+cheap.
 
-Every step names **what enforces it** — a lint rule, a test, the budget suite,
-or nothing at all. A step enforced by nothing is marked as such, because you
-have to be able to tell a convention from something that fails the build.
+Every step names **what enforces it** — a lint rule, a test, or nothing at all.
+A step enforced by nothing is marked as such, because you have to be able to
+tell a convention from something that fails the build.
 
 The acting half of this route is the **`new-widget` skill**
 (`.claude/skills/new-widget/`): the same steps as imperatives, which asks the
@@ -46,12 +46,11 @@ remember to edit" is unfounded.
 Four, and no more. They are here in one place because each of them is a glob's
 blind spot, and three of the four fail quietly or late.
 
-| File                                            | When                    | What happens if you forget                                      |
-| ----------------------------------------------- | ----------------------- | --------------------------------------------------------------- |
-| `src/types/widget-settings.ts`                  | always                  | Fails `npm run typecheck` — a union cannot be built by a glob   |
-| `src/locales/{en,es,ru,zh}/widgets.json`        | always                  | **Nothing fails.** The catalog and the panel show raw i18n keys |
-| `src/perf/wake-up-classification.perf.test.tsx` | a hot field is declared | Fails `npm run test:perf`, which is not `npm test` — so, late   |
-| `src/ui/app/widget-frame.ts`                    | a non-rectangular plate | Nothing fails; the widget just wears a rectangle                |
+| File                                     | When                    | What happens if you forget                                      |
+| ---------------------------------------- | ----------------------- | --------------------------------------------------------------- |
+| `src/types/widget-settings.ts`           | always                  | Fails `npm run typecheck` — a union cannot be built by a glob   |
+| `src/locales/{en,es,ru,zh}/widgets.json` | always                  | **Nothing fails.** The catalog and the panel show raw i18n keys |
+| `src/ui/app/widget-frame.ts`             | a non-rectangular plate | Nothing fails; the widget just wears a rectangle                |
 
 ---
 
@@ -112,10 +111,8 @@ use are `chassis`, `fuel`, `inputs`, `radar`, `relative`, `sectors`,
 `standings`, `weatherCurrent`. Omitting it is not an error — the widget is simply
 offered on sims that cannot fill it, and renders empty there.
 
-> _Enforced by:_ nothing checks that you declared what you read, or that you read
-> what you declared. `budget-coverage.perf.test.tsx` does check that every field
-> you declare is one the perf burst knows how to move — which catches a typo,
-> not an omission. The rest is on you and on review.
+> _Enforced by:_ nothing. No check confirms you declared what you read, or that
+> you read what you declared — it is on you and on review.
 
 ---
 
@@ -194,11 +191,10 @@ different widgets:
   still allocates every child element. [rendering.md → The rule](rendering.md).
 
 **Done when:** you can name the component that reads the hot field, and say which
-of those two branches it is on. That name is what you will put in the budget
-table at step 8; if you cannot name it, step 8 has nothing to measure.
+of those two branches it is on — this is what step 9 checks by review.
 
-> _Enforced by:_ the layer imports, by lint. The rendering rule, by the budget
-> suite (step 9). Decomposition style, by review.
+> _Enforced by:_ the layer imports, by lint. The rendering rule, by review at
+> step 9. Decomposition style, by review.
 
 ---
 
@@ -330,43 +326,23 @@ be added to `store/preview/`.
 
 ---
 
-## Step 9 — The render budget, if you declared a hot field
+## Step 9 — The hot/cold split, if you declared a hot field
 
 If your manifest declares `carDynamics`, `carInputs`, `carPositions` or
-`lapDelta`, two files, not one.
+`lapDelta`, [rendering.md](rendering.md) is required reading before you write the
+component, not after. There is no runtime check for this rule — it is
+enforced by review, not by a test — so getting it right the first time is the
+whole game.
 
-**`<Name>Widget.perf.test.tsx`**, beside the widget: a fixed burst of frames
-replayed through a real store, asserting how many times each component woke.
-Copy `EnginePanelWidget.perf.test.tsx` — it has two named budgets in its table
-and shows what one looks like filled in. Do **not** copy `GMeterWidget`'s: its
-`BUDGETS` is `{}`, which is legal and measures nothing.
-
-Three things that catch people:
-
-- **A component whose name is not in `BUDGETS` is not checked.** An empty table
-  passes. Listing every `observer(function …)` in the widget is on you, and it is
-  the whole point of the file.
-- A component under a budget is declared `observer(function Name() { … })`, not
-  as an arrow. The name is what the measurement is keyed by, and the harness
-  refuses to report rather than mis-attribute an anonymous one. This is the one
-  place the repo's arrow-function rule does not apply.
-- Budgets are absolute numbers in a table in the test. Raising one is allowed and
-  costs one line of justification beside it in the same commit.
-
-**`src/perf/wake-up-classification.perf.test.tsx`** — add `'<widget-id>':
-'same'` to `RENDERING_CLASSES`. It is an exact-equality record over every hot
-widget, so a new one fails the suite until it is listed. A widget on the
-`useReactiveDomWrite` bypass classifies as `same`.
-
-How a target is chosen, and what the current numbers are, is
-[rendering.md → Budgets](rendering.md).
-
-> _Enforced by:_ `src/perf/budget-coverage.perf.test.tsx` — a widget whose
-> manifest declares a hot field and whose folder has no `*.perf.test.tsx` fails.
-> The suite is `npm run test:perf`, its own command with its own config; it is
-> deliberately **not** part of `npm test` or the pre-commit hook, because it needs
-> a real browser. On a pull request it is the blocking _Run Render Budgets_ step
-> of the frontend job in `.github/workflows/reusable-quality.yml`.
+- A component that reads a hot field returns as little as possible; everything
+  that does not change while that field does is lifted into a parent that never
+  re-renders and passed down as `children`.
+- When the changing value is a single number per frame, skip React entirely and
+  write it through `useReactiveDomWrite` (`ui/hooks/useReactiveDomWrite.ts`) —
+  see the compass ring in `rendering.md` for the worked example.
+- Splitting a component into more, smaller pieces does not help: every child
+  still gets a `jsx()` call and an element allocation from its parent on every
+  frame, whether or not `observer` then skips its body.
 
 ---
 
@@ -376,7 +352,6 @@ How a target is chosen, and what the current numbers are, is
 npm run typecheck
 npm run lint          # oxlint --type-aware; layer direction lives here
 npm test              # vitest; also runs on commit via lefthook
-npm run test:perf     # only if step 9 applied
 ```
 
 ---
@@ -421,8 +396,8 @@ Look for the four failures that only appear here — one per quiet step:
 6. `manifest.ts` and `mount.ts`
 7. Strings in `src/locales/{en,es,ru,zh}/widgets.json` — all four
 8. Settings panel (one component, plus `PANEL_WIDGET_IDS`) and a story
-9. Perf test **and** `RENDERING_CLASSES`, if a hot field was declared
-10. `typecheck`, `lint`, `test`, `test:perf`
+9. The hot/cold split, reviewed against `rendering.md`, if a hot field was declared
+10. `typecheck`, `lint`, `test`
 11. `tauri:dev`, and look at it
 
 The four steps nothing enforces: **1** (declaring what you read), **7**

@@ -8,7 +8,6 @@ js:
   - 'eslint.config.js'
   - 'vite.config.ts'
   - 'vite.aliases.ts'
-  - 'vitest.perf.config.ts'
   - 'index.html'
 rust:
   - 'src-tauri/**'

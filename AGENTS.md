@@ -469,7 +469,7 @@ main window.
 
 ### Code Style
 
-- Arrow functions everywhere; always assign to a named `const`. No anonymous standalone functions. (One exception: a component under a render budget is declared as `observer(function Name() { … })`, because the name is what the measurement is keyed by — see `docs/rendering.md`.)
+- Arrow functions everywhere; always assign to a named `const`. No anonymous standalone functions.
 - Descriptive names — 1–3 char names forbidden (including callback params).
 - No magic numbers — use named constants.
 - Only comment code sections that are unclear even with the surrounding context — do not comment self-explanatory logic.
@@ -599,6 +599,7 @@ and `WidgetEditorContext`, and belong to the main window, not the overlay.
 - Root widget must not read 60 Hz fields (`carDynamics`, `carInputs`) — delegate to sub-components.
 - A component that reads a hot field returns as little as possible; everything unchanged by it is created by a parent that does not re-render and arrives as `children` (`docs/rendering.md`).
 - Decompose any visual section that is self-contained, has a distinct update rate, or would push the parent past ~150 lines.
+- **Never read a hot field (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`, and the heavy per-car frames `driverEntries`, `relative`, `proximity`) directly in a component body that also renders markup around it.** A single number per frame goes through `useReactiveDomWrite`; canvas widgets go through `useReactiveCanvasLoop`. There is no runtime check for this — see `docs/rendering.md` — so get it right the first time; a reviewer applies the rule, a test does not.
 
 ### `ws()` scaling
 
@@ -683,7 +684,7 @@ checklist below is what a reviewer applies to code that already exists.
    8b. If any of those is a hot field, keep the component that reads it down to
    one or two elements and pass the static part in as `children` — splitting into
    smaller components does not help, the parent still allocates every child
-   element. Add a `*.perf.test.tsx` with a wake-up budget. See `docs/rendering.md`
+   element. There is no test for this; get it right by review. See `docs/rendering.md`
 9. Use `fs()`/`sp()`/`radius()` tokens, `$font-widget`, `$widget-text-primary/secondary`, `$race-*` palette
 
 ### Storybook
@@ -709,5 +710,5 @@ lazily when a term or a decision is actually resolved. See
 
 An occasional sweep for generic React anti-patterns, run by hand — deliberately
 not in continuous integration, where `oxlint` is the blocking static check. It
-**cannot** enforce this project's rendering rule either; only the render budgets
-(`*.perf.test.tsx`) do that. See `docs/agents/react-doctor.md`.
+**cannot** enforce this project's rendering rule either — there is no runtime
+check for that rule; it is enforced by review. See `docs/agents/react-doctor.md`.

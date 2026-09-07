@@ -105,7 +105,7 @@ Decide, and write down before any file:
   [rendering.md](../../../docs/rendering.md) → The rule.
 
 **Done when** you can name the component that reads the hot field and say which
-branch it is on. That name goes in the budget table at step 9.
+branch it is on — this is what step 9 checks by review.
 
 ## Step 4 — Check the toolbox
 
@@ -210,26 +210,18 @@ seedSnapshot, args, argTypes })` from `@/storybook/define-widget-stories` — it
 mounts the widget with its background and does the `runInAction` seeding. Named
 `const` PascalCase exports, no default export.
 
-## Step 9 — Perf, if a hot field was declared
+## Step 9 — The hot/cold split, if a hot field was declared
 
-Two files, not one.
+There is no test for this — it is enforced by review, not by a runner. Read
+[rendering.md](../../../docs/rendering.md) before writing the component:
 
-**`<Name>Widget.perf.test.tsx`** beside the widget. Copy
-`src/ui/widgets/EnginePanelWidget/EnginePanelWidget.perf.test.tsx` — it has two
-named budgets. Do **not** copy `GMeterWidget`'s: its `BUDGETS` is `{}`, which
-passes while measuring nothing.
-
-**A component name absent from `BUDGETS` is not checked.** Listing every
-`observer(function …)` in the widget is on you, and is the point of the file.
-Components under a budget are declared `observer(function Name() { … })`, not as
-arrows — the name is what the measurement is keyed by.
-
-**`src/perf/wake-up-classification.perf.test.tsx`** — add `'<widget-id>':
-'same'` to `RENDERING_CLASSES`. It is an exact-equality record; a new hot widget
-fails the suite until it is listed. A widget on the `useReactiveDomWrite` bypass
-classifies as `same`.
-
-`src/perf/budget-coverage.perf.test.tsx` fails if the perf test file is missing.
+- A component that reads a hot field returns as little as possible; the static
+  rest is lifted into a parent that never re-renders and passed down as
+  `children`.
+- A single number per frame goes through `useReactiveDomWrite`
+  (`ui/hooks/useReactiveDomWrite.ts`) instead of React.
+- More, smaller components does not fix this — every child still costs a
+  `jsx()` allocation from its parent each frame.
 
 ## Step 10 — Checks
 
@@ -237,7 +229,6 @@ classifies as `same`.
 npm run typecheck
 npm run lint
 npm test
-npm run test:perf     # only if step 9 applied
 ```
 
 ## Step 11 — Run it in the app

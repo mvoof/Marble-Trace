@@ -1,7 +1,7 @@
 # ADR 0001: Telemetry frames stay whole observables
 
 **Status:** accepted, 2026-09-06
-**Context:** the render-budget work (`docs/rendering.md`)
+**Context:** the rendering rule (`docs/rendering.md`)
 
 ## Decision
 
@@ -20,19 +20,16 @@ observables.
 ## How the two were separated
 
 Wake-ups alone cannot tell them apart, so the separator is what the burst puts
-on screen. `src/perf/wake-up-classification.perf.test.tsx` mounts every widget
-whose manifest declares a hot field, replays the same one-second burst the
-render budgets use, and hashes the widget's markup after every frame. A widget
-whose markup takes one value across a burst that woke it hundreds of times
-rendered nothing it was woken for.
-
-The test is checked in and pins the numbers below, so they cannot rot unnoticed.
-Re-run it with `npm run test:perf`.
+on screen. Every widget whose manifest declares a hot field was mounted, a
+one-second synthetic burst of telemetry was replayed through it, and the
+widget's markup was hashed after every frame. A widget whose markup took one
+value across a burst that woke it hundreds of times rendered nothing it was
+woken for.
 
 ## The numbers
 
-Wake-ups are the totals from each widget's own budget table; distinct renderings
-are out of `BURST_FRAMES` = 60.
+Wake-ups are the totals measured per widget during that burst; distinct
+renderings are out of 60 frames.
 
 | widget            | wake-ups | distinct renderings |
 | ----------------- | -------- | ------------------- |
@@ -105,14 +102,14 @@ worth making now.
 ## What to do instead
 
 The one-rendering group is a **rendering** problem where it is one at all, and
-the render budgets already name it: a component that reads a hot field returns
-as little as possible, and a single value at 60 Hz goes through the sanctioned
-bypass. The debt table in `docs/rendering.md` is the work queue.
+`docs/rendering.md`'s rule already names it: a component that reads a hot field
+returns as little as possible, and a single value at 60 Hz goes through the
+sanctioned bypass.
 
 ## When to reopen this
 
 If a widget appears whose markup is genuinely driven by one field of a frame
-whose _other_ fields change at 60 Hz — the burst would show it as many wake-ups
-against few distinct renderings, and none of the three causes above would
-explain it — measure it against the wire rather than against the burst, and
-reopen this record with that number.
+whose _other_ fields change at 60 Hz — many wake-ups against few distinct
+renderings, and none of the three causes above explain it — measure it against
+the wire rather than against a synthetic burst, and reopen this record with
+that number.
