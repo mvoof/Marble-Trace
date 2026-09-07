@@ -27,16 +27,18 @@ target/
 
 # IDE specific
 .continue/
-.claude
 .gemini
 .agent
-CLAUDE.md
-GEMINI.md
-AGENTS.md
 .playwright-mcp
-.mcp.json
 *storybook.log
 storybook-static
+
+# Agent configuration. The shared contract is tracked: AGENTS.md and its two
+# wrappers, the project skills, the project-level settings and the MCP server
+# the visual-testing workflow needs. Personal allow-lists and run state are not.
+.claude/*
+!.claude/settings.json
+!.claude/skills/
 
 # Telemetry snapshots (captured from live iRacing sessions)
 # test-data/*.json — tracked in git for CI typecheck / Storybook
