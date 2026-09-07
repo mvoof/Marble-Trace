@@ -42,7 +42,7 @@ describe('LayoutsStore', () => {
     const { store } = freshStore();
 
     expect(store.layouts).toHaveLength(1);
-    expect(store.activeLayout?.id).toBe('layout-race');
+    expect(store.editingLayout?.id).toBe('layout-race');
     expect(store.byId('layout-race')?.monitors).toEqual([DISPLAY]);
   });
 
@@ -60,7 +60,7 @@ describe('LayoutsStore', () => {
 
     store.addMonitor(SECOND_DISPLAY);
 
-    expect(store.activeMonitorNames).toEqual(['DISPLAY1', 'DISPLAY2']);
+    expect(store.editingMonitorNames).toEqual(['DISPLAY1', 'DISPLAY2']);
     expect(store.desktopBounds.width).toBe(3840);
   });
 
@@ -69,7 +69,7 @@ describe('LayoutsStore', () => {
 
     store.addMonitor(DISPLAY);
 
-    expect(store.activeLayout?.monitors).toHaveLength(1);
+    expect(store.editingLayout?.monitors).toHaveLength(1);
   });
 });
 
@@ -94,8 +94,8 @@ describe('every layout record write leaves its mark', () => {
       run: (store) => store.setLayouts([layoutNamed('layout-quali', [])]),
     },
     {
-      name: 'setActiveLayoutId',
-      run: (store) => store.setActiveLayoutId(null),
+      name: 'setEditingLayoutId',
+      run: (store) => store.setEditingLayoutId(null),
     },
     {
       name: 'setSessionLayout',

@@ -87,7 +87,7 @@ const createOverlayWindow = async (monitor: PhysicalMonitor) => {
 // draws nothing and vanish.
 export const overlayMonitorNames = (root: RootStore): string[] => {
   if (root.appSettings.dragMode) {
-    return root.layouts.activeMonitorNames;
+    return root.layouts.liveMonitorNames;
   }
 
   return root.widgetSettings.populatedMonitorNames;

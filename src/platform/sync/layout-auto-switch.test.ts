@@ -78,40 +78,49 @@ describe('session layout auto-switch', () => {
   it('switches to the session layout when the driver goes on track', () => {
     goOnTrackInPractice();
 
-    expect(root.layouts.activeLayoutId).toBe('layout-practice');
+    expect(root.layouts.editingLayoutId).toBe('layout-practice');
   });
 
-  // Fixed twice before: going on track used to pull the layout out from under
-  // whoever was editing it, losing their place mid-edit.
-  it('stands down while the layout editor is open', () => {
+  // Fixed three times, the last two in opposite directions. Auto-switch used to
+  // pull the layout out from under whoever was editing it; standing down while
+  // the editor was open then froze the driver's screen on the wrong layout for
+  // as long as a window nobody was looking at stayed open. Neither happens now:
+  // the two layouts are separate values, and the session moves only the live one.
+  it('moves the screen while the editor keeps the layout it opened', () => {
     root.widgetSettings.setLayoutEditorOpen(true);
 
     goOnTrackInPractice();
 
-    expect(root.layouts.activeLayoutId).toBe('layout-garage');
+    expect(root.layouts.liveLayoutId).toBe('layout-practice');
+    expect(root.layouts.editingLayoutId).toBe('layout-garage');
   });
 
-  // Standing down is only half of it: the session change that happened while
-  // the editor was open must be applied once it closes, or the layout stays
-  // wrong until the next session change that nobody may make.
-  it('applies the session change that was skipped once the editor closes', () => {
+  it('hands the screen back as the edited layout once the editor closes', () => {
     root.widgetSettings.setLayoutEditorOpen(true);
 
     goOnTrackInPractice();
 
     root.widgetSettings.setLayoutEditorOpen(false);
 
-    expect(root.layouts.activeLayoutId).toBe('layout-practice');
+    expect(root.layouts.liveLayoutId).toBe('layout-practice');
+    expect(root.layouts.editingLayoutId).toBe('layout-practice');
   });
 
-  it('stands down while the editor previews another layout too', () => {
-    runInAction(() => {
-      root.widgetSettings.editorPreviewMode = true;
-    });
+  it('leaves the screen alone while the editor opens another layout', () => {
+    root.widgetSettings.setLayoutEditorOpen(true);
+    root.widgetSettings.switchEditorLayout('layout-practice');
 
-    goOnTrackInPractice();
+    expect(root.layouts.liveLayoutId).toBe('layout-garage');
+    expect(root.widgetSettings.editorPreviewMode).toBe(true);
+  });
 
-    expect(root.layouts.activeLayoutId).toBe('layout-garage');
+  it('puts the edited layout on screen when the editor activates it', () => {
+    root.widgetSettings.setLayoutEditorOpen(true);
+    root.widgetSettings.switchEditorLayout('layout-practice');
+    root.widgetSettings.activateEditorLayout();
+
+    expect(root.layouts.liveLayoutId).toBe('layout-practice');
+    expect(root.widgetSettings.editorPreviewMode).toBe(false);
   });
 
   it('does nothing at all while auto-switching is off', () => {
@@ -121,6 +130,6 @@ describe('session layout auto-switch', () => {
 
     goOnTrackInPractice();
 
-    expect(root.layouts.activeLayoutId).toBe('layout-garage');
+    expect(root.layouts.editingLayoutId).toBe('layout-garage');
   });
 });

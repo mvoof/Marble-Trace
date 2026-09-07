@@ -28,7 +28,7 @@ const snapshotFor = (
   root: RootStore,
   slug: string
 ): RemoteScreenSnapshot | null => {
-  const layout = root.layouts.activeLayout;
+  const layout = root.layouts.liveLayout;
 
   if (!layout) return null;
 
@@ -45,7 +45,7 @@ const snapshotFor = (
     // The widgets of this screen only: a tablet never receives the layout of
     // the monitors it is not showing.
     widgets: widgetsOnMonitor(
-      root.widgetSettings.allWidgets,
+      root.widgetSettings.liveWidgets,
       monitor.name,
       layout.monitors
     ),
@@ -58,7 +58,7 @@ const snapshotFor = (
 };
 
 const publishAll = (root: RootStore) => {
-  for (const monitor of root.layouts.activeRemoteScreens) {
+  for (const monitor of root.layouts.liveRemoteScreens) {
     const slug = monitor.slug;
 
     if (!slug) continue;
@@ -95,7 +95,7 @@ const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
     return;
   }
 
-  const monitor = root.layouts.activeRemoteScreens.find(
+  const monitor = root.layouts.liveRemoteScreens.find(
     (screen) => screen.slug === device.slug
   );
 
@@ -188,7 +188,7 @@ export const registerRemotePublishing = (root: RootStore) => {
     reaction(
       () => [
         root.widgetSettings.changeToken,
-        root.layouts.activeLayoutId,
+        root.layouts.liveLayoutId,
         root.units.unitSystem,
         root.appSettings.appSettings.steeringLock,
       ],

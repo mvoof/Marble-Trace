@@ -58,7 +58,7 @@ const parkedBounds = (
  */
 export class LayoutsStore {
   layouts: SavedLayout[] = [];
-  activeLayoutId: string | null = null;
+  editingLayoutId: string | null = null;
 
   sessionLayouts: Record<SessionContext, string | null> = {
     Practice: null,
@@ -81,26 +81,51 @@ export class LayoutsStore {
     );
   }
 
-  get activeLayout(): SavedLayout | undefined {
-    return this.layouts.find((layout) => layout.id === this.activeLayoutId);
+  /**
+   * The layout the overlay is rendering, when that is not the one being edited.
+   *
+   * Null whenever the two are the same, which is every moment the layout editor
+   * is closed. While it is open the two part company on purpose: the editor
+   * keeps whatever layout the user opened, and the session auto-switch moves
+   * this one instead, so the screen the driver races on always matches the
+   * session even mid-edit.
+   */
+  pinnedLiveLayoutId: string | null = null;
+
+  get editingLayout(): SavedLayout | undefined {
+    return this.layouts.find((layout) => layout.id === this.editingLayoutId);
+  }
+
+  /** What is on screen — the live layout while one is pinned, else the edited one. */
+  get liveLayout(): SavedLayout | undefined {
+    return this.layouts.find((layout) => layout.id === this.liveLayoutId);
+  }
+
+  get liveLayoutId(): string | null {
+    return this.pinnedLiveLayoutId ?? this.editingLayoutId;
+  }
+
+  setPinnedLiveLayoutId(id: string | null) {
+    this.pinnedLiveLayoutId = id;
+    this.mutations.recordEveryWidget();
   }
 
   byId(id: string): SavedLayout | undefined {
     return this.layouts.find((layout) => layout.id === id);
   }
 
-  setLayouts(layouts: SavedLayout[], activeLayoutId?: string | null) {
+  setLayouts(layouts: SavedLayout[], editingLayoutId?: string | null) {
     this.layouts = layouts;
 
-    if (activeLayoutId !== undefined) {
-      this.activeLayoutId = activeLayoutId;
+    if (editingLayoutId !== undefined) {
+      this.editingLayoutId = editingLayoutId;
     }
 
     this.mutations.recordEveryWidget();
   }
 
-  setActiveLayoutId(id: string | null) {
-    this.activeLayoutId = id;
+  setEditingLayoutId(id: string | null) {
+    this.editingLayoutId = id;
     this.mutations.recordEveryWidget();
   }
 
@@ -149,8 +174,8 @@ export class LayoutsStore {
    */
   createDefaultLayout(): string | null {
     if (this.layouts.length > 0) {
-      if (!this.activeLayoutId) {
-        this.activeLayoutId = this.layouts[0].id;
+      if (!this.editingLayoutId) {
+        this.editingLayoutId = this.layouts[0].id;
       }
 
       return null;
@@ -158,7 +183,7 @@ export class LayoutsStore {
 
     const id = this.addLayout(DEFAULT_LAYOUT_NAME);
 
-    this.activeLayoutId = id;
+    this.editingLayoutId = id;
     this.sessionLayouts = {
       Practice: id,
       Qualify: id,
@@ -241,24 +266,36 @@ export class LayoutsStore {
 
   /** Rectangle covering every monitor of the active layout. */
   get desktopBounds() {
-    return monitorsBounds(this.activeLayout?.monitors ?? []);
+    return monitorsBounds(this.editingLayout?.monitors ?? []);
   }
 
   /** Monitors the active layout covers, empty ones included. */
   // Remote screens are excluded: they are monitors for layout purposes, but no
   // overlay window is ever opened for one.
-  get activeMonitorNames(): string[] {
-    return (this.activeLayout?.monitors ?? [])
+  get editingMonitorNames(): string[] {
+    return (this.editingLayout?.monitors ?? [])
       .filter(isDisplayMonitor)
       .map((monitor) => monitor.name);
   }
 
-  get activeRemoteScreens(): LayoutMonitor[] {
-    return (this.activeLayout?.monitors ?? []).filter(isRemoteMonitor);
+  /** The same, for the layout actually on screen — see `pinnedLiveLayoutId`. */
+  get liveMonitorNames(): string[] {
+    return (this.liveLayout?.monitors ?? [])
+      .filter(isDisplayMonitor)
+      .map((monitor) => monitor.name);
+  }
+
+  get editingRemoteScreens(): LayoutMonitor[] {
+    return (this.editingLayout?.monitors ?? []).filter(isRemoteMonitor);
+  }
+
+  /** The same, for the layout actually on screen — see `pinnedLiveLayoutId`. */
+  get liveRemoteScreens(): LayoutMonitor[] {
+    return (this.liveLayout?.monitors ?? []).filter(isRemoteMonitor);
   }
 
   monitorByName(monitorName: string): LayoutMonitor | undefined {
-    return this.activeLayout?.monitors.find(
+    return this.editingLayout?.monitors.find(
       (monitor) => monitor.name === monitorName
     );
   }
@@ -277,7 +314,7 @@ export class LayoutsStore {
    * dragged onto. Existing widgets are untouched — the new screen starts empty.
    */
   addMonitor(monitor: LayoutMonitor) {
-    const layout = this.activeLayout;
+    const layout = this.editingLayout;
 
     if (!layout) return;
 
@@ -416,7 +453,7 @@ export class LayoutsStore {
    * on the layout; undefined clears it.
    */
   setMonitorBackground(monitorName: string, image: string | undefined) {
-    const layout = this.activeLayout;
+    const layout = this.editingLayout;
 
     if (!layout) return;
 
@@ -434,7 +471,7 @@ export class LayoutsStore {
 
   /** Convenience that paints (or clears) every monitor of the active layout. */
   setActiveLayoutBackground(image: string | undefined) {
-    const layout = this.activeLayout;
+    const layout = this.editingLayout;
 
     if (!layout) return;
 

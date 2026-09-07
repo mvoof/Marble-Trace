@@ -50,9 +50,9 @@ let mainSyncRefCount = 0;
  */
 const pushActiveLayout = (root: RootStore) =>
   emitActiveLayoutToOverlays(
-    root.layouts.activeLayout?.monitors ?? [],
-    root.widgetSettings.allWidgets,
-    root.layouts.activeLayoutId
+    root.layouts.liveLayout?.monitors ?? [],
+    root.widgetSettings.liveWidgets,
+    root.layouts.liveLayoutId
   );
 
 /** Values the overlay windows mirror. Requires a hydrated settings store. */
@@ -124,21 +124,9 @@ export const registerLayoutAutoSwitchReaction = (
       sessionType: root.session.currentSessionType,
       autoSwitchLayouts: root.appSettings.appSettings.autoSwitchLayouts,
       sessionLayouts: JSON.stringify(root.layouts.sessionLayouts),
-      // Tracked, not just read: closing the editor re-runs this and applies the
-      // session change that was skipped while it was open.
-      isEditorOpen:
-        root.widgetSettings.layoutEditorOpen ||
-        root.widgetSettings.editorPreviewMode,
     }),
-    ({
-      isConnected,
-      isOnTrack,
-      sessionType,
-      autoSwitchLayouts,
-      isEditorOpen,
-    }) => {
+    ({ isConnected, isOnTrack, sessionType, autoSwitchLayouts }) => {
       if (!autoSwitchLayouts) return;
-      if (isEditorOpen) return;
       if (!isConnected) return;
 
       let context: SessionContext | null = null;
@@ -157,11 +145,12 @@ export const registerLayoutAutoSwitchReaction = (
 
       const layoutId = root.layouts.sessionLayouts?.[context];
 
-      if (!layoutId || layoutId === root.layouts.activeLayoutId) return;
+      if (!layoutId) return;
 
-      if (root.layouts.byId(layoutId)) {
-        root.widgetSettings.loadLayout(layoutId, { notify: true });
-      }
+      // The screen follows the session whatever the editor is doing: while it
+      // is open this moves the live layout only, leaving the one being edited
+      // where the user put it.
+      root.widgetSettings.applySessionLayout(layoutId);
     },
     { fireImmediately: true }
   );
@@ -245,26 +234,15 @@ const registerOverlayWindowReactions = (
     // One overlay window per monitor that has widgets on it. Switching layouts,
     // adding or removing a monitor config, enabling a widget, dragging one to
     // another screen and entering drag mode all change that set.
-    () => [
-      root.layouts.activeLayoutId,
-      overlayMonitorNames(root).join('|'),
-      root.widgetSettings.editorPreviewMode,
-    ],
+    () => [root.layouts.liveLayoutId, overlayMonitorNames(root).join('|')],
     () => {
-      // While the editor previews a layout that isn't the active one, the
-      // overlay must keep showing the previously-active layout — both its
-      // widgets and its set of monitor windows.
-      if (root.widgetSettings.editorPreviewMode) return;
-
       void syncOverlayWindows(root).then(() => pushActiveLayout(root));
     }
   ),
   reaction(
     () => root.widgetSettings.changeToken,
     () => {
-      if (!root.widgetSettings.editorPreviewMode) {
-        void pushActiveLayout(root);
-      }
+      void pushActiveLayout(root);
     },
     { delay: 16 }
   ),
@@ -415,13 +393,13 @@ export const initMainSync = async (root: RootStore) => {
         closeRequestedUnlisten,
       ] = await Promise.all([
         listenTo<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
-          // An overlay speaks for the layout it is rendering. A list emitted
-          // just before a layout switch — or while the editor previews another
-          // layout — still carries the old id, and writing it into the layout
-          // that switched in would copy one layout's widgets over another's.
+          // An overlay speaks for the layout it is rendering, which is the live
+          // one — never the one the editor happens to have open. A list emitted
+          // just before a layout switch still carries the old id, and writing
+          // it in would copy one layout's widgets over another's.
           const { layoutId } = e.payload;
 
-          if (layoutId != null && layoutId !== root.layouts.activeLayoutId) {
+          if (layoutId != null && layoutId !== root.layouts.liveLayoutId) {
             return;
           }
 

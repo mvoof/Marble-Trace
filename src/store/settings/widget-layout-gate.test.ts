@@ -42,7 +42,7 @@ const layoutWith = (
   })),
 });
 
-describe('isWidgetInActiveLayout', () => {
+describe('isWidgetOnScreen', () => {
   let root: RootStore;
 
   beforeEach(() => {
@@ -60,16 +60,12 @@ describe('isWidgetInActiveLayout', () => {
   });
 
   it('follows the layout the session auto-switch loaded', () => {
-    expect(root.widgetSettings.isWidgetInActiveLayout('pit-service')).toBe(
-      true
-    );
+    expect(root.widgetSettings.isWidgetOnScreen('pit-service')).toBe(true);
 
     runInAction(() => root.widgetSettings.loadLayout('quali'));
 
-    expect(root.widgetSettings.isWidgetInActiveLayout('pit-service')).toBe(
-      false
-    );
-    expect(root.widgetSettings.isWidgetInActiveLayout('standings')).toBe(true);
+    expect(root.widgetSettings.isWidgetOnScreen('pit-service')).toBe(false);
+    expect(root.widgetSettings.isWidgetOnScreen('standings')).toBe(true);
   });
 
   it('takes pit-service auto mode down with the layout switch', () => {
@@ -92,9 +88,7 @@ describe('isWidgetInActiveLayout', () => {
   it('keeps following the overlay while the editor previews another layout', () => {
     runInAction(() => root.widgetSettings.switchEditorLayout('quali'));
 
-    expect(root.widgetSettings.isWidgetInActiveLayout('pit-service')).toBe(
-      true
-    );
+    expect(root.widgetSettings.isWidgetOnScreen('pit-service')).toBe(true);
   });
 
   it('follows the preview once it is actually activated', () => {
@@ -103,9 +97,7 @@ describe('isWidgetInActiveLayout', () => {
       root.widgetSettings.activateEditorLayout();
     });
 
-    expect(root.widgetSettings.isWidgetInActiveLayout('pit-service')).toBe(
-      false
-    );
+    expect(root.widgetSettings.isWidgetOnScreen('pit-service')).toBe(false);
   });
 
   it('does not lose the overlay state when previewing twice in a row', () => {
@@ -115,8 +107,6 @@ describe('isWidgetInActiveLayout', () => {
       root.widgetSettings.switchEditorLayout('quali');
     });
 
-    expect(root.widgetSettings.isWidgetInActiveLayout('pit-service')).toBe(
-      true
-    );
+    expect(root.widgetSettings.isWidgetOnScreen('pit-service')).toBe(true);
   });
 });

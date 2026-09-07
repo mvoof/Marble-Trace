@@ -212,7 +212,9 @@ export class SimStore {
 
     const requested = new Set<TelemetryEventName>();
 
-    for (const widget of this.root.widgetSettings.allWidgets) {
+    // What is on screen, not what the editor has open: the editor's preview
+    // draws against seeded scenarios and needs no telemetry of its own.
+    for (const widget of this.root.widgetSettings.liveWidgets) {
       if (!widget.userSettings.enabled) continue;
 
       const manifest = WIDGET_BY_ID.get(widgetTypeOf(widget));

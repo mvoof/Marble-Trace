@@ -168,7 +168,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const isAutoSwitchActive = autoSwitchEnabled && simStore.isConnected;
 
   const [selectedId, setSelectedId] = useState<string | null>(
-    layouts.activeLayoutId
+    layouts.editingLayoutId
   );
 
   // Monitors physically attached right now. A layout can hold configs for
@@ -211,9 +211,9 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
       selectedId &&
       !layouts.layouts.some((layout) => layout.id === selectedId)
     ) {
-      setSelectedId(layouts.activeLayoutId);
+      setSelectedId(layouts.editingLayoutId);
     }
-  }, [selectedId, layouts.layouts, layouts.activeLayoutId]);
+  }, [selectedId, layouts.layouts, layouts.editingLayoutId]);
 
   const handleCreateLayout = () => {
     const name = newLayoutName.trim();
@@ -223,7 +223,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
     }
 
     widgetSettings.saveLayout(name);
-    setSelectedId(layouts.activeLayoutId);
+    setSelectedId(layouts.editingLayoutId);
     setNewLayoutName('');
     setIsCreateModalOpen(false);
   };
@@ -251,11 +251,13 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
 
   const handleDeleteLayout = () => {
     if (selectedId) {
-      const activeLayout = layouts.layouts.find(
+      const editingLayout = layouts.layouts.find(
         (layout) => layout.id === selectedId
       );
 
-      for (const image of Object.values(activeLayout?.backgroundImages ?? {})) {
+      for (const image of Object.values(
+        editingLayout?.backgroundImages ?? {}
+      )) {
         void deleteBackgroundImage(image);
       }
 
@@ -342,7 +344,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
           <div className={styles.layoutsGrid}>
             {layouts.layouts.map((layout) => {
               const isSelected = layout.id === selectedId;
-              const isActive = layout.id === layouts.activeLayoutId;
+              const isActive = layout.id === layouts.editingLayoutId;
               const assignedSessions = (
                 ['Practice', 'Qualify', 'Race', 'Garage'] as SessionContext[]
               ).filter(
@@ -639,7 +641,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   icon={<Play size={16} />}
                   onClick={handleActivate}
                   disabled={
-                    selectedId === layouts.activeLayoutId || autoSwitchEnabled
+                    selectedId === layouts.editingLayoutId || autoSwitchEnabled
                   }
                   title={
                     autoSwitchEnabled

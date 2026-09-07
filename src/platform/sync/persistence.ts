@@ -236,7 +236,7 @@ export const buildSettings = (root: RootStore): Settings => ({
   },
   defaultWidgets: Array.from(root.widgetDefaults.widgets.values()),
   layouts: root.layouts.layouts,
-  activeLayoutId: root.layouts.activeLayoutId,
+  activeLayoutId: root.layouts.liveLayoutId,
   sessionLayouts: root.layouts.sessionLayouts,
   bindings: root.bindings.overrides,
   inputDevices: root.deviceInput.knownDevices,

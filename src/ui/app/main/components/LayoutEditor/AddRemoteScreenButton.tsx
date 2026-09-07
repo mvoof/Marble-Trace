@@ -84,7 +84,7 @@ export const AddRemoteScreenButton = observer(() => {
         <Button
           size="small"
           icon={<TabletSmartphone size={ICON_SIZE} />}
-          disabled={!layouts.activeLayout}
+          disabled={!layouts.editingLayout}
           onClick={() => setIsOpen(true)}
         >
           {t('layoutEditor.addRemoteScreen')}

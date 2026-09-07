@@ -336,7 +336,7 @@ describe('WidgetSettingsStore remote screen geometry', () => {
   });
 
   const remoteBounds = () =>
-    rootStore.layouts.activeLayout?.monitors.find(
+    rootStore.layouts.editingLayout?.monitors.find(
       (monitor) => monitor.name === 'Tablet'
     )?.bounds;
 
@@ -542,7 +542,7 @@ describe('the active layout owns the widgets', () => {
 
     store.updatePosition('fuel', 640, 480);
 
-    const stored = rootStore.layouts.activeLayout!.widgets.find(
+    const stored = rootStore.layouts.editingLayout!.widgets.find(
       (widget) => widget.id === 'fuel'
     )!.userSettings;
 
@@ -585,7 +585,7 @@ describe('the active layout owns the widgets', () => {
 
     expect(store.getWidget('fuel')!.userSettings.x).toBe(before);
     expect(
-      rootStore.layouts.activeLayout!.widgets.find(
+      rootStore.layouts.editingLayout!.widgets.find(
         (widget) => widget.id === 'fuel'
       )!.userSettings.x
     ).toBe(before);
@@ -596,7 +596,7 @@ describe('the active layout owns the widgets', () => {
 
     store.selectLayout(null);
 
-    expect(rootStore.layouts.activeLayout).toBeUndefined();
+    expect(rootStore.layouts.editingLayout).toBeUndefined();
     expect(store.getWidget('fuel')).toBeDefined();
   });
 });
@@ -806,7 +806,7 @@ describe('several copies of one widget in a layout', () => {
     // Reinstalling the layout's own list is what a layout switch does, and it
     // used to be where a second copy quietly disappeared.
     store.setWidgets(
-      rootStore.layouts.activeLayout!.widgets.map((widget) => ({ ...widget }))
+      rootStore.layouts.editingLayout!.widgets.map((widget) => ({ ...widget }))
     );
 
     expect(store.widgetsOfType('standings')).toHaveLength(3);
@@ -888,11 +888,11 @@ describe('several copies of one widget in a layout', () => {
 
     store.setWidgetEnabled('standings', false);
 
-    expect(store.isWidgetInActiveLayout('standings')).toBe(true);
+    expect(store.isWidgetOnScreen('standings')).toBe(true);
 
     store.setWidgetEnabled(copyId, false);
 
-    expect(store.isWidgetInActiveLayout('standings')).toBe(false);
+    expect(store.isWidgetOnScreen('standings')).toBe(false);
   });
 });
 
@@ -921,7 +921,7 @@ describe('a screen added to a layout', () => {
   });
 
   const screenNamed = (name: string) =>
-    rootStore.layouts.activeLayout!.monitors.find(
+    rootStore.layouts.editingLayout!.monitors.find(
       (monitor) => monitor.name === name
     )!;
 

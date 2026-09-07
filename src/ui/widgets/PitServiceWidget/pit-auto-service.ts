@@ -86,7 +86,7 @@ export class PitAutoService {
    * the auto-mode settings only take effect while the widget is actually there.
    */
   get isInActiveLayout(): boolean {
-    return this.store.root.widgetSettings.isWidgetInActiveLayout('pit-service');
+    return this.store.root.widgetSettings.isWidgetOnScreen('pit-service');
   }
 
   get isAutoFuelEnabled(): boolean {

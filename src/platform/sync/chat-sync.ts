@@ -32,13 +32,13 @@ export const registerChatReactions = (
       // Helix polling should not be running either. The widgets page renders
       // its preview against a seeded store, so it never needs a live
       // connection.
-      enabled:
-        root.widgetSettings.getWidget(STREAM_CHAT_WIDGET_ID)?.userSettings
-          .enabled === true,
-      // Previewing another layout in the editor swaps the working copy while
-      // the overlay still draws the active one — the connectors follow the
-      // overlay, not the preview.
-      editorPreviewMode: root.widgetSettings.editorPreviewMode,
+      // Asked of the layout on screen, not the one in the editor: opening a
+      // layout without the chat widget must not tear down the connectors the
+      // driver is reading from.
+      enabled: root.widgetSettings.liveWidgets.some(
+        (widget) =>
+          widget.id === STREAM_CHAT_WIDGET_ID && widget.userSettings.enabled
+      ),
       config: {
         twitchChannel: root.appSettings.appSettings.streamChatTwitchChannel,
         youtubeTarget: root.appSettings.appSettings.streamChatYoutubeTarget,
@@ -48,13 +48,7 @@ export const registerChatReactions = (
         authRevision: root.appSettings.appSettings.streamChatAuthRevision,
       },
     }),
-    ({ enabled, editorPreviewMode, config }) => {
-      // The flag is part of the tracked value, so leaving preview mode re-runs
-      // this with the real active layout.
-      if (editorPreviewMode) {
-        return;
-      }
-
+    ({ enabled, config }) => {
       const hasTarget = Boolean(
         config.twitchChannel?.trim() || config.youtubeTarget?.trim()
       );
