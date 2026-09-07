@@ -112,6 +112,12 @@ Commit messages should follow the [Conventional Commits](https://conventionalcom
 
 If you have any questions or need help, feel free to open an issue or ask in the discussions section. We appreciate your contributions!
 
+## Agent tooling
+
+`AGENTS.md`, the project skills under `.claude/skills/` and `.mcp.json` are tracked: they are the shared contract an agent working in this repository reads, and the MCP server the visual-testing workflow needs.
+
+Anything that makes your machine run third-party code is **not** tracked, and is yours to opt into. `.claude/settings.json` is gitignored along with `settings.local.json` — put `enabledPlugins`, `enableAllProjectMcpServers` and your permission allow-list in the local file, so a clone never enables a plugin you have not read. The MCP server in `.mcp.json` is pinned to an exact version for the same reason; bump it deliberately, in its own commit.
+
 ## Settings schema
 
 User settings are persisted in `settings.json` via `tauri-plugin-store`, and the file is versioned: format changes go through a chain of migrations in `src/platform/settings-schema/`.

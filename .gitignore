@@ -34,10 +34,11 @@ target/
 storybook-static
 
 # Agent configuration. The shared contract is tracked: AGENTS.md and its two
-# wrappers, the project skills, the project-level settings and the MCP server
-# the visual-testing workflow needs. Personal allow-lists and run state are not.
+# wrappers, the project skills and the MCP server the visual-testing workflow
+# needs. Personal settings, allow-lists and run state are not: settings.json
+# stays out too, because enabledPlugins there runs third-party code on every
+# machine that clones the repo — each developer opts in locally instead.
 .claude/*
-!.claude/settings.json
 !.claude/skills/
 
 # Telemetry snapshots (captured from live iRacing sessions)
