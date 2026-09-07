@@ -55,341 +55,346 @@ const SCREEN_UP_DEG = -90;
 /** How much the whole drawing is turned, for anything that must stay upright. */
 const SCREEN_ROTATION_PROPERTY = '--screen-rotation';
 
-export const TrackMapSvg = observer(function TrackMapSvg({
-  svgPath,
-  viewBox,
-  points,
-  cars,
-  sectors,
-  playerDotColor = '#18181b',
-  showPlayerLabel = true,
-  leaderLabelMode = 'all',
-  trackStrokePx = 10,
-  trackBorderPx = 3,
-  sectorStrokePx = 6,
-  targetDotRadiusPx = 10,
-  showStartFinish = true,
-  paceCarUseClassColor = false,
-  paceCarColor = '#facc15',
-  paceCarRadiusPx = 10,
-  zoomEnabled = false,
-  zoomLevel = MIN_ZOOM_LEVEL,
-  zoomRotate = false,
-  classShapes = false,
-  carClassOrder,
-}: TrackMapSvgProps) {
-  const carsStore = useCarsStore();
-  const computed = useBackendComputedStore();
+export const TrackMapSvg = observer(
+  ({
+    svgPath,
+    viewBox,
+    points,
+    cars,
+    sectors,
+    playerDotColor = '#18181b',
+    showPlayerLabel = true,
+    leaderLabelMode = 'all',
+    trackStrokePx = 10,
+    trackBorderPx = 3,
+    sectorStrokePx = 6,
+    targetDotRadiusPx = 10,
+    showStartFinish = true,
+    paceCarUseClassColor = false,
+    paceCarColor = '#facc15',
+    paceCarRadiusPx = 10,
+    zoomEnabled = false,
+    zoomLevel = MIN_ZOOM_LEVEL,
+    zoomRotate = false,
+    classShapes = false,
+    carClassOrder,
+  }: TrackMapSvgProps) => {
+    const carsStore = useCarsStore();
+    const computed = useBackendComputedStore();
 
-  const playerCar = cars.find((c) => c.isPlayer);
-  const playerClassId = playerCar?.carClassId ?? -1;
-  const parts = viewBox.split(' ').map(Number);
-  const vbW = parts[2];
-  const vbH = parts[3];
+    const playerCar = cars.find((c) => c.isPlayer);
+    const playerClassId = playerCar?.carClassId ?? -1;
+    const parts = viewBox.split(' ').map(Number);
+    const vbW = parts[2];
+    const vbH = parts[3];
 
-  const zoomActive =
-    zoomEnabled &&
-    zoomLevel > MIN_ZOOM_LEVEL &&
-    !!playerCar &&
-    points.length > 0;
+    const zoomActive =
+      zoomEnabled &&
+      zoomLevel > MIN_ZOOM_LEVEL &&
+      !!playerCar &&
+      points.length > 0;
 
-  // Where every car is, where the window sits and which way the drawing points
-  // all follow the lap distance, which moves on every tick. They are written
-  // straight to the SVG so the map's markup is built once. See
-  // `docs/rendering.md`.
-  const mapRef = useReactiveDomWrite<SVGSVGElement>(
-    (element, scheduleWrite) => {
-      const lapDistPctOf = (carIdx: number): number =>
-        carsStore.carPositions?.car_idx_lap_dist_pct[carIdx] ??
-        computed.driverEntryOf(carIdx)?.lapDistPct ??
-        -1;
+    // Where every car is, where the window sits and which way the drawing points
+    // all follow the lap distance, which moves on every tick. They are written
+    // straight to the SVG so the map's markup is built once. See
+    // `docs/rendering.md`.
+    const mapRef = useReactiveDomWrite<SVGSVGElement>(
+      (element, scheduleWrite) => {
+        const lapDistPctOf = (carIdx: number): number =>
+          carsStore.carPositions?.car_idx_lap_dist_pct[carIdx] ??
+          computed.driverEntryOf(carIdx)?.lapDistPct ??
+          -1;
 
-      const playerPct = playerCar ? lapDistPctOf(playerCar.carIdx) : -1;
-      const playerPoint =
-        zoomActive && playerPct >= 0 ? getPointAtPct(points, playerPct) : null;
+        const playerPct = playerCar ? lapDistPctOf(playerCar.carIdx) : -1;
+        const playerPoint =
+          zoomActive && playerPct >= 0
+            ? getPointAtPct(points, playerPct)
+            : null;
 
-      const nextViewBox = (() => {
-        if (!playerPoint) return viewBox;
+        const nextViewBox = (() => {
+          if (!playerPoint) return viewBox;
 
-        const zoomedW = vbW / zoomLevel;
-        const zoomedH = vbH / zoomLevel;
+          const zoomedW = vbW / zoomLevel;
+          const zoomedH = vbH / zoomLevel;
 
-        return `${playerPoint.x - zoomedW / 2} ${playerPoint.y - zoomedH / 2} ${zoomedW} ${zoomedH}`;
-      })();
+          return `${playerPoint.x - zoomedW / 2} ${playerPoint.y - zoomedH / 2} ${zoomedW} ${zoomedH}`;
+        })();
 
-      // Heading-up mode: the track tangent at the player's position is the
-      // travel direction, so rotating the whole drawing until it points up
-      // keeps the car fixed and facing forward. Labels counter-rotate to stay
-      // readable.
-      const screenRotation = (() => {
-        if (!playerPoint || !zoomRotate) return 0;
+        // Heading-up mode: the track tangent at the player's position is the
+        // travel direction, so rotating the whole drawing until it points up
+        // keeps the car fixed and facing forward. Labels counter-rotate to stay
+        // readable.
+        const screenRotation = (() => {
+          if (!playerPoint || !zoomRotate) return 0;
 
-        const aheadPct = (playerPct + HEADING_SAMPLE_PCT) % 1;
-        const ahead = getPointAtPct(points, aheadPct);
-        const headingDeg =
-          Math.atan2(ahead.y - playerPoint.y, ahead.x - playerPoint.x) *
-          (180 / Math.PI);
+          const aheadPct = (playerPct + HEADING_SAMPLE_PCT) % 1;
+          const ahead = getPointAtPct(points, aheadPct);
+          const headingDeg =
+            Math.atan2(ahead.y - playerPoint.y, ahead.x - playerPoint.x) *
+            (180 / Math.PI);
 
-        return SCREEN_UP_DEG - headingDeg;
-      })();
+          return SCREEN_UP_DEG - headingDeg;
+        })();
 
-      const uprightTransform =
-        screenRotation === 0 ? '' : ` rotate(${-screenRotation})`;
+        const uprightTransform =
+          screenRotation === 0 ? '' : ` rotate(${-screenRotation})`;
 
-      const carTransforms = cars.map((car) => {
-        const pct = lapDistPctOf(car.carIdx);
+        const carTransforms = cars.map((car) => {
+          const pct = lapDistPctOf(car.carIdx);
 
-        if (points.length === 0 || pct < 0) {
-          return null;
-        }
+          if (points.length === 0 || pct < 0) {
+            return null;
+          }
 
-        const { x, y } = getPointAtPct(points, pct);
+          const { x, y } = getPointAtPct(points, pct);
 
-        return `translate(${x}, ${y})${uprightTransform}`;
+          return `translate(${x}, ${y})${uprightTransform}`;
+        });
+
+        scheduleWrite(() => {
+          element.setAttribute('viewBox', nextViewBox);
+          element.style.setProperty(
+            SCREEN_ROTATION_PROPERTY,
+            `${screenRotation}deg`
+          );
+
+          const content = element.querySelector(`.${styles.content}`);
+
+          if (content instanceof SVGGElement) {
+            if (screenRotation === 0) {
+              content.removeAttribute('transform');
+            } else {
+              content.setAttribute(
+                'transform',
+                `rotate(${screenRotation} ${playerPoint?.x} ${playerPoint?.y})`
+              );
+            }
+          }
+
+          const dots = element.querySelectorAll(`.${styles.carDot}`);
+
+          for (const [dotIndex, transform] of carTransforms.entries()) {
+            const dot = dots[dotIndex];
+
+            if (!(dot instanceof SVGGElement)) {
+              continue;
+            }
+
+            dot.style.display = transform === null ? 'none' : '';
+
+            if (transform !== null) {
+              dot.setAttribute('transform', transform);
+            }
+          }
+        });
+      },
+      [
+        carsStore,
+        computed,
+        points,
+        cars,
+        viewBox,
+        vbW,
+        vbH,
+        zoomActive,
+        zoomLevel,
+        zoomRotate,
+        playerCar?.carIdx,
+      ]
+    );
+
+    const [pixelScale, setPixelScale] = useState(1);
+
+    useEffect(() => {
+      const el = mapRef.current;
+
+      if (!el) return;
+
+      const obs = new ResizeObserver(() => {
+        const { width, height } = el.getBoundingClientRect();
+
+        if (width === 0 || height === 0) return;
+
+        const scaleX = vbW / width;
+        const scaleY = vbH / height;
+
+        setPixelScale(Math.max(scaleX, scaleY));
       });
 
-      scheduleWrite(() => {
-        element.setAttribute('viewBox', nextViewBox);
-        element.style.setProperty(
-          SCREEN_ROTATION_PROPERTY,
-          `${screenRotation}deg`
-        );
+      obs.observe(el);
 
-        const content = element.querySelector(`.${styles.content}`);
+      return () => obs.disconnect();
+    }, [vbW, vbH, mapRef]);
 
-        if (content instanceof SVGGElement) {
-          if (screenRotation === 0) {
-            content.removeAttribute('transform');
-          } else {
-            content.setAttribute(
-              'transform',
-              `rotate(${screenRotation} ${playerPoint?.x} ${playerPoint?.y})`
-            );
-          }
-        }
+    const pathRef = useRef<SVGPathElement>(null);
+    const [pathLength, setPathLength] = useState(0);
 
-        const dots = element.querySelectorAll(`.${styles.carDot}`);
+    useEffect(() => {
+      if (pathRef.current) {
+        setPathLength(pathRef.current.getTotalLength());
+      }
+    }, [svgPath]);
 
-        for (const [dotIndex, transform] of carTransforms.entries()) {
-          const dot = dots[dotIndex];
+    const trackCenter = useMemo(() => {
+      if (points.length === 0) return { x: 0, y: 0 };
 
-          if (!(dot instanceof SVGGElement)) {
-            continue;
-          }
+      let sumX = 0;
+      let sumY = 0;
 
-          dot.style.display = transform === null ? 'none' : '';
+      for (const p of points) {
+        sumX += p.x;
+        sumY += p.y;
+      }
 
-          if (transform !== null) {
-            dot.setAttribute('transform', transform);
-          }
-        }
-      });
-    },
-    [
-      carsStore,
-      computed,
-      points,
-      cars,
-      viewBox,
-      vbW,
-      vbH,
-      zoomActive,
-      zoomLevel,
-      zoomRotate,
-      playerCar?.carIdx,
-    ]
-  );
+      return {
+        x: sumX / points.length,
+        y: sumY / points.length,
+      };
+    }, [points]);
 
-  const [pixelScale, setPixelScale] = useState(1);
+    // Magnifier view: shrink the visible window around the player. Stroke and
+    // dot sizes are divided by the same factor so they keep their on-screen
+    // size — only the covered track area changes, not the drawing itself.
+    const renderScale = zoomActive ? pixelScale / zoomLevel : pixelScale;
+    const dotRadius = targetDotRadiusPx * renderScale;
 
-  useEffect(() => {
-    const el = mapRef.current;
+    const validSectors = sectors
+      ?.filter((s) => s.sectorStartPct != null && s.sectorNum != null)
+      .sort((a, b) => (a.sectorStartPct ?? 0) - (b.sectorStartPct ?? 0));
 
-    if (!el) return;
+    return (
+      <svg ref={mapRef} viewBox={viewBox} className={styles.svgContainer}>
+        <g className={styles.content}>
+          {/* Track border */}
+          <path
+            d={svgPath}
+            fill="none"
+            stroke="#252525"
+            strokeWidth={trackBorderPx * renderScale}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
 
-    const obs = new ResizeObserver(() => {
-      const { width, height } = el.getBoundingClientRect();
+          {/* Track surface */}
+          <path
+            ref={pathRef}
+            d={svgPath}
+            fill="none"
+            stroke="#272727"
+            strokeWidth={trackStrokePx * renderScale}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
 
-      if (width === 0 || height === 0) return;
+          {/* Sector colored arcs */}
+          {pathLength > 0 &&
+            validSectors?.map((sector, i) => {
+              const nextSector = validSectors[i + 1];
+              const endPct = nextSector?.sectorStartPct ?? 1.0;
 
-      const scaleX = vbW / width;
-      const scaleY = vbH / height;
+              const startDist = (sector.sectorStartPct ?? 0) * pathLength;
+              const sectorLen =
+                (endPct - (sector.sectorStartPct ?? 0)) * pathLength;
 
-      setPixelScale(Math.max(scaleX, scaleY));
-    });
+              return (
+                <path
+                  key={`arc-${sector.sectorNum}`}
+                  d={svgPath}
+                  fill="none"
+                  strokeWidth={sectorStrokePx * renderScale}
+                  strokeLinecap="butt"
+                  strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
+                  className={styles.sectorArc}
+                  style={{ stroke: getSectorColor(i) }}
+                />
+              );
+            })}
 
-    obs.observe(el);
+          {/* Flag zones — over the surface, under the cars */}
+          <FlagZones
+            svgPath={svgPath}
+            pathLength={pathLength}
+            strokeWidth={trackStrokePx * renderScale}
+          />
 
-    return () => obs.disconnect();
-  }, [vbW, vbH, mapRef]);
+          {/* Start/Finish marker */}
+          {showStartFinish &&
+            points.length > 0 &&
+            (() => {
+              const { x, y } = getPointAtPct(points, 0);
+              const next = getPointAtPct(points, 0.01);
+              const angle =
+                Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
 
-  const pathRef = useRef<SVGPathElement>(null);
-  const [pathLength, setPathLength] = useState(0);
+              return (
+                <StartFinishMarker
+                  x={x}
+                  y={y}
+                  angle={angle}
+                  trackCenterX={trackCenter.x}
+                  trackCenterY={trackCenter.y}
+                  scale={zoomActive ? 1 / zoomLevel : 1}
+                />
+              );
+            })()}
 
-  useEffect(() => {
-    if (pathRef.current) {
-      setPathLength(pathRef.current.getTotalLength());
-    }
-  }, [svgPath]);
+          {/* Cars — radius scaled to fixed screen pixels via pixelScale */}
+          {points.length > 0 &&
+            cars.map((car) => {
+              if (car.isPaceCar) {
+                const paceColor = paceCarUseClassColor
+                  ? car.carClassColor
+                  : paceCarColor;
 
-  const trackCenter = useMemo(() => {
-    if (points.length === 0) return { x: 0, y: 0 };
+                return (
+                  <g key={car.carIdx} className={styles.carDot}>
+                    <PaceCarMarker
+                      radius={paceCarRadiusPx * renderScale}
+                      color={paceColor}
+                    />
+                  </g>
+                );
+              }
 
-    let sumX = 0;
-    let sumY = 0;
+              const isClassLeader = car.classPosition === 1 && !car.isPlayer;
+              const showLeaderLabel =
+                isClassLeader &&
+                (leaderLabelMode === 'all' ||
+                  (leaderLabelMode === 'own-class' &&
+                    car.carClassId === playerClassId));
 
-    for (const p of points) {
-      sumX += p.x;
-      sumY += p.y;
-    }
-
-    return {
-      x: sumX / points.length,
-      y: sumY / points.length,
-    };
-  }, [points]);
-
-  // Magnifier view: shrink the visible window around the player. Stroke and
-  // dot sizes are divided by the same factor so they keep their on-screen
-  // size — only the covered track area changes, not the drawing itself.
-  const renderScale = zoomActive ? pixelScale / zoomLevel : pixelScale;
-  const dotRadius = targetDotRadiusPx * renderScale;
-
-  const validSectors = sectors
-    ?.filter((s) => s.sectorStartPct != null && s.sectorNum != null)
-    .sort((a, b) => (a.sectorStartPct ?? 0) - (b.sectorStartPct ?? 0));
-
-  return (
-    <svg ref={mapRef} viewBox={viewBox} className={styles.svgContainer}>
-      <g className={styles.content}>
-        {/* Track border */}
-        <path
-          d={svgPath}
-          fill="none"
-          stroke="#252525"
-          strokeWidth={trackBorderPx * renderScale}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          opacity="0.6"
-        />
-
-        {/* Track surface */}
-        <path
-          ref={pathRef}
-          d={svgPath}
-          fill="none"
-          stroke="#272727"
-          strokeWidth={trackStrokePx * renderScale}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-
-        {/* Sector colored arcs */}
-        {pathLength > 0 &&
-          validSectors?.map((sector, i) => {
-            const nextSector = validSectors[i + 1];
-            const endPct = nextSector?.sectorStartPct ?? 1.0;
-
-            const startDist = (sector.sectorStartPct ?? 0) * pathLength;
-            const sectorLen =
-              (endPct - (sector.sectorStartPct ?? 0)) * pathLength;
-
-            return (
-              <path
-                key={`arc-${sector.sectorNum}`}
-                d={svgPath}
-                fill="none"
-                strokeWidth={sectorStrokePx * renderScale}
-                strokeLinecap="butt"
-                strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
-                className={styles.sectorArc}
-                style={{ stroke: getSectorColor(i) }}
-              />
-            );
-          })}
-
-        {/* Flag zones — over the surface, under the cars */}
-        <FlagZones
-          svgPath={svgPath}
-          pathLength={pathLength}
-          strokeWidth={trackStrokePx * renderScale}
-        />
-
-        {/* Start/Finish marker */}
-        {showStartFinish &&
-          points.length > 0 &&
-          (() => {
-            const { x, y } = getPointAtPct(points, 0);
-            const next = getPointAtPct(points, 0.01);
-            const angle = Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
-
-            return (
-              <StartFinishMarker
-                x={x}
-                y={y}
-                angle={angle}
-                trackCenterX={trackCenter.x}
-                trackCenterY={trackCenter.y}
-                scale={zoomActive ? 1 / zoomLevel : 1}
-              />
-            );
-          })()}
-
-        {/* Cars — radius scaled to fixed screen pixels via pixelScale */}
-        {points.length > 0 &&
-          cars.map((car) => {
-            if (car.isPaceCar) {
-              const paceColor = paceCarUseClassColor
-                ? car.carClassColor
-                : paceCarColor;
+              const label = car.isPlayer
+                ? showPlayerLabel
+                  ? 'YOU'
+                  : undefined
+                : showLeaderLabel
+                  ? 'P1'
+                  : undefined;
 
               return (
                 <g key={car.carIdx} className={styles.carDot}>
-                  <PaceCarMarker
-                    radius={paceCarRadiusPx * renderScale}
-                    color={paceColor}
+                  <CarDot
+                    carNumber={car.carNumber}
+                    carClassColor={car.carClassColor}
+                    isPlayer={car.isPlayer}
+                    shape={
+                      classShapes
+                        ? shapeForClassOrder(
+                            carClassOrder?.get(car.carClassId) ?? -1
+                          )
+                        : 'circle'
+                    }
+                    radius={dotRadius}
+                    label={label}
+                    labelIsPlayer={car.isPlayer}
+                    playerColor={playerDotColor}
                   />
                 </g>
               );
-            }
-
-            const isClassLeader = car.classPosition === 1 && !car.isPlayer;
-            const showLeaderLabel =
-              isClassLeader &&
-              (leaderLabelMode === 'all' ||
-                (leaderLabelMode === 'own-class' &&
-                  car.carClassId === playerClassId));
-
-            const label = car.isPlayer
-              ? showPlayerLabel
-                ? 'YOU'
-                : undefined
-              : showLeaderLabel
-                ? 'P1'
-                : undefined;
-
-            return (
-              <g key={car.carIdx} className={styles.carDot}>
-                <CarDot
-                  carNumber={car.carNumber}
-                  carClassColor={car.carClassColor}
-                  isPlayer={car.isPlayer}
-                  shape={
-                    classShapes
-                      ? shapeForClassOrder(
-                          carClassOrder?.get(car.carClassId) ?? -1
-                        )
-                      : 'circle'
-                  }
-                  radius={dotRadius}
-                  label={label}
-                  labelIsPlayer={car.isPlayer}
-                  playerColor={playerDotColor}
-                />
-              </g>
-            );
-          })}
-      </g>
-    </svg>
-  );
-});
+            })}
+        </g>
+      </svg>
+    );
+  }
+);

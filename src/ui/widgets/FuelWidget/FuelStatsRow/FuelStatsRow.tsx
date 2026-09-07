@@ -21,7 +21,7 @@ import {
 import { FuelStatsCell } from './FuelStatsCell/FuelStatsCell';
 import styles from './FuelStatsRow.module.scss';
 
-export const FuelStatsRow = observer(function FuelStatsRow() {
+export const FuelStatsRow = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { carStatus } = usePlayerStore();
   const { unitSystem } = useUnitsStore();

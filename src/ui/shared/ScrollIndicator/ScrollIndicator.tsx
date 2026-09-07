@@ -14,27 +14,25 @@ interface ScrollIndicatorProps {
   inset?: boolean;
 }
 
-export const ScrollIndicator = observer(function ScrollIndicator({
-  thumb,
-  visible,
-  inset = false,
-}: ScrollIndicatorProps) {
-  if (!visible || thumb === null) {
-    return null;
-  }
+export const ScrollIndicator = observer(
+  ({ thumb, visible, inset = false }: ScrollIndicatorProps) => {
+    if (!visible || thumb === null) {
+      return null;
+    }
 
-  return (
-    <div
-      className={`${styles.track} ${inset ? styles.trackInset : ''}`}
-      aria-hidden
-    >
+    return (
       <div
-        className={styles.thumb}
-        style={{
-          height: `${thumb.heightPercent}%`,
-          top: `${thumb.topPercent}%`,
-        }}
-      />
-    </div>
-  );
-});
+        className={`${styles.track} ${inset ? styles.trackInset : ''}`}
+        aria-hidden
+      >
+        <div
+          className={styles.thumb}
+          style={{
+            height: `${thumb.heightPercent}%`,
+            top: `${thumb.topPercent}%`,
+          }}
+        />
+      </div>
+    );
+  }
+);

@@ -9,22 +9,20 @@ interface FuelStatsCellProps {
   laps: string;
 }
 
-export const FuelStatsCell = observer(function FuelStatsCell({
-  label,
-  consumption,
-  laps,
-}: FuelStatsCellProps) {
-  return (
-    <div className={styles.cell}>
-      <WidgetLabel className={styles.label}>{label}</WidgetLabel>
+export const FuelStatsCell = observer(
+  ({ label, consumption, laps }: FuelStatsCellProps) => {
+    return (
+      <div className={styles.cell}>
+        <WidgetLabel className={styles.label}>{label}</WidgetLabel>
 
-      <span className={styles.consumption}>{consumption}</span>
+        <span className={styles.consumption}>{consumption}</span>
 
-      <span className={styles.laps}>
-        {laps}
+        <span className={styles.laps}>
+          {laps}
 
-        <span className={styles.lapsUnit}>lap</span>
-      </span>
-    </div>
-  );
-});
+          <span className={styles.lapsUnit}>lap</span>
+        </span>
+      </div>
+    );
+  }
+);

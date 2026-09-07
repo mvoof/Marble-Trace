@@ -7,7 +7,7 @@ import {
 } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import { usePitServiceWidgetStore } from '@store/root-store-context';
 
-export const TowRow = observer(function TowRow() {
+export const TowRow = observer(() => {
   const widget = usePitServiceWidgetStore();
 
   return (

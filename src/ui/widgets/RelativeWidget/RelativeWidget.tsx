@@ -5,7 +5,7 @@ import { RelativeContent } from './RelativeContent/RelativeContent';
 
 import styles from './RelativeWidget.module.scss';
 
-export const RelativeWidget = observer(function RelativeWidget() {
+export const RelativeWidget = observer(() => {
   return (
     <WidgetPanel className={styles.relative} gap={0}>
       <RelativeContent />

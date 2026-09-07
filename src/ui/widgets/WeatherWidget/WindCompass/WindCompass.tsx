@@ -9,7 +9,7 @@ import { WindArrow } from './WindArrow/WindArrow';
 import styles from './WindCompass.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 
-export const WindCompass = observer(function WindCompass() {
+export const WindCompass = observer(() => {
   const { showCompass } = useWidgetSettings<WeatherWidgetSettings>('weather');
 
   if (!showCompass) {

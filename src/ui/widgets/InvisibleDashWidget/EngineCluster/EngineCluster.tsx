@@ -25,7 +25,7 @@ const RPM_COLOR_PROPERTY = '--dash-rpm-color';
  * markup React renders once and a single pass per animation frame fills. See
  * `docs/rendering.md`.
  */
-export const EngineCluster = observer(function EngineCluster() {
+export const EngineCluster = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
   const units = useUnitsStore();

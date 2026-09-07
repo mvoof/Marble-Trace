@@ -11,7 +11,7 @@ import styles from './ChatBanner.module.scss';
  * tell a quiet channel from a broken connection. It stays a strip rather than a
  * block: the feed below is what the user is here for.
  */
-export const ChatBanner = observer(function ChatBanner() {
+export const ChatBanner = observer(() => {
   const chatWidget = useStreamChatWidgetStore();
   const { t } = useTranslation('widgets');
 

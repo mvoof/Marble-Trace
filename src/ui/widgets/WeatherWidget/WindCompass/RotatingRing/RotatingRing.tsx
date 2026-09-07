@@ -29,9 +29,7 @@ interface RotatingRingProps {
  * so the heading wakes React not at all: this component renders once, and its
  * children are the same element objects for as long as it is mounted.
  */
-export const RotatingRing = observer(function RotatingRing({
-  children,
-}: RotatingRingProps) {
+export const RotatingRing = observer(({ children }: RotatingRingProps) => {
   const player = usePlayerStore();
 
   const groupRef = useReactiveDomWrite<SVGGElement>(

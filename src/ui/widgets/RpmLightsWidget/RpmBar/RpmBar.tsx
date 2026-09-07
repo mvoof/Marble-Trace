@@ -22,7 +22,7 @@ import styles from '../RpmLightsWidget.module.scss';
  * over the row per animation frame, so a full-throttle burst wakes React not at
  * all. See `docs/rendering.md`.
  */
-export const RpmBar = observer(function RpmBar() {
+export const RpmBar = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
   const settings = useWidgetSettings<RpmLightsWidgetSettings>('rpm-lights');

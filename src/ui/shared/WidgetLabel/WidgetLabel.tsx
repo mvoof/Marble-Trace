@@ -10,22 +10,24 @@ interface WidgetLabelProps {
   uppercase?: boolean;
 }
 
-export const WidgetLabel = observer(function WidgetLabel({
-  children,
-  className,
-  mono = false,
-  uppercase = true,
-}: WidgetLabelProps) {
-  return (
-    <span
-      className={[
-        styles.label,
-        mono ? styles.mono : '',
-        !uppercase ? styles.noUppercase : '',
-        className ?? '',
-      ].join(' ')}
-    >
-      {children}
-    </span>
-  );
-});
+export const WidgetLabel = observer(
+  ({
+    children,
+    className,
+    mono = false,
+    uppercase = true,
+  }: WidgetLabelProps) => {
+    return (
+      <span
+        className={[
+          styles.label,
+          mono ? styles.mono : '',
+          !uppercase ? styles.noUppercase : '',
+          className ?? '',
+        ].join(' ')}
+      >
+        {children}
+      </span>
+    );
+  }
+);

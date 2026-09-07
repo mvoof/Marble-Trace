@@ -17,7 +17,7 @@ import styles from './RaceDashWidget.module.scss';
  * speed that decides how far over the limit it is belongs to the block that
  * draws it. See `docs/rendering.md`.
  */
-export const RaceDashWidget = observer(function RaceDashWidget() {
+export const RaceDashWidget = observer(() => {
   const { isOnPitRoad, isLimiterOn } = usePitServiceWidgetStore();
   const { showPitAssist } =
     useWidgetSettings<RaceDashWidgetSettings>('race-dash');

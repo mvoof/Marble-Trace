@@ -17,7 +17,7 @@ import styles from './ChatMessageList.module.scss';
 // One wheel notch moves a small block of messages, matching the standings feel.
 const WHEEL_STEP_MESSAGES = 3;
 
-export const ChatMessageList = observer(function ChatMessageList() {
+export const ChatMessageList = observer(() => {
   const chatWidget = useStreamChatWidgetStore();
   const appSettings = useAppSettingsStore();
   const { t } = useTranslation('widgets');

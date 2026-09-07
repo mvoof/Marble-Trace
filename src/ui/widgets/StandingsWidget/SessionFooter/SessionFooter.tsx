@@ -22,7 +22,7 @@ import {
 // the one thing the footer must not be.
 const PILL_VARIANT: StatPillVariant = 'inline';
 
-export const SessionFooter = observer(function SessionFooter() {
+export const SessionFooter = observer(() => {
   const { pitStops, driverIdentities } = useBackendComputedStore();
   const { sessionInfo } = useSessionStore();
   const { environment } = useEnvironmentStore();

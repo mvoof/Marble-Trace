@@ -10,7 +10,7 @@ import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelChart.module.scss';
 import { useBackendComputedStore } from '@store/root-store-context';
 
-export const FuelChart = observer(function FuelChart() {
+export const FuelChart = observer(() => {
   const { fuel } = useBackendComputedStore();
 
   const settings = useWidgetSettings<FuelWidgetSettings>('fuel');

@@ -9,7 +9,7 @@ import { ChatMessageList } from './ChatMessageList/ChatMessageList';
 
 import styles from './StreamChatWidget.module.scss';
 
-export const StreamChatWidget = observer(function StreamChatWidget() {
+export const StreamChatWidget = observer(() => {
   const settings = useWidgetSettings<StreamChatWidgetSettings>('stream-chat');
 
   return (

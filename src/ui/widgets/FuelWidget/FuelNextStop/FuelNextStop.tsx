@@ -13,7 +13,7 @@ import {
 
 const NO_LAP_PLACEHOLDER = '--';
 
-export const FuelNextStop = observer(function FuelNextStop() {
+export const FuelNextStop = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { lapTiming } = usePlayerStore();
 

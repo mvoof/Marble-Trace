@@ -17,10 +17,7 @@ const DIGIT_PATTERN = /\d/;
  * nothing to switch to and the widget's own font falls back to proportional
  * ones.
  */
-export const FixedDigits = observer(function FixedDigits({
-  text,
-  className,
-}: FixedDigitsProps) {
+export const FixedDigits = observer(({ text, className }: FixedDigitsProps) => {
   return (
     <span className={className}>
       {Array.from(text, (char, index) =>

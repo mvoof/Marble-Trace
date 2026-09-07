@@ -8,9 +8,7 @@ interface IrChangeCellProps {
   carIdx: number;
 }
 
-export const IrChangeCell = observer(function IrChangeCell({
-  carIdx,
-}: IrChangeCellProps) {
+export const IrChangeCell = observer(({ carIdx }: IrChangeCellProps) => {
   const standingsWidget = useStandingsWidgetStore();
 
   const entry = standingsWidget.driverMap.get(carIdx);

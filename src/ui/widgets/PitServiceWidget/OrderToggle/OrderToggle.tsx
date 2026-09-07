@@ -19,30 +19,32 @@ interface OrderToggleProps {
  * interact mode, so outside it there is nothing to click and no reason to
  * present the block as interactive.
  */
-export const OrderToggle = observer(function OrderToggle({
-  className,
-  clickableClassName,
-  label,
-  onToggle,
-  children,
-}: OrderToggleProps) {
-  const widget = usePitServiceWidgetStore();
+export const OrderToggle = observer(
+  ({
+    className,
+    clickableClassName,
+    label,
+    onToggle,
+    children,
+  }: OrderToggleProps) => {
+    const widget = usePitServiceWidgetStore();
 
-  if (!widget.order.canClickOrders) {
-    return <div className={className}>{children}</div>;
+    if (!widget.order.canClickOrders) {
+      return <div className={className}>{children}</div>;
+    }
+
+    return (
+      <button
+        type="button"
+        aria-label={label}
+        className={`${styles.reset} ${className} ${clickableClassName}`}
+        onClick={onToggle}
+        // Interact mode shares the mouse with widget dragging; without this a
+        // click on a checkbox would start moving the widget.
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        {children}
+      </button>
+    );
   }
-
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      className={`${styles.reset} ${className} ${clickableClassName}`}
-      onClick={onToggle}
-      // Interact mode shares the mouse with widget dragging; without this a
-      // click on a checkbox would start moving the widget.
-      onMouseDown={(event) => event.stopPropagation()}
-    >
-      {children}
-    </button>
-  );
-});
+);

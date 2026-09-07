@@ -6,7 +6,7 @@ import { StatCell } from './StatCell';
 import styles from './StatsGrid.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 
-export const StatsGrid = observer(function StatsGrid() {
+export const StatsGrid = observer(() => {
   const { showWind, showHumidity, showTrackWetness, showTrackTemp } =
     useWidgetSettings<WeatherWidgetSettings>('weather');
 

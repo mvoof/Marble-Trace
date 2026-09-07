@@ -35,7 +35,7 @@ const gearLabelOf = (gear: number): string => {
  * markup is rendered once per display mode and the numbers are written into it.
  * See `docs/rendering.md`.
  */
-const WheelCenter = observer(function WheelCenter() {
+const WheelCenter = observer(() => {
   const telemetry = usePlayerStore();
   const units = useUnitsStore();
 
@@ -142,7 +142,7 @@ const WheelCenter = observer(function WheelCenter() {
  * rim, the marker and the traced art are the same element objects for as long as
  * the wheel is mounted.
  */
-export const SteeringWheel = observer(function SteeringWheel() {
+export const SteeringWheel = observer(() => {
   const telemetry = usePlayerStore();
 
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');

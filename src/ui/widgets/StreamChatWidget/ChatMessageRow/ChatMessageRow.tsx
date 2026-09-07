@@ -19,9 +19,7 @@ const BADGE_CLASS: Record<string, string> = {
   vip: styles.badgeVip,
 };
 
-export const ChatMessageRow = observer(function ChatMessageRow({
-  message,
-}: ChatMessageRowProps) {
+export const ChatMessageRow = observer(({ message }: ChatMessageRowProps) => {
   const { t } = useTranslation('widgets');
   const settings = useWidgetSettings<StreamChatWidgetSettings>('stream-chat');
 

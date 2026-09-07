@@ -23,7 +23,7 @@ const NO_VALUE_TEXT = '—';
  * the rest of the row changes once a lap and is rendered by React. See
  * `docs/rendering.md`.
  */
-export const InfoRow = observer(function InfoRow() {
+export const InfoRow = observer(() => {
   const coach = useDrivingCoachWidgetStore();
   const trace = useCoachWidgetStore();
   const units = useUnitsStore();

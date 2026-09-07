@@ -5,7 +5,7 @@ import { RadarBar } from './RadarBar/RadarBar';
 
 import styles from './RadarBarWidget.module.scss';
 
-export const RadarBarWidget = observer(function RadarBarWidget() {
+export const RadarBarWidget = observer(() => {
   return (
     <WidgetPanel
       className={styles.root}

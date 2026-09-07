@@ -38,7 +38,7 @@ const TRAIL_OPACITY = 0.22;
  * The angle changes on every physics tick, so the dot and the trail are written
  * straight to their SVG attributes. See `docs/rendering.md`.
  */
-export const SteeringMarker = observer(function SteeringMarker() {
+export const SteeringMarker = observer(() => {
   const player = usePlayerStore();
 
   const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');

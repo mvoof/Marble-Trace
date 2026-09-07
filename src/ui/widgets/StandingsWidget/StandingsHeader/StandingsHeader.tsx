@@ -7,7 +7,7 @@ import { StandingsHeaderCell } from './StandingsHeaderCell';
 
 import styles from './StandingsHeader.module.scss';
 
-export const StandingsHeader = observer(function StandingsHeader() {
+export const StandingsHeader = observer(() => {
   const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
   if (!settings.showColumnHeaders) {

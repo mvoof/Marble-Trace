@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { TireCorner } from './TireCorner/TireCorner';
 import styles from './TireGrid.module.scss';
 
-export const TireGrid = observer(function TireGrid() {
+export const TireGrid = observer(() => {
   return (
     <div className={styles.grid}>
       <TireCorner position="lf" />

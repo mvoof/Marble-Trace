@@ -26,50 +26,57 @@ const DELTA_CLASS = {
 const RING_RADIUS = 9;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
-export const LapFlash = observer(function LapFlash({
-  lapTime,
-  isBest,
-  personalDelta = null,
-  duration = 5,
-  preview = false,
-}: Props) {
-  const animationStyle = preview
-    ? { animationName: 'none' }
-    : { animationDuration: `${duration}s` };
+export const LapFlash = observer(
+  ({
+    lapTime,
+    isBest,
+    personalDelta = null,
+    duration = 5,
+    preview = false,
+  }: Props) => {
+    const animationStyle = preview
+      ? { animationName: 'none' }
+      : { animationDuration: `${duration}s` };
 
-  return (
-    <div className={styles.root} style={animationStyle}>
-      <svg
-        className={styles.ring}
-        viewBox="0 0 22 22"
-        aria-hidden="true"
-        focusable="false"
-      >
-        <circle className={styles.ringTrack} cx="11" cy="11" r={RING_RADIUS} />
-        <circle
-          className={`${styles.ringProgress} ${isBest ? styles.ringBest : ''}`}
-          cx="11"
-          cy="11"
-          r={RING_RADIUS}
-          strokeDasharray={RING_CIRCUMFERENCE}
-          style={
-            {
-              ...animationStyle,
-              '--ring-length': RING_CIRCUMFERENCE,
-            } as unknown as CSSProperties
-          }
-        />
-      </svg>
+    return (
+      <div className={styles.root} style={animationStyle}>
+        <svg
+          className={styles.ring}
+          viewBox="0 0 22 22"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <circle
+            className={styles.ringTrack}
+            cx="11"
+            cy="11"
+            r={RING_RADIUS}
+          />
+          <circle
+            className={`${styles.ringProgress} ${isBest ? styles.ringBest : ''}`}
+            cx="11"
+            cy="11"
+            r={RING_RADIUS}
+            strokeDasharray={RING_CIRCUMFERENCE}
+            style={
+              {
+                ...animationStyle,
+                '--ring-length': RING_CIRCUMFERENCE,
+              } as unknown as CSSProperties
+            }
+          />
+        </svg>
 
-      <div className={`${styles.lapTime} ${isBest ? styles.best : ''}`}>
-        {formatLapTime(lapTime)}
+        <div className={`${styles.lapTime} ${isBest ? styles.best : ''}`}>
+          {formatLapTime(lapTime)}
+        </div>
+
+        <div
+          className={`${styles.delta} ${DELTA_CLASS[getDeltaState(personalDelta)]}`}
+        >
+          {formatDelta(personalDelta)}
+        </div>
       </div>
-
-      <div
-        className={`${styles.delta} ${DELTA_CLASS[getDeltaState(personalDelta)]}`}
-      >
-        {formatDelta(personalDelta)}
-      </div>
-    </div>
-  );
-});
+    );
+  }
+);

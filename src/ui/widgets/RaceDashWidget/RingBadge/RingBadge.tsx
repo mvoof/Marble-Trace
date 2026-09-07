@@ -36,7 +36,7 @@ const hidePath = (path: SVGPathElement, d: string, isVisible: boolean) => {
  * written straight to the DOM and React renders the badge once per setting
  * change. See `docs/rendering.md`.
  */
-export const RingBadge = observer(function RingBadge() {
+export const RingBadge = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
 

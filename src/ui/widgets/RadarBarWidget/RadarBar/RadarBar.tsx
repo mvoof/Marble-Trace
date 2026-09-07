@@ -80,7 +80,7 @@ const signOf = (rawDist: number): string => {
  * the DOM through the reactive-DOM primitive; what re-renders this component is
  * only the spotter turning the side on and off. See `docs/rendering.md`.
  */
-export const RadarBar = observer(function RadarBar({ side }: RadarBarProps) {
+export const RadarBar = observer(({ side }: RadarBarProps) => {
   const units = useUnitsStore();
   const appSettings = useAppSettingsStore();
   const computed = useBackendComputedStore();

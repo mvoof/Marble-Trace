@@ -27,7 +27,7 @@ const DEGREES_TO_RADIANS = Math.PI / 180;
  * re-render while the heading does, and handed to `RotatingRing` as children —
  * so no part of it is rebuilt at 60 Hz. See `docs/rendering.md`.
  */
-export const RingGeometry = observer(function RingGeometry() {
+export const RingGeometry = observer(() => {
   return (
     <>
       <circle r={RING_RADIUS} fill="none" stroke={RING_COLOR} strokeWidth="2" />

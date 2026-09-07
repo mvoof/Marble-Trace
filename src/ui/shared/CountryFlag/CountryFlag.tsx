@@ -16,10 +16,7 @@ interface CountryFlagProps {
  * what the empty cell otherwise leaves the reader to guess. A human without a
  * flag stays blank: a placeholder there would read as data that is not there.
  */
-export const CountryFlag = observer(function CountryFlag({
-  flairId,
-  isAi,
-}: CountryFlagProps) {
+export const CountryFlag = observer(({ flairId, isAi }: CountryFlagProps) => {
   const countryCode = countryCodeForFlairId(flairId);
 
   if (countryCode === null) {

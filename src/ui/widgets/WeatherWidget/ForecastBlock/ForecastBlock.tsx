@@ -19,7 +19,7 @@ const formatForecastTime = (timeSec: number): string => {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 };
 
-export const ForecastBlock = observer(function ForecastBlock() {
+export const ForecastBlock = observer(() => {
   const { weatherForecast } = useEnvironmentStore();
   const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();

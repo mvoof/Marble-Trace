@@ -13,7 +13,7 @@ import styles from './LapLogWidget.module.scss';
 
 const HISTORY_SHOW_SIZE = 8;
 
-export const LapLogWidget = observer(function LapLogWidget() {
+export const LapLogWidget = observer(() => {
   const { lapHistory, lastCompletedLap: _lastCompleted } =
     useBackendComputedStore();
   const { lapTiming } = usePlayerStore();

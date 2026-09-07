@@ -40,9 +40,7 @@ interface FlagBandsProps {
  * every tick, so each band's offset and size are written straight to the DOM;
  * React re-renders only when a zone is raised or cleared. See `docs/rendering.md`.
  */
-export const FlagBands = observer(function FlagBands({
-  isHorizontal,
-}: FlagBandsProps) {
+export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
   const incidentsStore = useIncidentsWidgetStore();
   const computed = useBackendComputedStore();
 

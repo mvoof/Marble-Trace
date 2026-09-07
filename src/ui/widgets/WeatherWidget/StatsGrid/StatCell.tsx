@@ -69,7 +69,7 @@ interface StatCellProps {
   type: StatCellType;
 }
 
-export const StatCell = observer(function StatCell({ type }: StatCellProps) {
+export const StatCell = observer(({ type }: StatCellProps) => {
   const { sessionInfo } = useSessionStore();
   const { environment: env } = useEnvironmentStore();
   const units = useUnitsStore();

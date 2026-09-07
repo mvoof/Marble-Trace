@@ -44,264 +44,264 @@ interface DriverRowProps {
   startsPlayerWindow?: boolean;
 }
 
-export const DriverRow = observer(function DriverRow({
-  carIdx,
-  index,
-  startsPlayerWindow = false,
-}: DriverRowProps) {
-  const standingsWidget = useStandingsWidgetStore();
-  const session = useSessionStore();
-  const computed = useBackendComputedStore();
+export const DriverRow = observer(
+  ({ carIdx, index, startsPlayerWindow = false }: DriverRowProps) => {
+    const standingsWidget = useStandingsWidgetStore();
+    const session = useSessionStore();
+    const computed = useBackendComputedStore();
 
-  const driver = standingsWidget.driverMap.get(carIdx);
-  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
-  const gridTemplate = buildGridTemplate(settings);
+    const driver = standingsWidget.driverMap.get(carIdx);
+    const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
+    const gridTemplate = buildGridTemplate(settings);
 
-  // The gap is the row's one moving number: it is measured against the leader's
-  // live entry and changes on every tick, so it is written straight to its span
-  // while the rest of the row is rendered from the identity above. See
-  // `docs/rendering.md`.
-  const gapRef = useReactiveDomWrite<HTMLSpanElement>(
-    (element, scheduleWrite) => {
-      const liveDriver = computed.driverEntryOf(carIdx);
+    // The gap is the row's one moving number: it is measured against the leader's
+    // live entry and changes on every tick, so it is written straight to its span
+    // while the rest of the row is rendered from the identity above. See
+    // `docs/rendering.md`.
+    const gapRef = useReactiveDomWrite<HTMLSpanElement>(
+      (element, scheduleWrite) => {
+        const liveDriver = computed.driverEntryOf(carIdx);
 
-      if (!liveDriver) {
-        return;
-      }
+        if (!liveDriver) {
+          return;
+        }
 
-      const byClass = settings.viewMode !== 'all';
-      const leaderIdentity = byClass
-        ? (standingsWidget.classLeaders.get(liveDriver.carClassId) ?? null)
-        : standingsWidget.overallLeader;
-      const liveLeader = leaderIdentity
-        ? computed.driverEntryOf(leaderIdentity.carIdx)
-        : null;
+        const byClass = settings.viewMode !== 'all';
+        const leaderIdentity = byClass
+          ? (standingsWidget.classLeaders.get(liveDriver.carClassId) ?? null)
+          : standingsWidget.overallLeader;
+        const liveLeader = leaderIdentity
+          ? computed.driverEntryOf(leaderIdentity.carIdx)
+          : null;
 
-      const sessions = session.sessionInfo?.sessions;
-      const isRaceSession =
-        sessions?.[session.sessionInfo?.currentSessionNum ?? 0]?.sessionType ===
-        'Race';
+        const sessions = session.sessionInfo?.sessions;
+        const isRaceSession =
+          sessions?.[session.sessionInfo?.currentSessionNum ?? 0]
+            ?.sessionType === 'Race';
 
-      const leads =
-        (byClass ? liveDriver.liveClassPosition : liveDriver.livePosition) ===
-        1;
+        const leads =
+          (byClass ? liveDriver.liveClassPosition : liveDriver.livePosition) ===
+          1;
 
-      const gapInfo = getStandingsGap(
-        liveDriver,
-        liveLeader,
-        isRaceSession,
-        leads,
-        calculateLapsBehind(liveLeader, liveDriver)
-      );
+        const gapInfo = getStandingsGap(
+          liveDriver,
+          liveLeader,
+          isRaceSession,
+          leads,
+          calculateLapsBehind(liveLeader, liveDriver)
+        );
 
-      scheduleWrite(() => {
-        const isMuted = gapInfo.isLeader || gapInfo.isEmpty;
+        scheduleWrite(() => {
+          const isMuted = gapInfo.isLeader || gapInfo.isEmpty;
 
-        element.classList.toggle(styles.gapLeader, isMuted);
-        element.classList.toggle(styles.gapValue, !isMuted);
-        element.textContent = gapInfo.value;
-      });
-    },
-    [computed, standingsWidget, session, settings, carIdx]
-  );
+          element.classList.toggle(styles.gapLeader, isMuted);
+          element.classList.toggle(styles.gapValue, !isMuted);
+          element.textContent = gapInfo.value;
+        });
+      },
+      [computed, standingsWidget, session, settings, carIdx]
+    );
 
-  if (!driver) {
-    return null;
-  }
+    if (!driver) {
+      return null;
+    }
 
-  const isInGarage = driver.trackSurface === 'NotInWorld';
+    const isInGarage = driver.trackSurface === 'NotInWorld';
 
-  // Once the session is over everybody drops to the garage, so leaving the world
-  // is no longer a status worth flagging — only a sim-confirmed retirement is.
-  const isOut =
-    driver.isRetired ||
-    (isInGarage && !isSessionEnded(session.session?.session_state ?? null));
+    // Once the session is over everybody drops to the garage, so leaving the world
+    // is no longer a status worth flagging — only a sim-confirmed retirement is.
+    const isOut =
+      driver.isRetired ||
+      (isInGarage && !isSessionEnded(session.session?.session_state ?? null));
 
-  const isPit =
-    !isOut &&
-    (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
+    const isPit =
+      !isOut &&
+      (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
 
-  const pitState = driver.pitState;
-  const flagType = parseDriverFlags(driver.rawFlags);
+    const pitState = driver.pitState;
+    const flagType = parseDriverFlags(driver.rawFlags);
 
-  // Latched in the backend once the car crosses the line under the checkered
-  // flag, so this outlives the drive back to the garage.
-  const isFinished = driver.isFinished && !driver.isRetired;
+    // Latched in the backend once the car crosses the line under the checkered
+    // flag, so this outlives the drive back to the garage.
+    const isFinished = driver.isFinished && !driver.isRetired;
 
-  // The tow truck has the car: it left the world without going through the pit
-  // lane, which OUT alone would not tell apart from a garage exit.
-  const isTowed = driver.isTowed && !isFinished;
+    // The tow truck has the car: it left the world without going through the pit
+    // lane, which OUT alone would not tell apart from a garage exit.
+    const isTowed = driver.isTowed && !isFinished;
 
-  const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
+    const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
-  const rowClass = [
-    styles.driverRow,
-    settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
-    settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
-    settings.rowPadding === 'wide' ? styles.rowPaddingWide : '',
-    driver.isPlayer ? styles.driverRowPlayer : '',
-    index % 2 !== 0 ? styles.rowOdd : '',
-    isOffTrack ? styles.driverRowOffTrack : '',
-    isOut ? styles.driverRowOut : '',
-    startsPlayerWindow ? styles.driverRowWindowStart : '',
-    standingsWidget.hoveredClassId === driver.carClassId
-      ? styles.driverRowScrollTarget
-      : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    const rowClass = [
+      styles.driverRow,
+      settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
+      settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
+      settings.rowPadding === 'wide' ? styles.rowPaddingWide : '',
+      driver.isPlayer ? styles.driverRowPlayer : '',
+      index % 2 !== 0 ? styles.rowOdd : '',
+      isOffTrack ? styles.driverRowOffTrack : '',
+      isOut ? styles.driverRowOut : '',
+      startsPlayerWindow ? styles.driverRowWindowStart : '',
+      standingsWidget.hoveredClassId === driver.carClassId
+        ? styles.driverRowScrollTarget
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
 
-  const rowFill = playerRowStyle(driver.isPlayer, settings.playerRowColor);
+    const rowFill = playerRowStyle(driver.isPlayer, settings.playerRowColor);
 
-  // The stripe is painted by a pseudo-element, so the class color reaches it
-  // through a variable — the same 3px marker the class header carries.
-  const rowStyle = {
-    gridTemplateColumns: gridTemplate,
-    ...rowFill,
-    '--row-class-marker': driver.carClassColor,
-  } as CSSProperties;
+    // The stripe is painted by a pseudo-element, so the class color reaches it
+    // through a variable — the same 3px marker the class header carries.
+    const rowStyle = {
+      gridTemplateColumns: gridTemplate,
+      ...rowFill,
+      '--row-class-marker': driver.carClassColor,
+    } as CSSProperties;
 
-  const formattedCarNumber = formatCarNumber(driver.carNumber);
+    const formattedCarNumber = formatCarNumber(driver.carNumber);
 
-  const classBest = standingsWidget.classBestLapMap.get(driver.carClassId);
-  const isClassBestLap =
-    driver.bestLapTime > 0 &&
-    classBest !== undefined &&
-    driver.bestLapTime === classBest;
+    const classBest = standingsWidget.classBestLapMap.get(driver.carClassId);
+    const isClassBestLap =
+      driver.bestLapTime > 0 &&
+      classBest !== undefined &&
+      driver.bestLapTime === classBest;
 
-  const bestLap = resolveBestLapDisplay(driver);
+    const bestLap = resolveBestLapDisplay(driver);
 
-  // One switch mutes every informational column at once, so the row's accent
-  // is left to the position, the name and the best lap.
-  const dimClass = settings.dimSecondaryColumns ? styles.cellDimmed : '';
+    // One switch mutes every informational column at once, so the row's accent
+    // is left to the position, the name and the best lap.
+    const dimClass = settings.dimSecondaryColumns ? styles.cellDimmed : '';
 
-  return (
-    <div
-      className={rowClass}
-      style={rowStyle}
-      data-driver-row
-      data-row-key={carIdx}
-    >
-      <PositionCell carIdx={carIdx} />
+    return (
+      <div
+        className={rowClass}
+        style={rowStyle}
+        data-driver-row
+        data-row-key={carIdx}
+      >
+        <PositionCell carIdx={carIdx} />
 
-      <div className={`${styles.cell} ${styles.carNumberCell}`}>
-        <span
-          className={styles.carNumber}
-          style={{
-            backgroundColor: driver.carClassColor,
-            color: getContrastTextColor(driver.carClassColor),
-          }}
-        >
-          {formattedCarNumber}
-        </span>
-      </div>
-
-      {settings.showPosChange && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <PosChange carIdx={carIdx} />
+        <div className={`${styles.cell} ${styles.carNumberCell}`}>
+          <span
+            className={styles.carNumber}
+            style={{
+              backgroundColor: driver.carClassColor,
+              color: getContrastTextColor(driver.carClassColor),
+            }}
+          >
+            {formattedCarNumber}
+          </span>
         </div>
-      )}
 
-      {settings.showCountryFlag && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <CountryFlag flairId={driver.flairId} isAi={driver.isAi} />
-        </div>
-      )}
+        {settings.showPosChange && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <PosChange carIdx={carIdx} />
+          </div>
+        )}
 
-      <div className={`${styles.cell} ${styles.nameCell}`}>
-        {settings.showDriverFlags &&
-          (isFinished ? (
-            <DriverFlagBadge type="checkered" />
-          ) : (
-            flagType !== 'none' && <DriverFlagBadge type={flagType} />
-          ))}
+        {settings.showCountryFlag && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <CountryFlag flairId={driver.flairId} isAi={driver.isAi} />
+          </div>
+        )}
 
-        <span
-          className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
-        >
-          {settings.abbreviateNames
-            ? abbreviateName(driver.userName)
-            : driver.userName}
-        </span>
+        <div className={`${styles.cell} ${styles.nameCell}`}>
+          {settings.showDriverFlags &&
+            (isFinished ? (
+              <DriverFlagBadge type="checkered" />
+            ) : (
+              flagType !== 'none' && <DriverFlagBadge type={flagType} />
+            ))}
 
-        <DriverStatusBadges
-          flagType={flagType}
-          isTowed={isTowed}
-          isOut={isOut}
-          isOffTrack={isOffTrack}
-          isPit={isPit}
-          pitState={pitState}
-          isFinished={isFinished}
-        />
-      </div>
+          <span
+            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
+          >
+            {settings.abbreviateNames
+              ? abbreviateName(driver.userName)
+              : driver.userName}
+          </span>
 
-      {settings.showLicBadge && (
-        <div className={`${styles.cell} ${styles.cellRating}`}>
-          <LicBadge
-            licString={driver.licString}
-            showLetter={settings.showLicenseLetter}
+          <DriverStatusBadges
+            flagType={flagType}
+            isTowed={isTowed}
+            isOut={isOut}
+            isOffTrack={isOffTrack}
+            isPit={isPit}
+            pitState={pitState}
+            isFinished={isFinished}
           />
         </div>
-      )}
 
-      {settings.showIRating && (
+        {settings.showLicBadge && (
+          <div className={`${styles.cell} ${styles.cellRating}`}>
+            <LicBadge
+              licString={driver.licString}
+              showLetter={settings.showLicenseLetter}
+            />
+          </div>
+        )}
+
+        {settings.showIRating && (
+          <div className={`${styles.cell} ${styles.cellRight}`}>
+            <span className={`${styles.irValue} ${dimClass}`}>
+              {formatIr(driver.iRating, settings.abbreviateIRating)}
+            </span>
+          </div>
+        )}
+
+        {settings.showIrChange && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <IrChangeCell carIdx={carIdx} />
+          </div>
+        )}
+
+        {settings.showLapsCompleted && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <span className={`${styles.lapsCompleted} ${dimClass}`}>
+              {driver.lap}
+            </span>
+          </div>
+        )}
+
         <div className={`${styles.cell} ${styles.cellRight}`}>
-          <span className={`${styles.irValue} ${dimClass}`}>
-            {formatIr(driver.iRating, settings.abbreviateIRating)}
+          <span ref={gapRef} className={dimClass} />
+        </div>
+
+        <div className={`${styles.cell} ${styles.cellRight}`}>
+          <span className={`${styles.lastLap} ${dimClass}`}>
+            {isPit
+              ? '-'
+              : formatLapTime(
+                  driver.lastLapTime > 0 ? driver.lastLapTime : null
+                )}
           </span>
         </div>
-      )}
 
-      {settings.showIrChange && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <IrChangeCell carIdx={carIdx} />
-        </div>
-      )}
-
-      {settings.showLapsCompleted && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <span className={`${styles.lapsCompleted} ${dimClass}`}>
-            {driver.lap}
-          </span>
-        </div>
-      )}
-
-      <div className={`${styles.cell} ${styles.cellRight}`}>
-        <span ref={gapRef} className={dimClass} />
-      </div>
-
-      <div className={`${styles.cell} ${styles.cellRight}`}>
-        <span className={`${styles.lastLap} ${dimClass}`}>
-          {isPit
-            ? '-'
-            : formatLapTime(driver.lastLapTime > 0 ? driver.lastLapTime : null)}
-        </span>
-      </div>
-
-      <div className={`${styles.cell} ${styles.cellRight}`}>
-        <span
-          className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''} ${bestLap.isQualifying ? styles.bestLapQualifying : ''}`}
-        >
-          {formatLapTime(bestLap.time)}
-        </span>
-      </div>
-
-      {settings.showBrand && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
+        <div className={`${styles.cell} ${styles.cellRight}`}>
           <span
-            className={`${styles.brandLabel} ${dimClass}`}
-            title={driver.carScreenName}
+            className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''} ${bestLap.isQualifying ? styles.bestLapQualifying : ''}`}
           >
-            {formatBrand(driver.carScreenName)}
+            {formatLapTime(bestLap.time)}
           </span>
         </div>
-      )}
 
-      {settings.showTire && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <TireBadge tire={driver.tireCompound} />
-        </div>
-      )}
-    </div>
-  );
-});
+        {settings.showBrand && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <span
+              className={`${styles.brandLabel} ${dimClass}`}
+              title={driver.carScreenName}
+            >
+              {formatBrand(driver.carScreenName)}
+            </span>
+          </div>
+        )}
+
+        {settings.showTire && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <TireBadge tire={driver.tireCompound} />
+          </div>
+        )}
+      </div>
+    );
+  }
+);

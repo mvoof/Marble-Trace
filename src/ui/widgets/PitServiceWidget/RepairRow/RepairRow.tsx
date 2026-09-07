@@ -18,7 +18,7 @@ const ICON_SIZE = 13;
  * speed is zero and the numbers that matter are the two repair countdowns and
  * how long the crew has been at it.
  */
-export const RepairRow = observer(function RepairRow() {
+export const RepairRow = observer(() => {
   const { pitService } = usePlayerStore();
   const widget = usePitServiceWidgetStore();
 

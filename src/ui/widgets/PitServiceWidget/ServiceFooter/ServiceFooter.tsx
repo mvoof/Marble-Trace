@@ -23,7 +23,7 @@ const STATE_LABEL = {
 
 const MANUAL_LABEL = 'MANUAL';
 
-export const ServiceFooter = observer(function ServiceFooter() {
+export const ServiceFooter = observer(() => {
   const { pitStops, relative } = useBackendComputedStore();
   const { pitService } = usePlayerStore();
   const pitServiceWidget = usePitServiceWidgetStore();

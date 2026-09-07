@@ -10,7 +10,7 @@ import {
 } from '@store/root-store-context';
 import styles from './PitWarningFill.module.scss';
 
-export const PitWarningFill = observer(function PitWarningFill() {
+export const PitWarningFill = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { unitSystem } = useUnitsStore();
 

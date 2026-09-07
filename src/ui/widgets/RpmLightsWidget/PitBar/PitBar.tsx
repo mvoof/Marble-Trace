@@ -114,7 +114,7 @@ const getPitLedColor = (
  * on. Its LEDs follow a timer of its own rather than telemetry, so it is a
  * separate component: the racing bar beside it never pays for these intervals.
  */
-export const PitBar = observer(function PitBar() {
+export const PitBar = observer(() => {
   const { pitState } = usePitState();
   const { ledShape } = useWidgetSettings<RpmLightsWidgetSettings>('rpm-lights');
 

@@ -12,7 +12,7 @@ import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/telemetry-format';
 const fuelUnitWord = (unitSystem: UnitSystem): string =>
   unitSystem === 'metric' ? 'LITERS' : 'GALLONS';
 
-export const FuelHeader = observer(function FuelHeader() {
+export const FuelHeader = observer(() => {
   const { carStatus } = usePlayerStore();
   const { unitSystem } = useUnitsStore();
 

@@ -27,10 +27,7 @@ interface GMeterRingsProps {
   height: number;
 }
 
-export const GMeterRings = observer(function GMeterRings({
-  width,
-  height,
-}: GMeterRingsProps) {
+export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
   const widgetId = useContext(WidgetIdContext);
   const widgetSettings = useWidgetSettingsStore();
 

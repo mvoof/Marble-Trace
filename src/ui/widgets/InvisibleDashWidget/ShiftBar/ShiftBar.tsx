@@ -20,7 +20,7 @@ const FILL_COLOR_PROPERTY = '--shift-fill-color';
  * and its colour are written straight to the DOM rather than rendered. See
  * `docs/rendering.md`.
  */
-export const ShiftBar = observer(function ShiftBar() {
+export const ShiftBar = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
 

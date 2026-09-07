@@ -2,6 +2,6 @@ import { observer } from 'mobx-react-lite';
 
 import { TrackMapContent } from './TrackMapContent/TrackMapContent';
 
-export const TrackMapWidget = observer(function TrackMapWidget() {
+export const TrackMapWidget = observer(() => {
   return <TrackMapContent />;
 });

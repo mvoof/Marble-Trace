@@ -26,7 +26,7 @@ const ICON_MAP = {
 
 const ICON_SIZE_PX = 20;
 
-export const WeatherHeader = observer(function WeatherHeader() {
+export const WeatherHeader = observer(() => {
   const units = useUnitsStore();
 
   const settings = useWidgetSettings<WeatherWidgetSettings>('weather');

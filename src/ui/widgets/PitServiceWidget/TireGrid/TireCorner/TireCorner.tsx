@@ -28,9 +28,7 @@ interface TireCornerProps {
   position: CornerPosition;
 }
 
-export const TireCorner = observer(function TireCorner({
-  position,
-}: TireCornerProps) {
+export const TireCorner = observer(({ position }: TireCornerProps) => {
   const { chassis, pitService } = usePlayerStore();
   const widget = usePitServiceWidgetStore();
   const units = useUnitsStore();

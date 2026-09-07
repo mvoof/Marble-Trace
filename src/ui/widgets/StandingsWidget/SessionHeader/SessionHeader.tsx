@@ -35,7 +35,7 @@ const SESSION_TYPE_CLASS: Record<SessionColorKey, string> = {
   other: styles.sessionTypeOther,
 };
 
-export const SessionHeader = observer(function SessionHeader() {
+export const SessionHeader = observer(() => {
   const { driverIdentities } = useBackendComputedStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();

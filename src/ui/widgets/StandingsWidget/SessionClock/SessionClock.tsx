@@ -28,7 +28,7 @@ const CLOCK_WIDTH_CHARS = 9;
 // Matches the icons the rest of the header carries.
 const ICON_SIZE_PX = 11;
 
-export const SessionClock = observer(function SessionClock() {
+export const SessionClock = observer(() => {
   const { session, sessionInfo } = useSessionStore();
 
   const settings = useWidgetSettings<StandingsWidgetSettings>('standings');

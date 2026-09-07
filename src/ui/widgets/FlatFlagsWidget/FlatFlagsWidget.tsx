@@ -8,7 +8,7 @@ import styles from './FlatFlagsWidget.module.scss';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
 import { useFlagsStore } from '@store/root-store-context';
 
-export const FlatFlagsWidget = observer(function FlatFlagsWidget() {
+export const FlatFlagsWidget = observer(() => {
   const flags = useFlagsStore();
 
   const { alwaysShow } = useWidgetSettings<FlagDisplaySettings>('flat-flags');

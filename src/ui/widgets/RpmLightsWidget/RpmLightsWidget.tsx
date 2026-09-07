@@ -13,7 +13,7 @@ import { RpmBar } from './RpmBar/RpmBar';
  * status, which arrives four times a second — the revs and the speed that drive
  * either bar are read inside it, so the root does not wake with them.
  */
-export const RpmLightsWidget = observer(function RpmLightsWidget() {
+export const RpmLightsWidget = observer(() => {
   const { carStatus } = usePlayerStore();
   const { showPitAssist } =
     useWidgetSettings<RaceDashWidgetSettings>('race-dash');

@@ -36,10 +36,7 @@ interface DriverRowProps {
  * tick, along with the lapped-and-lapping colouring that rides on it — is
  * written straight to its span. See `docs/rendering.md`.
  */
-export const DriverRow = observer(function DriverRow({
-  carIdx,
-  index,
-}: DriverRowProps) {
+export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const computed = useBackendComputedStore();
 
   const settings = useWidgetSettings<RelativeWidgetSettings>('relative');

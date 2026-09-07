@@ -8,7 +8,7 @@ import { SectorHeader } from './SectorHeader/SectorHeader';
 import { SectorGrid } from './SectorGrid/SectorGrid';
 import { SectorFooter } from './SectorFooter/SectorFooter';
 
-export const SectorMatrixWidget = observer(function SectorMatrixWidget() {
+export const SectorMatrixWidget = observer(() => {
   const { sessionInfo } = useSessionStore();
   const sim = useSimStore();
 

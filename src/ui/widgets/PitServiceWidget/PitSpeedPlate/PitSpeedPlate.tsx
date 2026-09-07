@@ -14,7 +14,7 @@ import styles from './PitSpeedPlate.module.scss';
  * limiter bit and what counts as being out of the pits too, and two answers to
  * "are we still bound by the limit" is one too many.
  */
-export const PitSpeedPlate = observer(function PitSpeedPlate() {
+export const PitSpeedPlate = observer(() => {
   const { isPitLimitReleased, isLimiterOn } = usePitServiceWidgetStore();
 
   if (isPitLimitReleased) {

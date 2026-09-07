@@ -7,7 +7,7 @@ import styles from './SingleLed.module.scss';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
 import { useFlagsStore } from '@store/root-store-context';
 
-export const SingleLed = observer(function SingleLed() {
+export const SingleLed = observer(() => {
   const flags = useFlagsStore();
 
   const { alwaysShow, animate } =

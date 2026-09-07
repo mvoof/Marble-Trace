@@ -17,7 +17,7 @@ const NO_LIMIT_TEXT = '—';
  * gauge and simply names both numbers. The speed half of the pair still moves
  * every tick and is written straight to its span.
  */
-export const PitLimiterRow = observer(function PitLimiterRow() {
+export const PitLimiterRow = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
   const units = useUnitsStore();

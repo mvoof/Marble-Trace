@@ -47,7 +47,7 @@ const ARROW_FLIP = `rotate(180 0 ${-ARROW_BASE_RADIUS + ARROW_HEIGHT / 2})`;
  * the reactive-DOM primitive and wakes React not at all; only the wind's own
  * speed, which arrives once a second, re-renders the arrow — for its colour.
  */
-export const WindArrow = observer(function WindArrow() {
+export const WindArrow = observer(() => {
   const sessionStore = useSessionStore();
   const environmentStore = useEnvironmentStore();
   const player = usePlayerStore();

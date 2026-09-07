@@ -6,7 +6,7 @@ import { WeatherHeader } from './WeatherHeader/WeatherHeader';
 import { StatsGrid } from './StatsGrid/StatsGrid';
 import { ForecastBlock } from './ForecastBlock/ForecastBlock';
 
-export const WeatherWidget = observer(function WeatherWidget() {
+export const WeatherWidget = observer(() => {
   return (
     <WidgetPanel direction="column" gap={0} minWidth={80}>
       <WindCompass />

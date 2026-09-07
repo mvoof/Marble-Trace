@@ -16,7 +16,7 @@ const RESULT_LABEL = {
  * The sim never acknowledges a broadcast, so "sent" means the message left this
  * app — the tire checkboxes underneath are the real confirmation.
  */
-export const OrderHint = observer(function OrderHint() {
+export const OrderHint = observer(() => {
   const pitService = usePitServiceWidgetStore();
 
   const result = pitService.order.lastOrderResult;

@@ -4,7 +4,7 @@ import styles from './PitWarningHeader.module.scss';
 import { useBackendComputedStore } from '@store/root-store-context';
 import { isPitNow } from '../../fuel-utils';
 
-export const PitWarningHeader = observer(function PitWarningHeader() {
+export const PitWarningHeader = observer(() => {
   const { fuel } = useBackendComputedStore();
 
   const windowStart = fuel?.pitWindowStart ?? null;

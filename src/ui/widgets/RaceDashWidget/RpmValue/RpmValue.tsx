@@ -15,7 +15,7 @@ const RPM_COLOR_PROPERTY = '--rpm-value-color';
  * the zone colour and the redline pulse are written straight to the span. See
  * `docs/rendering.md`.
  */
-export const RpmValue = observer(function RpmValue() {
+export const RpmValue = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
 

@@ -24,7 +24,7 @@ const isLimiterSafe = (pitState: PitState): boolean =>
   pitState === 'limiter-near-exit' ||
   pitState === 'limiter-exit';
 
-export const PitBlock = observer(function PitBlock() {
+export const PitBlock = observer(() => {
   const standingsWidget = useStandingsWidgetStore();
   const {
     pitState,

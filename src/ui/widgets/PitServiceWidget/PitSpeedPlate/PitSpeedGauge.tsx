@@ -31,7 +31,7 @@ const LIFT_WIDTH_PROPERTY = '--speed-lift-width';
  * tick, so the bars and the number are written straight to the DOM and React
  * renders the row once. See `docs/rendering.md`.
  */
-export const PitSpeedGauge = observer(function PitSpeedGauge() {
+export const PitSpeedGauge = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
   const units = useUnitsStore();

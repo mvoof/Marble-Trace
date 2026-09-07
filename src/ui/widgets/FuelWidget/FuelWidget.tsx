@@ -9,7 +9,7 @@ import { FuelSummaryRow } from './FuelSummaryRow/FuelSummaryRow';
 import { FuelPitWarning } from './FuelPitWarning/FuelPitWarning';
 import { FuelNextStop } from './FuelNextStop/FuelNextStop';
 
-export const FuelWidget = observer(function FuelWidget() {
+export const FuelWidget = observer(() => {
   return (
     <WidgetPanel direction="column" gap={0} minWidth={220}>
       <FuelHeader />

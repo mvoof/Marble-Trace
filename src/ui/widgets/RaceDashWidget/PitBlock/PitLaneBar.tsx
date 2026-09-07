@@ -15,7 +15,7 @@ const BOX_ZONE_MAX_PCT = 0.12;
 const clampPct = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max);
 
-export const PitLaneBar = observer(function PitLaneBar() {
+export const PitLaneBar = observer(() => {
   const {
     pitState,
     distMode,

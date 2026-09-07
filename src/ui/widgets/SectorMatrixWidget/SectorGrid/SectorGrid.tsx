@@ -69,7 +69,7 @@ const applyChipState = (chip: Element, state: SectorChipState): void => {
   }
 };
 
-export const SectorGrid = observer(function SectorGrid({ sectorCount }: Props) {
+export const SectorGrid = observer(({ sectorCount }: Props) => {
   const player = usePlayerStore();
   const computed = useBackendComputedStore();
 

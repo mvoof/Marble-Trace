@@ -36,7 +36,7 @@ const formatTempInt = (celsius: number | null, system: UnitSystem): string => {
   return `${Math.round(converted)}°`;
 };
 
-export const EnginePanelWidget = observer(function EnginePanelWidget() {
+export const EnginePanelWidget = observer(() => {
   const playerStore = usePlayerStore();
   const unitsStore = useUnitsStore();
 

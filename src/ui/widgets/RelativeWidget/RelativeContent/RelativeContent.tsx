@@ -26,7 +26,7 @@ const MIN_VISIBLE_ROWS = 3;
  * changing who is where re-renders nothing here — each row reads its own driver
  * and writes its own gap. See `docs/rendering.md`.
  */
-export const RelativeContent = observer(function RelativeContent() {
+export const RelativeContent = observer(() => {
   const computed = useBackendComputedStore();
   const relativeWidget = useRelativeWidgetStore();
   const sim = useSimStore();

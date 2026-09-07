@@ -5,7 +5,7 @@ import { FlagItem } from '@ui/widgets/FlatFlagsWidget/FlagItem/FlagItem';
 import styles from './FlagList.module.scss';
 import { useFlagsStore } from '@store/root-store-context';
 
-export const FlagList = observer(function FlagList() {
+export const FlagList = observer(() => {
   const { displayFlags } = useFlagsStore();
 
   return (

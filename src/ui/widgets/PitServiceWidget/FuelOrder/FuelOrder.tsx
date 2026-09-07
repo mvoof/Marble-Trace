@@ -29,7 +29,7 @@ const DRAG_THRESHOLD_PX = 3;
  * in interact mode it is dragged left and right to set it. A press that does
  * not move is still the on/off toggle.
  */
-export const FuelOrder = observer(function FuelOrder() {
+export const FuelOrder = observer(() => {
   const pitServiceWidget = usePitServiceWidgetStore();
   const units = useUnitsStore();
   const pressStartX = useRef<number | null>(null);

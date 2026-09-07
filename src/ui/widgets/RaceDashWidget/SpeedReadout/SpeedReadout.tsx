@@ -10,7 +10,7 @@ import styles from './SpeedReadout.module.scss';
  * The speed, which changes on every physics tick and is one number — the case
  * the reactive-DOM primitive exists for. See `docs/rendering.md`.
  */
-export const SpeedReadout = observer(function SpeedReadout() {
+export const SpeedReadout = observer(() => {
   const player = usePlayerStore();
   const units = useUnitsStore();
 

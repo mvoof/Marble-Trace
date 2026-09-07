@@ -31,7 +31,7 @@ const WINDOW_HALF = 0.5;
  * dots are markup React renders once per field change, and one pass per
  * animation frame moves them. See `docs/rendering.md`.
  */
-export const LinearMap = observer(function LinearMap() {
+export const LinearMap = observer(() => {
   const computed = useBackendComputedStore();
   const carsStore = useCarsStore();
   const sessionStore = useSessionStore();

@@ -6,7 +6,7 @@ import { Bar } from './Bar/Bar';
 
 import styles from './InputBars.module.scss';
 
-export const InputBars = observer(function InputBars() {
+export const InputBars = observer(() => {
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
 
   if (!settings.showThrottle && !settings.showBrake && !settings.showClutch) {

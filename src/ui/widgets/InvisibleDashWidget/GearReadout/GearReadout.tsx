@@ -17,7 +17,7 @@ const GEAR_COLOR_PROPERTY = '--dash-gear-color';
  * shift and the zone with the revs, both off the 60 Hz dynamics frame, so both
  * are written straight to the digit. See `docs/rendering.md`.
  */
-export const GearReadout = observer(function GearReadout() {
+export const GearReadout = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
 

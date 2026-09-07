@@ -24,10 +24,7 @@ interface PaceCarRowProps {
  * The pace car's own row. Its gap moves every tick and is written straight to
  * its span; the rest of the row is the roster entry, which does not move.
  */
-export const PaceCarRow = observer(function PaceCarRow({
-  carIdx,
-  index,
-}: PaceCarRowProps) {
+export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
   const computed = useBackendComputedStore();
   const relativeWidget = useRelativeWidgetStore();
 

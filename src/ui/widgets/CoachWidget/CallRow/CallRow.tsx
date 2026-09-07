@@ -55,7 +55,7 @@ const signed = (value: number, digits: number): string =>
  * gained. The advisory itself comes from the shared coach store; only the
  * window delta belongs to this widget.
  */
-export const CallRow = observer(function CallRow() {
+export const CallRow = observer(() => {
   const coach = useDrivingCoachWidgetStore();
   const trace = useCoachWidgetStore();
 
