@@ -30,9 +30,11 @@ export const ShiftBar = observer(() => {
   const trackRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
       const { pct, zone } = computeRpmZoneState(
+        // oxlint-disable-next-line no-restricted-properties
         Math.round(player.carDynamics?.rpm ?? 0),
         sessionStore.sessionInfo,
         player.carStatus,
+        // oxlint-disable-next-line no-restricted-properties
         player.carDynamics?.gear ?? 0
       );
 

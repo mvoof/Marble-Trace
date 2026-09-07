@@ -17,6 +17,7 @@ export const SpeedReadout = observer(() => {
   const valueRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
       const speedText = formatSpeed(
+        // oxlint-disable-next-line no-restricted-properties
         player.carDynamics?.speed ?? 0,
         units.unitSystem
       );

@@ -45,6 +45,7 @@ export const SteeringMarker = observer(() => {
 
   const rootRef = useReactiveDomWrite<SVGSVGElement>(
     (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
       const rawAngle = player.carDynamics?.steering_wheel_angle ?? 0;
       // Wheel left means the marker travels left, i.e. counter-clockwise, so
       // the sign flips against the clockwise-positive SVG sweep.

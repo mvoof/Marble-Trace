@@ -53,6 +53,7 @@ export const CanvasTrace = () => {
 
   useReactiveCanvasLoop(
     (scheduleDraw) => {
+      // oxlint-disable-next-line no-restricted-properties
       const inputs = telemetry.carInputs;
       const settings =
         widgetSettings.getSettings<InputTraceSettings>(instanceId);
@@ -103,6 +104,7 @@ export const CanvasTrace = () => {
             clutch: smoothed.clutch,
             absActive: !!inputs?.brake_abs_active,
             steeringWheelAngle:
+              // oxlint-disable-next-line no-restricted-properties
               telemetry.carDynamics?.steering_wheel_angle ?? 0,
           },
           settings

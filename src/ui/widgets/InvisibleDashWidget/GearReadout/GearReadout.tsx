@@ -26,8 +26,10 @@ export const GearReadout = observer(() => {
 
   const gearRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
       const gear = player.carDynamics?.gear ?? 0;
       const { zone } = computeRpmZoneState(
+        // oxlint-disable-next-line no-restricted-properties
         Math.round(player.carDynamics?.rpm ?? 0),
         sessionStore.sessionInfo,
         player.carStatus,

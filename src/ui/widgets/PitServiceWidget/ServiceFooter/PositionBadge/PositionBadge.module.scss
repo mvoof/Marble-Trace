@@ -1,0 +1,5 @@
+// The projection is an estimate, so it stays visually subordinate to the
+// position the car actually holds right now.
+.projected {
+  color: $race-amber;
+}

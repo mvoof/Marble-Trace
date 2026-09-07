@@ -97,8 +97,10 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
     (element, scheduleWrite) => {
       const rawDist =
         side === 'left'
-          ? computed.proximity?.radarDistances.leftDist
-          : computed.proximity?.radarDistances.rightDist;
+          ? // oxlint-disable-next-line no-restricted-properties
+            computed.proximity?.radarDistances.leftDist
+          : // oxlint-disable-next-line no-restricted-properties
+            computed.proximity?.radarDistances.rightDist;
 
       if (rawDist === null || rawDist === undefined) {
         scheduleWrite(() => {

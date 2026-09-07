@@ -23,11 +23,13 @@ export const RpmValue = observer(() => {
 
   const valueRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
       const rpm = Math.round(player.carDynamics?.rpm ?? 0);
       const { zone } = computeRpmZoneState(
         rpm,
         sessionStore.sessionInfo,
         player.carStatus,
+        // oxlint-disable-next-line no-restricted-properties
         player.carDynamics?.gear ?? 0
       );
 

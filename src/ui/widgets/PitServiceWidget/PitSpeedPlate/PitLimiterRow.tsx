@@ -24,6 +24,7 @@ export const PitLimiterRow = observer(() => {
 
   const rowRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
       const speedMs = player.carDynamics?.speed ?? 0;
       const limitMs = parsePitSpeedLimitMs(
         sessionStore.sessionInfo?.trackPitSpeedLimit

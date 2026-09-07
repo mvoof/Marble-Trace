@@ -68,6 +68,7 @@ export const PitApproachRail = observer(
           progressPct: player.pitLaneProgressPct,
           laneLengthM: pitService.pitLaneLengthM,
           boxLanePct: pitService.pitboxLanePct,
+          // oxlint-disable-next-line no-restricted-properties
           speedMs: player.carDynamics?.speed ?? 0,
           cueDistM,
           withBrakeCue,

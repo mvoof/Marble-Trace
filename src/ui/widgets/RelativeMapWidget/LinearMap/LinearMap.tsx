@@ -121,6 +121,7 @@ export const LinearMap = observer(() => {
         ),
         ...paceCars.map((car) =>
           projectLapDistPct(
+            // oxlint-disable-next-line no-restricted-properties
             carsStore.carPositions?.car_idx_lap_dist_pct[car.carIdx] ?? -1
           )
         ),
@@ -128,6 +129,7 @@ export const LinearMap = observer(() => {
 
       const paceCarOnTrack = paceCars.map(
         (car) =>
+          // oxlint-disable-next-line no-restricted-properties
           (carsStore.carPositions?.car_idx_lap_dist_pct[car.carIdx] ?? -1) >= 0
       );
 

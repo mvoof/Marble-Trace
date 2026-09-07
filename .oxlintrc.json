@@ -258,13 +258,50 @@
       }
     },
     {
+      "files": ["src/ui/**/*.tsx"],
+      "rules": {
+        "no-restricted-properties": [
+          "error",
+          {
+            "property": "carDynamics",
+            "message": "Hot field (60 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+          },
+          {
+            "property": "carInputs",
+            "message": "Hot field (60 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+          },
+          {
+            "property": "carPositions",
+            "message": "Hot field (60 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+          },
+          {
+            "property": "lapDelta",
+            "message": "Hot field (60 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+          },
+          {
+            "property": "relative",
+            "message": "Heavy per-car frame (10 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+          },
+          {
+            "property": "proximity",
+            "message": "Heavy per-car frame (10 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+          },
+          {
+            "property": "driverEntries",
+            "message": "Heavy per-car frame (10 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+          }
+        ]
+      }
+    },
+    {
       "files": [
         "src/**/*.test.ts",
         "src/**/*.test.tsx",
         "src/**/*.stories.tsx"
       ],
       "rules": {
-        "no-restricted-imports": "off"
+        "no-restricted-imports": "off",
+        "no-restricted-properties": "off"
       }
     }
   ]

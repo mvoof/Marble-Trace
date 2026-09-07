@@ -34,6 +34,7 @@ export const RotatingRing = observer(({ children }: RotatingRingProps) => {
 
   const groupRef = useReactiveDomWrite<SVGGElement>(
     (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
       const carYawDeg = (player.carDynamics?.yaw ?? 0) * RADIANS_TO_DEGREES;
 
       scheduleWrite(() => {

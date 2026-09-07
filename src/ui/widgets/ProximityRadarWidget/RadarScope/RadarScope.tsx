@@ -105,7 +105,10 @@ export const RadarScope = observer(() => {
 
       const scope = settingsRef.current;
       const { carLength } = carsRef.current;
+      // Inside a hand-rolled RAF loop (not useReactiveCanvasLoop), same escape
+      // hatch without the shared primitive's grep signal. See docs/rendering.md.
       const nearbyCars =
+        // oxlint-disable-next-line no-restricted-properties
         computed.proximity?.nearbyCars.filter(
           (car) => car.clearance <= SEARCH_RADIUS_M
         ) ?? [];

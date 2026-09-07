@@ -35,11 +35,13 @@ export const EngineCluster = observer(() => {
 
   const rootRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
       const rpm = Math.round(player.carDynamics?.rpm ?? 0);
       const { pct, zone } = computeRpmZoneState(
         rpm,
         sessionStore.sessionInfo,
         player.carStatus,
+        // oxlint-disable-next-line no-restricted-properties
         player.carDynamics?.gear ?? 0
       );
 
@@ -53,6 +55,7 @@ export const EngineCluster = observer(() => {
         : null;
 
       const speedText = formatSpeed(
+        // oxlint-disable-next-line no-restricted-properties
         player.carDynamics?.speed ?? 0,
         units.unitSystem
       );

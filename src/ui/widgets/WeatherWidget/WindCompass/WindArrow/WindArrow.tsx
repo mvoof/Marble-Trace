@@ -59,6 +59,7 @@ export const WindArrow = observer(() => {
 
   const groupRef = useReactiveDomWrite<SVGGElement>(
     (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
       const carYawDeg = (player.carDynamics?.yaw ?? 0) * RADIANS_TO_DEGREES;
       const windDirRad =
         environmentStore.environment?.windDir ??

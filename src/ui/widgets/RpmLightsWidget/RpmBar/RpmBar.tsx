@@ -37,10 +37,12 @@ export const RpmBar = observer(() => {
         limit: settings.rpmColorLimit,
       };
 
+      // oxlint-disable-next-line no-restricted-properties
       const rpm = player.carDynamics?.rpm ?? 0;
       const { shiftRpm, blinkRpm } = computeShiftThresholds(
         sessionStore.sessionInfo,
         player.carStatus,
+        // oxlint-disable-next-line no-restricted-properties
         player.carDynamics?.gear ?? 0
       );
 

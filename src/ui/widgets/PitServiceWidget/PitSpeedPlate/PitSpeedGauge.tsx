@@ -38,6 +38,7 @@ export const PitSpeedGauge = observer(() => {
 
   const rowRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
       const speedMs = player.carDynamics?.speed ?? 0;
       const limitMs = parsePitSpeedLimitMs(
         sessionStore.sessionInfo?.trackPitSpeedLimit
@@ -46,6 +47,7 @@ export const PitSpeedGauge = observer(() => {
       const view = buildSpeedRow(
         speedMs,
         limitMs,
+        // oxlint-disable-next-line no-restricted-properties
         player.carDynamics?.long_accel ?? null,
         units.speedFactor
       );

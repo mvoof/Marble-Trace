@@ -17,12 +17,36 @@ import type { CarIdentity } from '@/types/car-identity';
 import { carIdentityOf } from '@utils/car-identity';
 
 export class BackendComputedStore {
+  /**
+   * Heavy 10 Hz per-car frame — never read directly in a component render
+   * body. Read it inside `useReactiveDomWrite`/`useReactiveCanvasLoop`;
+   * `oxlint` enforces this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * @remarks See "The hot/cold split" in `docs/rendering.md`.
+   */
   proximity: ProximityFrame | null = null;
   fuel: FuelComputedFrame | null = null;
+  /**
+   * Heavy 10 Hz per-car frame — never read directly in a component render
+   * body. Read it inside `useReactiveDomWrite`/`useReactiveCanvasLoop`;
+   * `oxlint` enforces this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * @remarks See "The hot/cold split" in `docs/rendering.md`.
+   */
   relative: RelativeFrame | null = null;
   incidents: IncidentsFrame | null = null;
+  /**
+   * Heavy 10 Hz per-car frame — never read directly in a component render
+   * body. Read it inside `useReactiveDomWrite`/`useReactiveCanvasLoop`;
+   * `oxlint` enforces this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * @remarks See "The hot/cold split" in `docs/rendering.md`.
+   */
   driverEntries: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
+  /**
+   * 60 Hz hot field — never read directly in a component render body. Read it
+   * inside `useReactiveDomWrite`/`useReactiveCanvasLoop`; `oxlint` enforces
+   * this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * @remarks See "The hot/cold split" in `docs/rendering.md`.
+   */
   lapDelta: LapDeltaFrame | null = null;
   lapHistory: LapHistoryEntry[] = [];
   lastCompletedLap: LastCompletedLap | null = null;

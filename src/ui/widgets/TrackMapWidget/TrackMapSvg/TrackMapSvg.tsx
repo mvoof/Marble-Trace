@@ -101,6 +101,7 @@ export const TrackMapSvg = observer(
     const mapRef = useReactiveDomWrite<SVGSVGElement>(
       (element, scheduleWrite) => {
         const lapDistPctOf = (carIdx: number): number =>
+          // oxlint-disable-next-line no-restricted-properties
           carsStore.carPositions?.car_idx_lap_dist_pct[carIdx] ??
           computed.driverEntryOf(carIdx)?.lapDistPct ??
           -1;
