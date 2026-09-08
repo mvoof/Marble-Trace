@@ -85,232 +85,167 @@ $board-padding: 4px;
   );
 }
 
+// Every rule below reads `--phase-a`/`--phase-b` instead of running its own
+// `animation`. Both are written once per tick, on `.board`, by
+// `useLedBlinkClock` — a matrix can hold 500+ diodes, and one shared DOM
+// write reaching all of them (via `color-mix()`, a static formula) replaced
+// what used to be one running CSS Animation instance per diode. `--phase-a`
+// goes 0 -> 1 across each half-cycle and back; `--phase-b` is its complement,
+// for the patterns that need one group inverted relative to the other rather
+// than swapped to a different color. See the widget's own entry in the FPS
+// diagnostics CSV (2026-09-08) for the cost this replaced.
+//
+// The green "fill" wipe (`ledGreenFill-*` below) is left as CSS animation:
+// it is a genuine multi-step sequence per ring, not a two-state blink, and
+// there are far fewer distinct rings than diodes.
 .board.animate {
   &.flag-yellow .colorYellow {
-    animation: ledYellowAlternating 1s infinite steps(1);
-    animation-delay: calc(var(--col-parity) * 0.5s);
+    --diode-phase: var(--phase-a);
+
+    background-color: color-mix(
+      in srgb,
+      $led-yellow calc((1 - var(--diode-phase)) * 100%),
+      $led-surface-panel
+    );
+  }
+
+  &.flag-yellow .colorYellow[data-col-parity='1'] {
+    --diode-phase: var(--phase-b);
   }
 
   &.flag-blue {
     .colorBlue {
-      animation: ledBlueScroll 1s infinite steps(1);
+      background-color: color-mix(
+        in srgb,
+        $led-blue calc((1 - var(--phase-a)) * 100%),
+        $led-yellow
+      );
     }
+
     .colorYellow {
-      animation: ledYellowScrollBlue 1s infinite steps(1);
+      background-color: color-mix(
+        in srgb,
+        $led-yellow calc((1 - var(--phase-a)) * 100%),
+        $led-blue
+      );
     }
   }
 
   &.flag-checkered .colorWhite {
-    animation: ledCheckeredAlternating 1s infinite steps(1);
-    animation-delay: calc(var(--checkered-parity) * 0.5s);
+    --diode-phase: var(--phase-a);
+
+    background-color: color-mix(
+      in srgb,
+      $led-white calc((1 - var(--diode-phase)) * 100%),
+      $led-surface-panel
+    );
+  }
+
+  &.flag-checkered .colorWhite[data-checkered-parity='1'] {
+    --diode-phase: var(--phase-b);
   }
 
   &.flag-debris {
     .colorYellow {
-      animation: ledYellowScrollRed 1s infinite steps(1);
+      background-color: color-mix(
+        in srgb,
+        $led-yellow calc((1 - var(--phase-a)) * 100%),
+        $led-red
+      );
     }
+
     .colorRed {
-      animation: ledRedScrollYellow 1s infinite steps(1);
+      background-color: color-mix(
+        in srgb,
+        $led-red calc((1 - var(--phase-a)) * 100%),
+        $led-yellow
+      );
     }
   }
 
-  &.flag-meatball {
-    .colorOrange {
-      animation: ledMeatballBlink 1s infinite steps(1);
-    }
+  &.flag-meatball .colorOrange {
+    background-color: color-mix(
+      in srgb,
+      $led-orange calc((1 - var(--phase-a)) * 100%),
+      $led-surface-panel
+    );
   }
 
   &.flag-black .colorWhite {
-    animation: ledBlackBorderFlash 0.8s infinite steps(1);
+    background-color: color-mix(
+      in srgb,
+      $led-white calc((1 - var(--phase-a)) * 100%),
+      $led-surface-panel
+    );
   }
 
+  // `--phase-a` here is the eased 0->1 breath itself, written straight from
+  // `useLedBlinkClock`'s rAF loop rather than flipped every half-cycle: 0 is
+  // full white (the keyframe's 0%/100%), 1 is the dimmed midpoint (its 50%).
   &.flag-white .colorWhite {
-    animation: ledWhiteBreathing 2s infinite ease-in-out;
+    background-color: color-mix(
+      in srgb,
+      color-mix(in srgb, $led-white 50%, $led-surface-panel)
+        calc(var(--phase-a) * 100%),
+      $led-white
+    );
   }
 
   // Safety car: diagonal yellow/black hazard stripes that scroll, mirroring
   // the blue flag's scrolling treatment.
   &.flag-sc {
     .colorSc {
-      animation: ledScScrollYellow 1s infinite steps(1);
+      background-color: color-mix(
+        in srgb,
+        $led-yellow calc((1 - var(--phase-a)) * 100%),
+        $led-surface-panel
+      );
     }
+
     .colorScDark {
-      animation: ledScScrollDark 1s infinite steps(1);
+      background-color: color-mix(
+        in srgb,
+        $led-surface-panel calc((1 - var(--phase-a)) * 100%),
+        $led-yellow
+      );
     }
   }
 
   &.flag-dq {
     .colorRed {
-      animation: ledDqXPulse 0.8s infinite steps(1);
+      background-color: color-mix(
+        in srgb,
+        $led-red calc((1 - var(--phase-a)) * 100%),
+        $led-surface-panel
+      );
     }
 
     .colorWhite {
-      animation: ledBlackBorderFlash 0.8s infinite steps(1);
+      background-color: color-mix(
+        in srgb,
+        $led-white calc((1 - var(--phase-a)) * 100%),
+        $led-surface-panel
+      );
     }
   }
-}
 
-@keyframes ledYellowAlternating {
-  0%,
-  49.99% {
-    background-color: $led-yellow;
-  }
-  50%,
-  100% {
-    background-color: $led-surface-panel;
-  }
-}
+  &.flag-red {
+    .diode[data-is-outer='true'],
+    .diode[data-is-center='true'] {
+      background-color: color-mix(
+        in srgb,
+        $led-red calc((1 - var(--phase-a)) * 100%),
+        $led-surface-panel
+      );
+    }
 
-@keyframes ledBlueScroll {
-  0%,
-  49.99% {
-    background-color: $led-blue;
-  }
-  50%,
-  100% {
-    background-color: $led-yellow;
-  }
-}
-
-@keyframes ledYellowScrollBlue {
-  0%,
-  49.99% {
-    background-color: $led-yellow;
-  }
-  50%,
-  100% {
-    background-color: $led-blue;
-  }
-}
-
-@keyframes ledCheckeredAlternating {
-  0%,
-  49.99% {
-    background-color: $led-white;
-  }
-  50%,
-  100% {
-    background-color: $led-surface-panel;
-  }
-}
-
-@keyframes ledYellowScrollRed {
-  0%,
-  49.99% {
-    background-color: $led-yellow;
-  }
-  50%,
-  100% {
-    background-color: $led-red;
-  }
-}
-
-@keyframes ledRedScrollYellow {
-  0%,
-  49.99% {
-    background-color: $led-red;
-  }
-  50%,
-  100% {
-    background-color: $led-yellow;
-  }
-}
-
-@keyframes ledMeatballBlink {
-  0%,
-  49.99% {
-    background-color: $led-orange;
-  }
-  50%,
-  100% {
-    background-color: $led-surface-panel;
-  }
-}
-
-@keyframes ledBlackBorderFlash {
-  0%,
-  49.99% {
-    background-color: $led-white;
-  }
-  50%,
-  100% {
-    background-color: $led-surface-panel;
-  }
-}
-
-@keyframes ledDqXPulse {
-  0%,
-  49.99% {
-    background-color: $led-red;
-  }
-  50%,
-  100% {
-    background-color: $led-surface-panel;
-  }
-}
-
-@keyframes ledScScrollYellow {
-  0%,
-  49.99% {
-    background-color: $led-yellow;
-  }
-  50%,
-  100% {
-    background-color: $led-surface-panel;
-  }
-}
-
-@keyframes ledScScrollDark {
-  0%,
-  49.99% {
-    background-color: $led-surface-panel;
-  }
-  50%,
-  100% {
-    background-color: $led-yellow;
-  }
-}
-
-@keyframes ledWhiteBreathing {
-  0%,
-  100% {
-    background-color: $led-white;
-  }
-  50% {
-    background-color: color-mix(in srgb, $led-white 50%, $led-surface-panel);
-  }
-}
-
-.board.animate.flag-red {
-  .diode[data-is-outer='true'],
-  .diode[data-is-center='true'] {
-    animation: ledRedStateA 1s infinite steps(1);
-  }
-
-  .diode[data-is-inner='true'] {
-    animation: ledRedStateB 1s infinite steps(1);
-  }
-}
-
-@keyframes ledRedStateA {
-  0%,
-  49.99% {
-    background-color: $led-red;
-  }
-  50%,
-  100% {
-    background-color: $led-surface-panel;
-  }
-}
-
-@keyframes ledRedStateB {
-  0%,
-  49.99% {
-    background-color: $led-surface-panel;
-  }
-  50%,
-  100% {
-    background-color: $led-red;
+    .diode[data-is-inner='true'] {
+      background-color: color-mix(
+        in srgb,
+        $led-red calc((1 - var(--phase-b)) * 100%),
+        $led-surface-panel
+      );
+    }
   }
 }
 
