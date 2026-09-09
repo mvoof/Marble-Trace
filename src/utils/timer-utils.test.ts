@@ -91,11 +91,18 @@ describe('resolveSessionClock', () => {
 });
 
 describe('isLapLimitedSession', () => {
-  it('is true only for a session that ends on a lap count', () => {
-    expect(isLapLimitedSession('45')).toBe(true);
-    expect(isLapLimitedSession('unlimited')).toBe(false);
-    expect(isLapLimitedSession(null)).toBe(false);
-    expect(isLapLimitedSession(undefined)).toBe(false);
+  it('is true only for a race that ends on a lap count', () => {
+    expect(isLapLimitedSession('45', 'Race')).toBe(true);
+    expect(isLapLimitedSession('unlimited', 'Race')).toBe(false);
+    expect(isLapLimitedSession(null, 'Race')).toBe(false);
+    expect(isLapLimitedSession(undefined, 'Race')).toBe(false);
+  });
+
+  it('is false for qualify and practice even with a numeric lap count', () => {
+    // Qualify/practice can carry a per-driver lap limit in this same field,
+    // but they still end on the clock, not on laps.
+    expect(isLapLimitedSession('10', 'Qualify')).toBe(false);
+    expect(isLapLimitedSession('10', 'Practice')).toBe(false);
   });
 });
 

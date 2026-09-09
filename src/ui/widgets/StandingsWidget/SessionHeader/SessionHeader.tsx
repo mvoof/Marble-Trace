@@ -78,7 +78,10 @@ export const SessionHeader = observer(() => {
 
   // A timed race has its remaining laps estimated from the leader's best lap —
   // shown as "~", and never allowed to announce a final lap.
-  const isLapLimited = isLapLimitedSession(currentSession?.sessionLaps);
+  const isLapLimited = isLapLimitedSession(
+    currentSession?.sessionLaps,
+    currentSession?.sessionType
+  );
   const lapProgress = buildLapProgress(leaderLap, totalLaps, !isLapLimited);
 
   // Whether anything precedes the SOF in the left group — a rule with nothing on

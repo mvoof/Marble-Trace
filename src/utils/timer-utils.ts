@@ -131,11 +131,21 @@ export const resolveSessionColorKey = (
 
 const UNLIMITED_LAPS = 'unlimited';
 
-/** Whether the session ends on a lap count rather than on the clock. */
+/**
+ * Whether the session ends on a lap count rather than on the clock.
+ *
+ * Only a race actually ends this way. Qualify and practice can carry a
+ * numeric `sessionLaps` too (a per-driver lap limit), but they still end on
+ * `SessionTimeRemain` — treating that number as session-ending there is what
+ * silenced the qualifying countdown.
+ */
 export const isLapLimitedSession = (
-  sessionLaps: string | null | undefined
+  sessionLaps: string | null | undefined,
+  sessionType: SessionType | null | undefined
 ): boolean =>
-  Boolean(sessionLaps) && sessionLaps!.toLowerCase() !== UNLIMITED_LAPS;
+  sessionType === 'Race' &&
+  Boolean(sessionLaps) &&
+  sessionLaps!.toLowerCase() !== UNLIMITED_LAPS;
 
 /**
  * A lap-limited session has no time limit, but iRacing still fills

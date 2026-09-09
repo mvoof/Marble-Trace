@@ -31,7 +31,10 @@ export const TimerDisplay = observer(() => {
   const { seconds: rawSeconds } = resolveSessionClock(
     session?.session_time_remain ?? null,
     session?.session_time ?? null,
-    isLapLimitedSession(currentSession?.sessionLaps)
+    isLapLimitedSession(
+      currentSession?.sessionLaps,
+      currentSession?.sessionType
+    )
   );
 
   const { main: timeMain, secs: timeSeconds } = splitTime(rawSeconds);
