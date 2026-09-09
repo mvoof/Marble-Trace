@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import { formatLapTime, formatSpeed, speedUnit } from '@utils/telemetry-format';
+import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,
@@ -17,6 +18,10 @@ const NO_VALUE_TEXT = '—';
  * Reference lap time, the speed pair at the car's current position, and which
  * of the two stored references is in use. All optional — the curves carry the
  * shape, this row carries the values for anyone who wants them.
+ *
+ * The speed pair moves with the car and is written straight to its two spans;
+ * the rest of the row changes once a lap and is rendered by React. See
+ * `docs/rendering.md`.
  */
 export const InfoRow = observer(() => {
   const coach = useDrivingCoachWidgetStore();
@@ -24,6 +29,31 @@ export const InfoRow = observer(() => {
   const units = useUnitsStore();
 
   const settings = useWidgetSettings<CoachWidgetSettings>('coach');
+
+  const rootRef = useReactiveDomWrite<HTMLDivElement>(
+    (element, scheduleWrite) => {
+      const currentText = formatSpeed(coach.currentSpeedMps, units.unitSystem);
+      const referenceSpeedMps = coach.referenceSpeedMps;
+      const referenceText =
+        referenceSpeedMps === null
+          ? NO_VALUE_TEXT
+          : formatSpeed(referenceSpeedMps, units.unitSystem);
+
+      scheduleWrite(() => {
+        const current = element.querySelector(`.${styles.value}`);
+        const reference = element.querySelector(`.${styles.reference}`);
+
+        if (current instanceof HTMLElement) {
+          current.textContent = currentText;
+        }
+
+        if (reference instanceof HTMLElement) {
+          reference.textContent = referenceText;
+        }
+      });
+    },
+    [coach, units]
+  );
 
   const showsAnything =
     settings.showSpeed ||
@@ -34,23 +64,16 @@ export const InfoRow = observer(() => {
     return null;
   }
 
-  const referenceSpeedMps = coach.referenceSpeedMps;
   const referenceLapTimeS = trace.referenceLapTimeS;
   const condition = trace.referenceCondition;
 
   return (
-    <div className={styles.root}>
+    <div ref={rootRef} className={styles.root}>
       {settings.showSpeed ? (
         <span className={styles.group}>
-          <span className={styles.value}>
-            {formatSpeed(coach.currentSpeedMps, units.unitSystem)}
-          </span>
+          <span className={styles.value} />
           <span className={styles.separator}>/</span>
-          <span className={styles.reference}>
-            {referenceSpeedMps === null
-              ? NO_VALUE_TEXT
-              : formatSpeed(referenceSpeedMps, units.unitSystem)}
-          </span>
+          <span className={styles.reference} />
           <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
         </span>
       ) : null}

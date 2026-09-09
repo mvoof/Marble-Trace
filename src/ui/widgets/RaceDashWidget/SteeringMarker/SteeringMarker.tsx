@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { usePlayerStore } from '@store/root-store-context';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import { steeringAngleDeg, wrapToHalfTurn } from '@utils/car-signals';
+import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import {
   RIM_MARKER_RADIUS,
   RING_SIZE,
@@ -33,45 +34,71 @@ const TRAIL_OPACITY = 0.22;
  * top of a real rim, which is also why it laps the badge on wheels with more
  * than one turn of lock. A faint trail back to 12 o'clock shows how far into
  * the current turn the wheel is.
+ *
+ * The angle changes on every physics tick, so the dot and the trail are written
+ * straight to their SVG attributes. See `docs/rendering.md`.
  */
 export const SteeringMarker = observer(() => {
-  const { carDynamics } = usePlayerStore();
+  const player = usePlayerStore();
 
   const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');
+
+  const rootRef = useReactiveDomWrite<SVGSVGElement>(
+    (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
+      const rawAngle = player.carDynamics?.steering_wheel_angle ?? 0;
+      // Wheel left means the marker travels left, i.e. counter-clockwise, so
+      // the sign flips against the clockwise-positive SVG sweep.
+      const travelDeg = -steeringAngleDeg(rawAngle);
+      // The dot laps the rim, the trail keeps the direction it was wound in.
+      const dot = rimPoint(wrapToHalfTurn(travelDeg), RIM_MARKER_RADIUS);
+      const trailDeg = Math.min(
+        Math.max(travelDeg, -MAX_TRAIL_DEG),
+        MAX_TRAIL_DEG
+      );
+
+      const hasTrail = Math.abs(trailDeg) > MIN_VISIBLE_TRAIL_DEG;
+      const trailPath = hasTrail
+        ? rimTrailPath(trailDeg, RIM_MARKER_RADIUS)
+        : '';
+
+      scheduleWrite(() => {
+        const trail = element.querySelector(`.${styles.trail}`);
+
+        if (trail instanceof SVGPathElement) {
+          trail.setAttribute('d', trailPath);
+          trail.style.display = hasTrail ? '' : 'none';
+        }
+
+        const marker = element.querySelector(`.${styles.dot}`);
+
+        if (marker instanceof SVGCircleElement) {
+          marker.setAttribute('cx', dot.x.toFixed(3));
+          marker.setAttribute('cy', dot.y.toFixed(3));
+        }
+      });
+    },
+    [player]
+  );
 
   if (!settings.showSteeringMarker) {
     return null;
   }
 
-  const rawAngle = carDynamics?.steering_wheel_angle ?? 0;
-  // Wheel left means the marker travels left, i.e. counter-clockwise, so the
-  // sign flips against the clockwise-positive SVG sweep.
-  const travelDeg = -steeringAngleDeg(rawAngle);
-  // The dot laps the rim, the trail keeps the direction it was wound in.
-  const dot = rimPoint(wrapToHalfTurn(travelDeg), RIM_MARKER_RADIUS);
-  const trailDeg = Math.min(Math.max(travelDeg, -MAX_TRAIL_DEG), MAX_TRAIL_DEG);
-
   return (
     <svg
+      ref={rootRef}
       className={styles.root}
       viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
       aria-hidden="true"
     >
-      {Math.abs(trailDeg) > MIN_VISIBLE_TRAIL_DEG && (
-        <path
-          className={styles.trail}
-          d={rimTrailPath(trailDeg, RIM_MARKER_RADIUS)}
-          stroke={settings.steeringTrailColor}
-          strokeOpacity={TRAIL_OPACITY}
-        />
-      )}
-
-      <circle
-        className={styles.dot}
-        cx={dot.x.toFixed(3)}
-        cy={dot.y.toFixed(3)}
-        r={DOT_RADIUS}
+      <path
+        className={styles.trail}
+        stroke={settings.steeringTrailColor}
+        strokeOpacity={TRAIL_OPACITY}
       />
+
+      <circle className={styles.dot} r={DOT_RADIUS} />
     </svg>
   );
 });

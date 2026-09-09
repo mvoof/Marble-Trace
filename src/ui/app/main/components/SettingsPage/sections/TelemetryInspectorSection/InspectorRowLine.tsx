@@ -53,6 +53,11 @@ export const InspectorRowLine = observer(({ row }: InspectorRowLineProps) => {
             className={styles.caret}
             onClick={() => inspector.toggleExpanded(row.path)}
             aria-expanded={row.expanded}
+            aria-label={
+              row.expanded
+                ? t('settingsPage.telemetryInspector.collapseRow')
+                : t('settingsPage.telemetryInspector.expandRow')
+            }
           >
             {row.expanded ? (
               <ChevronDown size={12} />

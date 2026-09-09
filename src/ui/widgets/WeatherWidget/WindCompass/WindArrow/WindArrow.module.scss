@@ -1,3 +1,5 @@
 .windArrowGroup {
-  transition: transform 0.05s linear;
+  // See RotatingRing.module.scss: --wind-bearing already writes at up to
+  // 60 Hz, so a transition here only adds a retargeted transition per frame.
+  transform: rotate(var(--wind-bearing, 0deg));
 }

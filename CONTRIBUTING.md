@@ -26,6 +26,21 @@ Before creating an issue please ensure that the problem is not [already reported
 3. **Make Changes**
    Implement your feature or fix the bug. Be sure to follow the project's coding style and add tests if necessary.
 
+   If you are **building a new widget**, read
+   [docs/widget-authoring.md](docs/widget-authoring.md) before you open a widget
+   file. It is the route from an idea to a merged widget, ordered by cost —
+   which telemetry exists and at what rate, which fields are sent only while a
+   widget asks for them, whether the widget needs a store, and what is collected
+   automatically and needs no shared file edited. Beside it,
+   [docs/widget-toolbox.md](docs/widget-toolbox.md) lists every helper, shared
+   component, hook and design token that already exists, so you do not write a
+   fifth lap-time formatter.
+
+   If you are touching a widget that reads telemetry, read
+   [docs/rendering.md](docs/rendering.md) first — the overlay renders under a
+   60 Hz feed, and a component that reads a hot field has to follow the
+   hot/cold split described there.
+
 4. **Commit Changes**
 
    Before committing, ensure your code is clean and functional:
@@ -97,9 +112,15 @@ Commit messages should follow the [Conventional Commits](https://conventionalcom
 
 If you have any questions or need help, feel free to open an issue or ask in the discussions section. We appreciate your contributions!
 
+## Agent tooling
+
+`AGENTS.md`, the project skills under `.claude/skills/` and `.mcp.json` are tracked: they are the shared contract an agent working in this repository reads, and the MCP server the visual-testing workflow needs.
+
+Anything that makes your machine run third-party code is **not** tracked, and is yours to opt into. `.claude/settings.json` is gitignored along with `settings.local.json` — put `enabledPlugins`, `enableAllProjectMcpServers` and your permission allow-list in the local file, so a clone never enables a plugin you have not read. The MCP server in `.mcp.json` is pinned to an exact version for the same reason; bump it deliberately, in its own commit.
+
 ## Settings schema
 
-User settings are persisted in `settings.json` via `tauri-plugin-store`, and the file is versioned: format changes go through a chain of migrations in `src/store/settings-schema/`.
+User settings are persisted in `settings.json` via `tauri-plugin-store`, and the file is versioned: format changes go through a chain of migrations in `src/platform/settings-schema/`.
 
 Most changes need no migration. Adding a field with a default, removing one, or adding an action with a default binding are all picked up on the next load — unknown and removed fields are purged from disk automatically, and defaults fill the gaps. A migration is for values that would otherwise be silently misread or be expensive for the user to recreate: a field that changes meaning or unit, a value that moves between blocks, or anything inside `layouts[]`, which the default-merging never reaches.
 

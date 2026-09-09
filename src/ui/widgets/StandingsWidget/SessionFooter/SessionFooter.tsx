@@ -23,8 +23,7 @@ import {
 const PILL_VARIANT: StatPillVariant = 'inline';
 
 export const SessionFooter = observer(() => {
-  const { pitStops, driverEntries: driverEntriesFrame } =
-    useBackendComputedStore();
+  const { pitStops, driverIdentities } = useBackendComputedStore();
   const { sessionInfo } = useSessionStore();
   const { environment } = useEnvironmentStore();
   const { unitSystem } = useUnitsStore();
@@ -39,10 +38,8 @@ export const SessionFooter = observer(() => {
     return null;
   }
 
-  const driverEntries = driverEntriesFrame?.entries ?? [];
-
   const playerIncidents =
-    driverEntries.find((entry) => entry.isPlayer)?.incidents ?? 0;
+    driverIdentities.find((entry) => entry.isPlayer)?.incidents ?? 0;
 
   // Null in practice and most hosted sessions, where incidents are uncapped.
   const incidentLimit = sessionInfo?.incidentLimit ?? null;

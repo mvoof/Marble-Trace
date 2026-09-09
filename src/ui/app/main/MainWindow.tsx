@@ -28,7 +28,7 @@ export const MainWindow = observer(() => {
   // Nothing selected yet falls back to the first widget in the catalog, so the
   // workbench never has to report a default choice back up here.
   const activeWidgetId =
-    selectedWidgetId ?? root.widgetSettings.allWidgets[0]?.id ?? null;
+    selectedWidgetId ?? root.widgetDefaults.catalogWidgets[0]?.id ?? null;
 
   useEffect(() => {
     void simStore.startStream();

@@ -6,6 +6,8 @@ import {
   applyLayoutResize,
   deriveWidgetDesignWidth,
 } from '@store/settings/layout-resize';
+import { availableWidgetIdsOf } from '@store/settings/widget-availability';
+import type { RootStore } from '@store/root-store';
 import type {
   BaseUserSettings,
   WidgetDefaultConfig,
@@ -37,8 +39,29 @@ export class WidgetDefaultsStore {
   // to the live layout's changeToken.
   changeToken = 0;
 
-  constructor() {
-    makeAutoObservable(this, {}, { autoBind: true });
+  constructor(private readonly root?: RootStore) {
+    makeAutoObservable<WidgetDefaultsStore, 'root'>(
+      this,
+      { root: false },
+      { autoBind: true }
+    );
+  }
+
+  /**
+   * The catalog as the Widgets page lists it: one entry per widget the app
+   * ships, never the active layout's copies.
+   */
+  get catalogWidgets(): WidgetDefaultConfig[] {
+    void this.changeToken;
+
+    return Array.from(this.widgets.values());
+  }
+
+  get availableWidgetIds(): string[] {
+    return availableWidgetIdsOf(
+      this.widgets.values(),
+      this.root?.sim?.capabilities
+    );
   }
 
   getWidget(id: string): WidgetDefaultConfig | undefined {

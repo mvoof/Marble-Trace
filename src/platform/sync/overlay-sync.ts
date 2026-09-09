@@ -35,7 +35,7 @@ export const initOverlaySync = async (root: RootStore) => {
   // hydrateStores fills the live widget map from the persisted snapshot, which
   // can lag behind the active layout. The window renders the layout, so it is
   // the layout that has to win.
-  root.widgetSettings.loadActiveLayoutWidgets();
+  root.widgetSettings.loadEditingLayoutWidgets();
 
   const unlistens = await setupOverlayListeners(root);
 
@@ -64,7 +64,7 @@ export const initOverlaySync = async (root: RootStore) => {
           monitorName,
           widgets,
           layoutId:
-            root.widgetSettings.syncedLayoutId ?? root.layouts.activeLayoutId,
+            root.widgetSettings.syncedLayoutId ?? root.layouts.editingLayoutId,
         });
       },
       { delay: 100 }

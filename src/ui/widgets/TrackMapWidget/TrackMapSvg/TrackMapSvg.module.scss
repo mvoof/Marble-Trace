@@ -1,3 +1,13 @@
+// The whole drawing, turned as one in heading-up mode by the draw reaction.
+.content {
+  transform-box: view-box;
+}
+
+// One car's marker. Its position is an attribute the draw reaction writes.
+.carDot {
+  pointer-events: none;
+}
+
 .svgContainer {
   width: 100%;
   height: 100%;

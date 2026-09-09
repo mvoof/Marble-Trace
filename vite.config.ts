@@ -1,9 +1,9 @@
 import { resolve } from 'node:path';
 
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
-import { createLayerAliases } from './vite.aliases';
+import { createLayerAliases, SCSS_ADDITIONAL_DATA } from './vite.aliases';
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -37,16 +37,14 @@ export default defineConfig(() => ({
     alias: createLayerAliases(),
   },
 
+  test: {
+    exclude: ['**/node_modules/**', '**/dist/**'],
+  },
+
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `
-          @use "@/styles/functions" as *;
-          @use "@/styles/variables" as *;
-          @use "@/styles/widget-tokens" as *;
-          @use "@/styles/sys-tokens" as *;
-          @use "@/styles/opacity" as *;
-        `,
+        additionalData: SCSS_ADDITIONAL_DATA,
       },
     },
   },

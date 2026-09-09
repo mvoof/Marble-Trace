@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { RootStore } from '../root-store';
 import type { CapabilitiesPayload } from '@/types/bindings';
+import type { LayoutsStore } from './layouts.store';
+import type { WidgetSettingsStore } from './widget-settings.store';
 
 const FULL_CAPABILITIES: CapabilitiesPayload = {
   playerDynamics: true,
@@ -85,7 +87,9 @@ describe('WidgetSettingsStore capabilities gating', () => {
   });
 });
 
-describe('WidgetSettingsStore session layouts', () => {
+// The mapping itself is a layout record and is pinned in `layouts.store.test.ts`;
+// what is left here is which session the sim is actually in.
+describe('the session a layout would be picked for', () => {
   let rootStore: RootStore;
 
   beforeEach(() => {
@@ -107,17 +111,6 @@ describe('WidgetSettingsStore session layouts', () => {
         widgets: [],
       },
     ]);
-  });
-
-  it('correctly sets and maps session layouts', () => {
-    rootStore.widgetSettings.setSessionLayout('Practice', 'layout-practice');
-    rootStore.widgetSettings.setSessionLayout('Race', 'layout-race');
-
-    expect(rootStore.widgetSettings.sessionLayouts.Practice).toBe(
-      'layout-practice'
-    );
-    expect(rootStore.widgetSettings.sessionLayouts.Race).toBe('layout-race');
-    expect(rootStore.widgetSettings.sessionLayouts.Qualify).toBeNull();
   });
 
   it('returns correct currentSessionType based on sessionInfo', () => {
@@ -343,7 +336,7 @@ describe('WidgetSettingsStore remote screen geometry', () => {
   });
 
   const remoteBounds = () =>
-    rootStore.widgetSettings.activeLayout?.monitors.find(
+    rootStore.layouts.editingLayout?.monitors.find(
       (monitor) => monitor.name === 'Tablet'
     )?.bounds;
 
@@ -549,7 +542,7 @@ describe('the active layout owns the widgets', () => {
 
     store.updatePosition('fuel', 640, 480);
 
-    const stored = store.activeLayout!.widgets.find(
+    const stored = rootStore.layouts.editingLayout!.widgets.find(
       (widget) => widget.id === 'fuel'
     )!.userSettings;
 
@@ -575,7 +568,7 @@ describe('the active layout owns the widgets', () => {
 
     store.updatePosition('fuel', 640, 480);
 
-    const other = store.layouts
+    const other = rootStore.layouts.layouts
       .find((entry) => entry.id === 'layout-garage')!
       .widgets.find((widget) => widget.id === 'fuel');
 
@@ -592,8 +585,9 @@ describe('the active layout owns the widgets', () => {
 
     expect(store.getWidget('fuel')!.userSettings.x).toBe(before);
     expect(
-      store.activeLayout!.widgets.find((widget) => widget.id === 'fuel')!
-        .userSettings.x
+      rootStore.layouts.editingLayout!.widgets.find(
+        (widget) => widget.id === 'fuel'
+      )!.userSettings.x
     ).toBe(before);
   });
 
@@ -602,7 +596,7 @@ describe('the active layout owns the widgets', () => {
 
     store.selectLayout(null);
 
-    expect(store.activeLayout).toBeUndefined();
+    expect(rootStore.layouts.editingLayout).toBeUndefined();
     expect(store.getWidget('fuel')).toBeDefined();
   });
 });
@@ -637,7 +631,7 @@ describe('a layout with no monitors is not written to', () => {
 
     store.loadLayout('layout-screenless');
 
-    const saved = store.layouts[0].widgets.find(
+    const saved = rootStore.layouts.layouts[0].widgets.find(
       (widget) => widget.id === 'fuel'
     )!.userSettings;
 
@@ -812,7 +806,7 @@ describe('several copies of one widget in a layout', () => {
     // Reinstalling the layout's own list is what a layout switch does, and it
     // used to be where a second copy quietly disappeared.
     store.setWidgets(
-      store.activeLayout!.widgets.map((widget) => ({ ...widget }))
+      rootStore.layouts.editingLayout!.widgets.map((widget) => ({ ...widget }))
     );
 
     expect(store.widgetsOfType('standings')).toHaveLength(3);
@@ -894,11 +888,11 @@ describe('several copies of one widget in a layout', () => {
 
     store.setWidgetEnabled('standings', false);
 
-    expect(store.isWidgetInActiveLayout('standings')).toBe(true);
+    expect(store.isWidgetOnScreen('standings')).toBe(true);
 
     store.setWidgetEnabled(copyId, false);
 
-    expect(store.isWidgetInActiveLayout('standings')).toBe(false);
+    expect(store.isWidgetOnScreen('standings')).toBe(false);
   });
 });
 
@@ -927,7 +921,7 @@ describe('a screen added to a layout', () => {
   });
 
   const screenNamed = (name: string) =>
-    rootStore.widgetSettings.activeLayout!.monitors.find(
+    rootStore.layouts.editingLayout!.monitors.find(
       (monitor) => monitor.name === name
     )!;
 
@@ -953,5 +947,357 @@ describe('a screen added to a layout', () => {
     rootStore.widgetSettings.setRemoteScreenBackground('Tablet', 'transparent');
 
     expect(screenNamed('Tablet').background).toBe('transparent');
+  });
+});
+
+/**
+ * Every write, and the mark it leaves.
+ *
+ * Two things happen on a settings write besides the write itself: a token moves
+ * (`changeToken` for a local edit, `syncToken` for one that arrived from the
+ * other window and must not be echoed back), and the widgets that changed are
+ * recorded so the overlay can be sent a patch instead of the whole layout.
+ * Both are why a write reaches disk at all, and both are spelled out by hand at
+ * every call site — so a write that forgets them fails in the worst way: the
+ * edit is on screen and is never saved.
+ *
+ * This table pins what each write marks today, so the rule can be moved without
+ * anyone having to remember which of the thirty-odd writes was the exception.
+ */
+describe('every settings write leaves its mark', () => {
+  const DISPLAY = {
+    name: 'DISPLAY1',
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  const SECOND_LAYOUT = {
+    id: 'layout-quali',
+    name: 'Quali',
+    createdAt: 0,
+    monitors: [DISPLAY],
+    widgets: [],
+  };
+
+  // What the other window sends back: the same widgets, as detached records.
+  // Handing the store its own live objects would compare equal to itself and
+  // hide whether the applier marked anything.
+  const clonedWidgets = (store: WidgetSettingsStore) =>
+    store.allWidgets.map((widget) => ({
+      ...widget,
+      userSettings: { ...widget.userSettings },
+    }));
+
+  type WriteMark = {
+    /** Which counter the write is expected to move. */
+    token: 'change' | 'sync' | 'none';
+    /** 'every' = the whole map is sent; a list = a patch of those widgets. */
+    touched: 'every' | 'none' | string[];
+  };
+
+  type WriteCase = {
+    name: string;
+    /** Runs before the measurement, so the case measures one write only. */
+    setup?: (store: WidgetSettingsStore, layouts: LayoutsStore) => void;
+    /**
+     * Layout records are written through `layouts` now, the live widget map
+     * through `store` — which of the two a write goes through is itself part of
+     * what this table pins.
+     */
+    run: (store: WidgetSettingsStore, layouts: LayoutsStore) => void;
+    expected: WriteMark;
+  };
+
+  const WRITES: WriteCase[] = [
+    // Widget edits — a patch of the widgets named.
+    {
+      name: 'updatePosition',
+      run: (store) => store.updatePosition('fuel', 640, 480),
+      expected: { token: 'change', touched: ['fuel'] },
+    },
+    {
+      name: 'updateSize',
+      run: (store) => store.updateSize('fuel', 300, 200),
+      expected: { token: 'change', touched: ['fuel'] },
+    },
+    {
+      name: 'updateUserSettings',
+      run: (store) => store.updateUserSettings('fuel', { x: 12 }),
+      expected: { token: 'change', touched: ['fuel'] },
+    },
+    {
+      name: 'setWidgetEnabled',
+      run: (store) => store.setWidgetEnabled('timer', false),
+      expected: { token: 'change', touched: ['timer'] },
+    },
+    {
+      name: 'bringToFront',
+      run: (store) => store.bringToFront('fuel'),
+      expected: { token: 'change', touched: ['fuel'] },
+    },
+    {
+      name: 'sendToBack',
+      run: (store) => store.sendToBack('fuel'),
+      expected: { token: 'change', touched: ['fuel'] },
+    },
+    {
+      name: 'addWidgetToMonitor',
+      run: (store) => store.addWidgetToMonitor('fuel', DISPLAY.name),
+      expected: { token: 'change', touched: ['fuel'] },
+    },
+    {
+      name: 'moveWidgetToMonitor',
+      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      run: (store) => store.moveWidgetToMonitor('fuel', 'Tablet'),
+      expected: { token: 'change', touched: ['fuel'] },
+    },
+
+    // Writes that install a map wholesale — only a full list describes them.
+    {
+      name: 'setWidgets',
+      run: (store) => store.setWidgets(store.allWidgets),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'duplicateWidget',
+      run: (store) => store.duplicateWidget('fuel'),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'removeWidgetCopy',
+      setup: (store) => store.duplicateWidget('fuel'),
+      run: (store) => {
+        const copy = store
+          .widgetsOfType('fuel')
+          .find((widget) => widget.id !== 'fuel')!;
+
+        store.removeWidgetCopy(copy.id);
+      },
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'undo',
+      setup: (store) => store.setWidgetEnabled('timer', false),
+      run: (store) => store.undo(),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'redo',
+      setup: (store) => {
+        store.setWidgetEnabled('timer', false);
+        store.undo();
+      },
+      run: (store) => store.redo(),
+      expected: { token: 'change', touched: 'every' },
+    },
+
+    // Layout records.
+    {
+      name: 'setSessionLayout',
+      run: (store) => store.setSessionLayout('Race', 'layout-race'),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'setSessionLayouts',
+      run: (store) => store.setSessionLayouts({ Race: 'layout-race' }),
+      expected: { token: 'change', touched: 'every' },
+    },
+    // `saveLayout` and `ensureDefaultLayout` are deliberately absent: both mark
+    // synchronously and then ask the OS for a monitor and mark a second time
+    // when the answer lands. Neither the second mark nor the monitor call can
+    // be measured here without stubbing Tauri, and a table case that pins only
+    // the first half would read as if that were the whole write.
+    {
+      name: 'loadLayout',
+      run: (store) => store.loadLayout('layout-race'),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'selectLayout',
+      run: (store) => store.selectLayout('layout-race'),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'switchEditorLayout',
+      setup: (store, layouts) =>
+        store.setLayouts([...layouts.layouts, SECOND_LAYOUT]),
+      run: (store) => store.switchEditorLayout(SECOND_LAYOUT.id),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'activateEditorLayout',
+      setup: (store, layouts) => {
+        store.setLayouts([...layouts.layouts, SECOND_LAYOUT]);
+        store.switchEditorLayout(SECOND_LAYOUT.id);
+      },
+      run: (store) => store.activateEditorLayout(),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'updateLayout',
+      run: (store) => store.updateLayout('layout-race'),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'renameLayout',
+      run: (store) => store.renameLayout('layout-race', 'Renamed'),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'deleteLayout',
+      setup: (store, layouts) =>
+        store.setLayouts([...layouts.layouts, SECOND_LAYOUT]),
+      run: (store) => store.deleteLayout(SECOND_LAYOUT.id),
+      expected: { token: 'change', touched: 'every' },
+    },
+
+    // Monitors and remote screens. The record-level writes are pinned in
+    // `layouts.store.test.ts`; what is here composes a record with the widgets
+    // standing on it.
+    {
+      name: 'removeMonitor',
+      setup: (_store, layouts) =>
+        layouts.addMonitor({
+          name: 'DISPLAY2',
+          bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
+        }),
+      run: (store) => store.removeMonitor('layout-race', 'DISPLAY2'),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'alignMonitorsToHardware',
+      run: (store) => store.alignMonitorsToHardware([DISPLAY]),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'addRemoteScreen',
+      run: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'setRemoteScreenBackground',
+      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      run: (store) => store.setRemoteScreenBackground('Tablet', 'transparent'),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'resizeRemoteScreen',
+      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      run: (store) => store.resizeRemoteScreen('Tablet', 1024, 768),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'moveRemoteScreen',
+      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      run: (store) => store.moveRemoteScreen('Tablet', 4000, 200),
+      expected: { token: 'change', touched: 'every' },
+    },
+    {
+      name: 'arrangeRemoteScreens',
+      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      run: (store) => store.arrangeRemoteScreens(),
+      expected: { token: 'change', touched: 'every' },
+    },
+
+    // Writes that arrived from the other window: saved, never echoed back.
+    {
+      name: 'syncWidgetSet',
+      setup: (store) => store.updateUserSettings('fuel', { x: 33 }),
+      run: (store) => store.syncWidgetSet(clonedWidgets(store)),
+      expected: { token: 'sync', touched: 'none' },
+    },
+    {
+      name: 'applySettingsSync',
+      setup: (store) => store.updateUserSettings('fuel', { x: 33 }),
+      run: (store) => store.applySettingsSync(clonedWidgets(store)),
+      expected: { token: 'sync', touched: 'none' },
+    },
+    {
+      name: 'applySettingsSyncForMonitor',
+      setup: (store) => store.updateUserSettings('fuel', { x: 33 }),
+      run: (store) =>
+        store.applySettingsSyncForMonitor(DISPLAY.name, clonedWidgets(store)),
+      expected: { token: 'sync', touched: 'none' },
+    },
+
+    // Writes that mark nothing at all. Pinned deliberately: the monitor
+    // arrangement the overlay adopts is written into the active layout record
+    // and left unmarked, so nothing saves it on its own — the main window's own
+    // write is what carries it to disk.
+    {
+      name: 'applyMonitorsSync',
+      run: (store) => store.applyMonitorsSync([DISPLAY]),
+      expected: { token: 'none', touched: 'none' },
+    },
+    {
+      name: 'setOverlayResolution',
+      run: (store) => store.setOverlayResolution({ width: 1280, height: 720 }),
+      expected: { token: 'none', touched: 'none' },
+    },
+    {
+      name: 'setAttachedMonitors',
+      run: (store) => store.setAttachedMonitors([DISPLAY]),
+      expected: { token: 'none', touched: 'none' },
+    },
+    {
+      name: 'setOwnMonitorName',
+      run: (store) => store.setOwnMonitorName(DISPLAY.name),
+      expected: { token: 'none', touched: 'none' },
+    },
+  ];
+
+  it.each(WRITES)('$name', ({ setup, run, expected }) => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+
+    store.setLayouts(
+      [
+        {
+          id: 'layout-race',
+          name: 'Race',
+          createdAt: 0,
+          monitors: [DISPLAY],
+          widgets: [],
+        },
+      ],
+      'layout-race'
+    );
+
+    setup?.(store, rootStore.layouts);
+
+    // Everything above is arrangement, not the write under test.
+    store.drainTouchedWidgets();
+
+    const changeBefore = store.changeToken;
+    const syncBefore = store.syncToken;
+
+    run(store, rootStore.layouts);
+
+    const drained = store.drainTouchedWidgets();
+
+    expect({
+      change: store.changeToken > changeBefore,
+      sync: store.syncToken > syncBefore,
+    }).toEqual({
+      change: expected.token === 'change',
+      sync: expected.token === 'sync',
+    });
+
+    if (expected.touched === 'every') {
+      expect(drained.everyWidget).toBe(true);
+
+      return;
+    }
+
+    expect(drained.everyWidget).toBe(false);
+
+    if (expected.touched === 'none') {
+      expect(drained.widgets).toEqual([]);
+
+      return;
+    }
+
+    expect(drained.widgets.map((widget) => widget.id).sort()).toEqual(
+      [...expected.touched].sort()
+    );
   });
 });

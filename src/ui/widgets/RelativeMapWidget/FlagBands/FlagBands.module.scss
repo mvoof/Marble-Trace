@@ -1,3 +1,9 @@
+.bandLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .flagBand {
   position: absolute;
   box-sizing: border-box;
@@ -9,11 +15,15 @@
 .flagBandHorizontal {
   top: 0;
   bottom: 0;
+  left: var(--band-start, 0%);
+  width: var(--band-size, 0%);
 }
 
 .flagBandVertical {
   left: 0;
   right: 0;
+  bottom: var(--band-start, 0%);
+  height: var(--band-size, 0%);
 }
 
 .flagBandOutline {

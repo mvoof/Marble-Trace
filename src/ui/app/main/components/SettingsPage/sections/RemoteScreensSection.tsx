@@ -161,7 +161,7 @@ export const RemoteScreensSection = observer(() => {
     [info]
   );
 
-  const remoteScreens = layouts.activeRemoteScreens;
+  const remoteScreens = layouts.editingRemoteScreens;
 
   return (
     <SettingsCard title={t('settingsPage.remote.title')}>

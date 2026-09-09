@@ -7,6 +7,11 @@ import type { SectorEntry } from '@/types/bindings';
 import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
 import type { CarOnTrack } from '@ui/widgets/TrackMapWidget/types';
 import { CarDot } from '@ui/shared/CarDot/CarDot';
+import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import {
+  useBackendComputedStore,
+  useCarsStore,
+} from '@store/root-store-context';
 import { shapeForClassOrder } from '@utils/canvas';
 import { PaceCarMarker } from './PaceCarMarker/PaceCarMarker';
 import { FlagZones } from './FlagZones/FlagZones';
@@ -47,6 +52,9 @@ const HEADING_SAMPLE_PCT = 0.004;
 /** Screen "up" in SVG coordinates, where the Y axis grows downwards. */
 const SCREEN_UP_DEG = -90;
 
+/** How much the whole drawing is turned, for anything that must stay upright. */
+const SCREEN_ROTATION_PROPERTY = '--screen-rotation';
+
 export const TrackMapSvg = observer(
   ({
     svgPath,
@@ -71,17 +79,135 @@ export const TrackMapSvg = observer(
     classShapes = false,
     carClassOrder,
   }: TrackMapSvgProps) => {
+    const carsStore = useCarsStore();
+    const computed = useBackendComputedStore();
+
     const playerCar = cars.find((c) => c.isPlayer);
     const playerClassId = playerCar?.carClassId ?? -1;
     const parts = viewBox.split(' ').map(Number);
     const vbW = parts[2];
     const vbH = parts[3];
 
-    const svgRef = useRef<SVGSVGElement>(null);
+    const zoomActive =
+      zoomEnabled &&
+      zoomLevel > MIN_ZOOM_LEVEL &&
+      !!playerCar &&
+      points.length > 0;
+
+    // Where every car is, where the window sits and which way the drawing points
+    // all follow the lap distance, which moves on every tick. They are written
+    // straight to the SVG so the map's markup is built once. See
+    // `docs/rendering.md`.
+    const mapRef = useReactiveDomWrite<SVGSVGElement>(
+      (element, scheduleWrite) => {
+        const lapDistPctOf = (carIdx: number): number =>
+          // oxlint-disable-next-line no-restricted-properties
+          carsStore.carPositions?.car_idx_lap_dist_pct[carIdx] ??
+          computed.driverEntryOf(carIdx)?.lapDistPct ??
+          -1;
+
+        const playerPct = playerCar ? lapDistPctOf(playerCar.carIdx) : -1;
+        const playerPoint =
+          zoomActive && playerPct >= 0
+            ? getPointAtPct(points, playerPct)
+            : null;
+
+        const nextViewBox = (() => {
+          if (!playerPoint) return viewBox;
+
+          const zoomedW = vbW / zoomLevel;
+          const zoomedH = vbH / zoomLevel;
+
+          return `${playerPoint.x - zoomedW / 2} ${playerPoint.y - zoomedH / 2} ${zoomedW} ${zoomedH}`;
+        })();
+
+        // Heading-up mode: the track tangent at the player's position is the
+        // travel direction, so rotating the whole drawing until it points up
+        // keeps the car fixed and facing forward. Labels counter-rotate to stay
+        // readable.
+        const screenRotation = (() => {
+          if (!playerPoint || !zoomRotate) return 0;
+
+          const aheadPct = (playerPct + HEADING_SAMPLE_PCT) % 1;
+          const ahead = getPointAtPct(points, aheadPct);
+          const headingDeg =
+            Math.atan2(ahead.y - playerPoint.y, ahead.x - playerPoint.x) *
+            (180 / Math.PI);
+
+          return SCREEN_UP_DEG - headingDeg;
+        })();
+
+        const uprightTransform =
+          screenRotation === 0 ? '' : ` rotate(${-screenRotation})`;
+
+        const carTransforms = cars.map((car) => {
+          const pct = lapDistPctOf(car.carIdx);
+
+          if (points.length === 0 || pct < 0) {
+            return null;
+          }
+
+          const { x, y } = getPointAtPct(points, pct);
+
+          return `translate(${x}, ${y})${uprightTransform}`;
+        });
+
+        scheduleWrite(() => {
+          element.setAttribute('viewBox', nextViewBox);
+          element.style.setProperty(
+            SCREEN_ROTATION_PROPERTY,
+            `${screenRotation}deg`
+          );
+
+          const content = element.querySelector(`.${styles.content}`);
+
+          if (content instanceof SVGGElement) {
+            if (screenRotation === 0) {
+              content.removeAttribute('transform');
+            } else {
+              content.setAttribute(
+                'transform',
+                `rotate(${screenRotation} ${playerPoint?.x} ${playerPoint?.y})`
+              );
+            }
+          }
+
+          const dots = element.querySelectorAll(`.${styles.carDot}`);
+
+          for (const [dotIndex, transform] of carTransforms.entries()) {
+            const dot = dots[dotIndex];
+
+            if (!(dot instanceof SVGGElement)) {
+              continue;
+            }
+
+            dot.style.display = transform === null ? 'none' : '';
+
+            if (transform !== null) {
+              dot.setAttribute('transform', transform);
+            }
+          }
+        });
+      },
+      [
+        carsStore,
+        computed,
+        points,
+        cars,
+        viewBox,
+        vbW,
+        vbH,
+        zoomActive,
+        zoomLevel,
+        zoomRotate,
+        playerCar?.carIdx,
+      ]
+    );
+
     const [pixelScale, setPixelScale] = useState(1);
 
     useEffect(() => {
-      const el = svgRef.current;
+      const el = mapRef.current;
 
       if (!el) return;
 
@@ -99,7 +225,7 @@ export const TrackMapSvg = observer(
       obs.observe(el);
 
       return () => obs.disconnect();
-    }, [vbW, vbH]);
+    }, [vbW, vbH, mapRef]);
 
     const pathRef = useRef<SVGPathElement>(null);
     const [pathLength, setPathLength] = useState(0);
@@ -130,48 +256,6 @@ export const TrackMapSvg = observer(
     // Magnifier view: shrink the visible window around the player. Stroke and
     // dot sizes are divided by the same factor so they keep their on-screen
     // size — only the covered track area changes, not the drawing itself.
-    const zoomActive =
-      zoomEnabled &&
-      zoomLevel > MIN_ZOOM_LEVEL &&
-      !!playerCar &&
-      points.length > 0;
-
-    const playerPoint = zoomActive
-      ? getPointAtPct(points, playerCar.lapDistPct)
-      : null;
-
-    const effectiveViewBox = (() => {
-      if (!playerPoint) return viewBox;
-
-      const zoomedW = vbW / zoomLevel;
-      const zoomedH = vbH / zoomLevel;
-
-      return `${playerPoint.x - zoomedW / 2} ${playerPoint.y - zoomedH / 2} ${zoomedW} ${zoomedH}`;
-    })();
-
-    // Heading-up mode: the track tangent at the player's position is the travel
-    // direction, so rotating the whole drawing until it points up keeps the car
-    // fixed and facing forward. Labels counter-rotate to stay readable.
-    const screenRotation = (() => {
-      if (!playerPoint || !playerCar || !zoomRotate) return 0;
-
-      const aheadPct = (playerCar.lapDistPct + HEADING_SAMPLE_PCT) % 1;
-      const ahead = getPointAtPct(points, aheadPct);
-      const headingDeg =
-        Math.atan2(ahead.y - playerPoint.y, ahead.x - playerPoint.x) *
-        (180 / Math.PI);
-
-      return SCREEN_UP_DEG - headingDeg;
-    })();
-
-    const contentTransform =
-      screenRotation === 0
-        ? undefined
-        : `rotate(${screenRotation} ${playerPoint?.x} ${playerPoint?.y})`;
-
-    const uprightTransform =
-      screenRotation === 0 ? '' : ` rotate(${-screenRotation})`;
-
     const renderScale = zoomActive ? pixelScale / zoomLevel : pixelScale;
     const dotRadius = targetDotRadiusPx * renderScale;
 
@@ -180,12 +264,8 @@ export const TrackMapSvg = observer(
       .sort((a, b) => (a.sectorStartPct ?? 0) - (b.sectorStartPct ?? 0));
 
     return (
-      <svg
-        ref={svgRef}
-        viewBox={effectiveViewBox}
-        className={styles.svgContainer}
-      >
-        <g transform={contentTransform}>
+      <svg ref={mapRef} viewBox={viewBox} className={styles.svgContainer}>
+        <g className={styles.content}>
           {/* Track border */}
           <path
             d={svgPath}
@@ -256,7 +336,6 @@ export const TrackMapSvg = observer(
                   trackCenterX={trackCenter.x}
                   trackCenterY={trackCenter.y}
                   scale={zoomActive ? 1 / zoomLevel : 1}
-                  screenRotation={screenRotation}
                 />
               );
             })()}
@@ -264,18 +343,13 @@ export const TrackMapSvg = observer(
           {/* Cars — radius scaled to fixed screen pixels via pixelScale */}
           {points.length > 0 &&
             cars.map((car) => {
-              const { x, y } = getPointAtPct(points, car.lapDistPct);
-
               if (car.isPaceCar) {
                 const paceColor = paceCarUseClassColor
                   ? car.carClassColor
                   : paceCarColor;
 
                 return (
-                  <g
-                    key={car.carIdx}
-                    transform={`translate(${x}, ${y})${uprightTransform}`}
-                  >
+                  <g key={car.carIdx} className={styles.carDot}>
                     <PaceCarMarker
                       radius={paceCarRadiusPx * renderScale}
                       color={paceColor}
@@ -300,10 +374,7 @@ export const TrackMapSvg = observer(
                   : undefined;
 
               return (
-                <g
-                  key={car.carIdx}
-                  transform={`translate(${x}, ${y})${uprightTransform}`}
-                >
+                <g key={car.carIdx} className={styles.carDot}>
                   <CarDot
                     carNumber={car.carNumber}
                     carClassColor={car.carClassColor}

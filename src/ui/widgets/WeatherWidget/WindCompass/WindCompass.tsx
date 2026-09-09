@@ -2,6 +2,7 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import CarIcon from '@assets/car-icon.svg?react';
+import { RingGeometry } from './RingGeometry/RingGeometry';
 import { RotatingRing } from './RotatingRing/RotatingRing';
 import { WindArrow } from './WindArrow/WindArrow';
 
@@ -24,7 +25,9 @@ export const WindCompass = observer(() => {
           viewBox="-110 -110 220 220"
           className={styles.compassSvg}
         >
-          <RotatingRing />
+          <RotatingRing>
+            <RingGeometry />
+          </RotatingRing>
 
           <WindArrow />
 

@@ -21,32 +21,34 @@ const DELTA_CLASS: Record<DeltaVariant, string> = {
 };
 
 export const LapRow = observer(
-  ({ lapLabel, time, deltaLabel, deltaVariant, isLive, isBest }: Props) => (
-    <div
-      className={`${styles.row} ${isLive ? styles.rowLive : ''} ${isBest ? styles.rowBest : ''}`}
-    >
-      <span
-        className={`${styles.lapNum} ${isLive ? styles.lapNumLive : ''} ${isBest ? styles.lapNumBest : ''}`}
+  ({ lapLabel, time, deltaLabel, deltaVariant, isLive, isBest }: Props) => {
+    return (
+      <div
+        className={`${styles.row} ${isLive ? styles.rowLive : ''} ${isBest ? styles.rowBest : ''}`}
       >
-        {isLive && <span className={styles.liveIcon}>▶</span>}
-        {lapLabel}
-      </span>
-
-      <span
-        className={`${styles.lapTime} ${isBest ? styles.lapTimeBest : ''} ${time === null ? styles.lapTimeInvalid : ''}`}
-      >
-        {time ?? 'INV'}
-      </span>
-
-      {deltaLabel !== undefined && (
-        <span className={styles.deltaCell}>
-          <span
-            className={`${styles.delta} ${deltaVariant ? DELTA_CLASS[deltaVariant] : ''}`}
-          >
-            {deltaLabel}
-          </span>
+        <span
+          className={`${styles.lapNum} ${isLive ? styles.lapNumLive : ''} ${isBest ? styles.lapNumBest : ''}`}
+        >
+          {isLive && <span className={styles.liveIcon}>▶</span>}
+          {lapLabel}
         </span>
-      )}
-    </div>
-  )
+
+        <span
+          className={`${styles.lapTime} ${isBest ? styles.lapTimeBest : ''} ${time === null ? styles.lapTimeInvalid : ''}`}
+        >
+          {time ?? 'INV'}
+        </span>
+
+        {deltaLabel !== undefined && (
+          <span className={styles.deltaCell}>
+            <span
+              className={`${styles.delta} ${deltaVariant ? DELTA_CLASS[deltaVariant] : ''}`}
+            >
+              {deltaLabel}
+            </span>
+          </span>
+        )}
+      </div>
+    );
+  }
 );

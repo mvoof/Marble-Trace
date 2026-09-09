@@ -12,16 +12,20 @@ interface WidgetValueProps {
 }
 
 export const WidgetValue = observer(
-  ({ value, unit, color, className, unitClassName }: WidgetValueProps) => (
-    <span
-      className={`${styles.root} ${className ?? ''}`}
-      style={color ? { color } : undefined}
-    >
-      {value}
+  ({ value, unit, color, className, unitClassName }: WidgetValueProps) => {
+    return (
+      <span
+        className={`${styles.root} ${className ?? ''}`}
+        style={color ? { color } : undefined}
+      >
+        {value}
 
-      {unit && (
-        <span className={`${styles.unit} ${unitClassName ?? ''}`}>{unit}</span>
-      )}
-    </span>
-  )
+        {unit && (
+          <span className={`${styles.unit} ${unitClassName ?? ''}`}>
+            {unit}
+          </span>
+        )}
+      </span>
+    );
+  }
 );

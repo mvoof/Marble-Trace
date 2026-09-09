@@ -1,5 +1,6 @@
 import { parseClassColor } from '@utils/colors';
 import type { CarEntry, CarIdxFrame, DriverEntry } from '@/types/bindings';
+import type { CarIdentity } from '@/types/car-identity';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import type { PaceCarPitPhase } from '@store/widgets/pace-car.widget';
 
@@ -233,7 +234,7 @@ export const mergePaceCarRows = (
 // official number is the last resort in both modes: it is the only one a car the
 // sim has not placed on track yet ever has.
 export const resolveRowPosition = (
-  driver: DriverEntry,
+  driver: CarIdentity,
   useLivePositions: boolean
 ): number => {
   if (useLivePositions) {

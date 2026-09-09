@@ -11,7 +11,19 @@ import type {
 } from '@/types/bindings';
 
 export class PlayerStore {
+  /**
+   * 60 Hz hot field — never read directly in a component render body. Read it
+   * inside `useReactiveDomWrite`/`useReactiveCanvasLoop`; `oxlint` enforces
+   * this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * @remarks See "The hot/cold split" in `docs/rendering.md`.
+   */
   carDynamics: CarDynamicsFrame | null = null;
+  /**
+   * 60 Hz hot field — never read directly in a component render body. Read it
+   * inside `useReactiveDomWrite`/`useReactiveCanvasLoop`; `oxlint` enforces
+   * this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * @remarks See "The hot/cold split" in `docs/rendering.md`.
+   */
   carInputs: CarInputsFrame | null = null;
   carStatus: CarStatusFrame | null = null;
   chassis: ChassisFrame | null = null;
@@ -39,6 +51,33 @@ export class PlayerStore {
 
   get isOnTrack(): boolean {
     return this.carStatus?.is_on_track ?? true;
+  }
+
+  /**
+   * The ABS light. It lives in the 60 Hz inputs frame but flips only when the
+   * brakes lock, so it is read as a flag of its own: a component reading this
+   * wakes when the light changes rather than on every tick.
+   */
+  get isAbsActive(): boolean {
+    return this.carInputs?.brake_abs_active ?? false;
+  }
+
+  /**
+   * The gear, off the 60 Hz dynamics frame but changing only on a shift. Read as
+   * a number of its own, it wakes a widget when the driver shifts rather than on
+   * every tick.
+   */
+  get currentGear(): number {
+    return this.carDynamics?.gear ?? 0;
+  }
+
+  /**
+   * Whether the sim has told us where the car is along the pit lane. The
+   * progress itself moves while the car rolls; only its presence decides
+   * whether there is a lane to draw at all.
+   */
+  get hasPitLaneProgress(): boolean {
+    return this.pitLaneProgressPct !== null;
   }
 
   updateCarDynamics(frame: CarDynamicsFrame) {

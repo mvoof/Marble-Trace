@@ -13,6 +13,7 @@ import {
   Copy,
 } from 'lucide-react';
 import {
+  useLayoutsStore,
   useWidgetSettingsStore,
   useAppSettingsStore,
   useRemoteDevicesStore,
@@ -158,6 +159,7 @@ const SESSION_LABEL_KEYS: Record<SessionContext, string> = {
 
 export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const widgetSettings = useWidgetSettingsStore();
+  const layouts = useLayoutsStore();
   const remoteDevices = useRemoteDevicesStore();
   const appSettings = useAppSettingsStore();
   const simStore = useSimStore();
@@ -166,7 +168,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const isAutoSwitchActive = autoSwitchEnabled && simStore.isConnected;
 
   const [selectedId, setSelectedId] = useState<string | null>(
-    widgetSettings.activeLayoutId
+    layouts.editingLayoutId
   );
 
   // Monitors physically attached right now. A layout can hold configs for
@@ -200,18 +202,18 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [renameValue, setRenameValue] = useState('');
 
-  const selectedLayout = widgetSettings.layouts.find(
+  const selectedLayout = layouts.layouts.find(
     (layout) => layout.id === selectedId
   );
 
   useEffect(() => {
     if (
       selectedId &&
-      !widgetSettings.layouts.some((layout) => layout.id === selectedId)
+      !layouts.layouts.some((layout) => layout.id === selectedId)
     ) {
-      setSelectedId(widgetSettings.activeLayoutId);
+      setSelectedId(layouts.editingLayoutId);
     }
-  }, [selectedId, widgetSettings.layouts, widgetSettings.activeLayoutId]);
+  }, [selectedId, layouts.layouts, layouts.editingLayoutId]);
 
   const handleCreateLayout = () => {
     const name = newLayoutName.trim();
@@ -221,7 +223,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
     }
 
     widgetSettings.saveLayout(name);
-    setSelectedId(widgetSettings.activeLayoutId);
+    setSelectedId(layouts.editingLayoutId);
     setNewLayoutName('');
     setIsCreateModalOpen(false);
   };
@@ -249,11 +251,13 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
 
   const handleDeleteLayout = () => {
     if (selectedId) {
-      const activeLayout = widgetSettings.layouts.find(
+      const editingLayout = layouts.layouts.find(
         (layout) => layout.id === selectedId
       );
 
-      for (const image of Object.values(activeLayout?.backgroundImages ?? {})) {
+      for (const image of Object.values(
+        editingLayout?.backgroundImages ?? {}
+      )) {
         void deleteBackgroundImage(image);
       }
 
@@ -338,14 +342,13 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
       <div className={styles.content}>
         <div className={styles.gridSection}>
           <div className={styles.layoutsGrid}>
-            {widgetSettings.layouts.map((layout) => {
+            {layouts.layouts.map((layout) => {
               const isSelected = layout.id === selectedId;
-              const isActive = layout.id === widgetSettings.activeLayoutId;
+              const isActive = layout.id === layouts.editingLayoutId;
               const assignedSessions = (
                 ['Practice', 'Qualify', 'Race', 'Garage'] as SessionContext[]
               ).filter(
-                (context) =>
-                  widgetSettings.sessionLayouts?.[context] === layout.id
+                (context) => layouts.sessionLayouts?.[context] === layout.id
               );
 
               const monitorNames = layout.monitors.map(
@@ -500,8 +503,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                       ] as SessionContext[]
                     ).map((context) => {
                       const isAssigned =
-                        widgetSettings.sessionLayouts?.[context] ===
-                        selectedLayout.id;
+                        layouts.sessionLayouts?.[context] === selectedLayout.id;
                       return (
                         <Checkbox
                           key={context}
@@ -639,8 +641,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   icon={<Play size={16} />}
                   onClick={handleActivate}
                   disabled={
-                    selectedId === widgetSettings.activeLayoutId ||
-                    autoSwitchEnabled
+                    selectedId === layouts.editingLayoutId || autoSwitchEnabled
                   }
                   title={
                     autoSwitchEnabled

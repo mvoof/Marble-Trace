@@ -1,5 +1,5 @@
 import type { RadarSettings } from '@/types/widget-settings';
-import { useWidgetAutoHide } from './useWidgetAutoHide';
+import type { RadarWidgetType } from '@store/widgets/radar.widget';
 import {
   useBackendComputedStore,
   useRadarWidgetStore,
@@ -7,7 +7,7 @@ import {
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 
 export const useProximityRadarData = (
-  widgetId: 'proximity-radar' | 'radar-bar',
+  widgetId: RadarWidgetType,
   searchRadius: number
 ) => {
   const computed = useBackendComputedStore();
@@ -26,8 +26,6 @@ export const useProximityRadarData = (
   const spotterRight = proximity?.spotterRight ?? false;
 
   const visible = radarStore.isVisibleForWidget(widgetId);
-
-  useWidgetAutoHide(visible);
 
   return {
     proximity,

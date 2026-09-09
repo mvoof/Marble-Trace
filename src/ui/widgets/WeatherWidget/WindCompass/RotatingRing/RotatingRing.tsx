@@ -1,92 +1,52 @@
-﻿import { observer } from 'mobx-react-lite';
+import type { ReactNode } from 'react';
+import { observer } from 'mobx-react-lite';
 
-import styles from './RotatingRing.module.scss';
+import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@store/root-store-context';
 
-const RING_RADIUS = 82;
-const TICK_OUTER = 88;
-const TICK_INNER_MAJOR = 77;
-const TICK_INNER_MINOR = 84;
-const LABEL_RADIUS = 64;
+import styles from './RotatingRing.module.scss';
 
-const CARDINAL_ANGLES = [
-  { label: 'N', angle: 0 },
-  { label: 'E', angle: 90 },
-  { label: 'S', angle: 180 },
-  { label: 'W', angle: 270 },
-];
+const RADIANS_TO_DEGREES = 180 / Math.PI;
 
-const MINOR_TICK_ANGLES = [45, 135, 225, 315];
+/**
+ * The custom property the whole compass turns on. The group rotates by it and
+ * the cardinal labels counter-rotate by it, so one write turns the ring and
+ * keeps the letters upright.
+ */
+const COMPASS_YAW_PROPERTY = '--compass-yaw';
 
-const RING_COLOR = 'rgba(255,255,255,0.22)';
+interface RotatingRingProps {
+  /**
+   * The ring's geometry, created by a parent that does not re-render — nothing
+   * inside it changes with the heading.
+   */
+  children: ReactNode;
+}
 
-// Re-renders at 60 Hz — driven by carDynamics.yaw updating at physics rate
-export const RotatingRing = observer(() => {
-  const { carDynamics } = usePlayerStore();
+/**
+ * Turns the compass with the car's heading, a hot field that changes on every
+ * physics tick. The rotation goes to the DOM through the reactive-DOM primitive,
+ * so the heading wakes React not at all: this component renders once, and its
+ * children are the same element objects for as long as it is mounted.
+ */
+export const RotatingRing = observer(({ children }: RotatingRingProps) => {
+  const player = usePlayerStore();
 
-  const carYawRad = carDynamics?.yaw ?? 0;
-  const carYawDeg = carYawRad * (180 / Math.PI);
+  const groupRef = useReactiveDomWrite<SVGGElement>(
+    (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
+      const carYawDeg = (player.carDynamics?.yaw ?? 0) * RADIANS_TO_DEGREES;
+
+      scheduleWrite(() => {
+        element.style.setProperty(COMPASS_YAW_PROPERTY, `${-carYawDeg}deg`);
+      });
+    },
+    [player]
+  );
 
   return (
-    <g
-      style={{ transform: `rotate(${-carYawDeg}deg)` }}
-      className={styles.rotatingGroup}
-      pointerEvents="none"
-    >
-      <circle r={RING_RADIUS} fill="none" stroke={RING_COLOR} strokeWidth="2" />
-
-      {CARDINAL_ANGLES.map(({ angle }) => {
-        const rad = (angle * Math.PI) / 180;
-
-        return (
-          <line
-            key={angle}
-            x1={Math.sin(rad) * TICK_OUTER}
-            y1={-Math.cos(rad) * TICK_OUTER}
-            x2={Math.sin(rad) * TICK_INNER_MAJOR}
-            y2={-Math.cos(rad) * TICK_INNER_MAJOR}
-            stroke={RING_COLOR}
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        );
-      })}
-
-      {MINOR_TICK_ANGLES.map((angle) => {
-        const rad = (angle * Math.PI) / 180;
-
-        return (
-          <line
-            key={angle}
-            x1={Math.sin(rad) * TICK_OUTER}
-            y1={-Math.cos(rad) * TICK_OUTER}
-            x2={Math.sin(rad) * TICK_INNER_MINOR}
-            y2={-Math.cos(rad) * TICK_INNER_MINOR}
-            stroke={RING_COLOR}
-            strokeWidth="1"
-            strokeLinecap="round"
-          />
-        );
-      })}
-
-      {CARDINAL_ANGLES.map(({ label, angle }) => {
-        const rad = (angle * Math.PI) / 180;
-        const x = Math.sin(rad) * LABEL_RADIUS;
-        const y = -Math.cos(rad) * LABEL_RADIUS;
-
-        return (
-          <g key={label} transform={`translate(${x}, ${y})`}>
-            <text
-              textAnchor="middle"
-              dominantBaseline="central"
-              className={styles.cardinalLabel}
-              style={{ transform: `rotate(${carYawDeg}deg)` }}
-            >
-              {label}
-            </text>
-          </g>
-        );
-      })}
+    <g ref={groupRef} className={styles.rotatingGroup} pointerEvents="none">
+      {children}
     </g>
   );
 });

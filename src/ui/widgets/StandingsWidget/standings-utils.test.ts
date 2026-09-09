@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { CarIdentity } from '@/types/car-identity';
 import type { DriverEntry } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
@@ -28,7 +29,7 @@ const makeField = (count: number, playerIdx: number): DriverEntry[] =>
       }) as DriverEntry
   );
 
-const carIndices = (drivers: DriverEntry[]) =>
+const carIndices = (drivers: CarIdentity[]) =>
   drivers.map((driver) => driver.carIdx);
 
 describe('buildVisibleRows', () => {

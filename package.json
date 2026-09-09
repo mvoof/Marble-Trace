@@ -14,7 +14,6 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev --features dev",
-    "screenshot": "node scripts/screenshot.mjs",
     "version-bump": "node scripts/bump-version.mjs",
     "wheel:trace": "uv run --no-project scripts/trace-wheel-svg.py",
     "tauri:build:release": "tauri build",

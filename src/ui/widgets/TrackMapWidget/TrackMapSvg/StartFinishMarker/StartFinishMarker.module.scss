@@ -1,3 +1,7 @@
+.screenUpright {
+  transform: rotate(calc(-1 * var(--screen-rotation, 0deg)));
+}
+
 .markerLine {
   stroke: rgba(255, 255, 255, 0.45);
   stroke-width: 1;

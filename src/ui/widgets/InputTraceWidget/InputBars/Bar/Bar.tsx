@@ -5,6 +5,7 @@ import type { InputTraceSettings } from '@/types/widget-settings';
 
 import { getContrastTextColor } from '@utils/colors';
 
+import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { useValueCoverPoint } from './useValueCoverPoint';
 
 import styles from './Bar.module.scss';
@@ -33,6 +34,12 @@ const getChannelColor = (
   return settings.clutchColor;
 };
 
+const FILL_HEIGHT_PROPERTY = '--bar-fill';
+const FILL_COLOR_PROPERTY = '--bar-color';
+const VALUE_COLOR_PROPERTY = '--bar-value-color';
+
+const PCT = 100;
+
 const CHANNEL_VISIBILITY_KEY: Record<
   BarChannel,
   'showClutch' | 'showBrake' | 'showThrottle'
@@ -42,32 +49,55 @@ const CHANNEL_VISIBILITY_KEY: Record<
   throttle: 'showThrottle',
 };
 
+/**
+ * One pedal's bar. The pedal moves on every physics tick, so its height, its
+ * colour and its readout are written straight to the DOM and React renders the
+ * bar only when the driver changes a setting. See `docs/rendering.md`.
+ */
 export const Bar = observer(
   ({ channel, width = 'md', rounded = true }: BarProps) => {
     const trackRef = useRef<HTMLDivElement>(null);
     const labelRef = useRef<HTMLSpanElement>(null);
-    const { carInputs } = usePlayerStore();
+    const player = usePlayerStore();
     const inputTrace = useInputTraceWidgetStore();
     const settings = useWidgetSettings<InputTraceSettings>('input-trace');
     const showValue = settings.showInputValues;
     const coverPoint = useValueCoverPoint(trackRef, labelRef, showValue);
 
+    const containerRef = useReactiveDomWrite<HTMLDivElement>(
+      (element, scheduleWrite) => {
+        const clamped = Math.max(0, Math.min(1, inputTrace.smoothed[channel]));
+        const isAbsActive = channel === 'brake' && player.isAbsActive;
+
+        const color = isAbsActive
+          ? settings.absColor
+          : getChannelColor(settings, channel);
+
+        const valueText = `${Math.round(clamped * PCT)}`;
+        const valueColor =
+          clamped >= coverPoint ? getContrastTextColor(color) : '';
+
+        scheduleWrite(() => {
+          element.style.setProperty(FILL_HEIGHT_PROPERTY, `${clamped * PCT}%`);
+          element.style.setProperty(FILL_COLOR_PROPERTY, color);
+          element.style.setProperty(VALUE_COLOR_PROPERTY, valueColor);
+
+          const label = element.querySelector(`.${styles.value}`);
+
+          if (label instanceof HTMLElement) {
+            label.textContent = valueText;
+          }
+        });
+      },
+      [inputTrace, player, settings, channel, coverPoint]
+    );
+
     if (!settings[CHANNEL_VISIBILITY_KEY[channel]]) {
       return null;
     }
 
-    const clamped = Math.max(0, Math.min(1, inputTrace.smoothed[channel]));
-    const isAbsActive =
-      channel === 'brake' && (carInputs?.brake_abs_active ?? false);
-
-    const valueText = `${Math.round(clamped * 100)}`;
-
-    const color = isAbsActive
-      ? settings.absColor
-      : getChannelColor(settings, channel);
-
     return (
-      <div className={styles.verticalContainer}>
+      <div ref={containerRef} className={styles.verticalContainer}>
         <div
           ref={trackRef}
           className={`${styles.verticalTrack} ${styles[`trackWidth-${width}`]}${
@@ -76,22 +106,10 @@ export const Bar = observer(
         >
           <div
             className={`${styles.verticalFill}${!rounded ? ` ${styles.noRadius}` : ''}`}
-            style={{ height: `${clamped * 100}%`, background: color }}
           />
         </div>
 
-        {showValue && (
-          <span
-            ref={labelRef}
-            className={styles.value}
-            style={{
-              color:
-                clamped >= coverPoint ? getContrastTextColor(color) : undefined,
-            }}
-          >
-            {valueText}
-          </span>
-        )}
+        {showValue && <span ref={labelRef} className={styles.value} />}
       </div>
     );
   }

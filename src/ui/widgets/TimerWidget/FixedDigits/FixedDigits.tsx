@@ -17,18 +17,20 @@ const DIGIT_PATTERN = /\d/;
  * nothing to switch to and the widget's own font falls back to proportional
  * ones.
  */
-export const FixedDigits = observer(({ text, className }: FixedDigitsProps) => (
-  <span className={className}>
-    {Array.from(text, (char, index) =>
-      DIGIT_PATTERN.test(char) ? (
-        <span className={styles.digit} key={index}>
-          {char}
-        </span>
-      ) : (
-        <span className={styles.separator} key={index}>
-          {char}
-        </span>
-      )
-    )}
-  </span>
-));
+export const FixedDigits = observer(({ text, className }: FixedDigitsProps) => {
+  return (
+    <span className={className}>
+      {Array.from(text, (char, index) =>
+        DIGIT_PATTERN.test(char) ? (
+          <span className={styles.digit} key={index}>
+            {char}
+          </span>
+        ) : (
+          <span className={styles.separator} key={index}>
+            {char}
+          </span>
+        )
+      )}
+    </span>
+  );
+});

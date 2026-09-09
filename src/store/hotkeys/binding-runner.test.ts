@@ -21,7 +21,7 @@ const keyboard = (accelerator: string) =>
 interface TestRoot {
   bindings: BindingsStore;
   widgetSettings: {
-    isWidgetInActiveLayout: (id: string) => boolean;
+    isWidgetOnScreen: (id: string) => boolean;
     getWidget: (id: string) => { userSettings: { enabled: boolean } };
     firstWidgetOfType: (type: string) => {
       id: string;
@@ -41,7 +41,7 @@ interface TestRoot {
 const makeRoot = (widgetsInLayout: string[]): TestRoot => ({
   bindings: new BindingsStore(registry),
   widgetSettings: {
-    isWidgetInActiveLayout: (id: string) => widgetsInLayout.includes(id),
+    isWidgetOnScreen: (id: string) => widgetsInLayout.includes(id),
     getWidget: (id: string) => ({
       userSettings: { enabled: widgetsInLayout.includes(id) },
     }),

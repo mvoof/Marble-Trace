@@ -12,7 +12,8 @@
 
 .fill {
   position: absolute;
-  inset: 0 100% 0 0;
+  inset: 0 var(--shift-fill-right, 100%) 0 0;
+  background: var(--shift-fill-color, transparent);
 }
 
 // A sub-pixel bar is a smudge, not a signal — it keeps a minimum thickness.

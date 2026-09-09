@@ -27,16 +27,19 @@ target/
 
 # IDE specific
 .continue/
-.claude
 .gemini
 .agent
-CLAUDE.md
-GEMINI.md
-AGENTS.md
 .playwright-mcp
-.mcp.json
 *storybook.log
 storybook-static
+
+# Agent configuration. The shared contract is tracked: AGENTS.md and its two
+# wrappers, the project skills and the MCP server the visual-testing workflow
+# needs. Personal settings, allow-lists and run state are not: settings.json
+# stays out too, because enabledPlugins there runs third-party code on every
+# machine that clones the repo — each developer opts in locally instead.
+.claude/*
+!.claude/skills/
 
 # Telemetry snapshots (captured from live iRacing sessions)
 # test-data/*.json — tracked in git for CI typecheck / Storybook
@@ -44,3 +47,13 @@ storybook-static
 # Local python env for scripts/trace-wheel-svg.py
 .venv/
 __pycache__/
+
+# Agent scratch space (specs, tickets, wayfinding maps)
+.scratch/
+
+# Render-budget runs in browser mode (npm run test:perf)
+**/__screenshots__/
+.vitest-attachments/
+
+# React Doctor writes its report here when asked for one.
+react-doctor.json

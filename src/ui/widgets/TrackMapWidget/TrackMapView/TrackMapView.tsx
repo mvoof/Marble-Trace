@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
-import { TrackSurface, type TrackPoint } from '@/types';
+import type { TrackPoint } from '@/types';
 import { parseClassColor } from '@utils/colors';
 import { RecordingOverlay } from '@ui/widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { TrackMapSvg } from '@ui/widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
@@ -20,7 +20,6 @@ import type { TrackMapWidgetSettings } from '@/types/widget-settings';
 import {
   useAppSettingsStore,
   useBackendComputedStore,
-  useCarsStore,
   usePaceCarStore,
   useSessionStore,
 } from '@store/root-store-context';
@@ -50,7 +49,6 @@ export const TrackMapView = observer(
   }: TrackMapViewProps) => {
     const sessionStore = useSessionStore();
     const { sessionInfo } = sessionStore;
-    const { carPositions } = useCarsStore();
     const computed = useBackendComputedStore();
     const paceCarStore = usePaceCarStore();
     const { dragMode } = useAppSettingsStore();
@@ -64,7 +62,9 @@ export const TrackMapView = observer(
 
     const sectors = sessionInfo?.sectors;
 
-    const driverEntries = computed.driverEntries?.entries ?? [];
+    // Identities, not entries: who is on the map changes when a car joins or
+    // leaves, while where each dot goes is read inside the draw reaction.
+    const driverIdentities = computed.driverIdentities;
 
     const rotatedTrackData = useMemo(() => {
       if (!trackData) return null;
@@ -96,18 +96,14 @@ export const TrackMapView = observer(
       isHiddenInQualifying(rawSettings.qualifyingVisibility, sessionStore);
 
     const visibleEntries = hideCompetitors
-      ? driverEntries.filter((entry) => entry.isPlayer)
-      : driverEntries;
+      ? driverIdentities.filter((entry) => entry.isPlayer)
+      : driverIdentities;
 
     const competitorCars: CarOnTrack[] = visibleEntries.map((entry) => ({
       carIdx: entry.carIdx,
       carNumber: entry.carNumber,
       carClassColor: entry.carClassColor,
       carClassId: entry.carClassId,
-      lapDistPct:
-        carPositions?.car_idx_lap_dist_pct[entry.carIdx] ?? entry.lapDistPct,
-      trackSurface:
-        carPositions?.car_idx_track_surface[entry.carIdx] ?? entry.trackSurface,
       isPlayer: entry.isPlayer,
       position: useLivePositions
         ? entry.livePosition || entry.position
@@ -124,12 +120,11 @@ export const TrackMapView = observer(
     // driving back out is always shown so you can time the merge behind it.
     const paceCarShowInPits = settings.paceCarShowInPits ?? false;
 
+    // A pace car out of the world has no position to draw; the dot is rendered
+    // either way and hidden by the draw reaction, so the element list stays a
+    // function of the roster rather than of where the car happens to be.
     const paceCars: CarOnTrack[] = (sessionInfo?.cars ?? []).flatMap((car) => {
       if (!car.isPaceCar) return [];
-
-      const lapDistPct = carPositions?.car_idx_lap_dist_pct[car.carIdx] ?? -1;
-
-      if (lapDistPct < 0) return [];
 
       const pitPhase = paceCarStore.getPitPhase(car.carIdx);
 
@@ -147,10 +142,6 @@ export const TrackMapView = observer(
           carNumber: '',
           carClassColor: parseClassColor(car.carClassColor),
           carClassId: car.carClassId,
-          lapDistPct,
-          trackSurface:
-            carPositions?.car_idx_track_surface[car.carIdx] ??
-            TrackSurface.NotInWorld,
           isPlayer: false,
           position: 0,
           classPosition: 0,

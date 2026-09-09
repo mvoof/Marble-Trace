@@ -239,7 +239,7 @@ export const seedSampleTelemetry = action((store: RootStore) => {
   };
 
   store.backendComputed.updateProximity(baselineProximity);
-  store.radar.visible = true;
+  store.radar.visible = { 'proximity-radar': true, 'radar-bar': true };
 
   store.player.updateChassis(buildSampleChassis());
   store.player.updatePitService(samplePitService);

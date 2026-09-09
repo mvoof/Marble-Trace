@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
@@ -6,6 +7,7 @@ import {
   buildGridData,
 } from '@ui/widgets/LedFlagWidget/led-flag-utils';
 import { getColorClass, type ColorStyles } from '../led-matrix-utils';
+import { useLedBlinkClock } from '../useLedBlinkClock';
 
 import styles from './LedMatrix.module.scss';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
@@ -22,14 +24,17 @@ export const LedMatrix = observer(
     const { alwaysShow, animate, split } =
       useWidgetSettings<FlagDisplaySettings>('led-flags');
     const { ledDisplayFlag: flag, blinkOn } = flags;
-
-    if (!alwaysShow && flag === 'none') {
-      return null;
-    }
+    const boardRef = useRef<HTMLDivElement>(null);
 
     const isOff =
       flag === 'none' ||
       (!animate && (flag === 'yellow' || flag === 'red') && !blinkOn);
+
+    useLedBlinkClock(boardRef, flag, !!animate, isOff);
+
+    if (!alwaysShow && flag === 'none') {
+      return null;
+    }
 
     const dpbX = split ? 3 : diodesPerBlock;
     const dpbY = split ? splitRows : diodesPerBlock;
@@ -57,6 +62,7 @@ export const LedMatrix = observer(
 
     return (
       <div
+        ref={boardRef}
         className={`${styles.board}${animate ? ` ${styles.animate}` : ''} ${styles[`flag-${flag}`] || ''}`}
         data-size={dpbX >= 8 && !split ? 'large' : 'small'}
         data-max-ring={maxRing}
@@ -129,6 +135,8 @@ export const LedMatrix = observer(
                   data-is-center={isCenter}
                   data-is-inner={isInner}
                   data-is-outer={isOuter}
+                  data-col-parity={colParity}
+                  data-checkered-parity={checkeredParity}
                   style={
                     {
                       '--gx': gx,

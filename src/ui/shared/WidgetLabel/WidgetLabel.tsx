@@ -16,16 +16,18 @@ export const WidgetLabel = observer(
     className,
     mono = false,
     uppercase = true,
-  }: WidgetLabelProps) => (
-    <span
-      className={[
-        styles.label,
-        mono ? styles.mono : '',
-        !uppercase ? styles.noUppercase : '',
-        className ?? '',
-      ].join(' ')}
-    >
-      {children}
-    </span>
-  )
+  }: WidgetLabelProps) => {
+    return (
+      <span
+        className={[
+          styles.label,
+          mono ? styles.mono : '',
+          !uppercase ? styles.noUppercase : '',
+          className ?? '',
+        ].join(' ')}
+      >
+        {children}
+      </span>
+    );
+  }
 );

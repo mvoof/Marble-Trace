@@ -7,65 +7,67 @@ import { DriverRow } from '@ui/widgets/RelativeWidget/DriverRow/DriverRow';
 import { PaceCarRow } from '@ui/widgets/RelativeWidget/PaceCarRow/PaceCarRow';
 import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
 import {
-  buildPaceCarRowEntries,
-  mergePaceCarRows,
-} from '@ui/widgets/RelativeWidget/relative-utils';
-import {
   useBackendComputedStore,
-  useCarsStore,
-  usePaceCarStore,
-  useSessionStore,
+  useRelativeWidgetStore,
   useSimStore,
 } from '@store/root-store-context';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './RelativeContent.module.scss';
 
+const WIDE_ROW_HEIGHT = 3.5;
+const MEDIUM_ROW_HEIGHT = 3.25;
+const NARROW_ROW_HEIGHT = 2.75;
+const MIN_VISIBLE_ROWS = 3;
+
+/**
+ * The strip around the player. The order comes from the widget store as a list
+ * of car indices compared by content, so a burst that moves every car without
+ * changing who is where re-renders nothing here — each row reads its own driver
+ * and writes its own gap. See `docs/rendering.md`.
+ */
 export const RelativeContent = observer(() => {
   const computed = useBackendComputedStore();
+  const relativeWidget = useRelativeWidgetStore();
   const sim = useSimStore();
-  const { carIdx } = useCarsStore();
-  const { sessionInfo } = useSessionStore();
-  const paceCarStore = usePaceCarStore();
 
-  const { rowPadding, paceCarShowInPits } =
-    useWidgetSettings<RelativeWidgetSettings>('relative');
+  const { rowPadding } = useWidgetSettings<RelativeWidgetSettings>('relative');
 
-  const paceCarEntries = buildPaceCarRowEntries(
-    carIdx,
-    sessionInfo?.cars,
-    computed.relativeEntries,
-    (entryCarIdx) => paceCarStore.getPitPhase(entryCarIdx),
-    paceCarShowInPits ?? false
-  );
+  const rows = relativeWidget.rowOrder;
 
-  const entries = mergePaceCarRows(computed.relativeEntries, paceCarEntries);
+  const playerCarIdx = computed.relativeIdentities.find(
+    (identity) => identity.isPlayer
+  )?.carIdx;
 
   const { ref: driverListRef, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(
-      rowPadding === 'wide' ? 3.5 : rowPadding === 'medium' ? 3.25 : 2.75,
-      3,
+      rowPadding === 'wide'
+        ? WIDE_ROW_HEIGHT
+        : rowPadding === 'medium'
+          ? MEDIUM_ROW_HEIGHT
+          : NARROW_ROW_HEIGHT,
+      MIN_VISIBLE_ROWS,
       '[data-relative-row]'
     );
 
-  const displayEntries = useMemo(() => {
-    const playerIdx = entries.findIndex((entry) => entry.isPlayer);
+  const displayRows = useMemo(() => {
+    const playerIdx = rows.findIndex((row) => row.carIdx === playerCarIdx);
 
     if (playerIdx === -1) {
-      return entries.slice(0, visibleRowCount);
+      return rows.slice(0, visibleRowCount);
     }
 
     // Force an odd window so the player can sit dead-centre with an equal
     // number of rows above and below. On resize, rows are then added/removed
     // symmetrically from both ends — the player row never shifts position.
-    let total = Math.min(visibleRowCount, entries.length);
+    let total = Math.min(visibleRowCount, rows.length);
 
     if (total % 2 === 0 && total > 1) {
       total -= 1;
     }
 
     const aboveAvail = playerIdx;
-    const belowAvail = entries.length - playerIdx - 1;
+    const belowAvail = rows.length - playerIdx - 1;
     const half = (total - 1) / 2;
 
     let above = Math.min(half, aboveAvail);
@@ -74,10 +76,10 @@ export const RelativeContent = observer(() => {
     above = Math.min(total - 1 - below, aboveAvail);
     below = Math.min(total - 1 - above, belowAvail);
 
-    return entries.slice(playerIdx - above, playerIdx + below + 1);
-  }, [entries, visibleRowCount]);
+    return rows.slice(playerIdx - above, playerIdx + below + 1);
+  }, [rows, playerCarIdx, visibleRowCount]);
 
-  const hasData = sim.isConnected && entries.length > 0;
+  const hasData = sim.isConnected && rows.length > 0;
 
   if (!hasData) {
     return <NoDataPlaceholder />;
@@ -85,11 +87,11 @@ export const RelativeContent = observer(() => {
 
   return (
     <div ref={driverListRef} className={styles.driverList}>
-      {displayEntries.map((entry, index) =>
-        'isPaceCar' in entry ? (
-          <PaceCarRow key={entry.carIdx} driver={entry} index={index} />
+      {displayRows.map((row, index) =>
+        row.isPaceCar ? (
+          <PaceCarRow key={row.carIdx} carIdx={row.carIdx} index={index} />
         ) : (
-          <DriverRow key={entry.carIdx} driver={entry} index={index} />
+          <DriverRow key={row.carIdx} carIdx={row.carIdx} index={index} />
         )
       )}
     </div>

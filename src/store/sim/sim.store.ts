@@ -91,7 +91,13 @@ export class SimStore {
       this.disposers.push(
         reaction(
           () => ({
-            widgets: this.root.widgetSettings.allWidgets.map((w) => ({
+            // What is on screen, not what the editor has open — same source
+            // updateActiveEvents itself reads. Tracking allWidgets (the
+            // editing layout) here left the mask stuck on whatever layout was
+            // live when the editor opened: the live layout could change out
+            // from under it (a session auto-switch while editing another
+            // layout) with nothing to trigger a recompute.
+            widgets: this.root.widgetSettings.liveWidgets.map((w) => ({
               id: w.id,
               enabled: w.userSettings.enabled,
             })),
@@ -212,7 +218,9 @@ export class SimStore {
 
     const requested = new Set<TelemetryEventName>();
 
-    for (const widget of this.root.widgetSettings.allWidgets) {
+    // What is on screen, not what the editor has open: the editor's preview
+    // draws against seeded scenarios and needs no telemetry of its own.
+    for (const widget of this.root.widgetSettings.liveWidgets) {
       if (!widget.userSettings.enabled) continue;
 
       const manifest = WIDGET_BY_ID.get(widgetTypeOf(widget));

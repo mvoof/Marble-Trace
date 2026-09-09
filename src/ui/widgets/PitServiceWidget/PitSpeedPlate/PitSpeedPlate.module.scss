@@ -63,6 +63,7 @@ $speed-limit-seam: $pit-readout-seam;
   top: 0;
   bottom: 0;
   left: 0;
+  width: var(--speed-fill, 0%);
   background: rgba($race-green, 0.34);
   transition: width 80ms linear;
 }
@@ -71,6 +72,8 @@ $speed-limit-seam: $pit-readout-seam;
   position: absolute;
   top: 0;
   bottom: 0;
+  left: var(--speed-over-left, 0%);
+  width: var(--speed-over-width, 0%);
   background: rgba($race-red, 0.5);
 }
 
@@ -80,6 +83,8 @@ $speed-limit-seam: $pit-readout-seam;
   position: absolute;
   top: 0;
   bottom: 0;
+  left: var(--speed-lift-left, 0%);
+  width: var(--speed-lift-width, 0%);
   background: repeating-linear-gradient(
     135deg,
     rgba($race-amber, 0.55) 0 3px,

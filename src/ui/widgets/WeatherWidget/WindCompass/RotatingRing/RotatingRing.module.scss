@@ -1,17 +1,7 @@
 .rotatingGroup {
-  transition: transform 0.05s linear;
-}
-
-.cardinalLabel {
-  font-family: $font-widget;
-  font-size: fs(md);
-  font-weight: 400;
-  fill: rgba(255, 255, 255, 0.22);
-  paint-order: stroke;
-  stroke-width: 3px;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: transform 0.05s linear;
+  // No transition: --compass-yaw is already written up to 60 times a second
+  // by useReactiveDomWrite, which is smoothing enough on its own. A
+  // transition retargeted every frame costs the compositor a fresh eased
+  // interpolation instead of a plain instant write, for no visible gain.
+  transform: rotate(var(--compass-yaw, 0deg));
 }

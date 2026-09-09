@@ -14,6 +14,7 @@ import {
   usePlayerStore,
   useSimStore,
   useWidgetAutoHideStore,
+  useLayoutsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -26,6 +27,7 @@ export const WidgetContainer = observer(
   ({ widgetId, children }: WidgetContainerProps) => {
     const { dragMode, appSettings } = useAppSettingsStore();
     const widgetSettings = useWidgetSettingsStore();
+    const layouts = useLayoutsStore();
 
     const simStore = useSimStore();
     const widgetAutoHide = useWidgetAutoHideStore();
@@ -55,7 +57,7 @@ export const WidgetContainer = observer(
     const isConnected = simStore.status === 'connected';
     const isOnTrack = player.isOnTrack;
 
-    const hasGarageLayout = !!widgetSettings.sessionLayouts?.Garage;
+    const hasGarageLayout = !!layouts.sessionLayouts?.Garage;
 
     const shouldHideInGarage =
       appSettings.autoSwitchLayouts && !hasGarageLayout;
@@ -279,7 +281,7 @@ export const WidgetContainer = observer(
               style={frameStyle}
             >
               <WidgetIdContext.Provider value={widgetId}>
-                {children}
+                {shouldHide ? null : children}
               </WidgetIdContext.Provider>
             </div>
           </ErrorBoundary>

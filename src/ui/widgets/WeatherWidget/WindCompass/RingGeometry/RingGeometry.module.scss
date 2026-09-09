@@ -1,0 +1,18 @@
+.cardinalLabel {
+  font-family: $font-widget;
+  font-size: fs(md);
+  font-weight: 400;
+  fill: rgba(255, 255, 255, 0.22);
+  paint-order: stroke;
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: center;
+  // Undoes the ring's own rotation so the letters stay upright. Both read the
+  // same custom property, so one write to the group turns the whole compass.
+  // No transition: see RotatingRing.module.scss — the property already
+  // writes at up to 60 Hz, so a transition here would just retarget itself
+  // every frame for no visible gain.
+  transform: rotate(calc(-1 * var(--compass-yaw, 0deg)));
+}

@@ -49,30 +49,32 @@ export const StatPill = observer(
     pulse = false,
     variant = 'chip',
     className,
-  }: StatPillProps) => (
-    <span
-      className={[
-        styles.pill,
-        variant === 'inline' ? styles.pillInline : '',
-        pulse ? styles.pillPulse : '',
-        className ?? '',
-      ].join(' ')}
-    >
-      {Icon && (
-        <Icon
-          size={ICON_SIZE_PX}
-          color={iconColor ?? 'currentColor'}
-          className={`${styles.icon} ${iconColor === undefined ? ICON_TONE_CLASS[iconTone] : ''}`}
-        />
-      )}
-
-      {label && <span className={styles.label}>{label}</span>}
-
+  }: StatPillProps) => {
+    return (
       <span
-        className={`${styles.value} ${valueDanger ? styles.valueDanger : ''}`}
+        className={[
+          styles.pill,
+          variant === 'inline' ? styles.pillInline : '',
+          pulse ? styles.pillPulse : '',
+          className ?? '',
+        ].join(' ')}
       >
-        {children}
+        {Icon && (
+          <Icon
+            size={ICON_SIZE_PX}
+            color={iconColor ?? 'currentColor'}
+            className={`${styles.icon} ${iconColor === undefined ? ICON_TONE_CLASS[iconTone] : ''}`}
+          />
+        )}
+
+        {label && <span className={styles.label}>{label}</span>}
+
+        <span
+          className={`${styles.value} ${valueDanger ? styles.valueDanger : ''}`}
+        >
+          {children}
+        </span>
       </span>
-    </span>
-  )
+    );
+  }
 );

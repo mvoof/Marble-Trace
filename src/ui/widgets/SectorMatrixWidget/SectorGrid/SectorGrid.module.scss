@@ -15,7 +15,7 @@
   position: relative;
   padding: sp(xxs) sp(xs);
   background: $widget-surface-cell;
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  border-left: 2px solid var(--chip-border, rgba(255, 255, 255, 0.1));
   display: flex;
   flex-direction: column;
   gap: sp(xxxs);
@@ -28,7 +28,6 @@
 
 .chipFuture {
   background: $widget-surface-cell;
-  border-left-color: rgba(255, 255, 255, 0.1);
 }
 
 // Dividers are hairlines inset from the plate edges, never full bleed.
@@ -76,6 +75,7 @@
 }
 
 .sectorDelta {
+  color: var(--chip-delta-color, var(--sector-neutral));
   font-family: $font-mono;
   font-size: fs(sm);
   font-weight: 700;
@@ -86,7 +86,7 @@
   font-family: $font-mono;
   font-size: fs(sm);
   font-weight: 700;
-  color: $widget-text-primary;
+  color: var(--chip-time-color, #{$widget-text-primary});
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }

@@ -1,6 +1,7 @@
 @use '../invisible-dash-scale' as *;
 
 .gear {
+  color: var(--dash-gear-color, inherit);
   font-size: wfs(72 * $ss);
   line-height: 1;
   font-variant-numeric: tabular-nums;

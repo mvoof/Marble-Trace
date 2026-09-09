@@ -13,12 +13,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-// The projection is an estimate, so it stays visually subordinate to the
-// position the car actually holds right now.
-.projected {
-  color: $race-amber;
-}
-
 .state {
   letter-spacing: 0.1em;
   color: $widget-label;

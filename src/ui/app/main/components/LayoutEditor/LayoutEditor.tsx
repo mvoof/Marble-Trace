@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import {
   useAppSettingsStore,
+  useLayoutsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
@@ -83,6 +84,7 @@ export const LayoutEditor = observer(
     onModeChange?: (mode: 'list' | 'editor') => void;
   }) => {
     const widgetSettings = useWidgetSettingsStore();
+    const layouts = useLayoutsStore();
     const appSettings = useAppSettingsStore();
     const { t } = useTranslation('main-app');
 
@@ -98,46 +100,29 @@ export const LayoutEditor = observer(
       }
     };
 
-    // When the editor is opened for a layout that wasn't previously active,
-    // prevActiveId holds the id we should restore when the user goes back
-    // without clicking "Make Active".
-    const [prevActiveId, setPrevActiveId] = useState<string | null>(null);
-
+    // Which layout is on screen is the store's to remember, not this
+    // component's: opening the editor pins it, and everything the user does in
+    // here moves the edited layout only until they put it on screen.
     const handleOpenEditorWithId = (id: string) => {
-      const currentActiveId = widgetSettings.activeLayoutId;
-
-      if (id !== currentActiveId) {
-        widgetSettings.switchEditorLayout(id);
-        setPrevActiveId(currentActiveId);
-      } else {
-        setPrevActiveId(null);
-      }
+      widgetSettings.setLayoutEditorOpen(true);
+      widgetSettings.switchEditorLayout(id);
 
       handleModeChange('editor');
     };
 
     const handleBack = () => {
-      if (prevActiveId) {
-        widgetSettings.loadLayout(prevActiveId);
-        setPrevActiveId(null);
-      } else {
-        widgetSettings.activateEditorLayout();
-      }
-
       handleModeChange('list');
     };
 
     const handleMakeActive = () => {
       widgetSettings.activateEditorLayout();
-      setPrevActiveId(null);
     };
 
-    const isEditingLayoutActive = prevActiveId === null;
+    const isEditingLayoutActive = !widgetSettings.editorPreviewMode;
 
-    // The session auto-switch stands down while the editor is on screen —
-    // otherwise going on track swaps the layout being edited out from under the
-    // user. Closing the editor re-runs that reaction, so a session change that
-    // happened meanwhile is applied then.
+    // Closing hands the screen's layout back as the one being edited; the
+    // session auto-switch never stands down, so the overlay has been following
+    // the session the whole time the editor was open.
     useEffect(() => {
       widgetSettings.setLayoutEditorOpen(activeMode === 'editor');
 
@@ -184,14 +169,14 @@ export const LayoutEditor = observer(
       {}
     );
 
-    const activeId = widgetSettings.activeLayoutId;
-    const activeLayout = widgetSettings.activeLayout;
+    const activeId = layouts.editingLayoutId;
+    const editingLayout = layouts.editingLayout;
     const monitors = widgetSettings.attachedMonitors;
 
     // Background images belong to a screen, so setting one needs a screen in
     // focus; in overview the first monitor is the sensible target.
     const backgroundTargetName =
-      focusedMonitorName ?? activeLayout?.monitors[0]?.name;
+      focusedMonitorName ?? editingLayout?.monitors[0]?.name;
 
     const prevActiveIdRef = useRef(activeId);
 
@@ -247,9 +232,7 @@ export const LayoutEditor = observer(
         const extension = (file.name.split('.').pop() ?? 'png').toLowerCase();
         const bytes = new Uint8Array(await file.arrayBuffer());
         const previous = backgroundTargetName
-          ? widgetSettings.activeLayout?.backgroundImages?.[
-              backgroundTargetName
-            ]
+          ? layouts.editingLayout?.backgroundImages?.[backgroundTargetName]
           : undefined;
 
         const fileName = await saveBackgroundImage(activeId, bytes, extension);
@@ -259,7 +242,7 @@ export const LayoutEditor = observer(
         }
 
         if (backgroundTargetName) {
-          widgetSettings.setMonitorBackground(backgroundTargetName, fileName);
+          layouts.setMonitorBackground(backgroundTargetName, fileName);
         }
       } catch (error) {
         console.error('Failed to save background image:', error);
@@ -272,9 +255,9 @@ export const LayoutEditor = observer(
       if (!backgroundTargetName) return;
 
       void deleteBackgroundImage(
-        activeLayout?.backgroundImages?.[backgroundTargetName]
+        editingLayout?.backgroundImages?.[backgroundTargetName]
       );
-      widgetSettings.setMonitorBackground(backgroundTargetName, undefined);
+      layouts.setMonitorBackground(backgroundTargetName, undefined);
     };
 
     const handleDeleteLayout = () => {
@@ -283,7 +266,7 @@ export const LayoutEditor = observer(
       }
 
       for (const image of Object.values(
-        widgetSettings.activeLayout?.backgroundImages ?? {}
+        layouts.editingLayout?.backgroundImages ?? {}
       )) {
         void deleteBackgroundImage(image);
       }
@@ -291,13 +274,13 @@ export const LayoutEditor = observer(
       widgetSettings.deleteLayout(activeId);
     };
 
-    const layoutOptions = widgetSettings.layouts.map((layout) => ({
+    const layoutOptions = layouts.layouts.map((layout) => ({
       value: layout.id,
       label: layout.name,
     }));
 
     const layoutMonitorNames = new Set(
-      (activeLayout?.monitors ?? []).map((monitor) => monitor.name)
+      (editingLayout?.monitors ?? []).map((monitor) => monitor.name)
     );
 
     // The picker does double duty: it zooms the canvas to one screen, and it is
@@ -318,7 +301,7 @@ export const LayoutEditor = observer(
       })),
       // Remote screens live in the layout only — the machine has no display to
       // offer them from, so they are listed straight from the layout itself.
-      ...(activeLayout?.monitors ?? [])
+      ...(editingLayout?.monitors ?? [])
         .filter(isRemoteMonitor)
         .map((monitor) => ({
           value: monitor.name,
@@ -327,11 +310,11 @@ export const LayoutEditor = observer(
         })),
     ];
 
-    const hasRemoteScreens = (activeLayout?.monitors ?? []).some(
+    const hasRemoteScreens = (editingLayout?.monitors ?? []).some(
       isRemoteMonitor
     );
 
-    const moveTargetOptions = (activeLayout?.monitors ?? [])
+    const moveTargetOptions = (editingLayout?.monitors ?? [])
       .filter((monitor) => monitor.name !== focusedMonitorName)
       .map((monitor) => ({ value: monitor.name, label: monitor.name }));
 
@@ -370,7 +353,7 @@ export const LayoutEditor = observer(
       if (!monitor) return;
 
       if (!layoutMonitorNames.has(name)) {
-        widgetSettings.addMonitor({
+        layouts.addMonitor({
           name: monitor.name,
           bounds: monitor.bounds,
         });
@@ -397,7 +380,7 @@ export const LayoutEditor = observer(
           : selectedWidget.userSettings.currentHeight;
       // Widget coordinates are virtual-desktop wide, so the corners are those
       // of the screen the widget currently sits on, not of the desktop box.
-      const monitors = widgetSettings.activeLayout?.monitors ?? [];
+      const monitors = layouts.editingLayout?.monitors ?? [];
       const screen = monitorForWidget(selectedWidget, monitors)?.bounds ?? {
         x: 0,
         y: 0,
@@ -591,19 +574,7 @@ export const LayoutEditor = observer(
                     placeholder={t('layoutEditor.selectLayoutPlaceholder')}
                     value={activeId ?? undefined}
                     onChange={(id) => {
-                      const trueActiveId =
-                        prevActiveId ?? widgetSettings.activeLayoutId;
-
-                      if (id === trueActiveId) {
-                        widgetSettings.loadLayout(id);
-                        setPrevActiveId(null);
-                      } else {
-                        if (prevActiveId === null) {
-                          setPrevActiveId(widgetSettings.activeLayoutId);
-                        }
-
-                        widgetSettings.switchEditorLayout(id);
-                      }
+                      widgetSettings.switchEditorLayout(id);
                     }}
                     options={layoutOptions}
                   />
@@ -626,9 +597,9 @@ export const LayoutEditor = observer(
                       size="small"
                       type="text"
                       icon={<Pencil size={14} />}
-                      disabled={!activeLayout}
+                      disabled={!editingLayout}
                       onClick={() => {
-                        setDraftName(activeLayout?.name ?? '');
+                        setDraftName(editingLayout?.name ?? '');
                         pendingNameFocusRef.current = true;
                         setIsRenaming(true);
                       }}
@@ -725,7 +696,7 @@ export const LayoutEditor = observer(
                     )}
                   </div>
                 )}
-                disabled={!activeLayout}
+                disabled={!editingLayout}
                 popupMatchSelectWidth={240}
                 style={{ minWidth: 180 }}
               />
@@ -823,7 +794,7 @@ export const LayoutEditor = observer(
                   size="small"
                   type="text"
                   icon={<Image size={14} />}
-                  disabled={!activeLayout}
+                  disabled={!editingLayout}
                   onClick={() => {
                     if (backgroundInputRef.current) {
                       setIsUploadingBackground(true);
@@ -834,7 +805,7 @@ export const LayoutEditor = observer(
               </Tooltip>
 
               {backgroundTargetName &&
-                activeLayout?.backgroundImages?.[backgroundTargetName] && (
+                editingLayout?.backgroundImages?.[backgroundTargetName] && (
                   <Tooltip title={t('layoutEditor.clearBackgroundTooltip')}>
                     <Button
                       size="small"

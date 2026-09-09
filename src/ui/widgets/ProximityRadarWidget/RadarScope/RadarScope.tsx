@@ -5,9 +5,13 @@ import { observer } from 'mobx-react-lite';
 import type { NearbyCar } from '@/types/bindings';
 import type { UnitSystem } from '@/types';
 import type { ProximityRadarSettings } from '@/types/widget-settings';
-import { useProximityRadarData } from '@ui/hooks/useProximityRadarData';
 import { formatDistance } from '@utils/telemetry-format';
-import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
+import {
+  useAppSettingsStore,
+  useBackendComputedStore,
+  useRadarWidgetStore,
+  useUnitsStore,
+} from '@store/root-store-context';
 import {
   DESIGN_SIZE_PX,
   SCOPE_INK,
@@ -40,16 +44,18 @@ export const RadarScope = observer(() => {
   const units = useUnitsStore();
   const appSettings = useAppSettingsStore();
 
-  const { proximity, nearbyCars, visible } = useProximityRadarData(
-    'proximity-radar',
-    SEARCH_RADIUS_M
-  );
+  const computed = useBackendComputedStore();
 
-  // Read once per frame inside the draw loop rather than through props: the
-  // canvas is redrawn on RAF anyway, and a store read in the render body would
-  // rebuild the effect on every telemetry tick.
-  const frameRef = useRef({
-    nearbyCars,
+  // Deliberately not `useProximityRadarData`: that hook reads the proximity
+  // frame to build its car list, and reading it here is exactly what woke this
+  // component sixty times a second.
+  const visible = useRadarWidgetStore().isVisibleForWidget('proximity-radar');
+
+  // The cars are read inside the draw loop instead of here. The loop repaints on
+  // every animation frame regardless, so reading the frame in the render body
+  // would buy nothing and would wake React sixty times a second — the whole of
+  // this widget's debt. See `docs/rendering.md`.
+  const carsRef = useRef({
     carLength: appSettings.appSettings.carLength,
   });
 
@@ -62,8 +68,7 @@ export const RadarScope = observer(() => {
   // a ref is not replayable, and the draw loop only ever reads them on the next
   // frame anyway. No dependency list — every render carries a newer tick.
   useLayoutEffect(() => {
-    frameRef.current = {
-      nearbyCars,
+    carsRef.current = {
       carLength: appSettings.appSettings.carLength,
     };
     settingsRef.current = settings;
@@ -99,7 +104,14 @@ export const RadarScope = observer(() => {
       }
 
       const scope = settingsRef.current;
-      const { carLength } = frameRef.current;
+      const { carLength } = carsRef.current;
+      // Inside a hand-rolled RAF loop (not useReactiveCanvasLoop), same escape
+      // hatch without the shared primitive's grep signal. See docs/rendering.md.
+      const nearbyCars =
+        // oxlint-disable-next-line no-restricted-properties
+        computed.proximity?.nearbyCars.filter(
+          (car) => car.clearance <= SEARCH_RADIUS_M
+        ) ?? [];
       const radiusPx = size / 2;
 
       const { pxPerMeter, rangeMeters } = resolveScopeScale({
@@ -135,16 +147,10 @@ export const RadarScope = observer(() => {
         carLengthM: carLength,
       };
 
-      drawCenterLane(
-        ctx,
-        frameRef.current.nearbyCars,
-        geometry,
-        scope,
-        unitSystemRef.current
-      );
+      drawCenterLane(ctx, nearbyCars, geometry, scope, unitSystemRef.current);
 
-      drawSideLane(ctx, frameRef.current.nearbyCars, 'left', geometry, scope);
-      drawSideLane(ctx, frameRef.current.nearbyCars, 'right', geometry, scope);
+      drawSideLane(ctx, nearbyCars, 'left', geometry, scope);
+      drawSideLane(ctx, nearbyCars, 'right', geometry, scope);
 
       drawCar(ctx, {
         x: 0,
@@ -161,9 +167,9 @@ export const RadarScope = observer(() => {
     frame = requestAnimationFrame(draw);
 
     return () => cancelAnimationFrame(frame);
-  }, [canvas]);
+  }, [canvas, computed]);
 
-  if (!visible || !proximity) {
+  if (!visible || !computed.hasProximity) {
     return null;
   }
 

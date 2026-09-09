@@ -41,7 +41,7 @@ interface WidgetFrameStyleInput {
   widgetScale: number;
   transparentContainer?: boolean;
   autoHeight?: boolean;
-  /** The overlay keeps a hidden widget mounted but strips its plate away. */
+  /** A hidden widget keeps its frame but drops its body, so drop the plate too. */
   hidden?: boolean;
 }
 

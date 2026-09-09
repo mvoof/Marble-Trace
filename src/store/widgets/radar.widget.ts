@@ -1,67 +1,94 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
+import type { IReactionDisposer } from 'mobx';
 
-import type { NearbyCar } from '@/types/bindings';
 import type { RadarSettings } from '@/types/widget-settings';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import type { RootStore } from '@store/root-store';
 
-export class RadarWidgetStore {
-  visible = false;
+export const RADAR_WIDGET_TYPES = ['proximity-radar', 'radar-bar'] as const;
 
-  private hideTimer: ReturnType<typeof setTimeout> | null = null;
+export type RadarWidgetType = (typeof RADAR_WIDGET_TYPES)[number];
+
+const noneVisible = (): Record<RadarWidgetType, boolean> => ({
+  'proximity-radar': false,
+  'radar-bar': false,
+});
+
+export class RadarWidgetStore {
+  // Per widget, not per app: the scope and the bar carry their own activation
+  // range and their own fade-out delay, and a driver who widens one does not
+  // mean the other. Per *copy* is deliberately not offered — a store is one per
+  // app, and the settings panel edits the copy it is opened on.
+  visible: Record<RadarWidgetType, boolean> = noneVisible();
+
+  private hideTimers: Record<
+    RadarWidgetType,
+    ReturnType<typeof setTimeout> | null
+  > = { 'proximity-radar': null, 'radar-bar': null };
+
+  private disposers: IReactionDisposer[] = [];
 
   constructor(private readonly root: RootStore) {
     makeAutoObservable(this);
   }
 
   init() {
-    reaction(
-      () => ({
-        hasNearby: this.hasNearby,
-        hideDelay: this.hideDelay,
-      }),
-      ({ hasNearby, hideDelay }) => {
-        if (hasNearby) {
-          if (this.hideTimer) {
-            clearTimeout(this.hideTimer);
-            this.hideTimer = null;
-          }
+    for (const widgetType of RADAR_WIDGET_TYPES) {
+      this.watch(widgetType);
+    }
+  }
 
-          action(() => {
-            this.visible = true;
-          })();
-        } else {
-          if (this.hideTimer) {
-            return;
-          }
+  private watch(widgetType: RadarWidgetType) {
+    this.disposers.push(
+      reaction(
+        () => ({
+          hasNearby: this.hasNearbyFor(widgetType),
+          hideDelay: this.hideDelayFor(widgetType),
+        }),
+        ({ hasNearby, hideDelay }) => {
+          const pendingHide = this.hideTimers[widgetType];
 
-          this.hideTimer = setTimeout(
+          if (hasNearby) {
+            if (pendingHide) {
+              clearTimeout(pendingHide);
+              this.hideTimers[widgetType] = null;
+            }
+
             action(() => {
-              this.visible = false;
-              this.hideTimer = null;
-            }),
-            hideDelay * 1000
-          );
+              this.visible[widgetType] = true;
+            })();
+          } else {
+            if (pendingHide) {
+              return;
+            }
+
+            this.hideTimers[widgetType] = setTimeout(
+              action(() => {
+                this.visible[widgetType] = false;
+                this.hideTimers[widgetType] = null;
+              }),
+              hideDelay * 1000
+            );
+          }
         }
-      }
+      )
     );
   }
 
-  get hasNearby(): boolean {
+  hasNearbyFor(widgetType: RadarWidgetType): boolean {
     const proximity = this.root.backendComputed.proximity;
 
     if (!proximity) {
       return false;
     }
 
-    const settings =
-      this.root.widgetSettings.getSettings<RadarSettings>('proximity-radar');
-    const proximityThreshold = settings.proximityThreshold;
     const hasSpotterContact = proximity.spotterLeft || proximity.spotterRight;
 
     if (hasSpotterContact) {
       return true;
     }
+
+    const { proximityThreshold } = this.settingsOf(widgetType);
 
     // The threshold is the number the driver reads in the settings, so it is
     // measured the way a driver means it: bumper to bumper, not centre to
@@ -71,19 +98,20 @@ export class RadarWidgetStore {
     );
   }
 
-  private get hideDelay(): number {
-    return this.root.widgetSettings.getSettings<RadarSettings>(
-      'proximity-radar'
-    ).hideDelay;
+  private hideDelayFor(widgetType: RadarWidgetType): number {
+    return this.settingsOf(widgetType).hideDelay;
+  }
+
+  private settingsOf(widgetType: RadarWidgetType) {
+    return this.root.widgetSettings.getSettings<RadarSettings>(widgetType);
   }
 
   get isLoneQualifying(): boolean {
     return this.root.session.isLoneQualifying;
   }
 
-  isHiddenInQualifyingFor(widgetId: 'proximity-radar' | 'radar-bar'): boolean {
-    const settings =
-      this.root.widgetSettings.getSettings<RadarSettings>(widgetId);
+  isHiddenInQualifyingFor(widgetType: RadarWidgetType): boolean {
+    const settings = this.settingsOf(widgetType);
 
     return isHiddenInQualifying(
       settings.qualifyingVisibility,
@@ -91,41 +119,38 @@ export class RadarWidgetStore {
     );
   }
 
-  isVisibleForWidget(widgetId: 'proximity-radar' | 'radar-bar'): boolean {
+  isVisibleForWidget(widgetType: RadarWidgetType): boolean {
     if (this.root.appSettings.dragMode) {
       return true;
     }
 
-    if (this.isHiddenInQualifyingFor(widgetId)) {
+    if (this.isHiddenInQualifyingFor(widgetType)) {
       return false;
     }
 
-    return this.visible;
-  }
-
-  get isVisible(): boolean {
-    return this.isVisibleForWidget('proximity-radar');
-  }
-
-  getNearbyCars(
-    _widgetId: 'proximity-radar' | 'radar-bar',
-    searchRadius: number
-  ): NearbyCar[] {
-    const proximity = this.root.backendComputed.proximity;
-
-    if (!proximity) {
-      return [];
-    }
-
-    return proximity.nearbyCars.filter((car) => car.clearance <= searchRadius);
+    return this.visible[widgetType];
   }
 
   reset() {
-    if (this.hideTimer) {
-      clearTimeout(this.hideTimer);
-      this.hideTimer = null;
+    for (const widgetType of RADAR_WIDGET_TYPES) {
+      const pendingHide = this.hideTimers[widgetType];
+
+      if (pendingHide) {
+        clearTimeout(pendingHide);
+        this.hideTimers[widgetType] = null;
+      }
     }
 
-    this.visible = false;
+    this.visible = noneVisible();
+  }
+
+  dispose() {
+    this.reset();
+
+    for (const disposeReaction of this.disposers) {
+      disposeReaction();
+    }
+
+    this.disposers = [];
   }
 }

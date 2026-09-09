@@ -384,7 +384,9 @@
       "sourceSession": "Session (YAML)",
       "rowCount": "{{count}} rows",
       "waitingSession": "Waiting for session data…",
-      "showAll": "Show the remaining {{count}}"
+      "showAll": "Show the remaining {{count}}",
+      "collapseRow": "Collapse",
+      "expandRow": "Expand"
     },
     "developerTools": {
       "title": "Developer Tools",

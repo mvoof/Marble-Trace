@@ -5,6 +5,7 @@ import { IncidentsWidgetStore } from './widgets/incidents.widget';
 import { PaceCarStore } from './widgets/pace-car.widget';
 import { RadarWidgetStore } from './widgets/radar.widget';
 import { CloseBattleWidgetStore } from '@ui/widgets/CloseBattleWidget/close-battle.widget';
+import { RelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.widget';
 import { PitServiceWidgetStore } from '@ui/widgets/PitServiceWidget/pit-service.widget';
 import { StandingsWidgetStore } from './widgets/standings.widget';
 import { TrackMapWidgetStore } from '@ui/widgets/TrackMapWidget/track-map.widget';
@@ -13,7 +14,8 @@ import { CoachWidgetStore } from '@ui/widgets/CoachWidget/coach.widget';
 import { InputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.widget';
 import { WidgetSettingsStore } from './settings/widget-settings.store';
 import { WidgetDefaultsStore } from './settings/widget-defaults.store';
-import type { LayoutsStore } from './settings/layouts.store';
+import { LayoutsStore } from './settings/layouts.store';
+import { SettingsMutationLog } from './settings/mutation-log';
 import { AppSettingsStore } from './settings/app-settings.store';
 import { CompanionAppsStore } from './settings/companion-apps.store';
 import { UnitsStore } from './settings/units.store';
@@ -54,6 +56,7 @@ export class RootStore {
   incidentsWidget: IncidentsWidgetStore;
   radar: RadarWidgetStore;
   closeBattleWidget: CloseBattleWidgetStore;
+  relativeWidget: RelativeWidgetStore;
   standingsWidget: StandingsWidgetStore;
   pitServiceWidget: PitServiceWidgetStore;
   trackMapWidget: TrackMapWidgetStore;
@@ -64,6 +67,8 @@ export class RootStore {
   widgetSettings: WidgetSettingsStore;
   widgetDefaults: WidgetDefaultsStore;
   layouts: LayoutsStore;
+  /** What every settings write marks itself in — see `SettingsMutationLog`. */
+  settingsMutations: SettingsMutationLog;
   appSettings: AppSettingsStore;
   companionApps: CompanionAppsStore;
   twitchAuth: TwitchAuthStore;
@@ -88,9 +93,14 @@ export class RootStore {
     this.referenceLap = new ReferenceLapStore();
     this.chat = new ChatStore();
     this.backendComputed = new BackendComputedStore();
-    this.widgetDefaults = new WidgetDefaultsStore();
-    this.widgetSettings = new WidgetSettingsStore(this);
-    this.layouts = this.widgetSettings.layoutRecords;
+    this.widgetDefaults = new WidgetDefaultsStore(this);
+    this.settingsMutations = new SettingsMutationLog();
+    this.layouts = new LayoutsStore(this.settingsMutations);
+    this.widgetSettings = new WidgetSettingsStore(
+      this.settingsMutations,
+      this.layouts,
+      this
+    );
     this.appSettings = new AppSettingsStore();
     this.companionApps = new CompanionAppsStore(this);
     this.twitchAuth = new TwitchAuthStore(this);
@@ -100,6 +110,7 @@ export class RootStore {
     this.incidentsWidget = new IncidentsWidgetStore(this);
     this.radar = new RadarWidgetStore(this);
     this.closeBattleWidget = new CloseBattleWidgetStore(this);
+    this.relativeWidget = new RelativeWidgetStore(this);
     this.standingsWidget = new StandingsWidgetStore(this);
     this.pitServiceWidget = new PitServiceWidgetStore(this);
     // A preview store shows a sample track: turning that map must not write an
@@ -112,7 +123,7 @@ export class RootStore {
     this.inputTraceWidget = new InputTraceWidgetStore(this);
     this.streamChatWidget = new StreamChatWidgetStore(this);
     this.sim = new SimStore(this);
-    this.widgetAutoHide = new WidgetAutoHideStore();
+    this.widgetAutoHide = new WidgetAutoHideStore(this);
     this.bindings = new BindingsStore(new ActionRegistry(DEFAULT_WIDGETS));
     this.deviceInput = new DeviceInputStore();
     this.bindingsUi = new BindingsUiStore();
@@ -154,5 +165,6 @@ export class RootStore {
     this.standingsWidget.dispose();
     this.flags.dispose();
     this.sim.dispose();
+    this.radar.dispose();
   }
 }

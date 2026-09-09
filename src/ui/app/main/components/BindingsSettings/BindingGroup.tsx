@@ -29,7 +29,7 @@ export const BindingGroup = observer(
     // and not its background work — so the group says so rather than letting
     // the bindings look broken.
     const isInactive =
-      owner !== APP_OWNER && !widgetSettings.isWidgetInActiveLayout(owner);
+      owner !== APP_OWNER && !widgetSettings.isWidgetOnScreen(owner);
 
     const boundCount = actionIds.filter(
       (actionId) => bindings.bindingsFor(actionId).length > 0
