@@ -87,7 +87,14 @@
       "useLivePositionsRelativeDesc": "Ordena por la posición en pista, recalculada en cada tick. Desactivado: el número oficial del simulador, que solo se actualiza cuando un coche cruza la meta. El orden de las filas siempre sigue la diferencia en pista.",
       "useLivePositionsTrackMapDesc": "Elige la etiqueta P1 según la posición en pista, recalculada en cada tick. Desactivado: el número oficial del simulador, que solo se actualiza cuando un coche cruza la meta — un coche remolcado a boxes conserva el liderato hasta entonces.",
       "classPositionInMulticlass": "Posición de clase en multiclase",
-      "classPositionInMulticlassDesc": "En una sesión multiclase, cuenta la posición dentro de tu propia clase en lugar de la parrilla completa. Las sesiones de una sola clase no cambian: allí ambos números coinciden."
+      "classPositionInMulticlassDesc": "En una sesión multiclase, cuenta la posición dentro de tu propia clase en lugar de la parrilla completa. Las sesiones de una sola clase no cambian: allí ambos números coinciden.",
+      "carNumber": "Número del Coche",
+      "carNumberDesc": "Distintivo del número del coche con el color de la clase, justo después de la posición.",
+      "licBadgeStyle": "Estilo del Distintivo SR",
+      "licBadgeStyleDesc": "Distintivo es la ficha de dos tonos, Sin Fondo muestra el valor con el color de la licencia, y Oscuro mantiene la letra de clase sobre su placa de color y escribe el valor con ese color sobre un fondo casi negro.",
+      "licBadgeStyleBadge": "Distintivo",
+      "licBadgeStylePlain": "Sin Fondo",
+      "licBadgeStyleDark": "Oscuro"
     },
     "delta": {
       "deltaReference": "Referencia del delta",
@@ -506,7 +513,13 @@
       "dimSecondaryColumns": "Atenuar columnas secundarias",
       "dimSecondaryColumnsDesc": "Muestra última vuelta, vueltas, diferencia, marca e iRating en el color de texto atenuado.",
       "hideDriversWithoutLap": "Ocultar pilotos sin vuelta",
-      "hideDriversWithoutLapDesc": "En práctica y clasificación, quita las filas de los coches que aún no han marcado tiempo. Tu propia fila siempre se mantiene."
+      "hideDriversWithoutLapDesc": "En práctica y clasificación, quita las filas de los coches que aún no han marcado tiempo. Tu propia fila siempre se mantiene.",
+      "gap": "Diferencia",
+      "gapDesc": "Tiempo o vueltas respecto al líder de la vista actual.",
+      "lastLap": "Última Vuelta",
+      "lastLapDesc": "Tiempo de la última vuelta de cada piloto.",
+      "bestLap": "Mejor Vuelta",
+      "bestLapDesc": "Vuelta más rápida de cada piloto; hasta marcar una se muestra el tiempo de clasificación."
     },
     "timer": {
       "visibleElements": "Elementos visibles",

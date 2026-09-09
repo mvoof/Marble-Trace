@@ -33,6 +33,35 @@
   line-height: 1;
 }
 
+// Style variants — declared after the base classes they override. The `badge`
+// style is the two-tone chip above and carries no class of its own.
+
+// The value alone in the class color — no chip, so the column keeps only the
+// width the digits need.
+.licStylePlain {
+  .licLetter,
+  .licNumber {
+    padding: 0;
+    background: none;
+    color: var(--lic-color);
+  }
+
+  .licLetter + .licNumber {
+    margin-left: 0.3em;
+  }
+}
+
+// The badge's capsule with the rating half darkened: the class letter keeps its
+// colored plate, and the rating is written in that color on a near-black ground
+// instead of on a tinted one. Nothing is added around it, so the capsule is
+// exactly the size the badge style has.
+.licStyleDark {
+  .licNumber {
+    background: $rating-lic-dark-bg;
+    color: var(--lic-color);
+  }
+}
+
 // License color classes — applied to .licBadge so --lic-color is available
 // to both .licLetter (bg via inheritance) and .licNumber (color-mix bg).
 .licA {

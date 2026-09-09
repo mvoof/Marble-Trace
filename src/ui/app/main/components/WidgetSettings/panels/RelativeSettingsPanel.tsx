@@ -11,6 +11,7 @@ import { SettingRow } from './SettingRow';
 import { SettingSwitchGroup } from './SettingSwitchGroup';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows, usePanelWidgetId } from './setting-rows';
+import { LicBadgeStyleRow } from './shared';
 import {
   NAME_COLUMN_MAX_PX,
   NAME_COLUMN_MIN_PX,
@@ -24,8 +25,6 @@ interface RelativeColumnSwitch {
   descKey: string;
   value: boolean;
   onChange: (next: boolean) => void;
-  /** Options that only say how this column's value is written. */
-  sub?: RelativeColumnSwitch[];
 }
 
 const { ColorRow, SwitchRow } = panelRows<RelativeWidgetSettings>();
@@ -51,32 +50,22 @@ export const RelativeSettingsPanel = observer(() => {
 
   const dataColumns: RelativeColumnSwitch[] = [
     {
+      titleKey: 'settingsPanels.common.carNumber',
+      descKey: 'settingsPanels.common.carNumberDesc',
+      value: settings.showCarNumber,
+      onChange: (v: boolean) => update({ showCarNumber: v }),
+    },
+    {
       titleKey: 'settingsPanels.relative.licenseBadge',
       descKey: 'settingsPanels.relative.licenseBadgeDesc',
       value: settings.showLicBadge,
       onChange: (v: boolean) => update({ showLicBadge: v }),
-      sub: [
-        {
-          titleKey: 'settingsPanels.relative.licenseLetter',
-          descKey: 'settingsPanels.relative.licenseLetterDesc',
-          value: settings.showLicenseLetter,
-          onChange: (v: boolean) => update({ showLicenseLetter: v }),
-        },
-      ],
     },
     {
       titleKey: 'settingsPanels.relative.iRating',
       descKey: 'settingsPanels.relative.iRatingDesc',
       value: settings.showIRating,
       onChange: (v: boolean) => update({ showIRating: v }),
-      sub: [
-        {
-          titleKey: 'settingsPanels.relative.abbreviateIRating',
-          descKey: 'settingsPanels.relative.abbreviateIRatingDesc',
-          value: settings.abbreviateIRating,
-          onChange: (v: boolean) => update({ abbreviateIRating: v }),
-        },
-      ],
     },
     {
       titleKey: 'settingsPanels.relative.pitIndicator',
@@ -148,6 +137,29 @@ export const RelativeSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
+          <LicBadgeStyleRow
+            value={settings.licBadgeStyle}
+            onChange={(v) => update({ licBadgeStyle: v })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showLicenseLetter"
+            title={t('settingsPanels.relative.licenseLetter')}
+            desc={t('settingsPanels.relative.licenseLetterDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="abbreviateIRating"
+            title={t('settingsPanels.relative.abbreviateIRating')}
+            desc={t('settingsPanels.relative.abbreviateIRatingDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
           <ColorRow
             settingKey="playerRowColor"
             title={t('settingsPanels.relative.playerRowColor')}
@@ -182,12 +194,6 @@ export const RelativeSettingsPanel = observer(() => {
             desc={t(item.descKey)}
             checked={item.value}
             onChange={item.onChange}
-            sub={item.sub?.map((option) => ({
-              title: t(option.titleKey),
-              desc: t(option.descKey),
-              checked: option.value,
-              onChange: option.onChange,
-            }))}
           />
         ))}
       </Card>

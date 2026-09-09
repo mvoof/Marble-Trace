@@ -54,9 +54,17 @@ export const StandingsHeader = observer(() => {
         <StandingsHeaderCell align="center">Laps</StandingsHeaderCell>
       )}
 
-      <StandingsHeaderCell align="center">Gap</StandingsHeaderCell>
-      <StandingsHeaderCell align="center">Last</StandingsHeaderCell>
-      <StandingsHeaderCell align="center">Best</StandingsHeaderCell>
+      {settings.showGap && (
+        <StandingsHeaderCell align="center">Gap</StandingsHeaderCell>
+      )}
+
+      {settings.showLastLap && (
+        <StandingsHeaderCell align="center">Last</StandingsHeaderCell>
+      )}
+
+      {settings.showBestLap && (
+        <StandingsHeaderCell align="center">Best</StandingsHeaderCell>
+      )}
 
       {settings.showBrand && (
         <StandingsHeaderCell align="center">Brand</StandingsHeaderCell>

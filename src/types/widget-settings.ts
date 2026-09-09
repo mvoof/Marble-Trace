@@ -303,6 +303,14 @@ export type RowPadding = 'narrow' | 'medium' | 'wide';
 
 export type StandingsViewMode = 'all' | 'cycling' | 'grouped';
 
+/**
+ * How the SR value is drawn: `badge` is the two-tone chip (class letter on the
+ * class color, rating on a darker half), `plain` is the bare number in the class
+ * color, and `dark` keeps the letter's colored plate but puts the number in the
+ * class color on a near-black ground.
+ */
+export type LicBadgeStyle = 'badge' | 'plain' | 'dark';
+
 export interface StandingsWidgetSettings {
   rowPadding: RowPadding;
   viewMode: StandingsViewMode;
@@ -351,6 +359,7 @@ export interface StandingsWidgetSettings {
    * says, so dropping it costs the column nothing but its width.
    */
   showLicenseLetter: boolean;
+  licBadgeStyle: LicBadgeStyle;
   showIRating: boolean;
   /**
    * Round the iRating to a thousand ("9.9k") instead of spelling it out ("9873").
@@ -360,6 +369,12 @@ export interface StandingsWidgetSettings {
   abbreviateIRating: boolean;
   /** Projected iR change column (Elo-based estimate, not real SDK data) */
   showIrChange: boolean;
+  /** Gap to the leader of the table's current reference (overall or class). */
+  showGap: boolean;
+  showLastLap: boolean;
+  showBestLap: boolean;
+  /** Badge marking a car that is on pit road or in its stall. */
+  showPitIndicator: boolean;
   /** Player-only pit stop counter (counted on the frontend) */
   showPitStops: boolean;
   showLapsCompleted: boolean;
@@ -405,9 +420,12 @@ export interface RelativeWidgetSettings {
    * the text, which dragging the widget's edge would do.
    */
   nameColumnWidth: number;
+  /** Car number badge, in its own column right after the position. */
+  showCarNumber: boolean;
   showLicBadge: boolean;
   /** Keep the class letter in the SR badge ("A 4.99") or the rating alone ("4.99"). */
   showLicenseLetter: boolean;
+  licBadgeStyle: LicBadgeStyle;
   showIRating: boolean;
   /** Round the iRating to a thousand ("9.9k") or spell it out ("9873"), which widens the column. */
   abbreviateIRating: boolean;

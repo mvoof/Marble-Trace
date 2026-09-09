@@ -229,6 +229,7 @@ export const DriverRow = observer(
             isPit={isPit}
             pitState={pitState}
             isFinished={isFinished}
+            showPit={settings.showPitIndicator}
           />
         </div>
 
@@ -237,6 +238,7 @@ export const DriverRow = observer(
             <LicBadge
               licString={driver.licString}
               showLetter={settings.showLicenseLetter}
+              badgeStyle={settings.licBadgeStyle}
             />
           </div>
         )}
@@ -263,27 +265,33 @@ export const DriverRow = observer(
           </div>
         )}
 
-        <div className={`${styles.cell} ${styles.cellRight}`}>
-          <span ref={gapRef} className={dimClass} />
-        </div>
+        {settings.showGap && (
+          <div className={`${styles.cell} ${styles.cellRight}`}>
+            <span ref={gapRef} className={dimClass} />
+          </div>
+        )}
 
-        <div className={`${styles.cell} ${styles.cellRight}`}>
-          <span className={`${styles.lastLap} ${dimClass}`}>
-            {isPit
-              ? '-'
-              : formatLapTime(
-                  driver.lastLapTime > 0 ? driver.lastLapTime : null
-                )}
-          </span>
-        </div>
+        {settings.showLastLap && (
+          <div className={`${styles.cell} ${styles.cellRight}`}>
+            <span className={`${styles.lastLap} ${dimClass}`}>
+              {isPit
+                ? '-'
+                : formatLapTime(
+                    driver.lastLapTime > 0 ? driver.lastLapTime : null
+                  )}
+            </span>
+          </div>
+        )}
 
-        <div className={`${styles.cell} ${styles.cellRight}`}>
-          <span
-            className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''} ${bestLap.isQualifying ? styles.bestLapQualifying : ''}`}
-          >
-            {formatLapTime(bestLap.time)}
-          </span>
-        </div>
+        {settings.showBestLap && (
+          <div className={`${styles.cell} ${styles.cellRight}`}>
+            <span
+              className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''} ${bestLap.isQualifying ? styles.bestLapQualifying : ''}`}
+            >
+              {formatLapTime(bestLap.time)}
+            </span>
+          </div>
+        )}
 
         {settings.showBrand && (
           <div className={`${styles.cell} ${styles.cellCenter}`}>

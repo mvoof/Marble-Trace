@@ -19,9 +19,13 @@ const resolveStandingsLayout =
       // Both change a column's width rather than its presence, so the table has
       // to be re-measured for them exactly as it is for a column being toggled.
       'showLicenseLetter',
+      'licBadgeStyle',
       'abbreviateIRating',
       'showIRating',
       'showIrChange',
+      'showGap',
+      'showLastLap',
+      'showBestLap',
       'showLapsCompleted',
       'showPosChange',
       'showCountryFlag',
@@ -40,9 +44,13 @@ const STANDINGS_COLUMN_DEFAULTS = {
   showTire: true,
   showLicBadge: true,
   showLicenseLetter: true,
+  licBadgeStyle: 'badge',
   showIRating: true,
   abbreviateIRating: true,
   showIrChange: true,
+  showGap: true,
+  showLastLap: true,
+  showBestLap: true,
   showLapsCompleted: true,
 };
 const STANDINGS_DESIGN_WIDTH = computeStandingsDesignWidth(
@@ -85,6 +93,7 @@ export const STANDINGS_MANIFEST: WidgetManifest = {
     showSOF: true,
     abbreviateSof: true,
     showTotalDrivers: true,
+    showPitIndicator: true,
     showPitStops: true,
     showIncidentsBadge: true,
     abbreviateNames: false,

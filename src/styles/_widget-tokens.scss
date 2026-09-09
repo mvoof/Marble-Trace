@@ -131,6 +131,9 @@ $rating-lic-b: $race-green;
 $rating-lic-c: $race-amber;
 $rating-lic-d: $race-orange;
 $rating-lic-r: $race-red;
+// Ground the dark SR half sits on — dark enough that the class color reads as
+// the digits on top of it.
+$rating-lic-dark-bg: rgba(0, 0, 0, 0.85);
 
 // Rating Badge — iRating tiers
 $rating-ir-rookie-bg: rgba($race-neutral, 0.28);

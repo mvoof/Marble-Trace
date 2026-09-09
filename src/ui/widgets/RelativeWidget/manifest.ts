@@ -19,8 +19,10 @@ const resolveRelativeLayout =
       // Change a column's width rather than its presence, so the table is
       // re-measured for them exactly as for a column being toggled.
       'showLicenseLetter',
+      'licBadgeStyle',
       'abbreviateIRating',
       'showIRating',
+      'showCarNumber',
       'showCountryFlag',
       'nameColumnWidth',
     ],
@@ -29,8 +31,10 @@ const resolveRelativeLayout =
 
 const RELATIVE_COLUMN_DEFAULTS = {
   nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
+  showCarNumber: true,
   showLicBadge: true,
   showLicenseLetter: true,
+  licBadgeStyle: 'badge',
   showIRating: true,
   abbreviateIRating: true,
   showCountryFlag: false,

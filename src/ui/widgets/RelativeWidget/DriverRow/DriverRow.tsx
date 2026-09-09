@@ -163,17 +163,19 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         </span>
       </div>
 
-      <div className={styles.carNumberCell}>
-        <span
-          className={styles.driverCarNumber}
-          style={{
-            backgroundColor: driver.carClassColor,
-            color: getContrastTextColor(driver.carClassColor),
-          }}
-        >
-          {formattedCarNumber}
-        </span>
-      </div>
+      {settings.showCarNumber && (
+        <div className={styles.carNumberCell}>
+          <span
+            className={styles.driverCarNumber}
+            style={{
+              backgroundColor: driver.carClassColor,
+              color: getContrastTextColor(driver.carClassColor),
+            }}
+          >
+            {formattedCarNumber}
+          </span>
+        </div>
+      )}
 
       {settings.showCountryFlag && (
         <div className={styles.countryFlagCell}>
@@ -215,6 +217,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
           <LicBadge
             licString={driver.licString}
             showLetter={settings.showLicenseLetter}
+            badgeStyle={settings.licBadgeStyle}
           />
         </div>
       ) : null}
