@@ -573,6 +573,8 @@
       "moduleParameters": "Module Parameters",
       "windCompass": "Wind Compass",
       "windCompassDesc": "Animated compass showing current wind direction.",
+      "windCompassRing": "Compass Ring",
+      "windCompassRingDesc": "Cardinal directions and the compass circle. Turn off to show only the arrow and car.",
       "airTemperature": "Air Temperature",
       "airTemperatureDesc": "Ambient air temperature at track level.",
       "trackTemperature": "Track Temperature",

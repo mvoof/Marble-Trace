@@ -513,6 +513,7 @@ export interface LinearMapWidgetSettings {
 
 export interface WeatherWidgetSettings {
   showCompass: boolean;
+  showCompassRing: boolean;
   showAirTemp: boolean;
   showTrackTemp: boolean;
   showWind: boolean;

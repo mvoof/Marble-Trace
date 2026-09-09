@@ -10,7 +10,8 @@ import styles from './WindCompass.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 
 export const WindCompass = observer(() => {
-  const { showCompass } = useWidgetSettings<WeatherWidgetSettings>('weather');
+  const { showCompass, showCompassRing } =
+    useWidgetSettings<WeatherWidgetSettings>('weather');
 
   if (!showCompass) {
     return null;
@@ -25,9 +26,11 @@ export const WindCompass = observer(() => {
           viewBox="-110 -110 220 220"
           className={styles.compassSvg}
         >
-          <RotatingRing>
-            <RingGeometry />
-          </RotatingRing>
+          {showCompassRing && (
+            <RotatingRing>
+              <RingGeometry />
+            </RotatingRing>
+          )}
 
           <WindArrow />
 
