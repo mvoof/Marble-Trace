@@ -54,7 +54,10 @@ export const SessionClock = observer(() => {
     sessionInfo?.sessions?.[sessionInfo?.currentSessionNum ?? 0];
 
   // In a lap race the clock is context, not the thing that ends the session.
-  const isLapLimited = isLapLimitedSession(currentSession?.sessionLaps);
+  const isLapLimited = isLapLimitedSession(
+    currentSession?.sessionLaps,
+    currentSession?.sessionType
+  );
 
   const { seconds: rawSeconds, isCountdown } = resolveSessionClock(
     remain,
