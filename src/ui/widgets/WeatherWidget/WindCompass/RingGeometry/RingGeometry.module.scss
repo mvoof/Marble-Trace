@@ -9,8 +9,10 @@
   stroke-linejoin: round;
   transform-box: fill-box;
   transform-origin: center;
-  transition: transform 0.05s linear;
   // Undoes the ring's own rotation so the letters stay upright. Both read the
   // same custom property, so one write to the group turns the whole compass.
+  // No transition: see RotatingRing.module.scss — the property already
+  // writes at up to 60 Hz, so a transition here would just retarget itself
+  // every frame for no visible gain.
   transform: rotate(calc(-1 * var(--compass-yaw, 0deg)));
 }
