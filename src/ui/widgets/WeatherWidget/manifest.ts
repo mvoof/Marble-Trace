@@ -23,6 +23,7 @@ export const WEATHER_MANIFEST: WidgetManifest = {
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     showCompass: true,
+    showCompassRing: true,
     showAirTemp: true,
     showTrackTemp: true,
     showWind: true,

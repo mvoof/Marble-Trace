@@ -573,6 +573,8 @@
       "moduleParameters": "Parámetros del módulo",
       "windCompass": "Brújula de viento",
       "windCompassDesc": "Brújula animada con la dirección actual del viento.",
+      "windCompassRing": "Anillo de la brújula",
+      "windCompassRingDesc": "Puntos cardinales y el círculo de la brújula. Desactívalo para mostrar solo la flecha y el coche.",
       "airTemperature": "Temperatura del aire",
       "airTemperatureDesc": "Temperatura ambiente a nivel de pista.",
       "trackTemperature": "Temperatura de la pista",

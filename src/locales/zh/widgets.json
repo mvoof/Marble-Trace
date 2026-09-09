@@ -573,6 +573,8 @@
       "moduleParameters": "模块参数",
       "windCompass": "风向罗盘",
       "windCompassDesc": "显示当前风向的动画罗盘。",
+      "windCompassRing": "罗盘圈",
+      "windCompassRingDesc": "方位字母和罗盘圆圈。关闭后只显示箭头和车辆。",
       "airTemperature": "气温",
       "airTemperatureDesc": "赛道水平的环境气温。",
       "trackTemperature": "赛道温度",

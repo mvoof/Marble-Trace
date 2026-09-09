@@ -34,6 +34,12 @@ export const WeatherSettingsPanel = observer(() => {
       key: 'showCompass',
     },
     {
+      titleKey: 'settingsPanels.weather.windCompassRing',
+      descKey: 'settingsPanels.weather.windCompassRingDesc',
+      value: settings.showCompassRing,
+      key: 'showCompassRing',
+    },
+    {
       titleKey: 'settingsPanels.weather.airTemperature',
       descKey: 'settingsPanels.weather.airTemperatureDesc',
       value: settings.showAirTemp,
