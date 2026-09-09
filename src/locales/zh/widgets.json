@@ -87,7 +87,14 @@
       "useLivePositionsRelativeDesc": "按赛道上的位置排名，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。行排序始终按赛道上的间隔。",
       "useLivePositionsTrackMapDesc": "按赛道上的位置选择 P1 标签，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新——被拖车拖回维修区的赛车在此之前仍显示为领跑者。",
       "classPositionInMulticlass": "多组别中显示组内名次",
-      "classPositionInMulticlassDesc": "在多组别赛事中按自己所在组别计算名次，而非全场名次。单一组别赛事不受影响——两者是同一个数字。"
+      "classPositionInMulticlassDesc": "在多组别赛事中按自己所在组别计算名次，而非全场名次。单一组别赛事不受影响——两者是同一个数字。",
+      "carNumber": "赛车号码",
+      "carNumberDesc": "紧跟名次之后、以组别颜色显示的赛车号码标签。",
+      "licBadgeStyle": "SR 徽章样式",
+      "licBadgeStyleDesc": "“徽章”为双色标签，“无底色”仅以执照颜色显示评分，“深色底”保留彩色底的等级字母，并以该颜色把评分写在近乎全黑的底上。",
+      "licBadgeStyleBadge": "徽章",
+      "licBadgeStylePlain": "无底色",
+      "licBadgeStyleDark": "深色底"
     },
     "delta": {
       "deltaReference": "差值参考",
@@ -506,7 +513,13 @@
       "dimSecondaryColumns": "淡化次要列",
       "dimSecondaryColumnsDesc": "以次要文字颜色显示最后一圈、圈数、差距、品牌和 iRating。",
       "hideDriversWithoutLap": "隐藏未设圈速的车手",
-      "hideDriversWithoutLapDesc": "在练习和排位赛中，移除尚未跑出圈速的车辆行。你自己的行始终保留。"
+      "hideDriversWithoutLapDesc": "在练习和排位赛中，移除尚未跑出圈速的车辆行。你自己的行始终保留。",
+      "gap": "差距",
+      "gapDesc": "与当前视图领跑者的时间或圈数差距。",
+      "lastLap": "最近单圈",
+      "lastLapDesc": "每位车手最近一圈的成绩。",
+      "bestLap": "最快单圈",
+      "bestLapDesc": "每位车手的最快单圈；在跑出成绩前显示排位赛成绩。"
     },
     "timer": {
       "visibleElements": "可见元素",

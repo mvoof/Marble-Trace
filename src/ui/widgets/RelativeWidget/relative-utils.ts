@@ -3,6 +3,7 @@ import type { CarEntry, CarIdxFrame, DriverEntry } from '@/types/bindings';
 import type { CarIdentity } from '@/types/car-identity';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import type { PaceCarPitPhase } from '@store/widgets/pace-car.widget';
+import { licColumnWidthPx } from '@ui/shared/RatingBadge/LicBadge.utils';
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 
@@ -34,12 +35,15 @@ interface ColSpec {
 // match the render order in DriverRow.tsx.
 const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
   { px: 28, show: true }, // pos
-  { px: 40, show: true }, // carNum — class-colored badge, right after pos
+  { px: 40, show: settings.showCarNumber }, // carNum — class-colored badge, right after pos
   { px: 22, show: settings.showCountryFlag }, // country flag, right before the name
   { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
   // Both widths follow the format the value is written in — see the same pair in
   // Standings, which the two widgets keep aligned so their SR columns match.
-  { px: settings.showLicenseLetter ? 60 : 42, show: settings.showLicBadge },
+  {
+    px: licColumnWidthPx(settings.licBadgeStyle, settings.showLicenseLetter),
+    show: settings.showLicBadge,
+  },
   { px: settings.abbreviateIRating ? 36 : 48, show: settings.showIRating },
   { px: 56, show: true }, // gap
 ];

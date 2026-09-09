@@ -1,6 +1,7 @@
 import type { CarIdentity } from '@/types/car-identity';
 import type { DriverEntry } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import { licColumnWidthPx } from '@ui/shared/RatingBadge/LicBadge.utils';
 
 export interface VisibleRows {
   drivers: CarIdentity[];
@@ -156,9 +157,9 @@ const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   { px: 22, show: settings.showCountryFlag }, // country flag, right before the name
   { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
   {
-    // "A 4.99" — matches Relative for an equal PIT↔SR gap; without the class
-    // letter the badge is four characters and the column follows it in.
-    px: settings.showLicenseLetter ? 60 : 42,
+    // "A 4.99" — matches Relative for an equal PIT↔SR gap; the width follows
+    // both the class letter and the style the value is drawn in.
+    px: licColumnWidthPx(settings.licBadgeStyle, settings.showLicenseLetter),
     show: settings.showLicBadge,
   },
   {
@@ -168,9 +169,9 @@ const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   },
   { px: 42, show: settings.showIrChange }, // ΔiR     "+123"
   { px: 28, show: settings.showLapsCompleted }, // laps "00"
-  { px: 50, show: true }, // gap      "+123.4" / "12 L"
-  { px: 82, show: true }, // last     "--:--.---" (9 chars mono)
-  { px: 82, show: true }, // best     "--:--.---" (9 chars mono)
+  { px: 50, show: settings.showGap }, // gap  "+123.4" / "12 L"
+  { px: 82, show: settings.showLastLap }, // last "--:--.---" (9 chars mono)
+  { px: 82, show: settings.showBestLap }, // best "--:--.---" (9 chars mono)
   { px: 36, show: settings.showBrand }, // brand    "MERC" — at end
   { px: 30, show: settings.showTire }, // tire     badge — at end
 ];

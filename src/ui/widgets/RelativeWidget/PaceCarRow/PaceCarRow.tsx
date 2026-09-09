@@ -88,9 +88,11 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
         style={{ borderLeft: `3px solid ${driver.carClassColor}` }}
       />
 
-      <div className={styles.carNumberCell}>
-        <span className={styles.carNumber}>#{formattedCarNumber}</span>
-      </div>
+      {settings.showCarNumber && (
+        <div className={styles.carNumberCell}>
+          <span className={styles.carNumber}>#{formattedCarNumber}</span>
+        </div>
+      )}
 
       {settings.showCountryFlag && <div className={styles.flagCell} />}
 

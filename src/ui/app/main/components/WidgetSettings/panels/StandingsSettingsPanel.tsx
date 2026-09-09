@@ -12,6 +12,7 @@ import { SettingRow } from './SettingRow';
 import { SettingSwitchGroup } from './SettingSwitchGroup';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows, usePanelWidgetId } from './setting-rows';
+import { LicBadgeStyleRow } from './shared';
 import {
   NAME_COLUMN_MAX_PX,
   NAME_COLUMN_MIN_PX,
@@ -104,28 +105,36 @@ export const StandingsSettingsPanel = observer(() => {
       descKey: 'settingsPanels.standings.licenseBadgeDesc',
       value: settings.showLicBadge,
       key: 'showLicBadge',
-      sub: [
-        {
-          titleKey: 'settingsPanels.standings.licenseLetter',
-          descKey: 'settingsPanels.standings.licenseLetterDesc',
-          value: settings.showLicenseLetter,
-          key: 'showLicenseLetter',
-        },
-      ],
     },
     {
       titleKey: 'settingsPanels.standings.iRating',
       descKey: 'settingsPanels.standings.iRatingDesc',
       value: settings.showIRating,
       key: 'showIRating',
-      sub: [
-        {
-          titleKey: 'settingsPanels.standings.abbreviateIRating',
-          descKey: 'settingsPanels.standings.abbreviateIRatingDesc',
-          value: settings.abbreviateIRating,
-          key: 'abbreviateIRating',
-        },
-      ],
+    },
+    {
+      titleKey: 'settingsPanels.standings.gap',
+      descKey: 'settingsPanels.standings.gapDesc',
+      value: settings.showGap,
+      key: 'showGap',
+    },
+    {
+      titleKey: 'settingsPanels.standings.lastLap',
+      descKey: 'settingsPanels.standings.lastLapDesc',
+      value: settings.showLastLap,
+      key: 'showLastLap',
+    },
+    {
+      titleKey: 'settingsPanels.standings.bestLap',
+      descKey: 'settingsPanels.standings.bestLapDesc',
+      value: settings.showBestLap,
+      key: 'showBestLap',
+    },
+    {
+      titleKey: 'settingsPanels.relative.pitIndicator',
+      descKey: 'settingsPanels.relative.pitIndicatorDesc',
+      value: settings.showPitIndicator,
+      key: 'showPitIndicator',
     },
     {
       titleKey: 'settingsPanels.standings.iRatingDelta',
@@ -281,6 +290,29 @@ export const StandingsSettingsPanel = observer(() => {
             settingKey="dimSecondaryColumns"
             title={t('settingsPanels.standings.dimSecondaryColumns')}
             desc={t('settingsPanels.standings.dimSecondaryColumnsDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <LicBadgeStyleRow
+            value={settings.licBadgeStyle}
+            onChange={(v) => update({ licBadgeStyle: v })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showLicenseLetter"
+            title={t('settingsPanels.standings.licenseLetter')}
+            desc={t('settingsPanels.standings.licenseLetterDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="abbreviateIRating"
+            title={t('settingsPanels.standings.abbreviateIRating')}
+            desc={t('settingsPanels.standings.abbreviateIRatingDesc')}
           />
         </div>
 
