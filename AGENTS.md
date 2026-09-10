@@ -215,7 +215,7 @@ file and hydrating the stores.
   or registries** — freeze what it needs as a literal, or a step written today
   rewrites history by next year's rules.
 - **The active layout owns the widgets.** They live in `layouts[].widgets[]` and
-  nowhere else; `WidgetSettingsStore.widgets` is a projection of that layout's
+  nowhere else; `LiveWidgetsStore.widgets` is a projection of that layout's
   own objects, so an edit lands in the record itself and there is nothing to
   commit. `defaultWidgets[]` beside it is only the template catalogue a new
   layout is built from. A layout with no monitors is not an owner and falls back
@@ -451,7 +451,7 @@ main window.
   moving the driver's screen while the user edits another layout, and closing
   the editor hands the live layout back as the edited one. `editorPreviewMode`
   is derived from the two, not stored.
-- Geometry is read from and written to the **main** `WidgetSettingsStore`; widget
+- Geometry is read from and written to the **main** `LiveWidgetsStore`; widget
   _content_ renders against an isolated `RootStore({ skipInit: true })` seeded from
   `store/preview/scenarios.ts`, mirrored on `changeToken`.
 - The preview store must never persist anything — stores that own files take a flag

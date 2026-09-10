@@ -13,6 +13,11 @@ import {
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import type { RootStore } from '@store/root-store';
 
+type RadarDeps = Pick<
+  RootStore,
+  'backendComputed' | 'liveWidgets' | 'session' | 'appSettings'
+>;
+
 export const RADAR_WIDGET_TYPES = ['proximity-radar', 'radar-bar'] as const;
 
 export type RadarWidgetType = (typeof RADAR_WIDGET_TYPES)[number];
@@ -38,7 +43,7 @@ export class RadarWidgetStore {
 
   private disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: RadarDeps) {
     makeAutoObservable(this);
   }
 
@@ -152,7 +157,7 @@ export class RadarWidgetStore {
   private settingsOf<Settings extends RadarSettings = RadarSettings>(
     widgetType: RadarWidgetType
   ) {
-    return this.root.widgetSettings.getSettings<Settings>(widgetType);
+    return this.root.liveWidgets.getSettings<Settings>(widgetType);
   }
 
   get isLoneQualifying(): boolean {

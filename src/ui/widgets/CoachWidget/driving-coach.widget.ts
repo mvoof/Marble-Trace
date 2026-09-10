@@ -16,6 +16,11 @@ import {
   type DrivingAdvisoryInput,
 } from '@utils/driving-coach-utils';
 
+type DrivingCoachDeps = Pick<
+  RootStore,
+  'player' | 'referenceLap' | 'session' | 'liveWidgets'
+>;
+
 /**
  * Debounce entry/exit into a new advisory. With the zone latch in
  * `computeDrivingAdvisory` this no longer carries the anti-flicker load —
@@ -109,7 +114,7 @@ export class DrivingCoachWidgetStore {
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private reactionDisposers: (() => void)[] = [];
 
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: DrivingCoachDeps) {
     makeAutoObservable<
       DrivingCoachWidgetStore,
       | 'advisoryState'
@@ -360,7 +365,7 @@ export class DrivingCoachWidgetStore {
   }
 
   private get settings(): CoachWidgetSettings {
-    return this.root.widgetSettings.getSettings<CoachWidgetSettings>('coach');
+    return this.root.liveWidgets.getSettings<CoachWidgetSettings>('coach');
   }
 
   /** Append this frame's steering angle to the rolling window and resolve the unsettled flag. */

@@ -8,9 +8,15 @@ import {
   widgetsOnMonitor,
 } from '@store/settings/virtual-desktop';
 import {
+  boundsOverlap,
+  clearOfMonitors,
   cloneMonitor,
   isDisplayMonitor,
   isRemoteMonitor,
+  nextRemoteBounds,
+  remoteScreenGrid,
+  slugFromName,
+  uniqueSlug,
 } from '@utils/remote-screen';
 import type { SettingsMutationLog } from '@store/settings/mutation-log';
 import type {
@@ -49,12 +55,19 @@ const parkedBounds = (
  * each session context maps to, and the monitors and background images each
  * layout carries.
  *
- * Deliberately knows nothing about the live widget map the overlay renders —
- * everything here operates on stored records only, so the dependency runs one
- * way: `WidgetSettingsStore` → `LayoutsStore`. Operations that also have to
- * touch the live widgets (loading, committing, deleting the active layout) are
- * orchestrated by `WidgetSettingsStore`, which calls into this store for the
- * record half.
+ * The lifecycle of a record lives here — creating, deleting, renaming and
+ * duplicating one — and so does the topology of the screens it stands on:
+ * adding, moving, resizing, arranging and removing them. A remote screen is a
+ * monitor with no display behind it, so it is managed here beside the
+ * monitors rather than in the widget map.
+ *
+ * Nothing here reaches out to the live widget map. A record change that also
+ * has to reach what is on screen is a *gesture*, and gestures are functions in
+ * `layout-gestures.ts` that hold both sides — which is what keeps the
+ * dependency between records and map pointing one way. A screen that moves
+ * needs no gesture at all: it carries its widgets by writing to the record's
+ * own widget objects, which the map projects rather than copies — see
+ * `carryWidgets`.
  */
 export class LayoutsStore {
   layouts: SavedLayout[] = [];
@@ -81,17 +94,6 @@ export class LayoutsStore {
     );
   }
 
-  /**
-   * The layout the overlay is rendering, when that is not the one being edited.
-   *
-   * Null whenever the two are the same, which is every moment the layout editor
-   * is closed. While it is open the two part company on purpose: the editor
-   * keeps whatever layout the user opened, and the session auto-switch moves
-   * this one instead, so the screen the driver races on always matches the
-   * session even mid-edit.
-   */
-  pinnedLiveLayoutId: string | null = null;
-
   get editingLayout(): SavedLayout | undefined {
     return this.layouts.find((layout) => layout.id === this.editingLayoutId);
   }
@@ -101,13 +103,26 @@ export class LayoutsStore {
     return this.layouts.find((layout) => layout.id === this.liveLayoutId);
   }
 
-  get liveLayoutId(): string | null {
-    return this.pinnedLiveLayoutId ?? this.editingLayoutId;
-  }
+  /**
+   * The layout the overlay is rendering while the editor holds another one, or
+   * null whenever the two are the same.
+   *
+   * It lives here rather than in `LayoutEditorStore` because it is the same
+   * kind of value as `editingLayoutId` — a pointer into the record set,
+   * answering "which layout is the application looking at". The editor only
+   * *moves* it, and it is read by callers that have no editor at all
+   * (persistence, remote publishing, the overlay window watcher).
+   */
+  pinnedLiveLayoutId: string | null = null;
 
   setPinnedLiveLayoutId(id: string | null) {
     this.pinnedLiveLayoutId = id;
     this.mutations.recordEveryWidget();
+  }
+
+  /** What the overlay renders: the pinned layout while there is one, else the edited one. */
+  get liveLayoutId(): string | null {
+    return this.pinnedLiveLayoutId ?? this.editingLayoutId;
   }
 
   byId(id: string): SavedLayout | undefined {
@@ -203,6 +218,35 @@ export class LayoutsStore {
     this.mutations.recordEveryWidget();
   }
 
+  /**
+   * Anchors a layout that has none to the screen the hardware just named, and
+   * answers whether it took: a layout that gained a monitor meanwhile is left
+   * alone, and so is one that has been deleted.
+   */
+  anchorToMonitor(id: string, monitor: LayoutMonitor): boolean {
+    const targetLayout = this.byId(id);
+
+    if (!targetLayout || targetLayout.monitors.length > 0) return false;
+
+    this.setMonitors(id, [monitor]);
+
+    return true;
+  }
+
+  /**
+   * Drops the record, releasing the pin first when it names this layout — a
+   * pin to a deleted record would leave the overlay speaking for a layout that
+   * no longer exists. What becomes active afterwards is the caller's, so that
+   * the fallback's widgets can be loaded before the mutation token moves.
+   */
+  detachLayout(id: string) {
+    if (this.pinnedLiveLayoutId === id) {
+      this.setPinnedLiveLayoutId(null);
+    }
+
+    this.removeLayout(id);
+  }
+
   /** Drops the record. The caller decides what becomes active afterwards. */
   removeLayout(id: string) {
     this.layouts = this.layouts.filter((layout) => layout.id !== id);
@@ -278,7 +322,7 @@ export class LayoutsStore {
       .map((monitor) => monitor.name);
   }
 
-  /** The same, for the layout actually on screen — see `pinnedLiveLayoutId`. */
+  /** The same, for the layout actually on screen — see `liveLayoutId`. */
   get liveMonitorNames(): string[] {
     return (this.liveLayout?.monitors ?? [])
       .filter(isDisplayMonitor)
@@ -289,7 +333,7 @@ export class LayoutsStore {
     return (this.editingLayout?.monitors ?? []).filter(isRemoteMonitor);
   }
 
-  /** The same, for the layout actually on screen — see `pinnedLiveLayoutId`. */
+  /** The same, for the layout actually on screen — see `liveLayoutId`. */
   get liveRemoteScreens(): LayoutMonitor[] {
     return (this.liveLayout?.monitors ?? []).filter(isRemoteMonitor);
   }
@@ -333,12 +377,12 @@ export class LayoutsStore {
    * Drops a monitor from a layout. Its overlay window closes on the next window
    * sync, and the widgets that lived on it move to the first remaining monitor
    * rather than being deleted — losing them to a mis-click would be
-   * unrecoverable. Returns the layout so the caller can refresh live widgets.
+   * unrecoverable.
+   *
+   * The widget list is rebuilt here, so the caller installs it: reach this
+   * through the `removeMonitor` gesture rather than calling it directly.
    */
-  removeMonitor(
-    layoutId: string,
-    monitorName: string
-  ): SavedLayout | undefined {
+  removeMonitor(layoutId: string, monitorName: string) {
     const layout = this.byId(layoutId);
     const removed = layout?.monitors.find(
       (monitor) => monitor.name === monitorName
@@ -367,9 +411,8 @@ export class LayoutsStore {
     );
 
     delete layout.backgroundImages?.[monitorName];
-    this.mutations.recordEveryWidget();
 
-    return layout;
+    this.mutations.recordEveryWidget();
   }
 
   /**
@@ -381,6 +424,9 @@ export class LayoutsStore {
    * because the persisted settings never recorded desktop positions. This is
    * the step that turns those placeholders into real coordinates — until it
    * runs, a layout's widgets are in the right order but the wrong place.
+   *
+   * Rebuilds the active layout's widget list, so the caller installs it: reach
+   * this through the `alignMonitorsToHardware` gesture.
    */
   alignMonitorsToHardware(attached: LayoutMonitor[]) {
     const byName = new Map(
@@ -440,6 +486,195 @@ export class LayoutsStore {
 
         return placeWidgetOnMonitor(widget, from, to);
       });
+    }
+
+    this.mutations.recordEveryWidget();
+  }
+
+  // ── Remote screens ──────────────────────────────────────────────────────
+
+  /**
+   * Carries the widgets standing on a screen along with it.
+   *
+   * They are the layout record's own widget objects, which the live map
+   * projects rather than copies, so moving them here is what puts them on
+   * screen — nothing has to be handed over afterwards. A rebuilt widget *list*
+   * is the other case, and that one does go through the map.
+   */
+  private carryWidgets(carried: WidgetDefaultConfig[], dx: number, dy: number) {
+    for (const widget of carried) {
+      widget.userSettings.x += dx;
+      widget.userSettings.y += dy;
+    }
+  }
+
+  /**
+   * Adds a device screen to the active layout. It is a monitor in every way
+   * that matters for the layout — widgets belong to it by their centre point,
+   * it gets its own widget set — but the machine has no display behind it, so
+   * it is parked in free desktop space and never gets an overlay window.
+   */
+  addRemoteScreen(
+    name: string,
+    width: number,
+    height: number,
+    background?: string
+  ) {
+    const layout = this.editingLayout;
+
+    if (!layout) return;
+
+    const slug = uniqueSlug(
+      slugFromName(name),
+      layout.monitors.map((monitor) => monitor.slug ?? '')
+    );
+
+    this.addMonitor({
+      name,
+      kind: 'remote',
+      slug,
+      bounds: nextRemoteBounds(layout.monitors, width, height),
+      ...(background ? { background } : {}),
+    });
+  }
+
+  /** What a remote screen paints behind its widgets: a CSS color, or
+   *  `'transparent'` for a browser source compositing over a game capture. */
+  setRemoteScreenBackground(monitorName: string, background: string) {
+    const monitor = this.editingLayout?.monitors.find(
+      (candidate) => candidate.name === monitorName
+    );
+
+    if (!monitor) return;
+
+    monitor.background = background;
+    this.mutations.recordEveryWidget();
+  }
+
+  /** Applied when a device reports a viewport that differs from the size the
+   *  screen was drawn for. Never automatic: resizing moves every widget. */
+  resizeRemoteScreen(monitorName: string, width: number, height: number) {
+    const layout = this.editingLayout;
+    const monitor = layout?.monitors.find(
+      (candidate) => candidate.name === monitorName
+    );
+
+    if (!layout || !monitor) return;
+
+    // Growing a screen in place can push it into its neighbours, which the
+    // drag path refuses outright — the widened rectangle would take over the
+    // widgets whose centres it now covers. It is slid clear the short way, and
+    // its own widgets travel with it.
+    const others = layout.monitors.filter(
+      (candidate) => candidate.name !== monitorName
+    );
+
+    const grown = { ...monitor.bounds, width, height };
+    const slid = clearOfMonitors(
+      grown,
+      others.map((candidate) => candidate.bounds)
+    );
+
+    // An arrangement dense enough to leave no room nearby falls back to the
+    // free space every new screen is parked in.
+    const landed = others.some((candidate) =>
+      boundsOverlap(candidate.bounds, slid)
+    )
+      ? nextRemoteBounds(others, width, height)
+      : slid;
+
+    const carried = widgetsOnMonitor(
+      layout.widgets,
+      monitorName,
+      layout.monitors
+    );
+
+    monitor.bounds = landed;
+    this.carryWidgets(carried, landed.x - grown.x, landed.y - grown.y);
+
+    this.mutations.recordEveryWidget();
+  }
+
+  /**
+   * Moves a remote screen across the virtual desktop, carrying its widgets with
+   * it: widget coordinates are desktop-wide and a widget belongs to the monitor
+   * containing its centre, so a screen that moved alone would leave every
+   * widget behind on whatever rectangle they landed in. A move onto another
+   * monitor is refused for the same reason — it would steal that screen's
+   * widgets.
+   *
+   * Deliberately outside undo/redo: the history holds widget snapshots only, so
+   * an undo here would put the widgets back and leave the screen moved.
+   */
+  moveRemoteScreen(monitorName: string, x: number, y: number) {
+    const layout = this.editingLayout;
+
+    if (!layout) return;
+
+    const monitor = layout.monitors.find(
+      (candidate) => candidate.name === monitorName
+    );
+
+    if (!monitor || !isRemoteMonitor(monitor)) return;
+
+    const dx = x - monitor.bounds.x;
+    const dy = y - monitor.bounds.y;
+
+    if (dx === 0 && dy === 0) return;
+
+    const target = { ...monitor.bounds, x, y };
+
+    const collides = layout.monitors.some(
+      (other) =>
+        other.name !== monitorName && boundsOverlap(other.bounds, target)
+    );
+
+    if (collides) return;
+
+    const carried = widgetsOnMonitor(
+      layout.widgets,
+      monitorName,
+      layout.monitors
+    );
+
+    monitor.bounds = target;
+    this.carryWidgets(carried, dx, dy);
+
+    this.mutations.recordEveryWidget();
+  }
+
+  /**
+   * Re-parks every remote screen in rows under the real desktop. New screens
+   * are appended to the right of everything else, which turns a handful of them
+   * into a strip too wide for the editor to show at a useful scale.
+   */
+  arrangeRemoteScreens() {
+    const layout = this.editingLayout;
+
+    if (!layout) return;
+
+    const targets = remoteScreenGrid(layout.monitors);
+
+    // Ownership is read against the arrangement as it stands, before any
+    // rectangle moves — halfway through, a widget's centre could fall inside a
+    // screen that has already been re-parked.
+    const carried = new Map(
+      Object.keys(targets).map((name) => [
+        name,
+        widgetsOnMonitor(layout.widgets, name, layout.monitors),
+      ])
+    );
+
+    for (const monitor of layout.monitors) {
+      const target = targets[monitor.name];
+
+      if (!target) continue;
+
+      const dx = target.x - monitor.bounds.x;
+      const dy = target.y - monitor.bounds.y;
+
+      monitor.bounds = target;
+      this.carryWidgets(carried.get(monitor.name) ?? [], dx, dy);
     }
 
     this.mutations.recordEveryWidget();

@@ -104,7 +104,7 @@ the traffic. See [architecture.md → Demand gating](architecture.md).
 **Does the sim have to support it?** Separately from the mask,
 `requiredCapabilities` in the manifest hides the widget from the catalog when the
 connected sim cannot feed it (`availableWidgetIds` in
-`store/settings/widget-settings.store.ts`). It names keys of
+`store/settings/live-widgets.store.ts`). It names keys of
 `CapabilitiesPayload`, not telemetry fields: a widget reading `carDynamics` or
 `carInputs` for the player's own car declares `['playerDynamics']`; the others in
 use are `chassis`, `fuel`, `inputs`, `radar`, `relative`, `sectors`,

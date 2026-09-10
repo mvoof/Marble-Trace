@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { App, Button, ColorPicker, Flex, QRCode, Tag, Tooltip } from 'antd';
 import { Copy, Maximize2, EyeOff } from 'lucide-react';
 
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useLayoutsStore } from '@store/root-store-context';
 import { DEFAULT_REMOTE_BACKGROUND } from '@utils/remote-screen';
 import type { RemoteDevice } from '@/types/bindings';
 import type { LayoutMonitor } from '@/types/widget-settings';
@@ -36,7 +36,7 @@ const maskToken = (url: string): string =>
  */
 export const RemoteScreenRow = observer(
   ({ screen, url, device, revealed }: RemoteScreenRowProps) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const layouts = useLayoutsStore();
     const { message } = App.useApp();
     const { t } = useTranslation('main-app');
 
@@ -44,7 +44,7 @@ export const RemoteScreenRow = observer(
     const isTransparent = background === 'transparent';
 
     const handleBackground = (color: string) => {
-      widgetSettings.setRemoteScreenBackground(screen.name, color);
+      layouts.setRemoteScreenBackground(screen.name, color);
     };
 
     const handleCopy = () => {
@@ -68,11 +68,7 @@ export const RemoteScreenRow = observer(
     const handleFit = () => {
       if (!reported) return;
 
-      widgetSettings.resizeRemoteScreen(
-        screen.name,
-        reported.width,
-        reported.height
-      );
+      layouts.resizeRemoteScreen(screen.name, reported.width, reported.height);
 
       message.success(t('settingsPage.remote.sizeApplied'));
     };

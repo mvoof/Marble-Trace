@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
+
+import { RootStore } from '../root-store';
+import { buildSettings } from '@platform/sync/persistence';
 
 import { LayoutsStore } from './layouts.store';
+import { deleteLayout } from './layout-gestures';
+import { layoutGestureStores } from '../root-store-context';
 import { SettingsMutationLog } from './mutation-log';
 import type { LayoutMonitor, SavedLayout } from '@/types/widget-settings';
 
@@ -24,8 +29,8 @@ const layoutNamed = (id: string, monitors: LayoutMonitor[]): SavedLayout => ({
 
 /**
  * A store and the log its writes mark themselves in — the whole of what a
- * layout record needs. No RootStore, no widget map: the records are what
- * widgets stand on, and they answer for themselves.
+ * layout record needs. Nothing is stood in for, because the records reach
+ * nothing: what has to touch the live map is a gesture, not a record write.
  */
 const freshStore = () => {
   const mutations = new SettingsMutationLog();
@@ -139,6 +144,30 @@ describe('every layout record write leaves its mark', () => {
       run: (store) => store.alignMonitorsToHardware([DISPLAY]),
     },
     {
+      name: 'addRemoteScreen',
+      run: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+    },
+    {
+      name: 'setRemoteScreenBackground',
+      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      run: (store) => store.setRemoteScreenBackground('Tablet', 'transparent'),
+    },
+    {
+      name: 'resizeRemoteScreen',
+      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      run: (store) => store.resizeRemoteScreen('Tablet', 1024, 768),
+    },
+    {
+      name: 'moveRemoteScreen',
+      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      run: (store) => store.moveRemoteScreen('Tablet', 4000, 200),
+    },
+    {
+      name: 'arrangeRemoteScreens',
+      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      run: (store) => store.arrangeRemoteScreens(),
+    },
+    {
       name: 'setMonitorBackground',
       run: (store) => store.setMonitorBackground('DISPLAY1', 'image.png'),
     },
@@ -174,5 +203,314 @@ describe('every layout record write leaves its mark', () => {
     expect(mutations.changeToken > before).toBe(marks);
     expect(mutations.drain().everyWidget).toBe(marks);
     expect(mutations.syncToken).toBe(0);
+  });
+});
+
+// Deleting the layout on screen is the one gesture where the order of two
+// writes is load-bearing: the fallback's widgets have to be in the live map
+// before the mutation token moves, or the commit reaction persists the widgets
+// of the layout that was just deleted over the one the driver landed on.
+describe('deleting the layout that is on screen', () => {
+  const MONITOR = {
+    name: 'DISPLAY1',
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  const RACE_FUEL_X = 100;
+  const GARAGE_FUEL_X = 900;
+
+  let rootStore: RootStore;
+
+  const layoutRecord = (id: string) => ({
+    id,
+    name: id,
+    createdAt: Date.now(),
+    monitors: [MONITOR],
+    widgets: [],
+  });
+
+  // A detached copy, so a comparison never holds the store's own object and
+  // cannot be rewritten under the assertion by a later mutation.
+  const fuelPositionOf = (layoutId: string): { x: number; y: number } => {
+    const record = rootStore.layouts.layouts.find(
+      (layout) => layout.id === layoutId
+    );
+    const fuel = record?.widgets.find((widget) => widget.id === 'fuel');
+
+    return { x: fuel!.userSettings.x, y: fuel!.userSettings.y };
+  };
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+
+    const store = rootStore.liveWidgets;
+
+    store.setLayouts(
+      [layoutRecord('layout-race'), layoutRecord('layout-garage')],
+      'layout-race'
+    );
+
+    // Each layout gets its own arrangement, so "the fallback's widgets" and
+    // "the deleted layout's widgets" are distinguishable afterwards.
+    store.loadLayout('layout-garage');
+    store.updatePosition('fuel', GARAGE_FUEL_X, GARAGE_FUEL_X);
+    store.loadLayout('layout-race');
+    store.updatePosition('fuel', RACE_FUEL_X, RACE_FUEL_X);
+    store.drainTouchedWidgets();
+  });
+
+  it("leaves the fallback layout's own widgets on screen", () => {
+    const store = rootStore.liveWidgets;
+
+    deleteLayout(layoutGestureStores(rootStore), 'layout-race');
+
+    expect(rootStore.layouts.editingLayoutId).toBe('layout-garage');
+    expect(store.getWidget('fuel')!.userSettings.x).toBe(GARAGE_FUEL_X);
+  });
+
+  it('marks the whole widget map rather than a patch', () => {
+    const store = rootStore.liveWidgets;
+
+    deleteLayout(layoutGestureStores(rootStore), 'layout-race');
+
+    const drained = store.drainTouchedWidgets();
+
+    expect(drained.everyWidget).toBe(true);
+    expect(drained.widgets.length).toBe(store.allWidgets.length);
+  });
+
+  it("persists the fallback's widgets, not the deleted layout's", () => {
+    deleteLayout(layoutGestureStores(rootStore), 'layout-race');
+
+    const persisted = buildSettings(rootStore);
+
+    expect(persisted.layouts.map((layout) => layout.id)).toEqual([
+      'layout-garage',
+    ]);
+
+    const fuel = persisted.layouts[0].widgets.find(
+      (widget) => widget.id === 'fuel'
+    )!;
+
+    expect(fuel.userSettings.x).toBe(GARAGE_FUEL_X);
+    expect(fuel.userSettings.y).toBe(GARAGE_FUEL_X);
+  });
+
+  it('leaves nothing being edited when the last layout goes', () => {
+    deleteLayout(layoutGestureStores(rootStore), 'layout-garage');
+
+    expect(() =>
+      deleteLayout(layoutGestureStores(rootStore), 'layout-race')
+    ).not.toThrow();
+    expect(rootStore.layouts.layouts).toEqual([]);
+    expect(rootStore.layouts.editingLayoutId).toBeNull();
+  });
+
+  it('leaves the live map untouched when another layout is deleted', () => {
+    const store = rootStore.liveWidgets;
+    const before = fuelPositionOf('layout-race');
+
+    deleteLayout(layoutGestureStores(rootStore), 'layout-garage');
+
+    expect(rootStore.layouts.editingLayoutId).toBe('layout-race');
+    expect(store.getWidget('fuel')!.userSettings.x).toBe(RACE_FUEL_X);
+    expect(fuelPositionOf('layout-race')).toEqual(before);
+  });
+
+  it('clears a pin that the editor left on the deleted layout', () => {
+    // The editor opens on the live layout and is then pointed at another one,
+    // which pins 'layout-race' as the one the overlay keeps showing.
+    rootStore.layoutEditor.setOpen(true);
+    rootStore.layoutEditor.switchLayout('layout-garage');
+
+    expect(rootStore.layouts.pinnedLiveLayoutId).toBe('layout-race');
+
+    deleteLayout(layoutGestureStores(rootStore), 'layout-race');
+
+    expect(rootStore.layouts.pinnedLiveLayoutId).toBeNull();
+    expect(rootStore.layouts.liveLayoutId).toBe('layout-garage');
+  });
+});
+
+describe('the screens of a layout that have something to draw', () => {
+  let rootStore: RootStore;
+  const SECOND_MONITOR_X = 1920;
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.liveWidgets.setLayouts(
+      [
+        {
+          id: 'layout-multi',
+          name: 'Multi',
+          createdAt: Date.now(),
+          monitors: [
+            {
+              name: 'DISPLAY1',
+              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+            },
+            {
+              name: 'DISPLAY2',
+              bounds: {
+                x: SECOND_MONITOR_X,
+                y: 0,
+                width: 1920,
+                height: 1080,
+              },
+            },
+          ],
+          widgets: [],
+        },
+      ],
+      'layout-multi'
+    );
+
+    for (const widget of rootStore.liveWidgets.allWidgets) {
+      rootStore.liveWidgets.setWidgetEnabled(widget.id, false);
+    }
+  });
+
+  it('lists no monitor while every widget is disabled', () => {
+    expect(rootStore.liveWidgets.populatedMonitorNames).toEqual([]);
+  });
+
+  it('lists only the monitor the enabled widget sits on', () => {
+    const [widget] = rootStore.liveWidgets.allWidgets;
+
+    rootStore.liveWidgets.setWidgetEnabled(widget.id, true);
+    rootStore.liveWidgets.updatePosition(widget.id, 0, 0);
+
+    expect(rootStore.liveWidgets.populatedMonitorNames).toEqual(['DISPLAY1']);
+
+    rootStore.liveWidgets.updatePosition(widget.id, SECOND_MONITOR_X, 0);
+
+    expect(rootStore.liveWidgets.populatedMonitorNames).toEqual(['DISPLAY2']);
+  });
+});
+
+describe('remote screen geometry', () => {
+  let rootStore: RootStore;
+  const REMOTE_X = 2500;
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.liveWidgets.setLayouts(
+      [
+        {
+          id: 'layout-remote',
+          name: 'Remote',
+          createdAt: Date.now(),
+          monitors: [
+            {
+              name: 'DISPLAY1',
+              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+            },
+            {
+              name: 'Tablet',
+              kind: 'remote',
+              slug: 'tablet',
+              bounds: { x: REMOTE_X, y: 0, width: 400, height: 300 },
+            },
+          ],
+          widgets: [],
+        },
+      ],
+      'layout-remote'
+    );
+  });
+
+  const remoteBounds = () =>
+    rootStore.layouts.editingLayout?.monitors.find(
+      (monitor) => monitor.name === 'Tablet'
+    )?.bounds;
+
+  it('slides a screen clear of the display when fitting it to a device grows it over one', () => {
+    rootStore.layouts.resizeRemoteScreen('Tablet', 1280, 800);
+
+    const bounds = remoteBounds();
+
+    expect(bounds?.width).toBe(1280);
+    expect(bounds?.x).toBeGreaterThanOrEqual(1920);
+  });
+
+  it('carries the screen widgets along when the fit displaces it', () => {
+    const [widget] = rootStore.liveWidgets.allWidgets;
+
+    rootStore.liveWidgets.setWidgetEnabled(widget.id, true);
+    rootStore.liveWidgets.updatePosition(widget.id, REMOTE_X + 10, 10);
+
+    const before = widget.userSettings.x;
+
+    rootStore.layouts.resizeRemoteScreen('Tablet', 1280, 800);
+
+    const bounds = remoteBounds();
+
+    expect(widget.userSettings.x - before).toBe((bounds?.x ?? 0) - REMOTE_X);
+  });
+
+  it('refuses a drag that would land the screen on another one', () => {
+    rootStore.layouts.moveRemoteScreen('Tablet', 0, 0);
+
+    expect(remoteBounds()?.x).toBe(REMOTE_X);
+  });
+
+  it('moves the screen widgets with a drag', () => {
+    const [widget] = rootStore.liveWidgets.allWidgets;
+
+    rootStore.liveWidgets.setWidgetEnabled(widget.id, true);
+    rootStore.liveWidgets.updatePosition(widget.id, REMOTE_X + 10, 10);
+
+    rootStore.layouts.moveRemoteScreen('Tablet', REMOTE_X, 2000);
+
+    expect(widget.userSettings.y).toBe(2010);
+  });
+});
+
+describe('a screen added to a layout', () => {
+  let rootStore: RootStore;
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.liveWidgets.setLayouts(
+      [
+        {
+          id: 'layout-race',
+          name: 'Race',
+          createdAt: 0,
+          monitors: [
+            {
+              name: 'DISPLAY1',
+              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+            },
+          ],
+          widgets: [],
+        },
+      ],
+      'layout-race'
+    );
+  });
+
+  const screenNamed = (name: string) =>
+    rootStore.layouts.editingLayout!.monitors.find(
+      (monitor) => monitor.name === name
+    )!;
+
+  // The only thing that separates a browser source from a tablet: what the page
+  // paints behind the widgets. Everything else about the screen is the same.
+  it('carries the background it was created with', () => {
+    rootStore.layouts.addRemoteScreen('Stream', 1920, 1080, 'transparent');
+
+    expect(screenNamed('Stream').background).toBe('transparent');
+  });
+
+  it('leaves the ground to the default until it is set', () => {
+    rootStore.layouts.addRemoteScreen('Tablet', 1280, 800);
+
+    expect(screenNamed('Tablet').background).toBeUndefined();
+    expect(screenNamed('Tablet').fittedToDevice).toBeFalsy();
+
+    rootStore.layouts.setRemoteScreenBackground('Tablet', 'transparent');
+
+    expect(screenNamed('Tablet').background).toBe('transparent');
   });
 });

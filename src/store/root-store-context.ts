@@ -1,3 +1,4 @@
+import type { LayoutGestureStores } from '@store/settings/layout-gestures';
 import { createContext, use } from 'react';
 import type { RootStore } from './root-store';
 
@@ -39,9 +40,25 @@ export const useInputTraceWidgetStore = () => useStore().inputTraceWidget;
 export const useChatStore = () => useStore().chat;
 export const useStreamChatWidgetStore = () => useStore().streamChatWidget;
 export const useTwitchAuthStore = () => useStore().twitchAuth;
-export const useWidgetSettingsStore = () => useStore().widgetSettings;
+export const useLiveWidgetsStore = () => useStore().liveWidgets;
 export const useWidgetDefaultsStore = () => useStore().widgetDefaults;
 export const useLayoutsStore = () => useStore().layouts;
+
+export const useLayoutEditorStore = () => useStore().layoutEditor;
+
+/**
+ * The two sides a layout gesture holds — see `layout-gestures.ts`. Handed out
+ * together so a call site spells the coordination once rather than assembling
+ * it from two hooks.
+ */
+export const layoutGestureStores = (root: RootStore): LayoutGestureStores => ({
+  records: root.layouts,
+  widgetMap: root.liveWidgets,
+});
+
+export const useLayoutGestureStores = (): LayoutGestureStores =>
+  layoutGestureStores(useStore());
+export const useSettingsMutationLog = () => useStore().settingsMutations;
 export const useAppSettingsStore = () => useStore().appSettings;
 export const useCompanionAppsStore = () => useStore().companionApps;
 export const useUnitsStore = () => useStore().units;

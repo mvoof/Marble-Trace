@@ -9,6 +9,8 @@ import type { SourceFrame } from '@/types/bindings';
 import type { InspectorRow, InspectorSource } from '@/types/inspector';
 import { ARRAY_PAGE, buildRows, countAbsent } from './inspector-tree';
 
+type TelemetryInspectorDeps = Pick<RootStore, 'session'>;
+
 /**
  * The telemetry inspector's data feed and view state.
  *
@@ -47,7 +49,7 @@ export class TelemetryInspectorStore {
   private arrayLimits = new Map<string, number>();
   private timer: ReturnType<typeof setInterval> | null = null;
 
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: TelemetryInspectorDeps) {
     makeAutoObservable<this, 'root'>(this, { root: false }, { autoBind: true });
   }
 

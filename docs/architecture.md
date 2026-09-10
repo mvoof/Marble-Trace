@@ -1516,7 +1516,7 @@ Three rules, each of which exists because breaking it corrupts real users' files
 ### The active layout owns the widgets
 
 The widgets a driver sees live in `layouts[].widgets[]` and nowhere else.
-`WidgetSettingsStore.widgets` is a **projection** of the active layout's own
+`LiveWidgetsStore.widgets` is a **projection** of the active layout's own
 objects — the same objects, not a copy — so every edit the overlay or the editor
 makes lands in the layout record directly. There is nothing to commit afterwards,
 which is why the old `commitActiveLayout` and its 500 ms debounce (and the forced

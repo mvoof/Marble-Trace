@@ -12,7 +12,7 @@ import { resizeCanvasToDpr } from '@utils/canvas';
 
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GMeterRings.module.scss';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/root-store-context';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 
 const RING_COLOR = 'rgba(42,43,48,0.8)';
@@ -29,11 +29,11 @@ interface GMeterRingsProps {
 
 export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
   const widgetId = useContext(WidgetIdContext);
-  const widgetSettings = useWidgetSettingsStore();
+  const liveWidgets = useLiveWidgetsStore();
 
   const { scale } = useWidgetSettings<GMeterWidgetSettings>('g-meter');
   const fontScale =
-    widgetSettings.getWidget(widgetId)?.userSettings.fontScale ?? 1;
+    liveWidgets.getWidget(widgetId)?.userSettings.fontScale ?? 1;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {

@@ -47,16 +47,16 @@ export const PANEL_WIDGET_IDS = ['close-battle'];
 const { SwitchRow, ColorRow } = panelRows<CloseBattleWidgetSettings>();
 
 export const CloseBattleSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('close-battle');
   const units = useUnitsStore();
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<CloseBattleWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<CloseBattleWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<CloseBattleWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

@@ -14,15 +14,14 @@ export const PANEL_WIDGET_IDS = ['timer'];
 const { SwitchRow } = panelRows<TimerWidgetSettings>();
 
 export const TimerSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('timer');
   const { t } = useTranslation('widgets');
 
-  const settings =
-    widgetSettings.getSettings<TimerWidgetSettings>(panelWidgetId);
+  const settings = liveWidgets.getSettings<TimerWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<TimerWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

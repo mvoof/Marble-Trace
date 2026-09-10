@@ -52,13 +52,14 @@ describe('session layout auto-switch', () => {
   };
 
   beforeEach(() => {
+    vi.clearAllMocks();
     root = new RootStore({ skipInit: true });
 
-    root.widgetSettings.setLayouts(
+    root.liveWidgets.setLayouts(
       [layout('layout-garage'), layout('layout-practice')],
       'layout-garage'
     );
-    root.widgetSettings.setSessionLayouts({
+    root.layouts.setSessionLayouts({
       Practice: 'layout-practice',
       Garage: 'layout-garage',
     });
@@ -87,7 +88,7 @@ describe('session layout auto-switch', () => {
   // as long as a window nobody was looking at stayed open. Neither happens now:
   // the two layouts are separate values, and the session moves only the live one.
   it('moves the screen while the editor keeps the layout it opened', () => {
-    root.widgetSettings.setLayoutEditorOpen(true);
+    root.layoutEditor.setOpen(true);
 
     goOnTrackInPractice();
 
@@ -96,31 +97,33 @@ describe('session layout auto-switch', () => {
   });
 
   it('hands the screen back as the edited layout once the editor closes', () => {
-    root.widgetSettings.setLayoutEditorOpen(true);
+    root.layoutEditor.setOpen(true);
 
     goOnTrackInPractice();
 
-    root.widgetSettings.setLayoutEditorOpen(false);
+    root.layoutEditor.setOpen(false);
 
     expect(root.layouts.liveLayoutId).toBe('layout-practice');
     expect(root.layouts.editingLayoutId).toBe('layout-practice');
   });
 
-  it('leaves the screen alone while the editor opens another layout', () => {
-    root.widgetSettings.setLayoutEditorOpen(true);
-    root.widgetSettings.switchEditorLayout('layout-practice');
+  it('tells the overlay which layout it switched to', async () => {
+    const { emitLayoutActivated } =
+      await import('@platform/services/events.service');
 
-    expect(root.layouts.liveLayoutId).toBe('layout-garage');
-    expect(root.widgetSettings.editorPreviewMode).toBe(true);
+    goOnTrackInPractice();
+
+    expect(emitLayoutActivated).toHaveBeenCalledWith('layout-practice');
   });
 
-  it('puts the edited layout on screen when the editor activates it', () => {
-    root.widgetSettings.setLayoutEditorOpen(true);
-    root.widgetSettings.switchEditorLayout('layout-practice');
-    root.widgetSettings.activateEditorLayout();
+  it('tells the overlay even while the editor holds another layout', async () => {
+    const { emitLayoutActivated } =
+      await import('@platform/services/events.service');
 
-    expect(root.layouts.liveLayoutId).toBe('layout-practice');
-    expect(root.widgetSettings.editorPreviewMode).toBe(false);
+    root.layoutEditor.setOpen(true);
+    goOnTrackInPractice();
+
+    expect(emitLayoutActivated).toHaveBeenCalledWith('layout-practice');
   });
 
   it('does nothing at all while auto-switching is off', () => {

@@ -12,15 +12,15 @@ import { usePanelWidgetId } from './setting-rows';
 export const PANEL_WIDGET_IDS = ['rpm-lights'];
 
 export const RpmLightsSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('rpm-lights');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<RpmLightsWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<RpmLightsWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<RpmLightsWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

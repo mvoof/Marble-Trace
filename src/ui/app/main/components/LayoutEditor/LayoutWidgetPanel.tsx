@@ -8,7 +8,7 @@ import type {
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
 import { isRemoteMonitor } from '@utils/remote-screen';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/root-store-context';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import styles from './LayoutWidgetPanel.module.scss';
 
@@ -27,20 +27,20 @@ const WidgetRow = observer(
     isSelected: boolean;
     onSelectWidget: (id: string) => void;
   }) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const liveWidgets = useLiveWidgetsStore();
     const { t } = useTranslation('main-app');
-    const isAvailable = widgetSettings.availableWidgetIds.includes(widget.id);
+    const isAvailable = liveWidgets.availableWidgetIds.includes(widget.id);
     const rowRef = useRef<HTMLDivElement | null>(null);
 
     // A copy is a record of its own everywhere — its own settings, its own
     // place, its own enabled flag — so the row has to say which one it is
     // before the user hides or deletes the wrong one.
     const isCopy = widget.type !== undefined;
-    const { ordinal, total } = widgetSettings.copyOrdinalOf(widget.id);
+    const { ordinal, total } = liveWidgets.copyOrdinalOf(widget.id);
 
     const handleToggle = (checked: boolean) => {
       if (isAvailable) {
-        widgetSettings.setWidgetEnabled(widget.id, checked);
+        liveWidgets.setWidgetEnabled(widget.id, checked);
       }
     };
 
@@ -134,11 +134,11 @@ const ScreenHeading = observer(
  */
 export const LayoutWidgetPanel = observer(
   ({ selectedWidgetId, onSelectWidget }: LayoutWidgetPanelProps) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const liveWidgets = useLiveWidgetsStore();
 
     return (
       <div className={styles.list}>
-        {widgetSettings.widgetsByScreen.map((group) => (
+        {liveWidgets.widgetsByScreen.map((group) => (
           <div
             className={styles.screenGroup}
             key={group.monitor?.name ?? 'off-screen'}

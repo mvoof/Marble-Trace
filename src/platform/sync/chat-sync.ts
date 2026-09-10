@@ -35,7 +35,7 @@ export const registerChatReactions = (
       // Asked of the layout on screen, not the one in the editor: opening a
       // layout without the chat widget must not tear down the connectors the
       // driver is reading from.
-      enabled: root.widgetSettings.liveWidgets.some(
+      enabled: root.liveWidgets.liveWidgets.some(
         (widget) =>
           widget.id === STREAM_CHAT_WIDGET_ID && widget.userSettings.enabled
       ),

@@ -10,6 +10,8 @@ import type { RaceFlags } from '@/types/bindings';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
 
+type FlagsDeps = Pick<RootStore, 'liveWidgets' | 'player' | 'paceCar'>;
+
 const NO_FLAG: FlagType = 'none';
 const NO_FLAGS: FlagType[] = [];
 
@@ -129,7 +131,7 @@ export class FlagsStore {
   private blinkInterval: ReturnType<typeof setInterval> | null = null;
   private readonly disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: FlagsDeps) {
     makeAutoObservable(this);
   }
 
@@ -139,7 +141,7 @@ export class FlagsStore {
       (flags) => flags.length === 0,
       NO_FLAGS,
       () =>
-        this.root.widgetSettings.getSettings<FlagDisplaySettings>('flat-flags')
+        this.root.liveWidgets.getSettings<FlagDisplaySettings>('flat-flags')
           .holdDuration,
       (value) => {
         this.displayFlags = value;
@@ -153,7 +155,7 @@ export class FlagsStore {
       (flag) => flag === NO_FLAG,
       NO_FLAG,
       () =>
-        this.root.widgetSettings.getSettings<FlagDisplaySettings>('led-flags')
+        this.root.liveWidgets.getSettings<FlagDisplaySettings>('led-flags')
           .holdDuration,
       (value) => {
         this.ledDisplayFlag = value;

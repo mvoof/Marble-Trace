@@ -2,6 +2,8 @@ import { makeAutoObservable, reaction } from 'mobx';
 
 import type { RootStore } from '@store/root-store';
 
+type PaceCarDeps = Pick<RootStore, 'cars' | 'session'>;
+
 export type PaceCarPitPhase = 'onTrack' | 'stall' | 'pitIn' | 'pitOut';
 
 const NOT_IN_WORLD = -1;
@@ -33,7 +35,7 @@ export const nextPaceCarPitPhase = (
 export class PaceCarStore {
   private readonly phaseByCarIdx = new Map<number, PaceCarPitPhase>();
 
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: PaceCarDeps) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 

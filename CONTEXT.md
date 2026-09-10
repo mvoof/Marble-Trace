@@ -7,17 +7,42 @@ conversation had to stop and define it — not before.
 
 **Layout record** — a saved `SavedLayout`: its monitors, its widgets, its
 backgrounds. Lives in `LayoutsStore` (`root.layouts`) and is what reaches disk.
-A record is edited whether or not anything is drawing it.
+A record is edited whether or not anything is drawing it. The record side owns
+the screens a layout stands on — monitors and remote screens alike — and the
+lifecycle of the records themselves: creating, renaming, cloning, deleting.
 
 **Live widget map** — the widgets the window is rendering right now, held by
-`WidgetSettingsStore`. It is a _projection_ of the active layout record's own
-objects, not a copy, so an edit lands in the record itself and there is nothing
-to commit. A layout with no monitors owns nothing, and the map falls back to a
-detached set of shipped defaults.
+`LiveWidgetsStore` (`root.liveWidgets`). It is a _projection_ of the active
+layout record's own objects, not a copy, so an edit lands in the record itself
+and there is nothing to commit. A layout with no monitors owns nothing, and the
+map falls back to a detached set of shipped defaults. The map side owns the
+projection and everything done to a widget in it: per-copy settings, geometry
+and z-order, undo and redo, and what this window in particular is showing.
 
 Read the record when you want what is saved (`root.layouts.activeLayout`); read
-the map when you want what is on screen (`root.widgetSettings`). The two are
+the map when you want what is on screen (`root.liveWidgets`). The two are
 kept in step by the mutation log, not by living in the same class.
+
+**Widget map** — the shape both widget-holding stores present: a set of widget
+copies addressed by copy id, readable and mutable. It has two adapters. The
+**live widget map** is the projection of the active record — what is on screen.
+The **widget defaults catalogue** (`WidgetDefaultsStore`) is the template set a
+new layout is seeded from — what is shipped. A caller holding either one reads
+and edits widgets the same way; which one it holds decides whether the edit is
+to what is racing or to what the next layout will start from.
+
+**Editing session** — `LayoutEditorStore` (`root.layoutEditor`): whether the
+layout editor is on screen. While it is, the layout under the cursor and the
+layout on the overlay part company, so the driver's screen keeps auto-switching
+underneath the one being edited. The session moves that pin; the pin itself is a
+record-side pointer (`root.layouts.liveLayoutId`), because callers with no editor
+read it too.
+
+**Gesture** — a change to the layout records that also has to reach the live
+widget map: creating or deleting a layout, dropping a screen, realigning the
+screens to the hardware. Gestures are functions in `layout-gestures.ts` holding
+both sides, never members of either store — that is what keeps the dependency
+between records and map pointing one way.
 
 **Mutation log** — `SettingsMutationLog`: what changed in the settings since
 anyone last looked. Every settings write marks itself in it, and both marks are
@@ -32,7 +57,8 @@ why an edit reaches disk at all:
 The log holds ids, never widgets: only the store owning the live map can turn an
 id into a record, and keeping that out is what lets a layout record mark itself
 without knowing anything about widgets. See
-[ADR-0002](docs/adr/0002-settings-writes-mark-themselves.md).
+[ADR-0002](docs/adr/0002-settings-writes-mark-themselves.md) and
+[ADR-0003](docs/adr/0003-widget-state-lives-in-three-stores.md).
 
 **Widget copy** — a second instance of one widget in the same layout, with its
 own settings: one on the screen being raced on, another on a stream screen. Its

@@ -45,7 +45,7 @@ const snapshotFor = (
     // The widgets of this screen only: a tablet never receives the layout of
     // the monitors it is not showing.
     widgets: widgetsOnMonitor(
-      root.widgetSettings.liveWidgets,
+      root.liveWidgets.liveWidgets,
       monitor.name,
       layout.monitors
     ),
@@ -105,7 +105,7 @@ const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
     monitor.fittedToDevice = true;
   });
 
-  root.widgetSettings.resizeRemoteScreen(
+  root.layouts.resizeRemoteScreen(
     monitor.name,
     device.viewportWidth,
     device.viewportHeight
@@ -187,7 +187,7 @@ export const registerRemotePublishing = (root: RootStore) => {
     // way a monitor does.
     reaction(
       () => [
-        root.widgetSettings.changeToken,
+        root.settingsMutations.changeToken,
         root.layouts.liveLayoutId,
         root.units.unitSystem,
         root.appSettings.appSettings.steeringLock,

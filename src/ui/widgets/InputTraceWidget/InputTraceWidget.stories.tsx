@@ -29,7 +29,7 @@ const meta: Meta<StoryArgs> = {
     },
     seedSnapshot: true,
     seed: (store, args) => {
-      store.widgetSettings.updateUserSettings('input-trace', {
+      store.liveWidgets.updateUserSettings('input-trace', {
         showThrottle: args.showThrottle,
         showBrake: args.showBrake,
         showClutch: args.showClutch,

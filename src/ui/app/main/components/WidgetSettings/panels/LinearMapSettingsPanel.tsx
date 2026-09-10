@@ -17,15 +17,15 @@ export const PANEL_WIDGET_IDS = ['relative-map'];
 const { ColorRow, SwitchRow } = panelRows<LinearMapWidgetSettings>();
 
 export const LinearMapSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('relative-map');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<LinearMapWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<LinearMapWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<LinearMapWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

@@ -19,6 +19,16 @@ import {
   type BattlePlateGroup,
 } from './close-battle-utils';
 
+type CloseBattleDeps = Pick<
+  RootStore,
+  | 'units'
+  | 'appSettings'
+  | 'liveWidgets'
+  | 'backendComputed'
+  | 'session'
+  | 'player'
+>;
+
 const WIDGET_ID = 'close-battle';
 
 const setsMatch = (first: Set<number>, second: Set<number>): boolean =>
@@ -42,7 +52,7 @@ export class CloseBattleWidgetStore {
 
   private disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: CloseBattleDeps) {
     makeAutoObservable(this);
   }
 
@@ -137,7 +147,7 @@ export class CloseBattleWidgetStore {
   }
 
   get settings(): CloseBattleWidgetSettings {
-    return this.root.widgetSettings.getSettings<CloseBattleWidgetSettings>(
+    return this.root.liveWidgets.getSettings<CloseBattleWidgetSettings>(
       WIDGET_ID
     );
   }

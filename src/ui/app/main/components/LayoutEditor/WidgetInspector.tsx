@@ -17,7 +17,7 @@ import {
   Trash2,
 } from 'lucide-react';
 
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/root-store-context';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
 import { Card } from '../WidgetSettings/panels/Card';
@@ -71,11 +71,11 @@ export const WidgetInspector = observer(
     onSelectWidget,
     onSnap,
   }: WidgetInspectorProps) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const liveWidgets = useLiveWidgetsStore();
     const { t } = useTranslation('main-app');
 
     const widget = selectedWidgetId
-      ? widgetSettings.getWidget(selectedWidgetId)
+      ? liveWidgets.getWidget(selectedWidgetId)
       : undefined;
 
     if (!selectedWidgetId || !widget) {
@@ -87,7 +87,7 @@ export const WidgetInspector = observer(
     }
 
     const isCopy = widget.type !== undefined;
-    const { ordinal, total } = widgetSettings.copyOrdinalOf(widget.id);
+    const { ordinal, total } = liveWidgets.copyOrdinalOf(widget.id);
 
     return (
       <div className={styles.root}>
@@ -117,7 +117,7 @@ export const WidgetInspector = observer(
               okText={t('layoutWidgetPanel.deleteCopyOk')}
               cancelText={t('layoutEditor.cancel')}
               onConfirm={() => {
-                widgetSettings.removeWidgetCopy(widget.id);
+                liveWidgets.removeWidgetCopy(widget.id);
                 onSelectWidget(null);
               }}
             >
@@ -148,7 +148,7 @@ export const WidgetInspector = observer(
                   value={null}
                   placeholder={t('layoutEditor.moveToMonitorPlaceholder')}
                   onChange={(monitorName: string) =>
-                    widgetSettings.moveWidgetToMonitor(widget.id, monitorName)
+                    liveWidgets.moveWidgetToMonitor(widget.id, monitorName)
                   }
                   options={moveTargetOptions}
                   popupMatchSelectWidth={200}
@@ -163,7 +163,7 @@ export const WidgetInspector = observer(
                   <Button
                     size="small"
                     icon={<BringToFront size={ICON_SIZE} />}
-                    onClick={() => widgetSettings.bringToFront(widget.id)}
+                    onClick={() => liveWidgets.bringToFront(widget.id)}
                   />
                 </Tooltip>
 
@@ -171,7 +171,7 @@ export const WidgetInspector = observer(
                   <Button
                     size="small"
                     icon={<SendToBack size={ICON_SIZE} />}
-                    onClick={() => widgetSettings.sendToBack(widget.id)}
+                    onClick={() => liveWidgets.sendToBack(widget.id)}
                   />
                 </Tooltip>
               </div>
@@ -182,7 +182,7 @@ export const WidgetInspector = observer(
                 size="small"
                 icon={<Copy size={ICON_SIZE} />}
                 onClick={() => {
-                  const copyId = widgetSettings.duplicateWidget(widget.id);
+                  const copyId = liveWidgets.duplicateWidget(widget.id);
 
                   // Selection follows the copy: it is offset from the widget it
                   // came from and on top, so it is the one about to be placed.

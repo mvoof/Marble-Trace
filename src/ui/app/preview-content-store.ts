@@ -6,7 +6,8 @@ import { seedScenario } from '@store/preview/scenarios';
 import { seedInputHistory } from '@store/preview/preview-animator';
 import {
   useUnitsStore,
-  useWidgetSettingsStore,
+  useLiveWidgetsStore,
+  useSettingsMutationLog,
 } from '@store/root-store-context';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 
@@ -23,7 +24,7 @@ export const mirrorWidgetsIntoPreview = (
   // The whole set rather than a patch: the preview world starts as the shipped
   // catalog, so a layout holding a copy has records it has never heard of, and
   // a patch would leave the copy drawing another widget's settings.
-  previewStore.widgetSettings.syncWidgetSet(
+  previewStore.liveWidgets.syncWidgetSet(
     source.map((widget) => ({
       ...widget,
       userSettings: { ...widget.userSettings },
@@ -50,7 +51,8 @@ export const mirrorWidgetsIntoPreview = (
  * restart every widget's animation.
  */
 export const usePreviewContentStore = (active: boolean): RootStore | null => {
-  const widgetSettings = useWidgetSettingsStore();
+  const liveWidgets = useLiveWidgetsStore();
+  const settingsMutations = useSettingsMutationLog();
   const units = useUnitsStore();
 
   const [previewStore, setPreviewStore] = useState<RootStore | null>(null);
@@ -85,13 +87,13 @@ export const usePreviewContentStore = (active: boolean): RootStore | null => {
   useLayoutEffect(() => {
     if (!previewStore) return;
 
-    mirrorWidgetsIntoPreview(widgetSettings.allWidgets, previewStore);
+    mirrorWidgetsIntoPreview(liveWidgets.allWidgets, previewStore);
 
     return reaction(
-      () => [widgetSettings.changeToken, widgetSettings.syncToken],
-      () => mirrorWidgetsIntoPreview(widgetSettings.allWidgets, previewStore)
+      () => [settingsMutations.changeToken, settingsMutations.syncToken],
+      () => mirrorWidgetsIntoPreview(liveWidgets.allWidgets, previewStore)
     );
-  }, [previewStore, widgetSettings]);
+  }, [previewStore, liveWidgets, settingsMutations]);
 
   return active ? previewStore : null;
 };

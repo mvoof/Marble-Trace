@@ -56,11 +56,11 @@ describe('RadarWidgetStore activation', () => {
   const setScopeRange = (scopeRange: number) => {
     runInAction(() => {
       const settings =
-        rootStore.widgetSettings.getSettings<ProximityRadarSettings>(
+        rootStore.liveWidgets.getSettings<ProximityRadarSettings>(
           'proximity-radar'
         );
 
-      rootStore.widgetSettings.updateUserSettings('proximity-radar', {
+      rootStore.liveWidgets.updateUserSettings('proximity-radar', {
         ...settings,
         scaleMode: 'manual',
         scopeRange,

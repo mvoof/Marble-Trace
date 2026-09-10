@@ -6,7 +6,7 @@ import { APP_OWNER } from '@/types/input-bindings';
 import { widgetVisibilityActionId } from '@store/hotkeys/actions';
 import {
   useBindingsStore,
-  useWidgetSettingsStore,
+  useLiveWidgetsStore,
 } from '@store/root-store-context';
 import { BindingRow } from './BindingRow';
 import { ownerLabel } from './binding-labels';
@@ -21,7 +21,7 @@ interface BindingGroupProps {
 
 export const BindingGroup = observer(
   ({ owner, actionIds, isOpen, onToggle }: BindingGroupProps) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const liveWidgets = useLiveWidgetsStore();
     const bindings = useBindingsStore();
     const { t } = useTranslation('main-app');
 
@@ -29,7 +29,7 @@ export const BindingGroup = observer(
     // and not its background work — so the group says so rather than letting
     // the bindings look broken.
     const isInactive =
-      owner !== APP_OWNER && !widgetSettings.isWidgetOnScreen(owner);
+      owner !== APP_OWNER && !liveWidgets.isWidgetOnScreen(owner);
 
     const boundCount = actionIds.filter(
       (actionId) => bindings.bindingsFor(actionId).length > 0

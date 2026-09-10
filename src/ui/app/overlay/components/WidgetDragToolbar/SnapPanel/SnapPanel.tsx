@@ -13,7 +13,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import styles from './SnapPanel.module.scss';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/root-store-context';
 
 const SNAP_MARGIN = 8;
 const PANEL_WIDTH = 102;
@@ -52,10 +52,10 @@ interface SnapPanelProps {
 }
 
 export const SnapPanel = observer(({ widgetId, onClose }: SnapPanelProps) => {
-  const widgetSettings = useWidgetSettingsStore();
+  const liveWidgets = useLiveWidgetsStore();
   const panelRef = useClickOutside<HTMLDivElement>(onClose);
 
-  const widget = widgetSettings.getWidget(widgetId);
+  const widget = liveWidgets.getWidget(widgetId);
 
   if (!widget) {
     return null;
@@ -108,7 +108,7 @@ export const SnapPanel = observer(({ widgetId, onClose }: SnapPanelProps) => {
 
     const { x, y } = positions[pos];
 
-    widgetSettings.updatePosition(widgetId, x, y);
+    liveWidgets.updatePosition(widgetId, x, y);
     onClose();
   };
 

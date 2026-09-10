@@ -15,15 +15,15 @@ const { SwitchRow } = panelRows<FlagDisplaySettings>();
 
 export const FlagDisplaySettingsPanel = observer(
   ({ widgetId }: { widgetId: string }) => {
-    const widgetSettings = useWidgetEditor();
+    const liveWidgets = useWidgetEditor();
     const { t } = useTranslation('widgets');
     const widgetType = widgetTypeOf(
-      widgetSettings.getWidget(widgetId) ?? { id: widgetId }
+      liveWidgets.getWidget(widgetId) ?? { id: widgetId }
     );
-    const settings = widgetSettings.getSettings<FlagDisplaySettings>(widgetId);
+    const settings = liveWidgets.getSettings<FlagDisplaySettings>(widgetId);
 
     const update = (partial: Partial<FlagDisplaySettings>) => {
-      widgetSettings.updateUserSettings(widgetId, {
+      liveWidgets.updateUserSettings(widgetId, {
         ...settings,
         ...partial,
       });

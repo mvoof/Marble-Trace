@@ -93,7 +93,7 @@ const meta: Meta<StoryArgs> = {
     },
     seedSnapshot: true,
     seed: (store, args) => {
-      store.widgetSettings.updateUserSettings('coach', {
+      store.liveWidgets.updateUserSettings('coach', {
         showTrace: args.showTrace,
         showUrgencyBar: args.showUrgencyBar,
         showSpeed: args.showSpeed,

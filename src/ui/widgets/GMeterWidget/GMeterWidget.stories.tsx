@@ -28,7 +28,7 @@ const meta: Meta<StoryArgs> = {
         long_accel: args.longG * G_CONSTANT,
       } as Parameters<typeof store.player.updateCarDynamics>[0]);
 
-      store.widgetSettings.updateUserSettings('g-meter', {
+      store.liveWidgets.updateUserSettings('g-meter', {
         displayMode: args.displayMode,
         scale: args.scale,
         colorMode: args.colorMode,

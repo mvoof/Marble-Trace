@@ -24,13 +24,13 @@ export const PANEL_WIDGET_IDS = ['pit-line'];
 const { SwitchRow } = panelRows<PitLineWidgetSettings>();
 
 export const PitLineSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('pit-line');
   const { t } = useTranslation('widgets');
   const units = useUnitsStore();
 
   const settings =
-    widgetSettings.getSettings<PitLineWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<PitLineWidgetSettings>(panelWidgetId);
 
   const isImperial = units.unitSystem === 'imperial';
 
@@ -42,7 +42,7 @@ export const PitLineSettingsPanel = observer(() => {
   });
 
   const update = (partial: Partial<PitLineWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

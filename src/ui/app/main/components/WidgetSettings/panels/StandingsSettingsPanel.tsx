@@ -39,15 +39,15 @@ export const PANEL_WIDGET_IDS = ['standings'];
 const { SwitchRow, ColorRow } = panelRows<StandingsWidgetSettings>();
 
 export const StandingsSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('standings');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<StandingsWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<StandingsWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<StandingsWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

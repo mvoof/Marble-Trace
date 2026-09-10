@@ -5,11 +5,13 @@ import type {
   WidgetSpecificSettings,
   WidgetUserSettings,
 } from '@/types/widget-settings';
-import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
+import type { LiveWidgetsStore } from '@store/settings/live-widgets.store';
 import type { WidgetDefaultsStore } from '@store/settings/widget-defaults.store';
+import type { SettingsMutationLog } from '@store/settings/mutation-log';
 import {
   useWidgetDefaultsStore,
-  useWidgetSettingsStore,
+  useLiveWidgetsStore,
+  useSettingsMutationLog,
 } from '@store/root-store-context';
 
 // A small editing target so the settings panels don't care WHAT they edit. The
@@ -26,12 +28,15 @@ export interface WidgetEditor {
   pushUndo?(): void;
 }
 
-const liveEditor = (store: WidgetSettingsStore): WidgetEditor => ({
+const liveEditor = (
+  store: LiveWidgetsStore,
+  mutations: SettingsMutationLog
+): WidgetEditor => ({
   getWidget: (id) => store.getWidget(id),
   getSettings: <S extends WidgetSpecificSettings>(id: string) =>
     store.getSettings<S>(id),
   updateUserSettings: (id, partial) => store.updateUserSettings(id, partial),
-  getChangeToken: () => store.changeToken,
+  getChangeToken: () => mutations.changeToken,
   pushUndo: () => store.pushUndo(),
 });
 
@@ -48,9 +53,13 @@ const WidgetEditorContext = createContext<WidgetEditor | null>(null);
 
 export const useWidgetEditor = (): WidgetEditor => {
   const context = use(WidgetEditorContext);
-  const store = useWidgetSettingsStore();
+  const store = useLiveWidgetsStore();
+  const mutations = useSettingsMutationLog();
 
-  return useMemo(() => context ?? liveEditor(store), [context, store]);
+  return useMemo(
+    () => context ?? liveEditor(store, mutations),
+    [context, store, mutations]
+  );
 };
 
 // Binds descendant settings panels / previews to the global widget defaults.

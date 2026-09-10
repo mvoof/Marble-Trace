@@ -23,15 +23,14 @@ export const PANEL_WIDGET_IDS = ['coach'];
 const { ColorRow, SwitchRow } = panelRows<CoachWidgetSettings>();
 
 export const CoachSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('coach');
   const { t } = useTranslation('widgets');
 
-  const settings =
-    widgetSettings.getSettings<CoachWidgetSettings>(panelWidgetId);
+  const settings = liveWidgets.getSettings<CoachWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<CoachWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

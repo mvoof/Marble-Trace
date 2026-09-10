@@ -14,15 +14,15 @@ export const PANEL_WIDGET_IDS = ['engine-panel'];
 const { SwitchRow } = panelRows<EnginePanelWidgetSettings>();
 
 export const EnginePanelSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('engine-panel');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<EnginePanelWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<EnginePanelWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<EnginePanelWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

@@ -12,9 +12,10 @@ import { TrackMapWidgetStore } from '@ui/widgets/TrackMapWidget/track-map.widget
 import { DrivingCoachWidgetStore } from '@ui/widgets/CoachWidget/driving-coach.widget';
 import { CoachWidgetStore } from '@ui/widgets/CoachWidget/coach.widget';
 import { InputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.widget';
-import { WidgetSettingsStore } from './settings/widget-settings.store';
+import { LiveWidgetsStore } from './settings/live-widgets.store';
 import { WidgetDefaultsStore } from './settings/widget-defaults.store';
 import { LayoutsStore } from './settings/layouts.store';
+import { LayoutEditorStore } from './settings/layout-editor.store';
 import { SettingsMutationLog } from './settings/mutation-log';
 import { AppSettingsStore } from './settings/app-settings.store';
 import { CompanionAppsStore } from './settings/companion-apps.store';
@@ -64,9 +65,11 @@ export class RootStore {
   coachWidget: CoachWidgetStore;
   inputTraceWidget: InputTraceWidgetStore;
   streamChatWidget: StreamChatWidgetStore;
-  widgetSettings: WidgetSettingsStore;
+  liveWidgets: LiveWidgetsStore;
   widgetDefaults: WidgetDefaultsStore;
   layouts: LayoutsStore;
+
+  layoutEditor: LayoutEditorStore;
   /** What every settings write marks itself in — see `SettingsMutationLog`. */
   settingsMutations: SettingsMutationLog;
   appSettings: AppSettingsStore;
@@ -95,12 +98,17 @@ export class RootStore {
     this.backendComputed = new BackendComputedStore();
     this.widgetDefaults = new WidgetDefaultsStore(this);
     this.settingsMutations = new SettingsMutationLog();
+    // Built in dependency order, so none of the three needs a deferred
+    // reference to another: the records know nothing, the live map projects
+    // the records, the editing session drives both.
     this.layouts = new LayoutsStore(this.settingsMutations);
-    this.widgetSettings = new WidgetSettingsStore(
+    this.liveWidgets = new LiveWidgetsStore(
       this.settingsMutations,
       this.layouts,
-      this
+      this.widgetDefaults,
+      () => this.sim.capabilities
     );
+    this.layoutEditor = new LayoutEditorStore(this.layouts, this.liveWidgets);
     this.appSettings = new AppSettingsStore();
     this.companionApps = new CompanionAppsStore(this);
     this.twitchAuth = new TwitchAuthStore(this);

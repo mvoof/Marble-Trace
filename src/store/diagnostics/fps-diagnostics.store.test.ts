@@ -40,7 +40,7 @@ const makeRoot = (): FakeRoot => {
   );
 
   const root = {
-    widgetSettings: {
+    liveWidgets: {
       get enabledWidgetIds() {
         return WIDGET_IDS.filter((id) => enabled.get(id));
       },

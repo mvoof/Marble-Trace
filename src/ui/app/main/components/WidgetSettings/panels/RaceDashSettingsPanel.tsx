@@ -21,15 +21,15 @@ const { ColorRow, SwitchRow } = panelRows<RaceDashWidgetSettings>();
 
 export const RaceDashSettingsPanel = observer(() => {
   const units = useUnitsStore();
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('race-dash');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<RaceDashWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<RaceDashWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<RaceDashWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

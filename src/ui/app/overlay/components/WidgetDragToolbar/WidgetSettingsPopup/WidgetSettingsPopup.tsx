@@ -5,7 +5,7 @@ import { useClickOutside } from '@ui/hooks/useClickOutside';
 import { ConfigProvider, theme } from 'antd';
 import { X } from 'lucide-react';
 import { WidgetSettings } from '@ui/app/main/components/WidgetSettings/WidgetSettings';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/root-store-context';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import styles from './WidgetSettingsPopup.module.scss';
 
@@ -20,11 +20,11 @@ interface WidgetSettingsPopupProps {
 
 export const WidgetSettingsPopup = observer(
   ({ widgetId, onClose }: WidgetSettingsPopupProps) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const liveWidgets = useLiveWidgetsStore();
     const popupRef = useClickOutside<HTMLDialogElement>(onClose);
     const { t } = useTranslation('main-app');
 
-    const widget = widgetSettings.getWidget(widgetId);
+    const widget = liveWidgets.getWidget(widgetId);
 
     if (!widget) {
       return null;

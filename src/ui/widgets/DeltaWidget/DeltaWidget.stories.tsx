@@ -20,7 +20,7 @@ const meta: Meta = {
     widget: DeltaWidget,
     size: { width: 200, height: 100 },
     seed: (store) => {
-      store.widgetSettings.updateUserSettings('delta', {
+      store.liveWidgets.updateUserSettings('delta', {
         reference: 'personal_best',
         showLapFlash: false,
       });
@@ -46,7 +46,7 @@ const BestLapHost = () => {
 
   useLayoutEffect(() => {
     runInAction(() => {
-      store.widgetSettings.updateUserSettings('delta', {
+      store.liveWidgets.updateUserSettings('delta', {
         reference: 'personal_best',
         showLapFlash: true,
         flashDuration: 999,

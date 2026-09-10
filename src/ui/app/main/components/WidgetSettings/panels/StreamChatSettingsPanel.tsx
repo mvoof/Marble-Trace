@@ -22,15 +22,15 @@ const MAX_LIFETIME_SECONDS = 600;
 export const PANEL_WIDGET_IDS = ['stream-chat'];
 
 export const StreamChatSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId(WIDGET_ID);
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<StreamChatWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<StreamChatWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<StreamChatWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

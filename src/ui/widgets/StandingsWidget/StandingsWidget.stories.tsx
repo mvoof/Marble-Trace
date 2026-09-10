@@ -103,7 +103,7 @@ const meta: Meta<StoryArgs> = {
         store.session.updateSessionInfo(snapshot.sessionInfo);
       }
 
-      store.widgetSettings.updateUserSettings('standings', args.settings);
+      store.liveWidgets.updateUserSettings('standings', args.settings);
       store.standingsWidget.activeClassIndex = args.activeClassIndex;
     },
     args: {

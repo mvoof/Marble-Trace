@@ -14,10 +14,11 @@ import {
 } from 'lucide-react';
 import {
   useLayoutsStore,
-  useWidgetSettingsStore,
+  useLiveWidgetsStore,
   useAppSettingsStore,
   useRemoteDevicesStore,
   useSimStore,
+  useLayoutGestureStores,
 } from '@store/root-store-context';
 import { isRemoteMonitor } from '@utils/remote-screen';
 import {
@@ -31,6 +32,11 @@ import {
 } from '@store/settings/virtual-desktop';
 import type { SavedLayout, SessionContext } from '@/types/widget-settings';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
+import {
+  createLayout,
+  deleteLayout,
+  removeMonitor,
+} from '@store/settings/layout-gestures';
 import styles from './LayoutList.module.scss';
 
 interface LayoutPreviewProps {
@@ -158,8 +164,9 @@ const SESSION_LABEL_KEYS: Record<SessionContext, string> = {
 };
 
 export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
-  const widgetSettings = useWidgetSettingsStore();
+  const liveWidgets = useLiveWidgetsStore();
   const layouts = useLayoutsStore();
+  const gestureStores = useLayoutGestureStores();
   const remoteDevices = useRemoteDevicesStore();
   const appSettings = useAppSettingsStore();
   const simStore = useSimStore();
@@ -222,7 +229,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
       return;
     }
 
-    widgetSettings.saveLayout(name);
+    void createLayout(gestureStores, name);
     setSelectedId(layouts.editingLayoutId);
     setNewLayoutName('');
     setIsCreateModalOpen(false);
@@ -232,14 +239,14 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
     const name = renameValue.trim();
 
     if (selectedId && name) {
-      widgetSettings.renameLayout(selectedId, name);
+      layouts.renameLayout(selectedId, name);
       setIsRenaming(false);
     }
   };
 
   const handleActivate = () => {
     if (selectedId) {
-      widgetSettings.selectLayout(selectedId);
+      liveWidgets.selectLayout(selectedId);
     }
   };
 
@@ -261,7 +268,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
         void deleteBackgroundImage(image);
       }
 
-      widgetSettings.deleteLayout(selectedId);
+      deleteLayout(gestureStores, selectedId);
     }
   };
 
@@ -270,7 +277,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
       setIsDuplicating(true);
 
       try {
-        const newId = await widgetSettings.cloneLayout(selectedId);
+        const newId = await layouts.cloneLayout(selectedId);
 
         if (newId) {
           setSelectedId(newId);
@@ -510,7 +517,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                           checked={isAssigned}
                           onChange={(e) => {
                             const checked = e.target.checked;
-                            widgetSettings.setSessionLayout(
+                            layouts.setSessionLayout(
                               context,
                               checked ? selectedLayout.id : null
                             );
@@ -591,7 +598,8 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                             okButtonProps={{ danger: true }}
                             cancelText={t('layoutEditor.cancel')}
                             onConfirm={() =>
-                              widgetSettings.removeMonitor(
+                              removeMonitor(
+                                gestureStores,
                                 selectedLayout.id,
                                 monitorName
                               )

@@ -66,7 +66,7 @@ export const WidgetPreview = observer(
     useLayoutEffect(() => {
       if (!widget) return;
 
-      previewStore.widgetSettings.applySettingsSync([
+      previewStore.liveWidgets.applySettingsSync([
         {
           id: previewId,
           label: widget.label,

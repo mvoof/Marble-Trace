@@ -8,6 +8,17 @@ import { PitPanelState } from '@ui/widgets/PitServiceWidget/pit-panel';
 import { distanceToPitEntryM } from '@utils/pit-approach';
 import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
 
+type PitServiceDeps = Pick<
+  RootStore,
+  | 'liveWidgets'
+  | 'player'
+  | 'trackMapWidget'
+  | 'session'
+  | 'backendComputed'
+  | 'appSettings'
+  | 'units'
+>;
+
 /**
  * The widget's entry point, and the three things it is made of:
  *
@@ -30,7 +41,7 @@ export class PitServiceWidgetStore {
 
   private readonly disposers: IReactionDisposer[] = [];
 
-  constructor(readonly root: RootStore) {
+  constructor(readonly root: PitServiceDeps) {
     this.panel = new PitPanelState(this);
     this.auto = new PitAutoService(this);
     this.order = new PitOrder(this);
@@ -75,7 +86,7 @@ export class PitServiceWidgetStore {
   }
 
   get settings(): PitServiceWidgetSettings {
-    return this.root.widgetSettings.getSettings<PitServiceWidgetSettings>(
+    return this.root.liveWidgets.getSettings<PitServiceWidgetSettings>(
       'pit-service'
     );
   }

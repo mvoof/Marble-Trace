@@ -22,7 +22,7 @@ describe('WidgetDefaultsStore catalog', () => {
 
   beforeEach(() => {
     rootStore = new RootStore({ skipInit: true });
-    rootStore.widgetSettings.setLayouts(
+    rootStore.liveWidgets.setLayouts(
       [
         {
           id: 'layout-race',
@@ -49,12 +49,12 @@ describe('WidgetDefaultsStore catalog', () => {
 
   it('stays one entry per widget when the active layout holds a copy', () => {
     const copyId = runInAction(() =>
-      rootStore.widgetSettings.duplicateWidget('fuel')
+      rootStore.liveWidgets.duplicateWidget('fuel')
     );
 
     expect(copyId).not.toBeNull();
     expect(
-      rootStore.widgetSettings.allWidgets.filter(
+      rootStore.liveWidgets.allWidgets.filter(
         (widget) => (widget.type ?? widget.id) === 'fuel'
       )
     ).toHaveLength(2);

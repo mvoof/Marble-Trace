@@ -35,7 +35,7 @@ export const initOverlaySync = async (root: RootStore) => {
   // hydrateStores fills the live widget map from the persisted snapshot, which
   // can lag behind the active layout. The window renders the layout, so it is
   // the layout that has to win.
-  root.widgetSettings.loadEditingLayoutWidgets();
+  root.liveWidgets.loadEditingLayoutWidgets();
 
   const unlistens = await setupOverlayListeners(root);
 
@@ -47,16 +47,16 @@ export const initOverlaySync = async (root: RootStore) => {
       }
     ),
     reaction(
-      () => root.widgetSettings.changeToken,
+      () => root.settingsMutations.changeToken,
       () => {
-        const monitorName = root.widgetSettings.ownMonitorName;
+        const monitorName = root.liveWidgets.ownMonitorName;
 
         if (!monitorName) return;
 
         // Only what was edited here travels back. A drag reports one widget
         // instead of the whole layout, and a list this window never touched
         // can no longer overwrite the record main holds for it.
-        const { widgets } = root.widgetSettings.drainTouchedWidgets();
+        const { widgets } = root.liveWidgets.drainTouchedWidgets();
 
         if (widgets.length === 0) return;
 
@@ -64,7 +64,7 @@ export const initOverlaySync = async (root: RootStore) => {
           monitorName,
           widgets,
           layoutId:
-            root.widgetSettings.syncedLayoutId ?? root.layouts.editingLayoutId,
+            root.liveWidgets.syncedLayoutId ?? root.layouts.editingLayoutId,
         });
       },
       { delay: 100 }

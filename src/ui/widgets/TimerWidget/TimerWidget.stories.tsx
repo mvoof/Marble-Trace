@@ -80,7 +80,7 @@ const meta: Meta<StoryArgs> = {
         player_car_position: args.position,
       } as LapTimingFrame);
 
-      store.widgetSettings.updateUserSettings('timer', {
+      store.liveWidgets.updateUserSettings('timer', {
         showLaps: args.showLaps,
         showPosition: args.showPosition,
         showWallClock: args.showWallClock,

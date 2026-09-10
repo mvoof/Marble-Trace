@@ -15,14 +15,13 @@ import { usePanelWidgetId } from './setting-rows';
 export const PANEL_WIDGET_IDS = ['delta'];
 
 export const DeltaSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('delta');
   const { t } = useTranslation('widgets');
-  const settings =
-    widgetSettings.getSettings<DeltaWidgetSettings>(panelWidgetId);
+  const settings = liveWidgets.getSettings<DeltaWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<DeltaWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

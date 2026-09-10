@@ -10,6 +10,8 @@ import {
 import type { TwitchDeviceCode } from '@/types/bindings';
 import type { RootStore } from '@store/root-store';
 
+type TwitchAuthDeps = Pick<RootStore, 'appSettings'>;
+
 const MS_PER_SECOND = 1000;
 
 /**
@@ -35,7 +37,7 @@ export class TwitchAuthStore {
   private pollTimer: ReturnType<typeof setTimeout> | null = null;
   private expiryTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: TwitchAuthDeps) {
     makeAutoObservable<TwitchAuthStore, 'pollTimer' | 'expiryTimer' | 'root'>(
       this,
       { pollTimer: false, expiryTimer: false, root: false },

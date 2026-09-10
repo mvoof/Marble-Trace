@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
+import type { LiveWidgetsStore } from '@store/settings/live-widgets.store';
 import type { MonitorBounds } from '@/types/widget-settings';
 import {
   resizeDirectionsFor,
@@ -18,7 +18,7 @@ const snapToGrid = (value: number, gridSize: number) =>
 interface LayoutCanvasWidgetProps {
   widgetId: string;
   fit: number;
-  mainSettings: WidgetSettingsStore;
+  mainSettings: LiveWidgetsStore;
   isSelected: boolean;
   snap: boolean;
   gridSize: number;

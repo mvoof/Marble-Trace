@@ -2,8 +2,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { RootStore } from '../root-store';
 import type { CapabilitiesPayload } from '@/types/bindings';
+import { deleteLayout } from './layout-gestures';
 import type { LayoutsStore } from './layouts.store';
-import type { WidgetSettingsStore } from './widget-settings.store';
+import type { LayoutEditorStore } from './layout-editor.store';
+import type { LiveWidgetsStore } from './live-widgets.store';
 
 const FULL_CAPABILITIES: CapabilitiesPayload = {
   playerDynamics: true,
@@ -18,7 +20,7 @@ const FULL_CAPABILITIES: CapabilitiesPayload = {
   sectors: true,
 };
 
-describe('WidgetSettingsStore capabilities gating', () => {
+describe('LiveWidgetsStore capabilities gating', () => {
   let rootStore: RootStore;
 
   beforeEach(() => {
@@ -30,9 +32,9 @@ describe('WidgetSettingsStore capabilities gating', () => {
       rootStore.sim.capabilities = { ...FULL_CAPABILITIES };
     });
 
-    const available = rootStore.widgetSettings.availableWidgetIds;
+    const available = rootStore.liveWidgets.availableWidgetIds;
     // All default widgets should be available
-    expect(available.length).toBe(rootStore.widgetSettings.allWidgets.length);
+    expect(available.length).toBe(rootStore.liveWidgets.allWidgets.length);
   });
 
   it('hides fuel widget when fuel capability is missing', () => {
@@ -43,7 +45,7 @@ describe('WidgetSettingsStore capabilities gating', () => {
       };
     });
 
-    const available = rootStore.widgetSettings.availableWidgetIds;
+    const available = rootStore.liveWidgets.availableWidgetIds;
     expect(available).not.toContain('fuel');
     expect(available).toContain('race-dash'); // race-dash requires playerDynamics, which is true
   });
@@ -56,7 +58,7 @@ describe('WidgetSettingsStore capabilities gating', () => {
       };
     });
 
-    const available = rootStore.widgetSettings.availableWidgetIds;
+    const available = rootStore.liveWidgets.availableWidgetIds;
     expect(available).not.toContain('input-trace');
     expect(available).toContain('race-dash');
   });
@@ -64,15 +66,15 @@ describe('WidgetSettingsStore capabilities gating', () => {
   it('filters enabledWidgetIds based on availableWidgetIds', () => {
     runInAction(() => {
       // Enable a widget that is NOT available
-      rootStore.widgetSettings.setWidgetEnabled('fuel', true);
+      rootStore.liveWidgets.setWidgetEnabled('fuel', true);
       rootStore.sim.capabilities = {
         ...FULL_CAPABILITIES,
         fuel: false, // Fuel is disabled in capabilities
       };
     });
 
-    expect(rootStore.widgetSettings.availableWidgetIds).not.toContain('fuel');
-    expect(rootStore.widgetSettings.enabledWidgetIds).not.toContain('fuel');
+    expect(rootStore.liveWidgets.availableWidgetIds).not.toContain('fuel');
+    expect(rootStore.liveWidgets.enabledWidgetIds).not.toContain('fuel');
 
     runInAction(() => {
       // Now make fuel capability available
@@ -82,8 +84,8 @@ describe('WidgetSettingsStore capabilities gating', () => {
       };
     });
 
-    expect(rootStore.widgetSettings.availableWidgetIds).toContain('fuel');
-    expect(rootStore.widgetSettings.enabledWidgetIds).toContain('fuel');
+    expect(rootStore.liveWidgets.availableWidgetIds).toContain('fuel');
+    expect(rootStore.liveWidgets.enabledWidgetIds).toContain('fuel');
   });
 });
 
@@ -95,7 +97,7 @@ describe('the session a layout would be picked for', () => {
   beforeEach(() => {
     rootStore = new RootStore({ skipInit: true });
     // Создаем несколько фейковых лейаутов
-    rootStore.widgetSettings.setLayouts([
+    rootStore.liveWidgets.setLayouts([
       {
         id: 'layout-practice',
         name: 'Practice Layout',
@@ -152,13 +154,13 @@ describe('the session a layout would be picked for', () => {
   });
 });
 
-describe('WidgetSettingsStore populated monitors', () => {
+describe('LiveWidgetsStore overlay widget picker', () => {
   let rootStore: RootStore;
   const SECOND_MONITOR_X = 1920;
 
   beforeEach(() => {
     rootStore = new RootStore({ skipInit: true });
-    rootStore.widgetSettings.setLayouts(
+    rootStore.liveWidgets.setLayouts(
       [
         {
           id: 'layout-multi',
@@ -185,78 +187,18 @@ describe('WidgetSettingsStore populated monitors', () => {
       'layout-multi'
     );
 
-    for (const widget of rootStore.widgetSettings.allWidgets) {
-      rootStore.widgetSettings.setWidgetEnabled(widget.id, false);
-    }
-  });
-
-  it('lists no monitor while every widget is disabled', () => {
-    expect(rootStore.widgetSettings.populatedMonitorNames).toEqual([]);
-  });
-
-  it('lists only the monitor the enabled widget sits on', () => {
-    const [widget] = rootStore.widgetSettings.allWidgets;
-
-    rootStore.widgetSettings.setWidgetEnabled(widget.id, true);
-    rootStore.widgetSettings.updatePosition(widget.id, 0, 0);
-
-    expect(rootStore.widgetSettings.populatedMonitorNames).toEqual([
-      'DISPLAY1',
-    ]);
-
-    rootStore.widgetSettings.updatePosition(widget.id, SECOND_MONITOR_X, 0);
-
-    expect(rootStore.widgetSettings.populatedMonitorNames).toEqual([
-      'DISPLAY2',
-    ]);
-  });
-});
-
-describe('WidgetSettingsStore overlay widget picker', () => {
-  let rootStore: RootStore;
-  const SECOND_MONITOR_X = 1920;
-
-  beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
-    rootStore.widgetSettings.setLayouts(
-      [
-        {
-          id: 'layout-multi',
-          name: 'Multi',
-          createdAt: Date.now(),
-          monitors: [
-            {
-              name: 'DISPLAY1',
-              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
-            },
-            {
-              name: 'DISPLAY2',
-              bounds: {
-                x: SECOND_MONITOR_X,
-                y: 0,
-                width: 1920,
-                height: 1080,
-              },
-            },
-          ],
-          widgets: [],
-        },
-      ],
-      'layout-multi'
-    );
-
-    for (const widget of rootStore.widgetSettings.allWidgets) {
-      rootStore.widgetSettings.setWidgetEnabled(widget.id, false);
-      rootStore.widgetSettings.updatePosition(widget.id, 0, 0);
+    for (const widget of rootStore.liveWidgets.allWidgets) {
+      rootStore.liveWidgets.setWidgetEnabled(widget.id, false);
+      rootStore.liveWidgets.updatePosition(widget.id, 0, 0);
     }
   });
 
   it('centres a newly added widget on the target monitor', () => {
-    const [widget] = rootStore.widgetSettings.allWidgets;
+    const [widget] = rootStore.liveWidgets.allWidgets;
 
-    rootStore.widgetSettings.addWidgetToMonitor(widget.id, 'DISPLAY2');
+    rootStore.liveWidgets.addWidgetToMonitor(widget.id, 'DISPLAY2');
 
-    const added = rootStore.widgetSettings.getWidget(widget.id)!;
+    const added = rootStore.liveWidgets.getWidget(widget.id)!;
     const { currentWidth, currentHeight } = added.userSettings;
 
     expect(added.userSettings.enabled).toBe(true);
@@ -264,19 +206,17 @@ describe('WidgetSettingsStore overlay widget picker', () => {
       Math.round(SECOND_MONITOR_X + (1920 - currentWidth) / 2)
     );
     expect(added.userSettings.y).toBe(Math.round((1080 - currentHeight) / 2));
-    expect(rootStore.widgetSettings.populatedMonitorNames).toEqual([
-      'DISPLAY2',
-    ]);
+    expect(rootStore.liveWidgets.populatedMonitorNames).toEqual(['DISPLAY2']);
   });
 
   it('cascades a second widget instead of stacking it', () => {
-    const [first, second] = rootStore.widgetSettings.allWidgets;
+    const [first, second] = rootStore.liveWidgets.allWidgets;
 
-    rootStore.widgetSettings.addWidgetToMonitor(first.id, 'DISPLAY1');
-    rootStore.widgetSettings.addWidgetToMonitor(second.id, 'DISPLAY1');
+    rootStore.liveWidgets.addWidgetToMonitor(first.id, 'DISPLAY1');
+    rootStore.liveWidgets.addWidgetToMonitor(second.id, 'DISPLAY1');
 
-    const placedFirst = rootStore.widgetSettings.getWidget(first.id)!;
-    const placedSecond = rootStore.widgetSettings.getWidget(second.id)!;
+    const placedFirst = rootStore.liveWidgets.getWidget(first.id)!;
+    const placedSecond = rootStore.liveWidgets.getWidget(second.id)!;
 
     expect(placedSecond.userSettings.x).not.toBe(placedFirst.userSettings.x);
     expect(placedSecond.userSettings.zIndex).toBeGreaterThan(
@@ -285,18 +225,17 @@ describe('WidgetSettingsStore overlay widget picker', () => {
   });
 
   it('offers widgets drawn elsewhere with the monitor they live on', () => {
-    const [widget] = rootStore.widgetSettings.allWidgets;
+    const [widget] = rootStore.liveWidgets.allWidgets;
 
-    rootStore.widgetSettings.addWidgetToMonitor(widget.id, 'DISPLAY2');
+    rootStore.liveWidgets.addWidgetToMonitor(widget.id, 'DISPLAY2');
 
-    const onFirst =
-      rootStore.widgetSettings.pickableWidgetsForMonitor('DISPLAY1');
+    const onFirst = rootStore.liveWidgets.pickableWidgetsForMonitor('DISPLAY1');
     const entry = onFirst.find((candidate) => candidate.id === widget.id);
 
     expect(entry?.currentMonitorName).toBe('DISPLAY2');
 
     const onSecond =
-      rootStore.widgetSettings.pickableWidgetsForMonitor('DISPLAY2');
+      rootStore.liveWidgets.pickableWidgetsForMonitor('DISPLAY2');
 
     expect(onSecond.some((candidate) => candidate.id === widget.id)).toBe(
       false
@@ -304,88 +243,10 @@ describe('WidgetSettingsStore overlay widget picker', () => {
   });
 });
 
-describe('WidgetSettingsStore remote screen geometry', () => {
-  let rootStore: RootStore;
-  const REMOTE_X = 2500;
-
-  beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
-    rootStore.widgetSettings.setLayouts(
-      [
-        {
-          id: 'layout-remote',
-          name: 'Remote',
-          createdAt: Date.now(),
-          monitors: [
-            {
-              name: 'DISPLAY1',
-              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
-            },
-            {
-              name: 'Tablet',
-              kind: 'remote',
-              slug: 'tablet',
-              bounds: { x: REMOTE_X, y: 0, width: 400, height: 300 },
-            },
-          ],
-          widgets: [],
-        },
-      ],
-      'layout-remote'
-    );
-  });
-
-  const remoteBounds = () =>
-    rootStore.layouts.editingLayout?.monitors.find(
-      (monitor) => monitor.name === 'Tablet'
-    )?.bounds;
-
-  it('slides a screen clear of the display when fitting it to a device grows it over one', () => {
-    rootStore.widgetSettings.resizeRemoteScreen('Tablet', 1280, 800);
-
-    const bounds = remoteBounds();
-
-    expect(bounds?.width).toBe(1280);
-    expect(bounds?.x).toBeGreaterThanOrEqual(1920);
-  });
-
-  it('carries the screen widgets along when the fit displaces it', () => {
-    const [widget] = rootStore.widgetSettings.allWidgets;
-
-    rootStore.widgetSettings.setWidgetEnabled(widget.id, true);
-    rootStore.widgetSettings.updatePosition(widget.id, REMOTE_X + 10, 10);
-
-    const before = widget.userSettings.x;
-
-    rootStore.widgetSettings.resizeRemoteScreen('Tablet', 1280, 800);
-
-    const bounds = remoteBounds();
-
-    expect(widget.userSettings.x - before).toBe((bounds?.x ?? 0) - REMOTE_X);
-  });
-
-  it('refuses a drag that would land the screen on another one', () => {
-    rootStore.widgetSettings.moveRemoteScreen('Tablet', 0, 0);
-
-    expect(remoteBounds()?.x).toBe(REMOTE_X);
-  });
-
-  it('moves the screen widgets with a drag', () => {
-    const [widget] = rootStore.widgetSettings.allWidgets;
-
-    rootStore.widgetSettings.setWidgetEnabled(widget.id, true);
-    rootStore.widgetSettings.updatePosition(widget.id, REMOTE_X + 10, 10);
-
-    rootStore.widgetSettings.moveRemoteScreen('Tablet', REMOTE_X, 2000);
-
-    expect(widget.userSettings.y).toBe(2010);
-  });
-});
-
 describe('derived design width', () => {
   it('rebuilds a stale design width when a layout copy is installed', () => {
     const rootStore = new RootStore({ skipInit: true });
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
     const relative = store.getWidget('relative');
 
     expect(relative).toBeDefined();
@@ -409,7 +270,7 @@ describe('derived design width', () => {
 
   it('rescales currentWidth with it, so the repair does not resize the text', () => {
     const rootStore = new RootStore({ skipInit: true });
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
     const relative = store.getWidget('relative')!;
     const shippedWidth = relative.designWidth;
     const staleWidth = shippedWidth + 120;
@@ -431,7 +292,7 @@ describe('derived design width', () => {
 
   it('leaves the size alone when the derived width already agrees', () => {
     const rootStore = new RootStore({ skipInit: true });
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
     const relative = store.getWidget('relative')!;
     const userChosenWidth = relative.designWidth * 2;
 
@@ -452,7 +313,7 @@ describe('derived design width', () => {
 
   it('rebuilds it from settings synced in by an overlay window', () => {
     const rootStore = new RootStore({ skipInit: true });
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     const monitorName = 'DISPLAY1';
     const monitors = [
@@ -497,7 +358,7 @@ describe('derived design width', () => {
 
   it('follows the name column width without touching other widgets', () => {
     const rootStore = new RootStore({ skipInit: true });
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
     const before = store.getWidget('standings')!.designWidth;
     const timerWidth = store.getWidget('timer')!.designWidth;
 
@@ -531,14 +392,14 @@ describe('the active layout owns the widgets', () => {
 
   beforeEach(() => {
     rootStore = new RootStore({ skipInit: true });
-    rootStore.widgetSettings.setLayouts(
+    rootStore.liveWidgets.setLayouts(
       [layout('layout-race'), layout('layout-garage')],
       'layout-race'
     );
   });
 
   it('writes an edit straight into the layout record, with nothing to commit', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.updatePosition('fuel', 640, 480);
 
@@ -554,7 +415,7 @@ describe('the active layout owns the widgets', () => {
   // so anything that switched layouts inside its 500 ms window took the old
   // layout's widgets with it and dropped the edit.
   it('keeps an edit made immediately before a layout switch', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.updatePosition('fuel', 640, 480);
     store.loadLayout('layout-garage');
@@ -564,7 +425,7 @@ describe('the active layout owns the widgets', () => {
   });
 
   it('does not leak an edit into the layout that was not active', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.updatePosition('fuel', 640, 480);
 
@@ -576,7 +437,7 @@ describe('the active layout owns the widgets', () => {
   });
 
   it('undoes an edit on the layout record itself', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
     const before = store.getWidget('fuel')!.userSettings.x;
 
     store.pushUndo();
@@ -592,7 +453,7 @@ describe('the active layout owns the widgets', () => {
   });
 
   it('falls back to the shipped defaults while no layout is active', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.selectLayout(null);
 
@@ -607,7 +468,7 @@ describe('a layout with no monitors is not written to', () => {
   // an edit and saved over the arrangement the driver still has.
   it('keeps the saved widgets when the layout is loaded without a screen', () => {
     const rootStore = new RootStore({ skipInit: true });
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.setLayouts(
       [
@@ -650,7 +511,7 @@ describe('the overlay reports only what it edited', () => {
 
   beforeEach(() => {
     rootStore = new RootStore({ skipInit: true });
-    rootStore.widgetSettings.setLayouts(
+    rootStore.liveWidgets.setLayouts(
       [
         {
           id: 'layout-race',
@@ -662,11 +523,11 @@ describe('the overlay reports only what it edited', () => {
       ],
       'layout-race'
     );
-    rootStore.widgetSettings.drainTouchedWidgets();
+    rootStore.liveWidgets.drainTouchedWidgets();
   });
 
   it('drains a patch of the edited widgets, not the whole layout', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.updatePosition('fuel', 640, 480);
     store.updateSize('fuel', 300, 200);
@@ -682,7 +543,7 @@ describe('the overlay reports only what it edited', () => {
   });
 
   it('drains nothing when nothing was edited', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.updatePosition('fuel', 10, 20);
     store.drainTouchedWidgets();
@@ -691,7 +552,7 @@ describe('the overlay reports only what it edited', () => {
   });
 
   it('reports the whole map when a layout is installed wholesale', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.loadLayout('layout-race');
 
@@ -727,14 +588,14 @@ describe('several copies of one widget in a layout', () => {
 
   beforeEach(() => {
     rootStore = new RootStore({ skipInit: true });
-    rootStore.widgetSettings.setLayouts(
+    rootStore.liveWidgets.setLayouts(
       [layout('layout-race'), layout('layout-garage')],
       'layout-race'
     );
   });
 
   it('gives a copy its own id and points it back at the original', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     const copyId = store.duplicateWidget('standings')!;
     const copy = store.getWidget(copyId)!;
@@ -745,7 +606,7 @@ describe('several copies of one widget in a layout', () => {
   });
 
   it('leaves the original alone when the copy is edited', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     const copyId = store.duplicateWidget('standings')!;
 
@@ -756,7 +617,7 @@ describe('several copies of one widget in a layout', () => {
   });
 
   it('hides a copy without hiding the widget it was copied from', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     const copyId = store.duplicateWidget('standings')!;
 
@@ -769,7 +630,7 @@ describe('several copies of one widget in a layout', () => {
   // The whole point of the split: the original's id doubles as its type, so a
   // settings file written before copies existed needs no migration.
   it('keeps a file that predates copies readable as the original', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.setWidgets([
       {
@@ -785,7 +646,7 @@ describe('several copies of one widget in a layout', () => {
   });
 
   it('survives the round trip through a layout switch', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     const copyId = store.duplicateWidget('standings')!;
 
@@ -798,7 +659,7 @@ describe('several copies of one widget in a layout', () => {
   });
 
   it('never merges two copies onto one record when the layout is installed', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.duplicateWidget('standings');
     store.duplicateWidget('standings');
@@ -813,7 +674,7 @@ describe('several copies of one widget in a layout', () => {
   });
 
   it('deletes a copy but refuses to delete the original', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     const copyId = store.duplicateWidget('standings')!;
 
@@ -828,7 +689,7 @@ describe('several copies of one widget in a layout', () => {
   // them. Before copies existed the set never changed, so a per-field patch was
   // enough; now an arrival and a deletion both have to land.
   it('installs a copy a synced list carries and drops one it has lost', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     const incoming = store.allWidgets.map((widget) => ({
       ...widget,
@@ -855,11 +716,11 @@ describe('several copies of one widget in a layout', () => {
   // with its shipped default answered back with a default-placed widget, and
   // the window that had sent the list took that answer for an edit.
   it('adopts a synced list without inventing defaults or reporting an edit', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.updateUserSettings('standings', { x: 1500 });
 
-    const before = store.changeToken;
+    const before = rootStore.settingsMutations.changeToken;
     const standings = {
       ...store.getWidget('standings')!,
       userSettings: { ...store.getWidget('standings')!.userSettings },
@@ -869,20 +730,20 @@ describe('several copies of one widget in a layout', () => {
 
     expect(store.allWidgets).toHaveLength(1);
     expect(store.getWidget('standings')!.userSettings.x).toBe(1500);
-    expect(store.changeToken).toBe(before);
+    expect(rootStore.settingsMutations.changeToken).toBe(before);
   });
 
   // The crash a copy caused in the editor: a store handed an id it holds no
   // record for used to answer with nothing at all, and every widget reads its
   // settings without checking.
   it('answers with the defaults of the type behind a copy id it has no record of', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     expect(store.getSettings('standings-7')).toBeDefined();
   });
 
   it('counts the widget as in the layout while any copy of it is', () => {
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     const copyId = store.duplicateWidget('standings')!;
 
@@ -893,60 +754,6 @@ describe('several copies of one widget in a layout', () => {
     store.setWidgetEnabled(copyId, false);
 
     expect(store.isWidgetOnScreen('standings')).toBe(false);
-  });
-});
-
-describe('a screen added to a layout', () => {
-  let rootStore: RootStore;
-
-  beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
-    rootStore.widgetSettings.setLayouts(
-      [
-        {
-          id: 'layout-race',
-          name: 'Race',
-          createdAt: 0,
-          monitors: [
-            {
-              name: 'DISPLAY1',
-              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
-            },
-          ],
-          widgets: [],
-        },
-      ],
-      'layout-race'
-    );
-  });
-
-  const screenNamed = (name: string) =>
-    rootStore.layouts.editingLayout!.monitors.find(
-      (monitor) => monitor.name === name
-    )!;
-
-  // The only thing that separates a browser source from a tablet: what the page
-  // paints behind the widgets. Everything else about the screen is the same.
-  it('carries the background it was created with', () => {
-    rootStore.widgetSettings.addRemoteScreen(
-      'Stream',
-      1920,
-      1080,
-      'transparent'
-    );
-
-    expect(screenNamed('Stream').background).toBe('transparent');
-  });
-
-  it('leaves the ground to the default until it is set', () => {
-    rootStore.widgetSettings.addRemoteScreen('Tablet', 1280, 800);
-
-    expect(screenNamed('Tablet').background).toBeUndefined();
-    expect(screenNamed('Tablet').fittedToDevice).toBeFalsy();
-
-    rootStore.widgetSettings.setRemoteScreenBackground('Tablet', 'transparent');
-
-    expect(screenNamed('Tablet').background).toBe('transparent');
   });
 });
 
@@ -981,7 +788,7 @@ describe('every settings write leaves its mark', () => {
   // What the other window sends back: the same widgets, as detached records.
   // Handing the store its own live objects would compare equal to itself and
   // hide whether the applier marked anything.
-  const clonedWidgets = (store: WidgetSettingsStore) =>
+  const clonedWidgets = (store: LiveWidgetsStore) =>
     store.allWidgets.map((widget) => ({
       ...widget,
       userSettings: { ...widget.userSettings },
@@ -997,13 +804,21 @@ describe('every settings write leaves its mark', () => {
   type WriteCase = {
     name: string;
     /** Runs before the measurement, so the case measures one write only. */
-    setup?: (store: WidgetSettingsStore, layouts: LayoutsStore) => void;
+    setup?: (
+      store: LiveWidgetsStore,
+      layouts: LayoutsStore,
+      editor: LayoutEditorStore
+    ) => void;
     /**
-     * Layout records are written through `layouts` now, the live widget map
-     * through `store` — which of the two a write goes through is itself part of
-     * what this table pins.
+     * Layout records are written through `layouts`, the editing session through
+     * `editor`, the live widget map through `store` — which of the three a
+     * write goes through is itself part of what this table pins.
      */
-    run: (store: WidgetSettingsStore, layouts: LayoutsStore) => void;
+    run: (
+      store: LiveWidgetsStore,
+      layouts: LayoutsStore,
+      editor: LayoutEditorStore
+    ) => void;
     expected: WriteMark;
   };
 
@@ -1046,7 +861,7 @@ describe('every settings write leaves its mark', () => {
     },
     {
       name: 'moveWidgetToMonitor',
-      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
+      setup: (_store, layouts) => layouts.addRemoteScreen('Tablet', 1280, 800),
       run: (store) => store.moveWidgetToMonitor('fuel', 'Tablet'),
       expected: { token: 'change', touched: ['fuel'] },
     },
@@ -1093,19 +908,21 @@ describe('every settings write leaves its mark', () => {
     // Layout records.
     {
       name: 'setSessionLayout',
-      run: (store) => store.setSessionLayout('Race', 'layout-race'),
+      run: (_store, layouts) => layouts.setSessionLayout('Race', 'layout-race'),
       expected: { token: 'change', touched: 'every' },
     },
     {
       name: 'setSessionLayouts',
-      run: (store) => store.setSessionLayouts({ Race: 'layout-race' }),
+      run: (_store, layouts) =>
+        layouts.setSessionLayouts({ Race: 'layout-race' }),
       expected: { token: 'change', touched: 'every' },
     },
-    // `saveLayout` and `ensureDefaultLayout` are deliberately absent: both mark
-    // synchronously and then ask the OS for a monitor and mark a second time
-    // when the answer lands. Neither the second mark nor the monitor call can
-    // be measured here without stubbing Tauri, and a table case that pins only
-    // the first half would read as if that were the whole write.
+    // `createLayout` is deliberately absent: it marks synchronously and then
+    // asks the OS for a monitor and marks a second time when the answer lands.
+    // Neither the second mark nor the monitor call can be measured here without
+    // stubbing Tauri, and a table case that pins only the first half would read
+    // as if that were the whole write. First-run setup left this store entirely
+    // — see `first-run.test.ts`.
     {
       name: 'loadLayout',
       run: (store) => store.loadLayout('layout-race'),
@@ -1117,19 +934,19 @@ describe('every settings write leaves its mark', () => {
       expected: { token: 'change', touched: 'every' },
     },
     {
-      name: 'switchEditorLayout',
+      name: 'switchLayout',
       setup: (store, layouts) =>
         store.setLayouts([...layouts.layouts, SECOND_LAYOUT]),
-      run: (store) => store.switchEditorLayout(SECOND_LAYOUT.id),
+      run: (_store, _layouts, editor) => editor.switchLayout(SECOND_LAYOUT.id),
       expected: { token: 'change', touched: 'every' },
     },
     {
-      name: 'activateEditorLayout',
-      setup: (store, layouts) => {
+      name: 'activateLayout',
+      setup: (store, layouts, editor) => {
         store.setLayouts([...layouts.layouts, SECOND_LAYOUT]);
-        store.switchEditorLayout(SECOND_LAYOUT.id);
+        editor.switchLayout(SECOND_LAYOUT.id);
       },
-      run: (store) => store.activateEditorLayout(),
+      run: (_store, _layouts, editor) => editor.activateLayout(),
       expected: { token: 'change', touched: 'every' },
     },
     {
@@ -1139,62 +956,15 @@ describe('every settings write leaves its mark', () => {
     },
     {
       name: 'renameLayout',
-      run: (store) => store.renameLayout('layout-race', 'Renamed'),
+      run: (_store, layouts) => layouts.renameLayout('layout-race', 'Renamed'),
       expected: { token: 'change', touched: 'every' },
     },
     {
       name: 'deleteLayout',
       setup: (store, layouts) =>
         store.setLayouts([...layouts.layouts, SECOND_LAYOUT]),
-      run: (store) => store.deleteLayout(SECOND_LAYOUT.id),
-      expected: { token: 'change', touched: 'every' },
-    },
-
-    // Monitors and remote screens. The record-level writes are pinned in
-    // `layouts.store.test.ts`; what is here composes a record with the widgets
-    // standing on it.
-    {
-      name: 'removeMonitor',
-      setup: (_store, layouts) =>
-        layouts.addMonitor({
-          name: 'DISPLAY2',
-          bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
-        }),
-      run: (store) => store.removeMonitor('layout-race', 'DISPLAY2'),
-      expected: { token: 'change', touched: 'every' },
-    },
-    {
-      name: 'alignMonitorsToHardware',
-      run: (store) => store.alignMonitorsToHardware([DISPLAY]),
-      expected: { token: 'change', touched: 'every' },
-    },
-    {
-      name: 'addRemoteScreen',
-      run: (store) => store.addRemoteScreen('Tablet', 1280, 800),
-      expected: { token: 'change', touched: 'every' },
-    },
-    {
-      name: 'setRemoteScreenBackground',
-      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
-      run: (store) => store.setRemoteScreenBackground('Tablet', 'transparent'),
-      expected: { token: 'change', touched: 'every' },
-    },
-    {
-      name: 'resizeRemoteScreen',
-      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
-      run: (store) => store.resizeRemoteScreen('Tablet', 1024, 768),
-      expected: { token: 'change', touched: 'every' },
-    },
-    {
-      name: 'moveRemoteScreen',
-      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
-      run: (store) => store.moveRemoteScreen('Tablet', 4000, 200),
-      expected: { token: 'change', touched: 'every' },
-    },
-    {
-      name: 'arrangeRemoteScreens',
-      setup: (store) => store.addRemoteScreen('Tablet', 1280, 800),
-      run: (store) => store.arrangeRemoteScreens(),
+      run: (store, layouts) =>
+        deleteLayout({ records: layouts, widgetMap: store }, SECOND_LAYOUT.id),
       expected: { token: 'change', touched: 'every' },
     },
 
@@ -1247,7 +1017,7 @@ describe('every settings write leaves its mark', () => {
 
   it.each(WRITES)('$name', ({ setup, run, expected }) => {
     const rootStore = new RootStore({ skipInit: true });
-    const store = rootStore.widgetSettings;
+    const store = rootStore.liveWidgets;
 
     store.setLayouts(
       [
@@ -1262,21 +1032,21 @@ describe('every settings write leaves its mark', () => {
       'layout-race'
     );
 
-    setup?.(store, rootStore.layouts);
+    setup?.(store, rootStore.layouts, rootStore.layoutEditor);
 
     // Everything above is arrangement, not the write under test.
     store.drainTouchedWidgets();
 
-    const changeBefore = store.changeToken;
-    const syncBefore = store.syncToken;
+    const changeBefore = rootStore.settingsMutations.changeToken;
+    const syncBefore = rootStore.settingsMutations.syncToken;
 
-    run(store, rootStore.layouts);
+    run(store, rootStore.layouts, rootStore.layoutEditor);
 
     const drained = store.drainTouchedWidgets();
 
     expect({
-      change: store.changeToken > changeBefore,
-      sync: store.syncToken > syncBefore,
+      change: rootStore.settingsMutations.changeToken > changeBefore,
+      sync: rootStore.settingsMutations.syncToken > syncBefore,
     }).toEqual({
       change: expected.token === 'change',
       sync: expected.token === 'sync',

@@ -43,13 +43,13 @@ export const PANEL_WIDGET_IDS = ['pit-service'];
 const { SwitchRow } = panelRows<PitServiceWidgetSettings>();
 
 export const PitServiceSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('pit-service');
   const { t } = useTranslation('widgets');
   const units = useUnitsStore();
 
   const settings =
-    widgetSettings.getSettings<PitServiceWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<PitServiceWidgetSettings>(panelWidgetId);
 
   // Both distances are stored in meters and shown in whatever the app is set
   // to: a driver on imperial reads and drags feet, and the file still holds the
@@ -64,7 +64,7 @@ export const PitServiceSettingsPanel = observer(() => {
   });
 
   const update = (partial: Partial<PitServiceWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

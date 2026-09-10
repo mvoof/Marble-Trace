@@ -33,7 +33,7 @@ const layoutWith = (
   createdAt: 0,
   monitors: [MONITOR],
   backgroundImages: {},
-  widgets: root.widgetSettings.allWidgets.map((widget) => ({
+  widgets: root.liveWidgets.allWidgets.map((widget) => ({
     ...widget,
     userSettings: {
       ...widget.userSettings,
@@ -49,7 +49,7 @@ describe('isWidgetOnScreen', () => {
     root = new RootStore({ skipInit: true });
 
     runInAction(() => {
-      root.widgetSettings.setLayouts(
+      root.liveWidgets.setLayouts(
         [
           layoutWith(root, 'race', ['pit-service', 'standings']),
           layoutWith(root, 'quali', ['standings']),
@@ -60,17 +60,17 @@ describe('isWidgetOnScreen', () => {
   });
 
   it('follows the layout the session auto-switch loaded', () => {
-    expect(root.widgetSettings.isWidgetOnScreen('pit-service')).toBe(true);
+    expect(root.liveWidgets.isWidgetOnScreen('pit-service')).toBe(true);
 
-    runInAction(() => root.widgetSettings.loadLayout('quali'));
+    runInAction(() => root.liveWidgets.loadLayout('quali'));
 
-    expect(root.widgetSettings.isWidgetOnScreen('pit-service')).toBe(false);
-    expect(root.widgetSettings.isWidgetOnScreen('standings')).toBe(true);
+    expect(root.liveWidgets.isWidgetOnScreen('pit-service')).toBe(false);
+    expect(root.liveWidgets.isWidgetOnScreen('standings')).toBe(true);
   });
 
   it('takes pit-service auto mode down with the layout switch', () => {
     runInAction(() => {
-      root.widgetSettings.updateUserSettings('pit-service', {
+      root.liveWidgets.updateUserSettings('pit-service', {
         autoFuel: true,
         autoTires: false,
       });
@@ -78,7 +78,7 @@ describe('isWidgetOnScreen', () => {
 
     expect(root.pitServiceWidget.auto.isAutoEnabled).toBe(true);
 
-    runInAction(() => root.widgetSettings.loadLayout('quali'));
+    runInAction(() => root.liveWidgets.loadLayout('quali'));
 
     expect(root.pitServiceWidget.auto.isAutoEnabled).toBe(false);
   });
@@ -86,27 +86,27 @@ describe('isWidgetOnScreen', () => {
   // Previewing a layout in the editor leaves the overlay on the previous one,
   // so runtime gating must not follow the preview.
   it('keeps following the overlay while the editor previews another layout', () => {
-    runInAction(() => root.widgetSettings.switchEditorLayout('quali'));
+    runInAction(() => root.layoutEditor.switchLayout('quali'));
 
-    expect(root.widgetSettings.isWidgetOnScreen('pit-service')).toBe(true);
+    expect(root.liveWidgets.isWidgetOnScreen('pit-service')).toBe(true);
   });
 
   it('follows the preview once it is actually activated', () => {
     runInAction(() => {
-      root.widgetSettings.switchEditorLayout('quali');
-      root.widgetSettings.activateEditorLayout();
+      root.layoutEditor.switchLayout('quali');
+      root.layoutEditor.activateLayout();
     });
 
-    expect(root.widgetSettings.isWidgetOnScreen('pit-service')).toBe(false);
+    expect(root.liveWidgets.isWidgetOnScreen('pit-service')).toBe(false);
   });
 
   it('does not lose the overlay state when previewing twice in a row', () => {
     runInAction(() => {
-      root.widgetSettings.switchEditorLayout('quali');
-      root.widgetSettings.switchEditorLayout('race');
-      root.widgetSettings.switchEditorLayout('quali');
+      root.layoutEditor.switchLayout('quali');
+      root.layoutEditor.switchLayout('race');
+      root.layoutEditor.switchLayout('quali');
     });
 
-    expect(root.widgetSettings.isWidgetOnScreen('pit-service')).toBe(true);
+    expect(root.liveWidgets.isWidgetOnScreen('pit-service')).toBe(true);
   });
 });

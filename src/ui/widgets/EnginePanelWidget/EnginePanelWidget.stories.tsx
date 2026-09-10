@@ -54,7 +54,7 @@ const meta: Meta<StoryArgs> = {
         dc_throttle_shape: args.dcThrottleShape,
       } as CarStatusFrame);
 
-      store.widgetSettings.updateUserSettings('engine-panel', {
+      store.liveWidgets.updateUserSettings('engine-panel', {
         showOilTemp: args.showOilTemp,
         showWaterTemp: args.showWaterTemp,
         showOilPress: args.showOilPress,

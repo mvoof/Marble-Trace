@@ -7,6 +7,7 @@ import {
   deriveWidgetDesignWidth,
 } from '@store/settings/layout-resize';
 import { availableWidgetIdsOf } from '@store/settings/widget-availability';
+import type { WidgetMap } from '@store/settings/widget-map';
 import type { RootStore } from '@store/root-store';
 import type {
   BaseUserSettings,
@@ -15,6 +16,8 @@ import type {
   WidgetUserSettings,
 } from '@/types/widget-settings';
 
+type WidgetDefaultsDeps = Pick<RootStore, 'sim'>;
+
 const FUEL_BAR_WIDTH_MIN = 5;
 const FUEL_BAR_WIDTH_MAX = 20;
 
@@ -22,12 +25,12 @@ const FUEL_BAR_WIDTH_MAX = 20;
  * The global widget catalog — the template edited on the Widgets page, before a
  * widget is ever placed in a layout.
  *
- * Deliberately independent of the live working copy in `WidgetSettingsStore`:
+ * Deliberately independent of the live working copy in `LiveWidgetsStore`:
  * editing a template never touches what the overlay is currently drawing, and
  * nothing here reaches the backend. A new layout copies these as its starting
  * widgets.
  */
-export class WidgetDefaultsStore {
+export class WidgetDefaultsStore implements WidgetMap {
   widgets = new Map<string, WidgetDefaultConfig>(
     DEFAULT_WIDGETS.map((widgetConfig) => [
       widgetConfig.id,
@@ -39,7 +42,7 @@ export class WidgetDefaultsStore {
   // to the live layout's changeToken.
   changeToken = 0;
 
-  constructor(private readonly root?: RootStore) {
+  constructor(private readonly root?: WidgetDefaultsDeps) {
     makeAutoObservable<WidgetDefaultsStore, 'root'>(
       this,
       { root: false },

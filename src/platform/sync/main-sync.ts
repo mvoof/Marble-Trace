@@ -1,3 +1,5 @@
+import { alignMonitorsToHardware } from '@store/settings/layout-gestures';
+import { layoutGestureStores } from '@store/root-store-context';
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
@@ -36,7 +38,8 @@ import {
 } from './pit-service-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { registerRemotePublishing } from './remote-publish';
-import { listMonitorBounds } from './overlay-resolution';
+import { listMonitorBounds, resolveMonitorByName } from './overlay-resolution';
+import { setUpFirstRun } from '@store/settings/first-run';
 import { watchMonitorArrangement } from './monitor-watch';
 import type { SessionContext } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
@@ -51,7 +54,7 @@ let mainSyncRefCount = 0;
 const pushActiveLayout = (root: RootStore) =>
   emitActiveLayoutToOverlays(
     root.layouts.liveLayout?.monitors ?? [],
-    root.widgetSettings.liveWidgets,
+    root.liveWidgets.liveWidgets,
     root.layouts.liveLayoutId
   );
 
@@ -111,7 +114,7 @@ const registerBroadcastReactions = (
 
 /**
  * Session-driven layout auto-switch. `fireImmediately`, so it must run after
- * hydration and after `ensureDefaultLayout` — otherwise it resolves the session
+ * hydration and after `setUpFirstRun` — otherwise it resolves the session
  * context against an empty layout list.
  */
 export const registerLayoutAutoSwitchReaction = (
@@ -150,7 +153,7 @@ export const registerLayoutAutoSwitchReaction = (
       // The screen follows the session whatever the editor is doing: while it
       // is open this moves the live layout only, leaving the one being edited
       // where the user put it.
-      root.widgetSettings.applySessionLayout(layoutId);
+      root.layoutEditor.applySessionLayout(layoutId);
     },
     { fireImmediately: true }
   );
@@ -240,7 +243,7 @@ const registerOverlayWindowReactions = (
     }
   ),
   reaction(
-    () => root.widgetSettings.changeToken,
+    () => root.settingsMutations.changeToken,
     () => {
       void pushActiveLayout(root);
     },
@@ -263,7 +266,10 @@ const registerOverlayWindowReactions = (
     //
     // Nothing is committed into the active layout first: the edits were made on
     // the layout's own widgets, so the debounce delays only the write to disk.
-    () => [root.widgetSettings.changeToken, root.widgetSettings.syncToken],
+    () => [
+      root.settingsMutations.changeToken,
+      root.settingsMutations.syncToken,
+    ],
     () => {
       void onSave();
     },
@@ -365,12 +371,19 @@ export const initMainSync = async (root: RootStore) => {
       // gone by then, so nothing here can do it.
       void root.companionApps.launchOnStart();
 
-      root.widgetSettings.ensureDefaultLayout();
+      void setUpFirstRun({
+        layoutRecords: root.layouts,
+        widgetMap: root.liveWidgets,
+        resolvePrimaryMonitor: () => resolveMonitorByName(null),
+      });
 
       // Migrated layouts carry placeholder monitor positions — persisted
       // settings never recorded where the screens actually are. Nothing may
       // render or open a window before this lands them on the real desktop.
-      root.widgetSettings.alignMonitorsToHardware(await listMonitorBounds());
+      alignMonitorsToHardware(
+        layoutGestureStores(root),
+        await listMonitorBounds()
+      );
 
       const onSave = createSaveHandle(root, store);
 
@@ -406,7 +419,7 @@ export const initMainSync = async (root: RootStore) => {
           // An overlay window only ever speaks for the widgets on its own
           // screen; taking the rest of its list would overwrite the other
           // monitors with a stale copy.
-          root.widgetSettings.applySettingsSyncForMonitor(
+          root.liveWidgets.applySettingsSyncForMonitor(
             e.payload.monitorName,
             e.payload.widgets
           );

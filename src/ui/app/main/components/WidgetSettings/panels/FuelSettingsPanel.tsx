@@ -35,15 +35,14 @@ export const PANEL_WIDGET_IDS = ['fuel'];
 const { SwitchRow } = panelRows<FuelWidgetSettings>();
 
 export const FuelSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('fuel');
   const { t } = useTranslation('widgets');
 
-  const settings =
-    widgetSettings.getSettings<FuelWidgetSettings>(panelWidgetId);
+  const settings = liveWidgets.getSettings<FuelWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<FuelWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

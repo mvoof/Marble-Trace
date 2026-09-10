@@ -73,7 +73,7 @@ export const WithSectors: Story = {
         entries: DRIVER_ENTRIES.slice(0, 10),
         playerCarIdx: DRIVER_ENTRIES.find((d) => d.isPlayer)?.carIdx ?? 0,
       });
-      store.widgetSettings.updateUserSettings('track-map', {
+      store.liveWidgets.updateUserSettings('track-map', {
         showSectorsOnMap: true,
         showSectorTimes: true,
       });
@@ -91,7 +91,7 @@ export const ClassShapes: Story = {
         entries: DRIVER_ENTRIES,
         playerCarIdx: DRIVER_ENTRIES.find((d) => d.isPlayer)?.carIdx ?? 0,
       });
-      store.widgetSettings.updateUserSettings('track-map', {
+      store.liveWidgets.updateUserSettings('track-map', {
         classShapes: true,
       });
     }),
@@ -178,7 +178,7 @@ const withIncidents = (flagZoneStyle: 'filled' | 'outline') =>
         },
       ],
     });
-    store.widgetSettings.updateUserSettings('track-map', {
+    store.liveWidgets.updateUserSettings('track-map', {
       showIncidentZones: true,
       blinkIncidentZones: true,
       flagZoneStyle,
