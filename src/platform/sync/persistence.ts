@@ -212,7 +212,7 @@ export const hydrateStores = (
     }
 
     if (loadedSettings.sessionLayouts) {
-      root.liveWidgets.setSessionLayouts(loadedSettings.sessionLayouts);
+      root.layouts.setSessionLayouts(loadedSettings.sessionLayouts);
     }
 
     root.bindings.applyBindings(loadedSettings.bindings);

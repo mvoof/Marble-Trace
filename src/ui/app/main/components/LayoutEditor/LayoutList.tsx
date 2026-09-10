@@ -18,6 +18,7 @@ import {
   useAppSettingsStore,
   useRemoteDevicesStore,
   useSimStore,
+  useLayoutGestureStores,
 } from '@store/root-store-context';
 import { isRemoteMonitor } from '@utils/remote-screen';
 import {
@@ -31,6 +32,11 @@ import {
 } from '@store/settings/virtual-desktop';
 import type { SavedLayout, SessionContext } from '@/types/widget-settings';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
+import {
+  createLayout,
+  deleteLayout,
+  removeMonitor,
+} from '@store/settings/layout-gestures';
 import styles from './LayoutList.module.scss';
 
 interface LayoutPreviewProps {
@@ -160,6 +166,7 @@ const SESSION_LABEL_KEYS: Record<SessionContext, string> = {
 export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const liveWidgets = useLiveWidgetsStore();
   const layouts = useLayoutsStore();
+  const gestureStores = useLayoutGestureStores();
   const remoteDevices = useRemoteDevicesStore();
   const appSettings = useAppSettingsStore();
   const simStore = useSimStore();
@@ -222,7 +229,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
       return;
     }
 
-    layouts.createLayout(name);
+    void createLayout(gestureStores, name);
     setSelectedId(layouts.editingLayoutId);
     setNewLayoutName('');
     setIsCreateModalOpen(false);
@@ -261,7 +268,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
         void deleteBackgroundImage(image);
       }
 
-      layouts.deleteLayout(selectedId);
+      deleteLayout(gestureStores, selectedId);
     }
   };
 
@@ -510,7 +517,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                           checked={isAssigned}
                           onChange={(e) => {
                             const checked = e.target.checked;
-                            liveWidgets.setSessionLayout(
+                            layouts.setSessionLayout(
                               context,
                               checked ? selectedLayout.id : null
                             );
@@ -591,7 +598,8 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                             okButtonProps={{ danger: true }}
                             cancelText={t('layoutEditor.cancel')}
                             onConfirm={() =>
-                              layouts.removeMonitor(
+                              removeMonitor(
+                                gestureStores,
                                 selectedLayout.id,
                                 monitorName
                               )

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { RootStore } from '../root-store';
 import type { CapabilitiesPayload } from '@/types/bindings';
+import { deleteLayout } from './layout-gestures';
 import type { LayoutsStore } from './layouts.store';
 import type { LayoutEditorStore } from './layout-editor.store';
 import type { LiveWidgetsStore } from './live-widgets.store';
@@ -907,12 +908,13 @@ describe('every settings write leaves its mark', () => {
     // Layout records.
     {
       name: 'setSessionLayout',
-      run: (store) => store.setSessionLayout('Race', 'layout-race'),
+      run: (_store, layouts) => layouts.setSessionLayout('Race', 'layout-race'),
       expected: { token: 'change', touched: 'every' },
     },
     {
       name: 'setSessionLayouts',
-      run: (store) => store.setSessionLayouts({ Race: 'layout-race' }),
+      run: (_store, layouts) =>
+        layouts.setSessionLayouts({ Race: 'layout-race' }),
       expected: { token: 'change', touched: 'every' },
     },
     // `createLayout` is deliberately absent: it marks synchronously and then
@@ -961,7 +963,8 @@ describe('every settings write leaves its mark', () => {
       name: 'deleteLayout',
       setup: (store, layouts) =>
         store.setLayouts([...layouts.layouts, SECOND_LAYOUT]),
-      run: (_store, layouts) => layouts.deleteLayout(SECOND_LAYOUT.id),
+      run: (store, layouts) =>
+        deleteLayout({ records: layouts, widgetMap: store }, SECOND_LAYOUT.id),
       expected: { token: 'change', touched: 'every' },
     },
 

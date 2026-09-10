@@ -1,3 +1,5 @@
+import { alignMonitorsToHardware } from '@store/settings/layout-gestures';
+import { layoutGestureStores } from '@store/root-store-context';
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
@@ -151,7 +153,7 @@ export const registerLayoutAutoSwitchReaction = (
       // The screen follows the session whatever the editor is doing: while it
       // is open this moves the live layout only, leaving the one being edited
       // where the user put it.
-      root.liveWidgets.applySessionLayout(layoutId);
+      root.layoutEditor.applySessionLayout(layoutId);
     },
     { fireImmediately: true }
   );
@@ -378,7 +380,10 @@ export const initMainSync = async (root: RootStore) => {
       // Migrated layouts carry placeholder monitor positions — persisted
       // settings never recorded where the screens actually are. Nothing may
       // render or open a window before this lands them on the real desktop.
-      root.layouts.alignMonitorsToHardware(await listMonitorBounds());
+      alignMonitorsToHardware(
+        layoutGestureStores(root),
+        await listMonitorBounds()
+      );
 
       const onSave = createSaveHandle(root, store);
 

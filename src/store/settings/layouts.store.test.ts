@@ -4,10 +4,8 @@ import { RootStore } from '../root-store';
 import { buildSettings } from '@platform/sync/persistence';
 
 import { LayoutsStore } from './layouts.store';
-import type {
-  LayoutEditorPin,
-  LayoutLifecycleWidgetMap,
-} from './layouts.store';
+import { deleteLayout } from './layout-gestures';
+import { layoutGestureStores } from '../root-store-context';
 import { SettingsMutationLog } from './mutation-log';
 import type { LayoutMonitor, SavedLayout } from '@/types/widget-settings';
 
@@ -31,28 +29,12 @@ const layoutNamed = (id: string, monitors: LayoutMonitor[]): SavedLayout => ({
 
 /**
  * A store and the log its writes mark themselves in — the whole of what a
- * layout record needs. The editing session and the live widget map are stood
- * in for: the record writes exercised here reach neither.
+ * layout record needs. Nothing is stood in for, because the records reach
+ * nothing: what has to touch the live map is a gesture, not a record write.
  */
 const freshStore = () => {
   const mutations = new SettingsMutationLog();
-  const pin: LayoutEditorPin = {
-    pinnedLiveLayoutId: null,
-    setPinnedLiveLayoutId(id) {
-      pin.pinnedLiveLayoutId = id;
-    },
-  };
-  const widgetMap: LayoutLifecycleWidgetMap = {
-    loadLayout: () => undefined,
-    setWidgets: () => undefined,
-    setOverlayResolution: () => undefined,
-    starterWidgets: () => [],
-  };
-  const store = new LayoutsStore(
-    mutations,
-    () => pin,
-    () => widgetMap
-  );
+  const store = new LayoutsStore(mutations);
 
   store.setLayouts([layoutNamed('layout-race', [DISPLAY])], 'layout-race');
   mutations.drain();
@@ -280,7 +262,7 @@ describe('deleting the layout that is on screen', () => {
   it("leaves the fallback layout's own widgets on screen", () => {
     const store = rootStore.liveWidgets;
 
-    rootStore.layouts.deleteLayout('layout-race');
+    deleteLayout(layoutGestureStores(rootStore), 'layout-race');
 
     expect(rootStore.layouts.editingLayoutId).toBe('layout-garage');
     expect(store.getWidget('fuel')!.userSettings.x).toBe(GARAGE_FUEL_X);
@@ -289,7 +271,7 @@ describe('deleting the layout that is on screen', () => {
   it('marks the whole widget map rather than a patch', () => {
     const store = rootStore.liveWidgets;
 
-    rootStore.layouts.deleteLayout('layout-race');
+    deleteLayout(layoutGestureStores(rootStore), 'layout-race');
 
     const drained = store.drainTouchedWidgets();
 
@@ -298,7 +280,7 @@ describe('deleting the layout that is on screen', () => {
   });
 
   it("persists the fallback's widgets, not the deleted layout's", () => {
-    rootStore.layouts.deleteLayout('layout-race');
+    deleteLayout(layoutGestureStores(rootStore), 'layout-race');
 
     const persisted = buildSettings(rootStore);
 
@@ -315,9 +297,11 @@ describe('deleting the layout that is on screen', () => {
   });
 
   it('leaves nothing being edited when the last layout goes', () => {
-    rootStore.layouts.deleteLayout('layout-garage');
+    deleteLayout(layoutGestureStores(rootStore), 'layout-garage');
 
-    expect(() => rootStore.layouts.deleteLayout('layout-race')).not.toThrow();
+    expect(() =>
+      deleteLayout(layoutGestureStores(rootStore), 'layout-race')
+    ).not.toThrow();
     expect(rootStore.layouts.layouts).toEqual([]);
     expect(rootStore.layouts.editingLayoutId).toBeNull();
   });
@@ -326,7 +310,7 @@ describe('deleting the layout that is on screen', () => {
     const store = rootStore.liveWidgets;
     const before = fuelPositionOf('layout-race');
 
-    rootStore.layouts.deleteLayout('layout-garage');
+    deleteLayout(layoutGestureStores(rootStore), 'layout-garage');
 
     expect(rootStore.layouts.editingLayoutId).toBe('layout-race');
     expect(store.getWidget('fuel')!.userSettings.x).toBe(RACE_FUEL_X);
@@ -339,11 +323,11 @@ describe('deleting the layout that is on screen', () => {
     rootStore.layoutEditor.setOpen(true);
     rootStore.layoutEditor.switchLayout('layout-garage');
 
-    expect(rootStore.layoutEditor.pinnedLiveLayoutId).toBe('layout-race');
+    expect(rootStore.layouts.pinnedLiveLayoutId).toBe('layout-race');
 
-    rootStore.layouts.deleteLayout('layout-race');
+    deleteLayout(layoutGestureStores(rootStore), 'layout-race');
 
-    expect(rootStore.layoutEditor.pinnedLiveLayoutId).toBeNull();
+    expect(rootStore.layouts.pinnedLiveLayoutId).toBeNull();
     expect(rootStore.layouts.liveLayoutId).toBe('layout-garage');
   });
 });

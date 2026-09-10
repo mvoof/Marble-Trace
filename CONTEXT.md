@@ -31,10 +31,18 @@ new layout is seeded from — what is shipped. A caller holding either one reads
 and edits widgets the same way; which one it holds decides whether the edit is
 to what is racing or to what the next layout will start from.
 
-**Editing session** — which layout the settings window is looking at, and, while
-the editor is open, which layout is pinned live so the driver's screen keeps
-auto-switching underneath the one being edited. It exists only while the editor
-is open, which is why it is neither a record nor a map.
+**Editing session** — `LayoutEditorStore` (`root.layoutEditor`): whether the
+layout editor is on screen. While it is, the layout under the cursor and the
+layout on the overlay part company, so the driver's screen keeps auto-switching
+underneath the one being edited. The session moves that pin; the pin itself is a
+record-side pointer (`root.layouts.liveLayoutId`), because callers with no editor
+read it too.
+
+**Gesture** — a change to the layout records that also has to reach the live
+widget map: creating or deleting a layout, dropping a screen, realigning the
+screens to the hardware. Gestures are functions in `layout-gestures.ts` holding
+both sides, never members of either store — that is what keeps the dependency
+between records and map pointing one way.
 
 **Mutation log** — `SettingsMutationLog`: what changed in the settings since
 anyone last looked. Every settings write marks itself in it, and both marks are

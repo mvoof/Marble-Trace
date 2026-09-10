@@ -2,7 +2,6 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import { cloneBackgroundImage } from '@store/settings/layout-background';
 import {
-  fullScreenMonitor,
   monitorForWidget,
   monitorsBounds,
   placeWidgetOnMonitor,
@@ -19,38 +18,13 @@ import {
   slugFromName,
   uniqueSlug,
 } from '@utils/remote-screen';
-import { resolveMonitorByName } from '@platform/sync/overlay-resolution';
 import type { SettingsMutationLog } from '@store/settings/mutation-log';
 import type {
   LayoutMonitor,
-  LayoutResolution,
   SavedLayout,
   SessionContext,
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
-
-/**
- * What the record lifecycle needs from the editing session: the pin that says
- * which layout the overlay is showing while the editor holds another one.
- */
-export interface LayoutEditorPin {
-  pinnedLiveLayoutId: string | null;
-  setPinnedLiveLayoutId(id: string | null): void;
-}
-
-/**
- * What the records need from the live widget map. Creating a layout seeds it
- * with starter widgets, deleting the active one hands the fallback layout's
- * widgets over, and a screen that was removed or realigned leaves the widgets
- * standing on it somewhere else. All of those are changes to what is on
- * screen, so they are asked of the map rather than performed here.
- */
-export interface LayoutLifecycleWidgetMap {
-  loadLayout(id: string, options?: { notify?: boolean }): void;
-  setWidgets(widgets: WidgetDefaultConfig[]): void;
-  setOverlayResolution(resolution: LayoutResolution): void;
-  starterWidgets(clean?: boolean): WidgetDefaultConfig[];
-}
 
 const DEFAULT_LAYOUT_NAME = 'Default';
 
@@ -87,12 +61,13 @@ const parkedBounds = (
  * monitor with no display behind it, so it is managed here beside the
  * monitors rather than in the widget map.
  *
- * Where a record change also has to reach what is on screen, the live widget
- * map is asked for it through `LayoutLifecycleWidgetMap`, a declared handful
- * of gestures rather than the whole store. That is for a widget *list* the
- * record rebuilt; a screen that moves carries its widgets by writing to the
- * record's own widget objects, which the map projects rather than copies —
- * see `carryWidgets`.
+ * Nothing here reaches out to the live widget map. A record change that also
+ * has to reach what is on screen is a *gesture*, and gestures are functions in
+ * `layout-gestures.ts` that hold both sides — which is what keeps the
+ * dependency between records and map pointing one way. A screen that moves
+ * needs no gesture at all: it carries its widgets by writing to the record's
+ * own widget objects, which the map projects rather than copies — see
+ * `carryWidgets`.
  */
 export class LayoutsStore {
   layouts: SavedLayout[] = [];
@@ -111,14 +86,10 @@ export class LayoutsStore {
    * records it changes are what the widgets stand on, and after one of them
    * moves no patch describes where they are.
    */
-  constructor(
-    private readonly mutations: SettingsMutationLog,
-    private readonly editorPin: () => LayoutEditorPin,
-    private readonly liveWidgets: () => LayoutLifecycleWidgetMap
-  ) {
-    makeAutoObservable<LayoutsStore, 'mutations' | 'editorPin' | 'liveWidgets'>(
+  constructor(private readonly mutations: SettingsMutationLog) {
+    makeAutoObservable<LayoutsStore, 'mutations'>(
       this,
-      { mutations: false, editorPin: false, liveWidgets: false },
+      { mutations: false },
       { autoBind: true }
     );
   }
@@ -133,12 +104,25 @@ export class LayoutsStore {
   }
 
   /**
-   * The pinned layout while the editor holds one — see `LayoutEditorStore`,
-   * which owns the pin because it exists only while the editor is open. Read
-   * through a getter so the records depend on nothing but the value.
+   * The layout the overlay is rendering while the editor holds another one, or
+   * null whenever the two are the same.
+   *
+   * It lives here rather than in `LayoutEditorStore` because it is the same
+   * kind of value as `editingLayoutId` — a pointer into the record set,
+   * answering "which layout is the application looking at". The editor only
+   * *moves* it, and it is read by callers that have no editor at all
+   * (persistence, remote publishing, the overlay window watcher).
    */
+  pinnedLiveLayoutId: string | null = null;
+
+  setPinnedLiveLayoutId(id: string | null) {
+    this.pinnedLiveLayoutId = id;
+    this.mutations.recordEveryWidget();
+  }
+
+  /** What the overlay renders: the pinned layout while there is one, else the edited one. */
   get liveLayoutId(): string | null {
-    return this.editorPin().pinnedLiveLayoutId ?? this.editingLayoutId;
+    return this.pinnedLiveLayoutId ?? this.editingLayoutId;
   }
 
   byId(id: string): SavedLayout | undefined {
@@ -235,68 +219,32 @@ export class LayoutsStore {
   }
 
   /**
-   * The create gesture: a new layout, made the one being edited, seeded with
-   * starter widgets and anchored to the primary monitor once the hardware
-   * answers.
+   * Anchors a layout that has none to the screen the hardware just named, and
+   * answers whether it took: a layout that gained a monitor meanwhile is left
+   * alone, and so is one that has been deleted.
    */
-  createLayout(name: string) {
-    const id = this.addLayout(name);
+  anchorToMonitor(id: string, monitor: LayoutMonitor): boolean {
+    const targetLayout = this.byId(id);
 
-    this.setEditingLayoutId(id);
-    this.liveWidgets().setWidgets(this.liveWidgets().starterWidgets(true));
-    this.mutations.recordEveryWidget();
+    if (!targetLayout || targetLayout.monitors.length > 0) return false;
 
-    void resolveMonitorByName(null).then((monitor) => {
-      if (!monitor) return;
+    this.setMonitors(id, [monitor]);
 
-      runInAction(() => {
-        const targetLayout = this.byId(id);
-
-        if (!targetLayout || targetLayout.monitors.length > 0) return;
-
-        this.setMonitors(id, [fullScreenMonitor(monitor)]);
-        targetLayout.widgets = this.liveWidgets().starterWidgets(true);
-
-        // The monitor resolved asynchronously; the driver may have switched
-        // layouts while it did, and the screen then belongs to that one.
-        if (this.editingLayoutId === id) {
-          this.liveWidgets().setOverlayResolution(monitor.resolution);
-        }
-
-        this.mutations.recordEveryWidget();
-      });
-    });
+    return true;
   }
 
   /**
-   * The delete gesture: drops the record and, when it was the active one,
-   * lands on whatever layout remains with that layout's own widgets.
+   * Drops the record, releasing the pin first when it names this layout — a
+   * pin to a deleted record would leave the overlay speaking for a layout that
+   * no longer exists. What becomes active afterwards is the caller's, so that
+   * the fallback's widgets can be loaded before the mutation token moves.
    */
-  deleteLayout(id: string) {
-    const wasActive = this.editingLayoutId === id;
-
-    // A pin to the layout being deleted would leave the overlay speaking for a
-    // record that no longer exists.
-    if (this.editorPin().pinnedLiveLayoutId === id) {
-      this.editorPin().setPinnedLiveLayoutId(null);
+  detachLayout(id: string) {
+    if (this.pinnedLiveLayoutId === id) {
+      this.setPinnedLiveLayoutId(null);
     }
 
     this.removeLayout(id);
-
-    if (!wasActive) return;
-
-    const fallbackId = this.layouts[0]?.id ?? null;
-
-    // Load the fallback's saved widgets into the live map BEFORE the mutation
-    // token moves, or the commit reaction writes the deleted layout's widgets
-    // over the fallback.
-    if (fallbackId) {
-      this.liveWidgets().loadLayout(fallbackId);
-
-      return;
-    }
-
-    this.setEditingLayoutId(null);
   }
 
   /** Drops the record. The caller decides what becomes active afterwards. */
@@ -430,6 +378,9 @@ export class LayoutsStore {
    * sync, and the widgets that lived on it move to the first remaining monitor
    * rather than being deleted — losing them to a mis-click would be
    * unrecoverable.
+   *
+   * The widget list is rebuilt here, so the caller installs it: reach this
+   * through the `removeMonitor` gesture rather than calling it directly.
    */
   removeMonitor(layoutId: string, monitorName: string) {
     const layout = this.byId(layoutId);
@@ -461,12 +412,6 @@ export class LayoutsStore {
 
     delete layout.backgroundImages?.[monitorName];
 
-    // The widget list was rebuilt, so the map's projection of it has to be
-    // installed again — the one thread that kept this gesture on the map side.
-    if (layout.id === this.editingLayoutId) {
-      this.liveWidgets().setWidgets(layout.widgets);
-    }
-
     this.mutations.recordEveryWidget();
   }
 
@@ -479,6 +424,9 @@ export class LayoutsStore {
    * because the persisted settings never recorded desktop positions. This is
    * the step that turns those placeholders into real coordinates — until it
    * runs, a layout's widgets are in the right order but the wrong place.
+   *
+   * Rebuilds the active layout's widget list, so the caller installs it: reach
+   * this through the `alignMonitorsToHardware` gesture.
    */
   alignMonitorsToHardware(attached: LayoutMonitor[]) {
     const byName = new Map(
@@ -538,12 +486,6 @@ export class LayoutsStore {
 
         return placeWidgetOnMonitor(widget, from, to);
       });
-    }
-
-    const editingLayout = this.editingLayout;
-
-    if (editingLayout) {
-      this.liveWidgets().setWidgets(editingLayout.widgets);
     }
 
     this.mutations.recordEveryWidget();

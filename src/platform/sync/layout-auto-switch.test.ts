@@ -59,7 +59,7 @@ describe('session layout auto-switch', () => {
       [layout('layout-garage'), layout('layout-practice')],
       'layout-garage'
     );
-    root.liveWidgets.setSessionLayouts({
+    root.layouts.setSessionLayouts({
       Practice: 'layout-practice',
       Garage: 'layout-garage',
     });

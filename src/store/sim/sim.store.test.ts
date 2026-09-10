@@ -82,7 +82,7 @@ describe('SimStore active-events mask', () => {
 
     // Live layout switches to B without touching what the editor (still on A)
     // is showing — this is exactly what session auto-switch does mid-edit.
-    root.layoutEditor.setPinnedLiveLayoutId('layout-b');
+    root.layouts.setPinnedLiveLayoutId('layout-b');
 
     expect(setActiveEventsSilent).toHaveBeenCalled();
     const lastMask =

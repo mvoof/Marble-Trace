@@ -98,23 +98,17 @@ export class RootStore {
     this.backendComputed = new BackendComputedStore();
     this.widgetDefaults = new WidgetDefaultsStore(this);
     this.settingsMutations = new SettingsMutationLog();
-    this.layouts = new LayoutsStore(
-      this.settingsMutations,
-      () => this.layoutEditor,
-      () => this.liveWidgets
-    );
-    this.layoutEditor = new LayoutEditorStore(
-      this.settingsMutations,
-      this.layouts,
-      () => this.liveWidgets
-    );
+    // Built in dependency order, so none of the three needs a deferred
+    // reference to another: the records know nothing, the live map projects
+    // the records, the editing session drives both.
+    this.layouts = new LayoutsStore(this.settingsMutations);
     this.liveWidgets = new LiveWidgetsStore(
       this.settingsMutations,
       this.layouts,
-      this.layoutEditor,
       this.widgetDefaults,
       () => this.sim.capabilities
     );
+    this.layoutEditor = new LayoutEditorStore(this.layouts, this.liveWidgets);
     this.appSettings = new AppSettingsStore();
     this.companionApps = new CompanionAppsStore(this);
     this.twitchAuth = new TwitchAuthStore(this);

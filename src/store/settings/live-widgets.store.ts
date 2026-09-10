@@ -11,7 +11,6 @@ import {
   setPitWarningLapsSilent,
 } from '@platform/services/settings.service';
 import type { LayoutsStore } from '@store/settings/layouts.store';
-import type { LayoutEditorStore } from '@store/settings/layout-editor.store';
 import type { SettingsMutationLog } from '@store/settings/mutation-log';
 import { availableWidgetIdsOf } from '@store/settings/widget-availability';
 import {
@@ -33,9 +32,7 @@ import type {
   LapDeltaReference,
   WidgetSpecificSettings,
   WidgetUserSettings,
-  SessionContext,
 } from '@/types/widget-settings';
-import { emitLayoutActivated } from '@platform/services/events.service';
 import { DEFAULT_LAYOUT_RESOLUTION } from '@store/settings/layout-resolution';
 import {
   monitorForWidget,
@@ -151,7 +148,6 @@ export class LiveWidgetsStore implements WidgetMap {
   constructor(
     private readonly mutations: SettingsMutationLog,
     layoutRecords: LayoutsStore,
-    private readonly layoutEditor: LayoutEditorStore,
     private readonly widgetDefaults: WidgetDefaultsStore,
     /**
      * The sim's capabilities, read through a getter rather than held: the sim
@@ -165,13 +161,12 @@ export class LiveWidgetsStore implements WidgetMap {
 
     makeAutoObservable<
       LiveWidgetsStore,
-      'layoutToastTimer' | 'mutations' | 'layoutEditor' | 'capabilitiesOf'
+      'layoutToastTimer' | 'mutations' | 'capabilitiesOf'
     >(
       this,
       {
         layoutToastTimer: false,
         mutations: false,
-        layoutEditor: false,
         capabilitiesOf: false,
       },
       {
@@ -306,14 +301,6 @@ export class LiveWidgetsStore implements WidgetMap {
 
       this.updateUserSettings(widget.id, { reference: order[nextIdx] });
     }
-  }
-
-  setSessionLayout(context: SessionContext, layoutId: string | null) {
-    this.layoutRecords.setSessionLayout(context, layoutId);
-  }
-
-  setSessionLayouts(layouts: Partial<Record<SessionContext, string | null>>) {
-    this.layoutRecords.setSessionLayouts(layouts);
   }
 
   pushUndo() {
@@ -1054,42 +1041,14 @@ export class LiveWidgetsStore implements WidgetMap {
     this.bumpMutation();
   }
 
-  /**
-   * The layout the session asks for, applied wherever it belongs: to the screen
-   * while the editor is open, and to both otherwise. Answers false when there
-   * was nothing to change.
-   */
-  applySessionLayout(id: string): boolean {
-    if (!this.layoutRecords.byId(id)) return false;
-
-    if (this.layoutEditor.open) {
-      if (this.layoutRecords.liveLayoutId === id) return false;
-
-      this.layoutEditor.setPinnedLiveLayoutId(id);
-
-      // The screen changed, so the screen says so — the editor holding a
-      // different layout is exactly when the driver has least reason to
-      // expect it and most reason to be told.
-      void emitLayoutActivated(this.layoutRecords.byId(id)?.name ?? '');
-
-      return true;
-    }
-
-    if (this.layoutRecords.editingLayoutId === id) return false;
-
-    this.loadLayout(id, { notify: true });
-
-    return true;
-  }
-
-  loadLayout(id: string, options?: { notify?: boolean }) {
+  loadLayout(id: string) {
     const layout = this.layoutRecords.byId(id);
 
     if (!layout) return;
 
     // Loading is the unqualified version of the switch: this layout becomes
     // both the one being edited and the one on screen.
-    this.layoutEditor.setPinnedLiveLayoutId(null);
+    this.layoutRecords.setPinnedLiveLayoutId(null);
     this.layoutRecords.setEditingLayoutId(id);
 
     if (layout.monitors.length > 0) {
@@ -1102,10 +1061,6 @@ export class LiveWidgetsStore implements WidgetMap {
     }
 
     this.bumpMutation();
-
-    if (options?.notify) {
-      void emitLayoutActivated(layout.name);
-    }
   }
 
   updateLayout(id: string) {

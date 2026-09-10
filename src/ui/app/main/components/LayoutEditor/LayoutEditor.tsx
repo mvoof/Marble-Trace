@@ -38,6 +38,7 @@ import {
   useLayoutsStore,
   useLayoutEditorStore,
   useLiveWidgetsStore,
+  useLayoutGestureStores,
 } from '@store/root-store-context';
 import {
   PREVIEW_SCENARIOS,
@@ -56,6 +57,11 @@ import { monitorForWidget } from '@store/settings/virtual-desktop';
 import { useToolbarBottom } from './use-toolbar-bottom';
 import { WidgetInspector } from './WidgetInspector';
 import type { SnapPosition } from './snap-position';
+import {
+  createLayout,
+  deleteLayout,
+  removeMonitor,
+} from '@store/settings/layout-gestures';
 import styles from './LayoutEditor.module.scss';
 
 const SNAP_MARGIN = 8;
@@ -86,6 +92,7 @@ export const LayoutEditor = observer(
   }) => {
     const liveWidgets = useLiveWidgetsStore();
     const layouts = useLayoutsStore();
+    const gestureStores = useLayoutGestureStores();
     const layoutEditor = useLayoutEditorStore();
     const appSettings = useAppSettingsStore();
     const { t } = useTranslation('main-app');
@@ -125,20 +132,27 @@ export const LayoutEditor = observer(
     // Closing hands the screen's layout back as the one being edited; the
     // session auto-switch never stands down, so the overlay has been following
     // the session the whole time the editor was open.
+    //
+    // The cleanup is registered only on the branch that opened the session,
+    // and that is what makes this safe to re-read. React tears the previous
+    // effect down before running the new one, so a cleanup that closed
+    // unconditionally would close the session the click handler had just
+    // opened — handing the editor back the layout that was live instead of the
+    // one that was clicked. Leaving on the other branch there is nothing to
+    // tear down, and the close below has already run.
     useEffect(() => {
-      layoutEditor.setOpen(activeMode === 'editor');
-    }, [activeMode, layoutEditor]);
+      if (activeMode !== 'editor') {
+        layoutEditor.setOpen(false);
 
-    // Unmount only. Kept apart from the mode effect on purpose: with the mode
-    // in its deps, React tears the previous effect down before running the new
-    // one, and a cleanup that closed the session would close the one the click
-    // handler just opened — handing the editor back the layout that was live
-    // instead of the one that was clicked.
-    useEffect(() => {
+        return;
+      }
+
+      layoutEditor.setOpen(true);
+
       return () => {
         layoutEditor.setOpen(false);
       };
-    }, [layoutEditor]);
+    }, [activeMode, layoutEditor]);
 
     const showGrid = appSettings.appSettings.editorShowGrid;
     const snapToGrid = appSettings.appSettings.editorSnapToGrid;
@@ -280,7 +294,7 @@ export const LayoutEditor = observer(
         void deleteBackgroundImage(image);
       }
 
-      layouts.deleteLayout(activeId);
+      deleteLayout(gestureStores, activeId);
     };
 
     const layoutOptions = layouts.layouts.map((layout) => ({
@@ -332,7 +346,7 @@ export const LayoutEditor = observer(
     const handleRemoveMonitor = (monitorName: string) => {
       if (!activeId) return;
 
-      layouts.removeMonitor(activeId, monitorName);
+      removeMonitor(gestureStores, activeId, monitorName);
 
       if (focusedMonitorName === monitorName) {
         setFocusedMonitorName(null);
@@ -439,7 +453,7 @@ export const LayoutEditor = observer(
         return;
       }
 
-      layouts.createLayout(trimmed);
+      void createLayout(gestureStores, trimmed);
       setNewName('');
       setIsCreating(false);
     };

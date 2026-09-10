@@ -1,5 +1,7 @@
 import type { RootStore } from '@store/root-store';
 import type { LayoutMonitor } from '@/types/widget-settings';
+import { alignMonitorsToHardware } from '@store/settings/layout-gestures';
+import { layoutGestureStores } from '@store/root-store-context';
 import { listMonitorBounds } from './overlay-resolution';
 import { syncOverlayWindows } from './overlay-windows';
 
@@ -46,7 +48,7 @@ export const watchMonitorArrangement = (
 
       // Widgets move with the screen they sit on, then the overlay windows
       // follow the layout onto their new positions.
-      root.layouts.alignMonitorsToHardware(monitors);
+      alignMonitorsToHardware(layoutGestureStores(root), monitors);
 
       await syncOverlayWindows(root);
 

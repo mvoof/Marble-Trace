@@ -1,7 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 
+import { emitLayoutActivated } from '@platform/services/events.service';
+
 import type { LayoutsStore } from '@store/settings/layouts.store';
-import type { SettingsMutationLog } from '@store/settings/mutation-log';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 
 /**
@@ -10,18 +11,18 @@ import type { WidgetDefaultConfig } from '@/types/widget-settings';
  * store so the dependency says what it is used for.
  */
 export interface EditorWidgetMap {
-  loadLayout(id: string, options?: { notify?: boolean }): void;
+  loadLayout(id: string): void;
   setWidgets(widgets: WidgetDefaultConfig[]): void;
 }
 
 /**
  * The editing session: what exists only while the layout editor is on screen.
  *
- * Everything here is main-window state with no meaning once the editor closes,
- * which is exactly why it is not part of the layout records. The records answer
- * "which layout is the application looking at" whether or not an editor exists;
- * this store answers "the editor is open, and it is holding the live layout
- * still".
+ * `open` is the whole of its state. The pin it moves — which layout the
+ * overlay renders while the editor holds another — belongs to the records,
+ * because it is a pointer into the record set that callers with no editor read
+ * too. This store is the last one built, and it depends on the other two
+ * rather than either depending on it.
  */
 export class LayoutEditorStore {
   /**
@@ -36,33 +37,13 @@ export class LayoutEditorStore {
    */
   open = false;
 
-  /**
-   * The layout the overlay is rendering, when that is not the one being edited.
-   *
-   * Null whenever the two are the same, which is every moment the layout editor
-   * is closed. While it is open the two part company on purpose: the editor
-   * keeps whatever layout the user opened, and the session auto-switch moves
-   * this one instead, so the screen the driver races on always matches the
-   * session even mid-edit.
-   */
-  pinnedLiveLayoutId: string | null = null;
-
-  /**
-   * The live map is reached through a getter, not a constructor argument: it
-   * depends on this store in turn, and deferring the lookup is what lets the
-   * root compose the two without either one being half-built.
-   */
   constructor(
-    private readonly mutations: SettingsMutationLog,
     private readonly layoutRecords: LayoutsStore,
-    private readonly liveWidgets: () => EditorWidgetMap
+    private readonly liveWidgets: EditorWidgetMap
   ) {
-    makeAutoObservable<
-      LayoutEditorStore,
-      'mutations' | 'layoutRecords' | 'liveWidgets'
-    >(
+    makeAutoObservable<LayoutEditorStore, 'layoutRecords' | 'liveWidgets'>(
       this,
-      { mutations: false, layoutRecords: false, liveWidgets: false },
+      { layoutRecords: false, liveWidgets: false },
       { autoBind: true }
     );
   }
@@ -70,14 +51,10 @@ export class LayoutEditorStore {
   /** The editor is showing a layout that is not the one on the overlay. */
   get previewMode(): boolean {
     return (
-      this.pinnedLiveLayoutId !== null &&
-      this.pinnedLiveLayoutId !== this.layoutRecords.editingLayoutId
+      this.layoutRecords.pinnedLiveLayoutId !== null &&
+      this.layoutRecords.pinnedLiveLayoutId !==
+        this.layoutRecords.editingLayoutId
     );
-  }
-
-  setPinnedLiveLayoutId(id: string | null) {
-    this.pinnedLiveLayoutId = id;
-    this.mutations.recordEveryWidget();
   }
 
   /**
@@ -95,17 +72,19 @@ export class LayoutEditorStore {
     this.open = open;
 
     if (open) {
-      this.setPinnedLiveLayoutId(this.layoutRecords.editingLayoutId);
+      this.layoutRecords.setPinnedLiveLayoutId(
+        this.layoutRecords.editingLayoutId
+      );
 
       return;
     }
 
-    const liveId = this.pinnedLiveLayoutId;
+    const liveId = this.layoutRecords.pinnedLiveLayoutId;
 
-    this.setPinnedLiveLayoutId(null);
+    this.layoutRecords.setPinnedLiveLayoutId(null);
 
     if (liveId && liveId !== this.layoutRecords.editingLayoutId) {
-      this.liveWidgets().loadLayout(liveId);
+      this.liveWidgets.loadLayout(liveId);
     }
   }
 
@@ -119,20 +98,46 @@ export class LayoutEditorStore {
     // Pins the screen itself rather than trusting the editor to have done it:
     // the layout being left is what stays on the overlay, and it is only
     // knowable before the switch.
-    if (this.pinnedLiveLayoutId === null) {
-      this.setPinnedLiveLayoutId(this.layoutRecords.editingLayoutId);
+    if (this.layoutRecords.pinnedLiveLayoutId === null) {
+      this.layoutRecords.setPinnedLiveLayoutId(
+        this.layoutRecords.editingLayoutId
+      );
     }
 
     this.layoutRecords.setEditingLayoutId(id);
-
-    this.liveWidgets().setWidgets(layout.widgets);
-
-    this.mutations.recordEveryWidget();
+    this.liveWidgets.setWidgets(layout.widgets);
   }
 
   // Make the layout currently shown in the editor the one on the overlay.
   activateLayout() {
-    this.setPinnedLiveLayoutId(this.layoutRecords.editingLayoutId);
-    this.mutations.recordEveryWidget();
+    this.layoutRecords.setPinnedLiveLayoutId(
+      this.layoutRecords.editingLayoutId
+    );
+  }
+
+  /**
+   * The layout the session asks for, applied wherever it belongs: to the screen
+   * while the editor is open, and to both otherwise. Answers false when there
+   * was nothing to change.
+   *
+   * Whichever way it lands, the screen changed and the screen says so — one
+   * announcement, made here, rather than one per branch. The editor holding a
+   * different layout is exactly when the driver has least reason to expect the
+   * switch and most reason to be told.
+   */
+  applySessionLayout(id: string): boolean {
+    const layout = this.layoutRecords.byId(id);
+
+    if (!layout || this.layoutRecords.liveLayoutId === id) return false;
+
+    if (this.open) {
+      this.layoutRecords.setPinnedLiveLayoutId(id);
+    } else {
+      this.liveWidgets.loadLayout(id);
+    }
+
+    void emitLayoutActivated(layout.name);
+
+    return true;
   }
 }

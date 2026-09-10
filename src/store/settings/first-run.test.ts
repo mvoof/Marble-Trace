@@ -6,10 +6,6 @@ import {
   type PrimaryMonitorResolver,
 } from './first-run';
 import { LayoutsStore } from './layouts.store';
-import type {
-  LayoutEditorPin,
-  LayoutLifecycleWidgetMap,
-} from './layouts.store';
 import { SettingsMutationLog } from './mutation-log';
 import type {
   LayoutMonitor,
@@ -42,28 +38,11 @@ const PRIMARY = {
 
 /**
  * The real record store — first-run setup is judged by what it leaves in the
- * records — with the editing session stubbed out and a widget map that records
- * what it was handed.
+ * records — and a widget map that records what it was handed.
  */
 const harness = (resolvePrimaryMonitor: PrimaryMonitorResolver) => {
   const mutations = new SettingsMutationLog();
-  const pin: LayoutEditorPin = {
-    pinnedLiveLayoutId: null,
-    setPinnedLiveLayoutId(id) {
-      pin.pinnedLiveLayoutId = id;
-    },
-  };
-  const lifecycleMap: LayoutLifecycleWidgetMap = {
-    loadLayout: () => undefined,
-    setWidgets: () => undefined,
-    setOverlayResolution: () => undefined,
-    starterWidgets: () => STARTER,
-  };
-  const layoutRecords = new LayoutsStore(
-    mutations,
-    () => pin,
-    () => lifecycleMap
-  );
+  const layoutRecords = new LayoutsStore(mutations);
 
   const live: {
     widgets: WidgetDefaultConfig[] | null;
