@@ -24,11 +24,9 @@ export const PitSpeedPlate = observer(({ withUnit }: PitSpeedPlateProps) => {
   if (isPitLimitReleased) {
     return (
       <div className={`${styles.row} ${styles.rowReleased}`}>
-        <span className={styles.label}>EXIT</span>
+        <span className={styles.flatValue}>GO!</span>
 
-        <span className={styles.readout}>
-          <span className={styles.value}>GO!</span>
-        </span>
+        <span className={styles.label}>EXIT</span>
       </div>
     );
   }
