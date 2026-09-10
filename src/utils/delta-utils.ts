@@ -12,6 +12,16 @@ const SECONDS_PER_HOUR = 3600;
 // changes its format, not its size.
 export const DELTA_SLOTS = 7;
 
+// Badge per reference, the same two letters the settings panel offers, so a
+// switch announced on the overlay reads as the button the user pressed.
+export const DELTA_REFERENCE_BADGE: Record<LapDeltaReference, string> = {
+  personal_best: 'PB',
+  personal_optimal: 'PO',
+  session_best: 'SB',
+  session_optimal: 'SO',
+  session_last: 'SL',
+};
+
 const TEN_MINUTES = 10 * SECONDS_PER_MINUTE;
 
 const padSlots = (text: string): string => text.padStart(DELTA_SLOTS, ' ');

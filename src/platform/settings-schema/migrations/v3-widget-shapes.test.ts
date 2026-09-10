@@ -457,3 +457,67 @@ describe('v3 — the top-level widget list is dropped', () => {
     ]);
   });
 });
+
+describe('v3 — the delta gets a plate', () => {
+  const PANEL_APPEARANCE = {
+    backgroundColor: 'rgba(21, 22, 26, 0.8)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  };
+
+  it('rebases a widget still holding the old transparent pair', () => {
+    const migrated = v3WidgetShapes.migrate(
+      inLayout([
+        {
+          id: 'delta',
+          userSettings: {
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+            reference: 'session_best',
+          },
+        },
+      ])
+    );
+
+    expect(layoutWidgets(migrated)[0]).toEqual({
+      id: 'delta',
+      userSettings: { ...PANEL_APPEARANCE, reference: 'session_best' },
+    });
+  });
+
+  it('leaves a color the driver picked alone', () => {
+    const chosen = {
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      borderColor: 'transparent',
+    };
+
+    const migrated = v3WidgetShapes.migrate(
+      inLayout([{ id: 'delta', userSettings: chosen }])
+    );
+
+    expect(layoutWidgets(migrated)[0]).toEqual({
+      id: 'delta',
+      userSettings: chosen,
+    });
+  });
+
+  it('reaches a copy, which names its widget in `type`', () => {
+    const migrated = v3WidgetShapes.migrate(
+      inLayout([
+        {
+          id: 'delta-2',
+          type: 'delta',
+          userSettings: {
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+          },
+        },
+      ])
+    );
+
+    expect(layoutWidgets(migrated)[0]).toEqual({
+      id: 'delta-2',
+      type: 'delta',
+      userSettings: PANEL_APPEARANCE,
+    });
+  });
+});

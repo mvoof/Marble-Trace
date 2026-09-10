@@ -67,6 +67,16 @@ import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
  * a number nothing reads any more. The bar loses `hideDelay` with it: it
  * follows the spotter and has nothing to fade out after.
  *
+ * **7. The delta gets a plate.** Its container used to paint the background and
+ * the border, so both shipped transparent — a plate stretched behind the delta
+ * bar would have swallowed the scale the bar draws. The container is registered
+ * transparent now and the number carries its own plate instead, which paints
+ * from those same two settings. A file still holding the old transparent pair
+ * would therefore render a plate nobody can see, so it is rebased onto the
+ * panel defaults. Only the untouched pair is rewritten: a driver who picked a
+ * color meant it, and either color differing from the old default is enough to
+ * leave the widget alone.
+ *
  * Every literal here is frozen on purpose: this step has to keep meaning "move
  * carLength, square up the radar, rescale the pit box" however the widgets are
  * named or defaulted later.
@@ -86,6 +96,43 @@ const PIT_NEW_HEIGHT_PX = 280;
 const G_METER_ID = 'g-meter';
 const G_METER_OLD_WIDTH_PX = 240;
 const G_METER_SIDE_PX = 240;
+
+const DELTA_ID = 'delta';
+
+/** What the delta shipped with before it had a plate of its own. */
+const DELTA_OLD_APPEARANCE = {
+  backgroundColor: 'transparent',
+  borderColor: 'transparent',
+};
+
+/** The panel defaults it joins — frozen, not read from the manifest. */
+const DELTA_NEW_APPEARANCE = {
+  backgroundColor: 'rgba(21, 22, 26, 0.8)',
+  borderColor: 'rgba(255, 255, 255, 0.1)',
+};
+
+/**
+ * The plate the number now paints for itself, but only where the old defaults
+ * are still untouched: the two settings moved from the container to the plate,
+ * so a customized color still means what it meant and is left where it stands.
+ */
+const replateDelta = (
+  widget: SettingsBlob,
+  settings: SettingsBlob
+): SettingsBlob => {
+  const untouched =
+    settings.backgroundColor === DELTA_OLD_APPEARANCE.backgroundColor &&
+    settings.borderColor === DELTA_OLD_APPEARANCE.borderColor;
+
+  if (!untouched) {
+    return widget;
+  }
+
+  return {
+    ...widget,
+    userSettings: { ...settings, ...DELTA_NEW_APPEARANCE },
+  };
+};
 
 const CLOSE_BATTLE_ID = 'close-battle';
 const CLOSE_BATTLE_OLD_WIDTH_PX = 440;
@@ -333,7 +380,7 @@ const dropTopLevelWidgets = (blob: SettingsBlob): SettingsBlob => {
 export const v3WidgetShapes: Migration = {
   to: 3,
   describe:
-    'move the car length to app settings, square up the radar and the g-meter, rescale the pit box, rebase Close Battle on its columns, drop the radar activation radius, drop the top-level widget list',
+    'move the car length to app settings, square up the radar and the g-meter, rescale the pit box, rebase Close Battle on its columns, drop the radar activation radius, give the delta its own plate, drop the top-level widget list',
   migrate: (blob: SettingsBlob): SettingsBlob => {
     const carLength = readCarLength(blob);
 
@@ -364,6 +411,12 @@ export const v3WidgetShapes: Migration = {
 
     const reshaped = mapEveryWidget(withoutActivationRange, (widgets) =>
       widgets.map((widget) => {
+        // A copy names the widget it is a copy of in `type`; on the original
+        // the id is the type. Structural, so no live helper is imported.
+        if ((widget?.type ?? widget?.id) === DELTA_ID) {
+          return replateDelta(widget, asObject(widget.userSettings) ?? {});
+        }
+
         if (widget?.id === CLOSE_BATTLE_ID) {
           return rebaseCloseBattle(widget, asObject(widget.userSettings) ?? {});
         }

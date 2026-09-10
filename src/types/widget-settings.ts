@@ -569,6 +569,7 @@ export type LapDeltaReference =
   | 'session_best'
   | 'session_optimal'
   | 'session_last';
+
 export interface DeltaWidgetSettings {
   reference: LapDeltaReference;
   showLapFlash: boolean;

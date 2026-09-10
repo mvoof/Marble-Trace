@@ -556,6 +556,7 @@
       "standingsScrollDown": "Desplazar la tabla hacia abajo",
       "streamChatScrollUp": "Desplazar el chat hacia arriba",
       "streamChatScrollDown": "Desplazar el chat hacia abajo",
+      "deltaCycleReference": "Cambiar la referencia del delta (PB → PO → SB → SO → SL)",
       "pitServiceToggle": "Abrir el cuadro de pedido fuera del pit lane (temporal)",
       "pitServiceAutoMode": "Pasar esta parada al modo automático, o recuperarla",
       "pitServiceApplyOrder": "Pedir una parada completa: el combustible calculado y los cuatro neumáticos (sustituye el pedido actual)",

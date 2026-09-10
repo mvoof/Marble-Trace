@@ -29,6 +29,8 @@ import type {
   SavedLayout,
   StandingsViewMode,
   StandingsWidgetSettings,
+  DeltaWidgetSettings,
+  LapDeltaReference,
   WidgetSpecificSettings,
   WidgetUserSettings,
   SessionContext,
@@ -317,6 +319,25 @@ export class WidgetSettingsStore {
       const nextIdx = (order.indexOf(settings.viewMode) + 1) % order.length;
 
       this.updateUserSettings(widget.id, { viewMode: order[nextIdx] });
+    }
+  }
+
+  cycleDeltaReference() {
+    const order: LapDeltaReference[] = [
+      'personal_best',
+      'personal_optimal',
+      'session_best',
+      'session_optimal',
+      'session_last',
+    ];
+
+    // Every copy, each advanced from where it stands — same reasoning as the
+    // standings view mode above.
+    for (const widget of this.widgetsOfType('delta')) {
+      const settings = this.getSettings<DeltaWidgetSettings>(widget.id);
+      const nextIdx = (order.indexOf(settings.reference) + 1) % order.length;
+
+      this.updateUserSettings(widget.id, { reference: order[nextIdx] });
     }
   }
 

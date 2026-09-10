@@ -1,0 +1,25 @@
+// A real border, not a ring of background behind an inset fill: the fill is
+// `--widget-bg`, which the user is free to make fully transparent, and a
+// background-as-border would then show through the whole plate instead of
+// tracing its edge.
+//
+// Sized by its content and never clamped to the widget (a column flex item
+// otherwise is) — a reading always occupies the same DELTA_SLOTS monospace
+// slots, so that measure is both constant and exact.
+.plate {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  max-width: none;
+  flex: 0 0 auto;
+  background: var(--widget-bg);
+  border: 1px solid var(--widget-border);
+  border-radius: 999px;
+  // The side padding belongs to the plate, not to the numbers: the reset makes
+  // every box border-box, so padding on a slot-sized number would eat into the
+  // slots its own text reserved.
+  padding-inline: sp(lg);
+  // Callers shift the plate by its margin while its width animates; the two
+  // have to move on the same clock or the number drifts mid-transition.
+  transition: margin-right 140ms ease-out;
+}
