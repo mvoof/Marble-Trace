@@ -1,7 +1,15 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
 import type { IReactionDisposer } from 'mobx';
 
-import type { RadarSettings } from '@/types/widget-settings';
+import type {
+  ProximityRadarSettings,
+  RadarSettings,
+} from '@/types/widget-settings';
+import {
+  DESIGN_SIZE_PX,
+  resolveScopeScale,
+  scopeDistanceOf,
+} from '@utils/radar-constants';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import type { RootStore } from '@store/root-store';
 
@@ -15,16 +23,18 @@ const noneVisible = (): Record<RadarWidgetType, boolean> => ({
 });
 
 export class RadarWidgetStore {
-  // Per widget, not per app: the scope and the bar carry their own activation
-  // range and their own fade-out delay, and a driver who widens one does not
-  // mean the other. Per *copy* is deliberately not offered — a store is one per
-  // app, and the settings panel edits the copy it is opened on.
+  // Two widgets, two different questions. The bar is the spotter's own report
+  // drawn as a light, so it is on exactly while the spotter is calling a car
+  // alongside. The scope is an instrument, and what it activates on is the
+  // range it draws: a car inside the circle. Neither has an activation radius
+  // of its own to set any more.
+  //
+  // Per *copy* is deliberately not offered — a store is one per app, and the
+  // settings panel edits the copy it is opened on.
   visible: Record<RadarWidgetType, boolean> = noneVisible();
 
-  private hideTimers: Record<
-    RadarWidgetType,
-    ReturnType<typeof setTimeout> | null
-  > = { 'proximity-radar': null, 'radar-bar': null };
+  /** The scope alone fades out; the bar follows the spotter with no delay. */
+  private scopeHideTimer: ReturnType<typeof setTimeout> | null = null;
 
   private disposers: IReactionDisposer[] = [];
 
@@ -33,39 +43,51 @@ export class RadarWidgetStore {
   }
 
   init() {
-    for (const widgetType of RADAR_WIDGET_TYPES) {
-      this.watch(widgetType);
-    }
+    this.watchBar();
+    this.watchScope();
   }
 
-  private watch(widgetType: RadarWidgetType) {
+  private watchBar() {
+    this.disposers.push(
+      reaction(
+        () => this.hasSpotterContact,
+        action((hasContact: boolean) => {
+          // No timer and no delay: the bar draws the spotter's own call, and it
+          // goes the moment the car is past.
+          this.visible['radar-bar'] = hasContact;
+        })
+      )
+    );
+  }
+
+  private watchScope() {
     this.disposers.push(
       reaction(
         () => ({
-          hasNearby: this.hasNearbyFor(widgetType),
-          hideDelay: this.hideDelayFor(widgetType),
+          hasNearby: this.hasCarInScope,
+          hideDelay: this.scopeHideDelay,
         }),
         ({ hasNearby, hideDelay }) => {
-          const pendingHide = this.hideTimers[widgetType];
+          const pendingHide = this.scopeHideTimer;
 
           if (hasNearby) {
             if (pendingHide) {
               clearTimeout(pendingHide);
-              this.hideTimers[widgetType] = null;
+              this.scopeHideTimer = null;
             }
 
             action(() => {
-              this.visible[widgetType] = true;
+              this.visible['proximity-radar'] = true;
             })();
           } else {
             if (pendingHide) {
               return;
             }
 
-            this.hideTimers[widgetType] = setTimeout(
+            this.scopeHideTimer = setTimeout(
               action(() => {
-                this.visible[widgetType] = false;
-                this.hideTimers[widgetType] = null;
+                this.visible['proximity-radar'] = false;
+                this.scopeHideTimer = null;
               }),
               hideDelay * 1000
             );
@@ -75,35 +97,62 @@ export class RadarWidgetStore {
     );
   }
 
-  hasNearbyFor(widgetType: RadarWidgetType): boolean {
+  get hasSpotterContact(): boolean {
     const proximity = this.root.backendComputed.proximity;
 
     if (!proximity) {
       return false;
     }
 
-    const hasSpotterContact = proximity.spotterLeft || proximity.spotterRight;
+    return proximity.spotterLeft || proximity.spotterRight;
+  }
 
-    if (hasSpotterContact) {
+  /** A car inside the circle the scope draws — what the scope activates on. */
+  get hasCarInScope(): boolean {
+    const proximity = this.root.backendComputed.proximity;
+
+    if (!proximity) {
+      return false;
+    }
+
+    if (this.hasSpotterContact) {
       return true;
     }
 
-    const { proximityThreshold } = this.settingsOf(widgetType);
+    const rangeMeters = this.scopeRangeMeters;
 
-    // The threshold is the number the driver reads in the settings, so it is
-    // measured the way a driver means it: bumper to bumper, not centre to
-    // centre — those differ by a whole car length.
     return proximity.nearbyCars.some(
-      (car) => Math.abs(car.bumperDist) <= proximityThreshold
+      (car) => scopeDistanceOf(car) <= rangeMeters
     );
   }
 
-  private hideDelayFor(widgetType: RadarWidgetType): number {
-    return this.settingsOf(widgetType).hideDelay;
+  /**
+   * What the scope covers right now, resolved from the same settings the canvas
+   * resolves it from — so the widget never wakes for a car it would have to
+   * leave off the picture, and never stays dark with one drawn inside the rim.
+   */
+  private get scopeRangeMeters(): number {
+    const settings = this.settingsOf<ProximityRadarSettings>('proximity-radar');
+
+    const size = Math.min(settings.currentWidth, settings.currentHeight);
+    const radiusPx = size / 2;
+
+    return resolveScopeScale({
+      scaleMode: settings.scaleMode,
+      scopeRange: settings.scopeRange,
+      radiusPx,
+      widgetScale: size / DESIGN_SIZE_PX,
+    }).rangeMeters;
   }
 
-  private settingsOf(widgetType: RadarWidgetType) {
-    return this.root.widgetSettings.getSettings<RadarSettings>(widgetType);
+  private get scopeHideDelay(): number {
+    return this.settingsOf<ProximityRadarSettings>('proximity-radar').hideDelay;
+  }
+
+  private settingsOf<Settings extends RadarSettings = RadarSettings>(
+    widgetType: RadarWidgetType
+  ) {
+    return this.root.widgetSettings.getSettings<Settings>(widgetType);
   }
 
   get isLoneQualifying(): boolean {
@@ -132,13 +181,9 @@ export class RadarWidgetStore {
   }
 
   reset() {
-    for (const widgetType of RADAR_WIDGET_TYPES) {
-      const pendingHide = this.hideTimers[widgetType];
-
-      if (pendingHide) {
-        clearTimeout(pendingHide);
-        this.hideTimers[widgetType] = null;
-      }
+    if (this.scopeHideTimer) {
+      clearTimeout(this.scopeHideTimer);
+      this.scopeHideTimer = null;
     }
 
     this.visible = noneVisible();

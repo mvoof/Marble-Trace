@@ -161,9 +161,12 @@ export interface InputTraceSettings {
 
 export type RadarQualifyingVisibility = 'always' | 'never' | 'auto';
 
+/**
+ * What both radars share. Neither carries an activation radius: the bar is on
+ * while the spotter calls a car alongside, and the scope while a car is inside
+ * the range it draws.
+ */
 export interface RadarSettings {
-  proximityThreshold: number;
-  hideDelay: number;
   qualifyingVisibility: RadarQualifyingVisibility;
   showDistance: boolean;
 }
@@ -190,9 +193,14 @@ export type RadarBackgroundTexture =
 
 /**
  * The round scope adds what only it can draw. `RadarSettings` stays the pair's
- * shared contract — the bar reads the same activation range and visibility.
+ * shared contract — the visibility rules the bar reads too.
  */
 export interface ProximityRadarSettings extends RadarSettings {
+  /**
+   * Seconds the scope stays up after the last car left the circle. The bar has
+   * no such delay: it goes with the spotter's call.
+   */
+  hideDelay: number;
   scaleMode: RadarScaleMode;
   /** Radius in meters the circle covers. Read only when `scaleMode` is manual. */
   scopeRange: number;

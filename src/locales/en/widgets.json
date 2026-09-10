@@ -260,8 +260,10 @@
     },
     "radar": {
       "radarBehavior": "Radar Behavior",
-      "activationRange": "Activation Range (m)",
       "fadeOutDelay": "Fade Out Delay (s)",
+      "fadeOutDelayDesc": "Seconds the scope stays up after the last car has left it.",
+      "scopeActivationDesc": "The scope shows itself whenever a car is inside the range it draws — set that range under Scope below. There is no separate activation radius.",
+      "barActivationDesc": "The bar is the spotter's own call: a side lights up while the spotter reports a car there, and goes out the moment it is past.",
       "showDistance": "Show distance",
       "qualifying": "Qualifying",
       "showInQualifying": "Show in qualifying",
@@ -269,7 +271,6 @@
       "auto": "Auto",
       "never": "Never",
       "autoDesc": "Auto: hidden during lone qualifying (single car on track)",
-      "activationRangeDesc": "Bumper to bumper — the widget appears once someone is this close.",
       "scope": "Scope",
       "scaleMode": "Scale",
       "scaleModes": {

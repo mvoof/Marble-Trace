@@ -1,37 +1,21 @@
 /**
- * Shared constants and utilities for radar widgets
- * (ProximityRadarWidget & RadarBarWidget).
+ * What both radar widgets share: the pill colour the bar paints, and the scale
+ * the round scope is drawn at.
+ *
+ * The scale lives here rather than beside the scope because the **store** needs
+ * it too — the proximity radar activates on the range it draws, so deciding
+ * whether a car is in the scope is the same arithmetic as placing it there. A
+ * store reaching into `@ui/**` is a lint error, so the shared half sits in
+ * `utils/`.
  */
 
-// === Car physical dimensions (meters) ===
-
-/** Average car body width */
-export const CAR_WIDTH = 1.8;
-
-/** Corner radius for car icon rendering */
-export const CAR_CORNER_RADIUS = 0.2;
-
-/** Lateral offset for side car positioning (car width + gap) */
-export const SIDE_CAR_LATERAL_OFFSET = CAR_WIDTH + 0.6;
-
-// === Distance thresholds (meters) ===
-
-/** Bumper-to-bumper distance considered dangerous */
-const DANGER_DISTANCE = 1.0;
-/** Bumper-to-bumper distance considered warning zone */
-const WARNING_DISTANCE = 2.0;
-
-/** Longitudinal overlap considered dangerous for side cars */
-const SIDE_DANGER_DISTANCE = 0.5;
-/** Longitudinal overlap considered warning for side cars */
-const SIDE_WARNING_DISTANCE = 1.5;
+import type { LateralSide } from '@/types/bindings';
+import type { RadarScaleMode } from '@/types/widget-settings';
 
 /** Proximity center distance considered dangerous for RadarBar */
 const BAR_DANGER_DISTANCE = 1.0;
 /** Proximity center distance considered warning for RadarBar */
 const BAR_WARNING_DISTANCE = 2.5;
-
-// === Danger zone colors (hex base) ===
 
 const RADAR_COLORS = {
   /** Collision imminent */
@@ -40,51 +24,7 @@ const RADAR_COLORS = {
   warning: '#eab308',
   /** Safe distance */
   safe: '#22c55e',
-  /** Grid/guide lines */
-  grid: 'rgba(255, 255, 255, 0.1)',
 } as const;
-
-/**
- * Apply alpha transparency to a radar color.
- * Converts hex to rgba string.
- */
-const withAlpha = (hex: string, alpha: number): string => {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
-// === Distance-to-color mapping ===
-
-/**
- * Color for front/rear cars based on bumper-to-bumper gap.
- */
-export const getCarColor = (gapMeters: number): string => {
-  if (gapMeters <= DANGER_DISTANCE) {
-    return withAlpha(RADAR_COLORS.danger, 0.7);
-  }
-
-  if (gapMeters <= WARNING_DISTANCE) {
-    return withAlpha(RADAR_COLORS.warning, 0.7);
-  }
-
-  return withAlpha(RADAR_COLORS.safe, 0.7);
-};
-
-/**
- * Color for side cars (spotter) based on longitudinal overlap.
- * Tighter thresholds since side contact is more dangerous.
- */
-export const getSideCarColor = (longitudinalOffset: number): string => {
-  const abs = Math.abs(longitudinalOffset);
-
-  if (abs <= SIDE_DANGER_DISTANCE) return withAlpha(RADAR_COLORS.danger, 0.7);
-  if (abs <= SIDE_WARNING_DISTANCE) return withAlpha(RADAR_COLORS.warning, 0.7);
-
-  return withAlpha(RADAR_COLORS.safe, 0.7);
-};
 
 /**
  * Solid (no alpha) color for RadarBar pill based on center distance.
@@ -94,4 +34,83 @@ export const getBarPillColor = (centerDistance: number): string => {
   if (centerDistance <= BAR_WARNING_DISTANCE) return RADAR_COLORS.warning;
 
   return RADAR_COLORS.safe;
+};
+
+/** 180 px of widget covers a 10 m radius. */
+export const DESIGN_SIZE_PX = 180;
+export const DESIGN_SCOPE_RANGE_M = 10;
+
+/**
+ * How far to the side an alongside car is drawn. The sim never reports a
+ * lateral position, so this is a constant, not a measurement — wide enough that
+ * the beam tracking a side car clears the player's own body.
+ */
+export const SIDE_LATERAL_OFFSET_M = 3.4;
+
+interface ScaleInput {
+  scaleMode: RadarScaleMode;
+  scopeRange: number;
+  /** Half of the widget's rendered side, in CSS pixels. */
+  radiusPx: number;
+  widgetScale: number;
+}
+
+export interface ScopeScale {
+  pxPerMeter: number;
+  /** Meters the circle actually covers, whichever mode produced them. */
+  rangeMeters: number;
+}
+
+/**
+ * One knob decides both the zoom and what fits in the circle, and the user
+ * picks which one it is.
+ */
+export const resolveScopeScale = ({
+  scaleMode,
+  scopeRange,
+  radiusPx,
+  widgetScale,
+}: ScaleInput): ScopeScale => {
+  const designPxPerMeter = DESIGN_SIZE_PX / 2 / DESIGN_SCOPE_RANGE_M;
+
+  if (scaleMode === 'fixed-cars') {
+    return {
+      pxPerMeter: designPxPerMeter,
+      rangeMeters: radiusPx / designPxPerMeter,
+    };
+  }
+
+  if (scaleMode === 'manual') {
+    // A hand-edited file can carry a zero or a negative here, and a scope of
+    // zero meters is an infinite pxPerMeter — every car drawn as a full-screen
+    // block. Fall back to the design range instead.
+    const range =
+      Number.isFinite(scopeRange) && scopeRange > 0
+        ? scopeRange
+        : DESIGN_SCOPE_RANGE_M;
+
+    return { pxPerMeter: radiusPx / range, rangeMeters: range };
+  }
+
+  const pxPerMeter = designPxPerMeter * widgetScale;
+
+  return { pxPerMeter, rangeMeters: radiusPx / pxPerMeter };
+};
+
+/**
+ * Where a car sits from the middle of the scope, in meters. A car alongside is
+ * drawn at a fixed lateral offset, so its distance is the hypotenuse — the same
+ * number the scope tests a row against before it draws it. Activation and
+ * drawing therefore agree by construction: what wakes the widget is exactly
+ * what it can show.
+ */
+export const scopeDistanceOf = (car: {
+  longitudinalDist: number;
+  lateralSide: LateralSide;
+}): number => {
+  if (car.lateralSide === 'center') {
+    return Math.abs(car.longitudinalDist);
+  }
+
+  return Math.hypot(SIDE_LATERAL_OFFSET_M, car.longitudinalDist);
 };

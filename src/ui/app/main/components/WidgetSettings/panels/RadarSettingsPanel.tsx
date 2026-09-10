@@ -10,12 +10,14 @@ import type {
   ProximityRadarSettings,
 } from '@/types/widget-settings';
 import {
-  DESIGN_SCOPE_RANGE_M,
-  DESIGN_SIZE_PX,
   LADDER_STEP_M,
   rangeRingRadii,
-  resolveScopeScale,
 } from '@ui/widgets/ProximityRadarWidget/radar-scope-utils';
+import {
+  DESIGN_SCOPE_RANGE_M,
+  DESIGN_SIZE_PX,
+  resolveScopeScale,
+} from '@utils/radar-constants';
 import { distanceUnit, formatDistance } from '@utils/telemetry-format';
 import { useUnitsStore } from '@store/root-store-context';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
@@ -285,49 +287,57 @@ export const RadarSettingsPanel = observer(
       });
     };
 
+    // The fade-out is the scope's alone, so it is read and written through the
+    // narrower type rather than widening the pair's shared contract again.
+    const scopeSettings =
+      widgetSettings.getSettings<ProximityRadarSettings>(widgetId);
+
+    const updateScope = (partial: Partial<ProximityRadarSettings>) => {
+      widgetSettings.updateUserSettings(widgetId, {
+        ...scopeSettings,
+        ...partial,
+      });
+    };
+
     return (
       <>
         <Card title={t('settingsPanels.radar.radarBehavior')}>
           <Row gutter={24} className={styles.fieldGroup}>
-            <Col span={8}>
-              <span className={styles.fieldLabel}>
-                {t('settingsPanels.radar.activationRange')}
-              </span>
-              <InputNumber
-                style={{ width: '100%' }}
-                value={settings.proximityThreshold}
-                min={1}
-                max={20}
-                step={0.5}
-                onChange={(v) => {
-                  if (v !== null) {
-                    update({ proximityThreshold: v });
-                  }
-                }}
-              />
+            <Col span={24}>
               <div className={styles.fieldDesc}>
-                {t('settingsPanels.radar.activationRangeDesc')}
+                {t(
+                  widgetType === 'proximity-radar'
+                    ? 'settingsPanels.radar.scopeActivationDesc'
+                    : 'settingsPanels.radar.barActivationDesc'
+                )}
               </div>
             </Col>
-
-            <Col span={8}>
-              <span className={styles.fieldLabel}>
-                {t('settingsPanels.radar.fadeOutDelay')}
-              </span>
-              <InputNumber
-                style={{ width: '100%' }}
-                value={settings.hideDelay}
-                min={0}
-                max={30}
-                step={0.5}
-                onChange={(v) => {
-                  if (v !== null) {
-                    update({ hideDelay: v });
-                  }
-                }}
-              />
-            </Col>
           </Row>
+
+          {widgetType === 'proximity-radar' && (
+            <Row gutter={24} className={styles.fieldGroup}>
+              <Col span={8}>
+                <span className={styles.fieldLabel}>
+                  {t('settingsPanels.radar.fadeOutDelay')}
+                </span>
+                <InputNumber
+                  style={{ width: '100%' }}
+                  value={scopeSettings.hideDelay}
+                  min={0}
+                  max={30}
+                  step={0.5}
+                  onChange={(v) => {
+                    if (v !== null) {
+                      updateScope({ hideDelay: v });
+                    }
+                  }}
+                />
+                <div className={styles.fieldDesc}>
+                  {t('settingsPanels.radar.fadeOutDelayDesc')}
+                </div>
+              </Col>
+            </Row>
+          )}
 
           <Row gutter={24} className={styles.fieldGroup}>
             <Col span={24}>

@@ -62,6 +62,11 @@ import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
  * width the driver had set: unlike the radar the circle itself is unchanged, so
  * a dial made half again as large stays that size.
  *
+ * **6. Both radars lose their activation radius.** The scope activates on the
+ * range it draws and the bar on the spotter's call, so `proximityThreshold` is
+ * a number nothing reads any more. The bar loses `hideDelay` with it: it
+ * follows the spotter and has nothing to fade out after.
+ *
  * Every literal here is frozen on purpose: this step has to keep meaning "move
  * carLength, square up the radar, rescale the pit box" however the widgets are
  * named or defaulted later.
@@ -69,6 +74,7 @@ import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
 const RADAR_IDS = ['proximity-radar', 'radar-bar'] as const;
 
 const PROXIMITY_RADAR_ID = 'proximity-radar';
+const RADAR_BAR_ID = 'radar-bar';
 const SCOPE_SIDE_PX = 180;
 
 const PIT_SERVICE_ID = 'pit-service';
@@ -327,7 +333,7 @@ const dropTopLevelWidgets = (blob: SettingsBlob): SettingsBlob => {
 export const v3WidgetShapes: Migration = {
   to: 3,
   describe:
-    'move the car length to app settings, square up the radar and the g-meter, rescale the pit box, rebase Close Battle on its columns, drop the top-level widget list',
+    'move the car length to app settings, square up the radar and the g-meter, rescale the pit box, rebase Close Battle on its columns, drop the radar activation radius, drop the top-level widget list',
   migrate: (blob: SettingsBlob): SettingsBlob => {
     const carLength = readCarLength(blob);
 
@@ -344,7 +350,19 @@ export const v3WidgetShapes: Migration = {
       withApp
     );
 
-    const reshaped = mapEveryWidget(withoutCarLength, (widgets) =>
+    const withoutActivationRange = RADAR_IDS.reduce(
+      (current, id) =>
+        dropWidgetSettings(
+          current,
+          id,
+          id === RADAR_BAR_ID
+            ? ['proximityThreshold', 'hideDelay']
+            : ['proximityThreshold']
+        ),
+      withoutCarLength
+    );
+
+    const reshaped = mapEveryWidget(withoutActivationRange, (widgets) =>
       widgets.map((widget) => {
         if (widget?.id === CLOSE_BATTLE_ID) {
           return rebaseCloseBattle(widget, asObject(widget.userSettings) ?? {});
