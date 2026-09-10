@@ -17,6 +17,64 @@
   margin-inline: -50%;
 }
 
+// What the badge adds to the plate when it opens: its own box plus the gap
+// between it and the number.
+$badge-slot: 32 + 8;
+
+// The plate is centred, so a badge opening on its left would push the number
+// right by half of what it added. The same measure as a right margin moves the
+// centred box back by exactly that half, which pins the plate's right edge —
+// and with it the number — while the plate grows leftwards alone.
+.plateAnnouncing {
+  margin-right: ws($badge-slot);
+}
+
+// The reference badge, shown for a moment after the reference is switched. It
+// is never unmounted: the box opens and closes instead, so the plate grows once
+// per announcement and a second press inside one costs no layout at all. The
+// badge is shorter than the number's line box, so the widget's height is the
+// number's whether the badge is open or shut.
+//
+// Aligned on the digits' baseline rather than the centre of their line box:
+// the box reserves room under the baseline for descenders the digits never
+// use, so a small pill centred in it reads as sitting too high next to them.
+.badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: baseline;
+  flex: 0 0 auto;
+  width: 0;
+  padding-block: sp(xxs);
+  margin-right: 0;
+  overflow: hidden;
+  opacity: 0;
+  background: color-mix(in srgb, $widget-text-primary 12%, transparent);
+  border-radius: radius(md);
+  transition:
+    width 140ms ease-out,
+    margin-right 140ms ease-out,
+    opacity 120ms ease-out;
+}
+
+.badgeShown {
+  // Two letters at fs(sm) plus a square's worth of air on each side. A fixed
+  // measure, not the text's own: every badge is two characters, and a width
+  // the content decides could not be transitioned.
+  width: ws(32);
+  margin-right: sp(sm);
+  opacity: 1;
+}
+
+.badgeText {
+  font-family: $font-widget;
+  font-size: fs(sm);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: $widget-text-secondary;
+}
+
 .delta {
   font-family: $font-mono;
   font-size: fs(xxxl);
@@ -28,8 +86,7 @@
   // `pre` keeps that padding so the glyphs never move or shrink, and the box
   // reserves the widest possible reading up front.
   white-space: pre;
-  width: 7ch;
-  padding: sp(sm) 0;
+  padding-block: sp(sm);
 }
 
 .ahead {

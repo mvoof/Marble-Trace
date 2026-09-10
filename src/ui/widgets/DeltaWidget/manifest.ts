@@ -1,7 +1,7 @@
 import type { WidgetManifest } from '@/types/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
-  TRANSPARENT_APPEARANCE_DEFAULTS,
+  PANEL_APPEARANCE_DEFAULTS,
 } from '@ui/widgets/widget-manifest';
 
 export const DELTA_MANIFEST: WidgetManifest = {
@@ -15,6 +15,10 @@ export const DELTA_MANIFEST: WidgetManifest = {
   // The delta bar deliberately runs wider than the widget box so the scale
   // reads at a glance — it must not be clipped to the panel.
   overflowVisible: true,
+  // The background and the border belong to the number's plate alone, never to
+  // the whole box — a plate behind the bar would swallow the scale it draws.
+  // DeltaLive paints them from --widget-bg / --widget-border instead.
+  transparentContainer: true,
   userSettings: {
     enabled: false,
     x: 400,
@@ -22,7 +26,8 @@ export const DELTA_MANIFEST: WidgetManifest = {
     currentWidth: 200,
     currentHeight: 100,
     ...COMMON_WIDGET_DEFAULTS,
-    ...TRANSPARENT_APPEARANCE_DEFAULTS,
+    // Painted on the number's plate, not on the container — see below.
+    ...PANEL_APPEARANCE_DEFAULTS,
     reference: 'personal_best',
     showLapFlash: false,
     flashDuration: 5,

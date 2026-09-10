@@ -111,6 +111,16 @@ const STREAM_CHAT_ACTIONS: HotkeyAction[] = [
   },
 ];
 
+const DELTA_ACTIONS: HotkeyAction[] = [
+  {
+    id: 'delta:cycle-reference',
+    owner: 'delta',
+    labelKey: 'deltaCycleReference',
+    trigger: 'press',
+    run: (root) => root.widgetSettings.cycleDeltaReference(),
+  },
+];
+
 const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
   {
     id: 'pit-service:toggle',
@@ -288,5 +298,6 @@ export const STATIC_ACTIONS: HotkeyAction[] = [
   ...APP_ACTIONS,
   ...STANDINGS_ACTIONS,
   ...STREAM_CHAT_ACTIONS,
+  ...DELTA_ACTIONS,
   ...PIT_SERVICE_ACTIONS,
 ];
