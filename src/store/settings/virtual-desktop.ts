@@ -1,5 +1,6 @@
 import type {
   LayoutMonitor,
+  LayoutResolution,
   MonitorBounds,
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
@@ -112,3 +113,22 @@ export const placeWidgetOnMonitor = (
     },
   };
 };
+
+/**
+ * The monitor entry a layout is anchored to when the hardware answers: the
+ * screen at the desktop origin, covering its whole reported resolution. Both
+ * paths that wait for a monitor — creating a layout and first-run setup — end
+ * in this same entry, and the shape is the part of them that must not drift.
+ */
+export const fullScreenMonitor = (monitor: {
+  name: string;
+  resolution: LayoutResolution;
+}): LayoutMonitor => ({
+  name: monitor.name,
+  bounds: {
+    x: 0,
+    y: 0,
+    width: monitor.resolution.width,
+    height: monitor.resolution.height,
+  },
+});

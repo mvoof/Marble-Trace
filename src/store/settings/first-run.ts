@@ -1,5 +1,7 @@
 import { runInAction } from 'mobx';
 
+import { fullScreenMonitor } from '@store/settings/virtual-desktop';
+
 import type {
   LayoutMonitor,
   LayoutResolution,
@@ -67,17 +69,7 @@ export const setUpFirstRun = async ({
 
     widgetMap.setOverlayResolution(monitor.resolution);
 
-    layoutRecords.setMonitors(id, [
-      {
-        name: monitor.name,
-        bounds: {
-          x: 0,
-          y: 0,
-          width: monitor.resolution.width,
-          height: monitor.resolution.height,
-        },
-      },
-    ]);
+    layoutRecords.setMonitors(id, [fullScreenMonitor(monitor)]);
 
     // The monitor resolved asynchronously; the driver may have selected a
     // different layout while it did. Its widgets are not this layout's to

@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import { cloneBackgroundImage } from '@store/settings/layout-background';
 import {
+  fullScreenMonitor,
   monitorForWidget,
   monitorsBounds,
   placeWidgetOnMonitor,
@@ -253,17 +254,7 @@ export class LayoutsStore {
 
         if (!targetLayout || targetLayout.monitors.length > 0) return;
 
-        this.setMonitors(id, [
-          {
-            name: monitor.name,
-            bounds: {
-              x: 0,
-              y: 0,
-              width: monitor.resolution.width,
-              height: monitor.resolution.height,
-            },
-          },
-        ]);
+        this.setMonitors(id, [fullScreenMonitor(monitor)]);
         targetLayout.widgets = this.liveWidgets().starterWidgets(true);
 
         // The monitor resolved asynchronously; the driver may have switched
