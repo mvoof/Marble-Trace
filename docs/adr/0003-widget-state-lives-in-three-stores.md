@@ -70,11 +70,18 @@ members into parameterised ones was considered and rejected: the caller still
 has to know every mode, the modes move from the type system into a discriminant,
 and the compiler stops catching mistakes at the call site.
 
-`LiveWidgetsStore` takes three named constructor dependencies instead of the
+`LiveWidgetsStore` takes four named constructor dependencies instead of the
 root store. This deliberately does not follow the `Pick<RootStore, …>` pattern
 that landed immediately before it: that slice is the remedy for a store
-consuming an arbitrary part of the global tree, and three named classes from one
+consuming an arbitrary part of the global tree, and named classes from one
 subsystem are already narrower than a slice of the root.
+
+The fourth is not a store but a getter, `() => CapabilitiesPayload | null`. What
+the sim can feed is the one thing this store reads from outside its own
+subsystem, `SimStore` is built after it, and the answer changes with every
+connection — so it is read on demand rather than held. A getter also keeps the
+dependency at one value instead of handing the store a sim it could ask anything
+else.
 
 ## What is pinned
 

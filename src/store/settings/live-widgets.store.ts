@@ -53,7 +53,8 @@ import {
   type PickableWidget,
 } from '@store/settings/widget-placement';
 import type { WidgetMap } from '@store/settings/widget-map';
-import type { RootStore } from '@store/root-store';
+import type { WidgetDefaultsStore } from '@store/settings/widget-defaults.store';
+import type { CapabilitiesPayload } from '@/types/bindings';
 
 const LAYOUT_TOAST_DURATION_MS = 3000;
 
@@ -151,19 +152,27 @@ export class LiveWidgetsStore implements WidgetMap {
     private readonly mutations: SettingsMutationLog,
     layoutRecords: LayoutsStore,
     private readonly layoutEditor: LayoutEditorStore,
-    private readonly root?: RootStore
+    private readonly widgetDefaults: WidgetDefaultsStore,
+    /**
+     * The sim's capabilities, read through a getter rather than held: the sim
+     * store is built after this one, and what it reports changes with every
+     * connection. Undefined until a sim has answered, which reads as "hide
+     * nothing".
+     */
+    private readonly capabilitiesOf: () => CapabilitiesPayload | null
   ) {
     this.layoutRecords = layoutRecords;
 
     makeAutoObservable<
       LiveWidgetsStore,
-      'layoutToastTimer' | 'mutations' | 'layoutEditor'
+      'layoutToastTimer' | 'mutations' | 'layoutEditor' | 'capabilitiesOf'
     >(
       this,
       {
         layoutToastTimer: false,
         mutations: false,
         layoutEditor: false,
+        capabilitiesOf: false,
       },
       {
         autoBind: true,
@@ -212,7 +221,7 @@ export class LiveWidgetsStore implements WidgetMap {
 
   get liveEnabledWidgetIds(): string[] {
     const available = new Set(
-      availableWidgetIdsOf(this.liveWidgets, this.root?.sim.capabilities)
+      availableWidgetIdsOf(this.liveWidgets, this.capabilitiesOf())
     );
 
     return this.liveWidgets
@@ -223,10 +232,7 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   get availableWidgetIds(): string[] {
-    return availableWidgetIdsOf(
-      this.widgets.values(),
-      this.root?.sim.capabilities
-    );
+    return availableWidgetIdsOf(this.widgets.values(), this.capabilitiesOf());
   }
 
   get enabledWidgetIds(): string[] {
@@ -1019,7 +1025,7 @@ export class LiveWidgetsStore implements WidgetMap {
    */
   starterWidgets(clean: boolean = false): WidgetDefaultConfig[] {
     return buildStarterWidgets(
-      this.root?.widgetDefaults.snapshot() ?? [],
+      this.widgetDefaults.snapshot(),
       this.overlayResolution,
       clean
     );

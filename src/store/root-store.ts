@@ -112,7 +112,8 @@ export class RootStore {
       this.settingsMutations,
       this.layouts,
       this.layoutEditor,
-      this
+      this.widgetDefaults,
+      () => this.sim.capabilities
     );
     this.appSettings = new AppSettingsStore();
     this.companionApps = new CompanionAppsStore(this);
