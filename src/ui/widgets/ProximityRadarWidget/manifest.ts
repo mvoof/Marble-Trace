@@ -12,7 +12,7 @@ const SCOPE_APPEARANCE_DEFAULTS = {
   borderColor: 'rgba(255, 255, 255, 0.18)',
 };
 
-/** 180 px of widget covers a 10 m radius — see `radar-scope-utils.ts`. */
+/** 180 px of widget covers a 10 m radius — see `utils/radar-constants.ts`. */
 const SCOPE_DESIGN_SIZE_PX = 180;
 
 export const PROXIMITY_RADAR_MANIFEST: WidgetManifest = {
@@ -35,7 +35,6 @@ export const PROXIMITY_RADAR_MANIFEST: WidgetManifest = {
     currentHeight: SCOPE_DESIGN_SIZE_PX,
     ...COMMON_WIDGET_DEFAULTS,
     ...SCOPE_APPEARANCE_DEFAULTS,
-    proximityThreshold: 5,
     hideDelay: 2,
     qualifyingVisibility: 'auto',
     showDistance: true,

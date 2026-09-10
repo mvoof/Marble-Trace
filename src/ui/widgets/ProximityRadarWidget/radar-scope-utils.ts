@@ -1,7 +1,4 @@
-import type {
-  RadarBackgroundTexture,
-  RadarScaleMode,
-} from '@/types/widget-settings';
+import type { RadarBackgroundTexture } from '@/types/widget-settings';
 
 /** Average car body width in meters — the icon is the footprint, not a dot. */
 export const CAR_WIDTH_M = 1.8;
@@ -9,19 +6,8 @@ export const CAR_WIDTH_M = 1.8;
 /** Corner rounding of the car icon, in meters of body. */
 export const CAR_CORNER_RADIUS_M = 0.35;
 
-/**
- * How far to the side an alongside car is drawn. The sim never reports a
- * lateral position, so this is a constant, not a measurement — wide enough that
- * the beam tracking a side car clears the player's own body.
- */
-export const SIDE_LATERAL_OFFSET_M = 3.4;
-
 /** Two cars closer than this along the lane read as one row, not a queue. */
 export const SAME_ROW_M = 2.5;
-
-/** 180 px of widget covers a 10 m radius. */
-export const DESIGN_SIZE_PX = 180;
-export const DESIGN_SCOPE_RANGE_M = 10;
 
 /** Longitudinal scale ticks — the one axis the sim actually measures. */
 export const LADDER_STEP_M = 2.5;
@@ -120,56 +106,6 @@ export const readableOn = (bodyColor: string): string => {
     0.0722 * channelLuminance(blue);
 
   return luminance > 0.45 ? LABEL_ON_LIGHT : LABEL_ON_DARK;
-};
-
-interface ScaleInput {
-  scaleMode: RadarScaleMode;
-  scopeRange: number;
-  /** Half of the widget's rendered side, in CSS pixels. */
-  radiusPx: number;
-  widgetScale: number;
-}
-
-export interface ScopeScale {
-  pxPerMeter: number;
-  /** Meters the circle actually covers, whichever mode produced them. */
-  rangeMeters: number;
-}
-
-/**
- * One knob decides both the zoom and what fits in the circle, and the user
- * picks which one it is.
- */
-export const resolveScopeScale = ({
-  scaleMode,
-  scopeRange,
-  radiusPx,
-  widgetScale,
-}: ScaleInput): ScopeScale => {
-  const designPxPerMeter = DESIGN_SIZE_PX / 2 / DESIGN_SCOPE_RANGE_M;
-
-  if (scaleMode === 'fixed-cars') {
-    return {
-      pxPerMeter: designPxPerMeter,
-      rangeMeters: radiusPx / designPxPerMeter,
-    };
-  }
-
-  if (scaleMode === 'manual') {
-    // A hand-edited file can carry a zero or a negative here, and a scope of
-    // zero meters is an infinite pxPerMeter — every car drawn as a full-screen
-    // block. Fall back to the design range instead.
-    const range =
-      Number.isFinite(scopeRange) && scopeRange > 0
-        ? scopeRange
-        : DESIGN_SCOPE_RANGE_M;
-
-    return { pxPerMeter: radiusPx / range, rangeMeters: range };
-  }
-
-  const pxPerMeter = designPxPerMeter * widgetScale;
-
-  return { pxPerMeter, rangeMeters: radiusPx / pxPerMeter };
 };
 
 export interface BearingSpan {
@@ -497,8 +433,8 @@ export const drawBeam = (
 };
 
 /**
- * A car past the rim still matters — it is the one that woke the widget when
- * the activation range is wider than the scope. It keeps its bearing and parks
+ * A car past the rim still matters — another car inside the circle is what has
+ * the widget up, and this one is closing on it. It keeps its bearing and parks
  * on the edge instead of vanishing.
  */
 export const drawEdgeMarker = (

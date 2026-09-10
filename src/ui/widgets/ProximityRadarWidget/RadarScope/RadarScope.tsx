@@ -14,8 +14,11 @@ import {
 } from '@store/root-store-context';
 import {
   DESIGN_SIZE_PX,
-  SCOPE_INK,
   SIDE_LATERAL_OFFSET_M,
+  resolveScopeScale,
+} from '@utils/radar-constants';
+import {
+  SCOPE_INK,
   carBearingSpan,
   collapseLaneRows,
   drawBeam,
@@ -24,7 +27,6 @@ import {
   drawEdgeMarker,
   drawGrid,
   drawTexture,
-  resolveScopeScale,
   threatColorForGap,
 } from '../radar-scope-utils';
 

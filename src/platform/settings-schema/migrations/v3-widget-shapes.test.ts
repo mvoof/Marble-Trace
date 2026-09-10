@@ -165,6 +165,50 @@ describe('v3 — the radar becomes a square scope', () => {
   });
 });
 
+describe('v3 — the radars lose their activation radius', () => {
+  it('drops the threshold from the scope and keeps its fade-out', () => {
+    const migrated = v3WidgetShapes.migrate(
+      inLayout([
+        {
+          id: 'proximity-radar',
+          userSettings: {
+            proximityThreshold: 7,
+            hideDelay: 4,
+            showDistance: true,
+          },
+        },
+      ])
+    );
+
+    expect(layoutWidgets(migrated)).toEqual([
+      {
+        id: 'proximity-radar',
+        ...SQUARE_DESIGN,
+        userSettings: { hideDelay: 4, showDistance: true, ...SQUARE },
+      },
+    ]);
+  });
+
+  it('drops the threshold and the fade-out from the bar', () => {
+    const migrated = v3WidgetShapes.migrate(
+      inLayout([
+        {
+          id: 'radar-bar',
+          userSettings: {
+            proximityThreshold: 3,
+            hideDelay: 2,
+            showDistance: false,
+          },
+        },
+      ])
+    );
+
+    expect(layoutWidgets(migrated)).toEqual([
+      { id: 'radar-bar', userSettings: { showDistance: false } },
+    ]);
+  });
+});
+
 describe('v3 — the g-meter becomes a round dial', () => {
   it('squares the box on the width, dropping the footer height', () => {
     const migrated = v3WidgetShapes.migrate(

@@ -18,11 +18,6 @@ const meta: Meta<StoryArgs> = {
     seed: (store, args) => {
       store.appSettings.dragMode = true;
 
-      store.widgetSettings.updateUserSettings('radar-bar', {
-        proximityThreshold: 3,
-        hideDelay: 2,
-      });
-
       store.backendComputed.updateProximity({
         radarDistances: args.radarDistances,
         spotterLeft: args.spotterLeft,

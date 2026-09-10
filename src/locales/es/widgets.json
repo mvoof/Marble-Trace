@@ -260,8 +260,10 @@
     },
     "radar": {
       "radarBehavior": "Comportamiento del radar",
-      "activationRange": "Alcance de activación (m)",
       "fadeOutDelay": "Retardo de desvanecido (s)",
+      "fadeOutDelayDesc": "Segundos que el radar permanece visible después de que el último coche lo haya abandonado.",
+      "scopeActivationDesc": "El radar aparece cuando un coche entra en el alcance que dibuja — configúralo abajo, en Alcance. Ya no hay un radio de activación aparte.",
+      "barActivationDesc": "La barra es el aviso del spotter: un lado se enciende mientras el spotter avisa de un coche ahí, y se apaga en cuanto ha pasado.",
       "showDistance": "Mostrar la distancia",
       "qualifying": "Clasificación",
       "showInQualifying": "Mostrar en clasificación",
@@ -269,7 +271,6 @@
       "auto": "Automático",
       "never": "Nunca",
       "autoDesc": "Automático: se oculta durante la clasificación en solitario (un solo coche en pista)",
-      "activationRangeDesc": "Parachoques con parachoques: el widget aparece cuando alguien se acerca tanto.",
       "scope": "Círculo",
       "scaleMode": "Escala",
       "scaleModes": {

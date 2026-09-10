@@ -260,8 +260,10 @@
     },
     "radar": {
       "radarBehavior": "雷达行为",
-      "activationRange": "激活范围（米）",
       "fadeOutDelay": "淡出延迟（秒）",
+      "fadeOutDelayDesc": "最后一辆车离开后，雷达继续显示的秒数。",
+      "scopeActivationDesc": "当有车辆进入雷达绘制的范围时雷达自动显示——请在下方“范围”中设置。不再有单独的激活半径。",
+      "barActivationDesc": "指示条即观察员的呼叫：观察员报告某侧有车时该侧亮起，车辆驶过后立即熄灭。",
       "showDistance": "显示距离",
       "qualifying": "排位赛",
       "showInQualifying": "在排位赛中显示",
@@ -269,7 +271,6 @@
       "auto": "自动",
       "never": "从不",
       "autoDesc": "自动：单独排位赛期间隐藏（赛道上仅一辆车）",
-      "activationRangeDesc": "以保险杠间距计算——有人靠近到该距离时组件才出现。",
       "scope": "视野圆",
       "scaleMode": "缩放",
       "scaleModes": {
