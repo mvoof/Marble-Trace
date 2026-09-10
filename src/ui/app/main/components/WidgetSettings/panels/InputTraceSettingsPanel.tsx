@@ -45,7 +45,7 @@ export const InputTraceSettingsPanel = observer(() => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <>
       <Card title={t('settingsPanels.inputTrace.dataChannels')}>
         <div className={styles.fieldGroup}>
           <SettingRow
@@ -312,6 +312,6 @@ export const InputTraceSettingsPanel = observer(() => {
           </SettingRow>
         </div>
       </Card>
-    </Space>
+    </>
   );
 });
