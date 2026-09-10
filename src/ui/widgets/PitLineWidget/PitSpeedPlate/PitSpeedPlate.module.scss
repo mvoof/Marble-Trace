@@ -123,14 +123,10 @@ $speed-limit-seam: $pit-readout-seam;
   height: 0;
 }
 
-// The speed is the number the whole column exists for, so it is the biggest
-// thing on it. Under the limit it hangs below the line; over it, it stands
-// above the line, in the red band it has just driven into.
-.value {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: sp(xxs);
+// The typography of the readout, shared by the three states: the number is the
+// same number whatever is holding the car to the limit, so it is read at the
+// same size and in the same face in all of them.
+%readout-number {
   font-family: $font-mono;
   font-size: fs(xl);
   font-weight: 700;
@@ -140,10 +136,25 @@ $speed-limit-seam: $pit-readout-seam;
   text-align: center;
 }
 
-// Two numbers with a slash between them do not fit a column this narrow at the
-// size a single margin is read at.
-.valueWide {
-  font-size: fs(md);
+// The speed is the number the whole column exists for, so it is the biggest
+// thing on it. Under the limit it hangs below the line; over it, it stands
+// above the line, in the red band it has just driven into.
+.value {
+  @extend %readout-number;
+
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: sp(xxs);
+}
+
+// With no gauge behind it there is no line to hang from, so the number takes
+// the top of the column instead — level with the number the rail beside it
+// reads at — and the label sits under it as its caption.
+.flatValue {
+  @extend %readout-number;
+
+  flex: 0 0 auto;
 }
 
 .valueUnder {
