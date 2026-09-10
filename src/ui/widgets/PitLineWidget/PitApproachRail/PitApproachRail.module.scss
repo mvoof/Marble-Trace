@@ -1,0 +1,172 @@
+// One telemetry frame of catch-up: long enough to smooth the steps the sim
+// sends the progress in, short enough that the bar is never behind the car.
+$rail-glide: 120ms;
+
+// One full length of the column, floor to ceiling. Long enough to read as a
+// run rather than a flicker.
+$exit-cycle: 1.4s;
+
+// The urgency is the ground the bar stands on, not a colour spread across it:
+// the number stays white and the fill stays the lane, so the two states worth
+// interrupting a driver for are the only things that change the column.
+.rail {
+  position: relative;
+  display: flex;
+  height: 100%;
+  background: transparent;
+  border-radius: radius(md);
+  font-family: $font-widget;
+  overflow: hidden;
+}
+
+.urgencybrake {
+  animation: railPulse 0.4s steps(2, end) infinite;
+}
+
+// Standing in the stall: the lane behind the bar goes green, so the column says
+// "stop here" with the one colour the driver already reads as done.
+.urgencyarrived .fill {
+  background: rgba($race-green, 0.4);
+}
+
+@keyframes railPulse {
+  0% {
+    background: $widget-surface-cell;
+  }
+
+  100% {
+    background: rgba($race-red, 0.22);
+  }
+}
+
+// The leg being driven, stood on end: the car at the foot of the column, the
+// target — the stall on the way in, the exit line on the way out — at the top.
+.track {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: sp(xxs);
+  height: 100%;
+  width: 100%;
+  padding: sp(xxs);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: radius(sm);
+  overflow: hidden;
+}
+
+.fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--rail-fill, 0%);
+  background: rgba($race-blue, 0.35);
+  // The lane progress lands in steps, one telemetry frame at a time; a bar that
+  // catches up over a frame's worth of time reads as the car rolling.
+  transition: height $rail-glide linear;
+}
+
+// Where braking has to start to roll to a stop in the stall.
+.brakeMarker {
+  position: absolute;
+  bottom: var(--rail-brake-left, 0%);
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: $race-red;
+}
+
+// Out of the pits the column stops being a measurement and becomes a sign: the
+// same green plate the speed column turns into at pit exit, with three arrows
+// sweeping up it. The plate and the arrows are the same hue two steps apart —
+// the ground washed out to a third, the arrows at full strength — so they read
+// against each other without a second color entering the widget.
+// The sweeping group is positioned against this, and nothing else stands in it.
+.trackGo {
+  background: rgba($race-green, 0.35);
+}
+
+// The group is what moves: it is as tall as the column, so sweeping it from one
+// end to the other carries the arrows the whole length of the bar and back.
+.goArrows {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: sp(xxs);
+  height: 100%;
+  animation: goSweep $exit-cycle linear infinite;
+}
+
+// Lucide's own chevron: the icon set the rest of the app draws from, at a size
+// that reads as a sign rather than a bar.
+.goArrow {
+  flex: none;
+  color: $race-green;
+}
+
+// The leading arrow is solid and the two behind it fade out, so a single frame
+// already says which way the run is going.
+.goArrow:nth-child(1) {
+  opacity: 1;
+}
+
+.goArrow:nth-child(2) {
+  opacity: 0.55;
+}
+
+.goArrow:nth-child(3) {
+  opacity: 0.25;
+}
+
+// From below the floor to above the ceiling: the group is the column's own
+// height, so one full translate is one full length of the bar. No glow behind
+// it — the overlay sits over the track, where a bloom is something to see past
+// rather than read.
+@keyframes goSweep {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+// The number is at the head of the column and the unit at its foot: the metres
+// are read every tick and the unit once a season, and a column read from the
+// top down should open with the thing that changes.
+.value {
+  position: relative;
+  flex: none;
+  align-self: center;
+  margin: 0 0 auto;
+  font-family: $font-mono;
+  font-size: fs(xl);
+  font-weight: 700;
+  line-height: 1;
+  // White whatever the urgency is: the colour of the lane is the bar's to say,
+  // and a number that changed hue with it only made the metres harder to read
+  // at the moment they matter most.
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.unit {
+  position: relative;
+  flex: none;
+  align-self: center;
+  margin: auto 0 0;
+  font-size: fs(xxs);
+  opacity: 0.85;
+  letter-spacing: 0.08em;
+  color: $widget-label;
+  font-weight: 600;
+  white-space: nowrap;
+}

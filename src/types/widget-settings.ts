@@ -635,7 +635,7 @@ export interface FlagDisplaySettings {
   modeWidths?: Record<string, number>;
 }
 
-export interface PitServiceWidgetSettings {
+export interface PitLineWidgetSettings {
   showPitSpeed: boolean;
   /**
    * The approach rail: a bar that fills to the stall on the way in and to the
@@ -644,16 +644,28 @@ export interface PitServiceWidgetSettings {
    * from one place.
    */
   showPitApproach: boolean;
-  /** Distance to the stall, in meters, at which the countdown starts warning. */
-  pitApproachCueDistM: number;
+  /** Mark where braking has to start to stop in the stall. */
+  showPitBrakeCue: boolean;
+  /** Write `km/h` and `m` under the columns. Off, the numbers stand alone. */
+  showUnits: boolean;
+  /**
+   * Meters before the pit entry line at which the bars show themselves. Their
+   * own, not the pit box's: the lane bars are read on the way in and the order
+   * is read a lap earlier, so one distance for both was always a compromise.
+   * Zero switches it off and the bars appear on pit road.
+   */
+  revealOnApproachM: number;
+  /** Keep the bars on screen instead of only around a pit stop. */
+  alwaysVisible: boolean;
+}
+
+export interface PitServiceWidgetSettings {
   /**
    * Meters before the pit entry line at which the widget shows itself, so the
    * order can still be changed on the way in. Zero switches it off and the box
    * appears on pit road as before.
    */
   revealOnApproachM: number;
-  /** Mark where braking has to start to stop in the stall. */
-  showPitBrakeCue: boolean;
   /** Source of the P-number in the footer. */
   useLivePositions: boolean;
   /** Count the P-number within the player own class in multiclass sessions. */
@@ -770,6 +782,7 @@ export interface CoachWidgetSettings {
 export type WidgetSpecificSettings =
   | Record<never, never> // id: example widget
   | PitServiceWidgetSettings
+  | PitLineWidgetSettings
   | FlagDisplaySettings
   | RpmLightsWidgetSettings
   | InputTraceSettings

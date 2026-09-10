@@ -5,7 +5,7 @@ import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { PitAutoService } from '@ui/widgets/PitServiceWidget/pit-auto-service';
 import { PitOrder } from '@ui/widgets/PitServiceWidget/pit-order';
 import { PitPanelState } from '@ui/widgets/PitServiceWidget/pit-panel';
-import { distanceToPitEntryM } from '@ui/widgets/PitServiceWidget/pit-approach';
+import { distanceToPitEntryM } from '@utils/pit-approach';
 import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
 
 /**
@@ -111,8 +111,16 @@ export class PitServiceWidgetStore {
    * showing it at all. Zero switches it off.
    */
   get isApproachingPit(): boolean {
-    const revealM = this.settings.revealOnApproachM;
+    return this.isApproachingWithin(this.settings.revealOnApproachM);
+  }
 
+  /**
+   * The same question asked with someone else's distance. The lane bars keep
+   * their own reveal — they are read on the way into the lane, the order a lap
+   * earlier — so the window is a parameter rather than a second copy of the
+   * geometry above.
+   */
+  isApproachingWithin = (revealM: number): boolean => {
     if (revealM <= 0) {
       return false;
     }
@@ -120,7 +128,7 @@ export class PitServiceWidgetStore {
     const distM = this.distToPitEntryM;
 
     return distM !== null && distM <= revealM;
-  }
+  };
 
   /**
    * The pit lane's length in meters, or null on a track whose lane has not been

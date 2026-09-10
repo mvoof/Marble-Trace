@@ -67,7 +67,10 @@
       "description": "Twitch 与 YouTube 直播聊天合并为一条信息流。"
     },
     "pit-service": {
-      "description": "维修站服务项目、维修、拖车时间与维修道限速。"
+      "description": "进站指令：燃油、轮胎、维修与拖车。"
+    },
+    "pit-line": {
+      "description": "维修道限速对比与到达停车位的距离。"
     },
     "coach": {
       "description": "刹车/油门提示，以及与已保存最快圈对比的速度曲线，按赢得或损失的时间着色。"
@@ -632,8 +635,6 @@
     "pitService": {
       "sections": "区块",
       "visibility": "显示",
-      "pitSpeed": "维修道速度",
-      "pitSpeedDesc": "距离维修道限速的余量，含收油区间与限速器状态。",
       "fuel": "加油量",
       "fuelDesc": "已下单油量、计算推荐值以及两者差值。",
       "tires": "轮胎",
@@ -657,15 +658,25 @@
       "fuelAdjustStepDesc": "加油/减油按键每次按下调整的量，单位与显示一致——公制为升，英制为加仑。",
       "commandRevealSeconds": "命令后显示 {{seconds}} 秒",
       "commandRevealSecondsDesc": "按下轮胎、加油或自动模式按键后面板自动显示的时长，便于在赛道上确认操作。设为零则关闭。临时显示按键不受影响，它会一直保持到再次按下。",
+      "revealOnApproach": "进入维修道前 {{distance}} 显示",
+      "revealOnApproachDesc": "模拟器不会告知你打算进站，所以这只是到维修道入口线的距离——足够在进站途中修改指令。设为零则关闭，面板仍像以前那样在维修道上出现。"
+    },
+    "pitLine": {
+      "sections": "区块",
+      "visibility": "显示",
+      "alwaysVisible": "始终显示",
+      "alwaysVisibleDesc": "保持显示，而不是仅在维修道和拖车时出现。",
+      "pitSpeed": "维修道速度",
+      "pitSpeedDesc": "相对于维修道限速的当前车速，含收油区间与限速器状态。",
       "approach": "进站接近",
       "approachDesc": "在维修道示意条上显示到自己维修位的距离，标出维修位并提示刹车点。",
       "approachCard": "进站接近",
-      "approachCueDist": "距离 {{distance}} 时提示",
-      "approachCueDistDesc": "倒数变为琥珀色时距维修位的距离。",
       "brakeCue": "刹车提示",
       "brakeCueDesc": "按当前速度标出需要开始刹车的位置，以便停进维修位；到达时示意条闪烁。",
-      "revealOnApproach": "进入维修道前 {{distance}} 显示",
-      "revealOnApproachDesc": "模拟器不会告知你打算进站，所以这只是到维修道入口线的距离——足够在进站途中修改指令。设为零则关闭，面板仍像以前那样在维修道上出现。"
+      "showUnits": "数字下方显示单位",
+      "showUnitsDesc": "在两列下方标注 km/h 与 m。关闭后只保留数字。",
+      "revealOnApproach": "进站口前 {{distance}} 显示",
+      "revealOnApproachDesc": "条形图有自己的提前显示距离，与维修单独立：它们是在进站口才读的。设为零则只在维修道上显示。"
     },
     "coach": {
       "call": "提示",

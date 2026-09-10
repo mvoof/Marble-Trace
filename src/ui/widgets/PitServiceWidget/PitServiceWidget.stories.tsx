@@ -122,9 +122,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/PitServiceWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: PitServiceWidget,
-    // The docked approach rail is drawn outside the panel, the way the overlay
-    // container lets it through with `overflowVisible` in the manifest.
-    size: { width: 235, height: 330, overflow: 'visible' },
+    size: { width: 235, height: 280 },
     seed: (store, args) => {
       store.player.updateCarStatus({
         on_pit_road: args.onPitRoad,
@@ -155,11 +153,11 @@ const meta: Meta<StoryArgs> = {
         boxLanePct * STORY_LANE_LENGTH_M
       );
 
-      store.player.updatePitTarget(
-        distToBoxM,
-        'pitbox',
-        boxLanePct - distToBoxM / STORY_LANE_LENGTH_M
-      );
+      store.player.updatePitTarget({
+        distM: distToBoxM,
+        target: 'pitbox',
+        laneProgressPct: boxLanePct - distToBoxM / STORY_LANE_LENGTH_M,
+      });
 
       store.player.updateChassis(buildChassis());
       store.player.updatePitService(buildPitService(args));
@@ -182,7 +180,6 @@ const meta: Meta<StoryArgs> = {
           'pit-service'
         ),
         showFooter: args.showFooter,
-        showPitApproach: true,
         alwaysVisible: true,
       });
     },
@@ -213,10 +210,6 @@ type Story = StoryObj<StoryArgs>;
 
 export const Armed: Story = {};
 
-export const OverPitLimit: Story = {
-  args: { speedMs: 22 },
-};
-
 export const Servicing: Story = {
   args: {
     inPitStall: true,
@@ -237,12 +230,4 @@ export const Towing: Story = {
 
 export const FooterOff: Story = {
   args: { showFooter: false },
-};
-
-export const ApproachingBox: Story = {
-  args: { distToBoxM: 60, speedMs: 18 },
-};
-
-export const BrakeForBox: Story = {
-  args: { distToBoxM: 30, speedMs: 18 },
 };

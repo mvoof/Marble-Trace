@@ -12,10 +12,7 @@ import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows, usePanelWidgetId } from './setting-rows';
 import { useUnitsStore } from '@store/root-store-context';
-import {
-  displayDistanceToMeters,
-  metersToDisplayDistance,
-} from '@utils/telemetry-format';
+import { distanceScale } from './distance-scale';
 
 // Remaining tread, in percent. Above 90 every fresh set would be ordered and
 // below 10 the tires are already gone, so neither end is worth offering.
@@ -23,27 +20,16 @@ const WEAR_THRESHOLD_MIN_PCT = 10;
 const WEAR_THRESHOLD_MAX_PCT = 90;
 const WEAR_THRESHOLD_STEP_PCT = 5;
 
-// The countdown warns from this far out. Below 20 m the warning arrives after
-// the braking, and past 250 m every lap of the pit lane would be amber.
-const CUE_MIN_M = 20;
-const CUE_MAX_M = 250;
-const CUE_STEP_M = 10;
-
 // The pit entry countdown. Below 100 m the box arrives after the braking, and
 // past 1 km it is up for most of a lap on a short track. Zero switches it off.
 const APPROACH_MIN_M = 0;
 const APPROACH_MAX_M = 1000;
 const APPROACH_STEP_M = 50;
 
-// The sliders are read and dragged in the driver's own units; the setting stays
-// meters. Steps are rounded to something a foot scale would actually offer
-// rather than to whatever 10 m converts to.
-const CUE_STEP_FT = 25;
+// The slider is read and dragged in the driver's own units; the setting stays
+// meters. The step is rounded to something a foot scale would actually offer
+// rather than to whatever 50 m converts to.
 const APPROACH_STEP_FT = 100;
-
-// Meters are stored to the centimeter — enough for a foot slider to land back
-// on its own notch, short of writing a float nobody can read into the file.
-const CM_PER_M = 100;
 
 // Zero switches the reveal off; past fifteen seconds a pit entry has usually
 // shown the panel anyway.
@@ -55,41 +41,6 @@ const REVEAL_STEP_S = 1;
 export const PANEL_WIDGET_IDS = ['pit-service'];
 
 const { SwitchRow } = panelRows<PitServiceWidgetSettings>();
-
-interface DistanceSliderScale {
-  min: number;
-  max: number;
-  step: number;
-  unit: string;
-  toDisplay: (meters: number) => number;
-  toMeters: (value: number) => number;
-}
-
-const distanceScale = (
-  isImperial: boolean,
-  bounds: { minM: number; maxM: number; stepM: number; stepFt: number }
-): DistanceSliderScale => {
-  const system = isImperial ? 'imperial' : 'metric';
-  const toDisplay = (meters: number) =>
-    Math.round(metersToDisplayDistance(meters, system));
-
-  return {
-    min: toDisplay(bounds.minM),
-    max: toDisplay(bounds.maxM),
-    step: isImperial ? bounds.stepFt : bounds.stepM,
-    unit: isImperial ? 'ft' : 'm',
-    toDisplay,
-    // Feet are kept exact rather than rounded to whole meters: 100 ft is
-    // 30.48 m, and a 30 m round trip reads back as 98 ft — the thumb would
-    // slide off the notch the driver just dropped it on. Meters are already
-    // whole, so they stay whole.
-    toMeters: (value: number) =>
-      isImperial
-        ? Math.round(displayDistanceToMeters(value, system) * CM_PER_M) /
-          CM_PER_M
-        : Math.round(value),
-  };
-};
 
 export const PitServiceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -104,13 +55,6 @@ export const PitServiceSettingsPanel = observer(() => {
   // to: a driver on imperial reads and drags feet, and the file still holds the
   // one unit every comparison in the widget is made in.
   const isImperial = units.unitSystem === 'imperial';
-
-  const cueScale = distanceScale(isImperial, {
-    minM: CUE_MIN_M,
-    maxM: CUE_MAX_M,
-    stepM: CUE_STEP_M,
-    stepFt: CUE_STEP_FT,
-  });
 
   const approachScale = distanceScale(isImperial, {
     minM: APPROACH_MIN_M,
@@ -127,18 +71,6 @@ export const PitServiceSettingsPanel = observer(() => {
   };
 
   const sections = [
-    {
-      titleKey: 'settingsPanels.pitService.pitSpeed',
-      descKey: 'settingsPanels.pitService.pitSpeedDesc',
-      value: settings.showPitSpeed,
-      key: 'showPitSpeed',
-    },
-    {
-      titleKey: 'settingsPanels.pitService.approach',
-      descKey: 'settingsPanels.pitService.approachDesc',
-      value: settings.showPitApproach,
-      key: 'showPitApproach',
-    },
     {
       titleKey: 'settingsPanels.pitService.fuel',
       descKey: 'settingsPanels.pitService.fuelDesc',
@@ -181,38 +113,6 @@ export const PitServiceSettingsPanel = observer(() => {
           </SettingRow>
         ))}
       </Card>
-
-      {settings.showPitApproach && (
-        <Card title={t('settingsPanels.pitService.approachCard')}>
-          <div className={styles.fieldGroup}>
-            <div className={styles.fieldLabel}>
-              {t('settingsPanels.pitService.approachCueDist', {
-                distance: `${cueScale.toDisplay(settings.pitApproachCueDistM)} ${cueScale.unit}`,
-              })}
-            </div>
-
-            <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-              {t('settingsPanels.pitService.approachCueDistDesc')}
-            </div>
-
-            <Slider
-              min={cueScale.min}
-              max={cueScale.max}
-              step={cueScale.step}
-              value={cueScale.toDisplay(settings.pitApproachCueDistM)}
-              onChange={(value) =>
-                update({ pitApproachCueDistM: cueScale.toMeters(value) })
-              }
-            />
-          </div>
-
-          <SwitchRow
-            settingKey="showPitBrakeCue"
-            title={t('settingsPanels.pitService.brakeCue')}
-            desc={t('settingsPanels.pitService.brakeCueDesc')}
-          />
-        </Card>
-      )}
 
       <Card title={t('settingsPanels.pitService.position')}>
         <SwitchRow

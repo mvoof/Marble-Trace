@@ -17,7 +17,11 @@ const NO_LIMIT_TEXT = '—';
  * gauge and simply names both numbers. The speed half of the pair still moves
  * every tick and is written straight to its span.
  */
-export const PitLimiterRow = observer(() => {
+interface PitLimiterRowProps {
+  withUnit: boolean;
+}
+
+export const PitLimiterRow = observer(({ withUnit }: PitLimiterRowProps) => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
   const units = useUnitsStore();
@@ -48,12 +52,14 @@ export const PitLimiterRow = observer(() => {
 
   return (
     <div ref={rowRef} className={`${styles.row} ${styles.rowLimiter}`}>
-      <span className={styles.label}>PIT LIMITER</span>
+      <span className={styles.label}>LIM</span>
 
       <span className={styles.readout}>
         <span className={`${styles.value} ${styles.valueWide}`} />
 
-        <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
+        {withUnit && (
+          <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
+        )}
       </span>
     </div>
   );

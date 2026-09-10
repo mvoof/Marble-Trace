@@ -46,12 +46,24 @@
   }
 }
 
+// What is aboard: the quiet half of the bar, and the one the driver did not
+// choose.
 .fill {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   background: rgba($race-blue, 0.45);
+}
+
+// The order, stacked on top of the tank rather than measured from the left
+// edge — the two together are the level the car leaves the box on, which is the
+// whole reason both numbers are written out.
+.fillOrdered {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba($race-green, 0.45);
 }
 
 .icon {
@@ -68,14 +80,45 @@
 }
 
 .value {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxxs);
   margin-left: auto;
-  min-width: 5ch;
+  justify-content: flex-end;
   font-family: $font-mono;
   font-size: fs(xs);
   line-height: 1;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
+}
+
+// Both slots are fixed and right-aligned: each number swings between one and
+// three digits as the row is dragged, and the icon beside them must not move
+// with it. The order's slot holds the sign too — the plus belongs to what is
+// being added, so the slack a short order leaves falls in front of it.
+.inTank {
+  min-width: 3ch;
   text-align: right;
+  color: $widget-text-secondary;
+}
+
+.order {
+  min-width: 4ch;
+  text-align: right;
+}
+
+.plus {
+  color: $widget-label;
+}
+
+.added {
+  color: $race-green;
+}
+
+// The tank is at the brim: nothing more can be ordered, and the row says so
+// rather than accepting a number the crew would silently truncate.
+.valueFull .added {
+  color: $widget-label;
 }
 
 .unit {

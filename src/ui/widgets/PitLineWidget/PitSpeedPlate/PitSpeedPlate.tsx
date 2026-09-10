@@ -14,13 +14,17 @@ import styles from './PitSpeedPlate.module.scss';
  * limiter bit and what counts as being out of the pits too, and two answers to
  * "are we still bound by the limit" is one too many.
  */
-export const PitSpeedPlate = observer(() => {
+interface PitSpeedPlateProps {
+  withUnit: boolean;
+}
+
+export const PitSpeedPlate = observer(({ withUnit }: PitSpeedPlateProps) => {
   const { isPitLimitReleased, isLimiterOn } = usePitServiceWidgetStore();
 
   if (isPitLimitReleased) {
     return (
       <div className={`${styles.row} ${styles.rowReleased}`}>
-        <span className={styles.label}>PIT EXIT</span>
+        <span className={styles.label}>EXIT</span>
 
         <span className={styles.readout}>
           <span className={styles.value}>GO!</span>
@@ -30,8 +34,8 @@ export const PitSpeedPlate = observer(() => {
   }
 
   if (isLimiterOn) {
-    return <PitLimiterRow />;
+    return <PitLimiterRow withUnit={withUnit} />;
   }
 
-  return <PitSpeedGauge />;
+  return <PitSpeedGauge withUnit={withUnit} />;
 });

@@ -28,10 +28,13 @@ import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
  * the manifest on load, so a portrait one left behind would keep skewing the
  * scale factor long after the plate became a disc.
  *
- * **3. Pit Service is rebuilt half the height and 40 px narrower.** The blocks
+ * **3. Pit Service is rebuilt half the height and 100 px narrower.** The blocks
  * it draws changed shape — the speed plate became one row, the tire corners
- * lost their headings — so the design size that describes it changed with them:
- * 300×540 to 235×330. The docked approach rail no longer widens the panel — it
+ * lost their headings —  so the design size that describes it changed with them:
+ * 300×540 to 235×280. The lane itself — the speed plate and the approach rail —
+ * left for the Pit Line widget in the same step, taking its four settings with
+ * it, and the tread is drawn narrower than the digits it stands under, so the
+ * panel is now as wide as its numbers and no wider. The docked approach rail no longer widens the panel — it
  * is carved out of it — so a file that was 360 wide for the rail lands on the
  * same 235 as everyone else.
  *
@@ -72,7 +75,7 @@ const PIT_SERVICE_ID = 'pit-service';
 const PIT_OLD_WIDTH_PX = 300;
 const PIT_OLD_SIDE_RAIL_WIDTH_PX = 360;
 const PIT_NEW_WIDTH_PX = 235;
-const PIT_NEW_HEIGHT_PX = 330;
+const PIT_NEW_HEIGHT_PX = 280;
 
 const G_METER_ID = 'g-meter';
 const G_METER_OLD_WIDTH_PX = 240;
@@ -170,12 +173,17 @@ const rescalePitService = (
 
   const scale = (asNumber(settings.currentWidth) ?? oldWidth) / oldWidth;
 
-  // The placement is gone with the docked rail: the approach bar is always a
-  // block in the stack now, so both keys are dropped rather than left behind to
-  // be merged back in by a default that no longer exists.
+  // The placement went with the docked rail, and the lane itself went with the
+  // Pit Line widget — speed, approach and the braking cue are its settings now,
+  // shipped at their own defaults. All five keys are dropped rather than left
+  // behind to be merged back in by defaults that no longer exist.
   const {
     pitApproachPlacement: _placement,
     pitApproachSide: _side,
+    showPitSpeed: _speed,
+    showPitApproach: _approach,
+    pitApproachCueDistM: _cue,
+    showPitBrakeCue: _brakeCue,
     ...kept
   } = settings;
 

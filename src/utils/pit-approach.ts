@@ -19,21 +19,26 @@ export interface PitApproachInput {
   /** Where the stall sits along the lane, 0..1 — null until recorded. */
   boxLanePct: number | null;
   speedMs: number;
-  /** Distance at which the countdown turns from "far" to "coming up". */
-  cueDistM: number;
   withBrakeCue: boolean;
 }
 
-export type PitApproachUrgency = 'far' | 'near' | 'brake' | 'arrived';
+/**
+ * What the rail is saying, and nothing the driver has to configure: the two
+ * states that are not 'far' are both geometry — one braking distance out at the
+ * current speed, and standing in the stall.
+ */
+export type PitApproachUrgency = 'far' | 'brake' | 'arrived';
 
 export interface PitApproachView {
   urgency: PitApproachUrgency;
   /**
-   * Fill of the current leg, 0..1. The rail is never the whole pit lane: on the
-   * way in it runs from the entry to the stall, and 100% *is* the box; once the
-   * box is behind us it runs from the stall to the exit, and 100% is the exit
-   * line. A bar whose end is the thing being driven at is one the driver can
-   * read without measuring where along it the target happens to sit.
+   * Length of the bar, 0..1, always measured from the foot of the column.
+   *
+   * The rail is never the whole pit lane, and the bar is never a progress bar:
+   * it is the room still to be driven, and the box is the end it moves towards.
+   * On the way in the box sits at the top and the bar grows to it; once the box
+   * is behind us it sits at the foot and the bar shrinks back down to the exit
+   * behind it. Either way a full bar is far and an empty one is there.
    */
   fill: number;
   /** Where braking has to start, 0..1 along the leg. Null when it does not apply. */
@@ -103,7 +108,6 @@ export const buildPitApproachView = (
     laneLengthM,
     boxLanePct,
     speedMs,
-    cueDistM,
     withBrakeCue,
   } = input;
 
@@ -120,8 +124,12 @@ export const buildPitApproachView = (
   const legLengthM =
     laneLengthM === null || laneLengthM <= 0 ? null : legSpan * laneLengthM;
 
-  const fill =
+  const legProgress =
     legSpan <= 0 ? 1 : clamp01(((progressPct ?? 0) - legStart) / legSpan);
+
+  // In: grows towards the box at the ceiling. Out: the box is behind the car,
+  // so the same bar drains back down towards it.
+  const fill = isTargetExit ? 1 - legProgress : legProgress;
 
   const urgency: PitApproachUrgency = (() => {
     // Past the stall the rail stops nagging: the target is the exit line, and
@@ -138,7 +146,7 @@ export const buildPitApproachView = (
       return 'brake';
     }
 
-    return distM <= cueDistM ? 'near' : 'far';
+    return 'far';
   })();
 
   // The leg ends at the stall, so the marker is one braking distance back from

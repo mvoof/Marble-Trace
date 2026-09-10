@@ -55,6 +55,7 @@ No React, no stores, no Tauri. Importable from any layer.
 | `driving-coach-utils.ts`   | Reference-lap maths: interpolating a reference sample, target-speed profiles, corner targets, tire wear, condition mismatch, the brake/gas/grip advisory.                   |
 | `flag-zones.ts`            | Incident and flag zones on a track line: computing them, measuring them, splitting one across start/finish, projecting one into a window.                                   |
 | `fuel-constants.ts`        | Fuel colors, chart configuration and the low-fuel thresholds — shared by the fuel widget and anything that shows a fuel figure.                                             |
+| `pit-approach.ts`          | The pit lane as a measured leg: metres to the pit entry line, and the view the approach rail is drawn from — fill, braking cue, urgency.                                    |
 | `qualifying-visibility.ts` | Honouring a widget's "show in qualifying" setting (`never` / `auto`) — the shared rule behind that switch.                                                                  |
 | `radar-constants.ts`       | Radar geometry (car width, corner radius, lateral offset) and the gap-to-color ramps used by every proximity view.                                                          |
 | `remote-screen.ts`         | Anything about remote screens as monitors: telling a remote monitor from a display, presets, bounds placement, slugs.                                                       |

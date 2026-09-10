@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 
 import styles from './FuelOrder.module.scss';
-import { formatFuel } from '@utils/telemetry-format';
+import { litersToDisplayFuel } from '@utils/telemetry-format';
 import type { UnitSystem } from '@/types';
 import {
   usePitServiceWidgetStore,
@@ -14,6 +14,11 @@ import {
 // The sim always reports fuel in liters; only the readout follows the setting.
 const fuelUnit = (unitSystem: UnitSystem): string =>
   unitSystem === 'metric' ? 'L' : 'gal';
+
+// Whole units: the row is read at speed, and the sim takes the order in whole
+// liters anyway. The decimals belong on the Fuel widget.
+const wholeUnits = (liters: number, unitSystem: UnitSystem): string =>
+  Math.round(litersToDisplayFuel(liters, unitSystem)).toString();
 
 const ICON_SIZE = 12;
 
@@ -25,9 +30,16 @@ const PERCENT = 100;
 const DRAG_THRESHOLD_PX = 3;
 
 /**
- * The fuel row doubles as the fuel gauge: it fills to the ordered amount, and
- * in interact mode it is dragged left and right to set it. A press that does
- * not move is still the on/off toggle.
+ * The fuel row doubles as the tank gauge: it fills to what is aboard, then to
+ * what has been ordered on top of it, and in interact mode it is dragged left
+ * and right to set the level to arrive at. A press that does not move is still
+ * the on/off toggle.
+ *
+ * Both halves are shown — `58 + 12` — because the number that decides a stop is
+ * the sum: an order of twelve liters means nothing until it is read against a
+ * tank that is already three quarters full. The order stops at the brim for the
+ * same reason: past it the sim keeps the fuel it can hold and the driver reads a
+ * number the crew never carried out.
  */
 export const FuelOrder = observer(() => {
   const pitServiceWidget = usePitServiceWidgetStore();
@@ -35,17 +47,27 @@ export const FuelOrder = observer(() => {
   const pressStartX = useRef<number | null>(null);
   const dragging = useRef(false);
 
+  const { order } = pitServiceWidget;
+
   // Follows the drag while the row is being moved, the sim otherwise.
-  const ordered = pitServiceWidget.order.fuelDisplayLiters;
+  const ordered = order.fuelDisplayLiters;
 
   // Owned by the widget store so the number shown here is exactly the number
-  // the order hotkey sends.
-  const calculated = pitServiceWidget.order.plannedFuelLiters;
+  // the order hotkey sends — and it counts down as the tank fills.
+  const calculated = order.plannedFillNowLiters;
 
-  const capacity = pitServiceWidget.order.fuelCapacityLiters;
+  const inTank = order.fuelInTankLiters;
+  const capacity = order.fuelCapacityLiters;
   const canFill = capacity !== null && capacity > 0;
-  const fillRatio = canFill ? Math.min(FULL_RATIO, ordered / capacity) : 0;
 
+  const tankRatio = canFill ? Math.min(FULL_RATIO, inTank / capacity) : 0;
+  const orderedRatio = canFill
+    ? Math.min(FULL_RATIO - tankRatio, ordered / capacity)
+    : 0;
+
+  // The bar is the tank, so the pointer names the level to arrive at and the
+  // order is whatever is missing to reach it. Dragging below what is already
+  // aboard clears the order rather than pretending fuel can be taken out.
   const litersAt = (element: HTMLElement, clientX: number): number => {
     const { left, width } = element.getBoundingClientRect();
 
@@ -55,7 +77,7 @@ export const FuelOrder = observer(() => {
 
     const ratio = Math.min(FULL_RATIO, Math.max(0, (clientX - left) / width));
 
-    return ratio * capacity;
+    return Math.max(0, ratio * capacity - inTank);
   };
 
   // Interact mode shares the mouse with widget dragging; without stopping the
@@ -82,9 +104,7 @@ export const FuelOrder = observer(() => {
     }
 
     dragging.current = true;
-    pitServiceWidget.order.setFuelDraft(
-      litersAt(event.currentTarget, event.clientX)
-    );
+    order.setFuelDraft(litersAt(event.currentTarget, event.clientX));
   };
 
   const handlePointerUp = () => {
@@ -92,51 +112,81 @@ export const FuelOrder = observer(() => {
 
     if (dragging.current) {
       dragging.current = false;
-      void pitServiceWidget.order.commitFuelDraft();
+      void order.commitFuelDraft();
 
       return;
     }
 
-    void pitServiceWidget.order.toggleFuel();
+    void order.toggleFuel();
   };
 
   const content = (
     <>
       {canFill && (
-        <div
-          className={styles.fill}
-          style={{ width: `${fillRatio * PERCENT}%` } as CSSProperties}
-        />
+        <>
+          <div
+            className={styles.fill}
+            style={{ width: `${tankRatio * PERCENT}%` } as CSSProperties}
+          />
+
+          <div
+            className={styles.fillOrdered}
+            style={
+              {
+                left: `${tankRatio * PERCENT}%`,
+                width: `${orderedRatio * PERCENT}%`,
+              } as CSSProperties
+            }
+          />
+        </>
       )}
 
       <Fuel size={ICON_SIZE} className={styles.icon} />
 
       {calculated !== null && (
         <span className={styles.calc}>
-          CALC {formatFuel(calculated, units.unitSystem)}
+          CALC {wholeUnits(calculated, units.unitSystem)}
         </span>
       )}
 
       {/*
-        Fixed slot, right-aligned: the amount swings between one and three
-        digits as it is dragged, and the icon beside it must not move with it.
+        Fixed slot, right-aligned: both numbers swing between one and three
+        digits as the row is dragged, and the icon beside them must not move
+        with it.
       */}
-      <span className={styles.value}>
-        {ordered > 0 ? `+${formatFuel(ordered, units.unitSystem)}` : '—'}
+      <span
+        className={`${styles.value} ${order.isTankFull ? styles.valueFull : ''}`}
+      >
+        <span className={styles.inTank}>
+          {wholeUnits(inTank, units.unitSystem)}
+        </span>
+
+        {/*
+          The sign travels with the number it signs: `6  +0`, not `6+  0`. Both
+          live in one right-aligned slot, so the padding a short order leaves
+          falls in front of the plus rather than between it and the digits.
+        */}
+        <span className={styles.order}>
+          <span className={styles.plus}>+</span>
+
+          <span className={styles.added}>
+            {ordered > 0 ? wholeUnits(ordered, units.unitSystem) : '0'}
+          </span>
+        </span>
       </span>
 
       <span className={styles.unit}>{fuelUnit(units.unitSystem)}</span>
     </>
   );
 
-  if (!pitServiceWidget.order.canClickOrders) {
+  if (!order.canClickOrders) {
     return <div className={styles.fuel}>{content}</div>;
   }
 
   return (
     <button
       type="button"
-      aria-label="Fuel on the pit order: click to toggle, drag to set the amount"
+      aria-label="Fuel on the pit order: click to toggle, drag to set the level to fill to"
       className={`${styles.fuel} ${styles.fuelClickable}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

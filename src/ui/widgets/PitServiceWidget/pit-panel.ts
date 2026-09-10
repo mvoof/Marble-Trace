@@ -48,8 +48,14 @@ export class PitPanelState {
    */
   commandRevealNonce = 0;
 
+  /**
+   * The panel is holding itself up for a few seconds after pit exit. Public
+   * because the lane bars ride the same tail — the GO they turn into is the end
+   * of the very stop the box is still showing the result of.
+   */
+  lingering = false;
+
   private revealTimer: ReturnType<typeof setTimeout> | null = null;
-  private lingering = false;
   private lastOnPitRoad = false;
   private lastServiceActive = false;
   private stallEnteredAt: number | null = null;

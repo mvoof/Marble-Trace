@@ -1,11 +1,12 @@
 import { observer } from 'mobx-react-lite';
+import { ChevronUp } from 'lucide-react';
 
 import {
   usePitServiceWidgetStore,
   usePlayerStore,
   useUnitsStore,
 } from '@store/root-store-context';
-import { buildPitApproachView } from '@ui/widgets/PitServiceWidget/pit-approach';
+import { buildPitApproachView } from '@utils/pit-approach';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { METERS_TO_FEET } from '@utils/telemetry-format';
 import { ReservedSlot } from '@ui/shared/ReservedSlot/ReservedSlot';
@@ -19,22 +20,23 @@ const NO_VALUE_TEXT = '--';
 const FILL_WIDTH_PROPERTY = '--rail-fill';
 const BRAKE_LEFT_PROPERTY = '--rail-brake-left';
 
-const URGENCY_CLASSES = [
-  styles.urgencynear,
-  styles.urgencybrake,
-  styles.urgencyarrived,
-];
+const URGENCY_CLASSES = [styles.urgencybrake, styles.urgencyarrived];
 
 /**
- * The rail is one lane and nothing else — `.track` is `ws(18)`, and the readout
- * is drawn on top of it rather than above it. Kept as a number here so the slot
- * the rail leaves behind is exactly the rail.
+ * The room the column asks for while the widget is being placed. Kept as a
+ * number here so the slot the rail leaves behind is exactly the rail.
  */
-const RAIL_HEIGHT_PX = 18;
+const RAIL_HEIGHT_PX = 130;
+
+// Small enough to read as a sign rather than a bar: three of them stacked are
+// the signal, not one arrow blown up to fill the column.
+const GO_ARROW_SIZE = 22;
+const GO_ARROW_STROKE = 3;
 
 interface PitApproachRailProps {
-  cueDistM: number;
   withBrakeCue: boolean;
+  withUnit: boolean;
+  revealOnApproachM: number;
 }
 
 /**
@@ -44,7 +46,7 @@ interface PitApproachRailProps {
  * rail when it appears and when the lane goes away. See `docs/rendering.md`.
  */
 export const PitApproachRail = observer(
-  ({ cueDistM, withBrakeCue }: PitApproachRailProps) => {
+  ({ withBrakeCue, withUnit, revealOnApproachM }: PitApproachRailProps) => {
     const pitService = usePitServiceWidgetStore();
     const player = usePlayerStore();
     const units = useUnitsStore();
@@ -56,7 +58,8 @@ export const PitApproachRail = observer(
     // Before the entry line the rail counts down to the entry instead of the
     // box: that is the whole of what the sim lets us know on the way in, and it
     // is the number the driver is braking for.
-    const isApproach = isIdle && pitService.isApproachingPit;
+    const isApproach =
+      isIdle && pitService.isApproachingWithin(revealOnApproachM);
 
     const isImperial = units.unitSystem === 'imperial';
 
@@ -70,7 +73,6 @@ export const PitApproachRail = observer(
           boxLanePct: pitService.pitboxLanePct,
           // oxlint-disable-next-line no-restricted-properties
           speedMs: player.carDynamics?.speed ?? 0,
-          cueDistM,
           withBrakeCue,
         });
 
@@ -84,8 +86,6 @@ export const PitApproachRail = observer(
             : Math.round(
                 isImperial ? shownDistM * METERS_TO_FEET : shownDistM
               ).toString();
-
-        const targetLabel = isIdle ? 'IN' : view.isTargetExit ? 'EXIT' : 'BOX';
 
         scheduleWrite(() => {
           for (const urgencyClass of URGENCY_CLASSES) {
@@ -126,52 +126,74 @@ export const PitApproachRail = observer(
           if (value instanceof HTMLElement) {
             value.textContent = distValue;
           }
-
-          const target = element.querySelector(`.${styles.target}`);
-
-          if (target instanceof HTMLElement) {
-            target.textContent = `→ ${targetLabel}`;
-          }
         });
       },
-      [player, pitService, cueDistM, withBrakeCue, isIdle, isImperial]
+      [player, pitService, withBrakeCue, isIdle, isImperial]
     );
 
     // The lane goes away, but not the room it stands in: the rail appears on
     // the way to the box, and a widget that grew a row at that moment would be
     // one the driver placed against a different bottom edge.
+    // Out of the pits altogether the column has nothing left to measure — the
+    // lane is behind the car — so it becomes the other half of the GO the speed
+    // column shows at the same moment: three arrows running the way the car is
+    // going. It is deliberately the same flag, so the two columns cannot
+    // disagree about when the lane stops applying.
+    if (pitService.isPitLimitReleased) {
+      return (
+        <div className={styles.rail}>
+          <div className={`${styles.track} ${styles.trackGo}`}>
+            {/*
+              One group of three, swept up the whole column rather than three
+              arrows blinking in place: the leading arrow is solid and the tail
+              fades out behind it, so the run has a direction even in a frame.
+            */}
+            <span className={styles.goArrows}>
+              <ChevronUp
+                size={GO_ARROW_SIZE}
+                strokeWidth={GO_ARROW_STROKE}
+                className={styles.goArrow}
+              />
+
+              <ChevronUp
+                size={GO_ARROW_SIZE}
+                strokeWidth={GO_ARROW_STROKE}
+                className={styles.goArrow}
+              />
+
+              <ChevronUp
+                size={GO_ARROW_SIZE}
+                strokeWidth={GO_ARROW_STROKE}
+                className={styles.goArrow}
+              />
+            </span>
+          </div>
+        </div>
+      );
+    }
+
     if (isIdle && !isApproach) {
       return <ReservedSlot height={RAIL_HEIGHT_PX} label="Pit approach" />;
     }
 
     return (
-      <div
-        ref={railRef}
-        className={[styles.rail, isIdle ? styles.railIdle : '']
-          .filter(Boolean)
-          .join(' ')}
-      >
+      <div ref={railRef} className={styles.rail}>
         <div className={styles.track}>
           <span className={styles.fill} />
 
           <span className={styles.brakeMarker} />
 
           {/*
-            The far end of the rail is the target itself — the stall on the way
-            in, the exit line on the way out — so it is drawn as an end cap
-            rather than as a patch somewhere along a full-lane bar.
+            The number is the first thing read on the column, so it stands at
+            the head of it; the unit is read once and sits out of the way at the
+            foot. Nothing marks the top of the fill — the fill's own edge is the
+            car, and a line drawn over it only competed with the box.
           */}
-          <span className={styles.targetCap} />
+          <span className={styles.value} />
 
-          <span className={styles.carMarker} />
-
-          <span className={styles.readout}>
-            <span className={styles.value} />
-
+          {withUnit && (
             <span className={styles.unit}>{isImperial ? 'ft' : 'm'}</span>
-
-            <span className={styles.target} />
-          </span>
+          )}
         </div>
       </div>
     );

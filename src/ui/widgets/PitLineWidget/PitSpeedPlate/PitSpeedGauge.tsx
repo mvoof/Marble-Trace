@@ -2,9 +2,8 @@ import { observer } from 'mobx-react-lite';
 
 import {
   buildSpeedRow,
-  formatSpeedMargin,
   SPEED_GREEN_SHARE,
-} from '@ui/widgets/PitServiceWidget/pit-service-utils';
+} from '@ui/widgets/PitLineWidget/pit-line-utils';
 import { parsePitSpeedLimitMs, speedUnit } from '@utils/telemetry-format';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import {
@@ -26,12 +25,20 @@ const LIFT_LEFT_PROPERTY = '--speed-lift-left';
 const LIFT_WIDTH_PROPERTY = '--speed-lift-width';
 
 /**
- * The gauge state, without the limiter: a scale whose readout is the margin left
- * before the limit rather than the speed itself. Speed changes on every physics
- * tick, so the bars and the number are written straight to the DOM and React
- * renders the row once. See `docs/rendering.md`.
+ * The gauge state, without the limiter: the speed itself, written against the
+ * limit line rather than beside it. The number rides under the line while the
+ * speed is legal and jumps over it the moment it is not, so the offence is a
+ * change of position as well as of colour — read from the corner of an eye that
+ * is on the lane, not on the widget.
+ *
+ * Speed changes on every physics tick, so the bars and the number are written
+ * straight to the DOM and React renders the row once. See `docs/rendering.md`.
  */
-export const PitSpeedGauge = observer(() => {
+interface PitSpeedGaugeProps {
+  withUnit: boolean;
+}
+
+export const PitSpeedGauge = observer(({ withUnit }: PitSpeedGaugeProps) => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
   const units = useUnitsStore();
@@ -48,12 +55,13 @@ export const PitSpeedGauge = observer(() => {
         speedMs,
         limitMs,
         // oxlint-disable-next-line no-restricted-properties
-        player.carDynamics?.long_accel ?? null,
-        units.speedFactor
+        player.carDynamics?.long_accel ?? null
       );
 
-      const marginText =
-        limitMs > 0 ? formatSpeedMargin(view.margin) : NO_LIMIT_TEXT;
+      const speedText =
+        limitMs > 0
+          ? Math.round(speedMs * units.speedFactor).toString()
+          : NO_LIMIT_TEXT;
 
       scheduleWrite(() => {
         element.style.setProperty(FILL_WIDTH_PROPERTY, `${view.fill * PCT}%`);
@@ -95,7 +103,7 @@ export const PitSpeedGauge = observer(() => {
         if (value instanceof HTMLElement) {
           value.classList.toggle(styles.valueOver, view.isOver);
           value.classList.toggle(styles.valueUnder, !view.isOver);
-          value.textContent = marginText;
+          value.textContent = speedText;
         }
       });
     },
@@ -121,18 +129,19 @@ export const PitSpeedGauge = observer(() => {
 
       <span className={styles.limitTick} />
 
-      <span className={styles.label}>PIT SPEED</span>
-
       {/*
-        Parked against the limit seam rather than against the row's own edge:
-        the number the driver reads and the line it is being read against sit
-        together, and the overspeed band past the seam stays clear of text.
+        A zero-height anchor on the limit line itself: the number hangs below it
+        under the limit and sits above it once over, so the two states are the
+        two sides of the same line rather than two colours of the same text.
       */}
-      <span className={styles.readout}>
+      <span className={styles.seam}>
         <span className={styles.value} />
-
-        <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
       </span>
+
+      {/* Read once, so it keeps out of the way at the foot of the column. */}
+      {withUnit && (
+        <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
+      )}
     </div>
   );
 });
