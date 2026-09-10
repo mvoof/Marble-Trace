@@ -105,12 +105,13 @@ const WheelCenter = observer(() => {
   }
 
   if (display === 'gear' || display === 'speed') {
-    return <span ref={centerRef} className={styles.centerText} />;
+    return <span key={display} ref={centerRef} className={styles.centerText} />;
   }
 
   if (display === 'angle') {
     return (
       <span
+        key={display}
         ref={centerRef}
         className={`${styles.centerText} ${styles.centerAngle}`}
       >
@@ -122,7 +123,7 @@ const WheelCenter = observer(() => {
 
   if (display === 'speed-gear') {
     return (
-      <span ref={centerRef} className={styles.speedGear}>
+      <span key={display} ref={centerRef} className={styles.speedGear}>
         <span className={styles.speedGearSpeed} />
         <span className={styles.speedGearDivider} />
         <span className={styles.speedGearGear} />
@@ -131,7 +132,7 @@ const WheelCenter = observer(() => {
   }
 
   return (
-    <div className={styles.logoWrapper}>
+    <div key={display} className={styles.logoWrapper}>
       <Logo className={styles.logo} />
     </div>
   );
