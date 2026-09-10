@@ -1,0 +1,167 @@
+// Where the allowed track ends and the overspeed one begins — the pit limit.
+// Measured from the foot of the column, so the seam is a line across the bar and
+// the fill grows towards it.
+$speed-limit-seam: $pit-readout-seam;
+
+// The column is the gauge: two tracks stacked, the seam between them the pit
+// limit. Everything drawn in it is absolutely positioned behind the readout.
+.row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: sp(xxs);
+  height: 100%;
+  padding: sp(xxs);
+  background: $widget-surface-cell;
+  border-radius: radius(md);
+  overflow: hidden;
+  font-family: $font-widget;
+
+  // Everything the column draws is painted behind the readout, so the readout
+  // only has to stand in front of it: no plate, which would hide the fill the
+  // column exists for, and no glow either — on an overlay a shadow under a
+  // number is one more edge to read past.
+  > * {
+    position: relative;
+  }
+}
+
+.rowLimiter {
+  background: rgba($race-blue, 0.28);
+}
+
+.rowReleased {
+  background: rgba($race-green, 0.35);
+}
+
+// The long green track is everything below the limit, the short red one at the
+// top the overspeed the driver still has time to correct.
+.trackAllowed,
+.trackPenalty {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.trackAllowed {
+  bottom: 0;
+  height: $speed-limit-seam;
+  background: rgba($race-green, 0.1);
+}
+
+.trackPenalty {
+  top: 0;
+  height: 100% - $speed-limit-seam;
+  background: rgba($race-red, 0.14);
+}
+
+.fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--speed-fill, 0%);
+  background: rgba($race-green, 0.34);
+  transition: height 80ms linear;
+}
+
+.fillOver {
+  position: absolute;
+  bottom: var(--speed-over-left, 0%);
+  left: 0;
+  right: 0;
+  height: var(--speed-over-width, 0%);
+  background: rgba($race-red, 0.5);
+}
+
+// Hatched, so it never reads as a fill of its own: it is a warning about where
+// the car is going, not a measurement of where it is.
+.liftZone {
+  position: absolute;
+  bottom: var(--speed-lift-left, 0%);
+  left: 0;
+  right: 0;
+  height: var(--speed-lift-width, 0%);
+  background: repeating-linear-gradient(
+    135deg,
+    rgba($race-amber, 0.55) 0 3px,
+    rgba($race-amber, 0) 3px 6px
+  );
+  border-top: 1px solid rgba($race-amber, 0.8);
+}
+
+.limitTick {
+  position: absolute;
+  bottom: $speed-limit-seam;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba($race-red, 0.8);
+}
+
+.label {
+  font-size: fs(xs);
+  letter-spacing: 0.1em;
+  color: $widget-label;
+  font-weight: 600;
+  text-align: center;
+}
+
+.rowLimiter .label,
+.rowReleased .label {
+  color: $widget-text-primary;
+}
+
+// The limit line, given no height of its own: it is only somewhere for the
+// number to hang from, on the line the number is being read against.
+.seam {
+  position: absolute;
+  bottom: $speed-limit-seam;
+  left: 0;
+  right: 0;
+  height: 0;
+}
+
+// The speed is the number the whole column exists for, so it is the biggest
+// thing on it. Under the limit it hangs below the line; over it, it stands
+// above the line, in the red band it has just driven into.
+.value {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: sp(xxs);
+  font-family: $font-mono;
+  font-size: fs(xl);
+  font-weight: 700;
+  line-height: 1;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+// Two numbers with a slash between them do not fit a column this narrow at the
+// size a single margin is read at.
+.valueWide {
+  font-size: fs(md);
+}
+
+.valueUnder {
+  color: $race-green;
+}
+
+.valueOver {
+  top: auto;
+  bottom: sp(xxs);
+  color: $race-red;
+}
+
+.unit {
+  margin: auto 0 0;
+  text-align: center;
+  font-size: fs(xxs);
+  letter-spacing: 0.08em;
+  color: $widget-label;
+  font-weight: 600;
+  opacity: 0.85;
+}

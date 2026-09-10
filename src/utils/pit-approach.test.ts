@@ -15,19 +15,12 @@ const baseInput: PitApproachInput = {
   laneLengthM: 400,
   boxLanePct: 0.6,
   speedMs: 16,
-  cueDistM: 100,
   withBrakeCue: true,
 };
 
 describe('buildPitApproachView', () => {
-  it('stays quiet while the box is further away than the cue distance', () => {
+  it('stays quiet while the box is further away than a braking distance', () => {
     expect(buildPitApproachView(baseInput).urgency).toBe('far');
-  });
-
-  it('warns inside the cue distance', () => {
-    expect(buildPitApproachView({ ...baseInput, distM: 80 }).urgency).toBe(
-      'near'
-    );
   });
 
   it('calls for the brakes at the braking distance for the current speed', () => {
@@ -47,7 +40,7 @@ describe('buildPitApproachView', () => {
         distM: brakeDistM,
         withBrakeCue: false,
       }).urgency
-    ).toBe('near');
+    ).toBe('far');
   });
 
   it('reads arrived within a car length of the stall', () => {
@@ -68,22 +61,34 @@ describe('buildPitApproachView', () => {
     expect(view.brakeMarker).toBeNull();
   });
 
-  it('fills the entry-to-stall leg on the way in, so 100% is the box', () => {
+  it('grows the bar towards the box on the way in', () => {
     // Halfway to a stall that sits at 0.6 of the lane.
     const view = buildPitApproachView({ ...baseInput, progressPct: 0.3 });
 
     expect(view.fill).toBeCloseTo(0.5, 6);
   });
 
-  it('fills the stall-to-exit leg once the box is behind us', () => {
+  it('drains the bar back towards the box once it is behind us', () => {
+    // A quarter of the way from the stall at 0.6 to the exit: three quarters
+    // of the leg are left, so three quarters of the bar are still standing.
     const view = buildPitApproachView({
       ...baseInput,
       distMode: 'pitExit',
-      progressPct: 0.8,
+      progressPct: 0.7,
     });
 
-    expect(view.fill).toBeCloseTo(0.5, 6);
+    expect(view.fill).toBeCloseTo(0.75, 6);
     expect(view.isTargetExit).toBe(true);
+  });
+
+  it('empties the bar at the exit line', () => {
+    const view = buildPitApproachView({
+      ...baseInput,
+      distMode: 'pitExit',
+      progressPct: 1,
+    });
+
+    expect(view.fill).toBeCloseTo(0, 6);
   });
 
   it('falls back to the whole lane until the stall has been recorded', () => {

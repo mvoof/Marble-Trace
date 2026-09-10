@@ -67,7 +67,10 @@
       "description": "Twitch and YouTube live chat in one feed."
     },
     "pit-service": {
-      "description": "Pit stop order, repairs, tow time and pit lane speed."
+      "description": "Pit stop order: fuel, tires, repairs and tow time."
+    },
+    "pit-line": {
+      "description": "Pit lane speed against the limit, and the roll to your stall."
     },
     "coach": {
       "description": "Brake/gas call and a speed trace against your stored best lap, colored by time gained or lost."
@@ -632,8 +635,6 @@
     "pitService": {
       "sections": "Sections",
       "visibility": "Visibility",
-      "pitSpeed": "Pit Lane Speed",
-      "pitSpeedDesc": "Margin left before the pit limit, with the lift-off band and the limiter state.",
       "fuel": "Fuel Order",
       "fuelDesc": "Ordered fuel, the calculated recommendation and how far the order differs from it.",
       "tires": "Tires",
@@ -657,15 +658,25 @@
       "fuelAdjustStepDesc": "How much one press of the fuel up / down keys adds or removes, in the unit you read — litres on metric, gallons on imperial.",
       "commandRevealSeconds": "Show for {{seconds}} s after a command",
       "commandRevealSecondsDesc": "How long the panel shows itself after a tyre, fuel or auto-mode key, so a press on track can be read back. Zero switches it off. The temporary-show key is not affected — it stays up until pressed again.",
+      "revealOnApproach": "Show {{distance}} before pit entry",
+      "revealOnApproachDesc": "The sim reports nothing about heading for the pits, so this is pure distance to the pit entry line — enough to change the order on the way in. Zero switches it off and the box appears on pit road as before."
+    },
+    "pitLine": {
+      "sections": "Sections",
+      "visibility": "Visibility",
+      "alwaysVisible": "Always visible",
+      "alwaysVisibleDesc": "Keep the widget on screen instead of showing it only on pit road and while being towed.",
+      "pitSpeed": "Pit Lane Speed",
+      "pitSpeedDesc": "Current speed read against the pit limit, with the lift-off band and the limiter state.",
       "approach": "Pit Approach",
       "approachDesc": "Distance to your stall drawn over the pit lane, with the stall marked and a braking cue.",
       "approachCard": "Pit Approach",
-      "approachCueDist": "Warn from {{distance}} out",
-      "approachCueDistDesc": "Distance to the stall at which the countdown turns amber.",
       "brakeCue": "Braking cue",
       "brakeCueDesc": "Mark where braking has to start to roll to a stop in the stall at the current speed, and flash the rail once you are there.",
+      "showUnits": "Units under the numbers",
+      "showUnitsDesc": "Write km/h and m under the columns. Off, the numbers stand on their own.",
       "revealOnApproach": "Show {{distance}} before pit entry",
-      "revealOnApproachDesc": "The sim reports nothing about heading for the pits, so this is pure distance to the pit entry line — enough to change the order on the way in. Zero switches it off and the box appears on pit road as before."
+      "revealOnApproachDesc": "The bars carry their own approach distance, apart from the pit box: they are read at the entry itself. Zero switches it off and they appear on pit road."
     },
     "coach": {
       "call": "Call",

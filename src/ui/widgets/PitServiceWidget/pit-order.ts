@@ -56,6 +56,22 @@ export class PitOrder {
   }
 
   /**
+   * What still has to go in, right now: the plan capped by the room left in the
+   * tank.
+   *
+   * It falls as the crew works — `fuel_level` climbs while the hose is in, and
+   * every liter that lands is one the plan no longer needs — so the row counts
+   * down to zero instead of standing at the figure the stop began with. That is
+   * also exactly the number every send clamps to, so what is read and what is
+   * ordered cannot drift apart.
+   */
+  get plannedFillNowLiters(): number | null {
+    const planned = this.plannedFuelLiters;
+
+    return planned === null ? null : this.clampFuel(planned);
+  }
+
+  /**
    * Whether the checkboxes in the overlay accept a click. The overlay only owns
    * the mouse in interact mode, so outside it a click cannot reach the widget
    * anyway — this keeps the affordance honest about that.
@@ -74,10 +90,13 @@ export class PitOrder {
    */
   get plannedOrder(): PitCommandRequest[] {
     const order: PitCommandRequest[] = [{ kind: 'clear', value: 0 }];
-    const fuel = this.plannedFuelLiters;
+    // Clamped like every other path into the sim: the plan is computed against
+    // the stint, not against the room left in the tank right now.
+    const planned = this.plannedFillNowLiters;
+    const fill = planned === null ? 0 : Math.ceil(planned);
 
-    if (fuel !== null && fuel > 0) {
-      order.push({ kind: 'fuel', value: Math.ceil(fuel) });
+    if (fill > 0) {
+      order.push({ kind: 'fuel', value: fill });
     }
 
     for (const corner of ALL_CORNERS) {
@@ -144,9 +163,40 @@ export class PitOrder {
     return this.store.root.player.pitService?.flags ?? 0;
   }
 
-  /** Tank size for this car; the ceiling for every manual fuel change. */
+  /** Tank size for this car; the ceiling the tank and the order share. */
   get fuelCapacityLiters(): number | null {
     return this.store.root.session.sessionInfo?.driverCarFuelMaxLtr ?? null;
+  }
+
+  /** What is already aboard. The crew adds on top of this, never instead of it. */
+  get fuelInTankLiters(): number {
+    return this.store.root.player.carStatus?.fuel_level ?? 0;
+  }
+
+  /**
+   * The most that can still be added: the tank, less what is in it.
+   *
+   * The sim silently truncates an order past the brim, so a bar that let the
+   * driver dial in twenty liters onto a nearly full tank would report an order
+   * the crew is not going to carry out — and the fuel calculation the whole
+   * strategy hangs on would be read off that number. Null while the car's tank
+   * size is unknown, which is the one case where no ceiling can be named.
+   */
+  get maxAddableLiters(): number | null {
+    const capacity = this.fuelCapacityLiters;
+
+    if (capacity === null) {
+      return null;
+    }
+
+    return Math.max(0, capacity - this.fuelInTankLiters);
+  }
+
+  /** The tank is at the brim, so there is nothing left to order. */
+  get isTankFull(): boolean {
+    const addable = this.maxAddableLiters;
+
+    return addable !== null && addable <= 0;
   }
 
   /** Liters the sim currently has on the order, zero when fuel is unchecked. */
@@ -170,10 +220,12 @@ export class PitOrder {
       : step * LITERS_PER_GALLON;
   }
 
+  // Private only in spirit: `plannedFillNowLiters` is the reading of it, and
+  // every write goes through it too.
   private clampFuel(liters: number): number {
-    const capacity = this.fuelCapacityLiters;
+    const addable = this.maxAddableLiters;
 
-    return Math.max(0, capacity === null ? liters : Math.min(liters, capacity));
+    return Math.max(0, addable === null ? liters : Math.min(liters, addable));
   }
 
   /** Moves the bar without touching the sim; `commitFuelDraft` sends it. */
@@ -229,13 +281,19 @@ export class PitOrder {
       return;
     }
 
-    const fuel = this.plannedFuelLiters;
+    const planned = this.plannedFillNowLiters;
 
-    if (fuel === null || fuel <= 0) {
+    if (planned === null) {
       return;
     }
 
-    await this.send([{ kind: 'fuel', value: Math.ceil(fuel) }]);
+    const fill = Math.ceil(planned);
+
+    if (fill <= 0) {
+      return;
+    }
+
+    await this.send([{ kind: 'fuel', value: fill }]);
   }
 
   /**

@@ -2,9 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: sp(xxxs);
-  // Five pixels of air around the tread and no more: three treads plus their
-  // gaps are what sets the whole panel's width, so every pixel spent here is
-  // spent twice over.
+  // Four pixels of air around the numbers: the three number columns plus their
+  // gaps are what the grid is measured by.
   padding: sp(xxxs) sp(xxs) sp(xxs);
   border-radius: radius(sm);
   background: $widget-surface-cell;
@@ -72,14 +71,17 @@
   color: $race-red;
 }
 
+// Narrower and shorter than the number columns above and below it: the tread
+// is a picture of the wear, and the digits are the reading. Sizing the picture
+// off the digits only ever made the panel wider than the numbers needed.
 .tire {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(3, ws(26));
+  grid-template-columns: repeat(3, ws(18));
   gap: 2px;
   justify-content: center;
   align-self: center;
-  height: ws(72);
+  height: ws(58);
   padding: 2px;
   background: rgba(0, 0, 0, $opacity-strong);
   border: 1px solid rgba(255, 255, 255, 0.25);

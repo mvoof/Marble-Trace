@@ -41,12 +41,16 @@ export function tempUnit(unitSystem: UnitSystem): string {
   return unitSystem === 'metric' ? '\u00B0C' : '\u00B0F';
 }
 
-export function formatFuel(liters: number, unitSystem: UnitSystem): string {
-  if (unitSystem === 'imperial') {
-    return (liters * LITERS_TO_GAL).toFixed(2);
-  }
+/** Liters in the unit the driver reads — gallons on imperial, unchanged on metric. */
+export function litersToDisplayFuel(
+  liters: number,
+  unitSystem: UnitSystem
+): number {
+  return unitSystem === 'imperial' ? liters * LITERS_TO_GAL : liters;
+}
 
-  return liters.toFixed(2);
+export function formatFuel(liters: number, unitSystem: UnitSystem): string {
+  return litersToDisplayFuel(liters, unitSystem).toFixed(2);
 }
 
 export function formatDistance(

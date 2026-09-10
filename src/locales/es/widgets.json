@@ -67,7 +67,10 @@
       "description": "Chat en directo de Twitch y YouTube en un solo hilo."
     },
     "pit-service": {
-      "description": "Pedido de la parada en boxes, reparaciones, tiempo de grúa y velocidad en el pit lane."
+      "description": "Orden de parada: combustible, neumáticos, reparaciones y grúa."
+    },
+    "pit-line": {
+      "description": "Velocidad en el pit lane frente al límite y la distancia hasta tu box."
     },
     "coach": {
       "description": "Indicación de freno y acelerador, y traza de velocidad frente a tu mejor vuelta guardada, coloreada según el tiempo ganado o perdido."
@@ -632,8 +635,6 @@
     "pitService": {
       "sections": "Secciones",
       "visibility": "Visibilidad",
-      "pitSpeed": "Velocidad en el pit lane",
-      "pitSpeedDesc": "Margen restante hasta el límite del pit lane, con la banda de levantar el pie y el estado del limitador.",
       "fuel": "Pedido de combustible",
       "fuelDesc": "Combustible pedido, la recomendación calculada y cuánto se desvía el pedido de ella.",
       "tires": "Neumáticos",
@@ -657,15 +658,25 @@
       "fuelAdjustStepDesc": "Cuánto añade o quita una pulsación de las teclas de subir y bajar combustible, en la unidad que lees: litros en métrico, galones en imperial.",
       "commandRevealSeconds": "Mostrar {{seconds}} s tras un comando",
       "commandRevealSecondsDesc": "Cuánto tiempo se muestra el panel tras usar una tecla de neumáticos, combustible o modo automático, para poder comprobar en pista lo que has pulsado. Cero lo desactiva. La tecla de mostrar temporalmente no se ve afectada: sigue visible hasta que la pulses de nuevo.",
+      "revealOnApproach": "Mostrar {{distance}} antes de la entrada al pit",
+      "revealOnApproachDesc": "El simulador no informa de la intención de entrar, así que es pura distancia a la línea de entrada al pit lane — lo justo para cambiar el pedido de camino. Cero lo desactiva y el panel aparece en el pit lane como antes."
+    },
+    "pitLine": {
+      "sections": "Secciones",
+      "visibility": "Visibilidad",
+      "alwaysVisible": "Siempre visible",
+      "alwaysVisibleDesc": "Mantiene el widget en pantalla en lugar de mostrarlo solo en el pit lane y durante el remolque.",
+      "pitSpeed": "Velocidad en el pit lane",
+      "pitSpeedDesc": "Velocidad actual frente al límite del pit lane, con la banda de levantar el gas y el estado del limitador.",
       "approach": "Aproximación al box",
       "approachDesc": "Distancia a tu box sobre el dibujo del pit lane, con el box marcado y un aviso de frenada.",
       "approachCard": "Aproximación al box",
-      "approachCueDist": "Avisar desde {{distance}}",
-      "approachCueDistDesc": "Distancia al box a la que la cuenta atrás se pone ámbar.",
       "brakeCue": "Aviso de frenada",
       "brakeCueDesc": "Marca dónde hay que empezar a frenar para detenerse en el box a la velocidad actual, y hace parpadear la barra al llegar.",
-      "revealOnApproach": "Mostrar {{distance}} antes de la entrada al pit",
-      "revealOnApproachDesc": "El simulador no informa de la intención de entrar, así que es pura distancia a la línea de entrada al pit lane — lo justo para cambiar el pedido de camino. Cero lo desactiva y el panel aparece en el pit lane como antes."
+      "showUnits": "Unidades bajo las cifras",
+      "showUnitsDesc": "Escribe km/h y m bajo las columnas. Desactivado, quedan solo las cifras.",
+      "revealOnApproach": "Mostrar {{distance}} antes de la entrada",
+      "revealOnApproachDesc": "Las barras tienen su propia distancia de aparición, aparte de la caja de servicio: se leen ya en la entrada. Cero lo desactiva y aparecen en el pit lane."
     },
     "coach": {
       "call": "Indicación",

@@ -237,8 +237,8 @@ describe('v3WidgetShapes — pit service', () => {
       {
         id: 'pit-service',
         designWidth: 235,
-        designHeight: 330,
-        userSettings: { currentWidth: 235, currentHeight: 330 },
+        designHeight: 280,
+        userSettings: { currentWidth: 235, currentHeight: 280 },
       },
     ]);
   });
@@ -259,13 +259,13 @@ describe('v3WidgetShapes — pit service', () => {
       {
         id: 'pit-service',
         designWidth: 235,
-        designHeight: 330,
-        userSettings: { currentWidth: 353, currentHeight: 495 },
+        designHeight: 280,
+        userSettings: { currentWidth: 353, currentHeight: 420 },
       },
     ]);
   });
 
-  it('measures a docked rail against the old wider base, then drops the placement', () => {
+  it('measures a docked rail against the old wider base, then drops the lane settings', () => {
     const migrated = v3WidgetShapes.migrate(
       inLayout([
         {
@@ -286,11 +286,10 @@ describe('v3WidgetShapes — pit service', () => {
       {
         id: 'pit-service',
         designWidth: 235,
-        designHeight: 330,
+        designHeight: 280,
         userSettings: {
           currentWidth: 235,
-          currentHeight: 330,
-          showPitApproach: true,
+          currentHeight: 280,
         },
       },
     ]);
@@ -305,8 +304,8 @@ describe('v3WidgetShapes — pit service', () => {
       {
         id: 'pit-service',
         designWidth: 235,
-        designHeight: 330,
-        userSettings: { currentWidth: 235, currentHeight: 330 },
+        designHeight: 280,
+        userSettings: { currentWidth: 235, currentHeight: 280 },
       },
     ]);
   });
@@ -395,8 +394,8 @@ describe('v3 — the top-level widget list is dropped', () => {
       {
         id: 'pit-service',
         designWidth: 235,
-        designHeight: 330,
-        userSettings: { currentWidth: 235, currentHeight: 330 },
+        designHeight: 280,
+        userSettings: { currentWidth: 235, currentHeight: 280 },
       },
     ]);
   });

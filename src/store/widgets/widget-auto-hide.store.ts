@@ -2,6 +2,7 @@ import { makeAutoObservable } from 'mobx';
 
 import type {
   FlagDisplaySettings,
+  PitLineWidgetSettings,
   PitServiceWidgetSettings,
 } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
@@ -58,11 +59,30 @@ export class WidgetAutoHideStore {
       );
     }
 
+    // The lane bars come and go with the same stop the order does, but not on
+    // the same approach: the box is opened a lap out to be edited, the bars are
+    // wanted at the entry itself, so they carry their own reveal distance and
+    // ride the panel only for the tail after pit exit.
+    if (widgetType === 'pit-line') {
+      const settings = this.settingsOf<PitLineWidgetSettings>(widgetId);
+      const pitService = this.root.pitServiceWidget;
+
+      return (
+        settings.alwaysVisible ||
+        pitService.isOnPitRoad ||
+        pitService.isApproachingWithin(settings.revealOnApproachM) ||
+        pitService.panel.lingering
+      );
+    }
+
     return true;
   };
 
   private settingsOf = <
-    SpecificSettings extends FlagDisplaySettings | PitServiceWidgetSettings,
+    SpecificSettings extends
+      | FlagDisplaySettings
+      | PitServiceWidgetSettings
+      | PitLineWidgetSettings,
   >(
     widgetId: string
   ) => this.root.widgetSettings.getSettings<SpecificSettings>(widgetId);
