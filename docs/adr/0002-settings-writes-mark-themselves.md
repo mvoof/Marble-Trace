@@ -1,13 +1,13 @@
 # ADR 0002: A settings write marks itself, in a log both stores share
 
 **Status:** accepted, 2026-09-07
-**Context:** the layout façade inside `WidgetSettingsStore`
+**Context:** the layout façade inside `LiveWidgetsStore`
 
 ## Decision
 
 `SettingsMutationLog` (`store/settings/mutation-log.ts`) holds `changeToken`,
 `syncToken` and the set of widgets touched. `LayoutsStore` and
-`WidgetSettingsStore` are both constructed with it and both write into it, so a
+`LiveWidgetsStore` are both constructed with it and both write into it, so a
 layout record marks its own writes instead of being wrapped in a façade method
 that remembers to.
 
@@ -24,14 +24,14 @@ class, and a write that forgot them failed in the worst possible way: the edit
 appeared on screen and was never saved.
 
 That forced every layout write through a façade method on
-`WidgetSettingsStore`, because `bumpMutation` was private to it — which is why
+`LiveWidgetsStore`, because `bumpMutation` was private to it — which is why
 ten of its members were one-line delegations onto `LayoutsStore`, and why a
 third of the call sites had already gone around them to `root.layouts`.
 
 ## Why not a reaction on the records
 
 The obvious cheaper move is to leave the mark where it is and have
-`WidgetSettingsStore` react to a token on `LayoutsStore`. It was rejected: it
+`LiveWidgetsStore` react to a token on `LayoutsStore`. It was rejected: it
 turns "the record changed, now re-project the live widgets" from a call into a
 scheduled effect, and the ordering is load-bearing at exactly the moment it is
 hardest to see. A layout switch already carries an echo in flight from the
@@ -53,7 +53,7 @@ claim.
 
 ## What is pinned
 
-`widget-settings.store.test.ts` tables every write of the live widget map and
+`live-widgets.store.test.ts` tables every write of the live widget map and
 the mark it leaves; `layouts.store.test.ts` does the same for the records. A
 write added without a mark fails there, which is the whole point of moving the
 rule.
@@ -64,3 +64,12 @@ If a third writer of settings appears that is neither a layout record nor the
 live widget map, check whether the log's vocabulary — one widget, every widget,
 synced — still describes what it does, rather than adding a fourth `record*`
 method to make it fit.
+
+## Since
+
+The seam this record stopped at was drawn afterwards. The class described above
+as `LiveWidgetsStore` was then a single 1505-line store still named
+`WidgetSettingsStore`; its screens, record lifecycle and editing session have
+since moved out to their owners. See
+[ADR-0003](0003-widget-state-lives-in-three-stores.md). The text above is left
+as it was written, describing the state it was decided against.

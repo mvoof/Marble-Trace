@@ -25,7 +25,8 @@ import {
   useTrackMapWidgetStore,
   useUnitsStore,
   useLayoutsStore,
-  useWidgetSettingsStore,
+  useLiveWidgetsStore,
+  useSettingsMutationLog,
 } from '@store/root-store-context';
 import { componentForWidget } from '@ui/widgets/registry';
 import { widgetTypeOf } from '@utils/widget-instance';
@@ -130,7 +131,7 @@ const mirrorAllWidgets = (
   // so a layout holding a copy has records it has never heard of. `syncWidgetSet`
   // reinstalls the list whenever the set of records changes, and patches it
   // field by field the rest of the time.
-  previewStore.widgetSettings.syncWidgetSet(mirrored);
+  previewStore.liveWidgets.syncWidgetSet(mirrored);
 };
 
 // One screen of the layout, drawn in desktop coordinates behind the widgets.
@@ -247,7 +248,8 @@ export const LayoutCanvas = observer(
     isRatioLocked = false,
     focusedMonitorName = null,
   }: LayoutCanvasProps) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const liveWidgets = useLiveWidgetsStore();
+    const settingsMutations = useSettingsMutationLog();
     const layouts = useLayoutsStore();
     const units = useUnitsStore();
     const monitors = layouts.editingLayout?.monitors ?? [];
@@ -294,13 +296,13 @@ export const LayoutCanvas = observer(
     }, [previewStore, scenarioId]);
 
     useLayoutEffect(() => {
-      mirrorAllWidgets(widgetSettings.allWidgets, previewStore);
+      mirrorAllWidgets(liveWidgets.allWidgets, previewStore);
 
       return reaction(
-        () => [widgetSettings.changeToken, widgetSettings.syncToken],
-        () => mirrorAllWidgets(widgetSettings.allWidgets, previewStore)
+        () => [settingsMutations.changeToken, settingsMutations.syncToken],
+        () => mirrorAllWidgets(liveWidgets.allWidgets, previewStore)
       );
-    }, [previewStore, widgetSettings]);
+    }, [previewStore, liveWidgets, settingsMutations]);
 
     useLayoutEffect(() => {
       const pane = paneRef.current;
@@ -347,7 +349,7 @@ export const LayoutCanvas = observer(
           event.key.toLowerCase() === 'z'
         ) {
           event.preventDefault();
-          widgetSettings.undo();
+          liveWidgets.undo();
           handled = true;
         } else if (
           (event.ctrlKey || event.metaKey) &&
@@ -355,7 +357,7 @@ export const LayoutCanvas = observer(
             (event.shiftKey && event.key.toLowerCase() === 'z'))
         ) {
           event.preventDefault();
-          widgetSettings.redo();
+          liveWidgets.redo();
           handled = true;
         }
 
@@ -363,7 +365,7 @@ export const LayoutCanvas = observer(
 
         if (!selectedWidgetId) return;
 
-        const widget = widgetSettings.getWidget(selectedWidgetId);
+        const widget = liveWidgets.getWidget(selectedWidgetId);
 
         if (!widget) return;
 
@@ -405,7 +407,7 @@ export const LayoutCanvas = observer(
             break;
           case 'Delete':
           case 'Backspace':
-            widgetSettings.setWidgetEnabled(selectedWidgetId, false);
+            liveWidgets.setWidgetEnabled(selectedWidgetId, false);
             onSelectWidget('');
             handled = true;
             break;
@@ -421,8 +423,8 @@ export const LayoutCanvas = observer(
           event.preventDefault();
 
           if (newX !== currentX || newY !== currentY) {
-            widgetSettings.pushUndo();
-            widgetSettings.updatePosition(selectedWidgetId, newX, newY);
+            liveWidgets.pushUndo();
+            liveWidgets.updatePosition(selectedWidgetId, newX, newY);
           }
         }
       };
@@ -432,13 +434,7 @@ export const LayoutCanvas = observer(
       return () => {
         document.removeEventListener('keydown', handleKeyDown);
       };
-    }, [
-      selectedWidgetId,
-      widgetSettings,
-      snapToGrid,
-      gridSize,
-      onSelectWidget,
-    ]);
+    }, [selectedWidgetId, liveWidgets, snapToGrid, gridSize, onSelectWidget]);
 
     // Overview fits every monitor of the layout at once — the only way to drag
     // a widget between screens. Focusing one zooms to it, because three or more
@@ -526,7 +522,7 @@ export const LayoutCanvas = observer(
         // rather than as nothing happening.
         const landed = clearOfMonitors(dropped, others);
 
-        widgetSettings.moveRemoteScreen(monitor.name, landed.x, landed.y);
+        layouts.moveRemoteScreen(monitor.name, landed.x, landed.y);
         setDraggedScreen(null);
         setFrozenView(null);
       };
@@ -690,8 +686,8 @@ export const LayoutCanvas = observer(
                   transform: `scale(${fit}) translate(${-view.x}px, ${-view.y}px)`,
                 }}
               >
-                {widgetSettings.enabledWidgetIds.map((id) => {
-                  const widget = widgetSettings.getWidget(id);
+                {liveWidgets.enabledWidgetIds.map((id) => {
+                  const widget = liveWidgets.getWidget(id);
                   const Widget = widget
                     ? componentForWidget(widgetTypeOf(widget))
                     : undefined;
@@ -705,7 +701,7 @@ export const LayoutCanvas = observer(
                       key={id}
                       widgetId={id}
                       fit={fit}
-                      mainSettings={widgetSettings}
+                      mainSettings={liveWidgets}
                       isSelected={selectedWidgetId === id}
                       isRatioLocked={selectedWidgetId === id && isRatioLocked}
                       snap={snapToGrid}

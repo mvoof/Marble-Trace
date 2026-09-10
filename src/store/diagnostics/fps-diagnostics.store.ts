@@ -19,6 +19,11 @@ import {
 import { resolveAppLanguage } from '@store/settings/app-settings.store';
 import { summarize, type SampleStats } from './stats';
 
+type FpsDiagnosticsDeps = Pick<
+  RootStore,
+  'liveWidgets' | 'appSettings' | 'simPerf'
+>;
+
 /**
  * Measures what each overlay configuration costs the sim, using the sim's own
  * `frame_rate` / `gpu_usage` / `cpu_usage_fg` counters.
@@ -108,7 +113,7 @@ export class FpsDiagnosticsStore {
   results: DiagnosticsResult[] = [];
   error: string | null = null;
 
-  private root: RootStore;
+  private root: FpsDiagnosticsDeps;
   private timer: ReturnType<typeof setTimeout> | null = null;
   private perfDisposer: IReactionDisposer | null = null;
   private restoreTo: ConfigSnapshot | null = null;
@@ -121,7 +126,7 @@ export class FpsDiagnosticsStore {
   private hudDisposer: IReactionDisposer | null = null;
   private hudCloseTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(root: RootStore) {
+  constructor(root: FpsDiagnosticsDeps) {
     this.root = root;
 
     makeAutoObservable(
@@ -137,7 +142,7 @@ export class FpsDiagnosticsStore {
    * duration for a different set of steps than the one it will walk.
    */
   get plannedSteps(): DiagnosticsStep[] {
-    return this.buildSteps(this.root.widgetSettings.enabledWidgetIds);
+    return this.buildSteps(this.root.liveWidgets.enabledWidgetIds);
   }
 
   get isRunning(): boolean {
@@ -205,7 +210,7 @@ export class FpsDiagnosticsStore {
       return;
     }
 
-    const enabledWidgetIds = this.root.widgetSettings.enabledWidgetIds;
+    const enabledWidgetIds = this.root.liveWidgets.enabledWidgetIds;
 
     if (enabledWidgetIds.length === 0) {
       this.phase = 'failed';
@@ -409,7 +414,7 @@ export class FpsDiagnosticsStore {
   }
 
   private applyStep(step: DiagnosticsStep) {
-    const settings = this.root.widgetSettings;
+    const settings = this.root.liveWidgets;
     const original = this.restoreTo?.enabledWidgetIds ?? [];
 
     this.root.appSettings.setHideAllWidgets(step.kind === 'hidden');
@@ -432,7 +437,7 @@ export class FpsDiagnosticsStore {
     }
 
     for (const widgetId of snapshot.enabledWidgetIds) {
-      this.root.widgetSettings.setWidgetEnabled(widgetId, true);
+      this.root.liveWidgets.setWidgetEnabled(widgetId, true);
     }
 
     this.root.appSettings.setHideAllWidgets(snapshot.hideAllWidgets);

@@ -4,7 +4,7 @@ import { EyeOff, LayoutGrid, Settings2 } from 'lucide-react';
 import styles from './WidgetDragToolbar.module.scss';
 import { SnapPanel } from './SnapPanel/SnapPanel';
 import { WidgetSettingsPopup } from './WidgetSettingsPopup/WidgetSettingsPopup';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/root-store-context';
 
 interface WidgetDragToolbarProps {
   widgetId: string;
@@ -12,7 +12,7 @@ interface WidgetDragToolbarProps {
 
 export const WidgetDragToolbar = observer(
   ({ widgetId }: WidgetDragToolbarProps) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const liveWidgets = useLiveWidgetsStore();
     const [snapOpen, setSnapOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -47,7 +47,7 @@ export const WidgetDragToolbar = observer(
 
     const hideWidget = (e: React.MouseEvent) => {
       e.stopPropagation();
-      widgetSettings.setWidgetEnabled(widgetId, false);
+      liveWidgets.setWidgetEnabled(widgetId, false);
     };
 
     return (

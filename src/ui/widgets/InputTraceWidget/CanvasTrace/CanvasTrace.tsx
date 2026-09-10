@@ -9,7 +9,7 @@ import {
   useAppSettingsStore,
   useInputTraceWidgetStore,
   usePlayerStore,
-  useWidgetSettingsStore,
+  useLiveWidgetsStore,
 } from '@store/root-store-context';
 import {
   createTraceBufferState,
@@ -28,7 +28,7 @@ const NO_FRAME_CONSUMED = -1;
 // observer() would cause 60 Hz React re-renders on every carInputs change.
 export const CanvasTrace = () => {
   const telemetry = usePlayerStore();
-  const widgetSettings = useWidgetSettingsStore();
+  const liveWidgets = useLiveWidgetsStore();
   const instanceId = useWidgetInstanceId('input-trace');
   const inputTrace = useInputTraceWidgetStore();
   const appSettings = useAppSettingsStore();
@@ -55,8 +55,7 @@ export const CanvasTrace = () => {
     (scheduleDraw) => {
       // oxlint-disable-next-line no-restricted-properties
       const inputs = telemetry.carInputs;
-      const settings =
-        widgetSettings.getSettings<InputTraceSettings>(instanceId);
+      const settings = liveWidgets.getSettings<InputTraceSettings>(instanceId);
       const state = bufferStateRef.current;
 
       if (!state) return;
@@ -113,15 +112,15 @@ export const CanvasTrace = () => {
 
       scheduleDraw(() => draw(settings, steeringLockDeg));
     },
-    [telemetry, widgetSettings, inputTrace, appSettings, draw]
+    [telemetry, liveWidgets, inputTrace, appSettings, draw]
   );
 
   const redrawOnResize = useCallback(() => {
     const currentSettings =
-      widgetSettings.getSettings<InputTraceSettings>(instanceId);
+      liveWidgets.getSettings<InputTraceSettings>(instanceId);
 
     draw(currentSettings, appSettings.appSettings.steeringLock);
-  }, [widgetSettings, instanceId, appSettings, draw]);
+  }, [liveWidgets, instanceId, appSettings, draw]);
 
   useCanvasAutoResize(canvasRef, redrawOnResize);
 

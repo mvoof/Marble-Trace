@@ -13,6 +13,11 @@ import {
   type TraceWindowStats,
 } from './coach-trace-utils';
 
+type CoachDeps = Pick<
+  RootStore,
+  'player' | 'referenceLap' | 'liveWidgets' | 'session'
+>;
+
 /**
  * A backwards jump larger than this (in lap fraction) is a teleport — a pit
  * tow, a reset to pits, or a session change — not a finish-line crossing. The
@@ -81,7 +86,7 @@ export class CoachWidgetStore {
   private previousBucket: number | null = null;
   private readonly disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: CoachDeps) {
     makeAutoObservable<
       CoachWidgetStore,
       | 'root'
@@ -142,7 +147,7 @@ export class CoachWidgetStore {
   }
 
   private get settings(): CoachWidgetSettings {
-    return this.root.widgetSettings.getSettings<CoachWidgetSettings>('coach');
+    return this.root.liveWidgets.getSettings<CoachWidgetSettings>('coach');
   }
 
   private recordSample(speed: number | undefined) {

@@ -97,7 +97,7 @@ export class SimStore {
             // live when the editor opened: the live layout could change out
             // from under it (a session auto-switch while editing another
             // layout) with nothing to trigger a recompute.
-            widgets: this.root.widgetSettings.liveWidgets.map((w) => ({
+            widgets: this.root.liveWidgets.liveWidgets.map((w) => ({
               id: w.id,
               enabled: w.userSettings.enabled,
             })),
@@ -220,7 +220,7 @@ export class SimStore {
 
     // What is on screen, not what the editor has open: the editor's preview
     // draws against seeded scenarios and needs no telemetry of its own.
-    for (const widget of this.root.widgetSettings.liveWidgets) {
+    for (const widget of this.root.liveWidgets.liveWidgets) {
       if (!widget.userSettings.enabled) continue;
 
       const manifest = WIDGET_BY_ID.get(widgetTypeOf(widget));

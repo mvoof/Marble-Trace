@@ -5,7 +5,7 @@ import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameStyle } from '@ui/app/widget-frame';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import styles from './RemoteWidgetFrame.module.scss';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/root-store-context';
 
 interface RemoteWidgetFrameProps {
   widgetId: string;
@@ -23,8 +23,8 @@ interface RemoteWidgetFrameProps {
  */
 export const RemoteWidgetFrame = observer(
   ({ widgetId, children }: RemoteWidgetFrameProps) => {
-    const widgetSettings = useWidgetSettingsStore();
-    const widget = widgetSettings.getWidget(widgetId);
+    const liveWidgets = useLiveWidgetsStore();
+    const widget = liveWidgets.getWidget(widgetId);
 
     if (!widget) {
       return null;

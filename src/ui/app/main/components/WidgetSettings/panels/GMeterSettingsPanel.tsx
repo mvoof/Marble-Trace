@@ -15,15 +15,14 @@ import { usePanelWidgetId } from './setting-rows';
 export const PANEL_WIDGET_IDS = ['g-meter'];
 
 export const GMeterSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('g-meter');
   const { t } = useTranslation('widgets');
 
-  const settings =
-    widgetSettings.getSettings<GMeterWidgetSettings>(panelWidgetId);
+  const settings = liveWidgets.getSettings<GMeterWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<GMeterWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

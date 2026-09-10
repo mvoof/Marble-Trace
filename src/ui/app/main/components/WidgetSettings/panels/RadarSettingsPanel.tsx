@@ -89,15 +89,15 @@ const ScopeReadout = observer(
 );
 
 const ScopeCard = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('proximity-radar');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<ProximityRadarSettings>(panelWidgetId);
+    liveWidgets.getSettings<ProximityRadarSettings>(panelWidgetId);
 
   const update = (partial: Partial<ProximityRadarSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });
@@ -273,15 +273,15 @@ const ScopeCard = observer(() => {
 
 export const RadarSettingsPanel = observer(
   ({ widgetId }: { widgetId: string }) => {
-    const widgetSettings = useWidgetEditor();
+    const liveWidgets = useWidgetEditor();
     const widgetType = widgetTypeOf(
-      widgetSettings.getWidget(widgetId) ?? { id: widgetId }
+      liveWidgets.getWidget(widgetId) ?? { id: widgetId }
     );
     const { t } = useTranslation('widgets');
-    const settings = widgetSettings.getSettings<RadarSettings>(widgetId);
+    const settings = liveWidgets.getSettings<RadarSettings>(widgetId);
 
     const update = (partial: Partial<RadarSettings>) => {
-      widgetSettings.updateUserSettings(widgetId, {
+      liveWidgets.updateUserSettings(widgetId, {
         ...settings,
         ...partial,
       });
@@ -290,10 +290,10 @@ export const RadarSettingsPanel = observer(
     // The fade-out is the scope's alone, so it is read and written through the
     // narrower type rather than widening the pair's shared contract again.
     const scopeSettings =
-      widgetSettings.getSettings<ProximityRadarSettings>(widgetId);
+      liveWidgets.getSettings<ProximityRadarSettings>(widgetId);
 
     const updateScope = (partial: Partial<ProximityRadarSettings>) => {
-      widgetSettings.updateUserSettings(widgetId, {
+      liveWidgets.updateUserSettings(widgetId, {
         ...scopeSettings,
         ...partial,
       });

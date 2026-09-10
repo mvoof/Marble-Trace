@@ -27,11 +27,11 @@ describe('StreamChatWidgetStore', () => {
   const setSettings = (partial: Partial<StreamChatWidgetSettings>) => {
     runInAction(() => {
       const settings =
-        rootStore.widgetSettings.getSettings<StreamChatWidgetSettings>(
+        rootStore.liveWidgets.getSettings<StreamChatWidgetSettings>(
           'stream-chat'
         );
 
-      rootStore.widgetSettings.updateUserSettings('stream-chat', {
+      rootStore.liveWidgets.updateUserSettings('stream-chat', {
         ...settings,
         ...partial,
       });

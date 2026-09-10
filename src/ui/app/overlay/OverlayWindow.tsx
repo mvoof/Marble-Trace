@@ -35,7 +35,7 @@ export const OverlayWindow = () => {
     const monitorName = readMonitorName();
 
     if (monitorName) {
-      root.widgetSettings.setOwnMonitorName(monitorName);
+      root.liveWidgets.setOwnMonitorName(monitorName);
     }
 
     let cleanup: (() => void) | undefined;

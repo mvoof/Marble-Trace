@@ -20,7 +20,7 @@ const keyboard = (accelerator: string) =>
 
 interface TestRoot {
   bindings: BindingsStore;
-  widgetSettings: {
+  liveWidgets: {
     isWidgetOnScreen: (id: string) => boolean;
     getWidget: (id: string) => { userSettings: { enabled: boolean } };
     firstWidgetOfType: (type: string) => {
@@ -40,7 +40,7 @@ interface TestRoot {
 
 const makeRoot = (widgetsInLayout: string[]): TestRoot => ({
   bindings: new BindingsStore(registry),
-  widgetSettings: {
+  liveWidgets: {
     isWidgetOnScreen: (id: string) => widgetsInLayout.includes(id),
     getWidget: (id: string) => ({
       userSettings: { enabled: widgetsInLayout.includes(id) },
@@ -129,7 +129,7 @@ describe('dispatchBinding', () => {
 
     dispatch(root, 'F5');
 
-    expect(root.widgetSettings.setWidgetEnabled).toHaveBeenCalledWith(
+    expect(root.liveWidgets.setWidgetEnabled).toHaveBeenCalledWith(
       'standings',
       false
     );
@@ -146,7 +146,7 @@ describe('dispatchBinding', () => {
 
     dispatch(root, 'F5');
 
-    expect(root.widgetSettings.setWidgetEnabled).toHaveBeenCalledWith(
+    expect(root.liveWidgets.setWidgetEnabled).toHaveBeenCalledWith(
       'standings',
       true
     );

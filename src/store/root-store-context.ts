@@ -39,9 +39,12 @@ export const useInputTraceWidgetStore = () => useStore().inputTraceWidget;
 export const useChatStore = () => useStore().chat;
 export const useStreamChatWidgetStore = () => useStore().streamChatWidget;
 export const useTwitchAuthStore = () => useStore().twitchAuth;
-export const useWidgetSettingsStore = () => useStore().widgetSettings;
+export const useLiveWidgetsStore = () => useStore().liveWidgets;
 export const useWidgetDefaultsStore = () => useStore().widgetDefaults;
 export const useLayoutsStore = () => useStore().layouts;
+
+export const useLayoutEditorStore = () => useStore().layoutEditor;
+export const useSettingsMutationLog = () => useStore().settingsMutations;
 export const useAppSettingsStore = () => useStore().appSettings;
 export const useCompanionAppsStore = () => useStore().companionApps;
 export const useUnitsStore = () => useStore().units;

@@ -19,6 +19,11 @@ import {
 import { MOVE_DURATION_MS } from '@utils/animation';
 import type { RootStore } from '@store/root-store';
 
+type StandingsDeps = Pick<
+  RootStore,
+  'backendComputed' | 'liveWidgets' | 'session' | 'player'
+>;
+
 export type PositionChangeDirection = 'up' | 'down';
 
 // Fallback lifetime of the arrow: it normally clears once the row has finished
@@ -103,7 +108,7 @@ export class StandingsWidgetStore {
 
   // Wired in the constructor rather than an init() step: the arrows compare
   // consecutive telemetry frames, so the very first frame must already be seen.
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: StandingsDeps) {
     makeAutoObservable<
       StandingsWidgetStore,
       | 'previousPositions'
@@ -142,7 +147,7 @@ export class StandingsWidgetStore {
       reaction(
         () => [
           this.activeClassIndex,
-          this.root.widgetSettings.getSettings<StandingsWidgetSettings>(
+          this.root.liveWidgets.getSettings<StandingsWidgetSettings>(
             'standings'
           ).viewMode,
         ],
@@ -182,7 +187,7 @@ export class StandingsWidgetStore {
    * by best lap, so the two are genuinely different answers there.
    */
   get useTrackOrder(): boolean {
-    return this.root.widgetSettings.getSettings<StandingsWidgetSettings>(
+    return this.root.liveWidgets.getSettings<StandingsWidgetSettings>(
       'standings'
     ).useLivePositions;
   }
@@ -432,9 +437,7 @@ export class StandingsWidgetStore {
     const entries = this.root.backendComputed.driverIdentities;
 
     const settings =
-      this.root.widgetSettings.getSettings<StandingsWidgetSettings>(
-        'standings'
-      );
+      this.root.liveWidgets.getSettings<StandingsWidgetSettings>('standings');
 
     const sessionType = this.root.session.currentSessionType;
 
@@ -817,7 +820,7 @@ export class StandingsWidgetStore {
     this.clearScrollReset();
 
     const resetSeconds =
-      this.root.widgetSettings.getSettings<StandingsWidgetSettings>(
+      this.root.liveWidgets.getSettings<StandingsWidgetSettings>(
         'standings'
       ).scrollResetSeconds;
 

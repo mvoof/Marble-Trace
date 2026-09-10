@@ -44,11 +44,11 @@ describe('PitServiceWidgetStore — pit orders', () => {
   ) => {
     runInAction(() => {
       const settings =
-        rootStore.widgetSettings.getSettings<PitServiceWidgetSettings>(
+        rootStore.liveWidgets.getSettings<PitServiceWidgetSettings>(
           'pit-service'
         );
 
-      rootStore.widgetSettings.updateUserSettings('pit-service', {
+      rootStore.liveWidgets.updateUserSettings('pit-service', {
         ...settings,
         ...partial,
       });

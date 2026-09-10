@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { Plus, Search, MoveRight } from 'lucide-react';
 import { useClickOutside } from '@ui/hooks/useClickOutside';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/root-store-context';
 import type { PickableWidget } from '@store/settings/widget-placement';
 import { getWidgetDescription } from '@ui/app/widget-i18n';
 import styles from './WidgetPicker.module.scss';
@@ -19,7 +19,7 @@ const PickerRow = observer(
     monitorName: string;
     onAdded: () => void;
   }) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const liveWidgets = useLiveWidgetsStore();
     const { t } = useTranslation('main-app');
 
     const isElsewhere = widget.currentMonitorName !== null;
@@ -29,7 +29,7 @@ const PickerRow = observer(
         return;
       }
 
-      widgetSettings.addWidgetToMonitor(widget.id, monitorName);
+      liveWidgets.addWidgetToMonitor(widget.id, monitorName);
       onAdded();
     };
 
@@ -67,7 +67,7 @@ const PickerRow = observer(
 // currently rendering — the one the session picked — so nothing has to be done
 // in the main window while the sim is running.
 export const WidgetPicker = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
+  const liveWidgets = useLiveWidgetsStore();
   const { t } = useTranslation('main-app');
 
   const [open, setOpen] = useState(false);
@@ -94,7 +94,7 @@ export const WidgetPicker = observer(() => {
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const monitorName = widgetSettings.ownMonitorName;
+  const monitorName = liveWidgets.ownMonitorName;
 
   if (!monitorName) {
     return null;
@@ -102,7 +102,7 @@ export const WidgetPicker = observer(() => {
 
   const normalizedQuery = query.trim().toLowerCase();
 
-  const candidates = widgetSettings
+  const candidates = liveWidgets
     .pickableWidgetsForMonitor(monitorName)
     .filter((widget) => widget.label.toLowerCase().includes(normalizedQuery));
 

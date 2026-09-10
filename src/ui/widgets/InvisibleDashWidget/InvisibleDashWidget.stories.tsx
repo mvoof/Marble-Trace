@@ -37,7 +37,7 @@ const meta: Meta<StoryArgs> = {
       border: 'none',
     },
     seed: (store, args) => {
-      store.widgetSettings.updateUserSettings('invisible-dash', {
+      store.liveWidgets.updateUserSettings('invisible-dash', {
         depth: args.depth,
         curvature: args.curvature,
         renderMode: args.renderMode,

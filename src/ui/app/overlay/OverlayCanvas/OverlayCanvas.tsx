@@ -16,12 +16,12 @@ import {
   useBindingsStore,
   useSimStore,
   useLayoutsStore,
-  useWidgetSettingsStore,
+  useLiveWidgetsStore,
 } from '@store/root-store-context';
 
 export const OverlayCanvas = observer(() => {
   const appSettings = useAppSettingsStore();
-  const widgetSettings = useWidgetSettingsStore();
+  const liveWidgets = useLiveWidgetsStore();
   const layouts = useLayoutsStore();
   const bindings = useBindingsStore();
   const simStore = useSimStore();
@@ -64,8 +64,8 @@ export const OverlayCanvas = observer(() => {
     appSettings.setDragMode(false);
   };
 
-  const ownBounds = widgetSettings.ownMonitorName
-    ? layouts.monitorByName(widgetSettings.ownMonitorName)?.bounds
+  const ownBounds = liveWidgets.ownMonitorName
+    ? layouts.monitorByName(liveWidgets.ownMonitorName)?.bounds
     : undefined;
 
   const monitorOffset = {
@@ -109,7 +109,7 @@ export const OverlayCanvas = observer(() => {
           on this monitor are drawn — dragging one over an edge hands it to the
           neighbouring window. */}
       <div className={styles.monitorOrigin} style={monitorOffset}>
-        {widgetSettings.ownMonitorWidgets.map((widget) => {
+        {liveWidgets.ownMonitorWidgets.map((widget) => {
           const WidgetComponent = componentForWidget(widgetTypeOf(widget));
 
           if (!WidgetComponent) return null;
@@ -136,12 +136,12 @@ export const OverlayCanvas = observer(() => {
           </div>
         )}
 
-        {widgetSettings.layoutActivatedToast !== null && (
+        {liveWidgets.layoutActivatedToast !== null && (
           <div className={styles.toast}>
             <Layers size={14} className={styles.toastIcon} />
             <span className={styles.toastText}>
               {t('overlayCanvas.layoutSwitched', {
-                layout: widgetSettings.layoutActivatedToast,
+                layout: liveWidgets.layoutActivatedToast,
               })}
             </span>
           </div>

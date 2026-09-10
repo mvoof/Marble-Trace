@@ -65,7 +65,7 @@ const meta: Meta<StoryArgs> = {
 
       store.environment.updateWeatherForecast(args.forecast);
 
-      store.widgetSettings.updateUserSettings('weather', {
+      store.liveWidgets.updateUserSettings('weather', {
         showCompass: args.showCompass,
         showAirTemp: args.showAirTemp,
         showTrackTemp: args.showTrackTemp,

@@ -6,7 +6,7 @@ import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
 import { useCanvasAutoResize } from '@ui/hooks/useCanvasAutoResize';
 import {
   useCoachWidgetStore,
-  useWidgetSettingsStore,
+  useLiveWidgetsStore,
 } from '@store/root-store-context';
 import { drawSpeedTrace, type SpeedTraceColors } from './speed-trace-render';
 
@@ -31,7 +31,7 @@ const traceColors = (settings: CoachWidgetSettings): SpeedTraceColors => ({
 // component only paints the buffers it already holds.
 export const SpeedTrace = () => {
   const coachTrace = useCoachWidgetStore();
-  const widgetSettings = useWidgetSettingsStore();
+  const liveWidgets = useLiveWidgetsStore();
   const instanceId = useWidgetInstanceId('coach');
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -58,8 +58,7 @@ export const SpeedTrace = () => {
 
   useReactiveCanvasLoop(
     (scheduleDraw) => {
-      const settings =
-        widgetSettings.getSettings<CoachWidgetSettings>(instanceId);
+      const settings = liveWidgets.getSettings<CoachWidgetSettings>(instanceId);
 
       // Read every drawn value inside the autorun so it is tracked: the paint
       // is deferred into requestAnimationFrame, outside the tracking window, so
@@ -72,15 +71,14 @@ export const SpeedTrace = () => {
 
       scheduleDraw(() => draw(settings.traceChannel, colors));
     },
-    [coachTrace, widgetSettings, draw]
+    [coachTrace, liveWidgets, draw]
   );
 
   const redrawOnResize = useCallback(() => {
-    const settings =
-      widgetSettings.getSettings<CoachWidgetSettings>(instanceId);
+    const settings = liveWidgets.getSettings<CoachWidgetSettings>(instanceId);
 
     draw(settings.traceChannel, traceColors(settings));
-  }, [widgetSettings, instanceId, draw]);
+  }, [liveWidgets, instanceId, draw]);
 
   useCanvasAutoResize(canvasRef, redrawOnResize);
 

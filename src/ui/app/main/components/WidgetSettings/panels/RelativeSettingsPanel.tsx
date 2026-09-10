@@ -34,15 +34,15 @@ const NAME_COLUMN_STEP_PX = 5;
 const NAME_COLUMN_SLIDER_WIDTH_PX = 160;
 
 export const RelativeSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('relative');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<RelativeWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<RelativeWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<RelativeWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

@@ -89,8 +89,8 @@ const meta: Meta<StoryArgs> = {
         driverPitTrkPct: STORY_PIT_BOX_PCT,
       } as Parameters<typeof store.session.updateSessionInfo>[0]);
 
-      store.widgetSettings.updateUserSettings('pit-line', {
-        ...store.widgetSettings.getSettings<PitLineWidgetSettings>('pit-line'),
+      store.liveWidgets.updateUserSettings('pit-line', {
+        ...store.liveWidgets.getSettings<PitLineWidgetSettings>('pit-line'),
         alwaysVisible: true,
       });
     },

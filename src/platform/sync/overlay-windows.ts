@@ -90,7 +90,7 @@ export const overlayMonitorNames = (root: RootStore): string[] => {
     return root.layouts.liveMonitorNames;
   }
 
-  return root.widgetSettings.populatedMonitorNames;
+  return root.liveWidgets.populatedMonitorNames;
 };
 
 let syncInFlight: Promise<void> = Promise.resolve();

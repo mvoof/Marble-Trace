@@ -15,7 +15,7 @@ import {
   useSimStore,
   useWidgetAutoHideStore,
   useLayoutsStore,
-  useWidgetSettingsStore,
+  useLiveWidgetsStore,
 } from '@store/root-store-context';
 
 interface WidgetContainerProps {
@@ -26,14 +26,14 @@ interface WidgetContainerProps {
 export const WidgetContainer = observer(
   ({ widgetId, children }: WidgetContainerProps) => {
     const { dragMode, appSettings } = useAppSettingsStore();
-    const widgetSettings = useWidgetSettingsStore();
+    const liveWidgets = useLiveWidgetsStore();
     const layouts = useLayoutsStore();
 
     const simStore = useSimStore();
     const widgetAutoHide = useWidgetAutoHideStore();
     const player = usePlayerStore();
 
-    const widget = widgetSettings.getWidget(widgetId);
+    const widget = liveWidgets.getWidget(widgetId);
 
     const isDraggingRef = useRef(false);
     const isResizingRef = useRef(false);
@@ -92,7 +92,7 @@ export const WidgetContainer = observer(
         e.preventDefault();
         e.stopPropagation();
 
-        const currentWidget = widgetSettings.getWidget(widgetId);
+        const currentWidget = liveWidgets.getWidget(widgetId);
 
         isDraggingRef.current = true;
 
@@ -109,7 +109,7 @@ export const WidgetContainer = observer(
           const dx = ev.clientX - dragStartRef.current.mouseX;
           const dy = ev.clientY - dragStartRef.current.mouseY;
 
-          widgetSettings.updatePosition(
+          liveWidgets.updatePosition(
             widgetId,
             Math.round(dragStartRef.current.widgetX + dx),
             Math.round(dragStartRef.current.widgetY + dy)
@@ -125,7 +125,7 @@ export const WidgetContainer = observer(
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       },
-      [dragMode, widgetId, widgetSettings]
+      [dragMode, widgetId, liveWidgets]
     );
 
     const handleResizeMouseDown = useCallback(
@@ -135,7 +135,7 @@ export const WidgetContainer = observer(
         e.preventDefault();
         e.stopPropagation();
 
-        const currentWidget = widgetSettings.getWidget(widgetId);
+        const currentWidget = liveWidgets.getWidget(widgetId);
 
         isResizingRef.current = true;
 
@@ -213,10 +213,10 @@ export const WidgetContainer = observer(
             }
           }
 
-          widgetSettings.updateSize(widgetId, newW, newH);
+          liveWidgets.updateSize(widgetId, newW, newH);
 
           if (newX !== startX || newY !== startY) {
-            widgetSettings.updatePosition(widgetId, newX, newY);
+            liveWidgets.updatePosition(widgetId, newX, newY);
           }
         };
 
@@ -232,7 +232,7 @@ export const WidgetContainer = observer(
       },
       [
         dragMode,
-        widgetSettings,
+        liveWidgets,
         widgetId,
         designWidth,
         designHeight,

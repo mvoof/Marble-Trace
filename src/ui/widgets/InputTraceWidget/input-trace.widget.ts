@@ -3,6 +3,8 @@ import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 import type { RootStore } from '@store/root-store';
 import type { InputTraceSettings } from '@/types/widget-settings';
 
+type InputTraceDeps = Pick<RootStore, 'player' | 'liveWidgets'>;
+
 export type InputChannel = 'throttle' | 'brake' | 'clutch';
 
 type SmoothedInputs = Record<InputChannel, number>;
@@ -26,7 +28,7 @@ export class InputTraceWidgetStore {
   // Wired in the constructor rather than an init() step: the exponential filter
   // must advance once per telemetry frame (never per React render), and the
   // isolated preview stores used by the workbench and Storybook skip init().
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: InputTraceDeps) {
     makeAutoObservable(this, {}, { autoBind: true });
 
     this.disposers.push(
@@ -34,7 +36,7 @@ export class InputTraceWidgetStore {
         () => this.root.player.carInputs,
         (inputs) => {
           const { smoothing } =
-            this.root.widgetSettings.getSettings<InputTraceSettings>(
+            this.root.liveWidgets.getSettings<InputTraceSettings>(
               'input-trace'
             );
 

@@ -4,6 +4,8 @@ import type { IncidentPoint } from '@/types/bindings';
 import { computeIncidentZones, type FlagZone } from '@utils/flag-zones';
 import type { RootStore } from '@store/root-store';
 
+type IncidentsDeps = Pick<RootStore, 'backendComputed' | 'session'>;
+
 /**
  * Where the trouble is, as both maps draw it.
  *
@@ -13,7 +15,7 @@ import type { RootStore } from '@store/root-store';
  * computed instead of each building it.
  */
 export class IncidentsWidgetStore {
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: IncidentsDeps) {
     makeAutoObservable(this);
   }
 

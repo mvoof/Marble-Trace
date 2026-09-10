@@ -147,24 +147,24 @@ export const setupOverlayListeners = async (
 
   unlistens.push(
     await listenTo<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
-      if (e.payload.monitorName !== root.widgetSettings.ownMonitorName) return;
+      if (e.payload.monitorName !== root.liveWidgets.ownMonitorName) return;
 
       if (e.payload.layoutId !== undefined) {
         runInAction(() => {
-          root.widgetSettings.syncedLayoutId = e.payload.layoutId ?? null;
+          root.liveWidgets.syncedLayoutId = e.payload.layoutId ?? null;
         });
       }
 
       if (e.payload.monitors) {
-        root.widgetSettings.applyMonitorsSync(e.payload.monitors);
+        root.liveWidgets.applyMonitorsSync(e.payload.monitors);
       }
 
       // Only a list that claims to be the whole layout may remove a widget;
       // anything else is a patch of what its sender just edited.
       if (e.payload.complete) {
-        root.widgetSettings.syncWidgetSet(e.payload.widgets);
+        root.liveWidgets.syncWidgetSet(e.payload.widgets);
       } else {
-        root.widgetSettings.applySettingsSync(e.payload.widgets);
+        root.liveWidgets.applySettingsSync(e.payload.widgets);
       }
     })
   );
@@ -232,9 +232,7 @@ export const setupOverlayListeners = async (
 
   unlistens.push(
     await listenTo<string>('layout-activated', (e) => {
-      runInAction(() =>
-        root.widgetSettings.showLayoutActivatedToast(e.payload)
-      );
+      runInAction(() => root.liveWidgets.showLayoutActivatedToast(e.payload));
     })
   );
 

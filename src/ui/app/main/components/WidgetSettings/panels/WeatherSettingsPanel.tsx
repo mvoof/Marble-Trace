@@ -12,15 +12,15 @@ import { usePanelWidgetId } from './setting-rows';
 export const PANEL_WIDGET_IDS = ['weather'];
 
 export const WeatherSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('weather');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<WeatherWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<WeatherWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<WeatherWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

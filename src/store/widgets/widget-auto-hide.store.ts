@@ -8,6 +8,11 @@ import type {
 import type { RootStore } from '@store/root-store';
 import { widgetTypeFromId, widgetTypeOf } from '@utils/widget-instance';
 
+type WidgetAutoHideDeps = Pick<
+  RootStore,
+  'liveWidgets' | 'radar' | 'flags' | 'pitServiceWidget'
+>;
+
 const NO_LED_FLAG = 'none';
 
 /**
@@ -23,13 +28,13 @@ const NO_LED_FLAG = 'none';
  * A widget absent from the switch is always visible — self-hiding is opt-in.
  */
 export class WidgetAutoHideStore {
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: WidgetAutoHideDeps) {
     makeAutoObservable<WidgetAutoHideStore, 'root'>(this, { root: false });
   }
 
   /** `widgetId` is a copy's id: settings are read per copy, state per widget. */
   isVisible = (widgetId: string): boolean => {
-    const widget = this.root.widgetSettings.getWidget(widgetId);
+    const widget = this.root.liveWidgets.getWidget(widgetId);
     const widgetType = widget
       ? widgetTypeOf(widget)
       : widgetTypeFromId(widgetId);
@@ -85,5 +90,5 @@ export class WidgetAutoHideStore {
       | PitLineWidgetSettings,
   >(
     widgetId: string
-  ) => this.root.widgetSettings.getSettings<SpecificSettings>(widgetId);
+  ) => this.root.liveWidgets.getSettings<SpecificSettings>(widgetId);
 }

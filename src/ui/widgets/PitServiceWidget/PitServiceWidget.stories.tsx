@@ -175,8 +175,8 @@ const meta: Meta<StoryArgs> = {
         fuelToAdd: args.fuelCalculated,
       } as Parameters<typeof store.backendComputed.updateFuel>[0]);
 
-      store.widgetSettings.updateUserSettings('pit-service', {
-        ...store.widgetSettings.getSettings<PitServiceWidgetSettings>(
+      store.liveWidgets.updateUserSettings('pit-service', {
+        ...store.liveWidgets.getSettings<PitServiceWidgetSettings>(
           'pit-service'
         ),
         showFooter: args.showFooter,

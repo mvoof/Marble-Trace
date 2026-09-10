@@ -10,6 +10,8 @@ import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
 import { scrollThumbFor, type ScrollThumb } from '@utils/canvas';
 
+type StreamChatDeps = Pick<RootStore, 'appSettings' | 'liveWidgets' | 'chat'>;
+
 const WIDGET_ID = 'stream-chat';
 
 // Sliding window for the messages-per-minute readout.
@@ -49,7 +51,7 @@ export class StreamChatWidgetStore {
 
   private disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: StreamChatDeps) {
     makeAutoObservable<StreamChatWidgetStore, 'tickTimer' | 'disposers'>(
       this,
       { tickTimer: false, disposers: false },
@@ -164,7 +166,7 @@ export class StreamChatWidgetStore {
   }
 
   private get settings(): StreamChatWidgetSettings {
-    return this.root.widgetSettings.getSettings<StreamChatWidgetSettings>(
+    return this.root.liveWidgets.getSettings<StreamChatWidgetSettings>(
       WIDGET_ID
     );
   }

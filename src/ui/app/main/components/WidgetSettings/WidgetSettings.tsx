@@ -18,7 +18,7 @@ export const WidgetSettings = observer(
      *  the actions; a second title under it would say the same thing twice. */
     hideHeader?: boolean;
   }) => {
-    const widgetSettings = useWidgetEditor();
+    const liveWidgets = useWidgetEditor();
     const { t } = useTranslation('main-app');
 
     if (!widgetId) {
@@ -29,7 +29,7 @@ export const WidgetSettings = observer(
       );
     }
 
-    const widget = widgetSettings.getWidget(widgetId);
+    const widget = liveWidgets.getWidget(widgetId);
 
     if (!widget) {
       return (
@@ -68,8 +68,8 @@ export const WidgetSettings = observer(
                   value={userSettings.x}
                   onChange={(v) => {
                     if (v !== null) {
-                      widgetSettings.pushUndo?.();
-                      widgetSettings.updateUserSettings(widgetId, { x: v });
+                      liveWidgets.pushUndo?.();
+                      liveWidgets.updateUserSettings(widgetId, { x: v });
                     }
                   }}
                 />
@@ -84,8 +84,8 @@ export const WidgetSettings = observer(
                   value={userSettings.y}
                   onChange={(v) => {
                     if (v !== null) {
-                      widgetSettings.pushUndo?.();
-                      widgetSettings.updateUserSettings(widgetId, { y: v });
+                      liveWidgets.pushUndo?.();
+                      liveWidgets.updateUserSettings(widgetId, { y: v });
                     }
                   }}
                 />
@@ -101,8 +101,8 @@ export const WidgetSettings = observer(
                   min={10}
                   onChange={(v) => {
                     if (v !== null) {
-                      widgetSettings.pushUndo?.();
-                      widgetSettings.updateUserSettings(widgetId, {
+                      liveWidgets.pushUndo?.();
+                      liveWidgets.updateUserSettings(widgetId, {
                         currentWidth: v,
                       });
                     }
@@ -120,8 +120,8 @@ export const WidgetSettings = observer(
                   min={10}
                   onChange={(v) => {
                     if (v !== null) {
-                      widgetSettings.pushUndo?.();
-                      widgetSettings.updateUserSettings(widgetId, {
+                      liveWidgets.pushUndo?.();
+                      liveWidgets.updateUserSettings(widgetId, {
                         currentHeight: v,
                       });
                     }
@@ -138,8 +138,8 @@ export const WidgetSettings = observer(
                   value={userSettings.zIndex ?? 0}
                   onChange={(v) => {
                     if (v !== null) {
-                      widgetSettings.pushUndo?.();
-                      widgetSettings.updateUserSettings(widgetId, {
+                      liveWidgets.pushUndo?.();
+                      liveWidgets.updateUserSettings(widgetId, {
                         zIndex: v,
                       });
                     }
@@ -157,9 +157,9 @@ export const WidgetSettings = observer(
                   step={0.05}
                   value={userSettings.fontScale ?? 1}
                   tooltip={{ formatter: (value) => `${value?.toFixed(2)}x` }}
-                  onChangeComplete={() => widgetSettings.pushUndo?.()}
+                  onChangeComplete={() => liveWidgets.pushUndo?.()}
                   onChange={(v) => {
-                    widgetSettings.updateUserSettings(widgetId, {
+                    liveWidgets.updateUserSettings(widgetId, {
                       fontScale: v,
                     });
                   }}
@@ -185,7 +185,7 @@ export const WidgetSettings = observer(
                       }
                       allowClear
                       onChange={(color) =>
-                        widgetSettings.updateUserSettings(widgetId, {
+                        liveWidgets.updateUserSettings(widgetId, {
                           backgroundColor: color
                             ? color.toRgbString()
                             : 'transparent',
@@ -209,7 +209,7 @@ export const WidgetSettings = observer(
                       }
                       allowClear
                       onChange={(color) =>
-                        widgetSettings.updateUserSettings(widgetId, {
+                        liveWidgets.updateUserSettings(widgetId, {
                           borderColor: color.toRgbString(),
                         })
                       }

@@ -132,7 +132,7 @@ const meta: Meta<StoryArgs> = {
         entries: args.entries,
         playerCarIdx: PLAYER_CAR_IDX,
       } as RelativeFrame);
-      store.widgetSettings.updateUserSettings('relative', args.settings);
+      store.liveWidgets.updateUserSettings('relative', args.settings);
 
       if (args.paceCar || args.multiclassPaceCar) {
         seedPaceCar(

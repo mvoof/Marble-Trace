@@ -8,6 +8,11 @@ import type { RootStore } from '@store/root-store';
 import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
 import { resultsToCsv } from './report';
 
+type DiagnosticsExportDeps = Pick<
+  RootStore,
+  'fpsDiagnostics' | 'telemetryInspector' | 'session'
+>;
+
 const EXPORT_DIR = 'diagnostics';
 const JSON_INDENT = 2;
 
@@ -20,9 +25,9 @@ export class DiagnosticsExportStore {
   saving = false;
   lastSavedPath: string | null = null;
 
-  private root: RootStore;
+  private root: DiagnosticsExportDeps;
 
-  constructor(root: RootStore) {
+  constructor(root: DiagnosticsExportDeps) {
     this.root = root;
 
     makeAutoObservable(this, {}, { autoBind: true });

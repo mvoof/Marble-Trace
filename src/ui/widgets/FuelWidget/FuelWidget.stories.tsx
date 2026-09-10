@@ -82,8 +82,8 @@ const meta: Meta<StoryArgs> = {
         lapFuelHistory: args.lapFuelHistory,
       } as FuelComputedFrame);
 
-      store.widgetSettings.updateUserSettings('fuel', {
-        ...store.widgetSettings.getSettings<FuelWidgetSettings>('fuel'),
+      store.liveWidgets.updateUserSettings('fuel', {
+        ...store.liveWidgets.getSettings<FuelWidgetSettings>('fuel'),
         showChart: args.showChart,
         chartType: args.chartType,
         barWidth: args.barWidth,

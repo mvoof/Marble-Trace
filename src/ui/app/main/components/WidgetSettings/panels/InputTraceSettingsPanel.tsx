@@ -24,7 +24,7 @@ const { SwitchRow, ColorRow } = panelRows<InputTraceSettings>();
 const STYLES_WITH_MARKER: SteeringWheelStyle[] = ['gt-round', 'flat-bottom'];
 
 export const InputTraceSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('input-trace');
   const appSettings = useAppSettingsStore();
   const { t } = useTranslation('widgets');
@@ -34,11 +34,10 @@ export const InputTraceSettingsPanel = observer(() => {
   // gives the zoom its real-world angle.
   const steeringLock = appSettings.appSettings.steeringLock;
 
-  const settings =
-    widgetSettings.getSettings<InputTraceSettings>(panelWidgetId);
+  const settings = liveWidgets.getSettings<InputTraceSettings>(panelWidgetId);
 
   const update = (partial: Partial<InputTraceSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

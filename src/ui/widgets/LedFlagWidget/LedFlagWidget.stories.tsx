@@ -38,8 +38,8 @@ const meta: Meta<StoryArgs> = {
     seed: (store, args) => {
       store.flags.ledDisplayFlag = args.flag;
       const settings =
-        store.widgetSettings.getSettings<FlagDisplaySettings>('led-flags');
-      store.widgetSettings.updateUserSettings('led-flags', {
+        store.liveWidgets.getSettings<FlagDisplaySettings>('led-flags');
+      store.liveWidgets.updateUserSettings('led-flags', {
         ...settings,
         split: args.split,
         animate: args.animate,

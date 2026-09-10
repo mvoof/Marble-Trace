@@ -58,7 +58,7 @@ export const ClassShapes: Story = {
         playerCarIdx: PLAYER_CAR_IDX,
       } as RelativeFrame);
 
-      store.widgetSettings.updateUserSettings('relative-map', {
+      store.liveWidgets.updateUserSettings('relative-map', {
         classShapes: true,
       });
     }),

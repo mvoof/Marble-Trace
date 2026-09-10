@@ -1,6 +1,6 @@
 import { use } from 'react';
 
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/root-store-context';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import type {
   BaseUserSettings,
@@ -27,10 +27,10 @@ export const useWidgetSettings = <
 >(
   type: string
 ): BaseUserSettings & SpecificSettings => {
-  const widgetSettings = useWidgetSettingsStore();
+  const liveWidgets = useLiveWidgetsStore();
   const instanceId = use(WidgetIdContext);
 
-  return widgetSettings.getSettings<SpecificSettings>(instanceId || type);
+  return liveWidgets.getSettings<SpecificSettings>(instanceId || type);
 };
 
 /**

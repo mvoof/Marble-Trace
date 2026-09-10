@@ -8,6 +8,11 @@ import {
   type PaceCarRowEntry,
 } from '@ui/widgets/RelativeWidget/relative-utils';
 
+type RelativeDeps = Pick<
+  RootStore,
+  'liveWidgets' | 'cars' | 'session' | 'backendComputed' | 'paceCar'
+>;
+
 /** What one row of the strip is: a car, and whether it is a pace car. */
 export interface RelativeRow {
   carIdx: number;
@@ -28,7 +33,7 @@ export interface RelativeRow {
  * none of which a data store may know about.
  */
 export class RelativeWidgetStore {
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: RelativeDeps) {
     makeAutoObservable<RelativeWidgetStore, 'root'>(
       this,
       { root: false, rowOrder: computed.struct },
@@ -37,7 +42,7 @@ export class RelativeWidgetStore {
   }
 
   private get settings(): RelativeWidgetSettings {
-    return this.root.widgetSettings.getSettings<RelativeWidgetSettings>(
+    return this.root.liveWidgets.getSettings<RelativeWidgetSettings>(
       'relative'
     );
   }

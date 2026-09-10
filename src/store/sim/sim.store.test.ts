@@ -72,17 +72,17 @@ describe('SimStore active-events mask', () => {
   // gated field and every widget reading it shows "no data" until the
   // editor closes.
   it('recomputes the telemetry mask when the live layout changes while the editor is open on a different layout', () => {
-    root.widgetSettings.setLayouts(
+    root.liveWidgets.setLayouts(
       [layout('layout-a', []), layout('layout-b', [gMeterWidget('g-meter')])],
       'layout-a'
     );
 
-    root.widgetSettings.setLayoutEditorOpen(true);
+    root.layoutEditor.setOpen(true);
     setActiveEventsSilent.mockClear();
 
     // Live layout switches to B without touching what the editor (still on A)
     // is showing — this is exactly what session auto-switch does mid-edit.
-    root.layouts.setPinnedLiveLayoutId('layout-b');
+    root.layoutEditor.setPinnedLiveLayoutId('layout-b');
 
     expect(setActiveEventsSilent).toHaveBeenCalled();
     const lastMask =

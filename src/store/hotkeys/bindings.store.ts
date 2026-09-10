@@ -18,7 +18,7 @@ export class BindingsStore {
   overrides: BindingMap = {};
 
   // Bumped by every setter so reactions can depend on one number instead of
-  // deep-comparing the map — same pattern as widgetSettings.changeToken.
+  // deep-comparing the map — same pattern as liveWidgets.changeToken.
   mutationId = 0;
 
   constructor(readonly registry: ActionRegistry) {

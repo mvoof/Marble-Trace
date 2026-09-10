@@ -26,15 +26,15 @@ export const PANEL_WIDGET_IDS = ['invisible-dash'];
 const { ColorRow, SwitchRow } = panelRows<InvisibleDashWidgetSettings>();
 
 export const InvisibleDashSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId(WIDGET_ID);
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<InvisibleDashWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<InvisibleDashWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<InvisibleDashWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

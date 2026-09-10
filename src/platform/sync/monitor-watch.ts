@@ -40,13 +40,13 @@ export const watchMonitorArrangement = (
       const isFirstRun = lastSignature === null;
 
       lastSignature = signature;
-      root.widgetSettings.setAttachedMonitors(monitors);
+      root.liveWidgets.setAttachedMonitors(monitors);
 
       if (isFirstRun) return;
 
       // Widgets move with the screen they sit on, then the overlay windows
       // follow the layout onto their new positions.
-      root.widgetSettings.alignMonitorsToHardware(monitors);
+      root.layouts.alignMonitorsToHardware(monitors);
 
       await syncOverlayWindows(root);
 

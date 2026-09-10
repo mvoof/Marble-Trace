@@ -23,15 +23,15 @@ export const PANEL_WIDGET_IDS = ['track-map'];
 const { ColorRow, SwitchRow } = panelRows<TrackMapWidgetSettings>();
 
 export const TrackMapSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetEditor();
+  const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('track-map');
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<TrackMapWidgetSettings>(panelWidgetId);
+    liveWidgets.getSettings<TrackMapWidgetSettings>(panelWidgetId);
 
   const update = (partial: Partial<TrackMapWidgetSettings>) => {
-    widgetSettings.updateUserSettings(panelWidgetId, {
+    liveWidgets.updateUserSettings(panelWidgetId, {
       ...settings,
       ...partial,
     });

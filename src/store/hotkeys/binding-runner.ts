@@ -17,7 +17,7 @@ import type { HotkeyAction } from './binding-types';
 const isActionLive = (action: HotkeyAction, root: RootStore): boolean =>
   action.owner === APP_OWNER ||
   action.ignoreLayoutGate === true ||
-  root.widgetSettings.isWidgetOnScreen(action.owner);
+  root.liveWidgets.isWidgetOnScreen(action.owner);
 
 const runAction = (action: HotkeyAction, root: RootStore, pressed: boolean) => {
   if (action.trigger === 'press' && !pressed) return;

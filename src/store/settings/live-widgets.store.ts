@@ -10,8 +10,8 @@ import {
   setFuelAvgWindowSilent,
   setPitWarningLapsSilent,
 } from '@platform/services/settings.service';
-import { resolveMonitorByName } from '@platform/sync/overlay-resolution';
 import type { LayoutsStore } from '@store/settings/layouts.store';
+import type { LayoutEditorStore } from '@store/settings/layout-editor.store';
 import type { SettingsMutationLog } from '@store/settings/mutation-log';
 import { availableWidgetIdsOf } from '@store/settings/widget-availability';
 import {
@@ -42,17 +42,7 @@ import {
   placeWidgetOnMonitor,
   widgetsOnMonitor,
 } from '@store/settings/virtual-desktop';
-import {
-  boundsOverlap,
-  clearOfMonitors,
-  cloneMonitor,
-  isDisplayMonitor,
-  isRemoteMonitor,
-  nextRemoteBounds,
-  remoteScreenGrid,
-  slugFromName,
-  uniqueSlug,
-} from '@utils/remote-screen';
+import { cloneMonitor, isDisplayMonitor } from '@utils/remote-screen';
 import { WidgetHistory } from '@store/settings/widget-history';
 import {
   bottomZIndex,
@@ -62,6 +52,7 @@ import {
   topZIndex,
   type PickableWidget,
 } from '@store/settings/widget-placement';
+import type { WidgetMap } from '@store/settings/widget-map';
 import type { RootStore } from '@store/root-store';
 
 const LAYOUT_TOAST_DURATION_MS = 3000;
@@ -72,7 +63,7 @@ const DUPLICATE_OFFSET_PX = 24;
 
 export type { PickableWidget };
 
-export class WidgetSettingsStore {
+export class LiveWidgetsStore implements WidgetMap {
   /**
    * Widgets of the active layout, keyed by id.
    *
@@ -123,12 +114,12 @@ export class WidgetSettingsStore {
   /**
    * The saved layout records, handed in rather than created here: both stores
    * write into the same `SettingsMutationLog`, and that shared log — not shared
-   * construction — is what keeps them in step. Exposed on RootStore as
-   * `root.layouts` for call sites that only need the records. Everything below
-   * that reads or writes a layout goes through it — this store keeps only the
-   * live working copy the overlay renders.
+   * construction — is what keeps them in step. Held privately: the records are
+   * reached from outside as `root.layouts`, and this store offers no second
+   * path to them. Everything below that reads or writes a layout goes through
+   * it — this store keeps only the live working copy the overlay renders.
    */
-  readonly layoutRecords: LayoutsStore;
+  private readonly layoutRecords: LayoutsStore;
 
   // Monitors physically attached right now, refreshed by the arrangement
   // watcher. The editor offers these as screens a layout can be spread onto.
@@ -143,20 +134,6 @@ export class WidgetSettingsStore {
   // changes. Drives the editor canvas scale.
   overlayResolution: LayoutResolution = { ...DEFAULT_LAYOUT_RESOLUTION };
 
-  // Incremented on every settings mutation. Reactions use this as a cheap
-  // change trigger instead of subscribing to every field across all widgets.
-  get changeToken(): number {
-    return this.mutations.changeToken;
-  }
-
-  // Incremented when settings arrive from the other window (overlay drag / F9).
-  // Kept separate from changeToken so cross-window sync does NOT re-trigger the
-  // emit/commit reactions (which would loop), while UI that needs to reflect
-  // those external edits (the layout editor preview) can still react to it.
-  get syncToken(): number {
-    return this.mutations.syncToken;
-  }
-
   /**
    * Overlay side: the layout id of the last widget list main pushed here. It
    * travels back on every echo so main can tell whether the window is still
@@ -164,27 +141,6 @@ export class WidgetSettingsStore {
    * layout switch otherwise lands in the wrong layout record.
    */
   syncedLayoutId: string | null = null;
-
-  /**
-   * True while the layout editor is on screen, whatever layout it edits.
-   *
-   * It is what pins the live layout: for as long as the editor is open the
-   * layout on the overlay and the layout under the cursor are two separate
-   * values, and the session auto-switch moves the first one only. Nothing
-   * stands down — an overlay that stopped following the session because a
-   * window nobody is looking at happens to be open is exactly the confusion
-   * this replaced.
-   */
-  layoutEditorOpen = false;
-
-  /** The editor is showing a layout that is not the one on the overlay. */
-  get editorPreviewMode(): boolean {
-    return (
-      this.layoutRecords.pinnedLiveLayoutId !== null &&
-      this.layoutRecords.pinnedLiveLayoutId !==
-        this.layoutRecords.editingLayoutId
-    );
-  }
 
   // Name shown in the overlay's "layout switched" toast; null once it expires.
   layoutActivatedToast: string | null = null;
@@ -194,15 +150,20 @@ export class WidgetSettingsStore {
   constructor(
     private readonly mutations: SettingsMutationLog,
     layoutRecords: LayoutsStore,
+    private readonly layoutEditor: LayoutEditorStore,
     private readonly root?: RootStore
   ) {
     this.layoutRecords = layoutRecords;
 
-    makeAutoObservable<WidgetSettingsStore, 'layoutToastTimer' | 'mutations'>(
+    makeAutoObservable<
+      LiveWidgetsStore,
+      'layoutToastTimer' | 'mutations' | 'layoutEditor'
+    >(
       this,
       {
         layoutToastTimer: false,
         mutations: false,
+        layoutEditor: false,
       },
       {
         autoBind: true,
@@ -238,7 +199,7 @@ export class WidgetSettingsStore {
    * editor is working on.
    */
   get liveWidgets(): WidgetDefaultConfig[] {
-    void this.changeToken;
+    void this.mutations.changeToken;
 
     const layout = this.layoutRecords.liveLayout;
 
@@ -609,8 +570,8 @@ export class WidgetSettingsStore {
   }
 
   getWidget(id: string): WidgetDefaultConfig | undefined {
-    void this.syncToken;
-    void this.changeToken;
+    void this.mutations.syncToken;
+    void this.mutations.changeToken;
     return this.widgets.get(id);
   }
 
@@ -622,8 +583,8 @@ export class WidgetSettingsStore {
    * screen" — a hotkey, the telemetry mask, the layout gate.
    */
   widgetsOfType(type: string): WidgetDefaultConfig[] {
-    void this.syncToken;
-    void this.changeToken;
+    void this.mutations.syncToken;
+    void this.mutations.changeToken;
 
     return this.allWidgets.filter((widget) => widgetTypeOf(widget) === type);
   }
@@ -1052,91 +1013,16 @@ export class WidgetSettingsStore {
     }
   }
 
-  // Guarantees there is always an active layout. Creates a "Default" layout on
-  // first run, anchored to the primary monitor — a layout with no monitor gets
-  // no overlay window and no area to place widgets on.
-  ensureDefaultLayout() {
-    const id = this.layoutRecords.createDefaultLayout();
-
-    if (!id) return;
-
-    void resolveMonitorByName(null).then((monitor) => {
-      if (!monitor) return;
-
-      runInAction(() => {
-        const target = this.layoutRecords.byId(id);
-
-        if (!target || target.monitors.length > 0) return;
-
-        this.overlayResolution = { ...monitor.resolution };
-
-        this.layoutRecords.setMonitors(id, [
-          {
-            name: monitor.name,
-            bounds: {
-              x: 0,
-              y: 0,
-              width: monitor.resolution.width,
-              height: monitor.resolution.height,
-            },
-          },
-        ]);
-
-        // The monitor resolved asynchronously; the driver may have selected a
-        // different layout while it did. Its widgets are not this layout's to
-        // overwrite, so the starter set goes to the record directly.
-        if (this.layoutRecords.editingLayoutId === id) {
-          this.setWidgets(this.buildStarterWidgets());
-        } else {
-          target.widgets = this.buildStarterWidgets();
-        }
-      });
-    });
-  }
-
-  private buildStarterWidgets(clean: boolean = false): WidgetDefaultConfig[] {
+  /**
+   * The starter set a fresh layout opens with — read by the record store when
+   * it creates one, which is why this is public.
+   */
+  starterWidgets(clean: boolean = false): WidgetDefaultConfig[] {
     return buildStarterWidgets(
       this.root?.widgetDefaults.snapshot() ?? [],
       this.overlayResolution,
       clean
     );
-  }
-
-  saveLayout(name: string) {
-    const id = this.layoutRecords.addLayout(name);
-
-    this.layoutRecords.setEditingLayoutId(id);
-    this.setWidgets(this.buildStarterWidgets(true));
-    this.bumpMutation();
-
-    void resolveMonitorByName(null).then((monitor) => {
-      if (!monitor) return;
-
-      runInAction(() => {
-        const targetLayout = this.layoutRecords.byId(id);
-
-        if (!targetLayout || targetLayout.monitors.length > 0) return;
-
-        this.layoutRecords.setMonitors(id, [
-          {
-            name: monitor.name,
-            bounds: {
-              x: 0,
-              y: 0,
-              width: monitor.resolution.width,
-              height: monitor.resolution.height,
-            },
-          },
-        ]);
-        targetLayout.widgets = this.buildStarterWidgets(true);
-
-        if (this.layoutRecords.editingLayoutId === id) {
-          this.overlayResolution = { ...monitor.resolution };
-        }
-
-        this.bumpMutation();
-      });
-    });
   }
 
   /**
@@ -1163,68 +1049,6 @@ export class WidgetSettingsStore {
   }
 
   /**
-   * Opening the editor pins what the overlay is showing; closing it hands that
-   * back as the layout being edited.
-   *
-   * Between the two the editor may open any layout it likes and the session may
-   * switch the screen underneath, each without disturbing the other. Closing
-   * takes the overlay's answer, not the editor's: the driver's screen is the
-   * one that was live, and the editor is gone.
-   */
-  setLayoutEditorOpen(open: boolean) {
-    if (open === this.layoutEditorOpen) return;
-
-    this.layoutEditorOpen = open;
-
-    if (open) {
-      this.layoutRecords.setPinnedLiveLayoutId(
-        this.layoutRecords.editingLayoutId
-      );
-
-      return;
-    }
-
-    const liveId = this.layoutRecords.pinnedLiveLayoutId;
-
-    this.layoutRecords.setPinnedLiveLayoutId(null);
-
-    if (liveId && liveId !== this.layoutRecords.editingLayoutId) {
-      this.loadLayout(liveId);
-    }
-  }
-
-  // Load a layout into the editor without pushing it to the overlay, which
-  // keeps showing the live one. activateEditorLayout() puts it on screen.
-  switchEditorLayout(id: string) {
-    const layout = this.layoutRecords.byId(id);
-
-    if (!layout) return;
-
-    // Pins the screen itself rather than trusting the editor to have done it:
-    // the layout being left is what stays on the overlay, and it is only
-    // knowable before the switch.
-    if (this.layoutRecords.pinnedLiveLayoutId === null) {
-      this.layoutRecords.setPinnedLiveLayoutId(
-        this.layoutRecords.editingLayoutId
-      );
-    }
-
-    this.layoutRecords.setEditingLayoutId(id);
-
-    this.setWidgets(layout.widgets);
-
-    this.bumpMutation();
-  }
-
-  // Make the layout currently shown in the editor the one on the overlay.
-  activateEditorLayout() {
-    this.layoutRecords.setPinnedLiveLayoutId(
-      this.layoutRecords.editingLayoutId
-    );
-    this.bumpMutation();
-  }
-
-  /**
    * The layout the session asks for, applied wherever it belongs: to the screen
    * while the editor is open, and to both otherwise. Answers false when there
    * was nothing to change.
@@ -1232,10 +1056,10 @@ export class WidgetSettingsStore {
   applySessionLayout(id: string): boolean {
     if (!this.layoutRecords.byId(id)) return false;
 
-    if (this.layoutEditorOpen) {
+    if (this.layoutEditor.open) {
       if (this.layoutRecords.liveLayoutId === id) return false;
 
-      this.layoutRecords.setPinnedLiveLayoutId(id);
+      this.layoutEditor.setPinnedLiveLayoutId(id);
 
       return true;
     }
@@ -1254,7 +1078,7 @@ export class WidgetSettingsStore {
 
     // Loading is the unqualified version of the switch: this layout becomes
     // both the one being edited and the one on screen.
-    this.layoutRecords.setPinnedLiveLayoutId(null);
+    this.layoutEditor.setPinnedLiveLayoutId(null);
     this.layoutRecords.setEditingLayoutId(id);
 
     if (layout.monitors.length > 0) {
@@ -1263,7 +1087,7 @@ export class WidgetSettingsStore {
       // No monitor config yet (e.g. a brand-new layout whose auto-resolve
       // hasn't landed). Fall back to a blank layout instead of silently
       // leaving the previously-active layout's widgets on screen.
-      this.setWidgets(this.buildStarterWidgets(true));
+      this.setWidgets(this.starterWidgets(true));
     }
 
     this.bumpMutation();
@@ -1282,269 +1106,11 @@ export class WidgetSettingsStore {
     this.bumpMutation();
   }
 
-  deleteLayout(id: string) {
-    const wasActive = this.layoutRecords.editingLayoutId === id;
-
-    // A pin to the layout being deleted would leave the overlay speaking for a
-    // record that no longer exists.
-    if (this.layoutRecords.pinnedLiveLayoutId === id) {
-      this.layoutRecords.setPinnedLiveLayoutId(null);
-    }
-
-    this.layoutRecords.removeLayout(id);
-
-    if (!wasActive) {
-      this.bumpMutation();
-
-      return;
-    }
-
-    const fallbackId = this.layoutRecords.layouts[0]?.id ?? null;
-
-    // Load the fallback's saved widgets into the live store BEFORE bumping the
-    // mutation so the commit reaction doesn't clobber the fallback.
-    if (fallbackId) {
-      this.loadLayout(fallbackId);
-
-      return;
-    }
-
-    this.layoutRecords.setEditingLayoutId(null);
-    this.bumpMutation();
-  }
-
-  renameLayout(id: string, name: string) {
-    this.layoutRecords.renameLayout(id, name);
-  }
-
-  /**
-   * Layout-record mutations all funnel through here rather than being called on
-   * `layoutRecords` directly: `bumpMutation` is what triggers the debounced save,
-   * so a record edited behind the facade's back would never reach disk.
-   */
-  /**
-   * Adds a device screen to the active layout. It is a monitor in every way
-   * that matters for the layout — widgets belong to it by their centre point,
-   * it gets its own widget set — but the machine has no display behind it, so
-   * it is parked in free desktop space and never gets an overlay window.
-   */
-  addRemoteScreen(
-    name: string,
-    width: number,
-    height: number,
-    background?: string
-  ) {
-    const layout = this.editingLayout;
-
-    if (!layout) return;
-
-    const slug = uniqueSlug(
-      slugFromName(name),
-      layout.monitors.map((monitor) => monitor.slug ?? '')
-    );
-
-    this.layoutRecords.addMonitor({
-      name,
-      kind: 'remote',
-      slug,
-      bounds: nextRemoteBounds(layout.monitors, width, height),
-      ...(background ? { background } : {}),
-    });
-
-    this.bumpMutation();
-  }
-
-  /** What a remote screen paints behind its widgets: a CSS color, or
-   *  `'transparent'` for a browser source compositing over a game capture. */
-  setRemoteScreenBackground(monitorName: string, background: string) {
-    const monitor = this.editingLayout?.monitors.find(
-      (candidate) => candidate.name === monitorName
-    );
-
-    if (!monitor) return;
-
-    monitor.background = background;
-    this.bumpMutation();
-  }
-
-  /** Applied when a device reports a viewport that differs from the size the
-   *  screen was drawn for. Never automatic: resizing moves every widget. */
-  resizeRemoteScreen(monitorName: string, width: number, height: number) {
-    const layout = this.editingLayout;
-    const monitor = layout?.monitors.find(
-      (candidate) => candidate.name === monitorName
-    );
-
-    if (!layout || !monitor) return;
-
-    // Growing a screen in place can push it into its neighbours, which the
-    // drag path refuses outright — the widened rectangle would take over the
-    // widgets whose centres it now covers. It is slid clear the short way, and
-    // its own widgets travel with it.
-    const others = layout.monitors.filter(
-      (candidate) => candidate.name !== monitorName
-    );
-
-    const grown = { ...monitor.bounds, width, height };
-    const slid = clearOfMonitors(
-      grown,
-      others.map((candidate) => candidate.bounds)
-    );
-
-    // An arrangement dense enough to leave no room nearby falls back to the
-    // free space every new screen is parked in.
-    const landed = others.some((candidate) =>
-      boundsOverlap(candidate.bounds, slid)
-    )
-      ? nextRemoteBounds(others, width, height)
-      : slid;
-
-    const carried = widgetsOnMonitor(
-      this.allWidgets,
-      monitorName,
-      layout.monitors
-    );
-
-    monitor.bounds = landed;
-
-    const dx = landed.x - grown.x;
-    const dy = landed.y - grown.y;
-
-    for (const widget of carried) {
-      widget.userSettings.x += dx;
-      widget.userSettings.y += dy;
-    }
-
-    this.bumpMutation();
-  }
-
-  /**
-   * Moves a remote screen across the virtual desktop, carrying its widgets with
-   * it: widget coordinates are desktop-wide and a widget belongs to the monitor
-   * containing its centre, so a screen that moved alone would leave every
-   * widget behind on whatever rectangle they landed in. A move onto another
-   * monitor is refused for the same reason — it would steal that screen's
-   * widgets.
-   *
-   * Deliberately outside undo/redo: the history holds widget snapshots only, so
-   * an undo here would put the widgets back and leave the screen moved.
-   */
-  moveRemoteScreen(monitorName: string, x: number, y: number) {
-    const layout = this.editingLayout;
-
-    if (!layout) return;
-
-    const monitor = layout.monitors.find(
-      (candidate) => candidate.name === monitorName
-    );
-
-    if (!monitor || !isRemoteMonitor(monitor)) return;
-
-    const dx = x - monitor.bounds.x;
-    const dy = y - monitor.bounds.y;
-
-    if (dx === 0 && dy === 0) return;
-
-    const target = { ...monitor.bounds, x, y };
-
-    const collides = layout.monitors.some(
-      (other) =>
-        other.name !== monitorName && boundsOverlap(other.bounds, target)
-    );
-
-    if (collides) return;
-
-    const carried = widgetsOnMonitor(
-      this.allWidgets,
-      monitorName,
-      layout.monitors
-    );
-
-    monitor.bounds = target;
-
-    for (const widget of carried) {
-      widget.userSettings.x += dx;
-      widget.userSettings.y += dy;
-    }
-
-    this.bumpMutation();
-  }
-
-  /**
-   * Re-parks every remote screen in rows under the real desktop. New screens
-   * are appended to the right of everything else, which turns a handful of them
-   * into a strip too wide for the editor to show at a useful scale.
-   */
-  arrangeRemoteScreens() {
-    const layout = this.editingLayout;
-
-    if (!layout) return;
-
-    const targets = remoteScreenGrid(layout.monitors);
-
-    // Ownership is read against the arrangement as it stands, before any
-    // rectangle moves — halfway through, a widget's centre could fall inside a
-    // screen that has already been re-parked.
-    const carried = new Map(
-      Object.keys(targets).map((name) => [
-        name,
-        widgetsOnMonitor(this.allWidgets, name, layout.monitors),
-      ])
-    );
-
-    for (const monitor of layout.monitors) {
-      const target = targets[monitor.name];
-
-      if (!target) continue;
-
-      const dx = target.x - monitor.bounds.x;
-      const dy = target.y - monitor.bounds.y;
-
-      monitor.bounds = target;
-
-      for (const widget of carried.get(monitor.name) ?? []) {
-        widget.userSettings.x += dx;
-        widget.userSettings.y += dy;
-      }
-    }
-
-    this.bumpMutation();
-  }
-
-  removeMonitor(layoutId: string, monitorName: string) {
-    const layout = this.layoutRecords.removeMonitor(layoutId, monitorName);
-
-    if (!layout) return;
-
-    if (layout.id === this.layoutRecords.editingLayoutId) {
-      this.setWidgets(layout.widgets);
-    }
-
-    this.bumpMutation();
-  }
-
-  async cloneLayout(id: string) {
-    return this.layoutRecords.cloneLayout(id);
-  }
-
-  /** Records plus the live widgets they moved — see `LayoutsStore` for the maths. */
-  alignMonitorsToHardware(attached: LayoutMonitor[]) {
-    this.layoutRecords.alignMonitorsToHardware(attached);
-
-    const editingLayout = this.layoutRecords.editingLayout;
-
-    if (editingLayout) {
-      this.setWidgets(editingLayout.widgets);
-    }
-
-    this.bumpMutation();
-  }
-
   getSettings<SpecificSettings extends WidgetSpecificSettings>(
     widgetId: string
   ): BaseUserSettings & SpecificSettings {
-    void this.syncToken;
-    void this.changeToken;
+    void this.mutations.syncToken;
+    void this.mutations.changeToken;
 
     const widget = this.getWidget(widgetId);
 

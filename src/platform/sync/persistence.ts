@@ -202,7 +202,7 @@ export const hydrateStores = (
     }
 
     if (loadedSettings.layouts) {
-      root.widgetSettings.setLayouts(
+      root.liveWidgets.setLayouts(
         loadedSettings.layouts.map((layout) => ({
           ...layout,
           widgets: restoreLayoutWidgets(layout.widgets ?? []),
@@ -212,7 +212,7 @@ export const hydrateStores = (
     }
 
     if (loadedSettings.sessionLayouts) {
-      root.widgetSettings.setSessionLayouts(loadedSettings.sessionLayouts);
+      root.liveWidgets.setSessionLayouts(loadedSettings.sessionLayouts);
     }
 
     root.bindings.applyBindings(loadedSettings.bindings);

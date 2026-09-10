@@ -15,10 +15,7 @@ import {
 import { TabletSmartphone } from 'lucide-react';
 
 import { REMOTE_SCREEN_PRESET_GROUPS } from '@utils/remote-screen';
-import {
-  useLayoutsStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useLayoutsStore } from '@store/root-store-context';
 
 const ICON_SIZE = 12;
 const MIN_SIDE = 240;
@@ -39,7 +36,6 @@ const DEFAULT_PRESET = REMOTE_SCREEN_PRESET_GROUPS[0].presets[0];
  * the screen needs bounds of its own long before anything opens it.
  */
 export const AddRemoteScreenButton = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
   const layouts = useLayoutsStore();
   const { t } = useTranslation('main-app');
 
@@ -60,7 +56,7 @@ export const AddRemoteScreenButton = observer(() => {
   const handleConfirm = () => {
     const trimmed = name.trim() || t('layoutEditor.remoteScreenDefaultName');
 
-    widgetSettings.addRemoteScreen(
+    layouts.addRemoteScreen(
       trimmed,
       width,
       height,

@@ -12,9 +12,10 @@ import { TrackMapWidgetStore } from '@ui/widgets/TrackMapWidget/track-map.widget
 import { DrivingCoachWidgetStore } from '@ui/widgets/CoachWidget/driving-coach.widget';
 import { CoachWidgetStore } from '@ui/widgets/CoachWidget/coach.widget';
 import { InputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.widget';
-import { WidgetSettingsStore } from './settings/widget-settings.store';
+import { LiveWidgetsStore } from './settings/live-widgets.store';
 import { WidgetDefaultsStore } from './settings/widget-defaults.store';
 import { LayoutsStore } from './settings/layouts.store';
+import { LayoutEditorStore } from './settings/layout-editor.store';
 import { SettingsMutationLog } from './settings/mutation-log';
 import { AppSettingsStore } from './settings/app-settings.store';
 import { CompanionAppsStore } from './settings/companion-apps.store';
@@ -64,9 +65,11 @@ export class RootStore {
   coachWidget: CoachWidgetStore;
   inputTraceWidget: InputTraceWidgetStore;
   streamChatWidget: StreamChatWidgetStore;
-  widgetSettings: WidgetSettingsStore;
+  liveWidgets: LiveWidgetsStore;
   widgetDefaults: WidgetDefaultsStore;
   layouts: LayoutsStore;
+
+  layoutEditor: LayoutEditorStore;
   /** What every settings write marks itself in — see `SettingsMutationLog`. */
   settingsMutations: SettingsMutationLog;
   appSettings: AppSettingsStore;
@@ -95,10 +98,20 @@ export class RootStore {
     this.backendComputed = new BackendComputedStore();
     this.widgetDefaults = new WidgetDefaultsStore(this);
     this.settingsMutations = new SettingsMutationLog();
-    this.layouts = new LayoutsStore(this.settingsMutations);
-    this.widgetSettings = new WidgetSettingsStore(
+    this.layouts = new LayoutsStore(
+      this.settingsMutations,
+      () => this.layoutEditor,
+      () => this.liveWidgets
+    );
+    this.layoutEditor = new LayoutEditorStore(
       this.settingsMutations,
       this.layouts,
+      () => this.liveWidgets
+    );
+    this.liveWidgets = new LiveWidgetsStore(
+      this.settingsMutations,
+      this.layouts,
+      this.layoutEditor,
       this
     );
     this.appSettings = new AppSettingsStore();

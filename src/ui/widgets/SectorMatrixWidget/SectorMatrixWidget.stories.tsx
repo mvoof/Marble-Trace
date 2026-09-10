@@ -53,7 +53,7 @@ const meta: Meta<StoryArgs> = {
         sectorDeltas: args.sectorDeltas,
       } as LapDeltaFrame);
 
-      store.widgetSettings.updateUserSettings('sector-matrix', {
+      store.liveWidgets.updateUserSettings('sector-matrix', {
         reference: 'personal_best',
         showPredicted: true,
       });

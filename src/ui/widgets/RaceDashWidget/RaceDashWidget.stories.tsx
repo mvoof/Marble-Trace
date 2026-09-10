@@ -58,7 +58,7 @@ const meta: Meta<StoryArgs> = {
     seed: (store, args) => {
       store.drivingCoachWidget.displayedAdvisory = args.advisory;
 
-      store.widgetSettings.updateUserSettings('race-dash', {
+      store.liveWidgets.updateUserSettings('race-dash', {
         showSteeringMarker: args.showSteeringMarker,
         steeringTrailColor: args.steeringTrailColor,
       } as Partial<RaceDashWidgetSettings>);
@@ -163,10 +163,8 @@ const RpmSweepPreview = ({
     runInAction(() => {
       store.sim.isConnected = true;
       seedFromSnapshot(store);
-      store.widgetSettings.updateUserSettings('race-dash', {
-        ...store.widgetSettings.getSettings<RaceDashWidgetSettings>(
-          'race-dash'
-        ),
+      store.liveWidgets.updateUserSettings('race-dash', {
+        ...store.liveWidgets.getSettings<RaceDashWidgetSettings>('race-dash'),
         rpmIndicatorMode,
       });
     });

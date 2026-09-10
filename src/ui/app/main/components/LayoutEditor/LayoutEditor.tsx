@@ -36,7 +36,8 @@ import {
 import {
   useAppSettingsStore,
   useLayoutsStore,
-  useWidgetSettingsStore,
+  useLayoutEditorStore,
+  useLiveWidgetsStore,
 } from '@store/root-store-context';
 import {
   PREVIEW_SCENARIOS,
@@ -83,8 +84,9 @@ export const LayoutEditor = observer(
     mode?: 'list' | 'editor';
     onModeChange?: (mode: 'list' | 'editor') => void;
   }) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const liveWidgets = useLiveWidgetsStore();
     const layouts = useLayoutsStore();
+    const layoutEditor = useLayoutEditorStore();
     const appSettings = useAppSettingsStore();
     const { t } = useTranslation('main-app');
 
@@ -104,8 +106,8 @@ export const LayoutEditor = observer(
     // component's: opening the editor pins it, and everything the user does in
     // here moves the edited layout only until they put it on screen.
     const handleOpenEditorWithId = (id: string) => {
-      widgetSettings.setLayoutEditorOpen(true);
-      widgetSettings.switchEditorLayout(id);
+      layoutEditor.setOpen(true);
+      layoutEditor.switchLayout(id);
 
       handleModeChange('editor');
     };
@@ -115,21 +117,21 @@ export const LayoutEditor = observer(
     };
 
     const handleMakeActive = () => {
-      widgetSettings.activateEditorLayout();
+      layoutEditor.activateLayout();
     };
 
-    const isEditingLayoutActive = !widgetSettings.editorPreviewMode;
+    const isEditingLayoutActive = !layoutEditor.previewMode;
 
     // Closing hands the screen's layout back as the one being edited; the
     // session auto-switch never stands down, so the overlay has been following
     // the session the whole time the editor was open.
     useEffect(() => {
-      widgetSettings.setLayoutEditorOpen(activeMode === 'editor');
+      layoutEditor.setOpen(activeMode === 'editor');
 
       return () => {
-        widgetSettings.setLayoutEditorOpen(false);
+        layoutEditor.setOpen(false);
       };
-    }, [activeMode, widgetSettings]);
+    }, [activeMode, layoutEditor]);
 
     const showGrid = appSettings.appSettings.editorShowGrid;
     const snapToGrid = appSettings.appSettings.editorSnapToGrid;
@@ -171,7 +173,7 @@ export const LayoutEditor = observer(
 
     const activeId = layouts.editingLayoutId;
     const editingLayout = layouts.editingLayout;
-    const monitors = widgetSettings.attachedMonitors;
+    const monitors = liveWidgets.attachedMonitors;
 
     // Background images belong to a screen, so setting one needs a screen in
     // focus; in overview the first monitor is the sensible target.
@@ -188,7 +190,7 @@ export const LayoutEditor = observer(
     }, [activeId]);
 
     const selectedWidget = selectedWidgetId
-      ? widgetSettings.getWidget(selectedWidgetId)
+      ? liveWidgets.getWidget(selectedWidgetId)
       : undefined;
 
     const toggleFullscreen = () => {
@@ -271,7 +273,7 @@ export const LayoutEditor = observer(
         void deleteBackgroundImage(image);
       }
 
-      widgetSettings.deleteLayout(activeId);
+      layouts.deleteLayout(activeId);
     };
 
     const layoutOptions = layouts.layouts.map((layout) => ({
@@ -323,7 +325,7 @@ export const LayoutEditor = observer(
     const handleRemoveMonitor = (monitorName: string) => {
       if (!activeId) return;
 
-      widgetSettings.removeMonitor(activeId, monitorName);
+      layouts.removeMonitor(activeId, monitorName);
 
       if (focusedMonitorName === monitorName) {
         setFocusedMonitorName(null);
@@ -384,8 +386,8 @@ export const LayoutEditor = observer(
       const screen = monitorForWidget(selectedWidget, monitors)?.bounds ?? {
         x: 0,
         y: 0,
-        width: widgetSettings.overlayResolution.width,
-        height: widgetSettings.overlayResolution.height,
+        width: liveWidgets.overlayResolution.width,
+        height: liveWidgets.overlayResolution.height,
       };
       const left = screen.x + SNAP_MARGIN;
       const right = screen.x + screen.width - width - SNAP_MARGIN;
@@ -406,8 +408,8 @@ export const LayoutEditor = observer(
       };
 
       const { x, y } = positions[pos];
-      widgetSettings.pushUndo();
-      widgetSettings.updatePosition(selectedWidget.id, x, y);
+      liveWidgets.pushUndo();
+      liveWidgets.updatePosition(selectedWidget.id, x, y);
     };
 
     const handleToggleRatioLock = () => {
@@ -430,14 +432,14 @@ export const LayoutEditor = observer(
         return;
       }
 
-      widgetSettings.saveLayout(trimmed);
+      layouts.createLayout(trimmed);
       setNewName('');
       setIsCreating(false);
     };
 
     const handleRenameConfirm = () => {
       if (activeId && draftName.trim()) {
-        widgetSettings.renameLayout(activeId, draftName);
+        layouts.renameLayout(activeId, draftName);
       }
 
       setIsRenaming(false);
@@ -574,7 +576,7 @@ export const LayoutEditor = observer(
                     placeholder={t('layoutEditor.selectLayoutPlaceholder')}
                     value={activeId ?? undefined}
                     onChange={(id) => {
-                      widgetSettings.switchEditorLayout(id);
+                      layoutEditor.switchLayout(id);
                     }}
                     options={layoutOptions}
                   />
@@ -653,7 +655,7 @@ export const LayoutEditor = observer(
                   size="small"
                   type="text"
                   icon={<Rows3 size={14} />}
-                  onClick={() => widgetSettings.arrangeRemoteScreens()}
+                  onClick={() => layouts.arrangeRemoteScreens()}
                 >
                   {t('layoutEditor.arrangeRemoteScreens')}
                 </Button>
@@ -723,8 +725,8 @@ export const LayoutEditor = observer(
                   size="small"
                   type="text"
                   icon={<Undo2 size={14} />}
-                  disabled={!widgetSettings.history.canUndo}
-                  onClick={() => widgetSettings.undo()}
+                  disabled={!liveWidgets.history.canUndo}
+                  onClick={() => liveWidgets.undo()}
                 />
               </Tooltip>
 
@@ -733,8 +735,8 @@ export const LayoutEditor = observer(
                   size="small"
                   type="text"
                   icon={<Redo2 size={14} />}
-                  disabled={!widgetSettings.history.canRedo}
-                  onClick={() => widgetSettings.redo()}
+                  disabled={!liveWidgets.history.canRedo}
+                  onClick={() => liveWidgets.redo()}
                 />
               </Tooltip>
 

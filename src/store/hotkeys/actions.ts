@@ -58,7 +58,7 @@ const STANDINGS_ACTIONS: HotkeyAction[] = [
     owner: 'standings',
     labelKey: 'standingsCycleViewMode',
     trigger: 'press',
-    run: (root) => root.widgetSettings.cycleStandingsViewMode(),
+    run: (root) => root.liveWidgets.cycleStandingsViewMode(),
   },
   {
     id: 'standings:class-prev',
@@ -117,7 +117,7 @@ const DELTA_ACTIONS: HotkeyAction[] = [
     owner: 'delta',
     labelKey: 'deltaCycleReference',
     trigger: 'press',
-    run: (root) => root.widgetSettings.cycleDeltaReference(),
+    run: (root) => root.liveWidgets.cycleDeltaReference(),
   },
 ];
 
@@ -282,11 +282,11 @@ export const widgetVisibilityAction = (widgetId: string): HotkeyAction => ({
     // for an audience that did not press the key, and hiding the pair together
     // would take the overlay off the stream every time the driver clears their
     // own screen. Hiding a copy is done on the copy, in the editor.
-    const widget = root.widgetSettings.firstWidgetOfType(widgetId);
+    const widget = root.liveWidgets.firstWidgetOfType(widgetId);
 
     if (!widget) return;
 
-    root.widgetSettings.setWidgetEnabled(
+    root.liveWidgets.setWidgetEnabled(
       widget.id,
       widget.userSettings.enabled !== true
     );

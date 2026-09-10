@@ -16,6 +16,8 @@ import type {
 } from '@/types/bindings';
 import type { RootStore } from '@store/root-store';
 
+type CompanionAppsDeps = Pick<RootStore, 'appSettings'>;
+
 /** How often the list refreshes while the settings section is on screen. */
 const STATUS_POLL_MS = 4000;
 
@@ -68,7 +70,7 @@ export class CompanionAppsStore {
   /** Set once the app is on its way out; no further program may be started. */
   private stopping = false;
 
-  constructor(private root: RootStore) {
+  constructor(private root: CompanionAppsDeps) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 

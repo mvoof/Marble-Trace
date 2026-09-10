@@ -16,10 +16,7 @@ import type { EnvelopePoint, TrailPoint } from '@ui/widgets/GMeterWidget/types';
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 
 import styles from './GMeterTrace.module.scss';
-import {
-  usePlayerStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { usePlayerStore, useLiveWidgetsStore } from '@store/root-store-context';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 
 const BADGE_BASE_WIDTH_PX = 240;
@@ -213,7 +210,7 @@ interface GMeterTraceProps {
 export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
   const widgetId = useContext(WidgetIdContext);
   const telemetry = usePlayerStore();
-  const widgetSettings = useWidgetSettingsStore();
+  const liveWidgets = useLiveWidgetsStore();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -377,10 +374,9 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
     (scheduleDraw) => {
       // oxlint-disable-next-line no-restricted-properties
       const dynamics = telemetry.carDynamics;
-      const settings =
-        widgetSettings.getSettings<GMeterWidgetSettings>(widgetId);
+      const settings = liveWidgets.getSettings<GMeterWidgetSettings>(widgetId);
       const fontScale =
-        widgetSettings.getWidget(widgetId)?.userSettings.fontScale ?? 1;
+        liveWidgets.getWidget(widgetId)?.userSettings.fontScale ?? 1;
       const canvas = canvasRef.current;
 
       if (!canvas) return;
@@ -481,7 +477,7 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
         drawTrace(canvas, settings, fontScale, color);
       });
     },
-    [telemetry, widgetSettings, widgetId, drawTrace, width, height]
+    [telemetry, liveWidgets, widgetId, drawTrace, width, height]
   );
 
   return (

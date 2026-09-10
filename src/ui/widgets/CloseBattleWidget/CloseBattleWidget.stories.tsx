@@ -53,7 +53,7 @@ const buildNearbyCars = (
 };
 
 const seed = (store: RootStore, args: StoryArgs) => {
-  store.widgetSettings.updateUserSettings('close-battle', {
+  store.liveWidgets.updateUserSettings('close-battle', {
     ...(CLOSE_BATTLE_MANIFEST.userSettings as unknown as CloseBattleWidgetSettings),
     trigger: 'distance',
     distanceThreshold: 200,
