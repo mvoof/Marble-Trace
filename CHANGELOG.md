@@ -7,9 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0] — 2026-09-11
+
 ### Added
 
-- **Duel Bar Widget:** A widget for the fight you are actually in, rather than the table of everyone in the session. Cars near you stand on a vertical distance axis running through the widget — ahead above, behind below, you as a short white line in the middle — and each plate sits at the distance the car really is at instead of being queued in a list. A plate carries the class rail and badge, the car number, the driver's surname, the distance in metres and the gap in seconds; the signs and colours are the ones the Relative table already uses, so a car ahead reads negative and blue and a car behind positive and red. A red glow builds up from below when someone is closing on your bumper and a blue one from above when you are closing on someone, each cut off at your own line so the side it comes from is the answer to "from where".
+- **Close Battle Widget:** A widget for the fight you are actually in rather than the whole table: cars near you stand on a vertical distance axis — ahead above, behind below, you in the middle — each plate sitting where the car really is, with class badge, number, name, distance and gap. A glow builds from the side someone is closing from, the columns can be switched off one by one, and the axis and your own line can be recoloured or hidden.
+- **Pit Line Widget:** The pit speed plate and the approach rail leave the Pit Service widget and become a widget of their own, in a vertical or a horizontal layout. Pit Service keeps the order alone and is now only as wide as its digits.
+- **Widget Copies and Stream Screens:** A layout can hold several copies of the same widget — one on the screen you race on, another on a stream screen with its own columns, scale and settings. Screens meant for OBS have a mode of their own: no background of their own, no status card, and a link that can be narrowed to a single widget so you can place them in your scene one at a time. The layout editor also gains an inspector listing every widget on the layout.
+- **Companion Apps:** A new settings section finds the other programs on your rig — wheelbase software, voice apps, telemetry tools — and starts them with Marble Trace, then closes the ones you marked when you quit. Programs that need administrator rights are launched through Windows' own consent dialog instead of failing quietly.
+- **Proximity Radar — Round Scope:** The radar is redrawn as a circular scope with its own range, range rings, axes, a tracking beam and background textures, plus sliders for car and beam opacity. The radar bar now switches on with the spotter, and the scope works to a range you set yourself.
+- **G-Meter — Round Dial:** The dial becomes the friction circle itself. The LAT/LON footer is gone; the ring numbers sit on the dial, the loaded quadrant is washed in colour and carries the pair of values, and the ring turns red when the load runs past it.
+- **Standings and Relative — Columns and Badges:** The car number moves next to the position as a class-coloured badge, rows get the class marker the class headers carry, and an optional country flag column sits before the driver. Gap, last lap, best lap, the pit indicator and the car number can each be switched off, the driver-name column is now a width you set rather than whatever space is left, the informational columns can be dimmed, and the safety rating badge has three styles to choose from.
+- **Standings — Cleaner Header and Footer:** Track, session, car count and SOF sit on the left of the header as plain text and the clock and lap count on the right; the clock turns yellow in the last five minutes and red in the last one, and a lap race announces its FINAL lap. Incidents move down to the footer next to the pit counter, and drivers without a lap can be hidden in practice and qualifying.
+- **Track Map and Relative Map — Flagged Sectors:** Sectors under a local yellow are drawn on both maps and fade out once the incident is cleared.
+- **Input Trace — Wheel and Pedals:** The steering block can take a wheel silhouette of your choice, with a centre-grip stripe in a colour you set so a round rim still shows its rotation, and the pedal bars can show their percentages.
+- **Delta — Its Own Plate:** The delta number sits on a plate of its own, and switching the reference lap is announced on the widget so you know what you are being measured against.
+- **Weather — Optional Compass Ring:** The compass ring can be hidden while keeping the wind arrow and the car.
+- **Pit Service — Compact Panel:** The approach rail folds into the panel as a two-leg bar, the speed row reads the margin to the limit and carries the limiter state itself, the tyre corners show the in-tread check and the ordered pressure, and the small orders share one chip row.
+- **Layout Editor — Visible Resize Handles:** A selected widget shows at rest which sides and corners can actually be pulled, instead of making you hover to find out, and widgets render against sample telemetry while you place them so you can see the room they will really need.
+- **Distance Between Bumpers:** Proximity is now measured bumper to bumper rather than centre to centre, with the car length as an app-level setting.
+
+### Changed
+
+- **Lighter Overlay:** The flag board's LED blink now runs off one shared timer instead of one animation per diode, which cost the overlay 10–20 fps on its own; widgets that read fast telemetry no longer redraw through React, and hidden widgets do not render at all.
+
+### Fixed
+
+- **The Coach Never Got a Reference Lap:** Fixed a genuine personal best failing to become the coach's reference lap when the sim published the time late or published it unchanged, which left the coach silent for the rest of the session while the lap log recorded the same lap fine.
+- **Checkered Flag Shown a Lap Early:** Fixed a timed race marking every car finished the moment the clock expired, while the leader was still on the white-flag lap — a driver a lap down got a checkered badge on the lap they were shown the white flag.
+- **Lap Races Showed 168:00:00:** Fixed the timer and the standings header printing a week-long countdown in a lap-limited race. A lap race now counts up, and the clock in qualifying and practice keeps counting down as it should.
+- **Pace Car and Spectators Counted in the Field:** Fixed the car count including the pace car and spectators, and fixed the pace car row in Relative growing to two lines when the flag column was on.
+- **The Layout Switched Under You:** Fixed the session auto-switch swapping the layout while the layout editor was open, and fixed the opposite problem — the overlay staying on the wrong layout for as long as an editor window nobody was looking at stayed open. The editor and the overlay now follow two separate layouts, and clicking a layout opens that one.
+- **Widget Edits Landing in the Wrong Layout:** Fixed an edit made on the overlay being echoed back after a layout switch and applied to the layout you had moved to.
+- **Wind Arrow Pointed the Wrong Way in OBS:** Fixed the wind arrow keeping its drawn direction on stream screens and remote devices, where every ordinary browser drew it correctly.
+- **Widgets Page Listed Copies:** Fixed the widget catalog in Settings showing a widget twice when the layout held a copy of it, and showing the English description instead of the translated one.
+- **Class Badges Read "GT3-Class":** Fixed class labels written with a hyphen or a slash keeping their filler word in the three-character badge column.
 
 ## [0.22.1] — 2026-08-22
 
