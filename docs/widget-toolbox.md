@@ -40,29 +40,29 @@ down into the widget.
 
 No React, no stores, no Tauri. Importable from any layer.
 
-| Module                     | Reach for it when                                                                                                                                                           |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `animation.ts`             | You need the FLIP row-move duration (`MOVE_DURATION_MS`) on both sides of an animation — the hook that plays it and the store that has to know when it ends.                |
-| `backend-constants.ts`     | You need a backend default as a compile-time literal (pit warning laps, fuel window bounds, default car length, default class color). **Generated from Rust — never edit.** |
-| `backend-events.ts`        | You need a `sim://…` or `chat://…` event name. **Generated from Rust — never edit**; `platform/sync/sim-events.ts` re-exports these and adds the frontend-only ones.        |
-| `canvas.ts`                | Drawing on a canvas or an SVG: car-dot geometry and shape-per-class, `resizeCanvasToDpr`, cell dividers, scroll-thumb metrics.                                              |
-| `car-identity.ts`          | You need a `DriverEntry` with its four per-tick numbers stripped off — the shape widgets draw and `BackendComputedStore` compares. Build it here and nowhere else.          |
-| `car-signals.ts`           | Anything RPM or steering: shift thresholds, RPM zone state and its colors, steering angle in degrees, normalized steering.                                                  |
-| `colors.ts`                | Turning data into a color: class color parsing, contrast text color, sector colors, air and track temp colors, the player-row style.                                        |
-| `delta-utils.ts`           | Formatting or classifying a lap delta: `formatDelta`, gauge ranges, ahead/behind state, sector times and sector deltas, the sim's own delta fields and their `_ok` flags.   |
-| `driver.ts`                | Anything about a driver or their car identity: name abbreviation and splitting, car number, iRating, brand, incident limits, flag bits, class SoF.                          |
-| `driver-flair.ts`          | Mapping an iRacing flair id to a country code (for `CountryFlag`).                                                                                                          |
-| `driving-coach-utils.ts`   | Reference-lap maths: interpolating a reference sample, target-speed profiles, corner targets, tire wear, condition mismatch, the brake/gas/grip advisory.                   |
-| `flag-zones.ts`            | Incident and flag zones on a track line: computing them, measuring them, splitting one across start/finish, projecting one into a window.                                   |
-| `fuel-constants.ts`        | Fuel colors, chart configuration and the low-fuel thresholds — shared by the fuel widget and anything that shows a fuel figure.                                             |
-| `pit-approach.ts`          | The pit lane as a measured leg: metres to the pit entry line, and the view the approach rail is drawn from — fill, braking cue, urgency.                                    |
-| `qualifying-visibility.ts` | Honouring a widget's "show in qualifying" setting (`never` / `auto`) — the shared rule behind that switch.                                                                  |
-| `radar-constants.ts`       | Radar geometry (car width, corner radius, lateral offset) and the gap-to-color ramps used by every proximity view.                                                          |
-| `remote-screen.ts`         | Anything about remote screens as monitors: telling a remote monitor from a display, presets, bounds placement, slugs.                                                       |
-| `telemetry-format.ts`      | Rendering a raw SI number for the driver in their unit system: speed, temperature, fuel, distance — and converting back.                                                    |
-| `timer-utils.ts`           | Clocks and session state: wall clock, sim date and time, session ended / race started, lap-limited vs timed, the session clock, `splitTime`.                                |
-| `weather-utils.ts`         | Weather rendering: wind color and bearing, track wetness, and the 0..1 fractions the gauges are drawn from.                                                                 |
-| `widget-instance.ts`       | Anything touching a widget _copy_: `widgetTypeOf` (**always** use it, never `widget.id`), the next instance id, the type behind an id.                                      |
+| Module                     | Reach for it when                                                                                                                                                                                          |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `animation.ts`             | You need the FLIP row-move duration (`MOVE_DURATION_MS`) on both sides of an animation — the hook that plays it and the store that has to know when it ends.                                               |
+| `backend-constants.ts`     | You need a backend default as a compile-time literal (pit warning laps, fuel window bounds, default car length, default class color). **Generated from Rust — never edit.**                                |
+| `backend-events.ts`        | You need a `sim://…` or `chat://…` event name. **Generated from Rust — never edit**; `platform/sync/sim-events.ts` re-exports these and adds the frontend-only ones.                                       |
+| `canvas.ts`                | Drawing on a canvas or an SVG: car-dot geometry and shape-per-class, `resizeCanvasToDpr`, `fillFixedDigits`/`measureFixedDigits` for a readout that must not shuffle, cell dividers, scroll-thumb metrics. |
+| `car-identity.ts`          | You need a `DriverEntry` with its four per-tick numbers stripped off — the shape widgets draw and `BackendComputedStore` compares. Build it here and nowhere else.                                         |
+| `car-signals.ts`           | Anything RPM or steering: shift thresholds, RPM zone state and its colors, steering angle in degrees, normalized steering.                                                                                 |
+| `colors.ts`                | Turning data into a color: class color parsing, contrast text color, sector colors, air and track temp colors, the player-row style.                                                                       |
+| `delta-utils.ts`           | Formatting or classifying a lap delta: `formatDelta`, gauge ranges, ahead/behind state, sector times and sector deltas, the sim's own delta fields and their `_ok` flags.                                  |
+| `driver.ts`                | Anything about a driver or their car identity: name abbreviation and splitting, car number, iRating, brand, incident limits, flag bits, class SoF.                                                         |
+| `driver-flair.ts`          | Mapping an iRacing flair id to a country code (for `CountryFlag`).                                                                                                                                         |
+| `driving-coach-utils.ts`   | Reference-lap maths: interpolating a reference sample, target-speed profiles, corner targets, tire wear, condition mismatch, the brake/gas/grip advisory.                                                  |
+| `flag-zones.ts`            | Incident and flag zones on a track line: computing them, measuring them, splitting one across start/finish, projecting one into a window.                                                                  |
+| `fuel-constants.ts`        | Fuel colors, chart configuration and the low-fuel thresholds — shared by the fuel widget and anything that shows a fuel figure.                                                                            |
+| `pit-approach.ts`          | The pit lane as a measured leg: metres to the pit entry line, and the view the approach rail is drawn from — fill, braking cue, urgency.                                                                   |
+| `qualifying-visibility.ts` | Honouring a widget's "show in qualifying" setting (`never` / `auto`) — the shared rule behind that switch.                                                                                                 |
+| `radar-constants.ts`       | Radar geometry (car width, corner radius, lateral offset) and the gap-to-color ramps used by every proximity view.                                                                                         |
+| `remote-screen.ts`         | Anything about remote screens as monitors: telling a remote monitor from a display, presets, bounds placement, slugs.                                                                                      |
+| `telemetry-format.ts`      | Rendering a raw SI number for the driver in their unit system: speed, temperature, fuel, distance — and converting back.                                                                                   |
+| `timer-utils.ts`           | Clocks and session state: wall clock, sim date and time, session ended / race started, lap-limited vs timed, the session clock, `splitTime`.                                                               |
+| `weather-utils.ts`         | Weather rendering: wind color and bearing, track wetness, and the 0..1 fractions the gauges are drawn from.                                                                                                |
+| `widget-instance.ts`       | Anything touching a widget _copy_: `widgetTypeOf` (**always** use it, never `widget.id`), the next instance id, the type behind an id.                                                                     |
 
 ---
 

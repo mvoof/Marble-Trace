@@ -87,6 +87,88 @@ export const resizeCanvasToDpr = (
   return ctx;
 };
 
+const DIGIT_PATTERN = /\d/;
+
+const DIGIT_SAMPLE = '0123456789';
+
+/**
+ * Widest-digit width per font string. A font is a handful of sizes per widget,
+ * so the map stays small; it is cleared wholesale rather than aged, since a
+ * rebuilt entry costs ten `measureText` calls.
+ */
+const MAX_CACHED_FONTS = 64;
+
+const digitCellWidthByFont = new Map<string, number>();
+
+const digitCellWidth = (ctx: CanvasRenderingContext2D): number => {
+  const cached = digitCellWidthByFont.get(ctx.font);
+
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  let widest = 0;
+
+  for (const digit of DIGIT_SAMPLE) {
+    widest = Math.max(widest, ctx.measureText(digit).width);
+  }
+
+  if (digitCellWidthByFont.size >= MAX_CACHED_FONTS) {
+    digitCellWidthByFont.clear();
+  }
+
+  digitCellWidthByFont.set(ctx.font, widest);
+
+  return widest;
+};
+
+const cellWidthsOf = (ctx: CanvasRenderingContext2D, text: string): number[] =>
+  Array.from(text, (char) =>
+    DIGIT_PATTERN.test(char) ? digitCellWidth(ctx) : ctx.measureText(char).width
+  );
+
+/**
+ * Width `fillFixedDigits` will occupy — the same for every value with the same
+ * shape, so an arc or a plate sized from it does not breathe with the number.
+ */
+export const measureFixedDigits = (
+  ctx: CanvasRenderingContext2D,
+  text: string
+): number => cellWidthsOf(ctx, text).reduce((total, width) => total + width, 0);
+
+/**
+ * Canvas counterpart of the `FixedDigits` component: every digit is drawn in a
+ * cell as wide as the widest one, so a live readout does not shuffle sideways
+ * as its digits change. `tabular-nums` cannot do this — Rajdhani ships no
+ * tabular figures, so the browser has nothing to switch to.
+ *
+ * The text is centred on `centerX`/`centerY`; the caller's `textBaseline` is
+ * respected, `textAlign` is restored on the way out.
+ */
+export const fillFixedDigits = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  centerX: number,
+  centerY: number
+): void => {
+  const widths = cellWidthsOf(ctx, text);
+  const total = widths.reduce((sum, width) => sum + width, 0);
+  const previousAlign = ctx.textAlign;
+
+  ctx.textAlign = 'center';
+
+  let cursor = centerX - total / 2;
+
+  for (let index = 0; index < widths.length; index++) {
+    const cell = widths[index];
+
+    ctx.fillText(text[index], cursor + cell / 2, centerY);
+    cursor += cell;
+  }
+
+  ctx.textAlign = previousAlign;
+};
+
 export interface CellDividers {
   right: boolean;
   top: boolean;
