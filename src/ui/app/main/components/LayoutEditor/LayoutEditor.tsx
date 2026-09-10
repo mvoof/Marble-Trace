@@ -127,11 +127,18 @@ export const LayoutEditor = observer(
     // the session the whole time the editor was open.
     useEffect(() => {
       layoutEditor.setOpen(activeMode === 'editor');
+    }, [activeMode, layoutEditor]);
 
+    // Unmount only. Kept apart from the mode effect on purpose: with the mode
+    // in its deps, React tears the previous effect down before running the new
+    // one, and a cleanup that closed the session would close the one the click
+    // handler just opened — handing the editor back the layout that was live
+    // instead of the one that was clicked.
+    useEffect(() => {
       return () => {
         layoutEditor.setOpen(false);
       };
-    }, [activeMode, layoutEditor]);
+    }, [layoutEditor]);
 
     const showGrid = appSettings.appSettings.editorShowGrid;
     const snapToGrid = appSettings.appSettings.editorSnapToGrid;
