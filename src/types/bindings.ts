@@ -3,1322 +3,1694 @@
 /**
  * Which telemetry domains the connected simulator supports.
  */
-export type CapabilitiesPayload = { playerDynamics: boolean; inputs: boolean; chassis: boolean; fuel: boolean; weatherCurrent: boolean; weatherForecast: boolean; standings: boolean; relative: boolean; radar: boolean; sectors: boolean }
+export type CapabilitiesPayload = {
+  playerDynamics: boolean;
+  inputs: boolean;
+  chassis: boolean;
+  fuel: boolean;
+  weatherCurrent: boolean;
+  weatherForecast: boolean;
+  standings: boolean;
+  relative: boolean;
+  radar: boolean;
+  sectors: boolean;
+};
 
-export type CarDynamicsFrame = { 
-/**
- * Vehicle speed in meters/sec
- * @see https://sajax.github.io/irsdkdocs/telemetry/speed/
- */
-speed: number; 
-/**
- * Engine revolutions per minute
- * @see https://sajax.github.io/irsdkdocs/telemetry/rpm/
- */
-rpm: number; 
-/**
- * Current gear: -1=Reverse, 0=Neutral, 1..n=Forward
- * @see https://sajax.github.io/irsdkdocs/telemetry/gear/
- */
-gear: number; 
-/**
- * Steering wheel angle in radians
- * @see https://sajax.github.io/irsdkdocs/telemetry/steeringwheelangle/
- */
-steering_wheel_angle: number; 
-/**
- * Vehicle velocity along X axis (lateral) in m/s
- * @see https://sajax.github.io/irsdkdocs/telemetry/velocityx/
- */
-velocity_x: number | null; 
-/**
- * Vehicle velocity along Y axis (vertical) in m/s
- * @see https://sajax.github.io/irsdkdocs/telemetry/velocityy/
- */
-velocity_y: number | null; 
-/**
- * Vehicle velocity along Z axis (forward) in m/s
- * @see https://sajax.github.io/irsdkdocs/telemetry/velocityz/
- */
-velocity_z: number | null; 
-/**
- * Lateral acceleration in m/s²
- * @see https://sajax.github.io/irsdkdocs/telemetry/lataccel/
- */
-lat_accel: number | null; 
-/**
- * Longitudinal acceleration in m/s²
- * @see https://sajax.github.io/irsdkdocs/telemetry/longaccel/
- */
-long_accel: number | null; 
-/**
- * Yaw angle (heading) in radians
- * @see https://sajax.github.io/irsdkdocs/telemetry/yaw/
- */
-yaw: number | null; 
-/**
- * Yaw rate (rotation speed) in rad/s
- * @see https://sajax.github.io/irsdkdocs/telemetry/yawrate/
- */
-yaw_rate: number | null; 
-/**
- * Pitch angle in radians
- * @see https://sajax.github.io/irsdkdocs/telemetry/pitch/
- */
-pitch: number | null; 
-/**
- * Roll angle in radians
- * @see https://sajax.github.io/irsdkdocs/telemetry/roll/
- */
-roll: number | null; 
-/**
- * Shift indicator: 0.0 (idle) to 1.0 (shift now)
- * @see https://sajax.github.io/irsdkdocs/telemetry/shiftindicatorpct/
- */
-shift_indicator_pct: number | null; 
-/**
- * RPM at which grinding occurs during shift
- * @see https://sajax.github.io/irsdkdocs/telemetry/shiftgrindrpm/
- */
-shift_grind_rpm: number | null }
+export type CarDynamicsFrame = {
+  /**
+   * Vehicle speed in meters/sec
+   * @see https://sajax.github.io/irsdkdocs/telemetry/speed/
+   */
+  speed: number;
+  /**
+   * Engine revolutions per minute
+   * @see https://sajax.github.io/irsdkdocs/telemetry/rpm/
+   */
+  rpm: number;
+  /**
+   * Current gear: -1=Reverse, 0=Neutral, 1..n=Forward
+   * @see https://sajax.github.io/irsdkdocs/telemetry/gear/
+   */
+  gear: number;
+  /**
+   * Steering wheel angle in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/steeringwheelangle/
+   */
+  steering_wheel_angle: number;
+  /**
+   * Vehicle velocity along X axis (lateral) in m/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/velocityx/
+   */
+  velocity_x: number | null;
+  /**
+   * Vehicle velocity along Y axis (vertical) in m/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/velocityy/
+   */
+  velocity_y: number | null;
+  /**
+   * Vehicle velocity along Z axis (forward) in m/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/velocityz/
+   */
+  velocity_z: number | null;
+  /**
+   * Lateral acceleration in m/s²
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lataccel/
+   */
+  lat_accel: number | null;
+  /**
+   * Longitudinal acceleration in m/s²
+   * @see https://sajax.github.io/irsdkdocs/telemetry/longaccel/
+   */
+  long_accel: number | null;
+  /**
+   * Yaw angle (heading) in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/yaw/
+   */
+  yaw: number | null;
+  /**
+   * Yaw rate (rotation speed) in rad/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/yawrate/
+   */
+  yaw_rate: number | null;
+  /**
+   * Pitch angle in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/pitch/
+   */
+  pitch: number | null;
+  /**
+   * Roll angle in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/roll/
+   */
+  roll: number | null;
+  /**
+   * Shift indicator: 0.0 (idle) to 1.0 (shift now)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/shiftindicatorpct/
+   */
+  shift_indicator_pct: number | null;
+  /**
+   * RPM at which grinding occurs during shift
+   * @see https://sajax.github.io/irsdkdocs/telemetry/shiftgrindrpm/
+   */
+  shift_grind_rpm: number | null;
+};
 
-export type CarEntry = { carIdx: number; userName: string; carNumber: string; carClassId: number; 
-/**
- * Class label provided by the sim (e.g. "GT3", "LMP2"); empty in single-class series.
- */
-carClassShortName: string; 
-/**
- * Raw iRacing color string (e.g. "0xffda59").
- */
-carClassColor: string; carScreenName: string; carScreenNameShort: string; 
-/**
- * iRacing's `FlairID` — the country flag the driver picked for their profile.
- * `0` is "no flag chosen"; the id → ISO code table lives on the frontend.
- */
-flairId: number; iRating: number; licString: string; licColor: string; incidentCount: number; isPaceCar: boolean; 
-/**
- * The sim is driving this car. AI drivers carry no `flair_id`, so this is
- * what the country-flag column falls back on.
- */
-isAi: boolean; isSpectator: boolean; carClassEstLapTime: number }
+export type CarEntry = {
+  carIdx: number;
+  userName: string;
+  carNumber: string;
+  carClassId: number;
+  /**
+   * Class label provided by the sim (e.g. "GT3", "LMP2"); empty in single-class series.
+   */
+  carClassShortName: string;
+  /**
+   * Raw iRacing color string (e.g. "0xffda59").
+   */
+  carClassColor: string;
+  carScreenName: string;
+  carScreenNameShort: string;
+  /**
+   * iRacing's `FlairID` — the country flag the driver picked for their profile.
+   * `0` is "no flag chosen"; the id → ISO code table lives on the frontend.
+   */
+  flairId: number;
+  iRating: number;
+  licString: string;
+  licColor: string;
+  incidentCount: number;
+  isPaceCar: boolean;
+  /**
+   * The sim is driving this car. AI drivers carry no `flair_id`, so this is
+   * what the country-flag column falls back on.
+   */
+  isAi: boolean;
+  isSpectator: boolean;
+  carClassEstLapTime: number;
+};
 
-export type CarIdxFrame = { 
-/**
- * Percentage distance around lap for each car (-1 = not on track)
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
- */
-car_idx_lap_dist_pct: number[]; 
-/**
- * Whether each car is on pit road
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxonpitroad/
- */
-car_idx_on_pit_road: boolean[]; 
-/**
- * Overall race position for each car
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxposition/
- */
-car_idx_position: number[]; 
-/**
- * Class position for each car
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxclassposition/
- */
-car_idx_class_position: number[]; 
-/**
- * Current lap number for each car
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlap/
- */
-car_idx_lap: number[]; 
-/**
- * Last lap time in seconds for each car (-1 = no time)
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlastlaptime/
- */
-car_idx_last_lap_time: number[]; 
-/**
- * Best lap time in seconds for each car (-1 = no time)
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxbestlaptime/
- */
-car_idx_best_lap_time: number[]; 
-/**
- * Race time behind leader or fastest car in seconds
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxf2time/
- */
-car_idx_f2_time: number[]; 
-/**
- * Estimated time around track for each car in seconds
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxesttime/
- */
-car_idx_est_time: number[]; 
-/**
- * Track surface type for each car (irsdk_TrkLoc enum)
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtracksurface/
- */
-car_idx_track_surface: TrackSurface[]; 
-/**
- * Tire compound index per car. Maps into DriverInfo.DriverTires[].
- * -1 = unknown.
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtirecompound/
- */
-car_idx_tire_compound: number[]; 
-/**
- * Raw iRacing per-car session flag bits; decoded on the frontend for now.
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
- */
-car_idx_session_flags: number[]; 
-/**
- * What the spotter reports about cars alongside the player.
- */
-spotter: SpotterState | null }
+export type CarIdxFrame = {
+  /**
+   * Percentage distance around lap for each car (-1 = not on track)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
+   */
+  car_idx_lap_dist_pct: number[];
+  /**
+   * Whether each car is on pit road
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxonpitroad/
+   */
+  car_idx_on_pit_road: boolean[];
+  /**
+   * Overall race position for each car
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxposition/
+   */
+  car_idx_position: number[];
+  /**
+   * Class position for each car
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxclassposition/
+   */
+  car_idx_class_position: number[];
+  /**
+   * Current lap number for each car
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlap/
+   */
+  car_idx_lap: number[];
+  /**
+   * Last lap time in seconds for each car (-1 = no time)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlastlaptime/
+   */
+  car_idx_last_lap_time: number[];
+  /**
+   * Best lap time in seconds for each car (-1 = no time)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxbestlaptime/
+   */
+  car_idx_best_lap_time: number[];
+  /**
+   * Race time behind leader or fastest car in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxf2time/
+   */
+  car_idx_f2_time: number[];
+  /**
+   * Estimated time around track for each car in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxesttime/
+   */
+  car_idx_est_time: number[];
+  /**
+   * Track surface type for each car (irsdk_TrkLoc enum)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtracksurface/
+   */
+  car_idx_track_surface: TrackSurface[];
+  /**
+   * Tire compound index per car. Maps into DriverInfo.DriverTires[].
+   * -1 = unknown.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtirecompound/
+   */
+  car_idx_tire_compound: number[];
+  /**
+   * Raw iRacing per-car session flag bits; decoded on the frontend for now.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
+   */
+  car_idx_session_flags: number[];
+  /**
+   * What the spotter reports about cars alongside the player.
+   */
+  spotter: SpotterState | null;
+};
 
 /**
  * Car input telemetry — driver pedal input data.
- * 
+ *
  * Contains throttle, brake, and clutch pedal positions.
- * 
+ *
  * @see https://sajax.github.io/irsdkdocs/telemetry/
  */
-export type CarInputsFrame = { 
-/**
- * Throttle pedal position: 0.0 (released) to 1.0 (fully pressed)
- * @see https://sajax.github.io/irsdkdocs/telemetry/throttle/
- */
-throttle: number; 
-/**
- * Brake pedal position: 0.0 (released) to 1.0 (fully pressed)
- * @see https://sajax.github.io/irsdkdocs/telemetry/brake/
- */
-brake: number; 
-/**
- * Clutch pedal: 0.0 = disengaged (pedal pressed), 1.0 = engaged (pedal released).
- * Note: iRacing provides clutch engagement, not pedal input.
- * @see https://sajax.github.io/irsdkdocs/telemetry/clutch/
- */
-clutch: number | null; 
-/**
- * True if ABS is active
- * @see https://sajax.github.io/irsdkdocs/telemetry/brakeabsactive/
- */
-brake_abs_active: boolean }
+export type CarInputsFrame = {
+  /**
+   * Throttle pedal position: 0.0 (released) to 1.0 (fully pressed)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/throttle/
+   */
+  throttle: number;
+  /**
+   * Brake pedal position: 0.0 (released) to 1.0 (fully pressed)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/brake/
+   */
+  brake: number;
+  /**
+   * Clutch pedal: 0.0 = disengaged (pedal pressed), 1.0 = engaged (pedal released).
+   * Note: iRacing provides clutch engagement, not pedal input.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/clutch/
+   */
+  clutch: number | null;
+  /**
+   * True if ABS is active
+   * @see https://sajax.github.io/irsdkdocs/telemetry/brakeabsactive/
+   */
+  brake_abs_active: boolean;
+};
 
 /**
  * Lightweight per-car position frame emitted at 30Hz for smooth map rendering.
  */
-export type CarPositionsFrame = { 
-/**
- * Lap distance percentage for each car (-1 = not on track)
- */
-car_idx_lap_dist_pct: number[]; 
-/**
- * Track surface type for each car (-1=NotInWorld, 0=OffTrack, 1=InPitStall, 2=AproachingPits, 3=OnTrack)
- */
-car_idx_track_surface: number[] }
+export type CarPositionsFrame = {
+  /**
+   * Lap distance percentage for each car (-1 = not on track)
+   */
+  car_idx_lap_dist_pct: number[];
+  /**
+   * Track surface type for each car (-1=NotInWorld, 0=OffTrack, 1=InPitStall, 2=AproachingPits, 3=OnTrack)
+   */
+  car_idx_track_surface: number[];
+};
 
 /**
  * Car status telemetry — vehicle systems, fuel, engine, and pit state.
- * 
+ *
  * Contains fuel levels, engine temperatures, voltage, oil pressure,
  * and pit road / on track indicators.
- * 
+ *
  * @see https://sajax.github.io/irsdkdocs/telemetry/
  */
-export type CarStatusFrame = { 
-/**
- * Fuel level in liters
- * @see https://sajax.github.io/irsdkdocs/telemetry/fuellevel/
- */
-fuel_level: number; 
-/**
- * Fuel level as percentage: 0.0 to 1.0
- * @see https://sajax.github.io/irsdkdocs/telemetry/fuellevelpct/
- */
-fuel_level_pct: number | null; 
-/**
- * Fuel consumption rate in kg/h
- * @see https://sajax.github.io/irsdkdocs/telemetry/fueluseperhour/
- */
-fuel_use_per_hour: number | null; 
-/**
- * Engine oil temperature in °C
- * @see https://sajax.github.io/irsdkdocs/telemetry/oiltemp/
- */
-oil_temp: number | null; 
-/**
- * Engine oil pressure in kPa
- * @see https://sajax.github.io/irsdkdocs/telemetry/oilpress/
- */
-oil_press: number | null; 
-/**
- * Engine water temperature in °C
- * @see https://sajax.github.io/irsdkdocs/telemetry/watertemp/
- */
-water_temp: number | null; 
-/**
- * Electrical system voltage
- * @see https://sajax.github.io/irsdkdocs/telemetry/voltage/
- */
-voltage: number | null; 
-/**
- * Whether car is on pit road
- * @see https://sajax.github.io/irsdkdocs/telemetry/onpitroad/
- */
-on_pit_road: boolean | null; 
-/**
- * Whether car is on track (not in garage/pits)
- * @see https://sajax.github.io/irsdkdocs/telemetry/isontrack/
- */
-is_on_track: boolean | null; 
-/**
- * What the spotter reports about cars alongside the player.
- */
-spotter: SpotterState | null; 
-/**
- * Engine warning bitmask; bit 0x10 = pit speed limiter active
- * @see https://sajax.github.io/irsdkdocs/telemetry/enginewarnings/
- */
-engine_warnings: number | null; 
-/**
- * Per-gear RPM threshold at which shift lights turn fully on (one value per gear, index = gear number)
- * @see https://sajax.github.io/irsdkdocs/telemetry/playercarslshiftrpm/
- */
-player_car_sl_shift_rpm: number[]; 
-/**
- * Per-gear RPM threshold at which shift lights blink (one value per gear, index = gear number)
- * @see https://sajax.github.io/irsdkdocs/telemetry/playercarslblinkrpm/
- */
-player_car_sl_blink_rpm: number[]; 
-/**
- * Decoded race flag state for the session and the player's car.
- */
-flags: RaceFlags; 
-/**
- * In car abs adjustment
- */
-dc_abs: number | null; 
-/**
- * In car brake bias adjustment
- */
-dc_brake_bias: number | null; 
-/**
- * In car traction control adjustment
- */
-dc_traction_control: number | null; 
-/**
- * In car throttle shape adjustment
- */
-dc_throttle_shape: number | null }
+export type CarStatusFrame = {
+  /**
+   * Fuel level in liters
+   * @see https://sajax.github.io/irsdkdocs/telemetry/fuellevel/
+   */
+  fuel_level: number;
+  /**
+   * Fuel level as percentage: 0.0 to 1.0
+   * @see https://sajax.github.io/irsdkdocs/telemetry/fuellevelpct/
+   */
+  fuel_level_pct: number | null;
+  /**
+   * Fuel consumption rate in kg/h
+   * @see https://sajax.github.io/irsdkdocs/telemetry/fueluseperhour/
+   */
+  fuel_use_per_hour: number | null;
+  /**
+   * Engine oil temperature in °C
+   * @see https://sajax.github.io/irsdkdocs/telemetry/oiltemp/
+   */
+  oil_temp: number | null;
+  /**
+   * Engine oil pressure in kPa
+   * @see https://sajax.github.io/irsdkdocs/telemetry/oilpress/
+   */
+  oil_press: number | null;
+  /**
+   * Engine water temperature in °C
+   * @see https://sajax.github.io/irsdkdocs/telemetry/watertemp/
+   */
+  water_temp: number | null;
+  /**
+   * Electrical system voltage
+   * @see https://sajax.github.io/irsdkdocs/telemetry/voltage/
+   */
+  voltage: number | null;
+  /**
+   * Whether car is on pit road
+   * @see https://sajax.github.io/irsdkdocs/telemetry/onpitroad/
+   */
+  on_pit_road: boolean | null;
+  /**
+   * Whether car is on track (not in garage/pits)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/isontrack/
+   */
+  is_on_track: boolean | null;
+  /**
+   * What the spotter reports about cars alongside the player.
+   */
+  spotter: SpotterState | null;
+  /**
+   * Engine warning bitmask; bit 0x10 = pit speed limiter active
+   * @see https://sajax.github.io/irsdkdocs/telemetry/enginewarnings/
+   */
+  engine_warnings: number | null;
+  /**
+   * Per-gear RPM threshold at which shift lights turn fully on (one value per gear, index = gear number)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercarslshiftrpm/
+   */
+  player_car_sl_shift_rpm: number[];
+  /**
+   * Per-gear RPM threshold at which shift lights blink (one value per gear, index = gear number)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercarslblinkrpm/
+   */
+  player_car_sl_blink_rpm: number[];
+  /**
+   * Decoded race flag state for the session and the player's car.
+   */
+  flags: RaceFlags;
+  /**
+   * In car abs adjustment
+   */
+  dc_abs: number | null;
+  /**
+   * In car brake bias adjustment
+   */
+  dc_brake_bias: number | null;
+  /**
+   * In car traction control adjustment
+   */
+  dc_traction_control: number | null;
+  /**
+   * In car throttle shape adjustment
+   */
+  dc_throttle_shape: number | null;
+};
 
 /**
  * Chassis telemetry — per-wheel tire and suspension data.
- * 
+ *
  * Contains ride height, shock deflection, tire temperatures (3 zones),
  * tire pressure, tire wear, and brake disc temperatures for all 4 corners.
- * 
+ *
  * All distance values are in meters (convert to mm on the frontend).
  * All temperature values are in °C. Pressure in kPa. Wear in 0.0–1.0.
- * 
+ *
  * @see https://sajax.github.io/irsdkdocs/telemetry/
  */
-export type ChassisFrame = { lf_ride_height: number | null; rf_ride_height: number | null; lr_ride_height: number | null; rr_ride_height: number | null; lf_shock_defl: number | null; rf_shock_defl: number | null; lr_shock_defl: number | null; rr_shock_defl: number | null; lf_temp_cl: number | null; lf_temp_cm: number | null; lf_temp_cr: number | null; rf_temp_cl: number | null; rf_temp_cm: number | null; rf_temp_cr: number | null; lr_temp_cl: number | null; lr_temp_cm: number | null; lr_temp_cr: number | null; rr_temp_cl: number | null; rr_temp_cm: number | null; rr_temp_cr: number | null; lf_pressure: number | null; rf_pressure: number | null; lr_pressure: number | null; rr_pressure: number | null; lf_wear_l: number | null; lf_wear_m: number | null; lf_wear_r: number | null; rf_wear_l: number | null; rf_wear_m: number | null; rf_wear_r: number | null; lr_wear_l: number | null; lr_wear_m: number | null; lr_wear_r: number | null; rr_wear_l: number | null; rr_wear_m: number | null; rr_wear_r: number | null; lf_brake_temp: number | null; rf_brake_temp: number | null; lr_brake_temp: number | null; rr_brake_temp: number | null }
+export type ChassisFrame = {
+  lf_ride_height: number | null;
+  rf_ride_height: number | null;
+  lr_ride_height: number | null;
+  rr_ride_height: number | null;
+  lf_shock_defl: number | null;
+  rf_shock_defl: number | null;
+  lr_shock_defl: number | null;
+  rr_shock_defl: number | null;
+  lf_temp_cl: number | null;
+  lf_temp_cm: number | null;
+  lf_temp_cr: number | null;
+  rf_temp_cl: number | null;
+  rf_temp_cm: number | null;
+  rf_temp_cr: number | null;
+  lr_temp_cl: number | null;
+  lr_temp_cm: number | null;
+  lr_temp_cr: number | null;
+  rr_temp_cl: number | null;
+  rr_temp_cm: number | null;
+  rr_temp_cr: number | null;
+  lf_pressure: number | null;
+  rf_pressure: number | null;
+  lr_pressure: number | null;
+  rr_pressure: number | null;
+  lf_wear_l: number | null;
+  lf_wear_m: number | null;
+  lf_wear_r: number | null;
+  rf_wear_l: number | null;
+  rf_wear_m: number | null;
+  rf_wear_r: number | null;
+  lr_wear_l: number | null;
+  lr_wear_m: number | null;
+  lr_wear_r: number | null;
+  rr_wear_l: number | null;
+  rr_wear_m: number | null;
+  rr_wear_r: number | null;
+  lf_brake_temp: number | null;
+  rf_brake_temp: number | null;
+  lr_brake_temp: number | null;
+  rr_brake_temp: number | null;
+};
 
-export type ChatBadge = { 
-/**
- * Stable key the widget maps to a colour: "moderator", "subscriber", "vip".
- */
-kind: string; 
-/**
- * Short uppercase text shown in the badge plate.
- */
-label: string; 
-/**
- * Artwork, when it could be resolved. Twitch retired the anonymous badge
- * endpoint, so on Twitch this is filled only while signed in; the text
- * plate is always the fallback.
- */
-url: string | null }
+export type ChatBadge = {
+  /**
+   * Stable key the widget maps to a colour: "moderator", "subscriber", "vip".
+   */
+  kind: string;
+  /**
+   * Short uppercase text shown in the badge plate.
+   */
+  label: string;
+  /**
+   * Artwork, when it could be resolved. Twitch retired the anonymous badge
+   * endpoint, so on Twitch this is filled only while signed in; the text
+   * plate is always the fallback.
+   */
+  url: string | null;
+};
 
 /**
  * Everything the chat runtime needs to connect, sent from the frontend when
  * the user edits the source settings.
  */
-export type ChatConfig = { 
-/**
- * Twitch login name, without the leading '#'. Empty disables Twitch.
- */
-twitchChannel: string | null; 
-/**
- * YouTube video id, full watch URL, channel URL or @handle.
- */
-youtubeTarget: string | null; twitchClientId: string | null; 
-/**
- * Bumped by the frontend on sign-in and sign-out. The tokens themselves
- * live in the OS credential store and are read there by the runtime, so
- * they never cross the IPC bridge; this only tells it to reconnect.
- */
-authRevision: number }
+export type ChatConfig = {
+  /**
+   * Twitch login name, without the leading '#'. Empty disables Twitch.
+   */
+  twitchChannel: string | null;
+  /**
+   * YouTube video id, full watch URL, channel URL or @handle.
+   */
+  youtubeTarget: string | null;
+  twitchClientId: string | null;
+  /**
+   * Bumped by the frontend on sign-in and sign-out. The tokens themselves
+   * live in the OS credential store and are read there by the runtime, so
+   * they never cross the IPC bridge; this only tells it to reconnect.
+   */
+  authRevision: number;
+};
 
 /**
  * Connection state of a single platform, surfaced as the footer status dot.
  */
-export type ChatConnectionStatus = "live" | "connecting" | "reconnecting" | "offline" | "error"
+export type ChatConnectionStatus =
+  | 'live'
+  | 'connecting'
+  | 'reconnecting'
+  | 'offline'
+  | 'error';
 
 /**
  * Moderation event — removes an already rendered row.
  */
-export type ChatDeletion = { platform: ChatPlatform; 
-/**
- * Single message id, when the platform names one.
- */
-messageId: string | null; 
-/**
- * Author whose whole history is cleared (Twitch ban / timeout).
- */
-authorName: string | null }
+export type ChatDeletion = {
+  platform: ChatPlatform;
+  /**
+   * Single message id, when the platform names one.
+   */
+  messageId: string | null;
+  /**
+   * Author whose whole history is cleared (Twitch ban / timeout).
+   */
+  authorName: string | null;
+};
 
 /**
  * A message is a sequence of fragments, never a raw string: emote positions
  * arrive as index ranges (Twitch) or as separate runs (YouTube), and both
  * collapse to this list so the renderer just walks it.
  */
-export type ChatFragment = { kind: "text"; text: string } | { kind: "emote"; name: string; url: string }
+export type ChatFragment =
+  | { kind: 'text'; text: string }
+  | { kind: 'emote'; name: string; url: string };
 
-export type ChatHighlight = { kind: ChatHighlightKind; 
-/**
- * Pre-rendered line for event rows ("kartoshka resubscribed · 8 months").
- */
-text: string; 
-/**
- * Super Chat amount, already formatted with its currency by the platform.
- */
-amount: string | null; 
-/**
- * Twitch cheer size. A raw count rather than a formatted string: unlike a
- * Super Chat sum, "bits" is a word the frontend has to translate.
- */
-bits: number | null }
+export type ChatHighlight = {
+  kind: ChatHighlightKind;
+  /**
+   * Pre-rendered line for event rows ("kartoshka resubscribed · 8 months").
+   */
+  text: string;
+  /**
+   * Super Chat amount, already formatted with its currency by the platform.
+   */
+  amount: string | null;
+  /**
+   * Twitch cheer size. A raw count rather than a formatted string: unlike a
+   * Super Chat sum, "bits" is a word the frontend has to translate.
+   */
+  bits: number | null;
+};
 
-export type ChatHighlightKind = "subscription" | "raid" | "paid" | "firstMessage"
+export type ChatHighlightKind =
+  | 'subscription'
+  | 'raid'
+  | 'paid'
+  | 'firstMessage';
 
-export type ChatMessage = { platform: ChatPlatform; 
-/**
- * Platform message id — required to drop the row when a mod deletes it.
- */
-id: string; authorName: string; 
-/**
- * Hex colour. Twitch sends it in the `color` tag; YouTube has none, so the
- * source derives a stable colour from the author name.
- */
-authorColor: string; badges: ChatBadge[]; fragments: ChatFragment[]; timestampMs: number; highlight: ChatHighlight | null }
+export type ChatMessage = {
+  platform: ChatPlatform;
+  /**
+   * Platform message id — required to drop the row when a mod deletes it.
+   */
+  id: string;
+  authorName: string;
+  /**
+   * Hex colour. Twitch sends it in the `color` tag; YouTube has none, so the
+   * source derives a stable colour from the author name.
+   */
+  authorColor: string;
+  badges: ChatBadge[];
+  fragments: ChatFragment[];
+  timestampMs: number;
+  highlight: ChatHighlight | null;
+};
 
-export type ChatPlatform = "twitch" | "youtube"
+export type ChatPlatform = 'twitch' | 'youtube';
 
 /**
  * Per-platform presence, emitted on its own slow cadence rather than riding
  * along with messages: viewer counts refresh every 30-60 s, messages do not.
  */
-export type ChatPresence = { platform: ChatPlatform; status: ChatConnectionStatus; 
-/**
- * None when the platform does not expose a count on the current auth path.
- */
-viewers: number | null; 
-/**
- * Seconds since the stream went live, when known. u32 rather than u64
- * because specta forbids BigInt-width integers in the TS contract.
- */
-uptimeSeconds: number | null; roomMode: ChatRoomMode | null; 
-/**
- * Reconnect attempt number, shown in the reconnect banner.
- */
-retry: number | null; 
-/**
- * Human-readable failure reason for the error banner.
- */
-detail: string | null }
+export type ChatPresence = {
+  platform: ChatPlatform;
+  status: ChatConnectionStatus;
+  /**
+   * None when the platform does not expose a count on the current auth path.
+   */
+  viewers: number | null;
+  /**
+   * Seconds since the stream went live, when known. u32 rather than u64
+   * because specta forbids BigInt-width integers in the TS contract.
+   */
+  uptimeSeconds: number | null;
+  roomMode: ChatRoomMode | null;
+  /**
+   * Reconnect attempt number, shown in the reconnect banner.
+   */
+  retry: number | null;
+  /**
+   * Human-readable failure reason for the error banner.
+   */
+  detail: string | null;
+};
 
 /**
  * Active room restriction. Kept structured rather than pre-rendered: the
  * banner text is translated in the frontend, next to every other UI string.
  */
-export type ChatRoomMode = { kind: "subsOnly" } | { kind: "emoteOnly" } | { kind: "followersOnly" } | { kind: "slow"; seconds: number }
+export type ChatRoomMode =
+  | { kind: 'subsOnly' }
+  | { kind: 'emoteOnly' }
+  | { kind: 'followersOnly' }
+  | { kind: 'slow'; seconds: number };
 
 /**
  * One configured program, as the settings file stores it.
  */
-export type CompanionApp = { 
-/**
- * Stable id generated by the frontend when the entry is added.
- */
-id: string; 
-/**
- * What the user sees. Seeded from the file name or the detection catalog.
- */
-name: string; 
-/**
- * Absolute path to the executable.
- */
-path: string; 
-/**
- * Command line passed on launch, split on spaces. Usually empty.
- */
-args: string; 
-/**
- * Start it when Marble Trace starts, if it is not already running.
- */
-launchWithApp: boolean; 
-/**
- * Close it when Marble Trace closes — only ever the instance we started.
- */
-closeWithApp: boolean; 
-/**
- * The executable to look for in the process list, when it is not the
- * one that gets launched. Discord is started through its updater and
- * runs as `Discord.exe` out of a versioned folder, so matching the
- * launched file would report it as never running.
- */
-processName?: string | null }
+export type CompanionApp = {
+  /**
+   * Stable id generated by the frontend when the entry is added.
+   */
+  id: string;
+  /**
+   * What the user sees. Seeded from the file name or the detection catalog.
+   */
+  name: string;
+  /**
+   * Absolute path to the executable.
+   */
+  path: string;
+  /**
+   * Command line passed on launch, split on spaces. Usually empty.
+   */
+  args: string;
+  /**
+   * Start it when Marble Trace starts, if it is not already running.
+   */
+  launchWithApp: boolean;
+  /**
+   * Close it when Marble Trace closes — only ever the instance we started.
+   */
+  closeWithApp: boolean;
+  /**
+   * The executable to look for in the process list, when it is not the
+   * one that gets launched. Discord is started through its updater and
+   * runs as `Discord.exe` out of a versioned folder, so matching the
+   * launched file would report it as never running.
+   */
+  processName?: string | null;
+};
 
 /**
  * Live state of one configured program.
  */
-export type CompanionStatus = { id: string; running: boolean; 
-/**
- * True while the running instance is the one this app started, which is
- * the only instance it is allowed to close.
- */
-owned: boolean; 
-/**
- * False when the executable is no longer where the entry says it is.
- */
-exists: boolean }
+export type CompanionStatus = {
+  id: string;
+  running: boolean;
+  /**
+   * True while the running instance is the one this app started, which is
+   * the only instance it is allowed to close.
+   */
+  owned: boolean;
+  /**
+   * False when the executable is no longer where the entry says it is.
+   */
+  exists: boolean;
+};
 
 /**
  * A program the catalog scan found installed on this machine.
  */
-export type DetectedApp = { name: string; path: string; 
-/**
- * Command line the program needs to start properly, empty for most.
- */
-args: string; 
-/**
- * The executable to look for in the process list, when it is not the
- * one that gets launched. Discord is started through its updater and
- * runs as `Discord.exe` out of a versioned folder, so matching the
- * launched file would report it as never running.
- */
-processName?: string | null }
+export type DetectedApp = {
+  name: string;
+  path: string;
+  /**
+   * Command line the program needs to start properly, empty for most.
+   */
+  args: string;
+  /**
+   * The executable to look for in the process list, when it is not the
+   * one that gets launched. Discord is started through its updater and
+   * runs as `Discord.exe` out of a versioned folder, so matching the
+   * launched file would report it as never running.
+   */
+  processName?: string | null;
+};
 
-export type DriverEntriesFrame = { entries: DriverEntry[]; playerCarIdx: number }
+export type DriverEntriesFrame = {
+  entries: DriverEntry[];
+  playerCarIdx: number;
+};
 
-export type DriverEntry = { carIdx: number; userName: string; carNumber: string; carClassId: number; carClassShortName: string; carClassColor: string; carScreenName: string; carScreenNameShort: string; 
-/**
- * iRacing's `FlairID` — the country flag on the driver's profile, `0` when unset.
- */
-flairId: number; 
-/**
- * The sim drives this car. AI entries never carry a flair.
- */
-isAi: boolean; tireCompound: string; position: number; classPosition: number; 
-/**
- * Track order recomputed from lap progress every tick, once the race is running.
- * Official `position` only refreshes when a car crosses the start/finish line,
- * so an overtake mid-lap is invisible there. Before the green flag this is the
- * starting grid, and outside a race it mirrors the official order — see
- * `RankingMode`. Which of the two fields is displayed is a frontend choice.
- */
-livePosition: number; 
-/**
- * Same as `live_position`, but ranked within the car's class.
- */
-liveClassPosition: number; startPosOverall: number; startPosClass: number; lap: number; lapDistPct: number; lastLapTime: number; bestLapTime: number; 
-/**
- * Lap time that earned the car its grid slot, from `QualifyResultsInfo`.
- * `-1.0` when the car set no qualifying time — the same "no time" marker
- * `best_lap_time` uses. Survives into the race, where it is the only lap
- * time the field has until the first one is completed.
- */
-qualifyTime: number; f2Time: number; estTime: number; trackSurface: TrackSurface; iRating: number; licString: string; licColor: string; incidents: number; isPlayer: boolean; onPitRoad: boolean; estimatedIrDeltaLive: number | null; estimatedIrDeltaOfficial: number | null; relativeLapDist: number; classEstLapTime: number; rawFlags: number; resultsPositionLap: number | null; resultsPositionTime: number | null; 
-/**
- * The sim marked the car as retired or disqualified (`ReasonOutId` != 0).
- * A car merely sitting in the garage is *not* retired.
- */
-isRetired: boolean; 
-/**
- * The car has crossed the finish line in the current race. Latched — see
- * the finish-latch block in `compute`.
- */
-isFinished: boolean; 
-/**
- * The car was recovered by the tow truck: it left the world from the track
- * without ever entering the pit lane. Cleared once it is back in the world.
- */
-isTowed: boolean; pitState: PitState }
+export type DriverEntry = {
+  carIdx: number;
+  userName: string;
+  carNumber: string;
+  carClassId: number;
+  carClassShortName: string;
+  carClassColor: string;
+  carScreenName: string;
+  carScreenNameShort: string;
+  /**
+   * iRacing's `FlairID` — the country flag on the driver's profile, `0` when unset.
+   */
+  flairId: number;
+  /**
+   * The sim drives this car. AI entries never carry a flair.
+   */
+  isAi: boolean;
+  tireCompound: string;
+  position: number;
+  classPosition: number;
+  /**
+   * Track order recomputed from lap progress every tick, once the race is running.
+   * Official `position` only refreshes when a car crosses the start/finish line,
+   * so an overtake mid-lap is invisible there. Before the green flag this is the
+   * starting grid, and outside a race it mirrors the official order — see
+   * `RankingMode`. Which of the two fields is displayed is a frontend choice.
+   */
+  livePosition: number;
+  /**
+   * Same as `live_position`, but ranked within the car's class.
+   */
+  liveClassPosition: number;
+  startPosOverall: number;
+  startPosClass: number;
+  lap: number;
+  lapDistPct: number;
+  lastLapTime: number;
+  bestLapTime: number;
+  /**
+   * Lap time that earned the car its grid slot, from `QualifyResultsInfo`.
+   * `-1.0` when the car set no qualifying time — the same "no time" marker
+   * `best_lap_time` uses. Survives into the race, where it is the only lap
+   * time the field has until the first one is completed.
+   */
+  qualifyTime: number;
+  f2Time: number;
+  estTime: number;
+  trackSurface: TrackSurface;
+  iRating: number;
+  licString: string;
+  licColor: string;
+  incidents: number;
+  isPlayer: boolean;
+  onPitRoad: boolean;
+  estimatedIrDeltaLive: number | null;
+  estimatedIrDeltaOfficial: number | null;
+  relativeLapDist: number;
+  classEstLapTime: number;
+  rawFlags: number;
+  resultsPositionLap: number | null;
+  resultsPositionTime: number | null;
+  /**
+   * The sim marked the car as retired or disqualified (`ReasonOutId` != 0).
+   * A car merely sitting in the garage is *not* retired.
+   */
+  isRetired: boolean;
+  /**
+   * The car has crossed the finish line in the current race. Latched — see
+   * the finish-latch block in `compute`.
+   */
+  isFinished: boolean;
+  /**
+   * The car was recovered by the tow truck: it left the world from the track
+   * without ever entering the pit lane. Cleared once it is back in the world.
+   */
+  isTowed: boolean;
+  pitState: PitState;
+};
 
-export type EnvironmentFrame = { 
-/**
- * Ambient air temperature in °C
- * @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/
- */
-airTemp: number | null; 
-/**
- * Track surface temperature in °C
- * @see https://sajax.github.io/irsdkdocs/telemetry/tracktemp/
- */
-trackTemp: number | null; 
-/**
- * Wind velocity in m/s
- * @see https://sajax.github.io/irsdkdocs/telemetry/windvel/
- */
-windVel: number | null; 
-/**
- * Wind direction in radians
- * @see https://sajax.github.io/irsdkdocs/telemetry/winddir/
- */
-windDir: number | null; 
-/**
- * Relative humidity (0.0 to 1.0)
- * @see https://sajax.github.io/irsdkdocs/telemetry/relativehumidity/
- */
-relativeHumidity: number | null; 
-/**
- * Skies (0=clear, 1=partly cloudy, 2=mostly cloudy, 3=overcast)
- * @see https://sajax.github.io/irsdkdocs/telemetry/skies/
- */
-skies: Skies | null; 
-/**
- * Current amount of precipitation at start/finish (0.0 to 1.0)
- */
-precipitation: number | null; 
-/**
- * Estimate of overall track wetness (0=dry to 7=flooded)
- */
-trackWetness: number | null; 
-/**
- * Whether rain tires are officially allowed
- */
-weatherDeclaredWet: boolean | null; 
-/**
- * Weather dynamics (Constant vs Dynamic)
- */
-weatherType: number | null; 
-/**
- * Weather system version
- */
-weatherVersion: number | null }
+export type EnvironmentFrame = {
+  /**
+   * Ambient air temperature in °C
+   * @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/
+   */
+  airTemp: number | null;
+  /**
+   * Track surface temperature in °C
+   * @see https://sajax.github.io/irsdkdocs/telemetry/tracktemp/
+   */
+  trackTemp: number | null;
+  /**
+   * Wind velocity in m/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/windvel/
+   */
+  windVel: number | null;
+  /**
+   * Wind direction in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/winddir/
+   */
+  windDir: number | null;
+  /**
+   * Relative humidity (0.0 to 1.0)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/relativehumidity/
+   */
+  relativeHumidity: number | null;
+  /**
+   * Skies (0=clear, 1=partly cloudy, 2=mostly cloudy, 3=overcast)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/skies/
+   */
+  skies: Skies | null;
+  /**
+   * Current amount of precipitation at start/finish (0.0 to 1.0)
+   */
+  precipitation: number | null;
+  /**
+   * Estimate of overall track wetness (0=dry to 7=flooded)
+   */
+  trackWetness: number | null;
+  /**
+   * Whether rain tires are officially allowed
+   */
+  weatherDeclaredWet: boolean | null;
+  /**
+   * Weather dynamics (Constant vs Dynamic)
+   */
+  weatherType: number | null;
+  /**
+   * Weather system version
+   */
+  weatherVersion: number | null;
+};
 
-export type FuelComputedFrame = { avgPerLap: number | null; lapsRemaining: number | null; lapsToFinish: number | null; 
-/**
- * Positive = surplus liters, negative = deficit
- */
-shortage: number | null; fuelToAdd: number | null; fuelToAddWithBuffer: number | null; fuelSavePerLap: number | null; pitWarning: boolean; pitWindowStart: number | null; pitWindowEnd: number | null; isTimedRace: boolean; lapFuelHistory: FuelLapRecord[]; historyStats: FuelHistoryStats; 
-/**
- * How `fuel_to_add_with_buffer` splits across the stops left to make —
- * the buffered figure, because that is the one both the widget and the pit
- * order dial in. `None` when nothing has to be added.
- */
-refuelPlan: RefuelPlan | null }
+export type FuelComputedFrame = {
+  avgPerLap: number | null;
+  lapsRemaining: number | null;
+  lapsToFinish: number | null;
+  /**
+   * Positive = surplus liters, negative = deficit
+   */
+  shortage: number | null;
+  fuelToAdd: number | null;
+  fuelToAddWithBuffer: number | null;
+  fuelSavePerLap: number | null;
+  pitWarning: boolean;
+  pitWindowStart: number | null;
+  pitWindowEnd: number | null;
+  isTimedRace: boolean;
+  lapFuelHistory: FuelLapRecord[];
+  historyStats: FuelHistoryStats;
+  /**
+   * How `fuel_to_add_with_buffer` splits across the stops left to make —
+   * the buffered figure, because that is the one both the widget and the pit
+   * order dial in. `None` when nothing has to be added.
+   */
+  refuelPlan: RefuelPlan | null;
+};
 
 /**
  * Last, average, minimum and maximum consumption over the *whole* recorded
  * history, deliberately ignoring the user's averaging window.
- * 
+ *
  * That window already drives `avg_per_lap` and every strategy figure with it;
  * repeating it here would make the stats row restate the summary instead of
  * adding to it. Reading the two side by side is what tells the driver whether
  * the current pace runs richer or leaner than the stint has averaged.
- * 
+ *
  * Rejected laps are skipped outright, so an out-lap or a lap behind the safety
  * car cannot become MIN or MAX however far it sits from the rest.
  */
-export type FuelHistoryStats = { last: number | null; avg: number | null; min: number | null; max: number | null }
+export type FuelHistoryStats = {
+  last: number | null;
+  avg: number | null;
+  min: number | null;
+  max: number | null;
+};
 
 /**
  * One completed lap as measured, kept whether or not it counts.
- * 
+ *
  * A rejected lap still burned fuel and still happened, so it belongs in the
  * history the widget draws — dropping it silently left the chart unable to say
  * which lap any bar referred to. `rejected` carries why it does not count.
  */
-export type FuelLapRecord = { lap: number; used: number; 
-/**
- * `None` for a lap that counts towards the average.
- */
-rejected: string | null }
+export type FuelLapRecord = {
+  lap: number;
+  used: number;
+  /**
+   * `None` for a lap that counts towards the average.
+   */
+  rejected: string | null;
+};
 
 /**
  * Why a car is marked. The widgets colour every kind the same for now; the
  * distinction is here because the answer to "is it still there" differs.
  */
-export type IncidentKind = 
-/**
- * The car is off the racing surface.
- */
-"offTrack" | 
-/**
- * The car is on track and not moving.
- */
-"stopped"
+export type IncidentKind =
+  /**
+   * The car is off the racing surface.
+   */
+  | 'offTrack'
+  /**
+   * The car is on track and not moving.
+   */
+  | 'stopped';
 
-export type IncidentPoint = { carIdx: number; 
-/**
- * Where the car was when it was last seen in trouble.
- */
-lapDistPct: number; kind: IncidentKind; 
-/**
- * True while the car is still in trouble; false once it recovered and the
- * marker is only lingering.
- */
-isActive: boolean }
+export type IncidentPoint = {
+  carIdx: number;
+  /**
+   * Where the car was when it was last seen in trouble.
+   */
+  lapDistPct: number;
+  kind: IncidentKind;
+  /**
+   * True while the car is still in trouble; false once it recovered and the
+   * marker is only lingering.
+   */
+  isActive: boolean;
+};
 
-export type IncidentsFrame = { incidents: IncidentPoint[] }
+export type IncidentsFrame = { incidents: IncidentPoint[] };
 
 /**
  * One button edge. Only edges are emitted — never the held state per poll.
  */
-export type InputButtonEvent = { deviceId: string; button: number; pressed: boolean }
+export type InputButtonEvent = {
+  deviceId: string;
+  button: number;
+  pressed: boolean;
+};
 
 /**
  * A game controller the app can bind buttons from.
  */
-export type InputDevice = { 
-/**
- * Stable identity, used as the binding's `deviceId`.
- */
-id: string; vendorId: number; productId: number; productName: string; buttonCount: number; 
-/**
- * False while the device is remembered but not currently attached.
- */
-connected: boolean }
+export type InputDevice = {
+  /**
+   * Stable identity, used as the binding's `deviceId`.
+   */
+  id: string;
+  vendorId: number;
+  productId: number;
+  productName: string;
+  buttonCount: number;
+  /**
+   * False while the device is remembered but not currently attached.
+   */
+  connected: boolean;
+};
 
 /**
  * Reported when a stored device is re-matched by vendor/product after its
  * DirectInput GUID changed, so the frontend can rewrite its bindings once.
  */
-export type InputDeviceRemap = { previousId: string; nextId: string }
+export type InputDeviceRemap = { previousId: string; nextId: string };
 
 /**
  * Answer to "here is what I remember, what is actually plugged in?".
  */
-export type InputDeviceResolution = { 
-/**
- * Attached devices plus remembered-but-offline ones, so bindings for a
- * device that is unplugged are shown greyed rather than disappearing.
- */
-devices: InputDevice[]; 
-/**
- * Ids the caller should rewrite in its stored bindings, at most once per
- * device — see `input::identity`.
- */
-remaps: InputDeviceRemap[] }
+export type InputDeviceResolution = {
+  /**
+   * Attached devices plus remembered-but-offline ones, so bindings for a
+   * device that is unplugged are shown greyed rather than disappearing.
+   */
+  devices: InputDevice[];
+  /**
+   * Ids the caller should rewrite in its stored bindings, at most once per
+   * device — see `input::identity`.
+   */
+  remaps: InputDeviceRemap[];
+};
 
 /**
  * Sector timing data for the sector matrix widget.
  * Total delta is provided directly by iRacing via LapTimingFrame delta fields.
  */
-export type LapDeltaFrame = { sectorTimes: (number | null)[]; currentSectorIdx: number; 
-/**
- * Per-sector delta vs driver's personal best lap (sector matrix display only)
- */
-sectorDeltas: (number | null)[] }
+export type LapDeltaFrame = {
+  sectorTimes: (number | null)[];
+  currentSectorIdx: number;
+  /**
+   * Per-sector delta vs driver's personal best lap (sector matrix display only)
+   */
+  sectorDeltas: (number | null)[];
+};
 
-export type LapHistoryEntry = { 
-/**
- * 1-based lap number that was completed.
- */
-lapNum: number; 
-/**
- * Lap time in seconds, or `None` if the lap was invalidated
- * (pit lane, safety car, penalty, or session reset).
- */
-lapTime: number | null; 
-/**
- * Seconds relative to the session best lap at the time this lap finished.
- * `None` for invalid laps or the first best lap (where delta = 0 by definition).
- */
-delta: number | null; 
-/**
- * Whether this was the driver's personal best at the time it was recorded.
- */
-isBest: boolean }
+export type LapHistoryEntry = {
+  /**
+   * 1-based lap number that was completed.
+   */
+  lapNum: number;
+  /**
+   * Lap time in seconds, or `None` if the lap was invalidated
+   * (pit lane, safety car, penalty, or session reset).
+   */
+  lapTime: number | null;
+  /**
+   * Seconds relative to the session best lap at the time this lap finished.
+   * `None` for invalid laps or the first best lap (where delta = 0 by definition).
+   */
+  delta: number | null;
+  /**
+   * Whether this was the driver's personal best at the time it was recorded.
+   */
+  isBest: boolean;
+};
 
 /**
  * Lap history frame — emitted at 4 Hz in `TelemetryBundle.lap_log`.
  */
-export type LapLogFrame = { 
-/**
- * Most recent entries first; capped at `HISTORY_SIZE`.
- */
-history: LapHistoryEntry[]; 
-/**
- * Set when a valid lap is completed; used to trigger the lap flash UI.
- */
-lastCompletedLap: LastCompletedLap | null }
+export type LapLogFrame = {
+  /**
+   * Most recent entries first; capped at `HISTORY_SIZE`.
+   */
+  history: LapHistoryEntry[];
+  /**
+   * Set when a valid lap is completed; used to trigger the lap flash UI.
+   */
+  lastCompletedLap: LastCompletedLap | null;
+};
 
 /**
  * Lap timing telemetry — lap times, distances, and race positions.
- * 
+ *
  * Contains current/last/best lap times, distance around track,
  * and overall/class position standings.
- * 
+ *
  * @see https://sajax.github.io/irsdkdocs/telemetry/
  */
-export type LapTimingFrame = { 
-/**
- * Current lap number
- * @see https://sajax.github.io/irsdkdocs/telemetry/lap/
- */
-lap: number | null; 
-/**
- * Distance traveled on current lap in meters
- * @see https://sajax.github.io/irsdkdocs/telemetry/lapdist/
- */
-lap_dist: number | null; 
-/**
- * Percentage of current lap completed: 0.0 to 1.0
- * @see https://sajax.github.io/irsdkdocs/telemetry/lapdistpct/
- */
-lap_dist_pct: number | null; 
-/**
- * Current lap time in seconds
- * @see https://sajax.github.io/irsdkdocs/telemetry/lapcurrentlaptime/
- */
-lap_current_lap_time: number; 
-/**
- * Last completed lap time in seconds
- * @see https://sajax.github.io/irsdkdocs/telemetry/laplastlaptime/
- */
-lap_last_lap_time: number | null; 
-/**
- * Best lap time in seconds
- * @see https://sajax.github.io/irsdkdocs/telemetry/lapbestlaptime/
- */
-lap_best_lap_time: number | null; 
-/**
- * Player's overall position in the race
- * @see https://sajax.github.io/irsdkdocs/telemetry/playercarposition/
- */
-player_car_position: number | null; 
-/**
- * Player's position within their car class
- * @see https://sajax.github.io/irsdkdocs/telemetry/playercarclassposition/
- */
-player_car_class_position: number | null; 
-/**
- * Live delta to session best lap
- */
-lap_delta_to_session_best_live: number | null; 
-/**
- * Live delta to session optimal lap
- */
-lap_delta_to_session_optimal_live: number | null; 
-/**
- * Live delta to driver's personal best lap
- */
-lap_delta_to_driver_best_live: number | null; lap_delta_to_best_lap: number | null; lap_delta_to_best_lap_dd: boolean | null; lap_delta_to_best_lap_ok: boolean | null; lap_delta_to_optimal_lap: number | null; lap_delta_to_optimal_lap_dd: boolean | null; lap_delta_to_optimal_lap_ok: boolean | null; lap_delta_to_session_best_lap: number | null; lap_delta_to_session_best_lap_dd: boolean | null; lap_delta_to_session_best_lap_ok: boolean | null; lap_delta_to_session_lastl_lap: number | null; lap_delta_to_session_lastl_lap_dd: boolean | null; lap_delta_to_session_lastl_lap_ok: boolean | null; lap_delta_to_session_optimal_lap: number | null; lap_delta_to_session_optimal_lap_dd: boolean | null; lap_delta_to_session_optimal_lap_ok: boolean | null }
+export type LapTimingFrame = {
+  /**
+   * Current lap number
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lap/
+   */
+  lap: number | null;
+  /**
+   * Distance traveled on current lap in meters
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lapdist/
+   */
+  lap_dist: number | null;
+  /**
+   * Percentage of current lap completed: 0.0 to 1.0
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lapdistpct/
+   */
+  lap_dist_pct: number | null;
+  /**
+   * Current lap time in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lapcurrentlaptime/
+   */
+  lap_current_lap_time: number;
+  /**
+   * Last completed lap time in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/laplastlaptime/
+   */
+  lap_last_lap_time: number | null;
+  /**
+   * Best lap time in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lapbestlaptime/
+   */
+  lap_best_lap_time: number | null;
+  /**
+   * Player's overall position in the race
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercarposition/
+   */
+  player_car_position: number | null;
+  /**
+   * Player's position within their car class
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercarclassposition/
+   */
+  player_car_class_position: number | null;
+  /**
+   * Live delta to session best lap
+   */
+  lap_delta_to_session_best_live: number | null;
+  /**
+   * Live delta to session optimal lap
+   */
+  lap_delta_to_session_optimal_live: number | null;
+  /**
+   * Live delta to driver's personal best lap
+   */
+  lap_delta_to_driver_best_live: number | null;
+  lap_delta_to_best_lap: number | null;
+  lap_delta_to_best_lap_dd: boolean | null;
+  lap_delta_to_best_lap_ok: boolean | null;
+  lap_delta_to_optimal_lap: number | null;
+  lap_delta_to_optimal_lap_dd: boolean | null;
+  lap_delta_to_optimal_lap_ok: boolean | null;
+  lap_delta_to_session_best_lap: number | null;
+  lap_delta_to_session_best_lap_dd: boolean | null;
+  lap_delta_to_session_best_lap_ok: boolean | null;
+  lap_delta_to_session_lastl_lap: number | null;
+  lap_delta_to_session_lastl_lap_dd: boolean | null;
+  lap_delta_to_session_lastl_lap_ok: boolean | null;
+  lap_delta_to_session_optimal_lap: number | null;
+  lap_delta_to_session_optimal_lap_dd: boolean | null;
+  lap_delta_to_session_optimal_lap_ok: boolean | null;
+};
 
 /**
  * Last completed valid lap — used by DeltaWidget for the flash animation.
  */
-export type LastCompletedLap = { lapNum: number; delta: number | null }
+export type LastCompletedLap = { lapNum: number; delta: number | null };
 
-export type LateralSide = "left" | "right" | "center"
+export type LateralSide = 'left' | 'right' | 'center';
 
-export type NearbyCar = { carIdx: number; 
-/**
- * Positive = ahead, negative = behind (meters)
- */
-longitudinalDist: number; lateralSide: LateralSide; 
-/**
- * Absolute longitudinal distance in meters
- */
-clearance: number; 
-/**
- * Longitudinal distance from bumper to bumper, in meters: `clearance`
- * less one car length, floored at zero. Signed like `longitudinal_dist`.
- * 
- * This is the number a driver means by "how far is he" — two cars nose to
- * tail read `0` here and a car length apart in `clearance`. One car length
- * serves for every car on track, so in a multiclass field it is an
- * estimate; the reference point iRacing reports is not exactly the centre
- * of the body either. Both are far closer to the truth than centre to
- * centre.
- */
-bumperDist: number }
+export type NearbyCar = {
+  carIdx: number;
+  /**
+   * Positive = ahead, negative = behind (meters)
+   */
+  longitudinalDist: number;
+  lateralSide: LateralSide;
+  /**
+   * Absolute longitudinal distance in meters
+   */
+  clearance: number;
+  /**
+   * Longitudinal distance from bumper to bumper, in meters: `clearance`
+   * less one car length, floored at zero. Signed like `longitudinal_dist`.
+   *
+   * This is the number a driver means by "how far is he" — two cars nose to
+   * tail read `0` here and a car length apart in `clearance`. One car length
+   * serves for every car on track, so in a multiclass field it is an
+   * estimate; the reference point iRacing reports is not exactly the centre
+   * of the body either. Both are far closer to the truth than centre to
+   * centre.
+   */
+  bumperDist: number;
+};
 
 /**
  * A single pit checkbox the sim should toggle.
  */
-export type PitCommandKind = "clear" | "windshield" | 
-/**
- * `value` = liters to add; 0 keeps the amount already ordered.
- */
-"fuel" | 
-/**
- * `value` = pressure in kPa; 0 keeps the pressure already ordered.
- */
-"lf" | "rf" | "lr" | "rr" | "clearTires" | "fastRepair" | "clearWindshield" | "clearFastRepair" | "clearFuel" | "tireCompound"
+export type PitCommandKind =
+  | 'clear'
+  | 'windshield'
+  /**
+   * `value` = liters to add; 0 keeps the amount already ordered.
+   */
+  | 'fuel'
+  /**
+   * `value` = pressure in kPa; 0 keeps the pressure already ordered.
+   */
+  | 'lf'
+  | 'rf'
+  | 'lr'
+  | 'rr'
+  | 'clearTires'
+  | 'fastRepair'
+  | 'clearWindshield'
+  | 'clearFastRepair'
+  | 'clearFuel'
+  | 'tireCompound';
 
 /**
  * One entry of a pit order. `value` is ignored by commands that take no
  * parameter.
  */
-export type PitCommandRequest = { kind: PitCommandKind; value?: number }
+export type PitCommandRequest = { kind: PitCommandKind; value?: number };
 
 /**
  * Pit service telemetry — what the sim will do at the next stop.
- * 
+ *
  * Everything here only changes while the car is being serviced, so the
  * frontend widget is driven by pit road state rather than by lap progress.
- * 
+ *
  * @see https://sajax.github.io/irsdkdocs/telemetry/
  */
-export type PitServiceFrame = { 
-/**
- * Raw `PitSvFlags` bitfield — decoded into the flags below.
- */
-flags: number | null; 
-/**
- * Individual service checkboxes decoded from `flags`.
- */
-changeLf: boolean; changeRf: boolean; changeLr: boolean; changeRr: boolean; addFuel: boolean; cleanWindshield: boolean; fastRepair: boolean; 
-/**
- * Ordered fuel amount in liters.
- */
-fuelAmount: number | null; 
-/**
- * Ordered pressures per corner in kPa.
- */
-lfPressure: number | null; rfPressure: number | null; lrPressure: number | null; rrPressure: number | null; 
-/**
- * Selected tire compound index, when the car supports more than one.
- */
-tireCompound: number | null; 
-/**
- * Mandatory repair time left in seconds — the car cannot leave until it hits zero.
- */
-repairLeftS: number | null; 
-/**
- * Optional (aero) repair time left in seconds — can be skipped.
- */
-optRepairLeftS: number | null; 
-/**
- * Tow countdown in seconds; greater than zero means the car is being recovered.
- */
-towTimeS: number | null; 
-/**
- * Fast repairs available and already used this session.
- */
-fastRepairsAvailable: number | null; fastRepairsUsed: number | null; 
-/**
- * Service status reported by the sim (`PlayerCarPitSvStatus`).
- */
-serviceStatus: number | null; 
-/**
- * Whether the car is in its own pit stall rather than just on pit road.
- */
-inPitStall: boolean; 
-/**
- * Whether the crew is actually working on the car ().
- * The sim reports no service duration, so this is what a stop clock runs on.
- */
-serviceActive: boolean }
+export type PitServiceFrame = {
+  /**
+   * Raw `PitSvFlags` bitfield — decoded into the flags below.
+   */
+  flags: number | null;
+  /**
+   * Individual service checkboxes decoded from `flags`.
+   */
+  changeLf: boolean;
+  changeRf: boolean;
+  changeLr: boolean;
+  changeRr: boolean;
+  addFuel: boolean;
+  cleanWindshield: boolean;
+  fastRepair: boolean;
+  /**
+   * Ordered fuel amount in liters.
+   */
+  fuelAmount: number | null;
+  /**
+   * Ordered pressures per corner in kPa.
+   */
+  lfPressure: number | null;
+  rfPressure: number | null;
+  lrPressure: number | null;
+  rrPressure: number | null;
+  /**
+   * Selected tire compound index, when the car supports more than one.
+   */
+  tireCompound: number | null;
+  /**
+   * Mandatory repair time left in seconds — the car cannot leave until it hits zero.
+   */
+  repairLeftS: number | null;
+  /**
+   * Optional (aero) repair time left in seconds — can be skipped.
+   */
+  optRepairLeftS: number | null;
+  /**
+   * Tow countdown in seconds; greater than zero means the car is being recovered.
+   */
+  towTimeS: number | null;
+  /**
+   * Fast repairs available and already used this session.
+   */
+  fastRepairsAvailable: number | null;
+  fastRepairsUsed: number | null;
+  /**
+   * Service status reported by the sim (`PlayerCarPitSvStatus`).
+   */
+  serviceStatus: number | null;
+  /**
+   * Whether the car is in its own pit stall rather than just on pit road.
+   */
+  inPitStall: boolean;
+  /**
+   * Whether the crew is actually working on the car ().
+   * The sim reports no service duration, so this is what a stop clock runs on.
+   */
+  serviceActive: boolean;
+};
 
-export type PitState = "none" | "in" | "stall" | "exit"
+export type PitState = 'none' | 'in' | 'stall' | 'exit';
 
-export type PitStopsFrame = { playerStops: number }
+export type PitStopsFrame = { playerStops: number };
 
 /**
  * Where the car is along the pit lane, and how far the current target still is.
- * 
+ *
  * One frame rather than three loose scalars on the bundle: as a struct it can
  * be quantized and held back when unchanged like every other per-tick frame,
  * and the frontend writes it under a single `if` instead of on every tick
  * whether or not the car is anywhere near the pits.
  */
-export type PitTargetFrame = { 
-/**
- * Meters to the current target.
- */
-distM: number; target: PitTargetType; 
-/**
- * Position along the pit lane, 0..1.
- */
-laneProgressPct: number }
+export type PitTargetFrame = {
+  /**
+   * Meters to the current target.
+   */
+  distM: number;
+  target: PitTargetType;
+  /**
+   * Position along the pit lane, 0..1.
+   */
+  laneProgressPct: number;
+};
 
-export type PitTargetType = "pitbox" | "pitExit"
+export type PitTargetType = 'pitbox' | 'pitExit';
 
-export type ProximityFrame = { nearbyCars: NearbyCar[]; radarDistances: RadarDistances; spotterLeft: boolean; spotterRight: boolean }
+export type ProximityFrame = {
+  nearbyCars: NearbyCar[];
+  radarDistances: RadarDistances;
+  spotterLeft: boolean;
+  spotterRight: boolean;
+};
 
 /**
  * A qualifying result. `position` and `class_position` are both
  * **1-indexed**, normalised by the source layer.
  */
-export type QualifyResultEntry = { carIdx: number; position: number; classPosition: number | null; 
-/**
- * Lap time that earned the grid slot. `None` when the car set no time.
- */
-fastestTime: number | null; 
-/**
- * Lap number the qualifying time was set on.
- */
-fastestLap: number | null }
+export type QualifyResultEntry = {
+  carIdx: number;
+  position: number;
+  classPosition: number | null;
+  /**
+   * Lap time that earned the grid slot. `None` when the car set no time.
+   */
+  fastestTime: number | null;
+  /**
+   * Lap number the qualifying time was set on.
+   */
+  fastestLap: number | null;
+};
 
 /**
  * Decoded race flag state for the current session and the player's car.
- * 
+ *
  * Populated from `SessionFlags` (session-wide) and
  * `CarIdxSessionFlags[player_car_idx]` (per-player) bit fields.
  */
-export type RaceFlags = { checkered: boolean; white: boolean; green: boolean; yellow: boolean; red: boolean; blue: boolean; debris: boolean; yellowWaving: boolean; caution: boolean; cautionWaving: boolean; black: boolean; disqualify: boolean; 
-/**
- * True when both servicible + repair bits are set (meatball flag).
- */
-meatball: boolean; furled: boolean; repair: boolean }
+export type RaceFlags = {
+  checkered: boolean;
+  white: boolean;
+  green: boolean;
+  yellow: boolean;
+  red: boolean;
+  blue: boolean;
+  debris: boolean;
+  yellowWaving: boolean;
+  caution: boolean;
+  cautionWaving: boolean;
+  black: boolean;
+  disqualify: boolean;
+  /**
+   * True when both servicible + repair bits are set (meatball flag).
+   */
+  meatball: boolean;
+  furled: boolean;
+  repair: boolean;
+};
 
-export type RadarDistances = { frontDist: number; rearDist: number; leftDist: number | null; rightDist: number | null }
+export type RadarDistances = {
+  frontDist: number;
+  rearDist: number;
+  leftDist: number | null;
+  rightDist: number | null;
+};
 
-export type ReferenceLapData = { trackId: number; carScreenName: string; 
-/**
- * Best lap time in seconds this reference telemetry was recorded from.
- */
-lapTime: number; 
-/**
- * Fixed-size, distance-bucketed samples — index `i` covers
- * `lap_dist_pct` in `[i / REFERENCE_LAP_BUCKET_COUNT, (i+1) / REFERENCE_LAP_BUCKET_COUNT)`.
- */
-samples: ReferenceLapSample[]; 
-/**
- * Track state this lap was driven in — part of its identity, not just a note.
- * `serde(default)` reads every reference recorded before the split as dry,
- * which is what a single stored lap always was in practice.
- */
-condition?: TrackCondition; 
-/**
- * Track wetness (0=dry to 7=flooded) averaged over this lap, when available.
- */
-recordedWetness: number | null; 
-/**
- * Average tire wear (0.0-1.0, 1.0=fresh) across all four tires at the moment this lap was committed.
- */
-recordedTireWear: number | null; 
-/**
- * Fuel level (liters) at the moment this lap was committed.
- */
-recordedFuelLevel: number | null }
+export type ReferenceLapData = {
+  trackId: number;
+  carScreenName: string;
+  /**
+   * Best lap time in seconds this reference telemetry was recorded from.
+   */
+  lapTime: number;
+  /**
+   * Fixed-size, distance-bucketed samples — index `i` covers
+   * `lap_dist_pct` in `[i / REFERENCE_LAP_BUCKET_COUNT, (i+1) / REFERENCE_LAP_BUCKET_COUNT)`.
+   */
+  samples: ReferenceLapSample[];
+  /**
+   * Track state this lap was driven in — part of its identity, not just a note.
+   * `serde(default)` reads every reference recorded before the split as dry,
+   * which is what a single stored lap always was in practice.
+   */
+  condition?: TrackCondition;
+  /**
+   * Track wetness (0=dry to 7=flooded) averaged over this lap, when available.
+   */
+  recordedWetness: number | null;
+  /**
+   * Average tire wear (0.0-1.0, 1.0=fresh) across all four tires at the moment this lap was committed.
+   */
+  recordedTireWear: number | null;
+  /**
+   * Fuel level (liters) at the moment this lap was committed.
+   */
+  recordedFuelLevel: number | null;
+};
 
-export type ReferenceLapSample = { 
-/**
- * Speed in m/s.
- */
-speed: number; 
-/**
- * Throttle input, 0.0-1.0.
- */
-throttle: number; 
-/**
- * Brake input, 0.0-1.0.
- */
-brake: number; 
-/**
- * Lateral acceleration in m/s^2, when the sim provides it.
- */
-latAccel: number | null; 
-/**
- * Longitudinal acceleration in m/s^2, when the sim provides it.
- * `serde(default)` keeps reference laps persisted before this field existed loadable.
- */
-longAccel?: number | null; 
-/**
- * Steering wheel angle in radians.
- */
-steeringWheelAngle: number }
+export type ReferenceLapSample = {
+  /**
+   * Speed in m/s.
+   */
+  speed: number;
+  /**
+   * Throttle input, 0.0-1.0.
+   */
+  throttle: number;
+  /**
+   * Brake input, 0.0-1.0.
+   */
+  brake: number;
+  /**
+   * Lateral acceleration in m/s^2, when the sim provides it.
+   */
+  latAccel: number | null;
+  /**
+   * Longitudinal acceleration in m/s^2, when the sim provides it.
+   * `serde(default)` keeps reference laps persisted before this field existed loadable.
+   */
+  longAccel?: number | null;
+  /**
+   * Steering wheel angle in radians.
+   */
+  steeringWheelAngle: number;
+};
 
 /**
  * How the outstanding fuel is split across the stops left to make.
- * 
+ *
  * Splitting the total evenly would recommend an amount no real stop uses:
  * drivers fill to the brim early and take the remainder last, so `fill_now` is
  * capped by tank capacity rather than divided.
  */
-export type RefuelPlan = { 
-/**
- * Stops needed to take on the whole amount; 1 when a single tank covers it.
- */
-stops: number; 
-/**
- * What to dial in at this stop — a full tank while more stops remain.
- */
-fillNow: number }
+export type RefuelPlan = {
+  /**
+   * Stops needed to take on the whole amount; 1 when a single tank covers it.
+   */
+  stops: number;
+  /**
+   * What to dial in at this stop — a full tank while more stops remain.
+   */
+  fillNow: number;
+};
 
 /**
  * Relative frame — emitted at 10 Hz in `TelemetryBundle.relative`.
- * 
+ *
  * Entries are sorted by `relative_lap_dist` descending so that cars ahead
  * of the player appear first (positive values), the player is in the middle,
  * and cars behind (negative values) appear last.
  */
-export type RelativeFrame = { 
-/**
- * Entries sorted by `relative_lap_dist` descending.
- */
-entries: DriverEntry[]; 
-/**
- * The `car_idx` of the player's car.
- */
-playerCarIdx: number }
+export type RelativeFrame = {
+  /**
+   * Entries sorted by `relative_lap_dist` descending.
+   */
+  entries: DriverEntry[];
+  /**
+   * The `car_idx` of the player's car.
+   */
+  playerCarIdx: number;
+};
 
 /**
  * Control messages the main window may push to the remote screens.
- * 
+ *
  * A whitelist rather than a free-form kind: the value reaching the socket is
  * one of these or nothing, so a typo in the main window cannot invent a
  * message the browser will never understand.
- * 
+ *
  * **A Tauri event never leaves the app.** Anything a hotkey does to a widget
  * needs a variant here too, or the monitors move and the tablet stays where it
  * was.
  */
-export type RemoteControlKind = "standings-class-index" | "standings-scroll" | "stream-chat-scroll" | "track-rotation"
+export type RemoteControlKind =
+  | 'standings-class-index'
+  | 'standings-scroll'
+  | 'stream-chat-scroll'
+  | 'track-rotation';
 
 /**
  * What a connected device says about itself.
- * 
+ *
  * Reported, never obeyed: the layout is drawn against the bounds stored with
  * the screen, because the editor has to work with the device switched off.
  * This only lets the settings UI offer to match the two up.
  */
-export type RemoteDevice = { 
-/**
- * Screen slug the device is showing.
- */
-slug: string; 
-/**
- * Page area actually available, in CSS pixels — smaller than the screen
- * while a browser address bar is on top of it.
- */
-viewportWidth: number; viewportHeight: number; 
-/**
- * The device's own screen, which is what the user recognises.
- */
-screenWidth: number; screenHeight: number; pixelRatio: number; 
-/**
- * True while the page runs without browser chrome, where the viewport and
- * the screen finally agree.
- */
-standalone: boolean; connected: boolean }
+export type RemoteDevice = {
+  /**
+   * Screen slug the device is showing.
+   */
+  slug: string;
+  /**
+   * Page area actually available, in CSS pixels — smaller than the screen
+   * while a browser address bar is on top of it.
+   */
+  viewportWidth: number;
+  viewportHeight: number;
+  /**
+   * The device's own screen, which is what the user recognises.
+   */
+  screenWidth: number;
+  screenHeight: number;
+  pixelRatio: number;
+  /**
+   * True while the page runs without browser chrome, where the viewport and
+   * the screen finally agree.
+   */
+  standalone: boolean;
+  connected: boolean;
+};
 
-export type RemoteServerConfig = { port: number; lan: boolean; 
-/**
- * Empty disables the check. The frontend generates and persists it.
- */
-token: string; 
-/**
- * Frames per second pushed to browsers, clamped to 1..=60 by the hub.
- */
-telemetryHz: number; 
-/**
- * Resolved app language, for the few pages the server renders itself.
- */
-language: string }
+export type RemoteServerConfig = {
+  port: number;
+  lan: boolean;
+  /**
+   * Empty disables the check. The frontend generates and persists it.
+   */
+  token: string;
+  /**
+   * Frames per second pushed to browsers, clamped to 1..=60 by the hub.
+   */
+  telemetryHz: number;
+  /**
+   * Resolved app language, for the few pages the server renders itself.
+   */
+  language: string;
+};
 
-export type RemoteServerInfo = { running: boolean; 
-/**
- * LAN address of this machine — what a tablet has to be pointed at.
- * `localhost` here means no usable network interface was found.
- */
-ip: string; 
-/**
- * The port actually bound, which can differ from the requested one when
- * that was taken.
- */
-port: number; 
-/**
- * Empty when the server runs without a token, i.e. open to the network.
- */
-token: string; 
-/**
- * False when the server is bound to loopback and only the host can reach it.
- */
-lan: boolean; clientCount: number }
+export type RemoteServerInfo = {
+  running: boolean;
+  /**
+   * LAN address of this machine — what a tablet has to be pointed at.
+   * `localhost` here means no usable network interface was found.
+   */
+  ip: string;
+  /**
+   * The port actually bound, which can differ from the requested one when
+   * that was taken.
+   */
+  port: number;
+  /**
+   * Empty when the server runs without a token, i.e. open to the network.
+   */
+  token: string;
+  /**
+   * False when the server is bound to loopback and only the host can reach it.
+   */
+  lan: boolean;
+  clientCount: number;
+};
 
 /**
  * Message kinds the server pushes on its own — the mirrored sim events, plus
  * the two the hub originates.
  */
-export type RemoteStreamKind = 
-/**
- * The screen's own widget layout, published by the main window.
- */
-"snapshot" | 
-/**
- * A whole `TelemetryBundle`, forwarded already serialized.
- */
-"telemetry" | "session" | "status" | "weather" | "capabilities" | "disconnected" | "track-shape" | "reference-lap" | "chat-message" | "chat-presence" | "chat-deletion"
+export type RemoteStreamKind =
+  /**
+   * The screen's own widget layout, published by the main window.
+   */
+  | 'snapshot'
+  /**
+   * A whole `TelemetryBundle`, forwarded already serialized.
+   */
+  | 'telemetry'
+  | 'session'
+  | 'status'
+  | 'weather'
+  | 'capabilities'
+  | 'disconnected'
+  | 'track-shape'
+  | 'reference-lap'
+  | 'chat-message'
+  | 'chat-presence'
+  | 'chat-deletion';
 
 /**
  * A finishing/running position from the session results.
- * 
+ *
  * `position` and `class_position` are both **1-indexed** — the source layer
  * normalises whatever convention the sim's own format uses.
  */
-export type ResultPosition = { carIdx: number; position: number; classPosition: number | null; lap: number | null; time: number | null; 
-/**
- * Best lap of the session, kept by the sim after the car leaves the world.
- */
-fastestTime: number | null; 
-/**
- * Last completed lap, kept by the sim after the car leaves the world.
- */
-lastTime: number | null; lapsComplete: number | null; 
-/**
- * 0 while the car is still running; non-zero once the sim marks it retired/DQ'd.
- */
-reasonOutId: number | null }
+export type ResultPosition = {
+  carIdx: number;
+  position: number;
+  classPosition: number | null;
+  lap: number | null;
+  time: number | null;
+  /**
+   * Best lap of the session, kept by the sim after the car leaves the world.
+   */
+  fastestTime: number | null;
+  /**
+   * Last completed lap, kept by the sim after the car leaves the world.
+   */
+  lastTime: number | null;
+  lapsComplete: number | null;
+  /**
+   * 0 while the car is still running; non-zero once the sim marks it retired/DQ'd.
+   */
+  reasonOutId: number | null;
+};
 
-export type SectorEntry = { sectorNum: number; sectorStartPct: number }
+export type SectorEntry = { sectorNum: number; sectorStartPct: number };
 
-export type SessionEntry = { sessionType: SessionType; 
-/**
- * Original label from the sim ("Lone Qualify", "Race", etc.) — use for display.
- */
-sessionTypeLabel: string; 
-/**
- * "unlimited" or a lap count as string (iRacing emits both forms).
- */
-sessionLaps: string; resultsPositions: ResultPosition[] }
+export type SessionEntry = {
+  sessionType: SessionType;
+  /**
+   * Original label from the sim ("Lone Qualify", "Race", etc.) — use for display.
+   */
+  sessionTypeLabel: string;
+  /**
+   * "unlimited" or a lap count as string (iRacing emits both forms).
+   */
+  sessionLaps: string;
+  resultsPositions: ResultPosition[];
+};
 
-export type SessionFrame = { 
-/**
- * Seconds since the session started
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontime/
- */
-session_time: number | null; 
-/**
- * Seconds remaining in the session
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeremain/
- */
-session_time_remain: number | null; 
-/**
- * Session state enum value (invalid, warmup, racing, etc.)
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessionstate/
- */
-session_state: SessionState | null; 
-/**
- * Session flags bit field (green, yellow, red, etc.)
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessionflags/
- */
-session_flags: number | null; 
-/**
- * Index of the current session (practice=0, qualifying=1, race=2, etc.)
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessionnum/
- */
-session_num: number | null; 
-/**
- * In-simulator time of day in seconds since midnight
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeofday/
- */
-session_time_of_day: number | null; 
-/**
- * Laps remaining in the session (leader-based, preferred over SessionLapsRemain)
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessionlapsremainex/
- */
-session_laps_remain_ex: number | null; 
-/**
- * Index of the player's car in CarIdx arrays
- * @see https://sajax.github.io/irsdkdocs/telemetry/playercaridx/
- */
-player_car_idx: number | null; 
-/**
- * Per-car session flags for the player's car (black flag, DQ, meatball, etc.)
- * Extracted from CarIdxSessionFlags[player_car_idx]
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
- */
-player_car_flags: number | null }
+export type SessionFrame = {
+  /**
+   * Seconds since the session started
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontime/
+   */
+  session_time: number | null;
+  /**
+   * Seconds remaining in the session
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeremain/
+   */
+  session_time_remain: number | null;
+  /**
+   * Session state enum value (invalid, warmup, racing, etc.)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessionstate/
+   */
+  session_state: SessionState | null;
+  /**
+   * Session flags bit field (green, yellow, red, etc.)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessionflags/
+   */
+  session_flags: number | null;
+  /**
+   * Index of the current session (practice=0, qualifying=1, race=2, etc.)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessionnum/
+   */
+  session_num: number | null;
+  /**
+   * In-simulator time of day in seconds since midnight
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeofday/
+   */
+  session_time_of_day: number | null;
+  /**
+   * Laps remaining in the session (leader-based, preferred over SessionLapsRemain)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessionlapsremainex/
+   */
+  session_laps_remain_ex: number | null;
+  /**
+   * Index of the player's car in CarIdx arrays
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercaridx/
+   */
+  player_car_idx: number | null;
+  /**
+   * Per-car session flags for the player's car (black flag, DQ, meatball, etc.)
+   * Extracted from CarIdxSessionFlags[player_car_idx]
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
+   */
+  player_car_flags: number | null;
+};
 
-export type SessionSnapshot = { trackId: number; 
-/**
- * Directory-style track name (e.g. "okayama full").
- */
-trackName: string; trackDisplayName: string; trackConfigName: string; driverPitTrkPct: number | null; 
-/**
- * Track length in meters, parsed from iRacing's "3.70 km" / "2.30 mi".
- */
-trackLengthM: number; 
-/**
- * Raw iRacing display strings with units (e.g. "56.33 kph", "25.55 C").
- */
-trackPitSpeedLimit: string; trackWeatherType: string; trackAirTemp: string; trackSurfaceTemp: string; trackWindVel: string; trackWindDir: string; trackRelativeHumidity: string; 
-/**
- * Simulated session date from WeekendOptions (e.g. "2026-06-11").
- */
-weekendDate: string; 
-/**
- * Incident count that disqualifies a driver. `None` when the sim reports
- * "unlimited" — the usual value in practice and hosted sessions.
- */
-incidentLimit: number | null; currentSessionNum: number; sessions: SessionEntry[]; playerCarIdx: number; 
-/**
- * Player car constants from DriverInfo (None when absent in YAML).
- */
-driverCarFuelMaxLtr: number | null; driverCarRedLine: number | null; driverCarSlShiftRpm: number | null; driverCarSlBlinkRpm: number | null; cars: CarEntry[]; driverTires: TireCompoundEntry[]; sectors: SectorEntry[]; qualifyResults: QualifyResultEntry[] }
+export type SessionSnapshot = {
+  trackId: number;
+  /**
+   * Directory-style track name (e.g. "okayama full").
+   */
+  trackName: string;
+  trackDisplayName: string;
+  trackConfigName: string;
+  driverPitTrkPct: number | null;
+  /**
+   * Track length in meters, parsed from iRacing's "3.70 km" / "2.30 mi".
+   */
+  trackLengthM: number;
+  /**
+   * Raw iRacing display strings with units (e.g. "56.33 kph", "25.55 C").
+   */
+  trackPitSpeedLimit: string;
+  trackWeatherType: string;
+  trackAirTemp: string;
+  trackSurfaceTemp: string;
+  trackWindVel: string;
+  trackWindDir: string;
+  trackRelativeHumidity: string;
+  /**
+   * Simulated session date from WeekendOptions (e.g. "2026-06-11").
+   */
+  weekendDate: string;
+  /**
+   * Incident count that disqualifies a driver. `None` when the sim reports
+   * "unlimited" — the usual value in practice and hosted sessions.
+   */
+  incidentLimit: number | null;
+  currentSessionNum: number;
+  sessions: SessionEntry[];
+  playerCarIdx: number;
+  /**
+   * Player car constants from DriverInfo (None when absent in YAML).
+   */
+  driverCarFuelMaxLtr: number | null;
+  driverCarRedLine: number | null;
+  driverCarSlShiftRpm: number | null;
+  driverCarSlBlinkRpm: number | null;
+  cars: CarEntry[];
+  driverTires: TireCompoundEntry[];
+  sectors: SectorEntry[];
+  qualifyResults: QualifyResultEntry[];
+};
 
-export type SessionState = "Invalid" | "GetInCar" | "Warmup" | "ParadeLaps" | "Racing" | "Checkered" | "CoolDown"
+export type SessionState =
+  | 'Invalid'
+  | 'GetInCar'
+  | 'Warmup'
+  | 'ParadeLaps'
+  | 'Racing'
+  | 'Checkered'
+  | 'CoolDown';
 
-export type SessionType = "Practice" | "Qualify" | "Race" | "Unknown"
+export type SessionType = 'Practice' | 'Qualify' | 'Race' | 'Unknown';
 
-export type SimPerfFrame = { 
-/**
- * Average frames per second rendered by the sim.
- * @see https://sajax.github.io/irsdkdocs/telemetry/framerate/
- */
-frameRate: number | null; 
-/**
- * Percent of available time the GPU took, 1 second average.
- * @see https://sajax.github.io/irsdkdocs/telemetry/gpuusage/
- */
-gpuUsage: number | null; 
-/**
- * Percent of available time the foreground thread took, 1 second average.
- * @see https://sajax.github.io/irsdkdocs/telemetry/cpuusagefg/
- */
-cpuUsageFg: number | null }
+export type SimPerfFrame = {
+  /**
+   * Average frames per second rendered by the sim.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/framerate/
+   */
+  frameRate: number | null;
+  /**
+   * Percent of available time the GPU took, 1 second average.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/gpuusage/
+   */
+  gpuUsage: number | null;
+  /**
+   * Percent of available time the foreground thread took, 1 second average.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/cpuusagefg/
+   */
+  cpuUsageFg: number | null;
+};
 
 /**
  * Status payload emitted as `sim://status`.
  */
-export type SimStatus = { status: string; sim: SimType | null }
+export type SimStatus = { status: string; sim: SimType | null };
 
 /**
  * Which simulator is currently connected.
  */
-export type SimType = "IRacing"
+export type SimType = 'IRacing';
 
-export type Skies = "Clear" | "PartlyCloudy" | "MostlyCloudy" | "Overcast"
+export type Skies = 'Clear' | 'PartlyCloudy' | 'MostlyCloudy' | 'Overcast';
 
 /**
  * One adapted telemetry tick: the domain model frames consumed by the
  * telemetry emitter, filled by whichever sim adapter is connected.
- * 
+ *
  * Serializable because the telemetry inspector reads it whole. It is
  * deliberately a superset of `TelemetryBundle`: the bundle is what the app
  * chose to forward — tiered, demand-gated and quantized — while this is what
  * the sim actually gave us, which is the only useful thing for an inspector to
  * show.
  */
-export type SourceFrame = { carDynamics: CarDynamicsFrame; carInputs: CarInputsFrame; carPositions: CarPositionsFrame; carIdx: CarIdxFrame; chassis: ChassisFrame; lapTiming: LapTimingFrame; carStatus: CarStatusFrame; pitService: PitServiceFrame; session: SessionFrame; environment: EnvironmentFrame; simPerf: SimPerfFrame }
+export type SourceFrame = {
+  carDynamics: CarDynamicsFrame;
+  carInputs: CarInputsFrame;
+  carPositions: CarPositionsFrame;
+  carIdx: CarIdxFrame;
+  chassis: ChassisFrame;
+  lapTiming: LapTimingFrame;
+  carStatus: CarStatusFrame;
+  pitService: PitServiceFrame;
+  session: SessionFrame;
+  environment: EnvironmentFrame;
+  simPerf: SimPerfFrame;
+};
 
 /**
  * What the simulator's spotter reports about cars alongside.
- * 
+ *
  * Sim-neutral on purpose: every source decodes its own encoding into this, so
  * `computations/` never sees a raw simulator enum value. `Off` is distinct
  * from `Clear` — a spotter that is switched off says nothing, and proximity
  * falls back to geometry rather than trusting a "nothing alongside" answer.
  */
-export type SpotterState = "off" | "clear" | "carLeft" | "carRight" | "carLeftRight" | "twoCarsLeft" | "twoCarsRight"
+export type SpotterState =
+  | 'off'
+  | 'clear'
+  | 'carLeft'
+  | 'carRight'
+  | 'carLeftRight'
+  | 'twoCarsLeft'
+  | 'twoCarsRight';
 
-export type TelemetryBundle = { carDynamics?: CarDynamicsFrame | null; carInputs?: CarInputsFrame | null; carPositions?: CarPositionsFrame | null; lapDelta?: LapDeltaFrame | null; carIdx?: CarIdxFrame | null; chassis?: ChassisFrame | null; lapTiming?: LapTimingFrame | null; proximity?: ProximityFrame | null; incidents?: IncidentsFrame | null; relative?: RelativeFrame | null; driverEntries?: DriverEntriesFrame | null; carStatus?: CarStatusFrame | null; fuel?: FuelComputedFrame | null; pitStops?: PitStopsFrame | null; pitService?: PitServiceFrame | null; lapLog?: LapLogFrame | null; session?: SessionFrame | null; environment?: EnvironmentFrame | null; trackRecording?: TrackRecordingFrame | null; pitTarget?: PitTargetFrame | null }
+export type TelemetryBundle = {
+  carDynamics?: CarDynamicsFrame | null;
+  carInputs?: CarInputsFrame | null;
+  carPositions?: CarPositionsFrame | null;
+  lapDelta?: LapDeltaFrame | null;
+  carIdx?: CarIdxFrame | null;
+  chassis?: ChassisFrame | null;
+  lapTiming?: LapTimingFrame | null;
+  proximity?: ProximityFrame | null;
+  incidents?: IncidentsFrame | null;
+  relative?: RelativeFrame | null;
+  driverEntries?: DriverEntriesFrame | null;
+  carStatus?: CarStatusFrame | null;
+  fuel?: FuelComputedFrame | null;
+  pitStops?: PitStopsFrame | null;
+  pitService?: PitServiceFrame | null;
+  lapLog?: LapLogFrame | null;
+  session?: SessionFrame | null;
+  environment?: EnvironmentFrame | null;
+  trackRecording?: TrackRecordingFrame | null;
+  pitTarget?: PitTargetFrame | null;
+};
 
 /**
  * The 4 Hz slice a window that does not draw widgets still needs.
- * 
+ *
  * The main window is off the bundle (see `SimStore.subscribeBundle`), but it
  * still owns the hotkey runner and the automatic pit order, and both of those
  * decide off these four frames: the fuel calculation, what the sim has on the
@@ -1326,61 +1698,97 @@ export type TelemetryBundle = { carDynamics?: CarDynamicsFrame | null; carInputs
  * their own event keeps main at 4 Hz instead of 60 while leaving it able to
  * answer a key press.
  */
-export type TelemetrySlowBundle = { carStatus: CarStatusFrame; lapTiming: LapTimingFrame; pitService: PitServiceFrame; fuel?: FuelComputedFrame | null; 
-/**
- * Distinct car classes in the field. A count rather than the entries: the
- * standings class hotkeys only need to know where the cycle wraps, and the
- * per-car frame is exactly what main is off the bundle to avoid.
- */
-carClassCount: number }
+export type TelemetrySlowBundle = {
+  carStatus: CarStatusFrame;
+  lapTiming: LapTimingFrame;
+  pitService: PitServiceFrame;
+  fuel?: FuelComputedFrame | null;
+  /**
+   * Distinct car classes in the field. A count rather than the entries: the
+   * standings class hotkeys only need to know where the cycle wraps, and the
+   * per-car frame is exactly what main is off the bundle to avoid.
+   */
+  carClassCount: number;
+};
 
-export type TireCompoundEntry = { tireIndex: number; tireCompoundType: string }
+export type TireCompoundEntry = { tireIndex: number; tireCompoundType: string };
 
 /**
  * Which track state a reference lap was driven in.
- * 
+ *
  * A dry lap is useless as a target in the rain and vice versa, so each is
  * stored and compared against separately — one file per track+car+condition.
  */
-export type TrackCondition = "dry" | "wet"
+export type TrackCondition = 'dry' | 'wet';
 
-export type TrackPoint = { x: number; y: number; pct: number }
+export type TrackPoint = { x: number; y: number; pct: number };
 
-export type TrackRecordingFrame = { isRecording: boolean; isWaitingForSf: boolean; progress: number; 
-/**
- * pit_in_pct detected but pit_exit_pct not yet — actively traversing pit lane.
- */
-pitLaneRecording: boolean }
+export type TrackRecordingFrame = {
+  isRecording: boolean;
+  isWaitingForSf: boolean;
+  progress: number;
+  /**
+   * pit_in_pct detected but pit_exit_pct not yet — actively traversing pit lane.
+   */
+  pitLaneRecording: boolean;
+};
 
-export type TrackShapePayload = { trackId: number; svgPath: string; viewBox: string; points: TrackPoint[]; 
-/**
- * Lap distance fraction where player crossed into pit road (on_pit_road false→true).
- */
-pitInPct?: number | null; 
-/**
- * Lap distance fraction where player exited pit road (on_pit_road true→false).
- */
-pitExitPct?: number | null }
+export type TrackShapePayload = {
+  trackId: number;
+  svgPath: string;
+  viewBox: string;
+  points: TrackPoint[];
+  /**
+   * Lap distance fraction where player crossed into pit road (on_pit_road false→true).
+   */
+  pitInPct?: number | null;
+  /**
+   * Lap distance fraction where player exited pit road (on_pit_road true→false).
+   */
+  pitExitPct?: number | null;
+};
 
-export type TrackSurface = "NotInWorld" | "OffTrack" | "InPitStall" | "AproachingPits" | "OnTrack"
+export type TrackSurface =
+  | 'NotInWorld'
+  | 'OffTrack'
+  | 'InPitStall'
+  | 'AproachingPits'
+  | 'OnTrack';
 
 /**
  * Device code flow, step one — what the user must type in to authorize.
  */
-export type TwitchDeviceCode = { deviceCode: string; userCode: string; verificationUri: string; expiresIn: number; interval: number }
+export type TwitchDeviceCode = {
+  deviceCode: string;
+  userCode: string;
+  verificationUri: string;
+  expiresIn: number;
+  interval: number;
+};
 
 /**
  * Device code flow, step two — the result of one poll attempt.
- * 
+ *
  * Carries no tokens on purpose: they are written straight to the OS credential
  * store by the backend, so the frontend only ever learns *that* sign-in
  * succeeded and *who* signed in.
  */
-export type TwitchTokenResult = { 
-/**
- * False while the user has not finished authorizing yet.
- */
-authorized: boolean; login: string | null; error: string | null }
+export type TwitchTokenResult = {
+  /**
+   * False while the user has not finished authorizing yet.
+   */
+  authorized: boolean;
+  login: string | null;
+  error: string | null;
+};
 
-export type WeatherForecastEntry = { Time: number; Temp: number; WindSpeed: number; WindDir: number; Skies: Skies; Humidity: number; Fog: number; RainPct: number }
-
+export type WeatherForecastEntry = {
+  Time: number;
+  Temp: number;
+  WindSpeed: number;
+  WindDir: number;
+  Skies: Skies;
+  Humidity: number;
+  Fog: number;
+  RainPct: number;
+};
