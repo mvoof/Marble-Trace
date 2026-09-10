@@ -34,7 +34,7 @@ export const DEFAULT_CAR_LENGTH_M = 4.4;
 /**
  * Shown for a car whose class the sim reported without a colour.
  */
-export const DEFAULT_CLASS_COLOR = '#888888';
+export const DEFAULT_CLASS_COLOR = "#888888";
 
 /**
  * Distance buckets a reference lap is recorded into: index `i` covers
