@@ -62,3 +62,20 @@ export const computeColor = (
     return `rgb(${r},${g},${b})`;
   }
 };
+
+/**
+ * The same color at a given alpha. `computeColor` hands back either a palette
+ * hex or an interpolated `rgb(...)`, and a gradient needs both ends spelled out
+ * with an alpha of their own — a stop of `transparent` fades through black.
+ */
+export const toRgba = (color: string, alpha: number): string => {
+  if (color.startsWith('#')) {
+    const red = parseInt(color.slice(1, 3), 16);
+    const green = parseInt(color.slice(3, 5), 16);
+    const blue = parseInt(color.slice(5, 7), 16);
+
+    return `rgba(${red},${green},${blue},${alpha})`;
+  }
+
+  return color.replace('rgb(', 'rgba(').replace(')', `,${alpha})`);
+};

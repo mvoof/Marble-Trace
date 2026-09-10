@@ -1,7 +1,11 @@
 import { useRef, useCallback, useLayoutEffect, useContext } from 'react';
 
 import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
-import { resizeCanvasToDpr } from '@utils/canvas';
+import {
+  fillFixedDigits,
+  measureFixedDigits,
+  resizeCanvasToDpr,
+} from '@utils/canvas';
 import {
   COLOR_TURN,
   ENVELOPE_SPREAD,
@@ -11,6 +15,7 @@ import {
   SMOOTHING,
   TRACE_LENGTH,
   computeColor,
+  toRgba,
 } from '@ui/widgets/GMeterWidget/g-meter-utils';
 import type { EnvelopePoint, TrailPoint } from '@ui/widgets/GMeterWidget/types';
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
@@ -22,12 +27,93 @@ import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/Widg
 const BADGE_BASE_WIDTH_PX = 240;
 const BADGE_FONT_SIZE_PX = 18;
 
+/** Thickness of the band across the arc, as a share of the value's font size. */
+const BAND_HEIGHT_RATIO = 1;
+
+/** Clearance either side of the digits before the band starts fading, in px. */
+const BAND_PADDING_PX = 6;
+
+/**
+ * How far the band may sweep along the rim, either side of its own axis. Past a
+ * quarter turn it reaches the neighbouring axis, which is deliberate — by then
+ * it is down to the transparent tail of its own gradient.
+ */
+const BAND_MAX_SWEEP = ((Math.PI / 2) * 4) / 3;
+
+/** Peak alpha at the middle of the band, low enough to read digits through. */
+const BAND_ALPHA = 0.16;
+
 interface AxisPeaks {
   top: number;
   bottom: number;
   left: number;
   right: number;
 }
+
+/**
+ * A curved band centred on an axis: an annulus wedge clipped out of the rim and
+ * filled with a conic gradient, which is the one gradient that follows an arc —
+ * a linear one across the chord collapses once the sweep grows past a quadrant.
+ * Clipping means one fill rather than a run of segments blending into each other
+ * at every seam.
+ *
+ * `digitHalfSweep` is the angle the digits themselves occupy — the band holds
+ * full strength across it and fades only past it, so the number never sits on a
+ * washed-out edge of its own plate.
+ */
+const drawAxisBand = (
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  bandRadius: number,
+  centerAngle: number,
+  digitHalfSweep: number,
+  loadRatio: number,
+  bandWidth: number,
+  color: string
+) => {
+  const halfSweep =
+    digitHalfSweep + loadRatio * Math.max(0, BAND_MAX_SWEEP - digitHalfSweep);
+  const innerRadius = bandRadius - bandWidth / 2;
+  const outerRadius = bandRadius + bandWidth / 2;
+  const from = centerAngle - halfSweep;
+  const to = centerAngle + halfSweep;
+
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, outerRadius, from, to);
+  ctx.arc(cx, cy, innerRadius, to, from, true);
+  ctx.closePath();
+  ctx.clip();
+
+  // The conic gradient runs a full turn from `from`, so the band's own sweep is
+  // that fraction of it and every stop is placed inside that fraction.
+  const sweepFraction = halfSweep / Math.PI;
+  const plateau = digitHalfSweep / (2 * Math.PI);
+  const gradient = ctx.createConicGradient(from, cx, cy);
+
+  gradient.addColorStop(0, toRgba(color, 0));
+  gradient.addColorStop(
+    Math.max(0, sweepFraction / 2 - plateau),
+    toRgba(color, BAND_ALPHA)
+  );
+  gradient.addColorStop(
+    Math.min(1, sweepFraction / 2 + plateau),
+    toRgba(color, BAND_ALPHA)
+  );
+  gradient.addColorStop(sweepFraction, toRgba(color, 0));
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(
+    cx - outerRadius,
+    cy - outerRadius,
+    outerRadius * 2,
+    outerRadius * 2
+  );
+
+  ctx.restore();
+};
 
 const drawDynamicAxisIndicator = (
   ctx: CanvasRenderingContext2D,
@@ -55,25 +141,27 @@ const drawDynamicAxisIndicator = (
   const textR = (radius + rRim) / 2;
 
   ctx.font = `700 ${fontSize}px 'Rajdhani', sans-serif`;
-  const textWidth = ctx.measureText(valStr).width;
+  // Laid out on a fixed digit grid, so the block is the same width whatever
+  // the value reads — the band sized from it holds still too.
+  const textWidth = measureFixedDigits(ctx, valStr);
 
-  // Maximum arc half-sweep along the rim extends 5px beyond the edges of the digits
-  const maxHalfSweep = (textWidth / 2 + 5 * scaleRatio) / rRim;
   const gRatio = Math.min(1, Math.max(0, displayVal / scale));
 
-  // Dynamic arc on the rim: grows from 0 to the exact text block width as load increases
-  if (isActive && gRatio > 0.01) {
-    const sweep = gRatio * maxHalfSweep;
-    ctx.save();
-    ctx.lineCap = 'round';
-    ctx.shadowColor = activeColor;
-    ctx.shadowBlur = 4 * scaleRatio;
-    ctx.beginPath();
-    ctx.arc(cx, cy, rRim, centerAngle - sweep, centerAngle + sweep);
-    ctx.strokeStyle = activeColor;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.restore();
+  // The band runs along the rim behind the digits: it always covers them, then
+  // lengthens along the arc as the load builds — the reading the arc used to
+  // give, now carrying the number instead of underlining it.
+  if (isActive) {
+    drawAxisBand(
+      ctx,
+      cx,
+      cy,
+      textR,
+      centerAngle,
+      (textWidth / 2 + BAND_PADDING_PX * scaleRatio) / textR,
+      gRatio,
+      fontSize * BAND_HEIGHT_RATIO,
+      activeColor
+    );
   }
 
   // Floating numeric text
@@ -90,14 +178,12 @@ const drawDynamicAxisIndicator = (
   ctx.textBaseline = 'middle';
 
   if (isActive) {
-    ctx.shadowColor = activeColor;
-    ctx.shadowBlur = 4 * scaleRatio;
     ctx.fillStyle = '#ffffff';
   } else {
     ctx.fillStyle = 'rgba(160, 165, 178, 0.75)';
   }
 
-  ctx.fillText(valStr, 0, 0);
+  fillFixedDigits(ctx, valStr, 0, 0);
   ctx.restore();
 };
 

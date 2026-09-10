@@ -502,6 +502,32 @@ Always block form. Blank line before `return`. Blank line before and after every
 
 Never hardcode hex/rgba in widgets. Use semantic tokens from `_widget-tokens.scss`. The `$race-*` palette follows Tailwind 500/600. JS-side canvas colors live in the widget manifests, `ui/widgets/GMeterWidget/g-meter-utils.ts`, `utils/weather-utils.ts` and `utils/colors.ts` — same palette hexes.
 
+### Numbers must not shuffle
+
+**A number that changes while the driver is looking at it must not move the
+glyphs around it.** A delta, a lap clock, a speed, a G reading, a gap — every
+live readout keeps each digit in a cell of the same width, so only the digit
+changes and nothing beside it shifts. A value the driver reads at the apex is
+read by shape as much as by content, and text that dances is read twice.
+
+`font-variant-numeric: tabular-nums` does **not** solve this here: `$font-widget`
+is Rajdhani, which ships no tabular figures, so the browser has nothing to switch
+to and silently keeps the proportional ones. Use one of the two grids instead:
+
+| where  | use                                                                     |
+| ------ | ----------------------------------------------------------------------- |
+| DOM    | `FixedDigits` (`ui/widgets/TimerWidget/FixedDigits/`) — digits in cells |
+| canvas | `fillFixedDigits` / `measureFixedDigits` (`utils/canvas.ts`)            |
+
+Two things follow from it. Measure the block with `measureFixedDigits`, never
+`measureText`, or an arc or plate sized from the text breathes with the value
+even though the glyphs hold still. And keep the **string length** fixed too — a
+`toFixed(2)` that becomes `toFixed(1)` past a threshold, or a sign that appears
+only when negative, re-centres the whole readout; pad the slot instead.
+
+Fixed cells are for values that move. A static label, a class badge or a heading
+is set normally.
+
 ---
 
 ## Widget System
