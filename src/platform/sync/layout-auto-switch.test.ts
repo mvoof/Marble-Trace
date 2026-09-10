@@ -52,6 +52,7 @@ describe('session layout auto-switch', () => {
   };
 
   beforeEach(() => {
+    vi.clearAllMocks();
     root = new RootStore({ skipInit: true });
 
     root.liveWidgets.setLayouts(
@@ -104,6 +105,25 @@ describe('session layout auto-switch', () => {
 
     expect(root.layouts.liveLayoutId).toBe('layout-practice');
     expect(root.layouts.editingLayoutId).toBe('layout-practice');
+  });
+
+  it('tells the overlay which layout it switched to', async () => {
+    const { emitLayoutActivated } =
+      await import('@platform/services/events.service');
+
+    goOnTrackInPractice();
+
+    expect(emitLayoutActivated).toHaveBeenCalledWith('layout-practice');
+  });
+
+  it('tells the overlay even while the editor holds another layout', async () => {
+    const { emitLayoutActivated } =
+      await import('@platform/services/events.service');
+
+    root.layoutEditor.setOpen(true);
+    goOnTrackInPractice();
+
+    expect(emitLayoutActivated).toHaveBeenCalledWith('layout-practice');
   });
 
   it('does nothing at all while auto-switching is off', () => {

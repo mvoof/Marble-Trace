@@ -1067,6 +1067,11 @@ export class LiveWidgetsStore implements WidgetMap {
 
       this.layoutEditor.setPinnedLiveLayoutId(id);
 
+      // The screen changed, so the screen says so — the editor holding a
+      // different layout is exactly when the driver has least reason to
+      // expect it and most reason to be told.
+      void emitLayoutActivated(this.layoutRecords.byId(id)?.name ?? '');
+
       return true;
     }
 
