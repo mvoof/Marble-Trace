@@ -9,6 +9,7 @@ const EMBED_TITLE_LIMIT = 256;
 const EMBED_DESCRIPTION_LIMIT = 4096;
 const EMBED_FIELD_NAME_LIMIT = 256;
 const EMBED_FIELD_VALUE_LIMIT = 1024;
+const EMBED_FIELD_COUNT_LIMIT = 25;
 const EMBED_TOTAL_LIMIT = 6000;
 const EMBED_COLOR = 0xf59e0b;
 
@@ -123,6 +124,10 @@ const buildEmbed = ({ version, releaseUrl, groups, isPrerelease }) => {
   let budget = EMBED_TOTAL_LIMIT - title.length - description.length;
 
   for (const group of groups) {
+    if (embed.fields.length >= EMBED_FIELD_COUNT_LIMIT) {
+      break;
+    }
+
     const name = truncate(group.name, EMBED_FIELD_NAME_LIMIT);
     const value = fieldValueOf(group.headlines);
     const cost = name.length + value.length;
