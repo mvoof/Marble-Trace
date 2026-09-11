@@ -26,7 +26,8 @@ use commands::{
     get_inspector_frame, get_last_session_info, get_reference_lap, launch_companion_app,
     log_settings_snapshot, reset_delivery_counters, reset_pit_lane_pct, send_pit_order,
     set_active_events, set_car_length, set_fuel_avg_window, set_inspector_active,
-    set_pit_warning_laps, settings_file_exists, start_telemetry_stream, stop_telemetry_stream,
+    set_pit_warning_laps, set_remote_active_events, settings_file_exists, start_telemetry_stream,
+    stop_telemetry_stream,
 };
 use companions::CompanionsState;
 use computations::ProcessorRegistry;
@@ -170,6 +171,7 @@ pub fn run() {
             set_pit_warning_laps,
             set_fuel_avg_window,
             set_active_events,
+            set_remote_active_events,
             set_inspector_active,
             get_inspector_frame,
             get_delivery_counters,
@@ -217,7 +219,7 @@ pub fn run() {
                 pit_in_pct: Mutex::new(None),
                 pit_exit_pct: Mutex::new(None),
                 live_pit_in_pct: Mutex::new(None),
-                active_events: AtomicU32::new(0xFFFFFFFF),
+                masks: telemetry::masks::MaskRegistry::bootstrapped(),
                 publications: Default::default(),
                 inspector_active: AtomicBool::new(false),
                 car_class_count: AtomicU32::new(0),
@@ -242,6 +244,15 @@ pub fn run() {
         .on_window_event(|window, event| match event {
             WindowEvent::Destroyed => {
                 tracing::info!(window = window.label(), "window destroyed");
+
+                // A window that is gone must not keep a demand-gated field
+                // switched on for everyone else.
+                window
+                    .app_handle()
+                    .state::<TelemetryState>()
+                    .service
+                    .masks
+                    .drop_label(window.label());
 
                 // Overlay windows are created per monitor at runtime, labelled
                 // "overlay-<monitor>", so they are torn down by prefix.

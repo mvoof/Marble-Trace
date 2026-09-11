@@ -12,6 +12,7 @@ import {
   getConnectionStatus,
   getLastSessionInfo,
   setActiveEventsSilent,
+  setRemoteActiveEventsSilent,
   startTelemetryStream,
   stopTelemetryStream,
 } from '@platform/services/telemetry.service';
@@ -47,6 +48,7 @@ import {
 } from '@/types/telemetry-events';
 import { WIDGET_BY_ID } from '@store/widget-catalog';
 import type { RootStore } from '@store/root-store';
+import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import {
   SIM_TELEMETRY_BUNDLE,
   SIM_SESSION,
@@ -67,6 +69,27 @@ import {
  */
 const drawsWidgets = () =>
   typeof window !== 'undefined' && window.location.hash.includes('overlay');
+
+/**
+ * The mask a set of widgets asks for: the union of the `telemetryEvents` every
+ * enabled one of them declares in its manifest. A widget states its appetite
+ * next to itself, so nothing here has to be kept in step with it.
+ */
+const maskOfWidgets = (widgets: WidgetDefaultConfig[]): number => {
+  const requested = new Set<TelemetryEventName>();
+
+  for (const widget of widgets) {
+    if (!widget.userSettings.enabled) continue;
+
+    const manifest = WIDGET_BY_ID.get(widgetTypeOf(widget));
+
+    for (const event of manifest?.telemetryEvents ?? []) {
+      requested.add(event);
+    }
+  }
+
+  return telemetryEventsToMask(requested);
+};
 
 export class SimStore {
   isConnected = false;
@@ -212,25 +235,19 @@ export class SimStore {
 
     if (hideAll) {
       setActiveEventsSilent(0);
+      setRemoteActiveEventsSilent(0);
 
       return;
     }
 
-    const requested = new Set<TelemetryEventName>();
-
     // What is on screen, not what the editor has open: the editor's preview
     // draws against seeded scenarios and needs no telemetry of its own.
-    for (const widget of this.root.liveWidgets.liveWidgets) {
-      if (!widget.userSettings.enabled) continue;
+    setActiveEventsSilent(maskOfWidgets(this.root.liveWidgets.liveWidgets));
 
-      const manifest = WIDGET_BY_ID.get(widgetTypeOf(widget));
-
-      for (const event of manifest?.telemetryEvents ?? []) {
-        requested.add(event);
-      }
-    }
-
-    setActiveEventsSilent(telemetryEventsToMask(requested));
+    // The remote screens have no window to register for them, so main does it.
+    setRemoteActiveEventsSilent(
+      maskOfWidgets(this.root.liveWidgets.liveRemoteScreenWidgets)
+    );
   }
 
   async startStream() {

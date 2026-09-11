@@ -5,7 +5,7 @@
 use std::sync::atomic::Ordering;
 use std::time::Duration;
 
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, State, Window};
 use tokio::time::sleep;
 use tracing::{debug, info};
 
@@ -13,6 +13,7 @@ use crate::model::defaults::MAX_FUEL_AVG_WINDOW;
 use crate::model::session::SessionSnapshot;
 use crate::sources::source::SourceFrame;
 use crate::telemetry::delivery::DeliverySet;
+use crate::telemetry::masks::REMOTE_LABEL;
 use crate::telemetry::runtime::spawn_telemetry_thread;
 use crate::telemetry::state::TelemetryState;
 use crate::utils::lock_or_recover;
@@ -61,11 +62,41 @@ pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(
     Ok(())
 }
 
+/// Records the calling window's appetite for the demand-gated bundle fields.
+///
+/// The label is taken from the caller, never from the payload: a label passed
+/// from JS goes stale across a window reload, and the window is the authority
+/// on its own identity. The entry is dropped when the window is destroyed
+/// (`WindowEvent::Destroyed` in `lib.rs`).
 #[tauri::command]
-pub async fn set_active_events(state: State<'_, TelemetryState>, mask: u32) -> Result<(), String> {
-    state.service.active_events.store(mask, Ordering::Relaxed);
+pub async fn set_active_events(
+    window: Window,
+    state: State<'_, TelemetryState>,
+    mask: u32,
+) -> Result<(), String> {
+    let label = window.label();
 
-    debug!("Active events mask updated to: {:#b}", mask);
+    state.service.masks.register(label, mask);
+
+    debug!("Active events mask for {label} updated to: {mask:#b}");
+
+    Ok(())
+}
+
+/// Records what the remote screens are asking for.
+///
+/// They have no webview of their own here — `remote/mirror.rs` taps the global
+/// event stream — so their appetite is registered under a reserved pseudo-label
+/// instead of a window's. Keeping it in the registry rather than implied by the
+/// broadcast is what lets the later move to `emit_to` be a transport swap.
+#[tauri::command]
+pub async fn set_remote_active_events(
+    state: State<'_, TelemetryState>,
+    mask: u32,
+) -> Result<(), String> {
+    state.service.masks.register(REMOTE_LABEL, mask);
+
+    debug!("Active events mask for {REMOTE_LABEL} updated to: {mask:#b}");
 
     Ok(())
 }

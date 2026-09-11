@@ -1071,3 +1071,67 @@ describe('every settings write leaves its mark', () => {
     );
   });
 });
+
+describe('the widgets a remote screen draws', () => {
+  const MONITOR = {
+    name: 'DISPLAY1',
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  const STREAM_SCREEN = {
+    name: 'Stream',
+    bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
+    kind: 'remote' as const,
+    slug: 'stream',
+  };
+
+  const layoutWithScreens = (id: string) => ({
+    id,
+    name: id,
+    createdAt: Date.now(),
+    monitors: [MONITOR, STREAM_SCREEN],
+    widgets: [],
+  });
+
+  it('is empty while every widget sits on a display', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.liveWidgets;
+
+    store.setLayouts([layoutWithScreens('layout-race')], 'layout-race');
+
+    expect(store.liveRemoteScreenWidgets).toHaveLength(0);
+  });
+
+  it('carries only the widgets whose centre lands on the remote screen', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.liveWidgets;
+
+    store.setLayouts([layoutWithScreens('layout-race')], 'layout-race');
+    store.updateUserSettings('standings', { x: 2000, y: 100 });
+
+    expect(store.liveRemoteScreenWidgets.map((widget) => widget.id)).toEqual([
+      'standings',
+    ]);
+  });
+
+  it('is empty when the layout has no remote screen at all', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.liveWidgets;
+
+    store.setLayouts(
+      [
+        {
+          id: 'layout-race',
+          name: 'layout-race',
+          createdAt: Date.now(),
+          monitors: [MONITOR],
+          widgets: [],
+        },
+      ],
+      'layout-race'
+    );
+    store.updateUserSettings('standings', { x: 2000, y: 100 });
+
+    expect(store.liveRemoteScreenWidgets).toHaveLength(0);
+  });
+});

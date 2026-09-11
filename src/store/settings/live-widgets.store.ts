@@ -919,6 +919,28 @@ export class LiveWidgetsStore implements WidgetMap {
       .map((monitor) => monitor.name);
   }
 
+  /**
+   * The widgets drawn on remote screens, of the layout on screen.
+   *
+   * Remote screens hold no webview of this app — the browsers on the LAN are
+   * fed by the mirror — so nothing registers their appetite for the gated
+   * telemetry fields unless main does it for them.
+   */
+  get liveRemoteScreenWidgets(): WidgetDefaultConfig[] {
+    const monitors = this.layoutRecords.liveLayout?.monitors ?? [];
+    const remoteNames = monitors
+      .filter((monitor) => !isDisplayMonitor(monitor))
+      .map((monitor) => monitor.name);
+
+    if (remoteNames.length === 0) return [];
+
+    return this.liveWidgets.filter((widget) => {
+      const owner = monitorForWidget(widget, monitors);
+
+      return owner ? remoteNames.includes(owner.name) : false;
+    });
+  }
+
   // Applies widgets synced in from an overlay window. Only the widgets that
   // window owns are taken: it knows nothing about the other monitors, and its
   // copy of them would be stale.

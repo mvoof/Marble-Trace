@@ -128,7 +128,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     let frame = ctx.frame;
     let due = ctx.due;
 
-    let active_mask = ctx.service.active_events.load(Ordering::Relaxed);
+    let active_mask = ctx.service.masks.effective_mask();
     // Every field is an `Option` the tiers below fill in, so the empty bundle
     // is the derived default rather than twenty-two `None`s written out.
     let mut bundle = TelemetryBundle::default();

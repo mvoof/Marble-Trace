@@ -5,6 +5,7 @@
 pub mod capabilities;
 pub mod delivery;
 pub mod emitter;
+pub mod masks;
 pub mod publications;
 pub mod quantize;
 pub mod runtime;

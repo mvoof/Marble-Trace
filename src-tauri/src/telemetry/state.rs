@@ -9,6 +9,7 @@ use crate::model::reference_lap::StoredReferenceTimes;
 use crate::model::session::SessionSnapshot;
 use crate::sources::source::SourceFrame;
 use crate::telemetry::delivery::DeliveryCounters;
+use crate::telemetry::masks::MaskRegistry;
 use crate::telemetry::publications::Publications;
 
 /// User-configured fuel parameters, written by commands and read once per tick
@@ -56,8 +57,9 @@ pub struct TelemetryServiceState {
     /// says where this particular entry began, which is what the pit approach
     /// rail counts from.
     pub live_pit_in_pct: Mutex<Option<f32>>,
-    /// Bitmask of active high-frequency events to emit.
-    pub active_events: AtomicU32,
+    /// What each recipient is asking for, keyed by its window label, and the
+    /// union of it that the emitter fills the bundle from.
+    pub masks: MaskRegistry,
     /// The telemetry inspector in the settings window is open. While this is
     /// false nothing below is written at all — the inspector costs the running
     /// app exactly nothing when nobody is looking at it, which is why it pulls

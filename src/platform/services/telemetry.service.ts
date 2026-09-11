@@ -18,10 +18,28 @@ export const getConnectionStatus = async (): Promise<boolean> =>
 export const getLastSessionInfo = async (): Promise<SessionSnapshot | null> =>
   invoke('get_last_session_info');
 
-/** Fire-and-forget: callers never await the event mask, so log here. */
+/**
+ * Fire-and-forget: callers never await the event mask, so log here.
+ *
+ * The mask is registered against the calling window's own label, which the
+ * backend takes from the command's `Window` — a label sent from here would go
+ * stale the moment the window reloaded.
+ */
 export const setActiveEventsSilent = (mask: number): void => {
   invoke('set_active_events', { mask }).catch((error) =>
     console.error('[telemetry.service] set_active_events failed:', error)
+  );
+};
+
+/**
+ * The remote screens' appetite, registered under a reserved pseudo-label.
+ *
+ * They are the one recipient with no window of its own — the hub is fed by a
+ * tap on the event stream — so main registers for them.
+ */
+export const setRemoteActiveEventsSilent = (mask: number): void => {
+  invoke('set_remote_active_events', { mask }).catch((error) =>
+    console.error('[telemetry.service] set_remote_active_events failed:', error)
   );
 };
 
