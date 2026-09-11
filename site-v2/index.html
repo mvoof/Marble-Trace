@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Marble Trace — Free Open-Source iRacing Telemetry Overlay</title>
+    <meta
+      name="description"
+      content="Marble Trace is a free, open-source iRacing overlay built with Rust and Tauri. Standings, relative, track map, fuel, delta, radar and 17+ widgets."
+    />
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+
+    <!-- Typography: Exo 2 and Barlow Condensed for aggressive racing display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800;1,900&family=Exo+2:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="src/styles/variables.css" />
+    <link rel="stylesheet" href="src/styles/navbar.css" />
+    <link rel="stylesheet" href="src/styles/main.css" />
+  </head>
+  <body>
+    <!-- ========================================================================
+       Top Navigation Bar
+       ======================================================================== -->
+    <header class="site-header" role="banner">
+      <div class="header-container">
+        <!-- Brand Logo & Title -->
+        <a href="#" class="brand" aria-label="Marble Trace — Home">
+          <div class="brand-icon-wrap">
+            <img
+              src="assets/logo.svg"
+              alt="Marble Trace Logo"
+              class="brand-icon"
+              width="26"
+              height="26"
+            />
+          </div>
+          <h1 class="brand-name">Marble Trace</h1>
+        </a>
+
+        <!-- Center Desktop Navigation Links -->
+        <nav class="nav-desktop" aria-label="Main Navigation">
+          <a href="#features" class="nav-link">Features</a>
+          <a href="#widgets" class="nav-link">Widgets</a>
+          <a href="#layouts" class="nav-link">Layouts</a>
+          <a href="#performance" class="nav-link">Performance</a>
+          <a href="#open-source" class="nav-link">Open Source</a>
+        </nav>
+
+        <!-- Right Actions (Social links + Download CTA + Mobile Hamburger) -->
+        <div class="header-actions">
+          <!-- GitHub Link -->
+          <a
+            href="https://github.com/mvoof/Marble-Trace"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="action-link"
+            aria-label="GitHub Repository"
+          >
+            <svg aria-hidden="true">
+              <use href="assets/icons/sprite.svg#icon-github" />
+            </svg>
+            <span>GitHub</span>
+          </a>
+
+          <!-- Discord Link -->
+          <a
+            href="https://discord.gg/GVaRsHbjxV"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="action-link"
+            aria-label="Discord Server"
+          >
+            <svg aria-hidden="true">
+              <use href="assets/icons/sprite.svg#icon-discord" />
+            </svg>
+            <span>Discord</span>
+          </a>
+
+          <!-- Download Button -->
+          <a
+            href="https://github.com/mvoof/Marble-Trace/releases/latest"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-download"
+          >
+            <svg aria-hidden="true">
+              <use href="assets/icons/sprite.svg#icon-windows" />
+            </svg>
+            <span>Download</span>
+          </a>
+
+          <!-- Mobile Hamburger Toggle -->
+          <button
+            type="button"
+            class="mobile-toggle"
+            aria-label="Toggle Navigation Menu"
+            aria-expanded="false"
+            aria-controls="mobile-drawer"
+          >
+            <span class="mobile-toggle-box">
+              <span class="mobile-toggle-line"></span>
+              <span class="mobile-toggle-line"></span>
+              <span class="mobile-toggle-line"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================================================
+       Mobile Navigation Drawer & Backdrop
+       ======================================================================== -->
+    <div class="mobile-backdrop" aria-hidden="true"></div>
+
+    <aside
+      id="mobile-drawer"
+      class="mobile-drawer"
+      aria-label="Mobile Navigation"
+    >
+      <div class="drawer-header">
+        <a href="#" class="drawer-brand">
+          <div class="brand-icon-wrap">
+            <img
+              src="assets/logo-light.svg"
+              alt="Marble Trace"
+              class="brand-icon"
+              width="24"
+              height="24"
+            />
+          </div>
+          <span class="brand-name">Marble Trace</span>
+        </a>
+        <button type="button" class="drawer-close" aria-label="Close menu">
+          <svg width="18" height="18" aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-close" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Nav Links -->
+      <nav class="drawer-nav">
+        <a href="#features" class="drawer-nav-link">
+          <span>Features</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#widgets" class="drawer-nav-link">
+          <span>Widgets</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#layouts" class="drawer-nav-link">
+          <span>Layouts</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#performance" class="drawer-nav-link">
+          <span>Performance</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#open-source" class="drawer-nav-link">
+          <span>Open Source</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+      </nav>
+
+      <div class="drawer-divider"></div>
+
+      <!-- Mobile Social Links -->
+      <div class="drawer-socials">
+        <a
+          href="https://github.com/mvoof/Marble-Trace"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="drawer-social-link"
+        >
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-github" />
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <a
+          href="https://discord.gg/GVaRsHbjxV"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="drawer-social-link"
+        >
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-discord" />
+          </svg>
+          <span>Discord</span>
+        </a>
+      </div>
+
+      <!-- Mobile Download CTA -->
+      <div class="drawer-cta">
+        <a
+          href="https://github.com/mvoof/Marble-Trace/releases/latest"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-download"
+        >
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-windows" />
+          </svg>
+          <span>Download for Windows</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ========================================================================
+       Main Content (Sections corresponding to Menu)
+       ======================================================================== -->
+    <main id="main">
+      <!-- Hero Section (Matches Screenshot 2026-09-11 202506.png and Screenshot 195640.png) -->
+      <section class="hero-block" id="hero" aria-labelledby="hero-heading">
+        <!-- Hero Visual — one uncut photograph, held inside the container so it
+           never runs past the page gutters while still filling the block height.
+           The "cuts" are diagonal washes: the picture dissolves into the page
+           ground along a slanted axis on the left, and a second, near-vertical
+           slanted cut peels a light strip off the right edge for the scroll cue. -->
+
+        <div class="hero-visual">
+          <img
+            src="assets/hero-cockpit-clean.jpg"
+            alt="iRacing Cockpit View"
+            class="hero-photo"
+          />
+
+          <!-- The blurred side dissolves into the hero ground along the same axis -->
+          <div class="hero-fade-left"></div>
+
+          <!-- Specular bloom and crisp hairlines riding the slanted cuts -->
+          <div class="cut-line cut-line-lead"></div>
+          <div class="cut-line cut-line-trail"></div>
+
+          <!-- Near-vertical slanted cut taking a strip off the right edge -->
+
+          <!-- Scroll indicator, sitting on the right strip -->
+          <div class="hero-scroll-indicator">
+            <span class="hero-scroll-text">SCROLL</span>
+            <svg class="hero-scroll-arrow" aria-hidden="true">
+              <use href="assets/icons/sprite.svg#icon-arrow-down" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="hero-container">
+          <!-- Content Column (Left) -->
+          <div class="hero-content">
+            <div class="hero-kicker">
+              OPEN SOURCE TELEMETRY OVERLAY FOR IRACING
+            </div>
+
+            <span id="hero-heading" class="hero-heading">
+              YOUR RACE.<br />
+              YOUR DATA.
+            </span>
+
+            <p class="hero-subtitle">
+              Marble Trace is a free, lightweight overlay for iRacing. A tiny
+              Rust core reads telemetry straight from the sim — beautiful
+              widgets float above it, costing you almost no FPS.
+            </p>
+
+            <!-- Buttons Group -->
+            <div class="hero-buttons">
+              <!-- Windows Download Button -->
+              <a
+                href="https://github.com/mvoof/Marble-Trace/releases/latest"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-hero-dark"
+              >
+                <svg aria-hidden="true">
+                  <use href="assets/icons/sprite.svg#icon-windows" />
+                </svg>
+                <span>DOWNLOAD</span>
+              </a>
+
+              <!-- Join Discord Button -->
+              <a
+                href="https://discord.gg/GVaRsHbjxV"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-hero-light"
+              >
+                <svg aria-hidden="true">
+                  <use href="assets/icons/sprite.svg#icon-discord" />
+                </svg>
+                <span>JOIN DISCORD</span>
+              </a>
+
+              <!-- Star on GitHub Button -->
+              <a
+                href="https://github.com/mvoof/Marble-Trace"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-hero-light"
+              >
+                <svg aria-hidden="true">
+                  <use href="assets/icons/sprite.svg#icon-github" />
+                </svg>
+                <span>STAR ON GITHUB</span>
+                <span class="star-gold" aria-hidden="true">★</span>
+              </a>
+            </div>
+
+            <!-- Feature Badges -->
+            <div class="hero-badges">
+              <span class="badge-pill"
+                >Free forever · GPL-3.0 licensed · Windows · iRacing</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section id="features" class="section">
+        <div class="container">
+          <div class="section-header">
+            <p class="section-tag">Core Capabilities</p>
+            <h2 class="section-title">Engineered for Sim Racers</h2>
+            <p class="section-subtitle">
+              Every widget is designed to deliver maximum track awareness with
+              zero unnecessary latency.
+            </p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card">
+              <div class="card-icon">⚡</div>
+              <h3 class="card-title">Rust Native Core</h3>
+              <p class="card-desc">
+                Direct shared memory access to iRacing telemetry. No overhead,
+                no memory leaks, ultra-low CPU utilization.
+              </p>
+            </div>
+            <div class="card">
+              <div class="card-icon">🎯</div>
+              <h3 class="card-title">Pixel-Perfect HUD</h3>
+              <p class="card-desc">
+                Transparent always-on-top overlay rendering with hardware
+                acceleration and crisp vector aesthetics.
+              </p>
+            </div>
+            <div class="card">
+              <div class="card-icon">🔄</div>
+              <h3 class="card-title">Multi-Window Sync</h3>
+              <p class="card-desc">
+                Independent main settings window and transparent gaming overlay
+                with synchronized state.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Widgets Section -->
+      <section id="widgets" class="section section-alt">
+        <div class="container">
+          <div class="section-header">
+            <p class="section-tag">Over 20 Modular Widgets</p>
+            <h2 class="section-title">Full Grid Awareness</h2>
+            <p class="section-subtitle">
+              From live standings and fuel calculations to proximity radar and
+              telemetry traces.
+            </p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card">
+              <h3 class="card-title">Standings &amp; Relative</h3>
+              <p class="card-desc">
+                Real-time driver gaps, multi-class rankings, pit indicators,
+                license safety rating badges, and tire stint ages.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Fuel Calculator</h3>
+              <p class="card-desc">
+                Intelligent per-lap fuel consumption analysis, target laps
+                calculation, and automated pit service orders.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Proximity Radar</h3>
+              <p class="card-desc">
+                High-precision 360-degree radar showing cars alongside you to
+                prevent blind-spot collisions.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Layouts Section -->
+      <section id="layouts" class="section">
+        <div class="container">
+          <div class="section-header">
+            <p class="section-tag">Layout Presets</p>
+            <h2 class="section-title">Built for Your Cockpit</h2>
+            <p class="section-subtitle">
+              Customize position, scale, opacity, and monitors for every
+              sim-racing discipline.
+            </p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card">
+              <h3 class="card-title">Multi-Monitor Support</h3>
+              <p class="card-desc">
+                Place widgets across ultra-wide, triple-screen, or secondary
+                monitor setups with individual monitor binding.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Car &amp; Track Profiles</h3>
+              <p class="card-desc">
+                Automatically switch widget sets when you change from GT3 to
+                Formula or oval racing cars.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">DirectInput Hotkeys</h3>
+              <p class="card-desc">
+                Bind steering wheel buttons or controller toggles to switch
+                layouts or cycle views without touching the mouse.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Performance Section -->
+      <section id="performance" class="section section-alt">
+        <div class="container">
+          <div class="section-header">
+            <p class="section-tag">Zero FPS Tax</p>
+            <h2 class="section-title">Pure 60 FPS Telemetry</h2>
+            <p class="section-subtitle">
+              Tested in endurance racing and competitive multi-class grids.
+            </p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card">
+              <h3 class="card-title">&lt; 1% CPU Usage</h3>
+              <p class="card-desc">
+                The Rust backend processes high-frequency telemetry in
+                background threads without blocking game rendering.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Tiered Refresh Rates</h3>
+              <p class="card-desc">
+                60 Hz for vehicle dynamics and inputs, 10 Hz for proximity, 4 Hz
+                for fuel and pit stops to eliminate wasted cycles.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Demand-Gated Pipeline</h3>
+              <p class="card-desc">
+                Only fields requested by currently active on-screen widgets are
+                unpacked and serialized.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Open Source Section -->
+      <section id="open-source" class="section">
+        <div class="container">
+          <div class="section-header">
+            <p class="section-tag">Community Driven</p>
+            <h2 class="section-title">100% Free &amp; Open Source</h2>
+            <p class="section-subtitle">
+              Licensed under MIT. No subscriptions, no ads, no telemetry
+              paywalls.
+            </p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card">
+              <h3 class="card-title">Open Architecture</h3>
+              <p class="card-desc">
+                Inspect, build, and customize widgets or backend processors.
+                Contributions and issues welcome on GitHub.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Active Community</h3>
+              <p class="card-desc">
+                Join fellow drivers on Discord to share layouts, suggest new
+                widgets, and report feedback.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Safe &amp; Approved</h3>
+              <p class="card-desc">
+                Reads standard iRacing shared memory SDK telemetry — completely
+                compliant with iRacing Terms of Service.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ========================================================================
+       Footer
+       ======================================================================== -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <img src="assets/logo-light.svg" alt="" width="26" height="26" />
+            <span class="brand-name">Marble Trace</span>
+          </div>
+
+          <nav class="footer-links" aria-label="Footer Navigation">
+            <a href="#features" class="footer-link">Features</a>
+            <a href="#widgets" class="footer-link">Widgets</a>
+            <a href="#layouts" class="footer-link">Layouts</a>
+            <a href="#performance" class="footer-link">Performance</a>
+            <a href="#open-source" class="footer-link">Open Source</a>
+            <a
+              href="https://github.com/mvoof/Marble-Trace"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="footer-link"
+              >GitHub</a
+            >
+            <a
+              href="https://discord.gg/GVaRsHbjxV"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="footer-link"
+              >Discord</a
+            >
+          </nav>
+        </div>
+
+        <div class="footer-bottom">
+          <p>
+            &copy; 2026 Marble Trace. Free and Open Source under MIT License.
+          </p>
+          <p>Built with Rust, Tauri &amp; modern Web standards.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Controller Script -->
+    <script src="src/components/navbar.js"></script>
+  </body>
+</html>
