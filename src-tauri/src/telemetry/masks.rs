@@ -99,9 +99,8 @@ impl MaskRegistry {
         self.effective.load(Ordering::Relaxed)
     }
 
-    /// Every recipient's own mask. Ticket 04 groups by these values; for now it
-    /// is what the tests and the logs read.
-    #[allow(dead_code)]
+    /// Every recipient's own mask. The emitter groups the bundle by these
+    /// values — see `telemetry::dispatch`.
     pub fn entries(&self) -> Vec<(String, u32)> {
         let mut entries: Vec<(String, u32)> = lock_or_recover(&self.masks)
             .iter()

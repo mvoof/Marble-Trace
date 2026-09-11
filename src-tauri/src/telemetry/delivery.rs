@@ -98,11 +98,17 @@ impl DeliveryCounters {
         self.labels.insert(label.to_owned(), LabelCounters::new());
     }
 
+    /// Starts a label's counters unless it already has some, so a recipient
+    /// that re-registers its appetite — every layout change does — keeps
+    /// counting across a measurement run rather than restarting it.
+    pub fn ensure(&mut self, label: &str) {
+        self.labels
+            .entry(label.to_owned())
+            .or_insert_with(LabelCounters::new);
+    }
+
     /// Drops a label's counters when its recipient goes away, so a window that
-    /// reloads never carries the previous run's totals. Unused while there is
-    /// only the broadcast to count; the caller arrives with the per-window
-    /// registration in ticket 02.
-    #[allow(dead_code)]
+    /// reloads never carries the previous run's totals.
     pub fn drop_label(&mut self, label: &str) {
         self.labels.remove(label);
     }
@@ -271,6 +277,29 @@ mod tests {
         assert_eq!(snapshot.len(), 2);
         assert_eq!(snapshot[0].label, "main");
         assert_eq!(snapshot[1].bundles, 0);
+    }
+
+    // Every layout change re-registers a window's appetite. If that restarted
+    // its counters, a measurement run would report only the traffic since the
+    // last drag.
+    #[test]
+    fn ensuring_an_existing_label_keeps_its_counters() {
+        let mut counters = DeliveryCounters::default();
+        counters.register("overlay");
+        counters.record("overlay", &TelemetryBundle::default());
+
+        counters.ensure("overlay");
+
+        assert_eq!(counters.snapshot()[0].bundles, 1);
+    }
+
+    #[test]
+    fn ensuring_a_new_label_starts_counting_it() {
+        let mut counters = DeliveryCounters::default();
+
+        counters.ensure("overlay");
+
+        assert_eq!(counters.snapshot()[0].label, "overlay");
     }
 
     #[test]

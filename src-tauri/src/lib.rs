@@ -39,6 +39,7 @@ use remote::commands::{
 };
 use telemetry::delivery::DeliveryCounters;
 use telemetry::state::TelemetryState;
+use utils::lock_or_recover;
 
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32};
 use std::sync::{Arc, Mutex};
@@ -247,12 +248,11 @@ pub fn run() {
 
                 // A window that is gone must not keep a demand-gated field
                 // switched on for everyone else.
-                window
-                    .app_handle()
-                    .state::<TelemetryState>()
-                    .service
-                    .masks
-                    .drop_label(window.label());
+                let app_handle = window.app_handle();
+                let service = &app_handle.state::<TelemetryState>().service;
+
+                service.masks.drop_label(window.label());
+                lock_or_recover(&service.delivery).drop_label(window.label());
 
                 // Overlay windows are created per monitor at runtime, labelled
                 // "overlay-<monitor>", so they are torn down by prefix.

@@ -10,7 +10,7 @@ use crate::model::session::SessionSnapshot;
 use crate::sources::source::SourceFrame;
 use crate::telemetry::delivery::DeliveryCounters;
 use crate::telemetry::masks::MaskRegistry;
-use crate::telemetry::publications::Publications;
+use crate::telemetry::publications::PublicationRegistry;
 
 /// User-configured fuel parameters, written by commands and read once per tick
 /// by the telemetry thread.
@@ -70,10 +70,12 @@ pub struct TelemetryServiceState {
     /// open. 4 Hz because that is already faster than a person can read a table
     /// of a hundred numbers.
     pub inspector_frame: Mutex<Option<SourceFrame>>,
-    /// What was last put on the wire, so an unchanged frame can be held back.
-    /// Lives with the connection: a reconnect clears it, because the windows
-    /// have reset their stores too and need a full bundle again.
-    pub publications: Mutex<Publications>,
+    /// What was last put on the wire for each delivery group, so an unchanged
+    /// frame can be held back. One record per mask value: a group seen for the
+    /// first time must get a full bundle rather than inherit what another group
+    /// was sent. Lives with the connection: a reconnect clears it, because the
+    /// windows have reset their stores too and need a full bundle again.
+    pub publications: Mutex<PublicationRegistry>,
     /// Configurable player car length in meters.
     pub car_length_m: Mutex<f32>,
     /// Set when a cached track was loaded from disk; consumed by TrackShapeProcessor

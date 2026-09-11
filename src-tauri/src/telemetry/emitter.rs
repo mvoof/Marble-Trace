@@ -9,7 +9,9 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager};
 use tracing::warn;
 
-use super::delivery::BROADCAST_LABEL;
+use super::delivery::DeliveryCounters;
+use super::dispatch::{mirrors, plan, BundleSink, DeliveryGroup, Recipient};
+use super::publications::PublicationRegistry;
 use super::quantize;
 use super::scheduler::DueGroups;
 use super::state::{
@@ -40,8 +42,8 @@ use crate::utils::lock_or_recover;
 // because this is the module that emits them.
 pub use crate::model::events::{
     EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_REFERENCE_LAP_UPDATED, EVENT_SESSION_INFO,
-    EVENT_SIM_PERF, EVENT_STATUS, EVENT_TELEMETRY_BUNDLE, EVENT_TELEMETRY_SLOW, EVENT_TRACK_SHAPE,
-    EVENT_WEATHER_FORECAST,
+    EVENT_SIM_PERF, EVENT_STATUS, EVENT_TELEMETRY_BUNDLE, EVENT_TELEMETRY_BUNDLE_MIRROR,
+    EVENT_TELEMETRY_SLOW, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
 };
 
 pub struct EmitContext<'a> {
@@ -330,30 +332,127 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     // Drop what nobody asked for. Deliberately after the processors have run:
     // the mask gates publication, never computation, so a widget switched on
     // mid-race finds the driver table, the gaps and the history intact
-    // instead of rebuilding them from the tick it became visible.
+    // instead of rebuilding them from the tick it became visible. This is the
+    // union; each group narrows it further below.
     apply_event_mask(&mut bundle, active_mask);
 
-    // Round to what a widget can actually draw, then drop whatever is identical
-    // to the last thing published. Order matters both ways: rounding before the
-    // comparison is what makes repeats compare equal at all, and both run after
-    // the gating above so a field the mask removed is never recorded as sent.
+    // Round to what a widget can actually draw. Rounding before the comparison
+    // in `publications` is what makes repeats compare equal at all — raw floats
+    // are never bit-identical two ticks running — and it happens once here
+    // rather than once per group, since the groups are subsets of this bundle.
     quantize_bundle(&mut bundle);
 
-    // The 1 Hz tier carries a full bundle. See `publications` — it is what a
-    // window that just reloaded, or a phone that just opened a remote screen,
-    // needs in order to paint anything at all.
-    lock_or_recover(&ctx.service.publications).prune(&mut bundle, due.first || due.hz1);
+    let groups = plan(ctx.service.masks.entries());
 
-    let should_emit = active_mask != 0 || due.first || due.hz10 || due.hz4 || due.hz1;
+    deliver(
+        &ctx.service.publications,
+        &ctx.service.delivery,
+        ctx.due,
+        bundle,
+        groups,
+        &mut TauriSink { app: ctx.app },
+    );
+}
 
-    if should_emit {
-        // Counted here rather than at assembly: what the counters answer is
-        // what went on the wire, after the mask and after the repeat
-        // suppression have both had their say.
-        lock_or_recover(&ctx.service.delivery).record(BROADCAST_LABEL, &bundle);
+/// The real transport: `emit_to` per window, `app.emit` for the broadcast and
+/// for the mirror's internal event.
+struct TauriSink<'a> {
+    app: &'a AppHandle,
+}
 
-        if let Err(e) = app.emit(EVENT_TELEMETRY_BUNDLE, &bundle) {
+impl BundleSink for TauriSink<'_> {
+    fn to_window(&mut self, label: &str, bundle: &TelemetryBundle) {
+        if let Err(e) = self.app.emit_to(label, EVENT_TELEMETRY_BUNDLE, bundle) {
+            warn!("Failed to emit telemetry bundle to {}: {}", label, e);
+        }
+    }
+
+    fn broadcast(&mut self, bundle: &TelemetryBundle) {
+        if let Err(e) = self.app.emit(EVENT_TELEMETRY_BUNDLE, bundle) {
             warn!("Failed to emit telemetry bundle: {}", e);
+        }
+    }
+
+    fn to_mirror(&mut self, bundle: &TelemetryBundle) {
+        if let Err(e) = self.app.emit(EVENT_TELEMETRY_BUNDLE_MIRROR, bundle) {
+            warn!(
+                "Failed to emit telemetry bundle to the remote mirror: {}",
+                e
+            );
+        }
+    }
+}
+
+/// Sends one bundle per distinct mask to everyone who asked for exactly that.
+///
+/// `assembled` is filled from the union and already quantized; each group is
+/// that bundle narrowed to its own mask, pruned against its own record and put
+/// on the wire once.
+fn deliver(
+    publications: &Mutex<PublicationRegistry>,
+    counters: &Mutex<DeliveryCounters>,
+    due: DueGroups,
+    assembled: TelemetryBundle,
+    groups: Vec<DeliveryGroup>,
+    sink: &mut impl BundleSink,
+) {
+    // Handed to the last group by value: with one group — one monitor, or two
+    // monitors whose widgets want the same fields, which is the common case —
+    // nothing is cloned and the tick costs exactly what it did before.
+    let mut assembled = Some(assembled);
+    let last = groups.len().saturating_sub(1);
+    let live: Vec<u32> = groups.iter().map(|group| group.mask).collect();
+    let mut publications = lock_or_recover(publications);
+    let mut delivery = lock_or_recover(counters);
+
+    publications.retain(&live);
+
+    for (index, group) in groups.iter().enumerate() {
+        // A clone is the price of a window that wants something different from
+        // its neighbour; the last group is handed the assembled bundle itself.
+        let taken = if index == last {
+            assembled.take()
+        } else {
+            assembled.as_ref().cloned()
+        };
+
+        let Some(mut bundle) = taken else {
+            break;
+        };
+
+        apply_event_mask(&mut bundle, group.mask);
+
+        // The 1 Hz tier carries a full bundle. See `publications` — it is what
+        // a window that just reloaded, or a phone that just opened a remote
+        // screen, needs in order to paint anything at all.
+        publications.prune(group.mask, &mut bundle, due.first || due.hz1);
+
+        // Mask 0 is "slow tiers only", not silence: a window with no hot widget
+        // still gets session, fuel and status. Silence is removal from the
+        // registry.
+        let should_emit = group.mask != 0 || due.first || due.hz10 || due.hz4 || due.hz1;
+
+        if !should_emit {
+            continue;
+        }
+
+        for recipient in &group.recipients {
+            // Counted here rather than at assembly: what the counters answer is
+            // what went on the wire, after the mask and after the repeat
+            // suppression have both had their say.
+            delivery.record(recipient.label(), &bundle);
+
+            match recipient {
+                Recipient::Window(label) => sink.to_window(label, &bundle),
+                Recipient::Broadcast => sink.broadcast(&bundle),
+                // Reached by the mirror re-emit below, which is the only path
+                // `remote/mirror.rs` can still see.
+                Recipient::Mirror => {}
+            }
+        }
+
+        if mirrors(&groups, group) {
+            sink.to_mirror(&bundle);
         }
     }
 }
@@ -579,5 +678,342 @@ fn patch_pit_lane_pct(app: &AppHandle, track_id: i32, pit_in_pct: f32, pit_exit_
         }
     } else {
         warn!("Failed to write patched track JSON back to {:?}", path);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::computations::driver_entries::DriverEntriesFrame;
+    use crate::model::cars::CarPositionsFrame;
+    use crate::telemetry::delivery::BROADCAST_LABEL;
+    use crate::telemetry::masks::{BOOTSTRAP_LABEL, REMOTE_LABEL};
+    use crate::telemetry::state::{EVENT_CAR_POSITIONS, EVENT_DRIVER_ENTRIES};
+
+    /// One bundle as it was delivered, and who it went to.
+    #[derive(Debug)]
+    struct Sent {
+        target: String,
+        bundle: TelemetryBundle,
+    }
+
+    /// Stands in for `TauriSink`. What the real transport can do silently —
+    /// above all leaving the mirror unfed — is a missing row here.
+    #[derive(Default)]
+    struct RecordingSink {
+        sent: Vec<Sent>,
+    }
+
+    /// The mirror's internal event, named so a test reads as what it asserts.
+    const MIRROR_TARGET: &str = "@mirror-event";
+
+    impl RecordingSink {
+        fn to(&self, target: &str) -> Vec<&TelemetryBundle> {
+            self.sent
+                .iter()
+                .filter(|sent| sent.target == target)
+                .map(|sent| &sent.bundle)
+                .collect()
+        }
+
+        fn record(&mut self, target: &str, bundle: &TelemetryBundle) {
+            self.sent.push(Sent {
+                target: target.to_owned(),
+                bundle: bundle.clone(),
+            });
+        }
+    }
+
+    impl BundleSink for RecordingSink {
+        fn to_window(&mut self, label: &str, bundle: &TelemetryBundle) {
+            self.record(label, bundle);
+        }
+
+        fn broadcast(&mut self, bundle: &TelemetryBundle) {
+            self.record(BROADCAST_LABEL, bundle);
+        }
+
+        fn to_mirror(&mut self, bundle: &TelemetryBundle) {
+            self.record(MIRROR_TARGET, bundle);
+        }
+    }
+
+    /// A tick on which no slow tier is due, so only a non-zero mask emits.
+    fn hot_tick() -> DueGroups {
+        DueGroups {
+            first: false,
+            hz10: false,
+            hz4: false,
+            hz1: false,
+        }
+    }
+
+    fn positions(pct: f32) -> CarPositionsFrame {
+        CarPositionsFrame {
+            car_idx_lap_dist_pct: vec![pct],
+            car_idx_track_surface: vec![3],
+        }
+    }
+
+    fn entries() -> DriverEntriesFrame {
+        DriverEntriesFrame {
+            entries: vec![],
+            player_car_idx: 0,
+        }
+    }
+
+    /// A bundle filled from the union, as the emitter hands it to `deliver`.
+    fn assembled(pct: f32) -> TelemetryBundle {
+        TelemetryBundle {
+            car_positions: Some(positions(pct)),
+            driver_entries: Some(entries()),
+            ..Default::default()
+        }
+    }
+
+    struct Harness {
+        publications: Mutex<PublicationRegistry>,
+        counters: Mutex<DeliveryCounters>,
+        sink: RecordingSink,
+    }
+
+    impl Harness {
+        fn new(labels: &[&str]) -> Self {
+            let mut counters = DeliveryCounters::default();
+
+            for label in labels {
+                counters.register(label);
+            }
+
+            Self {
+                publications: Mutex::new(PublicationRegistry::default()),
+                counters: Mutex::new(counters),
+                sink: RecordingSink::default(),
+            }
+        }
+
+        fn tick(&mut self, due: DueGroups, bundle: TelemetryBundle, registry: &[(&str, u32)]) {
+            let entries = registry
+                .iter()
+                .map(|(label, mask)| ((*label).to_owned(), *mask))
+                .collect();
+
+            deliver(
+                &self.publications,
+                &self.counters,
+                due,
+                bundle,
+                plan(entries),
+                &mut self.sink,
+            );
+        }
+    }
+
+    /// The claim the whole feature rests on: the window that asked for the
+    /// per-car frame gets it, and the one that did not never sees it.
+    #[test]
+    fn each_group_gets_its_own_bundle_and_not_the_others_fields() {
+        let mut harness = Harness::new(&["overlay-left", "overlay-right"]);
+
+        harness.tick(
+            hot_tick(),
+            assembled(0.5),
+            &[
+                ("overlay-left", EVENT_CAR_POSITIONS | EVENT_DRIVER_ENTRIES),
+                ("overlay-right", EVENT_CAR_POSITIONS),
+            ],
+        );
+
+        let left = harness.sink.to("overlay-left");
+        let right = harness.sink.to("overlay-right");
+
+        assert_eq!(left.len(), 1);
+        assert_eq!(right.len(), 1);
+        assert!(left[0].driver_entries.is_some());
+        assert!(right[0].car_positions.is_some());
+        assert!(
+            right[0].driver_entries.is_none(),
+            "a field only the other monitor asked for never reaches this window"
+        );
+    }
+
+    /// The common case. If two windows wanting the same thing produced two
+    /// serializations, this work would cost most users more than it saves.
+    #[test]
+    fn identical_masks_are_serialized_once_and_sent_to_both() {
+        let mut harness = Harness::new(&["overlay-left", "overlay-right"]);
+
+        harness.tick(
+            hot_tick(),
+            assembled(0.5),
+            &[
+                ("overlay-left", EVENT_CAR_POSITIONS),
+                ("overlay-right", EVENT_CAR_POSITIONS),
+            ],
+        );
+
+        // One delivery each, out of one bundle. The tap is fed as well, by the
+        // widest-group fallback in `dispatch::mirrors`, which is why this counts
+        // the windows rather than every row the sink holds.
+        assert_eq!(harness.sink.to("overlay-left").len(), 1);
+        assert_eq!(harness.sink.to("overlay-right").len(), 1);
+        assert_eq!(
+            harness.sink.to(MIRROR_TARGET).len(),
+            1,
+            "the tap is never left unfed, even with no remote appetite registered"
+        );
+    }
+
+    /// A group that appears later must not be muted by what an older group was
+    /// already sent — its window starts with empty stores.
+    #[test]
+    fn a_new_groups_first_tick_is_a_full_bundle() {
+        let mut harness = Harness::new(&["overlay-left", "overlay-right"]);
+
+        harness.tick(
+            hot_tick(),
+            assembled(0.5),
+            &[("overlay-left", EVENT_CAR_POSITIONS)],
+        );
+
+        // The same frame again: the established group is held back, the new one
+        // is not.
+        harness.tick(
+            hot_tick(),
+            assembled(0.5),
+            &[
+                ("overlay-left", EVENT_CAR_POSITIONS),
+                ("overlay-right", EVENT_CAR_POSITIONS | EVENT_DRIVER_ENTRIES),
+            ],
+        );
+
+        let left = harness.sink.to("overlay-left");
+        let right = harness.sink.to("overlay-right");
+
+        assert!(left[1].car_positions.is_none(), "a repeat is held back");
+        assert!(
+            right[0].car_positions.is_some(),
+            "the new group has been sent nothing yet and gets it all"
+        );
+    }
+
+    /// The failure mode of this ticket: `emit_to` does not feed `app.listen`,
+    /// and nothing logs when the mirror stops receiving — the remote screens
+    /// just go stale.
+    #[test]
+    fn the_mirrors_group_still_reaches_the_tap() {
+        let mut harness = Harness::new(&["overlay-left", REMOTE_LABEL]);
+
+        harness.tick(
+            hot_tick(),
+            assembled(0.5),
+            &[
+                ("overlay-left", EVENT_CAR_POSITIONS | EVENT_DRIVER_ENTRIES),
+                (REMOTE_LABEL, EVENT_CAR_POSITIONS),
+            ],
+        );
+
+        let mirrored = harness.sink.to(MIRROR_TARGET);
+
+        assert_eq!(mirrored.len(), 1, "the mirror is fed exactly once");
+        assert!(mirrored[0].car_positions.is_some());
+        assert!(
+            mirrored[0].driver_entries.is_none(),
+            "the remote screens pay for their own appetite, not the union"
+        );
+    }
+
+    /// Before any window has registered, the mirror has no appetite of its own
+    /// and the bootstrap broadcast is what it lives on.
+    #[test]
+    fn the_bootstrap_broadcast_feeds_the_tap_too() {
+        let mut harness = Harness::new(&[BROADCAST_LABEL]);
+
+        harness.tick(hot_tick(), assembled(0.5), &[(BOOTSTRAP_LABEL, u32::MAX)]);
+
+        assert_eq!(harness.sink.to(BROADCAST_LABEL).len(), 1);
+        assert_eq!(harness.sink.to(MIRROR_TARGET).len(), 1);
+    }
+
+    /// Mask 0 is "slow tiers only", not silence.
+    #[test]
+    fn a_window_with_no_hot_widget_still_gets_the_slow_tiers() {
+        let mut harness = Harness::new(&["overlay-right"]);
+
+        harness.tick(hot_tick(), assembled(0.5), &[("overlay-right", 0)]);
+
+        assert!(
+            harness.sink.to("overlay-right").is_empty(),
+            "nothing is due and nothing is wanted"
+        );
+
+        let due = DueGroups {
+            hz4: true,
+            ..hot_tick()
+        };
+        harness.tick(due, assembled(0.5), &[("overlay-right", 0)]);
+
+        assert_eq!(harness.sink.to("overlay-right").len(), 1);
+    }
+
+    /// What the counters report is what the sink was handed — per window, after
+    /// the mask and the repeat suppression have both had their say.
+    #[test]
+    fn the_counters_follow_the_groups() {
+        let mut harness = Harness::new(&["overlay-left", "overlay-right"]);
+
+        harness.tick(
+            hot_tick(),
+            assembled(0.5),
+            &[
+                ("overlay-left", EVENT_CAR_POSITIONS | EVENT_DRIVER_ENTRIES),
+                ("overlay-right", EVENT_CAR_POSITIONS),
+            ],
+        );
+
+        let snapshot = lock_or_recover(&harness.counters).snapshot();
+        let carried = |label: &str, field: &str| {
+            snapshot
+                .iter()
+                .find(|set| set.label == label)
+                .and_then(|set| set.fields.iter().find(|delivered| delivered.field == field))
+                .map(|delivered| delivered.bundles)
+                .unwrap_or_default()
+        };
+
+        assert_eq!(carried("overlay-left", "driverEntries"), 1);
+        assert_eq!(carried("overlay-right", "driverEntries"), 0);
+        assert_eq!(carried("overlay-right", "carPositions"), 1);
+    }
+
+    /// A group that goes away must not keep its record for the rest of the
+    /// session — and must not find it on coming back.
+    #[test]
+    fn a_group_that_disappears_forgets_what_it_was_sent() {
+        let mut harness = Harness::new(&["overlay-left", "overlay-right"]);
+
+        harness.tick(
+            hot_tick(),
+            assembled(0.5),
+            &[("overlay-right", EVENT_CAR_POSITIONS)],
+        );
+        harness.tick(
+            hot_tick(),
+            assembled(0.5),
+            &[("overlay-left", EVENT_DRIVER_ENTRIES)],
+        );
+        harness.tick(
+            hot_tick(),
+            assembled(0.5),
+            &[("overlay-right", EVENT_CAR_POSITIONS)],
+        );
+
+        let right = harness.sink.to("overlay-right");
+
+        assert_eq!(right.len(), 2);
+        assert!(
+            right[1].car_positions.is_some(),
+            "the group was gone, so its record went with it"
+        );
     }
 }

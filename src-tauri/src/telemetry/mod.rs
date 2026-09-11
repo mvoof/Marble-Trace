@@ -4,6 +4,7 @@
 
 pub mod capabilities;
 pub mod delivery;
+pub mod dispatch;
 pub mod emitter;
 pub mod masks;
 pub mod publications;

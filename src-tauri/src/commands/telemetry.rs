@@ -77,6 +77,9 @@ pub async fn set_active_events(
     let label = window.label();
 
     state.service.masks.register(label, mask);
+    // Its counters start with its first registration and are dropped with the
+    // window; re-registering on a layout change must not restart them.
+    lock_or_recover(&state.service.delivery).ensure(label);
 
     debug!("Active events mask for {label} updated to: {mask:#b}");
 
@@ -95,6 +98,7 @@ pub async fn set_remote_active_events(
     mask: u32,
 ) -> Result<(), String> {
     state.service.masks.register(REMOTE_LABEL, mask);
+    lock_or_recover(&state.service.delivery).ensure(REMOTE_LABEL);
 
     debug!("Active events mask for {REMOTE_LABEL} updated to: {mask:#b}");
 
