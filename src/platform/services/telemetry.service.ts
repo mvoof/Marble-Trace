@@ -44,6 +44,30 @@ export const setRemoteActiveEventsSilent = (mask: number): void => {
 };
 
 /**
+ * Takes the calling window out of the registry altogether.
+ *
+ * Not the same as a mask of `0`: that still names a recipient the ungated part
+ * of the bundle is delivered to. A window nobody can see — minimized, or with
+ * every widget hidden — should be sent nothing at all, and registers again on
+ * the way back.
+ */
+export const clearActiveEventsSilent = (): void => {
+  invoke('clear_active_events').catch((error) =>
+    console.error('[telemetry.service] clear_active_events failed:', error)
+  );
+};
+
+/** The remote screens' counterpart of {@link clearActiveEventsSilent}. */
+export const clearRemoteActiveEventsSilent = (): void => {
+  invoke('clear_remote_active_events').catch((error) =>
+    console.error(
+      '[telemetry.service] clear_remote_active_events failed:',
+      error
+    )
+  );
+};
+
+/**
  * Opens and closes the telemetry inspector's feed.
  *
  * The inspector pulls rather than subscribing: the settings window was

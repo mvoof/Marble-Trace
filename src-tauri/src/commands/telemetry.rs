@@ -105,6 +105,38 @@ pub async fn set_remote_active_events(
     Ok(())
 }
 
+/// Removes the calling window from the registry entirely.
+///
+/// A mask of `0` is not the same thing: it still describes a recipient that is
+/// being delivered the ungated part of the bundle. A window nobody can see —
+/// minimized, or with every widget hidden — should receive nothing at all, so
+/// it takes its entry away and puts it back on the way in.
+#[tauri::command]
+pub async fn clear_active_events(
+    window: Window,
+    state: State<'_, TelemetryState>,
+) -> Result<(), String> {
+    let label = window.label();
+
+    state.service.masks.drop_label(label);
+    lock_or_recover(&state.service.delivery).drop_label(label);
+
+    debug!("Active events cleared for {label}");
+
+    Ok(())
+}
+
+/// The remote screens' counterpart of `clear_active_events`.
+#[tauri::command]
+pub async fn clear_remote_active_events(state: State<'_, TelemetryState>) -> Result<(), String> {
+    state.service.masks.drop_label(REMOTE_LABEL);
+    lock_or_recover(&state.service.delivery).drop_label(REMOTE_LABEL);
+
+    debug!("Active events cleared for {REMOTE_LABEL}");
+
+    Ok(())
+}
+
 #[tauri::command]
 pub async fn set_pit_warning_laps(
     state: State<'_, TelemetryState>,

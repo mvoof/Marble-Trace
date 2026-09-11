@@ -220,6 +220,30 @@ mod tests {
         assert_eq!(registry.effective_mask(), 0);
     }
 
+    /// The visibility gate: a window that is minimized (or has every widget
+    /// hidden) drops out of the registry and registers again on the way back,
+    /// leaving the union exactly where it was. A mask of `0` would not do —
+    /// that still names a recipient the ungated bundle is delivered to.
+    #[test]
+    fn a_gate_cycle_leaves_the_same_mask_as_before() {
+        let registry = MaskRegistry::default();
+
+        registry.register("overlay-left", EVENT_CAR_DYNAMICS);
+        registry.register("overlay-right", EVENT_PROXIMITY);
+
+        let before = registry.effective_mask();
+
+        registry.drop_label("overlay-left");
+
+        assert_eq!(registry.effective_mask(), EVENT_PROXIMITY);
+        assert_eq!(registry.entries().len(), 1);
+
+        registry.register("overlay-left", EVENT_CAR_DYNAMICS);
+
+        assert_eq!(registry.effective_mask(), before);
+        assert_eq!(registry.entries().len(), 2);
+    }
+
     /// `monitorLabel` slugs a monitor name to `overlay-` plus alphanumerics,
     /// `-` and `_`. Whatever the OS calls a screen, it cannot come out as the
     /// pseudo-label the remote screens are registered under.

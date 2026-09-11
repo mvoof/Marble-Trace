@@ -9,6 +9,8 @@ import { listenTo, type UnlistenFn } from '@platform/services/events.service';
 import { maskOfWidgets } from '@store/sim/telemetry-mask';
 
 import {
+  clearActiveEventsSilent,
+  clearRemoteActiveEventsSilent,
   getConnectionStatus,
   getLastSessionInfo,
   setActiveEventsSilent,
@@ -16,6 +18,10 @@ import {
   startTelemetryStream,
   stopTelemetryStream,
 } from '@platform/services/telemetry.service';
+import {
+  watchMinimized,
+  type StopWatching,
+} from '@platform/services/window-visibility.service';
 import {
   deleteReferenceLap,
   getCachedTrackShape,
@@ -74,6 +80,13 @@ export class SimStore {
 
   /** Condition the currently loaded reference lap was asked for. */
   private referenceCondition: TrackCondition | null = null;
+  /**
+   * True while this window is minimized — one of the three states that take it
+   * out of the mask registry entirely. Watched only in the overlay windows.
+   */
+  private isMinimized = false;
+  private stopWatchingMinimized: StopWatching | null = null;
+  private isDisposed = false;
   private initId = 0;
   private unlistens: UnlistenFn[] = [];
   private readonly disposers: IReactionDisposer[] = [];
@@ -95,12 +108,27 @@ export class SimStore {
             widgets: this.root.liveWidgets.liveOwnMonitorWidgets.map(
               (widget) => widget.id
             ),
-            hideAll: this.root.appSettings.appSettings.hideAllWidgets,
+            gateClosed: this.ownGateClosed,
           }),
           () => this.updateOwnActiveEvents(),
           { fireImmediately: true, equals: comparer.structural }
         )
       );
+
+      void watchMinimized((minimized) =>
+        runInAction(() => {
+          this.isMinimized = minimized;
+        })
+      ).then((stop) => {
+        // The store can be disposed before the listener is in place.
+        if (this.isDisposed) {
+          stop();
+
+          return;
+        }
+
+        this.stopWatchingMinimized = stop;
+      });
     } else {
       this.disposers.push(
         reaction(
@@ -111,7 +139,7 @@ export class SimStore {
                 enabled: widget.userSettings.enabled,
               })
             ),
-            hideAll: this.root.appSettings.appSettings.hideAllWidgets,
+            gateClosed: this.remoteGateClosed,
           }),
           () => this.updateRemoteActiveEvents(),
           { fireImmediately: true, equals: comparer.structural }
@@ -182,6 +210,9 @@ export class SimStore {
     }
 
     this.disposers.length = 0;
+    this.isDisposed = true;
+    this.stopWatchingMinimized?.();
+    this.stopWatchingMinimized = null;
     this.disposeListeners();
   }
 
@@ -210,17 +241,57 @@ export class SimStore {
   }
 
   /**
+   * Whether the app is showing no widgets anywhere — the part of the visibility
+   * gate every recipient shares.
+   *
+   * A recipient behind a closed gate is removed from the registry rather than
+   * registered with a mask of `0`: a `0` still names a recipient the ungated
+   * bundle is delivered to, and the point is to be sent nothing at all.
+   *
+   * Loss of focus is deliberately absent: an overlay is unfocused for the whole
+   * session, and gating on it would blank every widget exactly when it matters.
+   */
+  private get everyWidgetHidden(): boolean {
+    const settings = this.root.appSettings.appSettings;
+
+    if (settings.hideAllWidgets) {
+      return true;
+    }
+
+    // Drag mode paints the widgets whatever the sim is doing, so the driver can
+    // place them with the game closed — it must keep its telemetry.
+    return (
+      settings.hideWidgetsWhenGameClosed &&
+      this.status !== 'connected' &&
+      !this.root.appSettings.dragMode
+    );
+  }
+
+  /** The shared gate plus the one state that belongs to a window: minimized. */
+  private get ownGateClosed(): boolean {
+    return this.isMinimized || this.everyWidgetHidden;
+  }
+
+  /**
+   * The shared gate alone: main's own window being minimized says nothing about
+   * a tablet on the LAN.
+   */
+  private get remoteGateClosed(): boolean {
+    return this.everyWidgetHidden;
+  }
+
+  /**
    * Registers this window's own appetite for the gated bundle fields.
    *
    * The mask is the union of what the enabled widgets **on this window's
    * monitor** declare in their manifests — the same set the canvas draws — so a
    * widget states its appetite next to itself and the window that renders it is
-   * the one that asks for it. Hiding everything asks for nothing at all; mask
-   * `0` is not silence, the slow tiers keep arriving.
+   * the one that asks for it. A window showing nothing leaves the registry
+   * altogether, so even the ungated tiers stop arriving.
    */
   private updateOwnActiveEvents() {
-    if (this.root.appSettings.appSettings.hideAllWidgets) {
-      setActiveEventsSilent(0);
+    if (this.ownGateClosed) {
+      clearActiveEventsSilent();
 
       return;
     }
@@ -236,8 +307,8 @@ export class SimStore {
    * reserved pseudo-label.
    */
   private updateRemoteActiveEvents() {
-    if (this.root.appSettings.appSettings.hideAllWidgets) {
-      setRemoteActiveEventsSilent(0);
+    if (this.remoteGateClosed) {
+      clearRemoteActiveEventsSilent();
 
       return;
     }
