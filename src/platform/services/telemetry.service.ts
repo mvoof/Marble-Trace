@@ -1,6 +1,10 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type { SessionSnapshot, SourceFrame } from '@/types/bindings';
+import type {
+  DeliverySet,
+  SessionSnapshot,
+  SourceFrame,
+} from '@/types/bindings';
 
 export const startTelemetryStream = async (): Promise<void> =>
   invoke('start_telemetry_stream');
@@ -38,3 +42,17 @@ export const setInspectorActive = async (active: boolean): Promise<void> =>
  */
 export const getInspectorFrame = async (): Promise<SourceFrame | null> =>
   invoke('get_inspector_frame');
+
+/**
+ * Per recipient, how many bundles went out and how many of them carried each
+ * demand-gated field, over the span the counters have been running.
+ *
+ * Read on the inspector's own poll rather than pushed: a window asking what it
+ * receives must not start receiving more in order to ask.
+ */
+export const getDeliveryCounters = async (): Promise<DeliverySet[]> =>
+  invoke('get_delivery_counters');
+
+/** Restarts every recipient's counters, giving a measurement run a defined start. */
+export const resetDeliveryCounters = async (): Promise<void> =>
+  invoke('reset_delivery_counters');

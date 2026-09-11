@@ -386,7 +386,19 @@
       "waitingSession": "Esperando datos de sesión…",
       "showAll": "Mostrar los {{count}} restantes",
       "collapseRow": "Contraer",
-      "expandRow": "Expandir"
+      "expandRow": "Expandir",
+      "delivery": {
+        "title": "Contadores de entrega",
+        "description": "Cuántos paquetes recibió realmente cada destinatario y cuántos de ellos llevaban cada campo servido bajo demanda.",
+        "reset": "Reiniciar contadores",
+        "waiting": "Todavía no se ha entregado nada.",
+        "field": "Campo",
+        "bundles": "Paquetes",
+        "rate": "Frecuencia",
+        "bundlesLabel": "paquetes",
+        "spanLabel": "en",
+        "seconds": "{{seconds}} s"
+      }
     },
     "developerTools": {
       "title": "Herramientas de desarrollo",

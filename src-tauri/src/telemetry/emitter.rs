@@ -9,6 +9,7 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager};
 use tracing::warn;
 
+use super::delivery::BROADCAST_LABEL;
 use super::quantize;
 use super::scheduler::DueGroups;
 use super::state::{
@@ -330,21 +331,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     // the mask gates publication, never computation, so a widget switched on
     // mid-race finds the driver table, the gaps and the history intact
     // instead of rebuilding them from the tick it became visible.
-    if (active_mask & EVENT_DRIVER_ENTRIES) == 0 {
-        bundle.driver_entries = None;
-    }
-
-    if (active_mask & EVENT_RELATIVE) == 0 {
-        bundle.relative = None;
-    }
-
-    if (active_mask & EVENT_PROXIMITY) == 0 {
-        bundle.proximity = None;
-    }
-
-    if (active_mask & EVENT_INCIDENTS) == 0 {
-        bundle.incidents = None;
-    }
+    apply_event_mask(&mut bundle, active_mask);
 
     // Round to what a widget can actually draw, then drop whatever is identical
     // to the last thing published. Order matters both ways: rounding before the
@@ -360,9 +347,54 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     let should_emit = active_mask != 0 || due.first || due.hz10 || due.hz4 || due.hz1;
 
     if should_emit {
+        // Counted here rather than at assembly: what the counters answer is
+        // what went on the wire, after the mask and after the repeat
+        // suppression have both had their say.
+        lock_or_recover(&ctx.service.delivery).record(BROADCAST_LABEL, &bundle);
+
         if let Err(e) = app.emit(EVENT_TELEMETRY_BUNDLE, &bundle) {
             warn!("Failed to emit telemetry bundle: {}", e);
         }
+    }
+}
+
+/// Removes from `bundle` every demand-gated field the mask does not ask for.
+///
+/// The four 60 Hz fields are already left out at assembly, so for them this is
+/// a no-op; stating all seven in one place is what makes the function a
+/// complete answer to *what may this bundle carry*, which is what the delivery
+/// counters are compared against.
+pub fn apply_event_mask(bundle: &mut TelemetryBundle, active_mask: u32) {
+    if (active_mask & EVENT_CAR_DYNAMICS) == 0 {
+        bundle.car_dynamics = None;
+    }
+
+    if (active_mask & EVENT_CAR_INPUTS) == 0 {
+        bundle.car_inputs = None;
+    }
+
+    if (active_mask & EVENT_CAR_POSITIONS) == 0 {
+        bundle.car_positions = None;
+    }
+
+    if (active_mask & EVENT_LAP_DELTA) == 0 {
+        bundle.lap_delta = None;
+    }
+
+    if (active_mask & EVENT_DRIVER_ENTRIES) == 0 {
+        bundle.driver_entries = None;
+    }
+
+    if (active_mask & EVENT_RELATIVE) == 0 {
+        bundle.relative = None;
+    }
+
+    if (active_mask & EVENT_PROXIMITY) == 0 {
+        bundle.proximity = None;
+    }
+
+    if (active_mask & EVENT_INCIDENTS) == 0 {
+        bundle.incidents = None;
     }
 }
 

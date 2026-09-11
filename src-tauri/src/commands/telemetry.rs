@@ -12,6 +12,7 @@ use tracing::{debug, info};
 use crate::model::defaults::MAX_FUEL_AVG_WINDOW;
 use crate::model::session::SessionSnapshot;
 use crate::sources::source::SourceFrame;
+use crate::telemetry::delivery::DeliverySet;
 use crate::telemetry::runtime::spawn_telemetry_thread;
 use crate::telemetry::state::TelemetryState;
 use crate::utils::lock_or_recover;
@@ -155,4 +156,26 @@ pub async fn get_inspector_frame(
     state: State<'_, TelemetryState>,
 ) -> Result<Option<SourceFrame>, String> {
     Ok(lock_or_recover(&state.service.inspector_frame).clone())
+}
+
+/// The delivery counters: per recipient, how many bundles went out and how many
+/// of them carried each demand-gated field, over a stated wall-clock span.
+///
+/// Polled by the telemetry inspector on the same 4 Hz it polls the frame with,
+/// and for the same reason: the settings window answers this with a command
+/// instead of subscribing to the traffic it is asking about.
+#[tauri::command]
+pub async fn get_delivery_counters(
+    state: State<'_, TelemetryState>,
+) -> Result<Vec<DeliverySet>, String> {
+    Ok(lock_or_recover(&state.service.delivery).snapshot())
+}
+
+/// Restarts every recipient's counters, giving a measurement run a defined
+/// start. The recipients themselves are left registered.
+#[tauri::command]
+pub async fn reset_delivery_counters(state: State<'_, TelemetryState>) -> Result<(), String> {
+    lock_or_recover(&state.service.delivery).reset();
+
+    Ok(())
 }

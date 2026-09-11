@@ -22,11 +22,11 @@ use chat::state::{ChatServiceState, ChatState};
 use commands::{
     backup_settings_file, close_companion_app, close_companion_apps, companion_app_icon,
     companion_app_statuses, delete_reference_lap, delete_settings_file, delete_track_shape,
-    detect_companion_apps, get_cached_track_shape, get_connection_status, get_inspector_frame,
-    get_last_session_info, get_reference_lap, launch_companion_app, log_settings_snapshot,
-    reset_pit_lane_pct, send_pit_order, set_active_events, set_car_length, set_fuel_avg_window,
-    set_inspector_active, set_pit_warning_laps, settings_file_exists, start_telemetry_stream,
-    stop_telemetry_stream,
+    detect_companion_apps, get_cached_track_shape, get_connection_status, get_delivery_counters,
+    get_inspector_frame, get_last_session_info, get_reference_lap, launch_companion_app,
+    log_settings_snapshot, reset_delivery_counters, reset_pit_lane_pct, send_pit_order,
+    set_active_events, set_car_length, set_fuel_avg_window, set_inspector_active,
+    set_pit_warning_laps, settings_file_exists, start_telemetry_stream, stop_telemetry_stream,
 };
 use companions::CompanionsState;
 use computations::ProcessorRegistry;
@@ -36,6 +36,7 @@ use remote::commands::{
     get_remote_devices, get_remote_server_info, publish_remote_control, publish_remote_snapshot,
     remote_screen_url, start_remote_server, stop_remote_server, RemoteState,
 };
+use telemetry::delivery::DeliveryCounters;
 use telemetry::state::TelemetryState;
 
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32};
@@ -171,6 +172,8 @@ pub fn run() {
             set_active_events,
             set_inspector_active,
             get_inspector_frame,
+            get_delivery_counters,
+            reset_delivery_counters,
             set_car_length,
             get_connection_status,
             delete_track_shape,
@@ -218,6 +221,7 @@ pub fn run() {
                 publications: Default::default(),
                 inspector_active: AtomicBool::new(false),
                 car_class_count: AtomicU32::new(0),
+                delivery: Mutex::new(DeliveryCounters::with_broadcast()),
                 inspector_frame: Mutex::new(None),
                 car_length_m: Mutex::new(model::defaults::DEFAULT_CAR_LENGTH_M),
                 track_cached: track_cached_service,

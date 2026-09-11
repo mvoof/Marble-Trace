@@ -386,7 +386,19 @@
       "waitingSession": "Waiting for session data…",
       "showAll": "Show the remaining {{count}}",
       "collapseRow": "Collapse",
-      "expandRow": "Expand"
+      "expandRow": "Expand",
+      "delivery": {
+        "title": "Delivery counters",
+        "description": "How many bundles each recipient actually received, and how many of those carried each demand-gated field. The rate is what the per-window mask work is measured against — a widget's declaration says what was asked for, this says what went on the wire.",
+        "reset": "Reset counters",
+        "waiting": "Nothing delivered yet.",
+        "field": "Field",
+        "bundles": "Bundles",
+        "rate": "Rate",
+        "bundlesLabel": "bundles",
+        "spanLabel": "over",
+        "seconds": "{{seconds}} s"
+      }
     },
     "developerTools": {
       "title": "Developer Tools",

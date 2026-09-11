@@ -2,10 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const setInspectorActive = vi.fn(async (_active: boolean) => undefined);
 const getInspectorFrame = vi.fn(async () => null as unknown);
+const getDeliveryCounters = vi.fn(async () => [] as unknown);
+const resetDeliveryCounters = vi.fn(async () => undefined);
 
 vi.mock('@platform/services/telemetry.service', () => ({
   setInspectorActive: (active: boolean) => setInspectorActive(active),
   getInspectorFrame: () => getInspectorFrame(),
+  getDeliveryCounters: () => getDeliveryCounters(),
+  resetDeliveryCounters: () => resetDeliveryCounters(),
 }));
 
 const { TelemetryInspectorStore } = await import('./telemetry-inspector.store');
@@ -27,6 +31,9 @@ describe('TelemetryInspectorStore', () => {
     setInspectorActive.mockClear();
     getInspectorFrame.mockClear();
     getInspectorFrame.mockResolvedValue(null);
+    getDeliveryCounters.mockClear();
+    resetDeliveryCounters.mockClear();
+    getDeliveryCounters.mockResolvedValue([]);
   });
 
   // The whole reason this store pulls instead of subscribing: the settings
@@ -176,5 +183,49 @@ describe('TelemetryInspectorStore', () => {
 
     expect(store.source).toBe('session');
     expect(store.running).toBe(false);
+  });
+
+  // The counters are read as a rate, not as a total: "this window took
+  // carPositions 60 times a second" is the claim tickets 02-04 are checked
+  // against, and a total alone cannot say it.
+  it('derives an effective rate per label and per field', async () => {
+    getDeliveryCounters.mockResolvedValue([
+      {
+        label: 'broadcast',
+        elapsedMs: 2000,
+        bundles: 120,
+        fields: [
+          { field: 'carPositions', bundles: 120 },
+          { field: 'proximity', bundles: 0 },
+        ],
+      },
+    ]);
+
+    const store = makeStore();
+    await store.refreshDeliveryCounters();
+
+    const [row] = store.deliveryRows;
+
+    expect(row.label).toBe('broadcast');
+    expect(row.hz).toBeCloseTo(60);
+    expect(row.fields[0]).toEqual({
+      field: 'carPositions',
+      bundles: 120,
+      hz: 60,
+    });
+    expect(row.fields[1].hz).toBe(0);
+  });
+
+  // A set whose span is zero has not measured anything yet; dividing by it
+  // would report an infinite rate on the first poll after a reset.
+  it('reports no rate for a span that has not started', async () => {
+    getDeliveryCounters.mockResolvedValue([
+      { label: 'broadcast', elapsedMs: 0, bundles: 0, fields: [] },
+    ]);
+
+    const store = makeStore();
+    await store.refreshDeliveryCounters();
+
+    expect(store.deliveryRows[0].hz).toBe(0);
   });
 });

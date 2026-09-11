@@ -8,6 +8,7 @@ use crate::computations::ProcessorRegistry;
 use crate::model::reference_lap::StoredReferenceTimes;
 use crate::model::session::SessionSnapshot;
 use crate::sources::source::SourceFrame;
+use crate::telemetry::delivery::DeliveryCounters;
 use crate::telemetry::publications::Publications;
 
 /// User-configured fuel parameters, written by commands and read once per tick
@@ -87,6 +88,10 @@ pub struct TelemetryServiceState {
     /// to know how far the standings class cycle wraps without taking the
     /// per-car frame itself.
     pub car_class_count: AtomicU32,
+    /// How many bundles each recipient received, and how many of those carried
+    /// each demand-gated field. The instrument the per-window mask work is
+    /// measured with; see `telemetry::delivery`.
+    pub delivery: Mutex<DeliveryCounters>,
 }
 
 /// Bitmask flags for high-frequency events.
