@@ -1,0 +1,59 @@
+name: Announce Release on Discord
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag to announce (e.g. v0.23.0).'
+        required: true
+        type: string
+      dry_run:
+        description: 'Print the payload instead of posting it.'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  announce:
+    name: Post Changelog Summary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve Release URL
+        id: release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_URL: ${{ github.event.release.html_url }}
+          EVENT_PRERELEASE: ${{ github.event.release.prerelease }}
+          INPUT_TAG: ${{ inputs.tag_name }}
+        run: |
+          if [ -n "$EVENT_URL" ]; then
+            echo "url=$EVENT_URL" >> $GITHUB_OUTPUT
+            echo "prerelease=$EVENT_PRERELEASE" >> $GITHUB_OUTPUT
+          else
+            echo "url=$(gh release view "$INPUT_TAG" --json url --jq .url)" >> $GITHUB_OUTPUT
+            echo "prerelease=$(gh release view "$INPUT_TAG" --json isPrerelease --jq .isPrerelease)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Announce
+        shell: bash
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name || inputs.tag_name }}
+          RELEASE_URL: ${{ steps.release.outputs.url }}
+          IS_PRERELEASE: ${{ steps.release.outputs.prerelease }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+        run: node scripts/discord-release-announce.mjs
