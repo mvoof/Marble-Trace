@@ -6,7 +6,7 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 import { listenTo, type UnlistenFn } from '@platform/services/events.service';
-import { widgetTypeOf } from '@utils/widget-instance';
+import { maskOfWidgets } from '@store/sim/telemetry-mask';
 
 import {
   getConnectionStatus,
@@ -42,13 +42,7 @@ import {
   trackConditionForWetness,
 } from '@store/sim/track-condition';
 import type { TelemetryStatus } from '@/types';
-import {
-  telemetryEventsToMask,
-  type TelemetryEventName,
-} from '@/types/telemetry-events';
-import { WIDGET_BY_ID } from '@store/widget-catalog';
 import type { RootStore } from '@store/root-store';
-import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import {
   SIM_TELEMETRY_BUNDLE,
   SIM_SESSION,
@@ -70,27 +64,6 @@ import {
 const drawsWidgets = () =>
   typeof window !== 'undefined' && window.location.hash.includes('overlay');
 
-/**
- * The mask a set of widgets asks for: the union of the `telemetryEvents` every
- * enabled one of them declares in its manifest. A widget states its appetite
- * next to itself, so nothing here has to be kept in step with it.
- */
-const maskOfWidgets = (widgets: WidgetDefaultConfig[]): number => {
-  const requested = new Set<TelemetryEventName>();
-
-  for (const widget of widgets) {
-    if (!widget.userSettings.enabled) continue;
-
-    const manifest = WIDGET_BY_ID.get(widgetTypeOf(widget));
-
-    for (const event of manifest?.telemetryEvents ?? []) {
-      requested.add(event);
-    }
-  }
-
-  return telemetryEventsToMask(requested);
-};
-
 export class SimStore {
   isConnected = false;
   status: TelemetryStatus = 'waiting';
@@ -110,24 +83,38 @@ export class SimStore {
   }
 
   init() {
-    if (!drawsWidgets()) {
+    if (drawsWidgets()) {
       this.disposers.push(
         reaction(
           () => ({
-            // What is on screen, not what the editor has open — same source
-            // updateActiveEvents itself reads. Tracking allWidgets (the
-            // editing layout) here left the mask stuck on whatever layout was
-            // live when the editor opened: the live layout could change out
-            // from under it (a session auto-switch while editing another
-            // layout) with nothing to trigger a recompute.
-            widgets: this.root.liveWidgets.liveWidgets.map((w) => ({
-              id: w.id,
-              enabled: w.userSettings.enabled,
-            })),
+            // What is on screen, not what the editor has open: the editor lives
+            // in main and its preview draws against seeded scenarios, so it
+            // must contribute nothing. Reading the live layout is also what
+            // keeps a session auto-switch moving this window's appetite while
+            // the editor holds another layout open.
+            widgets: this.root.liveWidgets.liveOwnMonitorWidgets.map(
+              (widget) => widget.id
+            ),
             hideAll: this.root.appSettings.appSettings.hideAllWidgets,
           }),
-          () => this.updateActiveEvents(),
-          { fireImmediately: true }
+          () => this.updateOwnActiveEvents(),
+          { fireImmediately: true, equals: comparer.structural }
+        )
+      );
+    } else {
+      this.disposers.push(
+        reaction(
+          () => ({
+            widgets: this.root.liveWidgets.liveRemoteScreenWidgets.map(
+              (widget) => ({
+                id: widget.id,
+                enabled: widget.userSettings.enabled,
+              })
+            ),
+            hideAll: this.root.appSettings.appSettings.hideAllWidgets,
+          }),
+          () => this.updateRemoteActiveEvents(),
+          { fireImmediately: true, equals: comparer.structural }
         )
       );
     }
@@ -223,28 +210,38 @@ export class SimStore {
   }
 
   /**
-   * Rebuilds the mask of high-frequency bundle fields the backend has to fill.
+   * Registers this window's own appetite for the gated bundle fields.
    *
-   * The answer comes from the manifests: every enabled widget of the active
-   * layout contributes its own `telemetryEvents`, so a widget declares its
-   * appetite next to itself and nothing here has to be kept in step with it.
-   * Hiding everything asks for nothing at all.
+   * The mask is the union of what the enabled widgets **on this window's
+   * monitor** declare in their manifests — the same set the canvas draws — so a
+   * widget states its appetite next to itself and the window that renders it is
+   * the one that asks for it. Hiding everything asks for nothing at all; mask
+   * `0` is not silence, the slow tiers keep arriving.
    */
-  private updateActiveEvents() {
-    const hideAll = this.root.appSettings.appSettings.hideAllWidgets;
-
-    if (hideAll) {
+  private updateOwnActiveEvents() {
+    if (this.root.appSettings.appSettings.hideAllWidgets) {
       setActiveEventsSilent(0);
+
+      return;
+    }
+
+    setActiveEventsSilent(
+      maskOfWidgets(this.root.liveWidgets.liveOwnMonitorWidgets)
+    );
+  }
+
+  /**
+   * The remote screens have no window of their own to register for them, and
+   * main owns remote publishing — so main registers their mask under the
+   * reserved pseudo-label.
+   */
+  private updateRemoteActiveEvents() {
+    if (this.root.appSettings.appSettings.hideAllWidgets) {
       setRemoteActiveEventsSilent(0);
 
       return;
     }
 
-    // What is on screen, not what the editor has open: the editor's preview
-    // draws against seeded scenarios and needs no telemetry of its own.
-    setActiveEventsSilent(maskOfWidgets(this.root.liveWidgets.liveWidgets));
-
-    // The remote screens have no window to register for them, so main does it.
     setRemoteActiveEventsSilent(
       maskOfWidgets(this.root.liveWidgets.liveRemoteScreenWidgets)
     );

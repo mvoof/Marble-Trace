@@ -896,6 +896,28 @@ export class LiveWidgetsStore implements WidgetMap {
     return widgetsOnMonitor(this.enabledWidgets, monitorName, monitors);
   }
 
+  /**
+   * The widgets this overlay window actually draws, of the layout on screen.
+   *
+   * `ownMonitorWidgets` answers the same question for the layout under the
+   * editor's cursor, which is what the canvas wants while a preview is open.
+   * The telemetry mask is about what is being rendered for the driver, so it
+   * reads the live layout: a session auto-switch has to move the appetite with
+   * it even while the editor holds another layout open.
+   */
+  get liveOwnMonitorWidgets(): WidgetDefaultConfig[] {
+    const monitorName = this.ownMonitorName;
+    const monitors = this.layoutRecords.liveLayout?.monitors ?? [];
+
+    if (!monitorName || monitors.length === 0) return [];
+
+    const enabled = this.liveWidgets.filter(
+      (widget) => widget.userSettings.enabled
+    );
+
+    return widgetsOnMonitor(enabled, monitorName, monitors);
+  }
+
   get enabledWidgets(): WidgetDefaultConfig[] {
     return this.allWidgets.filter((widget) => widget.userSettings.enabled);
   }
