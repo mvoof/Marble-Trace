@@ -1,0 +1,620 @@
+/* ==========================================================================
+   Base & Content Styles
+   ========================================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-height) + 16px);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-body-bg);
+  color: var(--color-body-text);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+body.mobile-menu-open {
+  overflow: hidden;
+}
+
+/* Accessibility: Focus styles */
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+/* Standard Content Container (1280px standard) */
+.container {
+  max-width: var(--container-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+  width: 100%;
+}
+
+/* ==========================================================================
+   Hero Block (Matches Screenshot 2026-09-11 202506.png)
+   With progressive leftward blur effect from Screenshot 2026-09-11 195640.png
+   ========================================================================== */
+
+.hero-block {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  background-color: var(--color-header-bg);
+  padding-top: calc(var(--header-height) + 1.25rem);
+  padding-bottom: 2.5rem;
+  overflow: hidden;
+}
+
+.hero-container {
+  position: relative;
+  z-index: 10;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 var(--container-padding);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 600px;
+}
+
+.hero-kicker {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4a525d;
+  margin-bottom: 1.25rem;
+}
+
+.hero-heading {
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(3.2rem, 6.2vw, 5.2rem);
+  line-height: 0.9;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  color: #101317;
+  margin-bottom: 1.25rem;
+}
+
+.hero-subtitle {
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: 1.05rem;
+  color: #4b5563;
+  line-height: 1.55;
+  max-width: 480px;
+  margin-bottom: 2.25rem;
+}
+
+/* Hero Action Buttons */
+.hero-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2.75rem;
+}
+
+.btn-hero-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #14171d;
+  color: #ffffff;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.72rem 1.05rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-hero-dark svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.btn-hero-dark:hover {
+  background-color: #242933;
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+}
+
+.btn-hero-dark:hover .btn-arrow {
+  transform: translateX(3px);
+}
+
+.btn-hero-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(245, 246, 242, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #1f242d;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.72rem 0.95rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-hero-light svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.btn-hero-light .star-gold {
+  color: #eab308;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.btn-hero-light:hover {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.22);
+  color: #000000;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* Feature Badges Row */
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.6rem;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4b5563;
+  user-select: none;
+}
+
+/* ==========================================================================
+   Hero Visual — one uncut photograph with slanted washes
+   The picture is never clipped. What reads as a cut is a wash that deepens
+   along a slanted axis: on the left it dissolves into the page ground, and a
+   near-vertical cut parallel to it peels a light strip off the right edge.
+   Crisp hairlines mark every boundary.
+   ========================================================================== */
+
+/* The frame pins the picture to the container box: its right edge sits on the
+   container's inner right edge, so the photo never runs into the page gutter,
+   while top/bottom stretch over the full height of the hero block. */
+.hero-visual-frame {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: var(--container-width);
+  padding: 0 var(--container-padding);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.hero-visual {
+  /* --slant: horizontal travel of a cut over the full height.
+     --lead: x of the leading hairline at the top of the frame.
+     --trail: x of the second, fainter hairline deeper into the wash.
+     --wash-angle: the gradient axis, perpendicular to the cuts.
+     --edge: x of the right-hand cut at the top of the frame.
+     --edge-slant: its horizontal travel, parallel to the left cuts. */
+  --slant: 22%;
+  --lead: 30%;
+  --trail: 20%;
+  --wash-angle: 124deg;
+  --edge: 95%;
+  --edge-slant: 4%;
+
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Bleeds to the viewport edge: an inset here reads as an empty strip
+     running down the right of the page. */
+  right: 0;
+  /* Reaches back under the copy column so the wash meets the text */
+  left: 26%;
+  z-index: 5;
+  overflow: hidden;
+  user-select: none;
+  /* Softens the straight left border the wash alone cannot reach at the bottom */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 90px);
+  mask-image: linear-gradient(to right, transparent 0, black 90px);
+}
+
+.hero-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 68% 42%;
+  display: block;
+}
+
+
+/* The blurred side dissolves into the hero ground along the same axis */
+.hero-fade-left {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    var(--wash-angle),
+    rgba(228, 228, 222, 0.96) 0%,
+    rgba(228, 228, 222, 0.94) 28%,
+    rgba(228, 228, 222, 0.84) 44%,
+    rgba(228, 228, 222, 0.5) 55%,
+    rgba(228, 228, 222, 0.18) 64%,
+    transparent 72%
+  );
+}
+
+/* Near-vertical slanted cut peeling a light strip off the right edge.
+   It runs parallel to the left-hand cuts, so every line in the hero leans the
+   same way; the strip carries the scroll cue. */
+
+/* Crisp hairlines riding the cuts */
+.cut-line {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cut-line-lead {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.4));
+  clip-path: polygon(
+    var(--lead) 0,
+    calc(var(--lead) + 2px) 0,
+    calc(var(--lead) + 2px - var(--slant)) 100%,
+    calc(var(--lead) - var(--slant)) 100%
+  );
+}
+
+.cut-line-trail {
+  background: rgba(255, 255, 255, 0.55);
+  clip-path: polygon(
+    var(--trail) 0,
+    calc(var(--trail) + 1px) 0,
+    calc(var(--trail) + 1px - var(--slant)) 100%,
+    calc(var(--trail) - var(--slant)) 100%
+  );
+}
+
+.cut-line-edge {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.5));
+  clip-path: polygon(
+    var(--edge) 0,
+    calc(var(--edge) + 2px) 0,
+    calc(var(--edge) + 2px - var(--edge-slant)) 100%,
+    calc(var(--edge) - var(--edge-slant)) 100%
+  );
+}
+
+/* Vertical Scroll Indicator in Cut Corner */
+.hero-scroll-indicator {
+  position: absolute;
+  right: 26px;
+  bottom: 22px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  user-select: none;
+}
+
+.hero-scroll-text {
+  writing-mode: vertical-rl;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #374151;
+}
+
+.hero-scroll-arrow {
+  width: 14px;
+  height: 14px;
+  color: #374151;
+  animation: scroll-bounce-down 2s infinite ease-in-out;
+}
+
+@keyframes scroll-bounce-down {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+/* ==========================================================================
+   Stats Bar
+   ========================================================================== */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 800px;
+}
+
+.stat-item h3 {
+  font-size: 2rem;
+  font-weight: 900;
+  font-style: italic;
+  color: #ffffff;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+
+.stat-item p {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   Content Sections (Targets for menu links)
+   ========================================================================== */
+
+.section {
+  padding: 6rem 0;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.section-alt {
+  background-color: #ffffff;
+}
+
+.section-header {
+  margin-bottom: 3.5rem;
+}
+
+.section-tag {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #65a30d;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--color-brand);
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: #64748b;
+  max-width: 620px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.75rem;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.section-alt .card {
+  background: var(--color-body-bg);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+}
+
+.card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(158, 195, 106, 0.2);
+  color: #4d7c0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+  color: var(--color-brand);
+}
+
+.card-desc {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.site-footer {
+  background: #0f1216;
+  color: #9ca3af;
+  padding: 4rem 0 2.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-brand .brand-name {
+  color: #ffffff;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.footer-link {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.footer-link:hover {
+  color: #ffffff;
+}
+
+.footer-bottom {
+  padding-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  gap: 1rem;
+}
+
+/* ==========================================================================
+   Responsive Adaptations for Hero Block
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .hero-block {
+    min-height: auto;
+    padding-top: calc(var(--header-height) + 2rem);
+    padding-bottom: 3.5rem;
+  }
+
+  .hero-container {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+  /* Narrow screens: the photo drops behind the copy instead of beside it */
+  .hero-visual {
+    left: 0;
+    right: 0;
+    opacity: 0.28;
+  }
+
+  .hero-visual .cut-line,
+  .hero-visual .cut-glare,
+  .hero-visual .hero-scroll-indicator {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-heading {
+    font-size: clamp(2.6rem, 11vw, 3.4rem);
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .btn-hero-dark,
+  .btn-hero-light {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-badges {
+    gap: 0.9rem 1.25rem;
+  }
+}
