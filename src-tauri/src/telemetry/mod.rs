@@ -3,17 +3,23 @@
 //! this layer only consumes normalized `model` types.
 
 pub mod capabilities;
+pub mod delivery;
+pub mod dispatch;
 pub mod emitter;
+pub mod masks;
 pub mod publications;
 pub mod quantize;
 pub mod runtime;
 pub mod scheduler;
 pub mod state;
 
-/// The two bundles this layer assembles.
+/// The two bundles this layer assembles, and the counters that say what was
+/// actually delivered of them.
 #[cfg(feature = "dev")]
 pub fn register_types(types: &mut specta::TypeCollection) {
     types
         .register::<emitter::TelemetryBundle>()
-        .register::<emitter::TelemetrySlowBundle>();
+        .register::<emitter::TelemetrySlowBundle>()
+        .register::<delivery::DeliverySet>()
+        .register::<delivery::FieldDelivery>();
 }

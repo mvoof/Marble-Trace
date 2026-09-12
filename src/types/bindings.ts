@@ -598,6 +598,20 @@ export type CompanionStatus = {
 };
 
 /**
+ * One recipient's totals over the span its counters have been running.
+ */
+export type DeliverySet = {
+  label: string;
+  /**
+   * Wall-clock span the counts cover, so a rate can be derived rather than
+   * guessed at from an assumed tick.
+   */
+  elapsedMs: number;
+  bundles: number;
+  fields: FieldDelivery[];
+};
+
+/**
  * A program the catalog scan found installed on this machine.
  */
 export type DetectedApp = {
@@ -752,6 +766,11 @@ export type EnvironmentFrame = {
    */
   weatherVersion: number | null;
 };
+
+/**
+ * How many of a label's bundles carried one field.
+ */
+export type FieldDelivery = { field: string; bundles: number };
 
 export type FuelComputedFrame = {
   avgPerLap: number | null;

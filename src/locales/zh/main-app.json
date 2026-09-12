@@ -384,7 +384,19 @@
       "waitingSession": "等待会话数据…",
       "showAll": "显示其余 {{count}} 项",
       "collapseRow": "折叠",
-      "expandRow": "展开"
+      "expandRow": "展开",
+      "delivery": {
+        "title": "交付计数器",
+        "description": "每个接收方实际收到了多少个数据包，其中有多少包含每个按需字段。",
+        "reset": "重置计数器",
+        "waiting": "尚未交付任何内容。",
+        "field": "字段",
+        "bundles": "数据包",
+        "rate": "频率",
+        "bundlesLabel": "个数据包",
+        "spanLabel": "历时",
+        "seconds": "{{seconds}} 秒"
+      }
     },
     "developerTools": {
       "title": "开发者工具",

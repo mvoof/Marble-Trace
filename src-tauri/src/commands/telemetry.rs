@@ -5,13 +5,15 @@
 use std::sync::atomic::Ordering;
 use std::time::Duration;
 
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, State, Window};
 use tokio::time::sleep;
 use tracing::{debug, info};
 
 use crate::model::defaults::MAX_FUEL_AVG_WINDOW;
 use crate::model::session::SessionSnapshot;
 use crate::sources::source::SourceFrame;
+use crate::telemetry::delivery::DeliverySet;
+use crate::telemetry::masks::REMOTE_LABEL;
 use crate::telemetry::runtime::spawn_telemetry_thread;
 use crate::telemetry::state::TelemetryState;
 use crate::utils::lock_or_recover;
@@ -60,11 +62,77 @@ pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(
     Ok(())
 }
 
+/// Records the calling window's appetite for the demand-gated bundle fields.
+///
+/// The label is taken from the caller, never from the payload: a label passed
+/// from JS goes stale across a window reload, and the window is the authority
+/// on its own identity. The entry is dropped when the window is destroyed
+/// (`WindowEvent::Destroyed` in `lib.rs`).
 #[tauri::command]
-pub async fn set_active_events(state: State<'_, TelemetryState>, mask: u32) -> Result<(), String> {
-    state.service.active_events.store(mask, Ordering::Relaxed);
+pub async fn set_active_events(
+    window: Window,
+    state: State<'_, TelemetryState>,
+    mask: u32,
+) -> Result<(), String> {
+    let label = window.label();
 
-    debug!("Active events mask updated to: {:#b}", mask);
+    state.service.masks.register(label, mask);
+    // Its counters start with its first registration and are dropped with the
+    // window; re-registering on a layout change must not restart them.
+    lock_or_recover(&state.service.delivery).ensure(label);
+
+    debug!("Active events mask for {label} updated to: {mask:#b}");
+
+    Ok(())
+}
+
+/// Records what the remote screens are asking for.
+///
+/// They have no webview of their own here — `remote/mirror.rs` taps the global
+/// event stream — so their appetite is registered under a reserved pseudo-label
+/// instead of a window's. Keeping it in the registry rather than implied by the
+/// broadcast is what lets the later move to `emit_to` be a transport swap.
+#[tauri::command]
+pub async fn set_remote_active_events(
+    state: State<'_, TelemetryState>,
+    mask: u32,
+) -> Result<(), String> {
+    state.service.masks.register(REMOTE_LABEL, mask);
+    lock_or_recover(&state.service.delivery).ensure(REMOTE_LABEL);
+
+    debug!("Active events mask for {REMOTE_LABEL} updated to: {mask:#b}");
+
+    Ok(())
+}
+
+/// Removes the calling window from the registry entirely.
+///
+/// A mask of `0` is not the same thing: it still describes a recipient that is
+/// being delivered the ungated part of the bundle. A window nobody can see —
+/// minimized, or with every widget hidden — should receive nothing at all, so
+/// it takes its entry away and puts it back on the way in.
+#[tauri::command]
+pub async fn clear_active_events(
+    window: Window,
+    state: State<'_, TelemetryState>,
+) -> Result<(), String> {
+    let label = window.label();
+
+    state.service.masks.drop_label(label);
+    lock_or_recover(&state.service.delivery).drop_label(label);
+
+    debug!("Active events cleared for {label}");
+
+    Ok(())
+}
+
+/// The remote screens' counterpart of `clear_active_events`.
+#[tauri::command]
+pub async fn clear_remote_active_events(state: State<'_, TelemetryState>) -> Result<(), String> {
+    state.service.masks.drop_label(REMOTE_LABEL);
+    lock_or_recover(&state.service.delivery).drop_label(REMOTE_LABEL);
+
+    debug!("Active events cleared for {REMOTE_LABEL}");
 
     Ok(())
 }
@@ -155,4 +223,26 @@ pub async fn get_inspector_frame(
     state: State<'_, TelemetryState>,
 ) -> Result<Option<SourceFrame>, String> {
     Ok(lock_or_recover(&state.service.inspector_frame).clone())
+}
+
+/// The delivery counters: per recipient, how many bundles went out and how many
+/// of them carried each demand-gated field, over a stated wall-clock span.
+///
+/// Polled by the telemetry inspector on the same 4 Hz it polls the frame with,
+/// and for the same reason: the settings window answers this with a command
+/// instead of subscribing to the traffic it is asking about.
+#[tauri::command]
+pub async fn get_delivery_counters(
+    state: State<'_, TelemetryState>,
+) -> Result<Vec<DeliverySet>, String> {
+    Ok(lock_or_recover(&state.service.delivery).snapshot())
+}
+
+/// Restarts every recipient's counters, giving a measurement run a defined
+/// start. The recipients themselves are left registered.
+#[tauri::command]
+pub async fn reset_delivery_counters(state: State<'_, TelemetryState>) -> Result<(), String> {
+    lock_or_recover(&state.service.delivery).reset();
+
+    Ok(())
 }
