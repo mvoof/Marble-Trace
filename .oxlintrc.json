@@ -235,6 +235,28 @@
       }
     },
     {
+      "files": ["src/store/preview/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@store/root-store-context",
+                  "**/root-store-context",
+                  "@ui/**",
+                  "@platform/**",
+                  "@tauri-apps/**"
+                ],
+                "message": "The preview store is isolated (ADR-0004 rule 1): a scenario or builder writes only into the RootStore({ skipInit: true }) handed to it. No context hooks onto the running stores, no UI, no persistence."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": ["src/platform/settings-schema/migrations/**"],
       "rules": {
         "no-restricted-imports": [
