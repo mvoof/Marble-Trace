@@ -142,6 +142,202 @@ describe('pit scenarios', () => {
   });
 });
 
+// The standings read their gap off `f2Time` and the relative off `estTime`, so
+// a field scenario is only right if both widgets end up describing the same
+// grid. The assertions are about what is in the store, never about how the
+// builder composed it.
+describe('field scenarios', () => {
+  const LONGEST_NAME_LENGTH = 31;
+
+  it('fills the grid with more cars than the snapshot recorded', () => {
+    const baseline = seed(DEFAULT_PREVIEW_SCENARIO_ID);
+    const store = seed('field-multiclass');
+    const entries = store.backendComputed.driverEntries?.entries ?? [];
+
+    expect(entries.length).toBeGreaterThan(
+      baseline.backendComputed.driverEntries?.entries.length ?? 0
+    );
+    expect(new Set(entries.map((entry) => entry.carIdx)).size).toBe(
+      entries.length
+    );
+  });
+
+  it('puts every class on the grid at once', () => {
+    const entries =
+      seed('field-multiclass').backendComputed.driverEntries?.entries ?? [];
+    const badges = new Set(entries.map((entry) => entry.carClassShortName));
+
+    expect(badges.size).toBeGreaterThan(2);
+
+    for (const entry of entries) {
+      expect(entry.carClassColor).toMatch(/^#[0-9a-f]{6}$/i);
+    }
+  });
+
+  it('carries the longest names a real field holds', () => {
+    const entries =
+      seed('field-multiclass').backendComputed.driverEntries?.entries ?? [];
+    const longest = Math.max(...entries.map((entry) => entry.userName.length));
+
+    expect(longest).toBe(LONGEST_NAME_LENGTH);
+  });
+
+  it('packs the field inside a second', () => {
+    const store = seed('field-close-pack');
+    const entries = store.backendComputed.driverEntries?.entries ?? [];
+    const gaps = entries
+      .slice(1)
+      .map((entry, index) => entry.f2Time - (entries[index]?.f2Time ?? 0));
+
+    expect(gaps.length).toBeGreaterThan(0);
+
+    for (const gap of gaps) {
+      expect(gap).toBeGreaterThan(0);
+      expect(gap).toBeLessThan(1);
+    }
+  });
+
+  it('spaces the relative from the same gap the standings show', () => {
+    const store = seed('field-close-pack');
+    const relative = store.backendComputed.relative;
+    const entries = relative?.entries ?? [];
+    const playerRow = entries.findIndex((entry) => entry.isPlayer);
+    // The row directly above the player's in the strip is the car it is
+    // actually racing, and that is the gap the close pack is about.
+    const ahead = entries[playerRow - 1];
+    const player = entries[playerRow];
+
+    expect(player).toBeDefined();
+    expect(ahead).toBeDefined();
+    expect(ahead?.relativeLapDist ?? 0).toBeGreaterThan(0);
+    expect(
+      Math.abs((ahead?.estTime ?? 0) - (player?.estTime ?? 0))
+    ).toBeLessThan(1);
+  });
+
+  it('sorts the relative by track order and the standings by position', () => {
+    const store = seed('field-multiclass');
+    const standings = store.backendComputed.driverEntries?.entries ?? [];
+    const relative = store.backendComputed.relative?.entries ?? [];
+
+    expect(standings.map((entry) => entry.position)).toEqual(
+      standings.map((_entry, index) => index + 1)
+    );
+
+    for (const [index, entry] of relative.slice(1).entries()) {
+      expect(entry.relativeLapDist).toBeLessThanOrEqual(
+        relative[index]?.relativeLapDist ?? 1
+      );
+    }
+  });
+
+  it('shows cars on pit road and stopped in the box', () => {
+    const entries =
+      seed('field-pit-states').backendComputed.driverEntries?.entries ?? [];
+    const states = new Set(entries.map((entry) => entry.pitState));
+
+    expect(states).toContain('in');
+    expect(states).toContain('stall');
+    expect(states).toContain('exit');
+
+    for (const entry of entries) {
+      if (entry.pitState !== 'none') {
+        expect(entry.onPitRoad).toBe(true);
+      }
+    }
+  });
+
+  it('keeps the typical field ordinary beside the worst case', () => {
+    const worst =
+      seed('field-multiclass').backendComputed.driverEntries?.entries ?? [];
+    const typical =
+      seed('field-typical').backendComputed.driverEntries?.entries ?? [];
+
+    expect(typical.length).toBeLessThan(worst.length);
+    expect(new Set(typical.map((entry) => entry.carClassShortName)).size).toBe(
+      1
+    );
+    expect(
+      Math.max(...typical.map((entry) => entry.userName.length))
+    ).toBeLessThan(LONGEST_NAME_LENGTH);
+  });
+
+  // A big grid spans more than a lap, so the relative strip does fold its tail
+  // back alongside the leaders — that is what a relative looks like in traffic.
+  // What must never happen is a fold with nothing marking it: a row drawn on
+  // the player's bumper while the standings report it two minutes down.
+  it('marks every car it folds back into the strip as a lap down', () => {
+    for (const scenarioId of ['field-multiclass', 'field-pit-states']) {
+      const store = seed(scenarioId);
+      const relative = store.backendComputed.relative?.entries ?? [];
+
+      expect(relative.length).toBeGreaterThan(0);
+
+      for (const [index, entry] of relative.slice(1).entries()) {
+        const previous = relative[index];
+
+        if (!previous || entry.position > previous.position) {
+          continue;
+        }
+
+        expect(
+          entry.lap,
+          `${scenarioId} folds position ${entry.position} back on the same lap`
+        ).not.toBe(previous.lap);
+      }
+    }
+  });
+
+  it('runs the leader further than the car it has lapped', () => {
+    const entries =
+      seed('field-multiclass').backendComputed.driverEntries?.entries ?? [];
+    const leader = entries[0];
+    const last = entries[entries.length - 1];
+
+    expect(leader?.lap ?? 0).toBeGreaterThan(last?.lap ?? 0);
+
+    for (const [index, entry] of entries.slice(1).entries()) {
+      expect(entry.lap).toBeLessThanOrEqual(entries[index]?.lap ?? 0);
+    }
+  });
+
+  it('gives every row a name of its own', () => {
+    const entries =
+      seed('field-multiclass').backendComputed.driverEntries?.entries ?? [];
+    const names = new Set(entries.map((entry) => entry.userName));
+
+    expect(names.size).toBe(entries.length);
+  });
+
+  it('leaves nobody in the pits but the rows it badges', () => {
+    const entries =
+      seed('field-pit-states').backendComputed.driverEntries?.entries ?? [];
+    const pitted = entries.filter((entry) => entry.onPitRoad);
+
+    expect(pitted).toHaveLength(3);
+
+    for (const entry of pitted) {
+      expect(entry.pitState).not.toBe('none');
+    }
+  });
+
+  it('keeps the player on a field it had to shrink', () => {
+    const frame = seed('field-typical').backendComputed.driverEntries;
+    const players = (frame?.entries ?? []).filter((entry) => entry.isPlayer);
+
+    expect(players).toHaveLength(1);
+    expect(players[0]?.carIdx).toBe(frame?.playerCarIdx);
+  });
+
+  it('leaves the player on the grid it rebuilt', () => {
+    const frame = seed('field-multiclass').backendComputed.driverEntries;
+    const players = (frame?.entries ?? []).filter((entry) => entry.isPlayer);
+
+    expect(players).toHaveLength(1);
+    expect(players[0]?.carIdx).toBe(frame?.playerCarIdx);
+  });
+});
+
 // The picker re-seeds the same preview store, so going back to the baseline has
 // to undo whatever the previous pick forced — the seed puts back the frames it
 // sets, and clears the ones no baseline frame covers.

@@ -60,7 +60,12 @@ const STANDINGS_DESIGN_WIDTH = computeStandingsDesignWidth(
 export const STANDINGS_MANIFEST: WidgetManifest = {
   id: 'standings',
   order: 50,
-  previewScenarios: ['table-badges'],
+  previewScenarios: [
+    'field-multiclass',
+    'field-close-pack',
+    'field-pit-states',
+    'field-typical',
+  ],
   telemetryEvents: ['driverEntries'],
   label: 'Standings',
   description: 'Live session standings and intervals.',
