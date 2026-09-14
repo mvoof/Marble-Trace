@@ -280,6 +280,7 @@ impl From<&IracingFrame> for CarIdxFrame {
             car_idx_position: f.car_idx_position.clone(),
             car_idx_class_position: f.car_idx_class_position.clone(),
             car_idx_lap: f.car_idx_lap.clone(),
+            car_idx_laps_completed: f.car_idx_lap_completed.clone(),
             car_idx_last_lap_time: f.car_idx_last_lap_time.clone(),
             car_idx_best_lap_time: f.car_idx_best_lap_time.clone(),
             car_idx_f2_time: f.car_idx_f2_time.clone(),

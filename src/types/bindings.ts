@@ -155,6 +155,14 @@ export type CarIdxFrame = {
    */
   car_idx_lap: number[];
   /**
+   * Laps completed by each car (-1 = unknown, the sim's own marker for a car
+   * that has left the world). Unlike `car_idx_lap`, which counts the lap being
+   * driven, this is on the same scale as `ResultsPositions.LapsComplete`, so the
+   * official results stand in for it seamlessly once the live value is gone.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapcompleted/
+   */
+  car_idx_laps_completed: number[];
+  /**
    * Last lap time in seconds for each car (-1 = no time)
    * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlastlaptime/
    */
