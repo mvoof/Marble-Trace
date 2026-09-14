@@ -17,7 +17,14 @@
 use specta::TypeCollection;
 use specta_typescript::Typescript;
 
-/// Where the generated files go, relative to `src-tauri/`.
+/// Where the generated files go.
+///
+/// Anchored on `CARGO_MANIFEST_DIR` (baked in at compile time) rather than a
+/// path relative to the process's cwd: `export()` runs from `run()` whenever
+/// the `dev` feature is on, including in a `tauri:build:dev` binary launched
+/// from anywhere — a relative `../src/...` only resolved because `cargo
+/// run`/`tauri dev` happen to set cwd to `src-tauri/`, and panicked on
+/// `NotFound` the moment that stopped being true.
 ///
 /// The types land in `src/types/`, which is the contract layer. The two value
 /// files do not: a default and an event name are values, and `types/` holds
@@ -25,9 +32,15 @@ use specta_typescript::Typescript;
 /// its shared constants and which every layer above it may import — including
 /// the widget manifests, whose shipped defaults are the reason these have to be
 /// compile-time literals in the first place.
-pub const BINDINGS_PATH: &str = "../src/types/bindings.ts";
-pub const CONSTANTS_PATH: &str = "../src/utils/backend-constants.ts";
-pub const EVENTS_PATH: &str = "../src/utils/backend-events.ts";
+pub const BINDINGS_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src/types/bindings.ts");
+pub const CONSTANTS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../src/utils/backend-constants.ts"
+);
+pub const EVENTS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../src/utils/backend-events.ts"
+);
 
 /// Every type the frontend may name, collected from the modules that declare
 /// them.
