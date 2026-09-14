@@ -40,4 +40,8 @@ export type PreviewScenarioId =
   | 'pit-over-limit'
   | 'fuel-pit-window'
   | 'fuel-short'
-  | 'fuel-refuel-calc';
+  | 'fuel-refuel-calc'
+  | 'delta-ahead'
+  | 'delta-behind'
+  | 'delta-personal-best'
+  | 'sector-in-progress';

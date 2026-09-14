@@ -17,6 +17,11 @@ import type { MockFieldOptions } from './mocks/field';
 import { mockField } from './mocks/field';
 import type { MockTrafficCar } from './mocks/traffic';
 import { mockProximity } from './mocks/traffic';
+import {
+  mockLapDelta,
+  mockLapTimingAtDelta,
+  mockPersonalBestLapLog,
+} from './mocks/delta';
 
 // Neutral, fully synthetic scenario fixtures. A recorded session never
 // guarantees the moment a flag waves, a badge appears, or traffic surrounds the
@@ -177,6 +182,15 @@ const applyField = (store: RootStore, options: MockFieldOptions) => {
 
   store.backendComputed.updateDriverEntries(frames.driverEntries);
   store.backendComputed.updateRelative(frames.relative);
+};
+
+// A delta scenario states one number: the same gap against every reference the
+// widget can be switched to, so the treatment is what changes between them and
+// not the value. The timing frame is replaced rather than patched — the
+// recorded one has no reference established, and a delta layered onto that
+// would still read as no delta.
+const applyDelta = (store: RootStore, delta: number) => {
+  store.player.updateLapTiming(mockLapTimingAtDelta(delta));
 };
 
 export interface PreviewScenario {
@@ -536,6 +550,67 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
           fuelToAddWithBuffer: 110.5,
           refuelPlan: { stops: 2, fillNow: 62.5 },
           pitWarning: true,
+        })
+      );
+    },
+  },
+  {
+    id: 'delta-ahead',
+    label: 'Delta — up on the reference',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Negative, so the sign is on screen: the one case that tells a driver
+      // whether the minus shifts the digits beside it when it appears.
+      applyDelta(store, -0.284);
+    },
+  },
+  {
+    id: 'delta-behind',
+    label: 'Delta — down on the reference',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyDelta(store, 0.617);
+    },
+  },
+  {
+    id: 'delta-personal-best',
+    label: 'Delta — personal best just set',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The lap has just been banked as a best: the log stars it, the header
+      // carries the new time, and the delta widget flashes it for anyone who
+      // has the flash switched on. The live delta sits on the reference the
+      // lap has just become.
+      const bestLapNum = 11;
+      const bestLapTime = 90.412;
+
+      store.player.updateLapTiming(
+        mockLapTimingAtDelta(0, {
+          lap: bestLapNum + 1,
+          lap_current_lap_time: 4.318,
+          lap_last_lap_time: bestLapTime,
+          lap_best_lap_time: bestLapTime,
+        })
+      );
+      store.backendComputed.updateLapLog(
+        mockPersonalBestLapLog(bestLapNum, bestLapTime)
+      );
+    },
+  },
+  {
+    id: 'sector-in-progress',
+    label: 'Sectors — one banked, one running',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The first sector is behind the driver and green; the second is being
+      // driven and has no time yet; the third has not been reached. The matrix
+      // draws all three states at once only in this window of the lap, so it is
+      // the one a driver has to size it against.
+      store.backendComputed.updateLapDelta(
+        mockLapDelta({
+          sectorTimes: [28.187, null, null],
+          currentSectorIdx: 1,
+          sectorDeltas: [-0.349, null, null],
         })
       );
     },

@@ -3,7 +3,6 @@ import type {
   ChassisFrame,
   DriverEntriesFrame,
   FuelComputedFrame,
-  LapDeltaFrame,
   PitServiceFrame,
   ProximityFrame,
   RelativeFrame,
@@ -12,6 +11,7 @@ import { action } from 'mobx';
 import { TrackSurface } from '@/types';
 import type { RootStore } from '@store/root-store';
 import { computeDriverEntries } from './compute-driver-entries';
+import { mockLapDelta, mockLapLog, mockLapTiming } from './mocks/delta';
 import { sampleTrack, SAMPLE_TRACK_ID } from './sample-track';
 
 // Mirror the active race flags into the FlagsStore's display state. The hold /
@@ -119,12 +119,6 @@ export const sampleFuel: FuelComputedFrame = {
   ],
 };
 
-const sampleLapDelta: LapDeltaFrame = {
-  sectorTimes: [28.4, 31.2, 26.9],
-  currentSectorIdx: 1,
-  sectorDeltas: [-0.12, 0.08, -0.05],
-};
-
 // Wrapped in `action` so the whole batch of setters runs as a single MobX
 // transaction — callers (preview, layout editor, Storybook) invoke it directly
 // without needing their own `runInAction`.
@@ -149,8 +143,11 @@ export const seedSampleTelemetry = action((store: RootStore) => {
     });
   if (sampleSnapshot.environment)
     store.environment.updateEnvironment(sampleSnapshot.environment);
-  if (sampleSnapshot.lapTiming)
-    store.player.updateLapTiming(sampleSnapshot.lapTiming);
+  // The recorded lap timing carries no lap times and no established reference
+  // (`_ok` false everywhere), which is the sim's "no delta yet" state — every
+  // timing widget draws dashes against it. The builder supplies a mid-lap
+  // picture with a personal best behind it instead.
+  store.player.updateLapTiming(mockLapTiming());
   if (sampleSnapshot.session)
     store.session.updateSession(sampleSnapshot.session);
   if (sampleSnapshot.sessionInfo)
@@ -248,7 +245,8 @@ export const seedSampleTelemetry = action((store: RootStore) => {
   // no session, so it opts in through the same manual toggle the hotkey uses.
   store.pitServiceWidget.panel.manualShow = true;
   store.backendComputed.updateFuel(sampleFuel);
-  store.backendComputed.updateLapDelta(sampleLapDelta);
+  store.backendComputed.updateLapDelta(mockLapDelta());
+  store.backendComputed.updateLapLog(mockLapLog());
 
   // Seed the synthetic track outline so the track-map widget renders a map
   // instead of the "recording track" placeholder.

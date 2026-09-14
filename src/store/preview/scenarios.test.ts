@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { FlagType } from '@/types';
+import { formatDelta, getGameDelta } from '@utils/delta-utils';
 import { RootStore } from '@store/root-store';
 import { WIDGETS } from '@store/widget-catalog';
 import { PREVIEW_CAR_LENGTH_M } from './mocks/traffic';
@@ -418,6 +419,71 @@ describe('an unknown scenario', () => {
     const baseline = seed(DEFAULT_PREVIEW_SCENARIO_ID).backendComputed.fuel;
 
     expect(fallback).toEqual(baseline);
+  });
+});
+
+// The delta fields are raw values the sim supplies rather than something this
+// app computes, so what a scenario owes the three timing widgets is a
+// reference the sim has established and a number on either side of it.
+describe('delta scenarios', () => {
+  it('renders a delta against the baseline alone', () => {
+    const store = seed(DEFAULT_PREVIEW_SCENARIO_ID);
+
+    expect(store.player.lapTiming?.lap_delta_to_best_lap_ok).toBe(true);
+    expect(store.player.lapTiming?.lap_best_lap_time).toBeGreaterThan(0);
+    expect(store.backendComputed.lapHistory.length).toBeGreaterThan(0);
+  });
+
+  it('goes up on the reference', () => {
+    const lapTiming = seed('delta-ahead').player.lapTiming;
+
+    expect(getGameDelta(lapTiming, 'personal_best')).toBeLessThan(0);
+    expect(getGameDelta(lapTiming, 'session_best')).toBeLessThan(0);
+  });
+
+  it('goes down on the reference', () => {
+    const lapTiming = seed('delta-behind').player.lapTiming;
+
+    expect(getGameDelta(lapTiming, 'personal_best')).toBeGreaterThan(0);
+  });
+
+  it('keeps the readout the same width once the sign appears', () => {
+    const ahead = getGameDelta(
+      seed('delta-ahead').player.lapTiming,
+      'personal_best'
+    );
+    const behind = getGameDelta(
+      seed('delta-behind').player.lapTiming,
+      'personal_best'
+    );
+
+    expect(formatDelta(ahead)).toHaveLength(formatDelta(behind).length);
+  });
+
+  it('banks a personal best the log can star', () => {
+    const store = seed('delta-personal-best');
+    const [newest, ...older] = store.backendComputed.lapHistory;
+
+    expect(newest.isBest).toBe(true);
+    expect(store.backendComputed.lastCompletedLap?.lapNum).toBe(newest.lapNum);
+    expect(store.player.lapTiming?.lap_best_lap_time).toBe(newest.lapTime);
+
+    for (const entry of older) {
+      expect(entry.isBest).toBe(false);
+
+      if (entry.lapTime !== null) {
+        expect(entry.lapTime).toBeGreaterThan(newest.lapTime ?? 0);
+      }
+    }
+  });
+
+  it('shows a banked sector beside one still being driven', () => {
+    const lapDelta = seed('sector-in-progress').backendComputed.lapDelta;
+
+    expect(lapDelta?.sectorTimes[0]).not.toBeNull();
+    expect(lapDelta?.sectorDeltas[0] ?? 0).toBeLessThan(0);
+    expect(lapDelta?.sectorTimes[1]).toBeNull();
+    expect(lapDelta?.currentSectorIdx).toBe(1);
   });
 });
 
