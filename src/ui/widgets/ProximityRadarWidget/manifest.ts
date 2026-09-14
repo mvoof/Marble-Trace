@@ -18,6 +18,7 @@ const SCOPE_DESIGN_SIZE_PX = 180;
 export const PROXIMITY_RADAR_MANIFEST: WidgetManifest = {
   id: 'proximity-radar',
   order: 20,
+  previewScenarios: ['radar-traffic'],
   telemetryEvents: ['proximity'],
   label: 'Proximity Radar',
   description: 'Visual radar for nearby traffic.',

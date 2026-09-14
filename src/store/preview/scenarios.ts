@@ -10,13 +10,11 @@ import type {
   ReferenceLapSample,
   RelativeFrame,
 } from '@/types/bindings';
+import type { PreviewScenarioId } from '@/types/preview-scenarios';
 import { action } from 'mobx';
 import type { RootStore } from '@store/root-store';
-import {
-  seedSampleTelemetry,
-  syncFlagDisplay,
-  sampleFuel,
-} from './sample-telemetry';
+import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';
+import { mockFuel } from './mocks/fuel';
 
 // Neutral, fully synthetic scenario fixtures. A recorded session never
 // guarantees the moment a flag waves, a badge appears, or traffic surrounds the
@@ -228,7 +226,7 @@ const applyTableBadges = (store: RootStore) => {
 };
 
 export interface PreviewScenario {
-  id: string;
+  id: PreviewScenarioId;
   label: string;
   apply: (store: RootStore) => void;
 }
@@ -522,27 +520,69 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
-    id: 'fuel-pit',
-    label: 'Fuel — pit window',
+    id: 'fuel-pit-window',
+    label: 'Fuel — pit window open',
     apply: (store) => {
       seedSampleTelemetry(store);
-      // Drop laps below the pit-warning threshold so the fuel widget's pit
-      // window panel becomes visible.
-      store.backendComputed.updateFuel({
-        ...sampleFuel,
-        lapsRemaining: 2,
-        shortage: -3.4,
-        pitWarning: true,
-      });
+      // The window is open and the laps left are below the warning threshold,
+      // which is what makes the pit-window block appear at all.
+      store.backendComputed.updateFuel(
+        mockFuel({
+          lapsRemaining: 2.4,
+          pitWarning: true,
+          pitWindowStart: 12,
+          pitWindowEnd: 16,
+        })
+      );
+    },
+  },
+  {
+    id: 'fuel-short',
+    label: 'Fuel — running short',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // A deficit big enough to need saving for the rest of the race: the
+      // widest the shortage and save-per-lap readouts ever get.
+      store.backendComputed.updateFuel(
+        mockFuel({
+          lapsRemaining: 4.1,
+          lapsToFinish: 28,
+          shortage: -18.7,
+          fuelSavePerLap: 0.78,
+          pitWarning: true,
+        })
+      );
+    },
+  },
+  {
+    id: 'fuel-refuel-calc',
+    label: 'Fuel — refuelling calculation',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Two stops left and a three-digit total to take on — the most digits the
+      // refuel rows can carry.
+      store.backendComputed.updateFuel(
+        mockFuel({
+          lapsRemaining: 6.8,
+          lapsToFinish: 52,
+          shortage: -104.3,
+          fuelToAdd: 104.3,
+          fuelToAddWithBuffer: 110.5,
+          refuelPlan: { stops: 2, fillNow: 62.5 },
+          pitWarning: true,
+        })
+      );
     },
   },
 ];
 
-export const PREVIEW_SCENARIO_BY_ID = new Map(
+// Keyed by plain string: the picked id arrives from component state and from
+// story parameters, so a lookup has to be able to miss.
+export const PREVIEW_SCENARIO_BY_ID = new Map<string, PreviewScenario>(
   PREVIEW_SCENARIOS.map((scenario) => [scenario.id, scenario])
 );
 
-export const DEFAULT_PREVIEW_SCENARIO_ID = 'baseline';
+export const DEFAULT_PREVIEW_SCENARIO_ID: PreviewScenarioId = 'baseline';
 
 // Wrapped in `action` so the seed + override setters run as a single MobX
 // transaction; callers invoke it directly without their own `runInAction`.

@@ -10,6 +10,7 @@ const G_METER_DESIGN_SIZE_PX = 240;
 export const G_METER_MANIFEST: WidgetManifest = {
   id: 'g-meter',
   order: 170,
+  previewScenarios: ['high-g'],
   telemetryEvents: ['carDynamics'],
   label: 'G-Meter',
   description: 'Lateral and longitudinal G-force friction circle.',

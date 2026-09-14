@@ -7,6 +7,18 @@ import {
 export const FLAT_FLAGS_MANIFEST: WidgetManifest = {
   id: 'flat-flags',
   order: 100,
+  previewScenarios: [
+    'yellow-flag',
+    'blue-flag',
+    'black-flag',
+    'dq-flag',
+    'green-flag',
+    'white-flag',
+    'checkered-flag',
+    'red-flag',
+    'meatball-flag',
+    'debris-flag',
+  ],
   label: 'Flat Flags',
   description: 'Banner-style list of active track flags.',
   autoHeight: true,

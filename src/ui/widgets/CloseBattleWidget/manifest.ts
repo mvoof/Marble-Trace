@@ -48,6 +48,7 @@ const PLAYER_LINE_DEFAULT_COLOR = '#ffffff';
 export const CLOSE_BATTLE_MANIFEST: WidgetManifest = {
   id: 'close-battle',
   order: 40,
+  previewScenarios: ['close-battle'],
   telemetryEvents: ['proximity', 'relative', 'driverEntries'],
   label: 'Close Battle',
   description: 'Who is fighting you right now, on a vertical distance axis.',

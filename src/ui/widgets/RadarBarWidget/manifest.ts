@@ -7,6 +7,7 @@ import {
 export const RADAR_BAR_MANIFEST: WidgetManifest = {
   id: 'radar-bar',
   order: 30,
+  previewScenarios: ['radar-traffic'],
   telemetryEvents: ['proximity'],
   label: 'Radar Bar',
   description: 'Full-width side proximity indicators.',

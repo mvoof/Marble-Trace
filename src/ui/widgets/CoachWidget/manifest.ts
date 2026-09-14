@@ -7,6 +7,7 @@ import {
 export const COACH_MANIFEST: WidgetManifest = {
   id: 'coach',
   order: 240,
+  previewScenarios: ['driving-coach-brake', 'driving-coach-gas'],
   telemetryEvents: ['carDynamics', 'carInputs'],
   label: 'Coach',
   description:
