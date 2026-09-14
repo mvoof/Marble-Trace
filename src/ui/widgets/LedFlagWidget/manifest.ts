@@ -47,6 +47,7 @@ export const LED_FLAGS_MANIFEST: WidgetManifest = {
   order: 90,
   previewScenarios: [
     'yellow-flag',
+    'safety-car',
     'blue-flag',
     'black-flag',
     'dq-flag',

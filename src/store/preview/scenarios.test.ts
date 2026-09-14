@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { FlagType } from '@/types';
 import { RootStore } from '@store/root-store';
 import { WIDGETS } from '@store/widget-catalog';
 import {
@@ -52,6 +53,48 @@ describe('fuel scenarios', () => {
     seedScenario(store, 'fuel-short');
 
     expect(JSON.stringify(store.liveWidgets.widgets)).toBe(before);
+  });
+});
+
+// Flag display is mirrored by the seeding rather than derived: the hold and
+// blink reactions never run in a store built with initialisation skipped, so
+// what the widgets read is `displayFlags` / `ledDisplayFlag`, not the parse.
+describe('flag scenarios', () => {
+  const cases: Array<[string, FlagType]> = [
+    ['yellow-flag', 'yellow'],
+    ['safety-car', 'sc'],
+    ['blue-flag', 'blue'],
+    ['black-flag', 'black'],
+    ['dq-flag', 'dq'],
+    ['green-flag', 'green'],
+    ['white-flag', 'white'],
+    ['checkered-flag', 'checkered'],
+    ['red-flag', 'red'],
+    ['meatball-flag', 'meatball'],
+    ['debris-flag', 'debris'],
+  ];
+
+  for (const [scenarioId, flag] of cases) {
+    it(`shows ${flag} for ${scenarioId}`, () => {
+      const store = seed(scenarioId);
+
+      expect(store.flags.displayFlags).toContain(flag);
+      expect(store.flags.ledDisplayFlag).toBe(flag);
+    });
+  }
+
+  it('raises nothing but the flag it is named after', () => {
+    const store = seed('meatball-flag');
+
+    expect(store.flags.displayFlags).toEqual(['meatball']);
+  });
+
+  it('leaves the rest of the base snapshot alone', () => {
+    const baseline = seed(DEFAULT_PREVIEW_SCENARIO_ID);
+    const black = seed('black-flag');
+
+    expect(black.backendComputed.fuel).toEqual(baseline.backendComputed.fuel);
+    expect(black.player.carDynamics).toEqual(baseline.player.carDynamics);
   });
 });
 

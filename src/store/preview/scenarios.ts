@@ -14,6 +14,7 @@ import type { PreviewScenarioId } from '@/types/preview-scenarios';
 import { action } from 'mobx';
 import type { RootStore } from '@store/root-store';
 import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';
+import { mockFlags } from './mocks/flags';
 import { mockFuel } from './mocks/fuel';
 
 // Neutral, fully synthetic scenario fixtures. A recorded session never
@@ -22,24 +23,6 @@ import { mockFuel } from './mocks/fuel';
 // those states on top of the realistic base snapshot, so both the in-app widget
 // preview and Storybook can show a specific state on demand. Depends on neither
 // the app UI nor Storybook.
-
-const ALL_FLAGS_OFF: RaceFlags = {
-  checkered: false,
-  white: false,
-  green: false,
-  yellow: false,
-  red: false,
-  blue: false,
-  debris: false,
-  yellowWaving: false,
-  caution: false,
-  cautionWaving: false,
-  black: false,
-  disqualify: false,
-  meatball: false,
-  furled: false,
-  repair: false,
-};
 
 const applyFlags = (store: RootStore, overrides: Partial<RaceFlags>) => {
   const carStatus = store.player.carStatus;
@@ -50,7 +33,7 @@ const applyFlags = (store: RootStore, overrides: Partial<RaceFlags>) => {
 
   store.player.updateCarStatus({
     ...carStatus,
-    flags: { ...ALL_FLAGS_OFF, ...overrides },
+    flags: mockFlags(overrides),
   });
 
   syncFlagDisplay(store);
@@ -242,10 +225,21 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
   },
   {
     id: 'yellow-flag',
-    label: 'Yellow flag',
+    label: 'Yellow flag (local)',
     apply: (store) => {
       seedSampleTelemetry(store);
-      applyFlags(store, { yellow: true, caution: true });
+      // A local yellow only — no caution bit. The two are separate states the
+      // widgets draw differently, and raising both here would leave the plain
+      // yellow unreachable: the caution outranks it.
+      applyFlags(store, { yellow: true, yellowWaving: true });
+    },
+  },
+  {
+    id: 'safety-car',
+    label: 'Safety car (full-course caution)',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { yellow: true, caution: true, cautionWaving: true });
     },
   },
   {

@@ -9,6 +9,7 @@ export const FLAT_FLAGS_MANIFEST: WidgetManifest = {
   order: 100,
   previewScenarios: [
     'yellow-flag',
+    'safety-car',
     'blue-flag',
     'black-flag',
     'dq-flag',
