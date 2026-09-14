@@ -142,6 +142,42 @@ describe('pit scenarios', () => {
   });
 });
 
+// The picker re-seeds the same preview store, so going back to the baseline has
+// to undo whatever the previous pick forced — the seed puts back the frames it
+// sets, and clears the ones no baseline frame covers.
+describe('returning to the baseline', () => {
+  it('clears a scenario that was picked before it', () => {
+    const store = new RootStore({ skipInit: true });
+
+    seedScenario(store, 'pit-limiter');
+    seedScenario(store, 'driving-coach-brake');
+    seedScenario(store, 'meatball-flag');
+    seedScenario(store, DEFAULT_PREVIEW_SCENARIO_ID);
+
+    expect(store.player.hasPitLaneProgress).toBe(false);
+    expect(store.referenceLap.data).toBeNull();
+    expect(store.drivingCoachWidget.displayedAdvisory).toBe('neutral');
+    // The snapshot's own flag, not the meatball that was picked over it.
+    expect(store.flags.displayFlags).toEqual(
+      seed(DEFAULT_PREVIEW_SCENARIO_ID).flags.displayFlags
+    );
+  });
+
+  it('matches a store that never left it', () => {
+    const visited = new RootStore({ skipInit: true });
+
+    seedScenario(visited, 'red-flag');
+    seedScenario(visited, DEFAULT_PREVIEW_SCENARIO_ID);
+
+    const untouched = seed(DEFAULT_PREVIEW_SCENARIO_ID);
+
+    expect(visited.player.carStatus).toEqual(untouched.player.carStatus);
+    expect(visited.backendComputed.proximity).toEqual(
+      untouched.backendComputed.proximity
+    );
+  });
+});
+
 describe('an unknown scenario', () => {
   it('falls back to the baseline rather than showing nothing', () => {
     const fallback = seed('no-such-scenario').backendComputed.fuel;

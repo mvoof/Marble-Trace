@@ -12,17 +12,33 @@ import {
 import { WIDGET_BY_ID } from '@store/widget-catalog';
 import styles from './WidgetWorkbench.module.scss';
 
+const scenarioOption = (scenarioId: string) => {
+  const scenario = PREVIEW_SCENARIO_BY_ID.get(scenarioId);
+
+  return scenario ? [{ value: scenario.id, label: scenario.label }] : [];
+};
+
 // A widget offers the scenarios its own manifest declares, and nothing else.
 // One that declares none has no states of its own to switch between, so it gets
 // no picker at all — its preview still renders against the base snapshot.
+//
+// The baseline leads the list without being declared anywhere: it is the
+// absence of a forced state rather than a state of its own, and it is what the
+// picker opens on — leaving it out stranded the driver on the first scenario
+// they picked, with nothing to pick to get back.
 const scenarioOptionsFor = (widgetId: string) => {
   const declared = WIDGET_BY_ID.get(widgetId)?.previewScenarios ?? [];
 
-  return declared.flatMap((scenarioId) => {
-    const scenario = PREVIEW_SCENARIO_BY_ID.get(scenarioId);
+  if (declared.length === 0) {
+    return [];
+  }
 
-    return scenario ? [{ value: scenario.id, label: scenario.label }] : [];
-  });
+  return [
+    ...scenarioOption(DEFAULT_PREVIEW_SCENARIO_ID),
+    ...declared
+      .filter((scenarioId) => scenarioId !== DEFAULT_PREVIEW_SCENARIO_ID)
+      .flatMap(scenarioOption),
+  ];
 };
 
 // Two-pane widget catalog workspace: live preview column on the left, widget

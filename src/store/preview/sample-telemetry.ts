@@ -254,5 +254,14 @@ export const seedSampleTelemetry = action((store: RootStore) => {
   // instead of the "recording track" placeholder.
   store.trackMapWidget.onTrackShapeReceived(sampleTrack);
 
+  // The seed is re-run every time the driver picks a scenario, on the same
+  // store — so it has to put back everything a scenario may have forced, not
+  // only what it sets itself. These three have no baseline frame of their own:
+  // without clearing them, a pit lane, a coach advisory or a reference lap
+  // picked once would still be on screen after switching back to the baseline.
+  store.player.updatePitTarget(null);
+  store.referenceLap.reset();
+  store.drivingCoachWidget.displayedAdvisory = 'neutral';
+
   syncFlagDisplay(store);
 });
