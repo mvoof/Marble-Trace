@@ -8,6 +8,10 @@ export const RACE_DASH_MANIFEST: WidgetManifest = {
   id: 'race-dash',
   order: 220,
   telemetryEvents: ['carDynamics', 'driverEntries'],
+  // The dash draws no flags — its own state is the pit block: the lane bar,
+  // the box countdown and the limiter banner, all off `usePitState`, which
+  // reads exactly what these three scenarios force.
+  previewScenarios: ['pit-lane', 'pit-limiter', 'pit-over-limit'],
   label: 'Race Dash',
   description:
     'Cockpit cluster: gear ring, speed readout with lap/position/RPM, and pit-lane mode.',

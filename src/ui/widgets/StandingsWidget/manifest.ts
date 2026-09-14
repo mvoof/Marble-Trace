@@ -60,6 +60,15 @@ const STANDINGS_DESIGN_WIDTH = computeStandingsDesignWidth(
 export const STANDINGS_MANIFEST: WidgetManifest = {
   id: 'standings',
   order: 50,
+  // The footer under the table carries the weather and the incident counter,
+  // so the two states those are sized against belong to this widget as much as
+  // to the weather widget itself.
+  previewScenarios: [
+    'field-close-pack',
+    'incident-limit',
+    'rain',
+    'heavy-rain',
+  ],
   telemetryEvents: ['driverEntries'],
   label: 'Standings',
   description: 'Live session standings and intervals.',

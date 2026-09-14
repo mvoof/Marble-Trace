@@ -62,6 +62,7 @@ const NON_SERIALIZABLE_WIDGET_KEYS = new Set([
   'resolveLayoutChange',
   'deriveDesignWidth',
   'telemetryEvents',
+  'previewScenarios',
   'order',
 ]);
 

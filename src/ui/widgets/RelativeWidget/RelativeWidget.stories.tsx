@@ -1,124 +1,104 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { TrackSurface } from '@/types';
-import type { CarIdxFrame, DriverEntry, RelativeFrame } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import { driverEntries, snapshot } from '@/storybook/test-data';
+import type { RootStore } from '@store/root-store';
+import type { MockFieldRows } from '@store/preview/mocks/field';
+import {
+  MOCK_DRIVER_FLAG_ROWS,
+  MOCK_PIT_ROWS,
+  PACE_CAR_IDX,
+  mockField,
+  mockPaceCarEntry,
+} from '@store/preview/mocks/field';
 import { RelativeWidget } from './RelativeWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
-const CLASS_LABELS = ['GTE', 'GT3', 'LMP2'];
+/** The spacing the table is read at by default — a couple of seconds a place. */
+const DEFAULT_GAP_S = 1.8;
 
-const BASE_ENTRIES: DriverEntry[] = driverEntries.map((entry, idx) => ({
-  ...entry,
-  carClassShortName: CLASS_LABELS[idx % CLASS_LABELS.length],
-  onPitRoad: false,
-  trackSurface: TrackSurface.OnTrack,
-  pitState: 'none' as const,
-  rawFlags: 0,
-}));
+const SECOND_PACE_CAR_IDX = PACE_CAR_IDX + 1;
+/** How far up the road from the player each pace car sits, as a lap fraction. */
+const PACE_CAR_LEAD_PCT = 0.05;
+const SECOND_PACE_CAR_LEAD_PCT = -0.04;
+const PACE_CAR_LEAD_S = 4;
+const SECOND_PACE_CAR_LEAD_S = -3;
 
-const PLAYER_CAR_IDX =
-  BASE_ENTRIES.find((entry) => entry.isPlayer)?.carIdx ?? 0;
-const PLAYER_IDX = BASE_ENTRIES.findIndex((entry) => entry.isPlayer);
-
-const BLUE_FLAG = 0x00000020;
-const MEATBALL_FLAG = 0x00100000;
-const PENALTY_FLAG = 0x00010000;
-
-const withOverrides = (
-  overrides: Record<number, Partial<DriverEntry>>
-): DriverEntry[] =>
-  BASE_ENTRIES.map((entry, idx) => {
-    const offset = idx - PLAYER_IDX;
-    const override = overrides[offset];
-
-    return override ? { ...entry, ...override } : entry;
-  });
-
-const PIT_ENTRIES = withOverrides({
-  [-2]: { onPitRoad: true, pitState: 'in' as const },
-  [-1]: { trackSurface: TrackSurface.InPitStall, pitState: 'stall' as const },
-  [2]: { onPitRoad: true, pitState: 'exit' as const },
-});
-
-const FLAG_ENTRIES = withOverrides({
-  [-3]: { rawFlags: BLUE_FLAG },
-  [-1]: { rawFlags: MEATBALL_FLAG },
-  [1]: { rawFlags: PENALTY_FLAG },
-});
-
-const DEFAULT_SETTINGS: RelativeWidgetSettings = {
-  showLicBadge: true,
-  showIRating: true,
-  showPitIndicator: true,
-  abbreviateNames: false,
-  showDriverFlags: true,
-};
-
-const PACE_CAR_IDX = 61;
-const SECOND_PACE_CAR_IDX = 62;
-
-const seedPaceCar = (
-  updateSessionInfo: (info: NonNullable<typeof snapshot.sessionInfo>) => void,
-  updateCarIdx: (frame: CarIdxFrame) => void,
-  multiclass = false
-) => {
-  const player = BASE_ENTRIES[PLAYER_IDX];
-  const otherClassEntry = BASE_ENTRIES.find(
-    (entry) => entry.carClassId !== player.carClassId
+// A safety car is not a driver entry: it reaches the widget through the session
+// roster and the per-car arrays, the way the sim reports it. Both halves are
+// stated here so the row cannot appear in one and be missing from the other.
+const seedPaceCars = (store: RootStore, multiclass: boolean) => {
+  const sessionInfo = store.session.sessionInfo;
+  const carIdx = store.cars.carIdx;
+  const player = store.backendComputed.relativeEntries.find(
+    (entry) => entry.isPlayer
   );
 
-  const lapDist = new Array(SECOND_PACE_CAR_IDX + 1).fill(-1);
-  const estTime = new Array(SECOND_PACE_CAR_IDX + 1).fill(0);
-  lapDist[PACE_CAR_IDX] = player.lapDistPct + 0.05;
-  estTime[PACE_CAR_IDX] = player.estTime + 4;
-
-  if (snapshot.sessionInfo) {
-    const template = snapshot.sessionInfo.cars[0];
-    const paceCars = [
-      {
-        ...template,
-        carIdx: PACE_CAR_IDX,
-        userName: 'Pace Car',
-        carNumber: '0',
-        isPaceCar: true,
-        carClassId: player.carClassId,
-        carClassEstLapTime: player.classEstLapTime,
-      },
-    ];
-
-    if (multiclass && otherClassEntry) {
-      paceCars.push({
-        ...template,
-        carIdx: SECOND_PACE_CAR_IDX,
-        userName: 'Pace Car',
-        carNumber: '00',
-        isPaceCar: true,
-        carClassId: otherClassEntry.carClassId,
-        carClassEstLapTime: otherClassEntry.classEstLapTime,
-      });
-
-      lapDist[SECOND_PACE_CAR_IDX] = otherClassEntry.lapDistPct - 0.04;
-      estTime[SECOND_PACE_CAR_IDX] = otherClassEntry.estTime - 3;
-    }
-
-    updateSessionInfo({
-      ...snapshot.sessionInfo,
-      cars: [...snapshot.sessionInfo.cars, ...paceCars],
-    });
+  if (!sessionInfo || !carIdx || !player) {
+    return;
   }
 
-  updateCarIdx({
+  const otherClassEntry = store.backendComputed.relativeEntries.find(
+    (entry) => entry.carClassId !== player.carClassId
+  );
+  const template = sessionInfo.cars[0];
+
+  const paceCars = [
+    mockPaceCarEntry(template, {
+      carClassId: player.carClassId,
+      carClassEstLapTime: player.classEstLapTime,
+    }),
+  ];
+
+  const lapDist = [...carIdx.car_idx_lap_dist_pct];
+  const estTime = [...carIdx.car_idx_est_time];
+
+  lapDist[PACE_CAR_IDX] = player.lapDistPct + PACE_CAR_LEAD_PCT;
+  estTime[PACE_CAR_IDX] = player.estTime + PACE_CAR_LEAD_S;
+
+  if (multiclass && otherClassEntry) {
+    paceCars.push(
+      mockPaceCarEntry(template, {
+        carIdx: SECOND_PACE_CAR_IDX,
+        carNumber: '00',
+        carClassId: otherClassEntry.carClassId,
+        carClassEstLapTime: otherClassEntry.classEstLapTime,
+      })
+    );
+
+    lapDist[SECOND_PACE_CAR_IDX] =
+      otherClassEntry.lapDistPct + SECOND_PACE_CAR_LEAD_PCT;
+    estTime[SECOND_PACE_CAR_IDX] =
+      otherClassEntry.estTime + SECOND_PACE_CAR_LEAD_S;
+  }
+
+  store.session.updateSessionInfo({
+    ...sessionInfo,
+    cars: [...sessionInfo.cars, ...paceCars],
+  });
+
+  store.cars.updateCarIdx({
+    ...carIdx,
     car_idx_lap_dist_pct: lapDist,
     car_idx_est_time: estTime,
-  } as CarIdxFrame);
+  });
 };
 
 interface StoryArgs {
-  settings: RelativeWidgetSettings;
-  entries: DriverEntry[];
+  /**
+   * The settings this story differs from the shipped defaults in. Everything
+   * left out keeps whatever the widget ships with.
+   */
+  settings?: Partial<RelativeWidgetSettings>;
+  /** Seconds between one car and the next. */
+  gapS?: number;
+  /** Rows around the player to state something extra about. */
+  rows?: MockFieldRows;
+  /** A safety car of the player's own class, up the road. */
   paceCar?: boolean;
+  /** A second safety car for the other class beside it. */
   multiclassPaceCar?: boolean;
 }
 
@@ -127,24 +107,37 @@ const meta: Meta<StoryArgs> = {
   ...defineWidgetStories<StoryArgs>({
     widget: RelativeWidget,
     size: { width: 406, height: 400 },
-    seed: (store, args) => {
-      store.backendComputed.updateRelative({
-        entries: args.entries,
-        playerCarIdx: PLAYER_CAR_IDX,
-      } as RelativeFrame);
-      store.liveWidgets.updateUserSettings('relative', args.settings);
+    seedSnapshot: true,
+    seed: (store, args, scenarioId) => {
+      const base = store.backendComputed.driverEntries;
+
+      // A scenario has already spaced the field the way it means to show it, so
+      // only a story that states a spacing of its own re-spaces it.
+      const respaces =
+        scenarioId === undefined ||
+        args.gapS !== undefined ||
+        args.rows !== undefined;
+
+      if (base && respaces) {
+        const { driverEntries, relative } = mockField(base.entries, {
+          gapS: args.gapS ?? DEFAULT_GAP_S,
+          rows: args.rows,
+        });
+
+        store.backendComputed.updateDriverEntries(driverEntries);
+        store.backendComputed.updateRelative(relative);
+      }
+
+      if (args.settings) {
+        store.liveWidgets.updateUserSettings('relative', args.settings);
+      }
 
       if (args.paceCar || args.multiclassPaceCar) {
-        seedPaceCar(
-          (info) => store.session.updateSessionInfo(info),
-          (frame) => store.cars.updateCarIdx(frame),
-          args.multiclassPaceCar
-        );
+        seedPaceCars(store, args.multiclassPaceCar === true);
       }
     },
-    args: { settings: DEFAULT_SETTINGS, entries: BASE_ENTRIES },
     argTypes: {
-      entries: { table: { disable: true } },
+      rows: { table: { disable: true } },
     },
   }),
 };
@@ -154,10 +147,14 @@ type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
 
+/** Sub-second between every car — the pack the relative is really read in. */
+export const ClosePack: Story = {
+  parameters: previewScenario('field-close-pack'),
+};
+
 export const MinimalView: Story = {
   args: {
     settings: {
-      ...DEFAULT_SETTINGS,
       showLicBadge: false,
       showIRating: false,
       showPitIndicator: false,
@@ -166,17 +163,15 @@ export const MinimalView: Story = {
 };
 
 export const AbbreviatedNames: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, abbreviateNames: true },
-  },
+  args: { settings: { abbreviateNames: true } },
 };
 
 export const WithPitBadges: Story = {
-  args: { entries: PIT_ENTRIES },
+  args: { rows: MOCK_PIT_ROWS },
 };
 
 export const WithDriverFlags: Story = {
-  args: { entries: FLAG_ENTRIES },
+  args: { rows: MOCK_DRIVER_FLAG_ROWS },
 };
 
 export const WithSafetyCarRow: Story = {

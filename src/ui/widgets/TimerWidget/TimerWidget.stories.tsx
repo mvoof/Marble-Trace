@@ -1,37 +1,37 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type {
-  CarIdxFrame,
-  LapTimingFrame,
+  SessionEntry,
   SessionFrame,
-  SessionSnapshot,
   SessionState as BindingSessionState,
   SessionType,
 } from '@/types/bindings';
+import { mockSession, mockSessionEntry } from '@store/preview/mocks/timing';
+import { whenSet } from '@/storybook/story-overrides';
 import { TimerWidget } from './TimerWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 const SESSION_FLAG_CHECKERED = 0x0001;
-const PLAYER_CAR_IDX = 0;
-
-const buildCarIdxLap = (lap: number): number[] => {
-  const arr: number[] = new Array(64).fill(0) as number[];
-  arr[PLAYER_CAR_IDX] = lap;
-  return arr;
-};
 
 interface StoryArgs {
-  sessionType: SessionType;
-  sessionTypeLabel: string;
-  sessionLaps: string;
-  remainSec: number | null;
-  elapsedSec: number;
-  simTimeOfDay: number | null;
-  checkered: boolean;
-  sessionState: BindingSessionState;
-  currentLap: number;
-  position: number;
-  totalDrivers: number;
+  /**
+   * The session clock and the entry that says how it ends. Left undefined —
+   * which is what a story naming a scenario does — the base's own session is
+   * kept, so a knob states a difference rather than replacing it.
+   */
+  sessionType?: SessionType;
+  sessionTypeLabel?: string;
+  sessionLaps?: string;
+  remainSec?: number | null;
+  elapsedSec?: number;
+  simTimeOfDay?: number | null;
+  checkered?: boolean;
+  sessionState?: BindingSessionState;
+  currentLap?: number;
+
   showLaps: boolean;
   showPosition: boolean;
   showWallClock: boolean;
@@ -40,6 +40,28 @@ interface StoryArgs {
   showSimDate: boolean;
 }
 
+// Only the knobs a story actually turned reach the frame; everything else is
+// left to the scenario or the snapshot underneath.
+const sessionOverrides = (args: StoryArgs): Partial<SessionFrame> => ({
+  ...whenSet(args.remainSec, (remain) => ({ session_time_remain: remain })),
+  ...whenSet(args.elapsedSec, (elapsed) => ({ session_time: elapsed })),
+  ...whenSet(args.simTimeOfDay, (timeOfDay) => ({
+    session_time_of_day: timeOfDay,
+  })),
+  ...whenSet(args.checkered, (checkered) => ({
+    session_flags: checkered ? SESSION_FLAG_CHECKERED : 0,
+  })),
+  ...whenSet(args.sessionState, (state) => ({ session_state: state })),
+});
+
+const entryOverrides = (args: StoryArgs): Partial<SessionEntry> => ({
+  ...whenSet(args.sessionType, (sessionType) => ({ sessionType })),
+  ...whenSet(args.sessionTypeLabel, (sessionTypeLabel) => ({
+    sessionTypeLabel,
+  })),
+  ...whenSet(args.sessionLaps, (sessionLaps) => ({ sessionLaps })),
+});
+
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/TimerWidget',
   ...defineWidgetStories<StoryArgs>({
@@ -47,38 +69,43 @@ const meta: Meta<StoryArgs> = {
     size: { width: 240, height: 120 },
     seedSnapshot: true,
     seed: (store, args) => {
-      store.session.updateSessionInfo({
-        playerCarIdx: PLAYER_CAR_IDX,
-        cars: new Array(args.totalDrivers).fill(null).map((_, idx) => ({
-          carIdx: idx,
-        })),
-        sessions: [
-          {
-            sessionType: args.sessionType,
-            sessionTypeLabel: args.sessionTypeLabel,
-            sessionLaps: String(args.sessionLaps),
-            resultsPositions: [],
-          },
-        ],
-        weekendDate: '2026 May 18',
-      } as unknown as SessionSnapshot);
+      const sessionInfo = store.session.sessionInfo;
+      const clock = sessionOverrides(args);
+      const entry = entryOverrides(args);
 
-      store.session.updateSession({
-        session_num: 0,
-        session_time_remain: args.remainSec,
-        session_time: args.elapsedSec,
-        session_time_of_day: args.simTimeOfDay,
-        session_flags: args.checkered ? SESSION_FLAG_CHECKERED : 0,
-        session_state: args.sessionState,
-      } as SessionFrame);
+      if (Object.keys(clock).length > 0) {
+        store.session.updateSession(
+          mockSession({ ...store.session.session, ...clock })
+        );
+      }
 
-      store.cars.updateCarIdx({
-        car_idx_lap: buildCarIdxLap(args.currentLap),
-      } as unknown as CarIdxFrame);
+      // Which of the clock and the lap count the timer reads is decided by the
+      // session entry, so the entry the frame points at is the one restated.
+      const sessionNum = store.session.session?.session_num ?? 0;
 
-      store.player.updateLapTiming({
-        player_car_position: args.position,
-      } as LapTimingFrame);
+      if (sessionInfo && Object.keys(entry).length > 0) {
+        const sessions = [...sessionInfo.sessions];
+
+        sessions[sessionNum] = mockSessionEntry({
+          ...sessions[sessionNum],
+          ...entry,
+        });
+
+        store.session.updateSessionInfo({
+          ...sessionInfo,
+          currentSessionNum: sessionNum,
+          sessions,
+        });
+      }
+
+      const carIdx = store.cars.carIdx;
+
+      if (carIdx && args.currentLap !== undefined) {
+        const lapByCar = [...carIdx.car_idx_lap];
+
+        lapByCar[sessionInfo?.playerCarIdx ?? 0] = args.currentLap;
+        store.cars.updateCarIdx({ ...carIdx, car_idx_lap: lapByCar });
+      }
 
       store.liveWidgets.updateUserSettings('timer', {
         showLaps: args.showLaps,
@@ -90,17 +117,6 @@ const meta: Meta<StoryArgs> = {
       });
     },
     args: {
-      sessionType: 'Race',
-      sessionTypeLabel: 'Race',
-      sessionLaps: '30',
-      remainSec: 42 * 60 + 18,
-      elapsedSec: 0,
-      simTimeOfDay: null,
-      checkered: false,
-      sessionState: 'Racing',
-      currentLap: 12,
-      position: 5,
-      totalDrivers: 24,
       showLaps: true,
       showPosition: true,
       showWallClock: false,
@@ -114,7 +130,16 @@ const meta: Meta<StoryArgs> = {
 export default meta;
 type Story = StoryObj<StoryArgs>;
 
-export const RaceGreen: Story = {};
+export const RaceGreen: Story = {
+  args: {
+    sessionType: 'Race',
+    sessionTypeLabel: 'Race',
+    sessionLaps: '30',
+    remainSec: 42 * 60 + 18,
+    elapsedSec: 0,
+    currentLap: 12,
+  },
+};
 
 export const Practice: Story = {
   args: {
@@ -134,49 +159,62 @@ export const LoneQualify: Story = {
     sessionLaps: 'unlimited',
     remainSec: 12 * 60,
     showLaps: false,
-    showPosition: true,
-    position: 3,
   },
 };
 
 export const OpenQualify: Story = {
-  args: {
-    sessionType: 'Qualify',
-    sessionTypeLabel: 'Open Qualify',
-    sessionLaps: 'unlimited',
-    remainSec: 12 * 60,
-    showLaps: false,
-    showPosition: true,
-    position: 3,
-  },
+  args: { ...LoneQualify.args, sessionTypeLabel: 'Open Qualify' },
 };
 
 export const FinalMinutes: Story = {
-  args: { remainSec: 4 * 60 + 55 },
+  args: { ...RaceGreen.args, remainSec: 4 * 60 + 55 },
+};
+
+// The last minute of a timed race, which is when the clock gets its critical
+// treatment.
+export const FinalMinute: Story = {
+  parameters: previewScenario('timer-final-minute'),
+};
+
+// A race that ends on a lap count has no clock at all: the timer counts up from
+// the elapsed time instead.
+export const LapLimited: Story = {
+  parameters: previewScenario('timer-lap-limited'),
 };
 
 export const Checkered: Story = {
-  args: { remainSec: 0, checkered: true, currentLap: 30 },
+  args: { ...RaceGreen.args, remainSec: 0, checkered: true, currentLap: 30 },
 };
 
 export const SessionEnded: Story = {
-  args: { sessionState: 'CoolDown' },
+  args: { ...RaceGreen.args, sessionState: 'CoolDown' },
 };
 
 export const WithClocks: Story = {
-  args: { showWallClock: true, showSimTime: true, simTimeOfDay: 16 * 3600 },
+  args: {
+    ...RaceGreen.args,
+    showWallClock: true,
+    showSimTime: true,
+    simTimeOfDay: 16 * 3600,
+  },
 };
 
 export const MinimalView: Story = {
-  args: { showLaps: false, showPosition: false },
+  args: { ...RaceGreen.args, showLaps: false, showPosition: false },
 };
 
 export const TimedRace: Story = {
-  args: { sessionLaps: 'unlimited', remainSec: 30 * 60, currentLap: 8 },
+  args: {
+    ...RaceGreen.args,
+    sessionLaps: 'unlimited',
+    remainSec: 30 * 60,
+    currentLap: 8,
+  },
 };
 
 export const WithDates: Story = {
   args: {
+    ...RaceGreen.args,
     showWallClock: true,
     showSimTime: true,
     showPcDate: true,

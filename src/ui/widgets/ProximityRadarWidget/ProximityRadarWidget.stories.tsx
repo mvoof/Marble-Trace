@@ -1,46 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { LateralSide, NearbyCar, ProximityFrame } from '@/types/bindings';
+import type { MockTrafficCar } from '@store/preview/mocks/traffic';
+import { mockProximity } from '@store/preview/mocks/traffic';
 import { ProximityRadarWidget } from './ProximityRadarWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
-
-const CAR_LENGTH_M = 4.6;
-
-/**
- * The scope reads `nearbyCars` alone, so a story is a list of cars — the
- * bumper gap is derived here exactly as the backend derives it.
- */
-const car = (
-  carIdx: number,
-  longitudinalDist: number,
-  lateralSide: LateralSide
-): NearbyCar => {
-  const clearance = Math.abs(longitudinalDist);
-
-  return {
-    carIdx,
-    longitudinalDist,
-    lateralSide,
-    clearance,
-    bumperDist:
-      Math.max(0, clearance - CAR_LENGTH_M) * Math.sign(longitudinalDist || 1),
-  };
-};
-
-const frameOf = (nearbyCars: NearbyCar[]): ProximityFrame => ({
-  nearbyCars,
-  radarDistances: {
-    frontDist: 999,
-    rearDist: 999,
-    leftDist: null,
-    rightDist: null,
-  },
-  spotterLeft: nearbyCars.some((entry) => entry.lateralSide === 'left'),
-  spotterRight: nearbyCars.some((entry) => entry.lateralSide === 'right'),
-});
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 interface StoryArgs {
-  proximity: ProximityFrame;
+  /**
+   * The cars around the player. Left undefined — which is what a story naming
+   * a scenario does — the scenario's own traffic is kept; a story states this
+   * only for an arrangement no scenario covers. The clearance, the bumper gaps
+   * and the four radar distances are the builder's, derived the way the
+   * backend derives them.
+   */
+  cars?: MockTrafficCar[];
 }
 
 const meta: Meta<StoryArgs> = {
@@ -50,60 +26,54 @@ const meta: Meta<StoryArgs> = {
     size: { width: 180, height: 180 },
     seed: (store, args) => {
       store.appSettings.dragMode = true;
-      store.backendComputed.updateProximity(args.proximity);
+
+      if (args.cars !== undefined) {
+        store.backendComputed.updateProximity(mockProximity(args.cars));
+      }
     },
-    args: { proximity: frameOf([]) },
   }),
 };
 
 export default meta;
 type Story = StoryObj<StoryArgs>;
 
-export const NoCars: Story = {};
+export const NoCars: Story = { args: { cars: [] } };
 
-export const CarLeft: Story = {
-  args: { proximity: frameOf([car(1, 1.2, 'left')]) },
-};
-
-export const CarRight: Story = {
-  args: { proximity: frameOf([car(2, -0.8, 'right')]) },
-};
+export const CarLeft: Story = { parameters: previewScenario('traffic-left') };
+export const CarRight: Story = { parameters: previewScenario('traffic-right') };
 
 export const CarsBothSides: Story = {
-  args: {
-    proximity: frameOf([car(1, 1.5, 'left'), car(2, -1, 'right')]),
-  },
-};
-
-export const CarAhead: Story = {
-  args: { proximity: frameOf([car(3, 8, 'center')]) },
+  parameters: previewScenario('traffic-three-wide'),
 };
 
 export const CarBehind: Story = {
-  args: { proximity: frameOf([car(4, -6.5, 'center')]) },
+  parameters: previewScenario('traffic-rear-bumper'),
+};
+
+export const Surrounded: Story = {
+  parameters: previewScenario('radar-traffic'),
+};
+
+export const CarAhead: Story = {
+  args: { cars: [{ carIdx: 3, longitudinalDist: 8, side: 'center' }] },
 };
 
 /** Two alongside in the same row — one body carrying a `×2`. */
 export const TwoCarsOneSide: Story = {
   args: {
-    proximity: frameOf([car(1, 0.4, 'left'), car(5, 1.1, 'left')]),
+    cars: [
+      { carIdx: 1, longitudinalDist: 0.4, side: 'left' },
+      { carIdx: 5, longitudinalDist: 1.1, side: 'left' },
+    ],
   },
 };
 
 /** A queue alongside: drawn where each car really is along the lane. */
 export const QueueAlongside: Story = {
   args: {
-    proximity: frameOf([car(1, 0.5, 'right'), car(5, -5.5, 'right')]),
-  },
-};
-
-export const Surrounded: Story = {
-  args: {
-    proximity: frameOf([
-      car(1, 1.2, 'left'),
-      car(2, -1, 'right'),
-      car(3, 7.5, 'center'),
-      car(4, -7, 'center'),
-    ]),
+    cars: [
+      { carIdx: 1, longitudinalDist: 0.5, side: 'right' },
+      { carIdx: 5, longitudinalDist: -5.5, side: 'right' },
+    ],
   },
 };

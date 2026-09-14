@@ -456,6 +456,11 @@ main window.
   `store/preview/scenarios.ts`, mirrored on `changeToken`.
 - The preview store must never persist anything — stores that own files take a flag
   from `skipInit` (`TrackMapWidgetStore({ persists })`).
+- The preview store is isolated, and `no-restricted-imports` over
+  `src/store/preview/**` keeps it that way: a scenario or mock builder writes only
+  into the `RootStore({ skipInit: true })` handed to it, so the context hooks in
+  `root-store-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are refused
+  there (ADR-0004 rule 1).
 - The editor raises `dragMode` on the preview store, so in-place widget controls
   behave as they do on the overlay. Prefer that flag over an editor-specific branch.
 - State an in-place control changes outside the preview store is bridged explicitly

@@ -1,179 +1,95 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type {
-  CarEntry,
-  ChassisFrame,
-  PitServiceFrame,
-  TrackShapePayload,
-} from '@/types/bindings';
+import type { PitServiceFrame } from '@/types/bindings';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
+import { mockFuel } from '@store/preview/mocks/fuel';
+import {
+  mockChassis,
+  mockPitService,
+  mockPitTarget,
+} from '@store/preview/mocks/pit';
+import { whenSet } from '@/storybook/story-overrides';
 import { PitServiceWidget } from './PitServiceWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 interface StoryArgs {
-  speedMs: number;
-  pitLimit: string;
-  onPitRoad: boolean;
-  inPitStall: boolean;
-  towTimeS: number;
-  fuelOrdered: number;
-  fuelCalculated: number;
-  repairLeftS: number;
-  optRepairLeftS: number;
-  changeFronts: boolean;
-  changeRears: boolean;
+  /**
+   * The stop. Left undefined — which is what a story naming a scenario does —
+   * the scenario's own order is kept, so a knob states a difference rather than
+   * replacing the frame.
+   */
+  towTimeS?: number;
+  fuelOrdered?: number;
+  fuelCalculated?: number;
+  repairLeftS?: number;
+  optRepairLeftS?: number;
+  changeFronts?: boolean;
+  changeRears?: boolean;
+  inPitStall?: boolean;
+  distToBoxM?: number;
+
   showFooter: boolean;
-  distToBoxM: number;
 }
 
-const STORY_FIELD_SIZE = 24;
-
-// A 4 km track whose pit lane runs from 2% to 12% of the lap with the stall two
-// thirds of the way down it — enough for the rail to have a real box patch.
-const STORY_TRACK_LENGTH_M = 4000;
-const STORY_PIT_IN_PCT = 0.02;
-const STORY_PIT_EXIT_PCT = 0.12;
-const STORY_PIT_BOX_PCT = 0.09;
-const STORY_LANE_LENGTH_M =
-  (STORY_PIT_EXIT_PCT - STORY_PIT_IN_PCT) * STORY_TRACK_LENGTH_M;
-
-const STORY_TRACK_SHAPE: TrackShapePayload = {
-  trackId: 1,
-  svgPath: '',
-  viewBox: '0 0 100 100',
-  points: [],
-  pitInPct: STORY_PIT_IN_PCT,
-  pitExitPct: STORY_PIT_EXIT_PCT,
-};
-
-const STORY_FIELD = Array.from(
-  { length: STORY_FIELD_SIZE },
-  (_unused, index) => ({
-    carIdx: index,
-  })
-) as CarEntry[];
-
-const CORNER_TEMPS: Record<string, [number, number, number]> = {
-  lf: [104, 97, 89],
-  rf: [91, 96, 101],
-  lr: [95, 92, 87],
-  rr: [88, 93, 99],
-};
-
-const CORNER_WEAR: Record<string, [number, number, number]> = {
-  lf: [0.41, 0.58, 0.72],
-  rf: [0.7, 0.61, 0.54],
-  lr: [0.62, 0.74, 0.79],
-  rr: [0.81, 0.76, 0.64],
-};
-
-const CORNER_PRESSURE: Record<string, number> = {
-  lf: 152,
-  rf: 158,
-  lr: 149,
-  rr: 154,
-};
-
-const buildChassis = (): ChassisFrame => {
-  const frame: Record<string, number> = {};
-
-  for (const corner of ['lf', 'rf', 'lr', 'rr']) {
-    const [cl, cm, cr] = CORNER_TEMPS[corner];
-    const [wl, wm, wr] = CORNER_WEAR[corner];
-
-    frame[`${corner}_temp_cl`] = cl;
-    frame[`${corner}_temp_cm`] = cm;
-    frame[`${corner}_temp_cr`] = cr;
-    frame[`${corner}_wear_l`] = wl;
-    frame[`${corner}_wear_m`] = wm;
-    frame[`${corner}_wear_r`] = wr;
-    frame[`${corner}_pressure`] = CORNER_PRESSURE[corner];
-  }
-
-  return frame as unknown as ChassisFrame;
-};
-
-const buildPitService = (args: StoryArgs): PitServiceFrame =>
-  ({
-    flags: null,
-    changeLf: args.changeFronts,
-    changeRf: args.changeFronts,
-    changeLr: args.changeRears,
-    changeRr: args.changeRears,
-    addFuel: args.fuelOrdered > 0,
-    cleanWindshield: false,
-    fastRepair: false,
-    fuelAmount: args.fuelOrdered,
-    lfPressure: 159,
-    rfPressure: 163,
-    lrPressure: 155,
-    rrPressure: 159,
-    tireCompound: null,
-    repairLeftS: args.repairLeftS,
-    optRepairLeftS: args.optRepairLeftS,
-    towTimeS: args.towTimeS,
-    fastRepairsAvailable: 1,
-    fastRepairsUsed: 1,
-    serviceStatus: null,
-    inPitStall: args.inPitStall,
-  }) as PitServiceFrame;
+// Only the knobs a story actually turned reach the frame; everything else is
+// left to the scenario or the snapshot underneath.
+const serviceOverrides = (args: StoryArgs): Partial<PitServiceFrame> => ({
+  ...whenSet(args.changeFronts, (change) => ({
+    changeLf: change,
+    changeRf: change,
+  })),
+  ...whenSet(args.changeRears, (change) => ({
+    changeLr: change,
+    changeRr: change,
+  })),
+  ...whenSet(args.fuelOrdered, (fuel) => ({
+    addFuel: fuel > 0,
+    fuelAmount: fuel,
+  })),
+  ...whenSet(args.repairLeftS, (repairLeftS) => ({ repairLeftS })),
+  ...whenSet(args.optRepairLeftS, (optRepairLeftS) => ({ optRepairLeftS })),
+  ...whenSet(args.towTimeS, (towTimeS) => ({ towTimeS })),
+  // Standing in the box is what puts the crew to work, so the two move together.
+  ...whenSet(args.inPitStall, (inPitStall) => ({
+    inPitStall,
+    serviceActive: inPitStall,
+  })),
+});
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/PitServiceWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: PitServiceWidget,
     size: { width: 235, height: 280 },
+    seedSnapshot: true,
     seed: (store, args) => {
-      store.player.updateCarStatus({
-        on_pit_road: args.onPitRoad,
-        fuel_level: 78,
-      } as Parameters<typeof store.player.updateCarStatus>[0]);
+      // A stint's worth of wear, so the tire block is sized against the spread
+      // it carries at the end of a run rather than the near-new baseline.
+      store.player.updateChassis(mockChassis());
 
-      store.player.updateCarDynamics({
-        speed: args.speedMs,
-      } as Parameters<typeof store.player.updateCarDynamics>[0]);
+      const service = serviceOverrides(args);
 
-      store.player.updateLapTiming({
-        player_car_position: 7,
-      } as Parameters<typeof store.player.updateLapTiming>[0]);
+      if (Object.keys(service).length > 0) {
+        store.player.updatePitService(
+          mockPitService({ ...store.player.pitService, ...service })
+        );
+      }
 
-      store.trackMapWidget.onTrackShapeReceived(STORY_TRACK_SHAPE);
+      if (args.distToBoxM !== undefined) {
+        store.player.updatePitTarget(mockPitTarget({ distM: args.distToBoxM }));
+      }
 
-      // The rail reads the lane the same way the overlay does: progress along
-      // the lane, not a bar filled to match the distance.
-      const boxLanePct =
-        (STORY_PIT_BOX_PCT - STORY_PIT_IN_PCT) /
-        (STORY_PIT_EXIT_PCT - STORY_PIT_IN_PCT);
-
-      // Further back than the entry line there is no lane left to stand on, so
-      // the control is capped there instead of showing a distance the progress
-      // below has already clamped away.
-      const distToBoxM = Math.min(
-        args.distToBoxM,
-        boxLanePct * STORY_LANE_LENGTH_M
-      );
-
-      store.player.updatePitTarget({
-        distM: distToBoxM,
-        target: 'pitbox',
-        laneProgressPct: boxLanePct - distToBoxM / STORY_LANE_LENGTH_M,
-      });
-
-      store.player.updateChassis(buildChassis());
-      store.player.updatePitService(buildPitService(args));
-
-      // `cars` is always present on a real SessionInfo, and the footer's field
-      // size reads it — a seed without it throws where the sim never would.
-      store.session.updateSessionInfo({
-        trackPitSpeedLimit: args.pitLimit,
-        trackLengthM: STORY_TRACK_LENGTH_M,
-        driverPitTrkPct: STORY_PIT_BOX_PCT,
-        cars: STORY_FIELD,
-      } as Parameters<typeof store.session.updateSessionInfo>[0]);
-
-      store.backendComputed.updateFuel({
-        fuelToAdd: args.fuelCalculated,
-      } as Parameters<typeof store.backendComputed.updateFuel>[0]);
+      if (args.fuelCalculated !== undefined) {
+        store.backendComputed.updateFuel(
+          mockFuel({
+            ...store.backendComputed.fuel,
+            fuelToAdd: args.fuelCalculated,
+          })
+        );
+      }
 
       store.liveWidgets.updateUserSettings('pit-service', {
         ...store.liveWidgets.getSettings<PitServiceWidgetSettings>(
@@ -184,22 +100,9 @@ const meta: Meta<StoryArgs> = {
       });
     },
     args: {
-      speedMs: 18,
-      pitLimit: '72 kph',
-      onPitRoad: true,
-      inPitStall: false,
-      towTimeS: 0,
-      fuelOrdered: 34.2,
-      fuelCalculated: 34.2,
-      repairLeftS: 0,
-      optRepairLeftS: 0,
-      changeFronts: true,
-      changeRears: true,
       showFooter: true,
-      distToBoxM: 180,
     },
     argTypes: {
-      speedMs: { control: { type: 'range', min: 0, max: 30, step: 0.5 } },
       distToBoxM: { control: { type: 'range', min: 0, max: 350, step: 5 } },
     },
   }),
@@ -208,26 +111,36 @@ const meta: Meta<StoryArgs> = {
 export default meta;
 type Story = StoryObj<StoryArgs>;
 
-export const Armed: Story = {};
-
-export const Servicing: Story = {
-  args: {
-    inPitStall: true,
-    speedMs: 0,
-    repairLeftS: 12.4,
-    optRepairLeftS: 8,
-    changeRears: false,
-  },
+// Rolling down the lane with the stop already ordered and nothing happening yet.
+export const Armed: Story = {
+  parameters: previewScenario('pit-limiter'),
 };
 
+// Stopped in the box with every corner ordered and the fuel going in — the only
+// state that lights the whole panel at once.
+export const Servicing: Story = {
+  parameters: previewScenario('pit-service'),
+};
+
+export const RepairsUnderWay: Story = {
+  parameters: previewScenario('pit-service'),
+  args: { repairLeftS: 12.4, optRepairLeftS: 8, changeRears: false },
+};
+
+// A fill the driver typed in rather than the one the calculation asked for, so
+// the two numbers disagree on screen.
 export const ManualFuelOrder: Story = {
+  parameters: previewScenario('pit-service'),
   args: { fuelOrdered: 40, fuelCalculated: 34.2 },
 };
 
+// On the hook with both repair clocks still running: the three countdowns the
+// box can carry at once, which is the tallest it ever gets.
 export const Towing: Story = {
-  args: { towTimeS: 42, onPitRoad: false },
+  parameters: previewScenario('pit-tow'),
 };
 
 export const FooterOff: Story = {
+  parameters: previewScenario('pit-service'),
   args: { showFooter: false },
 };

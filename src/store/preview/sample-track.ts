@@ -51,9 +51,23 @@ const samplePoints = buildPoints();
 
 export const SAMPLE_TRACK_ID = 9001;
 
+// A recorded pit lane. The lane pcts are only ever learned by driving through
+// the pits, so a fresh preview would otherwise have none — and without them the
+// lane bar, the pitbox marker and the box countdown draw nothing at all, on the
+// pit line widget and on the race dash alike.
+//
+// The lane wraps the start/finish line and is placed around the snapshot's own
+// `driverPitTrkPct` (0.98), so the player's stall lands about halfway down it.
+// A tenth of the 3.6 km lap makes a ~350 m lane — a realistic length to size the
+// bar against.
+export const SAMPLE_PIT_IN_PCT = 0.93;
+export const SAMPLE_PIT_EXIT_PCT = 0.03;
+
 export const sampleTrack: TrackShapePayload = {
   trackId: SAMPLE_TRACK_ID,
   viewBox: `0 0 ${TRACK_WIDTH} ${TRACK_HEIGHT}`,
   svgPath: buildSvgPath(samplePoints),
   points: samplePoints,
+  pitInPct: SAMPLE_PIT_IN_PCT,
+  pitExitPct: SAMPLE_PIT_EXIT_PCT,
 };

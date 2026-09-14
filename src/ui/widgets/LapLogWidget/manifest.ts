@@ -11,6 +11,7 @@ export const LAP_LOG_MANIFEST: WidgetManifest = {
   description:
     'Last 8 laps with time and delta vs personal best. Best lap highlighted.',
   requiredCapabilities: ['playerDynamics'],
+  previewScenarios: ['delta-personal-best'],
   autoHeight: true,
   designWidth: 220,
   designHeight: 260,
