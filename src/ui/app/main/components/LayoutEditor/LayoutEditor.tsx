@@ -41,7 +41,7 @@ import {
   useLayoutGestureStores,
 } from '@store/root-store-context';
 import {
-  PREVIEW_SCENARIOS,
+  SESSION_PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@store/preview/scenarios';
 import { LayoutCanvas } from './LayoutCanvas';
@@ -69,7 +69,9 @@ const SNAP_MARGIN = 8;
 // Sentinel for the picker entry that zooms the canvas out to the whole desktop.
 const ALL_MONITORS = '__all__';
 
-const SCENARIO_OPTIONS = PREVIEW_SCENARIOS.map((scenario) => ({
+// The canvas is seeded as a whole, so the bar offers the session-wide moments
+// only — a widget's own domain scenarios belong to that widget's picker.
+const SCENARIO_OPTIONS = SESSION_PREVIEW_SCENARIOS.map((scenario) => ({
   value: scenario.id,
   label: scenario.label,
 }));

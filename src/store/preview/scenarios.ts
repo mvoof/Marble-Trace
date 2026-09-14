@@ -277,14 +277,25 @@ const applySessionClock = (
   });
 };
 
+/**
+ * Who the scenario is offered to. A `'widget'` scenario states one domain and
+ * belongs to the widgets that declare it; a `'session'` scenario states a whole
+ * moment of a race and belongs to the layout editor, which seeds every widget
+ * on the canvas from it at once. Left out, a scenario is a widget one.
+ */
+export type PreviewScenarioScope = 'widget' | 'session';
+
 export interface PreviewScenario {
   id: PreviewScenarioId;
   label: string;
+  scope?: PreviewScenarioScope;
   apply: (store: RootStore) => void;
 }
 
+export const DEFAULT_PREVIEW_SCENARIO_ID: PreviewScenarioId = 'baseline';
+
 // Each scenario layers a forced state on top of the realistic base snapshot.
-export const PREVIEW_SCENARIOS: PreviewScenario[] = [
+const WIDGET_SCENARIOS: PreviewScenario[] = [
   {
     id: 'baseline',
     label: 'Baseline',
@@ -850,13 +861,151 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
   },
 ];
 
+/** Pace-car speed behind a full-course caution. */
+const CAUTION_SPEED_KMH = 90;
+/** A wet lap, against which the rain moment's gaps are measured. */
+const WET_LAP_TIME_S = 104.8;
+
+// The six moments a driver arranges a layout against. Each is composed from the
+// same domain helpers the widget scenarios use — nothing about a race is stated
+// twice — and each states enough of the canvas at once that a widget which only
+// appears in one of them can be placed with the rest in view.
+const SESSION_SCENARIOS: PreviewScenario[] = [
+  {
+    id: 'session-green',
+    label: 'Session — green flag',
+    scope: 'session',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { green: true });
+      applySessionClock(
+        store,
+        { session_time_remain: 2384.6, session_time: 615.4 },
+        { sessionLaps: 'unlimited' }
+      );
+      applyField(store, { gapS: 1.6 });
+      applyDelta(store, -0.142);
+    },
+  },
+  {
+    id: 'session-traffic',
+    label: 'Session — traffic',
+    scope: 'session',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { green: true });
+      // The field nose to tail and cars on both sides at once: the moment every
+      // widget that reads other cars is at its busiest, which is the one a
+      // driver wants the whole canvas measured against.
+      applyField(store, { gapS: 0.4 });
+      applyTraffic(store, [
+        { carIdx: 7, longitudinalDist: 0.9, side: 'left' },
+        { carIdx: 3, longitudinalDist: -0.6, side: 'right' },
+        { carIdx: 12, longitudinalDist: 7.2, side: 'center' },
+        { carIdx: 19, longitudinalDist: -6.4, side: 'center' },
+      ]);
+      applyDelta(store, 0.208);
+    },
+  },
+  {
+    id: 'session-yellow',
+    label: 'Session — full-course yellow',
+    scope: 'session',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { yellow: true, caution: true, cautionWaving: true });
+      // Behind the pace car: the field is bunched and the whole canvas is being
+      // read at a speed a driver actually has time to read it at.
+      applyField(store, { gapS: 0.8 });
+      applyDynamics(store, {
+        speed: CAUTION_SPEED_KMH / 3.6,
+        rpm: 3400,
+        gear: 3,
+      });
+    },
+  },
+  {
+    id: 'session-pit-stop',
+    label: 'Session — pit stop',
+    scope: 'session',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { green: true });
+      // Stopped in the box with the whole order being served. The pit widgets
+      // are the ones that appear in no other moment, so this is where they are
+      // placed among the rest.
+      applyPitBox(store);
+      store.backendComputed.updateFuel(
+        mockFuel({
+          lapsRemaining: 1.8,
+          lapsToFinish: 24,
+          shortage: -46.2,
+          fuelToAdd: 46.2,
+          fuelToAddWithBuffer: 52.4,
+          pitWarning: true,
+        })
+      );
+    },
+  },
+  {
+    id: 'session-rain',
+    label: 'Session — rain',
+    scope: 'session',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { green: true });
+      applyWeather(store, 'wet');
+      // Wet running spreads the field out and slows the lap, so the gaps are
+      // stated wider than the green moment's rather than left at its numbers.
+      applyField(store, { gapS: 2.4, lapTimeS: WET_LAP_TIME_S });
+      applyDelta(store, 0.734);
+    },
+  },
+  {
+    id: 'session-finish',
+    label: 'Session — finish',
+    scope: 'session',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { checkered: true });
+      // The clock run out with the flag out: every readout at the end of its
+      // range at once, which is the state the totals are widest in.
+      applySessionClock(
+        store,
+        {
+          session_time_remain: 0,
+          session_time: 3600,
+          session_state: 'Checkered',
+        },
+        { sessionLaps: 'unlimited' }
+      );
+      applyField(store, { gapS: 1.1 });
+    },
+  },
+];
+
+export const PREVIEW_SCENARIOS: PreviewScenario[] = [
+  ...WIDGET_SCENARIOS,
+  ...SESSION_SCENARIOS,
+];
+
+/**
+ * What the layout editor's picker offers: the whole-canvas moments, led by the
+ * baseline the canvas opens on. A widget's own picker is built from its
+ * manifest and so never reaches these.
+ */
+export const SESSION_PREVIEW_SCENARIOS: PreviewScenario[] = [
+  ...WIDGET_SCENARIOS.filter(
+    (scenario) => scenario.id === DEFAULT_PREVIEW_SCENARIO_ID
+  ),
+  ...SESSION_SCENARIOS,
+];
+
 // Keyed by plain string: the picked id arrives from component state and from
 // story parameters, so a lookup has to be able to miss.
 export const PREVIEW_SCENARIO_BY_ID = new Map<string, PreviewScenario>(
   PREVIEW_SCENARIOS.map((scenario) => [scenario.id, scenario])
 );
-
-export const DEFAULT_PREVIEW_SCENARIO_ID: PreviewScenarioId = 'baseline';
 
 // Wrapped in `action` so the seed + override setters run as a single MobX
 // transaction; callers invoke it directly without their own `runInAction`.

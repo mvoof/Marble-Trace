@@ -55,4 +55,13 @@ export type PreviewScenarioId =
   | 'engine-water-overheat'
   | 'engine-stalled'
   | 'timer-final-minute'
-  | 'timer-lap-limited';
+  | 'timer-lap-limited'
+  // Session-wide moments. Composed from the same domain builders, but scoped to
+  // the whole canvas rather than to one widget: the layout editor offers them
+  // and a widget's own picker never does.
+  | 'session-green'
+  | 'session-traffic'
+  | 'session-yellow'
+  | 'session-pit-stop'
+  | 'session-rain'
+  | 'session-finish';

@@ -15,6 +15,7 @@ import { PREVIEW_CAR_LENGTH_M } from './mocks/traffic';
 import {
   DEFAULT_PREVIEW_SCENARIO_ID,
   PREVIEW_SCENARIOS,
+  SESSION_PREVIEW_SCENARIOS,
   seedScenario,
 } from './scenarios';
 
@@ -788,9 +789,14 @@ describe('scenario declarations', () => {
     }
   });
 
+  // A session scenario belongs to the whole canvas, so no manifest declares it
+  // and the pairing has to let it through rather than read it as an orphan.
   it('ships only scenarios some widget declares', () => {
     for (const scenario of PREVIEW_SCENARIOS) {
-      if (scenario.id === DEFAULT_PREVIEW_SCENARIO_ID) {
+      if (
+        scenario.id === DEFAULT_PREVIEW_SCENARIO_ID ||
+        scenario.scope === 'session'
+      ) {
         continue;
       }
 
@@ -807,5 +813,94 @@ describe('scenario declarations', () => {
 
       expect(new Set(scenarios).size, manifest.id).toBe(scenarios.length);
     }
+  });
+});
+
+// The layout editor seeds the whole canvas at once, so its moments are stated
+// once and offered only there.
+describe('session scenarios', () => {
+  const sessionScenarios = PREVIEW_SCENARIOS.filter(
+    (scenario) => scenario.scope === 'session'
+  );
+
+  it('ships the six moments a layout is arranged against', () => {
+    expect(sessionScenarios.map((scenario) => scenario.id)).toEqual([
+      'session-green',
+      'session-traffic',
+      'session-yellow',
+      'session-pit-stop',
+      'session-rain',
+      'session-finish',
+    ]);
+  });
+
+  it('offers the editor its moments behind the baseline', () => {
+    expect(SESSION_PREVIEW_SCENARIOS[0]?.id).toBe(DEFAULT_PREVIEW_SCENARIO_ID);
+    expect(SESSION_PREVIEW_SCENARIOS).toHaveLength(sessionScenarios.length + 1);
+  });
+
+  it('never offers a session moment on a widget picker', () => {
+    const declared = new Set(
+      WIDGETS.flatMap((manifest) => manifest.previewScenarios ?? [])
+    );
+
+    for (const scenario of sessionScenarios) {
+      expect(declared.has(scenario.id), scenario.id).toBe(false);
+    }
+  });
+
+  it('waves the green with the field running and a clock left', () => {
+    const store = seed('session-green');
+
+    expect(store.player.carStatus?.flags.green).toBe(true);
+    expect(store.session.session?.session_time_remain ?? 0).toBeGreaterThan(0);
+    expect(store.backendComputed.relative?.entries.length ?? 0).toBeGreaterThan(
+      1
+    );
+  });
+
+  it('packs the field and fills the radar at once', () => {
+    const store = seed('session-traffic');
+    const nearby = store.backendComputed.proximity?.nearbyCars ?? [];
+
+    expect(nearby.length).toBeGreaterThan(2);
+    const radar = store.backendComputed.proximity?.radarDistances;
+
+    expect(radar?.leftDist).not.toBeNull();
+    expect(radar?.rightDist).not.toBeNull();
+    expect(radar?.rearDist ?? NO_CAR_DIST_M).toBeLessThan(NO_CAR_DIST_M);
+    expect(radar?.frontDist ?? NO_CAR_DIST_M).toBeLessThan(NO_CAR_DIST_M);
+  });
+
+  it('runs the caution at pace-car speed', () => {
+    const store = seed('session-yellow');
+
+    expect(store.player.carStatus?.flags.caution).toBe(true);
+    expect(store.player.carDynamics?.speed ?? 0).toBeGreaterThan(0);
+    expect(store.player.carDynamics?.speed ?? 0).toBeLessThan(
+      seed('session-green').player.carDynamics?.speed ?? 0
+    );
+  });
+
+  it('stands the car in the box with the order being served', () => {
+    const store = seed('session-pit-stop');
+
+    expect(store.player.pitService?.inPitStall).toBe(true);
+    expect(store.player.pitService?.serviceActive).toBe(true);
+    expect(store.backendComputed.fuel?.pitWarning).toBe(true);
+  });
+
+  it('wets the track without dropping the green', () => {
+    const store = seed('session-rain');
+
+    expect(store.environment.environment?.weatherDeclaredWet).toBe(true);
+    expect(store.player.carStatus?.flags.green).toBe(true);
+  });
+
+  it('runs the clock out under the checkered', () => {
+    const store = seed('session-finish');
+
+    expect(store.player.carStatus?.flags.checkered).toBe(true);
+    expect(store.session.session?.session_time_remain).toBe(0);
   });
 });
