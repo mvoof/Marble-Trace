@@ -105,7 +105,9 @@ const meta: Meta<StoryArgs> = {
       // The recorded snapshot was captured in the garage with the tank empty,
       // so the level a story states is put on the builder's running car rather
       // than patched onto that.
-      if (args.fuelLevel !== undefined) {
+      // `null` is the no-data story's way of asking for the snapshot's empty
+      // garage tank — the frame's own field is never nullable.
+      if (typeof args.fuelLevel === 'number') {
         store.player.updateCarStatus(
           mockCarStatus({ fuel_level: args.fuelLevel })
         );

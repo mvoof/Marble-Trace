@@ -108,10 +108,17 @@ const meta: Meta<StoryArgs> = {
     widget: RelativeWidget,
     size: { width: 406, height: 400 },
     seedSnapshot: true,
-    seed: (store, args) => {
+    seed: (store, args, scenarioId) => {
       const base = store.backendComputed.driverEntries;
 
-      if (base) {
+      // A scenario has already spaced the field the way it means to show it, so
+      // only a story that states a spacing of its own re-spaces it.
+      const respaces =
+        scenarioId === undefined ||
+        args.gapS !== undefined ||
+        args.rows !== undefined;
+
+      if (base && respaces) {
         const { driverEntries, relative } = mockField(base.entries, {
           gapS: args.gapS ?? DEFAULT_GAP_S,
           rows: args.rows,

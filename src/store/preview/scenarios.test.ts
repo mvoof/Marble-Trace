@@ -457,6 +457,15 @@ describe('returning to the baseline', () => {
     );
   });
 
+  it('takes the incident markers back off the map', () => {
+    const store = new RootStore({ skipInit: true });
+
+    seedScenario(store, 'incident-zones');
+    seedScenario(store, DEFAULT_PREVIEW_SCENARIO_ID);
+
+    expect(store.backendComputed.incidents?.incidents).toEqual([]);
+  });
+
   it('matches a store that never left it', () => {
     const visited = new RootStore({ skipInit: true });
 

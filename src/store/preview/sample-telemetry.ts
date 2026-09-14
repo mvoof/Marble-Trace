@@ -140,6 +140,10 @@ export const seedSampleTelemetry = action((store: RootStore) => {
       trackId: SAMPLE_TRACK_ID,
     });
 
+  // No incident markers in the baseline: they are laid down by a scenario, and
+  // re-seeding the same store has to take them back off the map again.
+  store.backendComputed.updateIncidents({ incidents: [] });
+
   const entries = computeDriverEntries(
     sampleSnapshot.carIdx ?? null,
     sampleSnapshot.sessionInfo ?? null

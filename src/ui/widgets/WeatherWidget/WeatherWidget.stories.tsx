@@ -101,10 +101,12 @@ const meta: Meta<StoryArgs> = {
 
       const sessionInfo = store.session.sessionInfo;
 
-      if (sessionInfo) {
+      // Only a story naming a weather type states one; otherwise the seeded
+      // session keeps its own, scenario or snapshot.
+      if (sessionInfo && args.weatherType !== undefined) {
         store.session.updateSessionInfo({
           ...sessionInfo,
-          trackWeatherType: args.weatherType ?? '',
+          trackWeatherType: args.weatherType,
         });
       }
 
