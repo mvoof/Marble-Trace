@@ -107,6 +107,7 @@
     "arrangeRemoteScreensTooltip": "Разложить внешние экраны рядами под рабочим столом вместе с их виджетами",
     "addRemoteScreenHint": "Экран рисует всё, что откроет ссылку: планшет в вашей сети или Browser Source в OBS. Для OBS сделайте фон прозрачным и задайте источнику тот же размер — первый подключившийся сообщает свой, и подгонка под него сдвинет все виджеты экрана.",
     "remoteScreenTransparent": "Прозрачный фон (для OBS)",
+    "remoteScreenTransparentSuffix": "прозрачный",
     "remoteScreenModeReuse": "Существующий экран",
     "remoteScreenModeNew": "Новый экран",
     "remoteScreenSelectExisting": "Выберите экран",

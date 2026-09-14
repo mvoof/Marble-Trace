@@ -631,4 +631,24 @@ describe('a screen added to a layout', () => {
         ?.monitors.find((m) => m.slug === 'wheel-tablet')?.bounds.width
     ).toBe(1920);
   });
+
+  it('generates a slug unique across all saved layouts when adding a new remote screen', () => {
+    const layout1Id = rootStore.layouts.addLayout('Layout 1');
+    rootStore.layouts.setEditingLayoutId(layout1Id);
+    rootStore.layouts.addRemoteScreen('Dash', 1280, 800);
+
+    const firstSlug = rootStore.layouts
+      .byId(layout1Id)
+      ?.monitors.find((m) => m.name === 'Dash')?.slug;
+    expect(firstSlug).toBe('dash');
+
+    const layout2Id = rootStore.layouts.addLayout('Layout 2');
+    rootStore.layouts.setEditingLayoutId(layout2Id);
+    rootStore.layouts.addRemoteScreen('Dash', 1280, 800);
+
+    const secondSlug = rootStore.layouts
+      .byId(layout2Id)
+      ?.monitors.find((m) => m.name === 'Dash')?.slug;
+    expect(secondSlug).toBe('dash-2');
+  });
 });

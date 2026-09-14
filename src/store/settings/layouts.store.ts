@@ -704,10 +704,11 @@ export class LayoutsStore {
 
     if (!layout) return;
 
-    const slug = uniqueSlug(
-      slugFromName(name),
-      layout.monitors.map((monitor) => monitor.slug ?? '')
+    const existingSlugs = this.layouts.flatMap((saved) =>
+      saved.monitors.map((monitor) => monitor.slug ?? '')
     );
+
+    const slug = uniqueSlug(slugFromName(name), existingSlugs);
 
     this.addMonitor({
       name,

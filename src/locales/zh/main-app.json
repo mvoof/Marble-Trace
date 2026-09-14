@@ -107,6 +107,7 @@
     "arrangeRemoteScreensTooltip": "将远程屏幕连同其挂件排列在桌面下方的多行中",
     "addRemoteScreenHint": "任何打开该链接的设备都会渲染此屏幕：网络中的平板，或 OBS 的浏览器源。用于 OBS 时请将背景设为透明，并把源设成相同尺寸——第一个连接的会上报自己的尺寸，按它调整会移动该屏幕上的所有挂件。",
     "remoteScreenTransparent": "透明背景（用于 OBS）",
+    "remoteScreenTransparentSuffix": "透明",
     "remoteScreenModeReuse": "现有屏幕",
     "remoteScreenModeNew": "新屏幕",
     "remoteScreenSelectExisting": "选择屏幕",

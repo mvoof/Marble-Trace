@@ -149,7 +149,7 @@ export const AddRemoteScreenButton = observer(() => {
                 onChange={setSelectedReusableSlug}
                 options={reusableScreens.map((screen) => ({
                   value: screen.slug ?? '',
-                  label: `${screen.name} · ${screen.bounds.width}×${screen.bounds.height}${screen.background === 'transparent' ? ' · transparent' : ''}`,
+                  label: `${screen.name} · ${screen.bounds.width}×${screen.bounds.height}${screen.background === 'transparent' ? ` · ${t('layoutEditor.remoteScreenTransparentSuffix')}` : ''}`,
                 }))}
               />
 

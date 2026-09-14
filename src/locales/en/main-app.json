@@ -107,6 +107,7 @@
     "arrangeRemoteScreensTooltip": "Lay the remote screens out in rows under the desktop, widgets included",
     "addRemoteScreenHint": "Anything that opens the link renders this screen: a tablet on your network, or a Browser Source in OBS. Make the ground transparent for OBS, and size the source to match — the first one that connects reports its own size, and fitting to it moves every widget on the screen.",
     "remoteScreenTransparent": "Transparent background (for OBS)",
+    "remoteScreenTransparentSuffix": "transparent",
     "remoteScreenModeReuse": "Existing screen",
     "remoteScreenModeNew": "New screen",
     "remoteScreenSelectExisting": "Select screen",
