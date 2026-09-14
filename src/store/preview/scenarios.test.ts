@@ -18,9 +18,9 @@ import {
   seedScenario,
 } from './scenarios';
 
-// The limiter's bit in the engine warning mask. Spelled out rather than
-// imported: it is declared in the UI layer, which the preview module may not
-// reach into.
+// The limiter's bit as the pit builder states it. The widgets' own copy is
+// declared in the UI layer, which the preview module may not reach into, so the
+// two are paired by the scenarios rather than by an import.
 const PIT_LIMITER_BIT = 0x10;
 
 /** The sim's dry track, and the top of its wetness scale. */
@@ -155,6 +155,52 @@ describe('pit scenarios', () => {
     expect(store.player.pitLaneProgressPct ?? 0).toBeGreaterThan(
       store.pitServiceWidget.pitboxLanePct ?? 1
     );
+  });
+  it('stops the car in its box with the crew working on it', () => {
+    const store = seed('pit-service');
+    const service = store.player.pitService;
+
+    expect(store.player.carStatus?.on_pit_road).toBe(true);
+    expect(store.player.carDynamics?.speed).toBe(0);
+    expect(service?.inPitStall).toBe(true);
+    expect(service?.serviceActive).toBe(true);
+    expect(service?.towTimeS).toBe(0);
+  });
+
+  it('orders every corner and the fuel on the stop it shows', () => {
+    const service = seed('pit-service').player.pitService;
+
+    for (const ordered of [
+      service?.changeLf,
+      service?.changeRf,
+      service?.changeLr,
+      service?.changeRr,
+      service?.addFuel,
+    ]) {
+      expect(ordered).toBe(true);
+    }
+
+    expect(service?.fuelAmount ?? 0).toBeGreaterThan(0);
+  });
+
+  it('runs the tow and both repair clocks together', () => {
+    const store = seed('pit-tow');
+    const service = store.player.pitService;
+
+    expect(service?.towTimeS ?? 0).toBeGreaterThan(0);
+    expect(service?.repairLeftS ?? 0).toBeGreaterThan(0);
+    expect(service?.optRepairLeftS ?? 0).toBeGreaterThan(0);
+    expect(store.player.carDynamics?.speed).toBe(0);
+  });
+
+  it('leaves the fuel calculation the baseline holds alone', () => {
+    const baseline = seed(DEFAULT_PREVIEW_SCENARIO_ID).backendComputed.fuel;
+
+    for (const scenarioId of ['pit-service', 'pit-tow', 'pit-limiter']) {
+      expect(seed(scenarioId).backendComputed.fuel, scenarioId).toEqual(
+        baseline
+      );
+    }
   });
 });
 

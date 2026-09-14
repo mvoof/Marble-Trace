@@ -11,7 +11,12 @@ import { action } from 'mobx';
 import type { RootStore } from '@store/root-store';
 import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';
 import { mockFlags } from './mocks/flags';
-import { mockPitTarget } from './mocks/pit';
+import {
+  mockPitCarStatus,
+  mockPitService,
+  mockPitStallDynamics,
+  mockPitTarget,
+} from './mocks/pit';
 import { mockFuel } from './mocks/fuel';
 import type { MockFieldOptions } from './mocks/field';
 import { mockField } from './mocks/field';
@@ -63,8 +68,6 @@ const applyFlags = (store: RootStore, overrides: Partial<RaceFlags>) => {
   syncFlagDisplay(store);
 };
 
-/** The pit limiter's bit in the engine warning mask, as the widgets read it. */
-const PIT_LIMITER_BIT = 0x10;
 const PIT_LANE_RPM = 2800;
 const PIT_LANE_GEAR = 2;
 
@@ -112,16 +115,9 @@ const applyPitLane = (
     pitTarget: Partial<PitTargetFrame>;
   }
 ) => {
-  const carStatus = store.player.carStatus;
   const sessionInfo = store.session.sessionInfo;
 
-  if (carStatus) {
-    store.player.updateCarStatus({
-      ...carStatus,
-      on_pit_road: true,
-      engine_warnings: limiterOn ? PIT_LIMITER_BIT : 0,
-    });
-  }
+  store.player.updateCarStatus(mockPitCarStatus({ limiterOn }));
 
   if (sessionInfo) {
     store.session.updateSessionInfo({
@@ -137,6 +133,31 @@ const applyPitLane = (
     rpm: PIT_LANE_RPM,
     gear: PIT_LANE_GEAR,
   });
+};
+
+// The stop itself: the car standing in its own stall with the crew working on
+// it. Stated as one helper because nothing about it varies — what a driver
+// sizes the box against is the full order being serviced at once, and the
+// countdowns that ride beside it belong to the tow scenario instead.
+const applyPitBox = (store: RootStore) => {
+  store.player.updateCarStatus(mockPitCarStatus({ limiterOn: true }));
+  store.player.updatePitTarget(
+    mockPitTarget({ target: 'pitbox', distM: 0, laneProgressPct: 0.42 })
+  );
+  store.player.updatePitService(
+    mockPitService({
+      changeLf: true,
+      changeRf: true,
+      changeLr: true,
+      changeRr: true,
+      addFuel: true,
+      fuelAmount: 52.4,
+      inPitStall: true,
+      serviceActive: true,
+    })
+  );
+
+  applyDynamics(store, mockPitStallDynamics());
 };
 
 // Puts the stored best lap in place and the player somewhere on it, so the
@@ -566,18 +587,17 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     label: 'Pit — towing',
     apply: (store) => {
       seedSampleTelemetry(store);
-      const pitService = store.player.pitService;
-
-      if (pitService) {
-        store.player.updatePitService({
-          ...pitService,
+      // On the hook with both repair clocks still running: the three countdowns
+      // the box can carry at once, which is the tallest it ever gets.
+      store.player.updatePitService(
+        mockPitService({
           towTimeS: 42,
           repairLeftS: 18.4,
           optRepairLeftS: 6,
-        });
-      }
+        })
+      );
 
-      applyDynamics(store, { speed: 0, rpm: 1200, gear: 0 });
+      applyDynamics(store, mockPitStallDynamics());
     },
   },
   {
@@ -620,6 +640,17 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
         speedKmh: 70,
         pitTarget: { laneProgressPct: 0.7, distM: 107, target: 'pitExit' },
       });
+    },
+  },
+  {
+    id: 'pit-service',
+    label: 'Pit — service under way',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Stopped in the box with every corner ordered and the fuel going in —
+      // the state the recording never reached without driving a stop, and the
+      // only one that lights the whole panel at once.
+      applyPitBox(store);
     },
   },
   {

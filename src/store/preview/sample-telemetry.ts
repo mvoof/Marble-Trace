@@ -12,6 +12,7 @@ import { TrackSurface } from '@/types';
 import type { RootStore } from '@store/root-store';
 import { computeDriverEntries } from './compute-driver-entries';
 import { mockLapDelta, mockLapLog, mockLapTiming } from './mocks/delta';
+import { mockPitService } from './mocks/pit';
 import { sampleTrack, SAMPLE_TRACK_ID } from './sample-track';
 
 // Mirror the active race flags into the FlagsStore's display state. The hold /
@@ -67,31 +68,10 @@ const buildSampleChassis = (): ChassisFrame => {
 };
 
 // The pit service order the preview shows: two tires and a fuel fill, so the
-// widget renders both an ordered and a kept corner without a live session.
-export const samplePitService: PitServiceFrame = {
-  flags: null,
-  changeLf: true,
-  changeRf: true,
-  changeLr: false,
-  changeRr: false,
-  addFuel: true,
-  cleanWindshield: false,
-  fastRepair: false,
-  fuelAmount: 34.2,
-  lfPressure: 159,
-  rfPressure: 163,
-  lrPressure: 155,
-  rrPressure: 159,
-  tireCompound: null,
-  repairLeftS: 0,
-  optRepairLeftS: 0,
-  towTimeS: 0,
-  fastRepairsAvailable: 1,
-  fastRepairsUsed: 1,
-  serviceStatus: null,
-  inPitStall: false,
-  serviceActive: false,
-};
+// widget renders both an ordered and a kept corner without a live session. The
+// shape is the pit builder's own, so the baseline and every pit scenario state
+// the same stop.
+export const samplePitService: PitServiceFrame = mockPitService();
 
 export const sampleFuel: FuelComputedFrame = {
   historyStats: { last: 2.7, avg: 2.6, min: 2.4, max: 2.9 },

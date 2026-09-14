@@ -43,6 +43,7 @@ export type PreviewScenarioId =
   | 'pit-lane'
   | 'pit-limiter'
   | 'pit-over-limit'
+  | 'pit-service'
   | 'fuel-pit-window'
   | 'fuel-short'
   | 'fuel-refuel-calc'

@@ -33,7 +33,7 @@ const STORY_TRACK_SHAPE: TrackShapePayload = {
   pitExitPct: STORY_PIT_EXIT_PCT,
 };
 
-const WIDGET_SIZE = { width: 120, height: 150 };
+const WIDGET_SIZE = { width: 80, height: 380 };
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/PitLineWidget',
