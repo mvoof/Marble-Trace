@@ -161,7 +161,7 @@ export const RemoteScreensSection = observer(() => {
     [info]
   );
 
-  const remoteScreens = layouts.allRemoteScreens;
+  const remoteScreens = layouts.groupedRemoteScreens;
 
   return (
     <SettingsCard title={t('settingsPage.remote.title')}>
@@ -366,16 +366,12 @@ export const RemoteScreensSection = observer(() => {
             : t('settingsPage.remote.screensDesc')}
         </div>
 
-        {remoteScreens.map((descriptor) => (
+        {remoteScreens.map((group) => (
           <RemoteScreenRow
-            key={`${descriptor.layoutId}:${descriptor.screen.name}:${descriptor.screen.slug}`}
-            screen={descriptor.screen}
-            layoutId={descriptor.layoutId}
-            layoutName={descriptor.layoutName}
-            isLive={descriptor.isLive}
-            sessionContexts={descriptor.sessionContexts}
-            url={screenUrl(descriptor.screen.slug ?? '')}
-            device={remoteDevices.bySlug(descriptor.screen.slug ?? '')}
+            key={group.slug}
+            group={group}
+            url={screenUrl(group.slug)}
+            device={remoteDevices.bySlug(group.slug)}
             revealed={revealed}
           />
         ))}

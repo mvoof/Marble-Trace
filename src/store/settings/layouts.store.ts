@@ -27,11 +27,28 @@ import type {
 } from '@/types/widget-settings';
 
 export interface RemoteScreenDescriptor {
-  screen: LayoutMonitor;
   layoutId: string;
   layoutName: string;
   isLive: boolean;
   sessionContexts: SessionContext[];
+  screen: LayoutMonitor;
+}
+
+export interface RemoteScreenUsage {
+  layoutId: string;
+  layoutName: string;
+  isLive: boolean;
+  sessionContexts: SessionContext[];
+  screen: LayoutMonitor;
+}
+
+export interface GroupedRemoteScreen {
+  slug: string;
+  name: string;
+  screen: LayoutMonitor;
+  isLive: boolean;
+  activeLayoutName?: string;
+  layouts: RemoteScreenUsage[];
 }
 
 const DEFAULT_LAYOUT_NAME = 'Default';
@@ -376,6 +393,99 @@ export class LayoutsStore {
   }
 
   /**
+   * Remote screens grouped by slug across all layouts.
+   * Gives a unified view of each device/URL screen, including all layouts
+   * where it is used.
+   */
+  get groupedRemoteScreens(): GroupedRemoteScreen[] {
+    const liveId = this.liveLayoutId;
+    const sessionMap = this.sessionLayouts;
+    const groups = new Map<string, GroupedRemoteScreen>();
+
+    for (const layout of this.layouts) {
+      const isLive = layout.id === liveId;
+      const sessionContexts: SessionContext[] = (
+        Object.entries(sessionMap) as [SessionContext, string | null][]
+      )
+        .filter(([, id]) => id === layout.id)
+        .map(([ctx]) => ctx);
+
+      for (const monitor of layout.monitors) {
+        if (!isRemoteMonitor(monitor) || !monitor.slug) {
+          continue;
+        }
+
+        const slug = monitor.slug;
+        const usage: RemoteScreenUsage = {
+          layoutId: layout.id,
+          layoutName: layout.name,
+          isLive,
+          sessionContexts,
+          screen: monitor,
+        };
+
+        const existing = groups.get(slug);
+        if (!existing) {
+          groups.set(slug, {
+            slug,
+            name: monitor.name,
+            screen: monitor,
+            isLive,
+            activeLayoutName: isLive ? layout.name : undefined,
+            layouts: [usage],
+          });
+        } else {
+          existing.layouts.push(usage);
+          if (isLive) {
+            existing.isLive = true;
+            existing.activeLayoutName = layout.name;
+            existing.screen = monitor;
+            existing.name = monitor.name;
+          }
+        }
+      }
+    }
+
+    return Array.from(groups.values());
+  }
+
+  /**
+   * Unique remote screens configured in other layouts that are not yet
+   * present in the currently edited layout.
+   */
+  get reusableRemoteScreens(): LayoutMonitor[] {
+    const currentLayout = this.editingLayout;
+    if (!currentLayout) return [];
+
+    const currentSlugs = new Set(
+      currentLayout.monitors
+        .filter(isRemoteMonitor)
+        .map((m) => m.slug)
+        .filter((s): s is string => Boolean(s))
+    );
+
+    const seen = new Set<string>();
+    const reusable: LayoutMonitor[] = [];
+
+    for (const layout of this.layouts) {
+      if (layout.id === currentLayout.id) continue;
+      for (const monitor of layout.monitors) {
+        if (
+          isRemoteMonitor(monitor) &&
+          monitor.slug &&
+          !currentSlugs.has(monitor.slug) &&
+          !seen.has(monitor.slug)
+        ) {
+          seen.add(monitor.slug);
+          reusable.push(cloneMonitor(monitor));
+        }
+      }
+    }
+
+    return reusable;
+  }
+
+  /**
    * Finds the layout carrying a remote screen with this slug.
    * Prefers the live layout if it carries the screen, otherwise checks all layouts.
    */
@@ -673,6 +783,64 @@ export class LayoutsStore {
     this.carryWidgets(carried, landed.x - grown.x, landed.y - grown.y);
 
     this.mutations.recordEveryWidget();
+  }
+
+  /**
+   * Adds an existing remote screen (from another layout) to the active layout,
+   * preserving its name, slug, bounds (width/height), background and fitted status.
+   */
+  addExistingRemoteScreen(slug: string) {
+    const layout = this.editingLayout;
+
+    if (!layout) return;
+
+    if (layout.monitors.some((m) => isRemoteMonitor(m) && m.slug === slug)) {
+      return;
+    }
+
+    const template = this.remoteScreenBySlug(slug)?.screen;
+    if (!template) return;
+
+    this.addMonitor({
+      name: template.name,
+      kind: 'remote',
+      slug: template.slug,
+      bounds: nextRemoteBounds(
+        layout.monitors,
+        template.bounds.width,
+        template.bounds.height
+      ),
+      ...(template.background ? { background: template.background } : {}),
+      ...(template.fittedToDevice ? { fittedToDevice: true } : {}),
+    });
+  }
+
+  /**
+   * Updates background across all layouts that have a remote screen with this slug.
+   */
+  setRemoteScreenBackgroundBySlug(slug: string, background: string) {
+    for (const layout of this.layouts) {
+      const monitor = layout.monitors.find(
+        (m) => isRemoteMonitor(m) && m.slug === slug
+      );
+      if (monitor) {
+        this.setRemoteScreenBackground(monitor.name, background, layout.id);
+      }
+    }
+  }
+
+  /**
+   * Resizes remote screens matching this slug across all layouts they appear in.
+   */
+  resizeRemoteScreenBySlug(slug: string, width: number, height: number) {
+    for (const layout of this.layouts) {
+      const monitor = layout.monitors.find(
+        (m) => isRemoteMonitor(m) && m.slug === slug
+      );
+      if (monitor) {
+        this.resizeRemoteScreen(monitor.name, width, height, layout.id);
+      }
+    }
   }
 
   /**

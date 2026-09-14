@@ -107,6 +107,10 @@
     "arrangeRemoteScreensTooltip": "Lay the remote screens out in rows under the desktop, widgets included",
     "addRemoteScreenHint": "Anything that opens the link renders this screen: a tablet on your network, or a Browser Source in OBS. Make the ground transparent for OBS, and size the source to match — the first one that connects reports its own size, and fitting to it moves every widget on the screen.",
     "remoteScreenTransparent": "Transparent background (for OBS)",
+    "remoteScreenModeReuse": "Existing screen",
+    "remoteScreenModeNew": "New screen",
+    "remoteScreenSelectExisting": "Select screen",
+    "remoteScreenReuseHint": "Reuses this screen with its URL and dimensions in the current layout.",
     "remoteScreenPresetGroup": {
       "monitor": "Monitor / stream canvas",
       "tablet": "Tablet",
@@ -480,6 +484,7 @@
       "screensTitle": "Remote screens",
       "screensDesc": "Open the address on the device. Adding it to the home screen hides the browser bar, so the layout gets the whole display.",
       "screensEmpty": "No remote screens yet. Add one in the layout editor, next to the monitors.",
+      "usedInLayouts": "Layouts",
       "activeNow": "Active now",
       "inactive": "Inactive in current session",
       "serverOffline": "Server not running",

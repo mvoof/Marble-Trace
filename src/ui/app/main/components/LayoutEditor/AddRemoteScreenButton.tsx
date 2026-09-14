@@ -7,10 +7,11 @@ import {
   Input,
   InputNumber,
   Modal,
-  Switch,
-  Typography,
+  Radio,
   Select,
+  Switch,
   Tooltip,
+  Typography,
 } from 'antd';
 import { TabletSmartphone } from 'lucide-react';
 
@@ -44,6 +45,21 @@ export const AddRemoteScreenButton = observer(() => {
   const [transparent, setTransparent] = useState(false);
   const [width, setWidth] = useState<number>(DEFAULT_PRESET.width);
   const [height, setHeight] = useState<number>(DEFAULT_PRESET.height);
+  const [mode, setMode] = useState<'reuse' | 'new'>('new');
+  const [selectedReusableSlug, setSelectedReusableSlug] = useState<string>('');
+
+  const reusableScreens = layouts.reusableRemoteScreens;
+  const hasReusable = reusableScreens.length > 0;
+
+  const handleOpen = () => {
+    setIsOpen(true);
+    if (reusableScreens.length > 0) {
+      setMode('reuse');
+      setSelectedReusableSlug(reusableScreens[0]?.slug ?? '');
+    } else {
+      setMode('new');
+    }
+  };
 
   const presetOptions = REMOTE_SCREEN_PRESET_GROUPS.map((group) => ({
     label: t(`layoutEditor.remoteScreenPresetGroup.${group.id}`),
@@ -54,17 +70,25 @@ export const AddRemoteScreenButton = observer(() => {
   }));
 
   const handleConfirm = () => {
-    const trimmed = name.trim() || t('layoutEditor.remoteScreenDefaultName');
+    if (hasReusable && mode === 'reuse') {
+      const slug = selectedReusableSlug || reusableScreens[0]?.slug;
+      if (slug) {
+        layouts.addExistingRemoteScreen(slug);
+      }
+    } else {
+      const trimmed = name.trim() || t('layoutEditor.remoteScreenDefaultName');
 
-    layouts.addRemoteScreen(
-      trimmed,
-      width,
-      height,
-      transparent ? 'transparent' : undefined
-    );
+      layouts.addRemoteScreen(
+        trimmed,
+        width,
+        height,
+        transparent ? 'transparent' : undefined
+      );
+    }
 
     setIsOpen(false);
     setName('');
+    setSelectedReusableSlug('');
   };
 
   const handlePreset = (value: string) => {
@@ -81,7 +105,7 @@ export const AddRemoteScreenButton = observer(() => {
           size="small"
           icon={<TabletSmartphone size={ICON_SIZE} />}
           disabled={!layouts.editingLayout}
-          onClick={() => setIsOpen(true)}
+          onClick={handleOpen}
         >
           {t('layoutEditor.addRemoteScreen')}
         </Button>
@@ -96,47 +120,88 @@ export const AddRemoteScreenButton = observer(() => {
         onCancel={() => setIsOpen(false)}
       >
         <Flex vertical gap={12}>
-          <Input
-            placeholder={t('layoutEditor.remoteScreenNamePlaceholder')}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-
-          <Select
-            options={presetOptions}
-            value={`${width}x${height}`}
-            onChange={handlePreset}
-          />
-
-          <Flex gap={8}>
-            <InputNumber
-              min={MIN_SIDE}
-              max={MAX_SIDE}
-              value={width}
-              prefix="W"
-              onChange={(value) => value !== null && setWidth(value)}
+          {hasReusable && (
+            <Radio.Group
+              value={mode}
+              onChange={(event) =>
+                setMode(event.target.value as 'reuse' | 'new')
+              }
+              optionType="button"
+              buttonStyle="solid"
+              options={[
+                {
+                  label: t('layoutEditor.remoteScreenModeReuse'),
+                  value: 'reuse',
+                },
+                {
+                  label: t('layoutEditor.remoteScreenModeNew'),
+                  value: 'new',
+                },
+              ]}
             />
+          )}
 
-            <InputNumber
-              min={MIN_SIDE}
-              max={MAX_SIDE}
-              value={height}
-              prefix="H"
-              onChange={(value) => value !== null && setHeight(value)}
-            />
-          </Flex>
+          {hasReusable && mode === 'reuse' ? (
+            <>
+              <Select
+                placeholder={t('layoutEditor.remoteScreenSelectExisting')}
+                value={selectedReusableSlug || reusableScreens[0]?.slug}
+                onChange={setSelectedReusableSlug}
+                options={reusableScreens.map((screen) => ({
+                  value: screen.slug ?? '',
+                  label: `${screen.name} · ${screen.bounds.width}×${screen.bounds.height}${screen.background === 'transparent' ? ' · transparent' : ''}`,
+                }))}
+              />
 
-          <Flex align="center" gap={12}>
-            <Switch checked={transparent} onChange={setTransparent} />
+              <Typography.Text type="secondary">
+                {t('layoutEditor.remoteScreenReuseHint')}
+              </Typography.Text>
+            </>
+          ) : (
+            <>
+              <Input
+                placeholder={t('layoutEditor.remoteScreenNamePlaceholder')}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
 
-            <Typography.Text>
-              {t('layoutEditor.remoteScreenTransparent')}
-            </Typography.Text>
-          </Flex>
+              <Select
+                options={presetOptions}
+                value={`${width}x${height}`}
+                onChange={handlePreset}
+              />
 
-          <Typography.Text type="secondary">
-            {t('layoutEditor.addRemoteScreenHint')}
-          </Typography.Text>
+              <Flex gap={8}>
+                <InputNumber
+                  min={MIN_SIDE}
+                  max={MAX_SIDE}
+                  value={width}
+                  prefix="W"
+                  onChange={(value) => value !== null && setWidth(value)}
+                />
+
+                <InputNumber
+                  min={MIN_SIDE}
+                  max={MAX_SIDE}
+                  value={height}
+                  prefix="H"
+                  onChange={(value) => value !== null && setHeight(value)}
+                />
+              </Flex>
+
+              <Flex align="center" gap={12}>
+                <Switch checked={transparent} onChange={setTransparent} />
+
+                <Typography.Text>
+                  {t('layoutEditor.remoteScreenTransparent')}
+                </Typography.Text>
+              </Flex>
+
+              <Typography.Text type="secondary">
+                {t('layoutEditor.addRemoteScreenHint')}
+              </Typography.Text>
+            </>
+          )}
         </Flex>
       </Modal>
     </>

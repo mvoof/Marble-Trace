@@ -57,19 +57,12 @@ const snapshotFor = (
 };
 
 const publishAll = (root: RootStore) => {
-  const seenSlugs = new Set<string>();
-
-  for (const descriptor of root.layouts.allRemoteScreens) {
-    const slug = descriptor.screen.slug;
-
-    if (!slug || seenSlugs.has(slug)) continue;
-    seenSlugs.add(slug);
-
-    const snapshot = snapshotFor(root, slug);
+  for (const group of root.layouts.groupedRemoteScreens) {
+    const snapshot = snapshotFor(root, group.slug);
 
     if (!snapshot) continue;
 
-    void publishRemoteSnapshot(slug, snapshot).catch((error: unknown) =>
+    void publishRemoteSnapshot(group.slug, snapshot).catch((error: unknown) =>
       console.error('[remote-publish] failed to publish snapshot:', error)
     );
   }
@@ -102,14 +95,19 @@ const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
   if (!target || target.screen.fittedToDevice) return;
 
   runInAction(() => {
-    target.screen.fittedToDevice = true;
+    for (const layout of root.layouts.layouts) {
+      for (const monitor of layout.monitors) {
+        if (monitor.kind === 'remote' && monitor.slug === device.slug) {
+          monitor.fittedToDevice = true;
+        }
+      }
+    }
   });
 
-  root.layouts.resizeRemoteScreen(
-    target.screen.name,
+  root.layouts.resizeRemoteScreenBySlug(
+    device.slug,
     device.viewportWidth,
-    device.viewportHeight,
-    target.layout.id
+    device.viewportHeight
   );
 };
 
