@@ -108,11 +108,19 @@ export const DriverRow = observer(
 
     const isInGarage = driver.trackSurface === 'NotInWorld';
 
+    // Latched in the backend once the car crosses the line under the checkered
+    // flag, so this outlives the drive back to the garage. It outranks retirement
+    // too: a driver who takes the flag and then quits the session is reported by
+    // the sim with a reason-out, but what he did in the race was finish it.
+    const isFinished = driver.isFinished;
+
     // Once the session is over everybody drops to the garage, so leaving the world
     // is no longer a status worth flagging — only a sim-confirmed retirement is.
     const isOut =
-      driver.isRetired ||
-      (isInGarage && !isSessionEnded(session.session?.session_state ?? null));
+      !isFinished &&
+      (driver.isRetired ||
+        (isInGarage &&
+          !isSessionEnded(session.session?.session_state ?? null)));
 
     const isPit =
       !isOut &&
@@ -120,10 +128,6 @@ export const DriverRow = observer(
 
     const pitState = driver.pitState;
     const flagType = parseDriverFlags(driver.rawFlags);
-
-    // Latched in the backend once the car crosses the line under the checkered
-    // flag, so this outlives the drive back to the garage.
-    const isFinished = driver.isFinished && !driver.isRetired;
 
     // The tow truck has the car: it left the world without going through the pit
     // lane, which OUT alone would not tell apart from a garage exit.

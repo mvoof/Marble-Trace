@@ -588,6 +588,11 @@ fn is_racing(entry: &DriverEntry) -> bool {
 /// the pit lane. A normal stop always shows `on_pit_road` first, so the two cannot
 /// be confused. The flag is cleared as soon as the car is back in the world — by
 /// then it has a real lap distance of its own once more.
+///
+/// A driver who takes the checkered flag and then quits the session has that exact
+/// shape too — the car is on the racing surface one tick and gone the next, with no
+/// pit lane in between — so a car already latched as finished is never towed. What
+/// happens after the flag is not a race incident.
 fn update_tow_states(entries: &mut [DriverEntry], state: &mut DriverEntriesState) {
     let active_car_indices: HashSet<i32> = entries.iter().map(|e| e.car_idx).collect();
 
@@ -606,8 +611,13 @@ fn update_tow_states(entries: &mut [DriverEntry], state: &mut DriverEntriesState
         });
 
         let vanished = entry.track_surface == TrackSurface::NotInWorld;
+        let has_finished = state.finished_cars.contains(&entry.car_idx);
 
-        if vanished && left_the_track_surface && !entry.is_retired {
+        if has_finished {
+            state.towed_cars.remove(&entry.car_idx);
+        }
+
+        if vanished && left_the_track_surface && !entry.is_retired && !has_finished {
             let frozen = state
                 .previous_progress
                 .get(&entry.car_idx)
@@ -1321,6 +1331,51 @@ mod tests {
             &state,
         );
 
+        assert!(frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_a_finished_car_that_leaves_the_session_is_not_towed() {
+        let session = race_session();
+        let state = Mutex::new(DriverEntriesState::default());
+
+        compute(
+            &racing_car_idx_frame_on_lap(0, 12),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            false,
+            &state,
+        );
+
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(0, 13),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            true,
+            &state,
+        );
+
+        assert!(frame.entries[0].is_finished);
+
+        // He quits straight from the racing surface, which is the shape of a tow.
+        let mut car_idx = racing_car_idx_frame_on_lap(0, 13);
+        car_idx.car_idx_track_surface = vec![TrackSurface::NotInWorld];
+
+        let frame = compute(
+            &car_idx,
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            true,
+            &state,
+        );
+
+        assert!(!frame.entries[0].is_towed);
         assert!(frame.entries[0].is_finished);
     }
 
