@@ -513,4 +513,142 @@ describe('a screen added to a layout', () => {
 
     expect(screenNamed('Tablet').background).toBe('transparent');
   });
+
+  it('aggregates all remote screens across all layouts with context metadata', () => {
+    const layout1Id = rootStore.layouts.addLayout('Race Layout');
+    rootStore.layouts.setEditingLayoutId(layout1Id);
+    rootStore.layouts.addRemoteScreen('Dash', 1280, 800);
+
+    const layout2Id = rootStore.layouts.addLayout('Quali Layout');
+    rootStore.layouts.setEditingLayoutId(layout2Id);
+    rootStore.layouts.addRemoteScreen('LapScreen', 1920, 1080);
+
+    rootStore.layouts.setSessionLayout('Race', layout1Id);
+    rootStore.layouts.setSessionLayout('Qualify', layout2Id);
+    rootStore.layouts.setPinnedLiveLayoutId(layout1Id);
+
+    const all = rootStore.layouts.allRemoteScreens;
+    expect(all).toHaveLength(2);
+
+    const dash = all.find((d) => d.screen.name === 'Dash');
+    expect(dash).toBeDefined();
+    expect(dash?.layoutId).toBe(layout1Id);
+    expect(dash?.layoutName).toBe('Race Layout');
+    expect(dash?.isLive).toBe(true);
+    expect(dash?.sessionContexts).toEqual(['Race']);
+
+    const lap = all.find((d) => d.screen.name === 'LapScreen');
+    expect(lap).toBeDefined();
+    expect(lap?.layoutId).toBe(layout2Id);
+    expect(lap?.layoutName).toBe('Quali Layout');
+    expect(lap?.isLive).toBe(false);
+    expect(lap?.sessionContexts).toEqual(['Qualify']);
+
+    // Test modifying screen on a non-editing layout
+    rootStore.layouts.setEditingLayoutId(layout1Id);
+    rootStore.layouts.setRemoteScreenBackground(
+      'LapScreen',
+      '#ff0000',
+      layout2Id
+    );
+    expect(
+      rootStore.layouts
+        .byId(layout2Id)
+        ?.monitors.find((m) => m.name === 'LapScreen')?.background
+    ).toBe('#ff0000');
+
+    rootStore.layouts.resizeRemoteScreen('LapScreen', 800, 600, layout2Id);
+    expect(
+      rootStore.layouts
+        .byId(layout2Id)
+        ?.monitors.find((m) => m.name === 'LapScreen')?.bounds.width
+    ).toBe(800);
+  });
+
+  it('groups remote screens by slug and supports reusing across layouts', () => {
+    const layout1Id = rootStore.layouts.addLayout('Race');
+    rootStore.layouts.setEditingLayoutId(layout1Id);
+    rootStore.layouts.addRemoteScreen('Wheel Tablet', 1280, 800, '#000000');
+
+    const layout2Id = rootStore.layouts.addLayout('Quali');
+    rootStore.layouts.setEditingLayoutId(layout2Id);
+
+    // In layout 2, "Wheel Tablet" should be available to reuse
+    const reusable = rootStore.layouts.reusableRemoteScreens;
+    expect(reusable).toHaveLength(1);
+    expect(reusable[0].slug).toBe('wheel-tablet');
+    expect(reusable[0].name).toBe('Wheel Tablet');
+
+    // Reuse it in layout 2
+    rootStore.layouts.addExistingRemoteScreen('wheel-tablet');
+    const layout2Screen = rootStore.layouts
+      .byId(layout2Id)
+      ?.monitors.find((m) => m.slug === 'wheel-tablet');
+    expect(layout2Screen).toBeDefined();
+    expect(layout2Screen?.name).toBe('Wheel Tablet');
+    expect(layout2Screen?.bounds.width).toBe(1280);
+    expect(layout2Screen?.bounds.height).toBe(800);
+    expect(layout2Screen?.background).toBe('#000000');
+
+    // Now it should no longer be in reusableRemoteScreens for layout 2
+    expect(rootStore.layouts.reusableRemoteScreens).toHaveLength(0);
+
+    // Check groupedRemoteScreens
+    rootStore.layouts.setPinnedLiveLayoutId(layout1Id);
+    const groups = rootStore.layouts.groupedRemoteScreens;
+    expect(groups).toHaveLength(1);
+    expect(groups[0].slug).toBe('wheel-tablet');
+    expect(groups[0].isLive).toBe(true);
+    expect(groups[0].activeLayoutName).toBe('Race');
+    expect(groups[0].layouts).toHaveLength(2);
+
+    // Update background by slug across all layouts
+    rootStore.layouts.setRemoteScreenBackgroundBySlug(
+      'wheel-tablet',
+      'transparent'
+    );
+    expect(
+      rootStore.layouts
+        .byId(layout1Id)
+        ?.monitors.find((m) => m.slug === 'wheel-tablet')?.background
+    ).toBe('transparent');
+    expect(
+      rootStore.layouts
+        .byId(layout2Id)
+        ?.monitors.find((m) => m.slug === 'wheel-tablet')?.background
+    ).toBe('transparent');
+
+    // Resize by slug across all layouts
+    rootStore.layouts.resizeRemoteScreenBySlug('wheel-tablet', 1920, 1080);
+    expect(
+      rootStore.layouts
+        .byId(layout1Id)
+        ?.monitors.find((m) => m.slug === 'wheel-tablet')?.bounds.width
+    ).toBe(1920);
+    expect(
+      rootStore.layouts
+        .byId(layout2Id)
+        ?.monitors.find((m) => m.slug === 'wheel-tablet')?.bounds.width
+    ).toBe(1920);
+  });
+
+  it('generates a slug unique across all saved layouts when adding a new remote screen', () => {
+    const layout1Id = rootStore.layouts.addLayout('Layout 1');
+    rootStore.layouts.setEditingLayoutId(layout1Id);
+    rootStore.layouts.addRemoteScreen('Dash', 1280, 800);
+
+    const firstSlug = rootStore.layouts
+      .byId(layout1Id)
+      ?.monitors.find((m) => m.name === 'Dash')?.slug;
+    expect(firstSlug).toBe('dash');
+
+    const layout2Id = rootStore.layouts.addLayout('Layout 2');
+    rootStore.layouts.setEditingLayoutId(layout2Id);
+    rootStore.layouts.addRemoteScreen('Dash', 1280, 800);
+
+    const secondSlug = rootStore.layouts
+      .byId(layout2Id)
+      ?.monitors.find((m) => m.name === 'Dash')?.slug;
+    expect(secondSlug).toBe('dash-2');
+  });
 });

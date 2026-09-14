@@ -8,7 +8,6 @@ import {
 } from '@platform/services/remote.service';
 import { resolveAppLanguage } from '@store/settings/app-settings.store';
 import { widgetsOnMonitor } from '@store/settings/virtual-desktop';
-import { isRemoteMonitor } from '@utils/remote-screen';
 import type { RootStore } from '@store/root-store';
 import type { RemoteScreenSnapshot } from '@/types/remote';
 import type { RemoteDevice } from '@/types/bindings';
@@ -28,15 +27,19 @@ const snapshotFor = (
   root: RootStore,
   slug: string
 ): RemoteScreenSnapshot | null => {
-  const layout = root.layouts.liveLayout;
+  const target = root.layouts.remoteScreenBySlug(slug);
 
-  if (!layout) return null;
+  if (!target) return null;
 
-  const monitor = layout.monitors.find(
-    (candidate) => isRemoteMonitor(candidate) && candidate.slug === slug
-  );
-
-  if (!monitor) return null;
+  const { layout, screen: monitor } = target;
+  const isLive = layout.id === root.layouts.liveLayoutId;
+  const widgets = isLive
+    ? widgetsOnMonitor(
+        root.liveWidgets.liveWidgets,
+        monitor.name,
+        layout.monitors
+      )
+    : widgetsOnMonitor(layout.widgets, monitor.name, layout.monitors);
 
   return {
     slug,
@@ -44,11 +47,7 @@ const snapshotFor = (
     bounds: { ...monitor.bounds },
     // The widgets of this screen only: a tablet never receives the layout of
     // the monitors it is not showing.
-    widgets: widgetsOnMonitor(
-      root.liveWidgets.liveWidgets,
-      monitor.name,
-      layout.monitors
-    ),
+    widgets,
     units: root.units.unitSystem,
     language: root.appSettings.appSettings.language,
     steeringLock: root.appSettings.appSettings.steeringLock,
@@ -58,16 +57,12 @@ const snapshotFor = (
 };
 
 const publishAll = (root: RootStore) => {
-  for (const monitor of root.layouts.liveRemoteScreens) {
-    const slug = monitor.slug;
-
-    if (!slug) continue;
-
-    const snapshot = snapshotFor(root, slug);
+  for (const group of root.layouts.groupedRemoteScreens) {
+    const snapshot = snapshotFor(root, group.slug);
 
     if (!snapshot) continue;
 
-    void publishRemoteSnapshot(slug, snapshot).catch((error: unknown) =>
+    void publishRemoteSnapshot(group.slug, snapshot).catch((error: unknown) =>
       console.error('[remote-publish] failed to publish snapshot:', error)
     );
   }
@@ -95,18 +90,22 @@ const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
     return;
   }
 
-  const monitor = root.layouts.liveRemoteScreens.find(
-    (screen) => screen.slug === device.slug
-  );
+  const target = root.layouts.remoteScreenBySlug(device.slug);
 
-  if (!monitor || monitor.fittedToDevice) return;
+  if (!target || target.screen.fittedToDevice) return;
 
   runInAction(() => {
-    monitor.fittedToDevice = true;
+    for (const layout of root.layouts.layouts) {
+      for (const monitor of layout.monitors) {
+        if (monitor.kind === 'remote' && monitor.slug === device.slug) {
+          monitor.fittedToDevice = true;
+        }
+      }
+    }
   });
 
-  root.layouts.resizeRemoteScreen(
-    monitor.name,
+  root.layouts.resizeRemoteScreenBySlug(
+    device.slug,
     device.viewportWidth,
     device.viewportHeight
   );
