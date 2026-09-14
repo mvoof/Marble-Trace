@@ -60,10 +60,18 @@ export const FuelOrder = observer(() => {
   const capacity = order.fuelCapacityLiters;
   const canFill = capacity !== null && capacity > 0;
 
+  // The green band is the gap between what is aboard and the level the car
+  // leaves the box on. Anchored to that level rather than stacked on the tank,
+  // so while the crew fills it shrinks into the blue bar instead of sliding
+  // right with it.
+  const target = order.fuelTargetLiters;
+
   const tankRatio = canFill ? Math.min(FULL_RATIO, inTank / capacity) : 0;
-  const orderedRatio = canFill
-    ? Math.min(FULL_RATIO - tankRatio, ordered / capacity)
-    : 0;
+  const targetRatio =
+    canFill && target !== null
+      ? Math.min(FULL_RATIO, Math.max(tankRatio, target / capacity))
+      : tankRatio;
+  const orderedRatio = targetRatio - tankRatio;
 
   // The bar is the tank, so the pointer names the level to arrive at and the
   // order is whatever is missing to reach it. Dragging below what is already
