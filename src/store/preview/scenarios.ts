@@ -1,9 +1,7 @@
 import type {
   CarDynamicsFrame,
   EnvironmentFrame,
-  NearbyCar,
   PitTargetFrame,
-  ProximityFrame,
   RaceFlags,
   ReferenceLapData,
   ReferenceLapSample,
@@ -17,6 +15,8 @@ import { mockPitTarget } from './mocks/pit';
 import { mockFuel } from './mocks/fuel';
 import type { MockFieldOptions } from './mocks/field';
 import { mockField } from './mocks/field';
+import type { MockTrafficCar } from './mocks/traffic';
+import { mockProximity } from './mocks/traffic';
 
 // Neutral, fully synthetic scenario fixtures. A recorded session never
 // guarantees the moment a flag waves, a badge appears, or traffic surrounds the
@@ -40,45 +40,16 @@ const applyFlags = (store: RootStore, overrides: Partial<RaceFlags>) => {
   syncFlagDisplay(store);
 };
 
-/** The shipped default; the preview has no backend to take a real one from. */
-const PREVIEW_CAR_LENGTH_M = 4.4;
-
 /** The pit limiter's bit in the engine warning mask, as the widgets read it. */
 const PIT_LIMITER_BIT = 0x10;
 const PIT_LANE_RPM = 2800;
 const PIT_LANE_GEAR = 2;
 
-const buildNearbyCar = (
-  carIdx: number,
-  longitudinalDist: number,
-  lateralSide: NearbyCar['lateralSide']
-): NearbyCar => ({
-  carIdx,
-  longitudinalDist,
-  lateralSide,
-  clearance: Math.abs(longitudinalDist),
-  bumperDist:
-    Math.max(0, Math.abs(longitudinalDist) - PREVIEW_CAR_LENGTH_M) *
-    Math.sign(longitudinalDist),
-});
-
-const applyProximity = (
-  store: RootStore,
-  proximity: Partial<ProximityFrame>
-) => {
-  const frame: ProximityFrame = {
-    nearbyCars: proximity.nearbyCars ?? [],
-    radarDistances: proximity.radarDistances ?? {
-      frontDist: 8,
-      rearDist: 8,
-      leftDist: null,
-      rightDist: null,
-    },
-    spotterLeft: proximity.spotterLeft ?? false,
-    spotterRight: proximity.spotterRight ?? false,
-  };
-
-  store.backendComputed.updateProximity(frame);
+// A traffic scenario states where the cars are and nothing else: the clearance,
+// the bumper gaps, the order and the four radar distances are all derived by
+// the builder the way the backend derives them from a real tick.
+const applyTraffic = (store: RootStore, cars: MockTrafficCar[]) => {
+  store.backendComputed.updateProximity(mockProximity(cars));
 };
 
 const applyWeather = (
@@ -319,22 +290,62 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     label: 'Radar traffic',
     apply: (store) => {
       seedSampleTelemetry(store);
-      applyProximity(store, {
-        spotterLeft: true,
-        spotterRight: true,
-        nearbyCars: [
-          buildNearbyCar(7, 2.4, 'left'),
-          buildNearbyCar(12, -1.8, 'left'),
-          buildNearbyCar(3, 3.1, 'right'),
-          buildNearbyCar(19, -4.5, 'center'),
-        ],
-        radarDistances: {
-          frontDist: 4,
-          rearDist: 5,
-          leftDist: 1.2,
-          rightDist: 1.6,
-        },
-      });
+      // Cars on both sides and one closing from behind — everything a scope has
+      // to place at once, so a driver sizing the widget sees whether the lanes
+      // still read when all of them are occupied.
+      applyTraffic(store, [
+        { carIdx: 7, longitudinalDist: 1.6, side: 'left' },
+        { carIdx: 12, longitudinalDist: -2.1, side: 'left' },
+        { carIdx: 3, longitudinalDist: 0.9, side: 'right' },
+        { carIdx: 19, longitudinalDist: -7.8, side: 'center' },
+      ]);
+    },
+  },
+  {
+    id: 'traffic-left',
+    label: 'Traffic — car alongside left',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Overlapping door to door: the one place a side lane is drawn at full
+      // length and the side pill carries its smallest number.
+      applyTraffic(store, [{ carIdx: 7, longitudinalDist: 0.8, side: 'left' }]);
+    },
+  },
+  {
+    id: 'traffic-right',
+    label: 'Traffic — car alongside right',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyTraffic(store, [
+        { carIdx: 3, longitudinalDist: -1.3, side: 'right' },
+      ]);
+    },
+  },
+  {
+    id: 'traffic-three-wide',
+    label: 'Traffic — three wide',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Both sides at once. A radar that reads well with one car beside it can
+      // still be unreadable with two, which is the arrangement a driver most
+      // wants to have checked before they are in it.
+      applyTraffic(store, [
+        { carIdx: 7, longitudinalDist: 0.6, side: 'left' },
+        { carIdx: 3, longitudinalDist: -0.4, side: 'right' },
+      ]);
+    },
+  },
+  {
+    id: 'traffic-rear-bumper',
+    label: 'Traffic — car on the rear bumper',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Bumper to bumper, still behind rather than alongside: the closest a car
+      // gets while the widgets still owe the driver a distance, and the state
+      // every warning colour is picked for.
+      applyTraffic(store, [
+        { carIdx: 3, longitudinalDist: -4.6, side: 'center' },
+      ]);
     },
   },
   {
@@ -347,20 +358,12 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
       // snapshot only ever holds whatever traffic happened to be around, so the
       // merged pair in particular has to be forced. Cars beyond the widget's
       // `maxRows` are dropped, nearest first — raise it to see all three.
-      applyProximity(store, {
-        nearbyCars: [
-          buildNearbyCar(3, -5.2, 'center'),
-          buildNearbyCar(7, 9.4, 'center'),
-          buildNearbyCar(12, -16, 'center'),
-          buildNearbyCar(19, -17.1, 'center'),
-        ],
-        radarDistances: {
-          frontDist: 9.4,
-          rearDist: 5.2,
-          leftDist: null,
-          rightDist: null,
-        },
-      });
+      applyTraffic(store, [
+        { carIdx: 3, longitudinalDist: -5.2, side: 'center' },
+        { carIdx: 7, longitudinalDist: 9.4, side: 'center' },
+        { carIdx: 12, longitudinalDist: -16, side: 'center' },
+        { carIdx: 19, longitudinalDist: -17.1, side: 'center' },
+      ]);
     },
   },
   {

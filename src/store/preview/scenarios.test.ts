@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { FlagType } from '@/types';
 import { RootStore } from '@store/root-store';
 import { WIDGETS } from '@store/widget-catalog';
+import { PREVIEW_CAR_LENGTH_M } from './mocks/traffic';
 import {
   DEFAULT_PREVIEW_SCENARIO_ID,
   PREVIEW_SCENARIOS,
@@ -13,6 +14,9 @@ import {
 // imported: it is declared in the UI layer, which the preview module may not
 // reach into.
 const PIT_LIMITER_BIT = 0x10;
+
+/** What the backend reports when nothing is in range on that side. */
+const NO_CAR_DIST_M = 999;
 
 const seed = (scenarioId: string) => {
   const store = new RootStore({ skipInit: true });
@@ -268,6 +272,107 @@ describe('the close-pack scenario', () => {
 
     expect(players).toHaveLength(1);
     expect(players[0]?.carIdx).toBe(frame?.playerCarIdx);
+  });
+});
+
+// The radars draw what the proximity frame says, and every number on it but
+// the cars' own positions is derived. These assertions are about what ends up
+// in the store — never about how the builder composed it.
+describe('traffic scenarios', () => {
+  const proximityOf = (scenarioId: string) =>
+    seed(scenarioId).backendComputed.proximity;
+
+  it('puts a car alongside on each side', () => {
+    const left = proximityOf('traffic-left');
+    const right = proximityOf('traffic-right');
+
+    expect(left?.spotterLeft).toBe(true);
+    expect(left?.spotterRight).toBe(false);
+    expect(left?.radarDistances.leftDist).not.toBeNull();
+    expect(left?.radarDistances.rightDist).toBeNull();
+
+    expect(right?.spotterRight).toBe(true);
+    expect(right?.spotterLeft).toBe(false);
+    expect(right?.radarDistances.rightDist).not.toBeNull();
+    expect(right?.radarDistances.leftDist).toBeNull();
+  });
+
+  it('fills both sides at once for three wide', () => {
+    const proximity = proximityOf('traffic-three-wide');
+    const sides = proximity?.nearbyCars.map((car) => car.lateralSide) ?? [];
+
+    expect(proximity?.spotterLeft).toBe(true);
+    expect(proximity?.spotterRight).toBe(true);
+    expect(new Set(sides)).toEqual(new Set(['left', 'right']));
+  });
+
+  it('parks a car on the rear bumper without calling it alongside', () => {
+    const proximity = proximityOf('traffic-rear-bumper');
+    const car = proximity?.nearbyCars[0];
+
+    expect(proximity?.nearbyCars).toHaveLength(1);
+    expect(car?.lateralSide).toBe('center');
+    expect(car?.longitudinalDist ?? 0).toBeLessThan(0);
+    // Bumper to bumper, which is a clearance of about one car length.
+    expect(Math.abs(car?.bumperDist ?? 9)).toBeLessThan(1);
+    expect(proximity?.radarDistances.rearDist ?? 9).toBeLessThan(1);
+    expect(proximity?.radarDistances.frontDist).toBe(NO_CAR_DIST_M);
+  });
+
+  it('derives every per-car value from the car the scenario stated', () => {
+    for (const car of proximityOf('radar-traffic')?.nearbyCars ?? []) {
+      expect(car.clearance).toBe(Math.abs(car.longitudinalDist));
+      expect(Math.abs(car.bumperDist)).toBe(
+        Math.max(0, car.clearance - PREVIEW_CAR_LENGTH_M)
+      );
+
+      if (car.bumperDist !== 0) {
+        expect(Math.sign(car.bumperDist)).toBe(Math.sign(car.longitudinalDist));
+      }
+    }
+  });
+
+  it('hands the cars over nearest first', () => {
+    const clearances =
+      proximityOf('close-battle')?.nearbyCars.map((car) => car.clearance) ?? [];
+
+    expect(clearances.length).toBeGreaterThan(1);
+    expect([...clearances].sort((first, second) => first - second)).toEqual(
+      clearances
+    );
+  });
+
+  it('never reports a side distance no car on that side backs up', () => {
+    for (const scenarioId of [
+      'radar-traffic',
+      'traffic-left',
+      'traffic-right',
+      'traffic-three-wide',
+      'traffic-rear-bumper',
+      'close-battle',
+    ]) {
+      const proximity = proximityOf(scenarioId);
+      const sided = (side: 'left' | 'right') =>
+        proximity?.nearbyCars.filter((car) => car.lateralSide === side) ?? [];
+
+      for (const side of ['left', 'right'] as const) {
+        const dist =
+          side === 'left'
+            ? proximity?.radarDistances.leftDist
+            : proximity?.radarDistances.rightDist;
+
+        expect(dist === null, `${scenarioId} ${side}`).toBe(
+          sided(side).length === 0
+        );
+      }
+    }
+  });
+
+  it('keeps the close battle reachable from both directions', () => {
+    const cars = proximityOf('close-battle')?.nearbyCars ?? [];
+
+    expect(cars.some((car) => car.longitudinalDist > 0)).toBe(true);
+    expect(cars.some((car) => car.longitudinalDist < 0)).toBe(true);
   });
 });
 
