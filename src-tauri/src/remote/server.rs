@@ -139,6 +139,7 @@ pub async fn serve(
         .route("/health", get(health))
         .route("/ws", get(websocket))
         .route("/r/{slug}", get(remote_page))
+        .route("/r/{slug}/", get(remote_page))
         .fallback(get(asset))
         .with_state(state);
 
@@ -210,18 +211,11 @@ async fn remote_page(
     serve_asset(&state, REMOTE_ENTRY).await
 }
 
-/// Everything that is not a route is a bundle asset. Requests coming from
-/// `/r/<slug>` are relative to that directory, so the leading segment is
-/// stripped before the lookup.
+/// Everything that is not a route is a bundle asset.
 async fn asset(State(state): State<ServerState>, uri: axum::http::Uri) -> Response {
     let path = uri.path().trim_start_matches('/');
 
-    let path = match path.strip_prefix("r/") {
-        Some(rest) => rest.split_once('/').map(|(_, tail)| tail).unwrap_or(rest),
-        None => path,
-    };
-
-    if path.is_empty() {
+    if path.is_empty() || path == "r" || path == "r/" {
         return (StatusCode::NOT_FOUND, "no screen selected").into_response();
     }
 
@@ -236,13 +230,58 @@ async fn serve_asset(state: &ServerState, path: &str) -> Response {
     serve_asset_with_query(state, path, None).await
 }
 
+/// In development the bundle is served by Vite, so screen-relative prefixes
+/// (`/r/<slug>/...` or `/r/...`) need to be stripped to match the Vite root.
+fn strip_dev_path(path: &str) -> &str {
+    let path = path.trim_start_matches('/');
+    let Some(rest) = path.strip_prefix("r/") else {
+        return path;
+    };
+
+    if let Some((first, tail)) = rest.split_once('/') {
+        if is_asset_root(first) {
+            rest
+        } else {
+            tail
+        }
+    } else {
+        rest
+    }
+}
+
+fn is_asset_root(segment: &str) -> bool {
+    matches!(
+        segment,
+        "assets" | "fonts" | "public" | "src" | "node_modules"
+    ) || segment.starts_with('@')
+}
+
 async fn serve_asset_with_query(state: &ServerState, path: &str, query: Option<&str>) -> Response {
     if state.dev {
-        return proxy_dev_asset(path, query).await;
+        return proxy_dev_asset(strip_dev_path(path), query).await;
     }
 
-    // The embedded bundle is keyed by path alone, so the query is dropped here.
-    let Some(asset) = state.app.asset_resolver().get(path.to_string()) else {
+    // The embedded bundle is keyed by path relative to frontendDist (`assets/...`,
+    // `fonts/...`, `remote.html`). Requests originating from `/r/<slug>` resolve
+    // relative paths to `/r/<path>` (or `/r/<slug>/<path>` with trailing slash).
+    // Try the direct path first, then strip `/r/`, and lastly strip `/r/<slug>/`.
+    let asset = state
+        .app
+        .asset_resolver()
+        .get(path.to_string())
+        .or_else(|| {
+            let rest = path.strip_prefix("r/")?;
+            state
+                .app
+                .asset_resolver()
+                .get(rest.to_string())
+                .or_else(|| {
+                    let (_, tail) = rest.split_once('/')?;
+                    state.app.asset_resolver().get(tail.to_string())
+                })
+        });
+
+    let Some(asset) = asset else {
         return (StatusCode::NOT_FOUND, "asset not found").into_response();
     };
 
@@ -468,4 +507,49 @@ fn authorized(state: &ServerState, peer: &SocketAddr, token: Option<&str>) -> bo
 
 fn language_of(hub: &RemoteHub) -> String {
     lock_or_recover(&hub.language).clone()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::strip_dev_path;
+
+    #[test]
+    fn leaves_direct_assets_untouched() {
+        assert_eq!(strip_dev_path("assets/remote.js"), "assets/remote.js");
+        assert_eq!(strip_dev_path("/assets/remote.js"), "assets/remote.js");
+        assert_eq!(strip_dev_path("src/remote.tsx"), "src/remote.tsx");
+        assert_eq!(strip_dev_path("/@vite/client"), "@vite/client");
+    }
+
+    #[test]
+    fn strips_leading_r_prefix_when_followed_by_asset_root() {
+        assert_eq!(strip_dev_path("r/assets/remote.js"), "assets/remote.js");
+        assert_eq!(strip_dev_path("/r/assets/remote.js"), "assets/remote.js");
+        assert_eq!(
+            strip_dev_path("r/fonts/Rajdhani.woff2"),
+            "fonts/Rajdhani.woff2"
+        );
+        assert_eq!(strip_dev_path("r/src/remote.tsx"), "src/remote.tsx");
+        assert_eq!(strip_dev_path("r/@vite/client"), "@vite/client");
+    }
+
+    #[test]
+    fn strips_both_r_and_slug_when_slug_is_present() {
+        assert_eq!(
+            strip_dev_path("r/main-screen/assets/remote.js"),
+            "assets/remote.js"
+        );
+        assert_eq!(
+            strip_dev_path("/r/main-screen/assets/remote.js"),
+            "assets/remote.js"
+        );
+        assert_eq!(
+            strip_dev_path("r/tablet/fonts/Rajdhani.woff2"),
+            "fonts/Rajdhani.woff2"
+        );
+        assert_eq!(
+            strip_dev_path("r/obs-overlay/src/remote.tsx"),
+            "src/remote.tsx"
+        );
+    }
 }
