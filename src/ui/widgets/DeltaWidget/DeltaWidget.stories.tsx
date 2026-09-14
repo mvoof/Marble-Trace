@@ -1,80 +1,74 @@
-﻿import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
 
-import type { LapDeltaFrame } from '@/types/bindings';
-import { useStore } from '@store/root-store-context';
+import type {
+  DeltaWidgetSettings,
+  LapDeltaReference,
+} from '@/types/widget-settings';
 import { LapFlash } from './LapFlash/LapFlash';
 import { DeltaWidget } from './DeltaWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
-const EMPTY_LAP_DELTA = {
-  sectorTimes: [],
-  currentSectorIdx: 0,
-  sectorDeltas: [],
-} as LapDeltaFrame;
+/** Long enough that the flash is still up while the story is being looked at. */
+const HELD_FLASH_S = 999;
 
-const meta: Meta = {
+interface StoryArgs {
+  reference: LapDeltaReference;
+  showLapFlash: boolean;
+}
+
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/DeltaWidget',
-  ...defineWidgetStories({
+  ...defineWidgetStories<StoryArgs>({
     widget: DeltaWidget,
     size: { width: 200, height: 100 },
-    seed: (store) => {
+    seed: (store, args) => {
       store.liveWidgets.updateUserSettings('delta', {
-        reference: 'personal_best',
-        showLapFlash: false,
+        ...store.liveWidgets.getSettings<DeltaWidgetSettings>('delta'),
+        reference: args.reference,
+        showLapFlash: args.showLapFlash,
+        flashDuration: HELD_FLASH_S,
       });
-
-      store.backendComputed.updateLapDelta(EMPTY_LAP_DELTA);
-
-      store.player.lapTiming = {
-        ...(store.player.lapTiming ?? {}),
-        lap_delta_to_best_lap: -0.842,
-        lap_delta_to_best_lap_ok: true,
-      } as typeof store.player.lapTiming;
+    },
+    args: { reference: 'personal_best', showLapFlash: false },
+    argTypes: {
+      reference: {
+        control: 'select',
+        options: [
+          'personal_best',
+          'personal_optimal',
+          'session_best',
+          'session_optimal',
+          'session_last',
+        ] satisfies LapDeltaReference[],
+      },
     },
   }),
 };
 
 export default meta;
-type Story = StoryObj;
+type Story = StoryObj<StoryArgs>;
 
-export const Default: Story = {};
-
-const BestLapHost = () => {
-  const store = useStore();
-
-  useLayoutEffect(() => {
-    runInAction(() => {
-      store.liveWidgets.updateUserSettings('delta', {
-        reference: 'personal_best',
-        showLapFlash: true,
-        flashDuration: 999,
-      });
-
-      store.backendComputed.updateLapDelta(EMPTY_LAP_DELTA);
-
-      store.backendComputed.lastCompletedLap = { lapNum: 5, delta: -1.235 };
-      store.backendComputed.lapHistory = [
-        { lapNum: 5, lapTime: 89.342, delta: -1.235, isBest: true },
-      ];
-
-      store.player.lapTiming = {
-        ...(store.player.lapTiming ?? {}),
-        lap_last_lap_time: 89.342,
-        lap_best_lap_time: 89.342,
-      } as typeof store.player.lapTiming;
-    });
-  }, [store]);
-
-  return <DeltaWidget />;
+export const Default: Story = {
+  parameters: previewScenario('delta-ahead'),
 };
 
+export const Behind: Story = {
+  parameters: previewScenario('delta-behind'),
+};
+
+// The lap has just been banked as a best, which is the only state the flash is
+// raised in — the widget swaps the live number for it.
 export const BestLap: Story = {
   name: 'Best Lap Flash',
-  render: () => <BestLapHost />,
+  parameters: previewScenario('delta-personal-best'),
+  args: { showLapFlash: true },
 };
 
+// The flash on its own, at each of the four shapes it draws. It takes what it
+// prints as props, so these stories need no store behind them.
 export const FlashCloseToBest: Story = {
   name: 'Flash: Close To Best',
   render: () => (

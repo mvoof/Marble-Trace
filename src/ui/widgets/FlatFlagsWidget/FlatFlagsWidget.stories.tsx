@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { FlagType } from '@/types';
 import { FlatFlagsWidget } from './FlatFlagsWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 const ALL_FLAGS: FlagType[] = [
   'green',
@@ -18,7 +21,12 @@ const ALL_FLAGS: FlagType[] = [
 ];
 
 interface StoryArgs {
-  flags: FlagType[];
+  /**
+   * The flags on display. Left undefined — which is what a story naming a
+   * scenario does — the scenario's own flags are kept; a story states this
+   * only for a combination the sim raises that no scenario covers.
+   */
+  flags?: FlagType[];
 }
 
 const meta: Meta<StoryArgs> = {
@@ -27,9 +35,10 @@ const meta: Meta<StoryArgs> = {
     widget: FlatFlagsWidget,
     size: { width: 300 },
     seed: (store, args) => {
-      store.flags.displayFlags = args.flags;
+      if (args.flags !== undefined) {
+        store.flags.displayFlags = args.flags;
+      }
     },
-    args: { flags: [] },
     argTypes: {
       flags: { control: 'check', options: ALL_FLAGS },
     },
@@ -39,11 +48,14 @@ const meta: Meta<StoryArgs> = {
 export default meta;
 type Story = StoryObj<StoryArgs>;
 
-export const NoFlags: Story = {};
+export const NoFlags: Story = { args: { flags: [] } };
 
-export const SingleGreen: Story = { args: { flags: ['green'] } };
-export const Yellow: Story = { args: { flags: ['yellow'] } };
-export const SafetyCar: Story = { args: { flags: ['sc'] } };
+export const SingleGreen: Story = { parameters: previewScenario('green-flag') };
+export const Yellow: Story = { parameters: previewScenario('yellow-flag') };
+export const SafetyCar: Story = { parameters: previewScenario('safety-car') };
+export const DqFlag: Story = { parameters: previewScenario('dq-flag') };
+
+// The two combinations no scenario states: a local yellow with debris under it,
+// and every flag at once — the row the widget has to stay readable at.
 export const MultipleFlags: Story = { args: { flags: ['yellow', 'debris'] } };
-export const DqFlag: Story = { args: { flags: ['dq'] } };
 export const AllFlags: Story = { args: { flags: ALL_FLAGS } };

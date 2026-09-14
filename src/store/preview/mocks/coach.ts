@@ -14,8 +14,13 @@ const APEX_SPEED_KMH = 112;
 export const PREVIEW_CORNER_CENTER_PCT = 0.5;
 /** How much of the lap the corner takes up, either side of the apex. */
 const CORNER_HALF_WIDTH_PCT = 0.05;
-/** Where the reference driver gets on the brakes for it. */
-const BRAKE_START_PCT = PREVIEW_CORNER_CENTER_PCT - 0.035;
+/**
+ * Where the reference driver gets on the brakes for it. Exported because a
+ * fixture that brakes later or earlier states that as an offset from this
+ * point — a second copy of the number is how a preview ends up comparing a lap
+ * against a braking zone the reference does not have.
+ */
+export const PREVIEW_BRAKE_START_PCT = PREVIEW_CORNER_CENTER_PCT - 0.035;
 /** How far past the apex the reference is still short of full throttle. */
 const EXIT_WIDTH_PCT = 0.03;
 
@@ -45,7 +50,8 @@ const speedAtPct = (pct: number): number => {
 };
 
 const sampleAtPct = (pct: number): ReferenceLapSample => {
-  const braking = pct >= BRAKE_START_PCT && pct <= PREVIEW_CORNER_CENTER_PCT;
+  const braking =
+    pct >= PREVIEW_BRAKE_START_PCT && pct <= PREVIEW_CORNER_CENTER_PCT;
   const exiting =
     pct > PREVIEW_CORNER_CENTER_PCT &&
     pct <= PREVIEW_CORNER_CENTER_PCT + EXIT_WIDTH_PCT;

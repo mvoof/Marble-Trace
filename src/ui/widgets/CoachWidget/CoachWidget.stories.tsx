@@ -1,84 +1,82 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { ReferenceLapData, ReferenceLapSample } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import type { DrivingAdvisory } from '@utils/driving-coach-utils';
+import { mockLapTiming } from '@store/preview/mocks/delta';
+import {
+  mockReferenceLap,
+  PREVIEW_BRAKE_START_PCT,
+  PREVIEW_CORNER_CENTER_PCT,
+  referenceSpeedKmhAt,
+} from '@store/preview/mocks/coach';
 import { CoachWidget } from './CoachWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 const BUCKET_COUNT = 1000;
-const TRACK_LENGTH_M = 4000;
-const REFERENCE_LAP_TIME_S = 107.48;
-/** Where the sample corner sits on the lap, as a fraction of lap distance. */
-const CORNER_CENTER_PCT = 0.5;
-/** How wide the sample braking zone is, in lap fraction. */
-const CORNER_HALF_WIDTH_PCT = 0.05;
-const STRAIGHT_SPEED_MPS = 68;
-const APEX_SPEED_MPS = 32;
+const KMH_PER_MPS = 3.6;
+
+/** Where the car sits when a story does not move it — just past the apex. */
+const DEFAULT_DIST_PCT = PREVIEW_CORNER_CENTER_PCT + 0.01;
+
+const STRAIGHT_SPEED_KMH = referenceSpeedKmhAt(0);
+const APEX_SPEED_KMH = referenceSpeedKmhAt(PREVIEW_CORNER_CENTER_PCT);
 
 /**
- * One braking zone into a corner and back out, so the trace has a real shape
- * to draw instead of a flat line.
+ * This lap's speed at a point on it, in m/s.
+ *
+ * The corner's shape is the reference's — only the apex moves, by
+ * `apexDeltaKmh`, tapering back to the reference's own speed on the straights.
+ * A story that redrew the corner instead would be comparing two tracks.
  */
-const speedAtPct = (pct: number, apexSpeedMps: number): number => {
-  const distance = Math.abs(pct - CORNER_CENTER_PCT);
+const ownSpeedAt = (pct: number, apexDeltaKmh: number): number => {
+  const referenceKmh = referenceSpeedKmhAt(pct);
+  const depth =
+    (STRAIGHT_SPEED_KMH - referenceKmh) / (STRAIGHT_SPEED_KMH - APEX_SPEED_KMH);
 
-  if (distance >= CORNER_HALF_WIDTH_PCT) {
-    return STRAIGHT_SPEED_MPS;
-  }
-
-  const depth = 1 - distance / CORNER_HALF_WIDTH_PCT;
-
-  return STRAIGHT_SPEED_MPS - (STRAIGHT_SPEED_MPS - apexSpeedMps) * depth;
+  return (referenceKmh + apexDeltaKmh * depth) / KMH_PER_MPS;
 };
 
-/** Brake pedal down from `brakeStartPct` until the apex, mirroring a real braking zone. */
-const brakeAtPct = (pct: number, brakeStartPct: number): number =>
-  pct >= brakeStartPct && pct <= CORNER_CENTER_PCT ? 1 : 0;
+/** Pedal down from this lap's braking point until the apex. */
+const ownBrakeAt = (pct: number, brakeLatePct: number): number => {
+  const brakeStartPct = PREVIEW_BRAKE_START_PCT + brakeLatePct;
 
-/** Where the reference driver gets on the brakes for the sample corner. */
-const REFERENCE_BRAKE_PCT = CORNER_CENTER_PCT - 0.035;
+  if (pct >= brakeStartPct && pct <= PREVIEW_CORNER_CENTER_PCT) {
+    return 1;
+  }
 
-const referenceLap = (): ReferenceLapData => ({
-  trackId: 1,
-  carScreenName: 'Storybook GT3',
-  lapTime: REFERENCE_LAP_TIME_S,
-  samples: Array.from({ length: BUCKET_COUNT }, (_unused, index) => {
-    const pct = index / BUCKET_COUNT;
-
-    return {
-      speed: speedAtPct(pct, APEX_SPEED_MPS),
-      throttle: 1,
-      brake: brakeAtPct(pct, REFERENCE_BRAKE_PCT),
-      latAccel: null,
-      longAccel: null,
-      steeringWheelAngle: 0,
-    } satisfies ReferenceLapSample;
-  }),
-  recordedWetness: null,
-  recordedTireWear: null,
-  recordedFuelLevel: null,
-});
+  return 0;
+};
 
 interface StoryArgs {
+  /**
+   * The call and the pedal state under it. Applied only when the story names
+   * no scenario — one that does takes the coach the scenario put in place
+   * rather than writing a second call over it.
+   */
   advisory: DrivingAdvisory;
   brakeUrgency: number;
-  hasReferenceLap: boolean;
-  showTrace: boolean;
-  showUrgencyBar: boolean;
-  /** Apex speed this lap ran: below the reference loses time, above it gains. */
-  ownApexSpeed: number;
-  /** Where this lap gets on the brakes — later than the reference costs time. */
-  ownBrakeOffsetPct: number;
-  distPct: number;
-  showSpeed: boolean;
-  showReferenceLapTime: boolean;
-  wetReference: boolean;
-  traceChannel: CoachWidgetSettings['traceChannel'];
   /** Metres later than the reference this exit's throttle was opened, or null outside an exit. */
   exitLateM: number | null;
   /** Pedal missing against the reference inside a corner exit, 0-1. */
   exitThrottleDeficit: number;
+  hasReferenceLap: boolean;
+  wetReference: boolean;
+
+  /** How much faster (+) or slower (-) than the reference this lap takes the apex, in km/h. */
+  ownApexDeltaKmh: number;
+  /** How much later than the reference this lap gets on the brakes, in lap fraction. */
+  ownBrakeLatePct: number;
+  /** Where the car sits. Left undefined, the base's own position is kept. */
+  distPct?: number;
+
+  showTrace: boolean;
+  showUrgencyBar: boolean;
+  showSpeed: boolean;
+  showReferenceLapTime: boolean;
+  traceChannel: CoachWidgetSettings['traceChannel'];
 }
 
 const meta: Meta<StoryArgs> = {
@@ -92,57 +90,62 @@ const meta: Meta<StoryArgs> = {
       borderRadius: 8,
     },
     seedSnapshot: true,
-    seed: (store, args) => {
+    seed: (store, args, scenarioId) => {
       store.liveWidgets.updateUserSettings('coach', {
+        ...store.liveWidgets.getSettings<CoachWidgetSettings>('coach'),
         showTrace: args.showTrace,
         showUrgencyBar: args.showUrgencyBar,
         showSpeed: args.showSpeed,
         showReferenceLapTime: args.showReferenceLapTime,
         showTrackCondition: true,
         traceChannel: args.traceChannel,
-        windowMeters: 150,
-      } as Partial<CoachWidgetSettings>);
+      });
 
-      store.session.updateSessionInfo({
-        ...store.session.sessionInfo,
-        trackLengthM: TRACK_LENGTH_M,
-      } as NonNullable<typeof store.session.sessionInfo>);
+      // A story with no scenario under it states the builder's stored lap and
+      // the call that goes with it; one with a scenario leaves both alone — the
+      // scenario has already put a reference and a coach in place, and the
+      // inactive one in particular is a reference this must not overwrite.
+      if (!scenarioId) {
+        if (args.hasReferenceLap) {
+          store.referenceLap.updateReferenceLap(
+            mockReferenceLap({ condition: args.wetReference ? 'wet' : 'dry' })
+          );
+        } else {
+          store.referenceLap.reset();
+        }
 
-      if (args.hasReferenceLap) {
-        store.referenceLap.updateReferenceLap({
-          ...referenceLap(),
-          condition: args.wetReference ? 'wet' : 'dry',
-        });
-      } else {
-        store.referenceLap.reset();
+        store.drivingCoachWidget.displayedAdvisory = args.advisory;
+        store.drivingCoachWidget.displayedBrakeUrgency = args.brakeUrgency;
+        store.drivingCoachWidget.displayedExitLateM = args.exitLateM;
+        store.drivingCoachWidget.displayedExitThrottleDeficit =
+          args.exitThrottleDeficit;
       }
 
-      store.drivingCoachWidget.displayedAdvisory = args.advisory;
-      store.drivingCoachWidget.displayedBrakeUrgency = args.brakeUrgency;
-      store.drivingCoachWidget.displayedExitLateM = args.exitLateM;
-      store.drivingCoachWidget.displayedExitThrottleDeficit =
-        args.exitThrottleDeficit;
+      const lapTiming = store.player.lapTiming;
+      const distPct =
+        args.distPct ?? lapTiming?.lap_dist_pct ?? DEFAULT_DIST_PCT;
+
+      store.player.updateLapTiming(
+        lapTiming
+          ? { ...lapTiming, lap_dist_pct: distPct }
+          : mockLapTiming({ lap_dist_pct: distPct })
+      );
 
       // Replay this lap up to the car's position, so the trace behind it has
       // something recorded to compare against the reference.
       store.coachWidget.reset();
 
-      const currentBucket = Math.floor(args.distPct * BUCKET_COUNT);
+      const currentBucket = Math.floor(distPct * BUCKET_COUNT);
 
       for (let bucket = 0; bucket <= currentBucket; bucket++) {
         const pct = bucket / BUCKET_COUNT;
 
         store.coachWidget.seedBucket(
           bucket,
-          speedAtPct(pct, args.ownApexSpeed),
-          brakeAtPct(pct, args.ownBrakeOffsetPct)
+          ownSpeedAt(pct, args.ownApexDeltaKmh),
+          ownBrakeAt(pct, args.ownBrakeLatePct)
         );
       }
-
-      store.player.updateLapTiming({
-        ...store.player.lapTiming,
-        lap_dist_pct: args.distPct,
-      } as NonNullable<typeof store.player.lapTiming>);
 
       // The store fills the window on the telemetry frame, which a seeded
       // preview never receives.
@@ -151,18 +154,17 @@ const meta: Meta<StoryArgs> = {
     args: {
       advisory: 'neutral',
       brakeUrgency: 0,
-      hasReferenceLap: true,
-      showTrace: true,
-      showUrgencyBar: true,
-      ownApexSpeed: APEX_SPEED_MPS,
-      ownBrakeOffsetPct: REFERENCE_BRAKE_PCT,
-      distPct: CORNER_CENTER_PCT + 0.01,
-      showSpeed: true,
-      showReferenceLapTime: true,
-      wetReference: false,
-      traceChannel: 'speed',
       exitLateM: null,
       exitThrottleDeficit: 0,
+      hasReferenceLap: true,
+      wetReference: false,
+      ownApexDeltaKmh: 0,
+      ownBrakeLatePct: 0,
+      showTrace: true,
+      showUrgencyBar: true,
+      showSpeed: true,
+      showReferenceLapTime: true,
+      traceChannel: 'speed',
     },
   }),
 };
@@ -170,38 +172,48 @@ const meta: Meta<StoryArgs> = {
 export default meta;
 type Story = StoryObj<StoryArgs>;
 
+/** How far off the reference's apex a story has to be for the trace to read. */
+const APEX_DELTA_KMH = 29;
+
 export const Default: Story = {};
 
 export const LosingTime: Story = {
-  args: { ownApexSpeed: APEX_SPEED_MPS - 8 },
+  args: { ownApexDeltaKmh: -APEX_DELTA_KMH },
 };
 
 export const GainingTime: Story = {
-  args: { ownApexSpeed: APEX_SPEED_MPS + 8 },
+  args: { ownApexDeltaKmh: APEX_DELTA_KMH },
 };
 
 export const BrakeCall: Story = {
-  args: {
-    advisory: 'brake',
-    brakeUrgency: 1,
-    distPct: CORNER_CENTER_PCT - 0.03,
-    ownApexSpeed: APEX_SPEED_MPS - 8,
-  },
+  parameters: previewScenario('driving-coach-brake'),
+  args: { ownApexDeltaKmh: -APEX_DELTA_KMH },
+};
+
+export const BrakeSoon: Story = {
+  parameters: previewScenario('driving-coach-brake-soon'),
 };
 
 export const GasCall: Story = {
-  args: {
-    advisory: 'gas',
-    distPct: CORNER_CENTER_PCT + 0.03,
-    ownApexSpeed: APEX_SPEED_MPS + 8,
-  },
+  parameters: previewScenario('driving-coach-gas'),
+  args: { ownApexDeltaKmh: APEX_DELTA_KMH },
+};
+
+/** The car is being caught — no pedal advice applies, so the coach says so instead. */
+export const UnsettledCar: Story = {
+  parameters: previewScenario('driving-coach-grip'),
+};
+
+/** The longest call the coach makes: a stored lap it can find no corner in. */
+export const NothingToCompare: Story = {
+  parameters: previewScenario('driving-coach-inactive'),
 };
 
 /** Out of the corner and still off the power — the metres count up until the throttle opens. */
 export const LateOnThrottle: Story = {
   args: {
     advisory: 'gas',
-    distPct: CORNER_CENTER_PCT + 0.02,
+    distPct: PREVIEW_CORNER_CENTER_PCT + 0.02,
     exitLateM: 14,
   },
 };
@@ -210,21 +222,9 @@ export const LateOnThrottle: Story = {
 export const ExitThrottleDeficit: Story = {
   args: {
     advisory: 'gas',
-    distPct: CORNER_CENTER_PCT + 0.03,
+    distPct: PREVIEW_CORNER_CENTER_PCT + 0.03,
     exitThrottleDeficit: 0.18,
   },
-};
-
-/** The car is being caught — no pedal advice applies, so the coach says so instead. */
-export const UnsettledCar: Story = {
-  args: {
-    advisory: 'grip',
-    distPct: CORNER_CENTER_PCT + 0.02,
-  },
-};
-
-export const BrakeSoon: Story = {
-  args: { brakeUrgency: 0.85, distPct: CORNER_CENTER_PCT - 0.055 },
 };
 
 export const NoReferenceLap: Story = {
@@ -243,17 +243,17 @@ export const TraceOffNoUrgencyBar: Story = {
 // mark and this lap's mark are inside the same window and can be compared.
 export const BrakingLaterThanReference: Story = {
   args: {
-    ownBrakeOffsetPct: REFERENCE_BRAKE_PCT + 0.008,
-    ownApexSpeed: APEX_SPEED_MPS - 6,
-    distPct: CORNER_CENTER_PCT - 0.005,
+    ownBrakeLatePct: 0.008,
+    ownApexDeltaKmh: -22,
+    distPct: PREVIEW_CORNER_CENTER_PCT - 0.005,
   },
 };
 
 export const BrakingEarlierThanReference: Story = {
   args: {
-    ownBrakeOffsetPct: REFERENCE_BRAKE_PCT - 0.008,
-    ownApexSpeed: APEX_SPEED_MPS + 4,
-    distPct: CORNER_CENTER_PCT - 0.005,
+    ownBrakeLatePct: -0.008,
+    ownApexDeltaKmh: 15,
+    distPct: PREVIEW_CORNER_CENTER_PCT - 0.005,
   },
 };
 
@@ -268,7 +268,7 @@ export const WetReference: Story = {
 export const BrakeChannel: Story = {
   args: {
     traceChannel: 'brake',
-    ownBrakeOffsetPct: REFERENCE_BRAKE_PCT + 0.008,
-    distPct: CORNER_CENTER_PCT - 0.005,
+    ownBrakeLatePct: 0.008,
+    distPct: PREVIEW_CORNER_CENTER_PCT - 0.005,
   },
 };

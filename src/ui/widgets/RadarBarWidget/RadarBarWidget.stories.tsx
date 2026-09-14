@@ -1,13 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { ProximityFrame, RadarDistances } from '@/types/bindings';
+import type { MockTrafficCar } from '@store/preview/mocks/traffic';
+import { mockProximity } from '@store/preview/mocks/traffic';
 import { RadarBarWidget } from './RadarBarWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 interface StoryArgs {
-  radarDistances: RadarDistances;
-  spotterLeft: boolean;
-  spotterRight: boolean;
+  /**
+   * The cars around the player. Left undefined — which is what a story naming
+   * a scenario does — the scenario's own traffic is kept. The bar reads the
+   * four radar distances and the two spotter flags, and the builder derives
+   * all six from these cars the way the backend derives them, so a story
+   * cannot state a side distance its own traffic denies.
+   */
+  cars?: MockTrafficCar[];
 }
 
 const meta: Meta<StoryArgs> = {
@@ -18,22 +27,9 @@ const meta: Meta<StoryArgs> = {
     seed: (store, args) => {
       store.appSettings.dragMode = true;
 
-      store.backendComputed.updateProximity({
-        radarDistances: args.radarDistances,
-        spotterLeft: args.spotterLeft,
-        spotterRight: args.spotterRight,
-        nearbyCars: [],
-      } as unknown as ProximityFrame);
-    },
-    args: {
-      radarDistances: {
-        frontDist: 999,
-        rearDist: 999,
-        leftDist: null,
-        rightDist: null,
-      },
-      spotterLeft: false,
-      spotterRight: false,
+      if (args.cars !== undefined) {
+        store.backendComputed.updateProximity(mockProximity(args.cars));
+      }
     },
   }),
 };
@@ -41,53 +37,16 @@ const meta: Meta<StoryArgs> = {
 export default meta;
 type Story = StoryObj<StoryArgs>;
 
-export const Default: Story = {};
+export const Default: Story = { args: { cars: [] } };
 
-export const CarLeft: Story = {
-  args: {
-    radarDistances: {
-      frontDist: 999,
-      rearDist: 999,
-      leftDist: 1.2,
-      rightDist: null,
-    },
-    spotterLeft: true,
-  },
-};
-
-export const CarRight: Story = {
-  args: {
-    radarDistances: {
-      frontDist: 999,
-      rearDist: 999,
-      leftDist: null,
-      rightDist: 0.8,
-    },
-    spotterRight: true,
-  },
-};
+export const CarLeft: Story = { parameters: previewScenario('traffic-left') };
+export const CarRight: Story = { parameters: previewScenario('traffic-right') };
 
 export const BothSides: Story = {
-  args: {
-    radarDistances: {
-      frontDist: 999,
-      rearDist: 999,
-      leftDist: 1.5,
-      rightDist: 0.8,
-    },
-    spotterLeft: true,
-    spotterRight: true,
-  },
+  parameters: previewScenario('traffic-three-wide'),
 };
 
+// Overlapping mirror to mirror — the closest the side pill ever reads.
 export const VeryClose: Story = {
-  args: {
-    radarDistances: {
-      frontDist: 999,
-      rearDist: 999,
-      leftDist: 0.3,
-      rightDist: null,
-    },
-    spotterLeft: true,
-  },
+  args: { cars: [{ carIdx: 7, longitudinalDist: 0.3, side: 'left' }] },
 };

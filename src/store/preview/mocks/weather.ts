@@ -1,4 +1,8 @@
-import type { EnvironmentFrame } from '@/types/bindings';
+import type {
+  EnvironmentFrame,
+  Skies,
+  WeatherForecastEntry,
+} from '@/types/bindings';
 
 // Mock builders for the weather domain. Pure: each returns a *complete*
 // environment frame typed from the generated bindings, so a field added to the
@@ -46,6 +50,16 @@ const CONDITIONS: Record<MockTrackCondition, Partial<EnvironmentFrame>> = {
   },
 };
 
+// How much water is in the air under each sky. The forecast strip colours its
+// hours by these, so they are stated once here rather than per fixture.
+const FORECAST_BY_SKIES: Record<Skies, { humidity: number; rainPct: number }> =
+  {
+    Clear: { humidity: 0.38, rainPct: 0 },
+    PartlyCloudy: { humidity: 0.46, rainPct: 0.05 },
+    MostlyCloudy: { humidity: 0.62, rainPct: 0.25 },
+    Overcast: { humidity: 0.84, rainPct: 0.7 },
+  };
+
 /**
  * A complete environment frame for one track condition.
  *
@@ -71,3 +85,35 @@ export const mockEnvironment = (
   ...CONDITIONS[condition],
   ...overrides,
 });
+
+/** One hour of the forecast strip, as the sim reports it. */
+export interface MockForecastHour {
+  /** Seconds from the session start the entry forecasts. */
+  time: number;
+  skies: Skies;
+  tempC: number;
+  windVelMps: number;
+  windDirRad: number;
+}
+
+/**
+ * The forecast strip, as a complete list of entries.
+ *
+ * A forecast hour is stated by what the strip draws — the hour, the sky and
+ * the temperature — and the rest is derived here: the humidity and the rain
+ * chance follow the sky the way the sim's own forecast does, so a strip cannot
+ * show an overcast hour with a clear one's numbers behind it.
+ */
+export const mockForecast = (
+  hours: MockForecastHour[]
+): WeatherForecastEntry[] =>
+  hours.map(({ time, skies, tempC, windVelMps, windDirRad }) => ({
+    Time: time,
+    Temp: tempC,
+    WindSpeed: windVelMps,
+    WindDir: windDirRad,
+    Skies: skies,
+    Humidity: FORECAST_BY_SKIES[skies].humidity,
+    Fog: 0,
+    RainPct: FORECAST_BY_SKIES[skies].rainPct,
+  }));
