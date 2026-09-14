@@ -53,6 +53,13 @@ pub struct CarIdxFrame {
     /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxlap/
     pub car_idx_lap: Vec<i32>,
 
+    /// Laps completed by each car (-1 = unknown, the sim's own marker for a car
+    /// that has left the world). Unlike `car_idx_lap`, which counts the lap being
+    /// driven, this is on the same scale as `ResultsPositions.LapsComplete`, so the
+    /// official results stand in for it seamlessly once the live value is gone.
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapcompleted/
+    pub car_idx_laps_completed: Vec<i32>,
+
     /// Last lap time in seconds for each car (-1 = no time)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxlastlaptime/
     pub car_idx_last_lap_time: Vec<f32>,

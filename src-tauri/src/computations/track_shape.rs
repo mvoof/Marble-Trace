@@ -724,6 +724,7 @@ mod tests {
             car_idx_position: vec![],
             car_idx_class_position: vec![],
             car_idx_lap: vec![],
+            car_idx_laps_completed: vec![],
             car_idx_last_lap_time: vec![],
             car_idx_best_lap_time: vec![],
             car_idx_f2_time: vec![],
