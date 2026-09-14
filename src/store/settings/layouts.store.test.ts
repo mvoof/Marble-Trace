@@ -513,4 +513,55 @@ describe('a screen added to a layout', () => {
 
     expect(screenNamed('Tablet').background).toBe('transparent');
   });
+
+  it('aggregates all remote screens across all layouts with context metadata', () => {
+    const layout1Id = rootStore.layouts.addLayout('Race Layout');
+    rootStore.layouts.setEditingLayoutId(layout1Id);
+    rootStore.layouts.addRemoteScreen('Dash', 1280, 800);
+
+    const layout2Id = rootStore.layouts.addLayout('Quali Layout');
+    rootStore.layouts.setEditingLayoutId(layout2Id);
+    rootStore.layouts.addRemoteScreen('LapScreen', 1920, 1080);
+
+    rootStore.layouts.setSessionLayout('Race', layout1Id);
+    rootStore.layouts.setSessionLayout('Qualify', layout2Id);
+    rootStore.layouts.setPinnedLiveLayoutId(layout1Id);
+
+    const all = rootStore.layouts.allRemoteScreens;
+    expect(all).toHaveLength(2);
+
+    const dash = all.find((d) => d.screen.name === 'Dash');
+    expect(dash).toBeDefined();
+    expect(dash?.layoutId).toBe(layout1Id);
+    expect(dash?.layoutName).toBe('Race Layout');
+    expect(dash?.isLive).toBe(true);
+    expect(dash?.sessionContexts).toEqual(['Race']);
+
+    const lap = all.find((d) => d.screen.name === 'LapScreen');
+    expect(lap).toBeDefined();
+    expect(lap?.layoutId).toBe(layout2Id);
+    expect(lap?.layoutName).toBe('Quali Layout');
+    expect(lap?.isLive).toBe(false);
+    expect(lap?.sessionContexts).toEqual(['Qualify']);
+
+    // Test modifying screen on a non-editing layout
+    rootStore.layouts.setEditingLayoutId(layout1Id);
+    rootStore.layouts.setRemoteScreenBackground(
+      'LapScreen',
+      '#ff0000',
+      layout2Id
+    );
+    expect(
+      rootStore.layouts
+        .byId(layout2Id)
+        ?.monitors.find((m) => m.name === 'LapScreen')?.background
+    ).toBe('#ff0000');
+
+    rootStore.layouts.resizeRemoteScreen('LapScreen', 800, 600, layout2Id);
+    expect(
+      rootStore.layouts
+        .byId(layout2Id)
+        ?.monitors.find((m) => m.name === 'LapScreen')?.bounds.width
+    ).toBe(800);
+  });
 });

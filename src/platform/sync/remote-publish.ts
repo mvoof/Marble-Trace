@@ -28,7 +28,19 @@ const snapshotFor = (
   root: RootStore,
   slug: string
 ): RemoteScreenSnapshot | null => {
-  const layout = root.layouts.liveLayout;
+  const liveLayout = root.layouts.liveLayout;
+  const liveMonitor = liveLayout?.monitors.find(
+    (candidate) => isRemoteMonitor(candidate) && candidate.slug === slug
+  );
+
+  const layout =
+    liveMonitor && liveLayout
+      ? liveLayout
+      : root.layouts.layouts.find((candidate) =>
+          candidate.monitors.some(
+            (monitor) => isRemoteMonitor(monitor) && monitor.slug === slug
+          )
+        );
 
   if (!layout) return null;
 
@@ -38,17 +50,22 @@ const snapshotFor = (
 
   if (!monitor) return null;
 
+  const isLive = layout.id === root.layouts.liveLayoutId;
+  const widgets = isLive
+    ? widgetsOnMonitor(
+        root.liveWidgets.liveWidgets,
+        monitor.name,
+        layout.monitors
+      )
+    : widgetsOnMonitor(layout.widgets, monitor.name, layout.monitors);
+
   return {
     slug,
     name: monitor.name,
     bounds: { ...monitor.bounds },
     // The widgets of this screen only: a tablet never receives the layout of
     // the monitors it is not showing.
-    widgets: widgetsOnMonitor(
-      root.liveWidgets.liveWidgets,
-      monitor.name,
-      layout.monitors
-    ),
+    widgets,
     units: root.units.unitSystem,
     language: root.appSettings.appSettings.language,
     steeringLock: root.appSettings.appSettings.steeringLock,
@@ -58,10 +75,13 @@ const snapshotFor = (
 };
 
 const publishAll = (root: RootStore) => {
-  for (const monitor of root.layouts.liveRemoteScreens) {
-    const slug = monitor.slug;
+  const seenSlugs = new Set<string>();
 
-    if (!slug) continue;
+  for (const descriptor of root.layouts.allRemoteScreens) {
+    const slug = descriptor.screen.slug;
+
+    if (!slug || seenSlugs.has(slug)) continue;
+    seenSlugs.add(slug);
 
     const snapshot = snapshotFor(root, slug);
 
@@ -95,20 +115,21 @@ const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
     return;
   }
 
-  const monitor = root.layouts.liveRemoteScreens.find(
-    (screen) => screen.slug === device.slug
+  const descriptor = root.layouts.allRemoteScreens.find(
+    (entry) => entry.screen.slug === device.slug
   );
 
-  if (!monitor || monitor.fittedToDevice) return;
+  if (!descriptor || descriptor.screen.fittedToDevice) return;
 
   runInAction(() => {
-    monitor.fittedToDevice = true;
+    descriptor.screen.fittedToDevice = true;
   });
 
   root.layouts.resizeRemoteScreen(
-    monitor.name,
+    descriptor.screen.name,
     device.viewportWidth,
-    device.viewportHeight
+    device.viewportHeight,
+    descriptor.layoutId
   );
 };
 
