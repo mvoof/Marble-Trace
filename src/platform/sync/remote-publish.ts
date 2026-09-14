@@ -8,7 +8,6 @@ import {
 } from '@platform/services/remote.service';
 import { resolveAppLanguage } from '@store/settings/app-settings.store';
 import { widgetsOnMonitor } from '@store/settings/virtual-desktop';
-import { isRemoteMonitor } from '@utils/remote-screen';
 import type { RootStore } from '@store/root-store';
 import type { RemoteScreenSnapshot } from '@/types/remote';
 import type { RemoteDevice } from '@/types/bindings';
@@ -28,28 +27,11 @@ const snapshotFor = (
   root: RootStore,
   slug: string
 ): RemoteScreenSnapshot | null => {
-  const liveLayout = root.layouts.liveLayout;
-  const liveMonitor = liveLayout?.monitors.find(
-    (candidate) => isRemoteMonitor(candidate) && candidate.slug === slug
-  );
+  const target = root.layouts.remoteScreenBySlug(slug);
 
-  const layout =
-    liveMonitor && liveLayout
-      ? liveLayout
-      : root.layouts.layouts.find((candidate) =>
-          candidate.monitors.some(
-            (monitor) => isRemoteMonitor(monitor) && monitor.slug === slug
-          )
-        );
+  if (!target) return null;
 
-  if (!layout) return null;
-
-  const monitor = layout.monitors.find(
-    (candidate) => isRemoteMonitor(candidate) && candidate.slug === slug
-  );
-
-  if (!monitor) return null;
-
+  const { layout, screen: monitor } = target;
   const isLive = layout.id === root.layouts.liveLayoutId;
   const widgets = isLive
     ? widgetsOnMonitor(
@@ -115,21 +97,19 @@ const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
     return;
   }
 
-  const descriptor = root.layouts.allRemoteScreens.find(
-    (entry) => entry.screen.slug === device.slug
-  );
+  const target = root.layouts.remoteScreenBySlug(device.slug);
 
-  if (!descriptor || descriptor.screen.fittedToDevice) return;
+  if (!target || target.screen.fittedToDevice) return;
 
   runInAction(() => {
-    descriptor.screen.fittedToDevice = true;
+    target.screen.fittedToDevice = true;
   });
 
   root.layouts.resizeRemoteScreen(
-    descriptor.screen.name,
+    target.screen.name,
     device.viewportWidth,
     device.viewportHeight,
-    descriptor.layoutId
+    target.layout.id
   );
 };
 
