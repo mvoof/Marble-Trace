@@ -16,11 +16,7 @@ import { mockFlags } from './mocks/flags';
 import { mockPitTarget } from './mocks/pit';
 import { mockFuel } from './mocks/fuel';
 import type { MockFieldOptions } from './mocks/field';
-import {
-  MOCK_ENDURANCE_CLASSES,
-  MOCK_SINGLE_CLASS,
-  mockField,
-} from './mocks/field';
+import { mockField } from './mocks/field';
 
 // Neutral, fully synthetic scenario fixtures. A recorded session never
 // guarantees the moment a flag waves, a badge appears, or traffic surrounds the
@@ -43,13 +39,6 @@ const applyFlags = (store: RootStore, overrides: Partial<RaceFlags>) => {
 
   syncFlagDisplay(store);
 };
-
-/** A full endurance entry list — more cars than any grid the widgets will meet. */
-const FULL_GRID_SIZE = 60;
-/** A club race: what most of a driver's seasons actually look like. */
-const TYPICAL_GRID_SIZE = 22;
-/** The longest display name iRacing lets a driver carry. */
-const LONGEST_NAME_LENGTH = 31;
 
 /** The shipped default; the preview has no backend to take a real one from. */
 const PREVIEW_CAR_LENGTH_M = 4.4;
@@ -420,62 +409,16 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
-    id: 'field-multiclass',
-    label: 'Field — full multi-class grid',
-    apply: (store) => {
-      seedSampleTelemetry(store);
-      // The worst case the columns ever face: four classes, a full endurance
-      // entry list, and names at the length the sim allows.
-      applyField(store, {
-        size: FULL_GRID_SIZE,
-        classes: MOCK_ENDURANCE_CLASSES,
-        nameLength: LONGEST_NAME_LENGTH,
-        gapS: 2.4,
-      });
-    },
-  },
-  {
     id: 'field-close-pack',
     label: 'Field — close pack',
     apply: (store) => {
       seedSampleTelemetry(store);
       // Sub-second between every car, which is what the gap column has to carry
-      // a decimal for.
-      applyField(store, {
-        size: FULL_GRID_SIZE,
-        classes: MOCK_ENDURANCE_CLASSES,
-        nameLength: LONGEST_NAME_LENGTH,
-        gapS: 0.4,
-      });
-    },
-  },
-  {
-    id: 'field-pit-states',
-    label: 'Field — pit road and stalls',
-    apply: (store) => {
-      seedSampleTelemetry(store);
-      // Cars on their way in, stopped in the box and rejoining — the three pit
-      // badges at once, placed either side of the player's own row.
-      applyField(store, {
-        size: FULL_GRID_SIZE,
-        classes: MOCK_ENDURANCE_CLASSES,
-        nameLength: LONGEST_NAME_LENGTH,
-        pitStates: true,
-      });
-    },
-  },
-  {
-    id: 'field-typical',
-    label: 'Field — typical race',
-    apply: (store) => {
-      seedSampleTelemetry(store);
-      // The everyday look beside the worst case: one make, a club-race entry
-      // list and the names the snapshot recorded. The worst case is unusual
-      // enough here that the ordinary grid cannot be judged from it.
-      applyField(store, {
-        size: TYPICAL_GRID_SIZE,
-        classes: MOCK_SINGLE_CLASS,
-      });
+      // a decimal for. The rest of what the two tables are sized against — a
+      // three-class grid, the longest names a driver can carry, cars sitting in
+      // their boxes — the snapshot already holds, so the baseline shows it and
+      // no scenario repeats it.
+      applyField(store, { gapS: 0.4 });
     },
   },
   {

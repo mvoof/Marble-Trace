@@ -21,7 +21,29 @@ const PREVIEW_CLASS_BADGES: Record<number, string> = {
   3002: 'FVee',
   4012: 'GR86',
   4102: 'M2',
+  4108: 'M2',
   4109: 'GT3',
+};
+
+/**
+ * The pit badge the backend would have resolved.
+ *
+ * `pitState` is computed in Rust from a car's movement through the lane, which
+ * the preview has no backend to run — so without this the snapshot's six cars
+ * sitting in their boxes render as ordinary rows and the pit column is empty
+ * whatever the snapshot holds. Only the states a single frame can tell apart:
+ * a car on its way in and a car on its way out look identical standing still,
+ * so neither is guessed at.
+ */
+const previewPitState = (
+  onPitRoad: boolean,
+  trackSurface: DriverEntry['trackSurface']
+): DriverEntry['pitState'] => {
+  if (trackSurface === TrackSurface.InPitStall) return 'stall';
+
+  if (onPitRoad) return 'in';
+
+  return 'none';
 };
 
 export const computeDriverEntries = (
@@ -39,6 +61,10 @@ export const computeDriverEntries = (
 
     if (car.isSpectator) continue;
     if (car.isPaceCar) continue;
+
+    const onPitRoad = carIdx.car_idx_on_pit_road[idx] ?? false;
+    const trackSurface =
+      carIdx.car_idx_track_surface[idx] ?? TrackSurface.NotInWorld;
 
     entries.push({
       carIdx: idx,
@@ -65,14 +91,13 @@ export const computeDriverEntries = (
       bestLapTime: carIdx.car_idx_best_lap_time[idx] ?? -1,
       qualifyTime: -1,
       f2Time: carIdx.car_idx_f2_time[idx] ?? 0,
-      trackSurface:
-        carIdx.car_idx_track_surface[idx] ?? TrackSurface.NotInWorld,
+      trackSurface,
       iRating: car.iRating,
       licString: car.licString,
       licColor: parseClassColor(car.licColor),
       incidents: 0,
       isPlayer: idx === playerCarIdx,
-      onPitRoad: carIdx.car_idx_on_pit_road[idx] ?? false,
+      onPitRoad,
       estimatedIrDeltaLive: null,
       estimatedIrDeltaOfficial: null,
       relativeLapDist: 0,
@@ -84,7 +109,7 @@ export const computeDriverEntries = (
       isRetired: false,
       isFinished: false,
       isTowed: false,
-      pitState: 'none',
+      pitState: previewPitState(onPitRoad, trackSurface),
     });
   }
 

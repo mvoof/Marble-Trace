@@ -46,12 +46,7 @@ const RELATIVE_DESIGN_WIDTH = computeRelativeDesignWidth(
 export const RELATIVE_MANIFEST: WidgetManifest = {
   id: 'relative',
   order: 60,
-  previewScenarios: [
-    'field-multiclass',
-    'field-close-pack',
-    'field-pit-states',
-    'field-typical',
-  ],
+  previewScenarios: ['field-close-pack'],
   telemetryEvents: ['carPositions', 'relative'],
   label: 'Relative',
   description: 'Gaps to cars ahead and behind you.',
