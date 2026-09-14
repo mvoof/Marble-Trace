@@ -9,6 +9,11 @@ import {
   seedScenario,
 } from './scenarios';
 
+// The limiter's bit in the engine warning mask. Spelled out rather than
+// imported: it is declared in the UI layer, which the preview module may not
+// reach into.
+const PIT_LIMITER_BIT = 0x10;
+
 const seed = (scenarioId: string) => {
   const store = new RootStore({ skipInit: true });
 
@@ -95,6 +100,45 @@ describe('flag scenarios', () => {
 
     expect(black.backendComputed.fuel).toEqual(baseline.backendComputed.fuel);
     expect(black.player.carDynamics).toEqual(baseline.player.carDynamics);
+  });
+});
+
+// The pit lane's geometry is only ever learned by driving through the pits, so
+// without it the lane bar, the pitbox marker and the box countdown draw nothing
+// — on the pit line widget and on the race dash alike.
+describe('pit scenarios', () => {
+  it('puts a recorded lane under the base snapshot', () => {
+    const store = seed(DEFAULT_PREVIEW_SCENARIO_ID);
+
+    expect(store.pitServiceWidget.pitLaneLengthM).toBeGreaterThan(200);
+    expect(store.pitServiceWidget.pitboxLanePct).toBeGreaterThan(0);
+    expect(store.pitServiceWidget.pitboxLanePct).toBeLessThan(1);
+  });
+
+  it('rolls the car down the lane towards its stall', () => {
+    const store = seed('pit-lane');
+
+    expect(store.player.carStatus?.on_pit_road).toBe(true);
+    expect(store.player.hasPitLaneProgress).toBe(true);
+    expect(store.player.pitTargetType).toBe('pitbox');
+    expect(store.player.pitTargetDistM).toBeGreaterThan(0);
+  });
+
+  it('arms the limiter only where the scenario says so', () => {
+    const off = seed('pit-lane').player.carStatus?.engine_warnings ?? 0;
+    const on = seed('pit-limiter').player.carStatus?.engine_warnings ?? 0;
+
+    expect(off & PIT_LIMITER_BIT).toBe(0);
+    expect(on & PIT_LIMITER_BIT).toBe(PIT_LIMITER_BIT);
+  });
+
+  it('counts down to the exit once the stall is behind the car', () => {
+    const store = seed('pit-over-limit');
+
+    expect(store.player.pitTargetType).toBe('pitExit');
+    expect(store.player.pitLaneProgressPct ?? 0).toBeGreaterThan(
+      store.pitServiceWidget.pitboxLanePct ?? 1
+    );
   });
 });
 

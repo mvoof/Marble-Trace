@@ -4,6 +4,7 @@ import type {
   DriverEntry,
   EnvironmentFrame,
   NearbyCar,
+  PitTargetFrame,
   ProximityFrame,
   RaceFlags,
   ReferenceLapData,
@@ -15,6 +16,7 @@ import { action } from 'mobx';
 import type { RootStore } from '@store/root-store';
 import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';
 import { mockFlags } from './mocks/flags';
+import { mockPitTarget } from './mocks/pit';
 import { mockFuel } from './mocks/fuel';
 
 // Neutral, fully synthetic scenario fixtures. A recorded session never
@@ -41,6 +43,11 @@ const applyFlags = (store: RootStore, overrides: Partial<RaceFlags>) => {
 
 /** The shipped default; the preview has no backend to take a real one from. */
 const PREVIEW_CAR_LENGTH_M = 4.4;
+
+/** The pit limiter's bit in the engine warning mask, as the widgets read it. */
+const PIT_LIMITER_BIT = 0x10;
+const PIT_LANE_RPM = 2800;
+const PIT_LANE_GEAR = 2;
 
 const buildNearbyCar = (
   carIdx: number,
@@ -99,6 +106,48 @@ const applyDynamics = (
   }
 
   store.player.updateCarDynamics({ ...carDynamics, ...overrides });
+};
+
+// The three pit-lane scenarios differ only in where the car is along the lane,
+// how fast it is going and whether the limiter is armed; everything else about
+// being in the pits is the same, so it is stated once.
+const applyPitLane = (
+  store: RootStore,
+  {
+    limiterOn,
+    speedKmh,
+    pitTarget,
+  }: {
+    limiterOn: boolean;
+    speedKmh: number;
+    pitTarget: Partial<PitTargetFrame>;
+  }
+) => {
+  const carStatus = store.player.carStatus;
+  const sessionInfo = store.session.sessionInfo;
+
+  if (carStatus) {
+    store.player.updateCarStatus({
+      ...carStatus,
+      on_pit_road: true,
+      engine_warnings: limiterOn ? PIT_LIMITER_BIT : 0,
+    });
+  }
+
+  if (sessionInfo) {
+    store.session.updateSessionInfo({
+      ...sessionInfo,
+      trackPitSpeedLimit: '55 kph',
+    });
+  }
+
+  store.player.updatePitTarget(mockPitTarget(pitTarget));
+
+  applyDynamics(store, {
+    speed: speedKmh / 3.6,
+    rpm: PIT_LANE_RPM,
+    gear: PIT_LANE_GEAR,
+  });
 };
 
 const REFERENCE_BUCKET_COUNT = 1000;
@@ -440,25 +489,13 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     label: 'Pit — no limiter',
     apply: (store) => {
       seedSampleTelemetry(store);
-      const carStatus = store.player.carStatus;
-      const sessionInfo = store.session.sessionInfo;
-
-      if (carStatus) {
-        store.player.updateCarStatus({
-          ...carStatus,
-          on_pit_road: true,
-          engine_warnings: 0,
-        });
-      }
-
-      if (sessionInfo) {
-        store.session.updateSessionInfo({
-          ...sessionInfo,
-          trackPitSpeedLimit: '55 kph',
-        });
-      }
-
-      applyDynamics(store, { speed: 40 / 3.6, rpm: 2800, gear: 2 });
+      // Just through the entry line with the limiter still off: the lane bar
+      // starts filling and the box is most of a lane away.
+      applyPitLane(store, {
+        limiterOn: false,
+        speedKmh: 40,
+        pitTarget: { laneProgressPct: 0.15, distM: 126, target: 'pitbox' },
+      });
     },
   },
   {
@@ -466,25 +503,13 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     label: 'Pit — limiter active',
     apply: (store) => {
       seedSampleTelemetry(store);
-      const carStatus = store.player.carStatus;
-      const sessionInfo = store.session.sessionInfo;
-
-      if (carStatus) {
-        store.player.updateCarStatus({
-          ...carStatus,
-          on_pit_road: true,
-          engine_warnings: 0x10,
-        });
-      }
-
-      if (sessionInfo) {
-        store.session.updateSessionInfo({
-          ...sessionInfo,
-          trackPitSpeedLimit: '55 kph',
-        });
-      }
-
-      applyDynamics(store, { speed: 52 / 3.6, rpm: 3100, gear: 3 });
+      // Closing on the stall under the limiter — the box countdown is inside
+      // the cue distance, which is when it turns green.
+      applyPitLane(store, {
+        limiterOn: true,
+        speedKmh: 52,
+        pitTarget: { laneProgressPct: 0.4, distM: 38, target: 'pitbox' },
+      });
     },
   },
   {
@@ -492,25 +517,13 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     label: 'Pit — over speed limit',
     apply: (store) => {
       seedSampleTelemetry(store);
-      const carStatus = store.player.carStatus;
-      const sessionInfo = store.session.sessionInfo;
-
-      if (carStatus) {
-        store.player.updateCarStatus({
-          ...carStatus,
-          on_pit_road: true,
-          engine_warnings: 0x10,
-        });
-      }
-
-      if (sessionInfo) {
-        store.session.updateSessionInfo({
-          ...sessionInfo,
-          trackPitSpeedLimit: '55 kph',
-        });
-      }
-
-      applyDynamics(store, { speed: 70 / 3.6, rpm: 3400, gear: 3 });
+      // Past the stall and running for the exit, over the cap: the widest the
+      // speed block ever gets, with the bar counting down to pit exit.
+      applyPitLane(store, {
+        limiterOn: true,
+        speedKmh: 70,
+        pitTarget: { laneProgressPct: 0.7, distM: 107, target: 'pitExit' },
+      });
     },
   },
   {
