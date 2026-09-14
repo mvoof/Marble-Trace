@@ -1,10 +1,13 @@
 import type {
   CarDynamicsFrame,
+  CarStatusFrame,
   EnvironmentFrame,
   PitTargetFrame,
   RaceFlags,
   ReferenceLapData,
   ReferenceLapSample,
+  SessionEntry,
+  SessionFrame,
 } from '@/types/bindings';
 import type { PreviewScenarioId } from '@/types/preview-scenarios';
 import { action } from 'mobx';
@@ -22,6 +25,17 @@ import {
   mockLapTimingAtDelta,
   mockPersonalBestLapLog,
 } from './mocks/delta';
+import {
+  mockCarStatus,
+  OIL_TEMP_WARNING_C,
+  WATER_TEMP_WARNING_C,
+} from './mocks/engine';
+import {
+  mockSession,
+  mockSessionEntry,
+  RACE_SESSION_NUM,
+  UNLIMITED_REMAIN_S,
+} from './mocks/timing';
 
 // Neutral, fully synthetic scenario fixtures. A recorded session never
 // guarantees the moment a flag waves, a badge appears, or traffic surrounds the
@@ -191,6 +205,50 @@ const applyField = (store: RootStore, options: MockFieldOptions) => {
 // would still read as no delta.
 const applyDelta = (store: RootStore, delta: number) => {
   store.player.updateLapTiming(mockLapTimingAtDelta(delta));
+};
+
+// An engine scenario replaces the status frame rather than patching it: the
+// recorded one was captured in the garage, with the oil pressure and every
+// in-car adjustment still at zero, so a temperature layered onto it would sit
+// beside a dead panel.
+const applyEngine = (store: RootStore, overrides: Partial<CarStatusFrame>) => {
+  store.player.updateCarStatus(mockCarStatus(overrides));
+};
+
+// A timing scenario states the clock and the lap limit together — which of the
+// two the timer counts is decided by the session entry, not by the frame, so
+// stating one without the other reads as the session it is not. The recorded
+// entry's results are carried over: the qualifying order hangs off them.
+const applySessionClock = (
+  store: RootStore,
+  session: Partial<SessionFrame>,
+  entry: Partial<SessionEntry>
+) => {
+  const sessionInfo = store.session.sessionInfo;
+  const frame = mockSession(session);
+
+  store.session.updateSession(frame);
+
+  if (!sessionInfo) {
+    return;
+  }
+
+  // The entry the timer reads is the one the frame points at, so the index
+  // comes off the frame rather than off the constant it defaults to.
+  const sessionNum = frame.session_num ?? RACE_SESSION_NUM;
+  const recorded = sessionInfo.sessions[sessionNum];
+  const sessions = [...sessionInfo.sessions];
+
+  sessions[sessionNum] = mockSessionEntry({
+    resultsPositions: recorded?.resultsPositions ?? [],
+    ...entry,
+  });
+
+  store.session.updateSessionInfo({
+    ...sessionInfo,
+    currentSessionNum: sessionNum,
+    sessions,
+  });
 };
 
 export interface PreviewScenario {
@@ -612,6 +670,85 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
           currentSectorIdx: 1,
           sectorDeltas: [-0.349, null, null],
         })
+      );
+    },
+  },
+  {
+    id: 'engine-oil-overheat',
+    label: 'Engine — oil overheating',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Past the threshold the panel flashes at, and far enough past it that
+      // the reading carries three digits — the widest the oil cell ever gets.
+      applyEngine(store, {
+        oil_temp: OIL_TEMP_WARNING_C + 12,
+        oil_press: 286,
+        water_temp: 108,
+      });
+    },
+  },
+  {
+    id: 'engine-water-overheat',
+    label: 'Engine — water overheating',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The water cell alone. The two overheats are separate scenarios because
+      // a panel that reads well with one cell flashing can be unreadable with
+      // two, and a driver sizing it has to see each treatment on its own.
+      applyEngine(store, {
+        water_temp: WATER_TEMP_WARNING_C + 9,
+        oil_temp: 128,
+      });
+    },
+  },
+  {
+    id: 'engine-stalled',
+    label: 'Engine — stalled',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Engine off and the car sitting still: the oil pressure falls away and
+      // the electrical system drops to what the battery alone holds.
+      applyEngine(store, {
+        oil_press: 0,
+        voltage: 12.2,
+        oil_temp: 96,
+        water_temp: 88,
+      });
+      applyDynamics(store, { speed: 0, rpm: 0, gear: 0 });
+    },
+  },
+  {
+    id: 'timer-final-minute',
+    label: 'Timer — final minute',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Inside the last minute of a timed race, which is when the clock gets
+      // its critical treatment and when a driver is least able to read a
+      // readout they have not looked at before.
+      applySessionClock(
+        store,
+        { session_time_remain: 47.4, session_time: 3552.6 },
+        { sessionLaps: 'unlimited' }
+      );
+    },
+  },
+  {
+    id: 'timer-lap-limited',
+    label: 'Timer — lap-limited race',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // A race that ends on a lap count has no clock at all. iRacing still
+      // fills the remaining time — with a week — so the scenario carries the
+      // sentinel and the lap limit together, and the timer counts up from the
+      // elapsed time rather than printing 168:00:00.
+      applySessionClock(
+        store,
+        {
+          session_time_remain: UNLIMITED_REMAIN_S,
+          session_time: 1249.7,
+          session_laps_remain_ex: 7,
+        },
+        { sessionLaps: '25' }
       );
     },
   },

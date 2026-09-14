@@ -44,4 +44,9 @@ export type PreviewScenarioId =
   | 'delta-ahead'
   | 'delta-behind'
   | 'delta-personal-best'
-  | 'sector-in-progress';
+  | 'sector-in-progress'
+  | 'engine-oil-overheat'
+  | 'engine-water-overheat'
+  | 'engine-stalled'
+  | 'timer-final-minute'
+  | 'timer-lap-limited';

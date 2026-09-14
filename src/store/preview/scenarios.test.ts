@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import type { FlagType } from '@/types';
 import { formatDelta, getGameDelta } from '@utils/delta-utils';
+import { resolveSessionLaps } from '@utils/telemetry-format';
+import {
+  isLapLimitedSession,
+  isSessionEnded,
+  resolveSessionClock,
+} from '@utils/timer-utils';
 import { RootStore } from '@store/root-store';
 import { WIDGETS } from '@store/widget-catalog';
 import { PREVIEW_CAR_LENGTH_M } from './mocks/traffic';
@@ -484,6 +490,135 @@ describe('delta scenarios', () => {
     expect(lapDelta?.sectorDeltas[0] ?? 0).toBeLessThan(0);
     expect(lapDelta?.sectorTimes[1]).toBeNull();
     expect(lapDelta?.currentSectorIdx).toBe(1);
+  });
+});
+
+// The engine panel flashes a cell off a threshold of its own, so what a
+// scenario owes it is a reading on the far side of that threshold and a panel
+// that is otherwise alive — the recorded snapshot was captured in the garage
+// with every pressure and adjustment still at zero.
+describe('engine scenarios', () => {
+  const OIL_TEMP_WARNING_C = 135;
+  const WATER_TEMP_WARNING_C = 120;
+
+  it('runs the oil past the temperature the panel flashes at', () => {
+    const carStatus = seed('engine-oil-overheat').player.carStatus;
+
+    expect(carStatus?.oil_temp ?? 0).toBeGreaterThanOrEqual(OIL_TEMP_WARNING_C);
+    expect(carStatus?.water_temp ?? 0).toBeLessThan(WATER_TEMP_WARNING_C);
+  });
+
+  it('runs the water past its own without taking the oil with it', () => {
+    const carStatus = seed('engine-water-overheat').player.carStatus;
+
+    expect(carStatus?.water_temp ?? 0).toBeGreaterThanOrEqual(
+      WATER_TEMP_WARNING_C
+    );
+    expect(carStatus?.oil_temp ?? 0).toBeLessThan(OIL_TEMP_WARNING_C);
+  });
+
+  it('stops the engine and drops what the engine was driving', () => {
+    const store = seed('engine-stalled');
+
+    expect(store.player.carDynamics?.rpm).toBe(0);
+    expect(store.player.carDynamics?.speed).toBe(0);
+    expect(store.player.carStatus?.oil_press).toBe(0);
+    expect(store.player.carStatus?.voltage ?? 99).toBeLessThan(13);
+  });
+
+  it('leaves the panel a reading in every cell', () => {
+    for (const scenarioId of [
+      'engine-oil-overheat',
+      'engine-water-overheat',
+      'engine-stalled',
+    ]) {
+      const carStatus = seed(scenarioId).player.carStatus;
+
+      for (const value of [
+        carStatus?.dc_abs,
+        carStatus?.dc_brake_bias,
+        carStatus?.dc_traction_control,
+        carStatus?.dc_throttle_shape,
+      ]) {
+        expect(value ?? 0, scenarioId).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('keeps the baseline flag on screen beside the panel', () => {
+    expect(seed('engine-oil-overheat').flags.displayFlags).toEqual(
+      seed(DEFAULT_PREVIEW_SCENARIO_ID).flags.displayFlags
+    );
+  });
+});
+
+// Which of the two readouts the timer draws is decided by the session entry
+// rather than by the clock, so a timing scenario is only right if the frame and
+// the entry describe the same session.
+describe('timing scenarios', () => {
+  const currentSession = (store: RootStore) => {
+    const sessionNum = store.session.session?.session_num ?? 0;
+
+    return store.session.sessionInfo?.sessions[sessionNum] ?? null;
+  };
+
+  const clockOf = (store: RootStore) => {
+    const session = currentSession(store);
+
+    return resolveSessionClock(
+      store.session.session?.session_time_remain ?? null,
+      store.session.session?.session_time ?? null,
+      isLapLimitedSession(session?.sessionLaps, session?.sessionType)
+    );
+  };
+
+  it('counts the last minute of a timed race down', () => {
+    const store = seed('timer-final-minute');
+    const clock = clockOf(store);
+
+    expect(clock.isCountdown).toBe(true);
+    expect(clock.seconds).toBeGreaterThan(0);
+    expect(clock.seconds).toBeLessThan(60);
+  });
+
+  it('gives a lap-limited race no clock to count down', () => {
+    const store = seed('timer-lap-limited');
+    const session = currentSession(store);
+    const clock = clockOf(store);
+
+    expect(
+      isLapLimitedSession(session?.sessionLaps, session?.sessionType)
+    ).toBe(true);
+    expect(clock.isCountdown).toBe(false);
+    // Counting up from the elapsed time, never the zero a session that has run
+    // out would show.
+    expect(clock.seconds).toBeGreaterThan(0);
+  });
+
+  it('states a lap limit the footer can print', () => {
+    const store = seed('timer-lap-limited');
+    const session = currentSession(store);
+
+    expect(
+      resolveSessionLaps(
+        session?.sessionLaps,
+        store.session.session?.session_time_remain ?? null,
+        11,
+        90
+      )
+    ).toBe('25');
+  });
+
+  it('runs both on a session that has not ended', () => {
+    for (const scenarioId of ['timer-final-minute', 'timer-lap-limited']) {
+      const store = seed(scenarioId);
+
+      expect(
+        isSessionEnded(store.session.session?.session_state ?? null),
+        scenarioId
+      ).toBe(false);
+      expect(currentSession(store)?.sessionType, scenarioId).toBe('Race');
+    }
   });
 });
 
