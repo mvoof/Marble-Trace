@@ -120,6 +120,7 @@ pub fn compute(
     start_positions: &HashMap<i32, (i32, i32)>,
     compute_ir_delta: bool,
     session_state: Option<SessionState>,
+    checkered_flag_shown: bool,
     state: &Mutex<DriverEntriesState>,
 ) -> DriverEntriesFrame {
     let player_car_idx = session.player_car_idx;
@@ -420,9 +421,16 @@ pub fn compute(
         // car one crossing early, and a player a lap down gets a checkered badge on
         // the lap they were shown the white flag. The broadcast checkered bit is the
         // signal that the leader has actually taken it; `CoolDown` is the backstop.
+        //
+        // That bit lives in the session-wide `SessionFlags`, not in `CarIdxSessionFlags`:
+        // the per-car field carries the flags shown to a driver (black, blue, meatball)
+        // and never lights the checkered, so scanning it alone left the latch unarmed
+        // until `CoolDown` — the whole field, leader included, got its badge only once
+        // the session had wound down. The per-car scan stays as a second signal.
         let checkered_is_out = matches!(session_state, Some(SessionState::CoolDown))
             || (matches!(session_state, Some(SessionState::Checkered))
-                && entries.iter().any(|entry| entry.raw_flags & CHECKERED != 0));
+                && (checkered_flag_shown
+                    || entries.iter().any(|entry| entry.raw_flags & CHECKERED != 0)));
 
         if checkered_is_out && locked_state.laps_at_checkered.is_none() {
             let baseline = locked_state.previous_laps.clone();
@@ -580,6 +588,11 @@ fn is_racing(entry: &DriverEntry) -> bool {
 /// the pit lane. A normal stop always shows `on_pit_road` first, so the two cannot
 /// be confused. The flag is cleared as soon as the car is back in the world — by
 /// then it has a real lap distance of its own once more.
+///
+/// A driver who takes the checkered flag and then quits the session has that exact
+/// shape too — the car is on the racing surface one tick and gone the next, with no
+/// pit lane in between — so a car already latched as finished is never towed. What
+/// happens after the flag is not a race incident.
 fn update_tow_states(entries: &mut [DriverEntry], state: &mut DriverEntriesState) {
     let active_car_indices: HashSet<i32> = entries.iter().map(|e| e.car_idx).collect();
 
@@ -598,8 +611,13 @@ fn update_tow_states(entries: &mut [DriverEntry], state: &mut DriverEntriesState
         });
 
         let vanished = entry.track_surface == TrackSurface::NotInWorld;
+        let has_finished = state.finished_cars.contains(&entry.car_idx);
 
-        if vanished && left_the_track_surface && !entry.is_retired {
+        if has_finished {
+            state.towed_cars.remove(&entry.car_idx);
+        }
+
+        if vanished && left_the_track_surface && !entry.is_retired && !has_finished {
             let frozen = state
                 .previous_progress
                 .get(&entry.car_idx)
@@ -873,6 +891,7 @@ impl Processor for DriverEntriesProcessor {
             ctx.start_positions,
             true,
             ctx.session_state,
+            ctx.car_status.flags.checkered,
             &self.state,
         );
 
@@ -1054,6 +1073,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1065,6 +1085,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1083,6 +1104,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1106,6 +1128,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1118,6 +1141,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1138,6 +1162,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1147,6 +1172,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1170,6 +1196,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1210,6 +1237,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1220,6 +1248,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Checkered),
+            false,
             &state,
         );
 
@@ -1232,6 +1261,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Checkered),
+            false,
             &state,
         );
 
@@ -1251,6 +1281,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Checkered),
+            false,
             &state,
         );
 
@@ -1262,9 +1293,89 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Checkered),
+            false,
             &state,
         );
 
+        assert!(frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_session_wide_checkered_arms_the_latch_without_a_per_car_bit() {
+        let session = race_session();
+        let state = Mutex::new(DriverEntriesState::default());
+
+        // The clock has expired, so the sim sits in `Checkered` while the leader
+        // still runs the last lap. Nothing is out yet.
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(0, 12),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            false,
+            &state,
+        );
+
+        assert!(!frame.entries[0].is_finished);
+
+        // The leader takes the flag: `SessionFlags` lights the checkered bit while
+        // `CarIdxSessionFlags` stays empty, and the lap counter ticks over.
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(0, 13),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            true,
+            &state,
+        );
+
+        assert!(frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_a_finished_car_that_leaves_the_session_is_not_towed() {
+        let session = race_session();
+        let state = Mutex::new(DriverEntriesState::default());
+
+        compute(
+            &racing_car_idx_frame_on_lap(0, 12),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            false,
+            &state,
+        );
+
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(0, 13),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            true,
+            &state,
+        );
+
+        assert!(frame.entries[0].is_finished);
+
+        // He quits straight from the racing surface, which is the shape of a tow.
+        let mut car_idx = racing_car_idx_frame_on_lap(0, 13);
+        car_idx.car_idx_track_surface = vec![TrackSurface::NotInWorld];
+
+        let frame = compute(
+            &car_idx,
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            true,
+            &state,
+        );
+
+        assert!(!frame.entries[0].is_towed);
         assert!(frame.entries[0].is_finished);
     }
 
@@ -1279,6 +1390,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1290,6 +1402,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Checkered),
+            false,
             &state,
         );
 
@@ -1307,6 +1420,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1319,6 +1433,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Checkered),
+            false,
             &state,
         );
 
@@ -1331,6 +1446,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Checkered),
+            false,
             &state,
         );
 
@@ -1340,6 +1456,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Checkered),
+            false,
             &state,
         );
 
@@ -1357,6 +1474,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1368,6 +1486,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::CoolDown),
+            false,
             &state,
         );
 
@@ -1387,6 +1506,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::CoolDown),
+            false,
             &state,
         );
 
@@ -1404,6 +1524,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::CoolDown),
+            false,
             &state,
         );
 
@@ -1420,6 +1541,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1448,6 +1570,7 @@ mod tests {
             &HashMap::new(),
             false,
             None,
+            false,
             &state,
         );
 
@@ -1485,7 +1608,15 @@ mod tests {
         car_idx.car_idx_track_surface = vec![TrackSurface::OnTrack];
 
         let state = Mutex::new(DriverEntriesState::default());
-        let frame = compute(&car_idx, &session, &HashMap::new(), false, None, &state);
+        let frame = compute(
+            &car_idx,
+            &session,
+            &HashMap::new(),
+            false,
+            None,
+            false,
+            &state,
+        );
 
         let entry = &frame.entries[0];
 
@@ -1517,6 +1648,7 @@ mod tests {
             &HashMap::new(),
             false,
             None,
+            false,
             &state,
         );
 
@@ -1874,6 +2006,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
@@ -1891,6 +2024,7 @@ mod tests {
             &HashMap::new(),
             false,
             Some(SessionState::Racing),
+            false,
             &state,
         );
 
