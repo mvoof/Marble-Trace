@@ -1,4 +1,5 @@
 import type {
+  CarEntry,
   DriverEntriesFrame,
   DriverEntry,
   RelativeFrame,
@@ -21,7 +22,20 @@ export interface MockFieldOptions {
   gapS: number;
   /** The lap time the gaps are measured against. */
   lapTimeS?: number;
+  /**
+   * Rows to state something extra about, keyed by their offset from the
+   * player's own row — `-1` is the car directly ahead, `1` the car behind.
+   *
+   * The two tables scroll around the player, so an absolute index states a row
+   * that may not be on screen. An offset states the row a reader is looking
+   * at. Applied after the field is spaced, so it can contradict the pack — a
+   * car sitting in its box is exactly that.
+   */
+  rows?: MockFieldRows;
 }
+
+/** Overrides for rows around the player, keyed by offset from the player. */
+export type MockFieldRows = Record<number, Partial<DriverEntry>>;
 
 export interface MockFieldFrames {
   driverEntries: DriverEntriesFrame;
@@ -131,12 +145,55 @@ const withClassPositions = (field: DriverEntry[]): DriverEntry[] => {
  * snapshot's — nobody hand-writes a field. What a scenario states is only the
  * one thing a recording cannot be asked for: how close the cars are running.
  */
+// iRacing packs the flags waving at one car into a bit field, and the two
+// tables read the driver's own three off it. Frozen here as the numbers the
+// sim sends rather than taken from a live enum: a fixture states a bit, and
+// what the widget makes of it is the widget's business.
+const BLUE_FLAG_BIT = 0x00000020;
+const MEATBALL_FLAG_BIT = 0x00100000;
+const PENALTY_FLAG_BIT = 0x00010000;
+
+/**
+ * Three cars around the player at the three stages of a stop: one on the way
+ * in, one standing in its box, one rejoining. What the pit column has to
+ * distinguish, in one frame.
+ */
+export const MOCK_PIT_ROWS: MockFieldRows = {
+  [-2]: { onPitRoad: true, pitState: 'in' },
+  [-1]: { trackSurface: TrackSurface.InPitStall, pitState: 'stall' },
+  [2]: { onPitRoad: true, pitState: 'exit' },
+};
+
+/** A blue, a meatball and a penalty on three rows — the flags a driver row draws. */
+export const MOCK_DRIVER_FLAG_ROWS: MockFieldRows = {
+  [-3]: { rawFlags: BLUE_FLAG_BIT },
+  [-1]: { rawFlags: MEATBALL_FLAG_BIT },
+  [1]: { rawFlags: PENALTY_FLAG_BIT },
+};
+
+const applyRows = (
+  field: DriverEntry[],
+  rows: MockFieldRows
+): DriverEntry[] => {
+  const playerIndex = Math.max(
+    0,
+    field.findIndex((entry) => entry.isPlayer)
+  );
+
+  return field.map((entry, index) => {
+    const override = rows[index - playerIndex];
+
+    return override ? { ...entry, ...override } : entry;
+  });
+};
+
 export const mockField = (
   base: DriverEntry[],
-  { gapS, lapTimeS = DEFAULT_LAP_TIME_S }: MockFieldOptions
+  { gapS, lapTimeS = DEFAULT_LAP_TIME_S, rows }: MockFieldOptions
 ): MockFieldFrames => {
   const playerCarIdx = base.find((entry) => entry.isPlayer)?.carIdx ?? 0;
-  const field = withClassPositions(spaceField(base, gapS, lapTimeS));
+  const spaced = withClassPositions(spaceField(base, gapS, lapTimeS));
+  const field = rows ? applyRows(spaced, rows) : spaced;
   const relativeEntries = [...field].sort(
     (first, second) => second.relativeLapDist - first.relativeLapDist
   );
@@ -146,3 +203,27 @@ export const mockField = (
     relative: { entries: relativeEntries, playerCarIdx },
   };
 };
+
+/** The car index a preview safety car is given, clear of every real entry. */
+export const PACE_CAR_IDX = 61;
+
+/**
+ * A safety car as the session roster carries it.
+ *
+ * It is not a driver entry: it reaches the widgets through the roster and the
+ * per-car arrays, so a fixture states one by adding this to `sessionInfo.cars`
+ * and putting a lap distance on its index. Built from one of the session's own
+ * cars, because everything else about it — the track, the class colors, the
+ * screen names — has to stay the session's.
+ */
+export const mockPaceCarEntry = (
+  template: CarEntry,
+  overrides: Partial<CarEntry> = {}
+): CarEntry => ({
+  ...template,
+  carIdx: PACE_CAR_IDX,
+  userName: 'Pace Car',
+  carNumber: '0',
+  isPaceCar: true,
+  ...overrides,
+});

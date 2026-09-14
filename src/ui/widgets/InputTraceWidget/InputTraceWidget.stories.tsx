@@ -1,7 +1,8 @@
 ﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { CarDynamicsFrame, CarInputsFrame } from '@/types/bindings';
 import type { InputTraceSettings } from '@/types/widget-settings';
+import { mockCarDynamics } from '@store/preview/mocks/dynamics';
+import { mockCarInputs } from '@store/preview/mocks/inputs';
 import { InputTraceWidget } from './InputTraceWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
@@ -29,40 +30,31 @@ const meta: Meta<StoryArgs> = {
     },
     seedSnapshot: true,
     seed: (store, args) => {
-      store.liveWidgets.updateUserSettings('input-trace', {
+      const settings: Partial<InputTraceSettings> = {
         showThrottle: args.showThrottle,
         showBrake: args.showBrake,
         showClutch: args.showClutch,
         showSteering: args.showSteering,
         showTrace: args.showTrace,
-      } as Partial<InputTraceSettings>);
+      };
+
+      store.liveWidgets.updateUserSettings('input-trace', settings);
 
       store.appSettings.setSteeringLock(args.steeringLock);
 
-      store.player.updateCarInputs({
-        throttle: args.throttle,
-        brake: args.brake,
-        clutch: 1 - args.clutch,
-        brake_abs_active: false,
-      } as CarInputsFrame);
+      store.player.updateCarInputs(
+        mockCarInputs({
+          throttle: args.throttle,
+          brake: args.brake,
+          // The sim reports the clutch the other way up: fully engaged is 1.
+          clutch: 1 - args.clutch,
+          brake_abs_active: false,
+        })
+      );
 
-      store.player.updateCarDynamics({
-        steering_wheel_angle: args.steeringWheelAngle,
-        speed: 0,
-        rpm: 0,
-        gear: 0,
-        velocity_x: null,
-        velocity_y: null,
-        velocity_z: null,
-        lat_accel: null,
-        long_accel: null,
-        yaw_rate: null,
-        pitch: null,
-        roll: null,
-        yaw: null,
-        shift_indicator_pct: null,
-        shift_grind_rpm: null,
-      } as CarDynamicsFrame);
+      store.player.updateCarDynamics(
+        mockCarDynamics({ steering_wheel_angle: args.steeringWheelAngle })
+      );
     },
     args: {
       throttle: 0.6,

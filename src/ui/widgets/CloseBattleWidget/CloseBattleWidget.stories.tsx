@@ -1,76 +1,55 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { NearbyCar, ProximityFrame } from '@/types/bindings';
 import type {
-  CloseBattleWidgetSettings,
   BattleNameMode,
+  CloseBattleWidgetSettings,
 } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
-import { CLOSE_BATTLE_MANIFEST } from './manifest';
+import { mockProximity } from '@store/preview/mocks/traffic';
 import { CloseBattleWidget } from './CloseBattleWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 interface StoryArgs {
-  /** Signed longitudinal distances in meters: positive ahead, negative behind. */
-  distances: number[];
+  /**
+   * Signed distances in metres, positive ahead of the player — one per car in
+   * the fight. Left undefined, which is what a story naming a scenario does,
+   * the scenario's own traffic is kept.
+   */
+  distances?: number[];
   compactMode: boolean;
   nameMode: BattleNameMode;
   maxRows: number;
 }
 
-const EMPTY_RADAR = {
-  frontDist: 999,
-  rearDist: 999,
-  leftDist: null,
-  rightDist: null,
-};
+/** Far enough that the trigger takes in the whole axis the stories draw. */
+const DISTANCE_THRESHOLD_M = 200;
 
-// The snapshot's own opponents, so names, numbers and class colors are real.
-const buildNearbyCars = (
-  store: RootStore,
-  distances: number[]
-): NearbyCar[] => {
+// The snapshot's own opponents, so names, numbers and class colors are real —
+// the widget looks every car up by its index. The frame itself is the traffic
+// builder's, so the radar distances and the spotter flags agree with the cars.
+const seedTraffic = (store: RootStore, distances: number[]) => {
   const opponents = store.backendComputed.relativeEntries.filter(
     (entry) => !entry.isPlayer
   );
 
-  return distances.flatMap((longitudinalDist, index) => {
-    const entry = opponents[index];
+  store.backendComputed.updateProximity(
+    mockProximity(
+      distances.flatMap((longitudinalDist, index) => {
+        const entry = opponents[index];
 
-    if (!entry) {
-      return [];
-    }
+        if (!entry) {
+          return [];
+        }
 
-    return [
-      {
-        carIdx: entry.carIdx,
-        longitudinalDist,
-        lateralSide: 'center',
-        clearance: Math.abs(longitudinalDist),
-      } as NearbyCar,
-    ];
-  });
-};
-
-const seed = (store: RootStore, args: StoryArgs) => {
-  store.liveWidgets.updateUserSettings('close-battle', {
-    ...(CLOSE_BATTLE_MANIFEST.userSettings as unknown as CloseBattleWidgetSettings),
-    trigger: 'distance',
-    distanceThreshold: 200,
-    maxRows: args.maxRows,
-    raceOnly: false,
-    compactMode: args.compactMode,
-    nameMode: args.nameMode,
-  });
-
-  store.closeBattleWidget.visible = true;
-
-  store.backendComputed.updateProximity({
-    radarDistances: EMPTY_RADAR,
-    spotterLeft: false,
-    spotterRight: false,
-    nearbyCars: buildNearbyCars(store, args.distances),
-  } as unknown as ProximityFrame);
+        return [
+          { carIdx: entry.carIdx, longitudinalDist, side: 'center' as const },
+        ];
+      })
+    )
+  );
 };
 
 const meta: Meta<StoryArgs> = {
@@ -79,7 +58,25 @@ const meta: Meta<StoryArgs> = {
     widget: CloseBattleWidget,
     size: { width: 440, height: 420, background: '#0e0f12' },
     seedSnapshot: true,
-    seed,
+    seed: (store, args) => {
+      const settings: Partial<CloseBattleWidgetSettings> = {
+        // The widget is normally armed by a gap and only during a race; the
+        // stories state the cars themselves, so both gates are opened.
+        trigger: 'distance',
+        distanceThreshold: DISTANCE_THRESHOLD_M,
+        raceOnly: false,
+        maxRows: args.maxRows,
+        compactMode: args.compactMode,
+        nameMode: args.nameMode,
+      };
+
+      store.liveWidgets.updateUserSettings('close-battle', settings);
+      store.closeBattleWidget.visible = true;
+
+      if (args.distances !== undefined) {
+        seedTraffic(store, args.distances);
+      }
+    },
     args: {
       distances: [-8],
       compactMode: false,
@@ -100,6 +97,12 @@ export const OneAhead: Story = {
 
 export const ThreeInTheFight: Story = {
   args: { distances: [-8, 45, 85] },
+};
+
+/** One ahead, one behind and a merged pair — every shape, in one frame. */
+export const AheadBehindAndMerged: Story = {
+  parameters: previewScenario('close-battle'),
+  args: { distances: undefined, maxRows: 4 },
 };
 
 export const FullNames: Story = {

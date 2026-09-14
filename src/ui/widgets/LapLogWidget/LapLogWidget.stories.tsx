@@ -1,28 +1,36 @@
-﻿import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type {
-  LapTimingFrame,
-  LapDeltaFrame,
-  LapHistoryEntry,
-} from '@/types/bindings';
+import type { LapHistoryEntry } from '@/types/bindings';
+import {
+  mockLapDelta,
+  mockLapLog,
+  mockLapTiming,
+} from '@store/preview/mocks/delta';
+import { whenSet } from '@/storybook/story-overrides';
 import { LapLogWidget } from './LapLogWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 interface StoryArgs {
-  liveDelta: number;
-  currentLapTime: number;
-  bestLapTime: number;
-  lapNum: number;
-  history: LapHistoryEntry[];
+  /** The live delta the top row draws. */
+  liveDelta?: number;
+  currentLapTime?: number;
+  bestLapTime?: number;
+  lapNum?: number;
+  /**
+   * The laps behind the current one. Left undefined — which is what a story
+   * naming a scenario does — the base's own history is kept.
+   */
+  history?: LapHistoryEntry[];
 }
 
-const HISTORY: LapHistoryEntry[] = [
-  { lapNum: 8, lapTime: 89.512, delta: 1.405, isBest: false },
-  { lapNum: 7, lapTime: 88.107, delta: null, isBest: true },
-  { lapNum: 6, lapTime: 90.331, delta: 2.224, isBest: false },
-  { lapNum: 5, lapTime: 91.004, delta: 2.897, isBest: false },
+/** Three laps in a row with no time on any of them — an out-lap and two spins. */
+const INVALID_LAPS: LapHistoryEntry[] = [
   { lapNum: 4, lapTime: null, delta: null, isBest: false },
-  { lapNum: 3, lapTime: 89.801, delta: 1.694, isBest: false },
+  { lapNum: 3, lapTime: null, delta: null, isBest: false },
+  { lapNum: 2, lapTime: null, delta: null, isBest: false },
 ];
 
 const meta: Meta<StoryArgs> = {
@@ -30,34 +38,37 @@ const meta: Meta<StoryArgs> = {
   ...defineWidgetStories<StoryArgs>({
     widget: LapLogWidget,
     size: { width: 220, height: 260 },
-    seed: (store, args) => {
-      store.player.updateLapTiming({
-        lap: args.lapNum,
-        lap_dist: null,
-        lap_dist_pct: 0.42,
-        lap_current_lap_time: args.currentLapTime,
-        lap_last_lap_time: 89.512,
-        lap_best_lap_time: args.bestLapTime,
-        player_car_position: 3,
-        player_car_class_position: 3,
-        lap_delta_to_session_best_live: args.liveDelta,
-        lap_delta_to_session_optimal_live: args.liveDelta,
-      } as LapTimingFrame);
+    seed: (store, args, scenarioId) => {
+      // A scenario states the whole lap — its timing, its delta and its log.
+      // The knobs below are the other base: what a story states when no
+      // scenario is named.
+      if (scenarioId !== undefined) {
+        return;
+      }
 
-      store.backendComputed.updateLapDelta({
-        sectorTimes: [],
-        currentSectorIdx: 0,
-        sectorDeltas: [],
-      } as LapDeltaFrame);
+      store.player.updateLapTiming(
+        mockLapTiming({
+          ...whenSet(args.lapNum, (lap) => ({ lap })),
+          ...whenSet(args.currentLapTime, (time) => ({
+            lap_current_lap_time: time,
+          })),
+          ...whenSet(args.bestLapTime, (time) => ({ lap_best_lap_time: time })),
+          ...whenSet(args.liveDelta, (delta) => ({
+            lap_delta_to_session_best_live: delta,
+            lap_delta_to_session_optimal_live: delta,
+          })),
+        })
+      );
 
-      store.backendComputed.lapHistory = args.history;
-    },
-    args: {
-      liveDelta: -0.312,
-      currentLapTime: 42.18,
-      bestLapTime: 88.107,
-      lapNum: 9,
-      history: [],
+      // The log draws no sectors of its own, but the delta frame is what the
+      // store holds the lap in — a widget reading an empty one shows dashes.
+      store.backendComputed.updateLapDelta(mockLapDelta());
+
+      if (args.history !== undefined) {
+        store.backendComputed.updateLapLog(
+          mockLapLog({ history: args.history })
+        );
+      }
     },
   }),
 };
@@ -65,38 +76,50 @@ const meta: Meta<StoryArgs> = {
 export default meta;
 type Story = StoryObj<StoryArgs>;
 
-export const Default: Story = {};
+/** Mid-lap, a couple of tenths up, with the log still empty. */
+export const Default: Story = {
+  args: {
+    liveDelta: -0.312,
+    currentLapTime: 42.18,
+    bestLapTime: 88.107,
+    lapNum: 9,
+    history: [],
+  },
+};
 
 export const Behind: Story = {
-  args: { liveDelta: 0.845 },
+  args: { ...Default.args, liveDelta: 0.845 },
 };
 
 export const NoHistory: Story = {
-  args: { lapNum: 1, currentLapTime: 12.3, bestLapTime: 0 },
+  args: { ...Default.args, lapNum: 1, currentLapTime: 12.3, bestLapTime: 0 },
 };
 
 export const WithHistory: Story = {
-  args: { history: HISTORY },
+  args: { ...Default.args, history: mockLapLog().history },
+};
+
+/** The lap that has just gone green — the star row and the re-deltaed laps under it. */
+export const PersonalBest: Story = {
+  parameters: previewScenario('delta-personal-best'),
 };
 
 export const PotentialBest: Story = {
   args: {
+    ...Default.args,
     liveDelta: -0.721,
     currentLapTime: 55.3,
     bestLapTime: 88.107,
-    history: HISTORY.slice(0, 3),
+    history: mockLapLog().history.slice(0, 3),
   },
 };
 
 export const AllInvalid: Story = {
   args: {
+    ...Default.args,
     lapNum: 5,
     currentLapTime: 18.4,
     bestLapTime: 0,
-    history: [
-      { lapNum: 4, lapTime: null, delta: null, isBest: false },
-      { lapNum: 3, lapTime: null, delta: null, isBest: false },
-      { lapNum: 2, lapTime: null, delta: null, isBest: false },
-    ],
+    history: INVALID_LAPS,
   },
 };

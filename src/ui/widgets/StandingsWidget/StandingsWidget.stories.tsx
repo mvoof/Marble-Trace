@@ -1,90 +1,34 @@
-﻿import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { TrackSurface } from '@/types';
-import type { DriverEntriesFrame, DriverEntry } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { driverEntries as RAW_ENTRIES, snapshot } from '@/storybook/test-data';
+import type { MockFieldRows } from '@store/preview/mocks/field';
+import {
+  MOCK_DRIVER_FLAG_ROWS,
+  MOCK_PIT_ROWS,
+  mockField,
+} from '@store/preview/mocks/field';
 import { StandingsWidget } from './StandingsWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
-const BASE_LAP_TIME = 92.3;
-const LAP_TIME_SPREAD_PER_POS = 0.35;
-const GAP_PER_POS = 1.8;
-
-const CLASS_LABELS = ['GTE', 'GT3', 'LMP2'];
-
-const BASE_ENTRIES: DriverEntry[] = RAW_ENTRIES.map((entry, idx) => ({
-  ...entry,
-  lap: 5,
-  lastLapTime: BASE_LAP_TIME + idx * LAP_TIME_SPREAD_PER_POS + (idx % 3) * 0.12,
-  bestLapTime: BASE_LAP_TIME + idx * LAP_TIME_SPREAD_PER_POS * 0.8,
-  f2Time: idx === 0 ? 0 : idx * GAP_PER_POS + (idx % 4) * 0.3,
-  carClassShortName: CLASS_LABELS[idx % CLASS_LABELS.length],
-  resultsPositionLap: idx > 6 ? 1 : 0,
-  resultsPositionTime: idx === 0 ? 0 : idx * GAP_PER_POS + (idx % 4) * 0.3,
-  onPitRoad: false,
-  trackSurface: TrackSurface.OnTrack,
-  pitState: 'none' as const,
-  rawFlags: 0,
-}));
-
-const PLAYER_IDX = BASE_ENTRIES.findIndex((entry) => entry.isPlayer);
-const PLAYER_CAR_IDX = BASE_ENTRIES[PLAYER_IDX]?.carIdx ?? 0;
-
-const BLUE_FLAG = 0x00000020;
-const MEATBALL_FLAG = 0x00100000;
-const PENALTY_FLAG = 0x00010000;
-
-const withOverrides = (
-  overrides: Record<number, Partial<DriverEntry>>
-): DriverEntry[] =>
-  BASE_ENTRIES.map((entry, idx) => {
-    const offset = idx - PLAYER_IDX;
-    const override = overrides[offset];
-
-    return override ? { ...entry, ...override } : entry;
-  });
-
-const PIT_ENTRIES = withOverrides({
-  [-2]: { onPitRoad: true, pitState: 'in' as const },
-  [-1]: { trackSurface: TrackSurface.InPitStall, pitState: 'stall' as const },
-  [2]: { onPitRoad: true, pitState: 'exit' as const },
-});
-
-const FLAG_ENTRIES = withOverrides({
-  [-3]: { rawFlags: BLUE_FLAG },
-  [-1]: { rawFlags: MEATBALL_FLAG },
-  [1]: { rawFlags: PENALTY_FLAG },
-});
-
-const DEFAULT_SETTINGS: StandingsWidgetSettings = {
-  viewMode: 'all',
-  viewModeHotkey: '',
-  classPrevHotkey: '',
-  classNextHotkey: '',
-  showPosChange: true,
-  showColumnHeaders: true,
-  showSessionHeader: true,
-  showSessionTime: true,
-  showWeather: true,
-  showSOF: true,
-  showTotalDrivers: true,
-  showBrand: false,
-  showTire: false,
-  showLicBadge: false,
-  showIRating: false,
-  showIrChange: false,
-  showPitStops: true,
-  showLapsCompleted: false,
-  showIncidentsBadge: true,
-  abbreviateNames: false,
-  showDriverFlags: true,
-};
+/** The spacing the table is read at by default — a couple of seconds a place. */
+const DEFAULT_GAP_S = 1.8;
 
 interface StoryArgs {
-  settings: StandingsWidgetSettings;
-  activeClassIndex: number;
-  entries: DriverEntry[];
+  /**
+   * The settings this story differs from the shipped defaults in. Everything
+   * left out keeps whatever the widget ships with, so a story states only the
+   * columns it is about.
+   */
+  settings?: Partial<StandingsWidgetSettings>;
+  /** Which class the cycling view is showing. */
+  activeClassIndex?: number;
+  /** Seconds between one car and the next. */
+  gapS?: number;
+  /** Rows around the player to state something extra about. */
+  rows?: MockFieldRows;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -94,25 +38,28 @@ const meta: Meta<StoryArgs> = {
     size: { width: 796, height: 500 },
     seedSnapshot: true,
     seed: (store, args) => {
-      store.backendComputed.updateDriverEntries({
-        entries: args.entries,
-        playerCarIdx: PLAYER_CAR_IDX,
-      } as DriverEntriesFrame);
+      const base = store.backendComputed.driverEntries;
 
-      if (snapshot.sessionInfo) {
-        store.session.updateSessionInfo(snapshot.sessionInfo);
+      if (base) {
+        const { driverEntries, relative } = mockField(base.entries, {
+          gapS: args.gapS ?? DEFAULT_GAP_S,
+          rows: args.rows,
+        });
+
+        store.backendComputed.updateDriverEntries(driverEntries);
+        store.backendComputed.updateRelative(relative);
       }
 
-      store.liveWidgets.updateUserSettings('standings', args.settings);
-      store.standingsWidget.activeClassIndex = args.activeClassIndex;
-    },
-    args: {
-      settings: DEFAULT_SETTINGS,
-      activeClassIndex: 0,
-      entries: BASE_ENTRIES,
+      if (args.settings) {
+        store.liveWidgets.updateUserSettings('standings', args.settings);
+      }
+
+      if (args.activeClassIndex !== undefined) {
+        store.standingsWidget.activeClassIndex = args.activeClassIndex;
+      }
     },
     argTypes: {
-      entries: { table: { disable: true } },
+      rows: { table: { disable: true } },
     },
   }),
 };
@@ -122,17 +69,18 @@ type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
 
+/** Sub-second between every car — what the gap column carries a decimal for. */
+export const ClosePack: Story = {
+  parameters: previewScenario('field-close-pack'),
+};
+
 export const ClassCycling: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },
-    activeClassIndex: 0,
-  },
+  args: { settings: { viewMode: 'cycling' }, activeClassIndex: 0 },
 };
 
 export const MinimalColumns: Story = {
   args: {
     settings: {
-      ...DEFAULT_SETTINGS,
       showPosChange: false,
       showColumnHeaders: false,
       showSessionHeader: false,
@@ -143,7 +91,6 @@ export const MinimalColumns: Story = {
 export const WithAllColumns: Story = {
   args: {
     settings: {
-      ...DEFAULT_SETTINGS,
       showBrand: true,
       showTire: true,
       showLicBadge: true,
@@ -156,49 +103,29 @@ export const WithAllColumns: Story = {
 };
 
 export const AbbreviatedNames: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, abbreviateNames: true },
-  },
+  args: { settings: { abbreviateNames: true } },
 };
 
 export const NoHeaders: Story = {
-  args: {
-    settings: {
-      ...DEFAULT_SETTINGS,
-      showColumnHeaders: false,
-      showSessionHeader: false,
-    },
-  },
+  args: { settings: { showColumnHeaders: false, showSessionHeader: false } },
 };
 
 export const GroupedByClass: Story = {
-  args: {
-    settings: {
-      ...DEFAULT_SETTINGS,
-      viewMode: 'grouped',
-      groupedRowsPerClass: 3,
-    },
-  },
+  args: { settings: { viewMode: 'grouped', groupedRowsPerClass: 3 } },
 };
 
 export const SecondClass: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },
-    activeClassIndex: 1,
-  },
+  args: { settings: { viewMode: 'cycling' }, activeClassIndex: 1 },
 };
 
 export const ThirdClass: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },
-    activeClassIndex: 2,
-  },
+  args: { settings: { viewMode: 'cycling' }, activeClassIndex: 2 },
 };
 
 export const WithPitBadges: Story = {
-  args: { entries: PIT_ENTRIES },
+  args: { rows: MOCK_PIT_ROWS },
 };
 
 export const WithDriverFlags: Story = {
-  args: { entries: FLAG_ENTRIES },
+  args: { rows: MOCK_DRIVER_FLAG_ROWS },
 };

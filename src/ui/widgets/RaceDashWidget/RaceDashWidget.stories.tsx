@@ -3,21 +3,42 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
 import type { DrivingAdvisory } from '@utils/driving-coach-utils';
-import type { ReferenceLapData } from '@/types/bindings';
 import type {
   RaceDashWidgetSettings,
   RpmIndicatorMode,
 } from '@/types/widget-settings';
-import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
 import { useStore } from '@store/root-store-context';
+import {
+  PREVIEW_CORNER_CENTER_PCT,
+  mockReferenceLap,
+  referenceSpeedKmhAt,
+} from '@store/preview/mocks/coach';
+import { MPS_PER_KMH, mockCarDynamics } from '@store/preview/mocks/dynamics';
+import { mockLapTiming } from '@store/preview/mocks/delta';
+import { mockPitCarStatus, mockPitTarget } from '@store/preview/mocks/pit';
 import { RaceDashWidget } from './RaceDashWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
 interface StoryArgs {
+  /** Which call the coach is making, which is what colors the dash. */
   advisory: DrivingAdvisory;
-  referenceKmh: number;
-  speedKmh: number;
+  /** Where on the lap the car sits — the reference speed is read at this point. */
+  atPct: number;
+  /**
+   * How far off the reference the car is running, in km/h. A coach story states
+   * this rather than an absolute speed, so the bar is drawn against the lap the
+   * builder supplies instead of against a number that has to agree with it by
+   * hand.
+   */
+  speedDeltaKmh: number;
+  /** An absolute speed instead — what a pit story states, with no lap being run. */
+  speedKmh?: number;
+  /** Whether a stored best lap is loaded at all. */
+  referenceLap: boolean;
   rpm: number;
   gear: number;
   pitMode: 'none' | 'limiter' | 'pit-lane';
@@ -28,18 +49,11 @@ interface StoryArgs {
   steeringWheelAngle: number;
 }
 
-const REFERENCE_BUCKET_COUNT = 1000;
+/** How far down the lane the car is, in each of the two pit phases. */
+const LANE_PROGRESS_TO_BOX = 0.4;
+const LANE_PROGRESS_TO_EXIT = 0.85;
 
-const buildReferenceLap = (referenceMps: number): ReferenceLapData => ({
-  trackId: 0,
-  carScreenName: 'Preview Car',
-  lapTime: 90,
-  samples: Array.from({ length: REFERENCE_BUCKET_COUNT }, () => ({
-    speed: referenceMps,
-    throttle: 1,
-    brake: 0,
-  })),
-});
+const DEGREES_PER_RADIAN = 180 / Math.PI;
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/RaceDashWidget',
@@ -55,67 +69,67 @@ const meta: Meta<StoryArgs> = {
       overflow: 'visible',
       border: 'none',
     },
-    seed: (store, args) => {
-      store.drivingCoachWidget.displayedAdvisory = args.advisory;
-
+    seed: (store, args, scenarioId) => {
       store.liveWidgets.updateUserSettings('race-dash', {
         showSteeringMarker: args.showSteeringMarker,
         steeringTrailColor: args.steeringTrailColor,
-      } as Partial<RaceDashWidgetSettings>);
+      });
 
-      if (args.referenceKmh > 0) {
-        store.referenceLap.updateReferenceLap(
-          buildReferenceLap(args.referenceKmh / 3.6)
-        );
+      // A scenario states the whole car — the lap it is on, the speed it is
+      // carrying and where in the pits it is. The knobs below are the other
+      // base: what a story states when it names none.
+      if (scenarioId !== undefined) {
+        return;
       }
 
-      const lapTiming = store.player.lapTiming;
+      store.drivingCoachWidget.displayedAdvisory = args.advisory;
 
-      if (lapTiming) {
-        store.player.updateLapTiming({ ...lapTiming, lap_dist_pct: 0.5 });
+      if (args.referenceLap) {
+        store.referenceLap.updateReferenceLap(mockReferenceLap());
+      } else {
+        store.referenceLap.reset();
       }
 
-      const carDynamics = store.player.carDynamics;
+      store.player.updateLapTiming(mockLapTiming({ lap_dist_pct: args.atPct }));
 
-      if (carDynamics) {
-        store.player.updateCarDynamics({
-          ...carDynamics,
-          speed: args.speedKmh / 3.6,
+      const speedKmh =
+        args.speedKmh ?? referenceSpeedKmhAt(args.atPct) + args.speedDeltaKmh;
+
+      store.player.updateCarDynamics(
+        mockCarDynamics({
+          speed: speedKmh / MPS_PER_KMH,
           rpm: args.rpm,
           gear: args.gear,
-          steering_wheel_angle: (args.steeringWheelAngle * Math.PI) / 180,
-        });
+          steering_wheel_angle: args.steeringWheelAngle / DEGREES_PER_RADIAN,
+        })
+      );
+
+      if (args.pitMode === 'none' || args.boxDistM <= 0) {
+        store.player.updatePitTarget(null);
+
+        return;
       }
 
-      const carStatus = store.player.carStatus;
+      store.player.updateCarStatus(
+        mockPitCarStatus({ limiterOn: args.pitMode === 'limiter' })
+      );
 
-      if (carStatus && args.pitMode !== 'none') {
-        store.player.updateCarStatus({
-          ...carStatus,
-          on_pit_road: true,
-          engine_warnings:
-            args.pitMode === 'limiter'
-              ? carStatus.engine_warnings | PIT_LIMITER_BIT
-              : carStatus.engine_warnings & ~PIT_LIMITER_BIT,
-        });
-      }
-
-      if (args.pitMode !== 'none' && args.boxDistM > 0) {
-        const progress = args.pitPhase === 'toExit' ? 0.85 : 0.4;
-
-        store.player.updatePitTarget(
-          args.boxDistM,
-          args.pitPhase === 'toExit' ? 'pitExit' : 'pitbox',
-          progress
-        );
-      } else {
-        store.player.updatePitTarget(null, null, null);
-      }
+      store.player.updatePitTarget(
+        mockPitTarget({
+          distM: args.boxDistM,
+          target: args.pitPhase === 'toExit' ? 'pitExit' : 'pitbox',
+          laneProgressPct:
+            args.pitPhase === 'toExit'
+              ? LANE_PROGRESS_TO_EXIT
+              : LANE_PROGRESS_TO_BOX,
+        })
+      );
     },
     args: {
       advisory: 'neutral',
-      referenceKmh: 185,
-      speedKmh: 184,
+      atPct: PREVIEW_CORNER_CENTER_PCT,
+      speedDeltaKmh: -1,
+      referenceLap: true,
       rpm: 6400,
       gear: 4,
       pitMode: 'none',
@@ -127,8 +141,10 @@ const meta: Meta<StoryArgs> = {
     },
     argTypes: {
       advisory: { control: 'radio', options: ['neutral', 'brake', 'gas'] },
-      referenceKmh: { control: { type: 'number' } },
+      atPct: { control: { type: 'range', min: 0, max: 1, step: 0.01 } },
+      speedDeltaKmh: { control: { type: 'number' } },
       speedKmh: { control: { type: 'number' } },
+      referenceLap: { control: 'boolean' },
       rpm: { control: { type: 'number' } },
       gear: { control: { type: 'number' } },
       pitMode: { control: 'radio', options: ['none', 'limiter', 'pit-lane'] },
@@ -148,6 +164,9 @@ type Story = StoryObj<StoryArgs>;
 
 const RPM_SWEEP_LOW = 1500;
 const RPM_SWEEP_MS = 3000;
+const RPM_SWEEP_SPEED_MPS = 60;
+const RPM_SWEEP_GEAR = 4;
+const FALLBACK_RED_LINE = 9500;
 
 // Sweeps RPM from idle to redline on a loop so the ring's zone coloring,
 // shift/blink thresholds, and rim-glow alert can be previewed without a live
@@ -163,10 +182,9 @@ const RpmSweepPreview = ({
     runInAction(() => {
       store.sim.isConnected = true;
       seedFromSnapshot(store);
-      store.liveWidgets.updateUserSettings('race-dash', {
-        ...store.liveWidgets.getSettings<RaceDashWidgetSettings>('race-dash'),
-        rpmIndicatorMode,
-      });
+      const settings: Partial<RaceDashWidgetSettings> = { rpmIndicatorMode };
+
+      store.liveWidgets.updateUserSettings('race-dash', settings);
     });
   }, [store, rpmIndicatorMode]);
 
@@ -177,20 +195,18 @@ const RpmSweepPreview = ({
     const tick = (now: number) => {
       const elapsedMs = (now - startTime) % RPM_SWEEP_MS;
       const sweepPct = elapsedMs / RPM_SWEEP_MS;
-      const redLine = store.session.sessionInfo?.driverCarRedLine ?? 9500;
+      const redLine =
+        store.session.sessionInfo?.driverCarRedLine ?? FALLBACK_RED_LINE;
       const rpm = RPM_SWEEP_LOW + sweepPct * (redLine - RPM_SWEEP_LOW);
 
       runInAction(() => {
-        const carDynamics = store.player.carDynamics;
-
-        if (carDynamics) {
-          store.player.updateCarDynamics({
-            ...carDynamics,
+        store.player.updateCarDynamics(
+          mockCarDynamics({
             rpm,
-            gear: 4,
-            speed: 60,
-          });
-        }
+            gear: RPM_SWEEP_GEAR,
+            speed: RPM_SWEEP_SPEED_MPS,
+          })
+        );
       });
 
       animationFrame = requestAnimationFrame(tick);
@@ -224,22 +240,28 @@ export const RpmSweepAnimationOff: Story = {
 
 export const OnPace: Story = {};
 
+/** Into the corner carrying too much speed — the call the dash turns red for. */
 export const Brake: Story = {
-  args: { advisory: 'brake', referenceKmh: 231, speedKmh: 243, gear: 5 },
+  args: { advisory: 'brake', speedDeltaKmh: 12, gear: 5 },
 };
 
+/** Off the corner short of the reference, with throttle still to come. */
 export const Gas: Story = {
-  args: {
-    advisory: 'gas',
-    referenceKmh: 137,
-    speedKmh: 128,
-    rpm: 4200,
-    gear: 3,
-  },
+  args: { advisory: 'gas', speedDeltaKmh: -9, rpm: 4200, gear: 3 },
+};
+
+/** The coach's own braking call, as the scenario states the whole corner. */
+export const CoachBrake: Story = {
+  parameters: previewScenario('driving-coach-brake'),
+};
+
+/** The car down the lane with the limiter armed, from the pit scenario. */
+export const PitLaneWithLimiter: Story = {
+  parameters: previewScenario('pit-limiter'),
 };
 
 export const ShiftBlink: Story = {
-  args: { rpm: 9200, speedKmh: 96, gear: 2 },
+  args: { rpm: 9200, speedDeltaKmh: -16, gear: 2 },
 };
 
 export const PitLimiter: Story = {
@@ -314,5 +336,5 @@ export const SteeringMarkerLapped: Story = {
 };
 
 export const NoReferenceLap: Story = {
-  args: { referenceKmh: 0, speedKmh: 172 },
+  args: { referenceLap: false, speedKmh: 172 },
 };

@@ -1,4 +1,4 @@
-import type { SessionEntry, SessionFrame } from '@/types/bindings';
+import type { SectorEntry, SessionEntry, SessionFrame } from '@/types/bindings';
 
 // Mock builders for the session-timing domain — the session clock, the lap
 // limit and the session header the timer draws. Pure: each takes a partial
@@ -49,3 +49,16 @@ export const mockSessionEntry = (
   resultsPositions: [],
   ...overrides,
 });
+
+/**
+ * A lap split into equal sectors, the way the session reports them.
+ *
+ * The sim's own splits are never equal, but what a fixture states here is how
+ * many cells the matrix has to lay out — where each one starts only decides
+ * which is running, and that is stated by the delta frame beside it.
+ */
+export const mockSectors = (sectorCount: number): SectorEntry[] =>
+  Array.from({ length: sectorCount }, (_unused, index) => ({
+    sectorNum: index,
+    sectorStartPct: index / sectorCount,
+  }));
