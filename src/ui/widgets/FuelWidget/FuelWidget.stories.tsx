@@ -1,9 +1,16 @@
-﻿import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { FuelComputedFrame, FuelLapRecord } from '@/types/bindings';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
+import { mockLapTiming } from '@store/preview/mocks/delta';
+import { mockCarStatus } from '@store/preview/mocks/engine';
+import { mockFuel } from '@store/preview/mocks/fuel';
+import { whenSet } from '@/storybook/story-overrides';
 import { FuelWidget } from './FuelWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 const LAP_FUEL_USED = [
   3.2, 3.1, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3,
@@ -23,64 +30,99 @@ const REJECTED_BY_LAP: Record<number, string> = {
   73: 'outlier',
 };
 
-const LAP_FUEL_HISTORY: FuelLapRecord[] = LAP_FUEL_USED.map((used, index) => {
-  const lap = index + 1;
+// A stint far longer than any scenario ships, which is what the chart has to
+// survive: a hundred and thirty bars, an outlier and three rejected laps.
+const LONG_LAP_FUEL_HISTORY: FuelLapRecord[] = LAP_FUEL_USED.map(
+  (used, index) => {
+    const lap = index + 1;
 
-  return { lap, used, rejected: REJECTED_BY_LAP[lap] ?? null };
-});
+    return { lap, used, rejected: REJECTED_BY_LAP[lap] ?? null };
+  }
+);
 
 interface StoryArgs {
-  fuelLevel: number | null;
-  fuelMax: number | null;
-  avgPerLap: number | null;
-  lapsRemaining: number | null;
-  shortage: number | null;
-  fuelToAddWithBuffer: number | null;
-  pitWarning: boolean;
-  pitWindowStart: number | null;
-  pitWindowEnd: number | null;
+  /**
+   * The fuel readouts. Left undefined — which is what a story naming a scenario
+   * does — the base's own value is kept, so a knob turned here states a
+   * difference rather than replacing the frame.
+   */
+  fuelLevel?: number | null;
+  avgPerLap?: number | null;
+  lapsRemaining?: number | null;
+  shortage?: number | null;
+  fuelToAddWithBuffer?: number | null;
+  pitWarning?: boolean;
+  bestLapTime?: number | null;
+  /** The long stint rather than the base's ten laps — what the chart is sized on. */
+  longHistory: boolean;
+
   showChart: boolean;
   chartType: 'line' | 'bar';
   barWidth: number;
-  lapFuelHistory: FuelLapRecord[];
   pitWarningLaps: number;
   showNextStopForecast: boolean;
-  bestLapTime: number | null;
 }
+
+// Only the knobs a story actually turned reach the frame; everything else is
+// left to the scenario or the snapshot underneath.
+const fuelOverrides = (args: StoryArgs): Partial<FuelComputedFrame> => {
+  const overrides: Partial<FuelComputedFrame> = {
+    ...whenSet(args.avgPerLap, (avgPerLap) => ({ avgPerLap })),
+    // The laps the tank holds and the laps left to run move together here: what
+    // these stories vary is how far short the tank falls, stated by `shortage`.
+    ...whenSet(args.lapsRemaining, (laps) => ({
+      lapsRemaining: laps,
+      lapsToFinish: laps,
+    })),
+    ...whenSet(args.shortage, (shortage) => ({ shortage })),
+    ...whenSet(args.fuelToAddWithBuffer, (fuel) => ({
+      fuelToAdd: fuel,
+      fuelToAddWithBuffer: fuel,
+    })),
+    ...whenSet(args.pitWarning, (pitWarning) => ({ pitWarning })),
+  };
+
+  if (args.longHistory) {
+    overrides.lapFuelHistory = LONG_LAP_FUEL_HISTORY;
+  } else {
+    // No history means no stint to summarise either, so the stats row goes with
+    // it rather than keeping the base's numbers over an empty chart.
+    overrides.lapFuelHistory = [];
+    overrides.historyStats = null;
+    overrides.refuelPlan = null;
+  }
+
+  return overrides;
+};
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/FuelWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: FuelWidget,
     size: { width: 240, height: 360 },
+    seedSnapshot: true,
     seed: (store, args) => {
-      store.player.updateCarStatus({
-        fuel_level: args.fuelLevel,
-      } as Parameters<typeof store.player.updateCarStatus>[0]);
+      // The recorded snapshot was captured in the garage with the tank empty,
+      // so the level a story states is put on the builder's running car rather
+      // than patched onto that.
+      if (args.fuelLevel !== undefined) {
+        store.player.updateCarStatus(
+          mockCarStatus({ fuel_level: args.fuelLevel })
+        );
+      }
 
-      store.player.updateLapTiming({
-        lap_best_lap_time: args.bestLapTime,
-        lap_last_lap_time: args.bestLapTime,
-      } as Parameters<typeof store.player.updateLapTiming>[0]);
+      if (args.bestLapTime !== undefined) {
+        store.player.updateLapTiming(
+          mockLapTiming({
+            lap_best_lap_time: args.bestLapTime,
+            lap_last_lap_time: args.bestLapTime,
+          })
+        );
+      }
 
-      store.session.updateSessionInfo({
-        driverCarFuelMaxLtr: args.fuelMax,
-      } as Parameters<typeof store.session.updateSessionInfo>[0]);
-
-      store.backendComputed.updateFuel({
-        avgPerLap: args.avgPerLap,
-        lapsRemaining: args.lapsRemaining,
-        lapsToFinish: args.lapsRemaining,
-        shortage: args.shortage,
-        fuelToAdd: args.fuelToAddWithBuffer,
-        fuelToAddWithBuffer: args.fuelToAddWithBuffer,
-        fuelSavePerLap: null,
-        pitWarning: args.pitWarning,
-        pitWindowStart: args.pitWindowStart,
-        pitWindowEnd: args.pitWindowEnd,
-        isTimedRace: false,
-        lapFuelHistory: args.lapFuelHistory,
-      } as FuelComputedFrame);
+      store.backendComputed.updateFuel(
+        mockFuel({ ...store.backendComputed.fuel, ...fuelOverrides(args) })
+      );
 
       store.liveWidgets.updateUserSettings('fuel', {
         ...store.liveWidgets.getSettings<FuelWidgetSettings>('fuel'),
@@ -93,21 +135,13 @@ const meta: Meta<StoryArgs> = {
     },
     args: {
       fuelLevel: 28.5,
-      fuelMax: 55.0,
-      avgPerLap: 3.15,
-      lapsRemaining: 9.0,
-      shortage: 2.3,
-      fuelToAddWithBuffer: null,
-      pitWarning: false,
-      pitWindowStart: null,
-      pitWindowEnd: null,
+      bestLapTime: 92.4,
+      longHistory: true,
       showChart: false,
       chartType: 'line',
       barWidth: 5,
-      lapFuelHistory: LAP_FUEL_HISTORY,
       pitWarningLaps: 3,
       showNextStopForecast: true,
-      bestLapTime: 92.4,
     },
     argTypes: {
       barWidth: { control: { type: 'range', min: 5, max: 20, step: 1 } },
@@ -120,67 +154,41 @@ export default meta;
 type Story = StoryObj<StoryArgs>;
 
 export const Comfortable: Story = {
-  args: { pitWindowStart: 18, pitWindowEnd: 20 },
+  args: { avgPerLap: 3.15, lapsRemaining: 9, shortage: 2.3, pitWarning: false },
 };
 
 export const NextStopForecast: Story = {
-  args: {
-    fuelLevel: 28.5,
-    lapsRemaining: 9.0,
-    shortage: 2.3,
-    pitWarning: false,
-    pitWindowStart: 18,
-    pitWindowEnd: 20,
-  },
+  args: { ...Comfortable.args },
 };
 
 export const NextStopForecastNoLapTime: Story = {
-  args: {
-    lapsRemaining: 9.0,
-    pitWindowStart: 18,
-    pitWindowEnd: 20,
-    bestLapTime: null,
-  },
+  args: { ...Comfortable.args, bestLapTime: null },
 };
 
 export const CustomBarWidth: Story = {
   args: { showChart: true, chartType: 'bar', barWidth: 12 },
 };
 
+export const PitWindowOpen: Story = {
+  parameters: previewScenario('fuel-pit-window'),
+};
+
 export const LowFuel: Story = {
-  args: {
-    fuelLevel: 8.4,
-    lapsRemaining: 2.7,
-    shortage: -1.2,
-    pitWarning: true,
-    pitWindowStart: 14,
-    pitWindowEnd: 16,
-    fuelToAddWithBuffer: 12.5,
-  },
+  parameters: previewScenario('fuel-short'),
+  args: { fuelLevel: 8.4 },
 };
 
 export const TankTooSmall: Story = {
-  args: {
-    fuelLevel: 5.2,
-    lapsRemaining: 1.6,
-    shortage: -5.8,
-    pitWarning: true,
-    pitWindowStart: 12,
-    pitWindowEnd: 13,
-    fuelToAddWithBuffer: 58.0,
-  },
+  parameters: previewScenario('fuel-refuel-calc'),
+  args: { fuelLevel: 5.2 },
 };
 
 export const WithLineChart: Story = {
-  args: {
-    showChart: true,
-    chartType: 'line',
-    lapFuelHistory: LAP_FUEL_HISTORY,
-  },
+  args: { showChart: true, chartType: 'line' },
 };
 
 export const WithBarChart: Story = {
-  args: { showChart: true, chartType: 'bar', lapFuelHistory: LAP_FUEL_HISTORY },
+  args: { showChart: true, chartType: 'bar' },
 };
 
 export const NoChart: Story = {
@@ -190,27 +198,14 @@ export const NoChart: Story = {
 export const NoData: Story = {
   args: {
     fuelLevel: null,
-    fuelMax: null,
     avgPerLap: null,
     lapsRemaining: null,
     shortage: null,
-    lapFuelHistory: [],
+    longHistory: false,
   },
 };
 
 export const FullPreview: Story = {
-  args: {
-    fuelLevel: 5.2,
-    fuelMax: 55.0,
-    avgPerLap: 3.15,
-    lapsRemaining: 1.6,
-    shortage: -15.8,
-    pitWarning: true,
-    pitWindowStart: 12,
-    pitWindowEnd: 13,
-    fuelToAddWithBuffer: 58.0,
-    showChart: true,
-    chartType: 'bar',
-    lapFuelHistory: LAP_FUEL_HISTORY,
-  },
+  parameters: previewScenario('fuel-refuel-calc'),
+  args: { fuelLevel: 5.2, showChart: true, chartType: 'bar' },
 };

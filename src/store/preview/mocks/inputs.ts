@@ -1,3 +1,5 @@
+import type { CarInputsFrame } from '@/types/bindings';
+
 // Mock builders for the driver-input domain. Pure: nothing here touches a
 // store, so the history below can be replayed into a preview store, asserted in
 // a unit test or driven from a story alike.
@@ -186,3 +188,17 @@ export const mockInputHistory = (
 
   return samples;
 };
+
+/**
+ * One frame of pedal state, complete and typed from the generated bindings — a
+ * car under power on the way out of a corner, with nothing locking.
+ */
+export const mockCarInputs = (
+  overrides: Partial<CarInputsFrame> = {}
+): CarInputsFrame => ({
+  throttle: 0.82,
+  brake: 0,
+  clutch: CLUTCH_ENGAGED,
+  brake_abs_active: false,
+  ...overrides,
+});

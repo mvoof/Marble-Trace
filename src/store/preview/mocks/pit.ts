@@ -1,5 +1,6 @@
 import type {
   CarStatusFrame,
+  ChassisFrame,
   PitServiceFrame,
   PitTargetFrame,
 } from '@/types/bindings';
@@ -90,4 +91,59 @@ export const mockPitStallDynamics = () => ({
   speed: 0,
   rpm: PIT_STALL_RPM,
   gear: 0,
+});
+
+/**
+ * The tires as they come into the box at the end of a stint: the outside
+ * shoulders down to the wear band, the inners still with life in them, and the
+ * temperatures spread the way loaded and unloaded corners spread them.
+ *
+ * The defaults are the worst realistic case the tire block has to lay out —
+ * a stint's worth of spread across all three bands of every corner, rather than
+ * the near-new rubber the baseline snapshot carries.
+ */
+export const mockChassis = (
+  overrides: Partial<ChassisFrame> = {}
+): ChassisFrame => ({
+  lf_ride_height: 0.05,
+  rf_ride_height: 0.05,
+  lr_ride_height: 0.05,
+  rr_ride_height: 0.05,
+  lf_shock_defl: 0.03,
+  rf_shock_defl: 0.03,
+  lr_shock_defl: 0.03,
+  rr_shock_defl: 0.03,
+  lf_temp_cl: 104,
+  lf_temp_cm: 97,
+  lf_temp_cr: 89,
+  rf_temp_cl: 91,
+  rf_temp_cm: 96,
+  rf_temp_cr: 101,
+  lr_temp_cl: 95,
+  lr_temp_cm: 92,
+  lr_temp_cr: 87,
+  rr_temp_cl: 88,
+  rr_temp_cm: 93,
+  rr_temp_cr: 99,
+  lf_pressure: 152,
+  rf_pressure: 158,
+  lr_pressure: 149,
+  rr_pressure: 154,
+  lf_wear_l: 0.41,
+  lf_wear_m: 0.58,
+  lf_wear_r: 0.72,
+  rf_wear_l: 0.7,
+  rf_wear_m: 0.61,
+  rf_wear_r: 0.54,
+  lr_wear_l: 0.62,
+  lr_wear_m: 0.74,
+  lr_wear_r: 0.79,
+  rr_wear_l: 0.81,
+  rr_wear_m: 0.76,
+  rr_wear_r: 0.64,
+  lf_brake_temp: 340,
+  rf_brake_temp: 340,
+  lr_brake_temp: 340,
+  rr_brake_temp: 340,
+  ...overrides,
 });

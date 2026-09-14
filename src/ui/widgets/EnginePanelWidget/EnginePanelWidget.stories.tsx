@@ -1,20 +1,26 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { CarInputsFrame, CarStatusFrame } from '@/types/bindings';
+import type { CarStatusFrame } from '@/types/bindings';
 import type { UnitSystem } from '@/types';
+import { mockCarStatus } from '@store/preview/mocks/engine';
+import { mockCarInputs } from '@store/preview/mocks/inputs';
+import { whenSet } from '@/storybook/story-overrides';
 import { EnginePanelWidget } from './EnginePanelWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 interface StoryArgs {
   system: UnitSystem;
-  oilTemp: number;
-  waterTemp: number;
-  oilPress: number;
-  voltage: number;
-  dcAbs: number;
-  dcBrakeBias: number;
-  dcTc: number;
-  dcThrottleShape: number;
+  /**
+   * The gauges. Left undefined — which is what a story naming a scenario does —
+   * the scenario's own reading is kept, so a knob states a difference rather
+   * than replacing the frame.
+   */
+  oilTemp?: number;
+  waterTemp?: number;
+  oilPress?: number;
   absActive: boolean;
 
   showOilTemp: boolean;
@@ -36,23 +42,26 @@ const meta: Meta<StoryArgs> = {
     widget: EnginePanelWidget,
     size: { width: 480, height: 80 },
     seedSnapshot: true,
-    seed: (store, args) => {
+    seed: (store, args, scenarioId) => {
       store.units.setSystem(args.system);
 
-      store.player.updateCarInputs({
-        brake_abs_active: args.absActive,
-      } as CarInputsFrame);
+      store.player.updateCarInputs(
+        mockCarInputs({ brake_abs_active: args.absActive })
+      );
 
-      store.player.updateCarStatus({
-        oil_temp: args.oilTemp,
-        water_temp: args.waterTemp,
-        oil_press: args.oilPress,
-        voltage: args.voltage,
-        dc_abs: args.dcAbs,
-        dc_brake_bias: args.dcBrakeBias,
-        dc_traction_control: args.dcTc,
-        dc_throttle_shape: args.dcThrottleShape,
-      } as CarStatusFrame);
+      const gauges: Partial<CarStatusFrame> = {
+        ...whenSet(args.oilTemp, (oil_temp) => ({ oil_temp })),
+        ...whenSet(args.waterTemp, (water_temp) => ({ water_temp })),
+        ...whenSet(args.oilPress, (oil_press) => ({ oil_press })),
+      };
+
+      // The recorded snapshot was captured in the garage, with every
+      // temperature, pressure and in-car adjustment still at zero. A story with
+      // no scenario under it states the builder's warm engine instead of
+      // patching that; one with a scenario leaves the scenario's own panel be.
+      if (!scenarioId) {
+        store.player.updateCarStatus(mockCarStatus(gauges));
+      }
 
       store.liveWidgets.updateUserSettings('engine-panel', {
         showOilTemp: args.showOilTemp,
@@ -73,11 +82,6 @@ const meta: Meta<StoryArgs> = {
       oilTemp: 110,
       waterTemp: 90,
       oilPress: 350,
-      voltage: 14.2,
-      dcAbs: 3,
-      dcBrakeBias: 54.5,
-      dcTc: 5,
-      dcThrottleShape: 2,
       absActive: false,
 
       showOilTemp: true,
@@ -112,12 +116,18 @@ export const ABSActive: Story = {
   },
 };
 
-export const OverheatingAlerts: Story = {
-  args: {
-    oilTemp: 138,
-    waterTemp: 122,
-    oilPress: 280,
-  },
+// The two overheats are separate scenarios because a panel that reads well with
+// one cell flashing can be unreadable with two.
+export const OilOverheat: Story = {
+  parameters: previewScenario('engine-oil-overheat'),
+};
+
+export const WaterOverheat: Story = {
+  parameters: previewScenario('engine-water-overheat'),
+};
+
+export const Stalled: Story = {
+  parameters: previewScenario('engine-stalled'),
 };
 
 export const MinimalLayout: Story = {
