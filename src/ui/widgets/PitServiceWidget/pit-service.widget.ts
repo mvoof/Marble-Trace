@@ -71,7 +71,10 @@ export class PitServiceWidgetStore {
       ),
       reaction(
         () => this.isServiceActive,
-        (serviceActive) => this.panel.handleServiceActiveChange(serviceActive),
+        (serviceActive) => {
+          this.panel.handleServiceActiveChange(serviceActive);
+          this.order.handleServiceActiveChange(serviceActive);
+        },
         { fireImmediately: true }
       )
     );
