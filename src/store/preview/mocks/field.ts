@@ -1,7 +1,10 @@
 import type {
   CarEntry,
+  CarPositionsFrame,
   DriverEntriesFrame,
   DriverEntry,
+  IncidentPoint,
+  IncidentsFrame,
   RelativeFrame,
 } from '@/types/bindings';
 import { TrackSurface } from '@/types';
@@ -204,6 +207,56 @@ export const mockField = (
   };
 };
 
+/**
+ * The numbers behind `TrackSurface`, as the positions frame carries them.
+ *
+ * The driver list names the surface and the per-car arrays code it, so a
+ * projection from one to the other has to state the pairing somewhere. It is
+ * the sim's own, from the field's doc comment in `bindings.ts`.
+ */
+const TRACK_SURFACE_CODE: Record<TrackSurface, number> = {
+  [TrackSurface.NotInWorld]: -1,
+  [TrackSurface.OffTrack]: 0,
+  [TrackSurface.InPitStall]: 1,
+  [TrackSurface.AproachingPits]: 2,
+  [TrackSurface.OnTrack]: 3,
+};
+
+/** What the sim reports for a car that is not in the world at all. */
+const NOT_IN_WORLD = TRACK_SURFACE_CODE[TrackSurface.NotInWorld];
+
+/** The code for a car running on the track surface itself. */
+export const TRACK_SURFACE_ON_TRACK = TRACK_SURFACE_CODE[TrackSurface.OnTrack];
+
+/**
+ * The per-car position arrays, projected from the driver list.
+ *
+ * The snapshot carries the field as a roster and a `carIdx` frame, but the map
+ * and the pace-car store read the positions frame — so a fixture that leaves it
+ * out shows a map of nothing. Everything in it is already stated by the
+ * entries, so it is projected rather than invented, and every index no entry
+ * claims is left not-in-world.
+ */
+export const mockCarPositions = (entries: DriverEntry[]): CarPositionsFrame => {
+  const maxCarIdx = entries.reduce(
+    (highest, entry) => Math.max(highest, entry.carIdx),
+    0
+  );
+  const size = maxCarIdx + 1;
+  const lapDistPct = new Array<number>(size).fill(NOT_IN_WORLD);
+  const trackSurface = new Array<number>(size).fill(NOT_IN_WORLD);
+
+  for (const entry of entries) {
+    lapDistPct[entry.carIdx] = entry.lapDistPct;
+    trackSurface[entry.carIdx] = TRACK_SURFACE_CODE[entry.trackSurface];
+  }
+
+  return {
+    car_idx_lap_dist_pct: lapDistPct,
+    car_idx_track_surface: trackSurface,
+  };
+};
+
 /** The car index a preview safety car is given, clear of every real entry. */
 export const PACE_CAR_IDX = 61;
 
@@ -227,3 +280,27 @@ export const mockPaceCarEntry = (
   isPaceCar: true,
   ...overrides,
 });
+
+/**
+ * The incident markers the track map draws, as the backend reports them.
+ *
+ * Two is the smallest set that states both halves of the widget: one car still
+ * in trouble, so the zone blinks, and one already recovered, so the marker is
+ * only lingering. Where they sit is a quarter of a lap apart, far enough that
+ * neither hides behind the other whatever the track's shape.
+ */
+export const mockIncidents = (
+  overrides: Partial<IncidentPoint>[] = []
+): IncidentsFrame => {
+  const points: IncidentPoint[] = [
+    { carIdx: 1, lapDistPct: 0.43, kind: 'stopped', isActive: true },
+    { carIdx: 2, lapDistPct: 0.78, kind: 'offTrack', isActive: false },
+  ];
+
+  return {
+    incidents: points.map((point, index) => ({
+      ...point,
+      ...overrides[index],
+    })),
+  };
+};

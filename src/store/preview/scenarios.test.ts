@@ -11,6 +11,7 @@ import {
 } from '@utils/timer-utils';
 import { RootStore } from '@store/root-store';
 import { WIDGETS } from '@store/widget-catalog';
+import { PACE_CAR_IDX } from './mocks/field';
 import { PREVIEW_CAR_LENGTH_M } from './mocks/traffic';
 import {
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -765,6 +766,42 @@ describe('incident scenarios', () => {
         ?.incidents ?? 0;
 
     expect(incidents).toBe(0);
+  });
+});
+
+// The map reads both of these off the per-car arrays and the roster rather than
+// off a driver entry, so the assertions follow the same two channels.
+describe('track scenarios', () => {
+  it('puts a safety car on the roster and on the lap', () => {
+    const store = seed('pace-car-on-track');
+    const paceCar = store.session.sessionInfo?.cars.find(
+      (entry) => entry.carIdx === PACE_CAR_IDX
+    );
+
+    expect(paceCar?.isPaceCar).toBe(true);
+    expect(
+      store.cars.carPositions?.car_idx_lap_dist_pct[PACE_CAR_IDX] ?? 0
+    ).toBeGreaterThan(0);
+  });
+
+  // The recorded roster carries the sim's own pace car, parked off the world
+  // where nothing draws it. What the scenario adds is one the map can show.
+  it('leaves the baseline with nothing at the preview index', () => {
+    const store = seed(DEFAULT_PREVIEW_SCENARIO_ID);
+
+    expect(
+      store.session.sessionInfo?.cars.some(
+        (entry) => entry.carIdx === PACE_CAR_IDX
+      )
+    ).toBe(false);
+  });
+
+  it('marks one incident still live and one already cleared', () => {
+    const incidents =
+      seed('incident-zones').backendComputed.incidents?.incidents;
+
+    expect(incidents?.some((point) => point.isActive)).toBe(true);
+    expect(incidents?.some((point) => !point.isActive)).toBe(true);
   });
 });
 

@@ -1,23 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { TrackMapWidgetSettings } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
-import {
-  PACE_CAR_IDX,
-  mockField,
-  mockPaceCarEntry,
-} from '@store/preview/mocks/field';
+import { mockField } from '@store/preview/mocks/field';
 import { mockSectors } from '@store/preview/mocks/timing';
-import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
-import { trackData as STORED_TRACK } from '@/storybook/test-data';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
+import { sampleTrack } from '@store/preview/sample-track';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 import { TrackMapView } from './TrackMapView/TrackMapView';
-import { withStore } from '../../../../.storybook/decorators';
 
 const TRACK_DATA = {
-  svgPath: STORED_TRACK.svgPath,
-  viewBox: STORED_TRACK.viewBox,
-  points: STORED_TRACK.points,
+  svgPath: sampleTrack.svgPath,
+  viewBox: sampleTrack.viewBox,
+  points: sampleTrack.points,
 };
 
 const DESIGN_SIZE = 600;
@@ -28,11 +24,18 @@ const LAP_TIME_S = 92.4;
 /** Only the leading cars are drawn, so they are spread over the whole lap. */
 const MAPPED_CAR_COUNT = 10;
 
-const PACE_CAR_LAP_PCT = 0.35;
-const TRACK_SURFACE_ON_TRACK = 3;
+interface StoryArgs {
+  trackData: typeof TRACK_DATA | null;
+  isRecording: boolean;
+  recordingProgress: number;
+  isWaitingForSF: boolean;
 
-const INCIDENT_LAP_DIST_PCT = 0.43;
-const CLEARED_LAP_DIST_PCT = 0.78;
+  showSectorsOnMap: boolean;
+  classShapes: boolean;
+  showIncidentZones: boolean;
+  blinkIncidentZones: boolean;
+  flagZoneStyle: 'filled' | 'outline';
+}
 
 // The map draws one dot per car off its own lap distance, so the field is
 // spread over the whole lap rather than packed into the seconds around the
@@ -53,114 +56,67 @@ const seedField = (store: RootStore) => {
   store.backendComputed.updateRelative(relative);
 };
 
-/** Everything every story here shares: a connected sim, the snapshot, the field. */
-const seedMap = (store: RootStore) => {
-  store.sim.isConnected = true;
-  seedFromSnapshot(store);
-  seedField(store);
-};
-
-const withMap = (
-  extra?: (store: RootStore) => void,
-  settings?: Partial<TrackMapWidgetSettings>
-) =>
-  withStore((store) => {
-    seedMap(store);
-
-    if (settings) {
-      store.liveWidgets.updateUserSettings('track-map', settings);
-    }
-
-    extra?.(store);
-  });
-
-// A safety car reaches the map through the session roster and the per-car
-// arrays rather than as a driver entry, the way the sim reports it.
-const seedPaceCar = (store: RootStore) => {
-  const sessionInfo = store.session.sessionInfo;
-  const positions = store.cars.carPositions;
-  const player = store.backendComputed.driverEntries?.entries.find(
-    (entry) => entry.isPlayer
-  );
-
-  if (!sessionInfo || !positions) {
-    return;
-  }
-
-  const template = sessionInfo.cars[0];
-
-  store.session.updateSessionInfo({
-    ...sessionInfo,
-    cars: [
-      ...sessionInfo.cars,
-      mockPaceCarEntry(template, {
-        carClassId: player?.carClassId ?? template.carClassId,
-        carClassColor: player?.carClassColor ?? template.carClassColor,
-      }),
-    ],
-  });
-
-  const lapDist = [...positions.car_idx_lap_dist_pct];
-  const surface = [...positions.car_idx_track_surface];
-
-  lapDist[PACE_CAR_IDX] = PACE_CAR_LAP_PCT;
-  surface[PACE_CAR_IDX] = TRACK_SURFACE_ON_TRACK;
-
-  store.cars.updateCarPositions({
-    ...positions,
-    car_idx_lap_dist_pct: lapDist,
-    car_idx_track_surface: surface,
-  });
-};
-
+// The lap's splits are on the session rather than on a frame, and the recorded
+// one carries none — so the sector story states them where the map reads them.
 const seedSectors = (store: RootStore) => {
   const sessionInfo = store.session.sessionInfo;
 
-  if (sessionInfo) {
-    store.session.updateSessionInfo({
-      ...sessionInfo,
-      sectors: mockSectors(SECTOR_COUNT),
-    });
+  if (!sessionInfo) {
+    return;
   }
-};
 
-const seedIncidents = (store: RootStore) => {
-  store.backendComputed.updateIncidents({
-    incidents: [
-      {
-        carIdx: 1,
-        lapDistPct: INCIDENT_LAP_DIST_PCT,
-        kind: 'stopped',
-        isActive: true,
-      },
-      {
-        carIdx: 2,
-        lapDistPct: CLEARED_LAP_DIST_PCT,
-        kind: 'offTrack',
-        isActive: false,
-      },
-    ],
+  store.session.updateSessionInfo({
+    ...sessionInfo,
+    sectors: mockSectors(SECTOR_COUNT),
   });
 };
 
-const meta: Meta<typeof TrackMapView> = {
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/TrackMapWidget',
-  component: TrackMapView,
-  parameters: { layout: 'centered' },
-  decorators: [
-    withMap(),
-    widgetDecorator({ width: DESIGN_SIZE, height: DESIGN_SIZE }),
-  ],
-  args: {
-    trackData: TRACK_DATA,
-    isRecording: false,
-    recordingProgress: 0,
-    isWaitingForSF: false,
-  },
+  ...defineWidgetStories<StoryArgs>({
+    widget: TrackMapView,
+    size: { width: DESIGN_SIZE, height: DESIGN_SIZE },
+    seedSnapshot: true,
+    seed: (store, args) => {
+      seedField(store);
+
+      if (args.showSectorsOnMap) {
+        seedSectors(store);
+      }
+
+      store.liveWidgets.updateUserSettings('track-map', {
+        showSectorsOnMap: args.showSectorsOnMap,
+        classShapes: args.classShapes,
+        showIncidentZones: args.showIncidentZones,
+        blinkIncidentZones: args.blinkIncidentZones,
+        flagZoneStyle: args.flagZoneStyle,
+      });
+    },
+    args: {
+      trackData: TRACK_DATA,
+      isRecording: false,
+      recordingProgress: 0,
+      isWaitingForSF: false,
+      showSectorsOnMap: false,
+      classShapes: false,
+      showIncidentZones: true,
+      blinkIncidentZones: true,
+      flagZoneStyle: 'filled',
+    },
+    argTypes: {
+      flagZoneStyle: {
+        control: 'inline-radio',
+        options: ['filled', 'outline'],
+      },
+      recordingProgress: {
+        control: { type: 'range', min: 0, max: 1, step: 0.05 },
+      },
+    },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof TrackMapView>;
+type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
 
@@ -173,11 +129,11 @@ export const Recording: Story = {
 };
 
 export const WithSectors: Story = {
-  decorators: [withMap(seedSectors, { showSectorsOnMap: true })],
+  args: { showSectorsOnMap: true },
 };
 
 export const ClassShapes: Story = {
-  decorators: [withMap(undefined, { classShapes: true })],
+  args: { classShapes: true },
 };
 
 export const WaitingForSF: Story = {
@@ -188,25 +144,14 @@ export const WaitingForSF: Story = {
 };
 
 export const WithPaceCar: Story = {
-  decorators: [withMap(seedPaceCar)],
+  parameters: previewScenario('pace-car-on-track'),
 };
 
 export const WithIncidentZones: Story = {
-  decorators: [
-    withMap(seedIncidents, {
-      showIncidentZones: true,
-      blinkIncidentZones: true,
-      flagZoneStyle: 'filled',
-    }),
-  ],
+  parameters: previewScenario('incident-zones'),
 };
 
 export const WithOutlinedIncidentZones: Story = {
-  decorators: [
-    withMap(seedIncidents, {
-      showIncidentZones: true,
-      blinkIncidentZones: true,
-      flagZoneStyle: 'outline',
-    }),
-  ],
+  parameters: previewScenario('incident-zones'),
+  args: { flagZoneStyle: 'outline' },
 };

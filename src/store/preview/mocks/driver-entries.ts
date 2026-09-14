@@ -6,6 +6,11 @@ import type {
 } from '@/types/bindings';
 import { parseClassColor } from '@utils/colors';
 
+// Mock builder for the driver list — the one the snapshot's own roster is
+// turned into, rather than one invented from nothing. It lives in the factory
+// with every other builder: the snapshot seeder composes it, and so does any
+// fixture that needs the entries the app would have received from the backend.
+
 /**
  * Badges for the classes in the recorded snapshot.
  *

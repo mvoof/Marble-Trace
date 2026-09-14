@@ -19,7 +19,13 @@ import {
 } from './mocks/pit';
 import { mockFuel } from './mocks/fuel';
 import type { MockFieldOptions } from './mocks/field';
-import { mockField } from './mocks/field';
+import {
+  mockField,
+  mockIncidents,
+  mockPaceCarEntry,
+  PACE_CAR_IDX,
+  TRACK_SURFACE_ON_TRACK,
+} from './mocks/field';
 import type { MockTrafficCar } from './mocks/traffic';
 import { mockProximity } from './mocks/traffic';
 import {
@@ -222,6 +228,54 @@ const applyIncidents = (
   if (sessionInfo) {
     store.session.updateSessionInfo({ ...sessionInfo, incidentLimit });
   }
+};
+
+/** Where the safety car is put: a third of the way round, clear of the player. */
+const PACE_CAR_LAP_PCT = 0.35;
+
+// A safety car reaches the map through the session roster and the per-car
+// arrays rather than as a driver entry, the way the sim reports it — so a
+// scenario states one in both places at once. The recorded session has none:
+// nobody records a caution on request.
+const applyPaceCar = (store: RootStore) => {
+  const sessionInfo = store.session.sessionInfo;
+  const positions = store.cars.carPositions;
+  const player = store.backendComputed.driverEntries?.entries.find(
+    (entry) => entry.isPlayer
+  );
+
+  if (!sessionInfo || !positions) {
+    return;
+  }
+
+  const template = sessionInfo.cars[0];
+
+  if (!template) {
+    return;
+  }
+
+  store.session.updateSessionInfo({
+    ...sessionInfo,
+    cars: [
+      ...sessionInfo.cars,
+      mockPaceCarEntry(template, {
+        carClassId: player?.carClassId ?? template.carClassId,
+        carClassColor: player?.carClassColor ?? template.carClassColor,
+      }),
+    ],
+  });
+
+  const lapDistPct = [...positions.car_idx_lap_dist_pct];
+  const trackSurface = [...positions.car_idx_track_surface];
+
+  lapDistPct[PACE_CAR_IDX] = PACE_CAR_LAP_PCT;
+  trackSurface[PACE_CAR_IDX] = TRACK_SURFACE_ON_TRACK;
+
+  store.cars.updateCarPositions({
+    ...positions,
+    car_idx_lap_dist_pct: lapDistPct,
+    car_idx_track_surface: trackSurface,
+  });
 };
 
 // A delta scenario states one number: the same gap against every reference the
@@ -579,6 +633,25 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       // their boxes — the snapshot already holds, so the baseline shows it and
       // no scenario repeats it.
       applyField(store, { gapS: 0.4 });
+    },
+  },
+  {
+    id: 'pace-car-on-track',
+    label: 'Track — safety car out',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyPaceCar(store);
+    },
+  },
+  {
+    id: 'incident-zones',
+    label: 'Track — incidents on the lap',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // One car still in trouble and one already recovered, so the blinking
+      // zone and the lingering marker are on the map at the same time — the
+      // only moment the two treatments can be compared against each other.
+      store.backendComputed.updateIncidents(mockIncidents());
     },
   },
   {

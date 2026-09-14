@@ -39,6 +39,8 @@ export type PreviewScenarioId =
   | 'driving-coach-inactive'
   | 'field-close-pack'
   | 'incident-limit'
+  | 'pace-car-on-track'
+  | 'incident-zones'
   | 'pit-tow'
   | 'pit-lane'
   | 'pit-limiter'

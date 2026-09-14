@@ -10,7 +10,8 @@ import type {
 import { action } from 'mobx';
 import { TrackSurface } from '@/types';
 import type { RootStore } from '@store/root-store';
-import { computeDriverEntries } from './compute-driver-entries';
+import { computeDriverEntries } from './mocks/driver-entries';
+import { mockCarPositions } from './mocks/field';
 import { mockLapDelta, mockLapLog, mockLapTiming } from './mocks/delta';
 import { mockPitService } from './mocks/pit';
 import { sampleTrack, SAMPLE_TRACK_ID } from './sample-track';
@@ -165,6 +166,10 @@ export const seedSampleTelemetry = action((store: RootStore) => {
       entries,
       playerCarIdx,
     } as RelativeFrame);
+
+    // The map and the pace-car store read the positions frame rather than the
+    // driver list, so the same field is handed to them in the shape they read.
+    store.cars.updateCarPositions(mockCarPositions(entries));
   }
 
   // Seed a light proximity frame and force the radar visible so radar widgets
