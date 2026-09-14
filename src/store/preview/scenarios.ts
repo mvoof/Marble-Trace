@@ -1,11 +1,8 @@
 import type {
   CarDynamicsFrame,
   CarStatusFrame,
-  EnvironmentFrame,
   PitTargetFrame,
   RaceFlags,
-  ReferenceLapData,
-  ReferenceLapSample,
   SessionEntry,
   SessionFrame,
 } from '@/types/bindings';
@@ -30,6 +27,13 @@ import {
   OIL_TEMP_WARNING_C,
   WATER_TEMP_WARNING_C,
 } from './mocks/engine';
+import {
+  mockReferenceLap,
+  mockReferenceLapWithoutCorners,
+  referenceSpeedKmhAt,
+} from './mocks/coach';
+import type { MockTrackCondition } from './mocks/weather';
+import { mockEnvironment } from './mocks/weather';
 import {
   mockSession,
   mockSessionEntry,
@@ -71,17 +75,13 @@ const applyTraffic = (store: RootStore, cars: MockTrafficCar[]) => {
   store.backendComputed.updateProximity(mockProximity(cars));
 };
 
-const applyWeather = (
-  store: RootStore,
-  overrides: Partial<EnvironmentFrame>
-) => {
-  const environment = store.environment.environment;
-
-  if (!environment) {
-    return;
-  }
-
-  store.environment.updateEnvironment({ ...environment, ...overrides });
+// A weather scenario states the track condition and nothing else: the
+// temperatures, the humidity and the sky that come with rain are the builder's,
+// so two scenarios differ only in how wet the track is. The frame is replaced
+// rather than patched — a wetness laid over the snapshot's dry numbers is a
+// picture no session ever shows.
+const applyWeather = (store: RootStore, condition: MockTrackCondition) => {
+  store.environment.updateEnvironment(mockEnvironment(condition));
 };
 
 const applyDynamics = (
@@ -139,47 +139,25 @@ const applyPitLane = (
   });
 };
 
-const REFERENCE_BUCKET_COUNT = 1000;
-
-// Seeds a flat synthetic reference lap plus the player's position on it so the
-// Driving Coach preview can render its reference speed + delta. `referenceKmh`
-// is the recorded reference speed at the player's spot; `deltaKmh` offsets the
-// player's live speed from it (negative = slower than reference).
+// Puts the stored best lap in place and the player somewhere on it, so the
+// coach has a reference, a corner and a position to evaluate against.
+// `atPct` is where on the lap the player sits; `deltaKmh` offsets their live
+// speed from the reference's at that point (negative = slower than reference).
 const applyCoachReference = (
   store: RootStore,
-  referenceKmh: number,
-  deltaKmh: number
+  { atPct, deltaKmh }: { atPct: number; deltaKmh: number }
 ) => {
-  const referenceMps = referenceKmh / 3.6;
-  const sample: ReferenceLapSample = {
-    speed: referenceMps,
-    throttle: 1,
-    brake: 0,
-    latAccel: null,
-    longAccel: null,
-    steeringWheelAngle: 0,
-  };
-  const data: ReferenceLapData = {
-    trackId: 0,
-    carScreenName: 'Preview Car',
-    lapTime: 90,
-    samples: Array.from({ length: REFERENCE_BUCKET_COUNT }, () => ({
-      ...sample,
-    })),
-    recordedWetness: null,
-    recordedTireWear: null,
-    recordedFuelLevel: null,
-  };
-
-  store.referenceLap.updateReferenceLap(data);
+  store.referenceLap.updateReferenceLap(mockReferenceLap());
 
   const lapTiming = store.player.lapTiming;
 
   if (lapTiming) {
-    store.player.updateLapTiming({ ...lapTiming, lap_dist_pct: 0.5 });
+    store.player.updateLapTiming({ ...lapTiming, lap_dist_pct: atPct });
   }
 
-  applyDynamics(store, { speed: (referenceKmh + deltaKmh) / 3.6 });
+  applyDynamics(store, {
+    speed: (referenceSpeedKmhAt(atPct) + deltaKmh) / 3.6,
+  });
 };
 
 // The standings and the relative draw the same field frames, so a field
@@ -196,6 +174,33 @@ const applyField = (store: RootStore, options: MockFieldOptions) => {
 
   store.backendComputed.updateDriverEntries(frames.driverEntries);
   store.backendComputed.updateRelative(frames.relative);
+};
+
+// The incident counter is the player's own, so a scenario states it on their
+// entry and on the session that caps it — the two halves of what the badge
+// prints, and of whether it is alarmed.
+const applyIncidents = (
+  store: RootStore,
+  {
+    incidents,
+    incidentLimit,
+  }: { incidents: number; incidentLimit: number | null }
+) => {
+  const standings = store.backendComputed.driverEntries;
+  const sessionInfo = store.session.sessionInfo;
+
+  if (standings) {
+    store.backendComputed.updateDriverEntries({
+      ...standings,
+      entries: standings.entries.map((entry) =>
+        entry.isPlayer ? { ...entry, incidents } : entry
+      ),
+    });
+  }
+
+  if (sessionInfo) {
+    store.session.updateSessionInfo({ ...sessionInfo, incidentLimit });
+  }
 };
 
 // A delta scenario states one number: the same gap against every reference the
@@ -443,13 +448,18 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     label: 'Rain',
     apply: (store) => {
       seedSampleTelemetry(store);
-      applyWeather(store, {
-        precipitation: 0.6,
-        trackWetness: 5,
-        skies: 'Overcast',
-        weatherDeclaredWet: true,
-        relativeHumidity: 0.85,
-      });
+      applyWeather(store, 'wet');
+    },
+  },
+  {
+    id: 'heavy-rain',
+    label: 'Heavy rain',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The top of the wetness scale, which is both the widest surface label
+      // and the state the wet readouts are colored for. A dry track is not a
+      // scenario beside these two — it is what the snapshot already carries.
+      applyWeather(store, 'heavy-rain');
     },
   },
   {
@@ -465,13 +475,28 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     label: 'Driving Coach — Brake',
     apply: (store) => {
       seedSampleTelemetry(store);
-      // The reactive advisory computation depends on a real reference lap +
-      // corner geometry, which the preview snapshot doesn't have. Force the
-      // displayed state directly instead — same reasoning as `radar.visible`
-      // above: the auto-hide/advisory reaction never runs in this isolated
-      // preview store, so nothing overrides it.
+      // The advisory itself is forced rather than computed: the reaction that
+      // evaluates it never runs in this isolated preview store, so nothing
+      // overrides what is written here — same reasoning as `radar.visible`
+      // above. The reference lap still has to be a real one, corner and all:
+      // without a braking zone in it the coach reports `no-corners` and draws
+      // that over every call a scenario asks for.
       store.drivingCoachWidget.displayedAdvisory = 'brake';
-      applyCoachReference(store, 198, 12);
+      // Into the braking zone and carrying too much speed for it.
+      applyCoachReference(store, { atPct: 0.475, deltaKmh: 12 });
+      store.drivingCoachWidget.displayedBrakeUrgency = 1;
+    },
+  },
+  {
+    id: 'driving-coach-brake-soon',
+    label: 'Driving Coach — Brake soon',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The amber step between the all-clear and the hard call: still neutral,
+      // but pre-armed, which is the one state that swaps the delta for a
+      // countdown to the braking point.
+      applyCoachReference(store, { atPct: 0.44, deltaKmh: 0 });
+      store.drivingCoachWidget.displayedBrakeUrgency = 0.85;
     },
   },
   {
@@ -480,7 +505,35 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     apply: (store) => {
       seedSampleTelemetry(store);
       store.drivingCoachWidget.displayedAdvisory = 'gas';
-      applyCoachReference(store, 205, -8);
+      // Out of the corner, short of the reference's speed and its pedal.
+      applyCoachReference(store, { atPct: 0.52, deltaKmh: -8 });
+      store.drivingCoachWidget.displayedExitLateM = 14;
+      store.drivingCoachWidget.displayedExitThrottleDeficit = 0.22;
+    },
+  },
+  {
+    id: 'driving-coach-grip',
+    label: 'Driving Coach — Grip',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Not an instruction but a refusal to give one — the car is being caught
+      // and corrected, and the call takes neither of the two configured colors.
+      store.drivingCoachWidget.displayedAdvisory = 'grip';
+      applyCoachReference(store, { atPct: 0.52, deltaKmh: -6 });
+    },
+  },
+  {
+    id: 'driving-coach-inactive',
+    label: 'Driving Coach — Nothing to compare',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The widest the row ever gets: the longest call the coach can make and
+      // the longest hint under it, which is what the plate has to be sized
+      // against — not BRAKE. A reference with no braking zone in it is exactly
+      // the state that produces it, so it is stated by seeding one rather than
+      // by writing the words anywhere.
+      applyCoachReference(store, { atPct: 0.5, deltaKmh: 0 });
+      store.referenceLap.updateReferenceLap(mockReferenceLapWithoutCorners());
     },
   },
   {
@@ -494,6 +547,18 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
       // their boxes — the snapshot already holds, so the baseline shows it and
       // no scenario repeats it.
       applyField(store, { gapS: 0.4 });
+    },
+  },
+  {
+    id: 'incident-limit',
+    label: 'Incidents — near the limit',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The counter at its widest and its loudest at once: a session that caps
+      // incidents prints the limit beside the count, and close enough to it the
+      // badge turns red and pulses. The recorded session has neither — nobody
+      // sits on a limit for a recording — so both are stated here.
+      applyIncidents(store, { incidents: 15, incidentLimit: 17 });
     },
   },
   {

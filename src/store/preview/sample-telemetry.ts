@@ -260,6 +260,9 @@ export const seedSampleTelemetry = action((store: RootStore) => {
   store.player.updatePitTarget(null);
   store.referenceLap.reset();
   store.drivingCoachWidget.displayedAdvisory = 'neutral';
+  store.drivingCoachWidget.displayedBrakeUrgency = 0;
+  store.drivingCoachWidget.displayedExitLateM = null;
+  store.drivingCoachWidget.displayedExitThrottleDeficit = 0;
 
   syncFlagDisplay(store);
 });

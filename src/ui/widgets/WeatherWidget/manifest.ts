@@ -7,7 +7,7 @@ import {
 export const WEATHER_MANIFEST: WidgetManifest = {
   id: 'weather',
   order: 150,
-  previewScenarios: ['rain'],
+  previewScenarios: ['rain', 'heavy-rain'],
   telemetryEvents: ['carDynamics'],
   label: 'Weather',
   description: 'Track conditions and wind information.',

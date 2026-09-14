@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { FlagType } from '@/types';
 import { formatDelta, getGameDelta } from '@utils/delta-utils';
+import { isNearIncidentLimit } from '@utils/driver';
 import { resolveSessionLaps } from '@utils/telemetry-format';
 import {
   isLapLimitedSession,
@@ -21,6 +22,10 @@ import {
 // imported: it is declared in the UI layer, which the preview module may not
 // reach into.
 const PIT_LIMITER_BIT = 0x10;
+
+/** The sim's dry track, and the top of its wetness scale. */
+const DRY_TRACK_WETNESS = 1;
+const MAX_TRACK_WETNESS = 7;
 
 /** What the backend reports when nothing is in range on that side. */
 const NO_CAR_DIST_M = 999;
@@ -619,6 +624,100 @@ describe('timing scenarios', () => {
       ).toBe(false);
       expect(currentSession(store)?.sessionType, scenarioId).toBe('Race');
     }
+  });
+});
+
+// The call row draws the inactive reason over whatever advisory is set, so a
+// coach scenario is only worth anything if the coach is actually evaluating —
+// which needs a reference with a braking zone in it, not just a reference.
+describe('coach scenarios', () => {
+  const cases: Array<[string, string]> = [
+    ['driving-coach-brake', 'brake'],
+    ['driving-coach-gas', 'gas'],
+    ['driving-coach-grip', 'grip'],
+    ['driving-coach-brake-soon', 'neutral'],
+  ];
+
+  it.each(cases)('%s renders the %s call', (scenarioId, advisory) => {
+    const coach = seed(scenarioId).drivingCoachWidget;
+
+    // A null reason is the corner too: without a braking zone in the
+    // reference the coach reports `no-corners` and draws it over the call.
+    expect(coach.inactiveReason).toBeNull();
+    expect(coach.displayedAdvisory).toBe(advisory);
+  });
+
+  it('pre-arms the brake call with a braking point to count down to', () => {
+    const coach = seed('driving-coach-brake-soon').drivingCoachWidget;
+
+    expect(coach.displayedBrakeUrgency).toBeGreaterThanOrEqual(0.7);
+    expect(coach.brakePointDistanceM).not.toBeNull();
+  });
+
+  it('carries the throttle figures the gas call is sized against', () => {
+    const coach = seed('driving-coach-gas').drivingCoachWidget;
+
+    expect(coach.displayedExitLateM).toBeGreaterThan(0);
+    expect(coach.displayedExitThrottleDeficit).toBeGreaterThan(0);
+  });
+
+  // The longest wording the row can carry is an inactive one, not a call, so
+  // that is the state the plate has to be sized against.
+  it('states the longest wording the row can carry', () => {
+    const coach = seed('driving-coach-inactive').drivingCoachWidget;
+
+    expect(coach.inactiveReason).toBe('no-corners');
+  });
+});
+
+describe('weather scenarios', () => {
+  it('declares the track wet with rain falling', () => {
+    const environment = seed('rain').environment.environment;
+
+    expect(environment?.weatherDeclaredWet).toBe(true);
+    expect(environment?.precipitation ?? 0).toBeGreaterThan(0);
+    expect(environment?.trackWetness ?? 0).toBeGreaterThan(DRY_TRACK_WETNESS);
+  });
+
+  it('tops out the wetness scale in heavy rain', () => {
+    const heavy = seed('heavy-rain').environment.environment;
+    const rain = seed('rain').environment.environment;
+
+    expect(heavy?.trackWetness).toBe(MAX_TRACK_WETNESS);
+    expect(heavy?.precipitation ?? 0).toBeGreaterThan(rain?.precipitation ?? 0);
+  });
+
+  it('leaves the baseline track dry', () => {
+    const environment = seed(DEFAULT_PREVIEW_SCENARIO_ID).environment
+      .environment;
+
+    expect(environment?.weatherDeclaredWet).toBe(false);
+  });
+});
+
+// The standings footer prints the incident count and, where the session caps
+// them, the limit beside it — the widest the badge ever gets, and the only
+// state that turns it red.
+describe('incident scenarios', () => {
+  it('runs the player up against a stated limit', () => {
+    const store = seed('incident-limit');
+    const incidents =
+      store.backendComputed.driverIdentities.find((entry) => entry.isPlayer)
+        ?.incidents ?? 0;
+    const limit = store.session.sessionInfo?.incidentLimit ?? null;
+
+    expect(limit).not.toBeNull();
+    expect(incidents).toBeGreaterThan(0);
+    expect(isNearIncidentLimit(incidents, limit)).toBe(true);
+  });
+
+  it('leaves the baseline uncounted', () => {
+    const store = seed(DEFAULT_PREVIEW_SCENARIO_ID);
+    const incidents =
+      store.backendComputed.driverIdentities.find((entry) => entry.isPlayer)
+        ?.incidents ?? 0;
+
+    expect(incidents).toBe(0);
   });
 });
 
