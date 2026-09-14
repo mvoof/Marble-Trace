@@ -379,34 +379,6 @@ pub fn compute(
         }
     });
 
-    update_tow_states(&mut entries, &mut locked_state);
-
-    match ranking_mode {
-        RankingMode::TrackOrder => assign_live_positions(&mut entries, &locked_state.towed_cars),
-        RankingMode::Grid => assign_static_positions(&mut entries, grid_sort_key),
-        RankingMode::Official => assign_static_positions(&mut entries, official_sort_key),
-    }
-
-    let player_lap_dist = entries
-        .iter()
-        .find(|e| e.car_idx == player_car_idx)
-        .map(|e| e.lap_dist_pct)
-        .unwrap_or(0.0);
-
-    for entry in &mut entries {
-        let mut diff = entry.lap_dist_pct - player_lap_dist;
-
-        if diff < -0.5 {
-            diff += 1.0;
-        }
-
-        if diff > 0.5 {
-            diff -= 1.0;
-        }
-
-        entry.relative_lap_dist = diff;
-    }
-
     // Finish latch. The per-car checkered bit is *not* a per-car finish signal: the
     // sim shows the checkered flag to the whole field the moment the leader takes it,
     // so `CarIdxSessionFlags` lights up for everyone at once. A car has actually
@@ -453,9 +425,19 @@ pub fn compute(
                 entry.lap > *baseline
             });
 
+            // A car that leaves the world once the flag is out has finished and
+            // gone: quitting straight off the racing surface looks exactly like a
+            // tow, and its live lap counter is zeroed on the way out, so the
+            // crossing itself may never be observed on any tick. Without this the
+            // finisher who quits is never latched and is towed instead.
+            let left_after_the_flag = state.laps_at_checkered.is_some()
+                && entry.track_surface == TrackSurface::NotInWorld
+                && !entry.is_retired
+                && entry.lap > 0;
+
             let classified = race_has_ended && !entry.is_retired && entry.lap > 0;
 
-            if crossed_the_line || classified {
+            if crossed_the_line || left_after_the_flag || classified {
                 state.finished_cars.insert(entry.car_idx);
             }
 
@@ -464,6 +446,34 @@ pub fn compute(
     }
 
     locked_state.previous_laps = entries.iter().map(|e| (e.car_idx, e.lap)).collect();
+
+    update_tow_states(&mut entries, &mut locked_state);
+
+    match ranking_mode {
+        RankingMode::TrackOrder => assign_live_positions(&mut entries, &locked_state.towed_cars),
+        RankingMode::Grid => assign_static_positions(&mut entries, grid_sort_key),
+        RankingMode::Official => assign_static_positions(&mut entries, official_sort_key),
+    }
+
+    let player_lap_dist = entries
+        .iter()
+        .find(|e| e.car_idx == player_car_idx)
+        .map(|e| e.lap_dist_pct)
+        .unwrap_or(0.0);
+
+    for entry in &mut entries {
+        let mut diff = entry.lap_dist_pct - player_lap_dist;
+
+        if diff < -0.5 {
+            diff += 1.0;
+        }
+
+        if diff > 0.5 {
+            diff -= 1.0;
+        }
+
+        entry.relative_lap_dist = diff;
+    }
 
     // Pit state machine — per-car, persisted across ticks in locked_state.pit_states
     let active_car_indices: HashSet<i32> = entries.iter().map(|e| e.car_idx).collect();
@@ -1377,6 +1387,41 @@ mod tests {
 
         assert!(!frame.entries[0].is_towed);
         assert!(frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_a_car_that_vanishes_under_the_flag_is_finished_not_towed() {
+        let session = race_session();
+        let state = Mutex::new(DriverEntriesState::default());
+
+        compute(
+            &racing_car_idx_frame_on_lap(0, 12),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            false,
+            &state,
+        );
+
+        // He crosses the line and quits inside the same tick, so his lap counter is
+        // never seen to increment: the sim zeroes the live value on the way out and
+        // the frame still reads the lap he was on.
+        let mut car_idx = racing_car_idx_frame_on_lap(0, 12);
+        car_idx.car_idx_track_surface = vec![TrackSurface::NotInWorld];
+
+        let frame = compute(
+            &car_idx,
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            true,
+            &state,
+        );
+
+        assert!(frame.entries[0].is_finished);
+        assert!(!frame.entries[0].is_towed);
     }
 
     #[test]
