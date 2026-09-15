@@ -259,6 +259,33 @@ describe('the field the baseline already holds', () => {
   });
 });
 
+// The committed snapshot is anonymised down to `flairId: 0`, so the country
+// column is the one thing in the two tables that the recording cannot supply.
+describe('the driver roster', () => {
+  it('gives every driver a country flag to draw', () => {
+    const entries =
+      seed('baseline').backendComputed.driverEntries?.entries ?? [];
+
+    expect(entries.length).toBeGreaterThan(0);
+
+    for (const entry of entries) {
+      expect(entry.flairId).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps a car on the same flag across re-seeds', () => {
+    const first = seed('baseline').backendComputed.driverEntries?.entries ?? [];
+    const second =
+      seed('field-close-pack').backendComputed.driverEntries?.entries ?? [];
+    const flagOf = (entries: typeof first, carIdx: number) =>
+      entries.find((entry) => entry.carIdx === carIdx)?.flairId;
+
+    for (const entry of first) {
+      expect(flagOf(second, entry.carIdx)).toBe(entry.flairId);
+    }
+  });
+});
+
 // The standings read their gap off `f2Time` and the relative off `estTime`, so
 // the close pack is only right if both widgets end up describing the same grid.
 // The assertions are about what is in the store, never about how the builder
