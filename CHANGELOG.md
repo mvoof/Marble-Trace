@@ -17,8 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Pace Car Stayed on Screen in the Pits:** Fixed the pace car still being shown while it sat in the pit lane, even with the "hide in pits" option on.
-- **A Finished Driver Turned Into "TOW":** Fixed a driver who crossed the line and left the session losing the checkered flag in Standings and being marked as being towed instead.
-- **The Finish Was Read Too Late:** Fixed Standings deciding a driver's finish after the tow rather than on the completed lap, so a car towed right after the line could lose its finished state.
+- **The Checkered Flag in Standings:** Fixed when a driver is marked as finished. The badge now appears on the driver's own crossing of the line — the leading group used to stay unmarked until the session wound down, because the flag was read from the moment the sim showed it to your car rather than from the moment each driver took it. A driver who crosses the line and then leaves the session keeps the checkered flag instead of being marked as towed, and a car towed right after the line keeps its finish too.
 - **Fuel Bar Did Not Match the Order:** Fixed the fuel bar in Pit Service being drawn against the tank instead of the fuel level you actually ordered.
 - **Remote Screens Stayed Blank in the Released App:** Fixed a device opening a remote screen and getting an empty page in the downloaded build, where the same screen worked when the app was run from source.
 - **Remote Screens Ignored Auto-Hide:** Fixed widgets set to hide themselves staying visible on remote and stream screens.
