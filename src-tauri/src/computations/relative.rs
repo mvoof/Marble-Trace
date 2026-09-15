@@ -73,7 +73,6 @@ impl Processor for RelativeProcessor {
             ctx.start_positions,
             false,
             ctx.session_state,
-            ctx.car_status.flags.checkered,
             &self.state,
         );
 
