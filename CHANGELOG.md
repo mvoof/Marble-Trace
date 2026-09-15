@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.0] — 2026-09-15
+
+### Changed
+
+- **One Remote Screen, Every Layout:** A remote screen is now the device itself rather than a screen belonging to one layout. The same phone or tablet keeps its link and its place across all your layouts, and adding it to another layout reuses the screen you already set up instead of creating a second one.
+- **Lighter Telemetry per Window:** Each window is now sent only the data its own widgets ask for. A monitor showing a clock no longer receives the fast per-car data a track map on another monitor needs, so the overlay does less work for the same picture.
+
+### Fixed
+
+- **Pace Car Stayed on Screen in the Pits:** Fixed the pace car still being shown while it sat in the pit lane, even with the "hide in pits" option on.
+- **A Finished Driver Turned Into "TOW":** Fixed a driver who crossed the line and left the session losing the checkered flag in Standings and being marked as being towed instead.
+- **The Finish Was Read Too Late:** Fixed Standings deciding a driver's finish after the tow rather than on the completed lap, so a car towed right after the line could lose its finished state.
+- **Fuel Bar Did Not Match the Order:** Fixed the fuel bar in Pit Service being drawn against the tank instead of the fuel level you actually ordered.
+- **Remote Screens Stayed Blank in the Released App:** Fixed a device opening a remote screen and getting an empty page in the downloaded build, where the same screen worked when the app was run from source.
+- **Remote Screens Ignored Auto-Hide:** Fixed widgets set to hide themselves staying visible on remote and stream screens.
+- **No Country Flags in the Layout Editor:** Fixed the sample drivers in the layout editor preview showing no country flags, so the flag column looked empty while placing a widget.
+
 ## [0.23.0] — 2026-09-11
 
 ### Added
