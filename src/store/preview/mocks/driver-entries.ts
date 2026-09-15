@@ -31,6 +31,39 @@ const PREVIEW_CLASS_BADGES: Record<number, string> = {
 };
 
 /**
+ * Country flags for the recorded snapshot's drivers.
+ *
+ * `FlairID` is anonymised out of the committed snapshot — every car carries
+ * `0`, which the app reads as "this driver picked no flag" and draws as an
+ * empty cell. So with the column switched on the preview showed a blank strip
+ * and nothing to size it against. Fixture data of the same kind as
+ * `PREVIEW_CLASS_BADGES`: a flag is handed to a car by its index, wrapping
+ * round the list, so the grid is mixed and the same car keeps the same flag on
+ * every re-seed. A snapshot that does carry a flair keeps it.
+ */
+const PREVIEW_FLAIR_IDS = [
+  222, // United Kingdom
+  77, // Germany
+  223, // United States
+  31, // Brazil
+  70, // Finland
+  146, // Netherlands
+  71, // France
+  16, // Australia
+  101, // Italy
+  198, // Spain
+  39, // Canada
+  203, // Sweden
+  13, // Argentina
+  104, // Japan
+  167, // Poland
+  23, // Belgium
+];
+
+const previewFlairId = (flairId: number, carIdx: number): number =>
+  flairId || (PREVIEW_FLAIR_IDS[carIdx % PREVIEW_FLAIR_IDS.length] ?? 0);
+
+/**
  * The pit badge the backend would have resolved.
  *
  * `pitState` is computed in Rust from a car's movement through the lane, which
@@ -79,7 +112,7 @@ export const computeDriverEntries = (
       carClassShortName:
         PREVIEW_CLASS_BADGES[car.carClassId] ?? car.carScreenNameShort,
       carClassColor: parseClassColor(car.carClassColor),
-      flairId: car.flairId,
+      flairId: previewFlairId(car.flairId, idx),
       isAi: car.isAi,
       carScreenName: car.carScreenName,
       carScreenNameShort: car.carScreenNameShort,
