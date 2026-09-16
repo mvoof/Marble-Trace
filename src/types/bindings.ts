@@ -920,6 +920,31 @@ export type InputDeviceResolution = {
 };
 
 /**
+ * Reported only when the running executable sits outside the directory the
+ * installer registered — never for a normal install, and never when there is
+ * no registry entry to compare against (a portable copy, a build run straight
+ * out of `target/`).
+ */
+export type InstallMismatch = {
+  /**
+   * Directory the running executable was launched from.
+   */
+  runningDir: string;
+  /**
+   * Version of the running executable.
+   */
+  runningVersion: string;
+  /**
+   * Directory the installer recorded as the installation.
+   */
+  registeredDir: string;
+  /**
+   * Version recorded beside it, when the entry carries one.
+   */
+  registeredVersion: string | null;
+};
+
+/**
  * Sector timing data for the sector matrix widget.
  * Total delta is provided directly by iRacing via LapTimingFrame delta fields.
  */

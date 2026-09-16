@@ -197,6 +197,32 @@ UI, persistence and the save reaction are all driven off the registry.
   once. Two identical devices are never auto-matched.
 - Conflicts (one key on two actions) are allowed and only warned about.
 
+### Packaging and the updater
+
+**NSIS only.** `bundle.targets` is `["nsis"]` — the `.msi` was dropped in 0.25.0
+and must not come back. The two are separate installers with separate records of
+where they installed, and Windows keeps **one uninstall entry per product**: a
+second install rewrites that entry and orphans the first copy, which then keeps
+running from its own shortcut, invisible to the updater. That is what the entry
+is for — `tauri-plugin-updater` passes no directory to the NSIS installer
+(`/S|/P /R /UPDATE /ARGS`, no `/D=`), so the install location comes from the
+registry and nowhere else.
+
+`latest.json` is generated per release from whatever bundles were built; its
+`windows-x86_64` key is the fallback for a client that could not identify its own
+bundle type, and it is never hand-edited. A client picks
+`windows-x86_64-<installer>` first, from the bundle marker baked into the
+executable.
+
+`plugins.updater.windows.installMode` is stated explicitly rather than inherited
+from the plugin default.
+
+**Temporary until 0.29.0:** `commands/install.rs` reports at startup that the
+running executable is not the registered installation — the `.msi` migration's
+user-facing half. A test in that file fails on the version bump that reaches
+0.29.0, and its module doc lists every file to delete. Do not extend it; it is
+scheduled to go.
+
 ### Settings schema
 
 `settings.json` carries an integer `schemaVersion` at its top level, unrelated to

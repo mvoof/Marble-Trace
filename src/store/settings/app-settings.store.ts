@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
+import { checkInstallIntegrity } from '@platform/services/install.service';
 import {
   deleteSettingsFile,
   setCarLengthSilent,
@@ -11,7 +12,7 @@ import { detectSystemLanguage } from '@store/settings/system-locale';
 import { createRemoteToken } from '@utils/remote-screen';
 import i18n from '@/i18n';
 import type { AppLanguage } from '@/types';
-import type { CompanionApp } from '@/types/bindings';
+import type { CompanionApp, InstallMismatch } from '@/types/bindings';
 import type { SettingsLockReason } from '@platform/settings-schema/types';
 
 export const resolveAppLanguage = (language: AppLanguage) =>
@@ -115,6 +116,15 @@ export class AppSettingsStore {
   settingsLocked = false;
   settingsLockReason: SettingsLockReason | null = null;
 
+  /**
+   * Set when this executable is not the one Windows has on record as installed.
+   * Read once at startup — an installation does not change under a running app.
+   *
+   * Temporary: part of the `.msi` migration, deleted with the rest of it (see
+   * the module doc of `src-tauri/src/commands/install.rs`).
+   */
+  installMismatch: InstallMismatch | null = null;
+
   dragMode = false;
   interactMode = false;
   updateStatus: UpdateStatus = 'idle';
@@ -140,6 +150,12 @@ export class AppSettingsStore {
 
     runInAction(() => {
       this.currentVersion = version;
+    });
+
+    const mismatch = await checkInstallIntegrity();
+
+    runInAction(() => {
+      this.installMismatch = mismatch;
     });
 
     if (this.appSettings.autoUpdate) {

@@ -42,6 +42,11 @@
     "resetOk": "重置并重启",
     "resetCancel": "取消"
   },
+  "installMismatch": {
+    "title": "你正在运行 Marble Trace 的第二个旧副本",
+    "description": "此窗口运行的是位于 {{runningDir}} 的 v{{runningVersion}}，而已安装的版本是位于 {{registeredDir}} 的 v{{registeredVersion}}。更新只会安装到已安装的副本，因此这一份会一直是旧版。请卸载 {{runningDir}} 中的副本，并从已安装的副本启动 Marble Trace。",
+    "unknownVersion": "未知"
+  },
   "updateBanner": {
     "downloading": "正在下载更新...",
     "ready": "更新已下载，正在重启...",
