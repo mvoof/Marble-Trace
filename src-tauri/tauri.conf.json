@@ -36,7 +36,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "msi"],
+    "targets": ["nsis"],
     "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
@@ -51,7 +51,10 @@
       "endpoints": [
         "https://github.com/mvoof/Marble-Trace/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJCOTk5QTRFNUUxNTc2RkUKUldUK2RoVmVUcHFadS81MVowVTRVQ3p2UHJkVVg0ZUxNdFJjV3F0WmpGM0p5dG5HenNZUXVPQ0sK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJCOTk5QTRFNUUxNTc2RkUKUldUK2RoVmVUcHFadS81MVowVTRVQ3p2UHJkVVg0ZUxNdFJjV3F0WmpGM0p5dG5HenNZUXVPQ0sK",
+      "windows": {
+        "installMode": "passive"
+      }
     }
   }
 }
