@@ -75,7 +75,7 @@
 
           <!-- Discord Link -->
           <a
-            href="https://discord.gg/GVaRsHbjxV"
+            href="https://discord.gg/tkdS9sn49b"
             target="_blank"
             rel="noopener noreferrer"
             class="action-link"
@@ -332,6 +332,7 @@
             </div>
           </div>
         </div>
+
       </section>
 
       <!-- ====================================================================
@@ -362,25 +363,6 @@
           </div>
 
           <figure class="chapter-shot">
-            <!-- The cut, drawn once more in the gutter as a construction
-                 detail: the same 24deg repeated at three weights with the
-                 marks the page background uses — a dashed run, a tick ladder,
-                 a hollow node and a cross. The viewBox is sliced, never
-                 stretched, so the angle survives every viewport. -->
-            <svg
-              class="chapter-marks"
-              viewBox="0 0 200 700"
-              preserveAspectRatio="xMidYMid slice"
-              aria-hidden="true"
-            >
-              <path class="markHair" d="M330-40 1 700" />
-              <path class="markHair markFaint" d="M390-40 61 700" />
-              <path class="markDash" d="M270-40-59 700" />
-              <path class="markHeavy" d="m150 150-54 120" />
-              <path class="markTick" d="M140 330h30M148 370h22M136 410h30" />
-              <circle class="markNode" cx="181" cy="290" r="6" />
-              <path class="markCross" d="M46 600h28M60 586v28" />
-            </svg>
 
             <img
               src="assets/why/cockpit-overlays.jpg"
@@ -402,7 +384,6 @@
         <div class="container">
           <ul class="claim-grid">
             <li class="claim">
-              <span class="claim-mark" aria-hidden="true"></span>
               <div class="claim-head">
                 <span class="claim-index" aria-hidden="true"><span>01</span></span>
                 <h3 class="claim-title">Zero overhead</h3>
@@ -414,7 +395,6 @@
             </li>
 
             <li class="claim">
-              <span class="claim-mark" aria-hidden="true"></span>
               <div class="claim-head">
                 <span class="claim-index" aria-hidden="true"><span>02</span></span>
                 <h3 class="claim-title">Fully modular</h3>
@@ -425,7 +405,6 @@
             </li>
 
             <li class="claim">
-              <span class="claim-mark" aria-hidden="true"></span>
               <div class="claim-head">
                 <span class="claim-index" aria-hidden="true"><span>03</span></span>
                 <h3 class="claim-title">Layouts for every session</h3>
@@ -437,7 +416,6 @@
             </li>
 
             <li class="claim">
-              <span class="claim-mark" aria-hidden="true"></span>
               <div class="claim-head">
                 <span class="claim-index" aria-hidden="true"><span>04</span></span>
                 <h3 class="claim-title">Any screen</h3>
@@ -451,43 +429,658 @@
         </div>
       </section>
 
-      <!-- Widgets Section -->
-      <section id="widgets" class="section section-alt">
-        <div class="container">
-          <div class="section-header">
-            <p class="section-tag">Over 20 Modular Widgets</p>
-            <h2 class="section-title">Full Grid Awareness</h2>
-            <p class="section-subtitle">
-              From live standings and fuel calculations to proximity radar and
-              telemetry traces.
-            </p>
-          </div>
+      <!-- ====================================================================
+         Section 02 - The widget gallery
 
-          <div class="cards-grid">
-            <div class="card">
-              <h3 class="card-title">Standings &amp; Relative</h3>
-              <p class="card-desc">
-                Real-time driver gaps, multi-class rankings, pit indicators,
-                license safety rating badges, and tire stint ages.
+         A stage and a rail. The rail lists every widget there is, grouped by
+         the four things a driver reads plus streaming, and it scrolls inside
+         its own box rather than down the page: the point of a gallery is that
+         the whole catalogue stands in front of you at once. The stage then
+         holds the chosen one at the size it is actually read at, which a grid
+         of thumbnails can never do - these captures run from 700x40 to
+         828x532, and a standings table shrunk to a card is a picture of
+         nothing.
+
+         Nothing leans here. Section 01 owns the 24deg angle; a screenshot
+         read at an angle is a screenshot nobody reads, and this section is
+         made of nothing else.
+
+         Without JavaScript the rail is still the full catalogue and the stage
+         still holds the first widget, so the section never renders empty.
+         ==================================================================== -->
+      <section
+        id="widgets"
+        class="chapter chapter-gallery"
+        aria-labelledby="widgets-heading"
+        data-widget-gallery
+      >
+        <!-- The crossbar. The chapter states itself in one line across the
+             page, the ordinal anchoring its left end and the kicker its
+             right, closed by a full-width rule. -->
+        <div class="container gallery-head">
+          <div class="gallery-head-bar">
+            <div class="gallery-head-title">
+              <span class="chapter-ordinal" aria-hidden="true">02</span>
+
+              <h2 id="widgets-heading" class="chapter-title gallery-title">
+                The right data. Right there.
+              </h2>
+            </div>
+
+            <p class="chapter-kicker gallery-kicker">Widget system</p>
+          </div>
+        </div>
+
+        <!-- Three columns under the bar, and no two start on the same line:
+             the sheet opens highest, the copy a step below it, the widget a
+             step below that. The step is the section's structure - three
+             columns squared off at the top would be a table. -->
+        <div class="container">
+          <div class="gallery">
+
+            <div class="gallery-copy">
+              <p class="lede gallery-lede">
+                Every widget in the app, at the size you actually read it. Take
+                the four you race with, or the whole board.
+              </p>
+
+              <p class="gallery-groups">
+                Race &amp; performance<br />
+                Timing &amp; standings<br />
+                Awareness<br />
+                Car &amp; session<br />
+                Streaming
               </p>
             </div>
-            <div class="card">
-              <h3 class="card-title">Fuel Calculator</h3>
-              <p class="card-desc">
-                Intelligent per-lap fuel consumption analysis, target laps
-                calculation, and automated pit service orders.
-              </p>
+
+          <figure class="stage" id="gw-stage" role="tabpanel" aria-live="polite">
+            <figcaption class="stage-head">
+              <p class="stage-group" id="gw-group">Race &amp; Performance</p>
+
+              <div class="stage-title">
+                <h3 class="stage-name" id="gw-name">Race Dash</h3>
+                <p class="stage-index" aria-hidden="true">
+                  <span id="gw-index">01</span> / <span id="gw-total">28</span>
+                </p>
+              </div>
+            </figcaption>
+
+            <div class="stage-shot">
+              <img
+                id="gw-shot"
+                src="assets/widgets/race-dash.png"
+                alt="Race Dash widget"
+                decoding="async"
+              />
             </div>
-            <div class="card">
-              <h3 class="card-title">Proximity Radar</h3>
-              <p class="card-desc">
-                High-precision 360-degree radar showing cars alongside you to
-                prevent blind-spot collisions.
-              </p>
+
+            <p class="stage-desc" id="gw-desc">Speed, gear, RPM, position and lap in one strip &mdash; the one widget that never leaves the screen.</p>
+          </figure>
+
+            <div class="sheet">
+              <ul
+                class="sheet-grid"
+                role="tablist"
+                aria-label="Widget gallery"
+                aria-orientation="horizontal"
+              >
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame is-active"
+                  role="tab"
+                  id="gw-tab-race-dash"
+                  aria-controls="gw-stage"
+                  aria-selected="true"
+                  tabindex="0"
+                  data-shot="assets/widgets/race-dash.png"
+                  data-name="Race Dash"
+                  data-alt="Race Dash widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Speed, gear, RPM, position and lap in one strip &mdash; the one widget that never leaves the screen."
+                >
+                  <img src="assets/widgets/race-dash.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Race Dash</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-pit-line"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/pit-line.png"
+                  data-name="Pit Line"
+                  data-alt="Pit Line widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Pit limiter, pit-lane speed and the metres left to your box, sized to be read while you watch the mirrors."
+                >
+                  <img src="assets/widgets/pit-line.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Pit Line</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-rpm-lights"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/rpm-lights.png"
+                  data-name="RPM Lights"
+                  data-alt="RPM Lights widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="A shift light bar you read at the edge of vision, with your own colours and shift point."
+                >
+                  <img src="assets/widgets/rpm-lights.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">RPM Lights</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-engine"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/engine.png"
+                  data-name="Engine Panel"
+                  data-alt="Engine Panel widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Water, oil, fuel pressure and voltage under one glance, so a failing engine is not a surprise."
+                >
+                  <img src="assets/widgets/engine.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Engine Panel</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-input-trace"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/input-trace.png"
+                  data-name="Input Trace"
+                  data-alt="Input Trace widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Throttle, brake and steering as a rolling trace &mdash; see your own hands and feet on the lap."
+                >
+                  <img src="assets/widgets/input-trace.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Input Trace</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-g-metr"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/g-metr.png"
+                  data-name="G-Meter"
+                  data-alt="G-Meter widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Lateral and longitudinal load live, with the peaks of the lap held beside them."
+                >
+                  <img src="assets/widgets/g-metr.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">G-Meter</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-coach"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/coach.png"
+                  data-name="Coach"
+                  data-alt="Coach widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Brake and traction guidance against your reference lap, while you are still in the corner."
+                >
+                  <img src="assets/widgets/coach.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Coach</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-invisible-dash"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/invisible-dash.png"
+                  data-name="Invisible Dash"
+                  data-alt="Invisible Dash widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="The numbers with no panel under them at all &mdash; speed, gear and position straight on the track."
+                >
+                  <img src="assets/widgets/invisible-dash.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Invisible Dash</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-standings"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/standings.png"
+                  data-name="Standings"
+                  data-alt="Standings widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="The multi-class order with gaps, class badges, pit state, licence and tyre stint age."
+                >
+                  <img src="assets/widgets/standings.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Standings</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-relative"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/relative.png"
+                  data-name="Relative"
+                  data-alt="Relative widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="Who is actually near you on track, ahead and behind, whatever lap they are on."
+                >
+                  <img src="assets/widgets/relative.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Relative</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-relative-map"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/relative-map.png"
+                  data-name="Relative Map"
+                  data-alt="Relative Map widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="The same field laid out along the track, so you read the gaps as distance."
+                >
+                  <img src="assets/widgets/relative-map.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Relative Map</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-delta"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/delta.png"
+                  data-name="Delta HUD"
+                  data-alt="Delta HUD widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="Live delta to your best lap or to the session best, with the trace of how you got there."
+                >
+                  <img src="assets/widgets/delta.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Delta HUD</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-delta-best"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/delta-best.png"
+                  data-name="Delta HUD &middot; best lap"
+                  data-alt="Delta HUD - best lap widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="The compact variant: the lap you are on and the delta under it, nothing else."
+                >
+                  <img src="assets/widgets/delta-best.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Delta HUD &middot; best lap</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-sector-matrix"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/sector-matrix.png"
+                  data-name="Sector Matrix"
+                  data-alt="Sector Matrix widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="Every sector of every lap side by side &mdash; where the lap was won and where it leaked."
+                >
+                  <img src="assets/widgets/sector-matrix.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Sector Matrix</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-lap-log"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/lap-log.png"
+                  data-name="Lap Log"
+                  data-alt="Lap Log widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="Your stint lap by lap, the best one marked, invalid laps called out."
+                >
+                  <img src="assets/widgets/lap-log.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Lap Log</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-timer"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/timer.png"
+                  data-name="Timer"
+                  data-alt="Timer widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="Session clock, stint countdown and the time left before you have to box."
+                >
+                  <img src="assets/widgets/timer.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Timer</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-map"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/map.png"
+                  data-name="Track Map"
+                  data-alt="Track Map widget"
+                  data-group="Awareness"
+                  data-desc="Live track position and layout, every car on it, your own class picked out."
+                >
+                  <img src="assets/widgets/map.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Track Map</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-map-record"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/map-record.png"
+                  data-name="Track Map &middot; recording"
+                  data-alt="Track Map - recording widget"
+                  data-group="Awareness"
+                  data-desc="The map drawing itself on an out lap &mdash; a track the app has never seen takes one lap to learn."
+                >
+                  <img src="assets/widgets/map-record.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Track Map &middot; recording</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-proximity-radar"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/proximity-radar.png"
+                  data-name="Proximity Radar"
+                  data-alt="Proximity Radar widget"
+                  data-group="Awareness"
+                  data-desc="360&deg; cover for the blind spots, with the real distance to the car beside you."
+                >
+                  <img src="assets/widgets/proximity-radar.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Proximity Radar</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-radar-bar"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/radar-bar.png"
+                  data-name="Radar Bar"
+                  data-alt="Radar Bar widget"
+                  data-group="Awareness"
+                  data-desc="The same warning as two flat bars down the edges of the screen, out of the driving view."
+                >
+                  <img src="assets/widgets/radar-bar.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Radar Bar</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-flat-flag"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/flat-flag.png"
+                  data-name="Flat Flags"
+                  data-alt="Flat Flags widget"
+                  data-group="Awareness"
+                  data-desc="Every flag state as a plain panel &mdash; unmistakable at a glance, in any light."
+                >
+                  <img src="assets/widgets/flat-flag.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Flat Flags</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-led-flag-dual"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/led-flag-dual.png"
+                  data-name="LED Flags"
+                  data-alt="LED Flags widget"
+                  data-group="Awareness"
+                  data-desc="Flags as light panels either side of the screen, seen without looking at them."
+                >
+                  <img src="assets/widgets/led-flag-dual.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">LED Flags</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-led-flag-one"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/led-flag-one.png"
+                  data-name="LED Flags &middot; single panel"
+                  data-alt="LED Flags - single panel widget"
+                  data-group="Awareness"
+                  data-desc="One panel instead of two, for a single screen or a tight cockpit."
+                >
+                  <img src="assets/widgets/led-flag-one.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">LED Flags &middot; single panel</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-pit-stop"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/pit-stop.png"
+                  data-name="Pit Service"
+                  data-alt="Pit Service widget"
+                  data-group="Car &amp; Session"
+                  data-desc="Fuel, tyre sets, pressures and repairs &mdash; the whole stop laid out before you commit to it."
+                >
+                  <img src="assets/widgets/pit-stop.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Pit Service</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-fuel"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/fuel.png"
+                  data-name="Fuel"
+                  data-alt="Fuel widget"
+                  data-group="Car &amp; Session"
+                  data-desc="Per-lap burn, laps left in the tank, and exactly what to add to reach the flag."
+                >
+                  <img src="assets/widgets/fuel.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Fuel</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-fuel-pit-stop"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/fuel-pit-stop.png"
+                  data-name="Fuel &middot; pit window"
+                  data-alt="Fuel - pit window widget"
+                  data-group="Car &amp; Session"
+                  data-desc="Fuel with the pit window on it: the lap to box and the margin either side of it."
+                >
+                  <img src="assets/widgets/fuel-pit-stop.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Fuel &middot; pit window</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-weather"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/weather.png"
+                  data-name="Weather"
+                  data-alt="Weather widget"
+                  data-group="Car &amp; Session"
+                  data-desc="Air and track temperature, humidity, wind, and how the session is turning."
+                >
+                  <img src="assets/widgets/weather.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Weather</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-stream-chat"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/stream-chat.png"
+                  data-name="Stream Chat"
+                  data-alt="Stream Chat widget"
+                  data-group="Streaming"
+                  data-desc="Your chat on the overlay instead of on a second screen &mdash; never on the wheel."
+                >
+                  <img src="assets/widgets/stream-chat.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Stream Chat</span>
+                </button>
+              </li>
+              </ul>
             </div>
           </div>
         </div>
       </section>
+
+      <!-- ====================================================================
+         Section 02 - The widget gallery
+
+         A stage and a rail. The rail lists every widget there is, grouped by
+         the four things a driver reads plus streaming, and it scrolls inside
+         its own box rather than down the page: the point of a gallery is that
+         the whole catalogue stands in front of you at once. The stage then
+         holds the chosen one at the size it is actually read at, which a grid
+         of thumbnails can never do - these captures run from 700x40 to
+         828x532, and a standings table shrunk to a card is a picture of
+         nothing.
+
+         Nothing leans here. Section 01 owns the 24deg angle; a screenshot
+         read at an angle is a screenshot nobody reads, and this section is
+         made of nothing else.
+
+         Without JavaScript the rail is still the full catalogue and the stage
+         still holds the first widget, so the section never renders empty.
+         ==================================================================== -->
 
       <!-- Layouts Section -->
       <section id="layouts" class="section">
@@ -525,6 +1118,7 @@
             </div>
           </div>
         </div>
+
       </section>
 
       <!-- Performance Section -->
@@ -562,6 +1156,7 @@
             </div>
           </div>
         </div>
+
       </section>
 
       <!-- Open Source Section -->
@@ -600,6 +1195,7 @@
             </div>
           </div>
         </div>
+
       </section>
     </main>
 
@@ -648,5 +1244,6 @@
 
     <!-- Controller Script -->
     <script src="src/components/navbar.js"></script>
+    <script src="src/components/widget-gallery.js"></script>
   </body>
 </html>
