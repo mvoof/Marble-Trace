@@ -270,7 +270,7 @@
               YOUR DATA.
             </span>
 
-            <p class="hero-subtitle">
+            <p class="lede hero-subtitle">
               Marble Trace is a free, lightweight overlay for iRacing. A tiny
               Rust core reads telemetry straight from the sim — beautiful
               widgets float above it, costing you almost no FPS.
@@ -329,44 +329,114 @@
         </div>
       </section>
 
-      <!-- Features Section -->
-      <section id="features" class="section">
-        <div class="container">
-          <div class="section-header">
-            <p class="section-tag">Core Capabilities</p>
-            <h2 class="section-title">Engineered for Sim Racers</h2>
-            <p class="section-subtitle">
-              Every widget is designed to deliver maximum track awareness with
-              zero unnecessary latency.
+      <!-- ====================================================================
+         Section 01 — Why Marble Trace
+         A numbered chapter opener: an oversized ghost ordinal standing above
+         the kicker in the left gutter, then the six advantages as one row of
+         sheared picture panels. The panels nearly touch — the sliver between
+         them is the only line in the section — and they alternate above and
+         below a lime rail, each caption falling on the side away from the
+         rail. No cards, no rules under the copy.
+         ==================================================================== -->
+      <section id="features" class="chapter" aria-labelledby="why-heading">
+        <div class="container chapter-head">
+          <span class="chapter-ordinal" aria-hidden="true">01</span>
+
+          <div class="chapter-lead">
+            <p class="chapter-kicker">Why Marble Trace</p>
+
+            <h2 id="why-heading" class="chapter-title">
+              Built to disappear<br />
+              into your sim.
+            </h2>
+
+            <p class="lede chapter-subtitle">
+              Everything a paid overlay does — without the subscription, the
+              bloat, or the FPS tax.
             </p>
           </div>
+        </div>
 
-          <div class="cards-grid">
-            <div class="card">
-              <div class="card-icon">⚡</div>
-              <h3 class="card-title">Rust Native Core</h3>
-              <p class="card-desc">
-                Direct shared memory access to iRacing telemetry. No overhead,
-                no memory leaks, ultra-low CPU utilization.
-              </p>
-            </div>
-            <div class="card">
-              <div class="card-icon">🎯</div>
-              <h3 class="card-title">Pixel-Perfect HUD</h3>
-              <p class="card-desc">
-                Transparent always-on-top overlay rendering with hardware
-                acceleration and crisp vector aesthetics.
-              </p>
-            </div>
-            <div class="card">
-              <div class="card-icon">🔄</div>
-              <h3 class="card-title">Multi-Window Sync</h3>
-              <p class="card-desc">
-                Independent main settings window and transparent gaming overlay
-                with synchronized state.
-              </p>
-            </div>
-          </div>
+        <div class="container chapter-body">
+          <ul class="reason-grid">
+            <li class="reason">
+              <div class="reason-panel">
+                <img
+                  src="assets/why/featherweight.jpg"
+                  alt=""
+                  class="reason-photo"
+                />
+                <span class="reason-index" aria-hidden="true">01</span>
+              </div>
+              <div class="reason-caption">
+                <h4 class="reason-title">Featherweight by design</h4>
+                <p class="lede reason-desc">
+                  A native Rust core instead of a bundled browser app, so
+                  every frame stays with the sim.
+                </p>
+              </div>
+            </li>
+
+            <li class="reason">
+              <div class="reason-panel">
+                <img src="assets/why/free.jpg" alt="" class="reason-photo" />
+                <span class="reason-index" aria-hidden="true">02</span>
+              </div>
+              <div class="reason-caption">
+                <h4 class="reason-title">Free. Actually free.</h4>
+                <p class="lede reason-desc">
+                  No subscription, no locked widgets, no trial — and
+                  developed in the open.
+                </p>
+              </div>
+            </li>
+
+            <li class="reason">
+              <div class="reason-panel">
+                <img src="assets/why/modular.jpg" alt="" class="reason-photo" />
+                <span class="reason-index" aria-hidden="true">03</span>
+              </div>
+              <div class="reason-caption">
+                <h4 class="reason-title">Fully modular</h4>
+                <p class="lede reason-desc">
+                  Every widget can be dragged anywhere, scaled, restyled and
+                  tuned to the pixel.
+                </p>
+              </div>
+            </li>
+
+            <li class="reason">
+              <div class="reason-panel">
+                <img
+                  src="assets/why/telemetry.jpg"
+                  alt=""
+                  class="reason-photo"
+                />
+                <span class="reason-index" aria-hidden="true">04</span>
+              </div>
+              <div class="reason-caption">
+                <h4 class="reason-title">Real-time telemetry</h4>
+                <p class="lede reason-desc">
+                  Up to 60 Hz straight from the iRacing SDK, with no
+                  perceptible lag.
+                </p>
+              </div>
+            </li>
+
+            <li class="reason">
+              <div class="reason-panel">
+                <img src="assets/why/private.jpg" alt="" class="reason-photo" />
+                <span class="reason-index" aria-hidden="true">05</span>
+              </div>
+              <div class="reason-caption">
+                <h4 class="reason-title">Private by default</h4>
+                <p class="lede reason-desc">
+                  No accounts and no personal data — only anonymous usage
+                  events.
+                </p>
+              </div>
+            </li>
+          </ul>
         </div>
       </section>
 
