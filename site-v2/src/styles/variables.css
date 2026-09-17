@@ -1,6 +1,10 @@
 :root {
   /* Brand Typography */
   --font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  /* The app's own instrument face. Nothing is fetched for it: the stack is
+     what every target platform already ships, and a readout that waits on a
+     web font shows the wrong width before it arrives. */
+  --font-mono: Consolas, 'SF Mono', ui-monospace, 'Liberation Mono', monospace;
   --font-hero-heading: 'Barlow Condensed', 'Exo 2', -apple-system, BlinkMacSystemFont, sans-serif;
   
   /* Layout Dimensions */

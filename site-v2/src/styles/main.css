@@ -658,7 +658,7 @@ a:focus-visible, button:focus-visible {
   --cut: 24deg;
   /* The three weights assets/background.svg draws with, so a mark added here
      lands on the same drawing rather than beside it. */
-  --ink-main: rgba(0, 0, 0, 0.26);
+  --ink-main: rgba(0, 0, 0, 0.1);
   --ink-light: rgba(0, 0, 0, 0.09);
   --ink-vlight: rgba(0, 0, 0, 0.03);
 
@@ -683,7 +683,10 @@ a:focus-visible, button:focus-visible {
   font-family: var(--font-hero-heading);
   font-weight: 900;
   font-style: italic;
-  font-size: clamp(5rem, 9.5vw, 10.5rem);
+  /* A step above the chapter title, not a storey above it: at nine-odd vw the
+     ordinal was twice the heading and took the section's dominance from the
+     words. Both chapters read off this one value, so they stay equal. */
+  font-size: clamp(3.2rem, 5.6vw, 5rem);
   line-height: 0.62;
   letter-spacing: -0.045em;
   color: rgba(26, 29, 35, 0.14);
@@ -757,58 +760,6 @@ a:focus-visible, button:focus-visible {
   );
 }
 
-/* The construction drawing in the gutter. It is an inline SVG rather than a
-   skewed box because a single rule cannot carry weights, a dash pattern, a
-   tick ladder and a node — and those marks, not the line, are what make the
-   plate read as a slice off a technical drawing. Ink weights match
-   assets/background.svg so the section and the page ground speak once. */
-.chapter-marks {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: calc(100% + 0.5rem);
-  width: clamp(3.5rem, 5.5vw, 6rem);
-  height: auto;
-  pointer-events: none;
-}
-
-.chapter-marks path,
-.chapter-marks circle {
-  fill: none;
-  vector-effect: non-scaling-stroke;
-}
-
-.markHair {
-  stroke: var(--ink-light);
-  stroke-width: 1;
-}
-
-.markFaint {
-  stroke: var(--ink-vlight);
-}
-
-.markDash {
-  stroke: var(--ink-light);
-  stroke-width: 1;
-  stroke-dasharray: 14 10;
-}
-
-.markHeavy {
-  stroke: var(--ink-main);
-  stroke-width: 2;
-}
-
-.markTick,
-.markCross {
-  stroke: var(--ink-main);
-  stroke-width: 1;
-}
-
-.markNode {
-  stroke: var(--ink-main);
-  stroke-width: 1.5;
-}
-
 /* ---- Callout beside the plate -------------------------------------------- */
 
 .chapter-callout {
@@ -856,87 +807,16 @@ a:focus-visible, button:focus-visible {
   padding: 0;
 }
 
-/* The divider is a skewed pseudo-element rather than a border: a border can
-   only be vertical, and a vertical rule in a section where every other edge
-   leans reads as a mistake. The rail above it is the same line laid flat. */
+/* No rules between the claims and none above them: the gap between columns and
+   the lime index chip are what separate them. The band had a skewed divider
+   per claim and a rail across the top, and together with the marks in the
+   plate above they turned the section into ruled paper. */
 .claim {
   position: relative;
-  padding-left: clamp(1.5rem, 3vw, 3rem);
-  margin-left: calc(-1 * clamp(1.5rem, 3vw, 3rem));
   padding-top: clamp(1.1rem, 1.8vw, 1.6rem);
 }
 
-.claim::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 1px;
-  background-color: var(--ink-main);
-  transform: skewX(calc(-1 * var(--cut)));
-}
 
-/* The divider marked up the way the drawing marks a line: a lighter run
-   beside it, a ladder of ticks against it, and a node where it starts. */
-.claim-mark {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0.55rem;
-  width: 1px;
-  background-color: var(--ink-light);
-  transform: skewX(calc(-1 * var(--cut)));
-  pointer-events: none;
-}
-
-.claim-mark::before {
-  content: '';
-  position: absolute;
-  top: 18%;
-  left: -0.5rem;
-  width: 0.7rem;
-  height: 2.6rem;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    var(--ink-main) 0 1px,
-    transparent 1px 0.85rem
-  );
-}
-
-.claim-mark::after {
-  content: '';
-  position: absolute;
-  top: -3px;
-  left: -3.5px;
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--ink-main);
-  border-radius: 50%;
-}
-
-.claim:first-child .claim-mark {
-  display: none;
-}
-
-.claim::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background-color: var(--ink-light);
-}
-
-.claim:first-child {
-  padding-left: 0;
-  margin-left: 0;
-}
-
-.claim:first-child::before {
-  content: none;
-}
 
 .claim-head {
   display: flex;
@@ -994,6 +874,23 @@ a:focus-visible, button:focus-visible {
     gap: clamp(1.75rem, 4vw, 2.75rem) clamp(1.25rem, 2.6vw, 2.75rem);
   }
 
+  /* The three-column opener collapses to the chapter's own two. It has to be
+     said here rather than left to the .chapter-head rule above, because
+     .gallery-head carries the same weight and is declared later in the file —
+     without this the copy kept a narrow column all the way down to a phone. */
+  .gallery-head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  /* Stacked under the copy, the stage has the whole container to fill and a
+     low widget stretches across all of it. Held to a column width it stays the
+     size it is read at. */
+  .stage {
+    grid-column: 1 / -1;
+    max-width: 44rem;
+    margin-inline: auto;
+  }
+
   .chapter-shot {
     grid-column: 1 / -1;
     align-self: start;
@@ -1017,11 +914,6 @@ a:focus-visible, button:focus-visible {
     row-gap: 2.25rem;
   }
 
-  .claim:nth-child(odd) {
-    border-left: 0;
-    padding-left: 0;
-    margin-left: 0;
-  }
 }
 
 @media (max-width: 640px) {
@@ -1046,9 +938,532 @@ a:focus-visible, button:focus-visible {
     row-gap: 2rem;
   }
 
-  .claim:nth-child(n) {
-    border-left: 0;
-    padding-left: 0;
-    margin-left: 0;
+}
+
+
+/* ==========================================================================
+   Section 02 — Widget gallery
+
+   A stage and a rail beside it. The rail carries the whole catalogue and
+   scrolls inside its own box, so the section stays one screen tall however
+   many widgets ship; the stage holds one capture at the size it is read at
+   in the car. Thumbnails were tried first and thrown out — these shots run
+   from 700x40 to 828x532, and the tall ones shrink to an unreadable stamp
+   in any grid cell wide enough for the short ones.
+
+   The stage ground is the one dark surface on this page. It is the overlay's
+   own ground: a widget photographed on paper is a widget nobody recognises.
+   ========================================================================== */
+
+.chapter-gallery {
+  padding-bottom: 6rem;
+}
+
+/* ---- Crossbar --------------------------------------------------------------
+
+   The chapter states itself in one line across the page instead of stacking in
+   a left-hand column: the ordinal anchors the left end, the kicker the right,
+   and one rule closes it. It is what lets the three columns below start on
+   three different lines — with the copy still up here they would have had to
+   line up under it.
+   -------------------------------------------------------------------------- */
+
+.gallery-head {
+  display: block;
+  margin-bottom: clamp(1.75rem, 3vw, 2.75rem);
+}
+
+.gallery-head-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  /* No rule under the bar. Three ruled edges — this one, the widget's name and
+     the top of the sheet — ran parallel within a few hundred pixels of each
+     other and the section read as ruled paper. The ordinal and the type size
+     already say where the chapter starts. */
+  padding-bottom: clamp(0.4rem, 0.8vw, 0.7rem);
+}
+
+.gallery-head-title {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  min-width: 0;
+}
+
+/* The ordinal is the chapter's own size, not a smaller one for this layout:
+   01 and 02 are the same rank and a section numbered in a smaller hand reads
+   as a subsection of the one above it. */
+.gallery-head .chapter-ordinal {
+  flex: none;
+  margin: 0;
+}
+
+.gallery-title {
+  font-size: clamp(2rem, 4.2vw, 4rem);
+  line-height: 0.84;
+  margin: 0;
+}
+
+.gallery-kicker {
+  flex: none;
+  margin: 0 0 0.4rem;
+}
+
+/* ---- The stepped row -------------------------------------------------------
+
+   Copy, widget and sheet, each starting on its own line. The offsets are the
+   section's structure, so they are declared here once rather than left to
+   whatever the content happens to be tall.
+   -------------------------------------------------------------------------- */
+
+.gallery {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.72fr) minmax(0, 1.5fr) minmax(17rem, 1fr);
+  gap: clamp(1.5rem, 3vw, 2.75rem);
+  align-items: start;
+}
+
+.gallery-copy,
+.stage,
+.sheet {
+  position: relative;
+  z-index: 1;
+}
+
+.gallery-copy {
+  padding-top: 2.5rem;
+}
+
+.gallery-lede {
+  max-width: 34ch;
+  margin: 0 0 clamp(1.25rem, 2vw, 1.75rem);
+}
+
+/* The five groups, named once here rather than repeated as dividers through
+   the sheet: the sheet is pictures, this column is words. */
+.gallery-groups {
+  margin: 0;
+  padding-top: clamp(1.1rem, 1.8vw, 1.6rem);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a0a7b0;
+}
+
+/* ---- Stage ---------------------------------------------------------------
+
+   One widget, upright, at the size it is drawn at in the car. No card under
+   it and no neighbours beside it: the captures are dark designed objects with
+   a frame of their own, and anything drawn around them competes with it.
+   -------------------------------------------------------------------------- */
+
+.stage {
+  /* A slot of one height whatever it holds. Sizing it to the picture would
+     make the page jump by several hundred pixels between Standings and RPM
+     Lights, and a section that resizes under the cursor cannot be browsed. */
+  --shot-h: clamp(15rem, 27vw, 23rem);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding-top: 5rem;
+}
+
+.stage-head {
+  width: 100%;
+  margin-bottom: clamp(1.1rem, 2vw, 1.75rem);
+}
+
+.stage-group {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #79883f;
+  margin: 0 0 0.45rem;
+}
+
+/* The one horizontal rule left in the section, and it earns it: the name of a
+   widget is a caption for the picture under it, and the rule is what ties them
+   together. */
+.stage-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--ink-main);
+}
+
+.stage-name {
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(1.5rem, 2.6vw, 2.15rem);
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: #101317;
+  margin: 0;
+}
+
+.stage-index {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  color: #8b929c;
+  margin: 0;
+}
+
+.stage-index > span:first-child {
+  font-weight: 700;
+  color: #101317;
+}
+
+.stage-shot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--shot-h);
+}
+
+.stage-shot img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 34px rgba(16, 19, 23, 0.28));
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
+}
+
+/* The one movement in the section: the outgoing capture drops out and the new
+   one settles in from a few pixels below. The picture is what changes, so the
+   picture is what moves — sliding the whole section would say something
+   happened to the page rather than to the widget. */
+.stage.is-swapping .stage-shot img,
+.stage.is-swapping .stage-desc {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* Two lines' worth of room whether the sentence fills them or not. Without it
+   the section is 25px shorter on a one-line description, and every widget with
+   a shorter sentence than its neighbour moved the whole page under the
+   cursor. */
+.stage-desc {
+  max-width: 50ch;
+  min-height: calc(2 * 1.6em);
+  margin: clamp(1rem, 1.8vw, 1.5rem) 0 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  text-align: center;
+  color: #5d656f;
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
+}
+
+/* ---- Sheet -----------------------------------------------------------------
+
+   Every widget there is, as its own capture, and the only control in the
+   section: the catalogue and the way through it are the same object. Three
+   frames to a row, each column hanging a little lower than the one before it,
+   scrolling in its own box so the column never runs past the widget beside it.
+   -------------------------------------------------------------------------- */
+
+/* The frames' own hairlines are the sheet's structure; a rule across the top
+   of them only added a fourth parallel line. The sheet's one edge is vertical:
+   it stands the catalogue off the widget beside it without adding a horizontal
+   to the stack. */
+.sheet {
+  position: relative;
+}
+
+.sheet::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * clamp(0.75rem, 1.5vw, 1.4rem));
+  width: 1px;
+  background-color: var(--ink-main);
+  pointer-events: none;
+}
+
+/* The bottom edge fades into the page ground: that is what says the sheet
+   continues past the end of its box. */
+.sheet::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3rem;
+  z-index: 2;
+  background: linear-gradient(180deg, transparent, var(--color-body-bg));
+  pointer-events: none;
+}
+
+.sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0 0 2.5rem;
+  max-height: clamp(22rem, 40vw, 32rem);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.28) transparent;
+}
+
+.sheet-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sheet-grid::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sheet-grid::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.28);
+}
+
+/* The rag. Each column hangs a step lower than its neighbour, so the sheet
+   reads as a stepped field rather than a table — the same offset the three
+   columns of the section take, one order of magnitude down. It is set on the
+   column rather than the row so it survives scrolling: a rag that changed as
+   the box scrolled would read as a rendering fault. */
+.sheet-grid > li:nth-child(3n + 2) {
+  margin-top: 1.4rem;
+}
+
+.sheet-grid > li:nth-child(3n) {
+  margin-top: 2.8rem;
+}
+
+.frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 100%;
+  padding: 0.85rem 0.6rem 0.8rem;
+  background-color: transparent;
+  border: 0;
+  /* Hairlines between frames rather than boxes around them, the way the claims
+     band above divides itself. */
+  border-right: 1px solid var(--ink-light);
+  border-bottom: 1px solid var(--ink-light);
+  cursor: pointer;
+  opacity: 0.6;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.sheet-grid > li:nth-child(3n) .frame {
+  border-right: 0;
+}
+
+.frame:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.frame.is-active {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* The lime marker on the chosen frame, sitting on the rule above it so the
+   sheet reads as one ruled surface with one mark on it. */
+.frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-btn-download-bg);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.frame.is-active::before {
+  opacity: 1;
+}
+
+.frame img {
+  width: 100%;
+  height: 2.8rem;
+  object-fit: contain;
+  object-position: center;
+}
+
+.frame-caption {
+  display: -webkit-box;
+  font-family: var(--font-family);
+  font-weight: 600;
+  font-size: 0.64rem;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
+  text-align: center;
+  color: #5d656f;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.frame.is-active .frame-caption {
+  font-weight: 800;
+  color: #101317;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-shot img,
+  .stage-desc,
+  .frame,
+  .frame::before {
+    transition: none;
+  }
+}
+
+/* ---- Responsive ---------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  /* Two columns: the widget takes the width, the sheet stands beside the copy.
+     The steps go with them — at this width they cost more than they say. */
+  .gallery {
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.85fr);
+  }
+
+  .gallery-copy,
+  .stage {
+    padding-top: 0;
+  }
+
+  .stage {
+    grid-column: 1;
+  }
+
+  .gallery-copy {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .sheet {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  /* Two columns, and the box keeps its own scroll: let loose at this width
+     the sheet becomes fourteen rows of cards with the widget beside them
+     stopping after two, which is the long-list failure again. */
+  .sheet-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: clamp(24rem, 52vw, 34rem);
+  }
+
+  .sheet-grid > li:nth-child(3n + 2),
+  .sheet-grid > li:nth-child(3n) {
+    margin-top: 0;
+  }
+
+  .sheet-grid > li:nth-child(2n) {
+    margin-top: 1.2rem;
+  }
+
+  .sheet-grid > li:nth-child(3n) .frame {
+    border-right: 1px solid var(--ink-light);
+  }
+
+  .sheet-grid > li:nth-child(2n) .frame {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 860px) {
+  .gallery {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The sheet's edge divides columns; stacked there are no columns. */
+  .sheet::before {
+    display: none;
+  }
+
+  .stage,
+  .gallery-copy,
+  .sheet {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  /* One line again on a phone. A vertical sheet here is a list a screen and a
+     half long, and the section stops being a gallery. */
+  .sheet-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    padding-bottom: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+  }
+
+  .sheet-grid::-webkit-scrollbar {
+    height: 6px;
+    width: auto;
+  }
+
+  .sheet-grid > li {
+    flex: none;
+    width: 7rem;
+    margin-top: 0;
+  }
+
+  .sheet-grid > li:nth-child(2n) .frame,
+  .sheet-grid > li:nth-child(3n) .frame {
+    border-right: 1px solid var(--ink-light);
+  }
+
+  .frame {
+    border-bottom: 0;
+    scroll-snap-align: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .chapter-gallery {
+    padding-bottom: 4rem;
+  }
+
+  /* The bar folds: a one-line title needs width this width does not have. */
+  .gallery-head-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .gallery-kicker {
+    order: -1;
+    margin: 0;
+  }
+
+  .stage {
+    --shot-h: 14rem;
   }
 }
