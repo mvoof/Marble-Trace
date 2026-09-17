@@ -20,14 +20,14 @@ use chat::commands::{
 };
 use chat::state::{ChatServiceState, ChatState};
 use commands::{
-    backup_settings_file, clear_active_events, clear_remote_active_events, close_companion_app,
-    close_companion_apps, companion_app_icon, companion_app_statuses, delete_reference_lap,
-    delete_settings_file, delete_track_shape, detect_companion_apps, get_cached_track_shape,
-    get_connection_status, get_delivery_counters, get_inspector_frame, get_last_session_info,
-    get_reference_lap, launch_companion_app, log_settings_snapshot, reset_delivery_counters,
-    reset_pit_lane_pct, send_pit_order, set_active_events, set_car_length, set_fuel_avg_window,
-    set_inspector_active, set_pit_warning_laps, set_remote_active_events, settings_file_exists,
-    start_telemetry_stream, stop_telemetry_stream,
+    backup_settings_file, check_install_integrity, clear_active_events, clear_remote_active_events,
+    close_companion_app, close_companion_apps, companion_app_icon, companion_app_statuses,
+    delete_reference_lap, delete_settings_file, delete_track_shape, detect_companion_apps,
+    get_cached_track_shape, get_connection_status, get_delivery_counters, get_inspector_frame,
+    get_last_session_info, get_reference_lap, launch_companion_app, log_settings_snapshot,
+    reset_delivery_counters, reset_pit_lane_pct, send_pit_order, set_active_events, set_car_length,
+    set_fuel_avg_window, set_inspector_active, set_pit_warning_laps, set_remote_active_events,
+    settings_file_exists, start_telemetry_stream, stop_telemetry_stream,
 };
 use companions::CompanionsState;
 use computations::ProcessorRegistry;
@@ -190,6 +190,7 @@ pub fn run() {
             backup_settings_file,
             settings_file_exists,
             delete_settings_file,
+            check_install_integrity,
             send_pit_order,
             start_chat_stream,
             stop_chat_stream,

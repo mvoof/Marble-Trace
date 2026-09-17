@@ -42,6 +42,11 @@
     "resetOk": "Restablecer y reiniciar",
     "resetCancel": "Cancelar"
   },
+  "installMismatch": {
+    "title": "Estás ejecutando una segunda copia desactualizada de Marble Trace",
+    "description": "Esta ventana ejecuta la v{{runningVersion}} desde {{runningDir}}, pero la versión instalada es {{registeredVersion}} en {{registeredDir}}. Las actualizaciones van a la copia instalada, así que esta se queda atrás. Desinstala la copia de {{runningDir}} e inicia Marble Trace desde la instalada.",
+    "unknownVersion": "desconocida"
+  },
   "updateBanner": {
     "downloading": "Descargando actualización...",
     "ready": "Actualización descargada. Reiniciando...",

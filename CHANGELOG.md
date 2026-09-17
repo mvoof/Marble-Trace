@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **One Installer Instead of Two:** Marble Trace is now shipped only as the `-setup.exe` installer. The `.msi` was never used by the auto-updater and made it possible to end up with two separate installations of the app. **If you installed Marble Trace from the `.msi`, remove it through Windows "Apps & features" and install once from `-setup.exe`** — your settings, layouts and bindings are kept, they do not live in the installation folder.
+
+### Fixed
+
+- **Running an Old Copy Looked Like Broken Settings:** When a second, outdated copy of Marble Trace is started — usually from a shortcut left behind by an earlier install into another folder — the app now says so, naming both folders and versions, instead of only reporting that the settings were written by a newer version.
+
 ## [0.24.0] — 2026-09-15
 
 ### Changed

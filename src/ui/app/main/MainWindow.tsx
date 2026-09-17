@@ -10,6 +10,7 @@ import { SettingsPage } from './components/SettingsPage/SettingsPage';
 import { AppHeader, type AppSection } from './components/AppHeader/AppHeader';
 import { AppFooter } from './components/AppFooter/AppFooter';
 import { UpdateBanner } from './components/UpdateBanner/UpdateBanner';
+import { InstallMismatchBanner } from './components/InstallMismatchBanner/InstallMismatchBanner';
 import { SettingsLockBanner } from './components/SettingsLockBanner/SettingsLockBanner';
 import styles from './MainWindow.module.scss';
 import { useStore, useSimStore } from '@store/root-store-context';
@@ -120,6 +121,8 @@ export const MainWindow = observer(() => {
             activeSection={activeSection}
             onSectionChange={setActiveSection}
           />
+
+          <InstallMismatchBanner />
 
           <SettingsLockBanner />
 

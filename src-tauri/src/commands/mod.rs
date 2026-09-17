@@ -6,6 +6,7 @@
 //! entirely different state.
 
 pub mod companions;
+pub mod install;
 pub mod pit;
 pub mod settings;
 pub mod telemetry;
@@ -15,6 +16,7 @@ pub use companions::{
     close_companion_app, close_companion_apps, companion_app_icon, companion_app_statuses,
     detect_companion_apps, launch_companion_app,
 };
+pub use install::check_install_integrity;
 pub use pit::send_pit_order;
 pub use settings::{
     backup_settings_file, delete_settings_file, log_settings_snapshot, settings_file_exists,

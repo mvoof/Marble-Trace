@@ -42,6 +42,11 @@
     "resetOk": "Reset and restart",
     "resetCancel": "Cancel"
   },
+  "installMismatch": {
+    "title": "You are running a second, outdated copy of Marble Trace",
+    "description": "This window is running v{{runningVersion}} from {{runningDir}}, but the installed version is {{registeredVersion}} in {{registeredDir}}. Updates go to the installed copy, so this one stays behind. Uninstall the copy in {{runningDir}} and start Marble Trace from the installed one.",
+    "unknownVersion": "unknown"
+  },
   "updateBanner": {
     "downloading": "Downloading update...",
     "ready": "Update downloaded. Restarting...",

@@ -42,6 +42,11 @@
     "resetOk": "Сбросить и перезапустить",
     "resetCancel": "Отмена"
   },
+  "installMismatch": {
+    "title": "Запущена вторая, устаревшая копия Marble Trace",
+    "description": "Это окно — v{{runningVersion}} из {{runningDir}}, а установленная версия — {{registeredVersion}} в {{registeredDir}}. Обновления приходят в установленную копию, поэтому эта остаётся старой. Удалите копию из {{runningDir}} и запускайте Marble Trace из установленной.",
+    "unknownVersion": "неизвестно"
+  },
   "updateBanner": {
     "downloading": "Загрузка обновления...",
     "ready": "Обновление загружено. Перезапуск...",
