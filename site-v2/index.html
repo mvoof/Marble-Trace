@@ -336,12 +336,12 @@
 
       <!-- ====================================================================
          Section 01 — Why Marble Trace
-         A numbered chapter opener: an oversized ghost ordinal standing above
-         the kicker in the left gutter, then the six advantages as one row of
-         sheared picture panels. The panels nearly touch — the sliver between
-         them is the only line in the section — and they alternate above and
-         below a lime rail, each caption falling on the side away from the
-         rail. No cards, no rules under the copy.
+         Two bands over one axis. Above: the oversized ghost ordinal in the
+         left gutter, the chapter copy beside it, and a single sheared still
+         of the overlay in the cockpit — with one callout standing off the
+         plate's right edge for the thing a screenshot cannot say. Below: the
+         four claims in a row, opened by a lime index chip and divided only by
+         hairlines. No cards anywhere in the section.
          ==================================================================== -->
       <section id="features" class="chapter" aria-labelledby="why-heading">
         <div class="container chapter-head">
@@ -351,95 +351,101 @@
             <p class="chapter-kicker">Why Marble Trace</p>
 
             <h2 id="why-heading" class="chapter-title">
-              Built to disappear<br />
-              into your sim.
+              Built for<br />
+              real racing.
             </h2>
 
             <p class="lede chapter-subtitle">
-              Everything a paid overlay does — without the subscription, the
-              bloat, or the FPS tax.
+              Lightweight, flexible and powerful — Marble Trace gives you the
+              telemetry data you need, without getting in your way.
+            </p>
+          </div>
+
+          <figure class="chapter-shot">
+            <!-- The cut, drawn once more in the gutter as a construction
+                 detail: the same 24deg repeated at three weights with the
+                 marks the page background uses — a dashed run, a tick ladder,
+                 a hollow node and a cross. The viewBox is sliced, never
+                 stretched, so the angle survives every viewport. -->
+            <svg
+              class="chapter-marks"
+              viewBox="0 0 200 700"
+              preserveAspectRatio="xMidYMid slice"
+              aria-hidden="true"
+            >
+              <path class="markHair" d="M330-40 1 700" />
+              <path class="markHair markFaint" d="M390-40 61 700" />
+              <path class="markDash" d="M270-40-59 700" />
+              <path class="markHeavy" d="m150 150-54 120" />
+              <path class="markTick" d="M140 330h30M148 370h22M136 410h30" />
+              <circle class="markNode" cx="181" cy="290" r="6" />
+              <path class="markCross" d="M46 600h28M60 586v28" />
+            </svg>
+
+            <img
+              src="assets/why/cockpit-overlays.jpg"
+              alt="Marble Trace widgets floating over the iRacing cockpit view — standings, delta, fuel and proximity radar"
+              class="chapter-shot-photo"
+            />
+          </figure>
+
+          <div class="chapter-callout">
+            <p class="chapter-callout-title">
+              Transparent frameless overlay
+            </p>
+            <p class="chapter-callout-desc">
+              Stays on top, never blocks your view.
             </p>
           </div>
         </div>
 
-        <div class="container chapter-body">
-          <ul class="reason-grid">
-            <li class="reason">
-              <div class="reason-panel">
-                <img
-                  src="assets/why/featherweight.jpg"
-                  alt=""
-                  class="reason-photo"
-                />
-                <span class="reason-index" aria-hidden="true">01</span>
+        <div class="container">
+          <ul class="claim-grid">
+            <li class="claim">
+              <span class="claim-mark" aria-hidden="true"></span>
+              <div class="claim-head">
+                <span class="claim-index" aria-hidden="true"><span>01</span></span>
+                <h3 class="claim-title">Zero overhead</h3>
               </div>
-              <div class="reason-caption">
-                <h4 class="reason-title">Featherweight by design</h4>
-                <p class="lede reason-desc">
-                  A native Rust core instead of a bundled browser app, so
-                  every frame stays with the sim.
-                </p>
-              </div>
+              <p class="lede claim-desc">
+                A tiny Rust backend reads telemetry directly, with minimal
+                impact on performance.
+              </p>
             </li>
 
-            <li class="reason">
-              <div class="reason-panel">
-                <img src="assets/why/free.jpg" alt="" class="reason-photo" />
-                <span class="reason-index" aria-hidden="true">02</span>
+            <li class="claim">
+              <span class="claim-mark" aria-hidden="true"></span>
+              <div class="claim-head">
+                <span class="claim-index" aria-hidden="true"><span>02</span></span>
+                <h3 class="claim-title">Fully modular</h3>
               </div>
-              <div class="reason-caption">
-                <h4 class="reason-title">Free. Actually free.</h4>
-                <p class="lede reason-desc">
-                  No subscription, no locked widgets, no trial — and
-                  developed in the open.
-                </p>
-              </div>
+              <p class="lede claim-desc">
+                Widgets can be independently positioned, resized and styled.
+              </p>
             </li>
 
-            <li class="reason">
-              <div class="reason-panel">
-                <img src="assets/why/modular.jpg" alt="" class="reason-photo" />
-                <span class="reason-index" aria-hidden="true">03</span>
+            <li class="claim">
+              <span class="claim-mark" aria-hidden="true"></span>
+              <div class="claim-head">
+                <span class="claim-index" aria-hidden="true"><span>03</span></span>
+                <h3 class="claim-title">Layouts for every session</h3>
               </div>
-              <div class="reason-caption">
-                <h4 class="reason-title">Fully modular</h4>
-                <p class="lede reason-desc">
-                  Every widget can be dragged anywhere, scaled, restyled and
-                  tuned to the pixel.
-                </p>
-              </div>
+              <p class="lede claim-desc">
+                Visual editor and session-based layout switching for practice,
+                qualifying and races.
+              </p>
             </li>
 
-            <li class="reason">
-              <div class="reason-panel">
-                <img
-                  src="assets/why/telemetry.jpg"
-                  alt=""
-                  class="reason-photo"
-                />
-                <span class="reason-index" aria-hidden="true">04</span>
+            <li class="claim">
+              <span class="claim-mark" aria-hidden="true"></span>
+              <div class="claim-head">
+                <span class="claim-index" aria-hidden="true"><span>04</span></span>
+                <h3 class="claim-title">Any screen</h3>
               </div>
-              <div class="reason-caption">
-                <h4 class="reason-title">Real-time telemetry</h4>
-                <p class="lede reason-desc">
-                  Up to 60 Hz straight from the iRacing SDK, with no
-                  perceptible lag.
-                </p>
-              </div>
-            </li>
-
-            <li class="reason">
-              <div class="reason-panel">
-                <img src="assets/why/private.jpg" alt="" class="reason-photo" />
-                <span class="reason-index" aria-hidden="true">05</span>
-              </div>
-              <div class="reason-caption">
-                <h4 class="reason-title">Private by default</h4>
-                <p class="lede reason-desc">
-                  No accounts and no personal data — only anonymous usage
-                  events.
-                </p>
-              </div>
+              <p class="lede claim-desc">
+                Use it on your main screen, a phone, a tablet or a second PC
+                over your local network. Nothing installed on the device.
+              </p>
             </li>
           </ul>
         </div>

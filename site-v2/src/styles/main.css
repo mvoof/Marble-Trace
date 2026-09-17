@@ -639,26 +639,31 @@ a:focus-visible, button:focus-visible {
 /* ==========================================================================
    Numbered chapter section (01 — Why Marble Trace)
 
-   The head is a chapter opener: an oversized ghost ordinal standing in the
-   left gutter, its top above the kicker and its body running past the first
-   heading line.
+   Two bands, one axis. The upper band is the chapter opener: an oversized
+   ghost ordinal in the left gutter, the copy beside it, and a single sheared
+   still of the overlay in the cockpit taking the right two thirds. A callout
+   stands off the plate's right edge, tied to it by one hairline — the plate
+   is the argument, the callout names the one thing a screenshot cannot say.
 
-   The strip below is built around one horizontal axis. Every panel lies
-   wholly on one side of it — odd above, even below — so the row is staggered
-   by a full half of a panel, and the half each panel leaves empty is where
-   its caption goes. The lime band carrying the number sits on the axis
-   itself: at the panel's bottom edge when the caption is underneath, at its
-   top edge when the caption is above, so the bands and the thin rail between
-   them read as one line running through the whole strip.
-
-   Panels interlock: each is widened by the shear and pulled left over its
-   neighbour by the same amount, so two slanted edges coincide exactly and no
-   gap or line is left between them.
+   The lower band is the claims, four to a row, each opened by a lime index
+   chip and separated from its neighbour by a hairline that starts at the
+   chip's own top edge. No cards: the rules are the only structure, so the
+   band reads as one continuous strip rather than four boxes.
    ========================================================================== */
 
 .chapter {
+  /* One angle for every cut in the section. 24deg is what the plate's own
+     shear measures, and the mock leans the dividers, the guide and the index
+     chips at the same angle — a section with two slants reads as a mistake. */
+  --cut: 24deg;
+  /* The three weights assets/background.svg draws with, so a mark added here
+     lands on the same drawing rather than beside it. */
+  --ink-main: rgba(0, 0, 0, 0.26);
+  --ink-light: rgba(0, 0, 0, 0.09);
+  --ink-vlight: rgba(0, 0, 0, 0.03);
+
   position: relative;
-  padding: 7rem 0;
+  padding: 7rem 0 5.5rem;
   background-color: transparent;
   border-bottom: 1px solid var(--color-card-border);
   overflow: hidden;
@@ -668,17 +673,17 @@ a:focus-visible, button:focus-visible {
 
 .chapter-head {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(20rem, 0.95fr) minmax(0, 1.55fr) minmax(9rem, 0.42fr);
   align-items: start;
-  gap: 0 clamp(1.5rem, 3.2vw, 3.25rem);
-  margin-bottom: clamp(3.5rem, 7vw, 6rem);
+  gap: 0 clamp(1.25rem, 2.6vw, 2.75rem);
+  margin-bottom: clamp(3.25rem, 6vw, 5rem);
 }
 
 .chapter-ordinal {
   font-family: var(--font-hero-heading);
   font-weight: 900;
   font-style: italic;
-  font-size: clamp(6rem, 13vw, 13rem);
+  font-size: clamp(5rem, 9.5vw, 10.5rem);
   line-height: 0.62;
   letter-spacing: -0.045em;
   color: rgba(26, 29, 35, 0.14);
@@ -687,7 +692,7 @@ a:focus-visible, button:focus-visible {
 }
 
 .chapter-lead {
-  padding-top: clamp(0.75rem, 1.6vw, 1.4rem);
+  padding-top: clamp(0.5rem, 1.2vw, 1.1rem);
 }
 
 .chapter-kicker {
@@ -704,7 +709,7 @@ a:focus-visible, button:focus-visible {
   font-family: var(--font-hero-heading);
   font-weight: 900;
   font-style: italic;
-  font-size: clamp(2.6rem, 5.4vw, 4.75rem);
+  font-size: clamp(2.4rem, 4.4vw, 4rem);
   line-height: 0.88;
   letter-spacing: -0.015em;
   text-transform: uppercase;
@@ -713,397 +718,337 @@ a:focus-visible, button:focus-visible {
 }
 
 .chapter-subtitle {
-  max-width: 44ch;
+  max-width: 38ch;
 }
 
-/* ---- Panel strip ---------------------------------------------------------
+/* ---- Cockpit plate -------------------------------------------------------
 
-   The panels interleave rather than sit on opposite sides of a line: each one
-   is dropped half its own height below its neighbour, so any two touching
-   panels share half their height. Every panel carries a lime band a quarter of
-   its height tall — at the bottom of a raised panel, at the top of a dropped
-   one — and at that offset the two bands meet edge to edge, so the lime steps
-   down across the strip as one unbroken run.
-
-   The caption goes in the half the panel leaves free: under a raised panel,
-   over a dropped one.
-
-   Panels also interlock sideways: each is widened by the shear and pulled left
-   over its neighbour by the same amount, so two slanted edges coincide exactly
-   and no gap or line is left between them.
+   One still, sheared on both vertical edges by the same angle the hero cuts
+   use, so the plate belongs to the same page geometry. The shear is a
+   clip-path rather than a transform: a transform would skew the photograph
+   itself, and a photograph of a cockpit read at an angle is a photograph of
+   nothing.
    -------------------------------------------------------------------------- */
 
-/*
-   --shear         horizontal travel of a panel's slanted sides over its height
-   --columns       panels per row
-   --drop          how far a dropped panel falls, as a share of its own height
-   --panel-height  the panel's own height, in terms the page can resolve: its
-                   width is one column plus the shear, and the box is 5:4
-   --caption-gap   air between a panel's band and its caption
-*/
-.chapter-body {
-  --shear: 130px;
-  --columns: 5;
-  --drop: 0.6;
-  --panel-height: calc((100% / var(--columns) + var(--shear)) * 0.8);
-  --caption-gap: 1.35rem;
+.chapter-shot {
+  --shot-shear: 18.6%;
 
   position: relative;
-  /* The dropped panels hang below the row that lays them out, but the row of
-     captions under the raised ones already covers part of that — reserve only
-     what is left, never a negative. */
-  padding-bottom: max(0px, calc(var(--panel-height) * var(--drop) - 7rem));
+  /* The plate is a real ultrawide capture (3440x1440). Holding that ratio is
+     what keeps the widgets in its corners inside the frame — a cover crop
+     would take the standings and the track map off the sides. */
+  aspect-ratio: 43 / 18;
+  align-self: center;
 }
 
-.reason-grid {
-  position: relative;
-  z-index: 2;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
-  /* The over-panel captions take no row of their own: they are pushed down
-     onto the dropped panels by a transform, which leaves the layout alone.
-     Rows are then the panels and the under-panel captions. */
-  grid-template-rows: 0 auto auto;
-  gap: 0;
-}
-
-/* The panel and the caption are placed on the grid themselves, one above the
-   other, so the wrapper must not form a box of its own. */
-.reason {
-  display: contents;
-}
-
-.reason:nth-child(1) .reason-panel,
-.reason:nth-child(1) .reason-caption {
-  grid-column: 1;
-}
-
-.reason:nth-child(2) .reason-panel,
-.reason:nth-child(2) .reason-caption {
-  grid-column: 2;
-}
-
-.reason:nth-child(3) .reason-panel,
-.reason:nth-child(3) .reason-caption {
-  grid-column: 3;
-}
-
-.reason:nth-child(4) .reason-panel,
-.reason:nth-child(4) .reason-caption {
-  grid-column: 4;
-}
-
-.reason:nth-child(5) .reason-panel,
-.reason:nth-child(5) .reason-caption {
-  grid-column: 5;
-}
-
-/* Raised: the panel sits on the row, the caption falls underneath it */
-.reason:nth-child(odd) .reason-panel {
-  grid-row: 2;
-  align-self: start;
-}
-
-.reason:nth-child(odd) .reason-caption {
-  grid-row: 3;
-  align-self: start;
-  padding-top: var(--caption-gap);
-}
-
-/* Dropped: the panel hangs half its height lower, the caption rides above it.
-   The negative bottom margin carries the caption down with the panel — the
-   panel's own drop is a transform, which leaves the row heights untouched. */
-/* Dropping a panel slides its slanted edges sideways with it — over the drop
-   they travel shear x drop — so the panel is pulled back by exactly that much
-   and the edges of the two neighbours stay one and the same line. The raised
-   panels need no margin of their own: the pull on every second one leaves the
-   step between any two of them right in both directions. */
-.reason:nth-child(even) .reason-panel {
-  grid-row: 2;
-  align-self: start;
-  margin-left: calc(var(--shear) * var(--drop) * -1);
-  transform: translateY(calc(var(--drop) * 100%));
-}
-
-/* The notch over a dropped panel runs from the top of the strip down to that
-   panel's own top, a drop deep. The caption hangs from the top of it rather
-   than from the bottom: hung from the bottom, a caption that grows by a line
-   climbs out of the strip altogether, while from the top it grows into a gap
-   that is always deeper than the copy is tall. */
-.reason:nth-child(even) .reason-caption {
-  grid-row: 1;
-  align-self: start;
-  margin-top: 1.75rem;
-}
-
-/* Widened by the shear and pulled over the neighbour, so the slanted edges of
-   two panels are the same edge and nothing shows between them. */
-.reason-panel {
-  position: relative;
-  width: calc(100% + var(--shear));
-  aspect-ratio: 5 / 4;
-  margin-right: calc(var(--shear) * -1);
-  overflow: hidden;
-  background: #101317;
-  clip-path: polygon(
-    var(--shear) 0,
-    100% 0,
-    calc(100% - var(--shear)) 100%,
-    0 100%
-  );
-}
-
-.reason-photo {
-  position: absolute;
-  top: 0;
-  left: calc(var(--shear) * -0.5);
-  width: calc(100% + var(--shear));
+/* The cut is on the photo, not on the figure: the figure has to stay
+   unclipped so it can draw the guide hairlines in the gutter beside it. */
+.chapter-shot-photo {
+  display: block;
+  width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
-  /* The plate is a game frame with its own grade — pulled back a little so
-     the copy beside it stays the loudest thing, never stripped to grey. */
-  filter: saturate(0.7) contrast(1.04);
-  transition: filter var(--transition-normal);
-}
-
-.reason-panel:hover .reason-photo {
-  filter: saturate(1.05) contrast(1.04);
-}
-
-/* The number rides in a tab of its own hanging off the line, and a hairline
-   runs out of its side to the edge of the panel. The tab is as tall as the
-   share of the panel either side of the drop, which is what puts the tab of a
-   raised panel and the tab of the dropped one beside it on the same line — and
-   the hairlines then continue into each other across the whole strip.
-
-   --band-frac  that share, as a fraction of the panel's height
-   --tab-slant  how far the tab's own sides lean over its height, the same
-                slope the panel leans on
-*/
-.reason-panel {
-  --band-frac: calc((1 - var(--drop)) / 2);
-  --tab-slant: calc(var(--shear) * var(--band-frac));
-}
-
-.reason-index {
-  position: absolute;
-  width: calc(var(--tab-slant) + 4.6rem);
-  height: calc(var(--band-frac) * 100%);
-  display: flex;
-  align-items: center;
-  padding-left: calc(var(--tab-slant) + 1rem);
-  background: var(--color-btn-download-bg);
-  color: #ffffff;
-  font-family: var(--font-hero-heading);
-  font-weight: 900;
-  font-style: italic;
-  font-size: 1.3rem;
-  letter-spacing: 0.02em;
+  background-color: #0d1014;
   clip-path: polygon(
-    var(--tab-slant) 0,
+    var(--shot-shear) 0,
     100% 0,
-    calc(100% - var(--tab-slant)) 100%,
+    calc(100% - var(--shot-shear)) 100%,
     0 100%
   );
 }
 
-/* The hairline runs out of the tab's side along the panel's own edge — the
-   foot of a raised panel, the head of a dropped one — so the tab stands on it
-   rather than hanging from it. */
-.reason-panel::after {
-  content: '';
+/* The construction drawing in the gutter. It is an inline SVG rather than a
+   skewed box because a single rule cannot carry weights, a dash pattern, a
+   tick ladder and a node — and those marks, not the line, are what make the
+   plate read as a slice off a technical drawing. Ink weights match
+   assets/background.svg so the section and the page ground speak once. */
+.chapter-marks {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 16px;
-  background: var(--color-btn-download-bg);
+  top: 0;
+  bottom: 0;
+  right: calc(100% + 0.5rem);
+  width: clamp(3.5rem, 5.5vw, 6rem);
+  height: auto;
   pointer-events: none;
 }
 
-/* Raised: the tab hangs below the line, at the foot of the panel */
-.reason:nth-child(odd) .reason-index {
-  left: 0;
-  bottom: 0;
+.chapter-marks path,
+.chapter-marks circle {
+  fill: none;
+  vector-effect: non-scaling-stroke;
 }
 
-.reason:nth-child(odd) .reason-panel::after {
-  bottom: 0;
+.markHair {
+  stroke: var(--ink-light);
+  stroke-width: 1;
 }
 
-/* Dropped: the tab stands above the line, at the head of the panel. Its left
-   edge is set in so it lands on the panel's own slanted side. */
-.reason:nth-child(even) .reason-index {
-  top: 0;
-  left: calc(var(--shear) * (1 - var(--band-frac)));
+.markFaint {
+  stroke: var(--ink-vlight);
 }
 
-.reason:nth-child(even) .reason-panel::after {
-  top: 0;
+.markDash {
+  stroke: var(--ink-light);
+  stroke-width: 1;
+  stroke-dasharray: 14 10;
 }
 
-/* The caption sits in the notch its panel leaves free — centred in it, not
-   ranged against either edge. The neighbouring panels lean into this column
-   from both sides, so the free width is the column less one shear, and
-   centring that block lands it in the middle of the gap. It is raised over the
-   panels, whose boxes overlap this column even where the clip leaves them
-   unpainted. */
-.reason-caption {
+.markHeavy {
+  stroke: var(--ink-main);
+  stroke-width: 2;
+}
+
+.markTick,
+.markCross {
+  stroke: var(--ink-main);
+  stroke-width: 1;
+}
+
+.markNode {
+  stroke: var(--ink-main);
+  stroke-width: 1.5;
+}
+
+/* ---- Callout beside the plate -------------------------------------------- */
+
+.chapter-callout {
   position: relative;
-  z-index: 3;
-  width: calc(100% - var(--shear));
-  margin-inline: auto;
+  padding-top: clamp(0.5rem, 1.2vw, 1.1rem);
+  padding-left: 1.1rem;
 }
 
-/* Over a dropped panel the notch is not the column: the raised panel on the
-   left is near its top there, where its slanted edge reaches a full shear into
-   this column, so the gap starts a shear in. */
-.reason:nth-child(even) .reason-caption {
-  width: calc(100% - var(--shear) * 1.05);
-  margin-left: calc(var(--shear) * 1.05);
-  margin-right: 0;
+.chapter-callout::before {
+  content: '';
+  position: absolute;
+  top: calc(clamp(0.5rem, 1.2vw, 1.1rem) + 0.45em);
+  left: 0;
+  width: 0.7rem;
+  height: 2px;
+  background-color: var(--color-btn-download-bg);
 }
 
-.reason-title {
+.chapter-callout-title {
   font-family: var(--font-family);
   font-weight: 800;
-  font-size: 1rem;
-  letter-spacing: 0.03em;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  line-height: 1.35;
   text-transform: uppercase;
-  color: var(--color-brand);
-  margin-bottom: 0.45rem;
+  color: #101317;
+  margin-bottom: 0.6rem;
 }
 
-.reason-desc {
-  --lede-size: 0.9rem;
+.chapter-callout-desc {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #5d656f;
+  max-width: 22ch;
 }
 
-/* Narrower than the full strip the interleave has nowhere to go: the panels
-   line up in two plain columns, each with its caption beneath and the band
-   along its bottom edge. */
-@media (max-width: 1400px) {
+/* ---- Claims band --------------------------------------------------------- */
+
+.claim-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0 clamp(1.5rem, 3vw, 3rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The divider is a skewed pseudo-element rather than a border: a border can
+   only be vertical, and a vertical rule in a section where every other edge
+   leans reads as a mistake. The rail above it is the same line laid flat. */
+.claim {
+  position: relative;
+  padding-left: clamp(1.5rem, 3vw, 3rem);
+  margin-left: calc(-1 * clamp(1.5rem, 3vw, 3rem));
+  padding-top: clamp(1.1rem, 1.8vw, 1.6rem);
+}
+
+.claim::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background-color: var(--ink-main);
+  transform: skewX(calc(-1 * var(--cut)));
+}
+
+/* The divider marked up the way the drawing marks a line: a lighter run
+   beside it, a ladder of ticks against it, and a node where it starts. */
+.claim-mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0.55rem;
+  width: 1px;
+  background-color: var(--ink-light);
+  transform: skewX(calc(-1 * var(--cut)));
+  pointer-events: none;
+}
+
+.claim-mark::before {
+  content: '';
+  position: absolute;
+  top: 18%;
+  left: -0.5rem;
+  width: 0.7rem;
+  height: 2.6rem;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--ink-main) 0 1px,
+    transparent 1px 0.85rem
+  );
+}
+
+.claim-mark::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3.5px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ink-main);
+  border-radius: 50%;
+}
+
+.claim:first-child .claim-mark {
+  display: none;
+}
+
+.claim::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--ink-light);
+}
+
+.claim:first-child {
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.claim:first-child::before {
+  content: none;
+}
+
+.claim-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+
+/* A parallelogram, not a square: the chip carries the plate's angle at the one
+   size where the full angle still fits. The digits are counter-skewed so only
+   the plate leans, never the number on it. */
+.claim-index {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.3rem;
+  padding: 0.24rem 0.5rem;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--color-btn-download-text);
+  background-color: var(--color-btn-download-bg);
+  transform: skewX(calc(-1 * var(--cut)));
+}
+
+.claim-index > span {
+  display: block;
+  transform: skewX(var(--cut));
+}
+
+.claim-title {
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.86rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #101317;
+  margin: 0;
+}
+
+.claim-desc {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #5d656f;
+  max-width: 28ch;
+}
+
+/* ---- Responsive ---------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  .chapter-head {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(1.75rem, 4vw, 2.75rem) clamp(1.25rem, 2.6vw, 2.75rem);
+  }
+
+  .chapter-shot {
+    grid-column: 1 / -1;
+    align-self: start;
+  }
+
+  .chapter-callout {
+    grid-column: 1 / -1;
+    padding-top: 0;
+  }
+
+  .chapter-callout::before {
+    top: 0.45em;
+  }
+
+  .chapter-callout-desc {
+    max-width: 46ch;
+  }
+
+  .claim-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 2.25rem;
+  }
+
+  .claim:nth-child(odd) {
+    border-left: 0;
+    padding-left: 0;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
   .chapter {
-    padding: 5rem 0;
+    padding: 4.5rem 0 3.5rem;
+  }
+
+  .chapter-head {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .chapter-ordinal {
-    font-size: clamp(4.5rem, 15vw, 7rem);
-  }
-
-  .chapter-body {
-    padding-bottom: 0;
-  }
-
-  .chapter-body {
-    --columns: 2;
-    --shear: 72px;
-  }
-
-  .reason-grid {
-    grid-template-rows: none;
-    grid-auto-rows: auto;
-    row-gap: clamp(2rem, 4vw, 3.25rem);
-  }
-
-  .reason {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .reason:nth-child(n) .reason-panel,
-  .reason:nth-child(n) .reason-caption {
-    grid-column: auto;
-    grid-row: auto;
-    align-self: auto;
-    transform: none;
-    margin-left: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-  }
-
-  .reason:nth-child(n) .reason-caption {
-    width: calc(100% - var(--shear));
-    margin-left: auto;
-    padding: var(--caption-gap) 0 0;
-  }
-
-  /* Half the row means twice the column, so the panels go wide rather than
-     tall, and the band takes a fixed height instead of a share of one. */
-  .reason-panel {
-    aspect-ratio: 16 / 9;
-  }
-
-  .reason-panel {
-    --tab-slant: calc(var(--shear) * 0.34);
-  }
-
-  .reason:nth-child(n) .reason-index {
-    top: auto;
-    bottom: 0;
-    left: 0;
-    height: 52px;
-  }
-
-  .reason:nth-child(n) .reason-panel::after {
-    top: auto;
-    bottom: 0;
-  }
-}
-
-@media (max-width: 680px) {
-  .chapter-head {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.5rem;
+    display: none;
   }
 
   .chapter-lead {
     padding-top: 0;
   }
 
-  /* On a phone the strip stops being a strip: the pictures go small and
-     straight, stacked one under another with the copy beneath each. */
-  .chapter-body {
-    --columns: 1;
-    --shear: 0px;
+  .claim-grid {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2rem;
   }
 
-  .reason-grid {
-    row-gap: 2.75rem;
-  }
-
-  .reason-panel {
-    width: 100%;
-    max-width: 260px;
-    margin-right: 0;
-    aspect-ratio: 4 / 3;
-    clip-path: none;
-  }
-
-  .reason-photo {
-    left: 0;
-    width: 100%;
-    filter: none;
-  }
-
-  .reason-panel {
-    --tab-slant: 0px;
-  }
-
-  .reason:nth-child(n) .reason-index {
-    height: 34px;
-    width: 5.5rem;
-    padding-left: 1.1rem;
-    font-size: 1.15rem;
-  }
-
-  .reason:nth-child(n) .reason-panel::after {
-    top: auto;
-    bottom: 0;
-  }
-
-  .reason:nth-child(n) .reason-caption {
-    width: 100%;
-    padding: 1.1rem 0 0;
+  .claim:nth-child(n) {
+    border-left: 0;
+    padding-left: 0;
+    margin-left: 0;
   }
 }
