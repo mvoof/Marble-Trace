@@ -1,0 +1,36 @@
+/* ==========================================================================
+   Page background — the technical-drawing ground
+   --------------------------------------------------------------------------
+   The drawing is assets/background.svg and carries its own line weights: a
+   drawing referenced from CSS is loaded in secure static mode, where an
+   external stylesheet is never fetched, so the weights cannot live out here.
+   What this file owns is the layer the drawing is laid on.
+
+   The layer is the height of the whole document and absolute rather than
+   fixed, so the drawing travels with the content instead of standing still
+   under it. `background-size: 100% 100%` hands the box to the file's own
+   `preserveAspectRatio="… slice"`, which crops it like object-fit: cover — so
+   the composition holds at any viewport and there is no tile to join up.
+   ========================================================================== */
+
+.page-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--color-body-bg);
+  background-image: url('../../assets/background.svg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+/* Everything the page itself draws stands above the ground */
+.site-header,
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
