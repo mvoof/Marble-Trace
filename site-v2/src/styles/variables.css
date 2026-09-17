@@ -41,7 +41,9 @@
   --color-backdrop: rgba(10, 14, 20, 0.65);
 
   /* Page Body */
-  --color-body-bg: #f5f6f4;
+  /* One ground for the whole page — the same value the header and the hero
+     use, so no section reads as a slightly different shade of white. */
+  --color-body-bg: #e4e4de;
   --color-body-text: #1a1d23;
   --color-card-bg: #ffffff;
   --color-card-border: rgba(0, 0, 0, 0.08);
