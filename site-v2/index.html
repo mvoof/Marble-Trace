@@ -52,6 +52,7 @@
         <nav class="nav-desktop" aria-label="Main Navigation">
           <a href="#features" class="nav-link">Features</a>
           <a href="#widgets" class="nav-link">Widgets</a>
+          <a href="#screens" class="nav-link">Screens</a>
           <a href="#layouts" class="nav-link">Layouts</a>
           <a href="#performance" class="nav-link">Performance</a>
           <a href="#open-source" class="nav-link">Open Source</a>
@@ -158,6 +159,12 @@
         </a>
         <a href="#widgets" class="drawer-nav-link">
           <span>Widgets</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#screens" class="drawer-nav-link">
+          <span>Screens</span>
           <svg aria-hidden="true">
             <use href="assets/icons/sprite.svg#icon-chevron-right" />
           </svg>
@@ -1082,6 +1089,124 @@
          still holds the first widget, so the section never renders empty.
          ==================================================================== -->
 
+      <!-- ====================================================================
+         Section 03 - Remote screens
+
+         One scene, four devices, one overlay. The claim is not that the app
+         runs on a tablet - it is that the same layout the driver built is
+         already on every screen he owns, so the devices are drawn in one
+         group at one scale rather than as four cards saying the same thing.
+
+         The scene is one cut-out (assets/screens/devices.png, white ground
+         removed) rather than four framed devices: the screens in it are at
+         angles no CSS inset would sit straight in, and a group photographed
+         together is what carries "at the same moment". Each device is then
+         called out off the scene by a leader line, the way a part is named on
+         a drawing - a caption row under the picture names the picture, not the
+         four things in it.
+         ==================================================================== -->
+      <section id="screens" class="chapter chapter-screens" aria-labelledby="screens-heading">
+        <div class="container screens">
+          <div class="screens-head">
+            <span class="chapter-ordinal" aria-hidden="true">03</span>
+
+            <div class="chapter-lead">
+              <p class="chapter-kicker">Multi-screen layouts</p>
+
+              <h2 id="screens-heading" class="chapter-title">
+                Same data.<br />
+                Anywhere.
+              </h2>
+
+              <p class="lede chapter-subtitle">
+                Open a layout on any screen on your network &mdash; a phone, a
+                tablet, a laptop, a second PC. A browser is all the device
+                needs; nothing is installed on it.
+              </p>
+
+              <ul class="screens-facts">
+                <li>A screen is a virtual monitor in the layout editor</li>
+                <li>Every screen keeps its own widgets, scale and columns</li>
+                <li>Open the link or scan the QR code &mdash; nothing to install</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="screens-stage">
+            <img
+              class="screens-shot"
+              src="assets/screens/devices.png"
+              alt="One Marble Trace layout running at once on a triple monitor sim rig, a tablet, a phone and a laptop"
+              decoding="async"
+            />
+
+            <!-- Leader lines, not a caption row: each label stands off the
+                 device it names and is tied to it by a hairline ending in a
+                 node, the way a part is called out on a drawing. The anchor
+                 is a percentage of the scene, so the callouts travel with the
+                 image at any width. -->
+            <p class="screens-callout screens-callout-desktop" style="--x: 41%; --lead: 3.4rem">
+              <span class="screens-callout-name">Desktop</span>
+              <span class="screens-callout-desc">Triple monitor rig</span>
+            </p>
+
+            <p class="screens-callout screens-callout-tablet" style="--x: 24%; --lead: 3.2rem">
+              <span class="screens-callout-name">Phone / Tablet</span>
+              <span class="screens-callout-desc">On the wheel deck</span>
+            </p>
+
+            <p class="screens-callout screens-callout-laptop" style="--x: 74%; --lead: 2.6rem">
+              <span class="screens-callout-name">Laptop</span>
+              <span class="screens-callout-desc">Beside the rig</span>
+            </p>
+          </div>
+
+          <!-- What the screens actually are. The scene says "on every device";
+               this band says how - virtual monitors in the same editor, an OBS
+               source among them, and who is allowed to touch what. -->
+          <ul class="screens-detail">
+            <li>
+              <h3 class="screens-detail-title">Virtual monitors</h3>
+              <p class="lede screens-detail-desc">
+                A remote screen is added in the layout editor beside your real
+                monitors, at any size you like &mdash; a tablet, a phone, or a
+                stream canvas. You drag widgets onto it the same way, and each
+                screen keeps its own set, its own scale and its own columns.
+              </p>
+            </li>
+
+            <li>
+              <h3 class="screens-detail-title">OBS browser source</h3>
+              <p class="lede screens-detail-desc">
+                Point a Browser Source at the screen's address and the layout
+                is on air, with a transparent background so only the widgets
+                render. Add <code>?widget=</code> to a link to put a single
+                widget on its own source and place it in your scene.
+              </p>
+            </li>
+
+            <li>
+              <h3 class="screens-detail-title">Just a browser</h3>
+              <p class="lede screens-detail-desc">
+                The app runs a small web server on your PC. Any device on the
+                same network opens the link &mdash; no app, no account, no
+                cloud, nothing leaves your network. Send rate is yours to set;
+                lap times, fuel and the session clock always arrive in full.
+              </p>
+            </li>
+
+            <li>
+              <h3 class="screens-detail-title">Watching only</h3>
+              <p class="lede screens-detail-desc">
+                Links carry an access token you can regenerate at any time, and
+                a device can only watch: nothing a browser sends can change a
+                layout, a setting or the overlay you are racing on.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
       <!-- Layouts Section -->
       <section id="layouts" class="section">
         <div class="container">
@@ -1213,6 +1338,7 @@
           <nav class="footer-links" aria-label="Footer Navigation">
             <a href="#features" class="footer-link">Features</a>
             <a href="#widgets" class="footer-link">Widgets</a>
+            <a href="#screens" class="footer-link">Screens</a>
             <a href="#layouts" class="footer-link">Layouts</a>
             <a href="#performance" class="footer-link">Performance</a>
             <a href="#open-source" class="footer-link">Open Source</a>
