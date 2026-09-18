@@ -16,8 +16,10 @@ pub struct EnvironmentFrame {
     /// @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/
     pub air_temp: Option<f32>,
 
-    /// Track surface temperature in °C
-    /// @see https://sajax.github.io/irsdkdocs/telemetry/tracktemp/
+    /// Track surface temperature in °C, as measured by the crew around the
+    /// track. Filled from `TrackTempCrew` — iRacing deprecated `TrackTemp`
+    /// and now just copies the crew reading into it.
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/tracktempcrew/
     pub track_temp: Option<f32>,
 
     /// Wind velocity in m/s
@@ -44,12 +46,6 @@ pub struct EnvironmentFrame {
 
     /// Whether rain tires are officially allowed
     pub weather_declared_wet: Option<bool>,
-
-    /// Weather dynamics (Constant vs Dynamic)
-    pub weather_type: Option<i32>,
-
-    /// Weather system version
-    pub weather_version: Option<i32>,
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]

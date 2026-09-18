@@ -258,7 +258,7 @@ impl From<&IracingFrame> for EnvironmentFrame {
     fn from(f: &IracingFrame) -> Self {
         Self {
             air_temp: Some(f.air_temp),
-            track_temp: Some(f.track_temp),
+            track_temp: Some(f.track_temp_crew),
             wind_vel: Some(f.wind_vel),
             wind_dir: Some(f.wind_dir),
             relative_humidity: Some(f.relative_humidity),
@@ -266,8 +266,6 @@ impl From<&IracingFrame> for EnvironmentFrame {
             precipitation: Some(f.precipitation),
             track_wetness: Some(f.track_wetness),
             weather_declared_wet: Some(f.weather_declared_wet),
-            weather_type: None,
-            weather_version: None,
         }
     }
 }

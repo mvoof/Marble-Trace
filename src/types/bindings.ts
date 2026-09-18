@@ -729,8 +729,10 @@ export type EnvironmentFrame = {
    */
   airTemp: number | null;
   /**
-   * Track surface temperature in °C
-   * @see https://sajax.github.io/irsdkdocs/telemetry/tracktemp/
+   * Track surface temperature in °C, as measured by the crew around the
+   * track. Filled from `TrackTempCrew` — iRacing deprecated `TrackTemp`
+   * and now just copies the crew reading into it.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/tracktempcrew/
    */
   trackTemp: number | null;
   /**
@@ -765,14 +767,6 @@ export type EnvironmentFrame = {
    * Whether rain tires are officially allowed
    */
   weatherDeclaredWet: boolean | null;
-  /**
-   * Weather dynamics (Constant vs Dynamic)
-   */
-  weatherType: number | null;
-  /**
-   * Weather system version
-   */
-  weatherVersion: number | null;
 };
 
 /**
