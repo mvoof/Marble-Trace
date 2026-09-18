@@ -1,0 +1,2202 @@
+/* ==========================================================================
+   Base & Content Styles
+   ========================================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-height) + 16px);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  /* the containing block for .page-bg, which spans the whole document */
+  position: relative;
+  font-family: var(--font-family);
+  background-color: var(--color-body-bg);
+  color: var(--color-body-text);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+
+body.mobile-menu-open {
+  overflow: hidden;
+}
+
+/* Accessibility: Focus styles */
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+/* Standard Content Container (1280px standard) */
+.container {
+  max-width: var(--container-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+  width: 100%;
+}
+
+/* ==========================================================================
+   Hero Block (Matches Screenshot 2026-09-11 202506.png)
+   With progressive leftward blur effect from Screenshot 2026-09-11 195640.png
+   ========================================================================== */
+
+.hero-block {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  background-color: var(--color-header-bg);
+  padding-top: calc(var(--header-height) + 1.25rem);
+  padding-bottom: 2.5rem;
+  overflow: hidden;
+}
+
+.hero-container {
+  position: relative;
+  z-index: 10;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 var(--container-padding);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  max-width: 600px;
+}
+
+.hero-kicker {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4a525d;
+  margin-bottom: 1.25rem;
+}
+
+.hero-heading {
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(3.2rem, 6.2vw, 5.2rem);
+  line-height: 0.9;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  color: #101317;
+  margin-bottom: 1.25rem;
+}
+
+/* ==========================================================================
+   Lede — the explanatory line under a heading
+
+   The hero, the chapter and each panel caption were three copies of the same
+   paragraph. They are one class now; what genuinely differs between them is
+   only the size, which each place sets through --lede-size, and its own
+   measure and spacing.
+   ========================================================================== */
+
+.lede {
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: var(--lede-size, 1.05rem);
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.hero-subtitle {
+  max-width: 480px;
+  margin-bottom: 2.25rem;
+}
+
+/* Hero Action Buttons */
+.hero-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2.75rem;
+}
+
+.btn-hero-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #14171d;
+  color: #ffffff;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.72rem 1.05rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-hero-dark svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.btn-hero-dark:hover {
+  background-color: #242933;
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+}
+
+.btn-hero-dark:hover .btn-arrow {
+  transform: translateX(3px);
+}
+
+.btn-hero-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(245, 246, 242, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #1f242d;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.72rem 0.95rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-hero-light svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.btn-hero-light .star-gold {
+  color: #eab308;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.btn-hero-light:hover {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.22);
+  color: #000000;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* Feature Badges Row */
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.6rem;
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4b5563;
+  user-select: none;
+}
+
+/* ==========================================================================
+   Hero Visual — one uncut photograph with slanted washes
+   The picture is never clipped. What reads as a cut is a wash that deepens
+   along a slanted axis: on the left it dissolves into the page ground, and a
+   near-vertical cut parallel to it peels a light strip off the right edge.
+   Crisp hairlines mark every boundary.
+   ========================================================================== */
+
+/* The frame pins the picture to the container box: its right edge sits on the
+   container's inner right edge, so the photo never runs into the page gutter,
+   while top/bottom stretch over the full height of the hero block. */
+.hero-visual-frame {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: var(--container-width);
+  padding: 0 var(--container-padding);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.hero-visual {
+  /* --slant: horizontal travel of a cut over the full height.
+     --lead: x of the leading hairline at the top of the frame.
+     --trail: x of the second, fainter hairline deeper into the wash.
+     --wash-angle: the gradient axis, perpendicular to the cuts.
+     --edge: x of the right-hand cut at the top of the frame.
+     --edge-slant: its horizontal travel, parallel to the left cuts. */
+  --slant: 22%;
+  --lead: 30%;
+  --trail: 20%;
+  --wash-angle: 124deg;
+  --edge: 95%;
+  --edge-slant: 4%;
+
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Bleeds to the viewport edge: an inset here reads as an empty strip
+     running down the right of the page. */
+  right: 0;
+  /* Reaches back under the copy column so the wash meets the text */
+  left: 26%;
+  z-index: 5;
+  overflow: hidden;
+  user-select: none;
+  /* Softens the straight left border the wash alone cannot reach at the bottom */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 90px);
+  mask-image: linear-gradient(to right, transparent 0, black 90px);
+}
+
+.hero-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 68% 42%;
+  display: block;
+}
+
+
+/* The blurred side dissolves into the hero ground along the same axis */
+.hero-fade-left {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    var(--wash-angle),
+    rgba(228, 228, 222, 0.96) 0%,
+    rgba(228, 228, 222, 0.94) 28%,
+    rgba(228, 228, 222, 0.84) 44%,
+    rgba(228, 228, 222, 0.5) 55%,
+    rgba(228, 228, 222, 0.18) 64%,
+    transparent 72%
+  );
+}
+
+/* Near-vertical slanted cut peeling a light strip off the right edge.
+   It runs parallel to the left-hand cuts, so every line in the hero leans the
+   same way; the strip carries the scroll cue. */
+
+/* Crisp hairlines riding the cuts */
+.cut-line {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cut-line-lead {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.4));
+  clip-path: polygon(
+    var(--lead) 0,
+    calc(var(--lead) + 2px) 0,
+    calc(var(--lead) + 2px - var(--slant)) 100%,
+    calc(var(--lead) - var(--slant)) 100%
+  );
+}
+
+.cut-line-trail {
+  background: rgba(255, 255, 255, 0.55);
+  clip-path: polygon(
+    var(--trail) 0,
+    calc(var(--trail) + 1px) 0,
+    calc(var(--trail) + 1px - var(--slant)) 100%,
+    calc(var(--trail) - var(--slant)) 100%
+  );
+}
+
+.cut-line-edge {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.5));
+  clip-path: polygon(
+    var(--edge) 0,
+    calc(var(--edge) + 2px) 0,
+    calc(var(--edge) + 2px - var(--edge-slant)) 100%,
+    calc(var(--edge) - var(--edge-slant)) 100%
+  );
+}
+
+/* Vertical Scroll Indicator in Cut Corner */
+.hero-scroll-indicator {
+  position: absolute;
+  right: 26px;
+  bottom: 22px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  user-select: none;
+}
+
+.hero-scroll-text {
+  writing-mode: vertical-rl;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #374151;
+}
+
+.hero-scroll-arrow {
+  width: 14px;
+  height: 14px;
+  color: #374151;
+  animation: scroll-bounce-down 2s infinite ease-in-out;
+}
+
+@keyframes scroll-bounce-down {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+/* ==========================================================================
+   Stats Bar
+   ========================================================================== */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 800px;
+}
+
+.stat-item h3 {
+  font-size: 2rem;
+  font-weight: 900;
+  font-style: italic;
+  color: #ffffff;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+
+.stat-item p {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   Content Sections (Targets for menu links)
+   ========================================================================== */
+
+.section {
+  padding: 6rem 0;
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+/* No alternating band: every section stands on the one page ground, and that
+   ground is the blueprint tile on body::before — so nothing repaints over it */
+.section-alt {
+  background-color: transparent;
+}
+
+.section-header {
+  margin-bottom: 3.5rem;
+}
+
+.section-tag {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #65a30d;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--color-brand);
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: #64748b;
+  max-width: 620px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.75rem;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.section-alt .card {
+  background: var(--color-body-bg);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+}
+
+.card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(158, 195, 106, 0.2);
+  color: #4d7c0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+  color: var(--color-brand);
+}
+
+.card-desc {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.site-footer {
+  background: #0f1216;
+  color: #9ca3af;
+  padding: 4rem 0 2.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-brand .brand-name {
+  color: #ffffff;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.footer-link {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.footer-link:hover {
+  color: #ffffff;
+}
+
+.footer-bottom {
+  padding-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  gap: 1rem;
+}
+
+/* ==========================================================================
+   Responsive Adaptations for Hero Block
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .hero-block {
+    min-height: auto;
+    padding-top: calc(var(--header-height) + 2rem);
+    padding-bottom: 3.5rem;
+  }
+
+  .hero-container {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+  /* Narrow screens: the photo drops behind the copy instead of beside it */
+  .hero-visual {
+    left: 0;
+    right: 0;
+    opacity: 0.28;
+  }
+
+  .hero-visual .cut-line,
+  .hero-visual .cut-glare,
+  .hero-visual .hero-scroll-indicator {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-heading {
+    font-size: clamp(2.6rem, 11vw, 3.4rem);
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .btn-hero-dark,
+  .btn-hero-light {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-badges {
+    gap: 0.9rem 1.25rem;
+  }
+}
+
+/* ==========================================================================
+   Numbered chapter section (01 — Why Marble Trace)
+
+   Two bands, one axis. The upper band is the chapter opener: an oversized
+   ghost ordinal in the left gutter, the copy beside it, and a single sheared
+   still of the overlay in the cockpit taking the right two thirds. A callout
+   stands off the plate's right edge, tied to it by one hairline — the plate
+   is the argument, the callout names the one thing a screenshot cannot say.
+
+   The lower band is the claims, four to a row, each opened by a lime index
+   chip and separated from its neighbour by a hairline that starts at the
+   chip's own top edge. No cards: the rules are the only structure, so the
+   band reads as one continuous strip rather than four boxes.
+   ========================================================================== */
+
+.chapter {
+  /* One angle for every cut in the section. 24deg is what the plate's own
+     shear measures, and the mock leans the dividers, the guide and the index
+     chips at the same angle — a section with two slants reads as a mistake. */
+  --cut: 24deg;
+  /* The three weights assets/background.svg draws with, so a mark added here
+     lands on the same drawing rather than beside it. */
+  --ink-main: rgba(0, 0, 0, 0.1);
+  --ink-light: rgba(0, 0, 0, 0.09);
+  --ink-vlight: rgba(0, 0, 0, 0.03);
+
+  position: relative;
+  padding: 7rem 0 5.5rem;
+  background-color: transparent;
+  border-bottom: 1px solid var(--color-card-border);
+  overflow: hidden;
+}
+
+/* ---- Head ---------------------------------------------------------------- */
+
+.chapter-head {
+  display: grid;
+  grid-template-columns: auto minmax(20rem, 0.95fr) minmax(0, 1.55fr) minmax(9rem, 0.42fr);
+  align-items: start;
+  gap: 0 clamp(1.25rem, 2.6vw, 2.75rem);
+  margin-bottom: clamp(3.25rem, 6vw, 5rem);
+}
+
+.chapter-ordinal {
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  /* A step above the chapter title, not a storey above it: at nine-odd vw the
+     ordinal was twice the heading and took the section's dominance from the
+     words. Both chapters read off this one value, so they stay equal. */
+  font-size: clamp(3.2rem, 5.6vw, 5rem);
+  line-height: 0.62;
+  letter-spacing: -0.045em;
+  color: rgba(26, 29, 35, 0.14);
+  margin-top: -0.06em;
+  user-select: none;
+}
+
+.chapter-lead {
+  padding-top: clamp(0.5rem, 1.2vw, 1.1rem);
+}
+
+.chapter-kicker {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #7b8390;
+  margin-bottom: 1rem;
+}
+
+.chapter-title {
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(2.4rem, 4.4vw, 4rem);
+  line-height: 0.88;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  color: #101317;
+  margin-bottom: 1.25rem;
+}
+
+.chapter-subtitle {
+  max-width: 38ch;
+}
+
+/* ---- Cockpit plate -------------------------------------------------------
+
+   One still, sheared on both vertical edges by the same angle the hero cuts
+   use, so the plate belongs to the same page geometry. The shear is a
+   clip-path rather than a transform: a transform would skew the photograph
+   itself, and a photograph of a cockpit read at an angle is a photograph of
+   nothing.
+   -------------------------------------------------------------------------- */
+
+.chapter-shot {
+  --shot-shear: 18.6%;
+
+  position: relative;
+  /* The plate is a real ultrawide capture (3440x1440). Holding that ratio is
+     what keeps the widgets in its corners inside the frame — a cover crop
+     would take the standings and the track map off the sides. */
+  aspect-ratio: 43 / 18;
+  align-self: center;
+}
+
+/* The cut is on the photo, not on the figure: the figure has to stay
+   unclipped so it can draw the guide hairlines in the gutter beside it. */
+.chapter-shot-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-color: #0d1014;
+  clip-path: polygon(
+    var(--shot-shear) 0,
+    100% 0,
+    calc(100% - var(--shot-shear)) 100%,
+    0 100%
+  );
+}
+
+/* ---- Callout beside the plate -------------------------------------------- */
+
+.chapter-callout {
+  position: relative;
+  padding-top: clamp(0.5rem, 1.2vw, 1.1rem);
+  padding-left: 1.1rem;
+}
+
+.chapter-callout::before {
+  content: '';
+  position: absolute;
+  top: calc(clamp(0.5rem, 1.2vw, 1.1rem) + 0.45em);
+  left: 0;
+  width: 0.7rem;
+  height: 2px;
+  background-color: var(--color-btn-download-bg);
+}
+
+.chapter-callout-title {
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: #101317;
+  margin-bottom: 0.6rem;
+}
+
+.chapter-callout-desc {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #5d656f;
+  max-width: 22ch;
+}
+
+/* ---- Claims band --------------------------------------------------------- */
+
+.claim-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0 clamp(1.5rem, 3vw, 3rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* No rules between the claims and none above them: the gap between columns and
+   the lime index chip are what separate them. The band had a skewed divider
+   per claim and a rail across the top, and together with the marks in the
+   plate above they turned the section into ruled paper. */
+.claim {
+  position: relative;
+  padding-top: clamp(1.1rem, 1.8vw, 1.6rem);
+}
+
+
+
+.claim-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+
+/* A parallelogram, not a square: the chip carries the plate's angle at the one
+   size where the full angle still fits. The digits are counter-skewed so only
+   the plate leans, never the number on it. */
+.claim-index {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.3rem;
+  padding: 0.24rem 0.5rem;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--color-btn-download-text);
+  background-color: var(--color-btn-download-bg);
+  transform: skewX(calc(-1 * var(--cut)));
+}
+
+.claim-index > span {
+  display: block;
+  transform: skewX(var(--cut));
+}
+
+.claim-title {
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.86rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #101317;
+  margin: 0;
+}
+
+.claim-desc {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #5d656f;
+  max-width: 28ch;
+}
+
+/* ---- Responsive ---------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  .chapter-head {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(1.75rem, 4vw, 2.75rem) clamp(1.25rem, 2.6vw, 2.75rem);
+  }
+
+  /* The three-column opener collapses to the chapter's own two. It has to be
+     said here rather than left to the .chapter-head rule above, because
+     .gallery-head carries the same weight and is declared later in the file —
+     without this the copy kept a narrow column all the way down to a phone. */
+  .gallery-head {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  /* Stacked under the copy, the stage has the whole container to fill and a
+     low widget stretches across all of it. Held to a column width it stays the
+     size it is read at. */
+  .stage {
+    grid-column: 1 / -1;
+    max-width: 44rem;
+    margin-inline: auto;
+  }
+
+  .chapter-shot {
+    grid-column: 1 / -1;
+    align-self: start;
+  }
+
+  .chapter-callout {
+    grid-column: 1 / -1;
+    padding-top: 0;
+  }
+
+  .chapter-callout::before {
+    top: 0.45em;
+  }
+
+  .chapter-callout-desc {
+    max-width: 46ch;
+  }
+
+  .claim-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 2.25rem;
+  }
+
+}
+
+@media (max-width: 640px) {
+  .chapter {
+    padding: 4.5rem 0 3.5rem;
+  }
+
+  .chapter-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chapter-ordinal {
+    display: none;
+  }
+
+  .chapter-lead {
+    padding-top: 0;
+  }
+
+  .claim-grid {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2rem;
+  }
+
+}
+
+
+/* ==========================================================================
+   Section 02 — Widget gallery
+
+   A stage and a rail beside it. The rail carries the whole catalogue and
+   scrolls inside its own box, so the section stays one screen tall however
+   many widgets ship; the stage holds one capture at the size it is read at
+   in the car. Thumbnails were tried first and thrown out — these shots run
+   from 700x40 to 828x532, and the tall ones shrink to an unreadable stamp
+   in any grid cell wide enough for the short ones.
+
+   The stage ground is the one dark surface on this page. It is the overlay's
+   own ground: a widget photographed on paper is a widget nobody recognises.
+   ========================================================================== */
+
+.chapter-gallery {
+  padding-bottom: 6rem;
+}
+
+/* ---- Crossbar --------------------------------------------------------------
+
+   The chapter states itself in one line across the page instead of stacking in
+   a left-hand column: the ordinal anchors the left end, the kicker the right,
+   and one rule closes it. It is what lets the three columns below start on
+   three different lines — with the copy still up here they would have had to
+   line up under it.
+   -------------------------------------------------------------------------- */
+
+.gallery-head {
+  display: block;
+  margin-bottom: clamp(1.75rem, 3vw, 2.75rem);
+}
+
+.gallery-head-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  /* No rule under the bar. Three ruled edges — this one, the widget's name and
+     the top of the sheet — ran parallel within a few hundred pixels of each
+     other and the section read as ruled paper. The ordinal and the type size
+     already say where the chapter starts. */
+  padding-bottom: clamp(0.4rem, 0.8vw, 0.7rem);
+}
+
+.gallery-head-title {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  min-width: 0;
+}
+
+/* The ordinal is the chapter's own size, not a smaller one for this layout:
+   01 and 02 are the same rank and a section numbered in a smaller hand reads
+   as a subsection of the one above it. */
+.gallery-head .chapter-ordinal {
+  flex: none;
+  margin: 0;
+}
+
+.gallery-title {
+  font-size: clamp(2rem, 4.2vw, 4rem);
+  line-height: 0.84;
+  margin: 0;
+}
+
+.gallery-kicker {
+  flex: none;
+  margin: 0 0 0.4rem;
+}
+
+/* ---- The stepped row -------------------------------------------------------
+
+   Copy, widget and sheet, each starting on its own line. The offsets are the
+   section's structure, so they are declared here once rather than left to
+   whatever the content happens to be tall.
+   -------------------------------------------------------------------------- */
+
+.gallery {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.72fr) minmax(0, 1.5fr) minmax(17rem, 1fr);
+  gap: clamp(1.5rem, 3vw, 2.75rem);
+  align-items: start;
+}
+
+.gallery-copy,
+.stage,
+.sheet {
+  position: relative;
+  z-index: 1;
+}
+
+.gallery-copy {
+  padding-top: 2.5rem;
+}
+
+.gallery-lede {
+  max-width: 34ch;
+  margin: 0 0 clamp(1.25rem, 2vw, 1.75rem);
+}
+
+/* The five groups, named once here rather than repeated as dividers through
+   the sheet: the sheet is pictures, this column is words. */
+.gallery-groups {
+  margin: 0;
+  padding-top: clamp(1.1rem, 1.8vw, 1.6rem);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a0a7b0;
+}
+
+/* ---- Stage ---------------------------------------------------------------
+
+   One widget, upright, at the size it is drawn at in the car. No card under
+   it and no neighbours beside it: the captures are dark designed objects with
+   a frame of their own, and anything drawn around them competes with it.
+   -------------------------------------------------------------------------- */
+
+.stage {
+  /* A slot of one height whatever it holds. Sizing it to the picture would
+     make the page jump by several hundred pixels between Standings and RPM
+     Lights, and a section that resizes under the cursor cannot be browsed. */
+  --shot-h: clamp(15rem, 27vw, 23rem);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding-top: 5rem;
+}
+
+.stage-head {
+  width: 100%;
+  margin-bottom: clamp(1.1rem, 2vw, 1.75rem);
+}
+
+.stage-group {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #79883f;
+  margin: 0 0 0.45rem;
+}
+
+/* The one horizontal rule left in the section, and it earns it: the name of a
+   widget is a caption for the picture under it, and the rule is what ties them
+   together. */
+.stage-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--ink-main);
+}
+
+.stage-name {
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(1.5rem, 2.6vw, 2.15rem);
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: #101317;
+  margin: 0;
+}
+
+.stage-index {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  color: #8b929c;
+  margin: 0;
+}
+
+.stage-index > span:first-child {
+  font-weight: 700;
+  color: #101317;
+}
+
+.stage-shot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--shot-h);
+}
+
+.stage-shot img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 34px rgba(16, 19, 23, 0.28));
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
+}
+
+/* The one movement in the section: the outgoing capture drops out and the new
+   one settles in from a few pixels below. The picture is what changes, so the
+   picture is what moves — sliding the whole section would say something
+   happened to the page rather than to the widget. */
+.stage.is-swapping .stage-shot img,
+.stage.is-swapping .stage-desc {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+/* Two lines' worth of room whether the sentence fills them or not. Without it
+   the section is 25px shorter on a one-line description, and every widget with
+   a shorter sentence than its neighbour moved the whole page under the
+   cursor. */
+.stage-desc {
+  max-width: 50ch;
+  min-height: calc(2 * 1.6em);
+  margin: clamp(1rem, 1.8vw, 1.5rem) 0 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  text-align: center;
+  color: #5d656f;
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
+}
+
+/* ---- Sheet -----------------------------------------------------------------
+
+   Every widget there is, as its own capture, and the only control in the
+   section: the catalogue and the way through it are the same object. Three
+   frames to a row, each column hanging a little lower than the one before it,
+   scrolling in its own box so the column never runs past the widget beside it.
+   -------------------------------------------------------------------------- */
+
+/* The frames' own hairlines are the sheet's structure; a rule across the top
+   of them only added a fourth parallel line. The sheet's one edge is vertical:
+   it stands the catalogue off the widget beside it without adding a horizontal
+   to the stack. */
+.sheet {
+  position: relative;
+}
+
+.sheet::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * clamp(0.75rem, 1.5vw, 1.4rem));
+  width: 1px;
+  background-color: var(--ink-main);
+  pointer-events: none;
+}
+
+/* The bottom edge fades into the page ground: that is what says the sheet
+   continues past the end of its box. */
+.sheet::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3rem;
+  z-index: 2;
+  background: linear-gradient(180deg, transparent, var(--color-body-bg));
+  pointer-events: none;
+}
+
+.sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0 0 2.5rem;
+  max-height: clamp(22rem, 40vw, 32rem);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.28) transparent;
+}
+
+.sheet-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sheet-grid::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sheet-grid::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.28);
+}
+
+/* The rag. Each column hangs a step lower than its neighbour, so the sheet
+   reads as a stepped field rather than a table — the same offset the three
+   columns of the section take, one order of magnitude down. It is set on the
+   column rather than the row so it survives scrolling: a rag that changed as
+   the box scrolled would read as a rendering fault. */
+.sheet-grid > li:nth-child(3n + 2) {
+  margin-top: 1.4rem;
+}
+
+.sheet-grid > li:nth-child(3n) {
+  margin-top: 2.8rem;
+}
+
+.frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 100%;
+  padding: 0.85rem 0.6rem 0.8rem;
+  background-color: transparent;
+  border: 0;
+  /* Hairlines between frames rather than boxes around them, the way the claims
+     band above divides itself. */
+  border-right: 1px solid var(--ink-light);
+  border-bottom: 1px solid var(--ink-light);
+  cursor: pointer;
+  opacity: 0.6;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.sheet-grid > li:nth-child(3n) .frame {
+  border-right: 0;
+}
+
+.frame:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.frame.is-active {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* The lime marker on the chosen frame, sitting on the rule above it so the
+   sheet reads as one ruled surface with one mark on it. */
+.frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-btn-download-bg);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.frame.is-active::before {
+  opacity: 1;
+}
+
+.frame img {
+  width: 100%;
+  height: 2.8rem;
+  object-fit: contain;
+  object-position: center;
+}
+
+.frame-caption {
+  display: -webkit-box;
+  font-family: var(--font-family);
+  font-weight: 600;
+  font-size: 0.64rem;
+  letter-spacing: 0.05em;
+  line-height: 1.25;
+  text-align: center;
+  color: #5d656f;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.frame.is-active .frame-caption {
+  font-weight: 800;
+  color: #101317;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-shot img,
+  .stage-desc,
+  .frame,
+  .frame::before {
+    transition: none;
+  }
+}
+
+/* ---- Responsive ---------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  /* Two columns: the widget takes the width, the sheet stands beside the copy.
+     The steps go with them — at this width they cost more than they say. */
+  .gallery {
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.85fr);
+  }
+
+  .gallery-copy,
+  .stage {
+    padding-top: 0;
+  }
+
+  .stage {
+    grid-column: 1;
+  }
+
+  .gallery-copy {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .sheet {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  /* Two columns, and the box keeps its own scroll: let loose at this width
+     the sheet becomes fourteen rows of cards with the widget beside them
+     stopping after two, which is the long-list failure again. */
+  .sheet-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: clamp(24rem, 52vw, 34rem);
+  }
+
+  .sheet-grid > li:nth-child(3n + 2),
+  .sheet-grid > li:nth-child(3n) {
+    margin-top: 0;
+  }
+
+  .sheet-grid > li:nth-child(2n) {
+    margin-top: 1.2rem;
+  }
+
+  .sheet-grid > li:nth-child(3n) .frame {
+    border-right: 1px solid var(--ink-light);
+  }
+
+  .sheet-grid > li:nth-child(2n) .frame {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 860px) {
+  .gallery {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The sheet's edge divides columns; stacked there are no columns. */
+  .sheet::before {
+    display: none;
+  }
+
+  .stage,
+  .gallery-copy,
+  .sheet {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  /* One line again on a phone. A vertical sheet here is a list a screen and a
+     half long, and the section stops being a gallery. */
+  .sheet-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    padding-bottom: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+  }
+
+  .sheet-grid::-webkit-scrollbar {
+    height: 6px;
+    width: auto;
+  }
+
+  .sheet-grid > li {
+    flex: none;
+    width: 7rem;
+    margin-top: 0;
+  }
+
+  .sheet-grid > li:nth-child(2n) .frame,
+  .sheet-grid > li:nth-child(3n) .frame {
+    border-right: 1px solid var(--ink-light);
+  }
+
+  .frame {
+    border-bottom: 0;
+    scroll-snap-align: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .chapter-gallery {
+    padding-bottom: 4rem;
+  }
+
+  /* The bar folds: a one-line title needs width this width does not have. */
+  .gallery-head-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .gallery-kicker {
+    order: -1;
+    margin: 0;
+  }
+
+  .stage {
+    --shot-h: 14rem;
+  }
+}
+
+/* ==========================================================================
+   Section 03 - Remote screens
+   ==========================================================================
+   The scene is one drawing, so the devices are placed in percentages of a
+   fixed aspect box rather than laid out: they overlap on purpose - a laptop
+   standing in front of the rig is what says the two show the same thing at
+   the same moment, and a grid of four devices in four cells says the opposite.
+   -------------------------------------------------------------------------- */
+
+/* One line across the page, the way the mock states it: the chapter on the
+   left at the width of a column of text, the devices taking the rest. The
+   scene is the argument here - the copy gets what it needs and no more. */
+.screens {
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+}
+
+.screens-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.6vw, 1.5rem);
+  align-items: start;
+}
+
+.screens-facts {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--ink-main);
+}
+
+.screens-facts li {
+  position: relative;
+  padding: 0.6rem 0 0.6rem 1.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #4b535d;
+  border-bottom: 1px solid var(--ink-light);
+}
+
+/* The same lime index mark the claims band opens its rows with, cut at the
+   section's own angle. */
+.screens-facts li::before {
+  content: '';
+  position: absolute;
+  top: 1.05rem;
+  left: 0;
+  width: 0.7rem;
+  height: 2px;
+  background-color: var(--color-btn-download-bg);
+  transform: skewX(calc(-1 * var(--cut)));
+}
+
+/* The cut-out keeps no ground of its own - the page colour is the only thing
+   behind it, which is why the white was taken out rather than faded. The stage
+   keeps a band above and below it for the callouts to stand in. */
+.screens-stage {
+  position: relative;
+  padding: 3.6rem 0 3.4rem;
+}
+
+.screens-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---- Callouts ------------------------------------------------------------
+   A label, a hairline and a node - the same three marks assets/background.svg
+   draws the page's construction lines with. The label is set off the scene so
+   nothing is written over a screen, and the line does the pointing. */
+
+.screens-callout {
+  position: absolute;
+  left: var(--x);
+  margin: 0;
+  width: max-content;
+  max-width: 11rem;
+  line-height: 1.25;
+  pointer-events: none;
+}
+
+/* The leader: a hairline from the label to the device, closed by a ring at the
+   device end. */
+.screens-callout::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: var(--lead);
+  background-color: var(--ink-main);
+}
+
+.screens-callout::after {
+  content: '';
+  position: absolute;
+  left: -2px;
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--color-btn-download-bg);
+  border-radius: 50%;
+  background-color: var(--color-body-bg);
+}
+
+/* Callouts above the scene point down, the ones below point up. */
+.screens-callout-desktop {
+  top: 0;
+  padding-bottom: calc(var(--lead) + 0.4rem);
+}
+
+.screens-callout-desktop::before {
+  bottom: 0;
+}
+
+.screens-callout-desktop::after {
+  bottom: -3px;
+}
+
+.screens-callout-tablet,
+.screens-callout-laptop {
+  bottom: 0;
+  padding-top: calc(var(--lead) + 0.4rem);
+}
+
+.screens-callout-tablet::before,
+.screens-callout-laptop::before {
+  top: 0;
+}
+
+.screens-callout-tablet::after,
+.screens-callout-laptop::after {
+  top: -3px;
+}
+
+.screens-callout-name {
+  display: block;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #101317;
+}
+
+.screens-callout-desc {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.76rem;
+  color: #6b727c;
+}
+
+/* The band under the scene: what a remote screen is, in the section's own
+   ruled language rather than in cards - four columns opened by a rule, the
+   way the claims band under chapter 01 divides itself. */
+.screens-detail {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+  margin: clamp(1.5rem, 3vw, 2.75rem) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--ink-main);
+}
+
+.screens-detail li {
+  padding: 1.1rem clamp(0.75rem, 1.6vw, 1.5rem) 0;
+  border-right: 1px solid var(--ink-light);
+}
+
+.screens-detail li:first-child {
+  padding-left: 0;
+}
+
+.screens-detail li:last-child {
+  border-right: 0;
+}
+
+.screens-detail-title {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: #101317;
+}
+
+.screens-detail-desc {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: #4b535d;
+}
+
+.screens-detail code {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  padding: 0.05em 0.3em;
+  border: 1px solid var(--ink-main);
+  color: #101317;
+}
+
+/* ---- Responsive ---------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  /* The copy over the scene rather than beside it: below this width the left
+     column is four words to a line and the devices have nowhere to stand. */
+  .screens {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .screens-head {
+    max-width: 44rem;
+  }
+
+  .screens-detail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .screens-detail li:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .screens-detail li:nth-child(odd) {
+    padding-left: 0;
+  }
+
+  .screens-detail li:nth-child(n + 3) {
+    margin-top: 1.1rem;
+    border-top: 1px solid var(--ink-light);
+  }
+}
+
+@media (max-width: 720px) {
+  /* Leaders need room beside the thing they point at; at this width the
+     labels would overlap each other before they reached a device. The scene
+     then carries no callouts and the devices are named in a row under it. */
+  .screens-stage {
+    padding: 0;
+  }
+
+  .screens-callout {
+    position: static;
+    display: inline-block;
+    width: auto;
+    max-width: none;
+    margin: 0.9rem 1.6rem 0 0;
+    padding: 0;
+    text-align: left;
+  }
+
+  .screens-callout::before,
+  .screens-callout::after {
+    display: none;
+  }
+
+  .screens-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .screens-detail li {
+    padding: 1.1rem 0 0;
+    border-right: 0;
+  }
+
+  .screens-detail li + li {
+    border-top: 1px solid var(--ink-light);
+  }
+}
+
+/* ==========================================================================
+   Section 04 — The app behind the overlay
+
+   A deck of captures and one plate beside it. The captures are of one window,
+   so they are stacked rather than tiled: six cards of the same dark window
+   laid out in a grid read as six different programs.
+
+   The lean is the page's own --cut, spent on the cards waiting their turn. The
+   card at the front is square to the reader — it is the one being read.
+   ========================================================================== */
+
+.chapter-control {
+  padding-bottom: 6rem;
+}
+
+.control {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.25rem);
+}
+
+/* The chapter opens the way 03 does — ordinal, then the lead beside it — so
+   the two numbered chapters start on the same line as each other. */
+.control-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.6vw, 1.5rem);
+  align-items: start;
+  max-width: 54rem;
+}
+
+/* ---- The deck ------------------------------------------------------------
+
+   The stack and its plate, side by side: the picture is the argument, the
+   plate names what is in it. The stage keeps one height whatever card is at
+   the front, so browsing the deck never moves the page under the pointer.
+   -------------------------------------------------------------------------- */
+
+.control-deck {
+  --card-w: clamp(19rem, 52vw, 54rem);
+  --card-ratio: 1595 / 969;
+  /* One step of the fan: how far each waiting card stands to the right of the
+     one in front of it, and how far back. Named here because the script never
+     touches geometry — it only says which card is at the front. */
+  --fan-x: clamp(2rem, 4.4vw, 4.4rem);
+  --fan-z: 5.2rem;
+  --fan-y: 0.9rem;
+  /* Half the span of the fan — five steps for six cards — and half a card,
+     which together put the block of cards on the middle of the column. On a
+     phone there is no room to centre anything, so both go to zero and the
+     stack starts at the left edge. */
+  --fan-shift: calc(var(--fan-x) * 2.5);
+  --fan-origin: -50%;
+
+  /* The deck owns the middle of the page and the plate floats over its right
+     end, rather than the two sharing a row: a column of text beside the stack
+     pushed the picture off centre, and the picture is the argument here. */
+  position: relative;
+}
+
+.deck {
+  position: relative;
+  /* Deep enough that the fan reads as depth rather than as a row of shrinking
+     rectangles, shallow enough that the back of the stack keeps its edges. */
+  perspective: 2400px;
+  perspective-origin: 50% 50%;
+  height: calc(var(--card-w) / (var(--card-ratio)));
+}
+
+.deck-card {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* The fan is centred as a whole, not the card at the front: the stack grows
+     to the right, so the deck is pulled back by half its own span and the
+     block of cards sits on the middle of the column. */
+  left: 50%;
+  width: var(--card-w);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  /* The waiting cards. --d is the card's distance from the front, set by the
+     script; the geometry is all here. */
+  transform: translate3d(
+      calc(var(--fan-origin) - var(--fan-shift) + var(--fan-x) * var(--d, 0)),
+      calc(var(--fan-y) * var(--d, 0) * -1),
+      calc(var(--fan-z) * var(--d, 0) * -1)
+    )
+    rotateY(var(--cut));
+  /* The cards behind are dark captures on a light page, so they are stepped
+     back by very little: at any real fade they stop being screenshots and
+     become grey ghosts of one. */
+  opacity: calc(1 - 0.06 * var(--d, 0));
+  transition:
+    transform var(--transition-smooth),
+    opacity var(--transition-smooth),
+    filter var(--transition-smooth);
+  will-change: transform;
+}
+
+/* The front card is square to the reader and carries the only shadow in the
+   stack, so the eye has one place to land. It is also the one that opens: a
+   card at the front is already the subject, and clicking it enlarges it
+   instead of doing nothing. */
+.deck-card.is-active {
+  z-index: 10;
+  transform: translate3d(calc(var(--fan-origin) - var(--fan-shift)), 0, 0) rotateY(0deg);
+  opacity: 1;
+  cursor: zoom-in;
+}
+
+/* A card already read leaves to the left rather than shrinking into the fan —
+   the deck runs one way, the way a hand of cards is dealt. */
+.deck-card.is-past {
+  transform: translate3d(calc(var(--fan-origin) - var(--fan-shift) - 18%), 0, -14rem) rotateY(var(--cut));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.deck-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1.2rem 2.6rem rgba(10, 14, 20, 0.28);
+  background-color: #0b0e12;
+}
+
+.deck-card.is-active .deck-shot {
+  box-shadow: 0 2rem 3.6rem rgba(10, 14, 20, 0.34);
+}
+
+/* The name rides on the card itself while it is in the fan: the plate names
+   the front card, and the cards behind it need a label of their own or the
+   stack is six dark rectangles. */
+.deck-card-name {
+  position: absolute;
+  left: 0;
+  bottom: -1.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6f7783;
+  white-space: nowrap;
+  transition: opacity var(--transition-fast);
+}
+
+.deck-card.is-active .deck-card-name {
+  opacity: 0;
+}
+
+.deck-card:focus-visible {
+  outline: 2px solid var(--color-btn-download-bg);
+  outline-offset: 6px;
+}
+
+/* ---- The plate -----------------------------------------------------------
+
+   The words for whatever is at the front, standing off the right end of the
+   deck. It carries the page's own ground rather than a panel colour of its
+   own: it is a plate laid on the drawing, not a card. */
+
+.deck-plate {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(17rem, 24vw, 22rem);
+  padding: clamp(1rem, 1.6vw, 1.4rem) clamp(1rem, 1.6vw, 1.4rem) clamp(0.5rem, 1vw, 0.8rem);
+  background-color: var(--color-body-bg);
+  border: 1px solid var(--ink-main);
+  box-shadow: 0 1.4rem 3rem rgba(10, 14, 20, 0.14);
+}
+
+.deck-panel[hidden] {
+  display: none;
+}
+
+/* The plate is swapped, not slid: at this size a moving block of text is read
+   twice. Only the fade is animated, and only on the way in. */
+.deck-panel {
+  animation: deck-panel-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes deck-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.deck-panel-ordinal {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: #8b929c;
+  margin: 0 0 0.75rem;
+}
+
+.deck-panel-title {
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #101317;
+  margin: 0 0 0.75rem;
+}
+
+.deck-panel-desc {
+  max-width: 34ch;
+  margin: 0 0 1.25rem;
+}
+
+.deck-panel-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--ink-light);
+}
+
+.deck-panel-facts li {
+  position: relative;
+  padding: 0.55rem 0 0.55rem 1.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #4b535d;
+  border-bottom: 1px solid var(--ink-light);
+}
+
+/* The same lime index mark the claims band and the screens facts open with,
+   cut at the section's own angle. */
+.deck-panel-facts li::before {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  left: 0;
+  width: 0.7rem;
+  height: 2px;
+  background-color: var(--color-btn-download-bg);
+  transform: skewX(calc(-1 * var(--cut)));
+}
+
+/* ---- Deck controls -------------------------------------------------------- */
+
+.deck-nav {
+  display: flex;
+  max-width: calc(100% - clamp(17rem, 24vw, 22rem) - 2rem);
+  align-items: center;
+  gap: 0.75rem;
+  border-top: 1px solid var(--ink-main);
+  padding-top: 0.9rem;
+}
+
+.deck-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  font-size: 0.9rem;
+  color: #2a2f36;
+  background: none;
+  border: 1px solid var(--ink-main);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.deck-step:hover {
+  color: #0b1015;
+  border-color: #0b1015;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.deck-step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.deck-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  color: #6f7783;
+  margin: 0;
+}
+
+.deck-hint {
+  margin: 0 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a0a7b0;
+}
+
+/* ---- Narrower ------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .deck-plate {
+    position: static;
+    transform: none;
+    width: auto;
+    max-width: 44rem;
+    margin-top: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .deck-nav {
+    max-width: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .control-deck {
+    --card-w: calc(100% - 2.6rem);
+    --fan-x: 0.55rem;
+    --fan-y: 0.35rem;
+    --fan-z: 3rem;
+    --fan-shift: 0rem;
+    --fan-origin: 0%;
+  }
+
+  .deck-card {
+    left: 0;
+  }
+
+  .deck-card-name {
+    display: none;
+  }
+
+  .deck-hint {
+    display: none;
+  }
+}
+
+/* A deck that re-deals itself under a reader who asked for stillness is the
+   one animation on the page that would be worth reporting. */
+@media (prefers-reduced-motion: reduce) {
+  .deck-card,
+  .deck-panel {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ---- The viewer ----------------------------------------------------------
+
+   The front card at the size it was captured at. The ground is dark rather
+   than the page's own: the captures are dark windows, and a dark window on a
+   pale ground at full size is a hole in the page.
+   -------------------------------------------------------------------------- */
+
+.deck-viewer {
+  position: fixed;
+  inset: 0;
+  /* Above the header, which sits at 1000: a viewer the navigation bar draws
+     over is a viewer with a hole in it. */
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.deck-viewer[hidden] {
+  display: none;
+}
+
+.deck-viewer-ground {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(8, 11, 15, 0.86);
+  border: 0;
+  animation: deck-viewer-in 0.2s ease;
+}
+
+.deck-viewer-figure {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  max-width: 100%;
+  animation: deck-viewer-in 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes deck-viewer-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.deck-viewer-shot {
+  display: block;
+  /* The capture is 1595px wide. Past that it is being blown up rather than
+     shown, so it stops at its own size. */
+  max-width: min(100%, 1595px);
+  max-height: calc(100vh - 8rem);
+  width: auto;
+  height: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.5);
+}
+
+.deck-viewer-caption {
+  margin-top: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #b9c0c9;
+}
+
+.deck-viewer-close {
+  position: absolute;
+  top: clamp(0.75rem, 2vw, 1.5rem);
+  right: clamp(0.75rem, 2vw, 1.5rem);
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #e9ecef;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.deck-viewer-close:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+/* While the viewer is open the page behind it does not scroll — the deck is
+   mid-page, and a reader who closes the viewer should be where they left. */
+body.is-viewer-open {
+  overflow: hidden;
+}
