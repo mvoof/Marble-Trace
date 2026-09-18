@@ -10,9 +10,17 @@ import {
 const DESIGN_WIDTH = 120;
 const DESIGN_HEIGHT = 150;
 
+// What the widget ships at: a tall, narrow strip down the side of the screen,
+// which is the shape the bars are actually read in. The design width stays the
+// coordinate system the styles are written in — the default is narrower than
+// it, so `--wfs` scales the columns down rather than letting them overflow.
+const DEFAULT_WIDTH = 80;
+const DEFAULT_HEIGHT = 380;
+
 export const PIT_LINE_MANIFEST: WidgetManifest = {
   id: 'pit-line',
   order: 115,
+  previewScenarios: ['pit-lane', 'pit-limiter', 'pit-over-limit'],
   telemetryEvents: ['carDynamics'],
   label: 'Pit Line',
   description: 'Pit lane speed against the limit, and the roll to your stall.',
@@ -31,8 +39,8 @@ export const PIT_LINE_MANIFEST: WidgetManifest = {
     enabled: false,
     x: 100,
     y: 100,
-    currentWidth: DESIGN_WIDTH,
-    currentHeight: DESIGN_HEIGHT,
+    currentWidth: DEFAULT_WIDTH,
+    currentHeight: DEFAULT_HEIGHT,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     showPitSpeed: true,

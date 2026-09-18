@@ -5,6 +5,7 @@ import type {
   InvisibleDashRenderMode,
   InvisibleDashWidgetSettings,
 } from '@/types/widget-settings';
+import { MPS_PER_KMH, mockCarDynamics } from '@store/preview/mocks/dynamics';
 import { InvisibleDashWidget } from './InvisibleDashWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
@@ -20,7 +21,6 @@ interface StoryArgs {
   bloomIntensity: number;
 }
 
-const MPS_PER_KMH = 3.6;
 const DESIGN_WIDTH = 900;
 const DESIGN_HEIGHT = 200;
 
@@ -37,25 +37,24 @@ const meta: Meta<StoryArgs> = {
       border: 'none',
     },
     seed: (store, args) => {
-      store.liveWidgets.updateUserSettings('invisible-dash', {
+      const settings: Partial<InvisibleDashWidgetSettings> = {
         depth: args.depth,
         curvature: args.curvature,
         renderMode: args.renderMode,
         backdropColor: args.backdropColor,
         backdropScope: args.backdropScope,
         bloomIntensity: args.bloomIntensity,
-      } as Partial<InvisibleDashWidgetSettings>);
+      };
 
-      const carDynamics = store.player.carDynamics;
+      store.liveWidgets.updateUserSettings('invisible-dash', settings);
 
-      if (carDynamics) {
-        store.player.updateCarDynamics({
-          ...carDynamics,
+      store.player.updateCarDynamics(
+        mockCarDynamics({
           speed: args.speedKmh / MPS_PER_KMH,
           rpm: args.rpm,
           gear: args.gear,
-        });
-      }
+        })
+      );
     },
     args: {
       speedKmh: 247,
@@ -78,12 +77,6 @@ const meta: Meta<StoryArgs> = {
       backdropColor: { control: 'color' },
       backdropScope: { control: 'radio', options: ['clusters', 'full'] },
       bloomIntensity: { control: { type: 'range', min: 0, max: 100, step: 5 } },
-      backdropOpacity: {
-        control: { type: 'range', min: 0, max: 100, step: 5 },
-      },
-      backdropSoftness: {
-        control: { type: 'range', min: 0, max: 100, step: 5 },
-      },
     },
   }),
 };

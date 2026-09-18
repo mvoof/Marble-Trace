@@ -7,7 +7,7 @@ Storybook.
 
 | File                                       | Contents                                                                            |
 | ------------------------------------------ | ----------------------------------------------------------------------------------- |
-| `telemetry-snapshot-2026-09-01_23-20.json` | iRacing telemetry snapshot — realistic multi-car session (drivers, classes, timing) |
+| `telemetry-snapshot-2026-09-07_02-13.json` | iRacing telemetry snapshot — realistic multi-car session (drivers, classes, timing) |
 
 The snapshot is loaded by the neutral preview fixture
 `src/store/preview/sample-telemetry.ts` (globbed as `telemetry-snapshot-*.json`,

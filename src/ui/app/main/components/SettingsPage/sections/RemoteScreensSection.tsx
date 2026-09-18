@@ -161,7 +161,7 @@ export const RemoteScreensSection = observer(() => {
     [info]
   );
 
-  const remoteScreens = layouts.editingRemoteScreens;
+  const remoteScreens = layouts.groupedRemoteScreens;
 
   return (
     <SettingsCard title={t('settingsPage.remote.title')}>
@@ -366,12 +366,12 @@ export const RemoteScreensSection = observer(() => {
             : t('settingsPage.remote.screensDesc')}
         </div>
 
-        {remoteScreens.map((screen) => (
+        {remoteScreens.map((group) => (
           <RemoteScreenRow
-            key={screen.name}
-            screen={screen}
-            url={screenUrl(screen.slug ?? '')}
-            device={remoteDevices.bySlug(screen.slug ?? '')}
+            key={group.slug}
+            group={group}
+            url={screenUrl(group.slug)}
+            device={remoteDevices.bySlug(group.slug)}
             revealed={revealed}
           />
         ))}

@@ -896,6 +896,28 @@ export class LiveWidgetsStore implements WidgetMap {
     return widgetsOnMonitor(this.enabledWidgets, monitorName, monitors);
   }
 
+  /**
+   * The widgets this overlay window actually draws, of the layout on screen.
+   *
+   * `ownMonitorWidgets` answers the same question for the layout under the
+   * editor's cursor, which is what the canvas wants while a preview is open.
+   * The telemetry mask is about what is being rendered for the driver, so it
+   * reads the live layout: a session auto-switch has to move the appetite with
+   * it even while the editor holds another layout open.
+   */
+  get liveOwnMonitorWidgets(): WidgetDefaultConfig[] {
+    const monitorName = this.ownMonitorName;
+    const monitors = this.layoutRecords.liveLayout?.monitors ?? [];
+
+    if (!monitorName || monitors.length === 0) return [];
+
+    const enabled = this.liveWidgets.filter(
+      (widget) => widget.userSettings.enabled
+    );
+
+    return widgetsOnMonitor(enabled, monitorName, monitors);
+  }
+
   get enabledWidgets(): WidgetDefaultConfig[] {
     return this.allWidgets.filter((widget) => widget.userSettings.enabled);
   }
@@ -917,6 +939,28 @@ export class LiveWidgetsStore implements WidgetMap {
           widgetsOnMonitor(enabled, monitor.name, monitors).length > 0
       )
       .map((monitor) => monitor.name);
+  }
+
+  /**
+   * The widgets drawn on remote screens, of the layout on screen.
+   *
+   * Remote screens hold no webview of this app — the browsers on the LAN are
+   * fed by the mirror — so nothing registers their appetite for the gated
+   * telemetry fields unless main does it for them.
+   */
+  get liveRemoteScreenWidgets(): WidgetDefaultConfig[] {
+    const monitors = this.layoutRecords.liveLayout?.monitors ?? [];
+    const remoteNames = monitors
+      .filter((monitor) => !isDisplayMonitor(monitor))
+      .map((monitor) => monitor.name);
+
+    if (remoteNames.length === 0) return [];
+
+    return this.liveWidgets.filter((widget) => {
+      const owner = monitorForWidget(widget, monitors);
+
+      return owner ? remoteNames.includes(owner.name) : false;
+    });
   }
 
   // Applies widgets synced in from an overlay window. Only the widgets that

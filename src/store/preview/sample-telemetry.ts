@@ -3,7 +3,6 @@ import type {
   ChassisFrame,
   DriverEntriesFrame,
   FuelComputedFrame,
-  LapDeltaFrame,
   PitServiceFrame,
   ProximityFrame,
   RelativeFrame,
@@ -11,7 +10,10 @@ import type {
 import { action } from 'mobx';
 import { TrackSurface } from '@/types';
 import type { RootStore } from '@store/root-store';
-import { computeDriverEntries } from './compute-driver-entries';
+import { computeDriverEntries } from './mocks/driver-entries';
+import { mockCarPositions } from './mocks/field';
+import { mockLapDelta, mockLapLog, mockLapTiming } from './mocks/delta';
+import { mockPitService } from './mocks/pit';
 import { sampleTrack, SAMPLE_TRACK_ID } from './sample-track';
 
 // Mirror the active race flags into the FlagsStore's display state. The hold /
@@ -67,31 +69,10 @@ const buildSampleChassis = (): ChassisFrame => {
 };
 
 // The pit service order the preview shows: two tires and a fuel fill, so the
-// widget renders both an ordered and a kept corner without a live session.
-export const samplePitService: PitServiceFrame = {
-  flags: null,
-  changeLf: true,
-  changeRf: true,
-  changeLr: false,
-  changeRr: false,
-  addFuel: true,
-  cleanWindshield: false,
-  fastRepair: false,
-  fuelAmount: 34.2,
-  lfPressure: 159,
-  rfPressure: 163,
-  lrPressure: 155,
-  rrPressure: 159,
-  tireCompound: null,
-  repairLeftS: 0,
-  optRepairLeftS: 0,
-  towTimeS: 0,
-  fastRepairsAvailable: 1,
-  fastRepairsUsed: 1,
-  serviceStatus: null,
-  inPitStall: false,
-  serviceActive: false,
-};
+// widget renders both an ordered and a kept corner without a live session. The
+// shape is the pit builder's own, so the baseline and every pit scenario state
+// the same stop.
+export const samplePitService: PitServiceFrame = mockPitService();
 
 export const sampleFuel: FuelComputedFrame = {
   historyStats: { last: 2.7, avg: 2.6, min: 2.4, max: 2.9 },
@@ -119,12 +100,6 @@ export const sampleFuel: FuelComputedFrame = {
   ],
 };
 
-const sampleLapDelta: LapDeltaFrame = {
-  sectorTimes: [28.4, 31.2, 26.9],
-  currentSectorIdx: 1,
-  sectorDeltas: [-0.12, 0.08, -0.05],
-};
-
 // Wrapped in `action` so the whole batch of setters runs as a single MobX
 // transaction — callers (preview, layout editor, Storybook) invoke it directly
 // without needing their own `runInAction`.
@@ -149,8 +124,11 @@ export const seedSampleTelemetry = action((store: RootStore) => {
     });
   if (sampleSnapshot.environment)
     store.environment.updateEnvironment(sampleSnapshot.environment);
-  if (sampleSnapshot.lapTiming)
-    store.player.updateLapTiming(sampleSnapshot.lapTiming);
+  // The recorded lap timing carries no lap times and no established reference
+  // (`_ok` false everywhere), which is the sim's "no delta yet" state — every
+  // timing widget draws dashes against it. The builder supplies a mid-lap
+  // picture with a personal best behind it instead.
+  store.player.updateLapTiming(mockLapTiming());
   if (sampleSnapshot.session)
     store.session.updateSession(sampleSnapshot.session);
   if (sampleSnapshot.sessionInfo)
@@ -161,6 +139,10 @@ export const seedSampleTelemetry = action((store: RootStore) => {
       ...sampleSnapshot.sessionInfo,
       trackId: SAMPLE_TRACK_ID,
     });
+
+  // No incident markers in the baseline: they are laid down by a scenario, and
+  // re-seeding the same store has to take them back off the map again.
+  store.backendComputed.updateIncidents({ incidents: [] });
 
   const entries = computeDriverEntries(
     sampleSnapshot.carIdx ?? null,
@@ -188,6 +170,10 @@ export const seedSampleTelemetry = action((store: RootStore) => {
       entries,
       playerCarIdx,
     } as RelativeFrame);
+
+    // The map and the pace-car store read the positions frame rather than the
+    // driver list, so the same field is handed to them in the shape they read.
+    store.cars.updateCarPositions(mockCarPositions(entries));
   }
 
   // Seed a light proximity frame and force the radar visible so radar widgets
@@ -248,11 +234,24 @@ export const seedSampleTelemetry = action((store: RootStore) => {
   // no session, so it opts in through the same manual toggle the hotkey uses.
   store.pitServiceWidget.panel.manualShow = true;
   store.backendComputed.updateFuel(sampleFuel);
-  store.backendComputed.updateLapDelta(sampleLapDelta);
+  store.backendComputed.updateLapDelta(mockLapDelta());
+  store.backendComputed.updateLapLog(mockLapLog());
 
   // Seed the synthetic track outline so the track-map widget renders a map
   // instead of the "recording track" placeholder.
   store.trackMapWidget.onTrackShapeReceived(sampleTrack);
+
+  // The seed is re-run every time the driver picks a scenario, on the same
+  // store — so it has to put back everything a scenario may have forced, not
+  // only what it sets itself. These three have no baseline frame of their own:
+  // without clearing them, a pit lane, a coach advisory or a reference lap
+  // picked once would still be on screen after switching back to the baseline.
+  store.player.updatePitTarget(null);
+  store.referenceLap.reset();
+  store.drivingCoachWidget.displayedAdvisory = 'neutral';
+  store.drivingCoachWidget.displayedBrakeUrgency = 0;
+  store.drivingCoachWidget.displayedExitLateM = null;
+  store.drivingCoachWidget.displayedExitThrottleDeficit = 0;
 
   syncFlagDisplay(store);
 });

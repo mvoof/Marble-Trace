@@ -122,6 +122,11 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
   id: 'engine-panel',
   order: 200,
   telemetryEvents: ['carInputs'],
+  previewScenarios: [
+    'engine-oil-overheat',
+    'engine-water-overheat',
+    'engine-stalled',
+  ],
   label: 'Engine Panel',
   description:
     'Liquid temperatures, pressures, and system adjustments (ABS, TC, Brake Bias, Engine Map).',

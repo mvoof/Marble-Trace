@@ -118,3 +118,34 @@
 .more {
   padding: 0 10px;
 }
+
+.deliveryLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/**
+ * Live counts refresh four times a second. A proportional figure set would
+ * re-measure on every poll and shuffle everything beside it, so every value
+ * that moves sits on a monospace grid of a fixed width and is read by shape.
+ */
+.numeric {
+  display: inline-block;
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.numericBundles {
+  min-width: 8ch;
+}
+
+.numericRate {
+  min-width: 8ch;
+}
+
+.numericSpan {
+  min-width: 7ch;
+}

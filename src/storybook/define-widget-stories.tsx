@@ -1,13 +1,19 @@
 import { useLayoutEffect } from 'react';
 import type { ComponentType } from 'react';
 import { runInAction } from 'mobx';
-import type { Decorator, Meta, ArgTypes } from '@storybook/react-vite';
+import type {
+  Decorator,
+  Meta,
+  ArgTypes,
+  StoryContext,
+} from '@storybook/react-vite';
 
+import type { PreviewScenarioId } from '@/types/preview-scenarios';
 import type { RootStore } from '@store/root-store';
 import { useStore } from '@store/root-store-context';
 import { withStore } from '../../.storybook/decorators';
 import { widgetDecorator } from './widgetDecorator';
-import { seedFromSnapshot } from './seed-from-snapshot';
+import { seedFromSnapshot, seedScenario } from './seed-from-snapshot';
 
 interface WidgetStorySize {
   width?: number | string;
@@ -22,6 +28,24 @@ interface WidgetStorySize {
   scale?: number;
 }
 
+/**
+ * Names a declared scenario as a story's starting state.
+ *
+ * Spread into a story's `parameters`, it is seeded before the meta's own
+ * `seed` runs, so a story states only what makes it different from the
+ * scenario. The id is checked against the shipped union, so a typo fails the
+ * build rather than showing an empty widget:
+ *
+ * ```ts
+ * export const RunningShort: Story = {
+ *   parameters: previewScenario('fuel-short'),
+ * };
+ * ```
+ */
+export const previewScenario = (id: PreviewScenarioId) => ({
+  previewScenario: id,
+});
+
 interface DefineWidgetStoriesOptions<Args> {
   /** The widget component to render (no props — reads its own stores). */
   widget: ComponentType;
@@ -29,8 +53,12 @@ interface DefineWidgetStoriesOptions<Args> {
   size?: WidgetStorySize;
   /** Load the shared telemetry snapshot as a baseline before `seed`. */
   seedSnapshot?: boolean;
-  /** The only widget-specific part: push `args` into the stores. */
-  seed?: (store: RootStore, args: Args) => void;
+  /**
+   * The only widget-specific part: push `args` into the stores. It runs after
+   * the story's scenario base, and is handed that scenario's id so a seed can
+   * leave the domain the scenario already stated alone.
+   */
+  seed?: (store: RootStore, args: Args, scenarioId?: PreviewScenarioId) => void;
   /** Default control values shared by every story. */
   args?: Partial<Args>;
   /** Storybook control config per arg. */
@@ -61,6 +89,10 @@ type WidgetMeta<Args> = Pick<
  * and `seed` re-run on every args change, so Controls drive the widget live for
  * visual testing.
  *
+ * A story can name a declared scenario as its starting state via
+ * `parameters: previewScenario('fuel-short')`; it is seeded before `seed`, so a
+ * story that names one needs no seeding code of its own.
+ *
  * A single frame wraps the widget; a story can resize it (e.g. swap a vertical
  * layout) via `parameters: { widgetFrame: { width, height } }` — this overrides
  * the default `size` in place instead of nesting a second clipped frame.
@@ -70,7 +102,13 @@ export const defineWidgetStories = <Args,>(
 ): WidgetMeta<Args> => {
   const { widget: Widget, size, seedSnapshot, seed, args, argTypes } = options;
 
-  const StoryHost = ({ hostArgs }: { hostArgs: Args }) => {
+  const StoryHost = ({
+    hostArgs,
+    scenarioId,
+  }: {
+    hostArgs: Args;
+    scenarioId?: PreviewScenarioId;
+  }) => {
     const store = useStore();
 
     const argsSignature = JSON.stringify(hostArgs);
@@ -82,17 +120,22 @@ export const defineWidgetStories = <Args,>(
         // the sim connected before seeding.
         store.sim.isConnected = true;
 
-        if (seedSnapshot) {
+        // A scenario lays down the snapshot itself, so naming one makes the
+        // meta's own snapshot baseline redundant. The story's `seed` runs last
+        // either way, and overrides whatever the base put in place.
+        if (scenarioId) {
+          seedScenario(store, scenarioId);
+        } else if (seedSnapshot) {
           seedFromSnapshot(store);
         }
 
         if (seed) {
-          seed(store, hostArgs);
+          seed(store, hostArgs, scenarioId);
         }
       });
       // hostArgs is re-read through argsSignature, its structural identity.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [store, argsSignature]);
+    }, [store, argsSignature, scenarioId]);
 
     return <Widget {...(hostArgs as object)} />;
   };
@@ -106,7 +149,14 @@ export const defineWidgetStories = <Args,>(
   };
 
   return {
-    render: (renderArgs: Args) => <StoryHost hostArgs={renderArgs} />,
+    render: (renderArgs: Args, context: StoryContext<Args>) => (
+      <StoryHost
+        hostArgs={renderArgs}
+        scenarioId={
+          context.parameters.previewScenario as PreviewScenarioId | undefined
+        }
+      />
+    ),
     parameters: { layout: 'centered' },
     decorators: [withStore(), frameDecorator],
     args: args as Args,

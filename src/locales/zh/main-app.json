@@ -42,6 +42,11 @@
     "resetOk": "重置并重启",
     "resetCancel": "取消"
   },
+  "installMismatch": {
+    "title": "你正在运行 Marble Trace 的第二个旧副本",
+    "description": "此窗口运行的是位于 {{runningDir}} 的 v{{runningVersion}}，而已安装的版本是位于 {{registeredDir}} 的 v{{registeredVersion}}。更新只会安装到已安装的副本，因此这一份会一直是旧版。请卸载 {{runningDir}} 中的副本，并从已安装的副本启动 Marble Trace。",
+    "unknownVersion": "未知"
+  },
   "updateBanner": {
     "downloading": "正在下载更新...",
     "ready": "更新已下载，正在重启...",
@@ -107,6 +112,11 @@
     "arrangeRemoteScreensTooltip": "将远程屏幕连同其挂件排列在桌面下方的多行中",
     "addRemoteScreenHint": "任何打开该链接的设备都会渲染此屏幕：网络中的平板，或 OBS 的浏览器源。用于 OBS 时请将背景设为透明，并把源设成相同尺寸——第一个连接的会上报自己的尺寸，按它调整会移动该屏幕上的所有挂件。",
     "remoteScreenTransparent": "透明背景（用于 OBS）",
+    "remoteScreenTransparentSuffix": "透明",
+    "remoteScreenModeReuse": "现有屏幕",
+    "remoteScreenModeNew": "新屏幕",
+    "remoteScreenSelectExisting": "选择屏幕",
+    "remoteScreenReuseHint": "在当前布局中复用此屏幕及其 URL 和尺寸。",
     "remoteScreenPresetGroup": {
       "monitor": "显示器 / 直播画布",
       "tablet": "平板",
@@ -384,7 +394,19 @@
       "waitingSession": "等待会话数据…",
       "showAll": "显示其余 {{count}} 项",
       "collapseRow": "折叠",
-      "expandRow": "展开"
+      "expandRow": "展开",
+      "delivery": {
+        "title": "交付计数器",
+        "description": "每个接收方实际收到了多少个数据包，其中有多少包含每个按需字段。",
+        "reset": "重置计数器",
+        "waiting": "尚未交付任何内容。",
+        "field": "字段",
+        "bundles": "数据包",
+        "rate": "频率",
+        "bundlesLabel": "个数据包",
+        "spanLabel": "历时",
+        "seconds": "{{seconds}} 秒"
+      }
     },
     "developerTools": {
       "title": "开发者工具",
@@ -463,9 +485,12 @@
       "tokenDesc": "设备需要此令牌才能打开屏幕。下方的链接和二维码中已包含该令牌。",
       "lanLabel": "可从局域网访问",
       "regenerateToken": "新令牌",
-      "screensTitle": "当前布局中的屏幕",
-      "screensDesc": "在设备上打开该地址。将其添加到主屏幕可隐藏浏览器地址栏，让布局占满整个屏幕。",
+      "screensTitle": "远程屏幕",
+      "screensDesc": "在设备上打开该地址。将其添加到主屏幕会隐藏浏览器地址栏，使布局占满整个显示屏。",
       "screensEmpty": "尚无远程屏幕。请在布局编辑器中的显示器旁添加一个。",
+      "usedInLayouts": "布局",
+      "activeNow": "当前活跃",
+      "inactive": "在当前会话中未激活",
       "serverOffline": "服务器未运行",
       "copyUrl": "复制链接",
       "obsHint": "在 OBS 中将此地址添加为浏览器源，尺寸 {{width}}×{{height}}。把屏幕背景设为透明，画面上就只剩下小部件。",

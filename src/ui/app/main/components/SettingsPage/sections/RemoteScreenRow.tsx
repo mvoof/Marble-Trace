@@ -4,9 +4,9 @@ import { App, Button, ColorPicker, Flex, QRCode, Tag, Tooltip } from 'antd';
 import { Copy, Maximize2, EyeOff } from 'lucide-react';
 
 import { useLayoutsStore } from '@store/root-store-context';
+import type { GroupedRemoteScreen } from '@store/settings/layouts.store';
 import { DEFAULT_REMOTE_BACKGROUND } from '@utils/remote-screen';
 import type { RemoteDevice } from '@/types/bindings';
-import type { LayoutMonitor } from '@/types/widget-settings';
 import styles from '../SettingsPage.module.scss';
 import rowStyles from './RemoteScreenRow.module.scss';
 
@@ -16,7 +16,7 @@ const ICON_SIZE = 14;
 const QR_SIZE = 184;
 
 interface RemoteScreenRowProps {
-  screen: LayoutMonitor;
+  group: GroupedRemoteScreen;
   url: string;
   device?: RemoteDevice;
   /** Whether the token — and with it the QR code — may be shown on screen. */
@@ -35,16 +35,17 @@ const maskToken = (url: string): string =>
  * on a tablet by hand is exactly the friction this feature exists to avoid.
  */
 export const RemoteScreenRow = observer(
-  ({ screen, url, device, revealed }: RemoteScreenRowProps) => {
+  ({ group, url, device, revealed }: RemoteScreenRowProps) => {
     const layouts = useLayoutsStore();
     const { message } = App.useApp();
     const { t } = useTranslation('main-app');
 
+    const screen = group.screen;
     const background = screen.background ?? DEFAULT_REMOTE_BACKGROUND;
     const isTransparent = background === 'transparent';
 
     const handleBackground = (color: string) => {
-      layouts.setRemoteScreenBackground(screen.name, color);
+      layouts.setRemoteScreenBackgroundBySlug(group.slug, color);
     };
 
     const handleCopy = () => {
@@ -68,7 +69,11 @@ export const RemoteScreenRow = observer(
     const handleFit = () => {
       if (!reported) return;
 
-      layouts.resizeRemoteScreen(screen.name, reported.width, reported.height);
+      layouts.resizeRemoteScreenBySlug(
+        group.slug,
+        reported.width,
+        reported.height
+      );
 
       message.success(t('settingsPage.remote.sizeApplied'));
     };
@@ -112,15 +117,42 @@ export const RemoteScreenRow = observer(
 
           <Flex vertical gap={8} flex="1 1 260px">
             <Flex align="center" gap={8} wrap>
-              <span className={styles.fieldTitle}>{screen.name}</span>
+              <span className={styles.fieldTitle}>{group.name}</span>
 
               <span className={styles.fieldDesc}>
                 {screen.bounds.width}×{screen.bounds.height}
               </span>
 
+              {group.isLive ? (
+                <Tag color="cyan">{t('settingsPage.remote.activeNow')}</Tag>
+              ) : (
+                <Tag>{t('settingsPage.remote.inactive')}</Tag>
+              )}
+
               {device?.connected && (
                 <Tag color="green">{t('settingsPage.remote.deviceOnline')}</Tag>
               )}
+            </Flex>
+
+            <Flex align="center" gap={6} wrap>
+              <span className={styles.fieldDesc}>
+                {t('settingsPage.remote.usedInLayouts')}:
+              </span>
+              {group.layouts.map((usage) => {
+                const contexts =
+                  usage.sessionContexts.length > 0
+                    ? ` (${usage.sessionContexts.join(', ')})`
+                    : '';
+                return (
+                  <Tag
+                    key={usage.layoutId}
+                    color={usage.isLive ? 'cyan' : undefined}
+                  >
+                    {usage.layoutName}
+                    {contexts}
+                  </Tag>
+                );
+              })}
             </Flex>
 
             <span className={`${styles.fieldDesc} ${rowStyles.maskedUrl}`}>

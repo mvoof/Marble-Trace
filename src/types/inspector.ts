@@ -35,3 +35,19 @@ export interface InspectorRow {
  * session YAML that arrives on its own event and changes a few times a session.
  */
 export type InspectorSource = 'telemetry' | 'session';
+
+/** One gated field's delivery, as a total and as the rate it implies. */
+export interface DeliveryFieldRow {
+  field: string;
+  bundles: number;
+  hz: number;
+}
+
+/** One recipient's delivery counters, ready to draw. */
+export interface DeliveryRow {
+  label: string;
+  bundles: number;
+  elapsedMs: number;
+  hz: number;
+  fields: DeliveryFieldRow[];
+}

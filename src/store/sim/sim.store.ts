@@ -6,15 +6,22 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 import { listenTo, type UnlistenFn } from '@platform/services/events.service';
-import { widgetTypeOf } from '@utils/widget-instance';
+import { maskOfWidgets } from '@store/sim/telemetry-mask';
 
 import {
+  clearActiveEventsSilent,
+  clearRemoteActiveEventsSilent,
   getConnectionStatus,
   getLastSessionInfo,
   setActiveEventsSilent,
+  setRemoteActiveEventsSilent,
   startTelemetryStream,
   stopTelemetryStream,
 } from '@platform/services/telemetry.service';
+import {
+  watchMinimized,
+  type StopWatching,
+} from '@platform/services/window-visibility.service';
 import {
   deleteReferenceLap,
   getCachedTrackShape,
@@ -41,11 +48,6 @@ import {
   trackConditionForWetness,
 } from '@store/sim/track-condition';
 import type { TelemetryStatus } from '@/types';
-import {
-  telemetryEventsToMask,
-  type TelemetryEventName,
-} from '@/types/telemetry-events';
-import { WIDGET_BY_ID } from '@store/widget-catalog';
 import type { RootStore } from '@store/root-store';
 import {
   SIM_TELEMETRY_BUNDLE,
@@ -78,6 +80,13 @@ export class SimStore {
 
   /** Condition the currently loaded reference lap was asked for. */
   private referenceCondition: TrackCondition | null = null;
+  /**
+   * True while this window is minimized — one of the three states that take it
+   * out of the mask registry entirely. Watched only in the overlay windows.
+   */
+  private isMinimized = false;
+  private stopWatchingMinimized: StopWatching | null = null;
+  private isDisposed = false;
   private initId = 0;
   private unlistens: UnlistenFn[] = [];
   private readonly disposers: IReactionDisposer[] = [];
@@ -87,24 +96,53 @@ export class SimStore {
   }
 
   init() {
-    if (!drawsWidgets()) {
+    if (drawsWidgets()) {
       this.disposers.push(
         reaction(
           () => ({
-            // What is on screen, not what the editor has open — same source
-            // updateActiveEvents itself reads. Tracking allWidgets (the
-            // editing layout) here left the mask stuck on whatever layout was
-            // live when the editor opened: the live layout could change out
-            // from under it (a session auto-switch while editing another
-            // layout) with nothing to trigger a recompute.
-            widgets: this.root.liveWidgets.liveWidgets.map((w) => ({
-              id: w.id,
-              enabled: w.userSettings.enabled,
-            })),
-            hideAll: this.root.appSettings.appSettings.hideAllWidgets,
+            // What is on screen, not what the editor has open: the editor lives
+            // in main and its preview draws against seeded scenarios, so it
+            // must contribute nothing. Reading the live layout is also what
+            // keeps a session auto-switch moving this window's appetite while
+            // the editor holds another layout open.
+            widgets: this.root.liveWidgets.liveOwnMonitorWidgets.map(
+              (widget) => widget.id
+            ),
+            gateClosed: this.ownGateClosed,
           }),
-          () => this.updateActiveEvents(),
-          { fireImmediately: true }
+          () => this.updateOwnActiveEvents(),
+          { fireImmediately: true, equals: comparer.structural }
+        )
+      );
+
+      void watchMinimized((minimized) =>
+        runInAction(() => {
+          this.isMinimized = minimized;
+        })
+      ).then((stop) => {
+        // The store can be disposed before the listener is in place.
+        if (this.isDisposed) {
+          stop();
+
+          return;
+        }
+
+        this.stopWatchingMinimized = stop;
+      });
+    } else {
+      this.disposers.push(
+        reaction(
+          () => ({
+            widgets: this.root.liveWidgets.liveRemoteScreenWidgets.map(
+              (widget) => ({
+                id: widget.id,
+                enabled: widget.userSettings.enabled,
+              })
+            ),
+            gateClosed: this.remoteGateClosed,
+          }),
+          () => this.updateRemoteActiveEvents(),
+          { fireImmediately: true, equals: comparer.structural }
         )
       );
     }
@@ -172,6 +210,9 @@ export class SimStore {
     }
 
     this.disposers.length = 0;
+    this.isDisposed = true;
+    this.stopWatchingMinimized?.();
+    this.stopWatchingMinimized = null;
     this.disposeListeners();
   }
 
@@ -200,37 +241,81 @@ export class SimStore {
   }
 
   /**
-   * Rebuilds the mask of high-frequency bundle fields the backend has to fill.
+   * Whether the app is showing no widgets anywhere — the part of the visibility
+   * gate every recipient shares.
    *
-   * The answer comes from the manifests: every enabled widget of the active
-   * layout contributes its own `telemetryEvents`, so a widget declares its
-   * appetite next to itself and nothing here has to be kept in step with it.
-   * Hiding everything asks for nothing at all.
+   * A recipient behind a closed gate is removed from the registry rather than
+   * registered with a mask of `0`: a `0` still names a recipient the ungated
+   * bundle is delivered to, and the point is to be sent nothing at all.
+   *
+   * Loss of focus is deliberately absent: an overlay is unfocused for the whole
+   * session, and gating on it would blank every widget exactly when it matters.
    */
-  private updateActiveEvents() {
-    const hideAll = this.root.appSettings.appSettings.hideAllWidgets;
+  private get everyWidgetHidden(): boolean {
+    const settings = this.root.appSettings.appSettings;
 
-    if (hideAll) {
-      setActiveEventsSilent(0);
+    if (settings.hideAllWidgets) {
+      return true;
+    }
+
+    // Drag mode paints the widgets whatever the sim is doing, so the driver can
+    // place them with the game closed — it must keep its telemetry.
+    return (
+      settings.hideWidgetsWhenGameClosed &&
+      this.status !== 'connected' &&
+      !this.root.appSettings.dragMode
+    );
+  }
+
+  /** The shared gate plus the one state that belongs to a window: minimized. */
+  private get ownGateClosed(): boolean {
+    return this.isMinimized || this.everyWidgetHidden;
+  }
+
+  /**
+   * The shared gate alone: main's own window being minimized says nothing about
+   * a tablet on the LAN.
+   */
+  private get remoteGateClosed(): boolean {
+    return this.everyWidgetHidden;
+  }
+
+  /**
+   * Registers this window's own appetite for the gated bundle fields.
+   *
+   * The mask is the union of what the enabled widgets **on this window's
+   * monitor** declare in their manifests — the same set the canvas draws — so a
+   * widget states its appetite next to itself and the window that renders it is
+   * the one that asks for it. A window showing nothing leaves the registry
+   * altogether, so even the ungated tiers stop arriving.
+   */
+  private updateOwnActiveEvents() {
+    if (this.ownGateClosed) {
+      clearActiveEventsSilent();
 
       return;
     }
 
-    const requested = new Set<TelemetryEventName>();
+    setActiveEventsSilent(
+      maskOfWidgets(this.root.liveWidgets.liveOwnMonitorWidgets)
+    );
+  }
 
-    // What is on screen, not what the editor has open: the editor's preview
-    // draws against seeded scenarios and needs no telemetry of its own.
-    for (const widget of this.root.liveWidgets.liveWidgets) {
-      if (!widget.userSettings.enabled) continue;
+  /**
+   * The remote screens have no window of their own to register for them, and
+   * main owns remote publishing — so main registers their mask under the
+   * reserved pseudo-label.
+   */
+  private updateRemoteActiveEvents() {
+    if (this.remoteGateClosed) {
+      clearRemoteActiveEventsSilent();
 
-      const manifest = WIDGET_BY_ID.get(widgetTypeOf(widget));
-
-      for (const event of manifest?.telemetryEvents ?? []) {
-        requested.add(event);
-      }
+      return;
     }
 
-    setActiveEventsSilent(telemetryEventsToMask(requested));
+    setRemoteActiveEventsSilent(
+      maskOfWidgets(this.root.liveWidgets.liveRemoteScreenWidgets)
+    );
   }
 
   async startStream() {

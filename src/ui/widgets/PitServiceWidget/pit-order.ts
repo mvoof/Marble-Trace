@@ -39,6 +39,17 @@ export class PitOrder {
    */
   fuelDraftLiters: number | null = null;
 
+  /**
+   * What was aboard when the crew started filling, or null off a stop.
+   *
+   * The sim keeps `fuelAmount` at the figure the order was placed with while
+   * the hose is in, so `inTank + ordered` climbs liter by liter as the tank
+   * does — and the mark showing the level the car leaves on would walk to the
+   * right through the whole stop. Measured from this instead, it stands still
+   * and the green band simply shrinks into the blue one.
+   */
+  fillBaselineLiters: number | null = null;
+
   private orderFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private readonly store: PitServiceWidgetStore) {
@@ -204,6 +215,37 @@ export class PitOrder {
     const service = this.store.root.player.pitService;
 
     return service?.addFuel ? (service.fuelAmount ?? 0) : 0;
+  }
+
+  /** Latches the tank level a stop starts from; see `fillBaselineLiters`. */
+  handleServiceActiveChange(serviceActive: boolean) {
+    this.fillBaselineLiters = serviceActive ? this.fuelInTankLiters : null;
+  }
+
+  /**
+   * The level the car leaves the box on: what the order is measured from, plus
+   * the order itself, capped at the brim.
+   *
+   * Off a stop that baseline is simply what is aboard right now — fuel burns,
+   * and an order of thirty liters targets thirty above whatever is left. During
+   * the stop it is frozen, so the target does not chase the rising tank.
+   */
+  get fuelTargetLiters(): number | null {
+    const capacity = this.fuelCapacityLiters;
+
+    if (capacity === null) {
+      return null;
+    }
+
+    const baseline =
+      this.fuelDraftLiters !== null
+        ? this.fuelInTankLiters
+        : (this.fillBaselineLiters ?? this.fuelInTankLiters);
+
+    return Math.min(
+      capacity,
+      Math.max(this.fuelInTankLiters, baseline + this.fuelDisplayLiters)
+    );
   }
 
   /** What the fuel bar shows: the live drag, or the sim when not dragging. */

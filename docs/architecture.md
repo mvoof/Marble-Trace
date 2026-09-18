@@ -830,6 +830,16 @@ the context hooks in `src/store/root-store-context.ts`.
 > `preview/` exists so the app never imports from `src/storybook`. Shared fixtures
 > live in this neutral place, which both the app and Storybook may read.
 
+**The preview store is isolated, and the linter holds it there.** A scenario and
+every mock builder write only into the `RootStore({ skipInit: true })` handed to
+them — never into the stores a running widget reads. So `src/store/preview/**`
+carries its own `no-restricted-imports` override: the context hooks in
+`root-store-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are all
+refused there, the way every other layer boundary in this project is enforced. A
+fixture that reached a live store would go unnoticed in the layout editor and
+surface as a wrong number in a driver's session; see
+[ADR-0004](adr/0004-widget-preview-runs-on-mocks.md), rule 1.
+
 ### The six store rules
 
 1. **Data stores** use types from `bindings.ts` only — never a hand-written

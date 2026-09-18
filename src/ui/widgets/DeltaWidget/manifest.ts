@@ -10,6 +10,7 @@ export const DELTA_MANIFEST: WidgetManifest = {
   label: 'Delta HUD',
   description: 'Live delta HUD — one glance, am I faster or slower?',
   requiredCapabilities: ['sectors'],
+  previewScenarios: ['delta-ahead', 'delta-behind', 'delta-personal-best'],
   designWidth: 200,
   designHeight: 100,
   // The delta bar deliberately runs wider than the widget box so the scale

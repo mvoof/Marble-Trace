@@ -10,7 +10,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Listener};
 
 use super::hub::RemoteHub;
-use crate::model::events::{RemoteStreamKind, EVENT_TELEMETRY_BUNDLE};
+use crate::model::events::{RemoteStreamKind, EVENT_TELEMETRY_BUNDLE_MIRROR};
 
 /// Subscribes the hub to the sim event stream for the lifetime of the app.
 /// Listeners stay registered while no server runs — the hub drops everything
@@ -18,7 +18,11 @@ use crate::model::events::{RemoteStreamKind, EVENT_TELEMETRY_BUNDLE};
 pub fn attach(app: &AppHandle, hub: Arc<RemoteHub>) {
     let bundle_hub = Arc::clone(&hub);
 
-    app.listen(EVENT_TELEMETRY_BUNDLE, move |event| {
+    // Not `EVENT_TELEMETRY_BUNDLE`: that one is delivered per window with
+    // `emit_to` now, and `emit_to` does not reach a Rust listener. The emitter
+    // re-emits the group built for the remote screens' own mask under the
+    // mirror name — see `EVENT_TELEMETRY_BUNDLE_MIRROR`.
+    app.listen(EVENT_TELEMETRY_BUNDLE_MIRROR, move |event| {
         bundle_hub.publish_raw_telemetry(event.payload());
     });
 

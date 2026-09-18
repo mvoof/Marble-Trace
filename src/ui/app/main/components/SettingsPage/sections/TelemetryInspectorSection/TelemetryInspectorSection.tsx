@@ -7,6 +7,7 @@ import { Search } from 'lucide-react';
 import { useTelemetryInspectorStore } from '@store/root-store-context';
 import type { InspectorSource } from '@/types/inspector';
 import { SettingsCard } from '../../SettingsCard';
+import { DeliveryCountersCard } from './DeliveryCountersCard';
 import { InspectorRowLine } from './InspectorRowLine';
 import styles from './TelemetryInspectorSection.module.scss';
 
@@ -36,92 +37,96 @@ export const TelemetryInspectorSection = observer(() => {
   }, [inspector]);
 
   return (
-    <SettingsCard title={t('settingsPage.telemetryInspector.title')}>
-      <div className={styles.hint}>
-        {t('settingsPage.telemetryInspector.description')}
-      </div>
+    <>
+      <SettingsCard title={t('settingsPage.telemetryInspector.title')}>
+        <div className={styles.hint}>
+          {t('settingsPage.telemetryInspector.description')}
+        </div>
 
-      <div className={styles.controls}>
-        <Segmented<InspectorSource>
-          value={inspector.source}
-          onChange={(value) => void inspector.setSource(value)}
-          options={[
-            {
-              value: 'telemetry',
-              label: t('settingsPage.telemetryInspector.sourceTelemetry'),
-            },
-            {
-              value: 'session',
-              label: t('settingsPage.telemetryInspector.sourceSession'),
-            },
-          ]}
-        />
-
-        <Input
-          allowClear
-          prefix={<Search size={14} />}
-          placeholder={t('settingsPage.telemetryInspector.filterPlaceholder')}
-          value={inspector.filter}
-          onChange={(event) => inspector.setFilter(event.target.value)}
-        />
-
-        <div className={styles.toggle}>
-          <Switch
-            checked={inspector.hideAbsent}
-            onChange={(checked) => inspector.setHideAbsent(checked)}
+        <div className={styles.controls}>
+          <Segmented<InspectorSource>
+            value={inspector.source}
+            onChange={(value) => void inspector.setSource(value)}
+            options={[
+              {
+                value: 'telemetry',
+                label: t('settingsPage.telemetryInspector.sourceTelemetry'),
+              },
+              {
+                value: 'session',
+                label: t('settingsPage.telemetryInspector.sourceSession'),
+              },
+            ]}
           />
 
-          <span>
-            {t('settingsPage.telemetryInspector.hideAbsent', {
-              count: inspector.absentCount,
-            })}
-          </span>
-        </div>
-      </div>
+          <Input
+            allowClear
+            prefix={<Search size={14} />}
+            placeholder={t('settingsPage.telemetryInspector.filterPlaceholder')}
+            value={inspector.filter}
+            onChange={(event) => inspector.setFilter(event.target.value)}
+          />
 
-      {inspector.lastError && (
-        <Alert
-          type="error"
-          showIcon
-          message={inspector.lastError}
-          className={styles.alert}
-        />
-      )}
+          <div className={styles.toggle}>
+            <Switch
+              checked={inspector.hideAbsent}
+              onChange={(checked) => inspector.setHideAbsent(checked)}
+            />
 
-      {inspector.isEmpty ? (
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={t(
-            inspector.source === 'session'
-              ? 'settingsPage.telemetryInspector.waitingSession'
-              : 'settingsPage.telemetryInspector.waiting'
-          )}
-        />
-      ) : (
-        <>
-          <div className={styles.summary}>
-            <Tag>
-              {t('settingsPage.telemetryInspector.rowCount', {
-                count: inspector.rows.length,
+            <span>
+              {t('settingsPage.telemetryInspector.hideAbsent', {
+                count: inspector.absentCount,
               })}
-            </Tag>
+            </span>
+          </div>
+        </div>
 
-            {inspector.absentCount > 0 && (
-              <Tag color="warning">
-                {t('settingsPage.telemetryInspector.absentCount', {
-                  count: inspector.absentCount,
+        {inspector.lastError && (
+          <Alert
+            type="error"
+            showIcon
+            message={inspector.lastError}
+            className={styles.alert}
+          />
+        )}
+
+        {inspector.isEmpty ? (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={t(
+              inspector.source === 'session'
+                ? 'settingsPage.telemetryInspector.waitingSession'
+                : 'settingsPage.telemetryInspector.waiting'
+            )}
+          />
+        ) : (
+          <>
+            <div className={styles.summary}>
+              <Tag>
+                {t('settingsPage.telemetryInspector.rowCount', {
+                  count: inspector.rows.length,
                 })}
               </Tag>
-            )}
-          </div>
 
-          <div className={styles.rows}>
-            {inspector.rows.map((row) => (
-              <InspectorRowLine key={row.path} row={row} />
-            ))}
-          </div>
-        </>
-      )}
-    </SettingsCard>
+              {inspector.absentCount > 0 && (
+                <Tag color="warning">
+                  {t('settingsPage.telemetryInspector.absentCount', {
+                    count: inspector.absentCount,
+                  })}
+                </Tag>
+              )}
+            </div>
+
+            <div className={styles.rows}>
+              {inspector.rows.map((row) => (
+                <InspectorRowLine key={row.path} row={row} />
+              ))}
+            </div>
+          </>
+        )}
+      </SettingsCard>
+
+      <DeliveryCountersCard />
+    </>
   );
 });

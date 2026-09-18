@@ -5,7 +5,10 @@ import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameStyle } from '@ui/app/widget-frame';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import styles from './RemoteWidgetFrame.module.scss';
-import { useLiveWidgetsStore } from '@store/root-store-context';
+import {
+  useLiveWidgetsStore,
+  useWidgetAutoHideStore,
+} from '@store/root-store-context';
 
 interface RemoteWidgetFrameProps {
   widgetId: string;
@@ -16,19 +19,29 @@ interface RemoteWidgetFrameProps {
  * What `WidgetContainer` reduces to on a device that only watches: position,
  * size and the widget's own appearance.
  *
- * No dragging, no resize handles, no auto-hide and no cursor handling — those
- * all exist to serve an overlay sitting on top of a running game, and none of
- * them mean anything in a browser. The scaling tokens are identical, so the
- * widgets themselves render exactly as they do on the monitor.
+ * No dragging, no resize handles and no cursor handling — those all exist to
+ * serve an overlay sitting on top of a running game, and none of them mean
+ * anything in a browser. The scaling tokens are identical, so the widgets
+ * themselves render exactly as they do on the monitor.
+ *
+ * A widget that hides itself does so here too: the pit bars, the radar and the
+ * flags come and go on a stream source exactly as they do on the driver's
+ * screen, which is the behaviour the widget was built with rather than an
+ * overlay convenience. The app-level hides (game closed, garage) stay behind —
+ * those answer "is the driver looking at this monitor", which a browser on the
+ * network cannot be asked.
  */
 export const RemoteWidgetFrame = observer(
   ({ widgetId, children }: RemoteWidgetFrameProps) => {
     const liveWidgets = useLiveWidgetsStore();
+    const widgetAutoHide = useWidgetAutoHideStore();
     const widget = liveWidgets.getWidget(widgetId);
 
     if (!widget) {
       return null;
     }
+
+    const isHidden = !widgetAutoHide.isVisible(widgetId);
 
     const { userSettings } = widget;
 
@@ -47,11 +60,12 @@ export const RemoteWidgetFrame = observer(
       widgetScale,
       transparentContainer,
       autoHeight,
+      hidden: isHidden,
     });
 
     return (
       <div
-        className={styles.frame}
+        className={`${styles.frame} ${isHidden ? styles.hidden : ''}`}
         data-widget-id={widgetId}
         style={{
           left: userSettings.x,
@@ -66,7 +80,7 @@ export const RemoteWidgetFrame = observer(
             style={frameStyle}
           >
             <WidgetIdContext.Provider value={widgetId}>
-              {children}
+              {isHidden ? null : children}
             </WidgetIdContext.Provider>
           </div>
         </ErrorBoundary>

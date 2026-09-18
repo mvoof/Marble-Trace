@@ -6,6 +6,11 @@ import type {
 } from '@/types/bindings';
 import { parseClassColor } from '@utils/colors';
 
+// Mock builder for the driver list — the one the snapshot's own roster is
+// turned into, rather than one invented from nothing. It lives in the factory
+// with every other builder: the snapshot seeder composes it, and so does any
+// fixture that needs the entries the app would have received from the backend.
+
 /**
  * Badges for the classes in the recorded snapshot.
  *
@@ -21,7 +26,62 @@ const PREVIEW_CLASS_BADGES: Record<number, string> = {
   3002: 'FVee',
   4012: 'GR86',
   4102: 'M2',
+  4108: 'M2',
   4109: 'GT3',
+};
+
+/**
+ * Country flags for the recorded snapshot's drivers.
+ *
+ * `FlairID` is anonymised out of the committed snapshot — every car carries
+ * `0`, which the app reads as "this driver picked no flag" and draws as an
+ * empty cell. So with the column switched on the preview showed a blank strip
+ * and nothing to size it against. Fixture data of the same kind as
+ * `PREVIEW_CLASS_BADGES`: a flag is handed to a car by its index, wrapping
+ * round the list, so the grid is mixed and the same car keeps the same flag on
+ * every re-seed. A snapshot that does carry a flair keeps it.
+ */
+const PREVIEW_FLAIR_IDS = [
+  222, // United Kingdom
+  77, // Germany
+  223, // United States
+  31, // Brazil
+  70, // Finland
+  146, // Netherlands
+  71, // France
+  16, // Australia
+  101, // Italy
+  198, // Spain
+  39, // Canada
+  203, // Sweden
+  13, // Argentina
+  104, // Japan
+  167, // Poland
+  23, // Belgium
+];
+
+const previewFlairId = (flairId: number, carIdx: number): number =>
+  flairId || (PREVIEW_FLAIR_IDS[carIdx % PREVIEW_FLAIR_IDS.length] ?? 0);
+
+/**
+ * The pit badge the backend would have resolved.
+ *
+ * `pitState` is computed in Rust from a car's movement through the lane, which
+ * the preview has no backend to run — so without this the snapshot's six cars
+ * sitting in their boxes render as ordinary rows and the pit column is empty
+ * whatever the snapshot holds. Only the states a single frame can tell apart:
+ * a car on its way in and a car on its way out look identical standing still,
+ * so neither is guessed at.
+ */
+const previewPitState = (
+  onPitRoad: boolean,
+  trackSurface: DriverEntry['trackSurface']
+): DriverEntry['pitState'] => {
+  if (trackSurface === TrackSurface.InPitStall) return 'stall';
+
+  if (onPitRoad) return 'in';
+
+  return 'none';
 };
 
 export const computeDriverEntries = (
@@ -40,6 +100,10 @@ export const computeDriverEntries = (
     if (car.isSpectator) continue;
     if (car.isPaceCar) continue;
 
+    const onPitRoad = carIdx.car_idx_on_pit_road[idx] ?? false;
+    const trackSurface =
+      carIdx.car_idx_track_surface[idx] ?? TrackSurface.NotInWorld;
+
     entries.push({
       carIdx: idx,
       userName: car.userName,
@@ -48,7 +112,7 @@ export const computeDriverEntries = (
       carClassShortName:
         PREVIEW_CLASS_BADGES[car.carClassId] ?? car.carScreenNameShort,
       carClassColor: parseClassColor(car.carClassColor),
-      flairId: car.flairId,
+      flairId: previewFlairId(car.flairId, idx),
       isAi: car.isAi,
       carScreenName: car.carScreenName,
       carScreenNameShort: car.carScreenNameShort,
@@ -65,14 +129,13 @@ export const computeDriverEntries = (
       bestLapTime: carIdx.car_idx_best_lap_time[idx] ?? -1,
       qualifyTime: -1,
       f2Time: carIdx.car_idx_f2_time[idx] ?? 0,
-      trackSurface:
-        carIdx.car_idx_track_surface[idx] ?? TrackSurface.NotInWorld,
+      trackSurface,
       iRating: car.iRating,
       licString: car.licString,
       licColor: parseClassColor(car.licColor),
       incidents: 0,
       isPlayer: idx === playerCarIdx,
-      onPitRoad: carIdx.car_idx_on_pit_road[idx] ?? false,
+      onPitRoad,
       estimatedIrDeltaLive: null,
       estimatedIrDeltaOfficial: null,
       relativeLapDist: 0,
@@ -84,7 +147,7 @@ export const computeDriverEntries = (
       isRetired: false,
       isFinished: false,
       isTowed: false,
-      pitState: 'none',
+      pitState: previewPitState(onPitRoad, trackSurface),
     });
   }
 

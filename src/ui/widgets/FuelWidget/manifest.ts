@@ -9,6 +9,7 @@ import { FUEL_AVG_WINDOW_ALL_LAPS } from '@utils/fuel-constants';
 export const FUEL_MANIFEST: WidgetManifest = {
   id: 'fuel',
   order: 160,
+  previewScenarios: ['fuel-pit-window', 'fuel-short', 'fuel-refuel-calc'],
   label: 'Fuel',
   description: 'Fuel level and consumption calculator.',
   requiredCapabilities: ['fuel'],

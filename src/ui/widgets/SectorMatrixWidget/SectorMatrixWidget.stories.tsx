@@ -1,62 +1,76 @@
-﻿import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type {
-  LapTimingFrame,
-  LapDeltaFrame,
-  SessionSnapshot,
-} from '@/types/bindings';
+import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
+import { mockLapDelta, mockLapTiming } from '@store/preview/mocks/delta';
+import { mockSectors } from '@store/preview/mocks/timing';
 import { SectorMatrixWidget } from './SectorMatrixWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 interface StoryArgs {
+  /** The live delta the header carries. */
   delta: number;
   lapTime: number;
   lastLapTime: number;
   bestLapTime: number;
   lapDistPct: number;
+  /** One entry per sector — `null` where the lap has not reached it yet. */
   sectorTimes: (number | null)[];
   sectorDeltas: (number | null)[];
   currentSectorIdx: number;
 }
+
+/** What a track is split into when a story states nothing else. */
+const DEFAULT_SECTOR_COUNT = 3;
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/SectorMatrixWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: SectorMatrixWidget,
     size: { width: 320 },
-    seed: (store, args) => {
-      const sectorCount = args.sectorTimes.length || 3;
-
-      store.player.updateLapTiming({
-        lap: 3,
-        lap_dist: null,
-        lap_dist_pct: args.lapDistPct,
-        lap_current_lap_time: args.lapTime,
-        lap_last_lap_time: args.lastLapTime,
-        lap_best_lap_time: args.bestLapTime,
-        player_car_position: 1,
-        player_car_class_position: 1,
-        lap_delta_to_session_best_live: args.delta,
-        lap_delta_to_session_optimal_live: args.delta,
-      } as LapTimingFrame);
-
-      store.session.updateSessionInfo({
-        sectors: Array.from({ length: sectorCount }, (_, idx) => ({
-          sectorNum: idx,
-          sectorStartPct: idx / sectorCount,
-        })),
-      } as unknown as SessionSnapshot);
-
-      store.backendComputed.updateLapDelta({
-        sectorTimes: args.sectorTimes,
-        currentSectorIdx: args.currentSectorIdx,
-        sectorDeltas: args.sectorDeltas,
-      } as LapDeltaFrame);
-
-      store.liveWidgets.updateUserSettings('sector-matrix', {
-        reference: 'personal_best',
+    seedSnapshot: true,
+    seed: (store, args, scenarioId) => {
+      const settings: Partial<SectorMatrixWidgetSettings> = {
         showPredicted: true,
-      });
+      };
+
+      store.liveWidgets.updateUserSettings('sector-matrix', settings);
+
+      // A scenario states the whole lap — its timing and its sectors both. The
+      // knobs below are the other base: what a story states on its own.
+      if (scenarioId !== undefined) {
+        return;
+      }
+
+      const sessionInfo = store.session.sessionInfo;
+
+      if (sessionInfo) {
+        store.session.updateSessionInfo({
+          ...sessionInfo,
+          sectors: mockSectors(args.sectorTimes.length || DEFAULT_SECTOR_COUNT),
+        });
+      }
+
+      store.player.updateLapTiming(
+        mockLapTiming({
+          lap_dist_pct: args.lapDistPct,
+          lap_current_lap_time: args.lapTime,
+          lap_last_lap_time: args.lastLapTime,
+          lap_best_lap_time: args.bestLapTime,
+          lap_delta_to_session_best_live: args.delta,
+          lap_delta_to_session_optimal_live: args.delta,
+        })
+      );
+
+      store.backendComputed.updateLapDelta(
+        mockLapDelta({
+          sectorTimes: args.sectorTimes,
+          sectorDeltas: args.sectorDeltas,
+          currentSectorIdx: args.currentSectorIdx,
+        })
+      );
     },
     args: {
       delta: -0.412,
@@ -75,6 +89,11 @@ export default meta;
 type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
+
+/** One sector banked, one being driven, one not reached — all three states at once. */
+export const InProgress: Story = {
+  parameters: previewScenario('sector-in-progress'),
+};
 
 export const Behind: Story = {
   args: { delta: 0.612, sectorDeltas: [0.21, 0.15, null] },

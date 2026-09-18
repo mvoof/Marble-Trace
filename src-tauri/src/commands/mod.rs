@@ -6,6 +6,7 @@
 //! entirely different state.
 
 pub mod companions;
+pub mod install;
 pub mod pit;
 pub mod settings;
 pub mod telemetry;
@@ -15,14 +16,16 @@ pub use companions::{
     close_companion_app, close_companion_apps, companion_app_icon, companion_app_statuses,
     detect_companion_apps, launch_companion_app,
 };
+pub use install::check_install_integrity;
 pub use pit::send_pit_order;
 pub use settings::{
     backup_settings_file, delete_settings_file, log_settings_snapshot, settings_file_exists,
 };
 pub use telemetry::{
-    get_connection_status, get_inspector_frame, get_last_session_info, set_active_events,
+    clear_active_events, clear_remote_active_events, get_connection_status, get_delivery_counters,
+    get_inspector_frame, get_last_session_info, reset_delivery_counters, set_active_events,
     set_car_length, set_fuel_avg_window, set_inspector_active, set_pit_warning_laps,
-    start_telemetry_stream, stop_telemetry_stream,
+    set_remote_active_events, start_telemetry_stream, stop_telemetry_stream,
 };
 pub use track::{
     delete_reference_lap, delete_track_shape, get_cached_track_shape, get_reference_lap,

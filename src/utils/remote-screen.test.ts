@@ -8,9 +8,11 @@ import {
   fitScale,
   isDisplayMonitor,
   isRemoteMonitor,
+  isReservedSlug,
   nextRemoteBounds,
   remoteScreenGrid,
   REMOTE_TOKEN_LENGTH,
+  RESERVED_SLUGS,
   slugFromName,
   TOKEN_ALPHABET,
   uniqueSlug,
@@ -111,6 +113,39 @@ describe('slugs', () => {
     expect(uniqueSlug('tablet', [])).toBe('tablet');
     expect(uniqueSlug('tablet', ['tablet'])).toBe('tablet-2');
     expect(uniqueSlug('tablet', ['tablet', 'tablet-2'])).toBe('tablet-3');
+  });
+
+  it('excludes reserved segments so they cannot be generated as a remote screen slug', () => {
+    const expectedReserved = [
+      'assets',
+      'fonts',
+      'public',
+      'src',
+      'node_modules',
+    ];
+
+    expect([...RESERVED_SLUGS]).toEqual(expectedReserved);
+
+    for (const segment of expectedReserved) {
+      expect(isReservedSlug(segment)).toBe(true);
+
+      const fromUnique = uniqueSlug(segment, []);
+      expect(fromUnique).not.toBe(segment);
+      expect(isReservedSlug(fromUnique)).toBe(false);
+
+      const fromName = uniqueSlug(slugFromName(segment), []);
+      expect(fromName).not.toBe(segment);
+      expect(isReservedSlug(fromName)).toBe(false);
+    }
+  });
+
+  it('preserves @ handling when generating slugs', () => {
+    expect(isReservedSlug('@vite')).toBe(true);
+    expect(isReservedSlug('@')).toBe(true);
+    expect(uniqueSlug('@tablet', [])).toBe('tablet');
+    expect(uniqueSlug('@assets', [])).toBe('assets-2');
+    expect(uniqueSlug('@', [])).toBe('screen');
+    expect(slugFromName('@screen')).toBe('screen');
   });
 });
 

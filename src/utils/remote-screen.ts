@@ -295,19 +295,41 @@ export const slugFromName = (name: string): string => {
   return slug || 'screen';
 };
 
-/** Keeps generated slugs unique within a layout. */
+/**
+ * Path segments reserved by the remote server and Vite asset serving. A remote
+ * screen slug matching one of these would hijack asset routes or break dev proxying.
+ */
+export const RESERVED_SLUGS: readonly string[] = [
+  'assets',
+  'fonts',
+  'public',
+  'src',
+  'node_modules',
+];
+
+export const isReservedSlug = (slug: string): boolean => {
+  const lower = slug.toLowerCase();
+  return RESERVED_SLUGS.includes(lower) || lower.startsWith('@');
+};
+
+/** Keeps generated slugs unique and clear of reserved routes. */
 export const uniqueSlug = (base: string, taken: string[]): string => {
-  if (!taken.includes(base)) {
-    return base;
+  const normalized = base.replace(/^@+/, '') || 'screen';
+
+  if (!isReservedSlug(normalized) && !taken.includes(normalized)) {
+    return normalized;
   }
 
   let suffix = 2;
 
-  while (taken.includes(`${base}-${suffix}`)) {
+  while (
+    isReservedSlug(`${normalized}-${suffix}`) ||
+    taken.includes(`${normalized}-${suffix}`)
+  ) {
     suffix += 1;
   }
 
-  return `${base}-${suffix}`;
+  return `${normalized}-${suffix}`;
 };
 
 /**

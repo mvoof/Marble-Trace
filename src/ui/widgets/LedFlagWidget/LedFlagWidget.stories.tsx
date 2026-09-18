@@ -1,33 +1,31 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { FlagType } from '@/types';
-import { LedFlagWidget } from './LedFlagWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
-
 import type { FlagDisplaySettings } from '@/types/widget-settings';
+import type { PreviewScenarioId } from '@/types/preview-scenarios';
+import { LedFlagWidget } from './LedFlagWidget';
+import {
+  defineWidgetStories,
+  previewScenario,
+} from '@/storybook/define-widget-stories';
 
 const DESIGN_SIZE = 300;
 
-const ALL_FLAGS: FlagType[] = [
-  'none',
-  'green',
-  'yellow',
-  'red',
-  'blue',
-  'white',
-  'checkered',
-  'black',
-  'meatball',
-  'debris',
-  'sc',
-  'dq',
-];
+const SINGLE_LED_FRAME = { width: 200, height: 200 };
+const SPLIT_FRAME = { width: 900, height: 300 };
+const MEDIUM_FRAME = { width: 350, height: 350 };
+const LARGE_FRAME = { width: 600, height: 600 };
+
+// The matrix is laid out from the frame it is given, so a story states a flag
+// and the box it has to fill together.
+const flagAt = (
+  flag: PreviewScenarioId,
+  widgetFrame: { width: number; height: number }
+) => ({ ...previewScenario(flag), widgetFrame });
 
 interface StoryArgs {
-  flag: FlagType;
   split: boolean;
   animate: boolean;
-  forceSingleLed?: boolean;
+  forceSingleLed: boolean;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -36,109 +34,84 @@ const meta: Meta<StoryArgs> = {
     widget: LedFlagWidget,
     size: { width: DESIGN_SIZE, height: DESIGN_SIZE, background: '#111' },
     seed: (store, args) => {
-      store.flags.ledDisplayFlag = args.flag;
-      const settings =
-        store.liveWidgets.getSettings<FlagDisplaySettings>('led-flags');
       store.liveWidgets.updateUserSettings('led-flags', {
-        ...settings,
+        ...store.liveWidgets.getSettings<FlagDisplaySettings>('led-flags'),
         split: args.split,
         animate: args.animate,
         forceSingleLed: args.forceSingleLed,
       });
     },
-    args: { flag: 'none', split: false, animate: true, forceSingleLed: false },
-    argTypes: {
-      flag: { control: 'select', options: ALL_FLAGS },
-      split: { control: 'boolean' },
-      animate: { control: 'boolean' },
-      forceSingleLed: { control: 'boolean' },
-    },
+    args: { split: false, animate: true, forceSingleLed: false },
   }),
 };
 
 export default meta;
 type Story = StoryObj<StoryArgs>;
 
+// The panel with every bit down — what it shows for most of a race.
 export const NoFlag: Story = {};
 
-export const GreenFlag: Story = { args: { flag: 'green' } };
-export const YellowFlag: Story = { args: { flag: 'yellow' } };
-export const RedFlag: Story = { args: { flag: 'red' } };
-export const BlueFlag: Story = { args: { flag: 'blue' } };
-export const WhiteFlag: Story = { args: { flag: 'white' } };
-export const CheckeredFlag: Story = { args: { flag: 'checkered' } };
-export const BlackFlag: Story = { args: { flag: 'black' } };
-export const MeatballFlag: Story = { args: { flag: 'meatball' } };
-export const DebrisFlag: Story = { args: { flag: 'debris' } };
-export const SafetyCar: Story = { args: { flag: 'sc' } };
-export const DqFlag: Story = { args: { flag: 'dq' } };
+export const GreenFlag: Story = { parameters: previewScenario('green-flag') };
+export const YellowFlag: Story = { parameters: previewScenario('yellow-flag') };
+export const RedFlag: Story = { parameters: previewScenario('red-flag') };
+export const BlueFlag: Story = { parameters: previewScenario('blue-flag') };
+export const WhiteFlag: Story = { parameters: previewScenario('white-flag') };
+export const CheckeredFlag: Story = {
+  parameters: previewScenario('checkered-flag'),
+};
+export const BlackFlag: Story = { parameters: previewScenario('black-flag') };
+export const MeatballFlag: Story = {
+  parameters: previewScenario('meatball-flag'),
+};
+export const DebrisFlag: Story = { parameters: previewScenario('debris-flag') };
+export const SafetyCar: Story = { parameters: previewScenario('safety-car') };
+export const DqFlag: Story = { parameters: previewScenario('dq-flag') };
 
 export const SafetyCarSingleLed: Story = {
-  args: { flag: 'sc', split: false, animate: true, forceSingleLed: true },
-  parameters: {
-    widgetFrame: { width: 200, height: 200 },
-  },
+  parameters: flagAt('safety-car', SINGLE_LED_FRAME),
+  args: { forceSingleLed: true },
 };
 
 export const SafetyCarSplit: Story = {
-  args: { flag: 'sc', split: true, animate: true },
-  parameters: {
-    widgetFrame: { width: 900, height: 300 },
-  },
+  parameters: flagAt('safety-car', SPLIT_FRAME),
+  args: { split: true },
 };
 
 export const DqFlagSplit: Story = {
-  args: { flag: 'dq', split: true, animate: true },
-  parameters: {
-    widgetFrame: { width: 900, height: 300 },
-  },
+  parameters: flagAt('dq-flag', SPLIT_FRAME),
+  args: { split: true },
 };
 
 export const DqFlagSingleLed: Story = {
-  args: { flag: 'dq', split: false, animate: true, forceSingleLed: true },
-  parameters: {
-    widgetFrame: { width: 200, height: 200 },
-  },
+  parameters: flagAt('dq-flag', SINGLE_LED_FRAME),
+  args: { forceSingleLed: true },
 };
 
 export const SplitAnimated: Story = {
-  args: { flag: 'yellow', split: true, animate: true },
-  parameters: {
-    widgetFrame: { width: 900, height: 300 },
-  },
+  parameters: flagAt('yellow-flag', SPLIT_FRAME),
+  args: { split: true },
 };
 
 export const SplitRedFlagAnimated: Story = {
-  args: { flag: 'red', split: true, animate: true },
-  parameters: {
-    widgetFrame: { width: 900, height: 300 },
-  },
+  parameters: flagAt('red-flag', SPLIT_FRAME),
+  args: { split: true },
 };
 
+// The same red flag at three sizes: the matrix is laid out from the frame, so
+// what a driver has to see is how few LEDs are left at the small end.
 export const SmallRedFlagAnimated: Story = {
-  args: { flag: 'red', split: false, animate: true },
-  parameters: {
-    widgetFrame: { width: 200, height: 200 },
-  },
+  parameters: flagAt('red-flag', SINGLE_LED_FRAME),
 };
 
 export const MediumRedFlagAnimated: Story = {
-  args: { flag: 'red', split: false, animate: true },
-  parameters: {
-    widgetFrame: { width: 350, height: 350 },
-  },
+  parameters: flagAt('red-flag', MEDIUM_FRAME),
 };
 
 export const LargeMatrixRedFlag: Story = {
-  args: { flag: 'red', split: false, animate: true },
-  parameters: {
-    widgetFrame: { width: 600, height: 600 },
-  },
+  parameters: flagAt('red-flag', LARGE_FRAME),
 };
 
 export const SingleLedMax: Story = {
-  args: { flag: 'red', split: false, animate: true, forceSingleLed: true },
-  parameters: {
-    widgetFrame: { width: 600, height: 600 },
-  },
+  parameters: flagAt('red-flag', LARGE_FRAME),
+  args: { forceSingleLed: true },
 };

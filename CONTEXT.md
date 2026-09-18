@@ -70,3 +70,34 @@ it through `widgetTypeOf`.
 browser on the LAN. A monitor in every way that matters to a layout: widgets
 belong to it by their centre point, it gets its own widget set, it is parked in
 free desktop space, and no overlay window is opened for it.
+
+## Widget preview
+
+**Snapshot** — one frame captured from a live session and committed under
+`test-data/`, the base every preview is seeded from. It supplies what is tedious
+to invent and never interesting to vary: the driver list with its names, classes
+and ratings, the track geometry, the session header. Singular and static — a
+snapshot is a frame, never a stretch of time.
+
+**Mock builder** — a pure function that returns one telemetry frame of the types
+in `bindings.ts`, taking overrides and knowing nothing about any store. The
+builders are the factory every preview draws from, and the reason there is one
+set of fixtures rather than one for Storybook and another for the in-app
+preview.
+
+**Scenario** — a named state a widget can be in, assembled from builders on top
+of the snapshot and applied to a preview store. A scenario exists for a state
+the driver does **not** control and rarely sees: a flag, an open pit window, a
+last lap, an overheat. A state reachable by a toggle in the widget's own
+settings is not a scenario — the toggle already shows it.
+
+A scenario belongs to the **domain of the widget that needs it**: the flag
+widget declares flags, the fuel widget declares fuel. A widget with no states of
+its own declares none and gets no picker; its preview still renders, against the
+snapshot. The **layout editor** is the other consumer, and takes session-wide
+scenarios that move the whole canvas at once.
+
+**Preview store** — the isolated `RootStore({ skipInit: true })` a preview
+renders against. It shares nothing with the stores the running widgets use;
+settings are mirrored into it one way and nothing travels back. See
+[ADR-0004](docs/adr/0004-widget-preview-runs-on-mocks.md).

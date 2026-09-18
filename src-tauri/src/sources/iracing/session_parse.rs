@@ -174,6 +174,14 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         })
         .collect();
 
+    // Two independent markers for the same car, because neither is reliable on
+    // its own: `CarIsPaceCar` is missing from the driver entry in some session
+    // types, while `PaceCarIdx` is absent whenever the session runs without one.
+    // A car named by either is the pace car. `-1` is the sim's own marker for
+    // "no pace car in this session", so it is filtered out rather than matched
+    // against a car index.
+    let pace_car_idx = driver_info.pace_car_idx.filter(|idx| *idx >= 0);
+
     let mut cars: Vec<CarEntry> = driver_info
         .drivers
         .unwrap_or_default()
@@ -199,7 +207,8 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                 lic_string: raw_driver.lic_string.unwrap_or_default(),
                 lic_color: raw_driver.lic_color.unwrap_or_default(),
                 incident_count: raw_driver.cur_driver_incident_count.unwrap_or(0),
-                is_pace_car: raw_driver.car_is_pace_car == Some(1),
+                is_pace_car: raw_driver.car_is_pace_car == Some(1)
+                    || (pace_car_idx.is_some() && raw_driver.car_idx == pace_car_idx),
                 is_ai: raw_driver.car_is_ai == Some(1),
                 is_spectator: raw_driver.is_spectator == Some(1),
                 car_class_est_lap_time: raw_driver
@@ -413,6 +422,7 @@ struct RawDriverInfo {
     driver_car_sl_blink_rpm: Option<f32>,
     #[serde(rename = "DriverPitTrkPct")]
     driver_pit_trk_pct: Option<f32>,
+    pace_car_idx: Option<i32>,
     drivers: Option<Vec<RawDriver>>,
     driver_tires: Option<Vec<RawDriverTire>>,
 }
@@ -694,5 +704,40 @@ QualifyResultsInfo:
             parsed.snapshot.track_display_name,
             "Okayama International Circuit"
         );
+    }
+
+    // A hosted or AI session can omit `CarIsPaceCar` from the driver entry, so
+    // the header's `PaceCarIdx` is the only thing naming the car. Without it the
+    // pace car reaches the widgets as an ordinary driver, which no per-widget
+    // setting can hide.
+    #[test]
+    fn marks_the_pace_car_named_only_by_the_header() {
+        let yaml = "DriverInfo:
+ PaceCarIdx: 0
+ DriverCarIdx: 3
+ Drivers:
+ - CarIdx: 0
+   UserName: Pace Car
+ - CarIdx: 3
+   UserName: Test Driver
+";
+        let parsed = parse_session(yaml).expect("parses");
+
+        assert!(parsed.snapshot.cars[0].is_pace_car);
+        assert!(!parsed.snapshot.cars[1].is_pace_car);
+    }
+
+    #[test]
+    fn brands_no_car_when_the_session_runs_without_a_pace_car() {
+        let yaml = "DriverInfo:
+ PaceCarIdx: -1
+ DriverCarIdx: 0
+ Drivers:
+ - CarIdx: 0
+   UserName: Test Driver
+";
+        let parsed = parse_session(yaml).expect("parses");
+
+        assert!(!parsed.snapshot.cars[0].is_pace_car);
     }
 }

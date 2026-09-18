@@ -11,6 +11,7 @@ export const TRACK_MAP_MANIFEST: WidgetManifest = {
   label: 'Track Map',
   description: 'Dynamic 2D map of the current circuit.',
   requiredCapabilities: ['playerDynamics'],
+  previewScenarios: ['pace-car-on-track', 'incident-zones'],
   designWidth: 400,
   designHeight: 400,
   userSettings: {

@@ -88,6 +88,19 @@ ts_values! {
     pub const EVENT_REMOTE_DEVICE: &str = "remote://device" => REMOTE_DEVICE_EVENT;
 }
 
+/// The same bundle again, for the remote screens only.
+///
+/// **Temporary — the second half of spec decision 6.** `remote/mirror.rs` taps
+/// the event stream with `app.listen`, and `emit_to` does not feed a Rust
+/// listener, so the bundle built for the remote screens' own mask is re-emitted
+/// under this name for the tap to pick up. The follow-up — moving the mirror to
+/// `emit_to` — is named as out of scope in
+/// `.scratch/per-window-telemetry-mask/spec.md`; this name goes away with it.
+///
+/// Not in `ts_values!` on purpose: it never crosses into TypeScript. A webview
+/// listening for it would take the remote screens' bundle on top of its own.
+pub const EVENT_TELEMETRY_BUNDLE_MIRROR: &str = "sim://telemetry/bundle/mirror";
+
 // --- Remote socket message kinds ----------------------------------------
 
 /// Control messages the main window may push to the remote screens.

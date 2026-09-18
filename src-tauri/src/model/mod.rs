@@ -12,6 +12,7 @@ pub mod environment;
 pub mod events;
 pub mod flags;
 pub mod input;
+pub mod install;
 pub mod lap_log;
 pub mod pit_command;
 pub mod player;
@@ -49,6 +50,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<input::InputButtonEvent>()
         .register::<input::InputDeviceRemap>()
         .register::<input::InputDeviceResolution>()
+        .register::<install::InstallMismatch>()
         .register::<lap_log::LapLogFrame>()
         .register::<pit_command::PitCommandKind>()
         .register::<pit_command::PitCommandRequest>()

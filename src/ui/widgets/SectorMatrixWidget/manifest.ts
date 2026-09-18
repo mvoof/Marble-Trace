@@ -12,6 +12,7 @@ export const SECTOR_MATRIX_MANIFEST: WidgetManifest = {
   description:
     'Sector-by-sector timing with progress bar, live delta per sector, LAST and BEST.',
   requiredCapabilities: ['sectors'],
+  previewScenarios: ['sector-in-progress'],
   autoHeight: true,
   designWidth: 320,
   designHeight: 180,

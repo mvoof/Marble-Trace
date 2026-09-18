@@ -1,6 +1,10 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type { SessionSnapshot, SourceFrame } from '@/types/bindings';
+import type {
+  DeliverySet,
+  SessionSnapshot,
+  SourceFrame,
+} from '@/types/bindings';
 
 export const startTelemetryStream = async (): Promise<void> =>
   invoke('start_telemetry_stream');
@@ -14,10 +18,52 @@ export const getConnectionStatus = async (): Promise<boolean> =>
 export const getLastSessionInfo = async (): Promise<SessionSnapshot | null> =>
   invoke('get_last_session_info');
 
-/** Fire-and-forget: callers never await the event mask, so log here. */
+/**
+ * Fire-and-forget: callers never await the event mask, so log here.
+ *
+ * The mask is registered against the calling window's own label, which the
+ * backend takes from the command's `Window` — a label sent from here would go
+ * stale the moment the window reloaded.
+ */
 export const setActiveEventsSilent = (mask: number): void => {
   invoke('set_active_events', { mask }).catch((error) =>
     console.error('[telemetry.service] set_active_events failed:', error)
+  );
+};
+
+/**
+ * The remote screens' appetite, registered under a reserved pseudo-label.
+ *
+ * They are the one recipient with no window of its own — the hub is fed by a
+ * tap on the event stream — so main registers for them.
+ */
+export const setRemoteActiveEventsSilent = (mask: number): void => {
+  invoke('set_remote_active_events', { mask }).catch((error) =>
+    console.error('[telemetry.service] set_remote_active_events failed:', error)
+  );
+};
+
+/**
+ * Takes the calling window out of the registry altogether.
+ *
+ * Not the same as a mask of `0`: that still names a recipient the ungated part
+ * of the bundle is delivered to. A window nobody can see — minimized, or with
+ * every widget hidden — should be sent nothing at all, and registers again on
+ * the way back.
+ */
+export const clearActiveEventsSilent = (): void => {
+  invoke('clear_active_events').catch((error) =>
+    console.error('[telemetry.service] clear_active_events failed:', error)
+  );
+};
+
+/** The remote screens' counterpart of {@link clearActiveEventsSilent}. */
+export const clearRemoteActiveEventsSilent = (): void => {
+  invoke('clear_remote_active_events').catch((error) =>
+    console.error(
+      '[telemetry.service] clear_remote_active_events failed:',
+      error
+    )
   );
 };
 
@@ -38,3 +84,17 @@ export const setInspectorActive = async (active: boolean): Promise<void> =>
  */
 export const getInspectorFrame = async (): Promise<SourceFrame | null> =>
   invoke('get_inspector_frame');
+
+/**
+ * Per recipient, how many bundles went out and how many of them carried each
+ * demand-gated field, over the span the counters have been running.
+ *
+ * Read on the inspector's own poll rather than pushed: a window asking what it
+ * receives must not start receiving more in order to ask.
+ */
+export const getDeliveryCounters = async (): Promise<DeliverySet[]> =>
+  invoke('get_delivery_counters');
+
+/** Restarts every recipient's counters, giving a measurement run a defined start. */
+export const resetDeliveryCounters = async (): Promise<void> =>
+  invoke('reset_delivery_counters');

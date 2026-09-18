@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **One Installer Instead of Two:** Marble Trace is now shipped only as the `-setup.exe` installer. The `.msi` was never used by the auto-updater and made it possible to end up with two separate installations of the app. **If you installed Marble Trace from the `.msi`, remove it through Windows "Apps & features" and install once from `-setup.exe`** — your settings, layouts and bindings are kept, they do not live in the installation folder.
+
+### Fixed
+
+- **Running an Old Copy Looked Like Broken Settings:** When a second, outdated copy of Marble Trace is started — usually from a shortcut left behind by an earlier install into another folder — the app now says so, naming both folders and versions, instead of only reporting that the settings were written by a newer version.
+
+## [0.24.0] — 2026-09-15
+
+### Changed
+
+- **One Remote Screen, Every Layout:** A remote screen is now the device itself rather than a screen belonging to one layout. The same phone or tablet keeps its link and its place across all your layouts, and adding it to another layout reuses the screen you already set up instead of creating a second one.
+- **Lighter Telemetry per Window:** Each window is now sent only the data its own widgets ask for. A monitor showing a clock no longer receives the fast per-car data a track map on another monitor needs, so the overlay does less work for the same picture.
+
+### Fixed
+
+- **Pace Car Stayed on Screen in the Pits:** Fixed the pace car still being shown while it sat in the pit lane, even with the "hide in pits" option on.
+- **The Checkered Flag in Standings:** Fixed when a driver is marked as finished. The badge now appears on the driver's own crossing of the line — the leading group used to stay unmarked until the session wound down, because the flag was read from the moment the sim showed it to your car rather than from the moment each driver took it. A driver who crosses the line and then leaves the session keeps the checkered flag instead of being marked as towed, and a car towed right after the line keeps its finish too.
+- **Fuel Bar Did Not Match the Order:** Fixed the fuel bar in Pit Service being drawn against the tank instead of the fuel level you actually ordered.
+- **Remote Screens Stayed Blank in the Released App:** Fixed a device opening a remote screen and getting an empty page in the downloaded build, where the same screen worked when the app was run from source.
+- **Remote Screens Ignored Auto-Hide:** Fixed widgets set to hide themselves staying visible on remote and stream screens.
+- **No Country Flags in the Layout Editor:** Fixed the sample drivers in the layout editor preview showing no country flags, so the flag column looked empty while placing a widget.
+
 ## [0.23.0] — 2026-09-11
 
 ### Added

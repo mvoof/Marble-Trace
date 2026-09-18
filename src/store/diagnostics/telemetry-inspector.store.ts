@@ -1,12 +1,19 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import {
+  getDeliveryCounters,
   getInspectorFrame,
+  resetDeliveryCounters,
   setInspectorActive,
 } from '@platform/services/telemetry.service';
 import type { RootStore } from '@store/root-store';
-import type { SourceFrame } from '@/types/bindings';
-import type { InspectorRow, InspectorSource } from '@/types/inspector';
+import type { DeliverySet, SourceFrame } from '@/types/bindings';
+import type {
+  DeliveryFieldRow,
+  DeliveryRow,
+  InspectorRow,
+  InspectorSource,
+} from '@/types/inspector';
 import { ARRAY_PAGE, buildRows, countAbsent } from './inspector-tree';
 
 type TelemetryInspectorDeps = Pick<RootStore, 'session'>;
@@ -31,6 +38,20 @@ const POLL_INTERVAL_MS = 250;
  * tick boundary, short enough that a disconnected sim answers quickly.
  */
 const CAPTURE_ATTEMPTS = 4;
+const MS_PER_SECOND = 1000;
+
+/**
+ * Bundles per second over the span the counters cover. A span of zero has
+ * measured nothing yet — the first poll after a reset — and has no rate to
+ * report rather than an infinite one.
+ */
+const ratePerSecond = (count: number, elapsedMs: number): number => {
+  if (elapsedMs <= 0) {
+    return 0;
+  }
+
+  return (count * MS_PER_SECOND) / elapsedMs;
+};
 
 export class TelemetryInspectorStore {
   frame: SourceFrame | null = null;
@@ -41,6 +62,8 @@ export class TelemetryInspectorStore {
   filter = '';
   /** Hide fields the sim is not reporting in this session. */
   hideAbsent = false;
+  /** What each recipient has actually been delivered, refreshed on the poll. */
+  deliverySets: DeliverySet[] = [];
   /** Set when a poll throws, so the panel can say so instead of looking idle. */
   lastError: string | null = null;
 
@@ -102,6 +125,49 @@ export class TelemetryInspectorStore {
 
   entryLimit(path: string): number {
     return this.arrayLimits.get(path) ?? ARRAY_PAGE;
+  }
+
+  /**
+   * The counters as rates. A total alone cannot answer *does this window still
+   * receive this field*, which is the claim the per-window mask work makes.
+   */
+  get deliveryRows(): DeliveryRow[] {
+    return this.deliverySets.map((set) => ({
+      label: set.label,
+      bundles: set.bundles,
+      elapsedMs: set.elapsedMs,
+      hz: ratePerSecond(set.bundles, set.elapsedMs),
+      fields: set.fields.map(
+        (delivered): DeliveryFieldRow => ({
+          field: delivered.field,
+          bundles: delivered.bundles,
+          hz: ratePerSecond(delivered.bundles, set.elapsedMs),
+        })
+      ),
+    }));
+  }
+
+  async refreshDeliveryCounters() {
+    try {
+      const sets = await getDeliveryCounters();
+
+      runInAction(() => {
+        this.deliverySets = sets;
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.lastError = String(error);
+      });
+    }
+  }
+
+  /** Gives a measurement run a defined start. */
+  async resetDelivery() {
+    await resetDeliveryCounters().catch((error: unknown) =>
+      console.error('[telemetry-inspector] failed to reset counters:', error)
+    );
+
+    await this.refreshDeliveryCounters();
   }
 
   /** What the rows are built from — the pulled frame, or the session snapshot. */
@@ -238,6 +304,8 @@ export class TelemetryInspectorStore {
   }
 
   private async poll() {
+    void this.refreshDeliveryCounters();
+
     try {
       const frame = await getInspectorFrame();
 

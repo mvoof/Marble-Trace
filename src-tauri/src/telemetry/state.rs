@@ -8,7 +8,9 @@ use crate::computations::ProcessorRegistry;
 use crate::model::reference_lap::StoredReferenceTimes;
 use crate::model::session::SessionSnapshot;
 use crate::sources::source::SourceFrame;
-use crate::telemetry::publications::Publications;
+use crate::telemetry::delivery::DeliveryCounters;
+use crate::telemetry::masks::MaskRegistry;
+use crate::telemetry::publications::PublicationRegistry;
 
 /// User-configured fuel parameters, written by commands and read once per tick
 /// by the telemetry thread.
@@ -55,8 +57,9 @@ pub struct TelemetryServiceState {
     /// says where this particular entry began, which is what the pit approach
     /// rail counts from.
     pub live_pit_in_pct: Mutex<Option<f32>>,
-    /// Bitmask of active high-frequency events to emit.
-    pub active_events: AtomicU32,
+    /// What each recipient is asking for, keyed by its window label, and the
+    /// union of it that the emitter fills the bundle from.
+    pub masks: MaskRegistry,
     /// The telemetry inspector in the settings window is open. While this is
     /// false nothing below is written at all — the inspector costs the running
     /// app exactly nothing when nobody is looking at it, which is why it pulls
@@ -67,10 +70,12 @@ pub struct TelemetryServiceState {
     /// open. 4 Hz because that is already faster than a person can read a table
     /// of a hundred numbers.
     pub inspector_frame: Mutex<Option<SourceFrame>>,
-    /// What was last put on the wire, so an unchanged frame can be held back.
-    /// Lives with the connection: a reconnect clears it, because the windows
-    /// have reset their stores too and need a full bundle again.
-    pub publications: Mutex<Publications>,
+    /// What was last put on the wire for each delivery group, so an unchanged
+    /// frame can be held back. One record per mask value: a group seen for the
+    /// first time must get a full bundle rather than inherit what another group
+    /// was sent. Lives with the connection: a reconnect clears it, because the
+    /// windows have reset their stores too and need a full bundle again.
+    pub publications: Mutex<PublicationRegistry>,
     /// Configurable player car length in meters.
     pub car_length_m: Mutex<f32>,
     /// Set when a cached track was loaded from disk; consumed by TrackShapeProcessor
@@ -87,6 +92,10 @@ pub struct TelemetryServiceState {
     /// to know how far the standings class cycle wraps without taking the
     /// per-car frame itself.
     pub car_class_count: AtomicU32,
+    /// How many bundles each recipient received, and how many of those carried
+    /// each demand-gated field. The instrument the per-window mask work is
+    /// measured with; see `telemetry::delivery`.
+    pub delivery: Mutex<DeliveryCounters>,
 }
 
 /// Bitmask flags for high-frequency events.

@@ -1,6 +1,7 @@
 import type React from 'react';
 import type { CapabilitiesPayload } from '@/types/bindings';
 import type { TelemetryEventName } from '@/types/telemetry-events';
+import type { PreviewScenarioId } from '@/types/preview-scenarios';
 
 type RpmColorTheme = 'custom' | 'gradient' | 'classic';
 export type LedShape = 'square' | 'circle' | 'parallelogram';
@@ -921,6 +922,16 @@ export interface WidgetManifest extends WidgetMeta {
    * why it belongs here rather than in a list somewhere else.
    */
   telemetryEvents?: TelemetryEventName[];
+  /**
+   * The preview scenarios of this widget's own domain — the states it can be in
+   * that the driver does not control. Absent means the widget has no states of
+   * its own and gets no scenario picker; its preview still renders against the
+   * base snapshot.
+   *
+   * A state the widget's own settings can toggle gets no scenario: the toggle
+   * governs whether a block is there, a scenario governs what data is in it.
+   */
+  previewScenarios?: PreviewScenarioId[];
 }
 
 export interface WidgetConfig extends WidgetManifest {
