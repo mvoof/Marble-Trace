@@ -1738,3 +1738,465 @@ a:focus-visible, button:focus-visible {
     border-top: 1px solid var(--ink-light);
   }
 }
+
+/* ==========================================================================
+   Section 04 — The app behind the overlay
+
+   A deck of captures and one plate beside it. The captures are of one window,
+   so they are stacked rather than tiled: six cards of the same dark window
+   laid out in a grid read as six different programs.
+
+   The lean is the page's own --cut, spent on the cards waiting their turn. The
+   card at the front is square to the reader — it is the one being read.
+   ========================================================================== */
+
+.chapter-control {
+  padding-bottom: 6rem;
+}
+
+.control {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.25rem);
+}
+
+/* The chapter opens the way 03 does — ordinal, then the lead beside it — so
+   the two numbered chapters start on the same line as each other. */
+.control-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(0.75rem, 1.6vw, 1.5rem);
+  align-items: start;
+  max-width: 54rem;
+}
+
+/* ---- The deck ------------------------------------------------------------
+
+   The stack and its plate, side by side: the picture is the argument, the
+   plate names what is in it. The stage keeps one height whatever card is at
+   the front, so browsing the deck never moves the page under the pointer.
+   -------------------------------------------------------------------------- */
+
+.control-deck {
+  --card-w: clamp(19rem, 52vw, 54rem);
+  --card-ratio: 1595 / 969;
+  /* One step of the fan: how far each waiting card stands to the right of the
+     one in front of it, and how far back. Named here because the script never
+     touches geometry — it only says which card is at the front. */
+  --fan-x: clamp(2rem, 4.4vw, 4.4rem);
+  --fan-z: 5.2rem;
+  --fan-y: 0.9rem;
+  /* Half the span of the fan — five steps for six cards — and half a card,
+     which together put the block of cards on the middle of the column. On a
+     phone there is no room to centre anything, so both go to zero and the
+     stack starts at the left edge. */
+  --fan-shift: calc(var(--fan-x) * 2.5);
+  --fan-origin: -50%;
+
+  /* The deck owns the middle of the page and the plate floats over its right
+     end, rather than the two sharing a row: a column of text beside the stack
+     pushed the picture off centre, and the picture is the argument here. */
+  position: relative;
+}
+
+.deck {
+  position: relative;
+  /* Deep enough that the fan reads as depth rather than as a row of shrinking
+     rectangles, shallow enough that the back of the stack keeps its edges. */
+  perspective: 2400px;
+  perspective-origin: 50% 50%;
+  height: calc(var(--card-w) / (var(--card-ratio)));
+}
+
+.deck-card {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* The fan is centred as a whole, not the card at the front: the stack grows
+     to the right, so the deck is pulled back by half its own span and the
+     block of cards sits on the middle of the column. */
+  left: 50%;
+  width: var(--card-w);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  /* The waiting cards. --d is the card's distance from the front, set by the
+     script; the geometry is all here. */
+  transform: translate3d(
+      calc(var(--fan-origin) - var(--fan-shift) + var(--fan-x) * var(--d, 0)),
+      calc(var(--fan-y) * var(--d, 0) * -1),
+      calc(var(--fan-z) * var(--d, 0) * -1)
+    )
+    rotateY(var(--cut));
+  /* The cards behind are dark captures on a light page, so they are stepped
+     back by very little: at any real fade they stop being screenshots and
+     become grey ghosts of one. */
+  opacity: calc(1 - 0.06 * var(--d, 0));
+  transition:
+    transform var(--transition-smooth),
+    opacity var(--transition-smooth),
+    filter var(--transition-smooth);
+  will-change: transform;
+}
+
+/* The front card is square to the reader and carries the only shadow in the
+   stack, so the eye has one place to land. It is also the one that opens: a
+   card at the front is already the subject, and clicking it enlarges it
+   instead of doing nothing. */
+.deck-card.is-active {
+  z-index: 10;
+  transform: translate3d(calc(var(--fan-origin) - var(--fan-shift)), 0, 0) rotateY(0deg);
+  opacity: 1;
+  cursor: zoom-in;
+}
+
+/* A card already read leaves to the left rather than shrinking into the fan —
+   the deck runs one way, the way a hand of cards is dealt. */
+.deck-card.is-past {
+  transform: translate3d(calc(var(--fan-origin) - var(--fan-shift) - 18%), 0, -14rem) rotateY(var(--cut));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.deck-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1.2rem 2.6rem rgba(10, 14, 20, 0.28);
+  background-color: #0b0e12;
+}
+
+.deck-card.is-active .deck-shot {
+  box-shadow: 0 2rem 3.6rem rgba(10, 14, 20, 0.34);
+}
+
+/* The name rides on the card itself while it is in the fan: the plate names
+   the front card, and the cards behind it need a label of their own or the
+   stack is six dark rectangles. */
+.deck-card-name {
+  position: absolute;
+  left: 0;
+  bottom: -1.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6f7783;
+  white-space: nowrap;
+  transition: opacity var(--transition-fast);
+}
+
+.deck-card.is-active .deck-card-name {
+  opacity: 0;
+}
+
+.deck-card:focus-visible {
+  outline: 2px solid var(--color-btn-download-bg);
+  outline-offset: 6px;
+}
+
+/* ---- The plate -----------------------------------------------------------
+
+   The words for whatever is at the front, standing off the right end of the
+   deck. It carries the page's own ground rather than a panel colour of its
+   own: it is a plate laid on the drawing, not a card. */
+
+.deck-plate {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(17rem, 24vw, 22rem);
+  padding: clamp(1rem, 1.6vw, 1.4rem) clamp(1rem, 1.6vw, 1.4rem) clamp(0.5rem, 1vw, 0.8rem);
+  background-color: var(--color-body-bg);
+  border: 1px solid var(--ink-main);
+  box-shadow: 0 1.4rem 3rem rgba(10, 14, 20, 0.14);
+}
+
+.deck-panel[hidden] {
+  display: none;
+}
+
+/* The plate is swapped, not slid: at this size a moving block of text is read
+   twice. Only the fade is animated, and only on the way in. */
+.deck-panel {
+  animation: deck-panel-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes deck-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.deck-panel-ordinal {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: #8b929c;
+  margin: 0 0 0.75rem;
+}
+
+.deck-panel-title {
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #101317;
+  margin: 0 0 0.75rem;
+}
+
+.deck-panel-desc {
+  max-width: 34ch;
+  margin: 0 0 1.25rem;
+}
+
+.deck-panel-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--ink-light);
+}
+
+.deck-panel-facts li {
+  position: relative;
+  padding: 0.55rem 0 0.55rem 1.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #4b535d;
+  border-bottom: 1px solid var(--ink-light);
+}
+
+/* The same lime index mark the claims band and the screens facts open with,
+   cut at the section's own angle. */
+.deck-panel-facts li::before {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  left: 0;
+  width: 0.7rem;
+  height: 2px;
+  background-color: var(--color-btn-download-bg);
+  transform: skewX(calc(-1 * var(--cut)));
+}
+
+/* ---- Deck controls -------------------------------------------------------- */
+
+.deck-nav {
+  display: flex;
+  max-width: calc(100% - clamp(17rem, 24vw, 22rem) - 2rem);
+  align-items: center;
+  gap: 0.75rem;
+  border-top: 1px solid var(--ink-main);
+  padding-top: 0.9rem;
+}
+
+.deck-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  font-size: 0.9rem;
+  color: #2a2f36;
+  background: none;
+  border: 1px solid var(--ink-main);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.deck-step:hover {
+  color: #0b1015;
+  border-color: #0b1015;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.deck-step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.deck-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  color: #6f7783;
+  margin: 0;
+}
+
+.deck-hint {
+  margin: 0 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #a0a7b0;
+}
+
+/* ---- Narrower ------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .deck-plate {
+    position: static;
+    transform: none;
+    width: auto;
+    max-width: 44rem;
+    margin-top: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .deck-nav {
+    max-width: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .control-deck {
+    --card-w: calc(100% - 2.6rem);
+    --fan-x: 0.55rem;
+    --fan-y: 0.35rem;
+    --fan-z: 3rem;
+    --fan-shift: 0rem;
+    --fan-origin: 0%;
+  }
+
+  .deck-card {
+    left: 0;
+  }
+
+  .deck-card-name {
+    display: none;
+  }
+
+  .deck-hint {
+    display: none;
+  }
+}
+
+/* A deck that re-deals itself under a reader who asked for stillness is the
+   one animation on the page that would be worth reporting. */
+@media (prefers-reduced-motion: reduce) {
+  .deck-card,
+  .deck-panel {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ---- The viewer ----------------------------------------------------------
+
+   The front card at the size it was captured at. The ground is dark rather
+   than the page's own: the captures are dark windows, and a dark window on a
+   pale ground at full size is a hole in the page.
+   -------------------------------------------------------------------------- */
+
+.deck-viewer {
+  position: fixed;
+  inset: 0;
+  /* Above the header, which sits at 1000: a viewer the navigation bar draws
+     over is a viewer with a hole in it. */
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.deck-viewer[hidden] {
+  display: none;
+}
+
+.deck-viewer-ground {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(8, 11, 15, 0.86);
+  border: 0;
+  animation: deck-viewer-in 0.2s ease;
+}
+
+.deck-viewer-figure {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  max-width: 100%;
+  animation: deck-viewer-in 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes deck-viewer-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.deck-viewer-shot {
+  display: block;
+  /* The capture is 1595px wide. Past that it is being blown up rather than
+     shown, so it stops at its own size. */
+  max-width: min(100%, 1595px);
+  max-height: calc(100vh - 8rem);
+  width: auto;
+  height: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.5);
+}
+
+.deck-viewer-caption {
+  margin-top: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #b9c0c9;
+}
+
+.deck-viewer-close {
+  position: absolute;
+  top: clamp(0.75rem, 2vw, 1.5rem);
+  right: clamp(0.75rem, 2vw, 1.5rem);
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #e9ecef;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.deck-viewer-close:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+/* While the viewer is open the page behind it does not scroll — the deck is
+   mid-page, and a reader who closes the viewer should be where they left. */
+body.is-viewer-open {
+  overflow: hidden;
+}

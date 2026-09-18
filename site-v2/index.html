@@ -1207,43 +1207,354 @@
         </div>
       </section>
 
-      <!-- Layouts Section -->
-      <section id="layouts" class="section">
-        <div class="container">
-          <div class="section-header">
-            <p class="section-tag">Layout Presets</p>
-            <h2 class="section-title">Built for Your Cockpit</h2>
-            <p class="section-subtitle">
-              Customize position, scale, opacity, and monitors for every
-              sim-racing discipline.
-            </p>
+      <!-- ====================================================================
+         Section 04 - The app behind the overlay
+
+         Sections 01-03 are the overlay; this one is the program that builds
+         it. Six captures of the real window, browsed as one deck rather than
+         laid out as six cards: they are screenshots of the same application,
+         and a grid of them reads as six products.
+
+         The deck leans on the section's own angle - --cut, the same 24deg the
+         hero and the dividers are cut at - so the stack belongs to the page
+         geometry rather than introducing a second perspective. The card at the
+         front stands upright: a screenshot read at an angle is a screenshot
+         nobody reads, so only the ones waiting their turn lean.
+
+         The pointer browses the deck by running across it; the plate beside it
+         is the thing that changes. Without JavaScript the first card is at the
+         front and its plate is the one printed open, so the section never
+         renders empty, and the deck is a tablist, so all of it is reachable
+         from the keyboard.
+         ==================================================================== -->
+      <section id="layouts" class="chapter chapter-control" aria-labelledby="control-heading">
+        <div class="container control">
+          <div class="control-head">
+            <span class="chapter-ordinal" aria-hidden="true">04</span>
+
+            <div class="chapter-lead">
+              <p class="chapter-kicker">The app itself</p>
+
+              <h2 id="control-heading" class="chapter-title">
+                Built once.<br />
+                Bound to a button.
+              </h2>
+
+              <p class="lede chapter-subtitle">
+                Behind the overlay is an ordinary desktop application: layouts
+                you build with the mouse, screens you hand out on your own
+                network, and every one of them on a key or a wheel button.
+              </p>
+            </div>
           </div>
 
-          <div class="cards-grid">
-            <div class="card">
-              <h3 class="card-title">Multi-Monitor Support</h3>
-              <p class="card-desc">
-                Place widgets across ultra-wide, triple-screen, or secondary
-                monitor setups with individual monitor binding.
-              </p>
+          <!-- The deck and its plate. data-control-deck is the only hook the
+               script looks for, and everything it needs is on the cards
+               themselves, so the catalogue lives in this markup and nowhere
+               else. -->
+          <div class="control-deck" data-control-deck>
+            <div
+              class="deck"
+              role="tablist"
+              aria-label="Application features"
+              aria-orientation="horizontal"
+            >
+              <button
+                class="deck-card is-active"
+                type="button"
+                role="tab"
+                id="cd-tab-1"
+                aria-controls="cd-panel-1"
+                aria-selected="true"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/layouts.png"
+                  alt="The layouts page of Marble Trace, with five saved layouts and the detail panel of the selected one"
+                  width="1595"
+                  height="969"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Layouts</span>
+              </button>
+
+              <button
+                class="deck-card"
+                type="button"
+                role="tab"
+                id="cd-tab-2"
+                aria-controls="cd-panel-2"
+                aria-selected="false"
+                tabindex="-1"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/layout-editor.png"
+                  alt="The layout editor, with widgets placed across a triple monitor desktop"
+                  width="1595"
+                  height="969"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Layout editor</span>
+              </button>
+
+              <button
+                class="deck-card"
+                type="button"
+                role="tab"
+                id="cd-tab-3"
+                aria-controls="cd-panel-3"
+                aria-selected="false"
+                tabindex="-1"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/widget-config.png"
+                  alt="The widget workbench, with a live standings preview beside its data column switches"
+                  width="1595"
+                  height="969"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Widget workbench</span>
+              </button>
+
+              <button
+                class="deck-card"
+                type="button"
+                role="tab"
+                id="cd-tab-4"
+                aria-controls="cd-panel-4"
+                aria-selected="false"
+                tabindex="-1"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/remote-screens.png"
+                  alt="The remote screens page, with the local server running and a screen ready to open on a device"
+                  width="1595"
+                  height="969"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Remote screens</span>
+              </button>
+
+              <button
+                class="deck-card"
+                type="button"
+                role="tab"
+                id="cd-tab-5"
+                aria-controls="cd-panel-5"
+                aria-selected="false"
+                tabindex="-1"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/bindings.png"
+                  alt="The input bindings page, listing app actions and the keys bound to them"
+                  width="1595"
+                  height="969"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Hotkeys</span>
+              </button>
+
+              <button
+                class="deck-card"
+                type="button"
+                role="tab"
+                id="cd-tab-6"
+                aria-controls="cd-panel-6"
+                aria-selected="false"
+                tabindex="-1"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/devices.png"
+                  alt="The devices page, listing connected wheels, button boxes and pedals"
+                  width="1595"
+                  height="969"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Devices</span>
+              </button>
             </div>
-            <div class="card">
-              <h3 class="card-title">Car &amp; Track Profiles</h3>
-              <p class="card-desc">
-                Automatically switch widget sets when you change from GT3 to
-                Formula or oval racing cars.
-              </p>
+
+            <!-- The plate. One per card, only the selected one rendered, so
+                 what the deck shows and what the page says cannot drift. -->
+            <div class="deck-plate">
+              <div class="deck-panel" role="tabpanel" id="cd-panel-1" aria-labelledby="cd-tab-1">
+                <p class="deck-panel-ordinal" aria-hidden="true">01 / 06</p>
+
+                <h3 class="deck-panel-title">Layouts</h3>
+
+                <p class="lede deck-panel-desc">
+                  A layout is the whole overlay at once &mdash; which widgets
+                  are on, where each one sits, on which monitor and at what
+                  scale. Build as many as you race in.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>One layout everywhere, or a different one per session</li>
+                  <li>Practice, qualifying, race and garage assigned per layout</li>
+                  <li>Auto-switching follows the session you are in</li>
+                  <li>Duplicate a layout to try something without losing it</li>
+                </ul>
+              </div>
+
+              <div
+                class="deck-panel"
+                role="tabpanel"
+                id="cd-panel-2"
+                aria-labelledby="cd-tab-2"
+                hidden
+              >
+                <p class="deck-panel-ordinal" aria-hidden="true">02 / 06</p>
+
+                <h3 class="deck-panel-title">Layout editor</h3>
+
+                <p class="lede deck-panel-desc">
+                  Your desktop, drawn to scale, with the widgets on it. Drag one
+                  where you want it and it is already there on the overlay
+                  &mdash; there is no second preview to reconcile.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>Every monitor, real or remote, on one canvas</li>
+                  <li>Widgets draw live data while you place them</li>
+                  <li>Snap grid, arrow-key nudging, undo and redo</li>
+                  <li>Layer order, locked aspect and corner placement per widget</li>
+                </ul>
+              </div>
+
+              <div
+                class="deck-panel"
+                role="tabpanel"
+                id="cd-panel-3"
+                aria-labelledby="cd-tab-3"
+                hidden
+              >
+                <p class="deck-panel-ordinal" aria-hidden="true">03 / 06</p>
+
+                <h3 class="deck-panel-title">Widget workbench</h3>
+
+                <p class="lede deck-panel-desc">
+                  Every widget opens with its own live preview and its own
+                  settings beside it, so a column you switch off is gone from
+                  the picture before you go back to the car.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>Data columns, rows and view modes per widget</li>
+                  <li>Scale, opacity, background and border</li>
+                  <li>Colours from the widget's own palette</li>
+                  <li>A second copy of a widget for a stream screen</li>
+                </ul>
+              </div>
+
+              <div
+                class="deck-panel"
+                role="tabpanel"
+                id="cd-panel-4"
+                aria-labelledby="cd-tab-4"
+                hidden
+              >
+                <p class="deck-panel-ordinal" aria-hidden="true">04 / 06</p>
+
+                <h3 class="deck-panel-title">Remote screens</h3>
+
+                <p class="lede deck-panel-desc">
+                  The app serves the layout to your own network. A screen is
+                  added like a monitor, and a phone, a tablet or OBS opens it in
+                  a browser.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>Open the link or scan the QR code &mdash; nothing installed</li>
+                  <li>A transparent stream screen for an OBS browser source</li>
+                  <li>Send rate and port are yours to set</li>
+                  <li>Links carry a token you can regenerate at any time</li>
+                </ul>
+              </div>
+
+              <div
+                class="deck-panel"
+                role="tabpanel"
+                id="cd-panel-5"
+                aria-labelledby="cd-tab-5"
+                hidden
+              >
+                <p class="deck-panel-ordinal" aria-hidden="true">05 / 06</p>
+
+                <h3 class="deck-panel-title">Hotkeys</h3>
+
+                <p class="lede deck-panel-desc">
+                  Anything you would reach for mid-stint is an action you can
+                  bind: hide everything, switch a layout, cycle a view, send the
+                  pit order. Keyboard or wheel, your choice.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>Bindings are app-wide, not per layout</li>
+                  <li>Several keys on one action, and one key on several</li>
+                  <li>Press or hold, per action</li>
+                  <li>A widget's action only fires while that widget is on screen</li>
+                </ul>
+              </div>
+
+              <div
+                class="deck-panel"
+                role="tabpanel"
+                id="cd-panel-6"
+                aria-labelledby="cd-tab-6"
+                hidden
+              >
+                <p class="deck-panel-ordinal" aria-hidden="true">06 / 06</p>
+
+                <h3 class="deck-panel-title">Devices</h3>
+
+                <p class="lede deck-panel-desc">
+                  Wheels, button boxes, joysticks and pedals are picked up on
+                  their own. Bind a button the way you bind a key &mdash; the
+                  app never touches the sim's own controls.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>DirectInput devices detected and listed as they connect</li>
+                  <li>Bindings survive a replug or a different USB port</li>
+                  <li>A device you bound stays listed while it is unplugged</li>
+                  <li>Two identical devices are never silently swapped</li>
+                </ul>
+              </div>
             </div>
-            <div class="card">
-              <h3 class="card-title">DirectInput Hotkeys</h3>
-              <p class="card-desc">
-                Bind steering wheel buttons or controller toggles to switch
-                layouts or cycle views without touching the mouse.
+
+            <!-- The deck's own controls: what the pointer scrub degrades to on
+                 a touch screen, and what says out loud that the stack can be
+                 browsed at all. -->
+            <div class="deck-nav">
+              <button class="deck-step" type="button" data-deck-prev aria-label="Previous feature">
+                <span aria-hidden="true">&#8592;</span>
+              </button>
+
+              <p class="deck-count">
+                <span data-deck-index>01</span><span aria-hidden="true"> / </span
+                ><span data-deck-total>06</span>
+              </p>
+
+              <button class="deck-step" type="button" data-deck-next aria-label="Next feature">
+                <span aria-hidden="true">&#8594;</span>
+              </button>
+
+              <p class="deck-hint" aria-hidden="true">
+                Run the pointer across the deck &middot; click to enlarge
               </p>
             </div>
           </div>
         </div>
-
       </section>
 
       <!-- Performance Section -->
@@ -1368,8 +1679,32 @@
       </div>
     </footer>
 
+    <!-- The viewer. A capture of a settings window is a page of small
+         type, and the deck shows it at half the width it was taken at,
+         so the front card opens at full size rather than sending the
+         reader to look for a bigger picture elsewhere. -->
+    <div class="deck-viewer" data-deck-viewer hidden>
+      <div class="deck-viewer-ground" data-deck-viewer-dismiss></div>
+
+      <figure class="deck-viewer-figure" role="dialog" aria-modal="true" aria-label="Screenshot">
+        <img class="deck-viewer-shot" data-deck-viewer-shot src="" alt="" />
+
+        <figcaption class="deck-viewer-caption" data-deck-viewer-caption></figcaption>
+      </figure>
+
+      <button
+        class="deck-viewer-close"
+        type="button"
+        data-deck-viewer-dismiss
+        aria-label="Close the screenshot"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
     <!-- Controller Script -->
     <script src="src/components/navbar.js"></script>
     <script src="src/components/widget-gallery.js"></script>
+    <script src="src/components/control-deck.js"></script>
   </body>
 </html>
