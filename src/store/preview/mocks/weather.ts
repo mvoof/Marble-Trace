@@ -80,8 +80,6 @@ export const mockEnvironment = (
   precipitation: null,
   trackWetness: null,
   weatherDeclaredWet: null,
-  weatherType: 1,
-  weatherVersion: 1,
   ...CONDITIONS[condition],
   ...overrides,
 });
