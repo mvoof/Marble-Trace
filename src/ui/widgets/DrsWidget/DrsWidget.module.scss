@@ -11,7 +11,7 @@
 }
 
 .label {
-  font-size: fs(xxxs);
+  font-size: fs(sm);
   font-weight: 600;
   letter-spacing: 0.14em;
   color: $widget-text-muted;
@@ -32,27 +32,41 @@
   color: $widget-text-muted;
 }
 
-// Armed: past the detection point, zone still ahead. Dimmer than ready on
-// purpose, because pressing now does nothing.
+// Armed: past the detection point, zone still ahead. The ground lifts, but
+// only a little — pressing now does nothing, and a plate as loud as READY
+// would train the driver to press early.
+.rootArmed {
+  background: rgba(245, 158, 11, 0.1);
+}
+
 .rootArmed .label {
   color: $widget-text-secondary;
 }
 
 .rootArmed .state {
-  color: rgba(245, 158, 11, 0.55);
+  color: rgba(245, 158, 11, 0.62);
 }
 
-// Ready is the one state that asks for an action.
+// Ready is the one state that asks for an action, so it is the first one lit
+// at full strength. Same hue as armed: the driver reads the step up in
+// brightness, not a change of colour, which is one thing to notice instead of
+// two.
+.rootReady {
+  background: rgba(245, 158, 11, 0.24);
+}
+
 .rootReady .label {
   color: $widget-text-secondary;
 }
 
 .rootReady .state {
-  color: $race-amber;
+  color: #fbbf24;
 }
 
+// Active changes hue, because it reports a fact rather than asking for
+// anything: the flap is open.
 .rootOpen {
-  background: rgba(16, 185, 129, 0.22);
+  background: rgba(16, 185, 129, 0.24);
 }
 
 .rootOpen .label {

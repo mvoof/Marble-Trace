@@ -35,7 +35,12 @@ export interface AdjustmentCellSpec {
 }
 
 /**
- * `dcDiffExit` is labelled `HSPD`, which is what the formula cars call it in
+ * The brake cells carry `BIAS` and the differential cells carry `DIFF`, so a
+ * driver scanning the panel groups them by reading rather than by remembering
+ * which of FINE, PEAK, ENTRY, MID and HISPD belong to what. The coarse brake
+ * bias is already `BIAS`, which is the group's own name.
+ *
+ * `dcDiffExit` is labelled `HISPD`, which is what the formula cars call it in
  * their own in-car adjustments box. The SDK name says Exit and some cars agree,
  * but the cars that expose three differentials at all are the formula cars, so
  * their word is the one the driver is looking for.
@@ -79,35 +84,35 @@ export const ADJUSTMENT_CELLS: readonly AdjustmentCellSpec[] = [
     settingKey: 'showBrakeBiasFine',
     flashTone: 'brake',
     field: 'dc_brake_bias_fine',
-    label: 'FINE',
+    label: 'BIAS FINE',
     format: 'signedOneDecimal',
   },
   {
     settingKey: 'showPeakBrakeBias',
     flashTone: 'brake',
     field: 'dc_peak_brake_bias',
-    label: 'PEAK',
+    label: 'BIAS PEAK',
     format: 'oneDecimal',
   },
   {
     settingKey: 'showDiffEntry',
     flashTone: 'diff',
     field: 'dc_diff_entry',
-    label: 'ENTRY',
+    label: 'DIFF ENTRY',
     format: 'integer',
   },
   {
     settingKey: 'showDiffMiddle',
     flashTone: 'diff',
     field: 'dc_diff_middle',
-    label: 'MID',
+    label: 'DIFF MID',
     format: 'integer',
   },
   {
     settingKey: 'showDiffExit',
     flashTone: 'diff',
     field: 'dc_diff_exit',
-    label: 'HSPD',
+    label: 'DIFF HISPD',
     format: 'integer',
   },
 ];

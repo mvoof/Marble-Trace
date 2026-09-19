@@ -6,11 +6,14 @@ import type { DrsState } from '@/types/bindings';
 import type { DrsWidgetSettings } from '@/types/widget-settings';
 import styles from './DrsWidget.module.scss';
 
+// `OFF` rather than `CLOSED` for the unavailable state: the flap is closed in
+// `Ready` too, so a label about the flap describes the wrong thing. What this
+// state says is that the rules do not allow DRS here.
 const STATE_LABEL: Record<DrsState, string> = {
-  Unavailable: 'CLOSED',
+  Unavailable: 'OFF',
   Armed: 'ARMED',
   Ready: 'READY',
-  Open: 'OPEN',
+  Open: 'ACTIVE',
 };
 
 const STATE_CLASS: Record<DrsState, string> = {

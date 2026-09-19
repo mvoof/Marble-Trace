@@ -73,6 +73,9 @@
   color: $widget-text-secondary;
   opacity: 0.55;
   letter-spacing: 0.08em;
+  // A two-word label must not wrap onto a second line: the cell is sized for
+  // one, and a wrapped label pushes its own value out of the plate.
+  white-space: nowrap;
 }
 
 .cellValues {
