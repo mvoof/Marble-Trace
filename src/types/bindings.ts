@@ -342,6 +342,50 @@ export type CarStatusFrame = {
    * In car throttle shape adjustment
    */
   dc_throttle_shape: number | null;
+  /**
+   * Second traction control channel, where the car has one (TC2 / TC slip)
+   */
+  dc_traction_control_2: number | null;
+  /**
+   * In car engine braking adjustment
+   */
+  dc_engine_braking: number | null;
+  /**
+   * Fine brake bias trim, in percentage points on top of `dc_brake_bias`
+   */
+  dc_brake_bias_fine: number | null;
+  /**
+   * Peak brake bias adjustment
+   */
+  dc_peak_brake_bias: number | null;
+  /**
+   * Differential setting on corner entry
+   */
+  dc_diff_entry: number | null;
+  /**
+   * Differential setting mid corner
+   */
+  dc_diff_middle: number | null;
+  /**
+   * Third differential setting — corner exit on some cars, high speed on others
+   */
+  dc_diff_exit: number | null;
+  /**
+   * Hybrid battery state of charge: 0.0 to 1.0
+   */
+  energy_ers_battery_pct: number | null;
+  /**
+   * MGU-K power in watts — negative while harvesting, positive while deploying
+   */
+  power_mgu_k: number | null;
+  /**
+   * Energy sent from the battery to the MGU-K this lap, in joules
+   */
+  energy_battery_to_mgu_k_lap: number | null;
+  /**
+   * In car MGU-K deployment mode, where the car exposes a selector
+   */
+  dc_mguk_deploy_mode: number | null;
 };
 
 /**
