@@ -1,0 +1,162 @@
+.root {
+  width: 100%;
+  height: 100%;
+  font-family: $font-widget;
+  padding: sp(xs) sp(sm);
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxs);
+}
+
+.chargeRow {
+  display: flex;
+  align-items: flex-end;
+  gap: sp(sm);
+  min-width: 0;
+}
+
+.label {
+  font-size: fs(xxxs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: $widget-text-secondary;
+  padding-bottom: sp(xxs);
+}
+
+.spacer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.chargeValue {
+  font-family: $font-mono;
+  font-size: fs(xxl);
+  font-weight: 700;
+  color: $widget-text-primary;
+  line-height: 1;
+}
+
+.chargeUnit {
+  font-size: 0.55em;
+  opacity: 0.6;
+}
+
+.bar {
+  position: relative;
+  height: ws(9);
+  border-radius: radius(sm);
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: radius(sm);
+  transition:
+    width 0.15s linear,
+    background-color 0.2s ease-in-out;
+}
+
+.barFillFull {
+  background: $race-green;
+}
+
+.barFillLow {
+  background: $race-amber;
+}
+
+.barFillCritical {
+  background: $race-red;
+}
+
+// The scale: one mark every tenth, centred in the track so a gap stays open
+// above and below. Every division is the same size — the bar reads as ten equal
+// steps rather than as a ruler with landmarks on it. Each mark is a dark line
+// with a lit edge beside it, so it reads as a notch on the fill and stays
+// visible against the empty track.
+.barMark {
+  position: absolute;
+  top: 50%;
+  width: 1px;
+  height: 46%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.modeStrip {
+  display: flex;
+  gap: ws(3);
+  // Off the bar on purpose: a row of words sitting against the track reads as a
+  // legend for it, and these are a control position, not a scale.
+  margin-top: sp(xs);
+}
+
+.mode {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  padding: sp(xxxs) 0;
+  border-radius: radius(sm);
+  font-size: fs(xxxs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: $widget-text-muted;
+}
+
+.modeActive {
+  background: rgba(245, 158, 11, 0.22);
+  font-weight: 700;
+  color: $race-amber;
+}
+
+.powerRow {
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+  min-width: 0;
+}
+
+.powerState {
+  font-size: fs(xxxs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.powerValue {
+  font-family: $font-mono;
+  font-size: fs(md);
+  font-weight: 700;
+}
+
+.powerUnit {
+  font-size: 0.7em;
+  opacity: 0.65;
+}
+
+.stateDeploy {
+  color: $race-amber;
+}
+
+.stateRegen {
+  color: $race-blue;
+}
+
+.stateIdle {
+  color: $widget-text-muted;
+}
+
+.lapDeployRow {
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+  min-width: 0;
+}
+
+.lapDeployValue {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  color: $widget-text-secondary;
+}

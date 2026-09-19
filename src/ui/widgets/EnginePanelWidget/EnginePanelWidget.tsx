@@ -3,9 +3,10 @@ import { cloneElement, type ReactElement } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
-import { getCellDividers } from '@utils/canvas';
 import { EngineCell, type EngineCellProps } from './EngineCell';
 import { AbsCell } from './AbsCell';
+import { AdjustmentCell } from './AdjustmentCell';
+import { ADJUSTMENT_CELLS, balanceCellRows } from './engine-panel-utils';
 import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
 import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
 import type { UnitSystem } from '@/types';
@@ -50,11 +51,6 @@ export const EnginePanelWidget = observer(() => {
   const oilPress = carStatus?.oil_press ?? null;
   const voltage = carStatus?.voltage ?? null;
 
-  // In-car settings
-  const dcBrakeBias = carStatus?.dc_brake_bias ?? null;
-  const dcTc = carStatus?.dc_traction_control ?? null;
-  const dcThrottleShape = carStatus?.dc_throttle_shape ?? null;
-
   const oilTempWarn = isOilTempWarning(oilTemp);
   const waterTempWarn = isWaterTempWarning(waterTemp);
 
@@ -62,11 +58,6 @@ export const EnginePanelWidget = observer(() => {
   const formattedWaterTemp = formatTempInt(waterTemp, system);
   const formattedOilPress = formatPressure(oilPress, system);
   const formattedVoltage = voltage !== null ? voltage.toFixed(1) : '--.-';
-
-  const formattedTc = dcTc !== null ? Math.round(dcTc).toString() : '--';
-  const formattedBias = dcBrakeBias !== null ? dcBrakeBias.toFixed(1) : '--.-';
-  const formattedMap =
-    dcThrottleShape !== null ? Math.round(dcThrottleShape).toString() : '--';
 
   const oilTempCell = settings.showOilTemp && (
     <EngineCell label="OIL" className={oilTempWarn ? styles.dangerFlash : ''}>
@@ -99,67 +90,59 @@ export const EnginePanelWidget = observer(() => {
     </EngineCell>
   );
 
-  const absCell = settings.showAbs && <AbsCell />;
+  // An adjustment the car does not publish reads back as null, and a cell that
+  // would permanently say `--` is noise: the panel carries what this car has.
+  const absCell = settings.showAbs && carStatus?.dc_abs != null && <AbsCell />;
 
-  const tcCell = settings.showTc && (
-    <EngineCell label="TC">
-      <WidgetValue
-        value={formattedTc}
-        className={`${styles.value} ${styles.blueValue}`}
-      />
-    </EngineCell>
-  );
-
-  const biasCell = settings.showBrakeBias && (
-    <EngineCell label="BIAS">
-      <WidgetValue value={formattedBias} unit="%" className={styles.value} />
-    </EngineCell>
-  );
-
-  const mapCell = settings.showEngineMap && (
-    <EngineCell label="MAP">
-      <WidgetValue value={formattedMap} className={styles.value} />
-    </EngineCell>
-  );
+  const adjustmentCells = ADJUSTMENT_CELLS.filter(
+    (spec) =>
+      settings[spec.settingKey] !== false && carStatus?.[spec.field] != null
+  ).map((spec) => <AdjustmentCell key={spec.settingKey} spec={spec} />);
 
   const cells = [
     absCell,
-    tcCell,
-    mapCell,
-    biasCell,
+    ...adjustmentCells,
     oilTempCell,
     oilPressCell,
     waterCell,
     voltageCell,
   ].filter(Boolean) as ReactElement<EngineCellProps>[];
 
-  const cols = settings.horizontal
-    ? Math.max(1, Math.min(settings.horizontalColumns ?? 8, cells.length))
+  // In the horizontal modes the column setting is a ceiling, not a count: the
+  // rows are balanced under it so the last one is never a stub, and every row
+  // stretches to the full width whatever it holds.
+  const maxCols = settings.horizontal
+    ? Math.max(1, settings.horizontalColumns ?? 8)
     : (settings.verticalColumns ?? 2);
 
-  const dividedCells = cells.map((cell, index) => {
-    const { right, top } = getCellDividers(index, cols, cells.length);
+  const rowLengths = balanceCellRows(cells.length, maxCols);
 
-    return cloneElement(cell, {
-      key: index,
-      dividerRight: right,
-      dividerTop: top,
-    });
+  let taken = 0;
+  const rows = rowLengths.map((length) => {
+    const row = cells.slice(taken, taken + length);
+    taken += length;
+
+    return row;
   });
 
   return (
     <WidgetPanel
-      direction={settings.horizontal ? 'row' : 'column'}
+      direction="column"
       gap={0}
       minWidth={0}
       className={styles.root}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        gridAutoRows: '1fr',
-      }}
     >
-      {dividedCells}
+      {rows.map((row, rowIndex) => (
+        <div className={styles.row} key={rowIndex}>
+          {row.map((cell, cellIndex) =>
+            cloneElement(cell, {
+              key: cellIndex,
+              dividerRight: cellIndex < row.length - 1,
+              dividerTop: rowIndex > 0,
+            })
+          )}
+        </div>
+      ))}
     </WidgetPanel>
   );
 });

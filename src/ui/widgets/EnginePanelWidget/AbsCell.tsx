@@ -1,7 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
 import { EngineCell } from './EngineCell';
-import { usePlayerStore } from '@store/root-store-context';
+import {
+  useEnginePanelWidgetStore,
+  usePlayerStore,
+} from '@store/root-store-context';
+import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
 import styles from './EnginePanelWidget.module.scss';
 
 export interface AbsCellProps {
@@ -16,6 +21,9 @@ export interface AbsCellProps {
 export const AbsCell = observer(
   ({ dividerRight = false, dividerTop = false }: AbsCellProps) => {
     const { carStatus, isAbsActive } = usePlayerStore();
+    const enginePanel = useEnginePanelWidgetStore();
+    const settings =
+      useWidgetSettings<EnginePanelWidgetSettings>('engine-panel');
 
     const dcAbs = carStatus?.dc_abs ?? null;
 
@@ -28,6 +36,11 @@ export const AbsCell = observer(
         dividerRight={dividerRight}
         dividerTop={dividerTop}
       >
+        {settings.highlightChanges !== false &&
+        enginePanel.isChanged('dc_abs') ? (
+          <div className={styles.changeFlash} />
+        ) : null}
+
         <WidgetValue
           value={formattedAbs}
           className={`${styles.value} ${styles.yellowValue}`}

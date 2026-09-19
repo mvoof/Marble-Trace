@@ -3,11 +3,28 @@
   height: 100%;
   font-family: $font-widget;
   padding: sp(xs);
+  display: flex;
+  flex-direction: column;
+}
+
+// Rows carry the balancing, not a grid template: a row of four and a row of
+// three both fill the width, so a cell count that divides into nothing still
+// reads as a finished block.
+//
+// The basis is `auto`, never `0`. This widget is autoHeight, so its container
+// measures itself from the content — a zero basis leaves no content to measure,
+// the rows collapse and the values are clipped out below their labels. With
+// `auto` a row is as tall as its cells, and still shares the spare height when
+// the driver has stretched the widget past them.
+.row {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .cell {
   position: relative;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
   background: $widget-surface-cell;
   padding: sp(xxs) sp(xs);
@@ -56,6 +73,9 @@
   color: $widget-text-secondary;
   opacity: 0.55;
   letter-spacing: 0.08em;
+  // A two-word label must not wrap onto a second line: the cell is sized for
+  // one, and a wrapped label pushes its own value out of the plate.
+  white-space: nowrap;
 }
 
 .cellValues {
@@ -110,6 +130,34 @@
     color: #ffffff !important;
     opacity: 1 !important;
   }
+}
+
+// A knob just moved. The highlight sits on the cell as an overlay rather than
+// on the value: the number is what the driver is reading at that moment, and
+// recolouring it competes with the colours already spoken for — blue for
+// traction control, amber for an active system. The background answers the
+// other question, which cell moved, and leaves the reading alone.
+//
+// No animation and no transition: an overlay over a sim should not be keeping
+// the compositor awake for a cosmetic cue. The overlay is simply present or
+// absent, and EnginePanelWidgetStore holds it for a second after the last
+// change — a trailing window, so spinning a rotary lights the cell once instead
+// of strobing per click.
+.changeFlash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+
+// The brake cells and the differential cells each light in their own colour, so
+// a change seen out of the corner of the eye already says which system moved.
+.changeFlashBrake {
+  background: rgba(16, 185, 129, 0.26);
+}
+
+.changeFlashDiff {
+  background: rgba(59, 130, 246, 0.28);
 }
 
 // System activations (e.g. ABS active)

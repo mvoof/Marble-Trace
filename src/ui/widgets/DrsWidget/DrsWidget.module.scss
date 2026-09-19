@@ -1,0 +1,78 @@
+.root {
+  width: 100%;
+  height: 100%;
+  font-family: $font-widget;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  transition: background-color 0.12s linear;
+}
+
+.label {
+  font-size: fs(sm);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: $widget-text-muted;
+}
+
+.state {
+  font-size: fs(lg);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: $widget-text-muted;
+}
+
+// Unavailable is the resting state and stays quiet — a plate that shouts while
+// the rule says no teaches the driver to stop looking at it.
+.rootUnavailable .label,
+.rootUnavailable .state {
+  color: $widget-text-muted;
+}
+
+// Armed: past the detection point, zone still ahead. The ground lifts, but
+// only a little — pressing now does nothing, and a plate as loud as READY
+// would train the driver to press early.
+.rootArmed {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.rootArmed .label {
+  color: $widget-text-secondary;
+}
+
+.rootArmed .state {
+  color: rgba(245, 158, 11, 0.62);
+}
+
+// Ready is the one state that asks for an action, so it is the first one lit
+// at full strength. Same hue as armed: the driver reads the step up in
+// brightness, not a change of colour, which is one thing to notice instead of
+// two.
+.rootReady {
+  background: rgba(245, 158, 11, 0.24);
+}
+
+.rootReady .label {
+  color: $widget-text-secondary;
+}
+
+.rootReady .state {
+  color: #fbbf24;
+}
+
+// Active changes hue, because it reports a fact rather than asking for
+// anything: the flap is open.
+.rootOpen {
+  background: rgba(16, 185, 129, 0.24);
+}
+
+.rootOpen .label {
+  color: $widget-text-secondary;
+}
+
+.rootOpen .state {
+  color: $race-green;
+}

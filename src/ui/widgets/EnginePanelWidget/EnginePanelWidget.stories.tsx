@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { CarStatusFrame } from '@/types/bindings';
 import type { UnitSystem } from '@/types';
-import { mockCarStatus } from '@store/preview/mocks/engine';
+import {
+  mockCarStatus,
+  mockHybridCarStatus,
+} from '@store/preview/mocks/engine';
 import { mockCarInputs } from '@store/preview/mocks/inputs';
 import { whenSet } from '@/storybook/story-overrides';
 import { EnginePanelWidget } from './EnginePanelWidget';
@@ -13,6 +16,12 @@ import {
 
 interface StoryArgs {
   system: UnitSystem;
+  /**
+   * Which car is in the pit box. A GT3 declares four in-car adjustments, a
+   * formula car eleven — and the panel carries exactly what the car declares,
+   * so this knob is the one that shows the cell list reflowing.
+   */
+  car: 'gt3' | 'formula';
   /**
    * The gauges. Left undefined — which is what a story naming a scenario does —
    * the scenario's own reading is kept, so a knob states a difference rather
@@ -60,7 +69,9 @@ const meta: Meta<StoryArgs> = {
       // no scenario under it states the builder's warm engine instead of
       // patching that; one with a scenario leaves the scenario's own panel be.
       if (!scenarioId) {
-        store.player.updateCarStatus(mockCarStatus(gauges));
+        const build =
+          args.car === 'formula' ? mockHybridCarStatus : mockCarStatus;
+        store.player.updateCarStatus(build(gauges));
       }
 
       store.liveWidgets.updateUserSettings('engine-panel', {
@@ -72,6 +83,14 @@ const meta: Meta<StoryArgs> = {
         showTc: args.showTc,
         showBrakeBias: args.showBrakeBias,
         showEngineMap: args.showEngineMap,
+        showTc2: true,
+        showEngineBraking: true,
+        showBrakeBiasFine: true,
+        showPeakBrakeBias: true,
+        showDiffEntry: true,
+        showDiffMiddle: true,
+        showDiffExit: true,
+        highlightChanges: true,
         horizontal: args.horizontal,
         verticalColumns: args.verticalColumns,
         horizontalColumns: args.horizontalColumns,
@@ -79,6 +98,7 @@ const meta: Meta<StoryArgs> = {
     },
     args: {
       system: 'metric',
+      car: 'gt3',
       oilTemp: 110,
       waterTemp: 90,
       oilPress: 350,
@@ -103,6 +123,14 @@ export default meta;
 type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
+
+/** Every in-car adjustment a formula car exposes, on the same grid. */
+export const FormulaCar: Story = {
+  args: {
+    car: 'formula',
+    horizontalColumns: 4,
+  },
+};
 
 export const Imperial: Story = {
   args: {

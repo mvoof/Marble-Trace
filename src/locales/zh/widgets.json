@@ -55,7 +55,7 @@
       "description": "最近 8 圈的时间及与个人最佳的差值，最佳圈高亮显示。"
     },
     "engine-panel": {
-      "description": "液体温度、压力和系统调整（ABS、牵引力控制、刹车偏移、引擎映射）。"
+      "description": "液体温度、压力，以及赛车提供的全部车内调节项——ABS、牵引力控制、制动分配、发动机映射、发动机制动与差速器。"
     },
     "rpm-lights": {
       "description": "由发动机转速驱动的独立换挡灯条，带维修区限速动画。"
@@ -77,6 +77,12 @@
     },
     "invisible-dash": {
       "description": "挡风玻璃投影：左侧是发动机列与挡位，右侧是名次与圈数，中间留空。"
+    },
+    "battery": {
+      "description": "混合动力电池电量、MGU-K 的工作状态，以及具备选择器的赛车上的释放模式。"
+    },
+    "drs": {
+      "description": "DRS 状态：通过检测点后待命、进入区域后可用、已开启。"
     }
   },
   "settingsPanels": {
@@ -161,7 +167,23 @@
       "brakeBias": "刹车偏移",
       "brakeBiasDesc": "显示当前刹车偏移。",
       "engineMap": "引擎映射",
-      "engineMapDesc": "显示油门映射/引擎映射。"
+      "engineMapDesc": "显示油门映射/引擎映射。",
+      "tractionControl2": "牵引力控制 2",
+      "tractionControl2Desc": "显示第二路牵引力控制通道（部分赛车具备）。",
+      "engineBraking": "发动机制动",
+      "engineBrakingDesc": "显示发动机制动设置。",
+      "brakeBiasFine": "制动分配微调",
+      "brakeBiasFineDesc": "显示在粗调值之上的制动分配微调量。",
+      "peakBrakeBias": "峰值制动分配",
+      "peakBrakeBiasDesc": "显示峰值制动分配设置。",
+      "diffEntry": "差速器入弯",
+      "diffEntryDesc": "显示入弯差速器设置。",
+      "diffMiddle": "差速器中段",
+      "diffMiddleDesc": "显示弯中差速器设置。",
+      "diffExit": "差速器 3",
+      "diffExitDesc": "显示第三项差速器设置——部分赛车为出弯，另一些为高速。",
+      "highlightChanges": "变更高亮",
+      "highlightChangesDesc": "当车手调整该项时闪烁对应单元格——制动项为绿色，差速器为蓝色。"
     },
     "flagDisplay": {
       "displayMode": "显示模式",
@@ -764,6 +786,20 @@
       "backdropScopeDesc": "“两侧模块”保持整行中间干净。“整行”则在全部内容后面画一块衢底，随数字一起倾斜。",
       "curvature": "风挡弧度",
       "curvatureDesc": "读数贴合玻璃的程度：两侧向外偏转并朝 A 柱抬起。"
+    },
+    "battery": {
+      "moduleParameters": "模块参数",
+      "deployMode": "释放模式",
+      "deployModeDesc": "显示 MGU-K 释放模式条。若赛车没有可调选择器，该条仍会隐藏。",
+      "power": "MGU-K 功率",
+      "powerDesc": "以千瓦显示 MGU-K 正在做什么以及强度。",
+      "lapDeploy": "本圈释放量",
+      "lapDeployDesc": "以兆焦显示本圈从电池送往 MGU-K 的能量。"
+    },
+    "drs": {
+      "moduleParameters": "模块参数",
+      "hideWhenUnavailable": "不可用时隐藏",
+      "hideWhenUnavailableDesc": "DRS 不可用时完全不显示，而不是显示一块暗色面板。"
     }
   },
   "streamChat": {
