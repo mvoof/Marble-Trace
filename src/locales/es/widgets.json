@@ -80,6 +80,9 @@
     },
     "battery": {
       "description": "Carga de la batería híbrida, qué hace el MGU-K con ella y el modo de despliegue en los coches con selector."
+    },
+    "drs": {
+      "description": "Estado del DRS: armado tras el punto de detección, listo dentro de la zona, abierto."
     }
   },
   "settingsPanels": {
@@ -792,6 +795,11 @@
       "powerDesc": "Mostrar qué hace el MGU-K y con cuánta potencia, en kilovatios.",
       "lapDeploy": "Despliegue en esta vuelta",
       "lapDeployDesc": "Mostrar la energía enviada de la batería al MGU-K en esta vuelta, en megajulios."
+    },
+    "drs": {
+      "moduleParameters": "Parámetros del módulo",
+      "hideWhenUnavailable": "Ocultar cuando no esté disponible",
+      "hideWhenUnavailableDesc": "No dibujar nada mientras el DRS no esté disponible, en lugar de una placa apagada."
     }
   },
   "streamChat": {

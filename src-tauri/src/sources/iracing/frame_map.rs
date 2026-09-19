@@ -6,7 +6,7 @@
 //! @see https://sajax.github.io/irsdkdocs/telemetry/
 
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame, SpotterState};
-use crate::model::enums::{SessionState, Skies, TrackSurface};
+use crate::model::enums::{DrsState, SessionState, Skies, TrackSurface};
 use crate::model::environment::EnvironmentFrame;
 use crate::model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
@@ -130,6 +130,7 @@ impl From<&IracingFrame> for CarStatusFrame {
             power_mgu_k: Some(f.power_mgu_k),
             energy_battery_to_mgu_k_lap: Some(f.energy_battery_to_mgu_k_lap),
             dc_mguk_deploy_mode: Some(f.dc_mguk_deploy_mode),
+            drs: Some(DrsState::from(f.drs_status)),
         }
     }
 }
@@ -169,6 +170,7 @@ const CAR_STATUS_OPTIONAL_VARS: &[(&str, ClearCarStatusField)] = &[
         s.energy_battery_to_mgu_k_lap = None
     }),
     ("dcMGUKDeployMode", |s| s.dc_mguk_deploy_mode = None),
+    ("DRS_Status", |s| s.drs = None),
 ];
 
 impl DeclaredVars {

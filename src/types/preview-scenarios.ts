@@ -58,6 +58,8 @@ export type PreviewScenarioId =
   | 'engine-stalled'
   | 'hybrid-deploying'
   | 'hybrid-harvesting'
+  | 'drs-ready'
+  | 'drs-open'
   | 'timer-final-minute'
   | 'timer-lap-limited'
   // Session-wide moments. Composed from the same domain builders, but scoped to

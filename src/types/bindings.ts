@@ -386,6 +386,10 @@ export type CarStatusFrame = {
    * In car MGU-K deployment mode, where the car exposes a selector
    */
   dc_mguk_deploy_mode: number | null;
+  /**
+   * Drag reduction system state, on the cars that have one
+   */
+  drs: DrsState | null;
 };
 
 /**
@@ -765,6 +769,35 @@ export type DriverEntry = {
   isTowed: boolean;
   pitState: PitState;
 };
+
+/**
+ * What the drag reduction system is doing.
+ *
+ * `DRS_Status` is a single int the SDK documents only as "Drag Reduction
+ * System Status", with no value table. These four came out of a logged
+ * practice session at Monza: the state machine runs
+ * `Unavailable -> Armed -> Ready <-> Open -> Unavailable`, and pressing the
+ * in-car toggle moves the car only between `Ready` and `Open` — a press in
+ * `Unavailable` or `Armed` does nothing at all.
+ */
+export type DrsState =
+  /**
+   * Outside a zone, or the rules do not allow it here.
+   */
+  | 'Unavailable'
+  /**
+   * Past the detection point with the activation zone still ahead. The
+   * button does nothing yet.
+   */
+  | 'Armed'
+  /**
+   * Inside the activation zone, flap closed — the press will land.
+   */
+  | 'Ready'
+  /**
+   * Flap open.
+   */
+  | 'Open';
 
 export type EnvironmentFrame = {
   /**

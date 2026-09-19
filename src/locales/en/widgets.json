@@ -80,6 +80,9 @@
     },
     "battery": {
       "description": "Hybrid battery charge, what the MGU-K is doing with it, and the deploy mode on cars that expose a selector."
+    },
+    "drs": {
+      "description": "Drag reduction system state: armed past the detection point, ready inside the zone, open."
     }
   },
   "settingsPanels": {
@@ -792,6 +795,11 @@
       "powerDesc": "Show what the MGU-K is doing and how hard, in kilowatts.",
       "lapDeploy": "Deploy this lap",
       "lapDeployDesc": "Show the energy sent from the battery to the MGU-K on this lap, in megajoules."
+    },
+    "drs": {
+      "moduleParameters": "Module parameters",
+      "hideWhenUnavailable": "Hide when unavailable",
+      "hideWhenUnavailableDesc": "Draw nothing while DRS is unavailable, instead of a quiet plate."
     }
   },
   "streamChat": {

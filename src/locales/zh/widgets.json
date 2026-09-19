@@ -80,6 +80,9 @@
     },
     "battery": {
       "description": "混合动力电池电量、MGU-K 的工作状态，以及具备选择器的赛车上的释放模式。"
+    },
+    "drs": {
+      "description": "DRS 状态：通过检测点后待命、进入区域后可用、已开启。"
     }
   },
   "settingsPanels": {
@@ -792,6 +795,11 @@
       "powerDesc": "以千瓦显示 MGU-K 正在做什么以及强度。",
       "lapDeploy": "本圈释放量",
       "lapDeployDesc": "以兆焦显示本圈从电池送往 MGU-K 的能量。"
+    },
+    "drs": {
+      "moduleParameters": "模块参数",
+      "hideWhenUnavailable": "不可用时隐藏",
+      "hideWhenUnavailableDesc": "DRS 不可用时完全不显示，而不是显示一块暗色面板。"
     }
   },
   "streamChat": {

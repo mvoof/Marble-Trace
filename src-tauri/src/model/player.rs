@@ -7,6 +7,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::model::cars::SpotterState;
+use crate::model::enums::DrsState;
 
 use crate::model::flags::RaceFlags;
 
@@ -207,6 +208,9 @@ pub struct CarStatusFrame {
 
     /// In car MGU-K deployment mode, where the car exposes a selector
     pub dc_mguk_deploy_mode: Option<f32>,
+
+    /// Drag reduction system state, on the cars that have one
+    pub drs: Option<DrsState>,
 }
 
 // iRacing emits uninitialized memory (garbage floats or zeroes) for temp fields

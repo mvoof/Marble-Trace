@@ -766,6 +766,15 @@ export interface EnginePanelWidgetSettings {
   layoutSizes?: Record<string, { width: number; height: number }>;
 }
 
+export interface DrsWidgetSettings {
+  /**
+   * Draw nothing at all while DRS is unavailable, rather than a quiet plate.
+   * Off by default: a widget that vanishes and comes back is harder to find
+   * again than one that sits still and goes dim.
+   */
+  hideWhenUnavailable: boolean;
+}
+
 export interface BatteryWidgetSettings {
   /** The deploy-mode strip. Hidden anyway on a car whose selector never moves. */
   showDeployMode: boolean;
@@ -836,6 +845,7 @@ export type WidgetSpecificSettings =
   | GMeterWidgetSettings
   | EnginePanelWidgetSettings
   | BatteryWidgetSettings
+  | DrsWidgetSettings
   | RaceDashWidgetSettings
   | InvisibleDashWidgetSettings
   | CoachWidgetSettings

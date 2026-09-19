@@ -57,6 +57,7 @@ export const mockCarStatus = (
   power_mgu_k: null,
   energy_battery_to_mgu_k_lap: null,
   dc_mguk_deploy_mode: null,
+  drs: null,
   ...overrides,
 });
 
@@ -85,5 +86,6 @@ export const mockHybridCarStatus = (
     power_mgu_k: 102_556,
     energy_battery_to_mgu_k_lap: 1_940_000,
     dc_mguk_deploy_mode: 1,
+    drs: 'Unavailable',
     ...overrides,
   });

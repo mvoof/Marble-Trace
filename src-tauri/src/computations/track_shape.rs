@@ -725,6 +725,7 @@ mod tests {
             power_mgu_k: None,
             energy_battery_to_mgu_k_lap: None,
             dc_mguk_deploy_mode: None,
+            drs: None,
         }
     }
 

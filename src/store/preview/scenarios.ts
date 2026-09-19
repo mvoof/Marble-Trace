@@ -919,6 +919,26 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
+    id: 'drs-ready',
+    label: 'DRS — ready',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Inside the activation zone with the flap closed: the one state that
+      // asks the driver to do something.
+      store.player.updateCarStatus(mockHybridCarStatus({ drs: 'Ready' }));
+      applyDynamics(store, { speed: 79, rpm: 10_500, gear: 7 });
+    },
+  },
+  {
+    id: 'drs-open',
+    label: 'DRS — open',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      store.player.updateCarStatus(mockHybridCarStatus({ drs: 'Open' }));
+      applyDynamics(store, { speed: 83, rpm: 11_200, gear: 8 });
+    },
+  },
+  {
     id: 'engine-stalled',
     label: 'Engine — stalled',
     apply: (store) => {
