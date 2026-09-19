@@ -37,6 +37,7 @@ export const useTrackMapWidgetStore = () => useStore().trackMapWidget;
 export const useDrivingCoachWidgetStore = () => useStore().drivingCoachWidget;
 export const useCoachWidgetStore = () => useStore().coachWidget;
 export const useInputTraceWidgetStore = () => useStore().inputTraceWidget;
+export const useEnginePanelWidgetStore = () => useStore().enginePanelWidget;
 export const useChatStore = () => useStore().chat;
 export const useStreamChatWidgetStore = () => useStore().streamChatWidget;
 export const useTwitchAuthStore = () => useStore().twitchAuth;

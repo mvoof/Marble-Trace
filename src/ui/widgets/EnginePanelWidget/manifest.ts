@@ -7,18 +7,27 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@ui/widgets/widget-manifest';
+import { ADJUSTMENT_CELLS, balanceCellRows } from './engine-panel-utils';
+
+/**
+ * The engine-side cells, which every car has. The in-car adjustments come from
+ * `ADJUSTMENT_CELLS`, so the resolver counts exactly what the widget renders.
+ */
+const ENGINE_CELL_KEYS = [
+  'showOilTemp',
+  'showWaterTemp',
+  'showOilPress',
+  'showVoltage',
+  'showAbs',
+];
+
+const CELL_KEYS = [
+  ...ENGINE_CELL_KEYS,
+  ...ADJUSTMENT_CELLS.map((spec) => spec.settingKey),
+];
 
 const getCellCount = (s: any) => {
-  return [
-    s.showOilTemp !== false,
-    s.showWaterTemp !== false,
-    s.showOilPress !== false,
-    s.showVoltage !== false,
-    s.showAbs !== false,
-    s.showTc !== false,
-    s.showBrakeBias !== false,
-    s.showEngineMap !== false,
-  ].filter(Boolean).length;
+  return CELL_KEYS.filter((key) => s[key] !== false).length;
 };
 
 const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
@@ -38,16 +47,7 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
       ? Number(next.horizontalColumns)
       : prevHorizCols;
 
-  const cellKeys = [
-    'showOilTemp',
-    'showWaterTemp',
-    'showOilPress',
-    'showVoltage',
-    'showAbs',
-    'showTc',
-    'showBrakeBias',
-    'showEngineMap',
-  ];
+  const cellKeys = CELL_KEYS;
 
   const modeChanged =
     prevHorizontal !== nextHorizontal ||
@@ -68,10 +68,15 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
   const prevCols = prevHorizontal ? prevHorizCols : prevVertCols;
   const nextCols = nextHorizontal ? nextHorizCols : nextVertCols;
 
-  const prevRows = Math.max(1, Math.ceil(prevCells / prevCols));
-  const nextRows = Math.max(1, Math.ceil(nextCells / nextCols));
+  // The widget balances its rows under the column setting, so the design size
+  // follows the widest row it will actually draw rather than the ceiling.
+  const prevRowLengths = balanceCellRows(prevCells, prevCols);
+  const nextRowLengths = balanceCellRows(nextCells, nextCols);
 
-  const nextDesignWidth = nextCols * 62.5;
+  const prevRows = Math.max(1, prevRowLengths.length);
+  const nextRows = Math.max(1, nextRowLengths.length);
+
+  const nextDesignWidth = Math.max(1, ...nextRowLengths) * 62.5;
   const nextDesignHeight = nextRows * 65;
 
   const prevSettings = prev as unknown as EnginePanelWidgetSettings;
@@ -126,10 +131,11 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
     'engine-oil-overheat',
     'engine-water-overheat',
     'engine-stalled',
+    'hybrid-deploying',
   ],
   label: 'Engine Panel',
   description:
-    'Liquid temperatures, pressures, and system adjustments (ABS, TC, Brake Bias, Engine Map).',
+    'Liquid temperatures, pressures, and every in-car adjustment the car exposes — ABS, traction control, brake bias, engine map, engine braking and the differential.',
   requiredCapabilities: ['playerDynamics'],
   autoHeight: true,
   designWidth: 500,
@@ -149,8 +155,16 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
     showVoltage: true,
     showAbs: true,
     showTc: true,
+    showTc2: true,
     showBrakeBias: true,
+    showBrakeBiasFine: true,
+    showPeakBrakeBias: true,
     showEngineMap: true,
+    showEngineBraking: true,
+    showDiffEntry: true,
+    showDiffMiddle: true,
+    showDiffExit: true,
+    highlightChanges: true,
     horizontal: true,
     verticalColumns: 2,
     horizontalColumns: 8,

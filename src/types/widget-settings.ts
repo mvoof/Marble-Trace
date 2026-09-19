@@ -742,12 +742,37 @@ export interface EnginePanelWidgetSettings {
   showVoltage: boolean;
   showAbs: boolean;
   showTc: boolean;
+  /** Second traction control channel, on the cars that carry one. */
+  showTc2: boolean;
   showBrakeBias: boolean;
+  /** Fine brake bias trim, in points on top of the coarse value. */
+  showBrakeBiasFine: boolean;
+  showPeakBrakeBias: boolean;
   showEngineMap: boolean;
+  showEngineBraking: boolean;
+  showDiffEntry: boolean;
+  showDiffMiddle: boolean;
+  /** Corner exit on some cars, high speed on others — one field either way. */
+  showDiffExit: boolean;
+  /**
+   * Flash a cell's background when the driver moves that adjustment. The brake
+   * cells flash green and the differential cells blue, so the colour says which
+   * system moved before the label is read.
+   */
+  highlightChanges: boolean;
   horizontal: boolean;
   verticalColumns: number;
   horizontalColumns: number;
   layoutSizes?: Record<string, { width: number; height: number }>;
+}
+
+export interface BatteryWidgetSettings {
+  /** The deploy-mode strip. Hidden anyway on a car whose selector never moves. */
+  showDeployMode: boolean;
+  /** MGU-K power, with the deploy/regen state beside it. */
+  showPower: boolean;
+  /** Energy sent to the MGU-K this lap. A debrief number, off by default. */
+  showLapDeploy: boolean;
 }
 
 /** Which channel the trace draws: the speed carried, or the brake pedal itself. */
@@ -810,6 +835,7 @@ export type WidgetSpecificSettings =
   | TimerWidgetSettings
   | GMeterWidgetSettings
   | EnginePanelWidgetSettings
+  | BatteryWidgetSettings
   | RaceDashWidgetSettings
   | InvisibleDashWidgetSettings
   | CoachWidgetSettings

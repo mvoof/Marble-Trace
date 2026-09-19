@@ -55,7 +55,7 @@
       "description": "Las últimas 8 vueltas con su tiempo y su delta frente a tu mejor vuelta. La mejor vuelta queda resaltada."
     },
     "engine-panel": {
-      "description": "Temperaturas de líquidos, presiones y ajustes del coche (ABS, TC, reparto de frenada, mapa motor)."
+      "description": "Temperaturas de líquidos, presiones y todos los ajustes internos que expone el coche: ABS, control de tracción, reparto de frenada, mapa motor, freno motor y diferencial."
     },
     "rpm-lights": {
       "description": "Barra de LED de cambio independiente, guiada por las revoluciones, con animaciones del limitador de boxes."
@@ -77,6 +77,9 @@
     },
     "invisible-dash": {
       "description": "Proyección sobre el parabrisas: columna del motor y marcha a la izquierda, posición y vuelta a la derecha, el centro despejado."
+    },
+    "battery": {
+      "description": "Carga de la batería híbrida, qué hace el MGU-K con ella y el modo de despliegue en los coches con selector."
     }
   },
   "settingsPanels": {
@@ -161,7 +164,23 @@
       "brakeBias": "Reparto de frenada",
       "brakeBiasDesc": "Muestra el reparto de frenada activo.",
       "engineMap": "Mapa motor",
-      "engineMapDesc": "Muestra el mapa de acelerador o de motor."
+      "engineMapDesc": "Muestra el mapa de acelerador o de motor.",
+      "tractionControl2": "Control de tracción 2",
+      "tractionControl2Desc": "Mostrar el segundo canal de control de tracción, en los coches que lo tienen.",
+      "engineBraking": "Freno motor",
+      "engineBrakingDesc": "Mostrar el ajuste de freno motor.",
+      "brakeBiasFine": "Reparto de frenada fino",
+      "brakeBiasFineDesc": "Mostrar el ajuste fino del reparto de frenada, en puntos sobre el valor base.",
+      "peakBrakeBias": "Reparto de frenada máximo",
+      "peakBrakeBiasDesc": "Mostrar el ajuste de reparto de frenada máximo.",
+      "diffEntry": "Diferencial de entrada",
+      "diffEntryDesc": "Mostrar el ajuste del diferencial en la entrada de curva.",
+      "diffMiddle": "Diferencial medio",
+      "diffMiddleDesc": "Mostrar el ajuste del diferencial en el centro de la curva.",
+      "diffExit": "Diferencial 3",
+      "diffExitDesc": "Mostrar el tercer ajuste del diferencial: salida de curva en unos coches, alta velocidad en otros.",
+      "highlightChanges": "Resaltar cambios",
+      "highlightChangesDesc": "Destellar la celda cuando el piloto mueve ese ajuste: verde para los de frenada, azul para el diferencial."
     },
     "flagDisplay": {
       "displayMode": "Modo de visualización",
@@ -764,6 +783,15 @@
       "backdropScopeDesc": "Grupos deja despejado el centro de la franja. Franja completa pinta una sola placa detrás de todo, inclinada junto con los dígitos.",
       "curvature": "Curvatura del parabrisas",
       "curvatureDesc": "Cuánto se envuelve la lectura sobre el cristal: los dos lados se alejan de ti y suben hacia los pilares."
+    },
+    "battery": {
+      "moduleParameters": "Parámetros del módulo",
+      "deployMode": "Modo de despliegue",
+      "deployModeDesc": "Mostrar la barra de modos de despliegue del MGU-K. En coches sin selector queda oculta igualmente.",
+      "power": "Potencia del MGU-K",
+      "powerDesc": "Mostrar qué hace el MGU-K y con cuánta potencia, en kilovatios.",
+      "lapDeploy": "Despliegue en esta vuelta",
+      "lapDeployDesc": "Mostrar la energía enviada de la batería al MGU-K en esta vuelta, en megajulios."
     }
   },
   "streamChat": {

@@ -55,7 +55,7 @@
       "description": "Last 8 laps with time and delta vs personal best. Best lap highlighted."
     },
     "engine-panel": {
-      "description": "Liquid temperatures, pressures, and system adjustments (ABS, TC, Brake Bias, Engine Map)."
+      "description": "Liquid temperatures, pressures, and every in-car adjustment the car exposes — ABS, traction control, brake bias, engine map, engine braking and the differential."
     },
     "rpm-lights": {
       "description": "Standalone shift-light LED bar driven by engine RPM, with pit-limiter animations."
@@ -77,6 +77,9 @@
     },
     "invisible-dash": {
       "description": "Windscreen projection: engine column and gear on the left, position and lap on the right, empty in the middle."
+    },
+    "battery": {
+      "description": "Hybrid battery charge, what the MGU-K is doing with it, and the deploy mode on cars that expose a selector."
     }
   },
   "settingsPanels": {
@@ -161,7 +164,23 @@
       "brakeBias": "Brake Bias",
       "brakeBiasDesc": "Show active brake bias.",
       "engineMap": "Engine Map",
-      "engineMapDesc": "Show throttle map / engine map."
+      "engineMapDesc": "Show throttle map / engine map.",
+      "tractionControl2": "Traction control 2",
+      "tractionControl2Desc": "Show the second traction control channel, on cars that have one.",
+      "engineBraking": "Engine braking",
+      "engineBrakingDesc": "Show the engine braking setting.",
+      "brakeBiasFine": "Brake bias fine",
+      "brakeBiasFineDesc": "Show the fine brake bias trim, in points on top of the coarse value.",
+      "peakBrakeBias": "Peak brake bias",
+      "peakBrakeBiasDesc": "Show the peak brake bias setting.",
+      "diffEntry": "Differential entry",
+      "diffEntryDesc": "Show the corner entry differential setting.",
+      "diffMiddle": "Differential mid",
+      "diffMiddleDesc": "Show the mid corner differential setting.",
+      "diffExit": "Differential 3",
+      "diffExitDesc": "Show the third differential setting — corner exit on some cars, high speed on others.",
+      "highlightChanges": "Highlight changes",
+      "highlightChangesDesc": "Flash a cell when the driver moves that adjustment — green for the brake cells, blue for the differential."
     },
     "flagDisplay": {
       "displayMode": "Display Mode",
@@ -764,6 +783,15 @@
       "backdropScopeDesc": "Clusters leaves the middle of the strip clear. Whole strip paints one plate behind everything, tilted along with the digits.",
       "curvature": "Windscreen Curvature",
       "curvatureDesc": "How hard the readout wraps around the glass: the two sides turn away from you and ride up toward the pillars."
+    },
+    "battery": {
+      "moduleParameters": "Module parameters",
+      "deployMode": "Deploy mode",
+      "deployModeDesc": "Show the MGU-K deploy mode strip. Hidden anyway on cars whose selector never moves.",
+      "power": "MGU-K power",
+      "powerDesc": "Show what the MGU-K is doing and how hard, in kilowatts.",
+      "lapDeploy": "Deploy this lap",
+      "lapDeployDesc": "Show the energy sent from the battery to the MGU-K on this lap, in megajoules."
     }
   },
   "streamChat": {

@@ -56,6 +56,8 @@ export type PreviewScenarioId =
   | 'engine-oil-overheat'
   | 'engine-water-overheat'
   | 'engine-stalled'
+  | 'hybrid-deploying'
+  | 'hybrid-harvesting'
   | 'timer-final-minute'
   | 'timer-lap-limited'
   // Session-wide moments. Composed from the same domain builders, but scoped to
