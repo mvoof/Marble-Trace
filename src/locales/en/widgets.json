@@ -789,6 +789,8 @@
     },
     "battery": {
       "moduleParameters": "Module parameters",
+      "compactMode": "Compact mode",
+      "compactModeDesc": "Show only the charge bar and its percentage, hiding the deploy mode, power and lap deploy rows.",
       "deployMode": "Deploy mode",
       "deployModeDesc": "Show the MGU-K deploy mode strip. Hidden anyway on cars whose selector never moves.",
       "power": "MGU-K power",

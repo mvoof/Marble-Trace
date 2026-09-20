@@ -1,54 +1,40 @@
 import { observer } from 'mobx-react-lite';
 import { usePlayerStore } from '@store/root-store-context';
 import {
-  CHARGE_CRITICAL_PCT,
-  CHARGE_LOW_PCT,
-  chargeBarMarks,
+  FALLBACK_CHARGE_BAR_CELLS,
+  chargeLevel,
+  litChargeCells,
 } from './battery-utils';
+import { useChargeCellCount } from './useChargeCellCount';
 import styles from './BatteryWidget.module.scss';
 
-const fillClass = (charge: number): string => {
-  if (charge < CHARGE_CRITICAL_PCT) {
-    return styles.barFillCritical;
-  }
-
-  if (charge < CHARGE_LOW_PCT) {
-    return styles.barFillLow;
-  }
-
-  return styles.barFillFull;
-};
-
-const MARKS = chargeBarMarks();
+const CELL_CLASS = {
+  full: styles.cellFull,
+  low: styles.cellLow,
+  critical: styles.cellCritical,
+} as const;
 
 /**
- * The charge as a length, divided into tenths. Read by shape rather than by
- * digit, which is what a driver actually does with it mid-corner — the marks
- * turn "most of the way along" into "seven tenths" without printing a number.
- *
- * The marks sit above the fill rather than under it, so the divisions stay
- * legible whatever the charge, and they are centred with the track open above
- * and below them so they read as scoring on the bar and not as a fence across
- * it.
+ * The charge as a row of cells, each one slanted along the direction of travel.
+ * The eye counts cells where it would have to measure a bar, and the slant is
+ * what keeps a row of them from reading as a barcode. How many there are is
+ * measured from the bar itself, so the cells stay square at any widget width.
  */
 export const ChargeBar = observer(() => {
   const { carStatus } = usePlayerStore();
+  const { ref, count } = useChargeCellCount(FALLBACK_CHARGE_BAR_CELLS);
 
   const charge = carStatus?.energy_ers_battery_pct ?? 0;
   const clamped = Math.min(Math.max(charge, 0), 1);
+  const lit = litChargeCells(clamped, count);
+  const litClass = CELL_CLASS[chargeLevel(clamped)];
 
   return (
-    <div className={styles.bar}>
-      <div
-        className={`${styles.barFill} ${fillClass(clamped)}`}
-        style={{ width: `${clamped * 100}%` }}
-      />
-
-      {MARKS.map((at) => (
+    <div className={styles.bar} ref={ref}>
+      {Array.from({ length: count }, (_unused, at) => (
         <div
-          className={styles.barMark}
+          className={`${styles.cell} ${at < lit ? litClass : styles.cellEmpty}`}
           key={at}
-          style={{ left: `${at * 100}%` }}
         />
       ))}
     </div>

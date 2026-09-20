@@ -782,6 +782,8 @@ export interface BatteryWidgetSettings {
   showPower: boolean;
   /** Energy sent to the MGU-K this lap. A debrief number, off by default. */
   showLapDeploy: boolean;
+  /** Strip the widget down to the charge bar and its percentage, nothing else. */
+  compactMode: boolean;
 }
 
 /** Which channel the trace draws: the speed carried, or the brake pedal itself. */
@@ -968,6 +970,19 @@ export interface WidgetManifest extends WidgetMeta {
    * governs whether a block is there, a scenario governs what data is in it.
    */
   previewScenarios?: PreviewScenarioId[];
+  /**
+   * Whether the baseline is one of the states this widget can be looked at in.
+   *
+   * The baseline car is a GT3, so a widget whose whole subject is hardware that
+   * car does not carry renders nothing against it — correctly, but in the
+   * workbench that is an empty pane on a widget the driver just clicked. Such a
+   * widget sets this to false and its picker offers only the states it declares.
+   *
+   * Default (absent) is true: for every other widget the baseline is the state
+   * to return to, and dropping it would strand the driver on the first scenario
+   * they picked.
+   */
+  previewBaseline?: boolean;
 }
 
 export interface WidgetConfig extends WidgetManifest {

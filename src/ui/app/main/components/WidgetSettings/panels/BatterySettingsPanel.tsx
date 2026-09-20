@@ -17,6 +17,14 @@ export const BatterySettingsPanel = observer(() => {
     <Card title={t('settingsPanels.battery.moduleParameters')}>
       <div className={styles.fieldGroup}>
         <SwitchRow
+          settingKey="compactMode"
+          title={t('settingsPanels.battery.compactMode')}
+          desc={t('settingsPanels.battery.compactModeDesc')}
+        />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <SwitchRow
           settingKey="showDeployMode"
           title={t('settingsPanels.battery.deployMode')}
           desc={t('settingsPanels.battery.deployModeDesc')}

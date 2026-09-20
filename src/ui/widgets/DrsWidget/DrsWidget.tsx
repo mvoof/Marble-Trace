@@ -4,6 +4,9 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { usePlayerStore } from '@store/root-store-context';
 import type { DrsState } from '@/types/bindings';
 import type { DrsWidgetSettings } from '@/types/widget-settings';
+// The wing itself — three slats stepping down and to the left, each cut on the
+// slant. It paints in `currentColor`, which the root sets per state.
+import DrsWing from '@assets/drs-wing.svg?react';
 import styles from './DrsWidget.module.scss';
 
 // `OFF` rather than `CLOSED` for the unavailable state: the flap is closed in
@@ -49,12 +52,17 @@ export const DrsWidget = observer(() => {
 
   return (
     <WidgetPanel
-      direction="column"
+      direction="row"
       gap={0}
       minWidth={0}
       className={`${styles.root} ${STATE_CLASS[drs]}`}
     >
+      <DrsWing className={styles.mark} aria-hidden="true" focusable="false" />
+
+      <div className={styles.divider} />
+
       <div className={styles.label}>DRS</div>
+
       <div className={styles.state}>{STATE_LABEL[drs]}</div>
     </WidgetPanel>
   );

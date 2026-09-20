@@ -24,22 +24,36 @@ export const DEPLOY_MODES = ['QUAL', 'ATK', 'BAL', 'BUILD'] as const;
 
 export type DeployMode = (typeof DEPLOY_MODES)[number];
 
-/**
- * How many sections the charge bar is scored into.
- *
- * Ten is a scale the eye counts without reading: every division is a tenth, so
- * a glance gives a number without a number being drawn. The divisions are equal
- * on purpose — a taller mark every fifth turns the bar into a ruler to be read
- * rather than a length to be seen.
- */
-export const CHARGE_BAR_SECTIONS = 10;
+/** Which band the charge falls in — the bar and its divider share the colour. */
+export type ChargeLevel = 'full' | 'low' | 'critical';
 
-/** The positions of the internal marks, as a fraction of the bar's width. */
-export const chargeBarMarks = (): number[] =>
-  Array.from(
-    { length: CHARGE_BAR_SECTIONS - 1 },
-    (_unused, index) => (index + 1) / CHARGE_BAR_SECTIONS
-  );
+export const chargeLevel = (fraction: number): ChargeLevel => {
+  if (fraction < CHARGE_CRITICAL_PCT) {
+    return 'critical';
+  }
+
+  if (fraction < CHARGE_LOW_PCT) {
+    return 'low';
+  }
+
+  return 'full';
+};
+
+/**
+ * What the bar is divided into before it has been measured.
+ *
+ * The real count comes from the bar's own width (`useChargeCellCount`), since a
+ * cell is a square block and a wider widget should gain divisions rather than
+ * stretch the ones it has. This is only what the first frame draws.
+ */
+export const FALLBACK_CHARGE_BAR_CELLS = 14;
+
+/** How many cells are lit at this charge. A part-full cell counts as lit. */
+export const litChargeCells = (fraction: number, cells: number): number => {
+  const clamped = Math.min(Math.max(fraction, 0), 1);
+
+  return Math.ceil(clamped * cells);
+};
 
 export const mguPowerState = (watts: number | null): MguPowerState => {
   if (watts === null || Math.abs(watts) < MGU_POWER_DEAD_BAND_W) {

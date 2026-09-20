@@ -1,133 +1,218 @@
+// The slant every cell and the bar itself are cut on. One angle, declared once:
+// the cells lean along the direction of travel, and a second value anywhere
+// would show up as a cell out of step with its neighbours.
+$cell-slant: -8deg;
+
 .root {
   width: 100%;
   height: 100%;
   font-family: $font-widget;
-  padding: sp(xs) sp(sm);
   display: flex;
   flex-direction: column;
-  gap: sp(xxs);
 }
 
-.chargeRow {
+.chargeBlock {
   display: flex;
-  align-items: flex-end;
-  gap: sp(sm);
-  min-width: 0;
+  flex-direction: column;
+  padding: sp(xs) sp(sm);
 }
 
-.label {
-  font-size: fs(xxxs);
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  color: $widget-text-secondary;
-  padding-bottom: sp(xxs);
-}
-
-.spacer {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.chargeValue {
-  font-family: $font-mono;
-  font-size: fs(xxl);
-  font-weight: 700;
-  color: $widget-text-primary;
-  line-height: 1;
-}
-
-.chargeUnit {
-  font-size: 0.55em;
-  opacity: 0.6;
-}
-
-.bar {
+// Every block below the charge sits under a hairline rule that stops short of
+// both edges: a rule running edge to edge cuts the plate into separate cards,
+// and these are sections of one readout.
+.section {
   position: relative;
-  height: ws(9);
-  border-radius: radius(sm);
-  background: rgba(255, 255, 255, 0.07);
-  overflow: hidden;
+  padding: sp(xs) sp(sm);
 }
 
-.barFill {
-  height: 100%;
-  border-radius: radius(sm);
-  transition:
-    width 0.15s linear,
-    background-color 0.2s ease-in-out;
-}
-
-.barFillFull {
-  background: $race-green;
-}
-
-.barFillLow {
-  background: $race-amber;
-}
-
-.barFillCritical {
-  background: $race-red;
-}
-
-// The scale: one mark every tenth, centred in the track so a gap stays open
-// above and below. Every division is the same size — the bar reads as ten equal
-// steps rather than as a ruler with landmarks on it. Each mark is a dark line
-// with a lit edge beside it, so it reads as a notch on the fill and stays
-// visible against the empty track.
-.barMark {
+.section::before {
+  content: '';
   position: absolute;
-  top: 50%;
-  width: 1px;
-  height: 46%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.55);
-  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.1);
-  pointer-events: none;
+  top: 0;
+  left: sp(sm);
+  right: sp(sm);
+  height: 1px;
+  background: $widget-border-default;
 }
 
-.modeStrip {
-  display: flex;
-  gap: ws(3);
-  // Off the bar on purpose: a row of words sitting against the track reads as a
-  // legend for it, and these are a control position, not a scale.
-  margin-top: sp(xs);
-}
-
-.mode {
-  flex: 1 1 0;
-  min-width: 0;
-  text-align: center;
-  padding: sp(xxxs) 0;
-  border-radius: radius(sm);
-  font-size: fs(xxxs);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: $widget-text-muted;
-}
-
-.modeActive {
-  background: rgba(245, 158, 11, 0.22);
-  font-weight: 700;
-  color: $race-amber;
-}
-
-.powerRow {
+// Label over the bar it names, the percentage beside both — the number is read
+// from a distance, the bar only glanced at, so they are not on one line.
+.chargeRow {
   display: flex;
   align-items: center;
   gap: sp(sm);
   min-width: 0;
 }
 
-.powerState {
-  font-size: fs(xxxs);
-  font-weight: 700;
-  letter-spacing: 0.1em;
+.chargeMeter {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxs);
 }
 
+// The bar's own caption, and nothing more: it names the row once and is never
+// read again, so it sits a step below the readouts rather than competing with
+// them. Slanted to sit with the cells under it.
+.label {
+  font-size: fs(xxxs);
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: $widget-label;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+// Lit in the charge's own colour, not a neutral hairline: it is the end of the
+// bar as much as the edge of the number, and it carries the state to the side
+// of the widget the eye lands on first.
+.chargeDivider {
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 2px;
+  border-radius: 1px;
+}
+
+.chargeDividerFull {
+  background: $race-green;
+}
+
+.chargeDividerLow {
+  background: $race-amber;
+}
+
+.chargeDividerCritical {
+  background: $race-red;
+}
+
+.chargeValue {
+  flex: 0 0 auto;
+  font-family: $font-mono;
+  font-size: fs(xxxl);
+  font-weight: 700;
+  color: $widget-text-primary;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.chargeUnit {
+  font-size: 0.5em;
+  opacity: 0.6;
+}
+
+// The gap is a seam between cells, not a space they sit in: hold it near a
+// sixth of the cell pitch and the bar reads as one lit strip divided up, let it
+// grow and the same cells read as hatching with the bar missing.
+.bar {
+  display: flex;
+  align-items: stretch;
+  gap: ws(1.5);
+  flex: 1 1 auto;
+  min-width: 0;
+  height: ws(9);
+}
+
+.cell {
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: 2px;
+  transform: skewX($cell-slant);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.cellFull {
+  background: $race-green;
+}
+
+.cellLow {
+  background: $race-amber;
+}
+
+.cellCritical {
+  background: $race-red;
+}
+
+.cellEmpty {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.modeStrip {
+  display: flex;
+  gap: ws(6);
+}
+
+// Plain text, nothing else: the active position is a colour. No box, no wash
+// and no rule under the word — the strip mirrors a selector, it is not one.
+.mode {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  font-size: fs(xxs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: $widget-label;
+}
+
+.modeActive {
+  font-weight: 700;
+  color: $race-amber;
+}
+
+// DEPLOY/REGEN and the per-lap energy as one text line, not two rows.
+.statusRow {
+  display: flex;
+  align-items: baseline;
+  gap: sp(md);
+  min-width: 0;
+}
+
+// Label left, value right — the values land in columns instead of drifting
+// with however wide the label beside them happens to be.
+//
+// Sized from its own content, never to an even half: DEPLOY carries a longer
+// word and a signed three-digit value, so an even split hands it less than it
+// needs and the reading runs out under the divider and into the lap beside it.
+// The halves take what they need first and share what is left over.
+.statusItem {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: sp(sm);
+  min-width: max-content;
+}
+
+.statusDivider {
+  align-self: stretch;
+  width: 1px;
+  background: $widget-border-default;
+}
+
+.powerState {
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+// The two numbers the row exists for: set larger, heavier and slanted, so they
+// carry against the labels beside them instead of reading as more of the same
+// line. The slant is the bar's, so the plate leans one way throughout.
 .powerValue {
   font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 700;
+  font-size: fs(lg);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.lapValue {
+  color: $widget-text-primary;
+}
+
+.lapLabel {
+  color: $widget-label;
 }
 
 .powerUnit {
@@ -144,19 +229,5 @@
 }
 
 .stateIdle {
-  color: $widget-text-muted;
-}
-
-.lapDeployRow {
-  display: flex;
-  align-items: center;
-  gap: sp(sm);
-  min-width: 0;
-}
-
-.lapDeployValue {
-  font-family: $font-mono;
-  font-size: fs(xs);
-  font-weight: 700;
-  color: $widget-text-secondary;
+  color: $widget-label;
 }

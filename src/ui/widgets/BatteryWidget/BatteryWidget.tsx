@@ -4,10 +4,8 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { usePlayerStore } from '@store/root-store-context';
 import type { BatteryWidgetSettings } from '@/types/widget-settings';
 import { ChargeRow } from './ChargeRow';
-import { ChargeBar } from './ChargeBar';
 import { DeployModeStrip } from './DeployModeStrip';
-import { PowerRow } from './PowerRow';
-import { LapDeployRow } from './LapDeployRow';
+import { StatusRow } from './StatusRow';
 import { deployModeIndex } from './battery-utils';
 import styles from './BatteryWidget.module.scss';
 
@@ -30,17 +28,27 @@ export const BatteryWidget = observer(() => {
     return null;
   }
 
+  // Compact mode strips the widget down to the charge itself — nothing else
+  // gets a look-in, whatever the other toggles say.
+  const compact = settings.compactMode;
+
   // A car that parks the mode on one value it never moves (the GTP cars do)
   // has no selector to mirror, so the strip is left out rather than drawn as a
   // control the driver cannot reach.
   const showModeStrip =
+    !compact &&
     settings.showDeployMode &&
     deployModeIndex(carStatus.dc_mguk_deploy_mode ?? null) !== null;
 
-  const showPower = settings.showPower && carStatus.power_mgu_k != null;
+  const showPower =
+    !compact && settings.showPower && carStatus.power_mgu_k != null;
 
   const showLapDeploy =
-    settings.showLapDeploy && carStatus.energy_battery_to_mgu_k_lap != null;
+    !compact &&
+    settings.showLapDeploy &&
+    carStatus.energy_battery_to_mgu_k_lap != null;
+
+  const showStatusRow = showPower || showLapDeploy;
 
   return (
     <WidgetPanel
@@ -49,14 +57,21 @@ export const BatteryWidget = observer(() => {
       minWidth={0}
       className={styles.root}
     >
-      <ChargeRow />
-      <ChargeBar />
+      <div className={styles.chargeBlock}>
+        <ChargeRow />
+      </div>
 
-      {showModeStrip ? <DeployModeStrip /> : null}
+      {showModeStrip ? (
+        <div className={styles.section}>
+          <DeployModeStrip />
+        </div>
+      ) : null}
 
-      {showPower ? <PowerRow /> : null}
-
-      {showLapDeploy ? <LapDeployRow /> : null}
+      {showStatusRow ? (
+        <div className={styles.section}>
+          <StatusRow showPower={showPower} showLapDeploy={showLapDeploy} />
+        </div>
+      ) : null}
     </WidgetPanel>
   );
 });

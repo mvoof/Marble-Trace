@@ -11,18 +11,20 @@ export const DRS_MANIFEST: WidgetManifest = {
   // to declare.
   telemetryEvents: [],
   requiredCapabilities: ['playerDynamics'],
-  previewScenarios: ['drs-ready', 'drs-open'],
+  previewScenarios: ['drs-armed', 'drs-ready', 'drs-open'],
   label: 'DRS',
   description:
     'Drag reduction system state: armed past the detection point, ready inside the zone, open.',
-  designWidth: 136,
-  designHeight: 46,
+  // Sized to the row it holds: mark, rule, name and the longest state word
+  // ("ACTIVE") at their design sizes, plus the padding around them.
+  designWidth: 215,
+  designHeight: 56,
   userSettings: {
     enabled: false,
     x: 700,
     y: 600,
-    currentWidth: 136,
-    currentHeight: 46,
+    currentWidth: 215,
+    currentHeight: 56,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     hideWhenUnavailable: false,

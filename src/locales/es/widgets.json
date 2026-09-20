@@ -789,6 +789,8 @@
     },
     "battery": {
       "moduleParameters": "Parámetros del módulo",
+      "compactMode": "Modo compacto",
+      "compactModeDesc": "Mostrar solo la barra de carga y su porcentaje, ocultando el modo de despliegue, la potencia y el despliegue por vuelta.",
       "deployMode": "Modo de despliegue",
       "deployModeDesc": "Mostrar la barra de modos de despliegue del MGU-K. En coches sin selector queda oculta igualmente.",
       "power": "Potencia del MGU-K",

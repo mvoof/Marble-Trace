@@ -58,6 +58,7 @@ export type PreviewScenarioId =
   | 'engine-stalled'
   | 'hybrid-deploying'
   | 'hybrid-harvesting'
+  | 'drs-armed'
   | 'drs-ready'
   | 'drs-open'
   | 'timer-final-minute'

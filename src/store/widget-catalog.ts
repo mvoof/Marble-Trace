@@ -63,6 +63,7 @@ const NON_SERIALIZABLE_WIDGET_KEYS = new Set([
   'deriveDesignWidth',
   'telemetryEvents',
   'previewScenarios',
+  'previewBaseline',
   'order',
 ]);
 

@@ -13,6 +13,9 @@ export const BATTERY_MANIFEST: WidgetManifest = {
   telemetryEvents: [],
   requiredCapabilities: ['playerDynamics'],
   previewScenarios: ['hybrid-deploying', 'hybrid-harvesting'],
+  // The baseline car is a GT3: no battery, so the widget correctly draws
+  // nothing against it and the picker would be offering an empty pane.
+  previewBaseline: false,
   label: 'Battery',
   description:
     'Hybrid battery charge, what the MGU-K is doing with it, and the deploy mode on cars that expose a selector.',
@@ -31,5 +34,6 @@ export const BATTERY_MANIFEST: WidgetManifest = {
     showPower: true,
     // Off by default: it is a debrief number, not something read at the apex.
     showLapDeploy: false,
+    compactMode: false,
   },
 };

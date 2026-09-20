@@ -19,7 +19,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/DrsWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: DrsWidget,
-    size: { width: 136, height: 46 },
+    size: { width: 215, height: 56 },
     seed: (store, args) => {
       store.player.updateCarStatus(
         args.noDrs ? mockCarStatus() : mockHybridCarStatus({ drs: args.state })

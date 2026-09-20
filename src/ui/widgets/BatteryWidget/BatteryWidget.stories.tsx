@@ -23,6 +23,7 @@ interface StoryArgs {
   showDeployMode: boolean;
   showPower: boolean;
   showLapDeploy: boolean;
+  compactMode: boolean;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -45,6 +46,7 @@ const meta: Meta<StoryArgs> = {
         showDeployMode: args.showDeployMode,
         showPower: args.showPower,
         showLapDeploy: args.showLapDeploy,
+        compactMode: args.compactMode,
       });
     },
     args: {
@@ -56,6 +58,7 @@ const meta: Meta<StoryArgs> = {
       showDeployMode: true,
       showPower: true,
       showLapDeploy: false,
+      compactMode: false,
     },
     argTypes: {
       charge: { control: { type: 'range', min: 0, max: 1, step: 0.01 } },
@@ -109,6 +112,13 @@ export const NoModeSelector: Story = {
 export const WithLapDeploy: Story = {
   args: {
     showLapDeploy: true,
+  },
+};
+
+/** Charge bar and percentage only — every other row hidden. */
+export const Compact: Story = {
+  args: {
+    compactMode: true,
   },
 };
 

@@ -919,6 +919,18 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
+    id: 'drs-armed',
+    label: 'DRS — armed',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Past the detection point with the zone still ahead: the press does
+      // nothing yet, which is the whole reason this state is drawn apart from
+      // ready rather than folded into it.
+      store.player.updateCarStatus(mockHybridCarStatus({ drs: 'Armed' }));
+      applyDynamics(store, { speed: 76, rpm: 10_200, gear: 6 });
+    },
+  },
+  {
     id: 'drs-ready',
     label: 'DRS — ready',
     apply: (store) => {
