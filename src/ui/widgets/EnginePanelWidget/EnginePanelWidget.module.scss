@@ -8,7 +8,6 @@
   padding: sp(xxs);
   display: flex;
   flex-direction: column;
-  gap: sp(xxs);
 }
 
 // A row holds whole plates. The basis is `auto`, never `0`: this widget is
@@ -20,6 +19,14 @@
   flex: 1 1 auto;
   gap: sp(xs);
   min-height: 0;
+}
+
+// The gap between rows is a margin, not the flex `gap` it looks like it should
+// be: `WidgetPanel` writes its own `gap` inline, and an inline style beats this
+// file. A margin is out of that fight, and unlike the panel's numeric prop it
+// scales with `--wfs` like every other measurement here.
+.row + .row {
+  margin-top: sp(xxs);
 }
 
 // The plate is the grouping. The gap around it does the separating work that
