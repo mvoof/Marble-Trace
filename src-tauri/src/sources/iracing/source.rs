@@ -24,8 +24,48 @@ impl IracingSource {
     pub fn try_connect() -> Option<Self> {
         match SimConnection::connect_to(KerbSimType::IRacing) {
             Ok(Connection::IRacing(conn)) => {
-                let declared =
-                    DeclaredVars::new(conn.var_list_snapshot().into_iter().map(|var| var.name));
+                let vars = conn.var_list_snapshot();
+
+                // What this car publishes, and what the car itself calls it.
+                //
+                // The `dc*` variables are generic rotary slots, not fixed
+                // controls: iRacing hangs whatever that car's wheel actually
+                // adjusts on them, so `dcABS` carries brake bias migration on a
+                // GTP car and ABS on a GT3. The slot name is therefore not the
+                // label — the description is, and it is the only place the
+                // car's own wording exists. Logged once per connection, because
+                // the telemetry inspector can only show fields the adapter
+                // already maps and a slot nothing reads yet is invisible
+                // everywhere else.
+                let mut adjustments: Vec<String> = vars
+                    .iter()
+                    .filter(|var| {
+                        var.name.starts_with("dc")
+                            || var.name.starts_with("Energy")
+                            || var.name.starts_with("Power")
+                            || var.name.starts_with("Torque")
+                            || var.name.contains("DRS")
+                            || var.name.contains("PushToPass")
+                    })
+                    .map(|var| format!("{} = {:?} [{}]", var.name, var.desc, var.unit))
+                    .collect();
+
+                adjustments.sort();
+
+                for line in &adjustments {
+                    debug!("iRacing adjustment var: {line}");
+                }
+
+                let mut names: Vec<String> = vars.into_iter().map(|var| var.name).collect();
+                names.sort();
+
+                debug!(
+                    count = names.len(),
+                    "iRacing declared vars: {}",
+                    names.join(" ")
+                );
+
+                let declared = DeclaredVars::new(names);
 
                 Some(Self {
                     connection: conn,
