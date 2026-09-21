@@ -119,6 +119,24 @@ export const EnginePanelSettingsPanel = observer(() => {
       key: 'showDiffMiddle',
     },
     {
+      titleKey: 'settingsPanels.enginePanel.antiRollFront',
+      descKey: 'settingsPanels.enginePanel.antiRollFrontDesc',
+      value: settings.showAntiRollFront,
+      key: 'showAntiRollFront',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.antiRollRear',
+      descKey: 'settingsPanels.enginePanel.antiRollRearDesc',
+      value: settings.showAntiRollRear,
+      key: 'showAntiRollRear',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.brakeMisc',
+      descKey: 'settingsPanels.enginePanel.brakeMiscDesc',
+      value: settings.showBrakeMisc,
+      key: 'showBrakeMisc',
+    },
+    {
       titleKey: 'settingsPanels.enginePanel.diffExit',
       descKey: 'settingsPanels.enginePanel.diffExitDesc',
       value: settings.showDiffExit,

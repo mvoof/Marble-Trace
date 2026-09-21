@@ -183,7 +183,13 @@
       "diffExit": "差速器 3",
       "diffExitDesc": "显示第三项差速器设置——部分赛车为出弯，另一些为高速。",
       "highlightChanges": "变更高亮",
-      "highlightChangesDesc": "当车手调整该项时闪烁对应单元格——制动项为绿色，差速器为蓝色。"
+      "highlightChangesDesc": "当车手调整该项时闪烁对应单元格——制动项为绿色，差速器为蓝色。",
+      "antiRollFront": "前防倾杆",
+      "antiRollFrontDesc": "在可从方向盘调节的赛车上显示前防倾杆设置。",
+      "antiRollRear": "后防倾杆",
+      "antiRollRearDesc": "在可从方向盘调节的赛车上显示后防倾杆设置。",
+      "brakeMisc": "备用制动旋钮",
+      "brakeMiscDesc": "赛车的额外制动控制——在混动原型车上为制动偏置迁移。"
     },
     "flagDisplay": {
       "displayMode": "显示模式",

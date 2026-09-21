@@ -183,7 +183,13 @@
       "diffExit": "Diferencial 3",
       "diffExitDesc": "Mostrar el tercer ajuste del diferencial: salida de curva en unos coches, alta velocidad en otros.",
       "highlightChanges": "Resaltar cambios",
-      "highlightChangesDesc": "Destellar la celda cuando el piloto mueve ese ajuste: verde para los de frenada, azul para el diferencial."
+      "highlightChangesDesc": "Destellar la celda cuando el piloto mueve ese ajuste: verde para los de frenada, azul para el diferencial.",
+      "antiRollFront": "Barra estabilizadora delantera",
+      "antiRollFrontDesc": "Muestra el ajuste de la barra delantera en coches que la regulan desde el volante.",
+      "antiRollRear": "Barra estabilizadora trasera",
+      "antiRollRearDesc": "Muestra el ajuste de la barra trasera en coches que la regulan desde el volante.",
+      "brakeMisc": "Mando de freno adicional",
+      "brakeMiscDesc": "Control de freno extra del coche: migración del reparto en los prototipos híbridos."
     },
     "flagDisplay": {
       "displayMode": "Modo de visualización",

@@ -754,6 +754,15 @@ export interface EnginePanelWidgetSettings {
   showDiffMiddle: boolean;
   /** Corner exit on some cars, high speed on others — one field either way. */
   showDiffExit: boolean;
+  /** Front anti-roll bar, on the cars that adjust it from the wheel. */
+  showAntiRollFront: boolean;
+  /** Rear anti-roll bar, on the cars that adjust it from the wheel. */
+  showAntiRollRear: boolean;
+  /**
+   * The car's spare brake rotary — brake bias migration on the hybrid
+   * prototypes, something else elsewhere. The slot has no fixed meaning.
+   */
+  showBrakeMisc: boolean;
   /**
    * Flash a cell's background when the driver moves that adjustment. The brake
    * cells flash green and the differential cells blue, so the colour says which

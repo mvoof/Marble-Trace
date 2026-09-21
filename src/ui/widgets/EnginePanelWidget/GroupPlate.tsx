@@ -12,6 +12,7 @@ const GROUP_CLASS: Record<PlannedGroup['group'], string> = {
   brake: styles.plateBrake,
   traction: styles.plateTraction,
   diff: styles.plateDiff,
+  chassis: styles.plateChassis,
   engine: styles.plateEngine,
 };
 

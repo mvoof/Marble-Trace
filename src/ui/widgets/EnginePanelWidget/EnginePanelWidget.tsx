@@ -146,7 +146,7 @@ export const EnginePanelWidget = observer(() => {
   // break between plates and never through one, so a system's cells are never
   // found in two places.
   const maxCols = settings.horizontal
-    ? Math.max(1, settings.horizontalColumns ?? 10)
+    ? Math.max(1, settings.horizontalColumns ?? 12)
     : (settings.verticalColumns ?? 3);
 
   const rows = planEnginePanel(drawn, maxCols);

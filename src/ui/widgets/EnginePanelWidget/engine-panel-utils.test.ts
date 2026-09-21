@@ -6,6 +6,7 @@ import {
   CELL_SLOTS,
   UNIT_WIDTH,
   enabledCellSlots,
+  formatAdjustment,
   packGroups,
   panelHeight,
   planEnginePanel,
@@ -35,6 +36,9 @@ describe('planGroupSlots', () => {
         ids: ['showBrakeBiasFine', 'showPeakBrakeBias'],
         units: 1,
       },
+      // The third satellite starts a column of its own, and a column of one is
+      // drawn level with the rest.
+      { kind: 'plain', ids: ['showBrakeMisc'], units: 1 },
     ]);
   });
 
@@ -44,6 +48,14 @@ describe('planGroupSlots', () => {
     expect(slots.map((slot) => slot.kind)).toEqual(['plain', 'plain', 'plain']);
   });
 
+  it('draws a lone satellite level with the rest instead of half a column', () => {
+    const [lead, satellite] = slotsOf('traction');
+
+    const slots = planGroupSlots([lead, satellite]);
+
+    expect(slots.map((slot) => slot.kind)).toEqual(['lead', 'plain']);
+  });
+
   it('never puts more than two satellites in one stack', () => {
     const lead = slotsOf('traction')[0];
     const satellite = slotsOf('traction')[1];
@@ -51,6 +63,7 @@ describe('planGroupSlots', () => {
     const slots = planGroupSlots([lead, satellite, satellite, satellite]);
 
     expect(slots.map((slot) => slot.ids.length)).toEqual([1, 2, 1]);
+    expect(slots.map((slot) => slot.kind)).toEqual(['lead', 'stack', 'plain']);
   });
 });
 
@@ -81,7 +94,7 @@ describe('planEnginePanel', () => {
 
     expect(rows.map((row) => row.map((group) => group.group))).toEqual([
       ['brake', 'traction'],
-      ['diff', 'engine'],
+      ['diff', 'chassis', 'engine'],
     ]);
   });
 
@@ -90,7 +103,7 @@ describe('planEnginePanel', () => {
       (slot) => slot.group !== 'diff' && slot.id !== 'showTc2'
     );
 
-    const rows = planEnginePanel(gt3, 10);
+    const rows = planEnginePanel(gt3, shipped.horizontalColumns);
 
     expect(rows[0].map((group) => group.group)).toEqual(['brake', 'traction']);
   });
@@ -105,6 +118,28 @@ describe('planEnginePanel', () => {
 
     expect(widest * UNIT_WIDTH).toBe(ENGINE_PANEL_MANIFEST.designWidth);
     expect(panelHeight(rows)).toBe(ENGINE_PANEL_MANIFEST.designHeight);
+  });
+});
+
+// The hybrid prototypes move the brake family in quarter points, and a click
+// the driver cannot read is a click they cannot trust.
+describe('formatAdjustment', () => {
+  it('keeps a quarter point on the brake bias', () => {
+    expect(formatAdjustment(53.25, 'twoDecimal')).toBe('53.25');
+  });
+
+  it('keeps it on a negative migration gain, sign and all', () => {
+    expect(formatAdjustment(-0.75, 'signedTwoDecimal')).toBe('−0.75');
+  });
+
+  it('holds the string length so the digits do not shuffle', () => {
+    expect(formatAdjustment(0.5, 'signedTwoDecimal')).toHaveLength(
+      formatAdjustment(-0.75, 'signedTwoDecimal').length
+    );
+  });
+
+  it('leaves a rotary an integer', () => {
+    expect(formatAdjustment(6, 'integer')).toBe('6');
   });
 });
 

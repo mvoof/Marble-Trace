@@ -188,6 +188,17 @@ pub struct CarStatusFrame {
     /// Peak brake bias adjustment
     pub dc_peak_brake_bias: Option<f32>,
 
+    /// Front anti-roll bar, adjusted from the wheel
+    pub dc_anti_roll_front: Option<f32>,
+
+    /// Rear anti-roll bar, adjusted from the wheel
+    pub dc_anti_roll_rear: Option<f32>,
+
+    /// The car's spare brake rotary. iRacing hangs whatever that car adjusts on
+    /// it — brake bias migration on the hybrid prototypes — so what it means is
+    /// per car, and the panel labels it accordingly.
+    pub dc_brake_misc: Option<f32>,
+
     /// Differential setting on corner entry
     pub dc_diff_entry: Option<f32>,
 

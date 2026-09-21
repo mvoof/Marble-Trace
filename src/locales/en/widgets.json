@@ -183,7 +183,13 @@
       "diffExit": "Differential 3",
       "diffExitDesc": "Show the third differential setting — corner exit on some cars, high speed on others.",
       "highlightChanges": "Highlight changes",
-      "highlightChangesDesc": "Flash a cell when the driver moves that adjustment — green for the brake cells, blue for the differential."
+      "highlightChangesDesc": "Flash a cell when the driver moves that adjustment — green for the brake cells, blue for the differential.",
+      "antiRollFront": "Front anti-roll bar",
+      "antiRollFrontDesc": "Show the front anti-roll bar setting, on cars that adjust it from the wheel.",
+      "antiRollRear": "Rear anti-roll bar",
+      "antiRollRearDesc": "Show the rear anti-roll bar setting, on cars that adjust it from the wheel.",
+      "brakeMisc": "Spare brake rotary",
+      "brakeMiscDesc": "The car’s extra brake control — brake bias migration on the hybrid prototypes."
     },
     "flagDisplay": {
       "displayMode": "Display Mode",

@@ -359,6 +359,20 @@ export type CarStatusFrame = {
    */
   dc_peak_brake_bias: number | null;
   /**
+   * Front anti-roll bar, adjusted from the wheel
+   */
+  dc_anti_roll_front: number | null;
+  /**
+   * Rear anti-roll bar, adjusted from the wheel
+   */
+  dc_anti_roll_rear: number | null;
+  /**
+   * The car's spare brake rotary. iRacing hangs whatever that car adjusts on
+   * it — brake bias migration on the hybrid prototypes — so what it means is
+   * per car, and the panel labels it accordingly.
+   */
+  dc_brake_misc: number | null;
+  /**
    * Differential setting on corner entry
    */
   dc_diff_entry: number | null;

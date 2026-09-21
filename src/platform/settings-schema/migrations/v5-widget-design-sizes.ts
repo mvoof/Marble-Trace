@@ -52,12 +52,12 @@ const REBASES: readonly DesignRebase[] = [
   {
     id: 'engine-panel',
     from: { width: 500, height: 65 },
-    to: { width: 625, height: 124 },
+    to: { width: 687.5, height: 124 },
     settings: {
       // The ceiling is counted in width units now, and a lead cell is two of
       // them: on the old 8 the traction plate no longer shares a row with the
       // brake plate and the panel grows a third row.
-      horizontalColumns: { from: 8, to: 10 },
+      horizontalColumns: { from: 8, to: 12 },
       verticalColumns: { from: 2, to: 3 },
     },
   },

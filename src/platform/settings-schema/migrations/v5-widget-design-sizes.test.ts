@@ -150,12 +150,12 @@ describe('v5 — the engine panel groups its cells into plates', () => {
       Record<string, unknown>
     >;
 
-    expect(widget['designWidth']).toBe(625);
+    expect(widget['designWidth']).toBe(687.5);
     expect(widget['designHeight']).toBe(124);
     expect(widget['userSettings']).toMatchObject({
-      currentWidth: 625,
+      currentWidth: 687.5,
       currentHeight: 124,
-      horizontalColumns: 10,
+      horizontalColumns: 12,
       verticalColumns: 3,
     });
   });
@@ -177,7 +177,7 @@ describe('v5 — the engine panel groups its cells into plates', () => {
 
     // The design size is build data and moves regardless; the box and the
     // ceiling are the driver's and do not.
-    expect(widget['designWidth']).toBe(625);
+    expect(widget['designWidth']).toBe(687.5);
     expect(widget['userSettings']).toMatchObject({
       currentWidth: 720,
       currentHeight: 65,
@@ -202,7 +202,7 @@ describe('v5 — the engine panel groups its cells into plates', () => {
 
     expect(widget['userSettings']).toMatchObject({
       currentWidth: 900,
-      horizontalColumns: 10,
+      horizontalColumns: 12,
     });
   });
 
@@ -228,7 +228,7 @@ describe('v5 — the engine panel groups its cells into plates', () => {
       migrated['layouts'] as Array<{ widgets: Array<Record<string, unknown>> }>
     )[0].widgets;
 
-    expect(widget['designWidth']).toBe(625);
-    expect(widget['userSettings']).toMatchObject({ currentWidth: 625 });
+    expect(widget['designWidth']).toBe(687.5);
+    expect(widget['userSettings']).toMatchObject({ currentWidth: 687.5 });
   });
 });

@@ -42,7 +42,7 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
     'verticalColumns' in next ? Number(next.verticalColumns) : prevVertCols;
 
   const prevHorizCols =
-    'horizontalColumns' in prev ? Number(prev.horizontalColumns) : 10;
+    'horizontalColumns' in prev ? Number(prev.horizontalColumns) : 12;
   const nextHorizCols =
     'horizontalColumns' in next
       ? Number(next.horizontalColumns)
@@ -128,14 +128,14 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
     'Liquid temperatures, pressures, and every in-car adjustment the car exposes — ABS, traction control, brake bias, engine map, engine braking and the differential, grouped by system.',
   requiredCapabilities: ['playerDynamics'],
   autoHeight: true,
-  designWidth: 625,
+  designWidth: 687.5,
   designHeight: 124,
   resolveLayoutChange: resolveEnginePanelLayout,
   userSettings: {
     enabled: false,
     x: 400,
     y: 400,
-    currentWidth: 625,
+    currentWidth: 687.5,
     currentHeight: 124,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
@@ -154,9 +154,12 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
     showDiffEntry: true,
     showDiffMiddle: true,
     showDiffExit: true,
+    showAntiRollFront: true,
+    showAntiRollRear: true,
+    showBrakeMisc: true,
     highlightChanges: true,
     horizontal: true,
     verticalColumns: 3,
-    horizontalColumns: 10,
+    horizontalColumns: 12,
   },
 };

@@ -2,7 +2,12 @@ import type { CarStatusFrame } from '@/types/bindings';
 import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
 
 /** How a value is turned into the string the cell draws. */
-type CellFormat = 'integer' | 'oneDecimal' | 'signedOneDecimal';
+type CellFormat =
+  | 'integer'
+  | 'oneDecimal'
+  | 'twoDecimal'
+  | 'signedOneDecimal'
+  | 'signedTwoDecimal';
 
 /**
  * Which system a cell belongs to.
@@ -18,7 +23,7 @@ type CellFormat = 'integer' | 'oneDecimal' | 'signedOneDecimal';
  * already spoken for — blue is traction control, amber an active ABS, red a
  * temperature over the line.
  */
-export type CellGroup = 'brake' | 'traction' | 'diff' | 'engine';
+export type CellGroup = 'brake' | 'traction' | 'diff' | 'chassis' | 'engine';
 
 /**
  * How much of the group's width and type size a cell gets.
@@ -35,6 +40,7 @@ export const GROUP_ORDER: readonly CellGroup[] = [
   'brake',
   'traction',
   'diff',
+  'chassis',
   'engine',
 ];
 
@@ -113,18 +119,18 @@ export const ADJUSTMENT_SPECS = {
   showBrakeBias: {
     field: 'dc_brake_bias',
     label: 'BIAS',
-    format: 'oneDecimal',
+    format: 'twoDecimal',
     unit: '%',
   },
   showBrakeBiasFine: {
     field: 'dc_brake_bias_fine',
     label: 'FINE',
-    format: 'signedOneDecimal',
+    format: 'signedTwoDecimal',
   },
   showPeakBrakeBias: {
     field: 'dc_peak_brake_bias',
     label: 'PEAK',
-    format: 'oneDecimal',
+    format: 'twoDecimal',
   },
   showTc: {
     field: 'dc_traction_control',
@@ -162,6 +168,27 @@ export const ADJUSTMENT_SPECS = {
     field: 'dc_diff_exit',
     label: 'HSP',
     format: 'integer',
+  },
+  showAntiRollFront: {
+    field: 'dc_anti_roll_front',
+    label: 'FARB',
+    format: 'integer',
+  },
+  showAntiRollRear: {
+    field: 'dc_anti_roll_rear',
+    label: 'RARB',
+    format: 'integer',
+  },
+  // The car's spare brake rotary. On the hybrid prototypes it is the brake bias
+  // migration, on another car it is whatever that car put there — the slot has
+  // no fixed meaning and iRacing's own description of it ("In car brake misc
+  // adjustment") is the same generic string on every car, so the label cannot
+  // be read from telemetry. Until a per-car table exists it is labelled for
+  // what the SDK calls it, and it is signed because a migration gain is.
+  showBrakeMisc: {
+    field: 'dc_brake_misc',
+    label: 'B MISC',
+    format: 'signedTwoDecimal',
   },
 } as const satisfies Record<string, AdjustmentCellSpec>;
 
@@ -214,6 +241,12 @@ export const CELL_SLOTS: readonly CellSlot[] = [
     weight: 'satellite',
     settingKeys: ['showPeakBrakeBias'],
   },
+  {
+    id: 'showBrakeMisc',
+    group: 'brake',
+    weight: 'satellite',
+    settingKeys: ['showBrakeMisc'],
+  },
 
   { id: 'showTc', group: 'traction', weight: 'lead', settingKeys: ['showTc'] },
   {
@@ -256,6 +289,19 @@ export const CELL_SLOTS: readonly CellSlot[] = [
   },
 
   {
+    id: 'showAntiRollFront',
+    group: 'chassis',
+    weight: 'satellite',
+    settingKeys: ['showAntiRollFront'],
+  },
+  {
+    id: 'showAntiRollRear',
+    group: 'chassis',
+    weight: 'satellite',
+    settingKeys: ['showAntiRollRear'],
+  },
+
+  {
     id: 'temps',
     group: 'engine',
     weight: 'satellite',
@@ -283,17 +329,27 @@ export const ADJUSTMENT_FIELDS: readonly (keyof CarStatusFrame)[] =
  * Every adjustment reads back on a fixed grid of digits, so a traction control
  * going from 9 to 10 does not push its neighbours sideways. The string length
  * is held too — a value the driver reads at the apex is read by shape.
+ *
+ * The brake family carries two decimals rather than one because the hybrid
+ * prototypes move it in quarter points: a bias of 53.25 drawn to one decimal
+ * reads 53.3, and a migration gain of −0.75 reads −0.8. A rounded adjustment is
+ * worse than no adjustment — the driver checks the cell precisely when they
+ * need to know which click they are on.
  */
 export const formatAdjustment = (value: number, format: CellFormat): string => {
   if (format === 'integer') {
     return Math.round(value).toString();
   }
 
-  if (format === 'signedOneDecimal') {
-    return `${value >= 0 ? '+' : '−'}${Math.abs(value).toFixed(1)}`;
+  const signed = format.startsWith('signed');
+  const decimals =
+    format === 'twoDecimal' || format === 'signedTwoDecimal' ? 2 : 1;
+
+  if (signed) {
+    return `${value >= 0 ? '+' : '−'}${Math.abs(value).toFixed(decimals)}`;
   }
 
-  return value.toFixed(1);
+  return value.toFixed(decimals);
 };
 
 /**
@@ -319,6 +375,11 @@ export interface PlannedGroup {
  * — that is what the size difference is for. A group of nothing but satellites
  * (the differential, the engine readings) has no lead to be secondary to, so
  * every cell is drawn plain and the group reads as an even row.
+ *
+ * A stack of one is not a stack. On a car with a second traction channel but no
+ * engine braking, TC2 would otherwise stand alone at half the height of the
+ * cell beside it, reading as a scrap of a column rather than a value — so a
+ * column that ends up holding one cell is drawn plain, level with the rest.
  */
 export const planGroupSlots = (cells: readonly CellSlot[]): PlannedSlot[] => {
   const hasLead = cells.some((cell) => cell.weight === 'lead');
@@ -350,7 +411,11 @@ export const planGroupSlots = (cells: readonly CellSlot[]): PlannedSlot[] => {
     slots.push({ kind: 'stack', ids: [cell.id], units: SATELLITE_UNITS });
   }
 
-  return slots;
+  return slots.map((slot) =>
+    slot.kind === 'stack' && slot.ids.length === 1
+      ? { ...slot, kind: 'plain' as const }
+      : slot
+  );
 };
 
 /**
@@ -467,6 +532,9 @@ export const CELL_LABELS: Record<CellId, string> = {
   showDiffEntry: ADJUSTMENT_SPECS.showDiffEntry.label,
   showDiffMiddle: ADJUSTMENT_SPECS.showDiffMiddle.label,
   showDiffExit: ADJUSTMENT_SPECS.showDiffExit.label,
+  showAntiRollFront: ADJUSTMENT_SPECS.showAntiRollFront.label,
+  showAntiRollRear: ADJUSTMENT_SPECS.showAntiRollRear.label,
+  showBrakeMisc: ADJUSTMENT_SPECS.showBrakeMisc.label,
   abs: 'ABS',
   temps: 'OIL / WATER',
   oilPress: 'OIL P',
