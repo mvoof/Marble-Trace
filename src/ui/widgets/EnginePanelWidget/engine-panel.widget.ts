@@ -8,7 +8,7 @@ import {
 
 import type { RootStore } from '@store/root-store';
 import type { CarStatusFrame } from '@/types/bindings';
-import { ADJUSTMENT_CELLS } from './engine-panel-utils';
+import { ADJUSTMENT_FIELDS } from './engine-panel-utils';
 
 type EnginePanelDeps = Pick<RootStore, 'player'>;
 
@@ -17,7 +17,7 @@ const ABS_FIELD: keyof CarStatusFrame = 'dc_abs';
 
 const WATCHED_FIELDS: (keyof CarStatusFrame)[] = [
   ABS_FIELD,
-  ...ADJUSTMENT_CELLS.map((spec) => spec.field),
+  ...ADJUSTMENT_FIELDS,
 ];
 
 /**

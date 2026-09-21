@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
+import { FixedDigits } from '@ui/widgets/TimerWidget/FixedDigits/FixedDigits';
 import {
   useEnginePanelWidgetStore,
   usePlayerStore,
@@ -8,20 +9,21 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
 import { EngineCell } from './EngineCell';
 import {
+  ADJUSTMENT_SPECS,
   formatAdjustment,
-  type AdjustmentCellSpec,
-  type CellFlashTone,
+  type AdjustmentKey,
+  type CellGroup,
+  type CellRenderWeight,
 } from './engine-panel-utils';
 import styles from './EnginePanelWidget.module.scss';
 
 export interface AdjustmentCellProps {
-  spec: AdjustmentCellSpec;
-  dividerRight?: boolean;
-  dividerTop?: boolean;
+  cellId: AdjustmentKey;
+  group: CellGroup;
+  weight: CellRenderWeight;
 }
 
-const TONE_CLASS: Record<CellFlashTone, string> = {
-  neutral: '',
+const TONE_CLASS: Partial<Record<CellGroup, string>> = {
   brake: styles.changeFlashBrake,
   diff: styles.changeFlashDiff,
 };
@@ -36,32 +38,35 @@ const TONE_CLASS: Record<CellFlashTone, string> = {
  * and a timer belongs in a store.
  */
 export const AdjustmentCell = observer(
-  ({ spec, dividerRight = false, dividerTop = false }: AdjustmentCellProps) => {
+  ({ cellId, group, weight }: AdjustmentCellProps) => {
     const { carStatus } = usePlayerStore();
     const enginePanel = useEnginePanelWidgetStore();
     const settings =
       useWidgetSettings<EnginePanelWidgetSettings>('engine-panel');
 
+    const spec = ADJUSTMENT_SPECS[cellId];
     const raw = carStatus?.[spec.field];
     const value = typeof raw === 'number' ? raw : null;
+    const unit = 'unit' in spec ? spec.unit : undefined;
+    const accent = 'accent' in spec && spec.accent;
 
     return (
-      <EngineCell
-        label={spec.label}
-        dividerRight={dividerRight}
-        dividerTop={dividerTop}
-      >
+      <EngineCell label={spec.label} weight={weight}>
         {settings.highlightChanges !== false &&
         enginePanel.isChanged(spec.field) ? (
-          <div
-            className={`${styles.changeFlash} ${TONE_CLASS[spec.flashTone ?? 'neutral']}`}
-          />
+          <div className={`${styles.changeFlash} ${TONE_CLASS[group] ?? ''}`} />
         ) : null}
 
         <WidgetValue
-          value={value === null ? '--' : formatAdjustment(value, spec.format)}
-          unit={spec.unit}
-          className={`${styles.value} ${spec.accent ? styles.blueValue : ''}`}
+          value={
+            <FixedDigits
+              text={
+                value === null ? '--' : formatAdjustment(value, spec.format)
+              }
+            />
+          }
+          unit={unit}
+          className={`${styles.value} ${accent ? styles.blueValue : ''}`}
         />
       </EngineCell>
     );

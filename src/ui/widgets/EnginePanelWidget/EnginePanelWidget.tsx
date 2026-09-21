@@ -1,41 +1,113 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
-import { cloneElement, type ReactElement } from 'react';
+import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
-import { EngineCell, type EngineCellProps } from './EngineCell';
+import { FixedDigits } from '@ui/widgets/TimerWidget/FixedDigits/FixedDigits';
+import { EngineCell } from './EngineCell';
 import { AbsCell } from './AbsCell';
 import { AdjustmentCell } from './AdjustmentCell';
-import { ADJUSTMENT_CELLS, balanceCellRows } from './engine-panel-utils';
+import { GroupPlate } from './GroupPlate';
+import {
+  ADJUSTMENT_SPECS,
+  CELL_SLOTS,
+  planEnginePanel,
+  renderWeights,
+  type AdjustmentKey,
+  type CellId,
+  type CellRenderWeight,
+  type CellSlot,
+} from './engine-panel-utils';
 import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
+import type { CarStatusFrame } from '@/types/bindings';
 import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
 import type { UnitSystem } from '@/types';
 
 import styles from './EnginePanelWidget.module.scss';
 
-const isOilTempWarning = (celsius: number | null | undefined): boolean =>
-  celsius != null && celsius >= 135;
+const OIL_TEMP_LIMIT_C = 135;
+const WATER_TEMP_LIMIT_C = 120;
 
-const isWaterTempWarning = (celsius: number | null | undefined): boolean =>
-  celsius != null && celsius >= 120;
+const isAdjustmentId = (id: CellId): id is AdjustmentKey =>
+  id in ADJUSTMENT_SPECS;
 
 const formatPressure = (
   kpa: number | null,
   unitSystem: UnitSystem
 ): { value: string; unit: string } => {
-  if (kpa === null)
+  if (kpa === null) {
     return { value: '--.-', unit: unitSystem === 'metric' ? 'bar' : 'psi' };
-  if (unitSystem === 'metric') {
-    return { value: (kpa / 100).toFixed(1), unit: 'bar' }; // Changed to 1 decimal place to fit better
   }
-  return { value: (kpa * 0.145038).toFixed(0), unit: 'psi' }; // Changed to 0 decimals for psi (e.g. 50 psi)
+
+  if (unitSystem === 'metric') {
+    return { value: (kpa / 100).toFixed(1), unit: 'bar' };
+  }
+
+  return { value: (kpa * 0.145038).toFixed(0), unit: 'psi' };
 };
 
 const formatTempInt = (celsius: number | null, system: UnitSystem): string => {
-  if (celsius === null) return '--°';
+  if (celsius === null) {
+    return '--';
+  }
+
   const converted = system === 'imperial' ? celsius * 1.8 + 32 : celsius;
-  return `${Math.round(converted)}°`;
+
+  return `${Math.round(converted)}`;
 };
+
+/**
+ * The oil and the water in one cell.
+ *
+ * They are read together and they move slowly, so two plates of their own were
+ * two more places the eye had to cross on the way to the value it came for.
+ */
+const TemperaturesCell = observer(
+  ({
+    carStatus,
+    system,
+    weight,
+    showOil,
+    showWater,
+  }: {
+    carStatus: CarStatusFrame | null | undefined;
+    system: UnitSystem;
+    weight: CellRenderWeight;
+    showOil: boolean;
+    showWater: boolean;
+  }) => {
+    const oilTemp = carStatus?.oil_temp ?? null;
+    const waterTemp = carStatus?.water_temp ?? null;
+
+    const overLimit =
+      (showOil && oilTemp !== null && oilTemp >= OIL_TEMP_LIMIT_C) ||
+      (showWater && waterTemp !== null && waterTemp >= WATER_TEMP_LIMIT_C);
+
+    const label =
+      showOil && showWater ? 'OIL / WATER' : showOil ? 'OIL' : 'WATER';
+
+    const text = [
+      showOil ? formatTempInt(oilTemp, system) : null,
+      showWater ? formatTempInt(waterTemp, system) : null,
+    ]
+      .filter((part) => part !== null)
+      .join('/');
+
+    return (
+      <EngineCell
+        label={label}
+        weight={weight}
+        className={overLimit ? styles.overLimit : ''}
+      >
+        <WidgetValue
+          value={<FixedDigits text={text} />}
+          unit="°"
+          className={styles.value}
+        />
+      </EngineCell>
+    );
+  }
+);
 
 export const EnginePanelWidget = observer(() => {
   const playerStore = usePlayerStore();
@@ -45,85 +117,104 @@ export const EnginePanelWidget = observer(() => {
   const carStatus = playerStore.carStatus;
   const system = unitsStore.unitSystem;
 
-  // Temperatures & pressures
-  const oilTemp = carStatus?.oil_temp ?? null;
-  const waterTemp = carStatus?.water_temp ?? null;
-  const oilPress = carStatus?.oil_press ?? null;
+  const oilPress = formatPressure(carStatus?.oil_press ?? null, system);
   const voltage = carStatus?.voltage ?? null;
 
-  const oilTempWarn = isOilTempWarning(oilTemp);
-  const waterTempWarn = isWaterTempWarning(waterTemp);
-
-  const formattedOilTemp = formatTempInt(oilTemp, system);
-  const formattedWaterTemp = formatTempInt(waterTemp, system);
-  const formattedOilPress = formatPressure(oilPress, system);
-  const formattedVoltage = voltage !== null ? voltage.toFixed(1) : '--.-';
-
-  const oilTempCell = settings.showOilTemp && (
-    <EngineCell label="OIL" className={oilTempWarn ? styles.dangerFlash : ''}>
-      <WidgetValue value={formattedOilTemp} className={styles.value} />
-    </EngineCell>
-  );
-
-  const oilPressCell = settings.showOilPress && (
-    <EngineCell label="OIL P">
-      <WidgetValue
-        value={formattedOilPress.value}
-        unit={formattedOilPress.unit}
-        className={styles.value}
-      />
-    </EngineCell>
-  );
-
-  const waterCell = settings.showWaterTemp && (
-    <EngineCell
-      label="WATER"
-      className={waterTempWarn ? styles.dangerFlash : ''}
-    >
-      <WidgetValue value={formattedWaterTemp} className={styles.value} />
-    </EngineCell>
-  );
-
-  const voltageCell = settings.showVoltage && (
-    <EngineCell label="VOLT">
-      <WidgetValue value={formattedVoltage} unit="V" className={styles.value} />
-    </EngineCell>
-  );
+  const nodes: Partial<Record<CellId, ReactNode>> = {};
 
   // An adjustment the car does not publish reads back as null, and a cell that
   // would permanently say `--` is noise: the panel carries what this car has.
-  const absCell = settings.showAbs && carStatus?.dc_abs != null && <AbsCell />;
+  const isDrawn = (slot: CellSlot): boolean => {
+    if (!slot.settingKeys.some((key) => settings[key] !== false)) {
+      return false;
+    }
 
-  const adjustmentCells = ADJUSTMENT_CELLS.filter(
-    (spec) =>
-      settings[spec.settingKey] !== false && carStatus?.[spec.field] != null
-  ).map((spec) => <AdjustmentCell key={spec.settingKey} spec={spec} />);
+    if (isAdjustmentId(slot.id)) {
+      return carStatus?.[ADJUSTMENT_SPECS[slot.id].field] != null;
+    }
 
-  const cells = [
-    absCell,
-    ...adjustmentCells,
-    oilTempCell,
-    oilPressCell,
-    waterCell,
-    voltageCell,
-  ].filter(Boolean) as ReactElement<EngineCellProps>[];
+    if (slot.id === 'abs') {
+      return carStatus?.dc_abs != null;
+    }
 
-  // In the horizontal modes the column setting is a ceiling, not a count: the
-  // rows are balanced under it so the last one is never a stub, and every row
-  // stretches to the full width whatever it holds.
+    return true;
+  };
+
+  const drawn = CELL_SLOTS.filter(isDrawn);
+
+  // The column setting is a ceiling in width units, not a cell count: the rows
+  // break between plates and never through one, so a system's cells are never
+  // found in two places.
   const maxCols = settings.horizontal
-    ? Math.max(1, settings.horizontalColumns ?? 8)
-    : (settings.verticalColumns ?? 2);
+    ? Math.max(1, settings.horizontalColumns ?? 10)
+    : (settings.verticalColumns ?? 3);
 
-  const rowLengths = balanceCellRows(cells.length, maxCols);
+  const rows = planEnginePanel(drawn, maxCols);
 
-  let taken = 0;
-  const rows = rowLengths.map((length) => {
-    const row = cells.slice(taken, taken + length);
-    taken += length;
+  // A cell is drawn as the slot it landed in, which the plan knows and the
+  // spec does not: the differential's cells are satellites by weight, but with
+  // no lead in their plate they are drawn plain, at reading size.
+  const weights = renderWeights(rows);
 
-    return row;
-  });
+  for (const slot of drawn) {
+    const weight = weights.get(slot.id) ?? 'plain';
+
+    if (isAdjustmentId(slot.id)) {
+      nodes[slot.id] = (
+        <AdjustmentCell cellId={slot.id} group={slot.group} weight={weight} />
+      );
+
+      continue;
+    }
+
+    if (slot.id === 'abs') {
+      nodes.abs = <AbsCell weight={weight} />;
+
+      continue;
+    }
+
+    if (slot.id === 'temps') {
+      nodes.temps = (
+        <TemperaturesCell
+          carStatus={carStatus}
+          system={system}
+          weight={weight}
+          showOil={settings.showOilTemp !== false}
+          showWater={settings.showWaterTemp !== false}
+        />
+      );
+
+      continue;
+    }
+
+    if (slot.id === 'oilPress') {
+      nodes.oilPress = (
+        <EngineCell label="OIL P" weight={weight}>
+          <WidgetValue
+            value={<FixedDigits text={oilPress.value} />}
+            unit={oilPress.unit}
+            className={styles.value}
+          />
+        </EngineCell>
+      );
+
+      continue;
+    }
+
+    nodes.voltage = (
+      <EngineCell label="VOLT" weight={weight}>
+        <WidgetValue
+          value={
+            <FixedDigits
+              text={voltage === null ? '--.-' : voltage.toFixed(1)}
+            />
+          }
+          unit="V"
+          className={styles.value}
+        />
+      </EngineCell>
+    );
+  }
 
   return (
     <WidgetPanel
@@ -134,13 +225,9 @@ export const EnginePanelWidget = observer(() => {
     >
       {rows.map((row, rowIndex) => (
         <div className={styles.row} key={rowIndex}>
-          {row.map((cell, cellIndex) =>
-            cloneElement(cell, {
-              key: cellIndex,
-              dividerRight: cellIndex < row.length - 1,
-              dividerTop: rowIndex > 0,
-            })
-          )}
+          {row.map((group) => (
+            <GroupPlate group={group} nodes={nodes} key={group.group} />
+          ))}
         </div>
       ))}
     </WidgetPanel>

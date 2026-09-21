@@ -67,6 +67,36 @@ export const mockCarStatus = (
  * it is a constant, which is why the battery widget hides the mode strip rather
  * than drawing a selector the driver cannot move.
  */
+/**
+ * A hybrid prototype — GTP or LMDh.
+ *
+ * It is not the formula car with the hybrid bolted on: a prototype keeps its
+ * ABS and its engine braking and has no differential to adjust from the wheel,
+ * which is a different engine panel from either a formula car or a GT3. The
+ * deploy mode rides along because the battery widget beside the panel reads it.
+ */
+export const mockGtpCarStatus = (
+  overrides: Partial<CarStatusFrame> = {}
+): CarStatusFrame =>
+  mockCarStatus({
+    dc_abs: 4,
+    dc_brake_bias: 53.5,
+    dc_brake_bias_fine: -0.2,
+    dc_peak_brake_bias: 58,
+    dc_traction_control: 3,
+    dc_traction_control_2: 2,
+    dc_throttle_shape: 4,
+    dc_engine_braking: 5,
+    dc_diff_entry: null,
+    dc_diff_middle: null,
+    dc_diff_exit: null,
+    energy_ers_battery_pct: 0.64,
+    power_mgu_k: 88_400,
+    energy_battery_to_mgu_k_lap: 1_420_000,
+    dc_mguk_deploy_mode: 2,
+    ...overrides,
+  });
+
 export const mockHybridCarStatus = (
   overrides: Partial<CarStatusFrame> = {}
 ): CarStatusFrame =>

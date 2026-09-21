@@ -35,6 +35,7 @@ import {
 } from './mocks/delta';
 import {
   mockCarStatus,
+  mockGtpCarStatus,
   mockHybridCarStatus,
   OIL_TEMP_WARNING_C,
   WATER_TEMP_WARNING_C,
@@ -964,6 +965,39 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
         water_temp: 88,
       });
       applyDynamics(store, { speed: 0, rpm: 0, gear: 0 });
+    },
+  },
+  {
+    id: 'engine-formula-car',
+    label: 'Engine — formula car, every adjustment',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The widest the engine panel ever gets: a car that publishes all three
+      // differentials, both traction channels and the fine and peak bias, and
+      // no ABS at all. Sizing the panel against a GT3 and then driving a
+      // formula car is how a widget ends up two rows taller than the space the
+      // driver left for it.
+      store.player.updateCarStatus(mockHybridCarStatus());
+    },
+  },
+  {
+    id: 'engine-gtp-car',
+    label: 'Engine — GTP prototype',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Between the two: ABS and engine braking a formula car has no cell for,
+      // and no differential to adjust from the wheel.
+      store.player.updateCarStatus(mockGtpCarStatus());
+    },
+  },
+  {
+    id: 'engine-gt3-car',
+    label: 'Engine — GT3, what the car publishes',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The other end: four adjustments, and every cell the car does not
+      // declare gone from the panel rather than reading `--` forever.
+      applyEngine(store, {});
     },
   },
   {
