@@ -800,6 +800,8 @@
     },
     "drs": {
       "moduleParameters": "Parámetros del módulo",
+      "hideWhenCarHasNoDrs": "Ocultar en coches sin DRS",
+      "hideWhenCarHasNoDrsDesc": "Quita el widget de la pantalla en un coche que no tiene DRS. Desactivado, la placa permanece y muestra N/A.",
       "hideWhenUnavailable": "Ocultar cuando no esté disponible",
       "hideWhenUnavailableDesc": "No dibujar nada mientras el DRS no esté disponible, en lugar de una placa apagada."
     }

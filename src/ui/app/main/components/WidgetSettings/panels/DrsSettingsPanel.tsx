@@ -17,6 +17,14 @@ export const DrsSettingsPanel = observer(() => {
     <Card title={t('settingsPanels.drs.moduleParameters')}>
       <div className={styles.fieldGroup}>
         <SwitchRow
+          settingKey="hideWhenCarHasNoDrs"
+          title={t('settingsPanels.drs.hideWhenCarHasNoDrs')}
+          desc={t('settingsPanels.drs.hideWhenCarHasNoDrsDesc')}
+        />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <SwitchRow
           settingKey="hideWhenUnavailable"
           title={t('settingsPanels.drs.hideWhenUnavailable')}
           desc={t('settingsPanels.drs.hideWhenUnavailableDesc')}

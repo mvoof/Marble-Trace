@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 
 import type {
+  DrsWidgetSettings,
   FlagDisplaySettings,
   PitLineWidgetSettings,
   PitServiceWidgetSettings,
@@ -10,7 +11,7 @@ import { widgetTypeFromId, widgetTypeOf } from '@utils/widget-instance';
 
 type WidgetAutoHideDeps = Pick<
   RootStore,
-  'liveWidgets' | 'radar' | 'flags' | 'pitServiceWidget'
+  'liveWidgets' | 'radar' | 'flags' | 'pitServiceWidget' | 'player'
 >;
 
 const NO_LED_FLAG = 'none';
@@ -57,6 +58,22 @@ export class WidgetAutoHideStore {
       );
     }
 
+    // A car without DRS never publishes the field at all, so the answer is the
+    // car rather than a state it is in. It is answered here rather than by the
+    // widget returning nothing, because the container keeps drawing its plate
+    // around a body that renders null — an empty box on every GT3 is exactly
+    // what this setting is asked for.
+    if (widgetType === 'drs') {
+      const settings = this.settingsOf<DrsWidgetSettings>(widgetId);
+      const drs = this.root.player.carStatus?.drs ?? null;
+
+      if (drs === null) {
+        return settings.hideWhenCarHasNoDrs === false;
+      }
+
+      return drs !== 'Unavailable' || !settings.hideWhenUnavailable;
+    }
+
     if (widgetType === 'pit-service') {
       return (
         this.settingsOf<PitServiceWidgetSettings>(widgetId).alwaysVisible ||
@@ -85,6 +102,7 @@ export class WidgetAutoHideStore {
 
   private settingsOf = <
     SpecificSettings extends
+      | DrsWidgetSettings
       | FlagDisplaySettings
       | PitServiceWidgetSettings
       | PitLineWidgetSettings,

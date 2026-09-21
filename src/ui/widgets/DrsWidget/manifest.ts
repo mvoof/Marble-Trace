@@ -28,5 +28,6 @@ export const DRS_MANIFEST: WidgetManifest = {
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     hideWhenUnavailable: false,
+    hideWhenCarHasNoDrs: true,
   },
 };

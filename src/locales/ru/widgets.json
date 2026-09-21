@@ -800,6 +800,8 @@
     },
     "drs": {
       "moduleParameters": "Параметры модуля",
+      "hideWhenCarHasNoDrs": "Скрывать на машинах без DRS",
+      "hideWhenCarHasNoDrsDesc": "Убирать виджет с экрана на машине, у которой DRS нет вовсе. Выключено — плита остаётся и показывает N/A.",
       "hideWhenUnavailable": "Скрывать, когда недоступен",
       "hideWhenUnavailableDesc": "Ничего не показывать, пока DRS недоступен, вместо приглушённой плашки."
     }

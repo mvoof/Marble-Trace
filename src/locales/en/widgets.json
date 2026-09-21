@@ -800,6 +800,8 @@
     },
     "drs": {
       "moduleParameters": "Module parameters",
+      "hideWhenCarHasNoDrs": "Hide on cars without DRS",
+      "hideWhenCarHasNoDrsDesc": "Take the widget off the screen on a car that has no DRS at all. Off, the plate stays and reads N/A.",
       "hideWhenUnavailable": "Hide when unavailable",
       "hideWhenUnavailableDesc": "Draw nothing while DRS is unavailable, instead of a quiet plate."
     }

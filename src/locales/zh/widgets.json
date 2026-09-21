@@ -800,6 +800,8 @@
     },
     "drs": {
       "moduleParameters": "模块参数",
+      "hideWhenCarHasNoDrs": "在无 DRS 的赛车上隐藏",
+      "hideWhenCarHasNoDrsDesc": "在完全没有 DRS 的赛车上移除该组件。关闭时，面板保留并显示 N/A。",
       "hideWhenUnavailable": "不可用时隐藏",
       "hideWhenUnavailableDesc": "DRS 不可用时完全不显示，而不是显示一块暗色面板。"
     }

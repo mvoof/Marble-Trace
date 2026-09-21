@@ -26,6 +26,9 @@ const STATE_CLASS: Record<DrsState, string> = {
   Open: styles.rootOpen,
 };
 
+/** What the plate says on a car that has no DRS, when it is kept on screen. */
+const NO_DRS_LABEL = 'N/A';
+
 /**
  * The drag reduction system, in the four states the sim actually publishes.
  *
@@ -33,8 +36,12 @@ const STATE_CLASS: Record<DrsState, string> = {
  * car is past the detection point with the zone still ahead, so the button does
  * nothing yet. Drawing it as READY would train the driver to press early.
  *
- * Nothing renders on a car without DRS — the adapter clears the field when the
- * car does not declare it, so null means "no DRS", not "closed".
+ * On a car without DRS the adapter clears the field, so null means "no DRS",
+ * not "closed". Whether the widget leaves the screen for it is
+ * `hideWhenCarHasNoDrs`, answered by WidgetAutoHideStore — the container draws
+ * its plate around a body that renders nothing, so hiding has to happen a level
+ * up. What is left here is the other half of that setting: kept on screen, the
+ * plate says `N/A` rather than sitting empty.
  */
 export const DrsWidget = observer(() => {
   const { carStatus } = usePlayerStore();
@@ -42,7 +49,7 @@ export const DrsWidget = observer(() => {
 
   const drs = carStatus?.drs ?? null;
 
-  if (drs === null) {
+  if (drs === null && settings.hideWhenCarHasNoDrs !== false) {
     return null;
   }
 
@@ -55,7 +62,7 @@ export const DrsWidget = observer(() => {
       direction="row"
       gap={0}
       minWidth={0}
-      className={`${styles.root} ${STATE_CLASS[drs]}`}
+      className={`${styles.root} ${STATE_CLASS[drs ?? 'Unavailable']}`}
     >
       <DrsWing className={styles.mark} aria-hidden="true" focusable="false" />
 
@@ -63,7 +70,9 @@ export const DrsWidget = observer(() => {
 
       <div className={styles.label}>DRS</div>
 
-      <div className={styles.state}>{STATE_LABEL[drs]}</div>
+      <div className={styles.state}>
+        {drs === null ? NO_DRS_LABEL : STATE_LABEL[drs]}
+      </div>
     </WidgetPanel>
   );
 });

@@ -773,6 +773,16 @@ export interface DrsWidgetSettings {
    * again than one that sits still and goes dim.
    */
   hideWhenUnavailable: boolean;
+  /**
+   * Take the widget off the screen entirely on a car that has no DRS at all.
+   *
+   * On by default, and a different question from `hideWhenUnavailable`: that
+   * one is about a state the car passes through lap after lap, this one about
+   * a car that will never have the system. Off, the plate stays where the
+   * driver put it and says so, which is what somebody building a fixed layout
+   * across several cars wants.
+   */
+  hideWhenCarHasNoDrs: boolean;
 }
 
 export interface BatteryWidgetSettings {
