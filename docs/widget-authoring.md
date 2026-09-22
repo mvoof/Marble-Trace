@@ -321,6 +321,9 @@ not a `SettingRow` wrapping a `Switch` wrapping a read and a write. Controls wit
 their own logic — clamped numbers, unit conversion, `Segmented` — still spell
 themselves out inside a `SettingRow`. Blocks inside a `Card` are separated
 automatically by `.cardContent > * + *` — **do not add dividers by hand.**
+A row that only qualifies another takes `dependsOn` (or goes in a
+`DependentBlock`) and sits directly after its parent — never
+`{settings.x && …}` in the panel.
 
 **`<Name>Widget.stories.tsx`** — spread `defineWidgetStories({ widget, size,
 seed, seedSnapshot, args, argTypes })` from

@@ -597,6 +597,17 @@ restricted at compile time to the keys of that widget's settings holding the
 right type. Controls with their own logic (clamped numbers, unit conversion,
 `Segmented`) still spell themselves out inside a `SettingRow`.
 
+A row that only qualifies another — a compass ring, a line colour, a column's
+number format — declares its parent with `dependsOn` (a boolean key, or a
+predicate when the gate is not one switch); anything that is not a plain
+switch or colour goes in the `DependentBlock` that `panelRows` also returns.
+It is hidden while the parent is off and otherwise drawn indented and joined to
+the block above it, so it must sit **directly after its parent, as a direct
+child of the card** — one level only. No `{settings.x && …}` in panel JSX. Gate
+on whether the feature exists at all, never on a value a hotkey flips (the
+Standings view mode): a row that comes and goes under the pointer is worse than
+one that changes nothing.
+
 Settings panels are collected the same way: each `*SettingsPanel.tsx` exports
 `PANEL_WIDGET_IDS` (usually one id, two for the radar and flag pairs), and
 `panels/panel-registry.ts` globs them into `SETTINGS_PANELS`. `WidgetSettings.tsx`

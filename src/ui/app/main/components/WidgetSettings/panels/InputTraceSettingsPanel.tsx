@@ -17,11 +17,22 @@ import { useAppSettingsStore } from '@store/root-store-context';
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['input-trace'];
 
-const { SwitchRow, ColorRow } = panelRows<InputTraceSettings>();
+const { ColorRow, DependentBlock, SwitchRow } = panelRows<InputTraceSettings>();
 
 // Only the wheel arts that draw the centre-grip stripe in their own SVG
 // (see wheels/gt-round.svg, wheels/flat-bottom-wheel.svg) read this color.
 const STYLES_WITH_MARKER: SteeringWheelStyle[] = ['gt-round', 'flat-bottom'];
+
+const hasSteeringMarker = (settings: InputTraceSettings): boolean =>
+  settings.showSteering &&
+  STYLES_WITH_MARKER.includes(settings.steeringWheelStyle);
+
+// The default wheel draws no plate, and with nothing in the centre there is
+// nothing for one to sit behind.
+const hasCenterPlate = (settings: InputTraceSettings): boolean =>
+  settings.showSteering &&
+  settings.steeringWheelStyle !== 'default' &&
+  settings.steeringCenterDisplay !== 'none';
 
 export const InputTraceSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -122,116 +133,103 @@ export const InputTraceSettingsPanel = observer(() => {
           />
         </div>
 
-        {settings.showSteering && (
-          <>
-            <div className={styles.fieldGroup}>
-              <SettingRow
-                title={t('settingsPanels.inputTrace.wheelStyle')}
-                desc={t('settingsPanels.inputTrace.wheelStyleDesc')}
-              >
-                <Select
-                  value={settings.steeringWheelStyle}
-                  options={STEERING_WHEEL_STYLE_IDS.map((styleId) => ({
-                    value: styleId,
-                    label: t(
-                      `settingsPanels.inputTrace.wheelStyles.${styleId}`
-                    ),
-                  }))}
-                  onChange={(value) =>
-                    update({ steeringWheelStyle: value as SteeringWheelStyle })
-                  }
-                  style={{ width: 180 }}
-                />
-              </SettingRow>
-            </div>
+        <DependentBlock dependsOn="showSteering">
+          <SettingRow
+            title={t('settingsPanels.inputTrace.wheelStyle')}
+            desc={t('settingsPanels.inputTrace.wheelStyleDesc')}
+          >
+            <Select
+              value={settings.steeringWheelStyle}
+              options={STEERING_WHEEL_STYLE_IDS.map((styleId) => ({
+                value: styleId,
+                label: t(`settingsPanels.inputTrace.wheelStyles.${styleId}`),
+              }))}
+              onChange={(value) =>
+                update({ steeringWheelStyle: value as SteeringWheelStyle })
+              }
+              style={{ width: 180 }}
+            />
+          </SettingRow>
+        </DependentBlock>
 
-            <div className={styles.fieldGroup}>
-              <SettingRow
-                title={t('settingsPanels.inputTrace.centerDisplay')}
-                desc={t('settingsPanels.inputTrace.centerDisplayDesc')}
-              >
-                <Segmented
-                  value={settings.steeringCenterDisplay}
-                  options={[
-                    {
-                      label: t('settingsPanels.inputTrace.centerNone'),
-                      value: 'none',
-                    },
-                    {
-                      label: t('settingsPanels.inputTrace.logo'),
-                      value: 'logo',
-                    },
-                    {
-                      label: t('settingsPanels.inputTrace.gear'),
-                      value: 'gear',
-                    },
-                    {
-                      label: t('settingsPanels.inputTrace.speed'),
-                      value: 'speed',
-                    },
-                    {
-                      label: t('settingsPanels.inputTrace.angle'),
-                      value: 'angle',
-                    },
-                    {
-                      label: t('settingsPanels.inputTrace.speedGear'),
-                      value: 'speed-gear',
-                    },
-                  ]}
-                  onChange={(v) =>
-                    update({
-                      steeringCenterDisplay: v as SteeringCenterDisplay,
-                    })
-                  }
-                />
-              </SettingRow>
-            </div>
+        <DependentBlock dependsOn="showSteering">
+          <SettingRow
+            title={t('settingsPanels.inputTrace.centerDisplay')}
+            desc={t('settingsPanels.inputTrace.centerDisplayDesc')}
+          >
+            <Segmented
+              value={settings.steeringCenterDisplay}
+              options={[
+                {
+                  label: t('settingsPanels.inputTrace.centerNone'),
+                  value: 'none',
+                },
+                {
+                  label: t('settingsPanels.inputTrace.logo'),
+                  value: 'logo',
+                },
+                {
+                  label: t('settingsPanels.inputTrace.gear'),
+                  value: 'gear',
+                },
+                {
+                  label: t('settingsPanels.inputTrace.speed'),
+                  value: 'speed',
+                },
+                {
+                  label: t('settingsPanels.inputTrace.angle'),
+                  value: 'angle',
+                },
+                {
+                  label: t('settingsPanels.inputTrace.speedGear'),
+                  value: 'speed-gear',
+                },
+              ]}
+              onChange={(v) =>
+                update({
+                  steeringCenterDisplay: v as SteeringCenterDisplay,
+                })
+              }
+            />
+          </SettingRow>
+        </DependentBlock>
 
-            {STYLES_WITH_MARKER.includes(settings.steeringWheelStyle) && (
-              <div className={styles.fieldGroup}>
-                <ColorRow
-                  settingKey="steeringMarkerColor"
-                  hex
-                  title={t('settingsPanels.inputTrace.markerColor')}
-                  desc={t('settingsPanels.inputTrace.markerColorDesc')}
-                />
-              </div>
-            )}
+        <ColorRow
+          settingKey="steeringMarkerColor"
+          dependsOn={hasSteeringMarker}
+          hex
+          title={t('settingsPanels.inputTrace.markerColor')}
+          desc={t('settingsPanels.inputTrace.markerColorDesc')}
+        />
 
-            {settings.steeringWheelStyle !== 'default' &&
-              settings.steeringCenterDisplay !== 'none' && (
-                <div className={styles.fieldGroup}>
-                  <SwitchRow
-                    settingKey="steeringCenterPlate"
-                    title={t('settingsPanels.inputTrace.centerPlate')}
-                    desc={t('settingsPanels.inputTrace.centerPlateDesc')}
-                  />
-                </div>
-              )}
+        <SwitchRow
+          settingKey="steeringCenterPlate"
+          dependsOn={hasCenterPlate}
+          title={t('settingsPanels.inputTrace.centerPlate')}
+          desc={t('settingsPanels.inputTrace.centerPlateDesc')}
+        />
 
-            <div className={styles.fieldGroup}>
-              <SettingRow
-                title={t('settingsPanels.inputTrace.steeringZoom')}
-                desc={t('settingsPanels.inputTrace.steeringZoomDesc', {
-                  angle: Math.round(
-                    steeringLock / 2 / (settings.steeringZoom ?? 1)
-                  ),
-                  zoom: settings.steeringZoom ?? 1,
-                  lock: steeringLock,
-                })}
-              >
-                <Slider
-                  min={1}
-                  max={4}
-                  step={0.5}
-                  value={settings.steeringZoom ?? 1}
-                  onChange={(v) => update({ steeringZoom: v })}
-                  style={{ width: 120 }}
-                />
-              </SettingRow>
-            </div>
-          </>
-        )}
+        <DependentBlock dependsOn="showSteering">
+          <SettingRow
+            title={t('settingsPanels.inputTrace.steeringZoom')}
+            desc={t('settingsPanels.inputTrace.steeringZoomDesc', {
+              angle: Math.round(
+                steeringLock / 2 / (settings.steeringZoom ?? 1)
+              ),
+              zoom: settings.steeringZoom ?? 1,
+              lock: steeringLock,
+            })}
+          >
+            <Slider
+              min={1}
+              max={4}
+              step={0.5}
+              value={settings.steeringZoom ?? 1}
+              onChange={(v) => update({ steeringZoom: v })}
+              style={{ width: 120 }}
+            />
+          </SettingRow>
+        </DependentBlock>
       </Card>
 
       <Card title={t('settingsPanels.inputTrace.layout')}>

@@ -64,21 +64,18 @@ export const PitLineSettingsPanel = observer(() => {
         />
 
         <SwitchRow
+          settingKey="showPitBrakeCue"
+          dependsOn="showPitApproach"
+          title={t('settingsPanels.pitLine.brakeCue')}
+          desc={t('settingsPanels.pitLine.brakeCueDesc')}
+        />
+
+        <SwitchRow
           settingKey="showUnits"
           title={t('settingsPanels.pitLine.showUnits')}
           desc={t('settingsPanels.pitLine.showUnitsDesc')}
         />
       </Card>
-
-      {settings.showPitApproach && (
-        <Card title={t('settingsPanels.pitLine.approachCard')}>
-          <SwitchRow
-            settingKey="showPitBrakeCue"
-            title={t('settingsPanels.pitLine.brakeCue')}
-            desc={t('settingsPanels.pitLine.brakeCueDesc')}
-          />
-        </Card>
-      )}
 
       <Card title={t('settingsPanels.pitLine.visibility')}>
         <SwitchRow

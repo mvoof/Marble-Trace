@@ -124,6 +124,14 @@
   border-left: 1px solid $sys-border-sub;
 }
 
+// A dependant placed straight in the card (`dependsOn`) joins the block above
+// it instead of being ruled off as a block of its own.
+.cardContent > .fieldSubRow {
+  margin-top: rem(14);
+  padding-top: 0;
+  border-top: 0;
+}
+
 .fieldRow {
   display: flex;
   align-items: center;

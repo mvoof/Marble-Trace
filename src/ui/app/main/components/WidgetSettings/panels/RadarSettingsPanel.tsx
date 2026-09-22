@@ -39,7 +39,11 @@ const OPACITY_STEP = 0.05;
 
 const asPercent = (opacity: number): number => Math.round(opacity * 100);
 
-const { SwitchRow } = panelRows<ProximityRadarSettings>();
+const { DependentBlock, SwitchRow } = panelRows<ProximityRadarSettings>();
+
+// The range is only the user's to set in manual mode; the other modes derive it.
+const isManualScale = (settings: ProximityRadarSettings): boolean =>
+  settings.scaleMode === 'manual';
 
 const SCALE_MODES: RadarScaleMode[] = ['fixed-scope', 'fixed-cars', 'manual'];
 
@@ -130,8 +134,8 @@ const ScopeCard = observer(() => {
           </Col>
         </Row>
 
-        {settings.scaleMode === 'manual' && (
-          <Row gutter={24} className={styles.fieldGroup}>
+        <DependentBlock dependsOn={isManualScale}>
+          <Row gutter={24}>
             <Col span={8}>
               <span className={styles.fieldLabel}>
                 {t('settingsPanels.radar.scopeRange')}
@@ -150,7 +154,7 @@ const ScopeCard = observer(() => {
               />
             </Col>
           </Row>
-        )}
+        </DependentBlock>
 
         <Row gutter={24} className={styles.fieldGroup}>
           <Col span={24}>
@@ -166,13 +170,12 @@ const ScopeCard = observer(() => {
           />
         </div>
 
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showAxisTicks"
-            title={t('settingsPanels.radar.showAxisTicks')}
-            desc={t('settingsPanels.radar.showAxisTicksDesc')}
-          />
-        </div>
+        <SwitchRow
+          settingKey="showAxisTicks"
+          dependsOn="showAxes"
+          title={t('settingsPanels.radar.showAxisTicks')}
+          desc={t('settingsPanels.radar.showAxisTicksDesc')}
+        />
 
         <div className={styles.fieldGroup}>
           <SwitchRow
@@ -205,6 +208,24 @@ const ScopeCard = observer(() => {
           />
         </div>
 
+        <DependentBlock dependsOn="showBeam">
+          <div className={styles.fieldLabel}>
+            {t('settingsPanels.radar.beamOpacity', {
+              percent: asPercent(settings.beamOpacity),
+            })}
+          </div>
+          <Slider
+            min={MIN_OPACITY}
+            max={MAX_OPACITY}
+            step={OPACITY_STEP}
+            value={settings.beamOpacity}
+            onChange={(value) => update({ beamOpacity: value })}
+          />
+          <div className={styles.fieldDesc}>
+            {t('settingsPanels.radar.beamOpacityDesc')}
+          </div>
+        </DependentBlock>
+
         <div className={styles.fieldGroup}>
           <div className={styles.fieldLabel}>
             {t('settingsPanels.radar.carOpacity', {
@@ -222,26 +243,6 @@ const ScopeCard = observer(() => {
             {t('settingsPanels.radar.carOpacityDesc')}
           </div>
         </div>
-
-        {settings.showBeam && (
-          <div className={styles.fieldGroup}>
-            <div className={styles.fieldLabel}>
-              {t('settingsPanels.radar.beamOpacity', {
-                percent: asPercent(settings.beamOpacity),
-              })}
-            </div>
-            <Slider
-              min={MIN_OPACITY}
-              max={MAX_OPACITY}
-              step={OPACITY_STEP}
-              value={settings.beamOpacity}
-              onChange={(value) => update({ beamOpacity: value })}
-            />
-            <div className={styles.fieldDesc}>
-              {t('settingsPanels.radar.beamOpacityDesc')}
-            </div>
-          </div>
-        )}
       </Card>
 
       <Card title={t('settingsPanels.radar.texture')}>

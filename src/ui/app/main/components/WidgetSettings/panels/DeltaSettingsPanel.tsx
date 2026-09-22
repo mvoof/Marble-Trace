@@ -9,10 +9,12 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { getDeltaReferenceDesc } from './shared';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { usePanelWidgetId } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['delta'];
+
+const { DependentBlock } = panelRows<DeltaWidgetSettings>();
 
 export const DeltaSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -88,22 +90,20 @@ export const DeltaSettingsPanel = observer(() => {
           </div>
         </div>
 
-        {settings.showLapFlash && (
-          <div className={styles.fieldGroup}>
-            <div className={styles.fieldLabel}>
-              {t('settingsPanels.delta.displayDuration', {
-                seconds: settings.flashDuration,
-              })}
-            </div>
-            <Slider
-              min={3}
-              max={10}
-              step={1}
-              value={settings.flashDuration}
-              onChange={(value) => update({ flashDuration: value })}
-            />
+        <DependentBlock dependsOn="showLapFlash">
+          <div className={styles.fieldLabel}>
+            {t('settingsPanels.delta.displayDuration', {
+              seconds: settings.flashDuration,
+            })}
           </div>
-        )}
+          <Slider
+            min={3}
+            max={10}
+            step={1}
+            value={settings.flashDuration}
+            onChange={(value) => update({ flashDuration: value })}
+          />
+        </DependentBlock>
       </Card>
     </>
   );

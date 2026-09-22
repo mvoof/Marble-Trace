@@ -1008,6 +1008,13 @@ from the panel context and write it back themselves — with the key checked
 against that widget's settings type. Anything with logic of its own (a clamped
 number, a unit conversion, a `Segmented`) is still written out by hand.
 
+A row that only means something while another is on declares it —
+`dependsOn="showCompass"`, or a predicate — instead of the panel wrapping it in
+a condition; hand-written controls take the same prop on `DependentBlock`. The
+row hides with its parent and is drawn indented under it. The join is pure CSS
+(`.cardContent > .fieldSubRow`), which is why a dependant goes straight after
+its parent and nesting stops at one level.
+
 Settings panels are collected the same way — each exports `PANEL_WIDGET_IDS`
 — but into their own registry rather than into `mount.ts`: the remote screen
 renders widgets through the widget registry and is a plain browser page, so a

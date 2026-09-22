@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Segmented, Slider } from 'antd';
@@ -8,9 +9,8 @@ import type {
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
-import { SettingSwitchGroup } from './SettingSwitchGroup';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows, usePanelWidgetId } from './setting-rows';
+import { panelRows, usePanelWidgetId, type SwitchKey } from './setting-rows';
 import { LicBadgeStyleRow } from './shared';
 import {
   NAME_COLUMN_MAX_PX,
@@ -21,13 +21,15 @@ import {
 export const PANEL_WIDGET_IDS = ['relative'];
 
 interface RelativeColumnSwitch {
+  key: SwitchKey<RelativeWidgetSettings>;
   titleKey: string;
   descKey: string;
-  value: boolean;
-  onChange: (next: boolean) => void;
+  /** Rows that only format this column, drawn under it while it is shown. */
+  dependants?: ReactNode;
 }
 
-const { ColorRow, SwitchRow } = panelRows<RelativeWidgetSettings>();
+const { ColorRow, DependentBlock, SwitchRow } =
+  panelRows<RelativeWidgetSettings>();
 
 // Pixel granularity of the name-column slider — finer steps are invisible on screen.
 const NAME_COLUMN_STEP_PX = 5;
@@ -52,44 +54,62 @@ export const RelativeSettingsPanel = observer(() => {
     {
       titleKey: 'settingsPanels.common.carNumber',
       descKey: 'settingsPanels.common.carNumberDesc',
-      value: settings.showCarNumber,
-      onChange: (v: boolean) => update({ showCarNumber: v }),
+      key: 'showCarNumber',
     },
     {
       titleKey: 'settingsPanels.relative.licenseBadge',
       descKey: 'settingsPanels.relative.licenseBadgeDesc',
-      value: settings.showLicBadge,
-      onChange: (v: boolean) => update({ showLicBadge: v }),
+      key: 'showLicBadge',
+      dependants: (
+        <>
+          <DependentBlock dependsOn="showLicBadge">
+            <LicBadgeStyleRow
+              value={settings.licBadgeStyle}
+              onChange={(v) => update({ licBadgeStyle: v })}
+            />
+          </DependentBlock>
+
+          <SwitchRow
+            settingKey="showLicenseLetter"
+            dependsOn="showLicBadge"
+            title={t('settingsPanels.relative.licenseLetter')}
+            desc={t('settingsPanels.relative.licenseLetterDesc')}
+          />
+        </>
+      ),
     },
     {
       titleKey: 'settingsPanels.relative.iRating',
       descKey: 'settingsPanels.relative.iRatingDesc',
-      value: settings.showIRating,
-      onChange: (v: boolean) => update({ showIRating: v }),
+      key: 'showIRating',
+      dependants: (
+        <SwitchRow
+          settingKey="abbreviateIRating"
+          dependsOn="showIRating"
+          title={t('settingsPanels.relative.abbreviateIRating')}
+          desc={t('settingsPanels.relative.abbreviateIRatingDesc')}
+        />
+      ),
     },
     {
       titleKey: 'settingsPanels.relative.pitIndicator',
       descKey: 'settingsPanels.relative.pitIndicatorDesc',
-      value: settings.showPitIndicator,
-      onChange: (v: boolean) => update({ showPitIndicator: v }),
+      key: 'showPitIndicator',
     },
     {
       titleKey: 'settingsPanels.relative.abbreviateNames',
       descKey: 'settingsPanels.relative.abbreviateNamesDesc',
-      value: settings.abbreviateNames,
-      onChange: (v: boolean) => update({ abbreviateNames: v }),
+      key: 'abbreviateNames',
     },
     {
       titleKey: 'settingsPanels.relative.countryFlag',
       descKey: 'settingsPanels.relative.countryFlagDesc',
-      value: settings.showCountryFlag,
-      onChange: (v: boolean) => update({ showCountryFlag: v }),
+      key: 'showCountryFlag',
     },
     {
       titleKey: 'settingsPanels.relative.driverFlags',
       descKey: 'settingsPanels.relative.driverFlagsDesc',
-      value: settings.showDriverFlags,
-      onChange: (v: boolean) => update({ showDriverFlags: v }),
+      key: 'showDriverFlags',
     },
   ];
 
@@ -137,29 +157,6 @@ export const RelativeSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <LicBadgeStyleRow
-            value={settings.licBadgeStyle}
-            onChange={(v) => update({ licBadgeStyle: v })}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showLicenseLetter"
-            title={t('settingsPanels.relative.licenseLetter')}
-            desc={t('settingsPanels.relative.licenseLetterDesc')}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="abbreviateIRating"
-            title={t('settingsPanels.relative.abbreviateIRating')}
-            desc={t('settingsPanels.relative.abbreviateIRatingDesc')}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
           <ColorRow
             settingKey="playerRowColor"
             title={t('settingsPanels.relative.playerRowColor')}
@@ -188,13 +185,15 @@ export const RelativeSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.relative.dataColumns')}>
         {dataColumns.map((item) => (
-          <SettingSwitchGroup
-            key={item.titleKey}
-            title={t(item.titleKey)}
-            desc={t(item.descKey)}
-            checked={item.value}
-            onChange={item.onChange}
-          />
+          <Fragment key={item.key}>
+            <SwitchRow
+              settingKey={item.key}
+              title={t(item.titleKey)}
+              desc={t(item.descKey)}
+            />
+
+            {item.dependants}
+          </Fragment>
         ))}
       </Card>
 

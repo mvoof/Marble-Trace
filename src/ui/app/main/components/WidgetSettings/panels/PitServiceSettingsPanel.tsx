@@ -40,7 +40,7 @@ const REVEAL_STEP_S = 1;
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['pit-service'];
 
-const { SwitchRow } = panelRows<PitServiceWidgetSettings>();
+const { DependentBlock, SwitchRow } = panelRows<PitServiceWidgetSettings>();
 
 export const PitServiceSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -195,23 +195,21 @@ export const PitServiceSettingsPanel = observer(() => {
           desc={t('settingsPanels.pitService.autoTiresDesc')}
         />
 
-        {settings.autoTires && (
-          <div className={styles.fieldGroup}>
-            <div className={styles.fieldLabel}>
-              {t('settingsPanels.pitService.autoTireWearThreshold', {
-                percent: settings.autoTireWearThreshold,
-              })}
-            </div>
-
-            <Slider
-              min={WEAR_THRESHOLD_MIN_PCT}
-              max={WEAR_THRESHOLD_MAX_PCT}
-              step={WEAR_THRESHOLD_STEP_PCT}
-              value={settings.autoTireWearThreshold}
-              onChange={(value) => update({ autoTireWearThreshold: value })}
-            />
+        <DependentBlock dependsOn="autoTires">
+          <div className={styles.fieldLabel}>
+            {t('settingsPanels.pitService.autoTireWearThreshold', {
+              percent: settings.autoTireWearThreshold,
+            })}
           </div>
-        )}
+
+          <Slider
+            min={WEAR_THRESHOLD_MIN_PCT}
+            max={WEAR_THRESHOLD_MAX_PCT}
+            step={WEAR_THRESHOLD_STEP_PCT}
+            value={settings.autoTireWearThreshold}
+            onChange={(value) => update({ autoTireWearThreshold: value })}
+          />
+        </DependentBlock>
 
         {/*
           Not gated on auto mode: the step belongs to the fuel up / down keys,

@@ -17,7 +17,8 @@ import { panelRows, usePanelWidgetId } from './setting-rows';
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['race-dash'];
 
-const { ColorRow, SwitchRow } = panelRows<RaceDashWidgetSettings>();
+const { ColorRow, DependentBlock, SwitchRow } =
+  panelRows<RaceDashWidgetSettings>();
 
 export const RaceDashSettingsPanel = observer(() => {
   const units = useUnitsStore();
@@ -149,16 +150,13 @@ export const RaceDashSettingsPanel = observer(() => {
           />
         </div>
 
-        {settings.showSteeringMarker && (
-          <div className={styles.fieldGroup}>
-            <ColorRow
-              settingKey="steeringTrailColor"
-              title={t('settingsPanels.raceDash.steeringTrail')}
-              desc={t('settingsPanels.raceDash.steeringTrailDesc')}
-              hex
-            />
-          </div>
-        )}
+        <ColorRow
+          settingKey="steeringTrailColor"
+          dependsOn="showSteeringMarker"
+          title={t('settingsPanels.raceDash.steeringTrail')}
+          desc={t('settingsPanels.raceDash.steeringTrailDesc')}
+          hex
+        />
       </Card>
 
       <Card title={t('settingsPanels.common.positions')}>
@@ -186,83 +184,81 @@ export const RaceDashSettingsPanel = observer(() => {
           />
         </div>
 
-        {settings.colorizePosition && (
-          <div className={styles.fieldGroup}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.raceDash.positionBands')}
-            </span>
+        <DependentBlock dependsOn="colorizePosition">
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.raceDash.positionBands')}
+          </span>
 
-            <div className={styles.rpmColorGrid}>
-              <div className={styles.rpmColorItem}>
-                <span className={styles.rpmColorLabel}>
-                  {t('settingsPanels.raceDash.bandWinner')}
-                </span>
-                <ColorPicker
-                  value={settings.positionColorP1}
-                  onChange={(color) =>
-                    update({ positionColorP1: color.toHexString() })
-                  }
-                />
-              </div>
+          <div className={styles.rpmColorGrid}>
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>
+                {t('settingsPanels.raceDash.bandWinner')}
+              </span>
+              <ColorPicker
+                value={settings.positionColorP1}
+                onChange={(color) =>
+                  update({ positionColorP1: color.toHexString() })
+                }
+              />
+            </div>
 
-              <div className={styles.rpmColorLine} />
+            <div className={styles.rpmColorLine} />
 
-              <div className={styles.rpmColorItem}>
-                <span className={styles.rpmColorLabel}>
-                  {t('settingsPanels.raceDash.bandTop3')}
-                </span>
-                <ColorPicker
-                  value={settings.positionColorTop3}
-                  onChange={(color) =>
-                    update({ positionColorTop3: color.toHexString() })
-                  }
-                />
-              </div>
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>
+                {t('settingsPanels.raceDash.bandTop3')}
+              </span>
+              <ColorPicker
+                value={settings.positionColorTop3}
+                onChange={(color) =>
+                  update({ positionColorTop3: color.toHexString() })
+                }
+              />
+            </div>
 
-              <div className={styles.rpmColorLine} />
+            <div className={styles.rpmColorLine} />
 
-              <div className={styles.rpmColorItem}>
-                <span className={styles.rpmColorLabel}>
-                  {t('settingsPanels.raceDash.bandTop5')}
-                </span>
-                <ColorPicker
-                  value={settings.positionColorTop5}
-                  onChange={(color) =>
-                    update({ positionColorTop5: color.toHexString() })
-                  }
-                />
-              </div>
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>
+                {t('settingsPanels.raceDash.bandTop5')}
+              </span>
+              <ColorPicker
+                value={settings.positionColorTop5}
+                onChange={(color) =>
+                  update({ positionColorTop5: color.toHexString() })
+                }
+              />
+            </div>
 
-              <div className={styles.rpmColorLine} />
+            <div className={styles.rpmColorLine} />
 
-              <div className={styles.rpmColorItem}>
-                <span className={styles.rpmColorLabel}>
-                  {t('settingsPanels.raceDash.bandTop10')}
-                </span>
-                <ColorPicker
-                  value={settings.positionColorTop10}
-                  onChange={(color) =>
-                    update({ positionColorTop10: color.toHexString() })
-                  }
-                />
-              </div>
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>
+                {t('settingsPanels.raceDash.bandTop10')}
+              </span>
+              <ColorPicker
+                value={settings.positionColorTop10}
+                onChange={(color) =>
+                  update({ positionColorTop10: color.toHexString() })
+                }
+              />
+            </div>
 
-              <div className={styles.rpmColorLine} />
+            <div className={styles.rpmColorLine} />
 
-              <div className={styles.rpmColorItem}>
-                <span className={styles.rpmColorLabel}>
-                  {t('settingsPanels.raceDash.bandRest')}
-                </span>
-                <ColorPicker
-                  value={settings.positionColorRest}
-                  onChange={(color) =>
-                    update({ positionColorRest: color.toHexString() })
-                  }
-                />
-              </div>
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>
+                {t('settingsPanels.raceDash.bandRest')}
+              </span>
+              <ColorPicker
+                value={settings.positionColorRest}
+                onChange={(color) =>
+                  update({ positionColorRest: color.toHexString() })
+                }
+              />
             </div>
           </div>
-        )}
+        </DependentBlock>
       </Card>
 
       <Card title={t('settingsPanels.raceDash.pitAssist')}>

@@ -24,6 +24,8 @@ export const SectorMatrixSettingsPanel = observer(() => {
           />
         </div>
 
+        {/* Not a dependant of the sector times: the predicted lap is drawn in
+            the header, which stays when the sector grid is switched off. */}
         <div className={styles.fieldGroup}>
           <SwitchRow
             settingKey="showPredicted"

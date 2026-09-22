@@ -46,6 +46,11 @@ export const PANEL_WIDGET_IDS = ['close-battle'];
 
 const { SwitchRow, ColorRow } = panelRows<CloseBattleWidgetSettings>();
 
+// Labels hang off the ticks, which hang off the axis; one level of nesting, so
+// the labels row names both.
+const areTicksShown = (settings: CloseBattleWidgetSettings): boolean =>
+  settings.showAxis && settings.showTicks;
+
 export const CloseBattleSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('close-battle');
@@ -267,21 +272,17 @@ export const CloseBattleSettingsPanel = observer(() => {
           />
         </div>
 
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showTicks"
-            title={t('settingsPanels.closeBattle.showTicks')}
-            disabled={settings.showAxis === false}
-          />
-        </div>
+        <SwitchRow
+          settingKey="showTicks"
+          dependsOn="showAxis"
+          title={t('settingsPanels.closeBattle.showTicks')}
+        />
 
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showTickLabels"
-            title={t('settingsPanels.closeBattle.showTickLabels')}
-            disabled={settings.showAxis === false || !settings.showTicks}
-          />
-        </div>
+        <SwitchRow
+          settingKey="showTickLabels"
+          dependsOn={areTicksShown}
+          title={t('settingsPanels.closeBattle.showTickLabels')}
+        />
 
         <div className={styles.fieldGroup}>
           <SwitchRow
@@ -292,15 +293,13 @@ export const CloseBattleSettingsPanel = observer(() => {
           />
         </div>
 
-        <div className={styles.fieldGroup}>
-          <ColorRow
-            settingKey="playerLineColor"
-            title={t('settingsPanels.closeBattle.playerLineColor')}
-            disabled={settings.showPlayerLine === false}
-            fallback={PLAYER_LINE_FALLBACK_COLOR}
-            hex
-          />
-        </div>
+        <ColorRow
+          settingKey="playerLineColor"
+          dependsOn="showPlayerLine"
+          title={t('settingsPanels.closeBattle.playerLineColor')}
+          fallback={PLAYER_LINE_FALLBACK_COLOR}
+          hex
+        />
 
         <div className={styles.fieldGroup}>
           <SwitchRow
