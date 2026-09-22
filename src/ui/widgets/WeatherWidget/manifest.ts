@@ -13,6 +13,14 @@ import {
 const TALL_DESIGN_WIDTH = 200;
 const HORIZONTAL_DESIGN_WIDTH = 340;
 
+// The orientation *is* the width: there are two layouts and each has exactly
+// one design width, so a stored one is a cache of what `horizontal` already
+// answers. Derived on every load and sync, the pair can never drift — a stored
+// 340 left over from a horizontal spell would otherwise keep scaling the tall
+// layout by 1.7 and multiply `currentWidth` again on the next toggle.
+const weatherDesignWidth = (settings: WeatherWidgetSettings) =>
+  settings.horizontal ? HORIZONTAL_DESIGN_WIDTH : TALL_DESIGN_WIDTH;
+
 export const WEATHER_MANIFEST: WidgetManifest = {
   id: 'weather',
   order: 150,
@@ -45,7 +53,8 @@ export const WEATHER_MANIFEST: WidgetManifest = {
   },
   resolveLayoutChange: makeExactColumnLayoutResolver<WeatherWidgetSettings>(
     ['horizontal'],
-    (settings) =>
-      settings.horizontal ? HORIZONTAL_DESIGN_WIDTH : TALL_DESIGN_WIDTH
+    weatherDesignWidth
   ),
+  deriveDesignWidth: (settings) =>
+    weatherDesignWidth(settings as unknown as WeatherWidgetSettings),
 };

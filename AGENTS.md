@@ -673,6 +673,14 @@ Use `fs()`/`sp()`/`radius()` for typography/spacing/radius; `ws()` only for layo
 
 For **toggleable-column widgets** (Standings, Relative): `designWidth` tracks the visible column set via `colSpecs` in `*-utils.ts`. `makeColumnLayoutResolver` in `src/ui/widgets/widget-manifest.ts` keeps `--wfs` constant while the widget resizes.
 
+A `designWidth` a widget's own settings can compute — a column set, or an
+orientation switch with one width each — needs **both** manifest fields:
+`resolveLayoutChange` rescales `currentWidth` on the toggle, `deriveDesignWidth`
+recomputes the width on every install (file load, layout switch, cross-window
+sync). The stored width is a cache, and with only the resolver it drifts: the
+widget renders at the wrong `--wfs` and crops, and each further toggle reads that
+ratio back as `scale` and grows `currentWidth` again.
+
 ### Widget copies
 
 A layout may hold **several copies of one widget** — one on the screen being

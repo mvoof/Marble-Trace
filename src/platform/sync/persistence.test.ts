@@ -91,6 +91,28 @@ describe('restoreLayoutWidgets', () => {
     expect(locked.designHeight).toBe(shipped.designHeight);
   });
 
+  it('rebuilds the weather design width from its orientation', () => {
+    const shipped = DEFAULT_WIDGETS.find((widget) => widget.id === 'weather')!;
+
+    const restored = restoreLayoutWidgets([
+      {
+        ...shipped,
+        // A width left behind by a horizontal spell, on a widget saved tall.
+        designWidth: 340,
+        userSettings: {
+          ...shipped.userSettings,
+          horizontal: false,
+          currentWidth: 340,
+        },
+      } as unknown as WidgetDefaultConfig,
+    ]);
+
+    const weather = restored.find((widget) => widget.id === 'weather')!;
+
+    expect(weather.designWidth).toBe(shipped.designWidth);
+    expect(weather.userSettings.currentWidth).toBe(shipped.designWidth);
+  });
+
   it('leaves a widget the layout already had enabled alone', () => {
     const restored = restoreLayoutWidgets([
       savedChat({ ...settingsBag(shippedChat()), enabled: true }),

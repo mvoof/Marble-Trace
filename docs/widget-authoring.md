@@ -158,6 +158,15 @@ from it. If the widget has toggleable columns, `designWidth` tracks the visible
 set through `makeColumnLayoutResolver` and a `compute…DesignWidth` in the
 widget's `*-utils.ts` — see `CloseBattleWidget` for the worked case.
 
+If a setting decides the design width — a column toggle, or an orientation switch
+with one width per orientation — the manifest declares **two** things, not one:
+`resolveLayoutChange` to rescale `currentWidth` on the toggle, and
+`deriveDesignWidth` so the width is recomputed rather than trusted every time the
+widget is installed. The stored width is a cache of arithmetic the settings
+already answer, and shipping only the resolver is how the weather widget came to
+render at 1.7× and grow on every click. See "Toggleable-column widgets" in
+`docs/architecture.md`.
+
 **The layout knobs.** Design size is not the only thing the manifest decides
 about shape, and the rest are easy to miss because they are all optional:
 `autoHeight`, `lockAspectRatio` (resize keeps the ratio — for a circular plate),

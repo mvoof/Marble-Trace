@@ -1116,6 +1116,21 @@ size of everything else. `designWidth` tracks the visible column set through
 `colSpecs` in `*-utils.ts`, and `makeColumnLayoutResolver` (in
 `ui/widgets/widget-manifest.ts`) keeps `--wfs` constant while the widget resizes.
 
+> [!IMPORTANT]
+> A `designWidth` its own settings can compute is **not state — it is a cache**,
+> and a cache saved to settings.json drifts. Every widget whose design width is
+> a function of its settings declares **both** halves in its manifest:
+> `resolveLayoutChange` rescales `currentWidth` at the moment of the toggle, so
+> `--wfs` does not jump under the driver, and `deriveDesignWidth` recomputes the
+> width wherever a widget is installed — file load (`restoreWidgets`), layout
+> switch, and the cross-window sync (`applySettingsSync`). One without the other
+> is the bug: with only the resolver, a stored width left behind by an older
+> setting survives every reload, `--wfs` renders the widget at the wrong scale
+> and crops it, and the next toggle reads that same wrong ratio back as `scale`
+> and multiplies `currentWidth` by it again — the widget grows on every click.
+> It applies to a two-state orientation switch (`WeatherWidget`'s `horizontal`)
+> exactly as it does to a table of columns; two design widths are still two.
+
 ### Canvas widgets
 
 Canvas widgets bypass React's render path entirely for their pixels: React mounts
