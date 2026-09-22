@@ -12,6 +12,9 @@ export const DRS_MANIFEST: WidgetManifest = {
   telemetryEvents: [],
   requiredCapabilities: ['playerDynamics'],
   previewScenarios: ['drs-armed', 'drs-ready', 'drs-open'],
+  // The baseline car is a GT3: no DRS, so the adapter clears the field and the
+  // widget hides itself. The picker would be offering an empty pane.
+  previewBaseline: false,
   label: 'DRS',
   description:
     'Drag reduction system state: armed past the detection point, ready inside the zone, open.',
