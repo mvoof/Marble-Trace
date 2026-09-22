@@ -47,6 +47,21 @@ describe('buildVisibleRows', () => {
     expect(result.windowStartIndex).toBe(-1);
   });
 
+  it('carves a window when the player sits on the last visible row', () => {
+    // Without it the player would be the bottom row with nobody behind them.
+    const result = buildVisibleRows(makeField(20, 5), 6, 2, 2);
+
+    expect(carIndices(result.drivers)).toEqual([0, 3, 4, 5, 6, 7]);
+    expect(result.windowStartIndex).toBe(1);
+  });
+
+  it('keeps the leader and marks the gap when the rows behind do not fit', () => {
+    const result = buildVisibleRows(makeField(20, 8), 6, 2, 2);
+
+    expect(carIndices(result.drivers)).toEqual([0, 6, 7, 8, 9, 10]);
+    expect(result.windowStartIndex).toBe(1);
+  });
+
   it('pins the player to the last row when the window is disabled', () => {
     const result = buildVisibleRows(makeField(20, 12), 5, 0, 0);
 

@@ -18,9 +18,10 @@ export const maxScrollOffset = (totalDrivers: number, maxRows: number) =>
   Math.max(0, totalDrivers - maxRows);
 
 /**
- * Picks the rows to render: the top of the table, plus — when the player has
- * dropped out of it — either a single pinned player row (`requestedAhead` and
- * `requestedBehind` both 0) or a contiguous window of that many cars around them.
+ * Picks the rows to render: the top of the table, plus — when the plain slice
+ * would not show the player together with the cars behind them — either a
+ * single pinned player row (`requestedAhead` and `requestedBehind` both 0) or a
+ * contiguous window of that many cars around them.
  */
 export const buildVisibleRows = (
   drivers: CarIdentity[],
@@ -46,7 +47,22 @@ export const buildVisibleRows = (
 
   const playerIndex = drivers.findIndex((driver) => driver.isPlayer);
 
-  if (playerIndex < 0 || playerIndex < start + maxRows) {
+  // Rows that actually exist behind the player. A short field must not be padded
+  // from the other side — a driver ahead rendered below the player (or the
+  // reverse) would read as the wrong side of the fight.
+  const availableBehind = Math.max(
+    0,
+    Math.min(requestedBehind, drivers.length - 1 - playerIndex)
+  );
+
+  // The plain slice is enough while the player is on it *with* the rows behind
+  // them — sitting on its last row, the driver sees nobody chasing them, which
+  // is exactly what the setting was turned on for. Scrolled past the player,
+  // the user is reading the field on purpose and the window stays out of it.
+  const plainSliceIsEnough =
+    playerIndex < start || playerIndex + availableBehind < start + maxRows;
+
+  if (playerIndex < 0 || plainSliceIsEnough) {
     return {
       drivers: drivers.slice(start, start + maxRows),
       windowStartIndex: NO_WINDOW,
@@ -61,17 +77,9 @@ export const buildVisibleRows = (
     return { drivers: topBlock, windowStartIndex: NO_WINDOW };
   }
 
-  // Rows that actually exist on each side of the player. A short field must not
-  // be padded from the other side — a driver ahead rendered below the player (or
-  // the reverse) would read as the wrong side of the fight.
-  const availableBehind = Math.min(
-    requestedBehind,
-    drivers.length - 1 - playerIndex
-  );
-
-  const availableAhead = Math.min(
-    requestedAhead,
-    playerIndex - start - MIN_TOP_ROWS
+  const availableAhead = Math.max(
+    0,
+    Math.min(requestedAhead, playerIndex - start - MIN_TOP_ROWS)
   );
 
   // Rows the requested window asks for beyond what is left once the top block
@@ -95,16 +103,23 @@ export const buildVisibleRows = (
   const topRowCount = maxRows - windowRowCount;
   const windowStart = playerIndex - aheadRows;
 
+  // The two blocks touch (or the window has eaten the whole budget): there is no
+  // gap to mark, so one contiguous slice ending below the player is rendered.
+  if (windowStart <= start + topRowCount) {
+    const end = Math.min(drivers.length, playerIndex + behindRows + 1);
+
+    return {
+      drivers: drivers.slice(Math.max(0, end - maxRows), end),
+      windowStartIndex: NO_WINDOW,
+    };
+  }
+
   const visibleDrivers = [
     ...drivers.slice(start, start + topRowCount),
     ...drivers.slice(windowStart, windowStart + windowRowCount),
   ];
 
-  return {
-    drivers: visibleDrivers,
-    windowStartIndex:
-      windowStart > start + topRowCount ? topRowCount : NO_WINDOW,
-  };
+  return { drivers: visibleDrivers, windowStartIndex: topRowCount };
 };
 
 export const parseWeekendTemp = (
