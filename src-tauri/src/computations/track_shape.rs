@@ -714,6 +714,21 @@ mod tests {
             dc_brake_bias: None,
             dc_traction_control: None,
             dc_throttle_shape: None,
+            dc_traction_control_2: None,
+            dc_engine_braking: None,
+            dc_brake_bias_fine: None,
+            dc_peak_brake_bias: None,
+            dc_anti_roll_front: None,
+            dc_anti_roll_rear: None,
+            dc_brake_misc: None,
+            dc_diff_entry: None,
+            dc_diff_middle: None,
+            dc_diff_exit: None,
+            energy_ers_battery_pct: None,
+            power_mgu_k: None,
+            energy_battery_to_mgu_k_lap: None,
+            dc_mguk_deploy_mode: None,
+            drs: None,
         }
     }
 

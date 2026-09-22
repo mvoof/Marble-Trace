@@ -634,6 +634,40 @@ describe('engine scenarios', () => {
     }
   });
 
+  it('gives the formula car every adjustment and no ABS', () => {
+    const carStatus = seed('engine-formula-car').player.carStatus;
+
+    for (const value of [
+      carStatus?.dc_traction_control_2,
+      carStatus?.dc_brake_bias_fine,
+      carStatus?.dc_peak_brake_bias,
+      carStatus?.dc_diff_entry,
+      carStatus?.dc_diff_middle,
+      carStatus?.dc_diff_exit,
+    ]) {
+      expect(value).not.toBeNull();
+    }
+
+    expect(carStatus?.dc_abs).toBeNull();
+  });
+
+  it('gives the prototype its ABS and engine braking but no differential', () => {
+    const carStatus = seed('engine-gtp-car').player.carStatus;
+
+    expect(carStatus?.dc_abs ?? 0).toBeGreaterThan(0);
+    expect(carStatus?.dc_engine_braking ?? 0).toBeGreaterThan(0);
+    expect(carStatus?.dc_peak_brake_bias ?? 0).toBeGreaterThan(0);
+    expect(carStatus?.dc_diff_middle).toBeNull();
+  });
+
+  it('leaves the GT3 the four adjustments it has and nothing else', () => {
+    const carStatus = seed('engine-gt3-car').player.carStatus;
+
+    expect(carStatus?.dc_abs ?? 0).toBeGreaterThan(0);
+    expect(carStatus?.dc_diff_entry).toBeNull();
+    expect(carStatus?.dc_traction_control_2).toBeNull();
+  });
+
   it('keeps the baseline flag on screen beside the panel', () => {
     expect(seed('engine-oil-overheat').flags.displayFlags).toEqual(
       seed(DEFAULT_PREVIEW_SCENARIO_ID).flags.displayFlags

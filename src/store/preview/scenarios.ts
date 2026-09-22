@@ -35,6 +35,8 @@ import {
 } from './mocks/delta';
 import {
   mockCarStatus,
+  mockGtpCarStatus,
+  mockHybridCarStatus,
   OIL_TEMP_WARNING_C,
   WATER_TEMP_WARNING_C,
 } from './mocks/engine';
@@ -882,6 +884,74 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
+    id: 'hybrid-deploying',
+    label: 'Hybrid — deploying',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Synthetic rather than recorded, for the reason test-data/README gives:
+      // a captured lap cannot be relied on to hold a full battery mid-deploy at
+      // its first frame. A formula car, so the deploy-mode strip has a selector
+      // to mirror — the prototypes park that field on one value.
+      store.player.updateCarStatus(
+        mockHybridCarStatus({
+          energy_ers_battery_pct: 0.9,
+          power_mgu_k: 102_556,
+          dc_mguk_deploy_mode: 1,
+        })
+      );
+    },
+  },
+  {
+    id: 'hybrid-harvesting',
+    label: 'Hybrid — harvesting',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The other side of the sign, at a charge low enough to put the bar on
+      // its amber step — the two states are separate scenarios because the
+      // widget changes colour as well as wording between them.
+      store.player.updateCarStatus(
+        mockHybridCarStatus({
+          energy_ers_battery_pct: 0.41,
+          power_mgu_k: -211_110,
+          dc_mguk_deploy_mode: 3,
+        })
+      );
+      applyDynamics(store, { speed: 62, rpm: 9_800, gear: 4 });
+    },
+  },
+  {
+    id: 'drs-armed',
+    label: 'DRS — armed',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Past the detection point with the zone still ahead: the press does
+      // nothing yet, which is the whole reason this state is drawn apart from
+      // ready rather than folded into it.
+      store.player.updateCarStatus(mockHybridCarStatus({ drs: 'Armed' }));
+      applyDynamics(store, { speed: 76, rpm: 10_200, gear: 6 });
+    },
+  },
+  {
+    id: 'drs-ready',
+    label: 'DRS — ready',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Inside the activation zone with the flap closed: the one state that
+      // asks the driver to do something.
+      store.player.updateCarStatus(mockHybridCarStatus({ drs: 'Ready' }));
+      applyDynamics(store, { speed: 79, rpm: 10_500, gear: 7 });
+    },
+  },
+  {
+    id: 'drs-open',
+    label: 'DRS — open',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      store.player.updateCarStatus(mockHybridCarStatus({ drs: 'Open' }));
+      applyDynamics(store, { speed: 83, rpm: 11_200, gear: 8 });
+    },
+  },
+  {
     id: 'engine-stalled',
     label: 'Engine — stalled',
     apply: (store) => {
@@ -895,6 +965,39 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
         water_temp: 88,
       });
       applyDynamics(store, { speed: 0, rpm: 0, gear: 0 });
+    },
+  },
+  {
+    id: 'engine-formula-car',
+    label: 'Engine — formula car, every adjustment',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The widest the engine panel ever gets: a car that publishes all three
+      // differentials, both traction channels and the fine and peak bias, and
+      // no ABS at all. Sizing the panel against a GT3 and then driving a
+      // formula car is how a widget ends up two rows taller than the space the
+      // driver left for it.
+      store.player.updateCarStatus(mockHybridCarStatus());
+    },
+  },
+  {
+    id: 'engine-gtp-car',
+    label: 'Engine — GTP prototype',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Between the two: ABS and engine braking a formula car has no cell for,
+      // and no differential to adjust from the wheel.
+      store.player.updateCarStatus(mockGtpCarStatus());
+    },
+  },
+  {
+    id: 'engine-gt3-car',
+    label: 'Engine — GT3, what the car publishes',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The other end: four adjustments, and every cell the car does not
+      // declare gone from the panel rather than reading `--` forever.
+      applyEngine(store, {});
     },
   },
   {

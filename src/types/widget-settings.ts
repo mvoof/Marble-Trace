@@ -742,12 +742,67 @@ export interface EnginePanelWidgetSettings {
   showVoltage: boolean;
   showAbs: boolean;
   showTc: boolean;
+  /** Second traction control channel, on the cars that carry one. */
+  showTc2: boolean;
   showBrakeBias: boolean;
+  /** Fine brake bias trim, in points on top of the coarse value. */
+  showBrakeBiasFine: boolean;
+  showPeakBrakeBias: boolean;
   showEngineMap: boolean;
+  showEngineBraking: boolean;
+  showDiffEntry: boolean;
+  showDiffMiddle: boolean;
+  /** Corner exit on some cars, high speed on others — one field either way. */
+  showDiffExit: boolean;
+  /** Front anti-roll bar, on the cars that adjust it from the wheel. */
+  showAntiRollFront: boolean;
+  /** Rear anti-roll bar, on the cars that adjust it from the wheel. */
+  showAntiRollRear: boolean;
+  /**
+   * The car's spare brake rotary — brake bias migration on the hybrid
+   * prototypes, something else elsewhere. The slot has no fixed meaning.
+   */
+  showBrakeMisc: boolean;
+  /**
+   * Flash a cell's background when the driver moves that adjustment. The brake
+   * cells flash green and the differential cells blue, so the colour says which
+   * system moved before the label is read.
+   */
+  highlightChanges: boolean;
   horizontal: boolean;
   verticalColumns: number;
   horizontalColumns: number;
   layoutSizes?: Record<string, { width: number; height: number }>;
+}
+
+export interface DrsWidgetSettings {
+  /**
+   * Draw nothing at all while DRS is unavailable, rather than a quiet plate.
+   * Off by default: a widget that vanishes and comes back is harder to find
+   * again than one that sits still and goes dim.
+   */
+  hideWhenUnavailable: boolean;
+  /**
+   * Take the widget off the screen entirely on a car that has no DRS at all.
+   *
+   * On by default, and a different question from `hideWhenUnavailable`: that
+   * one is about a state the car passes through lap after lap, this one about
+   * a car that will never have the system. Off, the plate stays where the
+   * driver put it and says so, which is what somebody building a fixed layout
+   * across several cars wants.
+   */
+  hideWhenCarHasNoDrs: boolean;
+}
+
+export interface BatteryWidgetSettings {
+  /** The deploy-mode strip. Hidden anyway on a car whose selector never moves. */
+  showDeployMode: boolean;
+  /** MGU-K power, with the deploy/regen state beside it. */
+  showPower: boolean;
+  /** Energy sent to the MGU-K this lap. A debrief number, off by default. */
+  showLapDeploy: boolean;
+  /** Strip the widget down to the charge bar and its percentage, nothing else. */
+  compactMode: boolean;
 }
 
 /** Which channel the trace draws: the speed carried, or the brake pedal itself. */
@@ -810,6 +865,8 @@ export type WidgetSpecificSettings =
   | TimerWidgetSettings
   | GMeterWidgetSettings
   | EnginePanelWidgetSettings
+  | BatteryWidgetSettings
+  | DrsWidgetSettings
   | RaceDashWidgetSettings
   | InvisibleDashWidgetSettings
   | CoachWidgetSettings
@@ -932,6 +989,19 @@ export interface WidgetManifest extends WidgetMeta {
    * governs whether a block is there, a scenario governs what data is in it.
    */
   previewScenarios?: PreviewScenarioId[];
+  /**
+   * Whether the baseline is one of the states this widget can be looked at in.
+   *
+   * The baseline car is a GT3, so a widget whose whole subject is hardware that
+   * car does not carry renders nothing against it — correctly, but in the
+   * workbench that is an empty pane on a widget the driver just clicked. Such a
+   * widget sets this to false and its picker offers only the states it declares.
+   *
+   * Default (absent) is true: for every other widget the baseline is the state
+   * to return to, and dropping it would strand the driver on the first scenario
+   * they picked.
+   */
+  previewBaseline?: boolean;
 }
 
 export interface WidgetConfig extends WidgetManifest {

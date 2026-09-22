@@ -1,16 +1,125 @@
+// Every size here is the approved layout's own measurement, divided by the
+// 1.6 that mock-up was drawn at: a 12 px label there is 7.5 design px here,
+// a 36 px lead value is 22, a 10 px gap between plates is 6.
 .root {
   width: 100%;
   height: 100%;
   font-family: $font-widget;
-  padding: sp(xs);
+  padding: sp(xxs);
+  display: flex;
+  flex-direction: column;
+}
+
+// A row holds whole plates. The basis is `auto`, never `0`: this widget is
+// autoHeight, so its container measures itself from the content — a zero basis
+// leaves no content to measure, the rows collapse and the values are clipped
+// out below their labels.
+.row {
+  display: flex;
+  flex: 1 1 auto;
+  gap: sp(xs);
+  min-height: 0;
+}
+
+// The gap between rows is a margin, not the flex `gap` it looks like it should
+// be: `WidgetPanel` writes its own `gap` inline, and an inline style beats this
+// file. A margin is out of that fight, and unlike the panel's numeric prop it
+// scales with `--wfs` like every other measurement here.
+.row + .row {
+  margin-top: sp(xxs);
+}
+
+// The plate is the grouping. The gap around it does the separating work that
+// fifteen identical hairlines could not: the eye reads empty space as a break,
+// and a line between every cell reads as one continuous run.
+.plate {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  background: $widget-surface-cell;
+  border-radius: radius(sm);
+  overflow: hidden;
+}
+
+// A hairline of colour on the top edge. It confirms the boundary the gap drew
+// and says which system moved when a cell flashes in the same tone — it never
+// carries the grouping on its own, because an overlay lies over a moving track
+// and the saturated colours already mean something here.
+.plateBar {
+  height: ws(1.5);
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.plateBrake .plateBar {
+  background: $race-green;
+}
+
+.plateTraction .plateBar {
+  background: $race-gold;
+}
+
+.plateDiff .plateBar {
+  background: $race-blue;
+}
+
+.plateChassis .plateBar {
+  background: $race-lilac;
+}
+
+.plateEngine .plateBar {
+  background: $widget-border-subtle;
+}
+
+.plateCells {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.slot {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+// A lead cell is twice a satellite column — the size difference is what says
+// which value the glance is for.
+.slotLead {
+  flex-grow: 2;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.stackItem {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+// Hairlines stay inside a plate, between the cells of one system.
+.slot + .slot,
+.slot + .stack,
+.stack + .slot,
+.stack + .stack {
+  border-left: 1px solid $widget-border-subtle;
+}
+
+.stackItem + .stackItem {
+  border-top: 1px solid $widget-border-subtle;
 }
 
 .cell {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
-  background: $widget-surface-cell;
-  padding: sp(xxs) sp(xs);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -22,40 +131,35 @@
     color 0.2s ease-in-out;
 }
 
-// Dividers are hairlines inset from the plate edges, never full bleed.
-.dividerRight::after {
-  content: '';
-  position: absolute;
-  top: sp(xs);
-  bottom: sp(xs);
-  right: 0;
-  width: 1px;
-  background: $widget-border-subtle;
+.lead {
+  padding: sp(xs) sp(xxs);
 }
 
-.dividerTop::before {
-  content: '';
-  position: absolute;
-  left: sp(xs);
-  right: sp(xs);
-  top: 0;
-  height: 1px;
-  background: $widget-border-subtle;
+// A plain cell is a whole plate's row — the mock-up's 5 px at the size it was
+// drawn, which is this scale's nearest even step. Its value size is the base
+// one, so only the padding is stated here.
+.plain {
+  padding: sp(xxs);
 }
 
-.cellHeader {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-bottom: 1px;
+// A satellite sits two to a column, so it gives back every pixel it can.
+.satellite {
+  padding: sp(xxxs);
 }
 
+// One label size across the whole panel. The plate and the value size already
+// say what a cell is; a label that grows with them turns the heading into the
+// thing the eye lands on.
 .label {
-  font-size: fs(xxxs);
-  font-weight: 500;
+  font-size: wfs(7.5);
+  font-weight: 600;
   color: $widget-text-secondary;
-  opacity: 0.55;
-  letter-spacing: 0.08em;
+  opacity: 0.75;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  // A two-word label must not wrap onto a second line: the cell is sized for
+  // one, and a wrapped label pushes its own value out of the plate.
+  white-space: nowrap;
 }
 
 .cellValues {
@@ -64,19 +168,34 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  min-width: 0;
+  margin-top: sp(xxxs);
 }
 
 .value {
-  font-size: fs(sm);
+  font-size: wfs(16);
   font-weight: 700;
   color: $widget-text-primary;
   font-family: $font-mono;
   line-height: 1;
+  white-space: nowrap;
 
   :global(.unit) {
-    font-size: 0.75em;
-    opacity: 0.65;
+    font-size: 0.6em;
+    opacity: 0.6;
   }
+}
+
+.lead .value {
+  font-size: fs(xl);
+}
+
+.satellite .value {
+  font-size: wfs(10.5);
+}
+
+.satellite .cellValues {
+  margin-top: 1px;
 }
 
 .blueValue {
@@ -89,36 +208,56 @@
   text-shadow: 0 0 sp(xs) rgba($race-gold, 0.3);
 }
 
-// Warning states
-@keyframes pulse-red {
-  0%,
-  100% {
-    background-color: rgba(239, 68, 68, 0.15);
-  }
-  50% {
-    background-color: rgba(239, 68, 68, 0.6);
+// A temperature over the line. Static, not a pulse: an always-on-top overlay
+// over a sim should not keep the compositor awake for a warning that is just as
+// readable held still, and a cell that blinks is read twice.
+.overLimit {
+  background-color: rgba($race-red, 0.28);
+  box-shadow: inset 0 0 0 1px rgba($race-red, 0.65);
+
+  .label,
+  .value {
+    color: $widget-text-primary;
+    opacity: 1;
   }
 }
 
-.dangerFlash {
-  animation: pulse-red 1s infinite ease-in-out;
+// A knob just moved. The highlight sits on the cell as an overlay rather than
+// on the value: the number is what the driver is reading at that moment, and
+// recolouring it competes with the colours already spoken for — blue for
+// traction control, amber for an active system. The background answers the
+// other question, which cell moved, and leaves the reading alone.
+//
+// No animation and no transition: an overlay over a sim should not be keeping
+// the compositor awake for a cosmetic cue. The overlay is simply present or
+// absent, and EnginePanelWidgetStore holds it for a second after the last
+// change — a trailing window, so spinning a rotary lights the cell once instead
+// of strobing per click.
+.changeFlash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
 
-  .label,
-  .value,
-  .subValue,
-  .subUnit {
-    color: #ffffff !important;
-    opacity: 1 !important;
-  }
+// The brake cells and the differential cells each light in their plate's own
+// colour, so a change seen out of the corner of the eye already says which
+// system moved.
+.changeFlashBrake {
+  background: rgba($race-green, 0.26);
+}
+
+.changeFlashDiff {
+  background: rgba($race-blue, 0.28);
 }
 
 // System activations (e.g. ABS active)
 .absActive {
-  background-color: rgba(245, 197, 24, 0.2);
-  box-shadow: 0 0 sp(xs) rgba(245, 197, 24, 0.1);
+  background-color: rgba($race-gold, 0.2);
+  box-shadow: 0 0 sp(xs) rgba($race-gold, 0.1);
 
   .value {
-    color: #facc15 !important;
-    text-shadow: 0 0 sp(xs) rgba(245, 197, 24, 0.4);
+    color: $race-gold;
+    text-shadow: 0 0 sp(xs) rgba($race-gold, 0.4);
   }
 }

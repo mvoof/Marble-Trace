@@ -6,7 +6,7 @@
 //! @see https://sajax.github.io/irsdkdocs/telemetry/
 
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame, SpotterState};
-use crate::model::enums::{SessionState, Skies, TrackSurface};
+use crate::model::enums::{DrsState, SessionState, Skies, TrackSurface};
 use crate::model::environment::EnvironmentFrame;
 use crate::model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
@@ -18,6 +18,7 @@ use crate::model::sim_perf::SimPerfFrame;
 use crate::sources::iracing::flags::decode_race_flags;
 use crate::sources::source::SourceFrame;
 use kerb::iracing::IracingFrame;
+use std::collections::HashSet;
 
 impl From<&IracingFrame> for SourceFrame {
     fn from(f: &IracingFrame) -> Self {
@@ -118,6 +119,87 @@ impl From<&IracingFrame> for CarStatusFrame {
             dc_brake_bias: Some(f.dc_brake_bias),
             dc_traction_control: Some(f.dc_traction_control),
             dc_throttle_shape: Some(f.dc_throttle_shape),
+            dc_traction_control_2: Some(f.dc_traction_control2),
+            dc_engine_braking: Some(f.dc_engine_braking),
+            dc_brake_bias_fine: Some(f.dc_brake_bias_fine),
+            dc_peak_brake_bias: Some(f.dc_peak_brake_bias),
+            dc_anti_roll_front: Some(f.dc_anti_roll_front),
+            dc_anti_roll_rear: Some(f.dc_anti_roll_rear),
+            dc_brake_misc: Some(f.dc_brake_misc),
+            dc_diff_entry: Some(f.dc_diff_entry),
+            dc_diff_middle: Some(f.dc_diff_middle),
+            dc_diff_exit: Some(f.dc_diff_exit),
+            energy_ers_battery_pct: Some(f.energy_ers_battery_pct),
+            power_mgu_k: Some(f.power_mgu_k),
+            energy_battery_to_mgu_k_lap: Some(f.energy_battery_to_mgu_k_lap),
+            dc_mguk_deploy_mode: Some(f.dc_mguk_deploy_mode),
+            drs: Some(DrsState::from(f.drs_status)),
+        }
+    }
+}
+
+/// The variable names this car actually declares, captured once per connection.
+///
+/// `IracingFrame` is a fixed struct: a field the car never declared resolves to
+/// no offset and reads back as a default, which is indistinguishable from a real
+/// zero. A GT3 would therefore report a 0% hybrid battery rather than no battery
+/// at all. The var list is the only place that distinction survives, so it is
+/// taken at connect and every optional field that is not universal is cleared
+/// against it before the frame leaves this layer.
+#[derive(Debug, Default, Clone)]
+pub struct DeclaredVars(HashSet<String>);
+
+/// Fields cleared when the car does not declare them, paired with the SDK
+/// variable each one reads. Universal fields (fuel, temps, flags) are absent on
+/// purpose — every car has them, and a car that somehow does not is a defect
+/// worth seeing rather than hiding.
+type ClearCarStatusField = fn(&mut CarStatusFrame);
+
+const CAR_STATUS_OPTIONAL_VARS: &[(&str, ClearCarStatusField)] = &[
+    ("dcABS", |s| s.dc_abs = None),
+    ("dcBrakeBias", |s| s.dc_brake_bias = None),
+    ("dcTractionControl", |s| s.dc_traction_control = None),
+    ("dcThrottleShape", |s| s.dc_throttle_shape = None),
+    ("dcTractionControl2", |s| s.dc_traction_control_2 = None),
+    ("dcEngineBraking", |s| s.dc_engine_braking = None),
+    ("dcBrakeBiasFine", |s| s.dc_brake_bias_fine = None),
+    ("dcPeakBrakeBias", |s| s.dc_peak_brake_bias = None),
+    ("dcAntiRollFront", |s| s.dc_anti_roll_front = None),
+    ("dcAntiRollRear", |s| s.dc_anti_roll_rear = None),
+    ("dcBrakeMisc", |s| s.dc_brake_misc = None),
+    ("dcDiffEntry", |s| s.dc_diff_entry = None),
+    ("dcDiffMiddle", |s| s.dc_diff_middle = None),
+    ("dcDiffExit", |s| s.dc_diff_exit = None),
+    ("EnergyERSBatteryPct", |s| s.energy_ers_battery_pct = None),
+    ("PowerMGU_K", |s| s.power_mgu_k = None),
+    ("EnergyBatteryToMGU_KLap", |s| {
+        s.energy_battery_to_mgu_k_lap = None
+    }),
+    ("dcMGUKDeployMode", |s| s.dc_mguk_deploy_mode = None),
+    ("DRS_Status", |s| s.drs = None),
+];
+
+impl DeclaredVars {
+    pub fn new(names: impl IntoIterator<Item = String>) -> Self {
+        Self(names.into_iter().collect())
+    }
+
+    /// True while nothing was captured — then nothing is cleared, so a source
+    /// that could not read the var list degrades to the old behaviour instead of
+    /// blanking every adjustment on the car.
+    fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    pub fn mask_car_status(&self, status: &mut CarStatusFrame) {
+        if self.is_empty() {
+            return;
+        }
+
+        for (var, clear) in CAR_STATUS_OPTIONAL_VARS {
+            if !self.0.contains(*var) {
+                clear(status);
+            }
         }
     }
 }

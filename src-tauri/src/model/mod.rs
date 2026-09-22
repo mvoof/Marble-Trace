@@ -41,6 +41,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<enums::SimStatus>()
         .register::<enums::SimType>()
         .register::<enums::PitTargetType>()
+        .register::<enums::DrsState>()
         .register::<events::RemoteControlKind>()
         .register::<events::RemoteStreamKind>()
         .register::<environment::EnvironmentFrame>()

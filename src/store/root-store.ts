@@ -12,6 +12,7 @@ import { TrackMapWidgetStore } from '@ui/widgets/TrackMapWidget/track-map.widget
 import { DrivingCoachWidgetStore } from '@ui/widgets/CoachWidget/driving-coach.widget';
 import { CoachWidgetStore } from '@ui/widgets/CoachWidget/coach.widget';
 import { InputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.widget';
+import { EnginePanelWidgetStore } from '@ui/widgets/EnginePanelWidget/engine-panel.widget';
 import { LiveWidgetsStore } from './settings/live-widgets.store';
 import { WidgetDefaultsStore } from './settings/widget-defaults.store';
 import { LayoutsStore } from './settings/layouts.store';
@@ -64,6 +65,7 @@ export class RootStore {
   drivingCoachWidget: DrivingCoachWidgetStore;
   coachWidget: CoachWidgetStore;
   inputTraceWidget: InputTraceWidgetStore;
+  enginePanelWidget: EnginePanelWidgetStore;
   streamChatWidget: StreamChatWidgetStore;
   liveWidgets: LiveWidgetsStore;
   widgetDefaults: WidgetDefaultsStore;
@@ -129,6 +131,7 @@ export class RootStore {
     this.drivingCoachWidget = new DrivingCoachWidgetStore(this);
     this.coachWidget = new CoachWidgetStore(this);
     this.inputTraceWidget = new InputTraceWidgetStore(this);
+    this.enginePanelWidget = new EnginePanelWidgetStore(this);
     this.streamChatWidget = new StreamChatWidgetStore(this);
     this.sim = new SimStore(this);
     this.widgetAutoHide = new WidgetAutoHideStore(this);
@@ -169,6 +172,7 @@ export class RootStore {
     this.chat.dispose();
     this.companionApps.dispose();
     this.inputTraceWidget.dispose();
+    this.enginePanelWidget.dispose();
     this.coachWidget.dispose();
     this.standingsWidget.dispose();
     this.flags.dispose();

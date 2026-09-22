@@ -3,6 +3,7 @@ import { v1LegacyConsolidation } from './migrations/v1-legacy-consolidation';
 import { v2DropExampleWidget } from './migrations/v2-drop-example-widget';
 import { v3WidgetShapes } from './migrations/v3-widget-shapes';
 import { v4PitLineDefaultSize } from './migrations/v4-pit-line-default-size';
+import { v5WidgetDesignSizes } from './migrations/v5-widget-design-sizes';
 
 /**
  * Format version of `settings.json`. An integer, deliberately unrelated to the
@@ -12,7 +13,7 @@ import { v4PitLineDefaultSize } from './migrations/v4-pit-line-default-size';
  *
  * 0 = anything written before 0.21, which carried no version field at all.
  */
-export const CURRENT_SCHEMA_VERSION = 4;
+export const CURRENT_SCHEMA_VERSION = 5;
 
 /**
  * Oldest version the chain can still migrate. Bump it only when a step is
@@ -27,6 +28,7 @@ export const MIGRATIONS: Migration[] = [
   v2DropExampleWidget,
   v3WidgetShapes,
   v4PitLineDefaultSize,
+  v5WidgetDesignSizes,
 ];
 
 /**

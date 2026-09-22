@@ -82,10 +82,78 @@ export const EnginePanelSettingsPanel = observer(() => {
       value: settings.showEngineMap,
       key: 'showEngineMap',
     },
+    {
+      titleKey: 'settingsPanels.enginePanel.tractionControl2',
+      descKey: 'settingsPanels.enginePanel.tractionControl2Desc',
+      value: settings.showTc2,
+      key: 'showTc2',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.engineBraking',
+      descKey: 'settingsPanels.enginePanel.engineBrakingDesc',
+      value: settings.showEngineBraking,
+      key: 'showEngineBraking',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.brakeBiasFine',
+      descKey: 'settingsPanels.enginePanel.brakeBiasFineDesc',
+      value: settings.showBrakeBiasFine,
+      key: 'showBrakeBiasFine',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.peakBrakeBias',
+      descKey: 'settingsPanels.enginePanel.peakBrakeBiasDesc',
+      value: settings.showPeakBrakeBias,
+      key: 'showPeakBrakeBias',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.diffEntry',
+      descKey: 'settingsPanels.enginePanel.diffEntryDesc',
+      value: settings.showDiffEntry,
+      key: 'showDiffEntry',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.diffMiddle',
+      descKey: 'settingsPanels.enginePanel.diffMiddleDesc',
+      value: settings.showDiffMiddle,
+      key: 'showDiffMiddle',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.antiRollFront',
+      descKey: 'settingsPanels.enginePanel.antiRollFrontDesc',
+      value: settings.showAntiRollFront,
+      key: 'showAntiRollFront',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.antiRollRear',
+      descKey: 'settingsPanels.enginePanel.antiRollRearDesc',
+      value: settings.showAntiRollRear,
+      key: 'showAntiRollRear',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.brakeMisc',
+      descKey: 'settingsPanels.enginePanel.brakeMiscDesc',
+      value: settings.showBrakeMisc,
+      key: 'showBrakeMisc',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.diffExit',
+      descKey: 'settingsPanels.enginePanel.diffExitDesc',
+      value: settings.showDiffExit,
+      key: 'showDiffExit',
+    },
   ];
 
   return (
     <Card title={t('settingsPanels.enginePanel.moduleParameters')}>
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="highlightChanges"
+          title={t('settingsPanels.enginePanel.highlightChanges')}
+          desc={t('settingsPanels.enginePanel.highlightChangesDesc')}
+        />
+      </div>
+
       <div className={styles.fieldGroup}>
         <SwitchRow
           settingKey="horizontal"

@@ -7,18 +7,28 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@ui/widgets/widget-manifest';
+import {
+  CELL_SETTING_KEYS,
+  UNIT_WIDTH,
+  enabledCellSlots,
+  panelHeight,
+  planEnginePanel,
+  rowUnits,
+} from './engine-panel-utils';
 
-const getCellCount = (s: any) => {
-  return [
-    s.showOilTemp !== false,
-    s.showWaterTemp !== false,
-    s.showOilPress !== false,
-    s.showVoltage !== false,
-    s.showAbs !== false,
-    s.showTc !== false,
-    s.showBrakeBias !== false,
-    s.showEngineMap !== false,
-  ].filter(Boolean).length;
+/** The size the widget will actually draw at, in design px. */
+const measure = (
+  settings: Record<string, unknown>,
+  maxCols: number
+): { width: number; height: number; rows: number } => {
+  const rows = planEnginePanel(enabledCellSlots(settings), maxCols);
+  const widest = Math.max(1, ...rows.map(rowUnits));
+
+  return {
+    width: widest * UNIT_WIDTH,
+    height: panelHeight(rows),
+    rows: Math.max(1, rows.length),
+  };
 };
 
 const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
@@ -27,34 +37,23 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
     'horizontal' in next ? !!next.horizontal : prevHorizontal;
 
   const prevVertCols =
-    'verticalColumns' in prev ? Number(prev.verticalColumns) : 2;
+    'verticalColumns' in prev ? Number(prev.verticalColumns) : 3;
   const nextVertCols =
     'verticalColumns' in next ? Number(next.verticalColumns) : prevVertCols;
 
   const prevHorizCols =
-    'horizontalColumns' in prev ? Number(prev.horizontalColumns) : 8;
+    'horizontalColumns' in prev ? Number(prev.horizontalColumns) : 12;
   const nextHorizCols =
     'horizontalColumns' in next
       ? Number(next.horizontalColumns)
       : prevHorizCols;
-
-  const cellKeys = [
-    'showOilTemp',
-    'showWaterTemp',
-    'showOilPress',
-    'showVoltage',
-    'showAbs',
-    'showTc',
-    'showBrakeBias',
-    'showEngineMap',
-  ];
 
   const modeChanged =
     prevHorizontal !== nextHorizontal ||
     prevVertCols !== nextVertCols ||
     prevHorizCols !== nextHorizCols;
 
-  const cellsChanged = cellKeys.some(
+  const cellsChanged = CELL_SETTING_KEYS.some(
     (key) => (prev as any)[key] !== (next as any)[key]
   );
 
@@ -62,17 +61,11 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
     return null;
   }
 
-  const prevCells = getCellCount(prev);
-  const nextCells = getCellCount(next);
-
   const prevCols = prevHorizontal ? prevHorizCols : prevVertCols;
   const nextCols = nextHorizontal ? nextHorizCols : nextVertCols;
 
-  const prevRows = Math.max(1, Math.ceil(prevCells / prevCols));
-  const nextRows = Math.max(1, Math.ceil(nextCells / nextCols));
-
-  const nextDesignWidth = nextCols * 62.5;
-  const nextDesignHeight = nextRows * 65;
+  const before = measure(prev as unknown as Record<string, unknown>, prevCols);
+  const after = measure(next as unknown as Record<string, unknown>, nextCols);
 
   const prevSettings = prev as unknown as EnginePanelWidgetSettings;
   const prevLayoutSizes = prevSettings.layoutSizes ?? {};
@@ -97,21 +90,20 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
       },
     };
 
-    const defaultNext = {
-      width: nextDesignWidth,
-      height: nextDesignHeight,
+    const savedSize = savedLayoutSizes[nextModeKey] ?? {
+      width: after.width,
+      height: after.height,
     };
 
-    const savedSize = savedLayoutSizes[nextModeKey] ?? defaultNext;
     nextWidth = savedSize.width;
     nextHeight = savedSize.height;
   } else if (cellsChanged) {
-    nextHeight = Math.round(current.currentHeight * (nextRows / prevRows));
+    nextHeight = Math.round(current.currentHeight * (after.rows / before.rows));
   }
 
   return {
-    designWidth: nextDesignWidth,
-    designHeight: nextDesignHeight,
+    designWidth: after.width,
+    designHeight: after.height,
     currentWidth: nextWidth,
     currentHeight: nextHeight,
     userSettingsPatch: { layoutSizes: savedLayoutSizes },
@@ -123,24 +115,28 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
   order: 200,
   telemetryEvents: ['carInputs'],
   previewScenarios: [
+    'engine-formula-car',
+    'engine-gtp-car',
+    'engine-gt3-car',
     'engine-oil-overheat',
     'engine-water-overheat',
     'engine-stalled',
+    'hybrid-deploying',
   ],
   label: 'Engine Panel',
   description:
-    'Liquid temperatures, pressures, and system adjustments (ABS, TC, Brake Bias, Engine Map).',
+    'Liquid temperatures, pressures, and every in-car adjustment the car exposes — ABS, traction control, brake bias, engine map, engine braking and the differential, grouped by system.',
   requiredCapabilities: ['playerDynamics'],
   autoHeight: true,
-  designWidth: 500,
-  designHeight: 65,
+  designWidth: 687.5,
+  designHeight: 124,
   resolveLayoutChange: resolveEnginePanelLayout,
   userSettings: {
     enabled: false,
     x: 400,
     y: 400,
-    currentWidth: 500,
-    currentHeight: 65,
+    currentWidth: 687.5,
+    currentHeight: 124,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     showOilTemp: true,
@@ -149,10 +145,21 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
     showVoltage: true,
     showAbs: true,
     showTc: true,
+    showTc2: true,
     showBrakeBias: true,
+    showBrakeBiasFine: true,
+    showPeakBrakeBias: true,
     showEngineMap: true,
+    showEngineBraking: true,
+    showDiffEntry: true,
+    showDiffMiddle: true,
+    showDiffExit: true,
+    showAntiRollFront: true,
+    showAntiRollRear: true,
+    showBrakeMisc: true,
+    highlightChanges: true,
     horizontal: true,
-    verticalColumns: 2,
-    horizontalColumns: 8,
+    verticalColumns: 3,
+    horizontalColumns: 12,
   },
 };

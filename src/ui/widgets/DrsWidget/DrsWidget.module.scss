@@ -1,0 +1,101 @@
+// One colour per state, set once on the root and read by the mark and the
+// status word alike — the plate changes as a whole rather than two things
+// changing to match. The plate itself never takes a colour: the state is the
+// mark and the word, and a washed ground behind white text only dulls it.
+.root {
+  --drs-accent: #{$widget-text-muted};
+
+  width: 100%;
+  height: 100%;
+  font-family: $font-widget;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: sp(md) sp(lg);
+}
+
+// Spacing rides on the children, not on the row: WidgetPanel writes `gap` as an
+// inline style, so a gap declared here never lands.
+.root > * + * {
+  margin-left: sp(lg);
+}
+
+// A wing seen from the side. The shape lives in the svg; all this sets is how
+// big it is and what colour it takes — `currentColor` inside the mark picks the
+// state accent up from here. The box keeps the artwork's own 126:106 ratio, so
+// the slats stay on their diagonal instead of being squashed onto it.
+.mark {
+  flex: 0 0 auto;
+  width: ws(38);
+  height: ws(32);
+  color: var(--drs-accent);
+  transition: color 0.12s linear;
+}
+
+// The wider berth is on the left: the mark's top slat is the rightmost thing in
+// the artwork, so it reaches the edge of its own box and an even gap leaves it
+// looking like it is leaning into the rule. Stated as one shorthand — a second
+// `.divider` rule setting only `margin-left` loses to this one and silently
+// collapses the gap to nothing.
+.divider {
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 1px;
+  margin: sp(xxs) 0 sp(xxs) sp(xl);
+  background: $widget-border-default;
+}
+
+// The name of the plate, and the largest thing on it: it is what the driver
+// finds the widget by at the edge of vision, before reading which state it is
+// in. White, because the colour on this plate belongs to the state.
+.label {
+  flex: 0 0 auto;
+  font-size: fs(xl);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: $widget-text-primary;
+  line-height: 1;
+}
+
+// The only thing on the plate that changes, so it is the only thing that could
+// move the rest: the row is centred, and OFF is 27px narrower than ACTIVE, so
+// without a fixed slot every state change shuffles the mark and the name
+// sideways. The word is anchored at its start and the slot holds the widest
+// state — ACTIVE, which measures 5.91ch, the `ch` being the bare "0" advance
+// with no letter-spacing on it. Rounded up so rounding cannot un-fix it.
+.state {
+  flex: 0 0 auto;
+  min-width: 6.2ch;
+  text-align: left;
+  font-size: fs(lg);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--drs-accent);
+  white-space: nowrap;
+}
+
+// Unavailable is the resting state and stays quiet — a plate that shouts while
+// the rule says no teaches the driver to stop looking at it. It keeps the muted
+// accent the root declares, and its name goes quiet with it.
+.rootUnavailable .label {
+  color: $widget-text-muted;
+}
+
+// Armed: past the detection point, zone still ahead. Blue because the press
+// does nothing yet — the driver reads "not mine to act on" from across the
+// cockpit, before reading the word.
+.rootArmed {
+  --drs-accent: #{$race-blue};
+}
+
+// Ready is the one state that asks for an action.
+.rootReady {
+  --drs-accent: #{$race-yellow};
+}
+
+// Active reports a fact rather than asking for anything: the flap is open.
+.rootOpen {
+  --drs-accent: #{$race-green};
+}

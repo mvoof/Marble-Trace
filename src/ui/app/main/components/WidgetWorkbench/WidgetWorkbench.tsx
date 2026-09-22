@@ -23,23 +23,44 @@ const scenarioOption = (scenarioId: string) => {
 // no picker at all — its preview still renders against the base snapshot.
 //
 // The baseline leads the list without being declared anywhere: it is the
-// absence of a forced state rather than a state of its own, and it is what the
-// picker opens on — leaving it out stranded the driver on the first scenario
-// they picked, with nothing to pick to get back.
+// absence of a forced state rather than a state of its own, and leaving it out
+// stranded the driver on the first scenario they picked, with nothing to pick
+// to get back.
+//
+// Unless the widget says the baseline is not one of its states at all — the
+// baseline car is a GT3, and a widget reading hardware it does not carry draws
+// nothing against it. Offering that is offering an empty pane.
 const scenarioOptionsFor = (widgetId: string) => {
-  const declared = WIDGET_BY_ID.get(widgetId)?.previewScenarios ?? [];
+  const manifest = WIDGET_BY_ID.get(widgetId);
+  const declared = manifest?.previewScenarios ?? [];
 
   if (declared.length === 0) {
     return [];
   }
 
+  const baseline =
+    manifest?.previewBaseline === false
+      ? []
+      : scenarioOption(DEFAULT_PREVIEW_SCENARIO_ID);
+
   return [
-    ...scenarioOption(DEFAULT_PREVIEW_SCENARIO_ID),
+    ...baseline,
     ...declared
       .filter((scenarioId) => scenarioId !== DEFAULT_PREVIEW_SCENARIO_ID)
       .flatMap(scenarioOption),
   ];
 };
+
+// What a widget opens on: the first state it declares, not the baseline.
+//
+// A manifest declares scenarios because those are the states the widget is
+// worth looking at in, and some widgets cannot draw the baseline at all — it is
+// a GT3, so the battery and the hybrid readouts render nothing against it and
+// the pane opens blank on a widget the driver just clicked to look at. The
+// baseline still leads the picker, one click away.
+const openingScenarioFor = (widgetId: string): string =>
+  WIDGET_BY_ID.get(widgetId)?.previewScenarios?.[0] ??
+  DEFAULT_PREVIEW_SCENARIO_ID;
 
 // Two-pane widget catalog workspace: live preview column on the left, widget
 // settings panel on the right. The parent owns which widget is active,
@@ -47,9 +68,13 @@ const scenarioOptionsFor = (widgetId: string) => {
 export const WidgetWorkbench = observer(
   ({ widgetId }: { widgetId: string | null }) => {
     const { t } = useTranslation('main-app');
-    const [scenarioId, setScenarioId] = useState<string>(
-      DEFAULT_PREVIEW_SCENARIO_ID
-    );
+    // Pinned to the widget it was picked on: a pick says "show me this state of
+    // this widget", and carrying it to the next widget shows another domain's
+    // state or, on a widget that cannot draw it, nothing at all.
+    const [picked, setPicked] = useState<{
+      widgetId: string;
+      scenarioId: string;
+    } | null>(null);
 
     if (!widgetId) {
       return (
@@ -58,15 +83,12 @@ export const WidgetWorkbench = observer(
     }
 
     const scenarioOptions = scenarioOptionsFor(widgetId);
-    // The picked id belongs to whichever widget was open when it was picked, so
-    // a widget that does not declare it falls back to the base snapshot rather
-    // than showing another domain's state.
-    const isDeclared = scenarioOptions.some(
-      (option) => option.value === scenarioId
-    );
-    const activeScenarioId = isDeclared
-      ? scenarioId
-      : DEFAULT_PREVIEW_SCENARIO_ID;
+    const isPickedHere =
+      picked?.widgetId === widgetId &&
+      scenarioOptions.some((option) => option.value === picked.scenarioId);
+    const activeScenarioId = isPickedHere
+      ? picked.scenarioId
+      : openingScenarioFor(widgetId);
 
     return (
       <DefaultsEditorProvider>
@@ -80,7 +102,7 @@ export const WidgetWorkbench = observer(
                 <Select
                   size="small"
                   value={activeScenarioId}
-                  onChange={setScenarioId}
+                  onChange={(scenarioId) => setPicked({ widgetId, scenarioId })}
                   options={scenarioOptions}
                   style={{ minWidth: 160 }}
                   popupMatchSelectWidth={false}

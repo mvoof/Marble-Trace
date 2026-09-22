@@ -43,5 +43,86 @@ export const mockCarStatus = (
   dc_brake_bias: 54.5,
   dc_traction_control: 4,
   dc_throttle_shape: 3,
+  // Null rather than zero on purpose: this baseline is a GT3, and the adapter
+  // clears an adjustment the car never declared so the panel can tell "the car
+  // has no such control" from "the control is set to zero".
+  dc_traction_control_2: null,
+  dc_engine_braking: null,
+  dc_brake_bias_fine: null,
+  dc_peak_brake_bias: null,
+  dc_anti_roll_front: null,
+  dc_anti_roll_rear: null,
+  dc_brake_misc: null,
+  dc_diff_entry: null,
+  dc_diff_middle: null,
+  dc_diff_exit: null,
+  energy_ers_battery_pct: null,
+  power_mgu_k: null,
+  energy_battery_to_mgu_k_lap: null,
+  dc_mguk_deploy_mode: null,
+  drs: null,
   ...overrides,
 });
+
+/**
+ * A hybrid formula car: every in-car adjustment the GT3 lacks, plus a battery
+ * mid-deployment. `dc_mguk_deploy_mode` is a live selector here — on a GTP car
+ * it is a constant, which is why the battery widget hides the mode strip rather
+ * than drawing a selector the driver cannot move.
+ */
+/**
+ * A hybrid prototype — GTP or LMDh.
+ *
+ * It is not the formula car with the hybrid bolted on: a prototype keeps its
+ * ABS and its engine braking and has no differential to adjust from the wheel,
+ * which is a different engine panel from either a formula car or a GT3. The
+ * deploy mode rides along because the battery widget beside the panel reads it.
+ */
+export const mockGtpCarStatus = (
+  overrides: Partial<CarStatusFrame> = {}
+): CarStatusFrame =>
+  mockCarStatus({
+    dc_abs: 4,
+    dc_brake_bias: 53.5,
+    dc_brake_bias_fine: -0.2,
+    dc_peak_brake_bias: 58,
+    dc_traction_control: 3,
+    dc_traction_control_2: 2,
+    dc_throttle_shape: 4,
+    dc_engine_braking: 5,
+    dc_anti_roll_front: 4,
+    dc_anti_roll_rear: 3,
+    // The spare brake rotary. On these cars it is the bias migration.
+    dc_brake_misc: 6,
+    dc_diff_entry: null,
+    dc_diff_middle: null,
+    dc_diff_exit: null,
+    energy_ers_battery_pct: 0.64,
+    power_mgu_k: 88_400,
+    energy_battery_to_mgu_k_lap: 1_420_000,
+    dc_mguk_deploy_mode: 2,
+    ...overrides,
+  });
+
+export const mockHybridCarStatus = (
+  overrides: Partial<CarStatusFrame> = {}
+): CarStatusFrame =>
+  mockCarStatus({
+    dc_abs: null,
+    dc_brake_bias: 57,
+    dc_traction_control: 5,
+    dc_throttle_shape: null,
+    dc_traction_control_2: 2,
+    dc_engine_braking: 6,
+    dc_brake_bias_fine: 0,
+    dc_peak_brake_bias: 61,
+    dc_diff_entry: 2,
+    dc_diff_middle: 5,
+    dc_diff_exit: 5,
+    energy_ers_battery_pct: 0.9,
+    power_mgu_k: 102_556,
+    energy_battery_to_mgu_k_lap: 1_940_000,
+    dc_mguk_deploy_mode: 1,
+    drs: 'Unavailable',
+    ...overrides,
+  });

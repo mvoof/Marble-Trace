@@ -7,6 +7,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::model::cars::SpotterState;
+use crate::model::enums::DrsState;
 
 use crate::model::flags::RaceFlags;
 
@@ -174,6 +175,53 @@ pub struct CarStatusFrame {
 
     /// In car throttle shape adjustment
     pub dc_throttle_shape: Option<f32>,
+
+    /// Second traction control channel, where the car has one (TC2 / TC slip)
+    pub dc_traction_control_2: Option<f32>,
+
+    /// In car engine braking adjustment
+    pub dc_engine_braking: Option<f32>,
+
+    /// Fine brake bias trim, in percentage points on top of `dc_brake_bias`
+    pub dc_brake_bias_fine: Option<f32>,
+
+    /// Peak brake bias adjustment
+    pub dc_peak_brake_bias: Option<f32>,
+
+    /// Front anti-roll bar, adjusted from the wheel
+    pub dc_anti_roll_front: Option<f32>,
+
+    /// Rear anti-roll bar, adjusted from the wheel
+    pub dc_anti_roll_rear: Option<f32>,
+
+    /// The car's spare brake rotary. iRacing hangs whatever that car adjusts on
+    /// it — brake bias migration on the hybrid prototypes — so what it means is
+    /// per car, and the panel labels it accordingly.
+    pub dc_brake_misc: Option<f32>,
+
+    /// Differential setting on corner entry
+    pub dc_diff_entry: Option<f32>,
+
+    /// Differential setting mid corner
+    pub dc_diff_middle: Option<f32>,
+
+    /// Third differential setting — corner exit on some cars, high speed on others
+    pub dc_diff_exit: Option<f32>,
+
+    /// Hybrid battery state of charge: 0.0 to 1.0
+    pub energy_ers_battery_pct: Option<f32>,
+
+    /// MGU-K power in watts — negative while harvesting, positive while deploying
+    pub power_mgu_k: Option<f32>,
+
+    /// Energy sent from the battery to the MGU-K this lap, in joules
+    pub energy_battery_to_mgu_k_lap: Option<f32>,
+
+    /// In car MGU-K deployment mode, where the car exposes a selector
+    pub dc_mguk_deploy_mode: Option<f32>,
+
+    /// Drag reduction system state, on the cars that have one
+    pub drs: Option<DrsState>,
 }
 
 // iRacing emits uninitialized memory (garbage floats or zeroes) for temp fields
