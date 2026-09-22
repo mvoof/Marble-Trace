@@ -23,7 +23,15 @@ export class IncidentsWidgetStore {
     return this.root.backendComputed.incidents?.incidents ?? [];
   }
 
+  /**
+   * Solo qualifying puts nobody else on track, so an incident zone there marks
+   * trouble no one can drive into — both maps drop the layer entirely.
+   */
   get zones(): FlagZone[] {
+    if (this.root.session.isLoneQualifying) {
+      return [];
+    }
+
     return computeIncidentZones(
       this.incidents,
       this.root.session.sessionInfo?.trackLengthM ?? 0
