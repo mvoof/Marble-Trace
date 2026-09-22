@@ -6,6 +6,7 @@
 //! running at all.
 
 pub mod commands;
+pub mod eventsub;
 pub mod helix;
 pub mod runtime;
 pub mod secrets;

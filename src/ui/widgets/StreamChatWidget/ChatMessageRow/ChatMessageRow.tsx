@@ -29,7 +29,9 @@ export const ChatMessageRow = observer(({ message }: ChatMessageRowProps) => {
   const highlight = message.highlight;
   const isEvent =
     highlight !== null &&
-    (highlight.kind === 'subscription' || highlight.kind === 'raid');
+    (highlight.kind === 'subscription' ||
+      highlight.kind === 'raid' ||
+      highlight.kind === 'follow');
 
   const rowClass = [
     styles.row,

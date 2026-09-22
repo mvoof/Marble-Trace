@@ -199,7 +199,7 @@ export class StreamChatWidgetStore {
 
   /** Everything that passes the filters, newest last and uncapped. */
   get filteredMessages(): ChatMessage[] {
-    const { messageLifetimeSeconds, showEvents } = this.settings;
+    const { messageLifetimeSeconds, showEvents, showFollows } = this.settings;
 
     // Reading the tick makes this getter recompute on the timer.
     void this.tick;
@@ -217,6 +217,12 @@ export class StreamChatWidgetStore {
           message.highlight === null ||
           (message.highlight.kind !== 'subscription' &&
             message.highlight.kind !== 'raid')
+      );
+    }
+
+    if (!showFollows) {
+      messages = messages.filter(
+        (message) => message.highlight?.kind !== 'follow'
       );
     }
 

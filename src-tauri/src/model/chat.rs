@@ -58,6 +58,8 @@ pub struct ChatBadge {
 #[serde(rename_all = "camelCase")]
 pub enum ChatHighlightKind {
     Subscription,
+    /// EventSub only — a follow is never announced over IRC.
+    Follow,
     Raid,
     Paid,
     FirstMessage,

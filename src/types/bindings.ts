@@ -552,6 +552,10 @@ export type ChatHighlight = {
 
 export type ChatHighlightKind =
   | 'subscription'
+  /**
+   * EventSub only — a follow is never announced over IRC.
+   */
+  | 'follow'
   | 'raid'
   | 'paid'
   | 'firstMessage';

@@ -633,6 +633,33 @@ too.
 | `capabilities.rs`   | per-sim feature reporting                                                                                                                                     |
 | `logging.rs`        | tracing setup — `RUST_LOG=marble_trace_lib=debug npm run tauri:dev`                                                                                           |
 
+### Twitch: two sources, one owner per event
+
+Chat arrives over anonymous IRC, which works with no account at all. That is the
+floor, and it stays the floor — a viewer watching someone else's channel gets it
+and nothing more.
+
+`chat/eventsub.rs` adds a second socket for what IRC cannot carry: a follow is
+never announced there, and a subscription arrives only as the rendered sentence
+in `system-msg`, with tier, months and gift size buried in prose. It needs a
+signed-in account (`moderator:read:followers`, `channel:read:subscriptions`) and
+runs **only for that account's own channel** — every scope involved is granted
+over one's own broadcast.
+
+Subscriptions therefore reach the app twice whenever EventSub is up.
+`ChatServiceState::eventsub_owns_subs` is the single switch that says which
+source owns them: raised once the socket's subscriptions are accepted, lowered
+the moment it drops, and read by the IRC `USERNOTICE` path, which then stays
+quiet about subs while still carrying raids. A flag rather than a time window —
+the two copies arrive milliseconds apart, and a window wide enough to catch that
+would also swallow two people subscribing at once.
+
+Scopes are baked into a token at issue time and a refresh carries the same set
+forward, so an account signed in before a scope was added keeps a valid token
+that cannot do the new thing. `twitch_account` reports the shortfall as
+`missingScopes` and the settings card asks for a reconnect; nothing is migrated
+and nobody is signed out.
+
 Device ids are DirectInput `guidInstance`, so replugging and port changes keep
 bindings intact. A driver reinstall that regenerates the GUID is re-matched by
 vendor/product and the stored id rewritten once. **Two identical devices are never
@@ -750,15 +777,15 @@ flowchart TB
 
 ### `services/` — the seam
 
-| File                   | Wraps                                                                                                                                  |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `events.service.ts`    | **the only `@tauri-apps/api/event` import in the codebase** — every emitter and `listenTo`                                             |
-| `telemetry.service.ts` | `startTelemetryStream`, `stopTelemetryStream`, `getConnectionStatus`, `getLastSessionInfo`, `setActiveEventsSilent`                    |
-| `track.service.ts`     | `getCachedTrackShape`, `deleteTrackShape`, `resetPitLanePct`, `getReferenceLap`, `deleteReferenceLap`                                  |
-| `settings.service.ts`  | `settingsFileExists`, `backupSettingsFile`, `logSettingsSnapshot`, `deleteSettingsFile`, and the `*Silent` setters                     |
-| `twitch.service.ts`    | `twitchHasClientId`, `twitchCurrentLogin`, `twitchRequestDeviceCode`, `twitchPollDeviceToken`, `twitchSignOut`, chat stream start/stop |
-| `input.service.ts`     | `resolveInputDevices`, `setInputPollingEnabled`                                                                                        |
-| `pit.service.ts`       | `sendPitOrder`                                                                                                                         |
+| File                   | Wraps                                                                                                                             |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `events.service.ts`    | **the only `@tauri-apps/api/event` import in the codebase** — every emitter and `listenTo`                                        |
+| `telemetry.service.ts` | `startTelemetryStream`, `stopTelemetryStream`, `getConnectionStatus`, `getLastSessionInfo`, `setActiveEventsSilent`               |
+| `track.service.ts`     | `getCachedTrackShape`, `deleteTrackShape`, `resetPitLanePct`, `getReferenceLap`, `deleteReferenceLap`                             |
+| `settings.service.ts`  | `settingsFileExists`, `backupSettingsFile`, `logSettingsSnapshot`, `deleteSettingsFile`, and the `*Silent` setters                |
+| `twitch.service.ts`    | `twitchHasClientId`, `twitchAccount`, `twitchRequestDeviceCode`, `twitchPollDeviceToken`, `twitchSignOut`, chat stream start/stop |
+| `input.service.ts`     | `resolveInputDevices`, `setInputPollingEnabled`                                                                                   |
+| `pit.service.ts`       | `sendPitOrder`                                                                                                                    |
 
 Because services are the seam, **tests mock services, not Tauri.**
 

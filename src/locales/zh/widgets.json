@@ -656,6 +656,8 @@
       "showBadgesDesc": "房管、订阅者与 VIP 标记。",
       "showEvents": "订阅与突袭",
       "showEventsDesc": "订阅与突袭行。付费消息（Super Chat 与 Bits）始终显示。",
+      "showFollows": "关注",
+      "showFollowsDesc": "新关注者的消息行。仅通过 EventSub 传送，因此需要连接所观看频道的 Twitch 账号。",
       "showBanner": "顶栏",
       "showBannerDesc": "顶部一行，显示连接状态与聊天限制（如仅关注者）。",
       "showFooter": "页脚",
