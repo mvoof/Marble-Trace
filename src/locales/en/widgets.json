@@ -615,6 +615,8 @@
       "blinkIncidentZones": "Blink While Active"
     },
     "weather": {
+      "horizontalLayout": "Horizontal Layout",
+      "horizontalLayoutDesc": "Wide layout: compass and conditions on one row, stats and forecast underneath.",
       "moduleParameters": "Module Parameters",
       "windCompass": "Wind Compass",
       "windCompassDesc": "Animated compass showing current wind direction.",

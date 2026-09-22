@@ -615,6 +615,8 @@
       "blinkIncidentZones": "活动时闪烁"
     },
     "weather": {
+      "horizontalLayout": "横向布局",
+      "horizontalLayoutDesc": "宽版布局：罗盘与天气状况同行显示，数据与预报置于下方。",
       "moduleParameters": "模块参数",
       "windCompass": "风向罗盘",
       "windCompassDesc": "显示当前风向的动画罗盘。",

@@ -1,6 +1,7 @@
 .cardinalLabel {
   font-family: $font-widget;
-  font-size: fs(md);
+  // Size comes from the `cardinalUnits` prop: the letters live in the svg's
+  // user units, so they must be stated there rather than in scaled CSS px.
   font-weight: 400;
   fill: rgba(255, 255, 255, 0.22);
   paint-order: stroke;

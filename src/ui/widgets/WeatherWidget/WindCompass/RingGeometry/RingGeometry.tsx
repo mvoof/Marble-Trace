@@ -27,7 +27,12 @@ const DEGREES_TO_RADIANS = Math.PI / 180;
  * re-render while the heading does, and handed to `RotatingRing` as children —
  * so no part of it is rebuilt at 60 Hz. See `docs/rendering.md`.
  */
-export const RingGeometry = observer(() => {
+interface RingGeometryProps {
+  /** Cardinal letter size, in the svg's own user units. */
+  cardinalUnits: number;
+}
+
+export const RingGeometry = observer(({ cardinalUnits }: RingGeometryProps) => {
   return (
     <>
       <circle r={RING_RADIUS} fill="none" stroke={RING_COLOR} strokeWidth="2" />
@@ -74,6 +79,7 @@ export const RingGeometry = observer(() => {
         return (
           <g key={label} transform={`translate(${labelX}, ${labelY})`}>
             <text
+              style={{ fontSize: cardinalUnits }}
               textAnchor="middle"
               dominantBaseline="central"
               className={styles.cardinalLabel}

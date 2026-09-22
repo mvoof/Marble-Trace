@@ -64,7 +64,13 @@ interface StoryArgs {
   showHumidity: boolean;
   showTrackWetness: boolean;
   showWindBearing: boolean;
+  /** The wide layout: compass beside the conditions, forecast as a strip. */
+  horizontal: boolean;
 }
+
+// The horizontal layout is drawn at its own design width, so the stories that
+// show it resize the frame instead of clipping the row.
+const HORIZONTAL_FRAME = { widgetFrame: { width: 380, height: 280 } };
 
 // Only the knobs a story actually turned reach the frame; everything else is
 // left to the scenario or to the builder's dry track underneath.
@@ -124,6 +130,7 @@ const meta: Meta<StoryArgs> = {
         showTrackWetness: args.showTrackWetness,
         showWindBearing: args.showWindBearing,
         showForecast: args.showForecast,
+        horizontal: args.horizontal,
       });
     },
     args: {
@@ -137,6 +144,7 @@ const meta: Meta<StoryArgs> = {
       showHumidity: true,
       showTrackWetness: true,
       showWindBearing: true,
+      horizontal: false,
     },
   }),
 };
@@ -195,4 +203,24 @@ export const NightRace: Story = {
     showForecast: true,
     withForecast: true,
   },
+};
+
+export const Horizontal: Story = {
+  args: { horizontal: true, showForecast: true, withForecast: true },
+  parameters: HORIZONTAL_FRAME,
+};
+
+export const HorizontalNoCompass: Story = {
+  args: {
+    horizontal: true,
+    showCompass: false,
+    showForecast: true,
+    withForecast: true,
+  },
+  parameters: HORIZONTAL_FRAME,
+};
+
+export const HorizontalWet: Story = {
+  args: { horizontal: true, showForecast: true, withForecast: true },
+  parameters: { ...HORIZONTAL_FRAME, ...previewScenario('rain') },
 };

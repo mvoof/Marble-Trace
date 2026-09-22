@@ -5,6 +5,12 @@
   margin-bottom: sp(md);
 }
 
+// The margin separates the cells from the forecast; with the forecast off
+// there is nothing under them and it would read as a stripe of dead plate.
+.statsGrid:last-child {
+  margin-bottom: 0;
+}
+
 // A lone cell left on its row fills the widget instead of half of it.
 .statsGrid > :last-child:nth-child(odd) {
   grid-column: 1 / -1;
@@ -22,6 +28,55 @@
 }
 
 .statsGrid > :nth-child(n + 3)::before {
+  content: '';
+  position: absolute;
+  left: sp(sm);
+  right: sp(sm);
+  top: 0;
+  height: 1px;
+  background: $widget-border-subtle;
+}
+
+// Horizontal layout: the same four cells side by side, one hairline between each
+// pair, and none of the two-column wrapping rules above.
+.statsGrid.statsRow {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 0;
+}
+
+.statsRow > :last-child:nth-child(odd) {
+  grid-column: auto;
+}
+
+.statsRow > :nth-child(n + 3)::before {
+  content: none;
+}
+
+.statsRow > :not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: sp(xs);
+  bottom: sp(xs);
+  right: 0;
+  width: 1px;
+  background: $widget-border-subtle;
+}
+
+// One cell per row: the vertical hairline has nothing to separate, and every
+// cell but the first gets the horizontal one.
+.statsGrid.singleColumn {
+  // One column, one cell wide — the width the wrapper hands it. Only a cell
+  // left alone on a row of two may spread across both; a stack of single cells
+  // keeps the cell size. The rows still split the plate's height between them.
+  grid-template-columns: 1fr;
+}
+
+.singleColumn > :nth-child(odd):not(:last-child)::after {
+  content: none;
+}
+
+.singleColumn > :nth-child(n + 2)::before {
   content: '';
   position: absolute;
   left: sp(sm);
