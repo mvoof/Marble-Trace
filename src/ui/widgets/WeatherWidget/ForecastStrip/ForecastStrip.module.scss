@@ -1,0 +1,87 @@
+.strip {
+  display: flex;
+  align-items: stretch;
+  gap: sp(xxs);
+  width: 100%;
+  padding: sp(xs) sp(xs) sp(xs);
+}
+
+.cell {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: sp(xxs);
+  padding: sp(xs) sp(xxs);
+  background: $widget-surface-cell;
+  border: 1px solid $widget-border-subtle;
+  border-radius: radius(md);
+  font-family: $font-mono;
+}
+
+// The hour being raced in reads as the anchor of the strip, not as one of the
+// hours ahead of it.
+.cell.cellNow {
+  border-color: rgba($race-blue, 0.7);
+  background: rgba($race-blue, 0.12);
+}
+
+.time {
+  font-size: fs(xxs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: $widget-text-secondary;
+  white-space: nowrap;
+}
+
+.cellNow .time {
+  color: $race-blue;
+}
+
+.skyRow {
+  display: flex;
+  align-items: center;
+  gap: sp(xxxs);
+  min-width: 0;
+}
+
+.skyIcon {
+  width: ws(14);
+  height: ws(14);
+  flex-shrink: 0;
+  color: $widget-text-secondary;
+}
+
+.rainIcon {
+  width: ws(10);
+  height: ws(10);
+  flex-shrink: 0;
+  color: $race-blue;
+}
+
+.rainPct {
+  font-size: fs(xxxs);
+  font-weight: 600;
+  color: $widget-text-muted;
+  white-space: nowrap;
+}
+
+.temp {
+  font-size: fs(sm);
+  font-weight: 700;
+  line-height: 1;
+  color: $widget-text-primary;
+  white-space: nowrap;
+}
+
+.emptyCell {
+  flex: 1 1 0;
+  padding: sp(xs) sp(sm);
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  color: $widget-text-muted;
+  text-align: center;
+  background: $widget-surface-cell;
+  border-radius: radius(md);
+}

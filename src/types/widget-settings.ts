@@ -548,6 +548,8 @@ export interface WeatherWidgetSettings {
   showForecast: boolean;
   showTrackWetness: boolean;
   showWindBearing: boolean;
+  /** Wide layout: compass and conditions on one row, stats and forecast below. */
+  horizontal: boolean;
 }
 
 export interface FuelWidgetSettings {

@@ -1,4 +1,95 @@
-.compassBlock {
+// Tall layout: the dial is square, so letting it span the full width made it
+// taller than the conditions and the cells underneath put together. Capped
+// just above their combined height, it reads as the widget's head rather than
+// as its subject.
+// The same inset on all four sides, so the dial sits in a square of air
+// rather than in a letterbox.
+$tall-compass-inset: 10;
+
+.tallCompassSlot {
+  width: calc(100% - #{ws($tall-compass-inset * 2)});
+  max-width: ws(180);
+  margin: ws($tall-compass-inset) auto;
+}
+
+// Horizontal layout — the compass keeps a square of its own on the left and the
+// conditions take the rest of the row.
+.horizontalTop {
+  position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
-  padding: sp(xxs) 0 sp(xxxs);
+  padding: sp(xxs) sp(lg);
+}
+
+// The cells take a slightly larger share than the conditions: theirs is the
+// side with four labels on it, and "WIND 129°" is the longest of them.
+.inlineStats {
+  display: flex;
+  flex: 1.2 1 0;
+  min-width: 0;
+}
+
+// Two cells or fewer stack into a single column one cell wide, so the plate
+// takes only that much and the conditions spread into what is left — the
+// weather moves with the cells instead of staying pinned to the left edge.
+.inlineStats.inlineStatsNarrow {
+  flex: 0 0 auto;
+  width: ws(104);
+}
+
+// The cells plate stands as tall as the conditions beside it: no bottom margin
+// of the tall layout's, and its two rows split the height rather than sitting
+// at their content size.
+.inlineStats > * {
+  flex: 1 1 auto;
+  height: 100%;
+  margin-bottom: 0;
+  grid-auto-rows: 1fr;
+}
+
+// Each cell owns a share of the plate's height, so its content sits in the
+// middle of it rather than at the top of a half-empty box.
+.inlineStats > * > * {
+  justify-content: center;
+}
+
+// With the compass gone the row is two plates side by side, so it runs edge to
+// edge, each side keeps its own padding instead of sharing the row's, and both
+// stand the full height of the row.
+.horizontalTop.horizontalTopFlush {
+  align-items: stretch;
+  padding: 0;
+}
+
+.horizontalTop.horizontalTopLast::after {
+  content: none;
+}
+
+.horizontalTop::after {
+  content: '';
+  position: absolute;
+  left: sp(sm);
+  right: sp(sm);
+  bottom: 0;
+  height: 1px;
+  background: $widget-border-subtle;
+}
+
+.compassSlot {
+  position: relative;
+  flex: 0 0 auto;
+  width: ws(128);
+  padding-right: sp(lg);
+}
+
+// The hairline between the compass and the conditions it explains.
+.compassSlot::after {
+  content: '';
+  position: absolute;
+  top: sp(xxs);
+  bottom: sp(xxs);
+  right: 0;
+  width: 1px;
+  background: $widget-border-subtle;
 }

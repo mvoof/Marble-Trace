@@ -26,7 +26,15 @@ export const WeatherSettingsPanel = observer(() => {
     });
   };
 
+  // A row that qualifies another one — the ring for the compass, the bearing
+  // for the wind cell — has nothing to say while the row it qualifies is off.
   const items = [
+    {
+      titleKey: 'settingsPanels.weather.horizontalLayout',
+      descKey: 'settingsPanels.weather.horizontalLayoutDesc',
+      value: settings.horizontal,
+      key: 'horizontal',
+    },
     {
       titleKey: 'settingsPanels.weather.windCompass',
       descKey: 'settingsPanels.weather.windCompassDesc',
@@ -83,9 +91,21 @@ export const WeatherSettingsPanel = observer(() => {
     },
   ] as const;
 
+  const visibleItems = items.filter((item) => {
+    if (item.key === 'showCompassRing') {
+      return settings.showCompass;
+    }
+
+    if (item.key === 'showWindBearing') {
+      return settings.showWind;
+    }
+
+    return true;
+  });
+
   return (
     <Card title={t('settingsPanels.weather.moduleParameters')}>
-      {items.map((item) => (
+      {visibleItems.map((item) => (
         <div key={item.key} className={styles.fieldGroup}>
           <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
             <Switch

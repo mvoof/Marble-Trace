@@ -35,10 +35,6 @@ export const WeatherHeader = observer(() => {
   const { sessionInfo } = useSessionStore();
   const { environment } = useEnvironmentStore();
 
-  if (!showAirTemp) {
-    return null;
-  }
-
   const { unitSystem } = units;
   const tUnit = tempUnit(unitSystem);
 
@@ -61,7 +57,7 @@ export const WeatherHeader = observer(() => {
         <span className={styles.conditionText}>{skiesLabel}</span>
       </div>
 
-      {airTempC != null && (
+      {showAirTemp && airTempC != null && (
         <span className={styles.airTempValue}>
           {Math.round(convertTemp(airTempC, unitSystem))}
           <span className={styles.unit}>{tUnit}</span>

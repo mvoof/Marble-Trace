@@ -1,0 +1,53 @@
+.condition {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: sp(xs);
+  padding: sp(sm) sp(md);
+}
+
+.skiesRow {
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+  min-width: 0;
+}
+
+.icon {
+  width: ws(34);
+  height: ws(34);
+  flex-shrink: 0;
+  color: $widget-text-primary;
+}
+
+.skiesText {
+  font-family: $font-widget;
+  font-size: fs(xl);
+  font-weight: 600;
+  line-height: 1;
+  color: $widget-text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.airTemp {
+  font-family: $font-widget;
+  // Off the type scale on purpose: the mockup sets the reading at 8.3% of the
+  // widget's width, which lands between the xxxl step and the next one.
+  font-size: wfs(40);
+  font-weight: 700;
+  line-height: 1;
+  color: $widget-text-primary;
+  white-space: nowrap;
+}
+
+.airTempUnit {
+  font-size: fs(xl);
+  font-weight: 600;
+  margin-left: 1px;
+  color: $widget-text-muted;
+}

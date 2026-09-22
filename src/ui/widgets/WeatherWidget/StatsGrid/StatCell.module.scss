@@ -57,14 +57,35 @@
   color: $widget-text-muted;
 }
 
-.statBar {
-  height: 2px;
-  width: 100%;
-  background: rgba(255, 255, 255, $opacity-subtle);
-  margin-top: sp(xs);
-}
+// Horizontal layout: one cell per column across the full width, set at the size
+// the driver reads at a glance rather than the tall layout's half-width cell.
+.statCell.statCellHorizontal {
+  justify-content: center;
+  padding: sp(sm);
 
-.statBarFill {
-  display: block;
-  height: 100%;
+  .statTop {
+    gap: sp(xxxs);
+    margin-bottom: sp(xs);
+  }
+
+  .statIcon {
+    width: ws(13);
+    height: ws(13);
+  }
+
+  .statLabel {
+    font-size: fs(xxs);
+  }
+
+  .statValue {
+    font-size: fs(lg);
+
+    &.statValueCompact {
+      font-size: fs(md);
+    }
+  }
+
+  .statUnit {
+    font-size: fs(xxs);
+  }
 }

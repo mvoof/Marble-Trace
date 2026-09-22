@@ -615,6 +615,8 @@
       "blinkIncidentZones": "Parpadear mientras esté activo"
     },
     "weather": {
+      "horizontalLayout": "Diseño horizontal",
+      "horizontalLayoutDesc": "Diseño ancho: brújula y condiciones en una fila, estadísticas y pronóstico debajo.",
       "moduleParameters": "Parámetros del módulo",
       "windCompass": "Brújula de viento",
       "windCompassDesc": "Brújula animada con la dirección actual del viento.",
