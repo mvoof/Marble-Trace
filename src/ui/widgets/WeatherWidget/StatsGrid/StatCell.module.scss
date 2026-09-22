@@ -62,6 +62,13 @@
 .statCell.statCellHorizontal {
   justify-content: center;
   padding: sp(sm);
+  // Four equal quarters of the row are not four equal labels: "WIND 129°" is
+  // half again as long as "TRACK", so an even split ellipsised it to "WIND 12…"
+  // while the cells beside it kept dead space. Each cell starts at what its own
+  // two lines need and the slack is what gets shared evenly — nothing is cut
+  // while the row has room, and when it runs out every cell gives way together
+  // instead of the longest label paying for all of them.
+  flex-basis: min-content;
 
   .statTop {
     gap: sp(xxxs);
