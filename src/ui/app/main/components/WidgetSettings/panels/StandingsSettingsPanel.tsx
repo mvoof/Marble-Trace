@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Segmented, Slider } from 'antd';
@@ -9,9 +10,8 @@ import type {
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
-import { SettingSwitchGroup } from './SettingSwitchGroup';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows, usePanelWidgetId } from './setting-rows';
+import { panelRows, usePanelWidgetId, type SwitchKey } from './setting-rows';
 import { LicBadgeStyleRow } from './shared';
 import {
   NAME_COLUMN_MAX_PX,
@@ -36,7 +36,16 @@ const NAME_COLUMN_SLIDER_WIDTH_PX = 160;
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['standings'];
 
-const { SwitchRow, ColorRow } = panelRows<StandingsWidgetSettings>();
+const { ColorRow, DependentBlock, SwitchRow } =
+  panelRows<StandingsWidgetSettings>();
+
+interface ColumnSwitch {
+  key: SwitchKey<StandingsWidgetSettings>;
+  titleKey: string;
+  descKey: string;
+  /** Rows that only format this column, drawn under it while it is shown. */
+  dependants?: ReactNode;
+}
 
 export const StandingsSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -53,194 +62,172 @@ export const StandingsSettingsPanel = observer(() => {
     });
   };
 
-  // Options that qualify a switch rather than stand beside it — translated here
-  // and handed to the group, which hides them while their parent is off.
-  const buildSubSwitches = (item: {
-    readonly titleKey: string;
-    readonly descKey: string;
-    readonly value: boolean;
-    readonly key: keyof StandingsWidgetSettings;
-    readonly sub?: readonly {
-      readonly titleKey: string;
-      readonly descKey: string;
-      readonly value: boolean;
-      readonly key: keyof StandingsWidgetSettings;
-    }[];
-  }) =>
-    item.sub?.map((option) => ({
-      title: t(option.titleKey),
-      desc: t(option.descKey),
-      checked: option.value,
-      onChange: (next: boolean) =>
-        update({ [option.key]: next } as Partial<StandingsWidgetSettings>),
-    }));
-
-  const dataColumns = [
+  const dataColumns: ColumnSwitch[] = [
     {
       titleKey: 'settingsPanels.standings.positionChange',
       descKey: 'settingsPanels.standings.positionChangeDesc',
-      value: settings.showPosChange,
       key: 'showPosChange',
     },
     {
       titleKey: 'settingsPanels.standings.livePositionChange',
       descKey: 'settingsPanels.standings.livePositionChangeDesc',
-      value: settings.showLivePosChange,
       key: 'showLivePosChange',
     },
     {
       titleKey: 'settingsPanels.standings.brandLogo',
       descKey: 'settingsPanels.standings.brandLogoDesc',
-      value: settings.showBrand,
       key: 'showBrand',
     },
     {
       titleKey: 'settingsPanels.standings.tireCompound',
       descKey: 'settingsPanels.standings.tireCompoundDesc',
-      value: settings.showTire,
       key: 'showTire',
     },
     {
       titleKey: 'settingsPanels.standings.licenseBadge',
       descKey: 'settingsPanels.standings.licenseBadgeDesc',
-      value: settings.showLicBadge,
       key: 'showLicBadge',
+      dependants: (
+        <>
+          <DependentBlock dependsOn="showLicBadge">
+            <LicBadgeStyleRow
+              value={settings.licBadgeStyle}
+              onChange={(v) => update({ licBadgeStyle: v })}
+            />
+          </DependentBlock>
+
+          <SwitchRow
+            settingKey="showLicenseLetter"
+            dependsOn="showLicBadge"
+            title={t('settingsPanels.standings.licenseLetter')}
+            desc={t('settingsPanels.standings.licenseLetterDesc')}
+          />
+        </>
+      ),
     },
     {
       titleKey: 'settingsPanels.standings.iRating',
       descKey: 'settingsPanels.standings.iRatingDesc',
-      value: settings.showIRating,
       key: 'showIRating',
+      dependants: (
+        <SwitchRow
+          settingKey="abbreviateIRating"
+          dependsOn="showIRating"
+          title={t('settingsPanels.standings.abbreviateIRating')}
+          desc={t('settingsPanels.standings.abbreviateIRatingDesc')}
+        />
+      ),
     },
     {
       titleKey: 'settingsPanels.standings.gap',
       descKey: 'settingsPanels.standings.gapDesc',
-      value: settings.showGap,
       key: 'showGap',
     },
     {
       titleKey: 'settingsPanels.standings.lastLap',
       descKey: 'settingsPanels.standings.lastLapDesc',
-      value: settings.showLastLap,
       key: 'showLastLap',
     },
     {
       titleKey: 'settingsPanels.standings.bestLap',
       descKey: 'settingsPanels.standings.bestLapDesc',
-      value: settings.showBestLap,
       key: 'showBestLap',
     },
     {
       titleKey: 'settingsPanels.relative.pitIndicator',
       descKey: 'settingsPanels.relative.pitIndicatorDesc',
-      value: settings.showPitIndicator,
       key: 'showPitIndicator',
     },
     {
       titleKey: 'settingsPanels.standings.iRatingDelta',
       descKey: 'settingsPanels.standings.iRatingDeltaDesc',
-      value: settings.showIrChange,
       key: 'showIrChange',
     },
     {
       titleKey: 'settingsPanels.standings.lapsCompleted',
       descKey: 'settingsPanels.standings.lapsCompletedDesc',
-      value: settings.showLapsCompleted,
       key: 'showLapsCompleted',
     },
     {
       titleKey: 'settingsPanels.standings.abbreviateNames',
       descKey: 'settingsPanels.standings.abbreviateNamesDesc',
-      value: settings.abbreviateNames,
       key: 'abbreviateNames',
     },
     {
       titleKey: 'settingsPanels.standings.countryFlag',
       descKey: 'settingsPanels.standings.countryFlagDesc',
-      value: settings.showCountryFlag,
       key: 'showCountryFlag',
     },
     {
       titleKey: 'settingsPanels.standings.driverFlags',
       descKey: 'settingsPanels.standings.driverFlagsDesc',
-      value: settings.showDriverFlags,
       key: 'showDriverFlags',
     },
     {
       titleKey: 'settingsPanels.standings.hideRetiredDrivers',
       descKey: 'settingsPanels.standings.hideRetiredDriversDesc',
-      value: settings.hideRetiredDrivers,
       key: 'hideRetiredDrivers',
     },
     {
       titleKey: 'settingsPanels.standings.hideDriversWithoutLap',
       descKey: 'settingsPanels.standings.hideDriversWithoutLapDesc',
-      value: settings.hideDriversWithoutLap,
       key: 'hideDriversWithoutLap',
     },
-  ] as const;
+  ];
 
-  const headerInfo = [
+  const headerInfo: ColumnSwitch[] = [
     {
       titleKey: 'settingsPanels.standings.columnHeaders',
       descKey: 'settingsPanels.standings.columnHeadersDesc',
-      value: settings.showColumnHeaders,
       key: 'showColumnHeaders',
     },
     {
       titleKey: 'settingsPanels.standings.sessionProgressInfo',
       descKey: 'settingsPanels.standings.sessionProgressInfoDesc',
-      value: settings.showSessionHeader,
       key: 'showSessionHeader',
     },
     {
       titleKey: 'settingsPanels.standings.sessionTime',
       descKey: 'settingsPanels.standings.sessionTimeDesc',
-      value: settings.showSessionTime,
       key: 'showSessionTime',
     },
     {
       titleKey: 'settingsPanels.standings.sof',
       descKey: 'settingsPanels.standings.sofDesc',
-      value: settings.showSOF,
       key: 'showSOF',
-      sub: [
-        {
-          titleKey: 'settingsPanels.standings.abbreviateSof',
-          descKey: 'settingsPanels.standings.abbreviateSofDesc',
-          value: settings.abbreviateSof,
-          key: 'abbreviateSof',
-        },
-      ],
+      dependants: (
+        <SwitchRow
+          settingKey="abbreviateSof"
+          dependsOn="showSOF"
+          title={t('settingsPanels.standings.abbreviateSof')}
+          desc={t('settingsPanels.standings.abbreviateSofDesc')}
+        />
+      ),
     },
     {
       titleKey: 'settingsPanels.standings.totalDriversCount',
       descKey: 'settingsPanels.standings.totalDriversCountDesc',
-      value: settings.showTotalDrivers,
       key: 'showTotalDrivers',
     },
-  ] as const;
+  ];
 
-  const footerInfo = [
+  const footerInfo: ColumnSwitch[] = [
     {
       titleKey: 'settingsPanels.standings.pitStopCounter',
       descKey: 'settingsPanels.standings.pitStopCounterDesc',
-      value: settings.showPitStops,
       key: 'showPitStops',
     },
     {
       titleKey: 'settingsPanels.standings.incidentsBadge',
       descKey: 'settingsPanels.standings.incidentsBadgeDesc',
-      value: settings.showIncidentsBadge,
       key: 'showIncidentsBadge',
     },
     {
       titleKey: 'settingsPanels.standings.liveWeatherInfo',
       descKey: 'settingsPanels.standings.liveWeatherInfoDesc',
-      value: settings.showWeather,
       key: 'showWeather',
     },
-  ] as const;
+  ];
 
   return (
     <>
@@ -294,29 +281,6 @@ export const StandingsSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <LicBadgeStyleRow
-            value={settings.licBadgeStyle}
-            onChange={(v) => update({ licBadgeStyle: v })}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showLicenseLetter"
-            title={t('settingsPanels.standings.licenseLetter')}
-            desc={t('settingsPanels.standings.licenseLetterDesc')}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="abbreviateIRating"
-            title={t('settingsPanels.standings.abbreviateIRating')}
-            desc={t('settingsPanels.standings.abbreviateIRatingDesc')}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
           <ColorRow
             settingKey="playerRowColor"
             title={t('settingsPanels.relative.playerRowColor')}
@@ -366,36 +330,39 @@ export const StandingsSettingsPanel = observer(() => {
           />
         </div>
 
-        {settings.viewMode === 'grouped' ? (
-          <div className={styles.fieldGroup}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.standings.groupedRowsPerClass', {
-                value:
-                  settings.groupedRowsPerClass > 0
-                    ? settings.groupedRowsPerClass
-                    : t('settingsPanels.standings.rowsPerClassAuto'),
-              })}
-            </span>
+        {/*
+          Not gated on the grouped view: the view is cycled by a hotkey mid-race,
+          and a row that came and went with each press would move the panel
+          under the pointer. It only takes effect while the view is grouped.
+        */}
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.standings.groupedRowsPerClass', {
+              value:
+                settings.groupedRowsPerClass > 0
+                  ? settings.groupedRowsPerClass
+                  : t('settingsPanels.standings.rowsPerClassAuto'),
+            })}
+          </span>
 
-            <Slider
-              min={GROUPED_ROWS_PER_CLASS_MIN}
-              max={GROUPED_ROWS_PER_CLASS_MAX}
-              step={1}
-              value={settings.groupedRowsPerClass}
-              onChange={(value) => update({ groupedRowsPerClass: value })}
-              tooltip={{
-                formatter: (value) =>
-                  value === 0
-                    ? t('settingsPanels.standings.rowsPerClassAuto')
-                    : String(value),
-              }}
-            />
+          <Slider
+            min={GROUPED_ROWS_PER_CLASS_MIN}
+            max={GROUPED_ROWS_PER_CLASS_MAX}
+            step={1}
+            value={settings.groupedRowsPerClass}
+            onChange={(value) => update({ groupedRowsPerClass: value })}
+            tooltip={{
+              formatter: (value) =>
+                value === 0
+                  ? t('settingsPanels.standings.rowsPerClassAuto')
+                  : String(value),
+            }}
+          />
 
-            <div className={styles.fieldDesc}>
-              {t('settingsPanels.standings.groupedRowsPerClassDesc')}
-            </div>
+          <div className={styles.fieldDesc}>
+            {t('settingsPanels.standings.groupedRowsPerClassDesc')}
           </div>
-        ) : null}
+        </div>
       </Card>
 
       <Card title={t('settingsPanels.standings.playerWindow')}>
@@ -449,40 +416,43 @@ export const StandingsSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.relative.dataColumns')}>
         {dataColumns.map((item) => (
-          <SettingSwitchGroup
-            key={item.key}
-            title={t(item.titleKey)}
-            desc={t(item.descKey)}
-            checked={item.value}
-            onChange={(v) => update({ [item.key]: v })}
-            sub={buildSubSwitches(item)}
-          />
+          <Fragment key={item.key}>
+            <SwitchRow
+              settingKey={item.key}
+              title={t(item.titleKey)}
+              desc={t(item.descKey)}
+            />
+
+            {item.dependants}
+          </Fragment>
         ))}
       </Card>
 
       <Card title={t('settingsPanels.standings.headerInfo')}>
         {headerInfo.map((item) => (
-          <SettingSwitchGroup
-            key={item.key}
-            title={t(item.titleKey)}
-            desc={t(item.descKey)}
-            checked={item.value}
-            onChange={(v) => update({ [item.key]: v })}
-            sub={buildSubSwitches(item)}
-          />
+          <Fragment key={item.key}>
+            <SwitchRow
+              settingKey={item.key}
+              title={t(item.titleKey)}
+              desc={t(item.descKey)}
+            />
+
+            {item.dependants}
+          </Fragment>
         ))}
       </Card>
 
       <Card title={t('settingsPanels.standings.footerInfo')}>
         {footerInfo.map((item) => (
-          <SettingSwitchGroup
-            key={item.key}
-            title={t(item.titleKey)}
-            desc={t(item.descKey)}
-            checked={item.value}
-            onChange={(v) => update({ [item.key]: v })}
-            sub={buildSubSwitches(item)}
-          />
+          <Fragment key={item.key}>
+            <SwitchRow
+              settingKey={item.key}
+              title={t(item.titleKey)}
+              desc={t(item.descKey)}
+            />
+
+            {item.dependants}
+          </Fragment>
         ))}
       </Card>
     </>

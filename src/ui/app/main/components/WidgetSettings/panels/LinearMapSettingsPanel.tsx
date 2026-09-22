@@ -16,6 +16,11 @@ export const PANEL_WIDGET_IDS = ['relative-map'];
 
 const { ColorRow, SwitchRow } = panelRows<LinearMapWidgetSettings>();
 
+// The marker is always drawn — there is no switch for it — so its size and the
+// pit option stand on their own; only the colour gives way to the class colour.
+const isOwnPaceCarColor = (settings: LinearMapWidgetSettings): boolean =>
+  settings.paceCarUseClassColor !== true;
+
 export const LinearMapSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('relative-map');
@@ -122,15 +127,12 @@ export const LinearMapSettingsPanel = observer(() => {
           />
         </div>
 
-        {(settings.showIncidentZones ?? true) && (
-          <div className={styles.fieldGroup}>
-            <SwitchRow
-              settingKey="blinkIncidentZones"
-              title={t('settingsPanels.linearMap.blinkIncidentZones')}
-              fallback
-            />
-          </div>
-        )}
+        <SwitchRow
+          settingKey="blinkIncidentZones"
+          dependsOn="showIncidentZones"
+          title={t('settingsPanels.linearMap.blinkIncidentZones')}
+          fallback
+        />
       </Card>
 
       <Card title={t('settingsPanels.trackMap.safetyCar')}>
@@ -143,16 +145,13 @@ export const LinearMapSettingsPanel = observer(() => {
           />
         </div>
 
-        {!settings.paceCarUseClassColor && (
-          <div className={styles.fieldGroup}>
-            <ColorRow
-              settingKey="paceCarColor"
-              title={t('settingsPanels.trackMap.paceCarColor')}
-              fallback={'#facc15'}
-              hex
-            />
-          </div>
-        )}
+        <ColorRow
+          settingKey="paceCarColor"
+          dependsOn={isOwnPaceCarColor}
+          title={t('settingsPanels.trackMap.paceCarColor')}
+          fallback={'#facc15'}
+          hex
+        />
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>

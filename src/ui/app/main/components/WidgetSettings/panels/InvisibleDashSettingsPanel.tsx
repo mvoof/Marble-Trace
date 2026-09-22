@@ -23,7 +23,8 @@ const PERCENT_MAX = 100;
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['invisible-dash'];
 
-const { ColorRow, SwitchRow } = panelRows<InvisibleDashWidgetSettings>();
+const { ColorRow, DependentBlock, SwitchRow } =
+  panelRows<InvisibleDashWidgetSettings>();
 
 export const InvisibleDashSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -266,22 +267,6 @@ export const InvisibleDashSettingsPanel = observer(() => {
             </div>
           </div>
         </div>
-
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="colorizeRpmByZone"
-            title={t('settingsPanels.invisibleDash.colorizeRpm')}
-            desc={t('settingsPanels.invisibleDash.colorizeRpmDesc')}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="colorizeGearByZone"
-            title={t('settingsPanels.invisibleDash.colorizeGear')}
-            desc={t('settingsPanels.invisibleDash.colorizeGearDesc')}
-          />
-        </div>
       </Card>
 
       <Card title={t('settingsPanels.invisibleDash.blocks')}>
@@ -301,7 +286,7 @@ export const InvisibleDashSettingsPanel = observer(() => {
           />
         </div>
 
-        <div className={styles.fieldGroup}>
+        <DependentBlock dependsOn="showRpm">
           <SettingRow
             title={t('settingsPanels.invisibleDash.rpmFormat')}
             desc={t('settingsPanels.invisibleDash.rpmFormatDesc')}
@@ -323,7 +308,14 @@ export const InvisibleDashSettingsPanel = observer(() => {
               }
             />
           </SettingRow>
-        </div>
+        </DependentBlock>
+
+        <SwitchRow
+          settingKey="colorizeRpmByZone"
+          dependsOn="showRpm"
+          title={t('settingsPanels.invisibleDash.colorizeRpm')}
+          desc={t('settingsPanels.invisibleDash.colorizeRpmDesc')}
+        />
 
         <div className={styles.fieldGroup}>
           <SwitchRow
@@ -341,6 +333,13 @@ export const InvisibleDashSettingsPanel = observer(() => {
           />
         </div>
 
+        <SwitchRow
+          settingKey="colorizeGearByZone"
+          dependsOn="showGear"
+          title={t('settingsPanels.invisibleDash.colorizeGear')}
+          desc={t('settingsPanels.invisibleDash.colorizeGearDesc')}
+        />
+
         <div className={styles.fieldGroup}>
           <SwitchRow
             settingKey="showPosition"
@@ -349,29 +348,25 @@ export const InvisibleDashSettingsPanel = observer(() => {
           />
         </div>
 
+        <SwitchRow
+          settingKey="useLivePositions"
+          dependsOn="showPosition"
+          title={t('settingsPanels.invisibleDash.livePositions')}
+          desc={t('settingsPanels.invisibleDash.livePositionsDesc')}
+        />
+
+        <SwitchRow
+          settingKey="classPositionInMulticlass"
+          dependsOn="showPosition"
+          title={t('settingsPanels.invisibleDash.classPosition')}
+          desc={t('settingsPanels.invisibleDash.classPositionDesc')}
+        />
+
         <div className={styles.fieldGroup}>
           <SwitchRow
             settingKey="showLap"
             title={t('settingsPanels.invisibleDash.lap')}
             desc={t('settingsPanels.invisibleDash.lapDesc')}
-          />
-        </div>
-      </Card>
-
-      <Card title={t('settingsPanels.invisibleDash.positionSource')}>
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="useLivePositions"
-            title={t('settingsPanels.invisibleDash.livePositions')}
-            desc={t('settingsPanels.invisibleDash.livePositionsDesc')}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="classPositionInMulticlass"
-            title={t('settingsPanels.invisibleDash.classPosition')}
-            desc={t('settingsPanels.invisibleDash.classPositionDesc')}
           />
         </div>
       </Card>

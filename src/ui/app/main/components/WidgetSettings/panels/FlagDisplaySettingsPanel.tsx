@@ -11,7 +11,11 @@ import { panelRows } from './setting-rows';
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['led-flags', 'flat-flags'];
 
-const { SwitchRow } = panelRows<FlagDisplaySettings>();
+const { DependentBlock, SwitchRow } = panelRows<FlagDisplaySettings>();
+
+// A flag held on screen for good has no hold time to set.
+const isHoldShown = (settings: FlagDisplaySettings): boolean =>
+  !settings.alwaysShow;
 
 export const FlagDisplaySettingsPanel = observer(
   ({ widgetId }: { widgetId: string }) => {
@@ -39,25 +43,23 @@ export const FlagDisplaySettingsPanel = observer(
           />
         </div>
 
-        {!settings.alwaysShow && (
-          <div className={styles.fieldGroup}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.flagDisplay.holdDuration', {
-                seconds: settings.holdDuration,
-              })}
-            </span>
-            <div className={styles.fieldDesc}>
-              {t('settingsPanels.flagDisplay.holdDurationDesc')}
-            </div>
-            <Slider
-              min={0}
-              max={30}
-              step={1}
-              value={settings.holdDuration}
-              onChange={(v) => update({ holdDuration: v })}
-            />
+        <DependentBlock dependsOn={isHoldShown}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.flagDisplay.holdDuration', {
+              seconds: settings.holdDuration,
+            })}
+          </span>
+          <div className={styles.fieldDesc}>
+            {t('settingsPanels.flagDisplay.holdDurationDesc')}
           </div>
-        )}
+          <Slider
+            min={0}
+            max={30}
+            step={1}
+            value={settings.holdDuration}
+            onChange={(v) => update({ holdDuration: v })}
+          />
+        </DependentBlock>
 
         {widgetType === 'led-flags' && (
           <>

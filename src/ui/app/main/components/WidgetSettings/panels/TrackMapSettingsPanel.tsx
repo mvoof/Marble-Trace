@@ -24,7 +24,18 @@ const DEFAULT_CIRCLE_OPACITY = 0.85;
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['track-map'];
 
-const { ColorRow, SwitchRow } = panelRows<TrackMapWidgetSettings>();
+const { ColorRow, DependentBlock, SwitchRow } =
+  panelRows<TrackMapWidgetSettings>();
+
+// The ground's colour and opacity qualify the ground, which only exists in the
+// follow view — one level of nesting, so both conditions are spelled out here.
+const isCircleGroundShown = (settings: TrackMapWidgetSettings): boolean =>
+  settings.zoomEnabled === true && settings.zoomCircleBackground === true;
+
+// The marker is always drawn — there is no switch for it — so its size and the
+// pit option stand on their own; only the colour gives way to the class colour.
+const isOwnPaceCarColor = (settings: TrackMapWidgetSettings): boolean =>
+  settings.paceCarUseClassColor !== true;
 
 export const TrackMapSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -102,69 +113,56 @@ export const TrackMapSettingsPanel = observer(() => {
           />
         </div>
 
-        {settings.zoomEnabled && (
-          <div className={styles.fieldGroup}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.trackMap.zoomLevel')}
-            </span>
-            <Slider
-              min={MIN_ZOOM_LEVEL}
-              max={MAX_ZOOM_LEVEL}
-              step={ZOOM_STEP}
-              value={settings.zoomLevel ?? DEFAULT_ZOOM_LEVEL}
-              tooltip={{ formatter: (v) => `${v}x` }}
-              onChange={(v) => update({ zoomLevel: v })}
-            />
-          </div>
-        )}
+        <DependentBlock dependsOn="zoomEnabled">
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.trackMap.zoomLevel')}
+          </span>
+          <Slider
+            min={MIN_ZOOM_LEVEL}
+            max={MAX_ZOOM_LEVEL}
+            step={ZOOM_STEP}
+            value={settings.zoomLevel ?? DEFAULT_ZOOM_LEVEL}
+            tooltip={{ formatter: (v) => `${v}x` }}
+            onChange={(v) => update({ zoomLevel: v })}
+          />
+        </DependentBlock>
 
-        {settings.zoomEnabled && (
-          <div className={styles.fieldGroup}>
-            <SwitchRow
-              settingKey="zoomRotate"
-              title={t('settingsPanels.trackMap.zoomRotate')}
-              desc={t('settingsPanels.trackMap.zoomRotateDesc')}
-              fallback={false}
-            />
-          </div>
-        )}
+        <SwitchRow
+          settingKey="zoomRotate"
+          dependsOn="zoomEnabled"
+          title={t('settingsPanels.trackMap.zoomRotate')}
+          desc={t('settingsPanels.trackMap.zoomRotateDesc')}
+          fallback={false}
+        />
 
-        {settings.zoomEnabled && (
-          <div className={styles.fieldGroup}>
-            <SwitchRow
-              settingKey="zoomCircleBackground"
-              title={t('settingsPanels.trackMap.zoomCircleBackground')}
-              desc={t('settingsPanels.trackMap.zoomCircleBackgroundDesc')}
-              fallback={false}
-            />
-          </div>
-        )}
+        <SwitchRow
+          settingKey="zoomCircleBackground"
+          dependsOn="zoomEnabled"
+          title={t('settingsPanels.trackMap.zoomCircleBackground')}
+          desc={t('settingsPanels.trackMap.zoomCircleBackgroundDesc')}
+          fallback={false}
+        />
 
-        {settings.zoomEnabled && settings.zoomCircleBackground && (
-          <div className={styles.fieldGroup}>
-            <ColorRow
-              settingKey="zoomCircleColor"
-              title={t('settingsPanels.trackMap.zoomCircleColor')}
-              hex
-            />
-          </div>
-        )}
+        <ColorRow
+          settingKey="zoomCircleColor"
+          dependsOn={isCircleGroundShown}
+          title={t('settingsPanels.trackMap.zoomCircleColor')}
+          hex
+        />
 
-        {settings.zoomEnabled && settings.zoomCircleBackground && (
-          <div className={styles.fieldGroup}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.trackMap.zoomCircleOpacity')}
-            </span>
-            <Slider
-              min={MIN_CIRCLE_OPACITY}
-              max={MAX_CIRCLE_OPACITY}
-              step={CIRCLE_OPACITY_STEP}
-              value={settings.zoomCircleOpacity ?? DEFAULT_CIRCLE_OPACITY}
-              tooltip={{ formatter: (v) => `${Math.round((v ?? 0) * 100)}%` }}
-              onChange={(v) => update({ zoomCircleOpacity: v })}
-            />
-          </div>
-        )}
+        <DependentBlock dependsOn={isCircleGroundShown}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.trackMap.zoomCircleOpacity')}
+          </span>
+          <Slider
+            min={MIN_CIRCLE_OPACITY}
+            max={MAX_CIRCLE_OPACITY}
+            step={CIRCLE_OPACITY_STEP}
+            value={settings.zoomCircleOpacity ?? DEFAULT_CIRCLE_OPACITY}
+            tooltip={{ formatter: (v) => `${Math.round((v ?? 0) * 100)}%` }}
+            onChange={(v) => update({ zoomCircleOpacity: v })}
+          />
+        </DependentBlock>
       </Card>
 
       <Card title={t('settingsPanels.linearMap.playerMarker')}>
@@ -254,15 +252,12 @@ export const TrackMapSettingsPanel = observer(() => {
           />
         </div>
 
-        {(settings.showIncidentZones ?? true) && (
-          <div className={styles.fieldGroup}>
-            <SwitchRow
-              settingKey="blinkIncidentZones"
-              title={t('settingsPanels.trackMap.blinkIncidentZones')}
-              fallback
-            />
-          </div>
-        )}
+        <SwitchRow
+          settingKey="blinkIncidentZones"
+          dependsOn="showIncidentZones"
+          title={t('settingsPanels.trackMap.blinkIncidentZones')}
+          fallback
+        />
       </Card>
 
       <Card title={t('settingsPanels.trackMap.safetyCar')}>
@@ -275,16 +270,13 @@ export const TrackMapSettingsPanel = observer(() => {
           />
         </div>
 
-        {!settings.paceCarUseClassColor && (
-          <div className={styles.fieldGroup}>
-            <ColorRow
-              settingKey="paceCarColor"
-              title={t('settingsPanels.trackMap.paceCarColor')}
-              fallback={'#facc15'}
-              hex
-            />
-          </div>
-        )}
+        <ColorRow
+          settingKey="paceCarColor"
+          dependsOn={isOwnPaceCarColor}
+          title={t('settingsPanels.trackMap.paceCarColor')}
+          fallback={'#facc15'}
+          hex
+        />
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>

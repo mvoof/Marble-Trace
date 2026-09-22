@@ -32,7 +32,7 @@ const STAT_COLUMN_ROWS: StatColumnRow[] = [
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['fuel'];
 
-const { SwitchRow } = panelRows<FuelWidgetSettings>();
+const { DependentBlock, SwitchRow } = panelRows<FuelWidgetSettings>();
 
 export const FuelSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -50,41 +50,36 @@ export const FuelSettingsPanel = observer(() => {
 
   return (
     <Card title={t('settingsPanels.fuel.analyticsAndWarnings')}>
-      <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showChart"
-          title={t('settingsPanels.fuel.historyChart')}
-          desc={t('settingsPanels.fuel.historyChartDesc')}
-          style={{ marginBottom: settings.showChart ? 16 : 0 }}
-        />
-        {settings.showChart && (
-          <>
-            <Segmented
-              block
-              value={settings.chartType}
-              options={[
-                { label: t('settingsPanels.fuel.barChart'), value: 'bar' },
-                { label: t('settingsPanels.fuel.lineChart'), value: 'line' },
-              ]}
-              onChange={(v) => update({ chartType: v as 'bar' | 'line' })}
-              style={{ marginBottom: 16 }}
-            />
+      <SwitchRow
+        settingKey="showChart"
+        title={t('settingsPanels.fuel.historyChart')}
+        desc={t('settingsPanels.fuel.historyChartDesc')}
+      />
 
-            <div className={styles.fieldGroup}>
-              <span className={styles.fieldLabel}>
-                {t('settingsPanels.fuel.chartStepWidth')}
-              </span>
-              <Slider
-                min={5}
-                max={20}
-                value={settings.barWidth}
-                onChange={(v) => update({ barWidth: v })}
-                tooltip={{ formatter: (v) => `${v}px` }}
-              />
-            </div>
-          </>
-        )}
-      </div>
+      <DependentBlock dependsOn="showChart">
+        <Segmented
+          block
+          value={settings.chartType}
+          options={[
+            { label: t('settingsPanels.fuel.barChart'), value: 'bar' },
+            { label: t('settingsPanels.fuel.lineChart'), value: 'line' },
+          ]}
+          onChange={(v) => update({ chartType: v as 'bar' | 'line' })}
+        />
+      </DependentBlock>
+
+      <DependentBlock dependsOn="showChart">
+        <span className={styles.fieldLabel}>
+          {t('settingsPanels.fuel.chartStepWidth')}
+        </span>
+        <Slider
+          min={5}
+          max={20}
+          value={settings.barWidth}
+          onChange={(v) => update({ barWidth: v })}
+          tooltip={{ formatter: (v) => `${v}px` }}
+        />
+      </DependentBlock>
 
       <div className={styles.fieldGroup}>
         <span className={styles.fieldLabel}>

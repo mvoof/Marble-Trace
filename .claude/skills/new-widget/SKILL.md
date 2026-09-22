@@ -203,7 +203,9 @@ Two constraints not visible in the file you copy:
 Rows bind themselves: `panelRows<YourSettings>()` once per panel, then
 `SwitchRow` / `ColorRow` with a `settingKey`. Blocks inside a `Card` are
 separated automatically by `.cardContent > * + *` — **do not add dividers by
-hand**, there is no `Divider` in this tree.
+hand**, there is no `Divider` in this tree. A row that only qualifies another
+takes `dependsOn="parentKey"` (or goes in a `DependentBlock`) and sits directly
+after its parent — never `{settings.x && …}` in the panel.
 
 `<Name>Widget.stories.tsx`: spread `defineWidgetStories({ widget, size, seed,
 seedSnapshot, args, argTypes })` from `@/storybook/define-widget-stories` — it

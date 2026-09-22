@@ -20,7 +20,8 @@ const DEFAULT_WINDOW_METERS = 150;
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['coach'];
 
-const { ColorRow, SwitchRow } = panelRows<CoachWidgetSettings>();
+const { ColorRow, DependentBlock, SwitchRow } =
+  panelRows<CoachWidgetSettings>();
 
 export const CoachSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -47,43 +48,35 @@ export const CoachSettingsPanel = observer(() => {
           />
         </div>
 
-        {settings.showCallRow && (
-          <>
-            <div className={styles.fieldGroup}>
-              <SwitchRow
-                settingKey="showUrgencyBar"
-                title={t('settingsPanels.coach.urgencyBar')}
-                desc={t('settingsPanels.coach.urgencyBarDesc')}
-              />
-            </div>
+        <SwitchRow
+          settingKey="showUrgencyBar"
+          dependsOn="showCallRow"
+          title={t('settingsPanels.coach.urgencyBar')}
+          desc={t('settingsPanels.coach.urgencyBarDesc')}
+        />
 
-            <div className={styles.fieldGroup}>
-              <SwitchRow
-                settingKey="showCornerExitCalls"
-                title={t('settingsPanels.coach.cornerExitCalls')}
-                desc={t('settingsPanels.coach.cornerExitCallsDesc')}
-              />
-            </div>
+        <SwitchRow
+          settingKey="showCornerExitCalls"
+          dependsOn="showCallRow"
+          title={t('settingsPanels.coach.cornerExitCalls')}
+          desc={t('settingsPanels.coach.cornerExitCallsDesc')}
+        />
 
-            <div className={styles.fieldGroup}>
-              <ColorRow
-                settingKey="brakeColor"
-                title={t('settingsPanels.coach.brakeAccent')}
-                desc={t('settingsPanels.coach.brakeAccentDesc')}
-                hex
-              />
-            </div>
+        <ColorRow
+          settingKey="brakeColor"
+          dependsOn="showCallRow"
+          title={t('settingsPanels.coach.brakeAccent')}
+          desc={t('settingsPanels.coach.brakeAccentDesc')}
+          hex
+        />
 
-            <div className={styles.fieldGroup}>
-              <ColorRow
-                settingKey="gasColor"
-                title={t('settingsPanels.coach.gasAccent')}
-                desc={t('settingsPanels.coach.gasAccentDesc')}
-                hex
-              />
-            </div>
-          </>
-        )}
+        <ColorRow
+          settingKey="gasColor"
+          dependsOn="showCallRow"
+          title={t('settingsPanels.coach.gasAccent')}
+          desc={t('settingsPanels.coach.gasAccentDesc')}
+          hex
+        />
       </Card>
 
       <Card title={t('settingsPanels.coach.readouts')}>
@@ -121,81 +114,74 @@ export const CoachSettingsPanel = observer(() => {
           />
         </div>
 
-        {settings.showTrace && (
-          <>
-            <div className={styles.fieldGroup}>
-              <span className={styles.fieldLabel}>
-                {t('settingsPanels.coach.channel')}
-              </span>
-              <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-                {t('settingsPanels.coach.channelDesc')}
-              </div>
-              <Segmented
-                block
-                value={settings.traceChannel}
-                options={[
-                  {
-                    label: t('settingsPanels.coach.channelSpeed'),
-                    value: 'speed',
-                  },
-                  {
-                    label: t('settingsPanels.coach.channelBrake'),
-                    value: 'brake',
-                  },
-                ]}
-                onChange={(value) =>
-                  update({ traceChannel: value as CoachTraceChannel })
-                }
-              />
-            </div>
+        <DependentBlock dependsOn="showTrace">
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.coach.channel')}
+          </span>
+          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+            {t('settingsPanels.coach.channelDesc')}
+          </div>
+          <Segmented
+            block
+            value={settings.traceChannel}
+            options={[
+              {
+                label: t('settingsPanels.coach.channelSpeed'),
+                value: 'speed',
+              },
+              {
+                label: t('settingsPanels.coach.channelBrake'),
+                value: 'brake',
+              },
+            ]}
+            onChange={(value) =>
+              update({ traceChannel: value as CoachTraceChannel })
+            }
+          />
+        </DependentBlock>
 
-            <div className={styles.fieldGroup}>
-              <span className={styles.fieldLabel}>
-                {t('settingsPanels.coach.window')}
-              </span>
-              <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-                {t('settingsPanels.coach.windowDesc')}
-              </div>
-              <InputNumber
-                style={{ width: '100%' }}
-                value={settings.windowMeters}
-                min={MIN_WINDOW_METERS}
-                max={MAX_WINDOW_METERS}
-                step={WINDOW_METERS_STEP}
-                onChange={(value) =>
-                  update({ windowMeters: value ?? DEFAULT_WINDOW_METERS })
-                }
-              />
-            </div>
+        <DependentBlock dependsOn="showTrace">
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.coach.window')}
+          </span>
+          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+            {t('settingsPanels.coach.windowDesc')}
+          </div>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.windowMeters}
+            min={MIN_WINDOW_METERS}
+            max={MAX_WINDOW_METERS}
+            step={WINDOW_METERS_STEP}
+            onChange={(value) =>
+              update({ windowMeters: value ?? DEFAULT_WINDOW_METERS })
+            }
+          />
+        </DependentBlock>
 
-            <div className={styles.fieldGroup}>
-              <ColorRow
-                settingKey="referenceColor"
-                title={t('settingsPanels.coach.referenceColor')}
-                desc={t('settingsPanels.coach.referenceColorDesc')}
-                hex
-              />
-            </div>
+        <ColorRow
+          settingKey="referenceColor"
+          dependsOn="showTrace"
+          title={t('settingsPanels.coach.referenceColor')}
+          desc={t('settingsPanels.coach.referenceColorDesc')}
+          hex
+        />
 
-            <div className={styles.fieldGroup}>
-              <ColorRow
-                settingKey="gainColor"
-                title={t('settingsPanels.coach.gainColor')}
-                desc={t('settingsPanels.coach.gainColorDesc')}
-                hex
-              />
-            </div>
+        <ColorRow
+          settingKey="gainColor"
+          dependsOn="showTrace"
+          title={t('settingsPanels.coach.gainColor')}
+          desc={t('settingsPanels.coach.gainColorDesc')}
+          hex
+        />
 
-            <div className={styles.fieldGroup}>
-              <ColorRow
-                settingKey="lossColor"
-                title={t('settingsPanels.coach.lossColor')}
-                desc={t('settingsPanels.coach.lossColorDesc')}
-                hex
-              />
-            </div>
-          </>
-        )}
+        <ColorRow
+          settingKey="lossColor"
+          dependsOn="showTrace"
+          title={t('settingsPanels.coach.lossColor')}
+          desc={t('settingsPanels.coach.lossColorDesc')}
+          hex
+        />
       </Card>
     </>
   );
