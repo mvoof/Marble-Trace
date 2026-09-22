@@ -656,6 +656,8 @@
       "showBadgesDesc": "Moderator, subscriber and VIP plates.",
       "showEvents": "Subs and raids",
       "showEventsDesc": "Subscription and raid rows. Paid messages — Super Chat and cheers — always stay visible.",
+      "showFollows": "Follows",
+      "showFollowsDesc": "New follower rows. They arrive only over EventSub, so they need a Twitch account connected to the channel being watched.",
       "showBanner": "Header",
       "showBannerDesc": "Top line with the connection state and room restrictions such as followers only.",
       "showFooter": "Footer",

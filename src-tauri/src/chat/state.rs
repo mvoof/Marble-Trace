@@ -18,6 +18,14 @@ pub struct ChatServiceState {
     /// left since the anonymous badge host was retired. Empty means every
     /// badge falls back to its text plate.
     pub badges: Mutex<std::collections::HashMap<String, String>>,
+    /// True while an EventSub socket holds live subscription topics.
+    ///
+    /// Subs reach us twice whenever it does — once as a structured event, once
+    /// as the IRC `USERNOTICE` Twitch has always sent — so this is the single
+    /// switch that says which source owns them. A flag rather than a time
+    /// window: the two arrive milliseconds apart and any window wide enough to
+    /// catch that would also swallow two people subscribing at once.
+    eventsub_owns_subs: AtomicBool,
 }
 
 impl ChatServiceState {
@@ -27,7 +35,19 @@ impl ChatServiceState {
             generation: std::sync::atomic::AtomicU64::new(0),
             config: Mutex::new(ChatConfig::default()),
             badges: Mutex::new(std::collections::HashMap::new()),
+            eventsub_owns_subs: AtomicBool::new(false),
         }
+    }
+
+    pub fn set_eventsub_owns_subs(&self, owns: bool) {
+        self.eventsub_owns_subs
+            .store(owns, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    /// Whether the IRC path should stay quiet about subscriptions.
+    pub fn eventsub_owns_subs(&self) -> bool {
+        self.eventsub_owns_subs
+            .load(std::sync::atomic::Ordering::SeqCst)
     }
 
     /// Badge artwork is per channel, so a reconnect to a different channel must

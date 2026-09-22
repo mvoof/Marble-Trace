@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import {
-  twitchCurrentLogin,
+  twitchAccount,
   twitchHasClientId,
   twitchPollDeviceToken,
   twitchRequestDeviceCode,
@@ -33,6 +33,12 @@ export class TwitchAuthStore {
   error: string | null = null;
   /** Whether the build carries a client id, so no registration is needed. */
   hasBakedClientId = false;
+  /**
+   * Scopes this build needs that the stored token does not carry — a user who
+   * signed in before a scope was added. The token is still valid, so this is a
+   * prompt to reconnect rather than a sign-out.
+   */
+  missingScopes: string[] = [];
 
   private pollTimer: ReturnType<typeof setTimeout> | null = null;
   private expiryTimer: ReturnType<typeof setTimeout> | null = null;
@@ -74,6 +80,14 @@ export class TwitchAuthStore {
     return this.root.appSettings.appSettings.streamChatTwitchLogin !== null;
   }
 
+  /**
+   * Signed in, but with a token that predates a scope this build needs. The
+   * features behind that scope stay dark until the user signs in again.
+   */
+  get needsReconnect(): boolean {
+    return this.isSignedIn && this.missingScopes.length > 0;
+  }
+
   /** Sign-in is possible with either a baked id or one the user supplied. */
   get canSignIn(): boolean {
     return this.hasBakedClientId || this.clientIdOverride !== null;
@@ -94,18 +108,20 @@ export class TwitchAuthStore {
    */
   async syncLogin() {
     try {
-      const login = await twitchCurrentLogin(this.clientIdOverride);
+      const account = await twitchAccount(this.clientIdOverride);
 
       const stored = this.root.appSettings.appSettings.streamChatTwitchLogin;
 
-      if (login === stored) {
-        return;
-      }
-
       runInAction(() => {
-        this.root.appSettings.setStreamChatTwitchLogin(login);
+        this.missingScopes = account.missingScopes;
 
-        if (login === null && stored !== null) {
+        if (account.login === stored) {
+          return;
+        }
+
+        this.root.appSettings.setStreamChatTwitchLogin(account.login);
+
+        if (account.login === null && stored !== null) {
           this.error = 'sessionExpired';
         }
       });
@@ -163,6 +179,7 @@ export class TwitchAuthStore {
 
     runInAction(() => {
       this.root.appSettings.setStreamChatTwitchLogin(null);
+      this.missingScopes = [];
       this.error = null;
     });
   }
@@ -218,6 +235,8 @@ export class TwitchAuthStore {
       if (result.authorized) {
         runInAction(() => {
           this.root.appSettings.setStreamChatTwitchLogin(result.login);
+          // A token just issued carries whatever this build asked for.
+          this.missingScopes = [];
           this.cancel();
           this.error = null;
         });

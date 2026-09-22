@@ -626,6 +626,13 @@ export interface StreamChatWidgetSettings {
   /** Subscriptions, raids and Super Chat rows. */
   showEvents: boolean;
   /**
+   * Follow rows, which arrive only over EventSub and so only while signed in
+   * to the channel being watched. Separate from `showEvents` because a small
+   * channel collects follows far faster than subscriptions, and a feed worth
+   * keeping for subs can be worth silencing for follows.
+   */
+  showFollows: boolean;
+  /**
    * The "waiting for messages" line while the feed is idle. Off leaves the
    * widget blank until something arrives, which is what an overlay that sits
    * on camera the whole session wants.

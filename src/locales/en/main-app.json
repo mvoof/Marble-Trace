@@ -435,6 +435,8 @@
       "clientIdDesc": "This build has no client id, so sign-in needs your own application from dev.twitch.tv/console/apps. Register it as a Public client; no client secret is needed.",
       "signIn": "Sign in",
       "signOut": "Sign out",
+      "reconnect": "Reconnect",
+      "reconnectDesc": "This build needs new Twitch permissions. Reconnect to grant them — follows and detailed subscription events stay unavailable until you do.",
       "signedIn": "Signed in",
       "cancel": "Cancel",
       "openActivate": "Open twitch.tv/activate",

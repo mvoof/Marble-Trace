@@ -95,6 +95,38 @@ describe('StreamChatWidgetStore', () => {
     ).toEqual(['3', '4']);
   });
 
+  const followRow = (id: string): ChatMessage => ({
+    ...makeMessage(id, 'viewer', ''),
+    highlight: {
+      kind: 'follow',
+      text: 'viewer followed',
+      amount: null,
+      bits: null,
+    },
+  });
+
+  const subRow = (id: string): ChatMessage => ({
+    ...makeMessage(id, 'viewer', ''),
+    highlight: { kind: 'subscription', text: 'sub', amount: null, bits: null },
+  });
+
+  it('hides follows on their own toggle, leaving subs alone', () => {
+    setSettings({ showEvents: true, showFollows: false });
+    seed([followRow('1'), subRow('2')]);
+
+    expect(
+      rootStore.streamChatWidget.visibleMessages.map((message) => message.id)
+    ).toEqual(['2']);
+  });
+
+  it('hides follows when events are off even with follows on', () => {
+    setSettings({ showEvents: false, showFollows: true });
+    seed([followRow('1'), subRow('2')]);
+
+    expect(rootStore.streamChatWidget.visibleMessages).toHaveLength(1);
+    expect(rootStore.streamChatWidget.visibleMessages[0].id).toBe('1');
+  });
+
   it('keeps commands when the filter is off', () => {
     runInAction(() => rootStore.appSettings.setStreamChatHideCommands(false));
     seed([makeMessage('1', 'viewer', '!drops')]);

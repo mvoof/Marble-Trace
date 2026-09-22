@@ -552,6 +552,10 @@ export type ChatHighlight = {
 
 export type ChatHighlightKind =
   | 'subscription'
+  /**
+   * EventSub only — a follow is never announced over IRC.
+   */
+  | 'follow'
   | 'raid'
   | 'paid'
   | 'firstMessage';
@@ -1891,6 +1895,27 @@ export type TrackSurface =
   | 'InPitStall'
   | 'AproachingPits'
   | 'OnTrack';
+
+/**
+ * Who the stored credentials belong to, and whether they still grant
+ * everything this build needs.
+ *
+ * Scopes are baked into a token when it is issued and a refresh carries the
+ * same set forward, so a user who signed in before a scope was added keeps a
+ * perfectly valid token that cannot do the new thing. That is not an error and
+ * must not sign them out — `missingScopes` lets the UI ask for a reconnect
+ * while the account stays visibly connected.
+ */
+export type TwitchAccount = {
+  /**
+   * None when signed out, or when the stored credentials are dead.
+   */
+  login: string | null;
+  /**
+   * Required scopes the stored token does not carry. Empty when signed out.
+   */
+  missingScopes: string[];
+};
 
 /**
  * Device code flow, step one — what the user must type in to authorize.

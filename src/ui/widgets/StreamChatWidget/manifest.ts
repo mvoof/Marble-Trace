@@ -33,6 +33,7 @@ export const STREAM_CHAT_MANIFEST: WidgetManifest = {
     showFooter: true,
     showActivity: true,
     showEvents: true,
+    showFollows: true,
     showPlaceholder: true,
   },
 };

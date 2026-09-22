@@ -656,6 +656,8 @@
       "showBadgesDesc": "Placas de moderador, suscriptor y VIP.",
       "showEvents": "Suscripciones y raids",
       "showEventsDesc": "Filas de suscripción y de raid. Los mensajes de pago — Super Chat y cheers — siempre se ven.",
+      "showFollows": "Seguidores",
+      "showFollowsDesc": "Filas de nuevos seguidores. Solo llegan por EventSub, así que necesitan una cuenta de Twitch conectada al canal que se está viendo.",
       "showBanner": "Cabecera",
       "showBannerDesc": "Línea superior con el estado de la conexión y las restricciones de la sala, como solo seguidores.",
       "showFooter": "Pie",

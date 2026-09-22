@@ -29,8 +29,21 @@ const GLOBAL_BADGES_URL: &str = "https://api.twitch.tv/helix/chat/badges/global"
 const CHANNEL_BADGES_URL: &str = "https://api.twitch.tv/helix/chat/badges";
 const DEVICE_GRANT: &str = "urn:ietf:params:oauth:grant-type:device_code";
 
-/// Read-only scope. Nothing here writes to chat or reads private data.
-const SCOPES: &str = "chat:read";
+/// Read-only scopes. Nothing here writes to chat or reads private data.
+///
+/// `moderator:read:followers` and `channel:read:subscriptions` exist for
+/// EventSub: follows never arrive over IRC at all, and subscriptions arrive
+/// there only as rendered text. Both are granted for the signed-in user's own
+/// channel.
+///
+/// The set is requested at sign-in and baked into the token that comes back, so
+/// a token minted before a scope was added never gains it — refreshing carries
+/// the old set forward. That is what `missing_scopes` is for.
+const REQUIRED_SCOPES: [&str; 3] = [
+    "chat:read",
+    "moderator:read:followers",
+    "channel:read:subscriptions",
+];
 
 /// Helix rate limits are generous (800/min); the ceiling here is taste, not
 /// policy — a viewer number that moves faster than once a minute is noise.
@@ -60,9 +73,11 @@ fn pending() -> TwitchTokenResult {
 }
 
 pub async fn request_device_code(client_id: &str) -> Result<TwitchDeviceCode, String> {
+    let scopes = REQUIRED_SCOPES.join(" ");
+
     let response = client()?
         .post(DEVICE_URL)
-        .form(&[("client_id", client_id), ("scopes", SCOPES)])
+        .form(&[("client_id", client_id), ("scopes", scopes.as_str())])
         .send()
         .await
         .map_err(|error| format!("device code request: {error}"))?;
@@ -114,11 +129,11 @@ async fn store_token_response(parsed: &serde_json::Value) -> Result<TwitchTokenR
         ));
     }
 
-    let login = validate_token(&access_token).await.ok();
+    let identity = validate_token(&access_token).await.ok();
 
     Ok(TwitchTokenResult {
         authorized: true,
-        login,
+        login: identity.map(|identity| identity.login),
         error: None,
     })
 }
@@ -244,9 +259,33 @@ fn grant_is_dead(status: reqwest::StatusCode, message: &str) -> bool {
     lowered.contains("invalid refresh token") || lowered.contains("invalid_grant")
 }
 
-/// Returns the login name the token belongs to. Doubles as a liveness check —
-/// a 401 here means the stored token is dead.
-pub async fn validate_token(access_token: &str) -> Result<String, String> {
+/// Who a token belongs to and what it is allowed to do.
+///
+/// Read from `/oauth2/validate` on every call rather than stored beside the
+/// token: the grant can be revoked on twitch.tv at any time, and a persisted
+/// copy of the scopes would then claim a permission the token no longer has.
+pub struct TokenIdentity {
+    pub login: String,
+    /// Numeric user id. `channel.follow` needs it as `moderator_user_id`, and
+    /// resolving it from the login costs an extra Helix call. Read by the
+    /// EventSub client only, which is why nothing in this module touches it.
+    #[allow(dead_code)]
+    pub user_id: String,
+    pub scopes: Vec<String>,
+}
+
+/// Required scopes the token does not carry. Empty means it can do everything
+/// this build asks of it.
+pub fn missing_scopes(granted: &[String]) -> Vec<String> {
+    REQUIRED_SCOPES
+        .iter()
+        .filter(|required| !granted.iter().any(|scope| scope == *required))
+        .map(|required| (*required).to_string())
+        .collect()
+}
+
+/// Doubles as a liveness check — a 401 here means the stored token is dead.
+pub async fn validate_token(access_token: &str) -> Result<TokenIdentity, String> {
     let response = client()?
         .get(VALIDATE_URL)
         .header("Authorization", format!("OAuth {access_token}"))
@@ -263,7 +302,18 @@ pub async fn validate_token(access_token: &str) -> Result<String, String> {
         .await
         .map_err(|error| format!("validate json: {error}"))?;
 
-    Ok(parsed["login"].as_str().unwrap_or_default().to_string())
+    Ok(TokenIdentity {
+        login: parsed["login"].as_str().unwrap_or_default().to_string(),
+        user_id: parsed["user_id"].as_str().unwrap_or_default().to_string(),
+        scopes: parsed["scopes"]
+            .as_array()
+            .map(|list| {
+                list.iter()
+                    .filter_map(|scope| scope.as_str().map(str::to_string))
+                    .collect()
+            })
+            .unwrap_or_default(),
+    })
 }
 
 /// Seconds the stored access token has left, or None when there is no usable
@@ -296,11 +346,14 @@ pub async fn token_lifetime_seconds() -> Option<u64> {
     Some(parsed["expires_in"].as_u64().unwrap_or(0))
 }
 
-/// Login of the currently stored token, or None when signed out.
-pub async fn current_login() -> Option<String> {
+/// Identity of the currently stored token, or None when signed out.
+pub async fn current_identity() -> Option<TokenIdentity> {
     let token = secrets::access_token()?;
 
-    validate_token(&token).await.ok().filter(|l| !l.is_empty())
+    validate_token(&token)
+        .await
+        .ok()
+        .filter(|identity| !identity.login.is_empty())
 }
 
 /// Resolves a login to the numeric broadcaster id that badge and stream

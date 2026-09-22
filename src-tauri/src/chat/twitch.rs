@@ -306,7 +306,7 @@ fn message_from_privmsg(line: &IrcLine, service: &ChatServiceState) -> Option<Ch
     })
 }
 
-fn message_from_usernotice(line: &IrcLine) -> Option<ChatMessage> {
+fn message_from_usernotice(line: &IrcLine, service: &Arc<ChatServiceState>) -> Option<ChatMessage> {
     let system_message = line.tags.get("system-msg")?.clone();
 
     if system_message.is_empty() {
@@ -316,8 +316,17 @@ fn message_from_usernotice(line: &IrcLine) -> Option<ChatMessage> {
     let notice_kind = line.tags.get("msg-id").map(String::as_str).unwrap_or("");
 
     let kind = match notice_kind {
+        // EventSub does not carry raids, so this half is always ours.
         "raid" => ChatHighlightKind::Raid,
         "sub" | "resub" | "subgift" | "submysterygift" | "giftpaidupgrade" | "anonsubgift" => {
+            // The same subscription arrives as a structured event whenever an
+            // EventSub socket is up. It carries tier, months and gift count as
+            // fields instead of buried in this sentence, so it wins and this
+            // row is dropped rather than shown twice.
+            if service.eventsub_owns_subs() {
+                return None;
+            }
+
             ChatHighlightKind::Subscription
         }
         _ => return None,
@@ -507,7 +516,7 @@ async fn connect_once(
                     }
                 }
                 "USERNOTICE" => {
-                    if let Some(message) = message_from_usernotice(&line) {
+                    if let Some(message) = message_from_usernotice(&line, service) {
                         let _ = app.emit(EVENT_CHAT_MESSAGE, &message);
                     }
                 }

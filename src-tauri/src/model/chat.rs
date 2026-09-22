@@ -58,6 +58,8 @@ pub struct ChatBadge {
 #[serde(rename_all = "camelCase")]
 pub enum ChatHighlightKind {
     Subscription,
+    /// EventSub only — a follow is never announced over IRC.
+    Follow,
     Raid,
     Paid,
     FirstMessage,
@@ -209,6 +211,24 @@ pub struct TwitchTokenResult {
     pub error: Option<String>,
 }
 
+/// Who the stored credentials belong to, and whether they still grant
+/// everything this build needs.
+///
+/// Scopes are baked into a token when it is issued and a refresh carries the
+/// same set forward, so a user who signed in before a scope was added keeps a
+/// perfectly valid token that cannot do the new thing. That is not an error and
+/// must not sign them out — `missingScopes` lets the UI ask for a reconnect
+/// while the account stays visibly connected.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
+pub struct TwitchAccount {
+    /// None when signed out, or when the stored credentials are dead.
+    pub login: Option<String>,
+    /// Required scopes the stored token does not carry. Empty when signed out.
+    pub missing_scopes: Vec<String>,
+}
+
 #[cfg(feature = "dev")]
 pub fn register_types(types: &mut specta::TypeCollection) {
     types
@@ -224,5 +244,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<ChatPresence>()
         .register::<ChatConfig>()
         .register::<TwitchDeviceCode>()
-        .register::<TwitchTokenResult>();
+        .register::<TwitchTokenResult>()
+        .register::<TwitchAccount>();
 }

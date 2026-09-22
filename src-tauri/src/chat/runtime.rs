@@ -12,7 +12,7 @@ use tauri::AppHandle;
 use tracing::{info, warn};
 
 use super::state::ChatServiceState;
-use super::{helix, resolve_client_id, secrets, twitch, youtube};
+use super::{eventsub, helix, resolve_client_id, secrets, twitch, youtube};
 use crate::model::chat::ChatConfig;
 
 fn non_empty(value: &Option<String>) -> Option<String> {
@@ -98,7 +98,7 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
         tokio::spawn(async move {
             let credentials = match secrets::access_token() {
                 Some(token) => match helix::validate_token(&token).await {
-                    Ok(login) if !login.is_empty() => Some((token, login)),
+                    Ok(identity) if !identity.login.is_empty() => Some((token, identity.login)),
                     _ => None,
                 },
                 None => None,
@@ -113,6 +113,22 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
             )
             .await;
         });
+
+        // Follows and structured subscription events. Starts unconditionally
+        // and retires itself when the channel is not the signed-in user's own
+        // or the token predates the scopes — both are answers, not failures,
+        // and neither is worth deciding twice.
+        if has_credentials {
+            if let Some(client_id) = client_id.clone() {
+                tokio::spawn(eventsub::run(
+                    app.clone(),
+                    Arc::clone(&service),
+                    generation,
+                    channel.clone(),
+                    client_id,
+                ));
+            }
+        }
 
         // Viewer count and uptime exist only behind a token; the poll mints
         // one from the refresh token when the access token is gone.
