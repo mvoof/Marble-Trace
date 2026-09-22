@@ -439,6 +439,8 @@
       "clientIdDesc": "В этой сборке нет client id, поэтому для входа нужно своё приложение с dev.twitch.tv/console/apps. Регистрируй как Public-клиент, client secret не нужен.",
       "signIn": "Войти",
       "signOut": "Выйти",
+      "reconnect": "Переподключить",
+      "reconnectDesc": "Этой версии нужны новые разрешения Twitch. Переподключитесь, чтобы выдать их — до этого фолловы и подробные события подписок недоступны.",
       "signedIn": "Вход выполнен",
       "cancel": "Отмена",
       "openActivate": "Открыть twitch.tv/activate",

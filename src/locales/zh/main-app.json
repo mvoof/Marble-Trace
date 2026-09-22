@@ -433,6 +433,8 @@
       "clientIdDesc": "此版本未内置 client id，登录需要你自己的应用（dev.twitch.tv/console/apps）。注册为 Public 客户端，无需 client secret。",
       "signIn": "登录",
       "signOut": "退出",
+      "reconnect": "重新连接",
+      "reconnectDesc": "此版本需要新的 Twitch 权限。请重新连接以授予权限，否则关注和详细的订阅事件将不可用。",
       "signedIn": "已登录",
       "cancel": "取消",
       "openActivate": "打开 twitch.tv/activate",

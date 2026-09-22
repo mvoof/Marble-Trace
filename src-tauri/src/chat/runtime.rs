@@ -98,7 +98,7 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
         tokio::spawn(async move {
             let credentials = match secrets::access_token() {
                 Some(token) => match helix::validate_token(&token).await {
-                    Ok(login) if !login.is_empty() => Some((token, login)),
+                    Ok(identity) if !identity.login.is_empty() => Some((token, identity.login)),
                     _ => None,
                 },
                 None => None,

@@ -15,7 +15,7 @@ mod telemetry;
 mod utils;
 
 use chat::commands::{
-    start_chat_stream, stop_chat_stream, twitch_current_login, twitch_has_client_id,
+    start_chat_stream, stop_chat_stream, twitch_account, twitch_has_client_id,
     twitch_poll_device_token, twitch_request_device_code, twitch_sign_out,
 };
 use chat::state::{ChatServiceState, ChatState};
@@ -197,7 +197,7 @@ pub fn run() {
             twitch_request_device_code,
             twitch_poll_device_token,
             twitch_has_client_id,
-            twitch_current_login,
+            twitch_account,
             twitch_sign_out,
             resolve_input_devices,
             set_input_polling_enabled,

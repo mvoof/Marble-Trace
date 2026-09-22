@@ -435,6 +435,8 @@
       "clientIdDesc": "Esta compilación no incluye client id, así que para iniciar sesión necesitas tu propia aplicación en dev.twitch.tv/console/apps. Regístrala como cliente público; no hace falta client secret.",
       "signIn": "Iniciar sesión",
       "signOut": "Cerrar sesión",
+      "reconnect": "Reconectar",
+      "reconnectDesc": "Esta versión necesita nuevos permisos de Twitch. Reconéctate para concederlos: hasta entonces los seguidores y los eventos detallados de suscripción no estarán disponibles.",
       "signedIn": "Sesión iniciada",
       "cancel": "Cancelar",
       "openActivate": "Abrir twitch.tv/activate",

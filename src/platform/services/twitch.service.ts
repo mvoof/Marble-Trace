@@ -1,6 +1,10 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type { TwitchDeviceCode, TwitchTokenResult } from '@/types/bindings';
+import type {
+  TwitchAccount,
+  TwitchDeviceCode,
+  TwitchTokenResult,
+} from '@/types/bindings';
 
 // Not in bindings.ts: the backend command takes this shape as a plain
 // serde struct that specta does not export.
@@ -14,9 +18,9 @@ export interface ChatStreamConfig {
 export const twitchHasClientId = async (): Promise<boolean> =>
   invoke('twitch_has_client_id');
 
-export const twitchCurrentLogin = async (
+export const twitchAccount = async (
   clientId: string | null
-): Promise<string | null> => invoke('twitch_current_login', { clientId });
+): Promise<TwitchAccount> => invoke('twitch_account', { clientId });
 
 export const twitchRequestDeviceCode = async (
   clientId: string | null

@@ -138,17 +138,7 @@ export const StreamChatSourceCard = observer(() => {
           </div>
         )}
 
-        {twitchAuth.isSignedIn ? (
-          <div className={styles.fieldRow}>
-            <Tag color="green">
-              {twitchAuth.login ?? t('settingsPage.streamChat.signedIn')}
-            </Tag>
-
-            <Button onClick={() => void twitchAuth.signOut()}>
-              {t('settingsPage.streamChat.signOut')}
-            </Button>
-          </div>
-        ) : twitchAuth.deviceCode ? (
+        {twitchAuth.deviceCode ? (
           <div className={styles.deviceBox}>
             <span className={styles.deviceCode}>
               {twitchAuth.deviceCode.userCode}
@@ -167,6 +157,32 @@ export const StreamChatSourceCard = observer(() => {
                 {t('settingsPage.streamChat.cancel')}
               </Button>
             </div>
+          </div>
+        ) : twitchAuth.isSignedIn ? (
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldRow}>
+              <Tag color={twitchAuth.needsReconnect ? 'orange' : 'green'}>
+                {twitchAuth.login ?? t('settingsPage.streamChat.signedIn')}
+              </Tag>
+
+              {/* The token is still valid — reconnecting is what mints one with
+                  the new scopes, so it is offered instead of a sign-out. */}
+              {twitchAuth.needsReconnect && (
+                <Button type="primary" onClick={() => void twitchAuth.start()}>
+                  {t('settingsPage.streamChat.reconnect')}
+                </Button>
+              )}
+
+              <Button onClick={() => void twitchAuth.signOut()}>
+                {t('settingsPage.streamChat.signOut')}
+              </Button>
+            </div>
+
+            {twitchAuth.needsReconnect && (
+              <span className={styles.fieldDesc}>
+                {t('settingsPage.streamChat.reconnectDesc')}
+              </span>
+            )}
           </div>
         ) : (
           <div className={styles.fieldRow}>

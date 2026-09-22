@@ -8,7 +8,7 @@ use tracing::info;
 
 use super::state::ChatState;
 use super::{has_baked_client_id, helix, resolve_client_id, runtime, secrets};
-use crate::model::chat::{ChatConfig, TwitchDeviceCode, TwitchTokenResult};
+use crate::model::chat::{ChatConfig, TwitchAccount, TwitchDeviceCode, TwitchTokenResult};
 
 const NO_CLIENT_ID: &str = "no twitch client id available";
 
@@ -64,29 +64,52 @@ pub async fn twitch_poll_device_token(
     helix::poll_device_token(&client_id, &device_code).await
 }
 
-/// Login of the stored token, or null when signed out or the token is dead.
-/// Called on startup so the settings page can show the right state.
+fn signed_out() -> TwitchAccount {
+    TwitchAccount {
+        login: None,
+        missing_scopes: Vec::new(),
+    }
+}
+
+/// Who the stored token belongs to and what it still may do. Called on startup
+/// so the settings page can show the right state.
 #[tauri::command]
-pub async fn twitch_current_login(client_id: Option<String>) -> Result<Option<String>, String> {
+pub async fn twitch_account(client_id: Option<String>) -> Result<TwitchAccount, String> {
     // Refresh-only is still signed in: the fall-through below mints a fresh
     // access token from it.
     if !secrets::has_credentials() {
-        return Ok(None);
+        return Ok(signed_out());
     }
 
-    if let Some(login) = helix::current_login().await {
-        return Ok(Some(login));
+    if let Some(identity) = helix::current_identity().await {
+        return Ok(TwitchAccount {
+            missing_scopes: helix::missing_scopes(&identity.scopes),
+            login: Some(identity.login),
+        });
     }
 
     // Stored token is stale — try the refresh token before giving up, so an app
     // left closed overnight signs itself back in instead of nagging the user.
     let Some(client_id) = resolve_client_id(client_id.as_deref()) else {
-        return Ok(None);
+        return Ok(signed_out());
     };
 
     let refreshed = helix::refresh_stored_token(&client_id).await?;
 
-    Ok(refreshed.login.filter(|_| refreshed.authorized))
+    if !refreshed.authorized {
+        return Ok(signed_out());
+    }
+
+    // A refresh carries the old scope set forward, so the fresh token has to be
+    // asked the same question the stale one was.
+    let Some(identity) = helix::current_identity().await else {
+        return Ok(signed_out());
+    };
+
+    Ok(TwitchAccount {
+        missing_scopes: helix::missing_scopes(&identity.scopes),
+        login: Some(identity.login),
+    })
 }
 
 #[tauri::command]
