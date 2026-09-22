@@ -16,6 +16,10 @@ const MIN_ZOOM_LEVEL = 1.5;
 const MAX_ZOOM_LEVEL = 10;
 const ZOOM_STEP = 0.5;
 const DEFAULT_ZOOM_LEVEL = 3;
+const MIN_CIRCLE_OPACITY = 0.1;
+const MAX_CIRCLE_OPACITY = 1;
+const CIRCLE_OPACITY_STEP = 0.05;
+const DEFAULT_CIRCLE_OPACITY = 0.85;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['track-map'];
@@ -121,6 +125,43 @@ export const TrackMapSettingsPanel = observer(() => {
               title={t('settingsPanels.trackMap.zoomRotate')}
               desc={t('settingsPanels.trackMap.zoomRotateDesc')}
               fallback={false}
+            />
+          </div>
+        )}
+
+        {settings.zoomEnabled && (
+          <div className={styles.fieldGroup}>
+            <SwitchRow
+              settingKey="zoomCircleBackground"
+              title={t('settingsPanels.trackMap.zoomCircleBackground')}
+              desc={t('settingsPanels.trackMap.zoomCircleBackgroundDesc')}
+              fallback={false}
+            />
+          </div>
+        )}
+
+        {settings.zoomEnabled && settings.zoomCircleBackground && (
+          <div className={styles.fieldGroup}>
+            <ColorRow
+              settingKey="zoomCircleColor"
+              title={t('settingsPanels.trackMap.zoomCircleColor')}
+              hex
+            />
+          </div>
+        )}
+
+        {settings.zoomEnabled && settings.zoomCircleBackground && (
+          <div className={styles.fieldGroup}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.zoomCircleOpacity')}
+            </span>
+            <Slider
+              min={MIN_CIRCLE_OPACITY}
+              max={MAX_CIRCLE_OPACITY}
+              step={CIRCLE_OPACITY_STEP}
+              value={settings.zoomCircleOpacity ?? DEFAULT_CIRCLE_OPACITY}
+              tooltip={{ formatter: (v) => `${Math.round((v ?? 0) * 100)}%` }}
+              onChange={(v) => update({ zoomCircleOpacity: v })}
             />
           </div>
         )}

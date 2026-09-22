@@ -492,6 +492,15 @@ export interface TrackMapWidgetSettings {
   zoomLevel?: number;
   /** Rotates the zoomed view so the player's travel direction points up. */
   zoomRotate?: boolean;
+  /**
+   * Paints the circular follow window with a solid ground so the cropped map
+   * reads against whatever is behind the overlay.
+   */
+  zoomCircleBackground?: boolean;
+  /** Ground color of the follow circle. */
+  zoomCircleColor?: string;
+  /** Opacity of the follow-circle ground, 0..1. */
+  zoomCircleOpacity?: number;
   /** Gives every car class its own marker shape instead of a circle for all. */
   classShapes?: boolean;
   /**
