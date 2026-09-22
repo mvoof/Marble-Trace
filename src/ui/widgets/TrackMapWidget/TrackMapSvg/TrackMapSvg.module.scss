@@ -15,6 +15,21 @@
   padding: ws(15);
 }
 
+// Follow mode: the map is a window on the track, so everything outside the
+// inscribed circle is cut away instead of drawn as a rectangle of stray
+// corners. The ground below is clipped by the same shape, which is why it sits
+// on this element rather than behind it.
+.followCircle {
+  overflow: hidden;
+  clip-path: circle(closest-side);
+  background-color: color-mix(
+    in srgb,
+    var(--follow-circle-color, transparent)
+      calc(var(--follow-circle-opacity, 0) * 100%),
+    transparent
+  );
+}
+
 .sectorArc {
   pointer-events: none;
   opacity: 0.8;

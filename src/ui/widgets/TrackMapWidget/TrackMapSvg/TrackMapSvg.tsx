@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
+import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { TrackPoint } from '@/types';
@@ -42,6 +43,9 @@ interface TrackMapSvgProps {
   zoomEnabled?: boolean;
   zoomLevel?: number;
   zoomRotate?: boolean;
+  zoomCircleBackground?: boolean;
+  zoomCircleColor?: string;
+  zoomCircleOpacity?: number;
   classShapes?: boolean;
   carClassOrder?: Map<number, number>;
 }
@@ -54,6 +58,12 @@ const SCREEN_UP_DEG = -90;
 
 /** How much the whole drawing is turned, for anything that must stay upright. */
 const SCREEN_ROTATION_PROPERTY = '--screen-rotation';
+
+/** Ground of the follow circle, when the user asks for one. */
+const CIRCLE_COLOR_PROPERTY = '--follow-circle-color';
+const CIRCLE_OPACITY_PROPERTY = '--follow-circle-opacity';
+const DEFAULT_CIRCLE_COLOR = '#09090b';
+const DEFAULT_CIRCLE_OPACITY = 0.85;
 
 export const TrackMapSvg = observer(
   ({
@@ -76,6 +86,9 @@ export const TrackMapSvg = observer(
     zoomEnabled = false,
     zoomLevel = MIN_ZOOM_LEVEL,
     zoomRotate = false,
+    zoomCircleBackground = false,
+    zoomCircleColor = DEFAULT_CIRCLE_COLOR,
+    zoomCircleOpacity = DEFAULT_CIRCLE_OPACITY,
     classShapes = false,
     carClassOrder,
   }: TrackMapSvgProps) => {
@@ -263,8 +276,28 @@ export const TrackMapSvg = observer(
       ?.filter((s) => s.sectorStartPct != null && s.sectorNum != null)
       .sort((a, b) => (a.sectorStartPct ?? 0) - (b.sectorStartPct ?? 0));
 
+    // Follow mode shows a window onto the track rather than the track itself, so
+    // the part of the circuit outside that window is cropped to a circle — a
+    // rectangle would keep drawing lap sections the driver is nowhere near.
+    const containerClassName = zoomActive
+      ? `${styles.svgContainer} ${styles.followCircle}`
+      : styles.svgContainer;
+
+    const circleStyle =
+      zoomActive && zoomCircleBackground
+        ? ({
+            [CIRCLE_COLOR_PROPERTY]: zoomCircleColor,
+            [CIRCLE_OPACITY_PROPERTY]: zoomCircleOpacity,
+          } as CSSProperties)
+        : undefined;
+
     return (
-      <svg ref={mapRef} viewBox={viewBox} className={styles.svgContainer}>
+      <svg
+        ref={mapRef}
+        viewBox={viewBox}
+        className={containerClassName}
+        style={circleStyle}
+      >
         <g className={styles.content}>
           {/* Track border */}
           <path

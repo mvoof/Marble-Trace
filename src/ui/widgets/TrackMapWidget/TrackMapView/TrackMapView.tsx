@@ -204,6 +204,9 @@ export const TrackMapView = observer(
           zoomEnabled={settings.zoomEnabled}
           zoomLevel={settings.zoomLevel}
           zoomRotate={settings.zoomRotate}
+          zoomCircleBackground={settings.zoomCircleBackground}
+          zoomCircleColor={settings.zoomCircleColor}
+          zoomCircleOpacity={settings.zoomCircleOpacity}
         />
       </WidgetPanel>
     );
