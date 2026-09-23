@@ -222,9 +222,9 @@ describe('the field the baseline already holds', () => {
   });
 
   it('resolves a badge for every class it fields', () => {
-    // The sim leaves `CarClassShortName` empty in the recorded session, so an
-    // unresolved class falls back to the car's own name and spills a model
-    // name into a column three characters wide.
+    // Every class in the recording is badged by `car_badges.rs`; one that fell
+    // back to the car's own name would spill a model name into a column three
+    // characters wide.
     const MAX_BADGE_LENGTH = 6;
 
     for (const entry of baselineEntries()) {
