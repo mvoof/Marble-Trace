@@ -12,34 +12,14 @@ import { parseClassColor } from '@utils/colors';
 // fixture that needs the entries the app would have received from the backend.
 
 /**
- * Badges for the classes in the recorded snapshot.
- *
- * In the app the badge is resolved in Rust (`sources/iracing/car_classes.rs`)
- * before the frontend ever sees an entry. The preview has no backend, and the
- * snapshot stores the raw session — every car's `CarClassShortName` is empty,
- * so without this the preview shows car names ("BMW M2 Racing (G87)") in a
- * column the app fills with "M2". Fixture data, not a second resolver: it only
- * covers the class ids this snapshot holds.
- */
-const PREVIEW_CLASS_BADGES: Record<number, string> = {
-  74: 'MX-5',
-  3002: 'FVee',
-  4012: 'GR86',
-  4102: 'M2',
-  4108: 'M2',
-  4109: 'GT3',
-};
-
-/**
  * Country flags for the recorded snapshot's drivers.
  *
  * `FlairID` is anonymised out of the committed snapshot — every car carries
  * `0`, which the app reads as "this driver picked no flag" and draws as an
  * empty cell. So with the column switched on the preview showed a blank strip
- * and nothing to size it against. Fixture data of the same kind as
- * `PREVIEW_CLASS_BADGES`: a flag is handed to a car by its index, wrapping
- * round the list, so the grid is mixed and the same car keeps the same flag on
- * every re-seed. A snapshot that does carry a flair keeps it.
+ * and nothing to size it against. Fixture data, not a lookup: a flag is handed
+ * to a car by its index, wrapping round the list, so the grid is mixed and the
+ * same car keeps the same flag on every re-seed. A snapshot that does carry a flair keeps it.
  */
 const PREVIEW_FLAIR_IDS = [
   222, // United Kingdom
@@ -138,8 +118,9 @@ export const computeDriverEntries = (
       userName: car.userName,
       carNumber: car.carNumber || String(idx),
       carClassId: car.carClassId,
-      carClassShortName:
-        PREVIEW_CLASS_BADGES[car.carClassId] ?? car.carScreenNameShort,
+      // Already the resolved badge: the snapshot records the session as the
+      // backend published it, after `sources/iracing/car_classes.rs`.
+      carClassShortName: car.carClassShortName,
       carClassColor: parseClassColor(car.carClassColor),
       flairId: previewFlairId(car.flairId, idx),
       isAi: car.isAi,

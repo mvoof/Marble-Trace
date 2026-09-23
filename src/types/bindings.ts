@@ -98,9 +98,15 @@ export type CarEntry = {
   carIdx: number;
   userName: string;
   carNumber: string;
+  /**
+   * iRacing's `CarID` — the car model. Keys the class badge map
+   * (`sources/iracing/car_badges.rs`).
+   */
+  carId: number;
   carClassId: number;
   /**
-   * Class label provided by the sim (e.g. "GT3", "LMP2"); empty in single-class series.
+   * The class badge, resolved by `sources/iracing/car_classes.rs` — not the
+   * sim's `CarClassShortName`, which is empty in AI and hosted sessions.
    */
   carClassShortName: string;
   /**

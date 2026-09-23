@@ -311,7 +311,7 @@ pub trait TelemetrySource {
 | `source.rs`        | implements `TelemetrySource`: connection lifecycle, frame reads                                  |
 | `frame_map.rs`     | maps kerb's `IracingFrame` onto our neutral `SourceFrame` — the field-by-field translation table |
 | `session_parse.rs` | parses the session YAML blob into `ParsedSession`                                                |
-| `car_classes.rs`   | resolves class badges and colors (see below)                                                     |
+| `car_classes.rs`   | resolves class badges (map in `car_badges.rs`) and colors (see below)                            |
 | `flags.rs`         | decodes the iRacing flag bitfield                                                                |
 | `weather.rs`       | weather and track-condition decoding                                                             |
 | `pit_command.rs`   | encodes our pit orders into iRacing's command format                                             |
@@ -330,41 +330,42 @@ in every consumer:
 
 #### Car class badges
 
-The badge shown next to a driver is not simply a field you can read.
+The badge shown next to a driver is not a field you can read.
 `CarClassShortName` from the session YAML is **empty in AI and hosted sessions**,
-and holds the _car_ name in single-model classes. So `car_class_short_name` is
-resolved in order, all of it inside `car_classes.rs`:
+and in official ones reads "GT3 Class" or the car name. What the sim always sends
+is each driver's `CarID` and `CarClassID`, so one badge per class is resolved
+from the cars in it, inside `car_classes.rs`:
 
 ```mermaid
 flowchart TB
-    S1["1 — CarClassShortName<br/><i>the sim's own value, never overwritten</i>"]
-    S2["2 — CLASS_BADGE_BY_ID<br/><i>curated badge per CarClassID</i>"]
-    S3["3 — derive_badge_from_car_names()<br/><i>tokens shared by every model in the class</i>"]
-    S4["4 — CarScreenNameShort<br/><i>the car name, last resort</i>"]
+    S1["1 — car_badges.rs<br/><i>CarID → badge, every car of the class agrees</i>"]
+    S2["2 — CarClassShortName<br/><i>the sim's own class name</i>"]
+    S3["3 — CarScreenNameShort<br/><i>the car name, single-model class</i>"]
+    S4["4 — Class &lt;CarClassID&gt;<br/><i>multi-model class, nothing else known</i>"]
     OUT["car_class_short_name"]
 
-    S1 -->|empty| S2 -->|no entry| S3 -->|no shared token| S4
+    S1 -->|a car unmapped or disagreeing| S2 -->|empty| S3 -->|several models| S4
     S1 --> OUT
     S2 --> OUT
     S3 --> OUT
     S4 --> OUT
 ```
 
-Step 3 is the interesting one: `"BMW M4 GT3 EVO"` + `"Ferrari 296 GT3"` share the
-token `GT3`, so a multi-model class names itself. **Add to `CLASS_BADGE_BY_ID` only
-for single-model classes whose car name is too long for the badge column** —
-multi-model classes resolve themselves.
+The map in `car_badges.rs` is the only hand-maintained list, and it is keyed by
+**car**, not by class: the Ferrari 296 GT3 is class 2708 in a multi-make field
+and 4036 in its own series, and `GT3` in both. The order follows irdashies, with
+the map ahead of the sim's name so "GT3 Class" never reaches a badge column
+sized for `GT3`.
 
 `CLASS_COLOR_MAP` corrects known mismatches between telemetry and in-game colors.
-`session_parse.rs` only calls `apply_class_badges()` and `normalize_class_color()`;
-the constants, the logic and its tests all stay in `car_classes.rs`.
+`session_parse.rs` only calls `apply_class_badges()` and `normalize_class_color()`.
 
-To read real `CarClassID` values, dump the session YAML with iRacing running
-(`kerb::utils::save_session`, or `cargo run --example session_diagnostics` in
-`kerb/examples`), then:
+To read real `CarID` values, dump the session YAML with iRacing running
+(`kerb::save_session`, or `cargo run --example test` in
+`kerb/examples`, which writes `session.yaml`), then:
 
 ```bash
-grep -o "CarClassID: [0-9]*\|CarScreenNameShort: .*" dump.yaml | paste - - | sort -u
+grep -o "CarID: [0-9]*\|CarClassID: [0-9]*\|CarScreenName: .*" session.yaml | paste - - - | sort -u
 ```
 
 ## `computations/` — pure logic

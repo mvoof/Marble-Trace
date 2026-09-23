@@ -146,25 +146,23 @@ See **[docs/steering-wheel-assets.md](docs/steering-wheel-assets.md)** for the p
 
 ## Car class badges
 
-Everything class-related — constants, resolution logic, tests — lives in `src-tauri/src/sources/iracing/car_classes.rs`. `session_parse.rs` only calls `apply_class_badges()` and `normalize_class_color()`.
+The badge next to a driver is resolved in Rust, in `src-tauri/src/sources/iracing/`: `car_badges.rs` is the map (`CarID → badge`), `car_classes.rs` the resolution and the class colors. Widgets only read `carClassShortName`.
 
-iRacing's `CarClassShortName` is **empty in AI and hosted sessions**, and in single-model classes it holds the _car_ name ("BMW M4 GT4"), not a class label. So `car_class_short_name` is resolved in this order:
+iRacing's `CarClassShortName` is **empty in AI and hosted sessions**, so each class gets one badge from the cars in it, in this order:
 
-| #   | Source                          | Notes                                                                                    |
-| --- | ------------------------------- | ---------------------------------------------------------------------------------------- |
-| 1   | `CarClassShortName`             | whatever the sim reports — never overwritten                                             |
-| 2   | `CLASS_BADGE_BY_ID`             | curated badge per `CarClassID` — the only hand-maintained list                           |
-| 3   | `derive_badge_from_car_names()` | tokens shared by every model in the class ("BMW M4 GT3 EVO" + "Ferrari 296 GT3" → `GT3`) |
-| 4   | `CarScreenNameShort`            | the car name, as a last resort                                                           |
+| #   | Source               | Notes                                                        |
+| --- | -------------------- | ------------------------------------------------------------ |
+| 1   | `car_badges.rs`      | when every car of the class is in the map and they all agree |
+| 2   | `CarClassShortName`  | the sim's class name, as it is                               |
+| 3   | `CarScreenNameShort` | the car name, when the class holds one model                 |
+| 4   | `Class <CarClassID>` | a multi-model class nothing above could name                 |
 
-**Adding a class** — add to `CLASS_BADGE_BY_ID` only when a class holds a single model whose name is too long for the badge column. Multi-model classes (GT3, LMP2, TCR…) resolve themselves at step 3 and need no entry. `CarClassID` is stable across sessions and seasons.
+**Adding a car** — one line in `car_badges.rs`: a GT3/GT4/GTP/LMP2/TCR… car gets its category, a single-make car whose name is too long for the badge column gets a short label (at most 6 characters, enforced by a test). The map is keyed by `CarID`, not `CarClassID`, because iRacing gives the same car a different class id in every series that runs it.
 
 **Class colors** — `CLASS_COLOR_MAP` corrects known mismatches between the telemetry color and what iRacing displays in-game.
 
-**Reading real values** — dump the session YAML with the sim running (`kerb::utils::save_session`, or `cargo run --example session_diagnostics` in `kerb/examples`), then:
+**Reading real values** — dump the session YAML with the sim running (`kerb::save_session`, or `cargo run --example test` in `kerb/examples`, which writes `session.yaml`), then:
 
 ```bash
-grep -o "CarClassID: [0-9]*\|CarScreenNameShort: .*" dump.yaml | paste - - | sort -u
+grep -o "CarID: [0-9]*\|CarClassID: [0-9]*\|CarScreenName: .*" session.yaml | paste - - - | sort -u
 ```
-
-The same list is available from the iRacing `/data/carclass/get` endpoint (fields `car_class_id` / `name`), which requires an account login — note that its `short_name` is the _longer_ car name and `name` is the concise one.

@@ -136,34 +136,44 @@ Four layers with strict one-way imports:
 
 ### Car class badges and colors
 
-Everything class-related lives in `sources/iracing/car_classes.rs` — constants,
-resolution logic and its tests. `session_parse.rs` only calls
-`apply_class_badges()` / `normalize_class_color()`.
+Two files in `sources/iracing/`: `car_badges.rs` is the **map** — `CarID → badge`,
+the only hand-maintained list — and `car_classes.rs` holds the resolution and
+the colors. `session_parse.rs` only calls `apply_class_badges()` /
+`normalize_class_color()`; nothing on the frontend derives a class name, every
+widget reads `carClassShortName` as the backend resolved it.
 
-`CarClassShortName` from the session YAML is **empty in AI and hosted sessions**,
-and holds the _car_ name in single-model classes — so `car_class_short_name` is
-resolved in this order:
+The sim does not name classes reliably: `CarClassShortName` is **empty in AI and
+hosted sessions** (verified on a dump), and in official ones reads "GT3 Class" or
+the car name. What it always sends is each driver's `CarID` and `CarClassID`, so
+one badge per class is resolved from the cars in it:
 
-| #   | Source                          | Notes                                                                                    |
-| --- | ------------------------------- | ---------------------------------------------------------------------------------------- |
-| 1   | `CarClassShortName`             | sim value, kept only if badge-shaped (≤6 chars, or no curated badge for the class)       |
-| 2   | `CLASS_BADGE_BY_ID`             | curated badge per `CarClassID` — the only hand-maintained list                           |
-| 3   | `derive_badge_from_car_names()` | tokens shared by every model in the class ("BMW M4 GT3 EVO" + "Ferrari 296 GT3" → `GT3`) |
-| 4   | `CarScreenNameShort`            | car name, last resort                                                                    |
+| #   | Source               | Notes                                                            |
+| --- | -------------------- | ---------------------------------------------------------------- |
+| 1   | `car_badges.rs`      | when **every** car of the class is in the map and they all agree |
+| 2   | `CarClassShortName`  | the sim's class name, as it is                                   |
+| 3   | `CarScreenNameShort` | the car name, when the class holds one model                     |
+| 4   | `Class <CarClassID>` | a multi-model class nothing above could name                     |
 
-Add to `CLASS_BADGE_BY_ID` only for single-model classes whose car name is too
-long for the badge column — multi-model classes resolve themselves at step 3.
-Every label, whatever step produced it, is passed through `tidy_class_badge()`,
-which drops filler words ("GT3 Class" → `GT3`) so a badge column three
-characters wide is spent on the class. Colors: `CLASS_COLOR_MAP` corrects known
-telemetry/in-game mismatches.
+This is irdashies' order with the map moved ahead of the sim's name. The map is
+keyed by **car, not class**: a car keeps its category in whatever class a session
+puts it in (the Ferrari 296 GT3 is class 2708 in a multi-make field and 4036 in
+its own series), while iRacing mints a class id per series. No other derivation
+exists — no token matching on car names, no filler-word stripping; a car the map
+does not know shows its own name.
 
-To read real `CarClassID` values, dump the session YAML with iRacing running
-(`kerb::utils::save_session`, or `cargo run --example session_diagnostics` in
-`kerb/examples`), then:
+**Adding a car:** one line in `car_badges.rs`. A category car (GT3, GT4, GTP,
+LMP2, TCR…) gets the category constant; a single-make car whose name overflows
+the badge column gets a short label; anything else needs no entry. Badges are
+capped at `MAX_BADGE_LENGTH` (6) by a test. Mark an id `verified` only once it has
+been seen in a dump. Colors: `CLASS_COLOR_MAP` corrects known telemetry/in-game
+mismatches.
+
+To read real `CarID` values, dump the session YAML with iRacing running
+(`kerb::save_session`, or `cargo run --example test` in `kerb/examples`,
+which writes `session.yaml`), then:
 
 ```bash
-grep -o "CarClassID: [0-9]*\|CarScreenNameShort: .*" dump.yaml | paste - - | sort -u
+grep -o "CarID: [0-9]*\|CarClassID: [0-9]*\|CarScreenName: .*" session.yaml | paste - - - | sort -u
 ```
 
 ### Input bindings

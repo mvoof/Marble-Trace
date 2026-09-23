@@ -1,5 +1,6 @@
 //! iRacing source adapter (kerb IRsdkConnection)
 
+pub mod car_badges;
 pub mod car_classes;
 pub mod flags;
 pub mod frame_map;

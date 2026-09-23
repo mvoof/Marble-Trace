@@ -142,8 +142,12 @@ pub struct CarEntry {
     pub car_idx: i32,
     pub user_name: String,
     pub car_number: String,
+    /// iRacing's `CarID` — the car model. Keys the class badge map
+    /// (`sources/iracing/car_badges.rs`).
+    pub car_id: i32,
     pub car_class_id: i32,
-    /// Class label provided by the sim (e.g. "GT3", "LMP2"); empty in single-class series.
+    /// The class badge, resolved by `sources/iracing/car_classes.rs` — not the
+    /// sim's `CarClassShortName`, which is empty in AI and hosted sessions.
     pub car_class_short_name: String,
     /// Raw iRacing color string (e.g. "0xffda59").
     pub car_class_color: String,

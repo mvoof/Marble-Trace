@@ -191,6 +191,7 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                 car_idx: raw_driver.car_idx?,
                 user_name: raw_driver.user_name.unwrap_or_default(),
                 car_number: raw_driver.car_number.unwrap_or_default(),
+                car_id: raw_driver.car_id.unwrap_or(-1),
                 car_class_id: raw_driver.car_class_id.unwrap_or(-1),
                 car_class_short_name: raw_driver
                     .car_class_short_name
@@ -433,6 +434,8 @@ struct RawDriver {
     car_idx: Option<i32>,
     user_name: Option<String>,
     car_number: Option<String>,
+    #[serde(rename = "CarID")]
+    car_id: Option<i32>,
     #[serde(rename = "CarClassID")]
     car_class_id: Option<i32>,
     car_class_short_name: Option<String>,
@@ -540,6 +543,7 @@ DriverInfo:
  - CarIdx: 3
    UserName: Test Driver
    CarNumber: "11"
+   CarID: 67
    CarClassID: 4011
    CarClassShortName: MX5
    CarClassColor: 0xffda59
@@ -607,7 +611,9 @@ QualifyResultsInfo:
 
         let player = &snapshot.cars[0];
         assert_eq!(player.car_class_id, 4011);
-        assert_eq!(player.car_class_short_name, "MX5");
+        assert_eq!(player.car_id, 67);
+        // The badge map wins over the sim's own class name.
+        assert_eq!(player.car_class_short_name, "MX-5");
         assert_eq!(player.car_class_color, "#ffd259");
         assert_eq!(player.i_rating, 2350);
         assert!(!player.is_pace_car);
