@@ -1,0 +1,18 @@
+// Every cell is an inline-block, and a line may break between any two of them:
+// a readout sized to its content wraps its last digit whenever the scaled `1ch`
+// rounds the measured width a fraction short.
+.root {
+  white-space: nowrap;
+}
+
+// A cell as wide as the font's "0" — every digit occupies the same advance,
+// whatever glyph is in it.
+.digit {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+}
+
+.separator {
+  display: inline-block;
+}

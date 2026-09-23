@@ -19,7 +19,7 @@ const DIGIT_PATTERN = /\d/;
  */
 export const FixedDigits = observer(({ text, className }: FixedDigitsProps) => {
   return (
-    <span className={className}>
+    <span className={`${styles.root} ${className ?? ''}`}>
       {Array.from(text, (char, index) =>
         DIGIT_PATTERN.test(char) ? (
           <span className={styles.digit} key={index}>
