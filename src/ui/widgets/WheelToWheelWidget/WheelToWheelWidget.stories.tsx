@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { UnitSystem } from '@/types';
-import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
+import type {
+  WheelToWheelLayout,
+  WheelToWheelWidgetSettings,
+} from '@/types/widget-settings';
 import { WheelToWheelWidget } from './WheelToWheelWidget';
 import {
   defineWidgetStories,
@@ -11,6 +14,7 @@ import {
 interface StoryArgs {
   unitSystem: UnitSystem;
   dragMode: boolean;
+  layout: WheelToWheelLayout;
 }
 
 /** Wide enough that the snapshot's nearest class rival is always inside. */
@@ -28,6 +32,7 @@ const meta: Meta<StoryArgs> = {
         // rival; the stories want a fight on screen whatever the snapshot is.
         gapThreshold: STORY_GAP_THRESHOLD_S,
         raceOnly: false,
+        layout: args.layout,
       };
 
       store.liveWidgets.updateUserSettings('wheel-to-wheel', settings);
@@ -37,6 +42,7 @@ const meta: Meta<StoryArgs> = {
     args: {
       unitSystem: 'metric',
       dragMode: false,
+      layout: 'columns',
     },
   }),
 };
@@ -51,4 +57,10 @@ export const InTheFight: Story = {
 export const Imperial: Story = {
   parameters: previewScenario('field-close-pack'),
   args: { unitSystem: 'imperial' },
+};
+
+/** One row per driver, stacked the way the cars run. */
+export const Rows: Story = {
+  parameters: previewScenario('field-close-pack'),
+  args: { layout: 'rows' },
 };

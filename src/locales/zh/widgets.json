@@ -401,6 +401,11 @@
       "scaleByDistanceDesc": "远处的卡片更小，但最多缩小三分之一。"
     },
     "wheelToWheel": {
+      "display": "显示",
+      "layout": "布局",
+      "layoutDesc": "“分栏”将对手放在你旁边；“分行”按赛道顺序排列车手：前方、你、后方。",
+      "layoutColumns": "分栏",
+      "layoutRows": "分行",
       "appearsWhen": "显示条件",
       "thresholdSeconds": "差距阈值（秒）",
       "thresholdDesc": "在此差距内、与你同组别同圈的最近车辆即为对手；超过该值的 1.3 倍后离开面板。",

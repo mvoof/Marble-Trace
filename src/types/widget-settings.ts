@@ -308,7 +308,14 @@ export interface CloseBattleWidgetSettings {
   raceOnly: boolean;
 }
 
+/**
+ * `columns`: you on the left, the gap in the middle, the rival on the right.
+ * `rows`: one row per driver, stacked in track order — ahead, you, behind.
+ */
+export type WheelToWheelLayout = 'columns' | 'rows';
+
 export interface WheelToWheelWidgetSettings {
+  layout: WheelToWheelLayout;
   /**
    * Seconds. The nearest car of your class on your lap inside this is the
    * fight; it leaves the plate at 1.3 × this value.

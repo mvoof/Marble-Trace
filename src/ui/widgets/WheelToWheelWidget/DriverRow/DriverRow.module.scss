@@ -1,0 +1,119 @@
+// A grid rather than a flex row: every row keeps the same column widths, so
+// the speeds and the gaps of all three drivers line up under one another.
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1px ws(150) 1px ws(104);
+  align-items: center;
+  column-gap: sp('lg');
+  padding: sp('sm') sp('lg');
+  border: 1px solid color-mix(in srgb, var(--side-accent) 55%, transparent);
+  border-radius: radius('lg');
+}
+
+// The accent is the row's, not the class's: blue is you and red a rival.
+.rowPlayer {
+  --side-accent: #{$race-blue};
+}
+
+.rowRival {
+  --side-accent: #{$race-red};
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: sp('lg');
+  min-width: 0;
+}
+
+.names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.role {
+  font-size: fs('xs');
+  font-weight: 700;
+  color: var(--side-accent);
+  text-transform: uppercase;
+}
+
+.name,
+.carName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name {
+  font-size: fs('lg');
+  font-weight: 700;
+}
+
+.carName {
+  font-size: fs('sm');
+  color: $widget-text-secondary;
+}
+
+.divider {
+  align-self: stretch;
+  background: $widget-border-default;
+}
+
+.pace {
+  display: flex;
+  flex-direction: column;
+  gap: sp('xs');
+  min-width: 0;
+}
+
+.gapCell {
+  min-width: 0;
+}
+
+.gap {
+  display: flex;
+  align-items: center;
+  gap: sp('sm');
+}
+
+.gapArrow {
+  flex: 0 0 auto;
+  width: ws(20);
+  height: ws(20);
+  color: var(--side-accent);
+}
+
+.gapText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.gapLine {
+  display: flex;
+  align-items: baseline;
+  gap: sp('xxs');
+}
+
+.gapValue {
+  font-size: fs('xl');
+  font-weight: 700;
+}
+
+.gapUnit {
+  font-size: fs('xs');
+  font-weight: 600;
+  color: $widget-text-secondary;
+}
+
+.gapCaption {
+  margin-top: sp('xxs');
+  font-size: fs('xxs');
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: $widget-text-muted;
+  text-transform: uppercase;
+}

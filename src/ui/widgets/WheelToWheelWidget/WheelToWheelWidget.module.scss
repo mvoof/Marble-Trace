@@ -10,3 +10,9 @@
   margin: sp('xs') 0;
   background: $widget-border-default;
 }
+
+.rowsRoot {
+  padding: sp('sm');
+  font-family: $font-widget;
+  color: $widget-text-primary;
+}

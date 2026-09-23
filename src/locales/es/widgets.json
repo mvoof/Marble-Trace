@@ -401,6 +401,11 @@
       "scaleByDistanceDesc": "Las placas lejanas se reducen, nunca más de un tercio."
     },
     "wheelToWheel": {
+      "display": "Visualización",
+      "layout": "Disposición",
+      "layoutDesc": "«Columnas» pone al rival a tu lado; «Filas» apila a los pilotos en orden de pista: delante, tú, detrás.",
+      "layoutColumns": "Columnas",
+      "layoutRows": "Filas",
       "appearsWhen": "Cuándo aparece",
       "thresholdSeconds": "Umbral de diferencia (s)",
       "thresholdDesc": "El coche más cercano de tu clase en tu vuelta dentro de esta diferencia es tu rival; sale del panel a 1,3 × este valor.",
