@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
-import { FixedDigits } from '@ui/widgets/TimerWidget/FixedDigits/FixedDigits';
+import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import { EngineCell } from './EngineCell';
 import { AbsCell } from './AbsCell';
 import { AdjustmentCell } from './AdjustmentCell';
