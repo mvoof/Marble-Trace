@@ -5,6 +5,7 @@ import { IncidentsWidgetStore } from './widgets/incidents.widget';
 import { PaceCarStore } from './widgets/pace-car.widget';
 import { RadarWidgetStore } from './widgets/radar.widget';
 import { CloseBattleWidgetStore } from '@ui/widgets/CloseBattleWidget/close-battle.widget';
+import { WheelToWheelWidgetStore } from '@ui/widgets/WheelToWheelWidget/wheel-to-wheel.widget';
 import { RelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.widget';
 import { PitServiceWidgetStore } from '@ui/widgets/PitServiceWidget/pit-service.widget';
 import { StandingsWidgetStore } from './widgets/standings.widget';
@@ -58,6 +59,7 @@ export class RootStore {
   incidentsWidget: IncidentsWidgetStore;
   radar: RadarWidgetStore;
   closeBattleWidget: CloseBattleWidgetStore;
+  wheelToWheelWidget: WheelToWheelWidgetStore;
   relativeWidget: RelativeWidgetStore;
   standingsWidget: StandingsWidgetStore;
   pitServiceWidget: PitServiceWidgetStore;
@@ -120,6 +122,7 @@ export class RootStore {
     this.incidentsWidget = new IncidentsWidgetStore(this);
     this.radar = new RadarWidgetStore(this);
     this.closeBattleWidget = new CloseBattleWidgetStore(this);
+    this.wheelToWheelWidget = new WheelToWheelWidgetStore(this);
     this.relativeWidget = new RelativeWidgetStore(this);
     this.standingsWidget = new StandingsWidgetStore(this);
     this.pitServiceWidget = new PitServiceWidgetStore(this);
@@ -150,6 +153,7 @@ export class RootStore {
       this.paceCar.init();
       this.radar.init();
       this.closeBattleWidget.init();
+      this.wheelToWheelWidget.init();
       this.sim.init();
       this.appSettings.init();
       this.drivingCoachWidget.init();
@@ -165,6 +169,7 @@ export class RootStore {
   // this on unmount — their reactions otherwise keep running against telemetry.
   dispose() {
     this.closeBattleWidget.dispose();
+    this.wheelToWheelWidget.dispose();
     this.fpsDiagnostics.dispose();
     this.twitchAuth.dispose();
     this.streamChatWidget.dispose();

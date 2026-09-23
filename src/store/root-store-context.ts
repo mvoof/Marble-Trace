@@ -30,6 +30,7 @@ export const useIncidentsWidgetStore = () => useStore().incidentsWidget;
 
 export const useRadarWidgetStore = () => useStore().radar;
 export const useCloseBattleWidgetStore = () => useStore().closeBattleWidget;
+export const useWheelToWheelWidgetStore = () => useStore().wheelToWheelWidget;
 export const useRelativeWidgetStore = () => useStore().relativeWidget;
 export const useStandingsWidgetStore = () => useStore().standingsWidget;
 export const usePitServiceWidgetStore = () => useStore().pitServiceWidget;

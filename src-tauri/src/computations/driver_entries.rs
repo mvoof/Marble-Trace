@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use serde::{Deserialize, Serialize};
 
 use crate::capabilities::Capabilities;
+use crate::computations::car_speed::CarSpeedTracker;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::cars::CarIdxFrame;
 use crate::model::enums::{PitState, SessionState, TrackSurface};
@@ -81,6 +82,10 @@ pub struct DriverEntry {
     /// without ever entering the pit lane. Cleared once it is back in the world.
     pub is_towed: bool,
     pub pit_state: PitState,
+    /// Speed along the track in m/s, `0` until two samples of the car exist.
+    /// The sim reports it only for the player; every other car's is derived
+    /// from its lap distance — see `CarSpeedTracker`.
+    pub speed: f32,
 }
 
 #[derive(Default)]
@@ -368,6 +373,7 @@ pub fn compute(
                 is_finished: false,
                 is_towed: false,
                 pit_state: PitState::None,
+                speed: 0.0,
             }
         })
         .collect();
@@ -954,12 +960,14 @@ fn compute_ir_deltas(entries: &[DriverEntry], use_live: bool) -> HashMap<i32, i3
 /// Stateful processor wrapping the standings computation.
 pub struct DriverEntriesProcessor {
     state: Mutex<DriverEntriesState>,
+    speeds: CarSpeedTracker,
 }
 
 impl Default for DriverEntriesProcessor {
     fn default() -> Self {
         Self {
             state: Mutex::new(DriverEntriesState::default()),
+            speeds: CarSpeedTracker::default(),
         }
     }
 }
@@ -978,13 +986,20 @@ impl Processor for DriverEntriesProcessor {
     }
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
-        let frame = compute(
+        let mut frame = compute(
             ctx.car_idx,
             ctx.session,
             ctx.start_positions,
             true,
             ctx.session_state,
             &self.state,
+        );
+
+        self.speeds.apply(
+            &mut frame.entries,
+            ctx.session_time,
+            ctx.track_length_m,
+            ctx.car_dynamics.speed,
         );
 
         Some(ComputedOutput::DriverEntries(frame))
@@ -994,6 +1009,8 @@ impl Processor for DriverEntriesProcessor {
         if let Ok(mut locked) = self.state.lock() {
             *locked = DriverEntriesState::default();
         }
+
+        self.speeds.reset();
     }
 }
 
@@ -1061,7 +1078,7 @@ fn next_pit_state(prev: PitState, on_pit_road: bool, track_surface: TrackSurface
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use crate::model::enums::{PitState, TrackSurface};
     use crate::model::flags::CHECKERED;
@@ -2047,7 +2064,7 @@ mod tests {
         assert_eq!(result, PitState::Stall);
     }
 
-    fn make_live_entry(
+    pub(crate) fn make_live_entry(
         car_idx: i32,
         position: i32,
         lap: i32,
@@ -2097,6 +2114,7 @@ mod tests {
             is_finished: false,
             is_towed: false,
             pit_state: PitState::None,
+            speed: 0.0,
         }
     }
 

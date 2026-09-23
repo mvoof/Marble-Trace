@@ -1,0 +1,34 @@
+.speed {
+  display: flex;
+  align-items: baseline;
+  gap: sp('sm');
+  line-height: 1;
+}
+
+// Three digit cells whatever the speed, so 99 and 250 sit in the same slot and
+// the unit beside them never slides.
+.value {
+  min-width: 3ch;
+  font-size: fs('xxxl');
+  font-weight: 700;
+  text-align: right;
+}
+
+.unit {
+  font-size: fs('sm');
+  font-weight: 600;
+  color: $widget-text-secondary;
+}
+
+.speedCompact {
+  flex: 0 0 auto;
+  gap: sp('xxs');
+}
+
+.speedCompact .value {
+  font-size: fs('xl');
+}
+
+.speedCompact .unit {
+  font-size: fs('xxxs');
+}

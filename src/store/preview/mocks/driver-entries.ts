@@ -84,6 +84,35 @@ const previewPitState = (
   return 'none';
 };
 
+/** A GT3 on a straight, in m/s — about 245 km/h. */
+const PREVIEW_TRACK_SPEED_MPS = 68;
+/** How far apart two neighbours' preview speeds sit, so "who is faster" has an answer. */
+const PREVIEW_SPEED_SPREAD_MPS = 0.9;
+const PREVIEW_SPEED_VARIANTS = 5;
+const PREVIEW_PIT_SPEED_MPS = 22;
+
+/**
+ * The speed the backend would have derived from the car's lap distance. One
+ * frame has no lap distance to derive it from, so each car gets a steady speed
+ * of its own instead — close enough to its neighbours to look like a fight.
+ */
+const previewSpeed = (
+  idx: number,
+  onPitRoad: boolean,
+  trackSurface: DriverEntry['trackSurface']
+): number => {
+  if (trackSurface === TrackSurface.InPitStall) return 0;
+
+  if (trackSurface === TrackSurface.NotInWorld) return 0;
+
+  if (onPitRoad) return PREVIEW_PIT_SPEED_MPS;
+
+  return (
+    PREVIEW_TRACK_SPEED_MPS +
+    (idx % PREVIEW_SPEED_VARIANTS) * PREVIEW_SPEED_SPREAD_MPS
+  );
+};
+
 export const computeDriverEntries = (
   carIdx: CarIdxFrame | null,
   sessionInfo: SessionSnapshot | null
@@ -148,6 +177,7 @@ export const computeDriverEntries = (
       isFinished: false,
       isTowed: false,
       pitState: previewPitState(onPitRoad, trackSurface),
+      speed: previewSpeed(idx, onPitRoad, trackSurface),
     });
   }
 

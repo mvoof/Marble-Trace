@@ -12,6 +12,9 @@
     "close-battle": {
       "description": "Quien pelea contigo ahora mismo, en un eje vertical de distancia."
     },
+    "wheel-to-wheel": {
+      "description": "Tú y tu rival más cercano, lado a lado: diferencia y velocidad."
+    },
     "standings": {
       "description": "Clasificación e intervalos de la sesión en directo."
     },
@@ -396,6 +399,16 @@
       "plateOpacityDesc": "Opaca por defecto: una fila translúcida pierde sus bordes sobre una curva. Lo único que además atenúa una placa es atenuar otra clase, y eso sí significa algo.",
       "scaleByDistance": "Reducir por distancia",
       "scaleByDistanceDesc": "Las placas lejanas se reducen, nunca más de un tercio."
+    },
+    "wheelToWheel": {
+      "appearsWhen": "Cuándo aparece",
+      "thresholdSeconds": "Umbral de diferencia (s)",
+      "thresholdDesc": "El coche más cercano de tu clase en tu vuelta dentro de esta diferencia es tu rival; sale del panel a 1,3 × este valor.",
+      "hideDelay": "Retardo de ocultación (s)",
+      "hideDelayDesc": "Cuánto tiempo sigue el panel después de que el rival salga del umbral.",
+      "raceOnly": "Solo en carreras",
+      "includeLapped": "Incluir coches doblados",
+      "includeLappedDesc": "En carrera, un coche a una vuelta por delante o por detrás también cuenta como rival. Fuera de carrera las vueltas no se tienen en cuenta."
     },
     "raceDash": {
       "rpmFill": "Relleno de revoluciones",

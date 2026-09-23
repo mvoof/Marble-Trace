@@ -1,0 +1,63 @@
+.side {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: sp('xs');
+  min-width: 0;
+  padding: 0 sp('md');
+}
+
+// The accent is the side's, not the class's: blue is you and red the rival,
+// wherever the two of you run in the field.
+.sidePlayer {
+  --side-accent: #{$race-blue};
+}
+
+.sideRival {
+  --side-accent: #{$race-red};
+  align-items: flex-end;
+  text-align: right;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: sp('lg');
+  min-width: 0;
+}
+
+.sideRival .header {
+  flex-direction: row-reverse;
+}
+
+.names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+.role {
+  font-size: fs('sm');
+  font-weight: 700;
+  color: var(--side-accent);
+  text-transform: uppercase;
+}
+
+.name,
+.carName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name {
+  font-size: fs('lg');
+  font-weight: 700;
+}
+
+.carName {
+  font-size: fs('sm');
+  color: $widget-text-secondary;
+}

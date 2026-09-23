@@ -1,0 +1,42 @@
+.row {
+  --side-accent: #{$race-red};
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: sp('xxs');
+  min-height: 0;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: sp('md');
+  min-width: 0;
+}
+
+.names {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 0;
+  line-height: 1.1;
+  text-align: right;
+}
+
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: fs('md');
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role {
+  font-size: fs('xxxs');
+  font-weight: 700;
+  color: var(--side-accent);
+  text-transform: uppercase;
+}

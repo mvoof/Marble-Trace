@@ -1,0 +1,12 @@
+.root {
+  align-items: stretch;
+  padding: sp('lg') sp('xl');
+  font-family: $font-widget;
+  color: $widget-text-primary;
+}
+
+.divider {
+  flex: 0 0 1px;
+  margin: sp('xs') 0;
+  background: $widget-border-default;
+}

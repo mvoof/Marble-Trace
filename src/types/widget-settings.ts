@@ -308,6 +308,23 @@ export interface CloseBattleWidgetSettings {
   raceOnly: boolean;
 }
 
+export interface WheelToWheelWidgetSettings {
+  /**
+   * Seconds. The nearest car of your class on your lap inside this is the
+   * fight; it leaves the plate at 1.3 × this value.
+   */
+  gapThreshold: number;
+  /** Seconds the plate stays after the rival left the threshold. */
+  hideDelay: number;
+  raceOnly: boolean;
+  /**
+   * In a race, cars a lap ahead or behind count as rivals too. Off by default:
+   * lapping traffic is not a fight. Outside a race it changes nothing — lap
+   * counts there only say when each car joined.
+   */
+  includeLapped: boolean;
+}
+
 export type RowPadding = 'narrow' | 'medium' | 'wide';
 
 export type StandingsViewMode = 'all' | 'cycling' | 'grouped';
@@ -872,6 +889,7 @@ export type WidgetSpecificSettings =
   | RadarSettings
   | ProximityRadarSettings
   | CloseBattleWidgetSettings
+  | WheelToWheelWidgetSettings
   | StandingsWidgetSettings
   | RelativeWidgetSettings
   | TrackMapWidgetSettings

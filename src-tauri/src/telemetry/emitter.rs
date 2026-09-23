@@ -174,6 +174,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
             fuel_settings: ctx.fuel_settings,
             lap_delta_active: (active_mask & EVENT_LAP_DELTA) != 0,
             session_num: frame.session.session_num,
+            session_time: frame.session.session_time,
             session_time_remain: frame.session.session_time_remain,
             session_state: frame.session.session_state,
         };

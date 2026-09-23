@@ -12,6 +12,9 @@
     "close-battle": {
       "description": "谁正在与你缠斗，显示在垂直距离轴上。"
     },
+    "wheel-to-wheel": {
+      "description": "你与最近的对手并排显示：差距与速度。"
+    },
     "standings": {
       "description": "实时赛事排名和间隔时间。"
     },
@@ -396,6 +399,16 @@
       "plateOpacityDesc": "默认不透明——半透明的行在弯道背景上会失去自身边界。唯一还会让卡片变淡的是“淡化其他组别”，那是有含义的。",
       "scaleByDistance": "按距离缩小",
       "scaleByDistanceDesc": "远处的卡片更小，但最多缩小三分之一。"
+    },
+    "wheelToWheel": {
+      "appearsWhen": "显示条件",
+      "thresholdSeconds": "差距阈值（秒）",
+      "thresholdDesc": "在此差距内、与你同组别同圈的最近车辆即为对手；超过该值的 1.3 倍后离开面板。",
+      "hideDelay": "淡出延迟（秒）",
+      "hideDelayDesc": "对手离开阈值后面板保留的时间。",
+      "raceOnly": "仅限正赛",
+      "includeLapped": "包括套圈车辆",
+      "includeLappedDesc": "正赛中，领先或落后一圈的车辆也算作对手。非正赛时圈数本来就不计入。"
     },
     "raceDash": {
       "rpmFill": "转速填充",

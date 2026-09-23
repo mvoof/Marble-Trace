@@ -1,0 +1,29 @@
+.bar {
+  display: flex;
+  gap: sp('xxs');
+  width: 100%;
+  height: ws(8);
+}
+
+.barCompact {
+  height: ws(4);
+}
+
+.segment {
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: radius('sm');
+  background: $widget-border-subtle;
+  transform: skewX(-20deg);
+  transition: background-color 120ms linear;
+}
+
+.segmentLit {
+  background: var(--side-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment {
+    transition: none;
+  }
+}

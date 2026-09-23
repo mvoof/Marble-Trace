@@ -1,0 +1,13 @@
+.split {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0 sp('md');
+}
+
+.divider {
+  flex: 0 0 1px;
+  margin: sp('xxs') 0;
+  background: $widget-border-subtle;
+}
