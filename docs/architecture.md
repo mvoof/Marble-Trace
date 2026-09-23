@@ -361,7 +361,7 @@ sized for `GT3`.
 `session_parse.rs` only calls `apply_class_badges()` and `normalize_class_color()`.
 
 To read real `CarID` values, dump the session YAML with iRacing running
-(`kerb::utils::save_session`, or `cargo run --example test` in
+(`kerb::save_session`, or `cargo run --example test` in
 `kerb/examples`, which writes `session.yaml`), then:
 
 ```bash

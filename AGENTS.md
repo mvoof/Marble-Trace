@@ -169,7 +169,7 @@ been seen in a dump. Colors: `CLASS_COLOR_MAP` corrects known telemetry/in-game
 mismatches.
 
 To read real `CarID` values, dump the session YAML with iRacing running
-(`kerb::utils::save_session`, or `cargo run --example test` in `kerb/examples`,
+(`kerb::save_session`, or `cargo run --example test` in `kerb/examples`,
 which writes `session.yaml`), then:
 
 ```bash

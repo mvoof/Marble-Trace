@@ -161,7 +161,7 @@ iRacing's `CarClassShortName` is **empty in AI and hosted sessions**, so each cl
 
 **Class colors** — `CLASS_COLOR_MAP` corrects known mismatches between the telemetry color and what iRacing displays in-game.
 
-**Reading real values** — dump the session YAML with the sim running (`kerb::utils::save_session`, or `cargo run --example test` in `kerb/examples`, which writes `session.yaml`), then:
+**Reading real values** — dump the session YAML with the sim running (`kerb::save_session`, or `cargo run --example test` in `kerb/examples`, which writes `session.yaml`), then:
 
 ```bash
 grep -o "CarID: [0-9]*\|CarClassID: [0-9]*\|CarScreenName: .*" session.yaml | paste - - - | sort -u

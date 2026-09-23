@@ -22,7 +22,7 @@
 //!
 //! Only the map is hand-maintained — see `car_badges.rs` for what goes in. To
 //! read real ids, dump the session YAML while the sim is running —
-//! `kerb::utils::save_session(&conn, path)`, or `cargo run --example test` in
+//! `kerb::save_session(&conn, path)`, or `cargo run --example test` in
 //! `kerb/examples`, which writes `session.yaml` — then grep it:
 //!
 //! ```text
@@ -94,17 +94,16 @@ fn resolve_class_badge(class_id: i32, members: &[&CarEntry]) -> String {
         return name.to_string();
     }
 
-    let mut car_ids: Vec<i32> = members.iter().map(|car| car.car_id).collect();
-    car_ids.sort_unstable();
-    car_ids.dedup();
-
-    let car_name = members
+    let mut car_names: Vec<&str> = members
         .iter()
         .map(|car| car.car_screen_name_short.trim())
-        .find(|name| !name.is_empty());
+        .filter(|name| !name.is_empty())
+        .collect();
+    car_names.sort_unstable();
+    car_names.dedup();
 
-    match (car_ids.len(), car_name) {
-        (1, Some(name)) => name.to_string(),
+    match car_names.as_slice() {
+        [name] => (*name).to_string(),
         _ => format!("Class {class_id}"),
     }
 }
@@ -242,6 +241,9 @@ mod tests {
             make_car(1, 9001, 9998, "Example Cup Car", ""),
             make_car(2, 9002, 9998, "Example Cup Car", ""),
             make_car(3, 9002, 9999, "Other Car", ""),
+            // No `CarID` from the sim: the names still tell the models apart.
+            make_car(4, 9003, -1, "Example Cup Car", ""),
+            make_car(5, 9003, -1, "Other Car", ""),
         ];
 
         apply_class_badges(&mut cars);
@@ -252,7 +254,9 @@ mod tests {
                 "Example Cup Car",
                 "Example Cup Car",
                 "Class 9002",
-                "Class 9002"
+                "Class 9002",
+                "Class 9003",
+                "Class 9003"
             ]
         );
     }
