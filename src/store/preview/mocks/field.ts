@@ -45,6 +45,9 @@ export interface MockFieldFrames {
   relative: RelativeFrame;
 }
 
+/** A GT3 on a straight, in m/s — the speed of a car put back on track. */
+const PACK_SPEED_MPS = 68;
+
 const DEFAULT_LAP_TIME_S = 92.4;
 /** Where the player sits on the lap; the rest of the field is spaced around it. */
 const PLAYER_LAP_DIST_PCT = 0.5;
@@ -104,6 +107,9 @@ const spaceField = (
       onPitRoad: false,
       pitState: 'none' as const,
       trackSurface: TrackSurface.OnTrack,
+      // A car lifted out of its box onto the track has to be moving, or the
+      // speed readouts put a parked car in the middle of the pack.
+      speed: entry.speed || PACK_SPEED_MPS,
       lap,
       lapDistPct,
       relativeLapDist: signedLapDistDiff(lapDistPct),

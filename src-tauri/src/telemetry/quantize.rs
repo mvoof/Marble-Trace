@@ -44,6 +44,8 @@ const GAP_DP: u32 = 2;
 const LAP_TIME_DP: u32 = 3;
 /// Distances between cars, in meters. 2 dp is a centimeter.
 const DISTANCE_DP: u32 = 2;
+/// Speeds in m/s: a hundredth is well under the whole km/h a readout prints.
+const SPEED_DP: u32 = 2;
 
 fn round(value: f32, decimals: u32) -> f32 {
     let factor = 10f32.powi(decimals as i32);
@@ -108,6 +110,7 @@ fn driver_entry(entry: &mut DriverEntry) {
     entry.qualify_time = round(entry.qualify_time, LAP_TIME_DP);
     entry.class_est_lap_time = round(entry.class_est_lap_time, LAP_TIME_DP);
     round_opt(&mut entry.results_position_time, LAP_TIME_DP);
+    entry.speed = round(entry.speed, SPEED_DP);
 }
 
 pub fn driver_entries(frame: &mut DriverEntriesFrame) {

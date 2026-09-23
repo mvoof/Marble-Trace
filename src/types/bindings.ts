@@ -786,6 +786,12 @@ export type DriverEntry = {
    */
   isTowed: boolean;
   pitState: PitState;
+  /**
+   * Speed along the track in m/s, `0` until two samples of the car exist.
+   * The sim reports it only for the player; every other car's is derived
+   * from its lap distance — see `CarSpeedTracker`.
+   */
+  speed: number;
 };
 
 /**

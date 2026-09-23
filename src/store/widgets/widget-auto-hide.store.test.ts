@@ -56,3 +56,19 @@ describe('WidgetAutoHideStore — DRS', () => {
     ).toBe(true);
   });
 });
+
+describe('WidgetAutoHideStore — wheel to wheel', () => {
+  const wheelToWheelStore = (isVisible: boolean) =>
+    new WidgetAutoHideStore({
+      liveWidgets: { getWidget: () => ({ id: 'wheel-to-wheel' }) },
+      wheelToWheelWidget: { isVisible },
+    } as unknown as Deps);
+
+  it('takes the plate off while nobody is inside the threshold', () => {
+    expect(wheelToWheelStore(false).isVisible('wheel-to-wheel')).toBe(false);
+  });
+
+  it('puts it back when a rival is', () => {
+    expect(wheelToWheelStore(true).isVisible('wheel-to-wheel')).toBe(true);
+  });
+});

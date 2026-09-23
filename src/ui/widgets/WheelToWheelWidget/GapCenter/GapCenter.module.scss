@@ -1,0 +1,68 @@
+.center {
+  display: flex;
+  flex: 0 0 ws(190);
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 sp('md');
+}
+
+.title {
+  font-size: fs('xs');
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: $widget-text-secondary;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.gapRow {
+  display: flex;
+  align-items: center;
+  gap: sp('xs');
+}
+
+.chevronPlayer,
+.chevronRival {
+  flex: 0 0 auto;
+  width: ws(22);
+  height: ws(22);
+}
+
+.chevronPlayer {
+  color: $race-blue;
+}
+
+.chevronRival {
+  color: $race-red;
+}
+
+.gap {
+  display: flex;
+  align-items: baseline;
+  gap: sp('xxs');
+  line-height: 1;
+}
+
+.gapValue {
+  font-size: fs('xxxl');
+  font-weight: 700;
+}
+
+.gapCompact .gapValue {
+  font-size: fs('xl');
+}
+
+.gapUnit {
+  font-size: fs('sm');
+  font-weight: 600;
+  color: $widget-text-secondary;
+}
+
+.caption {
+  font-size: fs('xs');
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: $widget-text-muted;
+  text-transform: uppercase;
+}

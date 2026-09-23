@@ -1,4 +1,5 @@
 use crate::capabilities::Capabilities;
+use crate::computations::car_speed::CarSpeedTracker;
 use crate::computations::driver_entries::DriverEntry;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::relative::RelativeFrame;
@@ -34,6 +35,7 @@ pub fn compute(entries: &[DriverEntry], player_car_idx: i32) -> RelativeFrame {
 /// Required capability: `RELATIVE` (already set by `IracingSource`).
 pub struct RelativeProcessor {
     state: std::sync::Mutex<crate::computations::driver_entries::DriverEntriesState>,
+    speeds: CarSpeedTracker,
 }
 
 impl Default for RelativeProcessor {
@@ -42,6 +44,7 @@ impl Default for RelativeProcessor {
             state: std::sync::Mutex::new(
                 crate::computations::driver_entries::DriverEntriesState::default(),
             ),
+            speeds: CarSpeedTracker::default(),
         }
     }
 }
@@ -67,13 +70,20 @@ impl Processor for RelativeProcessor {
             return None;
         }
 
-        let standings_frame = crate::computations::driver_entries::compute(
+        let mut standings_frame = crate::computations::driver_entries::compute(
             ctx.car_idx,
             ctx.session,
             ctx.start_positions,
             false,
             ctx.session_state,
             &self.state,
+        );
+
+        self.speeds.apply(
+            &mut standings_frame.entries,
+            ctx.session_time,
+            ctx.track_length_m,
+            ctx.car_dynamics.speed,
         );
 
         let frame = compute(&standings_frame.entries, player_car_idx);
@@ -85,6 +95,8 @@ impl Processor for RelativeProcessor {
         if let Ok(mut locked) = self.state.lock() {
             *locked = crate::computations::driver_entries::DriverEntriesState::default();
         }
+
+        self.speeds.reset();
     }
 }
 
@@ -149,6 +161,7 @@ mod tests {
             is_finished: false,
             is_towed: false,
             pit_state: PitState::None,
+            speed: 0.0,
         }
     }
 

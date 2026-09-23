@@ -1,3 +1,4 @@
+pub mod car_speed;
 pub mod driver_entries;
 pub mod fuel;
 pub mod incidents;
@@ -82,6 +83,9 @@ pub struct ComputeContext<'a> {
     pub lap_delta_active: bool,
     /// Current session number from the telemetry frame (used by fuel + pit_stops).
     pub session_num: Option<i32>,
+    /// Seconds since the session started — the clock `CarSpeedTracker` derives
+    /// every car's speed against, so a paused sim reads as nobody moving.
+    pub session_time: Option<f64>,
     /// Remaining session time in seconds (used by fuel for timed races).
     pub session_time_remain: Option<f64>,
     /// Session state from the telemetry frame (used by driver entries to latch finishers).

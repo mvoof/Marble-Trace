@@ -11,7 +11,12 @@ import { widgetTypeFromId, widgetTypeOf } from '@utils/widget-instance';
 
 type WidgetAutoHideDeps = Pick<
   RootStore,
-  'liveWidgets' | 'radar' | 'flags' | 'pitServiceWidget' | 'player'
+  | 'liveWidgets'
+  | 'radar'
+  | 'flags'
+  | 'pitServiceWidget'
+  | 'player'
+  | 'wheelToWheelWidget'
 >;
 
 const NO_LED_FLAG = 'none';
@@ -72,6 +77,12 @@ export class WidgetAutoHideStore {
       }
 
       return drs !== 'Unavailable' || !settings.hideWhenUnavailable;
+    }
+
+    // Nobody inside the gap threshold means nothing to show, and the plate the
+    // container draws around an empty body would say otherwise.
+    if (widgetType === 'wheel-to-wheel') {
+      return this.root.wheelToWheelWidget.isVisible;
     }
 
     if (widgetType === 'pit-service') {

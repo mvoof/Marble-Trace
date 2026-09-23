@@ -786,6 +786,7 @@ mod tests {
             fuel_settings: crate::computations::fuel::FuelSettings::default(),
             lap_delta_active: false,
             session_num: Some(0),
+            session_time: None,
             session_time_remain: None,
             session_state: None,
         }
