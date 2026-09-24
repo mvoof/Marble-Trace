@@ -1,0 +1,1710 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Marble Trace — Free Open-Source iRacing Telemetry Overlay</title>
+    <meta
+      name="description"
+      content="Marble Trace is a free, open-source iRacing overlay built with Rust and Tauri. Standings, relative, track map, fuel, delta, radar and 17+ widgets."
+    />
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+
+    <!-- Typography: Exo 2 and Barlow Condensed for aggressive racing display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800;1,900&family=Exo+2:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="src/styles/variables.css" />
+    <link rel="stylesheet" href="src/styles/background.css" />
+    <link rel="stylesheet" href="src/styles/navbar.css" />
+    <link rel="stylesheet" href="src/styles/main.css" />
+  </head>
+  <body>
+    <!-- Page background — a technical drawing behind everything. The drawing
+       itself is assets/background.svg; this element only places it. -->
+    <div class="page-bg" aria-hidden="true"></div>
+
+    <!-- ========================================================================
+       Top Navigation Bar
+       ======================================================================== -->
+    <header class="site-header" role="banner">
+      <div class="header-container">
+        <!-- Brand Logo & Title -->
+        <a href="#" class="brand" aria-label="Marble Trace — Home">
+          <div class="brand-icon-wrap">
+            <img
+              src="assets/logo.svg"
+              alt="Marble Trace Logo"
+              class="brand-icon"
+              width="26"
+              height="26"
+            />
+          </div>
+          <h1 class="brand-name">Marble Trace</h1>
+        </a>
+
+        <!-- Center Desktop Navigation Links -->
+        <nav class="nav-desktop" aria-label="Main Navigation">
+          <a href="#features" class="nav-link">Features</a>
+          <a href="#widgets" class="nav-link">Widgets</a>
+          <a href="#screens" class="nav-link">Screens</a>
+          <a href="#layouts" class="nav-link">Layouts</a>
+          <a href="#performance" class="nav-link">Performance</a>
+          <a href="#open-source" class="nav-link">Open Source</a>
+        </nav>
+
+        <!-- Right Actions (Social links + Download CTA + Mobile Hamburger) -->
+        <div class="header-actions">
+          <!-- GitHub Link -->
+          <a
+            href="https://github.com/mvoof/Marble-Trace"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="action-link"
+            aria-label="GitHub Repository"
+          >
+            <svg aria-hidden="true">
+              <use href="assets/icons/sprite.svg#icon-github" />
+            </svg>
+            <span>GitHub</span>
+          </a>
+
+          <!-- Discord Link -->
+          <a
+            href="https://discord.gg/tkdS9sn49b"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="action-link"
+            aria-label="Discord Server"
+          >
+            <svg aria-hidden="true">
+              <use href="assets/icons/sprite.svg#icon-discord" />
+            </svg>
+            <span>Discord</span>
+          </a>
+
+          <!-- Download Button -->
+          <a
+            href="https://github.com/mvoof/Marble-Trace/releases/latest"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-download"
+          >
+            <svg aria-hidden="true">
+              <use href="assets/icons/sprite.svg#icon-windows" />
+            </svg>
+            <span>Download</span>
+          </a>
+
+          <!-- Mobile Hamburger Toggle -->
+          <button
+            type="button"
+            class="mobile-toggle"
+            aria-label="Toggle Navigation Menu"
+            aria-expanded="false"
+            aria-controls="mobile-drawer"
+          >
+            <span class="mobile-toggle-box">
+              <span class="mobile-toggle-line"></span>
+              <span class="mobile-toggle-line"></span>
+              <span class="mobile-toggle-line"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================================================
+       Mobile Navigation Drawer & Backdrop
+       ======================================================================== -->
+    <div class="mobile-backdrop" aria-hidden="true"></div>
+
+    <aside
+      id="mobile-drawer"
+      class="mobile-drawer"
+      aria-label="Mobile Navigation"
+    >
+      <div class="drawer-header">
+        <a href="#" class="drawer-brand">
+          <div class="brand-icon-wrap">
+            <img
+              src="assets/logo-light.svg"
+              alt="Marble Trace"
+              class="brand-icon"
+              width="24"
+              height="24"
+            />
+          </div>
+          <span class="brand-name">Marble Trace</span>
+        </a>
+        <button type="button" class="drawer-close" aria-label="Close menu">
+          <svg width="18" height="18" aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-close" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Nav Links -->
+      <nav class="drawer-nav">
+        <a href="#features" class="drawer-nav-link">
+          <span>Features</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#widgets" class="drawer-nav-link">
+          <span>Widgets</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#screens" class="drawer-nav-link">
+          <span>Screens</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#layouts" class="drawer-nav-link">
+          <span>Layouts</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#performance" class="drawer-nav-link">
+          <span>Performance</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#open-source" class="drawer-nav-link">
+          <span>Open Source</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+      </nav>
+
+      <div class="drawer-divider"></div>
+
+      <!-- Mobile Social Links -->
+      <div class="drawer-socials">
+        <a
+          href="https://github.com/mvoof/Marble-Trace"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="drawer-social-link"
+        >
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-github" />
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <a
+          href="https://discord.gg/GVaRsHbjxV"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="drawer-social-link"
+        >
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-discord" />
+          </svg>
+          <span>Discord</span>
+        </a>
+      </div>
+
+      <!-- Mobile Download CTA -->
+      <div class="drawer-cta">
+        <a
+          href="https://github.com/mvoof/Marble-Trace/releases/latest"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-download"
+        >
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-windows" />
+          </svg>
+          <span>Download for Windows</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ========================================================================
+       Main Content (Sections corresponding to Menu)
+       ======================================================================== -->
+    <main id="main">
+      <!-- Hero Section (Matches Screenshot 2026-09-11 202506.png and Screenshot 195640.png) -->
+      <section class="hero-block" id="hero" aria-labelledby="hero-heading">
+        <!-- Hero Visual — one uncut photograph, held inside the container so it
+           never runs past the page gutters while still filling the block height.
+           The "cuts" are diagonal washes: the picture dissolves into the page
+           ground along a slanted axis on the left, and a second, near-vertical
+           slanted cut peels a light strip off the right edge for the scroll cue. -->
+
+        <div class="hero-visual">
+          <img
+            src="assets/hero-cockpit-clean.jpg"
+            alt="iRacing Cockpit View"
+            class="hero-photo"
+          />
+
+          <!-- The blurred side dissolves into the hero ground along the same axis -->
+          <div class="hero-fade-left"></div>
+
+          <!-- Specular bloom and crisp hairlines riding the slanted cuts -->
+          <div class="cut-line cut-line-lead"></div>
+          <div class="cut-line cut-line-trail"></div>
+
+          <!-- Near-vertical slanted cut taking a strip off the right edge -->
+
+          <!-- Scroll indicator, sitting on the right strip -->
+          <div class="hero-scroll-indicator">
+            <span class="hero-scroll-text">SCROLL</span>
+            <svg class="hero-scroll-arrow" aria-hidden="true">
+              <use href="assets/icons/sprite.svg#icon-arrow-down" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="hero-container">
+          <!-- Content Column (Left) -->
+          <div class="hero-content">
+            <div class="hero-kicker">
+              OPEN SOURCE TELEMETRY OVERLAY FOR IRACING
+            </div>
+
+            <span id="hero-heading" class="hero-heading">
+              YOUR RACE.<br />
+              YOUR DATA.
+            </span>
+
+            <p class="lede hero-subtitle">
+              Marble Trace is a free, lightweight overlay for iRacing. A tiny
+              Rust core reads telemetry straight from the sim — beautiful
+              widgets float above it, costing you almost no FPS.
+            </p>
+
+            <!-- Buttons Group -->
+            <div class="hero-buttons">
+              <!-- Windows Download Button -->
+              <a
+                href="https://github.com/mvoof/Marble-Trace/releases/latest"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-hero-dark"
+              >
+                <svg aria-hidden="true">
+                  <use href="assets/icons/sprite.svg#icon-windows" />
+                </svg>
+                <span>DOWNLOAD</span>
+              </a>
+
+              <!-- Join Discord Button -->
+              <a
+                href="https://discord.gg/GVaRsHbjxV"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-hero-light"
+              >
+                <svg aria-hidden="true">
+                  <use href="assets/icons/sprite.svg#icon-discord" />
+                </svg>
+                <span>JOIN DISCORD</span>
+              </a>
+
+              <!-- Star on GitHub Button -->
+              <a
+                href="https://github.com/mvoof/Marble-Trace"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-hero-light"
+              >
+                <svg aria-hidden="true">
+                  <use href="assets/icons/sprite.svg#icon-github" />
+                </svg>
+                <span>STAR ON GITHUB</span>
+                <span class="star-gold" aria-hidden="true">★</span>
+              </a>
+            </div>
+
+            <!-- Feature Badges -->
+            <div class="hero-badges">
+              <span class="badge-pill"
+                >Free forever · GPL-3.0 licensed · Windows · iRacing</span
+              >
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====================================================================
+         Section 01 — Why Marble Trace
+         Two bands over one axis. Above: the oversized ghost ordinal in the
+         left gutter, the chapter copy beside it, and a single sheared still
+         of the overlay in the cockpit — with one callout standing off the
+         plate's right edge for the thing a screenshot cannot say. Below: the
+         four claims in a row, opened by a lime index chip and divided only by
+         hairlines. No cards anywhere in the section.
+         ==================================================================== -->
+      <section id="features" class="chapter" aria-labelledby="why-heading">
+        <div class="container chapter-head">
+          <span class="chapter-ordinal" aria-hidden="true">01</span>
+
+          <div class="chapter-lead">
+            <p class="chapter-kicker">Why Marble Trace</p>
+
+            <h2 id="why-heading" class="chapter-title">
+              Built for<br />
+              real racing.
+            </h2>
+
+            <p class="lede chapter-subtitle">
+              Lightweight, flexible and powerful — Marble Trace gives you the
+              telemetry data you need, without getting in your way.
+            </p>
+          </div>
+
+          <figure class="chapter-shot">
+
+            <img
+              src="assets/why/cockpit-overlays.jpg"
+              alt="Marble Trace widgets floating over the iRacing cockpit view — standings, delta, fuel and proximity radar"
+              class="chapter-shot-photo"
+            />
+          </figure>
+
+          <div class="chapter-callout">
+            <p class="chapter-callout-title">
+              Transparent frameless overlay
+            </p>
+            <p class="chapter-callout-desc">
+              Stays on top, never blocks your view.
+            </p>
+          </div>
+        </div>
+
+        <div class="container">
+          <ul class="claim-grid">
+            <li class="claim">
+              <div class="claim-head">
+                <span class="claim-index" aria-hidden="true"><span>01</span></span>
+                <h3 class="claim-title">Zero overhead</h3>
+              </div>
+              <p class="lede claim-desc">
+                A tiny Rust backend reads telemetry directly, with minimal
+                impact on performance.
+              </p>
+            </li>
+
+            <li class="claim">
+              <div class="claim-head">
+                <span class="claim-index" aria-hidden="true"><span>02</span></span>
+                <h3 class="claim-title">Fully modular</h3>
+              </div>
+              <p class="lede claim-desc">
+                Widgets can be independently positioned, resized and styled.
+              </p>
+            </li>
+
+            <li class="claim">
+              <div class="claim-head">
+                <span class="claim-index" aria-hidden="true"><span>03</span></span>
+                <h3 class="claim-title">Layouts for every session</h3>
+              </div>
+              <p class="lede claim-desc">
+                Visual editor and session-based layout switching for practice,
+                qualifying and races.
+              </p>
+            </li>
+
+            <li class="claim">
+              <div class="claim-head">
+                <span class="claim-index" aria-hidden="true"><span>04</span></span>
+                <h3 class="claim-title">Any screen</h3>
+              </div>
+              <p class="lede claim-desc">
+                Use it on your main screen, a phone, a tablet or a second PC
+                over your local network. Nothing installed on the device.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+         Section 02 - The widget gallery
+
+         A stage and a rail. The rail lists every widget there is, grouped by
+         the four things a driver reads plus streaming, and it scrolls inside
+         its own box rather than down the page: the point of a gallery is that
+         the whole catalogue stands in front of you at once. The stage then
+         holds the chosen one at the size it is actually read at, which a grid
+         of thumbnails can never do - these captures run from 700x40 to
+         828x532, and a standings table shrunk to a card is a picture of
+         nothing.
+
+         Nothing leans here. Section 01 owns the 24deg angle; a screenshot
+         read at an angle is a screenshot nobody reads, and this section is
+         made of nothing else.
+
+         Without JavaScript the rail is still the full catalogue and the stage
+         still holds the first widget, so the section never renders empty.
+         ==================================================================== -->
+      <section
+        id="widgets"
+        class="chapter chapter-gallery"
+        aria-labelledby="widgets-heading"
+        data-widget-gallery
+      >
+        <!-- The crossbar. The chapter states itself in one line across the
+             page, the ordinal anchoring its left end and the kicker its
+             right, closed by a full-width rule. -->
+        <div class="container gallery-head">
+          <div class="gallery-head-bar">
+            <div class="gallery-head-title">
+              <span class="chapter-ordinal" aria-hidden="true">02</span>
+
+              <h2 id="widgets-heading" class="chapter-title gallery-title">
+                The right data. Right there.
+              </h2>
+            </div>
+
+            <p class="chapter-kicker gallery-kicker">Widget system</p>
+          </div>
+        </div>
+
+        <!-- Three columns under the bar, and no two start on the same line:
+             the sheet opens highest, the copy a step below it, the widget a
+             step below that. The step is the section's structure - three
+             columns squared off at the top would be a table. -->
+        <div class="container">
+          <div class="gallery">
+
+            <div class="gallery-copy">
+              <p class="lede gallery-lede">
+                Every widget in the app, at the size you actually read it. Take
+                the four you race with, or the whole board.
+              </p>
+
+              <p class="gallery-groups">
+                Race &amp; performance<br />
+                Timing &amp; standings<br />
+                Awareness<br />
+                Car &amp; session<br />
+                Streaming
+              </p>
+            </div>
+
+          <figure class="stage" id="gw-stage" role="tabpanel" aria-live="polite">
+            <figcaption class="stage-head">
+              <p class="stage-group" id="gw-group">Race &amp; Performance</p>
+
+              <div class="stage-title">
+                <h3 class="stage-name" id="gw-name">Race Dash</h3>
+                <p class="stage-index" aria-hidden="true">
+                  <span id="gw-index">01</span> / <span id="gw-total">28</span>
+                </p>
+              </div>
+            </figcaption>
+
+            <div class="stage-shot">
+              <img
+                id="gw-shot"
+                src="assets/widgets/race-dash.png"
+                alt="Race Dash widget"
+                decoding="async"
+              />
+            </div>
+
+            <p class="stage-desc" id="gw-desc">Speed, gear, RPM, position and lap in one strip &mdash; the one widget that never leaves the screen.</p>
+          </figure>
+
+            <div class="sheet">
+              <ul
+                class="sheet-grid"
+                role="tablist"
+                aria-label="Widget gallery"
+                aria-orientation="horizontal"
+              >
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame is-active"
+                  role="tab"
+                  id="gw-tab-race-dash"
+                  aria-controls="gw-stage"
+                  aria-selected="true"
+                  tabindex="0"
+                  data-shot="assets/widgets/race-dash.png"
+                  data-name="Race Dash"
+                  data-alt="Race Dash widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Speed, gear, RPM, position and lap in one strip &mdash; the one widget that never leaves the screen."
+                >
+                  <img src="assets/widgets/race-dash.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Race Dash</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-pit-line"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/pit-line.png"
+                  data-name="Pit Line"
+                  data-alt="Pit Line widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Pit limiter, pit-lane speed and the metres left to your box, sized to be read while you watch the mirrors."
+                >
+                  <img src="assets/widgets/pit-line.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Pit Line</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-rpm-lights"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/rpm-lights.png"
+                  data-name="RPM Lights"
+                  data-alt="RPM Lights widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="A shift light bar you read at the edge of vision, with your own colours and shift point."
+                >
+                  <img src="assets/widgets/rpm-lights.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">RPM Lights</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-engine"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/engine.png"
+                  data-name="Engine Panel"
+                  data-alt="Engine Panel widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Water, oil, fuel pressure and voltage under one glance, so a failing engine is not a surprise."
+                >
+                  <img src="assets/widgets/engine.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Engine Panel</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-input-trace"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/input-trace.png"
+                  data-name="Input Trace"
+                  data-alt="Input Trace widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Throttle, brake and steering as a rolling trace &mdash; see your own hands and feet on the lap."
+                >
+                  <img src="assets/widgets/input-trace.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Input Trace</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-g-metr"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/g-metr.png"
+                  data-name="G-Meter"
+                  data-alt="G-Meter widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Lateral and longitudinal load live, with the peaks of the lap held beside them."
+                >
+                  <img src="assets/widgets/g-metr.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">G-Meter</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-coach"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/coach.png"
+                  data-name="Coach"
+                  data-alt="Coach widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="Brake and traction guidance against your reference lap, while you are still in the corner."
+                >
+                  <img src="assets/widgets/coach.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Coach</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-invisible-dash"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/invisible-dash.png"
+                  data-name="Invisible Dash"
+                  data-alt="Invisible Dash widget"
+                  data-group="Race &amp; Performance"
+                  data-desc="The numbers with no panel under them at all &mdash; speed, gear and position straight on the track."
+                >
+                  <img src="assets/widgets/invisible-dash.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Invisible Dash</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-standings"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/standings.png"
+                  data-name="Standings"
+                  data-alt="Standings widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="The multi-class order with gaps, class badges, pit state, licence and tyre stint age."
+                >
+                  <img src="assets/widgets/standings.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Standings</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-relative"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/relative.png"
+                  data-name="Relative"
+                  data-alt="Relative widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="Who is actually near you on track, ahead and behind, whatever lap they are on."
+                >
+                  <img src="assets/widgets/relative.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Relative</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-relative-map"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/relative-map.png"
+                  data-name="Relative Map"
+                  data-alt="Relative Map widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="The same field laid out along the track, so you read the gaps as distance."
+                >
+                  <img src="assets/widgets/relative-map.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Relative Map</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-delta"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/delta.png"
+                  data-name="Delta HUD"
+                  data-alt="Delta HUD widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="Live delta to your best lap or to the session best, with the trace of how you got there."
+                >
+                  <img src="assets/widgets/delta.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Delta HUD</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-delta-best"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/delta-best.png"
+                  data-name="Delta HUD &middot; best lap"
+                  data-alt="Delta HUD - best lap widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="The compact variant: the lap you are on and the delta under it, nothing else."
+                >
+                  <img src="assets/widgets/delta-best.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Delta HUD &middot; best lap</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-sector-matrix"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/sector-matrix.png"
+                  data-name="Sector Matrix"
+                  data-alt="Sector Matrix widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="Every sector of every lap side by side &mdash; where the lap was won and where it leaked."
+                >
+                  <img src="assets/widgets/sector-matrix.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Sector Matrix</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-lap-log"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/lap-log.png"
+                  data-name="Lap Log"
+                  data-alt="Lap Log widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="Your stint lap by lap, the best one marked, invalid laps called out."
+                >
+                  <img src="assets/widgets/lap-log.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Lap Log</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-timer"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/timer.png"
+                  data-name="Timer"
+                  data-alt="Timer widget"
+                  data-group="Timing &amp; Standings"
+                  data-desc="Session clock, stint countdown and the time left before you have to box."
+                >
+                  <img src="assets/widgets/timer.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Timer</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-map"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/map.png"
+                  data-name="Track Map"
+                  data-alt="Track Map widget"
+                  data-group="Awareness"
+                  data-desc="Live track position and layout, every car on it, your own class picked out."
+                >
+                  <img src="assets/widgets/map.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Track Map</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-map-record"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/map-record.png"
+                  data-name="Track Map &middot; recording"
+                  data-alt="Track Map - recording widget"
+                  data-group="Awareness"
+                  data-desc="The map drawing itself on an out lap &mdash; a track the app has never seen takes one lap to learn."
+                >
+                  <img src="assets/widgets/map-record.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Track Map &middot; recording</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-proximity-radar"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/proximity-radar.png"
+                  data-name="Proximity Radar"
+                  data-alt="Proximity Radar widget"
+                  data-group="Awareness"
+                  data-desc="360&deg; cover for the blind spots, with the real distance to the car beside you."
+                >
+                  <img src="assets/widgets/proximity-radar.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Proximity Radar</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-radar-bar"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/radar-bar.png"
+                  data-name="Radar Bar"
+                  data-alt="Radar Bar widget"
+                  data-group="Awareness"
+                  data-desc="The same warning as two flat bars down the edges of the screen, out of the driving view."
+                >
+                  <img src="assets/widgets/radar-bar.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Radar Bar</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-flat-flag"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/flat-flag.png"
+                  data-name="Flat Flags"
+                  data-alt="Flat Flags widget"
+                  data-group="Awareness"
+                  data-desc="Every flag state as a plain panel &mdash; unmistakable at a glance, in any light."
+                >
+                  <img src="assets/widgets/flat-flag.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Flat Flags</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-led-flag-dual"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/led-flag-dual.png"
+                  data-name="LED Flags"
+                  data-alt="LED Flags widget"
+                  data-group="Awareness"
+                  data-desc="Flags as light panels either side of the screen, seen without looking at them."
+                >
+                  <img src="assets/widgets/led-flag-dual.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">LED Flags</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-led-flag-one"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/led-flag-one.png"
+                  data-name="LED Flags &middot; single panel"
+                  data-alt="LED Flags - single panel widget"
+                  data-group="Awareness"
+                  data-desc="One panel instead of two, for a single screen or a tight cockpit."
+                >
+                  <img src="assets/widgets/led-flag-one.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">LED Flags &middot; single panel</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-pit-stop"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/pit-stop.png"
+                  data-name="Pit Service"
+                  data-alt="Pit Service widget"
+                  data-group="Car &amp; Session"
+                  data-desc="Fuel, tyre sets, pressures and repairs &mdash; the whole stop laid out before you commit to it."
+                >
+                  <img src="assets/widgets/pit-stop.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Pit Service</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-fuel"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/fuel.png"
+                  data-name="Fuel"
+                  data-alt="Fuel widget"
+                  data-group="Car &amp; Session"
+                  data-desc="Per-lap burn, laps left in the tank, and exactly what to add to reach the flag."
+                >
+                  <img src="assets/widgets/fuel.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Fuel</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-fuel-pit-stop"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/fuel-pit-stop.png"
+                  data-name="Fuel &middot; pit window"
+                  data-alt="Fuel - pit window widget"
+                  data-group="Car &amp; Session"
+                  data-desc="Fuel with the pit window on it: the lap to box and the margin either side of it."
+                >
+                  <img src="assets/widgets/fuel-pit-stop.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Fuel &middot; pit window</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-weather"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/weather.png"
+                  data-name="Weather"
+                  data-alt="Weather widget"
+                  data-group="Car &amp; Session"
+                  data-desc="Air and track temperature, humidity, wind, and how the session is turning."
+                >
+                  <img src="assets/widgets/weather.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Weather</span>
+                </button>
+              </li>
+              <li role="presentation">
+                <button
+                  type="button"
+                  class="frame"
+                  role="tab"
+                  id="gw-tab-stream-chat"
+                  aria-controls="gw-stage"
+                  aria-selected="false"
+                  tabindex="-1"
+                  data-shot="assets/widgets/stream-chat.png"
+                  data-name="Stream Chat"
+                  data-alt="Stream Chat widget"
+                  data-group="Streaming"
+                  data-desc="Your chat on the overlay instead of on a second screen &mdash; never on the wheel."
+                >
+                  <img src="assets/widgets/stream-chat.png" alt="" loading="lazy" decoding="async" />
+                  <span class="frame-caption">Stream Chat</span>
+                </button>
+              </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+         Section 02 - The widget gallery
+
+         A stage and a rail. The rail lists every widget there is, grouped by
+         the four things a driver reads plus streaming, and it scrolls inside
+         its own box rather than down the page: the point of a gallery is that
+         the whole catalogue stands in front of you at once. The stage then
+         holds the chosen one at the size it is actually read at, which a grid
+         of thumbnails can never do - these captures run from 700x40 to
+         828x532, and a standings table shrunk to a card is a picture of
+         nothing.
+
+         Nothing leans here. Section 01 owns the 24deg angle; a screenshot
+         read at an angle is a screenshot nobody reads, and this section is
+         made of nothing else.
+
+         Without JavaScript the rail is still the full catalogue and the stage
+         still holds the first widget, so the section never renders empty.
+         ==================================================================== -->
+
+      <!-- ====================================================================
+         Section 03 - Remote screens
+
+         One scene, four devices, one overlay. The claim is not that the app
+         runs on a tablet - it is that the same layout the driver built is
+         already on every screen he owns, so the devices are drawn in one
+         group at one scale rather than as four cards saying the same thing.
+
+         The scene is one cut-out (assets/screens/devices.png, white ground
+         removed) rather than four framed devices: the screens in it are at
+         angles no CSS inset would sit straight in, and a group photographed
+         together is what carries "at the same moment". Each device is then
+         called out off the scene by a leader line, the way a part is named on
+         a drawing - a caption row under the picture names the picture, not the
+         four things in it.
+         ==================================================================== -->
+      <section id="screens" class="chapter chapter-screens" aria-labelledby="screens-heading">
+        <div class="container screens">
+          <div class="screens-head">
+            <span class="chapter-ordinal" aria-hidden="true">03</span>
+
+            <div class="chapter-lead">
+              <p class="chapter-kicker">Multi-screen layouts</p>
+
+              <h2 id="screens-heading" class="chapter-title">
+                Same data.<br />
+                Anywhere.
+              </h2>
+
+              <p class="lede chapter-subtitle">
+                Open a layout on any screen on your network &mdash; a phone, a
+                tablet, a laptop, a second PC. A browser is all the device
+                needs; nothing is installed on it.
+              </p>
+
+              <ul class="screens-facts">
+                <li>A screen is a virtual monitor in the layout editor</li>
+                <li>Every screen keeps its own widgets, scale and columns</li>
+                <li>Open the link or scan the QR code &mdash; nothing to install</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="screens-stage">
+            <img
+              class="screens-shot"
+              src="assets/screens/devices.png"
+              alt="One Marble Trace layout running at once on a triple monitor sim rig, a tablet, a phone and a laptop"
+              decoding="async"
+            />
+
+            <!-- Leader lines, not a caption row: each label stands off the
+                 device it names and is tied to it by a hairline ending in a
+                 node, the way a part is called out on a drawing. The anchor
+                 is a percentage of the scene, so the callouts travel with the
+                 image at any width. -->
+            <p class="screens-callout screens-callout-desktop" style="--x: 41%; --lead: 3.4rem">
+              <span class="screens-callout-name">Desktop</span>
+              <span class="screens-callout-desc">Triple monitor rig</span>
+            </p>
+
+            <p class="screens-callout screens-callout-tablet" style="--x: 24%; --lead: 3.2rem">
+              <span class="screens-callout-name">Phone / Tablet</span>
+              <span class="screens-callout-desc">On the wheel deck</span>
+            </p>
+
+            <p class="screens-callout screens-callout-laptop" style="--x: 74%; --lead: 2.6rem">
+              <span class="screens-callout-name">Laptop</span>
+              <span class="screens-callout-desc">Beside the rig</span>
+            </p>
+          </div>
+
+          <!-- What the screens actually are. The scene says "on every device";
+               this band says how - virtual monitors in the same editor, an OBS
+               source among them, and who is allowed to touch what. -->
+          <ul class="screens-detail">
+            <li>
+              <h3 class="screens-detail-title">Virtual monitors</h3>
+              <p class="lede screens-detail-desc">
+                A remote screen is added in the layout editor beside your real
+                monitors, at any size you like &mdash; a tablet, a phone, or a
+                stream canvas. You drag widgets onto it the same way, and each
+                screen keeps its own set, its own scale and its own columns.
+              </p>
+            </li>
+
+            <li>
+              <h3 class="screens-detail-title">OBS browser source</h3>
+              <p class="lede screens-detail-desc">
+                Point a Browser Source at the screen's address and the layout
+                is on air, with a transparent background so only the widgets
+                render. Add <code>?widget=</code> to a link to put a single
+                widget on its own source and place it in your scene.
+              </p>
+            </li>
+
+            <li>
+              <h3 class="screens-detail-title">Just a browser</h3>
+              <p class="lede screens-detail-desc">
+                The app runs a small web server on your PC. Any device on the
+                same network opens the link &mdash; no app, no account, no
+                cloud, nothing leaves your network. Send rate is yours to set;
+                lap times, fuel and the session clock always arrive in full.
+              </p>
+            </li>
+
+            <li>
+              <h3 class="screens-detail-title">Watching only</h3>
+              <p class="lede screens-detail-desc">
+                Links carry an access token you can regenerate at any time, and
+                a device can only watch: nothing a browser sends can change a
+                layout, a setting or the overlay you are racing on.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+         Section 04 - The app behind the overlay
+
+         Sections 01-03 are the overlay; this one is the program that builds
+         it. Six captures of the real window, browsed as one deck rather than
+         laid out as six cards: they are screenshots of the same application,
+         and a grid of them reads as six products.
+
+         The deck leans on the section's own angle - --cut, the same 24deg the
+         hero and the dividers are cut at - so the stack belongs to the page
+         geometry rather than introducing a second perspective. The card at the
+         front stands upright: a screenshot read at an angle is a screenshot
+         nobody reads, so only the ones waiting their turn lean.
+
+         The pointer browses the deck by running across it; the plate beside it
+         is the thing that changes. Without JavaScript the first card is at the
+         front and its plate is the one printed open, so the section never
+         renders empty, and the deck is a tablist, so all of it is reachable
+         from the keyboard.
+         ==================================================================== -->
+      <section id="layouts" class="chapter chapter-control" aria-labelledby="control-heading">
+        <div class="container control">
+          <div class="control-head">
+            <span class="chapter-ordinal" aria-hidden="true">04</span>
+
+            <div class="chapter-lead">
+              <p class="chapter-kicker">The app itself</p>
+
+              <h2 id="control-heading" class="chapter-title">
+                Built once.<br />
+                Bound to a button.
+              </h2>
+
+              <p class="lede chapter-subtitle">
+                Behind the overlay is an ordinary desktop application: layouts
+                you build with the mouse, screens you hand out on your own
+                network, and every one of them on a key or a wheel button.
+              </p>
+            </div>
+          </div>
+
+          <!-- The deck and its plate. data-control-deck is the only hook the
+               script looks for, and everything it needs is on the cards
+               themselves, so the catalogue lives in this markup and nowhere
+               else. -->
+          <div class="control-deck" data-control-deck>
+            <div
+              class="deck"
+              role="tablist"
+              aria-label="Application features"
+              aria-orientation="horizontal"
+            >
+              <button
+                class="deck-card is-active"
+                type="button"
+                role="tab"
+                id="cd-tab-1"
+                aria-controls="cd-panel-1"
+                aria-selected="true"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/layouts.png"
+                  alt="The layouts page of Marble Trace, with five saved layouts and the detail panel of the selected one"
+                  width="1595"
+                  height="969"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Layouts</span>
+              </button>
+
+              <button
+                class="deck-card"
+                type="button"
+                role="tab"
+                id="cd-tab-2"
+                aria-controls="cd-panel-2"
+                aria-selected="false"
+                tabindex="-1"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/layout-editor.png"
+                  alt="The layout editor, with widgets placed across a triple monitor desktop"
+                  width="1595"
+                  height="969"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Layout editor</span>
+              </button>
+
+              <button
+                class="deck-card"
+                type="button"
+                role="tab"
+                id="cd-tab-3"
+                aria-controls="cd-panel-3"
+                aria-selected="false"
+                tabindex="-1"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/widget-config.png"
+                  alt="The widget workbench, with a live standings preview beside its data column switches"
+                  width="1595"
+                  height="969"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Widget workbench</span>
+              </button>
+
+              <button
+                class="deck-card"
+                type="button"
+                role="tab"
+                id="cd-tab-4"
+                aria-controls="cd-panel-4"
+                aria-selected="false"
+                tabindex="-1"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/remote-screens.png"
+                  alt="The remote screens page, with the local server running and a screen ready to open on a device"
+                  width="1595"
+                  height="969"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Remote screens</span>
+              </button>
+
+              <button
+                class="deck-card"
+                type="button"
+                role="tab"
+                id="cd-tab-5"
+                aria-controls="cd-panel-5"
+                aria-selected="false"
+                tabindex="-1"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/bindings.png"
+                  alt="The input bindings page, listing app actions and the keys bound to them"
+                  width="1595"
+                  height="969"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Hotkeys</span>
+              </button>
+
+              <button
+                class="deck-card"
+                type="button"
+                role="tab"
+                id="cd-tab-6"
+                aria-controls="cd-panel-6"
+                aria-selected="false"
+                tabindex="-1"
+              >
+                <img
+                  class="deck-shot"
+                  src="assets/control/devices.png"
+                  alt="The devices page, listing connected wheels, button boxes and pedals"
+                  width="1595"
+                  height="969"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="deck-card-name">Devices</span>
+              </button>
+            </div>
+
+            <!-- The plate. One per card, only the selected one rendered, so
+                 what the deck shows and what the page says cannot drift. -->
+            <div class="deck-plate">
+              <div class="deck-panel" role="tabpanel" id="cd-panel-1" aria-labelledby="cd-tab-1">
+                <p class="deck-panel-ordinal" aria-hidden="true">01 / 06</p>
+
+                <h3 class="deck-panel-title">Layouts</h3>
+
+                <p class="lede deck-panel-desc">
+                  A layout is the whole overlay at once &mdash; which widgets
+                  are on, where each one sits, on which monitor and at what
+                  scale. Build as many as you race in.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>One layout everywhere, or a different one per session</li>
+                  <li>Practice, qualifying, race and garage assigned per layout</li>
+                  <li>Auto-switching follows the session you are in</li>
+                  <li>Duplicate a layout to try something without losing it</li>
+                </ul>
+              </div>
+
+              <div
+                class="deck-panel"
+                role="tabpanel"
+                id="cd-panel-2"
+                aria-labelledby="cd-tab-2"
+                hidden
+              >
+                <p class="deck-panel-ordinal" aria-hidden="true">02 / 06</p>
+
+                <h3 class="deck-panel-title">Layout editor</h3>
+
+                <p class="lede deck-panel-desc">
+                  Your desktop, drawn to scale, with the widgets on it. Drag one
+                  where you want it and it is already there on the overlay
+                  &mdash; there is no second preview to reconcile.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>Every monitor, real or remote, on one canvas</li>
+                  <li>Widgets draw live data while you place them</li>
+                  <li>Snap grid, arrow-key nudging, undo and redo</li>
+                  <li>Layer order, locked aspect and corner placement per widget</li>
+                </ul>
+              </div>
+
+              <div
+                class="deck-panel"
+                role="tabpanel"
+                id="cd-panel-3"
+                aria-labelledby="cd-tab-3"
+                hidden
+              >
+                <p class="deck-panel-ordinal" aria-hidden="true">03 / 06</p>
+
+                <h3 class="deck-panel-title">Widget workbench</h3>
+
+                <p class="lede deck-panel-desc">
+                  Every widget opens with its own live preview and its own
+                  settings beside it, so a column you switch off is gone from
+                  the picture before you go back to the car.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>Data columns, rows and view modes per widget</li>
+                  <li>Scale, opacity, background and border</li>
+                  <li>Colours from the widget's own palette</li>
+                  <li>A second copy of a widget for a stream screen</li>
+                </ul>
+              </div>
+
+              <div
+                class="deck-panel"
+                role="tabpanel"
+                id="cd-panel-4"
+                aria-labelledby="cd-tab-4"
+                hidden
+              >
+                <p class="deck-panel-ordinal" aria-hidden="true">04 / 06</p>
+
+                <h3 class="deck-panel-title">Remote screens</h3>
+
+                <p class="lede deck-panel-desc">
+                  The app serves the layout to your own network. A screen is
+                  added like a monitor, and a phone, a tablet or OBS opens it in
+                  a browser.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>Open the link or scan the QR code &mdash; nothing installed</li>
+                  <li>A transparent stream screen for an OBS browser source</li>
+                  <li>Send rate and port are yours to set</li>
+                  <li>Links carry a token you can regenerate at any time</li>
+                </ul>
+              </div>
+
+              <div
+                class="deck-panel"
+                role="tabpanel"
+                id="cd-panel-5"
+                aria-labelledby="cd-tab-5"
+                hidden
+              >
+                <p class="deck-panel-ordinal" aria-hidden="true">05 / 06</p>
+
+                <h3 class="deck-panel-title">Hotkeys</h3>
+
+                <p class="lede deck-panel-desc">
+                  Anything you would reach for mid-stint is an action you can
+                  bind: hide everything, switch a layout, cycle a view, send the
+                  pit order. Keyboard or wheel, your choice.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>Bindings are app-wide, not per layout</li>
+                  <li>Several keys on one action, and one key on several</li>
+                  <li>Press or hold, per action</li>
+                  <li>A widget's action only fires while that widget is on screen</li>
+                </ul>
+              </div>
+
+              <div
+                class="deck-panel"
+                role="tabpanel"
+                id="cd-panel-6"
+                aria-labelledby="cd-tab-6"
+                hidden
+              >
+                <p class="deck-panel-ordinal" aria-hidden="true">06 / 06</p>
+
+                <h3 class="deck-panel-title">Devices</h3>
+
+                <p class="lede deck-panel-desc">
+                  Wheels, button boxes, joysticks and pedals are picked up on
+                  their own. Bind a button the way you bind a key &mdash; the
+                  app never touches the sim's own controls.
+                </p>
+
+                <ul class="deck-panel-facts">
+                  <li>DirectInput devices detected and listed as they connect</li>
+                  <li>Bindings survive a replug or a different USB port</li>
+                  <li>A device you bound stays listed while it is unplugged</li>
+                  <li>Two identical devices are never silently swapped</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- The deck's own controls: what the pointer scrub degrades to on
+                 a touch screen, and what says out loud that the stack can be
+                 browsed at all. -->
+            <div class="deck-nav">
+              <button class="deck-step" type="button" data-deck-prev aria-label="Previous feature">
+                <span aria-hidden="true">&#8592;</span>
+              </button>
+
+              <p class="deck-count">
+                <span data-deck-index>01</span><span aria-hidden="true"> / </span
+                ><span data-deck-total>06</span>
+              </p>
+
+              <button class="deck-step" type="button" data-deck-next aria-label="Next feature">
+                <span aria-hidden="true">&#8594;</span>
+              </button>
+
+              <p class="deck-hint" aria-hidden="true">
+                Run the pointer across the deck &middot; click to enlarge
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Performance Section -->
+      <section id="performance" class="section section-alt">
+        <div class="container">
+          <div class="section-header">
+            <p class="section-tag">Zero FPS Tax</p>
+            <h2 class="section-title">Pure 60 FPS Telemetry</h2>
+            <p class="section-subtitle">
+              Tested in endurance racing and competitive multi-class grids.
+            </p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card">
+              <h3 class="card-title">&lt; 1% CPU Usage</h3>
+              <p class="card-desc">
+                The Rust backend processes high-frequency telemetry in
+                background threads without blocking game rendering.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Tiered Refresh Rates</h3>
+              <p class="card-desc">
+                60 Hz for vehicle dynamics and inputs, 10 Hz for proximity, 4 Hz
+                for fuel and pit stops to eliminate wasted cycles.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Demand-Gated Pipeline</h3>
+              <p class="card-desc">
+                Only fields requested by currently active on-screen widgets are
+                unpacked and serialized.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Open Source Section -->
+      <section id="open-source" class="section">
+        <div class="container">
+          <div class="section-header">
+            <p class="section-tag">Community Driven</p>
+            <h2 class="section-title">100% Free &amp; Open Source</h2>
+            <p class="section-subtitle">
+              Licensed under MIT. No subscriptions, no ads, no telemetry
+              paywalls.
+            </p>
+          </div>
+
+          <div class="cards-grid">
+            <div class="card">
+              <h3 class="card-title">Open Architecture</h3>
+              <p class="card-desc">
+                Inspect, build, and customize widgets or backend processors.
+                Contributions and issues welcome on GitHub.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Active Community</h3>
+              <p class="card-desc">
+                Join fellow drivers on Discord to share layouts, suggest new
+                widgets, and report feedback.
+              </p>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Safe &amp; Approved</h3>
+              <p class="card-desc">
+                Reads standard iRacing shared memory SDK telemetry — completely
+                compliant with iRacing Terms of Service.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ========================================================================
+       Footer
+       ======================================================================== -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <img src="assets/logo-light.svg" alt="" width="26" height="26" />
+            <span class="brand-name">Marble Trace</span>
+          </div>
+
+          <nav class="footer-links" aria-label="Footer Navigation">
+            <a href="#features" class="footer-link">Features</a>
+            <a href="#widgets" class="footer-link">Widgets</a>
+            <a href="#screens" class="footer-link">Screens</a>
+            <a href="#layouts" class="footer-link">Layouts</a>
+            <a href="#performance" class="footer-link">Performance</a>
+            <a href="#open-source" class="footer-link">Open Source</a>
+            <a
+              href="https://github.com/mvoof/Marble-Trace"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="footer-link"
+              >GitHub</a
+            >
+            <a
+              href="https://discord.gg/GVaRsHbjxV"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="footer-link"
+              >Discord</a
+            >
+          </nav>
+        </div>
+
+        <div class="footer-bottom">
+          <p>
+            &copy; 2026 Marble Trace. Free and Open Source under MIT License.
+          </p>
+          <p>Built with Rust, Tauri &amp; modern Web standards.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- The viewer. A capture of a settings window is a page of small
+         type, and the deck shows it at half the width it was taken at,
+         so the front card opens at full size rather than sending the
+         reader to look for a bigger picture elsewhere. -->
+    <div class="deck-viewer" data-deck-viewer hidden>
+      <div class="deck-viewer-ground" data-deck-viewer-dismiss></div>
+
+      <figure class="deck-viewer-figure" role="dialog" aria-modal="true" aria-label="Screenshot">
+        <img class="deck-viewer-shot" data-deck-viewer-shot src="" alt="" />
+
+        <figcaption class="deck-viewer-caption" data-deck-viewer-caption></figcaption>
+      </figure>
+
+      <button
+        class="deck-viewer-close"
+        type="button"
+        data-deck-viewer-dismiss
+        aria-label="Close the screenshot"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
+    <!-- Controller Script -->
+    <script src="src/components/navbar.js"></script>
+    <script src="src/components/widget-gallery.js"></script>
+    <script src="src/components/control-deck.js"></script>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+:root {
+  /* Brand Typography */
+  --font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  /* The app's own instrument face. Nothing is fetched for it: the stack is
+     what every target platform already ships, and a readout that waits on a
+     web font shows the wrong width before it arrives. */
+  --font-mono: Consolas, 'SF Mono', ui-monospace, 'Liberation Mono', monospace;
+  --font-hero-heading: 'Barlow Condensed', 'Exo 2', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Layout Dimensions */
+  --container-width: 1680px;
+  --container-padding: clamp(1rem, 3vw, 2rem);
+  --header-height: 64px;
+
+  /* Colors - Light Theme (matches screenshot navbar) */
+  --color-header-bg: #e4e4de;
+  --color-header-bg-scrolled: rgba(228, 228, 222, 0.92);
+  --color-header-border: rgba(0, 0, 0, 0.07);
+  --color-header-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+
+  --color-brand: #111418;
+  --color-nav-text: #262a30;
+  --color-nav-text-hover: #000000;
+  --color-nav-hover-bg: rgba(0, 0, 0, 0.04);
+  --color-nav-active-bar: #111418;
+
+  /* Download Button (Electric Lime / Motorsport Green) */
+  --color-btn-download-bg: #9ec36a;
+  --color-btn-download-bg-hover: #b2db74;
+  --color-btn-download-text: #0b1015;
+  --color-btn-download-shadow: 0 3px 12px rgba(158, 195, 106, 0.35);
+  --color-btn-download-shadow-hover: 0 6px 18px rgba(158, 195, 106, 0.5);
+
+  /* Social Icons */
+  --color-social: #1d2124;
+  --color-social-hover: #000000;
+
+  /* Mobile Drawer (High-contrast, sleek dark motorsport theme) */
+  --color-drawer-bg: #0f1216;
+  --color-drawer-card: #171b22;
+  --color-drawer-border: rgba(255, 255, 255, 0.08);
+  --color-drawer-text: #f3f4f6;
+  --color-drawer-text-muted: #9ca3af;
+  --color-drawer-hover: rgba(255, 255, 255, 0.06);
+  --color-backdrop: rgba(10, 14, 20, 0.65);
+
+  /* Page Body */
+  /* One ground for the whole page — the same value the header and the hero
+     use, so no section reads as a slightly different shade of white. */
+  --color-body-bg: #e4e4de;
+  --color-body-text: #1a1d23;
+  --color-card-bg: #ffffff;
+  --color-card-border: rgba(0, 0, 0, 0.08);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
