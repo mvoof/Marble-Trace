@@ -4,7 +4,7 @@ import {
   useUnitsStore,
   useWheelToWheelWidgetStore,
 } from '@store/root-store-context';
-import { FixedDigits } from '@ui/widgets/TimerWidget/FixedDigits/FixedDigits';
+import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import { speedUnit } from '@utils/telemetry-format';
 import type { BattleSlot } from '../wheel-to-wheel.widget';
 

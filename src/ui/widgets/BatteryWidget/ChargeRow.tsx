@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { usePlayerStore } from '@store/root-store-context';
-import { FixedDigits } from '@ui/widgets/TimerWidget/FixedDigits/FixedDigits';
+import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import { ChargeBar } from './ChargeBar';
 import { chargeLevel, formatChargePct } from './battery-utils';
 import styles from './BatteryWidget.module.scss';

@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { useWheelToWheelWidgetStore } from '@store/root-store-context';
-import { FixedDigits } from '@ui/widgets/TimerWidget/FixedDigits/FixedDigits';
+import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import type { RivalSlot } from '../wheel-to-wheel.widget';
 
 import styles from './GapCenter.module.scss';

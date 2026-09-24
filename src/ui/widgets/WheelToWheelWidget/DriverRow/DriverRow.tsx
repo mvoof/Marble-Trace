@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 
 import { useWheelToWheelWidgetStore } from '@store/root-store-context';
-import { FixedDigits } from '@ui/widgets/TimerWidget/FixedDigits/FixedDigits';
+import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import type { BattleSlot, RivalSlot } from '../wheel-to-wheel.widget';
 import { PositionBox } from '../PositionBox/PositionBox';
 import { SideSpeed } from '../SideSpeed/SideSpeed';

@@ -8,7 +8,7 @@ import {
 } from '@utils/timer-utils';
 
 import { useSessionStore } from '@store/root-store-context';
-import { FixedDigits } from '../FixedDigits/FixedDigits';
+import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import styles from './TimerDisplay.module.scss';
 
 export const TimerDisplay = observer(() => {

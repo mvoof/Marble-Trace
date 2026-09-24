@@ -14,7 +14,7 @@ import {
 } from '@store/root-store-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 
-import { FixedDigits } from '../FixedDigits/FixedDigits';
+import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import styles from './TimerFooter.module.scss';
 
 export const TimerFooter = observer(() => {

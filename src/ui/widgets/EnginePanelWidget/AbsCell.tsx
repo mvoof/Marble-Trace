@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
-import { FixedDigits } from '@ui/widgets/TimerWidget/FixedDigits/FixedDigits';
+import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import { EngineCell } from './EngineCell';
 import {
   useEnginePanelWidgetStore,

@@ -555,10 +555,10 @@ read by shape as much as by content, and text that dances is read twice.
 is Rajdhani, which ships no tabular figures, so the browser has nothing to switch
 to and silently keeps the proportional ones. Use one of the two grids instead:
 
-| where  | use                                                                     |
-| ------ | ----------------------------------------------------------------------- |
-| DOM    | `FixedDigits` (`ui/widgets/TimerWidget/FixedDigits/`) — digits in cells |
-| canvas | `fillFixedDigits` / `measureFixedDigits` (`utils/canvas.ts`)            |
+| where  | use                                                          |
+| ------ | ------------------------------------------------------------ |
+| DOM    | `FixedDigits` (`ui/shared/FixedDigits/`) — digits in cells   |
+| canvas | `fillFixedDigits` / `measureFixedDigits` (`utils/canvas.ts`) |
 
 Two things follow from it. Measure the block with `measureFixedDigits`, never
 `measureText`, or an arc or plate sized from the text breathes with the value
