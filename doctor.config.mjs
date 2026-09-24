@@ -4,8 +4,8 @@
  * It reports generic React and JavaScript anti-patterns when run by hand — it
  * is a sweep, not a gate, and `docs/agents/react-doctor.md` says why. It
  * knows nothing about which of this project's telemetry fields are hot, so it
- * cannot check the rendering rule; that is what the render budgets in the
- * `*.perf.test.tsx` files are for. See `docs/rendering.md`.
+ * cannot check the rendering rule; nothing checks that at runtime, it is
+ * enforced by review. See `docs/rendering.md`.
  *
  * Every rule switched off below was reviewed once against the code that
  * triggered it. A rule stays on unless leaving it on would mean carrying
@@ -19,8 +19,8 @@ export default {
     'eslint/no-restricted-imports': 'off',
 
     // Micro-optimisations on cold paths: settings, layout maths, migrations.
-    // What runs per telemetry frame is governed by the render budgets, which
-    // measure instead of guessing.
+    // What runs per telemetry frame is governed by the hot/cold contours in
+    // `docs/rendering.md`, not by syntax-level loop tweaks.
     'react-doctor/js-combine-iterations': 'off',
     'react-doctor/js-length-check-first': 'off',
     'react-doctor/js-index-maps': 'off',
