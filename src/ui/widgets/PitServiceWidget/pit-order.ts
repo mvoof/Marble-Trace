@@ -174,9 +174,9 @@ export class PitOrder {
     return this.store.root.player.pitService?.flags ?? 0;
   }
 
-  /** Tank size for this car; the ceiling the tank and the order share. */
+  /** Fuel the series lets this car carry; the ceiling the tank and the order share. */
   get fuelCapacityLiters(): number | null {
-    return this.store.root.session.sessionInfo?.driverCarFuelMaxLtr ?? null;
+    return this.store.root.session.sessionInfo?.fuelCapacityLtr ?? null;
   }
 
   /** What is already aboard. The crew adds on top of this, never instead of it. */

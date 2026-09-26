@@ -80,8 +80,12 @@ pub struct SessionSnapshot {
     pub current_session_num: i32,
     pub sessions: Vec<SessionEntry>,
     pub player_car_idx: i32,
+    /// Fuel the player may carry in this session, in litres: the physical tank
+    /// (`DriverCarFuelMaxLtr`) scaled by the series/BoP limit
+    /// (`DriverCarMaxFuelPct`). Not the tank size — a car with an 83 L tank
+    /// capped at 60 % reports 50 here.
+    pub fuel_capacity_ltr: Option<f32>,
     /// Player car constants from DriverInfo (None when absent in YAML).
-    pub driver_car_fuel_max_ltr: Option<f32>,
     pub driver_car_red_line: Option<f32>,
     pub driver_car_sl_shift_rpm: Option<f32>,
     pub driver_car_sl_blink_rpm: Option<f32>,

@@ -16,7 +16,7 @@ export const FuelProgress = observer(() => {
   const { unitSystem } = useUnitsStore();
 
   const fuelLevel = carStatus?.fuel_level ?? null;
-  const fuelMax = sessionInfo?.driverCarFuelMaxLtr ?? null;
+  const fuelMax = sessionInfo?.fuelCapacityLtr ?? null;
 
   const pct =
     fuelLevel !== null && fuelMax !== null && fuelMax > 0
