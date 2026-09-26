@@ -1724,9 +1724,15 @@ export type SessionSnapshot = {
   sessions: SessionEntry[];
   playerCarIdx: number;
   /**
+   * Fuel the player may carry in this session, in litres: the physical tank
+   * (`DriverCarFuelMaxLtr`) scaled by the series/BoP limit
+   * (`DriverCarMaxFuelPct`). Not the tank size — a car with an 83 L tank
+   * capped at 60 % reports 50 here.
+   */
+  fuelCapacityLtr: number | null;
+  /**
    * Player car constants from DriverInfo (None when absent in YAML).
    */
-  driverCarFuelMaxLtr: number | null;
   driverCarRedLine: number | null;
   driverCarSlShiftRpm: number | null;
   driverCarSlBlinkRpm: number | null;

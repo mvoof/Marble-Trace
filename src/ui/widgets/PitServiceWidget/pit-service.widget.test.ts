@@ -82,7 +82,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
       } as never;
 
       rootStore.session.sessionInfo = {
-        driverCarFuelMaxLtr: tankMax,
+        fuelCapacityLtr: tankMax,
       } as never;
     });
   };
@@ -975,7 +975,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
     ) => {
       runInAction(() => {
         rootStore.session.sessionInfo = {
-          driverCarFuelMaxLtr: 106,
+          fuelCapacityLtr: 106,
           driverTires: compounds,
         } as never;
 

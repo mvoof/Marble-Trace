@@ -547,7 +547,7 @@ pub fn compute(
         history_stats: history_stats(&fuel_state.lap_fuel_history),
         refuel_plan: refuel_plan(
             fuel_to_add_with_buffer,
-            session.driver_car_fuel_max_ltr,
+            session.fuel_capacity_ltr,
             fuel_level,
         ),
         lap_fuel_history: fuel_state.lap_fuel_history.clone(),

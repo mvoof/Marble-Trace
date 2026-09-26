@@ -296,9 +296,10 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         current_session_num: session_info.current_session_num.unwrap_or(0),
         sessions,
         player_car_idx: driver_info.driver_car_idx.unwrap_or(-1),
-        driver_car_fuel_max_ltr: driver_info
-            .driver_car_fuel_max_ltr
-            .filter(|v| v.is_finite()),
+        fuel_capacity_ltr: allowed_fuel_capacity(
+            driver_info.driver_car_fuel_max_ltr,
+            driver_info.driver_car_max_fuel_pct,
+        ),
         driver_car_red_line: driver_info.driver_car_red_line.filter(|v| v.is_finite()),
         driver_car_sl_shift_rpm: driver_info
             .driver_car_sl_shift_rpm
@@ -382,6 +383,18 @@ fn parse_incident_limit(raw: Option<&serde_yaml_ng::Value>) -> Option<i32> {
         .filter(|limit| *limit > 0)
 }
 
+/// `DriverCarFuelMaxLtr` is the physical tank; `DriverCarMaxFuelPct` is the
+/// share of it the series lets the car fill (0.6 for an 83 L tank capped at
+/// 50 L). A missing or nonsensical fraction means no restriction.
+fn allowed_fuel_capacity(tank_ltr: Option<f32>, max_fuel_pct: Option<f32>) -> Option<f32> {
+    let tank = tank_ltr.filter(|value| value.is_finite())?;
+    let fraction = max_fuel_pct
+        .filter(|value| value.is_finite() && *value > 0.0 && *value <= 1.0)
+        .unwrap_or(1.0);
+
+    Some(tank * fraction)
+}
+
 #[derive(Deserialize, Default)]
 #[serde(rename_all = "PascalCase")]
 struct RawSessionInfo {
@@ -416,6 +429,7 @@ struct RawResultPosition {
 struct RawDriverInfo {
     driver_car_idx: Option<i32>,
     driver_car_fuel_max_ltr: Option<f32>,
+    driver_car_max_fuel_pct: Option<f32>,
     driver_car_red_line: Option<f32>,
     #[serde(rename = "DriverCarSLShiftRPM")]
     driver_car_sl_shift_rpm: Option<f32>,
@@ -533,6 +547,7 @@ SessionInfo:
 DriverInfo:
  DriverCarIdx: 3
  DriverCarFuelMaxLtr: 45.500
+ DriverCarMaxFuelPct: 0.600
  DriverCarRedLine: 7200.00
  DriverCarSLShiftRPM: 6900.00
  DriverCarSLBlinkRPM: 7100.00
@@ -603,7 +618,7 @@ QualifyResultsInfo:
         assert_eq!(snapshot.sessions[1].results_positions.len(), 2);
         assert_eq!(snapshot.sessions[1].results_positions[0].car_idx, 7);
         assert_eq!(snapshot.player_car_idx, 3);
-        assert_eq!(snapshot.driver_car_fuel_max_ltr, Some(45.5));
+        assert_eq!(snapshot.fuel_capacity_ltr, Some(45.5 * 0.6));
         assert_eq!(snapshot.driver_car_red_line, Some(7200.0));
         assert_eq!(snapshot.driver_car_sl_shift_rpm, Some(6900.0));
         assert_eq!(snapshot.driver_car_sl_blink_rpm, Some(7100.0));
@@ -679,6 +694,24 @@ QualifyResultsInfo:
         assert_eq!(parsed.snapshot.cars.len(), 0);
         assert_eq!(parsed.snapshot.player_car_idx, -1);
         assert_eq!(parsed.snapshot.current_session_num, 0);
+    }
+
+    #[test]
+    fn fuel_capacity_is_the_whole_tank_without_a_series_limit() {
+        let yaml = "DriverInfo:
+ DriverCarFuelMaxLtr: 83.333
+";
+
+        let parsed = parse_session(yaml).expect("yaml must parse");
+
+        assert_eq!(parsed.snapshot.fuel_capacity_ltr, Some(83.333));
+    }
+
+    #[test]
+    fn fuel_capacity_ignores_a_fraction_outside_zero_to_one() {
+        assert_eq!(allowed_fuel_capacity(Some(80.0), Some(0.0)), Some(80.0));
+        assert_eq!(allowed_fuel_capacity(Some(80.0), Some(1.5)), Some(80.0));
+        assert_eq!(allowed_fuel_capacity(None, Some(0.6)), None);
     }
 
     #[test]
