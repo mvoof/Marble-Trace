@@ -29,6 +29,69 @@ export const isNearIncidentLimit = (
   return incidents >= incidentLimit - NEAR_DQ_INCIDENT_MARGIN;
 };
 
+/** Incidents left before the next penalty at which the counter starts warning. */
+const NEAR_PENALTY_INCIDENT_MARGIN = 2;
+
+export interface IncidentPenaltyRules {
+  initial: number | null;
+  subsequent: number | null;
+  limit: number | null;
+}
+
+export interface IncidentPenaltyStatus {
+  /** Penalties the driver has already been given. */
+  served: number;
+  /** Incident count of the next penalty; `null` when none is left before the DQ. */
+  nextAt: number | null;
+}
+
+/**
+ * Where the driver stands against the session's incident penalties: the first
+ * one at `initial`, then one every `subsequent`. `null` when the session gives
+ * none, or gives its first only at or past the disqualification limit.
+ */
+export const getIncidentPenaltyStatus = (
+  incidents: number,
+  { initial, subsequent, limit }: IncidentPenaltyRules
+): IncidentPenaltyStatus | null => {
+  if (initial === null) {
+    return null;
+  }
+
+  if (limit !== null && initial >= limit) {
+    return null;
+  }
+
+  if (incidents < initial) {
+    return { served: 0, nextAt: initial };
+  }
+
+  if (subsequent === null) {
+    return { served: 1, nextAt: null };
+  }
+
+  // A penalty that would land on or past the DQ is never given, whatever the
+  // count reads once the driver is out.
+  const countedIncidents =
+    limit === null ? incidents : Math.min(incidents, limit - 1);
+  const served = 1 + Math.floor((countedIncidents - initial) / subsequent);
+  const nextAt = initial + served * subsequent;
+  const isPastLimit = limit !== null && nextAt >= limit;
+
+  return { served, nextAt: isPastLimit ? null : nextAt };
+};
+
+export const isNearIncidentPenalty = (
+  incidents: number,
+  status: IncidentPenaltyStatus | null
+): boolean => {
+  if (status === null || status.nextAt === null) {
+    return false;
+  }
+
+  return incidents >= status.nextAt - NEAR_PENALTY_INCIDENT_MARGIN;
+};
+
 // ─── Formatters ───────────────────────────────────────────────────────────
 
 export const formatIRating = (ir: number, abbreviate = true): string => {

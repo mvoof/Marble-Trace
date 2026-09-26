@@ -288,10 +288,20 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
             .as_ref()
             .and_then(|options| options.date.clone())
             .unwrap_or_default(),
-        incident_limit: parse_incident_limit(
+        incident_limit: parse_incident_count(
             weekend_options
                 .as_ref()
                 .and_then(|options| options.incident_limit.as_ref()),
+        ),
+        incident_penalty_initial: parse_incident_count(
+            weekend_options
+                .as_ref()
+                .and_then(|options| options.incident_warning_initial_limit.as_ref()),
+        ),
+        incident_penalty_subsequent: parse_incident_count(
+            weekend_options
+                .as_ref()
+                .and_then(|options| options.incident_warning_subsequent_limit.as_ref()),
         ),
         current_session_num: session_info.current_session_num.unwrap_or(0),
         sessions,
@@ -362,13 +372,16 @@ struct RawWeekendInfo {
 struct RawWeekendOptions {
     date: Option<String>,
     /// Either a plain count or the literal "unlimited", so the raw node is kept
-    /// and narrowed in `parse_incident_limit`.
+    /// and narrowed in `parse_incident_count`. Same for the two penalty steps.
     incident_limit: Option<serde_yaml_ng::Value>,
+    incident_warning_initial_limit: Option<serde_yaml_ng::Value>,
+    incident_warning_subsequent_limit: Option<serde_yaml_ng::Value>,
 }
 
-/// `IncidentLimit` is a number when the session caps incidents and the string
-/// "unlimited" otherwise. Anything unrecognised is treated as no limit.
-fn parse_incident_limit(raw: Option<&serde_yaml_ng::Value>) -> Option<i32> {
+/// `IncidentLimit` and the `IncidentWarning*Limit` penalty steps are a number
+/// when the session sets them and the string "unlimited" (or 0) otherwise.
+/// Anything unrecognised is treated as not set.
+fn parse_incident_count(raw: Option<&serde_yaml_ng::Value>) -> Option<i32> {
     let value = raw?;
 
     if let Some(number) = value.as_i64() {
@@ -524,6 +537,8 @@ WeekendInfo:
  WeekendOptions:
   Date: 2025-05-21
   IncidentLimit: 17
+  IncidentWarningInitialLimit: 8
+  IncidentWarningSubsequentLimit: 4
 SessionInfo:
  CurrentSessionNum: 1
  Sessions:
@@ -609,6 +624,8 @@ QualifyResultsInfo:
         assert_eq!(snapshot.track_air_temp, "25.55 C");
         assert_eq!(snapshot.weekend_date, "2025-05-21");
         assert_eq!(snapshot.incident_limit, Some(17));
+        assert_eq!(snapshot.incident_penalty_initial, Some(8));
+        assert_eq!(snapshot.incident_penalty_subsequent, Some(4));
         assert_eq!(snapshot.current_session_num, 1);
         assert_eq!(snapshot.sessions.len(), 2);
         assert_eq!(snapshot.sessions[0].session_laps, "unlimited");
@@ -730,6 +747,20 @@ QualifyResultsInfo:
         let parsed = parse_session(yaml).expect("yaml must parse");
 
         assert_eq!(parsed.snapshot.incident_limit, Some(25));
+    }
+
+    #[test]
+    fn unset_incident_penalties_parse_as_none() {
+        let yaml = "WeekendInfo:
+ WeekendOptions:
+  IncidentWarningInitialLimit: 0
+  IncidentWarningSubsequentLimit: unlimited
+";
+
+        let parsed = parse_session(yaml).expect("yaml must parse");
+
+        assert_eq!(parsed.snapshot.incident_penalty_initial, None);
+        assert_eq!(parsed.snapshot.incident_penalty_subsequent, None);
     }
 
     #[test]

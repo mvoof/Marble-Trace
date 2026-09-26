@@ -206,14 +206,21 @@ const applyField = (store: RootStore, options: MockFieldOptions) => {
 };
 
 // The incident counter is the player's own, so a scenario states it on their
-// entry and on the session that caps it — the two halves of what the badge
-// prints, and of whether it is alarmed.
+// entry and on the session that caps it and hands out penalties — the halves of
+// what the badges print, and of whether they are alarmed.
 const applyIncidents = (
   store: RootStore,
   {
     incidents,
     incidentLimit,
-  }: { incidents: number; incidentLimit: number | null }
+    incidentPenaltyInitial,
+    incidentPenaltySubsequent,
+  }: {
+    incidents: number;
+    incidentLimit: number | null;
+    incidentPenaltyInitial: number | null;
+    incidentPenaltySubsequent: number | null;
+  }
 ) => {
   const standings = store.backendComputed.driverEntries;
   const sessionInfo = store.session.sessionInfo;
@@ -228,7 +235,12 @@ const applyIncidents = (
   }
 
   if (sessionInfo) {
-    store.session.updateSessionInfo({ ...sessionInfo, incidentLimit });
+    store.session.updateSessionInfo({
+      ...sessionInfo,
+      incidentLimit,
+      incidentPenaltyInitial,
+      incidentPenaltySubsequent,
+    });
   }
 };
 
@@ -662,10 +674,16 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
     apply: (store) => {
       seedSampleTelemetry(store);
       // The counter at its widest and its loudest at once: a session that caps
-      // incidents prints the limit beside the count, and close enough to it the
-      // badge turns red and pulses. The recorded session has neither — nobody
-      // sits on a limit for a recording — so both are stated here.
-      applyIncidents(store, { incidents: 15, incidentLimit: 17 });
+      // incidents prints the limit beside the count, one that hands out a
+      // penalty every few incidents adds its own badge, and close enough to
+      // either they turn red. The recorded session has none of it — nobody sits
+      // on a limit for a recording — so all of it is stated here.
+      applyIncidents(store, {
+        incidents: 15,
+        incidentLimit: 17,
+        incidentPenaltyInitial: 8,
+        incidentPenaltySubsequent: 4,
+      });
     },
   },
   {

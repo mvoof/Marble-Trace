@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import type { FlagType } from '@/types';
 import { formatDelta, getGameDelta } from '@utils/delta-utils';
-import { isNearIncidentLimit } from '@utils/driver';
+import {
+  getIncidentPenaltyStatus,
+  isNearIncidentLimit,
+  isNearIncidentPenalty,
+} from '@utils/driver';
 import { resolveSessionLaps } from '@utils/telemetry-format';
 import {
   isLapLimitedSession,
@@ -827,6 +831,22 @@ describe('incident scenarios', () => {
     expect(limit).not.toBeNull();
     expect(incidents).toBeGreaterThan(0);
     expect(isNearIncidentLimit(incidents, limit)).toBe(true);
+  });
+
+  it('states a penalty the player is about to earn', () => {
+    const store = seed('incident-limit');
+    const incidents =
+      store.backendComputed.driverIdentities.find((entry) => entry.isPlayer)
+        ?.incidents ?? 0;
+    const sessionInfo = store.session.sessionInfo;
+    const status = getIncidentPenaltyStatus(incidents, {
+      initial: sessionInfo?.incidentPenaltyInitial ?? null,
+      subsequent: sessionInfo?.incidentPenaltySubsequent ?? null,
+      limit: sessionInfo?.incidentLimit ?? null,
+    });
+
+    expect(status?.served).toBeGreaterThan(0);
+    expect(isNearIncidentPenalty(incidents, status)).toBe(true);
   });
 
   it('leaves the baseline uncounted', () => {

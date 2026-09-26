@@ -77,6 +77,12 @@ pub struct SessionSnapshot {
     /// Incident count that disqualifies a driver. `None` when the sim reports
     /// "unlimited" — the usual value in practice and hosted sessions.
     pub incident_limit: Option<i32>,
+    /// Incident count that earns the first penalty (a drive-through or a
+    /// stop-and-go). `None` when the session hands out none.
+    pub incident_penalty_initial: Option<i32>,
+    /// Incidents between each further penalty after the first. `None` when only
+    /// the first one is given.
+    pub incident_penalty_subsequent: Option<i32>,
     pub current_session_num: i32,
     pub sessions: Vec<SessionEntry>,
     pub player_car_idx: i32,
