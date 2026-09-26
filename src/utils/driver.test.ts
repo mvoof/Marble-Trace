@@ -52,6 +52,16 @@ describe('getIncidentPenaltyStatus', () => {
     ).toEqual({ served: 2, nextAt: null });
   });
 
+  it('counts no penalty at or past the DQ limit', () => {
+    expect(
+      getIncidentPenaltyStatus(20, {
+        initial: INITIAL,
+        subsequent: SUBSEQUENT,
+        limit: LIMIT,
+      })
+    ).toEqual({ served: 3, nextAt: null });
+  });
+
   it('gives a single penalty when there is no subsequent step', () => {
     expect(
       getIncidentPenaltyStatus(10, {

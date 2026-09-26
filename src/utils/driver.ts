@@ -70,7 +70,11 @@ export const getIncidentPenaltyStatus = (
     return { served: 1, nextAt: null };
   }
 
-  const served = 1 + Math.floor((incidents - initial) / subsequent);
+  // A penalty that would land on or past the DQ is never given, whatever the
+  // count reads once the driver is out.
+  const countedIncidents =
+    limit === null ? incidents : Math.min(incidents, limit - 1);
+  const served = 1 + Math.floor((countedIncidents - initial) / subsequent);
   const nextAt = initial + served * subsequent;
   const isPastLimit = limit !== null && nextAt >= limit;
 
