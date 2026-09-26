@@ -1720,6 +1720,16 @@ export type SessionSnapshot = {
    * "unlimited" — the usual value in practice and hosted sessions.
    */
   incidentLimit: number | null;
+  /**
+   * Incident count that earns the first penalty (a drive-through or a
+   * stop-and-go). `None` when the session hands out none.
+   */
+  incidentPenaltyInitial: number | null;
+  /**
+   * Incidents between each further penalty after the first. `None` when only
+   * the first one is given.
+   */
+  incidentPenaltySubsequent: number | null;
   currentSessionNum: number;
   sessions: SessionEntry[];
   playerCarIdx: number;

@@ -1,12 +1,16 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import { Wrench, Thermometer, Waves, TriangleAlert } from 'lucide-react';
+import { Wrench, Thermometer, Waves, TriangleAlert, Gavel } from 'lucide-react';
 
 import { formatTemp, tempUnit } from '@utils/telemetry-format';
 import { parseWeekendTemp } from '@ui/widgets/StandingsWidget/standings-utils';
 import { getAirTempColor, getTrackTempColor } from '@utils/colors';
 import { getTrackWetnessInfo } from '@utils/weather-utils';
-import { isNearIncidentLimit } from '@utils/driver';
+import {
+  getIncidentPenaltyStatus,
+  isNearIncidentLimit,
+  isNearIncidentPenalty,
+} from '@utils/driver';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { StatPill, type StatPillVariant } from '@ui/shared/StatPill/StatPill';
@@ -44,6 +48,15 @@ export const SessionFooter = observer(() => {
   // Null in practice and most hosted sessions, where incidents are uncapped.
   const incidentLimit = sessionInfo?.incidentLimit ?? null;
   const isNearLimit = isNearIncidentLimit(playerIncidents, incidentLimit);
+
+  // Sessions with a drive-through every N incidents, whether or not they also
+  // disqualify. Null when the session hands out no penalties.
+  const penaltyStatus = getIncidentPenaltyStatus(playerIncidents, {
+    initial: sessionInfo?.incidentPenaltyInitial ?? null,
+    subsequent: sessionInfo?.incidentPenaltySubsequent ?? null,
+    limit: incidentLimit,
+  });
+  const isNearPenalty = isNearIncidentPenalty(playerIncidents, penaltyStatus);
 
   const playerPitStops = pitStops?.playerStops ?? 0;
 
@@ -117,6 +130,20 @@ export const SessionFooter = observer(() => {
             {incidentLimit === null
               ? `${playerIncidents}x`
               : `${playerIncidents}/${incidentLimit}x`}
+          </StatPill>
+        )}
+
+        {showIncidents && penaltyStatus && (
+          <StatPill
+            icon={Gavel}
+            iconTone={isNearPenalty ? 'danger' : 'warning'}
+            label="PEN"
+            variant={PILL_VARIANT}
+            valueDanger={isNearPenalty}
+          >
+            {penaltyStatus.nextAt === null
+              ? `${penaltyStatus.served}`
+              : `${penaltyStatus.served} · ${penaltyStatus.nextAt}x`}
           </StatPill>
         )}
       </div>

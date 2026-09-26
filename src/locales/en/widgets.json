@@ -556,7 +556,7 @@
       "pitStopCounter": "Pit Stop Counter (player only)",
       "pitStopCounterDesc": "Number of pit stops made by the player car.",
       "incidentsBadge": "Incidents Badge (player only)",
-      "incidentsBadgeDesc": "Incident count accumulated by the player car.",
+      "incidentsBadgeDesc": "Incident count accumulated by the player car, and the penalties earned and the next one when the session gives a penalty every few incidents.",
       "totalDriversCount": "Total Drivers Count",
       "totalDriversCountDesc": "Total number of drivers in the session.",
       "scrolling": "Scrolling",

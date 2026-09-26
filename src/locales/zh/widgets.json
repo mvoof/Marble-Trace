@@ -556,7 +556,7 @@
       "pitStopCounter": "进站计数器（仅玩家）",
       "pitStopCounterDesc": "玩家车辆的进站次数。",
       "incidentsBadge": "违规徽章（仅玩家）",
-      "incidentsBadgeDesc": "玩家车辆累计的违规次数。",
+      "incidentsBadgeDesc": "玩家车辆累计的违规次数；若会话每 N 次违规判罚一次，还会显示已受处罚次数和下一次处罚的阈值。",
       "totalDriversCount": "车手总数",
       "totalDriversCountDesc": "会话中的车手总数。",
       "scrolling": "滚动",

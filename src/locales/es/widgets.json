@@ -556,7 +556,7 @@
       "pitStopCounter": "Contador de paradas (solo tú)",
       "pitStopCounterDesc": "Número de paradas en boxes hechas por tu coche.",
       "incidentsBadge": "Distintivo de incidentes (solo tú)",
-      "incidentsBadgeDesc": "Incidentes acumulados por tu coche.",
+      "incidentsBadgeDesc": "Incidentes acumulados por tu coche y, si la sesión penaliza cada N incidentes, las penalizaciones recibidas y el umbral de la siguiente.",
       "totalDriversCount": "Número total de pilotos",
       "totalDriversCountDesc": "Número total de pilotos en la sesión.",
       "scrolling": "Desplazamiento",
