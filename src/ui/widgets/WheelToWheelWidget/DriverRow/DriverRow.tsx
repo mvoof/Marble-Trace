@@ -4,10 +4,10 @@ import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useWheelToWheelWidgetStore } from '@store/root-store-context';
 import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import type { BattleSlot, RivalSlot } from '../wheel-to-wheel.widget';
-import { PositionBox } from '../PositionBox/PositionBox';
+import { CarNumberBox } from '../CarNumberBox/CarNumberBox';
 import { SideSpeed } from '../SideSpeed/SideSpeed';
 import { SpeedBar } from '../SpeedBar/SpeedBar';
-import { SLOT_ROLE } from '../slot-labels';
+import { SLOT_ROLE, formatSlotPosition } from '../slot-labels';
 
 import styles from './DriverRow.module.scss';
 
@@ -33,10 +33,15 @@ export const DriverRow = observer(({ slot }: DriverRowProps) => {
       className={`${styles.row} ${isPlayer ? styles.rowPlayer : styles.rowRival}`}
     >
       <div className={styles.who}>
-        <PositionBox slot={slot} />
+        <CarNumberBox slot={slot} />
 
         <div className={styles.names}>
-          <span className={styles.role}>{SLOT_ROLE[slot]}</span>
+          <span className={styles.role}>
+            {SLOT_ROLE[slot]}
+            <span className={styles.position}>
+              {formatSlotPosition(identity?.position)}
+            </span>
+          </span>
           <span className={styles.name}>{identity?.name ?? NO_DRIVER}</span>
           <span className={styles.carName}>{identity?.carName ?? ''}</span>
         </div>
