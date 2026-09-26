@@ -36,6 +36,7 @@ export type RivalSlot = Exclude<BattleSlot, 'player'>;
 /** What a slot draws that only changes when the fight does, not every tick. */
 export interface SideIdentity {
   position: number;
+  carNumber: string;
   name: string;
   carName: string;
 }
@@ -49,6 +50,7 @@ const identityOf = (entry: DriverEntry | null): SideIdentity | null => {
 
   return {
     position: entry.liveClassPosition || entry.classPosition,
+    carNumber: entry.carNumber,
     name: entry.userName,
     carName: entry.carScreenNameShort || entry.carScreenName,
   };

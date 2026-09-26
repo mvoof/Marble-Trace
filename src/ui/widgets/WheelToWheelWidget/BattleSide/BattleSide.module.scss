@@ -45,6 +45,13 @@
   text-transform: uppercase;
 }
 
+// The class position rides on the role line, so the box beside it can carry
+// the car number the driver actually sees on the bodywork.
+.position {
+  margin-left: sp('xs');
+  color: $widget-text-primary;
+}
+
 .name,
 .carName {
   overflow: hidden;

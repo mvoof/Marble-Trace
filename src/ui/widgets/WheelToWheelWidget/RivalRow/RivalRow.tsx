@@ -3,10 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { useWheelToWheelWidgetStore } from '@store/root-store-context';
 import { splitDriverName } from '@utils/driver';
 import type { RivalSlot } from '../wheel-to-wheel.widget';
-import { PositionBox } from '../PositionBox/PositionBox';
+import { CarNumberBox } from '../CarNumberBox/CarNumberBox';
 import { SideSpeed } from '../SideSpeed/SideSpeed';
 import { SpeedBar } from '../SpeedBar/SpeedBar';
-import { SLOT_ROLE } from '../slot-labels';
+import { SLOT_ROLE, formatSlotPosition } from '../slot-labels';
 
 import styles from './RivalRow.module.scss';
 
@@ -32,11 +32,16 @@ export const RivalRow = observer(({ slot }: RivalRowProps) => {
         <SideSpeed slot={slot} compact />
 
         <div className={styles.names}>
-          <span className={styles.role}>{SLOT_ROLE[slot]}</span>
+          <span className={styles.role}>
+            {SLOT_ROLE[slot]}
+            <span className={styles.position}>
+              {formatSlotPosition(identity?.position)}
+            </span>
+          </span>
           <span className={styles.name}>{surname}</span>
         </div>
 
-        <PositionBox slot={slot} compact />
+        <CarNumberBox slot={slot} compact />
       </div>
 
       <SpeedBar slot={slot} compact />

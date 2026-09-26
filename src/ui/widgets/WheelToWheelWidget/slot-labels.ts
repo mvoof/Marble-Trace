@@ -6,3 +6,7 @@ export const SLOT_ROLE: Record<BattleSlot, string> = {
   ahead: 'Ahead',
   behind: 'Behind',
 };
+
+/** The class position beside the role; empty until the sim has placed the car. */
+export const formatSlotPosition = (position: number | undefined): string =>
+  position ? `P${position}` : '';
