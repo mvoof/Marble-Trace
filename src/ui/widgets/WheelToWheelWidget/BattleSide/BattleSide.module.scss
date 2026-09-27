@@ -48,6 +48,8 @@
 // The class position rides on the role line, so the box beside it can carry
 // the car number the driver actually sees on the bodywork.
 .position {
+  font-size: wfs(16);
+  line-height: 1;
   margin-left: sp('xs');
   color: $widget-text-primary;
 }
