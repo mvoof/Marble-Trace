@@ -330,6 +330,7 @@ export interface WheelToWheelWidgetSettings {
    * counts there only say when each car joined.
    */
   includeLapped: boolean;
+  qualifyingVisibility: RadarQualifyingVisibility;
 }
 
 export type RowPadding = 'narrow' | 'medium' | 'wide';
@@ -440,6 +441,7 @@ export interface StandingsWidgetSettings {
 }
 
 export interface RelativeWidgetSettings {
+  qualifyingVisibility: RadarQualifyingVisibility;
   /**
    * Source of the position number in the leftmost column. Row order is always by
    * gap on track — that is what the widget is for — so this affects the number only.

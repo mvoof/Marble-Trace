@@ -2,6 +2,7 @@ import { computed, makeAutoObservable } from 'mobx';
 
 import type { RootStore } from '@store/root-store';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
+import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import {
   buildPaceCarRowEntries,
   mergePaceCarRows,
@@ -10,7 +11,12 @@ import {
 
 type RelativeDeps = Pick<
   RootStore,
-  'liveWidgets' | 'cars' | 'session' | 'backendComputed' | 'paceCar'
+  | 'liveWidgets'
+  | 'cars'
+  | 'session'
+  | 'backendComputed'
+  | 'paceCar'
+  | 'appSettings'
 >;
 
 /** What one row of the strip is: a car, and whether it is a pace car. */
@@ -48,6 +54,21 @@ export class RelativeWidgetStore {
   }
 
   /**
+   * Alone on track the other rows are stale garage entries, so only the
+   * player's row stays. Drag mode keeps the full strip to place the widget by.
+   */
+  get showsOnlyPlayer(): boolean {
+    if (this.root.appSettings.dragMode) {
+      return false;
+    }
+
+    return isHiddenInQualifying(
+      this.settings.qualifyingVisibility,
+      this.root.session
+    );
+  }
+
+  /**
    * The pace-car rows, synthesized from the session roster because the backend
    * leaves them out of the relative list. Not compared by content: the row that
    * draws one reads it inside a reaction, where the gap is expected to move.
@@ -68,6 +89,12 @@ export class RelativeWidgetStore {
 
   get rowOrder(): RelativeRow[] {
     const entries = this.root.backendComputed.relativeEntries;
+
+    if (this.showsOnlyPlayer) {
+      return entries
+        .filter((entry) => entry.isPlayer)
+        .map((entry) => ({ carIdx: entry.carIdx, isPaceCar: false }));
+    }
 
     return mergePaceCarRows(entries, this.paceCarRows).map((entry) => ({
       carIdx: entry.carIdx,

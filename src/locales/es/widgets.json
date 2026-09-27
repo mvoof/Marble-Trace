@@ -451,6 +451,8 @@
       "nearLimitWarningDesc": "Pone la velocidad en ámbar cuando falten estos {{unit}} para el límite del pit lane."
     },
     "relative": {
+      "showDriversInQualifying": "Mostrar a los demás pilotos en clasificación",
+      "showDriversInQualifyingDesc": "Automático: los demás pilotos se ocultan durante la clasificación en solitario (un solo coche en pista). Tu fila siempre se mantiene.",
       "appearance": "Apariencia",
       "rowHeight": "Alto de fila",
       "rowHeightDesc": "Espaciado vertical de cada fila de piloto.",
