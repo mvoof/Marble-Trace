@@ -26,6 +26,8 @@ const WHEEL_TO_WHEEL_DEFAULTS: WheelToWheelWidgetSettings = {
   // gap threshold already keeps random traffic off the plate.
   raceOnly: false,
   includeLapped: false,
+  // Alone on track there is nobody to fight.
+  qualifyingVisibility: 'auto',
 };
 
 export const WHEEL_TO_WHEEL_MANIFEST: WidgetManifest = {

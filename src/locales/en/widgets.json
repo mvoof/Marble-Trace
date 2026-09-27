@@ -451,6 +451,8 @@
       "nearLimitWarningDesc": "Color speed amber when this many {{unit}} below the pit speed limit."
     },
     "relative": {
+      "showDriversInQualifying": "Show other drivers in qualifying",
+      "showDriversInQualifyingDesc": "Auto: other drivers are hidden during lone qualifying (single car on track). Your own row always stays.",
       "appearance": "Appearance",
       "rowHeight": "Row Height",
       "rowHeightDesc": "Vertical padding of each driver row.",

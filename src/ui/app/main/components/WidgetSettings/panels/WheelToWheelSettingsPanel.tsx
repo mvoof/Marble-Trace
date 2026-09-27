@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { InputNumber, Segmented } from 'antd';
 
 import type {
+  RadarQualifyingVisibility,
   WheelToWheelLayout,
   WheelToWheelWidgetSettings,
 } from '@/types/widget-settings';
@@ -118,6 +119,25 @@ export const WheelToWheelSettingsPanel = observer(() => {
             title={t('settingsPanels.wheelToWheel.includeLapped')}
             desc={t('settingsPanels.wheelToWheel.includeLappedDesc')}
           />
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.radar.qualifying')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.radar.showInQualifying')}
+            desc={t('settingsPanels.radar.autoDesc')}
+          >
+            <Segmented<RadarQualifyingVisibility>
+              value={settings.qualifyingVisibility}
+              onChange={(value) => update({ qualifyingVisibility: value })}
+              options={[
+                { label: t('settingsPanels.radar.always'), value: 'always' },
+                { label: t('settingsPanels.radar.auto'), value: 'auto' },
+                { label: t('settingsPanels.radar.never'), value: 'never' },
+              ]}
+            />
+          </SettingRow>
         </div>
       </Card>
     </>

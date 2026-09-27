@@ -12,6 +12,7 @@ import type { UnitSystem } from '@/types';
 import type { DriverEntry } from '@/types/bindings';
 import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
+import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import { formatSpeed } from '@utils/telemetry-format';
 import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
 import {
@@ -261,6 +262,12 @@ export class WheelToWheelWidgetStore {
     const isRace = this.root.session.currentSessionType === 'Race';
 
     if (settings.raceOnly && !isRace) {
+      return NO_RIVALS;
+    }
+
+    if (
+      isHiddenInQualifying(settings.qualifyingVisibility, this.root.session)
+    ) {
       return NO_RIVALS;
     }
 

@@ -451,6 +451,8 @@
       "nearLimitWarningDesc": "当速度低于维修区限速这么多 {{unit}} 时将速度显示为琥珀色。"
     },
     "relative": {
+      "showDriversInQualifying": "排位赛中显示其他车手",
+      "showDriversInQualifyingDesc": "自动：单独排位赛期间隐藏其他车手（赛道上仅一辆车）。您自己的行始终保留。",
       "appearance": "外观",
       "rowHeight": "行高",
       "rowHeightDesc": "每个车手行的垂直内边距。",

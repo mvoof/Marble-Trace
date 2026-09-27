@@ -65,6 +65,8 @@ export const RELATIVE_MANIFEST: WidgetManifest = {
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     useLivePositions: true,
+    // Alone on track the strip holds only stale garage entries.
+    qualifyingVisibility: 'auto',
     rowPadding: 'narrow',
     ...RELATIVE_COLUMN_DEFAULTS,
     showPitIndicator: true,
