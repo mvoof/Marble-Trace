@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { InputNumber, Switch } from 'antd';
+import { InputNumber } from 'antd';
 import { StreamChatWidgetSettings } from '@/types/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { usePanelWidgetId } from './setting-rows';
+import { panelRows, usePanelWidgetId } from './setting-rows';
 
 const WIDGET_ID = 'stream-chat';
 
@@ -20,6 +20,8 @@ const MAX_LIFETIME_SECONDS = 600;
  */
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['stream-chat'];
+
+const { SwitchRow } = panelRows<StreamChatWidgetSettings>();
 
 export const StreamChatSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -35,69 +37,6 @@ export const StreamChatSettingsPanel = observer(() => {
       ...partial,
     });
   };
-
-  const toggles = [
-    {
-      titleKey: 'settingsPanels.streamChat.compactRows',
-      descKey: 'settingsPanels.streamChat.compactRowsDesc',
-      value: settings.compactRows,
-      key: 'compactRows',
-    },
-    {
-      titleKey: 'settingsPanels.streamChat.showPlatformGlyph',
-      descKey: 'settingsPanels.streamChat.showPlatformGlyphDesc',
-      value: settings.showPlatformGlyph,
-      key: 'showPlatformGlyph',
-    },
-    {
-      titleKey: 'settingsPanels.streamChat.showBadges',
-      descKey: 'settingsPanels.streamChat.showBadgesDesc',
-      value: settings.showBadges,
-      key: 'showBadges',
-    },
-    {
-      titleKey: 'settingsPanels.streamChat.badgeImages',
-      descKey: 'settingsPanels.streamChat.badgeImagesDesc',
-      value: settings.badgeImages,
-      key: 'badgeImages',
-    },
-    {
-      titleKey: 'settingsPanels.streamChat.showEvents',
-      descKey: 'settingsPanels.streamChat.showEventsDesc',
-      value: settings.showEvents,
-      key: 'showEvents',
-    },
-    {
-      titleKey: 'settingsPanels.streamChat.showFollows',
-      descKey: 'settingsPanels.streamChat.showFollowsDesc',
-      value: settings.showFollows,
-      key: 'showFollows',
-    },
-    {
-      titleKey: 'settingsPanels.streamChat.showBanner',
-      descKey: 'settingsPanels.streamChat.showBannerDesc',
-      value: settings.showBanner,
-      key: 'showBanner',
-    },
-    {
-      titleKey: 'settingsPanels.streamChat.showFooter',
-      descKey: 'settingsPanels.streamChat.showFooterDesc',
-      value: settings.showFooter,
-      key: 'showFooter',
-    },
-    {
-      titleKey: 'settingsPanels.streamChat.showActivity',
-      descKey: 'settingsPanels.streamChat.showActivityDesc',
-      value: settings.showActivity,
-      key: 'showActivity',
-    },
-    {
-      titleKey: 'settingsPanels.streamChat.showPlaceholder',
-      descKey: 'settingsPanels.streamChat.showPlaceholderDesc',
-      value: settings.showPlaceholder,
-      key: 'showPlaceholder',
-    },
-  ] as const;
 
   return (
     <>
@@ -136,16 +75,83 @@ export const StreamChatSettingsPanel = observer(() => {
       </Card>
 
       <Card title={t('settingsPanels.streamChat.visibleElements')}>
-        {toggles.map((item) => (
-          <div key={item.key} className={styles.fieldGroup}>
-            <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
-              <Switch
-                checked={item.value}
-                onChange={(value) => update({ [item.key]: value })}
-              />
-            </SettingRow>
-          </div>
-        ))}
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="compactRows"
+            title={t('settingsPanels.streamChat.compactRows')}
+            desc={t('settingsPanels.streamChat.compactRowsDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showPlatformGlyph"
+            title={t('settingsPanels.streamChat.showPlatformGlyph')}
+            desc={t('settingsPanels.streamChat.showPlatformGlyphDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showBadges"
+            title={t('settingsPanels.streamChat.showBadges')}
+            desc={t('settingsPanels.streamChat.showBadgesDesc')}
+          />
+        </div>
+
+        <SwitchRow
+          settingKey="badgeImages"
+          dependsOn="showBadges"
+          title={t('settingsPanels.streamChat.badgeImages')}
+          desc={t('settingsPanels.streamChat.badgeImagesDesc')}
+        />
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showEvents"
+            title={t('settingsPanels.streamChat.showEvents')}
+            desc={t('settingsPanels.streamChat.showEventsDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showFollows"
+            title={t('settingsPanels.streamChat.showFollows')}
+            desc={t('settingsPanels.streamChat.showFollowsDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showBanner"
+            title={t('settingsPanels.streamChat.showBanner')}
+            desc={t('settingsPanels.streamChat.showBannerDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showFooter"
+            title={t('settingsPanels.streamChat.showFooter')}
+            desc={t('settingsPanels.streamChat.showFooterDesc')}
+          />
+        </div>
+
+        <SwitchRow
+          settingKey="showActivity"
+          dependsOn="showFooter"
+          title={t('settingsPanels.streamChat.showActivity')}
+          desc={t('settingsPanels.streamChat.showActivityDesc')}
+        />
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showPlaceholder"
+            title={t('settingsPanels.streamChat.showPlaceholder')}
+            desc={t('settingsPanels.streamChat.showPlaceholderDesc')}
+          />
+        </div>
       </Card>
     </>
   );
