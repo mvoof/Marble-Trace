@@ -1,12 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Switch } from 'antd';
 import { TimerWidgetSettings } from '@/types/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
-import { SettingRow } from './SettingRow';
-import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows, usePanelWidgetId } from './setting-rows';
+import { panelRows } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['timer'];
@@ -14,96 +11,79 @@ export const PANEL_WIDGET_IDS = ['timer'];
 const { SwitchRow } = panelRows<TimerWidgetSettings>();
 
 export const TimerSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('timer');
   const { t } = useTranslation('widgets');
 
-  const settings = liveWidgets.getSettings<TimerWidgetSettings>(panelWidgetId);
-
-  const update = (partial: Partial<TimerWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
-
-  const items = [
-    {
-      titleKey: 'settingsPanels.timer.showSessionType',
-      descKey: 'settingsPanels.timer.showSessionTypeDesc',
-      value: settings.showSessionType,
-      key: 'showSessionType',
-    },
-    {
-      titleKey: 'settingsPanels.timer.showLapCount',
-      descKey: 'settingsPanels.timer.showLapCountDesc',
-      value: settings.showLaps,
-      key: 'showLaps',
-    },
-    {
-      titleKey: 'settingsPanels.timer.showPosition',
-      descKey: 'settingsPanels.timer.showPositionDesc',
-      value: settings.showPosition,
-      key: 'showPosition',
-    },
-    {
-      titleKey: 'settingsPanels.timer.showPcClock',
-      descKey: 'settingsPanels.timer.showPcClockDesc',
-      value: settings.showWallClock,
-      key: 'showWallClock',
-    },
-    {
-      titleKey: 'settingsPanels.timer.showSimTime',
-      descKey: 'settingsPanels.timer.showSimTimeDesc',
-      value: settings.showSimTime,
-      key: 'showSimTime',
-    },
-    {
-      titleKey: 'settingsPanels.timer.showPcDate',
-      descKey: 'settingsPanels.timer.showPcDateDesc',
-      value: settings.showPcDate,
-      key: 'showPcDate',
-    },
-    {
-      titleKey: 'settingsPanels.timer.showSimDate',
-      descKey: 'settingsPanels.timer.showSimDateDesc',
-      value: settings.showSimDate,
-      key: 'showSimDate',
-    },
-  ] as const;
-
   return (
-    <>
-      <Card title={t('settingsPanels.timer.visibleElements')}>
-        {items.map((item) => (
-          <div key={item.key} className={styles.fieldGroup}>
-            <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
-              <Switch
-                checked={item.value}
-                onChange={(v) => update({ [item.key]: v })}
-              />
-            </SettingRow>
-          </div>
-        ))}
-      </Card>
+    <Card title={t('settingsPanels.timer.visibleElements')}>
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="showSessionType"
+          title={t('settingsPanels.timer.showSessionType')}
+          desc={t('settingsPanels.timer.showSessionTypeDesc')}
+        />
+      </div>
 
-      <Card title={t('settingsPanels.common.positions')}>
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="useLivePositions"
-            title={t('settingsPanels.common.useLivePositions')}
-            desc={t('settingsPanels.common.useLivePositionsDesc')}
-          />
-        </div>
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="showLaps"
+          title={t('settingsPanels.timer.showLapCount')}
+          desc={t('settingsPanels.timer.showLapCountDesc')}
+        />
+      </div>
 
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="classPositionInMulticlass"
-            title={t('settingsPanels.common.classPositionInMulticlass')}
-            desc={t('settingsPanels.common.classPositionInMulticlassDesc')}
-          />
-        </div>
-      </Card>
-    </>
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="showPosition"
+          title={t('settingsPanels.timer.showPosition')}
+          desc={t('settingsPanels.timer.showPositionDesc')}
+        />
+      </div>
+
+      <SwitchRow
+        settingKey="useLivePositions"
+        dependsOn="showPosition"
+        title={t('settingsPanels.common.useLivePositions')}
+        desc={t('settingsPanels.common.useLivePositionsDesc')}
+      />
+
+      <SwitchRow
+        settingKey="classPositionInMulticlass"
+        dependsOn="showPosition"
+        title={t('settingsPanels.common.classPositionInMulticlass')}
+        desc={t('settingsPanels.common.classPositionInMulticlassDesc')}
+      />
+
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="showWallClock"
+          title={t('settingsPanels.timer.showPcClock')}
+          desc={t('settingsPanels.timer.showPcClockDesc')}
+        />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="showSimTime"
+          title={t('settingsPanels.timer.showSimTime')}
+          desc={t('settingsPanels.timer.showSimTimeDesc')}
+        />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="showPcDate"
+          title={t('settingsPanels.timer.showPcDate')}
+          desc={t('settingsPanels.timer.showPcDateDesc')}
+        />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="showSimDate"
+          title={t('settingsPanels.timer.showSimDate')}
+          desc={t('settingsPanels.timer.showSimDateDesc')}
+        />
+      </div>
+    </Card>
   );
 });

@@ -10,6 +10,11 @@ export const PANEL_WIDGET_IDS = ['battery'];
 
 const { SwitchRow } = panelRows<BatteryWidgetSettings>();
 
+// Compact mode strips the widget to the charge alone, so every other element
+// is only drawn outside it.
+const isFullView = (settings: BatteryWidgetSettings): boolean =>
+  !settings.compactMode;
+
 export const BatterySettingsPanel = observer(() => {
   const { t } = useTranslation('widgets');
 
@@ -23,29 +28,26 @@ export const BatterySettingsPanel = observer(() => {
         />
       </div>
 
-      <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showDeployMode"
-          title={t('settingsPanels.battery.deployMode')}
-          desc={t('settingsPanels.battery.deployModeDesc')}
-        />
-      </div>
+      <SwitchRow
+        settingKey="showDeployMode"
+        dependsOn={isFullView}
+        title={t('settingsPanels.battery.deployMode')}
+        desc={t('settingsPanels.battery.deployModeDesc')}
+      />
 
-      <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showPower"
-          title={t('settingsPanels.battery.power')}
-          desc={t('settingsPanels.battery.powerDesc')}
-        />
-      </div>
+      <SwitchRow
+        settingKey="showPower"
+        dependsOn={isFullView}
+        title={t('settingsPanels.battery.power')}
+        desc={t('settingsPanels.battery.powerDesc')}
+      />
 
-      <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showLapDeploy"
-          title={t('settingsPanels.battery.lapDeploy')}
-          desc={t('settingsPanels.battery.lapDeployDesc')}
-        />
-      </div>
+      <SwitchRow
+        settingKey="showLapDeploy"
+        dependsOn={isFullView}
+        title={t('settingsPanels.battery.lapDeploy')}
+        desc={t('settingsPanels.battery.lapDeployDesc')}
+      />
     </Card>
   );
 });
