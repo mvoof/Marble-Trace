@@ -51,14 +51,15 @@ a:focus-visible, button:focus-visible {
    With progressive leftward blur effect from Screenshot 2026-09-11 195640.png
    ========================================================================== */
 
+/* A column: the copy is centred in whatever the claims strip at the foot
+   leaves of the first screen. */
 .hero-block {
   position: relative;
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   background-color: var(--color-header-bg);
   padding-top: calc(var(--header-height) + 1.25rem);
-  padding-bottom: 2.5rem;
   overflow: hidden;
 }
 
@@ -72,6 +73,8 @@ a:focus-visible, button:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
+  margin-block: auto;
+  padding-block: 2.5rem;
 }
 
 .hero-content {
@@ -295,6 +298,39 @@ a:focus-visible, button:focus-visible {
   object-fit: cover;
   object-position: 68% 42%;
   display: block;
+  /* Held down so the photograph is ground under the copy and the strip, not a
+     second subject competing with them. */
+  filter: saturate(0.8) brightness(0.94);
+}
+
+/* ---- Claims strip at the foot of the hero ---------------------------------
+
+   The four reasons the app exists, on one dark translucent band across the
+   full width. It sits over the lower edge of the photograph, which is the
+   part with the most detail and the least to say. */
+.hero-claims {
+  --cut: 24deg;
+
+  position: relative;
+  z-index: 10;
+  padding: clamp(1.5rem, 2.6vw, 2.25rem) 0 clamp(1.75rem, 3vw, 2.5rem);
+  background-color: rgba(13, 16, 20, 0.82);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.hero-claims .claim {
+  padding-top: 0;
+}
+
+.hero-claims .claim-title {
+  color: #ffffff;
+}
+
+.hero-claims .claim-desc {
+  --lede-size: 0.92rem;
+
+  color: #a3abb5;
 }
 
 
@@ -353,45 +389,6 @@ a:focus-visible, button:focus-visible {
     calc(var(--edge) + 2px - var(--edge-slant)) 100%,
     calc(var(--edge) - var(--edge-slant)) 100%
   );
-}
-
-/* Vertical Scroll Indicator in Cut Corner */
-.hero-scroll-indicator {
-  position: absolute;
-  right: 26px;
-  bottom: 22px;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  user-select: none;
-}
-
-.hero-scroll-text {
-  writing-mode: vertical-rl;
-  font-family: var(--font-family);
-  font-weight: 800;
-  font-size: 0.65rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #374151;
-}
-
-.hero-scroll-arrow {
-  width: 14px;
-  height: 14px;
-  color: #374151;
-  animation: scroll-bounce-down 2s infinite ease-in-out;
-}
-
-@keyframes scroll-bounce-down {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(5px);
-  }
 }
 
 /* ==========================================================================
@@ -760,7 +757,6 @@ a:focus-visible, button:focus-visible {
   .hero-block {
     min-height: auto;
     padding-top: calc(var(--header-height) + 2rem);
-    padding-bottom: 3.5rem;
   }
 
   .hero-container {
@@ -780,8 +776,7 @@ a:focus-visible, button:focus-visible {
   }
 
   .hero-visual .cut-line,
-  .hero-visual .cut-glare,
-  .hero-visual .hero-scroll-indicator {
+  .hero-visual .cut-glare {
     display: none;
   }
 }
@@ -896,76 +891,161 @@ a:focus-visible, button:focus-visible {
   max-width: 38ch;
 }
 
-/* ---- Cockpit plate -------------------------------------------------------
+/* ---- Scene ---------------------------------------------------------------
 
-   One still, sheared on both vertical edges by the same angle the hero cuts
-   use, so the plate belongs to the same page geometry. The shear is a
-   clip-path rather than a transform: a transform would skew the photograph
-   itself, and a photograph of a cockpit read at an angle is a photograph of
-   nothing.
+   The section opens edge to edge on the cockpit, with the overlay as a second
+   image laid exactly over it. Both are cover-fitted into one box and centred
+   by the same rule, so whatever the box crops, it crops from both alike and
+   every widget stays on its spot in the car.
+
+   The copy sits in the sky over the road - the one band of the screen no
+   widget uses. A soft dark pool under it, drawn below the overlay, keeps the
+   white type legible on clouds without dimming the widgets.
    -------------------------------------------------------------------------- */
 
-.chapter-shot {
-  --shot-shear: 18.6%;
-
-  position: relative;
-  /* The plate is a real ultrawide capture (3440x1440). Holding that ratio is
-     what keeps the widgets in its corners inside the frame — a cover crop
-     would take the standings and the track map off the sides. */
-  aspect-ratio: 43 / 18;
-  align-self: center;
+.chapter-why {
+  padding: 0;
 }
 
-/* The cut is on the photo, not on the figure: the figure has to stay
-   unclipped so it can draw the guide hairlines in the gutter beside it. */
-.chapter-shot-photo {
-  display: block;
+/* Height, not aspect-ratio: an aspect-ratio box capped by max-height takes
+   its width from that height and leaves the rest of a wide window empty.
+   The width is always the window's; the height is the screen's 43:18 up to
+   one viewport, and the layers crop to fit it. */
+.why-scene {
+  position: relative;
+  width: 100%;
+  height: clamp(34rem, calc(100vw * 18 / 43), calc(100vh - var(--header-height)));
+  background-color: #0d1014;
+  overflow: hidden;
+}
+
+.why-scene-frame {
+  position: absolute;
+  inset: 0;
+}
+
+.why-scene-bg,
+.why-scene-overlay {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background-color: #0d1014;
-  clip-path: polygon(
-    var(--shot-shear) 0,
-    100% 0,
-    calc(100% - var(--shot-shear)) 100%,
-    0 100%
-  );
+  object-position: 50% 50%;
 }
 
-/* ---- Callout beside the plate -------------------------------------------- */
-
-.chapter-callout {
-  position: relative;
-  padding-top: clamp(0.5rem, 1.2vw, 1.1rem);
-  padding-left: 1.1rem;
+/* The render is lit like a summer noon and the page around it is not; held
+   down a stop it sits with the other sections, and the widgets on the layer
+   above it stay at full strength. */
+.why-scene-bg {
+  filter: brightness(0.72) saturate(0.85);
 }
 
-.chapter-callout::before {
+.why-scene-overlay {
+  z-index: 2;
+}
+
+.why-scene-frame::before {
   content: '';
   position: absolute;
-  top: calc(clamp(0.5rem, 1.2vw, 1.1rem) + 0.45em);
-  left: 0;
-  width: 0.7rem;
-  height: 2px;
-  background-color: var(--color-btn-download-bg);
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 36% 36% at 50% 30%, rgba(6, 9, 13, 0.6), rgba(6, 9, 13, 0) 100%),
+    linear-gradient(to bottom, rgba(6, 9, 13, 0.18), rgba(6, 9, 13, 0) 45%);
 }
 
-.chapter-callout-title {
-  font-family: var(--font-family);
-  font-weight: 800;
-  font-size: 0.78rem;
-  letter-spacing: 0.16em;
-  line-height: 1.35;
-  text-transform: uppercase;
-  color: #101317;
-  margin-bottom: 0.6rem;
+/* The chapter opener every other section has - ghost ordinal, kicker,
+   title, lede, at the same sizes - stacked on one centre line in the sky, so
+   it stands on the road's own axis rather than beside it. */
+.why-scene-copy {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(44rem, 46%);
+  transform: translateX(-50%);
+  text-align: center;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
 }
 
-.chapter-callout-desc {
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: #5d656f;
-  max-width: 22ch;
+.why-ordinal {
+  margin: 0 0 0.9rem;
+  color: rgba(255, 255, 255, 0.28);
+  text-shadow: none;
+}
+
+.why-kicker {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.why-title {
+  color: #ffffff;
+}
+
+.why-lede {
+  max-width: 38ch;
+  margin-inline: auto;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Narrow screens: the sky is too short to hold the copy, so it steps out
+   above the picture onto the page, and the scene becomes a plain still. */
+@media (max-width: 1180px) {
+  .why-scene {
+    display: flex;
+    flex-direction: column-reverse;
+    height: auto;
+    background-color: transparent;
+    overflow: visible;
+  }
+
+  .why-scene-frame {
+    position: relative;
+    aspect-ratio: 43 / 18;
+    background-color: #0d1014;
+    overflow: hidden;
+  }
+
+  .why-scene-frame::before {
+    display: none;
+  }
+
+  .why-scene-copy {
+    position: static;
+    align-items: flex-start;
+    width: auto;
+    transform: none;
+    padding: clamp(4.5rem, 9vw, 6rem) var(--container-padding) clamp(2rem, 4vw, 2.75rem);
+    text-align: left;
+    text-shadow: none;
+  }
+
+  .why-ordinal {
+    color: rgba(26, 29, 35, 0.14);
+  }
+
+  .why-kicker {
+    color: #7b8390;
+  }
+
+  .why-title {
+    color: #101317;
+  }
+
+  .why-lede {
+    margin-inline: 0;
+    color: #4b5563;
+  }
+}
+
+@media (max-width: 640px) {
+  .why-ordinal {
+    display: none;
+  }
 }
 
 /* ---- Claims band --------------------------------------------------------- */
@@ -1063,23 +1143,9 @@ a:focus-visible, button:focus-visible {
     margin-inline: auto;
   }
 
-  .chapter-shot {
-    grid-column: 1 / -1;
-    align-self: start;
-  }
 
-  .chapter-callout {
-    grid-column: 1 / -1;
-    padding-top: 0;
-  }
 
-  .chapter-callout::before {
-    top: 0.45em;
-  }
 
-  .chapter-callout-desc {
-    max-width: 46ch;
-  }
 
   .claim-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

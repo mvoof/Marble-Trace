@@ -260,14 +260,6 @@
           <div class="cut-line cut-line-trail"></div>
 
           <!-- Near-vertical slanted cut taking a strip off the right edge -->
-
-          <!-- Scroll indicator, sitting on the right strip -->
-          <div class="hero-scroll-indicator">
-            <span class="hero-scroll-text">SCROLL</span>
-            <svg class="hero-scroll-arrow" aria-hidden="true">
-              <use href="assets/icons/sprite.svg#icon-arrow-down" />
-            </svg>
-          </div>
         </div>
 
         <div class="hero-container">
@@ -340,100 +332,108 @@
           </div>
         </div>
 
+        <!-- The four reasons, moved here from section 01: the first screen
+             answers what the app is for, and section 01 is left to the scene
+             that shows it. One dark strip across the foot of the hero, over
+             the photograph, so the picture reads as ground rather than as a
+             second subject beside the copy. -->
+        <div class="hero-claims">
+          <div class="container">
+            <ul class="claim-grid hero-claims-grid">
+              <li class="claim">
+                <div class="claim-head">
+                  <span class="claim-index" aria-hidden="true"><span>01</span></span>
+                  <h3 class="claim-title">Zero overhead</h3>
+                </div>
+                <p class="lede claim-desc">
+                  A tiny Rust backend reads telemetry directly, with minimal
+                  impact on performance.
+                </p>
+              </li>
+
+              <li class="claim">
+                <div class="claim-head">
+                  <span class="claim-index" aria-hidden="true"><span>02</span></span>
+                  <h3 class="claim-title">Fully modular</h3>
+                </div>
+                <p class="lede claim-desc">
+                  Widgets can be independently positioned, resized and styled.
+                </p>
+              </li>
+
+              <li class="claim">
+                <div class="claim-head">
+                  <span class="claim-index" aria-hidden="true"><span>03</span></span>
+                  <h3 class="claim-title">Layouts for every session</h3>
+                </div>
+                <p class="lede claim-desc">
+                  Visual editor and session-based layout switching for practice,
+                  qualifying and races.
+                </p>
+              </li>
+
+              <li class="claim">
+                <div class="claim-head">
+                  <span class="claim-index" aria-hidden="true"><span>04</span></span>
+                  <h3 class="claim-title">Any screen</h3>
+                </div>
+                <p class="lede claim-desc">
+                  Use it on your main screen, a phone, a tablet or a second PC
+                  over your local network. Nothing installed on the device.
+                </p>
+              </li>
+            </ul>
+          </div>
+        </div>
       </section>
 
       <!-- ====================================================================
          Section 01 — Why Marble Trace
-         Two bands over one axis. Above: the oversized ghost ordinal in the
-         left gutter, the chapter copy beside it, and a single sheared still
-         of the overlay in the cockpit — with one callout standing off the
-         plate's right edge for the thing a screenshot cannot say. Below: the
-         four claims in a row, opened by a lime index chip and divided only by
-         hairlines. No cards anywhere in the section.
+         Two bands over one axis. Above: a scene - the cockpit as the section's
+         ground, the overlay laid over it as its own transparent layer, and the
+         chapter copy set in the one part of the screen no widget uses, the sky
+         above the road. The four claims that used to sit below it now open the
+         page, at the foot of the hero.
+
+         The cockpit and the overlay are two files, not one flattened capture,
+         so either can be replaced without the other. They share one aspect
+         ratio (43:18, a 3440x1440 screen) and are placed by the same rule, so
+         every widget lands where it sat on that screen.
          ==================================================================== -->
-      <section id="features" class="chapter" aria-labelledby="why-heading">
-        <div class="container chapter-head">
-          <span class="chapter-ordinal" aria-hidden="true">01</span>
+      <section id="features" class="chapter chapter-why" aria-labelledby="why-heading">
+        <div class="why-scene">
+          <div class="why-scene-frame">
+            <img
+              class="why-scene-bg"
+              src="assets/why/cockpit-bg.jpg"
+              alt=""
+              decoding="async"
+            />
+            <img
+              class="why-scene-overlay"
+              src="assets/why/overlay-layer.png"
+              alt="Marble Trace widgets over the iRacing cockpit: standings, relative, track map, fuel, weather, radar and the race dash"
+              decoding="async"
+            />
+          </div>
 
-          <div class="chapter-lead">
-            <p class="chapter-kicker">Why Marble Trace</p>
+          <div class="why-scene-copy">
+            <span class="chapter-ordinal why-ordinal" aria-hidden="true">01</span>
 
-            <h2 id="why-heading" class="chapter-title">
+            <p class="chapter-kicker why-kicker">Why Marble Trace</p>
+
+            <h2 id="why-heading" class="chapter-title why-title">
               Built for<br />
               real racing.
             </h2>
 
-            <p class="lede chapter-subtitle">
-              Lightweight, flexible and powerful — Marble Trace gives you the
-              telemetry data you need, without getting in your way.
-            </p>
-          </div>
-
-          <figure class="chapter-shot">
-
-            <img
-              src="assets/why/cockpit-overlays.jpg"
-              alt="Marble Trace widgets floating over the iRacing cockpit view — standings, delta, fuel and proximity radar"
-              class="chapter-shot-photo"
-            />
-          </figure>
-
-          <div class="chapter-callout">
-            <p class="chapter-callout-title">
-              Transparent frameless overlay
-            </p>
-            <p class="chapter-callout-desc">
-              Stays on top, never blocks your view.
+            <p class="lede why-lede">
+              A transparent, frameless overlay that stays on top and never
+              blocks your view.
             </p>
           </div>
         </div>
 
-        <div class="container">
-          <ul class="claim-grid">
-            <li class="claim">
-              <div class="claim-head">
-                <span class="claim-index" aria-hidden="true"><span>01</span></span>
-                <h3 class="claim-title">Zero overhead</h3>
-              </div>
-              <p class="lede claim-desc">
-                A tiny Rust backend reads telemetry directly, with minimal
-                impact on performance.
-              </p>
-            </li>
-
-            <li class="claim">
-              <div class="claim-head">
-                <span class="claim-index" aria-hidden="true"><span>02</span></span>
-                <h3 class="claim-title">Fully modular</h3>
-              </div>
-              <p class="lede claim-desc">
-                Widgets can be independently positioned, resized and styled.
-              </p>
-            </li>
-
-            <li class="claim">
-              <div class="claim-head">
-                <span class="claim-index" aria-hidden="true"><span>03</span></span>
-                <h3 class="claim-title">Layouts for every session</h3>
-              </div>
-              <p class="lede claim-desc">
-                Visual editor and session-based layout switching for practice,
-                qualifying and races.
-              </p>
-            </li>
-
-            <li class="claim">
-              <div class="claim-head">
-                <span class="claim-index" aria-hidden="true"><span>04</span></span>
-                <h3 class="claim-title">Any screen</h3>
-              </div>
-              <p class="lede claim-desc">
-                Use it on your main screen, a phone, a tablet or a second PC
-                over your local network. Nothing installed on the device.
-              </p>
-            </li>
-          </ul>
-        </div>
       </section>
 
       <!-- ====================================================================
