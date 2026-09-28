@@ -1557,92 +1557,174 @@
         </div>
       </section>
 
-      <!-- Performance Section -->
-      <section id="performance" class="section section-alt">
-        <div class="container">
-          <div class="section-header">
-            <p class="section-tag">Zero FPS Tax</p>
-            <h2 class="section-title">Pure 60 FPS Telemetry</h2>
-            <p class="section-subtitle">
-              Tested in endurance racing and competitive multi-class grids.
+      <!-- ====================================================================
+         Section 05 - Performance
+
+         One dark band, not a chapter: the section makes a single point - the
+         path a frame takes from the sim to the screen - and says it as a
+         diagram rather than as paragraphs.
+
+         Nothing here is a measurement taken once on somebody's machine. The
+         60 Hz and the tiers are the scheduler's (telemetry/scheduler.rs), "on
+         demand" is the per-window mask (telemetry/state.rs, emitter.rs), and
+         kerb waits on iRacing's data-ready event rather than polling
+         (kerb src/iracing/connection.rs). Change one of those and this band
+         has to change with it.
+         ==================================================================== -->
+      <section id="performance" class="perf-band" aria-labelledby="perf-heading">
+        <div class="container perf">
+          <span class="perf-ordinal" aria-hidden="true">05</span>
+
+          <div class="perf-lead">
+            <p class="perf-kicker">Performance</p>
+
+            <h2 id="perf-heading" class="perf-title">
+              Lightweight.<br />
+              Fast.<br />
+              Always on top.
+            </h2>
+
+            <p class="perf-desc">
+              A Rust core built on kerb, our own telemetry crate. Each window
+              gets only what its widgets draw.
             </p>
+
+            <a
+              class="perf-more"
+              href="https://github.com/mvoof/kerb"
+              target="_blank"
+              rel="noopener noreferrer"
+              >kerb on GitHub <span aria-hidden="true">&rarr;</span></a
+            >
           </div>
 
-          <div class="cards-grid">
-            <div class="card">
-              <h3 class="card-title">&lt; 1% CPU Usage</h3>
-              <p class="card-desc">
-                The Rust backend processes high-frequency telemetry in
-                background threads without blocking game rendering.
-              </p>
-            </div>
-            <div class="card">
-              <h3 class="card-title">Tiered Refresh Rates</h3>
-              <p class="card-desc">
-                60 Hz for vehicle dynamics and inputs, 10 Hz for proximity, 4 Hz
-                for fuel and pit stops to eliminate wasted cycles.
-              </p>
-            </div>
-            <div class="card">
-              <h3 class="card-title">Demand-Gated Pipeline</h3>
-              <p class="card-desc">
-                Only fields requested by currently active on-screen widgets are
-                unpacked and serialized.
-              </p>
-            </div>
+          <div class="perf-body">
+            <!-- The path a frame takes, left to right. -->
+            <ol class="perf-flow" aria-label="How telemetry reaches your screen">
+              <li class="perf-node">
+                <span class="perf-node-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M5 21V4" /><path d="M5 4h12l-2.5 4.5L17 13H5" /></svg>
+                </span>
+                <span class="perf-node-name">iRacing</span>
+                <span class="perf-node-sub">Shared memory</span>
+              </li>
+
+              <li class="perf-node">
+                <span class="perf-node-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" /><path d="M4 7.5l8 4.5 8-4.5" /><path d="M12 12v9" /></svg>
+                </span>
+                <span class="perf-node-name">kerb</span>
+                <span class="perf-node-sub">Our Rust crate</span>
+              </li>
+
+              <li class="perf-node">
+                <span class="perf-node-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1" /><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4" /></svg>
+                </span>
+                <span class="perf-node-name">Rust core</span>
+                <span class="perf-node-sub">60 &middot; 10 &middot; 4 &middot; 1 Hz</span>
+              </li>
+
+              <li class="perf-node perf-node-app">
+                <span class="perf-node-icon" aria-hidden="true">
+                  <img src="assets/logo-light.svg" alt="" width="28" height="28" />
+                </span>
+                <span class="perf-node-name">Marble Trace</span>
+                <span class="perf-node-sub">Only what is drawn</span>
+              </li>
+
+              <li class="perf-node">
+                <span class="perf-node-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1" /><path d="M8 20h8M12 16v4" /></svg>
+                </span>
+                <span class="perf-node-name">Overlay</span>
+                <span class="perf-node-sub">And remote screens</span>
+              </li>
+            </ol>
+
+            <ul class="perf-facts">
+              <li class="perf-fact">
+                <span class="perf-fact-name">60 Hz</span>
+                <span class="perf-fact-desc">On the sim's own signal</span>
+              </li>
+
+              <li class="perf-fact">
+                <span class="perf-fact-name">On demand</span>
+                <span class="perf-fact-desc">Unused data is never sent</span>
+              </li>
+
+              <li class="perf-fact">
+                <span class="perf-fact-name">Always on top</span>
+                <span class="perf-fact-desc">Transparent, frameless</span>
+              </li>
+
+              <li class="perf-fact">
+                <span class="perf-fact-name">Open source</span>
+                <span class="perf-fact-desc">GPL-3.0 app, MIT kerb</span>
+              </li>
+            </ul>
           </div>
+
         </div>
 
+        <!-- Outside the container: the still runs to the edge of the window
+             on any screen, not to the edge of a 1680px column. -->
+        <figure class="perf-shot">
+          <img src="assets/why/telemetry.jpg" alt="" loading="lazy" decoding="async" />
+          <figcaption class="perf-shot-caption">
+            Real data.<br />
+            Real performance.
+          </figcaption>
+        </figure>
       </section>
 
-      <!-- Open Source Section -->
-      <section id="open-source" class="section">
-        <div class="container">
-          <div class="section-header">
-            <p class="section-tag">Community Driven</p>
-            <h2 class="section-title">100% Free &amp; Open Source</h2>
-            <p class="section-subtitle">
-              Licensed under MIT. No subscriptions, no ads, no telemetry
-              paywalls.
-            </p>
-          </div>
-
-          <div class="cards-grid">
-            <div class="card">
-              <h3 class="card-title">Open Architecture</h3>
-              <p class="card-desc">
-                Inspect, build, and customize widgets or backend processors.
-                Contributions and issues welcome on GitHub.
-              </p>
-            </div>
-            <div class="card">
-              <h3 class="card-title">Active Community</h3>
-              <p class="card-desc">
-                Join fellow drivers on Discord to share layouts, suggest new
-                widgets, and report feedback.
-              </p>
-            </div>
-            <div class="card">
-              <h3 class="card-title">Safe &amp; Approved</h3>
-              <p class="card-desc">
-                Reads standard iRacing shared memory SDK telemetry — completely
-                compliant with iRacing Terms of Service.
-              </p>
-            </div>
-          </div>
-        </div>
-
-      </section>
     </main>
 
     <!-- ========================================================================
        Footer
+
+       Two tiers. The upper one is open source's own band - the ask for a
+       star, the brand, the map of the page and the three places the project
+       lives - standing on the same dark ground as section 05 above it, so the
+       page ends on one dark block rather than a band, a light gap and a
+       footer. The lower one is the light strip the page opened on, with the
+       licence and nothing to click.
+
+       The licence is GPL-3.0-or-later (LICENSE, package.json, Cargo.toml);
+       kerb alone is MIT.
        ======================================================================== -->
     <footer class="site-footer">
-      <div class="container">
-        <div class="footer-content">
+      <section id="open-source" class="footer-cta" aria-labelledby="oss-heading">
+        <div class="container footer-cta-inner">
+          <div class="footer-star">
+            <svg class="footer-star-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" />
+            </svg>
+
+            <div class="footer-star-copy">
+              <h2 id="oss-heading" class="footer-star-title">
+                If Marble Trace makes your racing better, give it a star.
+              </h2>
+              <p class="footer-star-desc">
+                Free and open source under GPL-3.0. No account, no ads, no
+                subscription.
+              </p>
+            </div>
+          </div>
+
+          <a
+            class="footer-star-btn"
+            href="https://github.com/mvoof/Marble-Trace"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span class="footer-star-btn-glyph" aria-hidden="true">&#9733;</span>
+            Star on GitHub
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+
           <div class="footer-brand">
-            <img src="assets/logo-light.svg" alt="" width="26" height="26" />
+            <img src="assets/logo-light.svg" alt="" width="44" height="44" />
             <span class="brand-name">Marble Trace</span>
           </div>
 
@@ -1652,29 +1734,47 @@
             <a href="#screens" class="footer-link">Screens</a>
             <a href="#layouts" class="footer-link">Layouts</a>
             <a href="#performance" class="footer-link">Performance</a>
-            <a href="#open-source" class="footer-link">Open Source</a>
+          </nav>
+
+          <div class="footer-social">
             <a
               href="https://github.com/mvoof/Marble-Trace"
               target="_blank"
               rel="noopener noreferrer"
-              class="footer-link"
-              >GitHub</a
+              aria-label="GitHub repository"
             >
+              <svg aria-hidden="true"><use href="assets/icons/sprite.svg#icon-github" /></svg>
+            </a>
             <a
-              href="https://discord.gg/GVaRsHbjxV"
+              href="https://discord.gg/tkdS9sn49b"
               target="_blank"
               rel="noopener noreferrer"
-              class="footer-link"
-              >Discord</a
+              aria-label="Discord server"
             >
-          </nav>
+              <svg aria-hidden="true"><use href="assets/icons/sprite.svg#icon-discord" /></svg>
+            </a>
+            <a
+              href="https://github.com/mvoof/Marble-Trace/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Download for Windows"
+            >
+              <svg aria-hidden="true"><use href="assets/icons/sprite.svg#icon-windows" /></svg>
+            </a>
+          </div>
         </div>
+      </section>
 
-        <div class="footer-bottom">
-          <p>
-            &copy; 2026 Marble Trace. Free and Open Source under MIT License.
-          </p>
-          <p>Built with Rust, Tauri &amp; modern Web standards.</p>
+      <div class="footer-bottom">
+        <div class="container footer-bottom-inner">
+          <div class="footer-bottom-brand">
+            <img src="assets/logo.svg" alt="" width="20" height="20" />
+            <span>Marble Trace</span>
+          </div>
+
+          <p>Built with Rust &amp; Tauri &middot; telemetry by kerb</p>
+
+          <p>&copy; 2026 Marble Trace &middot; GPL-3.0</p>
         </div>
       </div>
     </footer>
