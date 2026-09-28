@@ -1365,12 +1365,49 @@ a:focus-visible, button:focus-visible {
   color: #101317;
 }
 
+/* The widgets are drawn to sit over the sim - translucent dark panels made
+   for a road and a sky behind them - and on the page's own paper they turned
+   into grey boxes. So the stage is a screen: a frame of the cockpit, blurred
+   and held down, the way the overlay actually meets it. The picture is the
+   same render section 01 opens on, so nothing new is downloaded. */
 .stage-shot {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: var(--shot-h);
+  height: calc(var(--shot-h) + 4rem);
+  padding: 2rem;
+  border-radius: 14px;
+  overflow: hidden;
+  background-color: #0d1014;
+  box-shadow:
+    0 1.6rem 3.2rem -1.4rem rgba(10, 14, 20, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.stage-shot::before,
+.stage-shot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Scaled past the frame so the blur has no soft edge to show */
+.stage-shot::before {
+  inset: -2rem;
+  background: url('../../assets/why/cockpit-bg.jpg') center 40% / cover no-repeat;
+  filter: blur(14px) saturate(1.1) brightness(0.62);
+}
+
+/* A vignette and a lime floor light, so the widget has somewhere to stand */
+.stage-shot::after {
+  background:
+    radial-gradient(ellipse 60% 22% at 50% 100%, rgba(158, 195, 106, 0.28), transparent 70%),
+    radial-gradient(ellipse at center, transparent 35%, rgba(8, 10, 13, 0.7) 100%);
 }
 
 .stage-shot img {
@@ -1379,7 +1416,7 @@ a:focus-visible, button:focus-visible {
   width: auto;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 16px 34px rgba(16, 19, 23, 0.28));
+  filter: drop-shadow(0 16px 34px rgba(0, 0, 0, 0.5));
   transition:
     opacity 0.28s ease,
     transform 0.28s ease;
@@ -2074,10 +2111,14 @@ a:focus-visible, button:focus-visible {
      back by very little: at any real fade they stop being screenshots and
      become grey ghosts of one. */
   opacity: calc(1 - 0.06 * var(--d, 0));
+  /* Long enough for a card this size to be seen travelling rather than
+     jumping. The stacking order is handed over a beat late: the card leaving
+     the front stays on top while it clears, instead of the incoming one
+     popping over it before either has moved. */
   transition:
-    transform var(--transition-smooth),
-    opacity var(--transition-smooth),
-    filter var(--transition-smooth);
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s ease,
+    z-index 0s linear 0.18s;
   will-change: transform;
 }
 
@@ -2813,5 +2854,393 @@ body.is-viewer-open {
   .perf-fact:nth-child(3) {
     padding-left: 0;
     border-left: 0;
+  }
+}
+
+/* ==========================================================================
+   Tapes - two crossed bands between the gallery and section 03
+
+   The lime tape is the loud one: what the app is, in the hero's own face.
+   The dark tape crosses behind it the other way and carries the widgets as
+   pill badges. Both lean off the page's axis by a few degrees - enough to
+   read as tape laid across the page, not so much that the words are hard
+   to read.
+   ========================================================================== */
+
+.tapes {
+  position: relative;
+  height: clamp(8.5rem, 12vw, 11rem);
+  margin-block: -1.5rem;
+  overflow: hidden;
+}
+
+.tape {
+  position: absolute;
+  left: -5%;
+  width: 110%;
+  top: 50%;
+  display: flex;
+  overflow: hidden;
+}
+
+.tape-front {
+  z-index: 2;
+  background-color: var(--color-btn-download-bg);
+  color: #0b1015;
+  transform: translateY(-50%) rotate(-3deg);
+  box-shadow: 0 0.9rem 2rem -1rem rgba(11, 16, 21, 0.45);
+}
+
+.tape-back {
+  z-index: 1;
+  background-color: #0d1014;
+  transform: translateY(-50%) rotate(2.2deg);
+}
+
+.tape-track {
+  display: flex;
+  flex: none;
+  width: max-content;
+  animation: tape-run 48s linear infinite;
+}
+
+.tape-back .tape-track {
+  animation-duration: 64s;
+  animation-direction: reverse;
+}
+
+.tape-row {
+  display: flex;
+  flex: none;
+  align-items: center;
+  list-style: none;
+}
+
+/* The words, each closed by a chevron - the mark on a pit board */
+.tape-word {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(1.6rem, 2.6vw, 2.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  padding: 0.85rem 0;
+}
+
+.tape-word::after {
+  content: '';
+  width: 0.55em;
+  height: 0.55em;
+  margin: 0 0.9em;
+  background-color: #0b1015;
+  clip-path: polygon(0 0, 55% 0, 100% 50%, 55% 100%, 0 100%, 45% 50%);
+}
+
+.tape-back .tape-row {
+  gap: 0.6rem;
+  padding: 0.75rem 0.3rem;
+}
+
+.tape-badge {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #cfd4da;
+  padding: 0.45rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+/* Every third badge is lit, so the tape is not one grey rhythm */
+.tape-badge:nth-child(3n + 1) {
+  color: #0b1015;
+  background-color: #eef0f2;
+  border-color: #eef0f2;
+}
+
+/* On a narrow screen a few degrees of lean barely part the two tapes, and
+   the lime one hid the badges almost whole. They are stacked instead, still
+   crossing, overlapping only at their edges. */
+@media (max-width: 720px) {
+  .tape-back {
+    transform: translateY(-105%) rotate(2.2deg);
+  }
+
+  .tape-front {
+    transform: translateY(-5%) rotate(-3deg);
+  }
+}
+
+@keyframes tape-run {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tape-track {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Interact mode - one feature on lime, between section 03 and section 04
+
+   The key is the picture: a dark keycap with the lime legend, a countdown
+   ring around it that runs out, and one status line under it saying where
+   the mouse is. The copy stands beside it with the three widgets the key
+   opens up, set as a short ruled list rather than cards.
+   ========================================================================== */
+
+.interact-band {
+  position: relative;
+  padding: clamp(4rem, 7vw, 6rem) 0;
+  background-color: var(--color-btn-download-bg);
+  color: #0b1015;
+  overflow: hidden;
+}
+
+.interact {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 3rem clamp(2rem, 6vw, 6rem);
+}
+
+/* ---- The key ---------------------------------------------------------------- */
+
+.interact-demo {
+  --left: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.interact-dial {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(15rem, 24vw, 20rem);
+  aspect-ratio: 1;
+}
+
+.interact-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.interact-ring circle {
+  fill: none;
+  stroke-width: 5;
+}
+
+.interact-ring-track {
+  stroke: rgba(11, 16, 21, 0.14);
+}
+
+.interact-ring-fill {
+  stroke: #0b1015;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc(100 - var(--left) * 100);
+  transition: stroke-dashoffset 1s linear;
+}
+
+/* Out of interact mode the ring is spent and dims with the key */
+.interact-demo:not(.is-overlay) .interact-ring-fill {
+  opacity: 0;
+  transition:
+    stroke-dashoffset 1s linear,
+    opacity 0.3s ease;
+}
+
+.interact-key {
+  display: grid;
+  place-items: center;
+  width: 58%;
+  aspect-ratio: 1;
+  border-radius: 18%;
+  background: linear-gradient(180deg, #1f252c 0%, #0d1014 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -0.55rem 0 rgba(0, 0, 0, 0.55),
+    0 0.9rem 1.6rem -0.6rem rgba(11, 16, 21, 0.6);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.interact-demo.is-pressed .interact-key {
+  transform: translateY(0.35rem);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -0.2rem 0 rgba(0, 0, 0, 0.55),
+    0 0.3rem 0.6rem -0.3rem rgba(11, 16, 21, 0.6);
+}
+
+.interact-key-cap {
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(3rem, 5.4vw, 4.6rem);
+  line-height: 1;
+  margin-top: -0.2em;
+  color: var(--color-btn-download-bg);
+  transition: color 0.3s ease;
+}
+
+.interact-demo:not(.is-overlay) .interact-key-cap {
+  color: #5d656f;
+}
+
+.interact-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  background-color: #0d1014;
+  color: #eef0f2;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.interact-status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: #5d656f;
+  transition: background-color 0.3s ease;
+}
+
+.interact-demo.is-overlay .interact-status-dot {
+  background-color: var(--color-btn-download-bg);
+}
+
+/* Two digits in a monospace face: the countdown ticks without the pill
+   changing width under it */
+.interact-status-time {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  color: #8a939e;
+}
+
+/* ---- The copy --------------------------------------------------------------- */
+
+.interact-kicker {
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(11, 16, 21, 0.6);
+  margin-bottom: 1rem;
+}
+
+.interact-title {
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(2.4rem, 4.4vw, 4rem);
+  line-height: 0.88;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+
+.interact-desc {
+  max-width: 46ch;
+  font-weight: 500;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: rgba(11, 16, 21, 0.8);
+}
+
+.interact-uses {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 2rem;
+  border-top: 1px solid rgba(11, 16, 21, 0.2);
+}
+
+.interact-use {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1rem 0 0;
+}
+
+.interact-use + .interact-use {
+  padding-left: 1rem;
+  border-left: 1px solid rgba(11, 16, 21, 0.2);
+}
+
+.interact-use-name {
+  font-family: var(--font-hero-heading);
+  font-weight: 800;
+  font-style: italic;
+  font-size: 1.3rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.interact-use-desc {
+  font-weight: 500;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(11, 16, 21, 0.72);
+}
+
+.interact-note {
+  margin-top: 1.75rem;
+  max-width: 60ch;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(11, 16, 21, 0.74);
+}
+
+@media (max-width: 900px) {
+  .interact {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .interact-uses {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .interact-use,
+  .interact-use + .interact-use {
+    padding: 0.85rem 0;
+    border-left: 0;
+    border-bottom: 1px solid rgba(11, 16, 21, 0.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interact-ring-fill,
+  .interact-key,
+  .interact-key-cap {
+    transition: none;
   }
 }

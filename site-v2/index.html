@@ -1090,6 +1090,90 @@
          ==================================================================== -->
 
       <!-- ====================================================================
+         Tapes - the break between the gallery and section 03
+
+         Two bands crossed like barrier tape: a lime one naming what the app
+         is, and a dark one behind it carrying the widgets as badges, running
+         the other way. It is the page changing pace between two light
+         chapters, not a section of its own, so it has no heading and is
+         hidden from assistive tech - every word on it is said again in the
+         sections around it.
+
+         The counts are the repo's own: 28 widget manifests, four locales.
+         The loop is CSS alone - each track holds its row twice and slides by
+         one row's width.
+         ==================================================================== -->
+      <div class="tapes" aria-hidden="true">
+        <div class="tape tape-back">
+          <div class="tape-track">
+            <ul class="tape-row">
+              <li class="tape-badge">Standings</li>
+              <li class="tape-badge">Relative</li>
+              <li class="tape-badge">Track Map</li>
+              <li class="tape-badge">Fuel</li>
+              <li class="tape-badge">Delta HUD</li>
+              <li class="tape-badge">Proximity Radar</li>
+              <li class="tape-badge">Close Battle</li>
+              <li class="tape-badge">Pit Service</li>
+              <li class="tape-badge">Weather</li>
+              <li class="tape-badge">Input Trace</li>
+              <li class="tape-badge">G-Meter</li>
+              <li class="tape-badge">Coach</li>
+              <li class="tape-badge">Sector Matrix</li>
+              <li class="tape-badge">Lap Log</li>
+              <li class="tape-badge">LED Flags</li>
+              <li class="tape-badge">Race Dash</li>
+              <li class="tape-badge">Stream Chat</li>
+            </ul>
+            <ul class="tape-row">
+              <li class="tape-badge">Standings</li>
+              <li class="tape-badge">Relative</li>
+              <li class="tape-badge">Track Map</li>
+              <li class="tape-badge">Fuel</li>
+              <li class="tape-badge">Delta HUD</li>
+              <li class="tape-badge">Proximity Radar</li>
+              <li class="tape-badge">Close Battle</li>
+              <li class="tape-badge">Pit Service</li>
+              <li class="tape-badge">Weather</li>
+              <li class="tape-badge">Input Trace</li>
+              <li class="tape-badge">G-Meter</li>
+              <li class="tape-badge">Coach</li>
+              <li class="tape-badge">Sector Matrix</li>
+              <li class="tape-badge">Lap Log</li>
+              <li class="tape-badge">LED Flags</li>
+              <li class="tape-badge">Race Dash</li>
+              <li class="tape-badge">Stream Chat</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tape tape-front">
+          <div class="tape-track">
+            <ul class="tape-row">
+              <li class="tape-word">Free forever</li>
+              <li class="tape-word">Open source</li>
+              <li class="tape-word">Rust core</li>
+              <li class="tape-word">28 widgets</li>
+              <li class="tape-word">Any screen</li>
+              <li class="tape-word">OBS ready</li>
+              <li class="tape-word">Wheel buttons</li>
+              <li class="tape-word">4 languages</li>
+            </ul>
+            <ul class="tape-row">
+              <li class="tape-word">Free forever</li>
+              <li class="tape-word">Open source</li>
+              <li class="tape-word">Rust core</li>
+              <li class="tape-word">28 widgets</li>
+              <li class="tape-word">Any screen</li>
+              <li class="tape-word">OBS ready</li>
+              <li class="tape-word">Wheel buttons</li>
+              <li class="tape-word">4 languages</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
          Section 03 - Remote screens
 
          One scene, four devices, one overlay. The claim is not that the app
@@ -1204,6 +1288,81 @@
               </p>
             </li>
           </ul>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+         Interact mode - one feature, between section 03 and section 04
+
+         The page's saturated band, given to a single thing the app does: a
+         key that lets the mouse reach the overlay and hands it back to the
+         game on its own. The picture is the key itself and the countdown
+         around it, run by interact-demo.js; without it the key stands at a
+         full ring and the copy says the rest.
+
+         Every claim is the app's: F8 is the default binding
+         (store/hotkeys/actions.ts), toggle or hold is interactHotkeyMode,
+         15 s is interactAutoOffSeconds with 0 meaning stay on
+         (store/settings/app-settings.store.ts, toggle mode only), and the
+         three widgets are the ones that read interactMode.
+         ==================================================================== -->
+      <section class="interact-band" aria-labelledby="interact-heading">
+        <div class="container interact">
+          <div class="interact-demo is-overlay" data-interact-demo aria-hidden="true">
+            <div class="interact-dial">
+              <svg class="interact-ring" viewBox="0 0 120 120">
+                <circle class="interact-ring-track" cx="60" cy="60" r="54" />
+                <circle class="interact-ring-fill" cx="60" cy="60" r="54" pathLength="100" />
+              </svg>
+
+              <span class="interact-key">
+                <span class="interact-key-cap">F8</span>
+              </span>
+            </div>
+
+            <p class="interact-status">
+              <span class="interact-status-dot"></span>
+              <span data-interact-status>Mouse on the overlay</span>
+              <span class="interact-status-time" data-interact-time>0:15</span>
+            </p>
+          </div>
+
+          <div class="interact-copy">
+            <p class="interact-kicker">Interact mode</p>
+
+            <h2 id="interact-heading" class="interact-title">
+              One key.<br />
+              The mouse is yours.
+            </h2>
+
+            <p class="interact-desc">
+              Press F8 and the mouse reaches the overlay instead of the game,
+              without unlocking a single widget. Fifteen seconds later it hands
+              the mouse back on its own, so you never leave the car with the
+              cursor stuck on the standings.
+            </p>
+
+            <ul class="interact-uses">
+              <li class="interact-use">
+                <span class="interact-use-name">Standings</span>
+                <span class="interact-use-desc">Scroll the table, switch classes</span>
+              </li>
+              <li class="interact-use">
+                <span class="interact-use-name">Stream Chat</span>
+                <span class="interact-use-desc">Scroll back through the chat</span>
+              </li>
+              <li class="interact-use">
+                <span class="interact-use-name">Pit Service</span>
+                <span class="interact-use-desc">Click the order you want</span>
+              </li>
+            </ul>
+
+            <p class="interact-note">
+              F8 by default. Rebind it to any key or a wheel button, hold it
+              instead of toggling, change the fifteen seconds or switch the
+              timer off.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -1550,7 +1709,7 @@
               </button>
 
               <p class="deck-hint" aria-hidden="true">
-                Run the pointer across the deck &middot; click to enlarge
+                Click a card to bring it forward &middot; click again to enlarge
               </p>
             </div>
           </div>
@@ -1822,5 +1981,6 @@
     <script src="src/components/navbar.js"></script>
     <script src="src/components/widget-gallery.js"></script>
     <script src="src/components/control-deck.js"></script>
+    <script src="src/components/interact-demo.js"></script>
   </body>
 </html>

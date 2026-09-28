@@ -6,11 +6,11 @@
  * navigating anywhere. Everything the plate needs is already in the markup, so
  * this file never carries a copy of the catalogue.
  *
- * The pointer browses the stack by running across it — the deck is split into
- * as many bands as there are cards, and the band under the pointer is the card
- * at the front. That is only offered to a pointer that can hover; a touch
- * screen gets the swipe and the two step buttons, which are in the markup for
- * everyone.
+ * The deck moves only when it is asked to: a click on a card, the two step
+ * buttons, the arrow keys or a swipe. It used to follow the pointer across the
+ * stack and deal a card per wheel notch as well, and both dealt cards the
+ * reader never meant to - a pointer crossing the deck on its way down the page
+ * shuffled the whole stack.
  *
  * Geometry lives in the stylesheet. All this file sets is --d, the card's
  * distance from the front, so the fan can be redrawn in CSS without touching
@@ -88,49 +88,6 @@
         cards[target].focus();
       }
     };
-
-    /* ---- Pointer scrub ----------------------------------------------------
-       The deck is as many bands as it has cards. Reading the band rather than
-       the card under the pointer is what lets the whole stack be browsed: the
-       card at the front covers the ones behind it, so hovering the cards
-       themselves would only ever reach the front one and the sliver of each
-       card that sticks out. */
-
-    const bandAtPointer = (clientX) => {
-      const box = deck.getBoundingClientRect();
-      const ratio = (clientX - box.left) / box.width;
-      const band = Math.floor(ratio * cards.length);
-
-      return Math.max(0, Math.min(cards.length - 1, band));
-    };
-
-    const canHover =
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-    if (canHover) {
-      let pendingFrame = 0;
-
-      const onPointerMove = (event) => {
-        if (pendingFrame !== 0) {
-          return;
-        }
-
-        /* One read per frame: pointermove fires far faster than the deck is
-           redrawn, and each read costs a layout. */
-        pendingFrame = window.requestAnimationFrame(() => {
-          pendingFrame = 0;
-
-          const band = bandAtPointer(event.clientX);
-
-          if (band !== activeIndex) {
-            show(band, false);
-          }
-        });
-      };
-
-      deck.addEventListener('pointermove', onPointerMove);
-    }
 
     /* ---- Swipe, clicks and keys ------------------------------------------- */
 
@@ -286,43 +243,6 @@
         show(activeIndex + 1, false);
       });
     }
-
-    /* ---- Wheel ------------------------------------------------------------
-       Over the deck the wheel deals the next card instead of scrolling past
-       it. Only while there is a card left to deal in that direction: at either
-       end the page takes the wheel back, so the section can still be scrolled
-       out of rather than trapping the reader in it. */
-
-    const WHEEL_IDLE_MS = 90;
-
-    let wheelBlockedUntil = 0;
-
-    deck.addEventListener(
-      'wheel',
-      (event) => {
-        const forward =
-          (Math.abs(event.deltaY) > Math.abs(event.deltaX)
-            ? event.deltaY
-            : event.deltaX) > 0;
-        const next = forward ? activeIndex + 1 : activeIndex - 1;
-
-        if (next < 0 || next > cards.length - 1) {
-          return;
-        }
-
-        event.preventDefault();
-
-        /* A trackpad sends a whole flick as a stream of events; without this
-           one gesture runs the deck end to end. */
-        if (event.timeStamp < wheelBlockedUntil) {
-          return;
-        }
-
-        wheelBlockedUntil = event.timeStamp + WHEEL_IDLE_MS;
-        show(next, false);
-      },
-      { passive: false }
-    );
 
     /* ---- Plate height -----------------------------------------------------
        The plate is centred on the deck, so a shorter panel would move both of
