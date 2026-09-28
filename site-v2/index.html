@@ -418,7 +418,6 @@
           </div>
 
           <div class="why-scene-copy">
-            <span class="chapter-ordinal why-ordinal" aria-hidden="true">01</span>
 
             <p class="chapter-kicker why-kicker">Why Marble Trace</p>
 
@@ -462,12 +461,11 @@
         data-widget-gallery
       >
         <!-- The crossbar. The chapter states itself in one line across the
-             page, the ordinal anchoring its left end and the kicker its
+             page, the title anchoring its left end and the kicker its
              right, closed by a full-width rule. -->
         <div class="container gallery-head">
           <div class="gallery-head-bar">
             <div class="gallery-head-title">
-              <span class="chapter-ordinal" aria-hidden="true">02</span>
 
               <h2 id="widgets-heading" class="chapter-title gallery-title">
                 The right data. Right there.
@@ -489,14 +487,6 @@
               <p class="lede gallery-lede">
                 Every widget in the app, at the size you actually read it. Take
                 the four you race with, or the whole board.
-              </p>
-
-              <p class="gallery-groups">
-                Race &amp; performance<br />
-                Timing &amp; standings<br />
-                Awareness<br />
-                Car &amp; session<br />
-                Streaming
               </p>
             </div>
 
@@ -1192,7 +1182,6 @@
       <section id="screens" class="chapter chapter-screens" aria-labelledby="screens-heading">
         <div class="container screens">
           <div class="screens-head">
-            <span class="chapter-ordinal" aria-hidden="true">03</span>
 
             <div class="chapter-lead">
               <p class="chapter-kicker">Multi-screen layouts</p>
@@ -1292,38 +1281,267 @@
       </section>
 
       <!-- ====================================================================
-         Interact mode - one feature, between section 03 and section 04
+         Feature blocks - the app behind the overlay
 
-         The page's saturated band, given to a single thing the app does: a
-         key that lets the mouse reach the overlay and hands it back to the
-         game on its own. The picture is the key itself and the countdown
-         around it, run by interact-demo.js; without it the key stands at a
-         full ring and the copy says the rest.
+         What used to be one deck of six captures is three blocks of one or
+         two features each, so nothing waits behind a click to be read. Each
+         block has its own ground (dark, light, dark) and its own picture,
+         and each picture is a crop of the real window - the part that makes
+         the point - rather than the whole settings page with its margins.
+
+         A crop is .shot-crop with the capture's own pixel box in --x/--y/
+         --w/--h (all captures are 1595x969); data-zoom opens the whole
+         capture in the viewer at the end of the page (shot-viewer.js).
+         ==================================================================== -->
+
+      <!-- ---- Layouts --------------------------------------------------------
+           The session strip is the auto-switch acted out: the four sessions
+           a layout can be assigned to (layouts.png shows the same four tags),
+           stepped through by layout-demo.js, which brings up that session's
+           screenshot on the screen beside it. -->
+      <section id="layouts" class="feature feature-dark" aria-labelledby="layouts-heading">
+        <div class="container feature-grid">
+          <div class="feature-copy">
+            <p class="feature-kicker">Layouts</p>
+
+            <h2 id="layouts-heading" class="feature-title">
+              A layout for<br />
+              every session.
+            </h2>
+
+            <p class="feature-desc">
+              Which widgets, where, on which monitor. Give each session its own
+              layout and the overlay switches as the session changes.
+            </p>
+
+            <div class="session-track" role="group" aria-label="Show the layout for a session">
+              <button class="session-step" type="button" data-session="garage" aria-pressed="false">Garage</button>
+              <button class="session-step" type="button" data-session="practice" aria-pressed="false">Practice</button>
+              <button class="session-step" type="button" data-session="qualify" aria-pressed="false">Qualify</button>
+              <button class="session-step is-active" type="button" data-session="race" aria-pressed="true">Race</button>
+            </div>
+          </div>
+
+          <!-- The screen. One screenshot per session, taken in the sim with
+               that session's layout on, crossfaded by layout-demo.js as the
+               strip steps through the sessions. The shots live in
+               assets/layouts/<session>.jpg; a session whose shot is missing
+               drops out of the strip on its own, so the block never shows an
+               empty frame. -->
+          <div class="feature-media">
+            <div class="layout-screen" data-layout-screen>
+              <img class="layout-shot" data-shot="garage" src="assets/layouts/garage.jpg" alt="The garage layout on screen" loading="lazy" decoding="async" />
+              <img class="layout-shot" data-shot="practice" src="assets/layouts/practice.jpg" alt="The practice layout on screen" loading="lazy" decoding="async" />
+              <img class="layout-shot" data-shot="qualify" src="assets/layouts/qualify.jpg" alt="The qualifying layout on screen" loading="lazy" decoding="async" />
+              <img class="layout-shot is-active" data-shot="race" src="assets/layouts/race.jpg" alt="The race layout on screen" loading="lazy" decoding="async" />
+
+              <p class="layout-screen-label" aria-hidden="true">
+                <span data-layout-label>Race</span> layout
+              </p>
+            </div>
+
+            <button class="layout-screen-proof" type="button" data-zoom>
+              <img src="assets/control/layouts.png" alt="The layouts page of Marble Trace: saved layouts, each tagged with the sessions it is used in" width="1595" height="969" loading="lazy" hidden />
+              See the layouts page in the app <span aria-hidden="true">&rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        <ul class="container pill-list">
+          <li class="pill">Every monitor on one canvas</li>
+          <li class="pill">Remote screens too</li>
+          <li class="pill">Live data while you place</li>
+          <li class="pill">Snap grid</li>
+          <li class="pill">Undo and redo</li>
+          <li class="pill">Duplicate a layout</li>
+        </ul>
+      </section>
+
+      <!-- ---- Widget workbench ---------------------------------------------- -->
+      <section class="feature feature-light feature-flip" aria-labelledby="workbench-heading">
+        <div class="container feature-grid">
+          <div class="feature-copy">
+            <p class="feature-kicker">Widget settings</p>
+
+            <h2 id="workbench-heading" class="feature-title">
+              Every widget,<br />
+              your way.
+            </h2>
+
+            <p class="feature-desc">
+              Each widget opens with a live preview beside its settings. Switch
+              a column off and it is gone from the picture before you are back
+              in the car.
+            </p>
+
+            <ul class="pill-list pill-list-inline">
+              <li class="pill">Columns</li>
+              <li class="pill">Rows</li>
+              <li class="pill">View modes</li>
+              <li class="pill">Scale</li>
+              <li class="pill">Opacity</li>
+              <li class="pill">Background</li>
+              <li class="pill">Colours</li>
+              <li class="pill pill-lit">A copy for your stream</li>
+            </ul>
+          </div>
+
+          <div class="feature-media">
+            <button
+              class="shot-crop shot-workbench"
+              type="button"
+              style="--x: 330; --y: 250; --w: 1240; --h: 530"
+              data-zoom
+              aria-label="Open the widget settings screenshot"
+            >
+              <img
+                src="assets/control/widget-config.png"
+                alt="Standings open in the widget settings: a live preview of the table beside its column switches"
+                width="1595"
+                height="969"
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- Controls ------------------------------------------------------
+           Hotkeys and devices together: one is what is bound, the other what
+           it is bound on. The two crops are the Application group of Input
+           bindings (F9, F8, F10 - the real defaults) and the Devices list. -->
+      <section class="feature feature-dark" aria-labelledby="controls-heading">
+        <div class="container feature-grid">
+          <div class="feature-copy">
+            <p class="feature-kicker">Controls</p>
+
+            <h2 id="controls-heading" class="feature-title">
+              Bound to<br />
+              a button.
+            </h2>
+
+            <p class="feature-desc">
+              Hide everything, cycle a view, send the pit order. Every action
+              goes on a key or a wheel button, in every layout, and stays
+              bound after a replug.
+            </p>
+
+            <ul class="pill-list pill-list-inline">
+              <li class="pill">Keyboard</li>
+              <li class="pill">Wheels</li>
+              <li class="pill">Button boxes</li>
+              <li class="pill">Joysticks</li>
+              <li class="pill">Pedals</li>
+            </ul>
+          </div>
+
+          <div class="feature-media controls-media">
+            <button
+              class="shot-crop shot-devices"
+              type="button"
+              style="--x: 488; --y: 255; --w: 868; --h: 460"
+              data-zoom
+              aria-label="Open the devices screenshot"
+            >
+              <img
+                src="assets/control/devices.png"
+                alt="The devices page, listing connected wheels, button boxes, joysticks and pedals"
+                width="1595"
+                height="969"
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+
+            <button
+              class="shot-crop shot-bindings"
+              type="button"
+              style="--x: 508; --y: 378; --w: 828; --h: 182"
+              data-zoom
+              aria-label="Open the input bindings screenshot"
+            >
+              <img
+                src="assets/control/bindings.png"
+                alt="Input bindings: drag mode on F9, interact mode on F8, hide all widgets on F10"
+                width="1595"
+                height="969"
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+         Interact mode
+
+         One feature on the page's saturated ground, said in one line: a key
+         that gives the mouse to the overlay and hands it back to the game.
+         The picture is the key itself - an SVG keycap that goes down and
+         throws a splash - played on a loop by interact-demo.js, and pressed
+         again by anyone who clicks it.
 
          Every claim is the app's: F8 is the default binding
-         (store/hotkeys/actions.ts), toggle or hold is interactHotkeyMode,
-         15 s is interactAutoOffSeconds with 0 meaning stay on
-         (store/settings/app-settings.store.ts, toggle mode only), and the
-         three widgets are the ones that read interactMode.
+         (store/hotkeys/actions.ts), 15 s is interactAutoOffSeconds
+         (store/settings/app-settings.store.ts), and Standings, Stream Chat
+         and Pit Service are the widgets that read interactMode.
          ==================================================================== -->
       <section class="interact-band" aria-labelledby="interact-heading">
         <div class="container interact">
-          <div class="interact-demo is-overlay" data-interact-demo aria-hidden="true">
-            <div class="interact-dial">
-              <svg class="interact-ring" viewBox="0 0 120 120">
-                <circle class="interact-ring-track" cx="60" cy="60" r="54" />
-                <circle class="interact-ring-fill" cx="60" cy="60" r="54" pathLength="100" />
-              </svg>
-
-              <span class="interact-key">
-                <span class="interact-key-cap">F8</span>
+          <div class="interact-demo" data-interact-demo aria-hidden="true">
+            <div class="keycap-stage">
+              <span class="splash" data-splash>
+                <span class="splash-ring"></span>
+                <span class="splash-drop" style="--ox: -96px; --dx: -40px; --dy: -70px; --s: 1"></span>
+                <span class="splash-drop" style="--ox: -96px; --dx: -86px; --dy: -44px; --s: 0.8"></span>
+                <span class="splash-drop" style="--ox: -96px; --dx: -96px; --dy: -12px; --s: 0.65"></span>
+                <span class="splash-drop splash-drop-ink" style="--ox: -96px; --dx: -60px; --dy: -104px; --s: 0.7"></span>
+                <span class="splash-drop" style="--ox: -96px; --dx: -16px; --dy: -86px; --s: 0.55"></span>
+                <span class="splash-drop" style="--ox: 96px; --dx: 40px; --dy: -74px; --s: 1"></span>
+                <span class="splash-drop" style="--ox: 96px; --dx: 88px; --dy: -40px; --s: 0.8"></span>
+                <span class="splash-drop splash-drop-ink" style="--ox: 96px; --dx: 96px; --dy: -8px; --s: 0.65"></span>
+                <span class="splash-drop" style="--ox: 96px; --dx: 62px; --dy: -100px; --s: 0.7"></span>
+                <span class="splash-drop" style="--ox: 96px; --dx: 14px; --dy: -90px; --s: 0.55"></span>
               </span>
+
+              <svg class="keycap" viewBox="0 0 240 220" data-keycap>
+                <defs>
+                  <linearGradient id="keycap-wall" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#050608" />
+                    <stop offset="0.5" stop-color="#1c2229" />
+                    <stop offset="1" stop-color="#08090c" />
+                  </linearGradient>
+                  <linearGradient id="keycap-top" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#303841" />
+                    <stop offset="1" stop-color="#161b21" />
+                  </linearGradient>
+                  <radialGradient id="keycap-dish" cx="0.5" cy="0.42" r="0.6">
+                    <stop offset="0" stop-color="#000" stop-opacity="0.32" />
+                    <stop offset="1" stop-color="#000" stop-opacity="0" />
+                  </radialGradient>
+                </defs>
+
+                <ellipse class="keycap-shadow" cx="120" cy="198" rx="98" ry="13" />
+
+                <path
+                  class="keycap-wall"
+                  d="M52 70 H188 Q200 70 202 82 L214 172 Q216 188 200 188 H40 Q24 188 26 172 L38 82 Q40 70 52 70 Z"
+                />
+
+                <g class="keycap-cap">
+                  <rect class="keycap-top" x="46" y="34" width="148" height="120" rx="22" />
+                  <rect class="keycap-dish" x="56" y="42" width="128" height="104" rx="18" />
+                  <path class="keycap-shine" d="M68 40 H172" />
+                  <text class="keycap-legend" x="120" y="114">F8</text>
+                </g>
+              </svg>
             </div>
 
             <p class="interact-status">
               <span class="interact-status-dot"></span>
               <span data-interact-status>Mouse on the overlay</span>
-              <span class="interact-status-time" data-interact-time>0:15</span>
             </p>
           </div>
 
@@ -1331,387 +1549,16 @@
             <p class="interact-kicker">Interact mode</p>
 
             <h2 id="interact-heading" class="interact-title">
-              One key.<br />
-              The mouse is yours.
+              Press F8.<br />
+              Click the overlay.
             </h2>
 
             <p class="interact-desc">
-              Press F8 and the mouse reaches the overlay instead of the game,
-              without unlocking a single widget. Fifteen seconds later it hands
-              the mouse back on its own, so you never leave the car with the
-              cursor stuck on the standings.
+              Scroll the standings, switch classes, click the pit order.
+              After 15&nbsp;seconds the mouse goes back to the game.
             </p>
 
-            <ul class="interact-uses">
-              <li class="interact-use">
-                <span class="interact-use-name">Standings</span>
-                <span class="interact-use-desc">Scroll the table, switch classes</span>
-              </li>
-              <li class="interact-use">
-                <span class="interact-use-name">Stream Chat</span>
-                <span class="interact-use-desc">Scroll back through the chat</span>
-              </li>
-              <li class="interact-use">
-                <span class="interact-use-name">Pit Service</span>
-                <span class="interact-use-desc">Click the order you want</span>
-              </li>
-            </ul>
-
-            <p class="interact-note">
-              F8 by default. Rebind it to any key or a wheel button, hold it
-              instead of toggling, change the fifteen seconds or switch the
-              timer off.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ====================================================================
-         Section 04 - The app behind the overlay
-
-         Sections 01-03 are the overlay; this one is the program that builds
-         it. Six captures of the real window, browsed as one deck rather than
-         laid out as six cards: they are screenshots of the same application,
-         and a grid of them reads as six products.
-
-         The deck leans on the section's own angle - --cut, the same 24deg the
-         hero and the dividers are cut at - so the stack belongs to the page
-         geometry rather than introducing a second perspective. The card at the
-         front stands upright: a screenshot read at an angle is a screenshot
-         nobody reads, so only the ones waiting their turn lean.
-
-         The pointer browses the deck by running across it; the plate beside it
-         is the thing that changes. Without JavaScript the first card is at the
-         front and its plate is the one printed open, so the section never
-         renders empty, and the deck is a tablist, so all of it is reachable
-         from the keyboard.
-         ==================================================================== -->
-      <section id="layouts" class="chapter chapter-control" aria-labelledby="control-heading">
-        <div class="container control">
-          <div class="control-head">
-            <span class="chapter-ordinal" aria-hidden="true">04</span>
-
-            <div class="chapter-lead">
-              <p class="chapter-kicker">The app itself</p>
-
-              <h2 id="control-heading" class="chapter-title">
-                Built once.<br />
-                Bound to a button.
-              </h2>
-
-              <p class="lede chapter-subtitle">
-                Behind the overlay is an ordinary desktop application: layouts
-                you build with the mouse, screens you hand out on your own
-                network, and every one of them on a key or a wheel button.
-              </p>
-            </div>
-          </div>
-
-          <!-- The deck and its plate. data-control-deck is the only hook the
-               script looks for, and everything it needs is on the cards
-               themselves, so the catalogue lives in this markup and nowhere
-               else. -->
-          <div class="control-deck" data-control-deck>
-            <div
-              class="deck"
-              role="tablist"
-              aria-label="Application features"
-              aria-orientation="horizontal"
-            >
-              <button
-                class="deck-card is-active"
-                type="button"
-                role="tab"
-                id="cd-tab-1"
-                aria-controls="cd-panel-1"
-                aria-selected="true"
-              >
-                <img
-                  class="deck-shot"
-                  src="assets/control/layouts.png"
-                  alt="The layouts page of Marble Trace, with five saved layouts and the detail panel of the selected one"
-                  width="1595"
-                  height="969"
-                  decoding="async"
-                />
-                <span class="deck-card-name">Layouts</span>
-              </button>
-
-              <button
-                class="deck-card"
-                type="button"
-                role="tab"
-                id="cd-tab-2"
-                aria-controls="cd-panel-2"
-                aria-selected="false"
-                tabindex="-1"
-              >
-                <img
-                  class="deck-shot"
-                  src="assets/control/layout-editor.png"
-                  alt="The layout editor, with widgets placed across a triple monitor desktop"
-                  width="1595"
-                  height="969"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <span class="deck-card-name">Layout editor</span>
-              </button>
-
-              <button
-                class="deck-card"
-                type="button"
-                role="tab"
-                id="cd-tab-3"
-                aria-controls="cd-panel-3"
-                aria-selected="false"
-                tabindex="-1"
-              >
-                <img
-                  class="deck-shot"
-                  src="assets/control/widget-config.png"
-                  alt="The widget workbench, with a live standings preview beside its data column switches"
-                  width="1595"
-                  height="969"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <span class="deck-card-name">Widget workbench</span>
-              </button>
-
-              <button
-                class="deck-card"
-                type="button"
-                role="tab"
-                id="cd-tab-4"
-                aria-controls="cd-panel-4"
-                aria-selected="false"
-                tabindex="-1"
-              >
-                <img
-                  class="deck-shot"
-                  src="assets/control/remote-screens.png"
-                  alt="The remote screens page, with the local server running and a screen ready to open on a device"
-                  width="1595"
-                  height="969"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <span class="deck-card-name">Remote screens</span>
-              </button>
-
-              <button
-                class="deck-card"
-                type="button"
-                role="tab"
-                id="cd-tab-5"
-                aria-controls="cd-panel-5"
-                aria-selected="false"
-                tabindex="-1"
-              >
-                <img
-                  class="deck-shot"
-                  src="assets/control/bindings.png"
-                  alt="The input bindings page, listing app actions and the keys bound to them"
-                  width="1595"
-                  height="969"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <span class="deck-card-name">Hotkeys</span>
-              </button>
-
-              <button
-                class="deck-card"
-                type="button"
-                role="tab"
-                id="cd-tab-6"
-                aria-controls="cd-panel-6"
-                aria-selected="false"
-                tabindex="-1"
-              >
-                <img
-                  class="deck-shot"
-                  src="assets/control/devices.png"
-                  alt="The devices page, listing connected wheels, button boxes and pedals"
-                  width="1595"
-                  height="969"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <span class="deck-card-name">Devices</span>
-              </button>
-            </div>
-
-            <!-- The plate. One per card, only the selected one rendered, so
-                 what the deck shows and what the page says cannot drift. -->
-            <div class="deck-plate">
-              <div class="deck-panel" role="tabpanel" id="cd-panel-1" aria-labelledby="cd-tab-1">
-                <p class="deck-panel-ordinal" aria-hidden="true">01 / 06</p>
-
-                <h3 class="deck-panel-title">Layouts</h3>
-
-                <p class="lede deck-panel-desc">
-                  A layout is the whole overlay at once &mdash; which widgets
-                  are on, where each one sits, on which monitor and at what
-                  scale. Build as many as you race in.
-                </p>
-
-                <ul class="deck-panel-facts">
-                  <li>One layout everywhere, or a different one per session</li>
-                  <li>Practice, qualifying, race and garage assigned per layout</li>
-                  <li>Auto-switching follows the session you are in</li>
-                  <li>Duplicate a layout to try something without losing it</li>
-                </ul>
-              </div>
-
-              <div
-                class="deck-panel"
-                role="tabpanel"
-                id="cd-panel-2"
-                aria-labelledby="cd-tab-2"
-                hidden
-              >
-                <p class="deck-panel-ordinal" aria-hidden="true">02 / 06</p>
-
-                <h3 class="deck-panel-title">Layout editor</h3>
-
-                <p class="lede deck-panel-desc">
-                  Your desktop, drawn to scale, with the widgets on it. Drag one
-                  where you want it and it is already there on the overlay
-                  &mdash; there is no second preview to reconcile.
-                </p>
-
-                <ul class="deck-panel-facts">
-                  <li>Every monitor, real or remote, on one canvas</li>
-                  <li>Widgets draw live data while you place them</li>
-                  <li>Snap grid, arrow-key nudging, undo and redo</li>
-                  <li>Layer order, locked aspect and corner placement per widget</li>
-                </ul>
-              </div>
-
-              <div
-                class="deck-panel"
-                role="tabpanel"
-                id="cd-panel-3"
-                aria-labelledby="cd-tab-3"
-                hidden
-              >
-                <p class="deck-panel-ordinal" aria-hidden="true">03 / 06</p>
-
-                <h3 class="deck-panel-title">Widget workbench</h3>
-
-                <p class="lede deck-panel-desc">
-                  Every widget opens with its own live preview and its own
-                  settings beside it, so a column you switch off is gone from
-                  the picture before you go back to the car.
-                </p>
-
-                <ul class="deck-panel-facts">
-                  <li>Data columns, rows and view modes per widget</li>
-                  <li>Scale, opacity, background and border</li>
-                  <li>Colours from the widget's own palette</li>
-                  <li>A second copy of a widget for a stream screen</li>
-                </ul>
-              </div>
-
-              <div
-                class="deck-panel"
-                role="tabpanel"
-                id="cd-panel-4"
-                aria-labelledby="cd-tab-4"
-                hidden
-              >
-                <p class="deck-panel-ordinal" aria-hidden="true">04 / 06</p>
-
-                <h3 class="deck-panel-title">Remote screens</h3>
-
-                <p class="lede deck-panel-desc">
-                  The app serves the layout to your own network. A screen is
-                  added like a monitor, and a phone, a tablet or OBS opens it in
-                  a browser.
-                </p>
-
-                <ul class="deck-panel-facts">
-                  <li>Open the link or scan the QR code &mdash; nothing installed</li>
-                  <li>A transparent stream screen for an OBS browser source</li>
-                  <li>Send rate and port are yours to set</li>
-                  <li>Links carry a token you can regenerate at any time</li>
-                </ul>
-              </div>
-
-              <div
-                class="deck-panel"
-                role="tabpanel"
-                id="cd-panel-5"
-                aria-labelledby="cd-tab-5"
-                hidden
-              >
-                <p class="deck-panel-ordinal" aria-hidden="true">05 / 06</p>
-
-                <h3 class="deck-panel-title">Hotkeys</h3>
-
-                <p class="lede deck-panel-desc">
-                  Anything you would reach for mid-stint is an action you can
-                  bind: hide everything, switch a layout, cycle a view, send the
-                  pit order. Keyboard or wheel, your choice.
-                </p>
-
-                <ul class="deck-panel-facts">
-                  <li>Bindings are app-wide, not per layout</li>
-                  <li>Several keys on one action, and one key on several</li>
-                  <li>Press or hold, per action</li>
-                  <li>A widget's action only fires while that widget is on screen</li>
-                </ul>
-              </div>
-
-              <div
-                class="deck-panel"
-                role="tabpanel"
-                id="cd-panel-6"
-                aria-labelledby="cd-tab-6"
-                hidden
-              >
-                <p class="deck-panel-ordinal" aria-hidden="true">06 / 06</p>
-
-                <h3 class="deck-panel-title">Devices</h3>
-
-                <p class="lede deck-panel-desc">
-                  Wheels, button boxes, joysticks and pedals are picked up on
-                  their own. Bind a button the way you bind a key &mdash; the
-                  app never touches the sim's own controls.
-                </p>
-
-                <ul class="deck-panel-facts">
-                  <li>DirectInput devices detected and listed as they connect</li>
-                  <li>Bindings survive a replug or a different USB port</li>
-                  <li>A device you bound stays listed while it is unplugged</li>
-                  <li>Two identical devices are never silently swapped</li>
-                </ul>
-              </div>
-            </div>
-
-            <!-- The deck's own controls: what the pointer scrub degrades to on
-                 a touch screen, and what says out loud that the stack can be
-                 browsed at all. -->
-            <div class="deck-nav">
-              <button class="deck-step" type="button" data-deck-prev aria-label="Previous feature">
-                <span aria-hidden="true">&#8592;</span>
-              </button>
-
-              <p class="deck-count">
-                <span data-deck-index>01</span><span aria-hidden="true"> / </span
-                ><span data-deck-total>06</span>
-              </p>
-
-              <button class="deck-step" type="button" data-deck-next aria-label="Next feature">
-                <span aria-hidden="true">&#8594;</span>
-              </button>
-
-              <p class="deck-hint" aria-hidden="true">
-                Click a card to bring it forward &middot; click again to enlarge
-              </p>
-            </div>
+            <p class="interact-note">F8 by default &mdash; any key or wheel button works.</p>
           </div>
         </div>
       </section>
@@ -1732,7 +1579,6 @@
          ==================================================================== -->
       <section id="performance" class="perf-band" aria-labelledby="perf-heading">
         <div class="container perf">
-          <span class="perf-ordinal" aria-hidden="true">05</span>
 
           <div class="perf-lead">
             <p class="perf-kicker">Performance</p>
@@ -1954,23 +1800,21 @@
       </div>
     </footer>
 
-    <!-- The viewer. A capture of a settings window is a page of small
-         type, and the deck shows it at half the width it was taken at,
-         so the front card opens at full size rather than sending the
-         reader to look for a bigger picture elsewhere. -->
-    <div class="deck-viewer" data-deck-viewer hidden>
-      <div class="deck-viewer-ground" data-deck-viewer-dismiss></div>
+    <!-- The viewer. The feature blocks show crops of the app window; a
+         click opens the whole capture at full size (shot-viewer.js). -->
+    <div class="shot-viewer" data-shot-viewer hidden>
+      <div class="shot-viewer-ground" data-shot-viewer-dismiss></div>
 
-      <figure class="deck-viewer-figure" role="dialog" aria-modal="true" aria-label="Screenshot">
-        <img class="deck-viewer-shot" data-deck-viewer-shot src="" alt="" />
+      <figure class="shot-viewer-figure" role="dialog" aria-modal="true" aria-label="Screenshot">
+        <img class="shot-viewer-shot" data-shot-viewer-shot src="" alt="" />
 
-        <figcaption class="deck-viewer-caption" data-deck-viewer-caption></figcaption>
+        <figcaption class="shot-viewer-caption" data-shot-viewer-caption></figcaption>
       </figure>
 
       <button
-        class="deck-viewer-close"
+        class="shot-viewer-close"
         type="button"
-        data-deck-viewer-dismiss
+        data-shot-viewer-dismiss
         aria-label="Close the screenshot"
       >
         <span aria-hidden="true">&times;</span>
@@ -1980,7 +1824,8 @@
     <!-- Controller Script -->
     <script src="src/components/navbar.js"></script>
     <script src="src/components/widget-gallery.js"></script>
-    <script src="src/components/control-deck.js"></script>
+    <script src="src/components/shot-viewer.js"></script>
+    <script src="src/components/layout-demo.js"></script>
     <script src="src/components/interact-demo.js"></script>
   </body>
 </html>

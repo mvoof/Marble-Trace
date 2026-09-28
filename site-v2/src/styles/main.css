@@ -846,20 +846,6 @@ a:focus-visible, button:focus-visible {
   margin-bottom: clamp(3.25rem, 6vw, 5rem);
 }
 
-.chapter-ordinal {
-  font-family: var(--font-hero-heading);
-  font-weight: 900;
-  font-style: italic;
-  /* A step above the chapter title, not a storey above it: at nine-odd vw the
-     ordinal was twice the heading and took the section's dominance from the
-     words. Both chapters read off this one value, so they stay equal. */
-  font-size: clamp(3.2rem, 5.6vw, 5rem);
-  line-height: 0.62;
-  letter-spacing: -0.045em;
-  color: rgba(26, 29, 35, 0.14);
-  margin-top: -0.06em;
-  user-select: none;
-}
 
 .chapter-lead {
   padding-top: clamp(0.5rem, 1.2vw, 1.1rem);
@@ -972,11 +958,6 @@ a:focus-visible, button:focus-visible {
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
 }
 
-.why-ordinal {
-  margin: 0 0 0.9rem;
-  color: rgba(255, 255, 255, 0.28);
-  text-shadow: none;
-}
 
 .why-kicker {
   color: rgba(255, 255, 255, 0.78);
@@ -1024,9 +1005,6 @@ a:focus-visible, button:focus-visible {
     text-shadow: none;
   }
 
-  .why-ordinal {
-    color: rgba(26, 29, 35, 0.14);
-  }
 
   .why-kicker {
     color: #7b8390;
@@ -1043,9 +1021,6 @@ a:focus-visible, button:focus-visible {
 }
 
 @media (max-width: 640px) {
-  .why-ordinal {
-    display: none;
-  }
 }
 
 /* ---- Claims band --------------------------------------------------------- */
@@ -1134,14 +1109,6 @@ a:focus-visible, button:focus-visible {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
-  /* Stacked under the copy, the stage has the whole container to fill and a
-     low widget stretches across all of it. Held to a column width it stays the
-     size it is read at. */
-  .stage {
-    grid-column: 1 / -1;
-    max-width: 44rem;
-    margin-inline: auto;
-  }
 
 
 
@@ -1163,9 +1130,6 @@ a:focus-visible, button:focus-visible {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .chapter-ordinal {
-    display: none;
-  }
 
   .chapter-lead {
     padding-top: 0;
@@ -1230,13 +1194,6 @@ a:focus-visible, button:focus-visible {
   min-width: 0;
 }
 
-/* The ordinal is the chapter's own size, not a smaller one for this layout:
-   01 and 02 are the same rank and a section numbered in a smaller hand reads
-   as a subsection of the one above it. */
-.gallery-head .chapter-ordinal {
-  flex: none;
-  margin: 0;
-}
 
 .gallery-title {
   font-size: clamp(2rem, 4.2vw, 4rem);
@@ -1249,19 +1206,35 @@ a:focus-visible, button:focus-visible {
   margin: 0 0 0.4rem;
 }
 
-/* ---- The stepped row -------------------------------------------------------
+/* ---- Layout ------------------------------------------------------------------
 
-   Copy, widget and sheet, each starting on its own line. The offsets are the
-   section's structure, so they are declared here once rather than left to
-   whatever the content happens to be tall.
+   The widget is the section: the stage takes two thirds of the width and the
+   full height, and the copy and the sheet share the column beside it, the
+   words on top and the catalogue under them.
    -------------------------------------------------------------------------- */
 
 .gallery {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(14rem, 0.72fr) minmax(0, 1.5fr) minmax(17rem, 1fr);
+  grid-template-columns: minmax(0, 2.1fr) minmax(17rem, 0.9fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'stage copy'
+    'stage sheet';
   gap: clamp(1.5rem, 3vw, 2.75rem);
   align-items: start;
+}
+
+.stage {
+  grid-area: stage;
+}
+
+.gallery-copy {
+  grid-area: copy;
+}
+
+.sheet {
+  grid-area: sheet;
 }
 
 .gallery-copy,
@@ -1272,25 +1245,12 @@ a:focus-visible, button:focus-visible {
 }
 
 .gallery-copy {
-  padding-top: 2.5rem;
+  padding-top: 0;
 }
 
 .gallery-lede {
   max-width: 34ch;
-  margin: 0 0 clamp(1.25rem, 2vw, 1.75rem);
-}
-
-/* The five groups, named once here rather than repeated as dividers through
-   the sheet: the sheet is pictures, this column is words. */
-.gallery-groups {
   margin: 0;
-  padding-top: clamp(1.1rem, 1.8vw, 1.6rem);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  line-height: 2;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #a0a7b0;
 }
 
 /* ---- Stage ---------------------------------------------------------------
@@ -1304,14 +1264,13 @@ a:focus-visible, button:focus-visible {
   /* A slot of one height whatever it holds. Sizing it to the picture would
      make the page jump by several hundred pixels between Standings and RPM
      Lights, and a section that resizes under the cursor cannot be browsed. */
-  --shot-h: clamp(15rem, 27vw, 23rem);
+  --shot-h: clamp(18rem, 32vw, 30rem);
 
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
   margin: 0;
-  padding-top: 5rem;
 }
 
 .stage-head {
@@ -1624,25 +1583,9 @@ a:focus-visible, button:focus-visible {
      The steps go with them — at this width they cost more than they say. */
   .gallery {
     grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.85fr);
-  }
-
-  .gallery-copy,
-  .stage {
-    padding-top: 0;
-  }
-
-  .stage {
-    grid-column: 1;
-  }
-
-  .gallery-copy {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  .sheet {
-    grid-column: 2;
-    grid-row: 1 / span 2;
+    grid-template-areas:
+      'stage sheet'
+      'copy sheet';
   }
 
   /* Two columns, and the box keeps its own scroll: let loose at this width
@@ -1681,11 +1624,12 @@ a:focus-visible, button:focus-visible {
     display: none;
   }
 
-  .stage,
-  .gallery-copy,
-  .sheet {
-    grid-column: 1;
-    grid-row: auto;
+  .gallery {
+    grid-template-rows: none;
+    grid-template-areas:
+      'stage'
+      'copy'
+      'sheet';
   }
 
   /* One line again on a phone. A vertical sheet here is a list a screen and a
@@ -1764,7 +1708,7 @@ a:focus-visible, button:focus-visible {
 
 .screens-head {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(0.75rem, 1.6vw, 1.5rem);
   align-items: start;
 }
@@ -2015,470 +1959,345 @@ a:focus-visible, button:focus-visible {
 }
 
 /* ==========================================================================
-   Section 04 — The app behind the overlay
+   Feature blocks - the app behind the overlay
 
-   A deck of captures and one plate beside it. The captures are of one window,
-   so they are stacked rather than tiled: six cards of the same dark window
-   laid out in a grid read as six different programs.
-
-   The lean is the page's own --cut, spent on the cards waiting their turn. The
-   card at the front is square to the reader — it is the one being read.
+   One template, three blocks: copy in one column, a picture in the other,
+   the order flipped on every other block and the ground alternating dark and
+   light, so three blocks in a row read as three things rather than one
+   repeated. Each is about a screen high.
    ========================================================================== */
 
-.chapter-control {
-  padding-bottom: 6rem;
-}
+.feature {
+  --feature-ink: #101317;
+  --feature-muted: #4b5563;
+  --feature-kicker: #7b8390;
+  --feature-pill-border: rgba(0, 0, 0, 0.14);
+  --feature-pill-ink: #262a30;
 
-.control {
-  display: grid;
-  gap: clamp(2rem, 4vw, 3.25rem);
-}
-
-/* The chapter opens the way 03 does — ordinal, then the lead beside it — so
-   the two numbered chapters start on the same line as each other. */
-.control-head {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: clamp(0.75rem, 1.6vw, 1.5rem);
-  align-items: start;
-  max-width: 54rem;
-}
-
-/* ---- The deck ------------------------------------------------------------
-
-   The stack and its plate, side by side: the picture is the argument, the
-   plate names what is in it. The stage keeps one height whatever card is at
-   the front, so browsing the deck never moves the page under the pointer.
-   -------------------------------------------------------------------------- */
-
-.control-deck {
-  --card-w: clamp(19rem, 52vw, 54rem);
-  --card-ratio: 1595 / 969;
-  /* One step of the fan: how far each waiting card stands to the right of the
-     one in front of it, and how far back. Named here because the script never
-     touches geometry — it only says which card is at the front. */
-  --fan-x: clamp(2rem, 4.4vw, 4.4rem);
-  --fan-z: 5.2rem;
-  --fan-y: 0.9rem;
-  /* Half the span of the fan — five steps for six cards — and half a card,
-     which together put the block of cards on the middle of the column. On a
-     phone there is no room to centre anything, so both go to zero and the
-     stack starts at the left edge. */
-  --fan-shift: calc(var(--fan-x) * 2.5);
-  --fan-origin: -50%;
-
-  /* The deck owns the middle of the page and the plate floats over its right
-     end, rather than the two sharing a row: a column of text beside the stack
-     pushed the picture off centre, and the picture is the argument here. */
   position: relative;
+  padding: clamp(4.5rem, 8vw, 7rem) 0;
+  color: var(--feature-ink);
+  overflow: hidden;
 }
 
-.deck {
-  position: relative;
-  /* Deep enough that the fan reads as depth rather than as a row of shrinking
-     rectangles, shallow enough that the back of the stack keeps its edges. */
-  perspective: 2400px;
-  perspective-origin: 50% 50%;
-  height: calc(var(--card-w) / (var(--card-ratio)));
+.feature-light {
+  border-bottom: 1px solid var(--color-card-border);
 }
 
-.deck-card {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  /* The fan is centred as a whole, not the card at the front: the stack grows
-     to the right, so the deck is pulled back by half its own span and the
-     block of cards sits on the middle of the column. */
-  left: 50%;
-  width: var(--card-w);
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-  transform-style: preserve-3d;
-  transform-origin: center center;
-  /* The waiting cards. --d is the card's distance from the front, set by the
-     script; the geometry is all here. */
-  transform: translate3d(
-      calc(var(--fan-origin) - var(--fan-shift) + var(--fan-x) * var(--d, 0)),
-      calc(var(--fan-y) * var(--d, 0) * -1),
-      calc(var(--fan-z) * var(--d, 0) * -1)
-    )
-    rotateY(var(--cut));
-  /* The cards behind are dark captures on a light page, so they are stepped
-     back by very little: at any real fade they stop being screenshots and
-     become grey ghosts of one. */
-  opacity: calc(1 - 0.06 * var(--d, 0));
-  /* Long enough for a card this size to be seen travelling rather than
-     jumping. The stacking order is handed over a beat late: the card leaving
-     the front stays on top while it clears, instead of the incoming one
-     popping over it before either has moved. */
-  transition:
-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.45s ease,
-    z-index 0s linear 0.18s;
-  will-change: transform;
+.feature-dark {
+  --feature-ink: #eef0f2;
+  --feature-muted: #9aa2ad;
+  --feature-kicker: #7b8390;
+  --feature-pill-border: rgba(255, 255, 255, 0.16);
+  --feature-pill-ink: #cfd4da;
+
+  background-color: #0d1014;
 }
 
-/* The front card is square to the reader and carries the only shadow in the
-   stack, so the eye has one place to land. It is also the one that opens: a
-   card at the front is already the subject, and clicking it enlarges it
-   instead of doing nothing. */
-.deck-card.is-active {
-  z-index: 10;
-  transform: translate3d(calc(var(--fan-origin) - var(--fan-shift)), 0, 0) rotateY(0deg);
-  opacity: 1;
-  cursor: zoom-in;
+.feature-grid {
+  display: grid;
+  grid-template-columns: minmax(20rem, 0.72fr) minmax(0, 1.28fr);
+  align-items: center;
+  gap: 3rem clamp(2.5rem, 5vw, 5rem);
 }
 
-/* A card already read leaves to the left rather than shrinking into the fan —
-   the deck runs one way, the way a hand of cards is dealt. */
-.deck-card.is-past {
-  transform: translate3d(calc(var(--fan-origin) - var(--fan-shift) - 18%), 0, -14rem) rotateY(var(--cut));
-  opacity: 0;
-  pointer-events: none;
+.feature-flip .feature-copy {
+  order: 2;
 }
 
-.deck-shot {
-  display: block;
-  width: 100%;
-  height: auto;
-  border: 1px solid rgba(0, 0, 0, 0.35);
-  box-shadow: 0 1.2rem 2.6rem rgba(10, 14, 20, 0.28);
-  background-color: #0b0e12;
+.feature-flip .feature-grid {
+  grid-template-columns: minmax(0, 1.28fr) minmax(20rem, 0.72fr);
 }
 
-.deck-card.is-active .deck-shot {
-  box-shadow: 0 2rem 3.6rem rgba(10, 14, 20, 0.34);
-}
-
-/* The name rides on the card itself while it is in the fan: the plate names
-   the front card, and the cards behind it need a label of their own or the
-   stack is six dark rectangles. */
-.deck-card-name {
-  position: absolute;
-  left: 0;
-  bottom: -1.6rem;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.18em;
+.feature-kicker {
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: #6f7783;
-  white-space: nowrap;
-  transition: opacity var(--transition-fast);
+  color: var(--feature-kicker);
+  margin-bottom: 1rem;
 }
 
-.deck-card.is-active .deck-card-name {
-  opacity: 0;
-}
-
-.deck-card:focus-visible {
-  outline: 2px solid var(--color-btn-download-bg);
-  outline-offset: 6px;
-}
-
-/* ---- The plate -----------------------------------------------------------
-
-   The words for whatever is at the front, standing off the right end of the
-   deck. It carries the page's own ground rather than a panel colour of its
-   own: it is a plate laid on the drawing, not a card. */
-
-.deck-plate {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: clamp(17rem, 24vw, 22rem);
-  padding: clamp(1rem, 1.6vw, 1.4rem) clamp(1rem, 1.6vw, 1.4rem) clamp(0.5rem, 1vw, 0.8rem);
-  background-color: var(--color-body-bg);
-  border: 1px solid var(--ink-main);
-  box-shadow: 0 1.4rem 3rem rgba(10, 14, 20, 0.14);
-}
-
-.deck-panel[hidden] {
-  display: none;
-}
-
-/* The plate is swapped, not slid: at this size a moving block of text is read
-   twice. Only the fade is animated, and only on the way in. */
-.deck-panel {
-  animation: deck-panel-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes deck-panel-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.4rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.deck-panel-ordinal {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.18em;
-  color: #8b929c;
-  margin: 0 0 0.75rem;
-}
-
-.deck-panel-title {
+.feature-title {
   font-family: var(--font-hero-heading);
   font-weight: 900;
   font-style: italic;
-  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
-  line-height: 0.95;
-  letter-spacing: -0.01em;
+  font-size: clamp(2.4rem, 4.4vw, 4rem);
+  line-height: 0.88;
+  letter-spacing: -0.015em;
   text-transform: uppercase;
-  color: #101317;
-  margin: 0 0 0.75rem;
+  margin-bottom: 1.25rem;
 }
 
-.deck-panel-desc {
-  max-width: 34ch;
-  margin: 0 0 1.25rem;
+.feature-desc {
+  max-width: 40ch;
+  font-weight: 500;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--feature-muted);
 }
 
-.deck-panel-facts {
+/* ---- Pills ----------------------------------------------------------------- */
+
+.pill-list {
   list-style: none;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid var(--ink-light);
-}
-
-.deck-panel-facts li {
-  position: relative;
-  padding: 0.55rem 0 0.55rem 1.6rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #4b535d;
-  border-bottom: 1px solid var(--ink-light);
-}
-
-/* The same lime index mark the claims band and the screens facts open with,
-   cut at the section's own angle. */
-.deck-panel-facts li::before {
-  content: '';
-  position: absolute;
-  top: 1rem;
-  left: 0;
-  width: 0.7rem;
-  height: 2px;
-  background-color: var(--color-btn-download-bg);
-  transform: skewX(calc(-1 * var(--cut)));
-}
-
-/* ---- Deck controls -------------------------------------------------------- */
-
-.deck-nav {
   display: flex;
-  max-width: calc(100% - clamp(17rem, 24vw, 22rem) - 2rem);
-  align-items: center;
-  gap: 0.75rem;
-  border-top: 1px solid var(--ink-main);
-  padding-top: 0.9rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
-.deck-step {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.1rem;
-  height: 2.1rem;
-  padding: 0;
-  font-size: 0.9rem;
-  color: #2a2f36;
-  background: none;
-  border: 1px solid var(--ink-main);
-  cursor: pointer;
-  transition:
-    color var(--transition-fast),
-    border-color var(--transition-fast),
-    background-color var(--transition-fast);
+.feature > .pill-list {
+  margin-top: clamp(2.5rem, 4vw, 3.5rem);
 }
 
-.deck-step:hover {
+.pill-list-inline {
+  margin-top: 1.75rem;
+}
+
+.pill {
+  font-weight: 700;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--feature-pill-border);
+  border-radius: 999px;
+  color: var(--feature-pill-ink);
+}
+
+.pill-lit {
   color: #0b1015;
-  border-color: #0b1015;
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: var(--color-btn-download-bg);
+  border-color: var(--color-btn-download-bg);
 }
 
-.deck-step:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
+/* ---- Crops of the real window ------------------------------------------------
 
-.deck-count {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  color: #6f7783;
-  margin: 0;
-}
+   A crop is a window onto one box of a 1595x969 capture: the frame takes the
+   box's aspect ratio, and the image is scaled and shifted so exactly that box
+   fills it. Clicking one opens the whole capture. */
 
-.deck-hint {
-  margin: 0 0 0 auto;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #a0a7b0;
-}
+.shot-crop {
+  --cap-w: 1595;
+  --cap-h: 969;
 
-/* ---- Narrower ------------------------------------------------------------- */
-
-@media (max-width: 1100px) {
-  .deck-plate {
-    position: static;
-    transform: none;
-    width: auto;
-    max-width: 44rem;
-    margin-top: clamp(1.5rem, 3vw, 2.5rem);
-  }
-
-  .deck-nav {
-    max-width: none;
-  }
-}
-
-@media (max-width: 720px) {
-  .control-deck {
-    --card-w: calc(100% - 2.6rem);
-    --fan-x: 0.55rem;
-    --fan-y: 0.35rem;
-    --fan-z: 3rem;
-    --fan-shift: 0rem;
-    --fan-origin: 0%;
-  }
-
-  .deck-card {
-    left: 0;
-  }
-
-  .deck-card-name {
-    display: none;
-  }
-
-  .deck-hint {
-    display: none;
-  }
-}
-
-/* A deck that re-deals itself under a reader who asked for stillness is the
-   one animation on the page that would be worth reporting. */
-@media (prefers-reduced-motion: reduce) {
-  .deck-card,
-  .deck-panel {
-    transition: none;
-    animation: none;
-  }
-}
-
-/* ---- The viewer ----------------------------------------------------------
-
-   The front card at the size it was captured at. The ground is dark rather
-   than the page's own: the captures are dark windows, and a dark window on a
-   pale ground at full size is a hole in the page.
-   -------------------------------------------------------------------------- */
-
-.deck-viewer {
-  position: fixed;
-  inset: 0;
-  /* Above the header, which sits at 1000: a viewer the navigation bar draws
-     over is a viewer with a hole in it. */
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(1rem, 3vw, 2.5rem);
-}
-
-.deck-viewer[hidden] {
-  display: none;
-}
-
-.deck-viewer-ground {
-  position: absolute;
-  inset: 0;
-  background-color: rgba(8, 11, 15, 0.86);
-  border: 0;
-  animation: deck-viewer-in 0.2s ease;
-}
-
-.deck-viewer-figure {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0;
-  max-width: 100%;
-  animation: deck-viewer-in 0.24s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes deck-viewer-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-.deck-viewer-shot {
   display: block;
-  /* The capture is 1595px wide. Past that it is being blown up rather than
-     shown, so it stops at its own size. */
-  max-width: min(100%, 1595px);
-  max-height: calc(100vh - 8rem);
-  width: auto;
-  height: auto;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.5);
+  width: 100%;
+  aspect-ratio: var(--w) / var(--h);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background-color: #0b0e12;
+  box-shadow: 0 1.8rem 3.6rem -1.2rem rgba(0, 0, 0, 0.55);
+  cursor: zoom-in;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease;
 }
 
-.deck-viewer-caption {
-  margin-top: 0.8rem;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #b9c0c9;
+.shot-crop:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 2.4rem 4.2rem -1.2rem rgba(0, 0, 0, 0.6);
 }
 
-.deck-viewer-close {
+.shot-crop:focus-visible {
+  outline: 2px solid var(--color-btn-download-bg);
+  outline-offset: 4px;
+}
+
+.shot-crop img {
   position: absolute;
-  top: clamp(0.75rem, 2vw, 1.5rem);
-  right: clamp(0.75rem, 2vw, 1.5rem);
-  width: 2.6rem;
-  height: 2.6rem;
-  font-size: 1.4rem;
-  line-height: 1;
-  color: #e9ecef;
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  top: calc(var(--y) / var(--h) * -100%);
+  left: calc(var(--x) / var(--w) * -100%);
+  width: calc(var(--cap-w) / var(--w) * 100%);
+  max-width: none;
+  height: auto;
+}
+
+/* Controls: the device list, and the bindings laid over its corner */
+.controls-media {
+  position: relative;
+  padding-bottom: 3rem;
+}
+
+.shot-devices {
+  width: 88%;
+  margin-left: auto;
+}
+
+.shot-bindings {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 62%;
+}
+
+.feature-light .shot-crop {
+  box-shadow: 0 1.8rem 3.6rem -1.4rem rgba(10, 14, 20, 0.45);
+}
+
+/* ---- Session strip and screen ------------------------------------------------
+
+   The four sessions a layout can be assigned to, and one screen that
+   crossfades to the screenshot of each session's layout as it is picked. */
+
+.session-track {
+  display: grid;
+  /* As many columns as there are sessions offered: a session without a
+     screenshot is hidden, and leaves no hole */
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  margin-top: 2rem;
+  max-width: 28rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 0.3rem;
+}
+
+.session-step {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.55rem 0.3rem;
+  border: 0;
+  border-radius: 999px;
+  color: #7b8390;
+  background-color: transparent;
   cursor: pointer;
   transition:
-    color var(--transition-fast),
-    border-color var(--transition-fast);
+    color 0.3s ease,
+    background-color 0.3s ease;
 }
 
-.deck-viewer-close:hover {
-  color: #ffffff;
-  border-color: #ffffff;
+.session-step:hover {
+  color: #eef0f2;
 }
 
-/* While the viewer is open the page behind it does not scroll — the deck is
-   mid-page, and a reader who closes the viewer should be where they left. */
-body.is-viewer-open {
+.session-step.is-active {
+  color: #0b1015;
+  background-color: var(--color-btn-download-bg);
+}
+
+.session-step:focus-visible {
+  outline: 2px solid var(--color-btn-download-bg);
+  outline-offset: 2px;
+}
+
+.layout-screen {
+  position: relative;
+  aspect-ratio: 43 / 18;
   overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: #0b0e12;
+  box-shadow: 0 1.8rem 3.6rem -1.2rem rgba(0, 0, 0, 0.6);
 }
+
+.layout-shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.02);
+  transition:
+    opacity 0.7s ease,
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.layout-shot.is-active {
+  opacity: 1;
+  transform: none;
+}
+
+.layout-screen-label {
+  position: absolute;
+  right: 1.5%;
+  bottom: 3%;
+  z-index: 2;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background-color: rgba(11, 16, 21, 0.78);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #cfd4da;
+}
+
+.layout-screen-label span {
+  color: var(--color-btn-download-bg);
+}
+
+.layout-screen-proof {
+  display: inline-flex;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9aa2ad;
+  cursor: zoom-in;
+}
+
+.layout-screen-proof:hover {
+  color: var(--color-btn-download-bg);
+}
+
+/* ---- Narrower ------------------------------------------------------------------ */
+
+@media (max-width: 1024px) {
+  .feature-grid,
+  .feature-flip .feature-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .feature-flip .feature-copy {
+    order: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .shot-bindings {
+    position: relative;
+    left: auto;
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .controls-media {
+    padding-bottom: 0;
+  }
+
+  .shot-devices {
+    width: 100%;
+  }
+
+  /* The session strip above already names the layout, and at this width the
+     label covers a widget */
+  .layout-screen-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shot-crop,
+  .layout-shot {
+    transition: none;
+  }
+}
+
 
 /* ==========================================================================
    Section 05 - Performance
@@ -2512,7 +2331,7 @@ body.is-viewer-open {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: auto minmax(18rem, 0.75fr) minmax(0, 1.6fr);
+  grid-template-columns: minmax(18rem, 0.75fr) minmax(0, 1.6fr);
   align-items: center;
   gap: 0 clamp(1.25rem, 2.6vw, 2.75rem);
   padding-right: calc(var(--shot-width) * 0.8 + 1.5rem);
@@ -2520,18 +2339,6 @@ body.is-viewer-open {
 
 /* ---- Copy ---------------------------------------------------------------- */
 
-.perf-ordinal {
-  align-self: start;
-  font-family: var(--font-hero-heading);
-  font-weight: 900;
-  font-style: italic;
-  font-size: clamp(3.2rem, 5.6vw, 5rem);
-  line-height: 0.62;
-  letter-spacing: -0.045em;
-  color: rgba(255, 255, 255, 0.16);
-  margin-top: -0.06em;
-  user-select: none;
-}
 
 .perf-lead {
   align-self: start;
@@ -2775,7 +2582,7 @@ body.is-viewer-open {
 
 @media (max-width: 1500px) {
   .perf {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     row-gap: 3rem;
   }
 
@@ -2804,9 +2611,6 @@ body.is-viewer-open {
     row-gap: 2.5rem;
   }
 
-  .perf-ordinal {
-    display: none;
-  }
 
   .perf-lead {
     padding-top: 0;
@@ -2869,15 +2673,21 @@ body.is-viewer-open {
 
 .tapes {
   position: relative;
+  z-index: 2;
   height: clamp(8.5rem, 12vw, 11rem);
   margin-block: -1.5rem;
-  overflow: hidden;
+  /* Clipped sideways only. Clipped top and bottom as well, the box shaved the
+     ends of each leaning tape into a point, so the tapes seemed to narrow
+     towards the edges of the page; now they overhang the box and run past
+     both edges of the window at their full width. */
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .tape {
   position: absolute;
-  left: -5%;
-  width: 110%;
+  left: -10%;
+  width: 120%;
   top: 50%;
   display: flex;
   overflow: hidden;
@@ -2995,17 +2805,17 @@ body.is-viewer-open {
 }
 
 /* ==========================================================================
-   Interact mode - one feature on lime, between section 03 and section 04
+   Interact mode - one feature on lime
 
-   The key is the picture: a dark keycap with the lime legend, a countdown
-   ring around it that runs out, and one status line under it saying where
-   the mouse is. The copy stands beside it with the three widgets the key
-   opens up, set as a short ruled list rather than cards.
+   A compact band: the keycap on the left, three lines on the right. The
+   keycap is an SVG whose cap goes down on press while its wall stays put,
+   so the visible side of the key shortens the way a real one does; the
+   splash is a ring and a dozen drops thrown off its base and falling back.
    ========================================================================== */
 
 .interact-band {
   position: relative;
-  padding: clamp(4rem, 7vw, 6rem) 0;
+  padding: clamp(2.5rem, 4.5vw, 3.75rem) 0;
   background-color: var(--color-btn-download-bg);
   color: #0b1015;
   overflow: hidden;
@@ -3013,112 +2823,207 @@ body.is-viewer-open {
 
 .interact {
   display: grid;
-  grid-template-columns: minmax(16rem, 0.8fr) minmax(0, 1.2fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 3rem clamp(2rem, 6vw, 6rem);
+  gap: 2rem clamp(2.5rem, 6vw, 6rem);
+  max-width: 64rem;
 }
 
-/* ---- The key ---------------------------------------------------------------- */
+/* ---- The key --------------------------------------------------------------- */
 
 .interact-demo {
-  --left: 1;
-
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.9rem;
 }
 
-.interact-dial {
+.keycap-stage {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: clamp(15rem, 24vw, 20rem);
-  aspect-ratio: 1;
+  width: clamp(12rem, 18vw, 15rem);
 }
 
-.interact-ring {
-  position: absolute;
-  inset: 0;
+.keycap {
+  position: relative;
+  z-index: 1;
+  display: block;
   width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
+  height: auto;
+  overflow: visible;
+  cursor: pointer;
 }
 
-.interact-ring circle {
-  fill: none;
-  stroke-width: 5;
+.keycap-shadow {
+  fill: rgba(11, 16, 21, 0.38);
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
-.interact-ring-track {
-  stroke: rgba(11, 16, 21, 0.14);
+.keycap-wall {
+  fill: url(#keycap-wall);
 }
 
-.interact-ring-fill {
-  stroke: #0b1015;
+.keycap-top {
+  fill: url(#keycap-top);
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 1.5;
+}
+
+.keycap-dish {
+  fill: url(#keycap-dish);
+}
+
+.keycap-shine {
+  stroke: rgba(255, 255, 255, 0.16);
+  stroke-width: 2;
   stroke-linecap: round;
-  stroke-dasharray: 100;
-  stroke-dashoffset: calc(100 - var(--left) * 100);
-  transition: stroke-dashoffset 1s linear;
 }
 
-/* Out of interact mode the ring is spent and dims with the key */
-.interact-demo:not(.is-overlay) .interact-ring-fill {
-  opacity: 0;
-  transition:
-    stroke-dashoffset 1s linear,
-    opacity 0.3s ease;
-}
-
-.interact-key {
-  display: grid;
-  place-items: center;
-  width: 58%;
-  aspect-ratio: 1;
-  border-radius: 18%;
-  background: linear-gradient(180deg, #1f252c 0%, #0d1014 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -0.55rem 0 rgba(0, 0, 0, 0.55),
-    0 0.9rem 1.6rem -0.6rem rgba(11, 16, 21, 0.6);
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease;
-}
-
-.interact-demo.is-pressed .interact-key {
-  transform: translateY(0.35rem);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -0.2rem 0 rgba(0, 0, 0, 0.55),
-    0 0.3rem 0.6rem -0.3rem rgba(11, 16, 21, 0.6);
-}
-
-.interact-key-cap {
+.keycap-legend {
   font-family: var(--font-hero-heading);
   font-weight: 900;
   font-style: italic;
-  font-size: clamp(3rem, 5.4vw, 4.6rem);
-  line-height: 1;
-  margin-top: -0.2em;
-  color: var(--color-btn-download-bg);
-  transition: color 0.3s ease;
+  font-size: 66px;
+  text-anchor: middle;
+  fill: var(--color-btn-download-bg);
+  transition: fill 0.3s ease;
 }
 
-.interact-demo:not(.is-overlay) .interact-key-cap {
-  color: #5d656f;
+.interact-demo:not(.is-overlay) .keycap-legend {
+  fill: #6b737d;
+}
+
+.interact-demo.is-pressed .keycap-cap {
+  animation: keycap-press 0.62s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
+.interact-demo.is-pressed .keycap-shadow {
+  animation: keycap-shadow 0.62s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
+@keyframes keycap-press {
+  0% {
+    transform: translateY(0);
+  }
+
+  18%,
+  38% {
+    transform: translateY(16px);
+  }
+
+  70% {
+    transform: translateY(-3px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes keycap-shadow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  18%,
+  38% {
+    transform: scale(0.9, 0.8);
+    opacity: 0.75;
+  }
+}
+
+/* ---- The splash ------------------------------------------------------------ */
+
+/* Anchored on the key's base, where the cap strikes */
+.splash {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 84%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.splash-ring {
+  position: absolute;
+  left: -8.5rem;
+  top: -1.3rem;
+  width: 17rem;
+  height: 2.6rem;
+  border: 2px solid #0b1015;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.splash-drop {
+  position: absolute;
+  left: -0.55rem;
+  top: -0.55rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50% 50% 50% 0;
+  background-color: #f4f7ef;
+  opacity: 0;
+  transform: rotate(-45deg);
+}
+
+.splash-drop-ink {
+  background-color: #0b1015;
+}
+
+.interact-demo.is-pressed .splash-ring {
+  animation: splash-ring 0.7s ease-out 0.1s;
+}
+
+.interact-demo.is-pressed .splash-drop {
+  animation: splash-drop 0.9s cubic-bezier(0.2, 0.7, 0.4, 1) 0.1s;
+}
+
+@keyframes splash-ring {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.35);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+/* Thrown off either edge of the base (--ox), out and up along its own line,
+   then over the top and down: a drop, not a spark */
+@keyframes splash-drop {
+  0% {
+    opacity: 1;
+    transform: translate(var(--ox), 0) scale(0.3) rotate(-45deg);
+  }
+
+  55% {
+    opacity: 1;
+    transform: translate(calc(var(--ox) + var(--dx)), var(--dy)) scale(var(--s)) rotate(-45deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--ox) + var(--dx) * 1.25), calc(var(--dy) + 80px)) scale(calc(var(--s) * 0.6))
+      rotate(-45deg);
+  }
 }
 
 .interact-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.55rem 1.1rem;
+  gap: 0.6rem;
+  padding: 0.5rem 1rem;
   border-radius: 999px;
   background-color: #0d1014;
   color: #eef0f2;
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -3128,20 +3033,12 @@ body.is-viewer-open {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background-color: #5d656f;
+  background-color: #6b737d;
   transition: background-color 0.3s ease;
 }
 
 .interact-demo.is-overlay .interact-status-dot {
   background-color: var(--color-btn-download-bg);
-}
-
-/* Two digits in a monospace face: the countdown ticks without the pill
-   changing width under it */
-.interact-status-time {
-  font-family: var(--font-mono);
-  letter-spacing: 0.04em;
-  color: #8a939e;
 }
 
 /* ---- The copy --------------------------------------------------------------- */
@@ -3152,7 +3049,7 @@ body.is-viewer-open {
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: rgba(11, 16, 21, 0.6);
-  margin-bottom: 1rem;
+  margin-bottom: 0.9rem;
 }
 
 .interact-title {
@@ -3163,84 +3060,142 @@ body.is-viewer-open {
   line-height: 0.88;
   letter-spacing: -0.015em;
   text-transform: uppercase;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.1rem;
 }
 
 .interact-desc {
-  max-width: 46ch;
+  max-width: 40ch;
   font-weight: 500;
-  font-size: 1.05rem;
-  line-height: 1.6;
-  color: rgba(11, 16, 21, 0.8);
-}
-
-.interact-uses {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 2rem;
-  border-top: 1px solid rgba(11, 16, 21, 0.2);
-}
-
-.interact-use {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 1rem 1rem 0 0;
-}
-
-.interact-use + .interact-use {
-  padding-left: 1rem;
-  border-left: 1px solid rgba(11, 16, 21, 0.2);
-}
-
-.interact-use-name {
-  font-family: var(--font-hero-heading);
-  font-weight: 800;
-  font-style: italic;
-  font-size: 1.3rem;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.interact-use-desc {
-  font-weight: 500;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  color: rgba(11, 16, 21, 0.72);
+  font-size: 1.1rem;
+  line-height: 1.55;
+  color: rgba(11, 16, 21, 0.82);
 }
 
 .interact-note {
-  margin-top: 1.75rem;
-  max-width: 60ch;
+  margin-top: 1rem;
   font-size: 0.8rem;
-  line-height: 1.5;
   color: rgba(11, 16, 21, 0.74);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 720px) {
   .interact {
     grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 560px) {
-  .interact-uses {
-    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
   }
 
-  .interact-use,
-  .interact-use + .interact-use {
-    padding: 0.85rem 0;
-    border-left: 0;
-    border-bottom: 1px solid rgba(11, 16, 21, 0.2);
+  .interact-desc {
+    margin-inline: auto;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .interact-ring-fill,
-  .interact-key,
-  .interact-key-cap {
-    transition: none;
+  .interact-demo.is-pressed .keycap-cap,
+  .interact-demo.is-pressed .keycap-shadow,
+  .interact-demo.is-pressed .splash-ring,
+  .interact-demo.is-pressed .splash-drop {
+    animation: none;
   }
+}
+
+/* ==========================================================================
+   Screenshot viewer
+
+   A crop from a feature block, opened as the whole capture at its own size.
+   The ground is dark rather than the page's own: the captures are dark
+   windows, and a dark window on a pale ground at full size is a hole in the
+   page.
+   ========================================================================== */
+
+.shot-viewer {
+  position: fixed;
+  inset: 0;
+  /* Above the header, which sits at 1000: a viewer the navigation bar draws
+     over is a viewer with a hole in it. */
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.shot-viewer[hidden] {
+  display: none;
+}
+
+.shot-viewer-ground {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(8, 11, 15, 0.86);
+  border: 0;
+  animation: shot-viewer-in 0.2s ease;
+}
+
+.shot-viewer-figure {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  max-width: 100%;
+  animation: shot-viewer-in 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes shot-viewer-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.shot-viewer-shot {
+  display: block;
+  /* The capture is 1595px wide. Past that it is being blown up rather than
+     shown, so it stops at its own size. */
+  max-width: min(100%, 1595px);
+  max-height: calc(100vh - 8rem);
+  width: auto;
+  height: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.5);
+}
+
+.shot-viewer-caption {
+  margin-top: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #b9c0c9;
+}
+
+.shot-viewer-close {
+  position: absolute;
+  top: clamp(0.75rem, 2vw, 1.5rem);
+  right: clamp(0.75rem, 2vw, 1.5rem);
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #e9ecef;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.shot-viewer-close:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+/* While the viewer is open the page behind it does not scroll — the crops are
+   mid-page, and a reader who closes the viewer should be where they left. */
+body.is-viewer-open {
+  overflow: hidden;
 }
