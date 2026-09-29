@@ -1296,7 +1296,7 @@
 
       <!-- ---- Layouts --------------------------------------------------------
            The session strip is the auto-switch acted out: the four sessions
-           a layout can be assigned to (layouts.png shows the same four tags),
+           a layout can be assigned to (the app tags a layout with the same four),
            stepped through by layout-demo.js, which brings up that session's
            screenshot on the screen beside it. -->
       <section id="layouts" class="feature feature-dark" aria-labelledby="layouts-heading">
@@ -1329,7 +1329,7 @@
                drops out of the strip on its own, so the block never shows an
                empty frame. -->
           <div class="feature-media">
-            <div class="layout-screen" data-layout-screen>
+            <div class="layout-screen" data-layout-screen data-zoom>
               <img class="layout-shot" data-shot="garage" src="assets/layouts/garage.jpg" alt="The garage layout on screen" loading="lazy" decoding="async" />
               <img class="layout-shot" data-shot="practice" src="assets/layouts/practice.jpg" alt="The practice layout on screen" loading="lazy" decoding="async" />
               <img class="layout-shot" data-shot="qualify" src="assets/layouts/qualify.jpg" alt="The qualifying layout on screen" loading="lazy" decoding="async" />
@@ -1340,9 +1340,8 @@
               </p>
             </div>
 
-            <button class="layout-screen-proof" type="button" data-zoom>
-              <img src="assets/control/layouts.png" alt="The layouts page of Marble Trace: saved layouts, each tagged with the sessions it is used in" width="1595" height="969" loading="lazy" hidden />
-              See the layouts page in the app <span aria-hidden="true">&rarr;</span>
+            <button class="layout-screen-proof" type="button" data-zoom data-zoom-from="[data-layout-screen]">
+              Open this layout full size <span aria-hidden="true">&rarr;</span>
             </button>
           </div>
         </div>
@@ -1475,90 +1474,90 @@
       </section>
 
       <!-- ====================================================================
-         Interact mode
+         Two keys - interact mode and edit mode
 
-         One feature on the page's saturated ground, said in one line: a key
-         that gives the mouse to the overlay and hands it back to the game.
-         The picture is the key itself - an SVG keycap that goes down and
-         throws a splash - played on a loop by interact-demo.js, and pressed
-         again by anyone who clicks it.
+         The two keys that reach the overlay from the car, on the page's
+         saturated ground: F8 lets the mouse click it, F9 lets it move it.
+         The picture is the two keys themselves - caps whose wall is a
+         box-shadow, so a press moves the cap down and shortens the wall by
+         the same travel - pressed in turn by interact-demo.js, each throwing
+         a splash off its base; a click presses either one.
 
-         Every claim is the app's: F8 is the default binding
+         Every claim is the app's: F8 and F9 are the default bindings
          (store/hotkeys/actions.ts), 15 s is interactAutoOffSeconds
-         (store/settings/app-settings.store.ts), and Standings, Stream Chat
-         and Pit Service are the widgets that read interactMode.
+         (store/settings/app-settings.store.ts), Standings, Stream Chat and
+         Pit Service are the widgets that read interactMode, and edit mode
+         is the drag, resize and toolbar WidgetContainer shows under
+         dragMode.
          ==================================================================== -->
       <section class="interact-band" aria-labelledby="interact-heading">
         <div class="container interact">
           <div class="interact-demo" data-interact-demo aria-hidden="true">
-            <div class="keycap-stage">
-              <span class="splash" data-splash>
-                <span class="splash-ring"></span>
-                <span class="splash-drop" style="--ox: -96px; --dx: -40px; --dy: -70px; --s: 1"></span>
-                <span class="splash-drop" style="--ox: -96px; --dx: -86px; --dy: -44px; --s: 0.8"></span>
-                <span class="splash-drop" style="--ox: -96px; --dx: -96px; --dy: -12px; --s: 0.65"></span>
-                <span class="splash-drop splash-drop-ink" style="--ox: -96px; --dx: -60px; --dy: -104px; --s: 0.7"></span>
-                <span class="splash-drop" style="--ox: -96px; --dx: -16px; --dy: -86px; --s: 0.55"></span>
-                <span class="splash-drop" style="--ox: 96px; --dx: 40px; --dy: -74px; --s: 1"></span>
-                <span class="splash-drop" style="--ox: 96px; --dx: 88px; --dy: -40px; --s: 0.8"></span>
-                <span class="splash-drop splash-drop-ink" style="--ox: 96px; --dx: 96px; --dy: -8px; --s: 0.65"></span>
-                <span class="splash-drop" style="--ox: 96px; --dx: 62px; --dy: -100px; --s: 0.7"></span>
-                <span class="splash-drop" style="--ox: 96px; --dx: 14px; --dy: -90px; --s: 0.55"></span>
-              </span>
-
-              <svg class="keycap" viewBox="0 0 240 220" data-keycap>
-                <defs>
-                  <linearGradient id="keycap-wall" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0" stop-color="#050608" />
-                    <stop offset="0.5" stop-color="#1c2229" />
-                    <stop offset="1" stop-color="#08090c" />
-                  </linearGradient>
-                  <linearGradient id="keycap-top" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stop-color="#303841" />
-                    <stop offset="1" stop-color="#161b21" />
-                  </linearGradient>
-                  <radialGradient id="keycap-dish" cx="0.5" cy="0.42" r="0.6">
-                    <stop offset="0" stop-color="#000" stop-opacity="0.32" />
-                    <stop offset="1" stop-color="#000" stop-opacity="0" />
-                  </radialGradient>
-                </defs>
-
-                <ellipse class="keycap-shadow" cx="120" cy="198" rx="98" ry="13" />
-
-                <path
-                  class="keycap-wall"
-                  d="M52 70 H188 Q200 70 202 82 L214 172 Q216 188 200 188 H40 Q24 188 26 172 L38 82 Q40 70 52 70 Z"
-                />
-
-                <g class="keycap-cap">
-                  <rect class="keycap-top" x="46" y="34" width="148" height="120" rx="22" />
-                  <rect class="keycap-dish" x="56" y="42" width="128" height="104" rx="18" />
-                  <path class="keycap-shine" d="M68 40 H172" />
-                  <text class="keycap-legend" x="120" y="114">F8</text>
-                </g>
-              </svg>
+            <div class="keyrow">
+              <div class="keycap-slot" data-key-slot="interact">
+                <span class="splash">
+                  <span class="splash-ring"></span>
+                  <span class="splash-drop" style="--ox: -62px; --dx: -56px; --dy: -120px; --s: 1"></span>
+                  <span class="splash-drop" style="--ox: -62px; --dx: -74px; --dy: -80px; --s: 0.8"></span>
+                  <span class="splash-drop splash-drop-ink" style="--ox: -62px; --dx: -50px; --dy: -160px; --s: 0.7"></span>
+                  <span class="splash-drop" style="--ox: -62px; --dx: -30px; --dy: -140px; --s: 0.55"></span>
+                  <span class="splash-drop" style="--ox: 62px; --dx: 56px; --dy: -126px; --s: 1"></span>
+                  <span class="splash-drop splash-drop-ink" style="--ox: 62px; --dx: 70px; --dy: -76px; --s: 0.8"></span>
+                  <span class="splash-drop" style="--ox: 62px; --dx: 50px; --dy: -156px; --s: 0.7"></span>
+                  <span class="splash-drop" style="--ox: 62px; --dx: 28px; --dy: -138px; --s: 0.55"></span>
+                </span>
+                <kbd class="keycap" data-key="interact">F8</kbd>
+              </div>
+              <div class="keycap-slot" data-key-slot="edit">
+                <span class="splash">
+                  <span class="splash-ring"></span>
+                  <span class="splash-drop" style="--ox: -62px; --dx: -56px; --dy: -120px; --s: 1"></span>
+                  <span class="splash-drop" style="--ox: -62px; --dx: -74px; --dy: -80px; --s: 0.8"></span>
+                  <span class="splash-drop splash-drop-ink" style="--ox: -62px; --dx: -50px; --dy: -160px; --s: 0.7"></span>
+                  <span class="splash-drop" style="--ox: -62px; --dx: -30px; --dy: -140px; --s: 0.55"></span>
+                  <span class="splash-drop" style="--ox: 62px; --dx: 56px; --dy: -126px; --s: 1"></span>
+                  <span class="splash-drop splash-drop-ink" style="--ox: 62px; --dx: 70px; --dy: -76px; --s: 0.8"></span>
+                  <span class="splash-drop" style="--ox: 62px; --dx: 50px; --dy: -156px; --s: 0.7"></span>
+                  <span class="splash-drop" style="--ox: 62px; --dx: 28px; --dy: -138px; --s: 0.55"></span>
+                </span>
+                <kbd class="keycap" data-key="edit">F9</kbd>
+              </div>
             </div>
 
             <p class="interact-status">
               <span class="interact-status-dot"></span>
-              <span data-interact-status>Mouse on the overlay</span>
+              <span data-interact-status>Mouse back in the game</span>
             </p>
           </div>
 
           <div class="interact-copy">
-            <p class="interact-kicker">Interact mode</p>
+            <p class="interact-kicker">Two keys</p>
 
             <h2 id="interact-heading" class="interact-title">
-              Press F8.<br />
-              Click the overlay.
+              F8 to click.<br />
+              F9 to move.
             </h2>
 
-            <p class="interact-desc">
-              Scroll the standings, switch classes, click the pit order.
-              After 15&nbsp;seconds the mouse goes back to the game.
-            </p>
+            <dl class="interact-keys">
+              <div class="interact-key">
+                <dt><kbd>F8</kbd> Interact</dt>
+                <dd>
+                  Scroll the standings, switch classes, click the pit order.
+                  The mouse goes back to the game after 15&nbsp;seconds.
+                </dd>
+              </div>
+              <div class="interact-key">
+                <dt><kbd>F9</kbd> Edit</dt>
+                <dd>
+                  Drag and resize widgets right over the game. Press it again
+                  to lock them in place.
+                </dd>
+              </div>
+            </dl>
 
-            <p class="interact-note">F8 by default &mdash; any key or wheel button works.</p>
+            <p class="interact-try">Try F9: click the key, or press it on your keyboard.</p>
+
+            <p class="interact-note">Both are defaults &mdash; any key or wheel button works.</p>
           </div>
         </div>
       </section>
@@ -1827,5 +1826,6 @@
     <script src="src/components/shot-viewer.js"></script>
     <script src="src/components/layout-demo.js"></script>
     <script src="src/components/interact-demo.js"></script>
+    <script src="src/components/page-modes.js"></script>
   </body>
 </html>

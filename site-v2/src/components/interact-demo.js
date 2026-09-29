@@ -1,26 +1,33 @@
 /**
- * Marble Trace Site V2 — Interact mode demo
+ * Marble Trace Site V2 — Two keys demo
  *
- * Presses the F8 keycap on a loop: the cap goes down, a splash is thrown off
- * its base, and the status under it says the mouse is on the overlay; a few
- * seconds later it says the mouse is back in the game, and the key goes down
- * again. A click on the key presses it at once.
+ * Presses F8 and F9 in turn: the cap goes down for a moment, a splash is
+ * thrown off its base, its legend lights, and the status under the keys says
+ * what the mouse can do now. A few seconds later the status says the mouse is
+ * back in the game, and the other key goes down. A click on either key
+ * presses it at once and starts that mode on the page (page-modes.js).
  *
- * The motion is all CSS - this file only restarts it, by taking the class off
- * and putting it back after a forced reflow. It runs only while the band is
- * on screen, and not at all for a visitor who asked for reduced motion.
+ * The motion is all CSS - this file only holds a key down for a moment and
+ * restarts its splash, by taking the class off and putting it back after a
+ * forced reflow. The loop runs only while the band is on screen, and not at
+ * all for a visitor who asked for reduced motion.
  */
 
 (() => {
   'use strict';
 
-  const OVERLAY_HOLD_MS = 2800;
-  const GAME_HOLD_MS = 1300;
+  const HOLD_MS = 2800;
+  const GAME_MS = 1200;
+  const KEY_DOWN_MS = 170;
 
+  const DOWN_CLASS = 'is-down';
   const PRESSED_CLASS = 'is-pressed';
-  const OVERLAY_CLASS = 'is-overlay';
+  const LIT_CLASS = 'is-lit';
 
-  const STATUS_OVERLAY = 'Mouse on the overlay';
+  const STATUS = {
+    interact: 'Mouse on the overlay',
+    edit: 'Editing the widgets',
+  };
   const STATUS_GAME = 'Mouse back in the game';
 
   const initInteractDemo = () => {
@@ -29,44 +36,72 @@
       '(prefers-reduced-motion: reduce)'
     ).matches;
 
-    if (!demo || reducedMotion || !('IntersectionObserver' in window)) {
+    if (!demo) {
       return;
     }
 
-    const keycap = demo.querySelector('[data-keycap]');
+    const slots = Array.from(demo.querySelectorAll('[data-key-slot]'));
     const status = demo.querySelector('[data-interact-status]');
 
+    let nextIndex = 0;
     let timer = 0;
     let running = false;
 
     const release = () => {
-      demo.classList.remove(OVERLAY_CLASS);
+      slots.forEach((slot) => slot.classList.remove(LIT_CLASS));
+      demo.classList.remove(LIT_CLASS);
       status.textContent = STATUS_GAME;
-      timer = window.setTimeout(press, GAME_HOLD_MS);
+      timer = window.setTimeout(() => press(slots[nextIndex]), GAME_MS);
     };
 
-    const press = () => {
+    const press = (slot) => {
       window.clearTimeout(timer);
 
-      demo.classList.remove(PRESSED_CLASS);
-      // Reading layout here is what lets the same animation play twice.
-      void demo.offsetWidth;
-      demo.classList.add(PRESSED_CLASS, OVERLAY_CLASS);
-      status.textContent = STATUS_OVERLAY;
+      const key = slot.querySelector('[data-key]');
+
+      slots.forEach((candidate) => candidate.classList.remove(LIT_CLASS));
+      slot.classList.remove(PRESSED_CLASS);
+      // Reading layout here is what lets the same splash play twice.
+      void slot.offsetWidth;
+      slot.classList.add(PRESSED_CLASS, LIT_CLASS);
+      demo.classList.add(LIT_CLASS);
+
+      key.classList.add(DOWN_CLASS);
+      window.setTimeout(() => key.classList.remove(DOWN_CLASS), KEY_DOWN_MS);
+
+      status.textContent = STATUS[key.dataset.key];
+      nextIndex = (slots.indexOf(slot) + 1) % slots.length;
 
       if (running) {
-        timer = window.setTimeout(release, OVERLAY_HOLD_MS);
+        timer = window.setTimeout(release, HOLD_MS);
       }
     };
 
-    keycap.addEventListener('click', press);
+    // A press the visitor made also plays the mode itself on the page
+    // (page-modes.js); the loop's own presses only animate the caps.
+    slots.forEach((slot) => {
+      const key = slot.querySelector('[data-key]');
+
+      key.addEventListener('click', () => {
+        press(slot);
+        document.dispatchEvent(
+          new CustomEvent('mt:key', { detail: key.dataset.key })
+        );
+      });
+    });
+
+    // Without motion, or without the observer, the keys still answer a click;
+    // only the loop that presses them on its own is left out.
+    if (reducedMotion || !('IntersectionObserver' in window)) {
+      return;
+    }
 
     const observer = new IntersectionObserver((entries) => {
       const visible = entries.some((entry) => entry.isIntersecting);
 
       if (visible && !running) {
         running = true;
-        press();
+        press(slots[nextIndex]);
       } else if (!visible && running) {
         running = false;
         window.clearTimeout(timer);

@@ -1,8 +1,9 @@
 /**
  * Marble Trace Site V2 — Screenshot viewer
  *
- * The feature blocks show crops of the app's window. Clicking one ([data-zoom])
- * opens the whole capture at the size it was taken at, over the page; the
+ * The feature blocks show crops of the app's window and the layouts block a
+ * screenshot per session. Clicking one ([data-zoom]) opens the whole picture
+ * at the size it was taken at, over the page; the
  * ground, the close button and Escape dismiss it, and focus goes back to the
  * crop that opened it.
  */
@@ -38,8 +39,25 @@
       }
     };
 
+    // A trigger may point at another element to take its picture from
+    // (data-zoom-from); where that element holds several pictures, the one
+    // on show - .is-active - is the one opened.
+    const pictureOf = (trigger) => {
+      const source = trigger.dataset.zoomFrom
+        ? document.querySelector(trigger.dataset.zoomFrom)
+        : trigger;
+
+      if (!source) {
+        return null;
+      }
+
+      return (
+        source.querySelector('img.is-active') || source.querySelector('img')
+      );
+    };
+
     const open = (trigger) => {
-      const shot = trigger.querySelector('img');
+      const shot = pictureOf(trigger);
 
       if (!shot) {
         return;

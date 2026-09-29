@@ -2191,6 +2191,7 @@ a:focus-visible, button:focus-visible {
 .layout-screen {
   position: relative;
   aspect-ratio: 43 / 18;
+  cursor: zoom-in;
   overflow: hidden;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -2807,10 +2808,9 @@ a:focus-visible, button:focus-visible {
 /* ==========================================================================
    Interact mode - one feature on lime
 
-   A compact band: the keycap on the left, three lines on the right. The
-   keycap is an SVG whose cap goes down on press while its wall stays put,
-   so the visible side of the key shortens the way a real one does; the
-   splash is a ring and a dozen drops thrown off its base and falling back.
+   A compact band: F8 and F9 on the left, pressed in turn, and what each one
+   does on the right. The splash is a ring and a handful of drops thrown off
+   the base of the key that went down, falling back.
    ========================================================================== */
 
 .interact-band {
@@ -2838,100 +2838,72 @@ a:focus-visible, button:focus-visible {
   gap: 0.9rem;
 }
 
-.keycap-stage {
+/* A cap and its wall. The wall is a hard box-shadow under the cap, so a
+   press is one move: the cap goes down by --travel and the wall shortens by
+   the same amount, the way a real keycap sinks into its switch. */
+.keyrow {
   position: relative;
-  width: clamp(12rem, 18vw, 15rem);
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2.5rem;
+  padding-bottom: 1.2rem;
+}
+
+.keycap-slot {
+  position: relative;
 }
 
 .keycap {
+  --wall: 18px;
+  --travel: 13px;
+  --wall-col: #050608;
+
   position: relative;
   z-index: 1;
-  display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
-  cursor: pointer;
-}
-
-.keycap-shadow {
-  fill: rgba(11, 16, 21, 0.38);
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.keycap-wall {
-  fill: url(#keycap-wall);
-}
-
-.keycap-top {
-  fill: url(#keycap-top);
-  stroke: rgba(255, 255, 255, 0.07);
-  stroke-width: 1.5;
-}
-
-.keycap-dish {
-  fill: url(#keycap-dish);
-}
-
-.keycap-shine {
-  stroke: rgba(255, 255, 255, 0.16);
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-
-.keycap-legend {
+  display: inline-grid;
+  place-items: center;
+  width: 7.6rem;
+  height: 7.2rem;
+  padding-bottom: 0.2rem;
+  border-radius: 14px;
   font-family: var(--font-hero-heading);
   font-weight: 900;
   font-style: italic;
-  font-size: 66px;
-  text-anchor: middle;
-  fill: var(--color-btn-download-bg);
-  transition: fill 0.3s ease;
+  font-size: 3.4rem;
+  line-height: 1;
+  color: #6b737d;
+  background: linear-gradient(180deg, #2b323a 0%, #161b21 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.4),
+    0 var(--wall) 0 var(--wall-col),
+    0 calc(var(--wall) + 10px) 22px rgba(11, 16, 21, 0.45);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 110ms cubic-bezier(0.3, 0.7, 0.4, 1),
+    box-shadow 110ms cubic-bezier(0.3, 0.7, 0.4, 1),
+    color 0.3s ease;
 }
 
-.interact-demo:not(.is-overlay) .keycap-legend {
-  fill: #6b737d;
+.keycap-slot.is-lit .keycap {
+  color: var(--color-btn-download-bg);
 }
 
-.interact-demo.is-pressed .keycap-cap {
-  animation: keycap-press 0.62s cubic-bezier(0.3, 0.7, 0.4, 1);
+.keycap:hover {
+  background: linear-gradient(180deg, #323a43 0%, #161b21 100%);
 }
 
-.interact-demo.is-pressed .keycap-shadow {
-  animation: keycap-shadow 0.62s cubic-bezier(0.3, 0.7, 0.4, 1);
-}
-
-@keyframes keycap-press {
-  0% {
-    transform: translateY(0);
-  }
-
-  18%,
-  38% {
-    transform: translateY(16px);
-  }
-
-  70% {
-    transform: translateY(-3px);
-  }
-
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes keycap-shadow {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  18%,
-  38% {
-    transform: scale(0.9, 0.8);
-    opacity: 0.75;
-  }
+.keycap:active,
+.keycap.is-down {
+  transform: translateY(var(--travel));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 3px rgba(0, 0, 0, 0.45),
+    0 calc(var(--wall) - var(--travel)) 0 var(--wall-col),
+    0 calc(var(--wall) - var(--travel) + 4px) 8px rgba(11, 16, 21, 0.45);
 }
 
 /* ---- The splash ------------------------------------------------------------ */
@@ -2939,9 +2911,11 @@ a:focus-visible, button:focus-visible {
 /* Anchored on the key's base, where the cap strikes */
 .splash {
   position: absolute;
-  z-index: 2;
+  /* Behind the keys: the drops come out from under the row, not over it */
+  z-index: 0;
   left: 50%;
-  top: 84%;
+  /* on the floor under the key, where its wall meets the board */
+  top: calc(100% + 0.6rem);
   width: 0;
   height: 0;
   pointer-events: none;
@@ -2974,11 +2948,11 @@ a:focus-visible, button:focus-visible {
   background-color: #0b1015;
 }
 
-.interact-demo.is-pressed .splash-ring {
+.keycap-slot.is-pressed .splash-ring {
   animation: splash-ring 0.7s ease-out 0.1s;
 }
 
-.interact-demo.is-pressed .splash-drop {
+.keycap-slot.is-pressed .splash-drop {
   animation: splash-drop 0.9s cubic-bezier(0.2, 0.7, 0.4, 1) 0.1s;
 }
 
@@ -3037,7 +3011,7 @@ a:focus-visible, button:focus-visible {
   transition: background-color 0.3s ease;
 }
 
-.interact-demo.is-overlay .interact-status-dot {
+.interact-demo.is-lit .interact-status-dot {
   background-color: var(--color-btn-download-bg);
 }
 
@@ -3063,10 +3037,45 @@ a:focus-visible, button:focus-visible {
   margin-bottom: 1.1rem;
 }
 
-.interact-desc {
-  max-width: 40ch;
+.interact-keys {
+  display: grid;
+  gap: 1rem;
+  max-width: 44ch;
+  margin: 0;
+}
+
+.interact-key dt {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* The key named in the text, drawn as a small cap of the same make */
+.interact-key kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.1rem;
+  height: 1.8rem;
+  padding: 0 0.4rem;
+  border-radius: 5px;
+  font-family: var(--font-hero-heading);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1rem;
+  letter-spacing: 0;
+  color: var(--color-btn-download-bg);
+  background: linear-gradient(180deg, #2b323a 0%, #161b21 100%);
+  box-shadow: 0 3px 0 #050608;
+}
+
+.interact-key dd {
+  margin: 0.4rem 0 0;
   font-weight: 500;
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1.55;
   color: rgba(11, 16, 21, 0.82);
 }
@@ -3084,16 +3093,19 @@ a:focus-visible, button:focus-visible {
     text-align: center;
   }
 
-  .interact-desc {
+  .interact-keys {
     margin-inline: auto;
+  }
+
+  .interact-key dt {
+    justify-content: center;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .interact-demo.is-pressed .keycap-cap,
-  .interact-demo.is-pressed .keycap-shadow,
-  .interact-demo.is-pressed .splash-ring,
-  .interact-demo.is-pressed .splash-drop {
+  .keycap,
+  .keycap-slot.is-pressed .splash-ring,
+  .keycap-slot.is-pressed .splash-drop {
     animation: none;
   }
 }
@@ -3153,9 +3165,9 @@ a:focus-visible, button:focus-visible {
 
 .shot-viewer-shot {
   display: block;
-  /* The capture is 1595px wide. Past that it is being blown up rather than
-     shown, so it stops at its own size. */
-  max-width: min(100%, 1595px);
+  /* Never past the picture's own width, and never past the window's: the
+     layout shots are 3440px wide. */
+  max-width: 100%;
   max-height: calc(100vh - 8rem);
   width: auto;
   height: auto;
@@ -3198,4 +3210,201 @@ a:focus-visible, button:focus-visible {
    mid-page, and a reader who closes the viewer should be where they left. */
 body.is-viewer-open {
   overflow: hidden;
+}
+
+/* ==========================================================================
+   F9, acted out on the page (page-modes.js)
+
+   F9 - the overlay's edit mode over the whole page: the canvas tint and
+   hatching the app uses (OverlayCanvas.module.scss, .dragActive), frames
+   with the widget's thick corner marks (WidgetContainer.module.scss), and
+   the exit button at the top centre. A fixed layer over the page, so it
+   moves nothing under it.
+   ========================================================================== */
+
+.page-edit {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
+}
+
+.is-page-editing .page-edit {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.page-edit-tint {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 102, 255, 0.1);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 255, 255, 0.05) 10px,
+    rgba(255, 255, 255, 0.05) 11px
+  );
+}
+
+/* One frame per block, placed on it every frame. The frame, not the block,
+   takes the pointer: in edit mode a block is something to move, so a link
+   inside it must not be followed. */
+.page-edit-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  border: 1px solid rgba(158, 195, 106, 0.75);
+  /* A dark rim around the lime marks, so they still read on the page's own
+     lime band */
+  filter: drop-shadow(0 0 1px rgba(11, 16, 21, 0.85));
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.page-edit-frame.is-grabbing {
+  cursor: grabbing;
+  border-color: var(--color-btn-download-bg);
+}
+
+.page-edit-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 0 solid var(--color-btn-download-bg);
+}
+
+.page-edit-corner-tl {
+  top: -3px;
+  left: -3px;
+  border-top-width: 5px;
+  border-left-width: 5px;
+}
+
+.page-edit-corner-tr {
+  top: -3px;
+  right: -3px;
+  border-top-width: 5px;
+  border-right-width: 5px;
+}
+
+.page-edit-corner-bl {
+  bottom: -3px;
+  left: -3px;
+  border-bottom-width: 5px;
+  border-left-width: 5px;
+}
+
+.page-edit-corner-br {
+  right: -3px;
+  bottom: -3px;
+  border-right-width: 5px;
+  border-bottom-width: 5px;
+}
+
+.page-edit-label {
+  position: absolute;
+  left: -1px;
+  bottom: 100%;
+  margin-bottom: 6px;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #0b1015;
+  background-color: var(--color-btn-download-bg);
+}
+
+.page-edit-bar {
+  position: absolute;
+  top: calc(var(--header-height) + 1rem);
+  left: 50%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.page-edit-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  background-color: rgba(13, 16, 20, 0.92);
+  color: #eef0f2;
+  font-weight: 700;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.page-edit-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: #3b82f6;
+}
+
+.page-edit-time {
+  font-family: var(--font-mono);
+  color: #8a939e;
+}
+
+/* The app's own exit: a red, primary button at the top centre */
+.page-edit-exit {
+  padding: 0.65rem 1.1rem;
+  border: 0;
+  border-radius: 6px;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #ffffff;
+  background-color: #ef4444;
+  box-shadow: 0 0.6rem 1.4rem -0.6rem rgba(239, 68, 68, 0.7);
+  cursor: pointer;
+}
+
+.page-edit-exit:hover {
+  background-color: #f25c5c;
+}
+
+.page-edit-exit:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* A dragged block slides home when edit mode ends */
+.is-edit-returning {
+  transition: translate 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.interact-try {
+  margin-top: 1.4rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #0b1015;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-edit,
+  .is-edit-returning {
+    transition: none;
+  }
 }
