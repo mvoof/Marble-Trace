@@ -24,6 +24,11 @@
      it. */
   const FADE_MS = 200;
 
+  /* How long each widget holds the stage while the gallery plays by itself.
+     The run stops for good once the reader picks a frame: from then on the
+     stage is theirs. */
+  const AUTOPLAY_MS = 3500;
+
   const padOrdinal = (value) => (value < 10 ? '0' + value : String(value));
 
   const initWidgetGallery = () => {
@@ -183,6 +188,73 @@
 
     stage.setAttribute('aria-labelledby', frames[0].id);
     total.textContent = frames.length;
+
+    const sheetGrid = gallery.querySelector('.sheet-grid');
+    const reducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+    let userTookOver = false;
+    let hovering = false;
+    let inView = false;
+
+    const stopAutoplay = () => {
+      userTookOver = true;
+    };
+
+    /* Scrolls only the sheet's own box, never the page: a gallery playing by
+       itself must not move what the reader is looking at. */
+    const revealInSheet = (frame) => {
+      if (!sheetGrid) {
+        return;
+      }
+
+      const item = frame.parentElement;
+      const top = item.offsetTop - sheetGrid.offsetTop;
+      const bottom = top + item.offsetHeight;
+
+      if (
+        top < sheetGrid.scrollTop ||
+        bottom > sheetGrid.scrollTop + sheetGrid.clientHeight
+      ) {
+        sheetGrid.scrollTo({
+          top: top - sheetGrid.clientHeight / 3,
+          behavior: 'smooth',
+        });
+      }
+    };
+
+    const advance = () => {
+      if (userTookOver || hovering || !inView || document.hidden) {
+        return;
+      }
+
+      const next = activeIndex === frames.length - 1 ? 0 : activeIndex + 1;
+
+      revealInSheet(frames[next]);
+      // No focus move; the stage is in view, so show() scrolls nothing either.
+      show(next, false);
+    };
+
+    if (!reducedMotion) {
+      frames.forEach((frame) => {
+        frame.addEventListener('click', stopAutoplay);
+        frame.addEventListener('keydown', stopAutoplay);
+      });
+
+      gallery.addEventListener('pointerenter', () => {
+        hovering = true;
+      });
+
+      gallery.addEventListener('pointerleave', () => {
+        hovering = false;
+      });
+
+      new IntersectionObserver((entries) => {
+        inView = entries[0].isIntersecting;
+      }).observe(stage);
+
+      window.setInterval(advance, AUTOPLAY_MS);
+    }
   };
 
   if (document.readyState === 'loading') {

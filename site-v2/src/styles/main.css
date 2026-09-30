@@ -1264,7 +1264,7 @@ a:focus-visible, button:focus-visible {
   /* A slot of one height whatever it holds. Sizing it to the picture would
      make the page jump by several hundred pixels between Standings and RPM
      Lights, and a section that resizes under the cursor cannot be browsed. */
-  --shot-h: clamp(18rem, 32vw, 30rem);
+  --shot-h: clamp(21rem, 37vw, 35rem);
 
   display: flex;
   flex-direction: column;
@@ -1412,7 +1412,7 @@ a:focus-visible, button:focus-visible {
 
    Every widget there is, as its own capture, and the only control in the
    section: the catalogue and the way through it are the same object. Three
-   frames to a row, each column hanging a little lower than the one before it,
+   frames to a row, level with each other,
    scrolling in its own box so the column never runs past the widget beside it.
    -------------------------------------------------------------------------- */
 
@@ -1472,19 +1472,6 @@ a:focus-visible, button:focus-visible {
 
 .sheet-grid::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.28);
-}
-
-/* The rag. Each column hangs a step lower than its neighbour, so the sheet
-   reads as a stepped field rather than a table — the same offset the three
-   columns of the section take, one order of magnitude down. It is set on the
-   column rather than the row so it survives scrolling: a rag that changed as
-   the box scrolled would read as a rendering fault. */
-.sheet-grid > li:nth-child(3n + 2) {
-  margin-top: 1.4rem;
-}
-
-.sheet-grid > li:nth-child(3n) {
-  margin-top: 2.8rem;
 }
 
 .frame {
@@ -1683,7 +1670,7 @@ a:focus-visible, button:focus-visible {
   }
 
   .stage {
-    --shot-h: 14rem;
+    --shot-h: 16rem;
   }
 }
 
