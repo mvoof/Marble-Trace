@@ -893,14 +893,13 @@ a:focus-visible, button:focus-visible {
   padding: 0;
 }
 
-/* Height, not aspect-ratio: an aspect-ratio box capped by max-height takes
-   its width from that height and leaves the rest of a wide window empty.
-   The width is always the window's; the height is the screen's 43:18 up to
-   one viewport, and the layers crop to fit it. */
+/* Always the screen's own 43:18, never capped by the window height: a cap
+   cropped the capture top and bottom whenever the browser's toolbars ate
+   into the viewport, and the scene read as squashed. */
 .why-scene {
   position: relative;
   width: 100%;
-  height: clamp(34rem, calc(100vw * 18 / 43), calc(100vh - var(--header-height)));
+  height: max(34rem, calc(100vw * 18 / 43));
   background-color: #0d1014;
   overflow: hidden;
 }
@@ -910,35 +909,15 @@ a:focus-visible, button:focus-visible {
   inset: 0;
 }
 
-.why-scene-bg,
-.why-scene-overlay {
+/* One flattened capture: cockpit, its dimming and the overlay baked
+   together, so no widget can drift off the spot it held on the screen. */
+.why-scene-shot {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: 50% 50%;
-}
-
-/* The render is lit like a summer noon and the page around it is not; held
-   down a stop it sits with the other sections, and the widgets on the layer
-   above it stay at full strength. */
-.why-scene-bg {
-  filter: brightness(0.72) saturate(0.85);
-}
-
-.why-scene-overlay {
-  z-index: 2;
-}
-
-.why-scene-frame::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    radial-gradient(ellipse 36% 36% at 50% 30%, rgba(6, 9, 13, 0.6), rgba(6, 9, 13, 0) 100%),
-    linear-gradient(to bottom, rgba(6, 9, 13, 0.18), rgba(6, 9, 13, 0) 45%);
 }
 
 /* The chapter opener every other section has - ghost ordinal, kicker,
@@ -989,10 +968,6 @@ a:focus-visible, button:focus-visible {
     aspect-ratio: 43 / 18;
     background-color: #0d1014;
     overflow: hidden;
-  }
-
-  .why-scene-frame::before {
-    display: none;
   }
 
   .why-scene-copy {
