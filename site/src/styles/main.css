@@ -3413,3 +3413,117 @@ body.is-viewer-open {
     transition: none;
   }
 }
+
+/* ==========================================================================
+   FAQ
+
+   The chapter opener on the left, the questions on the right as plain
+   <details>: one hairline between them, a plus that turns into a cross when
+   a question opens. A light band between two dark ones.
+   ========================================================================== */
+
+.faq {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: clamp(2.5rem, 6vw, 6rem);
+  align-items: start;
+}
+
+/* Stays beside the list while the questions open below it */
+.faq-lead {
+  position: sticky;
+  top: calc(var(--header-height) + 2rem);
+}
+
+.faq-lead .lede {
+  max-width: 34ch;
+}
+
+.faq-list {
+  border-top: 1px solid var(--ink-main);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--ink-main);
+}
+
+.faq-question {
+  position: relative;
+  display: block;
+  padding: 1.3rem 3rem 1.3rem 0;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 1.08rem;
+  line-height: 1.35;
+  color: #101317;
+  cursor: pointer;
+  list-style: none;
+  transition: color var(--transition-fast);
+}
+
+.faq-question::-webkit-details-marker {
+  display: none;
+}
+
+/* The plus: two bars, the upright one folds away when the item opens */
+.faq-question::before,
+.faq-question::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  width: 14px;
+  height: 2px;
+  background-color: currentColor;
+  transition: transform var(--transition-normal);
+}
+
+.faq-question::after {
+  transform: rotate(90deg);
+}
+
+.faq-item[open] .faq-question::after {
+  transform: rotate(0deg);
+}
+
+.faq-question:hover {
+  color: #000000;
+}
+
+.faq-item[open] .faq-question {
+  color: #000000;
+}
+
+.faq-answer {
+  max-width: 62ch;
+  padding: 0 3rem 1.5rem 0;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #4b5563;
+}
+
+.faq-answer code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.06);
+  word-break: break-all;
+}
+
+@media (max-width: 900px) {
+  .faq {
+    grid-template-columns: 1fr;
+  }
+
+  .faq-lead {
+    position: static;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-question::before,
+  .faq-question::after {
+    transition: none;
+  }
+}

@@ -63,6 +63,91 @@
             "author": { "@type": "Person", "name": "mvoof", "url": "https://github.com/mvoof" }
           },
           {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Is it really free?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Marble Trace is open source under GPL-3.0: no account, no ads, no subscription, and nothing is locked behind a paid tier."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Which sims does it support?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "iRacing, on Windows. That is the one sim it is built and tested against today."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is it safe to use with iRacing?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "It reads the telemetry iRacing publishes for apps through its official SDK — the same data every iRacing overlay reads. The overlay is its own window; nothing is injected into the sim."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Why can't I see the overlay over the game?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Run iRacing in windowed or borderless mode. In exclusive fullscreen the game draws over every other window, the overlay included."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What do I need to install?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Only Marble Trace itself: download the -setup.exe from the latest release and run it. The app updates itself when a new release is out."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I use it on stream?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Add a stream screen to a layout and open its link as a browser source in OBS — the whole screen, or one widget per source so you can place each in your scene."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can a phone or tablet show widgets?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Any device on your local network opens a screen in its browser, from a QR code in the settings. Nothing is installed on the device, and it can only watch — it cannot change your settings."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where are my settings kept?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "In %APPDATA%\\com.voof.marble-trace, not in the install folder, so layouts and bindings survive updates and reinstalls."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Does it collect any data?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "One anonymous event on launch through Aptabase, an open-source analytics service: app version, OS, screen resolution and locale. No account, no user id, no telemetry from your sessions."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "I found a bug or have an idea — where do I go?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Ask on Discord or open an issue on GitHub. Both links are at the top and the foot of this page."
+                }
+              }
+            ]
+          },
+          {
             "@type": "WebSite",
             "@id": "https://mvoof.github.io/Marble-Trace/#site",
             "name": "Marble Trace",
@@ -119,6 +204,7 @@
           <a href="#screens" class="nav-link">Screens</a>
           <a href="#layouts" class="nav-link">Layouts</a>
           <a href="#performance" class="nav-link">Performance</a>
+          <a href="#faq" class="nav-link">FAQ</a>
           <a href="#open-source" class="nav-link">Open Source</a>
         </nav>
 
@@ -235,6 +321,12 @@
         </a>
         <a href="#performance" class="drawer-nav-link">
           <span>Performance</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#faq" class="drawer-nav-link">
+          <span>FAQ</span>
           <svg aria-hidden="true">
             <use href="assets/icons/sprite.svg#icon-chevron-right" />
           </svg>
@@ -1761,6 +1853,73 @@
         </figure>
       </section>
 
+      <!-- ====================================================================
+         FAQ - the questions people ask in Discord before they install.
+         Plain <details>, so it opens without JavaScript; the same answers
+         go into the FAQPage JSON-LD in the head. A light band between the
+         dark performance section and the dark footer.
+         ==================================================================== -->
+      <section id="faq" class="chapter chapter-faq" aria-labelledby="faq-heading">
+        <div class="container faq">
+          <div class="chapter-lead faq-lead">
+            <p class="chapter-kicker">FAQ</p>
+
+            <h2 id="faq-heading" class="chapter-title">
+              Before you<br />
+              install.
+            </h2>
+
+            <p class="lede">
+              The questions that come up in Discord most. Anything else &mdash;
+              ask there.
+            </p>
+          </div>
+
+          <div class="faq-list">
+            <details class="faq-item">
+              <summary class="faq-question">Is it really free?</summary>
+              <p class="faq-answer">Yes. Marble Trace is open source under GPL-3.0: no account, no ads, no subscription, and nothing is locked behind a paid tier.</p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">Which sims does it support?</summary>
+              <p class="faq-answer">iRacing, on Windows. That is the one sim it is built and tested against today.</p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">Is it safe to use with iRacing?</summary>
+              <p class="faq-answer">It reads the telemetry iRacing publishes for apps through its official SDK &mdash; the same data every iRacing overlay reads. The overlay is its own window; nothing is injected into the sim.</p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">Why can't I see the overlay over the game?</summary>
+              <p class="faq-answer">Run iRacing in windowed or borderless mode. In exclusive fullscreen the game draws over every other window, the overlay included.</p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">What do I need to install?</summary>
+              <p class="faq-answer">Only Marble Trace itself: download the <code>-setup.exe</code> from the latest release and run it. The app updates itself when a new release is out.</p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">Can I use it on stream?</summary>
+              <p class="faq-answer">Yes. Add a stream screen to a layout and open its link as a browser source in OBS &mdash; the whole screen, or one widget per source so you can place each in your scene.</p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">Can a phone or tablet show widgets?</summary>
+              <p class="faq-answer">Yes. Any device on your local network opens a screen in its browser, from a QR code in the settings. Nothing is installed on the device, and it can only watch &mdash; it cannot change your settings.</p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">Where are my settings kept?</summary>
+              <p class="faq-answer">In <code>%APPDATA%\com.voof.marble-trace</code>, not in the install folder, so layouts and bindings survive updates and reinstalls.</p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">Does it collect any data?</summary>
+              <p class="faq-answer">One anonymous event on launch through Aptabase, an open-source analytics service: app version, OS, screen resolution and locale. No account, no user id, no telemetry from your sessions.</p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">I found a bug or have an idea &mdash; where do I go?</summary>
+              <p class="faq-answer">Ask on Discord or open an issue on GitHub. Both links are at the top and the foot of this page.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
     </main>
 
     <!-- ========================================================================
@@ -1816,6 +1975,7 @@
             <a href="#screens" class="footer-link">Screens</a>
             <a href="#layouts" class="footer-link">Layouts</a>
             <a href="#performance" class="footer-link">Performance</a>
+            <a href="#faq" class="footer-link">FAQ</a>
           </nav>
 
           <div class="footer-social">
