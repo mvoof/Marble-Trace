@@ -25,7 +25,6 @@
 
   const EDITABLE_SELECTOR = [
     '.hero-content',
-    '.why-scene-copy',
     '.gallery-head-title',
     '.screens-head',
     '.feature-copy',

@@ -304,6 +304,7 @@
     <main id="main">
       <!-- Hero Section (Matches Screenshot 2026-09-11 202506.png and Screenshot 195640.png) -->
       <section class="hero-block" id="hero" aria-labelledby="hero-heading">
+        <div class="hero-stage">
         <!-- Hero Visual — one uncut photograph, held inside the container so it
            never runs past the page gutters while still filling the block height.
            The "cuts" are diagonal washes: the picture dissolves into the page
@@ -312,8 +313,8 @@
 
         <div class="hero-visual">
           <img
-            src="assets/hero-cockpit-clean.jpg"
-            alt="iRacing cockpit view from the driver seat"
+            src="assets/why/scene.jpg"
+            alt="Marble Trace widgets over the iRacing cockpit: standings, relative, track map, fuel, weather, radar and the race dash"
             class="hero-photo"
           />
 
@@ -340,9 +341,9 @@
             </p>
 
             <p class="lede hero-subtitle">
-              Marble Trace is a free, lightweight overlay for iRacing. A tiny
-              Rust core reads telemetry straight from the sim — beautiful
-              widgets float above it, costing you almost no FPS.
+              A free, transparent overlay for iRacing that stays on top and
+              never blocks your view. A tiny Rust core reads telemetry straight
+              from the sim, costing you almost no FPS.
             </p>
 
             <!-- Buttons Group -->
@@ -397,12 +398,14 @@
           </div>
         </div>
 
+        </div>
+
         <!-- The four reasons, moved here from section 01: the first screen
              answers what the app is for, and section 01 is left to the scene
              that shows it. One dark strip across the foot of the hero, over
              the photograph, so the picture reads as ground rather than as a
              second subject beside the copy. -->
-        <div class="hero-claims">
+        <div id="features" class="hero-claims">
           <div class="container">
             <ul class="claim-grid hero-claims-grid">
               <li class="claim">
@@ -450,47 +453,6 @@
             </ul>
           </div>
         </div>
-      </section>
-
-      <!-- ====================================================================
-         Section 01 — Why Marble Trace
-         Two bands over one axis. Above: a scene - the cockpit as the section's
-         ground, the overlay laid over it as its own transparent layer, and the
-         chapter copy set in the one part of the screen no widget uses, the sky
-         above the road. The four claims that used to sit below it now open the
-         page, at the foot of the hero.
-
-         The cockpit and the overlay are flattened into one capture
-         (43:18, a 3440x1440 screen): two stacked layers cropped separately
-         drifted apart as the window changed size.
-         ==================================================================== -->
-      <section id="features" class="chapter chapter-why" aria-labelledby="why-heading">
-        <div class="why-scene">
-          <div class="why-scene-frame">
-            <img
-              class="why-scene-shot"
-              src="assets/why/scene.jpg"
-              alt="Marble Trace widgets over the iRacing cockpit: standings, relative, track map, fuel, weather, radar and the race dash"
-              decoding="async"
-            />
-          </div>
-
-          <div class="why-scene-copy">
-
-            <p class="chapter-kicker why-kicker">Why Marble Trace</p>
-
-            <h2 id="why-heading" class="chapter-title why-title">
-              Built for<br />
-              real racing.
-            </h2>
-
-            <p class="lede why-lede">
-              A transparent, frameless overlay that stays on top and never
-              blocks your view.
-            </p>
-          </div>
-        </div>
-
       </section>
 
       <!-- ====================================================================

@@ -55,12 +55,20 @@ a:focus-visible, button:focus-visible {
    leaves of the first screen. */
 .hero-block {
   position: relative;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: var(--color-header-bg);
-  padding-top: calc(var(--header-height) + 1.25rem);
+  padding-top: var(--header-height);
   overflow: hidden;
+}
+
+/* The photograph's own 43:18 at full width, so every widget in the capture
+   stays in frame; the copy is centred in it vertically. */
+.hero-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: max(34rem, calc(100vw * 18 / 43));
 }
 
 .hero-container {
@@ -73,7 +81,6 @@ a:focus-visible, button:focus-visible {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  margin-block: auto;
   padding-block: 2.5rem;
 }
 
@@ -267,9 +274,9 @@ a:focus-visible, button:focus-visible {
      --wash-angle: the gradient axis, perpendicular to the cuts.
      --edge: x of the right-hand cut at the top of the frame.
      --edge-slant: its horizontal travel, parallel to the left cuts. */
-  --slant: 22%;
-  --lead: 30%;
-  --trail: 20%;
+  --slant: 12%;
+  --lead: 48%;
+  --trail: 41%;
   --wash-angle: 124deg;
   --edge: 95%;
   --edge-slant: 4%;
@@ -280,14 +287,10 @@ a:focus-visible, button:focus-visible {
   /* Bleeds to the viewport edge: an inset here reads as an empty strip
      running down the right of the page. */
   right: 0;
-  /* Reaches back under the copy column so the wash meets the text */
-  left: 26%;
+  left: 0;
   z-index: 5;
   overflow: hidden;
   user-select: none;
-  /* Softens the straight left border the wash alone cannot reach at the bottom */
-  -webkit-mask-image: linear-gradient(to right, transparent 0, black 90px);
-  mask-image: linear-gradient(to right, transparent 0, black 90px);
 }
 
 .hero-photo {
@@ -296,11 +299,11 @@ a:focus-visible, button:focus-visible {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 68% 42%;
+  object-position: 50% 50%;
   display: block;
   /* Held down so the photograph is ground under the copy and the strip, not a
      second subject competing with them. */
-  filter: saturate(0.8) brightness(0.94);
+  filter: saturate(0.85) brightness(0.92);
 }
 
 /* ---- Claims strip at the foot of the hero ---------------------------------
@@ -342,10 +345,10 @@ a:focus-visible, button:focus-visible {
   background: linear-gradient(
     var(--wash-angle),
     rgba(228, 228, 222, 0.96) 0%,
-    rgba(228, 228, 222, 0.94) 28%,
-    rgba(228, 228, 222, 0.84) 44%,
-    rgba(228, 228, 222, 0.5) 55%,
-    rgba(228, 228, 222, 0.18) 64%,
+    rgba(228, 228, 222, 0.94) 38%,
+    rgba(228, 228, 222, 0.84) 50%,
+    rgba(228, 228, 222, 0.5) 58%,
+    rgba(228, 228, 222, 0.18) 65%,
     transparent 72%
   );
 }
@@ -573,12 +576,10 @@ a:focus-visible, button:focus-visible {
 .footer-star-title {
   max-width: 24ch;
   margin: 0 0 0.6rem;
-  font-family: var(--font-hero-heading);
+  font-family: var(--font-family);
   font-weight: 800;
-  font-style: italic;
-  font-size: clamp(1.3rem, 1.9vw, 1.7rem);
-  line-height: 1.05;
-  text-transform: uppercase;
+  font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+  line-height: 1.2;
   color: #ffffff;
 }
 
@@ -830,7 +831,7 @@ a:focus-visible, button:focus-visible {
   --ink-vlight: rgba(0, 0, 0, 0.03);
 
   position: relative;
-  padding: 7rem 0 5.5rem;
+  padding: var(--section-pad-y) 0;
   background-color: transparent;
   border-bottom: 1px solid var(--color-card-border);
   overflow: hidden;
@@ -889,114 +890,7 @@ a:focus-visible, button:focus-visible {
    white type legible on clouds without dimming the widgets.
    -------------------------------------------------------------------------- */
 
-.chapter-why {
-  padding: 0;
-}
 
-/* Always the screen's own 43:18, never capped by the window height: a cap
-   cropped the capture top and bottom whenever the browser's toolbars ate
-   into the viewport, and the scene read as squashed. */
-.why-scene {
-  position: relative;
-  width: 100%;
-  height: max(34rem, calc(100vw * 18 / 43));
-  background-color: #0d1014;
-  overflow: hidden;
-}
-
-.why-scene-frame {
-  position: absolute;
-  inset: 0;
-}
-
-/* One flattened capture: cockpit, its dimming and the overlay baked
-   together, so no widget can drift off the spot it held on the screen. */
-.why-scene-shot {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 50%;
-}
-
-/* The chapter opener every other section has - ghost ordinal, kicker,
-   title, lede, at the same sizes - stacked on one centre line in the sky, so
-   it stands on the road's own axis rather than beside it. */
-.why-scene-copy {
-  position: absolute;
-  top: 15%;
-  left: 50%;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: min(44rem, 46%);
-  transform: translateX(-50%);
-  text-align: center;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
-}
-
-
-.why-kicker {
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.why-title {
-  color: #ffffff;
-}
-
-.why-lede {
-  max-width: 38ch;
-  margin-inline: auto;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* Narrow screens: the sky is too short to hold the copy, so it steps out
-   above the picture onto the page, and the scene becomes a plain still. */
-@media (max-width: 1180px) {
-  .why-scene {
-    display: flex;
-    flex-direction: column-reverse;
-    height: auto;
-    background-color: transparent;
-    overflow: visible;
-  }
-
-  .why-scene-frame {
-    position: relative;
-    aspect-ratio: 43 / 18;
-    background-color: #0d1014;
-    overflow: hidden;
-  }
-
-  .why-scene-copy {
-    position: static;
-    align-items: flex-start;
-    width: auto;
-    transform: none;
-    padding: clamp(4.5rem, 9vw, 6rem) var(--container-padding) clamp(2rem, 4vw, 2.75rem);
-    text-align: left;
-    text-shadow: none;
-  }
-
-
-  .why-kicker {
-    color: #7b8390;
-  }
-
-  .why-title {
-    color: #101317;
-  }
-
-  .why-lede {
-    margin-inline: 0;
-    color: #4b5563;
-  }
-}
-
-@media (max-width: 640px) {
-}
 
 /* ---- Claims band --------------------------------------------------------- */
 
@@ -1097,10 +991,6 @@ a:focus-visible, button:focus-visible {
 }
 
 @media (max-width: 640px) {
-  .chapter {
-    padding: 4.5rem 0 3.5rem;
-  }
-
   .chapter-head {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1131,10 +1021,6 @@ a:focus-visible, button:focus-visible {
    The stage ground is the one dark surface on this page. It is the overlay's
    own ground: a widget photographed on paper is a widget nobody recognises.
    ========================================================================== */
-
-.chapter-gallery {
-  padding-bottom: 6rem;
-}
 
 /* ---- Crossbar --------------------------------------------------------------
 
@@ -1171,7 +1057,6 @@ a:focus-visible, button:focus-visible {
 
 
 .gallery-title {
-  font-size: clamp(2rem, 4.2vw, 4rem);
   line-height: 0.84;
   margin: 0;
 }
@@ -1275,12 +1160,10 @@ a:focus-visible, button:focus-visible {
 }
 
 .stage-name {
-  font-family: var(--font-hero-heading);
-  font-weight: 900;
-  font-style: italic;
-  font-size: clamp(1.5rem, 2.6vw, 2.15rem);
-  letter-spacing: 0.005em;
-  text-transform: uppercase;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  letter-spacing: 0;
   color: #101317;
   margin: 0;
 }
@@ -1628,10 +1511,6 @@ a:focus-visible, button:focus-visible {
 }
 
 @media (max-width: 640px) {
-  .chapter-gallery {
-    padding-bottom: 4rem;
-  }
-
   /* The bar folds: a one-line title needs width this width does not have. */
   .gallery-head-bar {
     flex-direction: column;
@@ -1647,6 +1526,72 @@ a:focus-visible, button:focus-visible {
   .stage {
     --shot-h: 16rem;
   }
+}
+
+/* ---- The gallery on dark ---------------------------------------------------
+
+   Every section that shows widgets sits on the app's own dark ground, so the
+   page alternates light (explaining) and dark (showing). Only colour changes
+   here; the layout above is shared. */
+
+.chapter-gallery {
+  --ink-main: rgba(255, 255, 255, 0.1);
+  --ink-light: rgba(255, 255, 255, 0.08);
+  --ink-vlight: rgba(255, 255, 255, 0.03);
+
+  background-color: #0d1014;
+  border-bottom: 0;
+}
+
+.chapter-gallery .chapter-title,
+.chapter-gallery .stage-name,
+.chapter-gallery .stage-index > span:first-child,
+.chapter-gallery .frame.is-active .frame-caption {
+  color: #ffffff;
+}
+
+.chapter-gallery .lede {
+  color: #9aa2ad;
+}
+
+.chapter-gallery .stage-group {
+  color: var(--color-btn-download-bg);
+}
+
+.chapter-gallery .stage-index,
+.chapter-gallery .stage-desc,
+.chapter-gallery .frame-caption {
+  color: #8a939e;
+}
+
+.chapter-gallery .stage-shot {
+  box-shadow:
+    0 1.6rem 3.2rem -1.4rem rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.chapter-gallery .sheet::after {
+  background: linear-gradient(180deg, transparent, #0d1014);
+}
+
+.chapter-gallery .sheet-grid {
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.chapter-gallery .sheet-grid::-webkit-scrollbar-track {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.chapter-gallery .sheet-grid::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.chapter-gallery .frame:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.chapter-gallery .frame.is-active {
+  background-color: rgba(255, 255, 255, 0.07);
 }
 
 /* ==========================================================================
@@ -2032,7 +1977,7 @@ a:focus-visible, button:focus-visible {
   --feature-pill-ink: #262a30;
 
   position: relative;
-  padding: clamp(4.5rem, 8vw, 7rem) 0;
+  padding: var(--section-pad-y) 0;
   color: var(--feature-ink);
   overflow: hidden;
 }
@@ -2112,10 +2057,9 @@ a:focus-visible, button:focus-visible {
 }
 
 .pill {
-  font-weight: 700;
-  font-size: 0.74rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 0.84rem;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   padding: 0.5rem 0.95rem;
   border: 1px solid var(--feature-pill-border);
@@ -2379,7 +2323,7 @@ a:focus-visible, button:focus-visible {
   --shot-width: clamp(20rem, 27vw, 34rem);
 
   position: relative;
-  padding: 7rem 0 5.5rem;
+  padding: var(--section-pad-y) 0;
   color: var(--band-ink);
   background-color: #0d1014;
   overflow: hidden;
@@ -2418,8 +2362,8 @@ a:focus-visible, button:focus-visible {
   font-family: var(--font-hero-heading);
   font-weight: 900;
   font-style: italic;
-  font-size: clamp(2.4rem, 3.6vw, 3.6rem);
-  line-height: 0.9;
+  font-size: clamp(2.4rem, 4.4vw, 4rem);
+  line-height: 0.88;
   letter-spacing: -0.015em;
   text-transform: uppercase;
   color: #ffffff;
@@ -2660,10 +2604,6 @@ a:focus-visible, button:focus-visible {
 }
 
 @media (max-width: 640px) {
-  .perf-band {
-    padding: 4.5rem 0 3.5rem;
-  }
-
   .perf {
     grid-template-columns: minmax(0, 1fr);
     row-gap: 2.5rem;

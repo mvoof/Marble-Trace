@@ -11,6 +11,9 @@
   --container-width: 1680px;
   --container-padding: clamp(1rem, 3vw, 2rem);
   --header-height: 64px;
+  /* One vertical rhythm for every full section: the same breath above and
+     below each, so no section reads as louder or quieter by its padding. */
+  --section-pad-y: clamp(4.5rem, 8vw, 7rem);
 
   /* Colors - Light Theme (matches screenshot navbar) */
   --color-header-bg: #e4e4de;
