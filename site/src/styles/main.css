@@ -3721,3 +3721,71 @@ body.is-viewer-open {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Racing accents
+
+   Three large marks, one per block and no more, so the page gets a little of
+   the circuit without turning busy: a kerb under the hero, chevrons in the
+   controls, a chequered flag where the download is.
+   ========================================================================== */
+
+/* A kerb along the foot of the claims strip, where the hero meets the dark
+   gallery and the two would otherwise run together. */
+.hero-claims::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+  background: repeating-linear-gradient(
+    -60deg,
+    #d93a36 0 26px,
+    #f5f6f2 26px 52px
+  );
+  pointer-events: none;
+}
+
+/* Chevrons in the empty corner under the controls copy */
+.feature-controls::before {
+  content: '';
+  position: absolute;
+  left: clamp(-3rem, -2vw, -1rem);
+  bottom: clamp(-2rem, -2vw, -1rem);
+  width: clamp(16rem, 30vw, 28rem);
+  aspect-ratio: 420 / 180;
+  background: url('../../assets/chevrons.svg') no-repeat center / contain;
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.feature-controls > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* A chequered flag waving out of the lower right corner of the download band */
+.download-band::before {
+  content: '';
+  position: absolute;
+  right: -4%;
+  bottom: -14%;
+  width: min(36%, 34rem);
+  height: 120%;
+  background: url('../../assets/checkered-flag.svg') no-repeat right bottom /
+    contain;
+  opacity: 0.2;
+  /* Dissolves on the side facing the button, so the mark never sits under
+     the text beside it. */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 45%);
+  mask-image: linear-gradient(to right, transparent, #000 45%);
+  transform: rotate(-6deg);
+  transform-origin: bottom right;
+  pointer-events: none;
+}
+
+.download {
+  position: relative;
+  z-index: 1;
+}
