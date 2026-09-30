@@ -772,7 +772,7 @@ checklist below is what a reviewer applies to code that already exists.
    smaller components does not help, the parent still allocates every child
    element. There is no test for this; get it right by review. See `docs/rendering.md`
 9. Use `fs()`/`sp()`/`radius()` tokens, `$font-widget`, `$widget-text-primary/secondary`, `$race-*` palette
-10. Document it: a picture in `site-v2/assets/widgets/` taken from its story (a line in `SHOTS` in `scripts/capture-widgets.mjs`, then `npm run capture:widgets` with Storybook up), a section in `README.md`, and one card in the site gallery (`site-v2/index.html`) — one set of pictures serves both; see `docs/widget-authoring.md` step 12
+10. Document it: a picture in `site/assets/widgets/` taken from its story (a line in `SHOTS` in `scripts/capture-widgets.mjs`, then `npm run capture:widgets` with Storybook up), a section in `README.md`, and one card in the site gallery (`site/index.html`) — one set of pictures serves both; see `docs/widget-authoring.md` step 12
 
 ### Storybook
 

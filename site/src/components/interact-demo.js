@@ -1,5 +1,5 @@
 /**
- * Marble Trace Site V2 — Two keys demo
+ * Marble Trace Site — Two keys demo
  *
  * Presses F8 and F9 in turn: the cap goes down for a moment, a splash is
  * thrown off its base, its legend lights, and the status under the keys says

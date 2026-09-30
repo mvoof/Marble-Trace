@@ -120,7 +120,7 @@ Anything that makes your machine run third-party code is **not** tracked, and is
 
 ## Widget screenshots
 
-The widget pictures the README and the website gallery show are one set, in `site-v2/assets/widgets/`: transparent PNGs taken at 3x, so they stay sharp on high-density screens. The README shows each at a third of its width (`<img width>`), the widget's own size. The site shows one picture per widget; the README may add variants beside it (Delta against the best lap, Fuel with the pit window open…).
+The widget pictures the README and the website gallery show are one set, in `site/assets/widgets/`: transparent PNGs taken at 3x, so they stay sharp on high-density screens. The README shows each at a third of its width (`<img width>`), the widget's own size. The site shows one picture per widget; the README may add variants beside it (Delta against the best lap, Fuel with the pit window open…).
 
 They are taken from **Storybook** by `scripts/capture-widgets.mjs` — every picture is one story, so it shows exactly the data that story seeds. Start Storybook, and nothing else heavy beside it:
 

@@ -1,5 +1,5 @@
 // Captures widget pictures from Storybook as transparent PNGs into
-// site-v2/assets/widgets/ - the one set of widget pictures the site gallery
+// site/assets/widgets/ - the one set of widget pictures the site gallery
 // and the README both use.
 //
 // Start Storybook first, and nothing else heavy beside it:
@@ -25,7 +25,7 @@ import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
 
 const STORYBOOK_URL = process.env.STORYBOOK_URL ?? 'http://localhost:6006';
-const OUT_DIR = path.join(process.cwd(), 'site-v2', 'assets', 'widgets');
+const OUT_DIR = path.join(process.cwd(), 'site', 'assets', 'widgets');
 const DEVICE_SCALE = 3;
 const VIEWPORT = { width: 1600, height: 1200 };
 // Long enough for a sweep, a blink or a chart to reach a resting frame

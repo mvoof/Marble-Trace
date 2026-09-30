@@ -1,5 +1,5 @@
 /**
- * Marble Trace Site V2 — Screenshot viewer
+ * Marble Trace Site — Screenshot viewer
  *
  * The feature blocks show crops of the app's window and the layouts block a
  * screenshot per session. Clicking one ([data-zoom]) opens the whole picture

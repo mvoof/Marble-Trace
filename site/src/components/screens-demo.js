@@ -1,5 +1,5 @@
 /**
- * Marble Trace Site V2 — Remote screens scene
+ * Marble Trace Site — Remote screens scene
  *
  * A node on each screen of the rig. A click dollies the camera into the same
  * picture until that screen fills the stage, and a caption names it; Back,

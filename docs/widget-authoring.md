@@ -53,7 +53,7 @@ glob's blind spot, and all but the first fail quietly or late.
 | `src/ui/app/widget-frame.ts`             | a non-rectangular plate | Nothing fails; the widget just wears a rectangle                |
 | `scripts/capture-widgets.mjs` (`SHOTS`)  | always                  | Nothing fails; the widget's picture is never taken (step 12)    |
 | `README.md`                              | always                  | Nothing fails; the widget is not documented (step 12)           |
-| `site-v2/index.html`                     | always                  | Nothing fails; the widget is missing from the site (step 12)    |
+| `site/index.html`                        | always                  | Nothing fails; the widget is missing from the site (step 12)    |
 
 ---
 
@@ -402,7 +402,7 @@ Look for the four failures that only appear here — one per quiet step:
 ## Step 12 — Put it in the README and on the site
 
 A widget nobody can find has not shipped. The README and the website gallery
-show every widget, from one set of pictures in `site-v2/assets/widgets/` —
+show every widget, from one set of pictures in `site/assets/widgets/` —
 transparent PNGs at 3x, taken from Storybook by a script. Nothing collects any
 of this; it is three edits by hand.
 
@@ -415,10 +415,10 @@ of this; it is three edits by hand.
    ([CONTRIBUTING → Widget screenshots](../CONTRIBUTING.md#widget-screenshots)).
 2. **The README.** A `### <Name>` section in the widget's group: one or two
    sentences on what it shows, then
-   `<img src="site-v2/assets/widgets/<file>.png" alt="<Name>" width="…">` with
+   `<img src="site/assets/widgets/<file>.png" alt="<Name>" width="…">` with
    the width a third of the PNG's — the widget's own size. And a link to the
    section in the group's line at the top of **Widgets**.
-3. **The site.** One card in the gallery sheet in `site-v2/index.html`, in the
+3. **The site.** One card in the gallery sheet in `site/index.html`, in the
    widget's group — one per widget, the README's variants stay in the README:
    copy a neighbour's `<li>` and change `id`, `data-shot`, `data-name`,
    `data-alt`, `data-group`, `data-desc` and the caption.

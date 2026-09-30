@@ -270,9 +270,9 @@ Nothing collects these; do all three.
    ([CONTRIBUTING → Widget screenshots](../../../CONTRIBUTING.md#widget-screenshots)).
    Stop Storybook afterwards.
 2. `README.md`: a `### <Name>` section in its group with one or two sentences and
-   `<img src="site-v2/assets/widgets/<file>.png" alt="<Name>" width="…">` — width
+   `<img src="site/assets/widgets/<file>.png" alt="<Name>" width="…">` — width
    a third of the PNG's — plus a link in the group's line under **Widgets**.
-3. `site-v2/index.html`: one card in the gallery sheet, in its group — a copy
+3. `site/index.html`: one card in the gallery sheet, in its group — a copy
    of a neighbour's `<li>` with `id`, `data-shot`, `data-name`, `data-alt`,
    `data-group`, `data-desc` and the caption changed.
 

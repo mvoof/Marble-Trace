@@ -1,5 +1,5 @@
 /**
- * Marble Trace Site V2 — F9, acted out on the page
+ * Marble Trace Site — F9, acted out on the page
  *
  * Pressing F9 (the cap in the two-keys band, or the real key) puts the page
  * into the overlay's own edit mode: the screen takes the blue, hatched tint

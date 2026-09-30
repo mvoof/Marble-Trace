@@ -1,5 +1,5 @@
 /**
- * Marble Trace Site V2 — Layouts demo
+ * Marble Trace Site — Layouts demo
  *
  * The session strip and the screen beside it are the auto-switch acted out:
  * the strip steps through the sessions on its own and the screen crossfades

@@ -1,5 +1,5 @@
 /**
- * Marble Trace Site V2 - Widget gallery (section 02)
+ * Marble Trace Site - Widget gallery (section 02)
  *
  * A stage and a sheet of frames. The sheet is a tablist and the stage its
  * panel:

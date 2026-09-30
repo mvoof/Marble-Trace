@@ -1,5 +1,5 @@
 /**
- * Marble Trace Site V2 - Navbar & Mobile Drawer Controller
+ * Marble Trace Site - Navbar & Mobile Drawer Controller
  * Handles mobile menu toggle, scroll states, active link highlighting, and a11y.
  */
 
