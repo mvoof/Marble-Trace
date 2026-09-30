@@ -69,13 +69,42 @@
       }
     });
 
-    // Handle Header background & blur on scroll
+    // Handle Header background & blur on scroll, and get the header out of
+    // the way while the page is read downwards: it slides away on the way
+    // down and comes back the moment the reader scrolls up. Near the top it
+    // always shows, and it never hides with the drawer open or focus in it.
+    const HIDE_AFTER = 120;
+    const SCROLL_SLACK = 6;
+    let lastScrollY = window.scrollY;
+
     function onScroll() {
       if (!header) return;
-      if (window.scrollY > 20) {
+
+      const scrollY = window.scrollY;
+      const delta = scrollY - lastScrollY;
+
+      if (scrollY > 20) {
         header.classList.add('is-scrolled');
       } else {
         header.classList.remove('is-scrolled');
+      }
+
+      const pinned =
+        scrollY < HIDE_AFTER ||
+        document.body.classList.contains('mobile-menu-open') ||
+        header.contains(document.activeElement);
+
+      if (pinned || delta < -SCROLL_SLACK) {
+        header.classList.remove('is-hidden');
+      } else if (delta > SCROLL_SLACK) {
+        header.classList.add('is-hidden');
+        header
+          .querySelectorAll('details[open]')
+          .forEach((menu) => menu.removeAttribute('open'));
+      }
+
+      if (Math.abs(delta) > SCROLL_SLACK) {
+        lastScrollY = scrollY;
       }
     }
 
