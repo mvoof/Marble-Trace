@@ -4,8 +4,9 @@
  * A stage and a sheet of frames. The sheet is a tablist and the stage its
  * panel:
  * picking a frame swaps the capture above rather than navigating anywhere. Everything
- * the stage needs is on the frame that was pressed, so the markup stays the
- * source of truth and this file never carries a copy of the catalogue.
+ * the stage needs is on the frame that was pressed, or in the catalogue below
+ * the sheet it points at (the descriptions live there once, as text), so the
+ * markup stays the source of truth and this file never carries a copy.
  *
  * The next capture is decoded off-screen before it is shown. Swapping the src
  * straight away paints the stage empty for a frame, and a gallery that blinks
@@ -125,7 +126,11 @@
         shot.src = nextSrc;
         shot.alt = frame.getAttribute('data-alt') || '';
         name.textContent = frame.getAttribute('data-name') || '';
-        desc.textContent = frame.getAttribute('data-desc') || '';
+        const descSource = document.getElementById(
+          frame.getAttribute('data-desc-id') || ''
+        );
+
+        desc.textContent = descSource ? descSource.textContent : '';
         group.textContent = frame.getAttribute('data-group') || '';
         index.textContent = padOrdinal(activeIndex + 1);
         stage.classList.remove(SWAPPING_CLASS);

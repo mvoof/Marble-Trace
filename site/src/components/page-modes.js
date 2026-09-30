@@ -30,6 +30,8 @@
     '.feature-copy',
     '.interact-copy',
     '.perf-lead',
+    '.faq-lead',
+    '.download-copy',
   ].join(', ');
 
   let mode = null;
@@ -154,12 +156,16 @@
 
     note.append(
       element('span', 'page-edit-dot'),
-      'Edit mode · drag any framed block · '
+      document.body.dataset.editNote || ''
     );
     edit.timeLabel = element('span', 'page-edit-time');
     note.appendChild(edit.timeLabel);
 
-    const exit = element('button', 'page-edit-exit', 'Exit edit mode');
+    const exit = element(
+      'button',
+      'page-edit-exit',
+      document.body.dataset.editExit || ''
+    );
 
     exit.type = 'button';
     exit.addEventListener('click', () => leave());

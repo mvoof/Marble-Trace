@@ -24,12 +24,6 @@
   const PRESSED_CLASS = 'is-pressed';
   const LIT_CLASS = 'is-lit';
 
-  const STATUS = {
-    interact: 'Mouse on the overlay',
-    edit: 'Editing the widgets',
-  };
-  const STATUS_GAME = 'Mouse back in the game';
-
   const initInteractDemo = () => {
     const demo = document.querySelector('[data-interact-demo]');
     const reducedMotion = window.matchMedia(
@@ -39,6 +33,13 @@
     if (!demo) {
       return;
     }
+
+    // Wording lives on the demo's own element, translated with the page.
+    const STATUS = {
+      interact: demo.dataset.statusInteract,
+      edit: demo.dataset.statusEdit,
+    };
+    const STATUS_GAME = demo.dataset.statusGame;
 
     const slots = Array.from(demo.querySelectorAll('[data-key-slot]'));
     const status = demo.querySelector('[data-interact-status]');

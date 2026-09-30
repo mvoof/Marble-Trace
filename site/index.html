@@ -17,6 +17,9 @@
     <meta name="theme-color" content="#e4e4de" />
     <link rel="canonical" href="https://mvoof.github.io/Marble-Trace/" />
     <link rel="alternate" hreflang="en" href="https://mvoof.github.io/Marble-Trace/" />
+    <link rel="alternate" hreflang="ru" href="https://mvoof.github.io/Marble-Trace/ru/" />
+    <link rel="alternate" hreflang="es" href="https://mvoof.github.io/Marble-Trace/es/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://mvoof.github.io/Marble-Trace/zh/" />
     <link rel="alternate" hreflang="x-default" href="https://mvoof.github.io/Marble-Trace/" />
     <!-- A plain-text summary for AI agents and assistants (llmstxt.org) -->
     <link rel="alternate" type="text/markdown" title="LLM summary" href="llms.txt" />
@@ -174,7 +177,7 @@
     <link rel="stylesheet" href="src/styles/navbar.css" />
     <link rel="stylesheet" href="src/styles/main.css" />
   </head>
-  <body>
+  <body data-edit-note="Edit mode · drag any framed block · " data-edit-exit="Exit edit mode">
     <!-- Page background — a technical drawing behind everything. The drawing
        itself is assets/background.svg; this element only places it. -->
     <div class="page-bg" aria-hidden="true"></div>
@@ -210,6 +213,21 @@
 
         <!-- Right Actions (Social links + Download CTA + Mobile Hamburger) -->
         <div class="header-actions">
+          <!-- Language. English is the source page; the others are generated
+               from it at build time (i18n/), and the build marks the current
+               one. Names are written in their own language, never translated. -->
+          <details class="lang-switch">
+            <summary class="lang-switch-current" aria-label="Language">
+              <span data-lang-current translate="no">EN</span>
+            </summary>
+            <div class="lang-switch-menu">
+            <a href="./" hreflang="en" lang="en" class="lang-switch-link" data-lang="en" translate="no" aria-current="page">English</a>
+            <a href="ru/" hreflang="ru" lang="ru" class="lang-switch-link" data-lang="ru" translate="no">Русский</a>
+            <a href="es/" hreflang="es" lang="es" class="lang-switch-link" data-lang="es" translate="no">Español</a>
+            <a href="zh/" hreflang="zh" lang="zh" class="lang-switch-link" data-lang="zh" translate="no">中文</a>
+            </div>
+          </details>
+
           <!-- GitHub Link -->
           <a
             href="https://github.com/mvoof/Marble-Trace"
@@ -241,6 +259,7 @@
           <!-- Download Button -->
           <a
             href="https://github.com/mvoof/Marble-Trace/releases/latest"
+            data-download
             target="_blank"
             rel="noopener noreferrer"
             class="btn-download"
@@ -367,10 +386,18 @@
         </a>
       </div>
 
+      <nav class="drawer-langs" aria-label="Language">
+            <a href="./" hreflang="en" lang="en" class="drawer-lang-link" data-lang="en" translate="no" aria-current="page">English</a>
+            <a href="ru/" hreflang="ru" lang="ru" class="drawer-lang-link" data-lang="ru" translate="no">Русский</a>
+            <a href="es/" hreflang="es" lang="es" class="drawer-lang-link" data-lang="es" translate="no">Español</a>
+            <a href="zh/" hreflang="zh" lang="zh" class="drawer-lang-link" data-lang="zh" translate="no">中文</a>
+      </nav>
+
       <!-- Mobile Download CTA -->
       <div class="drawer-cta">
         <a
           href="https://github.com/mvoof/Marble-Trace/releases/latest"
+            data-download
           target="_blank"
           rel="noopener noreferrer"
           class="btn-download"
@@ -426,9 +453,8 @@
             </h1>
 
             <p class="lede hero-subtitle">
-              A free, transparent overlay for iRacing that stays on top and
-              never blocks your view. A tiny Rust core reads telemetry straight
-              from the sim.
+              A free, transparent overlay for iRacing that never blocks your
+              view. A tiny Rust core reads telemetry straight from the sim.
             </p>
 
             <!-- Buttons Group -->
@@ -436,6 +462,7 @@
               <!-- Windows Download Button -->
               <a
                 href="https://github.com/mvoof/Marble-Trace/releases/latest"
+            data-download
                 target="_blank"
                 rel="noopener noreferrer"
                 class="btn-hero-dark"
@@ -573,7 +600,7 @@
             <div class="gallery-head-title">
 
               <h2 id="widgets-heading" class="chapter-title gallery-title">
-                The right data. Right there.
+                Every number in its place.
               </h2>
             </div>
 
@@ -590,8 +617,8 @@
 
             <div class="gallery-copy">
               <p class="lede gallery-lede">
-                Every widget in the app, at the size you actually read it. Take
-                the four you race with, or the whole board.
+                Every widget is designed to be read at racing speed: one
+                glance, and your eyes are back on the road.
               </p>
             </div>
 
@@ -639,7 +666,7 @@
                   data-name="Race Dash"
                   data-alt="Race Dash widget"
                   data-group="Race &amp; Performance"
-                  data-desc="Speed, gear, RPM, position and lap in one strip &mdash; the one widget that never leaves the screen."
+                  data-desc-id="gw-desc-race-dash"
                 >
                   <img src="assets/widgets/race-dash.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Race Dash</span>
@@ -658,7 +685,7 @@
                   data-name="Pit Line"
                   data-alt="Pit Line widget"
                   data-group="Race &amp; Performance"
-                  data-desc="Pit limiter, pit-lane speed and the metres left to your box, sized to be read while you watch the mirrors."
+                  data-desc-id="gw-desc-pit-line"
                 >
                   <img src="assets/widgets/pit-line.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Pit Line</span>
@@ -677,7 +704,7 @@
                   data-name="RPM Lights"
                   data-alt="RPM Lights widget"
                   data-group="Race &amp; Performance"
-                  data-desc="A shift light bar you read at the edge of vision, with your own colours and shift point."
+                  data-desc-id="gw-desc-rpm-lights"
                 >
                   <img src="assets/widgets/rpm-lights.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">RPM Lights</span>
@@ -696,7 +723,7 @@
                   data-name="Engine Panel"
                   data-alt="Engine Panel widget"
                   data-group="Race &amp; Performance"
-                  data-desc="Water, oil, fuel pressure and voltage under one glance, so a failing engine is not a surprise."
+                  data-desc-id="gw-desc-engine"
                 >
                   <img src="assets/widgets/engine.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Engine Panel</span>
@@ -715,7 +742,7 @@
                   data-name="Battery"
                   data-alt="Battery widget"
                   data-group="Race &amp; Performance"
-                  data-desc="Hybrid charge, what the MGU-K is doing with it, and the energy spent on the lap."
+                  data-desc-id="gw-desc-battery"
                 >
                   <img src="assets/widgets/battery.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Battery</span>
@@ -734,7 +761,7 @@
                   data-name="DRS"
                   data-alt="DRS widget"
                   data-group="Race &amp; Performance"
-                  data-desc="Armed past the detection point, ready inside the zone, open &mdash; the drag reduction system at a glance."
+                  data-desc-id="gw-desc-drs"
                 >
                   <img src="assets/widgets/drs.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">DRS</span>
@@ -753,7 +780,7 @@
                   data-name="Input Trace"
                   data-alt="Input Trace widget"
                   data-group="Race &amp; Performance"
-                  data-desc="Throttle, brake and steering as a rolling trace &mdash; see your own hands and feet on the lap."
+                  data-desc-id="gw-desc-input-trace"
                 >
                   <img src="assets/widgets/input-trace.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Input Trace</span>
@@ -772,7 +799,7 @@
                   data-name="G-Meter"
                   data-alt="G-Meter widget"
                   data-group="Race &amp; Performance"
-                  data-desc="Lateral and longitudinal load live, with the peaks of the lap held beside them."
+                  data-desc-id="gw-desc-g-metr"
                 >
                   <img src="assets/widgets/g-metr.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">G-Meter</span>
@@ -791,7 +818,7 @@
                   data-name="Coach"
                   data-alt="Coach widget"
                   data-group="Race &amp; Performance"
-                  data-desc="Brake and traction guidance against your reference lap, while you are still in the corner."
+                  data-desc-id="gw-desc-coach"
                 >
                   <img src="assets/widgets/coach.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Coach</span>
@@ -810,7 +837,7 @@
                   data-name="Invisible Dash"
                   data-alt="Invisible Dash widget"
                   data-group="Race &amp; Performance"
-                  data-desc="The numbers with no panel under them at all &mdash; speed, gear and position straight on the track."
+                  data-desc-id="gw-desc-invisible-dash"
                 >
                   <img src="assets/widgets/invisible-dash.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Invisible Dash</span>
@@ -829,7 +856,7 @@
                   data-name="Standings"
                   data-alt="Standings widget"
                   data-group="Timing &amp; Standings"
-                  data-desc="The multi-class order with gaps, class badges, pit state, licence and tyre stint age."
+                  data-desc-id="gw-desc-standings"
                 >
                   <img src="assets/widgets/standings.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Standings</span>
@@ -848,7 +875,7 @@
                   data-name="Relative"
                   data-alt="Relative widget"
                   data-group="Timing &amp; Standings"
-                  data-desc="Who is actually near you on track, ahead and behind, whatever lap they are on."
+                  data-desc-id="gw-desc-relative"
                 >
                   <img src="assets/widgets/relative.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Relative</span>
@@ -867,7 +894,7 @@
                   data-name="Relative Map"
                   data-alt="Relative Map widget"
                   data-group="Timing &amp; Standings"
-                  data-desc="The same field laid out along the track, so you read the gaps as distance."
+                  data-desc-id="gw-desc-relative-map"
                 >
                   <img src="assets/widgets/relative-map.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Relative Map</span>
@@ -886,7 +913,7 @@
                   data-name="Delta HUD"
                   data-alt="Delta HUD widget"
                   data-group="Timing &amp; Standings"
-                  data-desc="Live delta to your best lap or to the session best, with the trace of how you got there."
+                  data-desc-id="gw-desc-delta"
                 >
                   <img src="assets/widgets/delta.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Delta HUD</span>
@@ -905,7 +932,7 @@
                   data-name="Sector Matrix"
                   data-alt="Sector Matrix widget"
                   data-group="Timing &amp; Standings"
-                  data-desc="Every sector of every lap side by side &mdash; where the lap was won and where it leaked."
+                  data-desc-id="gw-desc-sector-matrix"
                 >
                   <img src="assets/widgets/sector-matrix.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Sector Matrix</span>
@@ -924,7 +951,7 @@
                   data-name="Lap Log"
                   data-alt="Lap Log widget"
                   data-group="Timing &amp; Standings"
-                  data-desc="Your stint lap by lap, the best one marked, invalid laps called out."
+                  data-desc-id="gw-desc-lap-log"
                 >
                   <img src="assets/widgets/lap-log.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Lap Log</span>
@@ -943,7 +970,7 @@
                   data-name="Timer"
                   data-alt="Timer widget"
                   data-group="Timing &amp; Standings"
-                  data-desc="Session clock, stint countdown and the time left before you have to box."
+                  data-desc-id="gw-desc-timer"
                 >
                   <img src="assets/widgets/timer.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Timer</span>
@@ -962,7 +989,7 @@
                   data-name="Track Map"
                   data-alt="Track Map widget"
                   data-group="Awareness"
-                  data-desc="Live track position and layout, every car on it, your own class picked out."
+                  data-desc-id="gw-desc-map"
                 >
                   <img src="assets/widgets/map.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Track Map</span>
@@ -981,7 +1008,7 @@
                   data-name="Proximity Radar"
                   data-alt="Proximity Radar widget"
                   data-group="Awareness"
-                  data-desc="360&deg; cover for the blind spots, with the real distance to the car beside you."
+                  data-desc-id="gw-desc-proximity-radar"
                 >
                   <img src="assets/widgets/proximity-radar.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Proximity Radar</span>
@@ -1000,7 +1027,7 @@
                   data-name="Radar Bar"
                   data-alt="Radar Bar widget"
                   data-group="Awareness"
-                  data-desc="The same warning as two flat bars down the edges of the screen, out of the driving view."
+                  data-desc-id="gw-desc-radar-bar"
                 >
                   <img src="assets/widgets/radar-bar.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Radar Bar</span>
@@ -1019,7 +1046,7 @@
                   data-name="Close Battle"
                   data-alt="Close Battle widget"
                   data-group="Awareness"
-                  data-desc="The cars actually fighting you, on a vertical distance axis: ahead goes up, behind goes down."
+                  data-desc-id="gw-desc-close-battle"
                 >
                   <img src="assets/widgets/close-battle.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Close Battle</span>
@@ -1038,7 +1065,7 @@
                   data-name="Wheel to Wheel"
                   data-alt="Wheel to Wheel widget"
                   data-group="Awareness"
-                  data-desc="You and your nearest rival side by side: number, position, speed and the gap between you."
+                  data-desc-id="gw-desc-wheel-to-wheel"
                 >
                   <img src="assets/widgets/wheel-to-wheel.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Wheel to Wheel</span>
@@ -1057,7 +1084,7 @@
                   data-name="Flat Flags"
                   data-alt="Flat Flags widget"
                   data-group="Awareness"
-                  data-desc="Every flag state as a plain panel &mdash; unmistakable at a glance, in any light."
+                  data-desc-id="gw-desc-flat-flag"
                 >
                   <img src="assets/widgets/flat-flag.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Flat Flags</span>
@@ -1076,7 +1103,7 @@
                   data-name="LED Flags"
                   data-alt="LED Flags widget"
                   data-group="Awareness"
-                  data-desc="Flags as light panels either side of the screen, seen without looking at them."
+                  data-desc-id="gw-desc-led-flag-dual"
                 >
                   <img src="assets/widgets/led-flag-dual.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">LED Flags</span>
@@ -1095,7 +1122,7 @@
                   data-name="Pit Service"
                   data-alt="Pit Service widget"
                   data-group="Car &amp; Session"
-                  data-desc="Fuel, tyre sets, pressures and repairs &mdash; the whole stop laid out before you commit to it."
+                  data-desc-id="gw-desc-pit-stop"
                 >
                   <img src="assets/widgets/pit-stop.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Pit Service</span>
@@ -1114,7 +1141,7 @@
                   data-name="Fuel"
                   data-alt="Fuel widget"
                   data-group="Car &amp; Session"
-                  data-desc="Per-lap burn, laps left in the tank, and exactly what to add to reach the flag."
+                  data-desc-id="gw-desc-fuel"
                 >
                   <img src="assets/widgets/fuel.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Fuel</span>
@@ -1133,7 +1160,7 @@
                   data-name="Weather"
                   data-alt="Weather widget"
                   data-group="Car &amp; Session"
-                  data-desc="Air and track temperature, humidity, wind, and how the session is turning."
+                  data-desc-id="gw-desc-weather"
                 >
                   <img src="assets/widgets/weather.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Weather</span>
@@ -1152,7 +1179,7 @@
                   data-name="Stream Chat"
                   data-alt="Stream Chat widget"
                   data-group="Streaming"
-                  data-desc="Your chat on the overlay instead of on a second screen &mdash; never on the wheel."
+                  data-desc-id="gw-desc-stream-chat"
                 >
                   <img src="assets/widgets/stream-chat.png" alt="" loading="lazy" decoding="async" />
                   <span class="frame-caption">Stream Chat</span>
@@ -1161,6 +1188,154 @@
               </ul>
             </div>
           </div>
+
+          <!-- Every widget in one list: the stage shows one at a time, this is
+               the whole catalogue as text - readable on a phone, where the
+               sheet is a strip, and by a search engine, which never presses a
+               frame. The stage reads its description from here. -->
+          <details class="catalog">
+            <summary class="catalog-summary">All 28 widgets, one line each</summary>
+
+            <div class="catalog-body">
+              <div class="catalog-group">
+                <h4 class="catalog-group-title">Race &amp; Performance</h4>
+                <dl class="catalog-list">
+                  <div class="catalog-item">
+                    <dt>Race Dash</dt>
+                    <dd id="gw-desc-race-dash">Speed, gear, RPM, position and lap in one strip &mdash; the one widget that never leaves the screen.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Pit Line</dt>
+                    <dd id="gw-desc-pit-line">Pit limiter, pit-lane speed and the metres left to your box, sized to be read while you watch the mirrors.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>RPM Lights</dt>
+                    <dd id="gw-desc-rpm-lights">A shift light bar you read at the edge of vision, with your own colours and shift point.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Engine Panel</dt>
+                    <dd id="gw-desc-engine">Water, oil, fuel pressure and voltage under one glance, so a failing engine is not a surprise.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Battery</dt>
+                    <dd id="gw-desc-battery">Hybrid charge, what the MGU-K is doing with it, and the energy spent on the lap.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>DRS</dt>
+                    <dd id="gw-desc-drs">Armed past the detection point, ready inside the zone, open &mdash; the drag reduction system at a glance.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Input Trace</dt>
+                    <dd id="gw-desc-input-trace">Throttle, brake and steering as a rolling trace &mdash; see your own hands and feet on the lap.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>G-Meter</dt>
+                    <dd id="gw-desc-g-metr">Lateral and longitudinal load live, with the peaks of the lap held beside them.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Coach</dt>
+                    <dd id="gw-desc-coach">Brake and traction guidance against your reference lap, while you are still in the corner.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Invisible Dash</dt>
+                    <dd id="gw-desc-invisible-dash">The numbers with no panel under them at all &mdash; speed, gear and position straight on the track.</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="catalog-group">
+                <h4 class="catalog-group-title">Timing &amp; Standings</h4>
+                <dl class="catalog-list">
+                  <div class="catalog-item">
+                    <dt>Standings</dt>
+                    <dd id="gw-desc-standings">The multi-class order with gaps, class badges, pit state, licence and tyre stint age.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Relative</dt>
+                    <dd id="gw-desc-relative">Who is actually near you on track, ahead and behind, whatever lap they are on.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Relative Map</dt>
+                    <dd id="gw-desc-relative-map">The same field laid out along the track, so you read the gaps as distance.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Delta HUD</dt>
+                    <dd id="gw-desc-delta">Live delta to your best lap or to the session best, with the trace of how you got there.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Sector Matrix</dt>
+                    <dd id="gw-desc-sector-matrix">Every sector of every lap side by side &mdash; where the lap was won and where it leaked.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Lap Log</dt>
+                    <dd id="gw-desc-lap-log">Your stint lap by lap, the best one marked, invalid laps called out.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Timer</dt>
+                    <dd id="gw-desc-timer">Session clock, stint countdown and the time left before you have to box.</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="catalog-group">
+                <h4 class="catalog-group-title">Awareness</h4>
+                <dl class="catalog-list">
+                  <div class="catalog-item">
+                    <dt>Track Map</dt>
+                    <dd id="gw-desc-map">Live track position and layout, every car on it, your own class picked out.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Proximity Radar</dt>
+                    <dd id="gw-desc-proximity-radar">360&deg; cover for the blind spots, with the real distance to the car beside you.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Radar Bar</dt>
+                    <dd id="gw-desc-radar-bar">The same warning as two flat bars down the edges of the screen, out of the driving view.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Close Battle</dt>
+                    <dd id="gw-desc-close-battle">The cars actually fighting you, on a vertical distance axis: ahead goes up, behind goes down.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Wheel to Wheel</dt>
+                    <dd id="gw-desc-wheel-to-wheel">You and your nearest rival side by side: number, position, speed and the gap between you.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Flat Flags</dt>
+                    <dd id="gw-desc-flat-flag">Every flag state as a plain panel &mdash; unmistakable at a glance, in any light.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>LED Flags</dt>
+                    <dd id="gw-desc-led-flag-dual">Flags as light panels either side of the screen, seen without looking at them.</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="catalog-group">
+                <h4 class="catalog-group-title">Car &amp; Session</h4>
+                <dl class="catalog-list">
+                  <div class="catalog-item">
+                    <dt>Pit Service</dt>
+                    <dd id="gw-desc-pit-stop">Fuel, tyre sets, pressures and repairs &mdash; the whole stop laid out before you commit to it.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Fuel</dt>
+                    <dd id="gw-desc-fuel">Per-lap burn, laps left in the tank, and exactly what to add to reach the flag.</dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>Weather</dt>
+                    <dd id="gw-desc-weather">Air and track temperature, humidity, wind, and how the session is turning.</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="catalog-group">
+                <h4 class="catalog-group-title">Streaming</h4>
+                <dl class="catalog-list">
+                  <div class="catalog-item">
+                    <dt>Stream Chat</dt>
+                    <dd id="gw-desc-stream-chat">Your chat on the overlay instead of on a second screen &mdash; never on the wheel.</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          </details>
         </div>
       </section>
 
@@ -1338,8 +1513,8 @@
               <p class="chapter-kicker">Multi-screen layouts</p>
 
               <h2 id="screens-heading" class="chapter-title">
-                Same data.<br />
-                Anywhere.
+                One layout.<br />
+                Every screen.
               </h2>
 
               <p class="lede chapter-subtitle">
@@ -1663,7 +1838,14 @@
          ==================================================================== -->
       <section class="interact-band" aria-labelledby="interact-heading">
         <div class="container interact">
-          <div class="interact-demo" data-interact-demo aria-hidden="true">
+          <div
+            class="interact-demo"
+            data-interact-demo
+            data-status-interact="Mouse on the overlay"
+            data-status-edit="Editing the widgets"
+            data-status-game="Mouse back in the game"
+            aria-hidden="true"
+          >
             <div class="keyrow">
               <div class="keycap-slot" data-key-slot="interact">
                 <span class="splash">
@@ -1726,8 +1908,6 @@
               </div>
             </dl>
 
-            <p class="interact-try">Try F9: click the key, or press it on your keyboard.</p>
-
             <p class="interact-note">Both are defaults &mdash; any key or wheel button works.</p>
           </div>
         </div>
@@ -1755,8 +1935,7 @@
 
             <h2 id="perf-heading" class="perf-title">
               Lightweight.<br />
-              Fast.<br />
-              Always on top.
+              Fast.
             </h2>
 
             <p class="perf-desc">
@@ -1829,11 +2008,6 @@
               </li>
 
               <li class="perf-fact">
-                <span class="perf-fact-name">Always on top</span>
-                <span class="perf-fact-desc">Transparent, frameless</span>
-              </li>
-
-              <li class="perf-fact">
                 <span class="perf-fact-name">Open source</span>
                 <span class="perf-fact-desc">GPL-3.0 app, MIT kerb</span>
               </li>
@@ -1847,8 +2021,8 @@
         <figure class="perf-shot">
           <img src="assets/why/telemetry.jpg" alt="" loading="lazy" decoding="async" />
           <figcaption class="perf-shot-caption">
-            Real data.<br />
-            Real performance.
+            Real telemetry.<br />
+            Real racing.
           </figcaption>
         </figure>
       </section>
@@ -1916,6 +2090,67 @@
               <summary class="faq-question">I found a bug or have an idea &mdash; where do I go?</summary>
               <p class="faq-answer">Ask on Discord or open an issue on GitHub. Both links are at the top and the foot of this page.</p>
             </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+         Download - the page ends on the thing it is for. Version, size and
+         date come live from the latest GitHub release (release.js), so the
+         block never goes stale; without JavaScript every link still points
+         at the releases page and the line reads as plain text.
+         ==================================================================== -->
+      <section id="download" class="download-band" aria-labelledby="download-heading">
+        <div class="container download">
+          <div class="download-copy">
+            <p class="download-kicker">Download</p>
+
+            <h2 id="download-heading" class="download-title">
+              Your next race<br />
+              starts here.
+            </h2>
+
+            <p class="download-lede">
+              Free for Windows 10 and 11. One installer, nothing else to set
+              up &mdash; and it updates itself from then on.
+            </p>
+          </div>
+
+          <div class="download-action">
+            <a
+              href="https://github.com/mvoof/Marble-Trace/releases/latest"
+              data-download
+              class="download-button"
+            >
+              <svg aria-hidden="true">
+                <use href="assets/icons/sprite.svg#icon-windows" />
+              </svg>
+              <span>Download for Windows</span>
+            </a>
+
+            <p class="download-meta" data-release-meta hidden>
+              <span data-release-version data-template="Version {version}"></span>
+              <span aria-hidden="true">&middot;</span>
+              <span data-release-size></span>
+              <span aria-hidden="true">&middot;</span>
+              <span data-release-date data-template="released {date}"></span>
+            </p>
+
+            <p class="download-links">
+              <a
+                href="https://github.com/mvoof/Marble-Trace/releases/latest"
+                data-release-notes
+                target="_blank"
+                rel="noopener noreferrer"
+                >What&rsquo;s new</a
+              >
+              <a
+                href="https://github.com/mvoof/Marble-Trace/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                >All releases</a
+              >
+            </p>
           </div>
         </div>
       </section>
@@ -1997,6 +2232,7 @@
             </a>
             <a
               href="https://github.com/mvoof/Marble-Trace/releases/latest"
+            data-download
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Download for Windows"
@@ -2015,6 +2251,13 @@
           </div>
 
           <p>Built with Rust and the Tauri&reg; framework &middot; telemetry by kerb</p>
+
+          <nav class="footer-langs" aria-label="Language">
+            <a href="./" hreflang="en" lang="en" class="footer-lang-link" data-lang="en" translate="no" aria-current="page">English</a>
+            <a href="ru/" hreflang="ru" lang="ru" class="footer-lang-link" data-lang="ru" translate="no">Русский</a>
+            <a href="es/" hreflang="es" lang="es" class="footer-lang-link" data-lang="es" translate="no">Español</a>
+            <a href="zh/" hreflang="zh" lang="zh" class="footer-lang-link" data-lang="zh" translate="no">中文</a>
+          </nav>
 
           <p>&copy; 2026 Marble Trace &middot; GPL-3.0</p>
 
@@ -2066,5 +2309,6 @@
     <script type="module" src="src/components/screens-demo.js"></script>
     <script type="module" src="src/components/interact-demo.js"></script>
     <script type="module" src="src/components/page-modes.js"></script>
+    <script type="module" src="src/components/release.js"></script>
   </body>
 </html>

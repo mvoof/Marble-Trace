@@ -1,11 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://mvoof.github.io/Marble-Trace/</loc>
     <lastmod>2026-09-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mvoof.github.io/Marble-Trace/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://mvoof.github.io/Marble-Trace/ru/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://mvoof.github.io/Marble-Trace/es/" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://mvoof.github.io/Marble-Trace/zh/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mvoof.github.io/Marble-Trace/" />
+    <image:image>
+      <image:loc>https://mvoof.github.io/Marble-Trace/og-image.jpg</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://mvoof.github.io/Marble-Trace/ru/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mvoof.github.io/Marble-Trace/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://mvoof.github.io/Marble-Trace/ru/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://mvoof.github.io/Marble-Trace/es/" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://mvoof.github.io/Marble-Trace/zh/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mvoof.github.io/Marble-Trace/" />
+    <image:image>
+      <image:loc>https://mvoof.github.io/Marble-Trace/og-image.jpg</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://mvoof.github.io/Marble-Trace/es/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mvoof.github.io/Marble-Trace/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://mvoof.github.io/Marble-Trace/ru/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://mvoof.github.io/Marble-Trace/es/" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://mvoof.github.io/Marble-Trace/zh/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mvoof.github.io/Marble-Trace/" />
+    <image:image>
+      <image:loc>https://mvoof.github.io/Marble-Trace/og-image.jpg</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://mvoof.github.io/Marble-Trace/zh/</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mvoof.github.io/Marble-Trace/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://mvoof.github.io/Marble-Trace/ru/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://mvoof.github.io/Marble-Trace/es/" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://mvoof.github.io/Marble-Trace/zh/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mvoof.github.io/Marble-Trace/" />
     <image:image>
       <image:loc>https://mvoof.github.io/Marble-Trace/og-image.jpg</image:loc>
     </image:image>

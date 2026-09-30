@@ -1,6 +1,6 @@
 # Marble Trace
 
-> Marble Trace is a free, open-source telemetry overlay for iRacing on Windows. A small Rust core reads the sim's shared-memory telemetry, and 28 widgets are drawn in one transparent always-on-top window across all monitors. Layouts switch automatically per session, and any layout can also be opened on a phone, a tablet, a second PC or an OBS browser source over the local network. Licensed GPL-3.0-or-later, no subscription, no account.
+> Marble Trace is a free, open-source telemetry overlay for iRacing on Windows. A small Rust core reads the sim's shared-memory telemetry, and 28 widgets are drawn in one transparent window across all monitors. Layouts switch automatically per session, and any layout can also be opened on a phone, a tablet, a second PC or an OBS browser source over the local network. Licensed GPL-3.0-or-later, no subscription, no account.
 
 ## Key facts
 
