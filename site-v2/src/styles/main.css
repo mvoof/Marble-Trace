@@ -1652,188 +1652,48 @@ a:focus-visible, button:focus-visible {
 /* ==========================================================================
    Section 03 - Remote screens
    ==========================================================================
-   The scene is one drawing, so the devices are placed in percentages of a
-   fixed aspect box rather than laid out: they overlap on purpose - a laptop
-   standing in front of the rig is what says the two show the same thing at
-   the same moment, and a grid of four devices in four cells says the opposite.
+   The copy and the scenario tabs on the left, one drawn device on the right.
+   The device is CSS rather than a photo, so what is on its screen is only
+   ever the real widget pictures.
    -------------------------------------------------------------------------- */
 
-/* One line across the page, the way the mock states it: the chapter on the
-   left at the width of a column of text, the devices taking the rest. The
-   scene is the argument here - the copy gets what it needs and no more. */
 .screens {
   display: grid;
-  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
   gap: clamp(1.5rem, 4vw, 3.5rem);
-  align-items: start;
+  align-items: center;
 }
 
 .screens-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: clamp(0.75rem, 1.6vw, 1.5rem);
-  align-items: start;
+  gap: 1.4rem;
 }
 
-.screens-facts {
-  list-style: none;
-  margin: 1.5rem 0 0;
-  padding: 0;
-  border-top: 1px solid var(--ink-main);
-}
-
-.screens-facts li {
-  position: relative;
-  padding: 0.6rem 0 0.6rem 1.6rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #4b535d;
-  border-bottom: 1px solid var(--ink-light);
-}
-
-/* The same lime index mark the claims band opens its rows with, cut at the
-   section's own angle. */
-.screens-facts li::before {
-  content: '';
-  position: absolute;
-  top: 1.05rem;
-  left: 0;
-  width: 0.7rem;
-  height: 2px;
-  background-color: var(--color-btn-download-bg);
-  transform: skewX(calc(-1 * var(--cut)));
-}
-
-/* The cut-out keeps no ground of its own - the page colour is the only thing
-   behind it, which is why the white was taken out rather than faded. The stage
-   keeps a band above and below it for the callouts to stand in. */
-.screens-stage {
-  position: relative;
-  padding: 3.6rem 0 3.4rem;
-}
-
-.screens-shot {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-/* ---- Callouts ------------------------------------------------------------
-   A label, a hairline and a node - the same three marks assets/background.svg
-   draws the page's construction lines with. The label is set off the scene so
-   nothing is written over a screen, and the line does the pointing. */
-
-.screens-callout {
-  position: absolute;
-  left: var(--x);
-  margin: 0;
-  width: max-content;
-  max-width: 11rem;
-  line-height: 1.25;
-  pointer-events: none;
-}
-
-/* The leader: a hairline from the label to the device, closed by a ring at the
-   device end. */
-.screens-callout::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 1px;
-  height: var(--lead);
-  background-color: var(--ink-main);
-}
-
-.screens-callout::after {
-  content: '';
-  position: absolute;
-  left: -2px;
-  width: 5px;
-  height: 5px;
-  border: 1px solid var(--color-btn-download-bg);
-  border-radius: 50%;
-  background-color: var(--color-body-bg);
-}
-
-/* Callouts above the scene point down, the ones below point up. */
-.screens-callout-desktop {
-  top: 0;
-  padding-bottom: calc(var(--lead) + 0.4rem);
-}
-
-.screens-callout-desktop::before {
-  bottom: 0;
-}
-
-.screens-callout-desktop::after {
-  bottom: -3px;
-}
-
-.screens-callout-tablet,
-.screens-callout-laptop {
-  bottom: 0;
-  padding-top: calc(var(--lead) + 0.4rem);
-}
-
-.screens-callout-tablet::before,
-.screens-callout-laptop::before {
-  top: 0;
-}
-
-.screens-callout-tablet::after,
-.screens-callout-laptop::after {
-  top: -3px;
-}
-
-.screens-callout-name {
-  display: block;
-  font-family: var(--font-family);
-  font-weight: 800;
+.screens-hint {
+  margin: 1.4rem 0 0;
+  font-family: var(--font-mono);
   font-size: 0.7rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #101317;
-}
-
-.screens-callout-desc {
-  display: block;
-  margin-top: 0.1rem;
-  font-size: 0.76rem;
   color: #6b727c;
 }
 
-/* The band under the scene: what a remote screen is, in the section's own
-   ruled language rather than in cards - four columns opened by a rule, the
-   way the claims band under chapter 01 divides itself. */
-.screens-detail {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  list-style: none;
-  margin: clamp(1.5rem, 3vw, 2.75rem) 0 0;
-  padding: 0;
-  border-top: 1px solid var(--ink-main);
-}
-
-.screens-detail li {
-  padding: 1.1rem clamp(0.75rem, 1.6vw, 1.5rem) 0;
-  border-right: 1px solid var(--ink-light);
-}
-
-.screens-detail li:first-child {
-  padding-left: 0;
-}
-
-.screens-detail li:last-child {
-  border-right: 0;
+.screens-hint::before {
+  content: '';
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.6rem;
+  border-radius: 50%;
+  background-color: var(--color-btn-download-bg);
+  vertical-align: 0.05rem;
 }
 
 .screens-detail-title {
   margin: 0 0 0.45rem;
   font-family: var(--font-family);
   font-weight: 800;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   letter-spacing: 0.02em;
   color: #101317;
 }
@@ -1844,7 +1704,7 @@ a:focus-visible, button:focus-visible {
   color: #4b535d;
 }
 
-.screens-detail code {
+.screens-detail-desc code {
   font-family: var(--font-mono);
   font-size: 0.8em;
   padding: 0.05em 0.3em;
@@ -1852,72 +1712,307 @@ a:focus-visible, button:focus-visible {
   color: #101317;
 }
 
+/* ---- Scene ------------------------------------------------------------------
+   The camera move is the scene itself scaling about the picked node: the
+   node's position is written into transform-origin before the class goes on,
+   so the zoom heads for that screen and not for the middle of the picture. */
+
+.screens-stage {
+  position: relative;
+  overflow: hidden;
+}
+
+/* The camera: the script writes a translate and a scale that bring the
+   picked screen to the middle of the stage at the size that fills it. */
+.screens-scene {
+  position: relative;
+  transform-origin: 0 0;
+  transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.screens-scene.is-zoomed {
+  cursor: zoom-out;
+}
+
+.screens-scene.is-zoomed .screens-spot {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.screens-caption {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  max-width: 26rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 10px;
+  background-color: rgba(228, 228, 222, 0.94);
+  box-shadow: 0 0.8rem 2rem -0.8rem rgba(10, 14, 20, 0.45);
+  animation: screens-caption-in 0.4s ease 0.5s both;
+}
+
+.screens-caption[hidden] {
+  display: none;
+}
+
+@keyframes screens-caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.screens-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4b535d;
+  cursor: pointer;
+}
+
+.screens-back:hover {
+  color: #101317;
+}
+
+.screens-back svg {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.screens-scene-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.screens-spot {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background-color: var(--color-btn-download-bg);
+  box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+.screens-spot::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--color-btn-download-bg);
+  animation: screens-pulse 1.8s ease-out infinite;
+}
+
+@keyframes screens-pulse {
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.screens-spot span {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.5rem);
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background-color: #101317;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #eef0f2;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  pointer-events: none;
+}
+
+.screens-spot:hover span,
+.screens-spot:focus-visible span {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.screens-spot:focus-visible {
+  outline: 2px solid #101317;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screens-scene,
+  .screens-spot::before,
+  .screens-caption {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ---- Steps and network ---------------------------------------------------- */
+
+.screens-how {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: center;
+  margin-top: clamp(1.5rem, 3vw, 2.75rem);
+  padding-top: clamp(1.25rem, 2.4vw, 2rem);
+  border-top: 1px solid var(--ink-main);
+}
+
+.screens-steps {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.screens-steps li {
+  position: relative;
+  padding-left: 2.6rem;
+}
+
+.screens-step-num {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-btn-download-bg);
+}
+
+.screens-net {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: clamp(1rem, 2.5vw, 2rem);
+  align-items: center;
+  margin: 0;
+}
+
+.screens-net svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.screens-net-lan {
+  fill: none;
+  stroke: #9aa2ad;
+  stroke-dasharray: 4 4;
+}
+
+.screens-net-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  fill: #6b727c;
+}
+
+.screens-net-hub {
+  fill: #101317;
+}
+
+.screens-net-node {
+  fill: var(--color-card-bg);
+  stroke: rgba(0, 0, 0, 0.18);
+}
+
+.screens-net-name {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 12px;
+  fill: #101317;
+}
+
+.screens-net-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: #6b727c;
+}
+
+.screens-net-name-hub {
+  fill: #eef0f2;
+}
+
+.screens-net-sub-hub {
+  fill: var(--color-btn-download-bg);
+}
+
+.screens-net-flow {
+  fill: none;
+  stroke: var(--color-btn-download-bg);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+  animation: screens-flow 1.2s linear infinite;
+}
+
+.screens-net-head {
+  fill: var(--color-btn-download-bg);
+}
+
+@keyframes screens-flow {
+  to {
+    stroke-dashoffset: -11;
+  }
+}
+
+.screens-net-cloud path {
+  fill: none;
+  stroke: #9aa2ad;
+  stroke-width: 1.5;
+}
+
+.screens-net-cloud line {
+  stroke: #c0564b;
+  stroke-width: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screens-net-flow {
+    animation: none;
+  }
+}
+
 /* ---- Responsive ---------------------------------------------------------- */
 
 @media (max-width: 1100px) {
-  /* The copy over the scene rather than beside it: below this width the left
-     column is four words to a line and the devices have nowhere to stand. */
-  .screens {
+  .screens,
+  .screens-how {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .screens-head {
-    max-width: 44rem;
-  }
-
-  .screens-detail {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .screens-detail li:nth-child(2n) {
-    border-right: 0;
-  }
-
-  .screens-detail li:nth-child(odd) {
-    padding-left: 0;
-  }
-
-  .screens-detail li:nth-child(n + 3) {
-    margin-top: 1.1rem;
-    border-top: 1px solid var(--ink-light);
+    max-width: 36rem;
   }
 }
 
 @media (max-width: 720px) {
-  /* Leaders need room beside the thing they point at; at this width the
-     labels would overlap each other before they reached a device. The scene
-     then carries no callouts and the devices are named in a row under it. */
-  .screens-stage {
-    padding: 0;
-  }
-
-  .screens-callout {
-    position: static;
-    display: inline-block;
-    width: auto;
-    max-width: none;
-    margin: 0.9rem 1.6rem 0 0;
-    padding: 0;
-    text-align: left;
-  }
-
-  .screens-callout::before,
-  .screens-callout::after {
-    display: none;
-  }
-
-  .screens-detail {
+  .screens-net {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .screens-detail li {
-    padding: 1.1rem 0 0;
-    border-right: 0;
-  }
-
-  .screens-detail li + li {
-    border-top: 1px solid var(--ink-light);
-  }
 }
 
 /* ==========================================================================

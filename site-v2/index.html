@@ -1213,23 +1213,15 @@
       <!-- ====================================================================
          Section 03 - Remote screens
 
-         One scene, four devices, one overlay. The claim is not that the app
-         runs on a tablet - it is that the same layout the driver built is
-         already on every screen he owns, so the devices are drawn in one
-         group at one scale rather than as four cards saying the same thing.
+         One layout, opened wherever it is needed. Four scenarios, one tab
+         each, so the reader finds the one that is theirs.
 
-         The scene is one cut-out (assets/screens/devices.png, white ground
-         removed) rather than four framed devices: the screens in it are at
-         angles no CSS inset would sit straight in, and a group photographed
-         together is what carries "at the same moment". Each device is then
-         called out off the scene by a leader line, the way a part is named on
-         a drawing - a caption row under the picture names the picture, not the
-         four things in it.
+         The scene and the device close-ups are generated renders with blank
+         screens; everything on a screen is a real widget picture.
          ==================================================================== -->
       <section id="screens" class="chapter chapter-screens" aria-labelledby="screens-heading">
-        <div class="container screens">
+        <div class="container screens" data-screens-demo>
           <div class="screens-head">
-
             <div class="chapter-lead">
               <p class="chapter-kicker">Multi-screen layouts</p>
 
@@ -1244,86 +1236,106 @@
                 needs; nothing is installed on it.
               </p>
 
-              <ul class="screens-facts">
-                <li>A screen is a virtual monitor in the layout editor</li>
-                <li>Every screen keeps its own widgets, scale and columns</li>
-                <li>Open the link or scan the QR code &mdash; nothing to install</li>
-              </ul>
+              <p class="screens-hint">Pick a screen on the rig to look closer</p>
             </div>
           </div>
 
-          <div class="screens-stage">
-            <img
-              class="screens-shot"
-              src="assets/screens/devices.png"
-              alt="One Marble Trace layout running at once on a triple monitor sim rig, a tablet, a phone and a laptop"
-              decoding="async"
-            />
+          <!-- The rig as one picture, every screen marked by a pulsing node.
+               The widgets are composed onto the screens in the picture
+               itself. A click dollies the camera into that same picture -
+               the close-up is the preview, only nearer. -->
+          <div class="screens-stage" data-screens-stage>
+            <div class="screens-scene" data-screens-scene>
+              <img class="screens-scene-shot" src="assets/screens/rig.webp" alt="A sim racing rig with a triple monitor, a monitor above it, a tablet and a phone on the cockpit" decoding="async" />
 
-            <!-- Leader lines, not a caption row: each label stands off the
-                 device it names and is tied to it by a hairline ending in a
-                 node, the way a part is called out on a drawing. The anchor
-                 is a percentage of the scene, so the callouts travel with the
-                 image at any width. -->
-            <p class="screens-callout screens-callout-desktop" style="--x: 41%; --lead: 3.4rem">
-              <span class="screens-callout-name">Desktop</span>
-              <span class="screens-callout-desc">Triple monitor rig</span>
-            </p>
+              <button type="button" class="screens-spot" style="--x: 53%; --y: 30%" data-device="triple" data-zoom="0 16 100 52"><span>Triple monitors</span></button>
+              <button type="button" class="screens-spot" style="--x: 53%; --y: 8%" data-device="top" data-zoom="40 0 26 18"><span>Top monitor</span></button>
+              <button type="button" class="screens-spot" style="--x: 33%; --y: 52%" data-device="phone" data-zoom="29.5 46 7 13.5"><span>Phone</span></button>
+              <button type="button" class="screens-spot" style="--x: 69.5%; --y: 56%" data-device="tablet" data-zoom="61.5 47.5 16 16"><span>Tablet</span></button>
+            </div>
 
-            <p class="screens-callout screens-callout-tablet" style="--x: 24%; --lead: 3.2rem">
-              <span class="screens-callout-name">Phone / Tablet</span>
-              <span class="screens-callout-desc">On the wheel deck</span>
-            </p>
+            <div class="screens-caption" data-screens-caption hidden>
+              <button type="button" class="screens-back" data-screens-back>
+                <svg aria-hidden="true"><use href="assets/icons/sprite.svg#icon-close"></use></svg>
+                <span>Back to the rig</span>
+              </button>
 
-            <p class="screens-callout screens-callout-laptop" style="--x: 74%; --lead: 2.6rem">
-              <span class="screens-callout-name">Laptop</span>
-              <span class="screens-callout-desc">Beside the rig</span>
-            </p>
+              <div data-caption="triple" hidden>
+                <h3 class="screens-detail-title">Triple monitors</h3>
+                <p class="lede screens-detail-desc">The overlay you race with, laid over the game on the three screens in front of you.</p>
+              </div>
+              <div data-caption="top" hidden>
+                <h3 class="screens-detail-title">Top monitor</h3>
+                <p class="lede screens-detail-desc">Standings, weather and the track map moved off the racing view to a screen above it.</p>
+              </div>
+              <div data-caption="phone" hidden>
+                <h3 class="screens-detail-title">Phone on the cockpit</h3>
+                <p class="lede screens-detail-desc">The stream chat on its own screen, read without leaving the car.</p>
+              </div>
+              <div data-caption="tablet" hidden>
+                <h3 class="screens-detail-title">Tablet on the wheel deck</h3>
+                <p class="lede screens-detail-desc">The track map across the whole tablet, the field at a glance on a straight.</p>
+              </div>
+            </div>
           </div>
 
-          <!-- What the screens actually are. The scene says "on every device";
-               this band says how - virtual monitors in the same editor, an OBS
-               source among them, and who is allowed to touch what. -->
-          <ul class="screens-detail">
-            <li>
-              <h3 class="screens-detail-title">Virtual monitors</h3>
-              <p class="lede screens-detail-desc">
-                A remote screen is added in the layout editor beside your real
-                monitors, at any size you like &mdash; a tablet, a phone, or a
-                stream canvas. You drag widgets onto it the same way, and each
-                screen keeps its own set, its own scale and its own columns.
-              </p>
-            </li>
+          <!-- How a screen is opened, then where the data goes: three steps,
+               and the network drawn instead of described - arrows out of the
+               PC only, all of it inside the LAN, no cloud. -->
+          <div class="screens-how">
+            <ol class="screens-steps">
+              <li>
+                <span class="screens-step-num">01</span>
+                <h3 class="screens-detail-title">Add a screen</h3>
+                <p class="lede screens-detail-desc">In the layout editor, beside your monitors, at any size.</p>
+              </li>
+              <li>
+                <span class="screens-step-num">02</span>
+                <h3 class="screens-detail-title">Open the link</h3>
+                <p class="lede screens-detail-desc">Or scan its QR code on the device. No app, no account.</p>
+              </li>
+              <li>
+                <span class="screens-step-num">03</span>
+                <h3 class="screens-detail-title">Drag widgets on</h3>
+                <p class="lede screens-detail-desc">Each screen keeps its own set, scale and columns.</p>
+              </li>
+            </ol>
 
-            <li>
-              <h3 class="screens-detail-title">OBS browser source</h3>
-              <p class="lede screens-detail-desc">
-                Point a Browser Source at the screen's address and the layout
-                is on air, with a transparent background so only the widgets
-                render. Add <code>?widget=</code> to a link to put a single
-                widget on its own source and place it in your scene.
-              </p>
-            </li>
-
-            <li>
-              <h3 class="screens-detail-title">Just a browser</h3>
-              <p class="lede screens-detail-desc">
-                The app runs a small web server on your PC. Any device on the
-                same network opens the link &mdash; no app, no account, no
-                cloud, nothing leaves your network. Send rate is yours to set;
-                lap times, fuel and the session clock always arrive in full.
-              </p>
-            </li>
-
-            <li>
-              <h3 class="screens-detail-title">Watching only</h3>
-              <p class="lede screens-detail-desc">
-                Links carry an access token you can regenerate at any time, and
-                a device can only watch: nothing a browser sends can change a
-                layout, a setting or the overlay you are racing on.
-              </p>
-            </li>
-          </ul>
+            <figure class="screens-net">
+              <svg viewBox="0 0 520 220" role="img" aria-labelledby="screens-net-title">
+                <title id="screens-net-title">The PC sends telemetry one way to devices on the local network; nothing goes to the cloud</title>
+                <defs>
+                  <marker id="screens-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+                    <path d="M0 0 L8 4 L0 8 z" class="screens-net-head" />
+                  </marker>
+                </defs>
+                <rect x="6" y="18" width="380" height="196" rx="10" class="screens-net-lan" />
+                <text x="20" y="40" class="screens-net-tag">Your network</text>
+                <rect x="30" y="92" width="110" height="52" rx="6" class="screens-net-hub" />
+                <text x="85" y="116" class="screens-net-name screens-net-name-hub" text-anchor="middle">Your PC</text>
+                <text x="85" y="132" class="screens-net-sub screens-net-sub-hub" text-anchor="middle">Marble Trace</text>
+                <path d="M140 108 L262 66" class="screens-net-flow" marker-end="url(#screens-arrow)" />
+                <path d="M140 118 L262 118" class="screens-net-flow" marker-end="url(#screens-arrow)" />
+                <path d="M140 128 L262 170" class="screens-net-flow" marker-end="url(#screens-arrow)" />
+                <rect x="266" y="46" width="100" height="36" rx="6" class="screens-net-node" />
+                <text x="316" y="69" class="screens-net-name" text-anchor="middle">Tablet</text>
+                <rect x="266" y="100" width="100" height="36" rx="6" class="screens-net-node" />
+                <text x="316" y="123" class="screens-net-name" text-anchor="middle">Laptop</text>
+                <rect x="266" y="154" width="100" height="36" rx="6" class="screens-net-node" />
+                <text x="316" y="177" class="screens-net-name" text-anchor="middle">OBS</text>
+                <g class="screens-net-cloud">
+                  <path d="M428 134 a16 16 0 0 1 8 -30 a22 22 0 0 1 42 -4 a16 16 0 0 1 8 34 z" />
+                  <line x1="420" y1="146" x2="500" y2="90" />
+                </g>
+                <text x="462" y="170" class="screens-net-sub" text-anchor="middle">No cloud</text>
+              </svg>
+              <figcaption class="lede screens-detail-desc">
+                Devices only watch: nothing a browser sends can change a layout,
+                a setting or the overlay you race on. Links carry a token you
+                can regenerate at any time.
+              </figcaption>
+            </figure>
+          </div>
         </div>
       </section>
 
@@ -1872,6 +1884,7 @@
     <script src="src/components/widget-gallery.js"></script>
     <script src="src/components/shot-viewer.js"></script>
     <script src="src/components/layout-demo.js"></script>
+    <script src="src/components/screens-demo.js"></script>
     <script src="src/components/interact-demo.js"></script>
     <script src="src/components/page-modes.js"></script>
   </body>
