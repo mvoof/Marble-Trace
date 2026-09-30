@@ -72,6 +72,21 @@
 
       returnFocus = trigger;
       viewer.hidden = false;
+
+      // Where the picture is wider than the screen it opens on its middle,
+      // the part a crop was usually taken from, with room to pan both ways.
+      const pan = viewer.querySelector('[data-shot-viewer-pan]');
+      const centre = () => {
+        if (pan) {
+          pan.scrollLeft = (pan.scrollWidth - pan.clientWidth) / 2;
+        }
+      };
+
+      if (viewerShot.complete) {
+        centre();
+      } else {
+        viewerShot.addEventListener('load', centre, { once: true });
+      }
       document.body.classList.add(OPEN_CLASS);
 
       const closeButton = viewer.querySelector('.shot-viewer-close');

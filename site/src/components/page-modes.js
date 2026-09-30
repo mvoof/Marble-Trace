@@ -236,8 +236,19 @@
     mode = null;
   };
 
+  /* Dragging page blocks needs a mouse and room to move them: on a phone or
+     a tablet the edit mode only scrambles a single-column page under a
+     finger, so there the keycap stays a demo of the key and nothing more. */
+  const EDIT_SUPPORTED = window.matchMedia(
+    '(min-width: 1025px) and (hover: hover) and (pointer: fine)'
+  );
+
   const toggleEdit = () => {
     const wasActive = mode === 'edit';
+
+    if (!wasActive && !EDIT_SUPPORTED.matches) {
+      return;
+    }
 
     leave();
 
@@ -248,6 +259,13 @@
     mode = 'edit';
     enterEdit();
   };
+
+  // A window narrowed or turned into a tablet mid-edit leaves the mode.
+  EDIT_SUPPORTED.addEventListener('change', () => {
+    if (!EDIT_SUPPORTED.matches && mode === 'edit') {
+      leave();
+    }
+  });
 
   document.addEventListener('mt:key', (event) => {
     if (event.detail === 'edit') {

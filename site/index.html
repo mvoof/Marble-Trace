@@ -2283,7 +2283,11 @@
       <div class="shot-viewer-ground" data-shot-viewer-dismiss></div>
 
       <figure class="shot-viewer-figure" role="dialog" aria-modal="true" aria-label="Screenshot">
-        <img class="shot-viewer-shot" data-shot-viewer-shot src="" alt="" />
+        <!-- On a phone the picture is opened tall and panned by finger; on a
+             wide screen this box is transparent and it simply fits. -->
+        <div class="shot-viewer-pan" data-shot-viewer-pan>
+          <img class="shot-viewer-shot" data-shot-viewer-shot src="" alt="" />
+        </div>
 
         <figcaption class="shot-viewer-caption" data-shot-viewer-caption></figcaption>
       </figure>

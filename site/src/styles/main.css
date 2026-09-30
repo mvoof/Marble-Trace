@@ -2148,7 +2148,9 @@ a:focus-visible, button:focus-visible {
   /* As many columns as there are sessions offered: a session without a
      screenshot is hidden, and leaves no hole */
   grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
+  /* Never narrower than its word: "Тренировка" is longer than a quarter of
+     a phone-wide strip, and the other tabs give it the room. */
+  grid-auto-columns: minmax(max-content, 1fr);
   margin-top: 2rem;
   max-width: 28rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -2592,8 +2594,10 @@ a:focus-visible, button:focus-visible {
 }
 
 @media (max-width: 1180px) {
+  /* The photo is gone, so the room kept for it goes; the container's own
+     gutter stays. */
   .perf {
-    padding-right: 0;
+    padding-right: var(--container-padding);
   }
 
   .perf-shot {
@@ -3176,6 +3180,38 @@ a:focus-visible, button:focus-visible {
   height: auto;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.5);
+}
+
+.shot-viewer-pan {
+  max-width: 100%;
+}
+
+/* A phone: a 3440px capture fitted to 375px is a picture of nothing. There
+   the shot is opened at the height of the screen and the box around it
+   scrolls sideways under a finger - pinch still zooms on top of that. */
+@media (max-width: 900px), (pointer: coarse) {
+  .shot-viewer {
+    padding: 3.75rem 0 1rem;
+  }
+
+  .shot-viewer-figure {
+    width: 100%;
+  }
+
+  .shot-viewer-pan {
+    width: 100%;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y pinch-zoom;
+  }
+
+  .shot-viewer-shot {
+    max-width: none;
+    height: calc(100vh - 9rem);
+    max-height: none;
+    border: 0;
+  }
 }
 
 .shot-viewer-caption {
@@ -3788,4 +3824,13 @@ body.is-viewer-open {
 .download {
   position: relative;
   z-index: 1;
+}
+
+/* One column leaves no empty corner for them: the chevrons would sit under
+   the screenshots and the flag shrinks to a smudge. The kerb stays. */
+@media (max-width: 900px) {
+  .feature-controls::before,
+  .download-band::before {
+    display: none;
+  }
 }
