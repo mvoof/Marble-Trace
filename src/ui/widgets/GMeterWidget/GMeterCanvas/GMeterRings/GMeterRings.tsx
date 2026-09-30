@@ -1,5 +1,5 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
-import { useContext, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -13,7 +13,7 @@ import { resizeCanvasToDpr } from '@utils/canvas';
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GMeterRings.module.scss';
 import { useLiveWidgetsStore } from '@store/root-store-context';
-import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
+import { useWidgetInstanceId } from '@ui/hooks/useWidgetSettings';
 
 const RING_COLOR = 'rgba(42,43,48,0.8)';
 const OUTER_RING_COLOR = 'rgba(72,74,82,1)';
@@ -28,7 +28,7 @@ interface GMeterRingsProps {
 }
 
 export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
-  const widgetId = useContext(WidgetIdContext);
+  const widgetId = useWidgetInstanceId('g-meter');
   const liveWidgets = useLiveWidgetsStore();
 
   const { scale } = useWidgetSettings<GMeterWidgetSettings>('g-meter');

@@ -25,6 +25,7 @@
     "format:check": "oxfmt --check \"./**/*.{js,jsx,ts,tsx,json,scss,md}\"",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
+    "capture:widgets": "node scripts/capture-widgets.mjs",
     "cargo:format": "cd src-tauri && cargo fmt",
     "test": "vitest run",
     "prepare": "lefthook install"
