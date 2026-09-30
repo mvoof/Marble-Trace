@@ -16,7 +16,6 @@ html {
 }
 
 body {
-  /* the containing block for .page-bg, which spans the whole document */
   position: relative;
   font-family: var(--font-family);
   background-color: var(--color-body-bg);
@@ -824,8 +823,7 @@ a:focus-visible, button:focus-visible {
      shear measures, and the mock leans the dividers, the guide and the index
      chips at the same angle — a section with two slants reads as a mistake. */
   --cut: 24deg;
-  /* The three weights assets/background.svg draws with, so a mark added here
-     lands on the same drawing rather than beside it. */
+  /* Hairline weights for the section's own rules and dividers. */
   --ink-main: rgba(0, 0, 0, 0.1);
   --ink-light: rgba(0, 0, 0, 0.09);
   --ink-vlight: rgba(0, 0, 0, 0.03);
