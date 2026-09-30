@@ -1216,7 +1216,7 @@ a:focus-visible, button:focus-visible {
 /* Scaled past the frame so the blur has no soft edge to show */
 .stage-shot::before {
   inset: -2rem;
-  background: url('../../assets/why/cockpit-bg.jpg') center 40% / cover no-repeat;
+  background: url('../../assets/why/cockpit-bg.webp') center 40% / cover no-repeat;
   filter: blur(14px) saturate(1.1) brightness(0.62);
 }
 
@@ -2672,8 +2672,12 @@ a:focus-visible, button:focus-visible {
 .tapes {
   position: relative;
   z-index: 2;
-  height: clamp(8.5rem, 12vw, 11rem);
-  margin-block: -1.5rem;
+  --tapes-height: clamp(8.5rem, 12vw, 11rem);
+
+  height: var(--tapes-height);
+  /* Half the box over each neighbour: the tapes cross right on the seam
+     between the dark gallery and the light section below. */
+  margin-block: calc(var(--tapes-height) / -2);
   /* Clipped sideways only. Clipped top and bottom as well, the box shaved the
      ends of each leaning tape into a point, so the tapes seemed to narrow
      towards the edges of the page; now they overhang the box and run past
@@ -2701,7 +2705,11 @@ a:focus-visible, button:focus-visible {
 
 .tape-back {
   z-index: 1;
-  background-color: #0d1014;
+  /* Light, with dark badges: it crosses the dark gallery as well as the light
+     ground below, and a dark tape vanished into the gallery. The shadow
+     carries it over the light half. */
+  background-color: #f5f6f2;
+  box-shadow: 0 0.6rem 1.6rem -0.8rem rgba(11, 16, 21, 0.45);
   transform: translateY(-50%) rotate(2.2deg);
 }
 
@@ -2760,17 +2768,17 @@ a:focus-visible, button:focus-visible {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: #cfd4da;
+  color: #262a30;
   padding: 0.45rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(0, 0, 0, 0.16);
   border-radius: 999px;
 }
 
 /* Every third badge is lit, so the tape is not one grey rhythm */
 .tape-badge:nth-child(3n + 1) {
-  color: #0b1015;
-  background-color: #eef0f2;
-  border-color: #eef0f2;
+  color: #eef0f2;
+  background-color: #0d1014;
+  border-color: #0d1014;
 }
 
 /* On a narrow screen a few degrees of lean barely part the two tapes, and
