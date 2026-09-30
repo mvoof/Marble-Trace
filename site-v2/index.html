@@ -6,8 +6,73 @@
     <title>Marble Trace — Free Open-Source iRacing Telemetry Overlay</title>
     <meta
       name="description"
-      content="Marble Trace is a free, open-source iRacing overlay built with Rust and the Tauri framework. Standings, relative, track map, fuel, delta, radar and 17+ widgets."
+      content="Marble Trace is a free, open-source iRacing overlay for Windows, built in Rust and Tauri. 28 widgets: standings, relative, track map, fuel, delta, radar — on your monitors, a tablet, a phone or OBS."
     />
+    <meta
+      name="keywords"
+      content="iRacing overlay, iRacing telemetry, sim racing overlay, free iRacing overlay, iRacing HUD, relative, standings, track map, fuel calculator, OBS overlay, Marble Trace"
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="author" content="mvoof" />
+    <meta name="theme-color" content="#e4e4de" />
+    <link rel="canonical" href="https://mvoof.github.io/Marble-Trace/" />
+    <link rel="alternate" hreflang="en" href="https://mvoof.github.io/Marble-Trace/" />
+    <link rel="alternate" hreflang="x-default" href="https://mvoof.github.io/Marble-Trace/" />
+    <!-- A plain-text summary for AI agents and assistants (llmstxt.org) -->
+    <link rel="alternate" type="text/markdown" title="LLM summary" href="llms.txt" />
+
+    <!-- Open Graph / social cards. Absolute URLs: a card is fetched from
+         outside the page and resolves nothing relative. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Marble Trace" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="Marble Trace — Free Open-Source iRacing Telemetry Overlay" />
+    <meta property="og:description" content="28 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, almost no FPS cost, on any screen on your network." />
+    <meta property="og:url" content="https://mvoof.github.io/Marble-Trace/" />
+    <meta property="og:image" content="https://mvoof.github.io/Marble-Trace/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Marble Trace widgets over an iRacing race at Snetterton" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Marble Trace — Free Open-Source iRacing Telemetry Overlay" />
+    <meta name="twitter:description" content="28 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, almost no FPS cost." />
+    <meta name="twitter:image" content="https://mvoof.github.io/Marble-Trace/og-image.jpg" />
+
+    <!-- Structured data: what the page is about, for search engines and
+         agents that read schema.org rather than prose. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://mvoof.github.io/Marble-Trace/#app",
+            "name": "Marble Trace",
+            "description": "Free, open-source iRacing telemetry overlay built with Rust and Tauri. 28 widgets including standings, relative, track map, fuel calculator, delta and proximity radar. Layouts switch per session and can be opened on any screen on the local network, including a tablet, a phone or an OBS browser source.",
+            "operatingSystem": "Windows 10, Windows 11",
+            "applicationCategory": "GameApplication",
+            "applicationSubCategory": "Sim racing telemetry overlay",
+            "isAccessibleForFree": true,
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+            "downloadUrl": "https://github.com/mvoof/Marble-Trace/releases/latest",
+            "installUrl": "https://github.com/mvoof/Marble-Trace/releases/latest",
+            "codeRepository": "https://github.com/mvoof/Marble-Trace",
+            "url": "https://mvoof.github.io/Marble-Trace/",
+            "image": "https://mvoof.github.io/Marble-Trace/og-image.jpg",
+            "author": { "@type": "Person", "name": "mvoof", "url": "https://github.com/mvoof" }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://mvoof.github.io/Marble-Trace/#site",
+            "name": "Marble Trace",
+            "url": "https://mvoof.github.io/Marble-Trace/",
+            "inLanguage": "en",
+            "about": { "@id": "https://mvoof.github.io/Marble-Trace/#app" }
+          }
+        ]
+      }
+    </script>
     <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
 
     <!-- Typography: Exo 2 and Barlow Condensed for aggressive racing display -->
@@ -248,7 +313,7 @@
         <div class="hero-visual">
           <img
             src="assets/hero-cockpit-clean.jpg"
-            alt="iRacing Cockpit View"
+            alt="iRacing cockpit view from the driver seat"
             class="hero-photo"
           />
 
@@ -269,10 +334,10 @@
               OPEN SOURCE TELEMETRY OVERLAY FOR IRACING
             </div>
 
-            <span id="hero-heading" class="hero-heading">
+            <p id="hero-heading" class="hero-heading">
               YOUR RACE.<br />
               YOUR DATA.
-            </span>
+            </p>
 
             <p class="lede hero-subtitle">
               Marble Trace is a free, lightweight overlay for iRacing. A tiny
@@ -1880,12 +1945,12 @@
     </div>
 
     <!-- Controller Script -->
-    <script src="src/components/navbar.js"></script>
-    <script src="src/components/widget-gallery.js"></script>
-    <script src="src/components/shot-viewer.js"></script>
-    <script src="src/components/layout-demo.js"></script>
-    <script src="src/components/screens-demo.js"></script>
-    <script src="src/components/interact-demo.js"></script>
-    <script src="src/components/page-modes.js"></script>
+    <script type="module" src="src/components/navbar.js"></script>
+    <script type="module" src="src/components/widget-gallery.js"></script>
+    <script type="module" src="src/components/shot-viewer.js"></script>
+    <script type="module" src="src/components/layout-demo.js"></script>
+    <script type="module" src="src/components/screens-demo.js"></script>
+    <script type="module" src="src/components/interact-demo.js"></script>
+    <script type="module" src="src/components/page-modes.js"></script>
   </body>
 </html>

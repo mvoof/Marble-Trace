@@ -102,7 +102,7 @@ a:focus-visible, button:focus-visible {
   letter-spacing: -0.015em;
   text-transform: uppercase;
   color: #101317;
-  margin-bottom: 1.25rem;
+  margin: 0 0 1.25rem;
 }
 
 /* ==========================================================================

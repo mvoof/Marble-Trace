@@ -105,7 +105,12 @@
         stage.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }
 
-      const nextSrc = frame.getAttribute('data-shot');
+      // The thumbnail is the same picture, and its src is the one the build
+      // rewrote to the hashed file; a data-* path is never rewritten.
+      const thumbnail = frame.querySelector('img');
+      const nextSrc = thumbnail
+        ? thumbnail.currentSrc || thumbnail.src
+        : frame.getAttribute('data-shot');
       const loader = new Image();
 
       stage.classList.add(SWAPPING_CLASS);
