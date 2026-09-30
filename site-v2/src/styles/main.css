@@ -2712,11 +2712,11 @@ a:focus-visible, button:focus-visible {
   display: flex;
   flex: none;
   width: max-content;
-  animation: tape-run 48s linear infinite;
+  animation: tape-run 144s linear infinite;
 }
 
 .tape-back .tape-track {
-  animation-duration: 64s;
+  animation-duration: 105s;
   animation-direction: reverse;
 }
 
