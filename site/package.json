@@ -8,10 +8,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "i18n:check": "node i18n/check.mjs",
-    "i18n:sync": "node i18n/check.mjs --write"
+    "i18n:sync": "node i18n/check.mjs --write",
+    "images": "node scripts/images.mjs"
   },
   "devDependencies": {
     "node-html-parser": "^9.0.4",
+    "sharp": "^0.35.5",
     "vite": "^6.0.0"
   }
 }

@@ -63,7 +63,9 @@
         return;
       }
 
-      viewerShot.src = shot.currentSrc || shot.src;
+      // src is the widest copy (the build sets it so); the viewer shows the
+      // picture at full size, not the copy the crop happened to need.
+      viewerShot.src = shot.src;
       viewerShot.alt = shot.alt;
 
       if (viewerCaption) {

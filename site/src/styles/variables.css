@@ -5,9 +5,9 @@
      what every target platform already ships, and a readout that waits on a
      web font shows the wrong width before it arrives. */
   --font-mono: Consolas, 'SF Mono', ui-monospace, 'Liberation Mono', monospace;
-  /* Barlow has no Cyrillic or Chinese: those glyphs fall through to the
-     next face, which the translated pages load for themselves (i18n/). */
-  --font-hero-heading: 'Barlow Condensed', 'Roboto Condensed', 'Noto Sans SC', 'Exo 2', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Barlow has no Cyrillic or Chinese: Cyrillic falls through to Roboto
+     Condensed (fonts.css), Chinese to the system's own CJK face. */
+  --font-hero-heading: 'Barlow Condensed', 'Roboto Condensed', 'Exo 2', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', -apple-system, BlinkMacSystemFont, sans-serif;
   
   /* Layout Dimensions */
   --container-width: 1680px;

@@ -700,9 +700,9 @@ a:focus-visible, button:focus-visible {
   flex-basis: 100%;
   padding-top: 0.9rem;
   border-top: 1px solid var(--color-card-border);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   line-height: 1.55;
-  color: #7b8390;
+  color: #59616c;
 }
 
 .footer-bottom-brand {
@@ -856,7 +856,7 @@ a:focus-visible, button:focus-visible {
   font-size: 0.8rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: #7b8390;
+  color: #59616c;
   margin-bottom: 1rem;
 }
 
@@ -1214,7 +1214,7 @@ a:focus-visible, button:focus-visible {
 /* Scaled past the frame so the blur has no soft edge to show */
 .stage-shot::before {
   inset: -2rem;
-  background: url('../../assets/why/cockpit-bg.webp') center 40% / cover no-repeat;
+  background: url('../../assets/img/why/cockpit-bg-960.webp') center 40% / cover no-repeat;
   filter: blur(14px) saturate(1.1) brightness(0.62);
 }
 
@@ -1548,6 +1548,11 @@ a:focus-visible, button:focus-visible {
   color: #ffffff;
 }
 
+/* The kicker is darkened for the light ground; on this one it goes back up */
+.chapter-gallery .chapter-kicker {
+  color: #8a939e;
+}
+
 .chapter-gallery .lede {
   color: #9aa2ad;
 }
@@ -1618,7 +1623,7 @@ a:focus-visible, button:focus-visible {
   font-size: 0.7rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #6b727c;
+  color: #59616c;
 }
 
 .screens-hint::before {
@@ -1842,7 +1847,7 @@ a:focus-visible, button:focus-visible {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--color-btn-download-bg);
+  color: #4a6a1c;
 }
 
 .screens-net {
@@ -1970,7 +1975,7 @@ a:focus-visible, button:focus-visible {
 .feature {
   --feature-ink: #101317;
   --feature-muted: #4b5563;
-  --feature-kicker: #7b8390;
+  --feature-kicker: #59616c;
   --feature-pill-border: rgba(0, 0, 0, 0.14);
   --feature-pill-ink: #262a30;
 
@@ -3029,7 +3034,7 @@ a:focus-visible, button:focus-visible {
   font-size: 0.8rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(11, 16, 21, 0.6);
+  color: rgba(11, 16, 21, 0.75);
   margin-bottom: 0.9rem;
 }
 
@@ -3667,7 +3672,7 @@ body.is-viewer-open {
   font-size: 0.8rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(11, 16, 21, 0.6);
+  color: rgba(11, 16, 21, 0.75);
 }
 
 .download-title {
@@ -3833,4 +3838,17 @@ body.is-viewer-open {
   .download-band::before {
     display: none;
   }
+}
+
+/* Read by a screen reader, never drawn */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

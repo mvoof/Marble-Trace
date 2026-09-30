@@ -36,8 +36,6 @@ export const LOCALES = [
     ogLocale: 'ru_RU',
     label: 'Русский',
     short: 'RU',
-    // Barlow Condensed has no Cyrillic; this carries the headings' Cyrillic.
-    font: 'Roboto+Condensed:ital,wght@1,800;1,900',
   },
   {
     code: 'es',
@@ -52,8 +50,6 @@ export const LOCALES = [
     ogLocale: 'zh_CN',
     label: '中文',
     short: '中文',
-    // Neither Barlow nor Exo 2 has Chinese; Google serves it in slices.
-    font: 'Noto+Sans+SC:wght@500;700;900',
   },
 ];
 
@@ -249,9 +245,23 @@ export const extractStrings = (html) => {
 const RELATIVE_URL =
   /\b(src|href|srcset)="(?!https?:|mailto:|data:|#|\/|\.\.\/)([^"]+)"/g;
 
+const rebaseUrl = (url) =>
+  url.startsWith('./') ? `../${url.slice(2)}` : `../${url}`;
+
+// A srcset is a list - "a.webp 480w, b.webp 960w" - and every URL in it moves.
+const rebaseSrcset = (list) =>
+  list
+    .split(',')
+    .map((candidate) => {
+      const [url, ...descriptor] = candidate.trim().split(/\s+/);
+
+      return [rebaseUrl(url), ...descriptor].join(' ');
+    })
+    .join(', ');
+
 const rebase = (html) =>
   html.replace(RELATIVE_URL, (match, attribute, url) => {
-    const rebased = url.startsWith('./') ? `../${url.slice(2)}` : `../${url}`;
+    const rebased = attribute === 'srcset' ? rebaseSrcset(url) : rebaseUrl(url);
 
     return `${attribute}="${rebased}"`;
   });
@@ -270,19 +280,6 @@ const setLink = (root, rel, href) => {
   if (link) {
     link.setAttribute('href', href);
   }
-};
-
-/** Loads the face that carries this language's glyphs, when it needs one. */
-const addLocaleFont = (root, locale) => {
-  if (!locale.font) {
-    return;
-  }
-
-  root.querySelector('head').insertAdjacentHTML(
-    'beforeend',
-    `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=${locale.font}&display=swap" />
-`
-  );
 };
 
 /** Moves aria-current to this language's links and names it in the switcher. */
@@ -323,7 +320,6 @@ export const translatePage = (source, locale, dictionary) => {
 
   root.querySelector('html').setAttribute('lang', locale.htmlLang);
   markCurrentLanguage(root, locale);
-  addLocaleFont(root, locale);
   setMeta(root, 'og:locale', locale.ogLocale);
   setLink(root, 'canonical', `${SITE_URL}${locale.code}/`);
   setMeta(root, 'og:url', `${SITE_URL}${locale.code}/`);

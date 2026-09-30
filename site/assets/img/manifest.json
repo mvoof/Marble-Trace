@@ -1,0 +1,846 @@
+{
+  "assets/widgets/battery.png": {
+    "width": 840,
+    "height": 360,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/battery-480.webp"
+      },
+      {
+        "width": 840,
+        "path": "assets/img/widgets/battery-840.webp"
+      }
+    ]
+  },
+  "assets/widgets/close-battle.png": {
+    "width": 1320,
+    "height": 1740,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/close-battle-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/close-battle-960.webp"
+      },
+      {
+        "width": 1320,
+        "path": "assets/img/widgets/close-battle-1320.webp"
+      }
+    ]
+  },
+  "assets/widgets/coach.png": {
+    "width": 900,
+    "height": 384,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/coach-480.webp"
+      },
+      {
+        "width": 900,
+        "path": "assets/img/widgets/coach-900.webp"
+      }
+    ]
+  },
+  "assets/widgets/delta-best.png": {
+    "width": 600,
+    "height": 300,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/delta-best-480.webp"
+      },
+      {
+        "width": 600,
+        "path": "assets/img/widgets/delta-best-600.webp"
+      }
+    ]
+  },
+  "assets/widgets/delta.png": {
+    "width": 1560,
+    "height": 300,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/delta-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/delta-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/delta-1440.webp"
+      },
+      {
+        "width": 1560,
+        "path": "assets/img/widgets/delta-1560.webp"
+      }
+    ]
+  },
+  "assets/widgets/drs.png": {
+    "width": 648,
+    "height": 168,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/drs-480.webp"
+      },
+      {
+        "width": 648,
+        "path": "assets/img/widgets/drs-648.webp"
+      }
+    ]
+  },
+  "assets/widgets/engine.png": {
+    "width": 1440,
+    "height": 240,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/engine-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/engine-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/engine-1440.webp"
+      }
+    ]
+  },
+  "assets/widgets/flat-flag.png": {
+    "width": 900,
+    "height": 228,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/flat-flag-480.webp"
+      },
+      {
+        "width": 900,
+        "path": "assets/img/widgets/flat-flag-900.webp"
+      }
+    ]
+  },
+  "assets/widgets/fuel-pit-stop.png": {
+    "width": 720,
+    "height": 1080,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/fuel-pit-stop-480.webp"
+      },
+      {
+        "width": 720,
+        "path": "assets/img/widgets/fuel-pit-stop-720.webp"
+      }
+    ]
+  },
+  "assets/widgets/fuel.png": {
+    "width": 720,
+    "height": 1080,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/fuel-480.webp"
+      },
+      {
+        "width": 720,
+        "path": "assets/img/widgets/fuel-720.webp"
+      }
+    ]
+  },
+  "assets/widgets/g-metr.png": {
+    "width": 720,
+    "height": 720,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/g-metr-480.webp"
+      },
+      {
+        "width": 720,
+        "path": "assets/img/widgets/g-metr-720.webp"
+      }
+    ]
+  },
+  "assets/widgets/input-trace.png": {
+    "width": 1590,
+    "height": 444,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/input-trace-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/input-trace-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/input-trace-1440.webp"
+      },
+      {
+        "width": 1590,
+        "path": "assets/img/widgets/input-trace-1590.webp"
+      }
+    ]
+  },
+  "assets/widgets/invisible-dash.png": {
+    "width": 2700,
+    "height": 600,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/invisible-dash-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/invisible-dash-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/invisible-dash-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/widgets/invisible-dash-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/invisible-dash-2560.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/invisible-dash-2560.webp"
+      }
+    ]
+  },
+  "assets/widgets/lap-log.png": {
+    "width": 660,
+    "height": 780,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/lap-log-480.webp"
+      },
+      {
+        "width": 660,
+        "path": "assets/img/widgets/lap-log-660.webp"
+      }
+    ]
+  },
+  "assets/widgets/led-flag-dual.png": {
+    "width": 900,
+    "height": 900,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/led-flag-dual-480.webp"
+      },
+      {
+        "width": 900,
+        "path": "assets/img/widgets/led-flag-dual-900.webp"
+      }
+    ]
+  },
+  "assets/widgets/led-flag-one.png": {
+    "width": 600,
+    "height": 600,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/led-flag-one-480.webp"
+      },
+      {
+        "width": 600,
+        "path": "assets/img/widgets/led-flag-one-600.webp"
+      }
+    ]
+  },
+  "assets/widgets/map-record.png": {
+    "width": 1800,
+    "height": 1800,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/map-record-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/map-record-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/map-record-1440.webp"
+      },
+      {
+        "width": 1800,
+        "path": "assets/img/widgets/map-record-1800.webp"
+      }
+    ]
+  },
+  "assets/widgets/map.png": {
+    "width": 1800,
+    "height": 1800,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/map-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/map-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/map-1440.webp"
+      },
+      {
+        "width": 1800,
+        "path": "assets/img/widgets/map-1800.webp"
+      }
+    ]
+  },
+  "assets/widgets/pit-line.png": {
+    "width": 240,
+    "height": 1140,
+    "variants": [
+      {
+        "width": 240,
+        "path": "assets/img/widgets/pit-line-240.webp"
+      }
+    ]
+  },
+  "assets/widgets/pit-stop.png": {
+    "width": 708,
+    "height": 951,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/pit-stop-480.webp"
+      },
+      {
+        "width": 708,
+        "path": "assets/img/widgets/pit-stop-708.webp"
+      }
+    ]
+  },
+  "assets/widgets/proximity-radar.png": {
+    "width": 540,
+    "height": 540,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/proximity-radar-480.webp"
+      },
+      {
+        "width": 540,
+        "path": "assets/img/widgets/proximity-radar-540.webp"
+      }
+    ]
+  },
+  "assets/widgets/race-dash-pit.png": {
+    "width": 1254,
+    "height": 342,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/race-dash-pit-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/race-dash-pit-960.webp"
+      },
+      {
+        "width": 1254,
+        "path": "assets/img/widgets/race-dash-pit-1254.webp"
+      }
+    ]
+  },
+  "assets/widgets/race-dash.png": {
+    "width": 1254,
+    "height": 312,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/race-dash-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/race-dash-960.webp"
+      },
+      {
+        "width": 1254,
+        "path": "assets/img/widgets/race-dash-1254.webp"
+      }
+    ]
+  },
+  "assets/widgets/radar-bar.png": {
+    "width": 2400,
+    "height": 1140,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/radar-bar-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/radar-bar-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/radar-bar-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/widgets/radar-bar-1920.webp"
+      },
+      {
+        "width": 2400,
+        "path": "assets/img/widgets/radar-bar-2400.webp"
+      }
+    ]
+  },
+  "assets/widgets/relative-map.png": {
+    "width": 1218,
+    "height": 120,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/relative-map-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/relative-map-960.webp"
+      },
+      {
+        "width": 1218,
+        "path": "assets/img/widgets/relative-map-1218.webp"
+      }
+    ]
+  },
+  "assets/widgets/relative.png": {
+    "width": 1266,
+    "height": 1200,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/relative-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/relative-960.webp"
+      },
+      {
+        "width": 1266,
+        "path": "assets/img/widgets/relative-1266.webp"
+      }
+    ]
+  },
+  "assets/widgets/rpm-lights.png": {
+    "width": 1080,
+    "height": 108,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/rpm-lights-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/rpm-lights-960.webp"
+      },
+      {
+        "width": 1080,
+        "path": "assets/img/widgets/rpm-lights-1080.webp"
+      }
+    ]
+  },
+  "assets/widgets/sector-matrix.png": {
+    "width": 960,
+    "height": 516,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/sector-matrix-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/sector-matrix-960.webp"
+      }
+    ]
+  },
+  "assets/widgets/standings.png": {
+    "width": 2388,
+    "height": 1500,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/standings-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/standings-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/standings-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/widgets/standings-1920.webp"
+      },
+      {
+        "width": 2388,
+        "path": "assets/img/widgets/standings-2388.webp"
+      }
+    ]
+  },
+  "assets/widgets/stream-chat.png": {
+    "width": 1140,
+    "height": 1020,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/stream-chat-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/stream-chat-960.webp"
+      },
+      {
+        "width": 1140,
+        "path": "assets/img/widgets/stream-chat-1140.webp"
+      }
+    ]
+  },
+  "assets/widgets/timer.png": {
+    "width": 720,
+    "height": 360,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/timer-480.webp"
+      },
+      {
+        "width": 720,
+        "path": "assets/img/widgets/timer-720.webp"
+      }
+    ]
+  },
+  "assets/widgets/weather.png": {
+    "width": 1140,
+    "height": 840,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/weather-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/weather-960.webp"
+      },
+      {
+        "width": 1140,
+        "path": "assets/img/widgets/weather-1140.webp"
+      }
+    ]
+  },
+  "assets/widgets/wheel-to-wheel.png": {
+    "width": 1860,
+    "height": 390,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/wheel-to-wheel-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/wheel-to-wheel-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/wheel-to-wheel-1440.webp"
+      },
+      {
+        "width": 1860,
+        "path": "assets/img/widgets/wheel-to-wheel-1860.webp"
+      }
+    ]
+  },
+  "assets/control/bindings.png": {
+    "width": 1595,
+    "height": 969,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/control/bindings-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/control/bindings-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/control/bindings-1440.webp"
+      },
+      {
+        "width": 1595,
+        "path": "assets/img/control/bindings-1595.webp"
+      }
+    ]
+  },
+  "assets/control/devices.png": {
+    "width": 1595,
+    "height": 969,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/control/devices-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/control/devices-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/control/devices-1440.webp"
+      },
+      {
+        "width": 1595,
+        "path": "assets/img/control/devices-1595.webp"
+      }
+    ]
+  },
+  "assets/control/widget-config.png": {
+    "width": 1595,
+    "height": 969,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/control/widget-config-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/control/widget-config-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/control/widget-config-1440.webp"
+      },
+      {
+        "width": 1595,
+        "path": "assets/img/control/widget-config-1595.webp"
+      }
+    ]
+  },
+  "assets/why/cockpit-bg.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/why/cockpit-bg-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/why/cockpit-bg-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/why/cockpit-bg-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/why/cockpit-bg-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/why/cockpit-bg-2560.webp"
+      }
+    ]
+  },
+  "assets/why/scene.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/why/scene-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/why/scene-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/why/scene-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/why/scene-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/why/scene-2560.webp"
+      }
+    ]
+  },
+  "assets/why/telemetry.jpg": {
+    "width": 1200,
+    "height": 960,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/why/telemetry-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/why/telemetry-960.webp"
+      },
+      {
+        "width": 1200,
+        "path": "assets/img/why/telemetry-1200.webp"
+      }
+    ]
+  },
+  "assets/screens/rig.webp": {
+    "width": 3200,
+    "height": 2416,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/screens/rig-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/screens/rig-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/screens/rig-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/screens/rig-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/screens/rig-2560.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/screens/rig-2560.webp"
+      }
+    ]
+  },
+  "assets/layouts/garage.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/layouts/garage-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/layouts/garage-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/layouts/garage-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/layouts/garage-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/layouts/garage-2560.webp"
+      }
+    ]
+  },
+  "assets/layouts/practice.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/layouts/practice-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/layouts/practice-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/layouts/practice-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/layouts/practice-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/layouts/practice-2560.webp"
+      }
+    ]
+  },
+  "assets/layouts/qualify.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/layouts/qualify-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/layouts/qualify-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/layouts/qualify-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/layouts/qualify-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/layouts/qualify-2560.webp"
+      }
+    ]
+  },
+  "assets/layouts/race.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/layouts/race-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/layouts/race-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/layouts/race-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/layouts/race-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/layouts/race-2560.webp"
+      }
+    ]
+  }
+}

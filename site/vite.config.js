@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
@@ -93,9 +93,71 @@ const localizedPages = () => {
   };
 };
 
+const IMAGE_MANIFEST = join(ROOT, 'assets', 'img', 'manifest.json');
+const IMG_TAG = /<img\b[^>]*>/g;
+const DEFAULT_SIZES = '100vw';
+
+/**
+ * Every <img> whose source has WebP copies (npm run images) is served as
+ * those copies: the widest as src, all of them as srcset, and the source's
+ * own size as width/height so the box is held before the picture arrives.
+ * A `sizes` written on the tag is kept; without one the picture is assumed
+ * to span the screen. Runs before Vite resolves the URLs, so the copies are
+ * hashed and bundled like any other asset.
+ */
+const responsiveImages = () => {
+  const manifest = existsSync(IMAGE_MANIFEST)
+    ? JSON.parse(readFileSync(IMAGE_MANIFEST, 'utf8'))
+    : {};
+
+  const attribute = (tag, name) => {
+    const match = new RegExp(`\\s${name}="([^"]*)"`).exec(tag);
+
+    return match ? match[1] : null;
+  };
+
+  const rewrite = (tag) => {
+    const src = attribute(tag, 'src');
+    const entry = src && manifest[src];
+
+    if (!entry) {
+      if (src && /^assets\/(widgets|control|why|screens|layouts)\//.test(src)) {
+        console.warn(`[images] no WebP copies for ${src} (run npm run images)`);
+      }
+
+      return tag;
+    }
+
+    const widest = entry.variants[entry.variants.length - 1];
+    const srcset = entry.variants
+      .map((variant) => `${variant.path} ${variant.width}w`)
+      .join(', ');
+    const extra = [
+      `srcset="${srcset}"`,
+      attribute(tag, 'sizes') ? '' : `sizes="${DEFAULT_SIZES}"`,
+      attribute(tag, 'width') ? '' : `width="${entry.width}"`,
+      attribute(tag, 'height') ? '' : `height="${entry.height}"`,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return tag
+      .replace(`src="${src}"`, `src="${widest.path}"`)
+      .replace(/^<img\b/, `<img ${extra}`);
+  };
+
+  return {
+    name: 'marble-trace-responsive-images',
+    transformIndexHtml: {
+      order: 'pre',
+      handler: (html) => html.replace(IMG_TAG, rewrite),
+    },
+  };
+};
+
 // Relative base so the built site works from any location: domain root,
 // a sub-path (e.g. GitHub Pages /Marble-Trace/), or opened straight from disk.
 export default defineConfig({
   base: './',
-  plugins: [localizedPages()],
+  plugins: [responsiveImages(), localizedPages()],
 });

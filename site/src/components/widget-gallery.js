@@ -106,12 +106,17 @@
         stage.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }
 
-      // The thumbnail is the same picture, and its src is the one the build
-      // rewrote to the hashed file; a data-* path is never rewritten.
+      // The thumbnail is the same picture, and its src and srcset are the ones
+      // the build rewrote to the hashed WebP copies; a data-* path is never
+      // rewritten. The whole srcset moves to the stage, so the stage picks
+      // the copy for its own size rather than the thumbnail's.
       const thumbnail = frame.querySelector('img');
       const nextSrc = thumbnail
-        ? thumbnail.currentSrc || thumbnail.src
+        ? thumbnail.src
         : frame.getAttribute('data-shot');
+      const nextSrcset = thumbnail
+        ? thumbnail.getAttribute('srcset') || ''
+        : '';
       const loader = new Image();
 
       stage.classList.add(SWAPPING_CLASS);
@@ -123,6 +128,7 @@
           return;
         }
 
+        shot.srcset = nextSrcset;
         shot.src = nextSrc;
         shot.alt = frame.getAttribute('data-alt') || '';
         name.textContent = frame.getAttribute('data-name') || '';
@@ -159,6 +165,8 @@
         ready();
       };
 
+      loader.sizes = shot.sizes;
+      loader.srcset = nextSrcset;
       loader.src = nextSrc;
 
       if (loader.complete) {
