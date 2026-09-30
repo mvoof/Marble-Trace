@@ -268,12 +268,17 @@ Nothing collects these; do all three.
    user to run `npm run storybook`, or run it if it is not up, then
    `npm run capture:widgets -- <file>`
    ([CONTRIBUTING → Widget screenshots](../../../CONTRIBUTING.md#widget-screenshots)).
-   Stop Storybook afterwards.
+   It refreshes the site's WebP copies in `site/assets/img/` too — they are
+   part of the change. Stop Storybook afterwards.
 2. `README.md`: a `### <Name>` section in its group with one or two sentences and
    `<img src="site/assets/widgets/<file>.png" alt="<Name>" width="…">` — width
    a third of the PNG's — plus a link in the group's line under **Widgets**.
 3. `site/index.html`: one card in the gallery sheet, in its group — a copy
    of a neighbour's `<li>` with `id`, `data-shot`, `data-name`, `data-alt`,
-   `data-group`, `data-desc` and the caption changed.
+   `data-group`, `data-desc-id` and the caption changed — and its one-line
+   description as a `catalog-item` in the catalogue under the gallery, with
+   `<dd id="gw-desc-<file>">`. Then `npm run i18n:sync` in `site/` and the
+   new strings translated in `site/i18n/{ru,es,zh}.json`; the widget's name
+   stays English.
 
 Do not call the widget done before steps 11 and 12.

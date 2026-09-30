@@ -21,6 +21,7 @@
 
 import path from 'node:path';
 import process from 'node:process';
+import { execSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { chromium } from 'playwright';
 
@@ -237,6 +238,14 @@ const main = async () => {
   } finally {
     await browser.close();
   }
+
+  // The site never serves these PNGs: it serves WebP copies at several
+  // widths, which go stale the moment a PNG is written over. Refreshing
+  // them here means a new picture reaches the site with no step to forget.
+  execSync('npm run images', {
+    cwd: path.join(process.cwd(), 'site'),
+    stdio: 'inherit',
+  });
 };
 
 main().catch((error) => {

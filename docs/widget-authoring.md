@@ -413,6 +413,8 @@ of this; it is three edits by hand.
    `withReplay` from `src/storybook/with-replay.tsx`. Then, with
    `npm run storybook` running, `npm run capture:widgets -- <file>`
    ([CONTRIBUTING → Widget screenshots](../CONTRIBUTING.md#widget-screenshots)).
+   It also refreshes the site's WebP copies in `site/assets/img/`; commit
+   them with the PNG.
 2. **The README.** A `### <Name>` section in the widget's group: one or two
    sentences on what it shows, then
    `<img src="site/assets/widgets/<file>.png" alt="<Name>" width="…">` with
@@ -421,7 +423,13 @@ of this; it is three edits by hand.
 3. **The site.** One card in the gallery sheet in `site/index.html`, in the
    widget's group — one per widget, the README's variants stay in the README:
    copy a neighbour's `<li>` and change `id`, `data-shot`, `data-name`,
-   `data-alt`, `data-group`, `data-desc` and the caption.
+   `data-alt`, `data-group`, `data-desc-id` and the caption. The description
+   itself goes once into the catalogue under the gallery (`<details
+class="catalog">`): a `<div class="catalog-item">` in the same group with
+   `<dd id="gw-desc-<file>">`, the id `data-desc-id` points at. Then
+   `npm run i18n:sync` in `site/` and the new strings translated in
+   `site/i18n/ru.json`, `es.json`, `zh.json` — the widget's name stays
+   English, as it does in the app.
 
 > _Enforced by:_ nothing.
 

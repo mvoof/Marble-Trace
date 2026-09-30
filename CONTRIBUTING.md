@@ -141,6 +141,8 @@ npm run capture:widgets -- fuel timer   # only these files
 
 A new widget needs a story to be taken from, a line in `SHOTS`, and a width in the README of a third of its PNG's.
 
+**The site serves WebP copies, not the PNGs.** `site/scripts/images.mjs` (`npm run images` in `site/`) writes each picture as WebP at a ladder of widths into `site/assets/img/`, with a manifest, and the site's build turns every `<img src="assets/...">` into those copies with a `srcset`. `capture:widgets` runs it for you at the end, so a recaptured widget reaches the site with nothing else to do; commit `site/assets/img/` with the PNGs. Run it by hand only when you put a picture in `site/assets/` some other way — a replaced screenshot in `control/`, `layouts/` or `screens/`. The PNGs and the other originals stay: they are the sources the copies are made from, and the README shows the PNGs. The site build warns about any `<img>` it finds no copies for.
+
 ## Settings schema
 
 User settings are persisted in `settings.json` via `tauri-plugin-store`, and the file is versioned: format changes go through a chain of migrations in `src/platform/settings-schema/`.
