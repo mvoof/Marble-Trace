@@ -7,12 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.0] — 2026-10-01
+
+### Added
+
+- **Wheel-to-Wheel Widget:** A duel view of the car right next to you — number, class position and the speed of each car side by side.
+- **Battery and DRS Widgets:** For hybrid and formula cars: battery charge, deploy and regen at a glance, and a DRS indicator that hides itself on cars without DRS.
+- **Horizontal Weather Layout:** The weather widget can now be laid out horizontally, with a forecast strip.
+- **Track Map Follow View as a Circle:** The follow view can be cropped to a circle, with an optional background.
+- **Incident Penalties in Standings:** Standings can show how many incident points have earned a penalty and how far the next one is.
+- **Twitch Follows and Subs:** Stream chat now shows new follows and subscriptions.
+- **Qualifying Visibility for Relative:** Relative can be hidden during qualifying, like other widgets.
+- **Laps Under a Local Yellow in Fuel:** A setting to count or skip laps driven under a local yellow when averaging fuel use.
+
 ### Changed
 
 - **One Installer Instead of Two:** Marble Trace is now shipped only as the `-setup.exe` installer. The `.msi` was never used by the auto-updater and made it possible to end up with two separate installations of the app. **If you installed Marble Trace from the `.msi`, remove it through Windows "Apps & features" and install once from `-setup.exe`** — your settings, layouts and bindings are kept, they do not live in the installation folder.
+- **Class Badges:** Car class badges are now taken from a list of known cars, so classes are named correctly even in AI and hosted sessions.
+- **Standings Near the Bottom:** When you are on the last visible row, Standings now also shows the cars right behind you.
 
 ### Fixed
 
+- **False Incidents:** Hard braking and running wide on exit are no longer marked as incidents.
+- **Fuel Tank Larger Than Allowed:** Fuel calculations now respect the series fuel limit instead of the full tank size.
+- **Last Digit Jumping to a New Line:** Numbers in widgets no longer wrap their last digit onto a second line.
+- **Incident Zones in Solo Qualifying:** Incident zones are no longer shown on the maps when you qualify alone.
 - **Running an Old Copy Looked Like Broken Settings:** When a second, outdated copy of Marble Trace is started — usually from a shortcut left behind by an earlier install into another folder — the app now says so, naming both folders and versions, instead of only reporting that the settings were written by a newer version.
 
 ## [0.24.0] — 2026-09-15
