@@ -56,6 +56,12 @@ export const CarBehind: Story = {
 };
 
 export const Surrounded: Story = {
+  args: {
+    showAxes: false,
+    showAxisTicks: false,
+    showRangeRings: false,
+  },
+
   parameters: previewScenario('radar-traffic'),
 };
 
