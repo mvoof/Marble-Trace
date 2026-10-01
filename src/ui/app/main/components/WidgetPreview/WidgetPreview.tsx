@@ -91,7 +91,7 @@ export const WidgetPreview = observer(
     const { userSettings, designWidth, autoHeight, overflowVisible } = widget;
     const widgetScale = userSettings.currentWidth / designWidth;
     const frameStyle = widgetFrameStyle({
-      widgetId,
+      widgetType: widget ? widgetTypeOf(widget) : widgetId,
       userSettings,
       widgetScale,
       transparentContainer: widget.transparentContainer,
