@@ -3,6 +3,49 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      The language picked in the switcher is remembered, and the English root
+      sends a returning visitor straight to it. Only the root redirects: a
+      /ru/ or /es/ link someone shared opens in the language it names.
+      Inline and in <head> so the English page never paints first.
+    -->
+    <script>
+      (() => {
+        const STORAGE_KEY = 'mt-language';
+        const LOCALES = ['en', 'ru', 'es', 'zh'];
+        const LOCALE_SEGMENT = /\/(ru|es|zh)\/(index\.html)?$/;
+
+        const readStored = () => {
+          try {
+            return window.localStorage.getItem(STORAGE_KEY);
+          } catch {
+            return null;
+          }
+        };
+
+        const store = (code) => {
+          try {
+            window.localStorage.setItem(STORAGE_KEY, code);
+          } catch {}
+        };
+
+        const path = window.location.pathname;
+        const stored = readStored();
+
+        if (!LOCALE_SEGMENT.test(path) && stored && stored !== 'en' && LOCALES.includes(stored)) {
+          const base = path.replace(/index\.html$/, '').replace(/\/?$/, '/');
+          window.location.replace(base + stored + '/' + window.location.search + window.location.hash);
+        }
+
+        document.addEventListener('click', (event) => {
+          const link = event.target.closest && event.target.closest('[data-lang]');
+
+          if (link) {
+            store(link.getAttribute('data-lang'));
+          }
+        });
+      })();
+    </script>
     <title>Marble Trace — Free Open-Source iRacing Telemetry Overlay</title>
     <meta
       name="description"
