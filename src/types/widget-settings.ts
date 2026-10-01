@@ -592,6 +592,8 @@ export interface FuelWidgetSettings {
   pitWarningLaps: number;
   /** Laps averaged for consumption; 0 = every lap of the session. */
   fuelAvgWindow: number;
+  /** Count laps under a local yellow; full-course cautions are always dropped. */
+  countYellowFlagLaps: boolean;
   showNextStopForecast: boolean;
   chartType: 'line' | 'bar';
   barWidth: number;

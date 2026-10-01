@@ -15,6 +15,7 @@ vi.mock('@platform/services/events.service', () => ({
 
 vi.mock('@platform/services/settings.service', () => ({
   setFuelAvgWindowSilent: vi.fn(),
+  setFuelCountYellowLapsSilent: vi.fn(),
   setPitWarningLapsSilent: vi.fn(),
   setActiveEventsSilent: vi.fn(),
 }));

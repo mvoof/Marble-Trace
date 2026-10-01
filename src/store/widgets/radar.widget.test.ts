@@ -16,6 +16,7 @@ vi.mock('@platform/services/telemetry.service', () => ({
 vi.mock('@platform/services/settings.service', () => ({
   setPitWarningLapsSilent: vi.fn(),
   setFuelAvgWindowSilent: vi.fn(),
+  setFuelCountYellowLapsSilent: vi.fn(),
   setCarLengthSilent: vi.fn(),
 }));
 vi.mock('@platform/services/events.service', () => ({

@@ -140,7 +140,9 @@
       "nextStopForecastDesc": "Estimated lap and time until the pit window opens.",
       "lowFuelWarningThreshold": "Low Fuel Warning Threshold (Laps)",
       "avgWindow": "Consumption Averaging Window, Laps (0 = All Laps)",
-      "avgWindowDesc": "Nearly the whole widget is derived from this average: the summary AVG cell, LAPS LEFT, the fuel left at the finish, the refuel amount and the pit window edges. A short window tracks the current pace but jumps around; a long one reads steady but is slow to follow a change in pace or weather. The AVG ALL column always spans every lap, so the two read side by side."
+      "avgWindowDesc": "Nearly the whole widget is derived from this average: the summary AVG cell, LAPS LEFT, the fuel left at the finish, the refuel amount and the pit window edges. A short window tracks the current pace but jumps around; a long one reads steady but is slow to follow a change in pace or weather. The AVG ALL column always spans every lap, so the two read side by side.",
+      "countYellowFlagLaps": "Count laps under yellow",
+      "countYellowFlagLapsDesc": "Use laps run under a local yellow flag in the fuel average. On a road course a yellow rarely slows the lap enough to change consumption. Full-course cautions and red flags are always left out."
     },
     "enginePanel": {
       "moduleParameters": "Module Parameters",

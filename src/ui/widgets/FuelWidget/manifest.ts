@@ -27,6 +27,7 @@ export const FUEL_MANIFEST: WidgetManifest = {
     showChart: false,
     pitWarningLaps: DEFAULT_PIT_WARNING_LAPS,
     fuelAvgWindow: FUEL_AVG_WINDOW_ALL_LAPS,
+    countYellowFlagLaps: false,
     showNextStopForecast: true,
     chartType: 'bar',
     barWidth: 5,

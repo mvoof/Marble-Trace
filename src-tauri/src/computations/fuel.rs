@@ -39,6 +39,10 @@ pub use crate::model::defaults::{
 pub struct FuelSettings {
     pub pit_warning_laps: f32,
     pub avg_window: usize,
+    /// Count laps run under a local (sector) yellow. On a road course a
+    /// waved yellow rarely slows the lap enough to matter for fuel; a
+    /// full-course caution or a red is always dropped.
+    pub count_local_yellow_laps: bool,
 }
 
 impl Default for FuelSettings {
@@ -46,6 +50,7 @@ impl Default for FuelSettings {
         Self {
             pit_warning_laps: DEFAULT_PIT_WARNING_LAPS,
             avg_window: DEFAULT_FUEL_AVG_WINDOW,
+            count_local_yellow_laps: false,
         }
     }
 }
@@ -58,7 +63,8 @@ pub struct FuelSample {
     pub session_num: i32,
     /// False while towed, in the garage, or otherwise not on track.
     pub on_track: bool,
-    /// A full-course caution is out — the lap is not run at racing pace.
+    /// A flag is out that the user wants the lap dropped for — the lap is not
+    /// run at racing pace.
     pub caution: bool,
 }
 
@@ -575,17 +581,15 @@ impl Processor for FuelProcessor {
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
         let flags = &ctx.car_status.flags;
+        let local_yellow = flags.yellow || flags.yellow_waving;
+        let full_course = flags.caution || flags.caution_waving || flags.red;
 
         self.state.update(FuelSample {
             lap: ctx.lap_timing.lap.unwrap_or(-1),
             fuel_level: ctx.car_status.fuel_level,
             session_num: ctx.session_num.unwrap_or(-1),
             on_track: ctx.car_status.is_on_track.unwrap_or(true),
-            caution: flags.yellow
-                || flags.yellow_waving
-                || flags.caution
-                || flags.caution_waving
-                || flags.red,
+            caution: full_course || (local_yellow && !ctx.fuel_settings.count_local_yellow_laps),
         });
 
         let frame = compute(

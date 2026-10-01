@@ -138,6 +138,14 @@ export const FuelSettingsPanel = observer(() => {
           }
         />
       </div>
+
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="countYellowFlagLaps"
+          title={t('settingsPanels.fuel.countYellowFlagLaps')}
+          desc={t('settingsPanels.fuel.countYellowFlagLapsDesc')}
+        />
+      </div>
     </Card>
   );
 });
