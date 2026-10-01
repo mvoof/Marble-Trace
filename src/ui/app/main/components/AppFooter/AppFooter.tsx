@@ -1,7 +1,10 @@
+import { observer } from 'mobx-react-lite';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useTranslation } from 'react-i18next';
+import { useAppSettingsStore } from '@store/root-store-context';
 import styles from './AppFooter.module.scss';
 
+const SITE_URL = 'https://marbletrace.com/';
 const GITHUB_URL = 'https://github.com/mvoof/Marble-Trace';
 // Two communities: the Russian-speaking server and the international one.
 const DISCORD_URL_RU = 'https://discord.gg/GVaRsHbjxV';
@@ -11,15 +14,17 @@ const handleOpen = (url: string) => {
   openUrl(url).catch((error) => console.error('Failed to open URL:', error));
 };
 
-// Slim footer with external links, mirroring the lingvo-injector footer style.
-export const AppFooter = () => {
+// Slim footer: external links, and the app version on the right.
+export const AppFooter = observer(() => {
   const { i18n } = useTranslation();
+  const appSettings = useAppSettingsStore();
 
   const discordUrl = i18n.language?.toLowerCase().startsWith('ru')
     ? DISCORD_URL_RU
     : DISCORD_URL_INTL;
 
   const links = [
+    { label: 'Site', url: SITE_URL },
     { label: 'GitHub', url: GITHUB_URL },
     { label: 'Discord', url: discordUrl },
   ];
@@ -38,6 +43,10 @@ export const AppFooter = () => {
           </button>
         ))}
       </div>
+
+      {appSettings.currentVersion && (
+        <span className={styles.version}>v{appSettings.currentVersion}</span>
+      )}
     </footer>
   );
-};
+});

@@ -32,13 +32,21 @@
         const path = window.location.pathname;
         const stored = readStored();
 
-        if (!LOCALE_SEGMENT.test(path) && stored && stored !== 'en' && LOCALES.includes(stored)) {
+        if (
+          !LOCALE_SEGMENT.test(path) &&
+          stored &&
+          stored !== 'en' &&
+          LOCALES.includes(stored)
+        ) {
           const base = path.replace(/index\.html$/, '').replace(/\/?$/, '/');
-          window.location.replace(base + stored + '/' + window.location.search + window.location.hash);
+          window.location.replace(
+            base + stored + '/' + window.location.search + window.location.hash
+          );
         }
 
         document.addEventListener('click', (event) => {
-          const link = event.target.closest && event.target.closest('[data-lang]');
+          const link =
+            event.target.closest && event.target.closest('[data-lang]');
 
           if (link) {
             store(link.getAttribute('data-lang'));
@@ -55,7 +63,10 @@
       name="keywords"
       content="iRacing overlay, iRacing telemetry, sim racing overlay, free iRacing overlay, iRacing HUD, relative, standings, track map, fuel calculator, OBS overlay, Marble Trace"
     />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1"
+    />
     <meta name="author" content="mvoof" />
     <meta name="theme-color" content="#e3e6ea" />
     <link rel="canonical" href="https://marbletrace.com/" />
@@ -63,25 +74,49 @@
     <link rel="alternate" hreflang="ru" href="https://marbletrace.com/ru/" />
     <link rel="alternate" hreflang="es" href="https://marbletrace.com/es/" />
     <link rel="alternate" hreflang="zh-CN" href="https://marbletrace.com/zh/" />
-    <link rel="alternate" hreflang="x-default" href="https://marbletrace.com/" />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://marbletrace.com/"
+    />
     <!-- A plain-text summary for AI agents and assistants (llmstxt.org) -->
-    <link rel="alternate" type="text/markdown" title="LLM summary" href="llms.txt" />
+    <link
+      rel="alternate"
+      type="text/markdown"
+      title="LLM summary"
+      href="llms.txt"
+    />
 
     <!-- Open Graph / social cards. Absolute URLs: a card is fetched from
          outside the page and resolves nothing relative. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Marble Trace" />
     <meta property="og:locale" content="en_US" />
-    <meta property="og:title" content="Marble Trace — Free Open-Source iRacing Telemetry Overlay" />
-    <meta property="og:description" content="28 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network." />
+    <meta
+      property="og:title"
+      content="Marble Trace — Free Open-Source iRacing Telemetry Overlay"
+    />
+    <meta
+      property="og:description"
+      content="28 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network."
+    />
     <meta property="og:url" content="https://marbletrace.com/" />
     <meta property="og:image" content="https://marbletrace.com/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Marble Trace widgets over an iRacing race at Snetterton" />
+    <meta
+      property="og:image:alt"
+      content="Marble Trace widgets over an iRacing race at Snetterton"
+    />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Marble Trace — Free Open-Source iRacing Telemetry Overlay" />
-    <meta name="twitter:description" content="28 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network." />
+    <meta
+      name="twitter:title"
+      content="Marble Trace — Free Open-Source iRacing Telemetry Overlay"
+    />
+    <meta
+      name="twitter:description"
+      content="28 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network."
+    />
     <meta name="twitter:image" content="https://marbletrace.com/og-image.jpg" />
 
     <!-- Structured data: what the page is about, for search engines and
@@ -99,14 +134,22 @@
             "applicationCategory": "GameApplication",
             "applicationSubCategory": "Sim racing telemetry overlay",
             "isAccessibleForFree": true,
-            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
             "license": "https://www.gnu.org/licenses/gpl-3.0.html",
             "downloadUrl": "https://github.com/mvoof/Marble-Trace/releases/latest",
             "installUrl": "https://github.com/mvoof/Marble-Trace/releases/latest",
             "codeRepository": "https://github.com/mvoof/Marble-Trace",
             "url": "https://marbletrace.com/",
             "image": "https://marbletrace.com/og-image.jpg",
-            "author": { "@type": "Person", "name": "mvoof", "url": "https://github.com/mvoof" }
+            "author": {
+              "@type": "Person",
+              "name": "mvoof",
+              "url": "https://github.com/mvoof"
+            }
           },
           {
             "@type": "FAQPage",
@@ -206,14 +249,31 @@
     </script>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="assets/favicon-32.png"
+    />
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 
     <!-- Typography: Exo 2 and Barlow Condensed, served with the site
          (src/styles/fonts.css). The two faces the first screen paints with
          are fetched straight away rather than after the stylesheet. -->
-    <link rel="preload" href="assets/fonts/exo-2-normal-400-900-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="assets/fonts/barlow-condensed-italic-900-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link
+      rel="preload"
+      href="assets/fonts/exo-2-normal-400-900-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="assets/fonts/barlow-condensed-italic-900-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="stylesheet" href="src/styles/fonts.css" />
 
     <!-- Stylesheets -->
@@ -222,8 +282,10 @@
     <link rel="stylesheet" href="src/styles/navbar.css" />
     <link rel="stylesheet" href="src/styles/main.css" />
   </head>
-  <body data-edit-note="Edit mode · drag any framed block · " data-edit-exit="Exit edit mode">
-
+  <body
+    data-edit-note="Edit mode · drag any framed block · "
+    data-edit-exit="Exit edit mode"
+  >
     <!-- ========================================================================
        Top Navigation Bar
        ======================================================================== -->
@@ -264,10 +326,43 @@
               <span data-lang-current translate="no">EN</span>
             </summary>
             <div class="lang-switch-menu">
-            <a href="./" hreflang="en" lang="en" class="lang-switch-link" data-lang="en" translate="no" aria-current="page">English</a>
-            <a href="ru/" hreflang="ru" lang="ru" class="lang-switch-link" data-lang="ru" translate="no">Русский</a>
-            <a href="es/" hreflang="es" lang="es" class="lang-switch-link" data-lang="es" translate="no">Español</a>
-            <a href="zh/" hreflang="zh" lang="zh" class="lang-switch-link" data-lang="zh" translate="no">中文</a>
+              <a
+                href="./"
+                hreflang="en"
+                lang="en"
+                class="lang-switch-link"
+                data-lang="en"
+                translate="no"
+                aria-current="page"
+                >English</a
+              >
+              <a
+                href="ru/"
+                hreflang="ru"
+                lang="ru"
+                class="lang-switch-link"
+                data-lang="ru"
+                translate="no"
+                >Русский</a
+              >
+              <a
+                href="es/"
+                hreflang="es"
+                lang="es"
+                class="lang-switch-link"
+                data-lang="es"
+                translate="no"
+                >Español</a
+              >
+              <a
+                href="zh/"
+                hreflang="zh"
+                lang="zh"
+                class="lang-switch-link"
+                data-lang="zh"
+                translate="no"
+                >中文</a
+              >
             </div>
           </details>
 
@@ -430,17 +525,50 @@
       </div>
 
       <nav class="drawer-langs" aria-label="Language">
-            <a href="./" hreflang="en" lang="en" class="drawer-lang-link" data-lang="en" translate="no" aria-current="page">English</a>
-            <a href="ru/" hreflang="ru" lang="ru" class="drawer-lang-link" data-lang="ru" translate="no">Русский</a>
-            <a href="es/" hreflang="es" lang="es" class="drawer-lang-link" data-lang="es" translate="no">Español</a>
-            <a href="zh/" hreflang="zh" lang="zh" class="drawer-lang-link" data-lang="zh" translate="no">中文</a>
+        <a
+          href="./"
+          hreflang="en"
+          lang="en"
+          class="drawer-lang-link"
+          data-lang="en"
+          translate="no"
+          aria-current="page"
+          >English</a
+        >
+        <a
+          href="ru/"
+          hreflang="ru"
+          lang="ru"
+          class="drawer-lang-link"
+          data-lang="ru"
+          translate="no"
+          >Русский</a
+        >
+        <a
+          href="es/"
+          hreflang="es"
+          lang="es"
+          class="drawer-lang-link"
+          data-lang="es"
+          translate="no"
+          >Español</a
+        >
+        <a
+          href="zh/"
+          hreflang="zh"
+          lang="zh"
+          class="drawer-lang-link"
+          data-lang="zh"
+          translate="no"
+          >中文</a
+        >
       </nav>
 
       <!-- Mobile Download CTA -->
       <div class="drawer-cta">
         <a
           href="https://github.com/mvoof/Marble-Trace/releases/latest"
-            data-download
+          data-download
           target="_blank"
           rel="noopener noreferrer"
           class="btn-download"
@@ -460,101 +588,100 @@
       <!-- Hero Section (Matches Screenshot 2026-09-11 202506.png and Screenshot 195640.png) -->
       <section class="hero-block" id="hero" aria-labelledby="hero-heading">
         <div class="hero-stage">
-        <!-- Hero Visual — one uncut photograph, held inside the container so it
+          <!-- Hero Visual — one uncut photograph, held inside the container so it
            never runs past the page gutters while still filling the block height.
            The "cuts" are diagonal washes: the picture dissolves into the page
            ground along a slanted axis on the left, and a second, near-vertical
            slanted cut peels a light strip off the right edge for the scroll cue. -->
 
-        <div class="hero-visual">
-          <img
-            src="assets/why/scene.webp"
-            alt="Marble Trace widgets over the iRacing cockpit: standings, relative, track map, fuel, weather, radar and the race dash"
-            class="hero-photo"
-            fetchpriority="high"
-            decoding="async"
-          />
+          <div class="hero-visual">
+            <img
+              src="assets/why/scene.webp"
+              alt="Marble Trace widgets over the iRacing cockpit: standings, relative, track map, fuel, weather, radar and the race dash"
+              class="hero-photo"
+              fetchpriority="high"
+              decoding="async"
+            />
 
-          <!-- The blurred side dissolves into the hero ground along the same axis -->
-          <div class="hero-fade-left"></div>
+            <!-- The blurred side dissolves into the hero ground along the same axis -->
+            <div class="hero-fade-left"></div>
 
-          <!-- Specular bloom and crisp hairlines riding the slanted cuts -->
-          <div class="cut-line cut-line-lead"></div>
-          <div class="cut-line cut-line-trail"></div>
+            <!-- Specular bloom and crisp hairlines riding the slanted cuts -->
+            <div class="cut-line cut-line-lead"></div>
+            <div class="cut-line cut-line-trail"></div>
 
-          <!-- Near-vertical slanted cut taking a strip off the right edge -->
-        </div>
+            <!-- Near-vertical slanted cut taking a strip off the right edge -->
+          </div>
 
-        <div class="hero-container">
-          <!-- Content Column (Left) -->
-          <div class="hero-content">
-            <div class="hero-kicker">
-              OPEN SOURCE TELEMETRY OVERLAY FOR IRACING
-            </div>
+          <div class="hero-container">
+            <!-- Content Column (Left) -->
+            <div class="hero-content">
+              <div class="hero-kicker">
+                OPEN SOURCE TELEMETRY OVERLAY FOR IRACING
+              </div>
 
-            <h1 id="hero-heading" class="hero-heading">
-              YOUR RACE.<br />
-              YOUR DATA.
-            </h1>
+              <h1 id="hero-heading" class="hero-heading">
+                YOUR RACE.<br />
+                YOUR DATA.
+              </h1>
 
-            <p class="lede hero-subtitle">
-              A free, transparent overlay for iRacing that never blocks your
-              view. A tiny Rust core reads telemetry straight from the sim.
-            </p>
+              <p class="lede hero-subtitle">
+                A free, transparent overlay for iRacing that never blocks your
+                view. A tiny Rust core reads telemetry straight from the sim.
+              </p>
 
-            <!-- Buttons Group -->
-            <div class="hero-buttons">
-              <!-- Windows Download Button -->
-              <a
-                href="https://github.com/mvoof/Marble-Trace/releases/latest"
-            data-download
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn-hero-dark"
-              >
-                <svg aria-hidden="true">
-                  <use href="assets/icons/sprite.svg#icon-windows" />
-                </svg>
-                <span>DOWNLOAD</span>
-              </a>
+              <!-- Buttons Group -->
+              <div class="hero-buttons">
+                <!-- Windows Download Button -->
+                <a
+                  href="https://github.com/mvoof/Marble-Trace/releases/latest"
+                  data-download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn-hero-dark"
+                >
+                  <svg aria-hidden="true">
+                    <use href="assets/icons/sprite.svg#icon-windows" />
+                  </svg>
+                  <span>DOWNLOAD</span>
+                </a>
 
-              <!-- Join Discord Button -->
-              <a
-                href="https://discord.gg/tkdS9sn49b"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn-hero-light"
-              >
-                <svg aria-hidden="true">
-                  <use href="assets/icons/sprite.svg#icon-discord" />
-                </svg>
-                <span>JOIN DISCORD</span>
-              </a>
+                <!-- Join Discord Button -->
+                <a
+                  href="https://discord.gg/tkdS9sn49b"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn-hero-light"
+                >
+                  <svg aria-hidden="true">
+                    <use href="assets/icons/sprite.svg#icon-discord" />
+                  </svg>
+                  <span>JOIN DISCORD</span>
+                </a>
 
-              <!-- Star on GitHub Button -->
-              <a
-                href="https://github.com/mvoof/Marble-Trace"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn-hero-light"
-              >
-                <svg aria-hidden="true">
-                  <use href="assets/icons/sprite.svg#icon-github" />
-                </svg>
-                <span>STAR ON GITHUB</span>
-                <span class="star-gold" aria-hidden="true">★</span>
-              </a>
-            </div>
+                <!-- Star on GitHub Button -->
+                <a
+                  href="https://github.com/mvoof/Marble-Trace"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn-hero-light"
+                >
+                  <svg aria-hidden="true">
+                    <use href="assets/icons/sprite.svg#icon-github" />
+                  </svg>
+                  <span>STAR ON GITHUB</span>
+                  <span class="star-gold" aria-hidden="true">★</span>
+                </a>
+              </div>
 
-            <!-- Feature Badges -->
-            <div class="hero-badges">
-              <span class="badge-pill"
-                >Free forever · GPL-3.0 licensed · Windows · iRacing</span
-              >
+              <!-- Feature Badges -->
+              <div class="hero-badges">
+                <span class="badge-pill"
+                  >Free forever · GPL-3.0 licensed · Windows · iRacing</span
+                >
+              </div>
             </div>
           </div>
-        </div>
-
         </div>
 
         <!-- The four reasons, moved here from section 01: the first screen
@@ -567,7 +694,9 @@
             <ul class="claim-grid hero-claims-grid">
               <li class="claim">
                 <div class="claim-head">
-                  <span class="claim-index" aria-hidden="true"><span>01</span></span>
+                  <span class="claim-index" aria-hidden="true"
+                    ><span>01</span></span
+                  >
                   <h2 class="claim-title">Rust core</h2>
                 </div>
                 <p class="lede claim-desc">
@@ -578,7 +707,9 @@
 
               <li class="claim">
                 <div class="claim-head">
-                  <span class="claim-index" aria-hidden="true"><span>02</span></span>
+                  <span class="claim-index" aria-hidden="true"
+                    ><span>02</span></span
+                  >
                   <h2 class="claim-title">Fully modular</h2>
                 </div>
                 <p class="lede claim-desc">
@@ -588,7 +719,9 @@
 
               <li class="claim">
                 <div class="claim-head">
-                  <span class="claim-index" aria-hidden="true"><span>03</span></span>
+                  <span class="claim-index" aria-hidden="true"
+                    ><span>03</span></span
+                  >
                   <h2 class="claim-title">Layouts for every session</h2>
                 </div>
                 <p class="lede claim-desc">
@@ -599,7 +732,9 @@
 
               <li class="claim">
                 <div class="claim-head">
-                  <span class="claim-index" aria-hidden="true"><span>04</span></span>
+                  <span class="claim-index" aria-hidden="true"
+                    ><span>04</span></span
+                  >
                   <h2 class="claim-title">Any screen</h2>
                 </div>
                 <p class="lede claim-desc">
@@ -643,7 +778,6 @@
         <div class="container gallery-head">
           <div class="gallery-head-bar">
             <div class="gallery-head-title">
-
               <h2 id="widgets-heading" class="chapter-title gallery-title">
                 Every number in its place.
               </h2>
@@ -659,37 +793,41 @@
              columns squared off at the top would be a table. -->
         <div class="container">
           <div class="gallery">
-
             <div class="gallery-copy">
               <p class="lede gallery-lede">
-                Every widget is designed to be read at racing speed: one
-                glance, and your eyes are back on the road.
+                Every widget is designed to be read at racing speed: one glance,
+                and your eyes are back on the road.
               </p>
             </div>
 
-          <div class="stage" id="gw-stage" role="tabpanel" aria-live="polite">
-            <div class="stage-head">
-              <p class="stage-group" id="gw-group">Race &amp; Performance</p>
+            <div class="stage" id="gw-stage" role="tabpanel" aria-live="polite">
+              <div class="stage-head">
+                <p class="stage-group" id="gw-group">Race &amp; Performance</p>
 
-              <div class="stage-title">
-                <h3 class="stage-name" id="gw-name">Race Dash</h3>
-                <p class="stage-index" aria-hidden="true">
-                  <span id="gw-index">01</span> / <span id="gw-total">28</span>
-                </p>
+                <div class="stage-title">
+                  <h3 class="stage-name" id="gw-name">Race Dash</h3>
+                  <p class="stage-index" aria-hidden="true">
+                    <span id="gw-index">01</span> /
+                    <span id="gw-total">28</span>
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <div class="stage-shot">
-              <img sizes="(max-width: 1180px) 92vw, 64vw"
-                id="gw-shot"
-                src="assets/widgets/race-dash.png"
-                alt="Race Dash widget"
-                decoding="async"
-              />
-            </div>
+              <div class="stage-shot">
+                <img
+                  sizes="(max-width: 1180px) 92vw, 64vw"
+                  id="gw-shot"
+                  src="assets/widgets/race-dash.png"
+                  alt="Race Dash widget"
+                  decoding="async"
+                />
+              </div>
 
-            <p class="stage-desc" id="gw-desc">Speed, gear, RPM, position and lap in one strip &mdash; the one widget that never leaves the screen.</p>
-          </div>
+              <p class="stage-desc" id="gw-desc">
+                Speed, gear, RPM, position and lap in one strip &mdash; the one
+                widget that never leaves the screen.
+              </p>
+            </div>
 
             <div class="sheet">
               <ul
@@ -698,538 +836,706 @@
                 aria-label="Widget gallery"
                 aria-orientation="horizontal"
               >
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame is-active"
-                  role="tab"
-                  id="gw-tab-race-dash"
-                  aria-controls="gw-stage"
-                  aria-selected="true"
-                  tabindex="0"
-                  data-shot="assets/widgets/race-dash.png"
-                  data-name="Race Dash"
-                  data-alt="Race Dash widget"
-                  data-group="Race &amp; Performance"
-                  data-desc-id="gw-desc-race-dash"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/race-dash.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Race Dash</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-pit-line"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/pit-line.png"
-                  data-name="Pit Line"
-                  data-alt="Pit Line widget"
-                  data-group="Race &amp; Performance"
-                  data-desc-id="gw-desc-pit-line"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/pit-line.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Pit Line</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-rpm-lights"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/rpm-lights.png"
-                  data-name="RPM Lights"
-                  data-alt="RPM Lights widget"
-                  data-group="Race &amp; Performance"
-                  data-desc-id="gw-desc-rpm-lights"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/rpm-lights.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">RPM Lights</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-engine"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/engine.png"
-                  data-name="Engine Panel"
-                  data-alt="Engine Panel widget"
-                  data-group="Race &amp; Performance"
-                  data-desc-id="gw-desc-engine"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/engine.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Engine Panel</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-battery"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/battery.png"
-                  data-name="Battery"
-                  data-alt="Battery widget"
-                  data-group="Race &amp; Performance"
-                  data-desc-id="gw-desc-battery"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/battery.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Battery</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-drs"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/drs.png"
-                  data-name="DRS"
-                  data-alt="DRS widget"
-                  data-group="Race &amp; Performance"
-                  data-desc-id="gw-desc-drs"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/drs.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">DRS</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-input-trace"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/input-trace.png"
-                  data-name="Input Trace"
-                  data-alt="Input Trace widget"
-                  data-group="Race &amp; Performance"
-                  data-desc-id="gw-desc-input-trace"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/input-trace.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Input Trace</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-g-metr"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/g-metr.png"
-                  data-name="G-Meter"
-                  data-alt="G-Meter widget"
-                  data-group="Race &amp; Performance"
-                  data-desc-id="gw-desc-g-metr"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/g-metr.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">G-Meter</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-coach"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/coach.png"
-                  data-name="Coach"
-                  data-alt="Coach widget"
-                  data-group="Race &amp; Performance"
-                  data-desc-id="gw-desc-coach"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/coach.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Coach</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-invisible-dash"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/invisible-dash.png"
-                  data-name="Invisible Dash"
-                  data-alt="Invisible Dash widget"
-                  data-group="Race &amp; Performance"
-                  data-desc-id="gw-desc-invisible-dash"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/invisible-dash.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Invisible Dash</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-standings"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/standings.png"
-                  data-name="Standings"
-                  data-alt="Standings widget"
-                  data-group="Timing &amp; Standings"
-                  data-desc-id="gw-desc-standings"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/standings.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Standings</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-relative"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/relative.png"
-                  data-name="Relative"
-                  data-alt="Relative widget"
-                  data-group="Timing &amp; Standings"
-                  data-desc-id="gw-desc-relative"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/relative.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Relative</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-relative-map"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/relative-map.png"
-                  data-name="Relative Map"
-                  data-alt="Relative Map widget"
-                  data-group="Timing &amp; Standings"
-                  data-desc-id="gw-desc-relative-map"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/relative-map.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Relative Map</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-delta"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/delta.png"
-                  data-name="Delta HUD"
-                  data-alt="Delta HUD widget"
-                  data-group="Timing &amp; Standings"
-                  data-desc-id="gw-desc-delta"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/delta.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Delta HUD</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-sector-matrix"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/sector-matrix.png"
-                  data-name="Sector Matrix"
-                  data-alt="Sector Matrix widget"
-                  data-group="Timing &amp; Standings"
-                  data-desc-id="gw-desc-sector-matrix"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/sector-matrix.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Sector Matrix</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-lap-log"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/lap-log.png"
-                  data-name="Lap Log"
-                  data-alt="Lap Log widget"
-                  data-group="Timing &amp; Standings"
-                  data-desc-id="gw-desc-lap-log"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/lap-log.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Lap Log</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-timer"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/timer.png"
-                  data-name="Timer"
-                  data-alt="Timer widget"
-                  data-group="Timing &amp; Standings"
-                  data-desc-id="gw-desc-timer"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/timer.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Timer</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-map"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/map.png"
-                  data-name="Track Map"
-                  data-alt="Track Map widget"
-                  data-group="Awareness"
-                  data-desc-id="gw-desc-map"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/map.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Track Map</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-proximity-radar"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/proximity-radar.png"
-                  data-name="Proximity Radar"
-                  data-alt="Proximity Radar widget"
-                  data-group="Awareness"
-                  data-desc-id="gw-desc-proximity-radar"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/proximity-radar.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Proximity Radar</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-radar-bar"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/radar-bar.png"
-                  data-name="Radar Bar"
-                  data-alt="Radar Bar widget"
-                  data-group="Awareness"
-                  data-desc-id="gw-desc-radar-bar"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/radar-bar.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Radar Bar</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-close-battle"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/close-battle.png"
-                  data-name="Close Battle"
-                  data-alt="Close Battle widget"
-                  data-group="Awareness"
-                  data-desc-id="gw-desc-close-battle"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/close-battle.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Close Battle</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-wheel-to-wheel"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/wheel-to-wheel.png"
-                  data-name="Wheel to Wheel"
-                  data-alt="Wheel to Wheel widget"
-                  data-group="Awareness"
-                  data-desc-id="gw-desc-wheel-to-wheel"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/wheel-to-wheel.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Wheel to Wheel</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-flat-flag"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/flat-flag.png"
-                  data-name="Flat Flags"
-                  data-alt="Flat Flags widget"
-                  data-group="Awareness"
-                  data-desc-id="gw-desc-flat-flag"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/flat-flag.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Flat Flags</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-led-flag-dual"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/led-flag-dual.png"
-                  data-name="LED Flags"
-                  data-alt="LED Flags widget"
-                  data-group="Awareness"
-                  data-desc-id="gw-desc-led-flag-dual"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/led-flag-dual.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">LED Flags</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-pit-stop"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/pit-service.png"
-                  data-name="Pit Service"
-                  data-alt="Pit Service widget"
-                  data-group="Car &amp; Session"
-                  data-desc-id="gw-desc-pit-stop"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/pit-service.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Pit Service</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-fuel"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/fuel.png"
-                  data-name="Fuel"
-                  data-alt="Fuel widget"
-                  data-group="Car &amp; Session"
-                  data-desc-id="gw-desc-fuel"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/fuel.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Fuel</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-weather"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/weather.png"
-                  data-name="Weather"
-                  data-alt="Weather widget"
-                  data-group="Car &amp; Session"
-                  data-desc-id="gw-desc-weather"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/weather.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Weather</span>
-                </button>
-              </li>
-              <li role="presentation">
-                <button
-                  type="button"
-                  class="frame"
-                  role="tab"
-                  id="gw-tab-stream-chat"
-                  aria-controls="gw-stage"
-                  aria-selected="false"
-                  tabindex="-1"
-                  data-shot="assets/widgets/stream-chat.png"
-                  data-name="Stream Chat"
-                  data-alt="Stream Chat widget"
-                  data-group="Streaming"
-                  data-desc-id="gw-desc-stream-chat"
-                >
-                  <img sizes="(max-width: 860px) 36vw, 10vw" src="assets/widgets/stream-chat.png" alt="" loading="lazy" decoding="async" />
-                  <span class="frame-caption">Stream Chat</span>
-                </button>
-              </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame is-active"
+                    role="tab"
+                    id="gw-tab-race-dash"
+                    aria-controls="gw-stage"
+                    aria-selected="true"
+                    tabindex="0"
+                    data-shot="assets/widgets/race-dash.png"
+                    data-name="Race Dash"
+                    data-alt="Race Dash widget"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-race-dash"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/race-dash.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Race Dash</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-pit-line"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/pit-line.png"
+                    data-name="Pit Line"
+                    data-alt="Pit Line widget"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-pit-line"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/pit-line.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Pit Line</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-rpm-lights"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/rpm-lights.png"
+                    data-name="RPM Lights"
+                    data-alt="RPM Lights widget"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-rpm-lights"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/rpm-lights.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">RPM Lights</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-engine"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/engine.png"
+                    data-name="Engine Panel"
+                    data-alt="Engine Panel widget"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-engine"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/engine.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Engine Panel</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-battery"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/battery.png"
+                    data-name="Battery"
+                    data-alt="Battery widget"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-battery"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/battery.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Battery</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-drs"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/drs.png"
+                    data-name="DRS"
+                    data-alt="DRS widget"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-drs"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/drs.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">DRS</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-input-trace"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/input-trace.png"
+                    data-name="Input Trace"
+                    data-alt="Input Trace widget"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-input-trace"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/input-trace.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Input Trace</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-g-metr"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/g-metr.png"
+                    data-name="G-Meter"
+                    data-alt="G-Meter widget"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-g-metr"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/g-metr.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">G-Meter</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-coach"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/coach.png"
+                    data-name="Coach"
+                    data-alt="Coach widget"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-coach"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/coach.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Coach</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-invisible-dash"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/invisible-dash.png"
+                    data-name="Invisible Dash"
+                    data-alt="Invisible Dash widget"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-invisible-dash"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/invisible-dash.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Invisible Dash</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-standings"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/standings.png"
+                    data-name="Standings"
+                    data-alt="Standings widget"
+                    data-group="Timing &amp; Standings"
+                    data-desc-id="gw-desc-standings"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/standings.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Standings</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-relative"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/relative.png"
+                    data-name="Relative"
+                    data-alt="Relative widget"
+                    data-group="Timing &amp; Standings"
+                    data-desc-id="gw-desc-relative"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/relative.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Relative</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-relative-map"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/relative-map.png"
+                    data-name="Relative Map"
+                    data-alt="Relative Map widget"
+                    data-group="Timing &amp; Standings"
+                    data-desc-id="gw-desc-relative-map"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/relative-map.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Relative Map</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-delta"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/delta.png"
+                    data-name="Delta HUD"
+                    data-alt="Delta HUD widget"
+                    data-group="Timing &amp; Standings"
+                    data-desc-id="gw-desc-delta"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/delta.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Delta HUD</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-sector-matrix"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/sector-matrix.png"
+                    data-name="Sector Matrix"
+                    data-alt="Sector Matrix widget"
+                    data-group="Timing &amp; Standings"
+                    data-desc-id="gw-desc-sector-matrix"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/sector-matrix.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Sector Matrix</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-lap-log"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/lap-log.png"
+                    data-name="Lap Log"
+                    data-alt="Lap Log widget"
+                    data-group="Timing &amp; Standings"
+                    data-desc-id="gw-desc-lap-log"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/lap-log.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Lap Log</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-timer"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/timer.png"
+                    data-name="Timer"
+                    data-alt="Timer widget"
+                    data-group="Timing &amp; Standings"
+                    data-desc-id="gw-desc-timer"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/timer.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Timer</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-map"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/map.png"
+                    data-name="Track Map"
+                    data-alt="Track Map widget"
+                    data-group="Awareness"
+                    data-desc-id="gw-desc-map"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/map.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Track Map</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-proximity-radar"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/proximity-radar.png"
+                    data-name="Proximity Radar"
+                    data-alt="Proximity Radar widget"
+                    data-group="Awareness"
+                    data-desc-id="gw-desc-proximity-radar"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/proximity-radar.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Proximity Radar</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-radar-bar"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/radar-bar.png"
+                    data-name="Radar Bar"
+                    data-alt="Radar Bar widget"
+                    data-group="Awareness"
+                    data-desc-id="gw-desc-radar-bar"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/radar-bar.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Radar Bar</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-close-battle"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/close-battle.png"
+                    data-name="Close Battle"
+                    data-alt="Close Battle widget"
+                    data-group="Awareness"
+                    data-desc-id="gw-desc-close-battle"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/close-battle.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Close Battle</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-wheel-to-wheel"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/wheel-to-wheel.png"
+                    data-name="Wheel to Wheel"
+                    data-alt="Wheel to Wheel widget"
+                    data-group="Awareness"
+                    data-desc-id="gw-desc-wheel-to-wheel"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/wheel-to-wheel.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Wheel to Wheel</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-flat-flag"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/flat-flag.png"
+                    data-name="Flat Flags"
+                    data-alt="Flat Flags widget"
+                    data-group="Awareness"
+                    data-desc-id="gw-desc-flat-flag"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/flat-flag.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Flat Flags</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-led-flag-dual"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/led-flag-dual.png"
+                    data-name="LED Flags"
+                    data-alt="LED Flags widget"
+                    data-group="Awareness"
+                    data-desc-id="gw-desc-led-flag-dual"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/led-flag-dual.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">LED Flags</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-pit-stop"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/pit-service.png"
+                    data-name="Pit Service"
+                    data-alt="Pit Service widget"
+                    data-group="Car &amp; Session"
+                    data-desc-id="gw-desc-pit-stop"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/pit-service.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Pit Service</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-fuel"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/fuel.png"
+                    data-name="Fuel"
+                    data-alt="Fuel widget"
+                    data-group="Car &amp; Session"
+                    data-desc-id="gw-desc-fuel"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/fuel.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Fuel</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-weather"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/weather.png"
+                    data-name="Weather"
+                    data-alt="Weather widget"
+                    data-group="Car &amp; Session"
+                    data-desc-id="gw-desc-weather"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/weather.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Weather</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-stream-chat"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/stream-chat.png"
+                    data-name="Stream Chat"
+                    data-alt="Stream Chat widget"
+                    data-group="Streaming"
+                    data-desc-id="gw-desc-stream-chat"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/stream-chat.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Stream Chat</span>
+                  </button>
+                </li>
               </ul>
             </div>
           </div>
@@ -1239,7 +1545,9 @@
                sheet is a strip, and by a search engine, which never presses a
                frame. The stage reads its description from here. -->
           <details class="catalog">
-            <summary class="catalog-summary">All 28 widgets, one line each</summary>
+            <summary class="catalog-summary">
+              All 28 widgets, one line each
+            </summary>
 
             <div class="catalog-body">
               <div class="catalog-group">
@@ -1247,43 +1555,73 @@
                 <dl class="catalog-list">
                   <div class="catalog-item">
                     <dt>Race Dash</dt>
-                    <dd id="gw-desc-race-dash">Speed, gear, RPM, position and lap in one strip &mdash; the one widget that never leaves the screen.</dd>
+                    <dd id="gw-desc-race-dash">
+                      Speed, gear, RPM, position and lap in one strip &mdash;
+                      the one widget that never leaves the screen.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Pit Line</dt>
-                    <dd id="gw-desc-pit-line">Pit limiter, pit-lane speed and the metres left to your box, sized to be read while you watch the mirrors.</dd>
+                    <dd id="gw-desc-pit-line">
+                      Pit limiter, pit-lane speed and the metres left to your
+                      box, sized to be read while you watch the mirrors.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>RPM Lights</dt>
-                    <dd id="gw-desc-rpm-lights">A shift light bar you read at the edge of vision, with your own colours and shift point.</dd>
+                    <dd id="gw-desc-rpm-lights">
+                      A shift light bar you read at the edge of vision, with
+                      your own colours and shift point.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Engine Panel</dt>
-                    <dd id="gw-desc-engine">Water, oil, fuel pressure and voltage under one glance, so a failing engine is not a surprise.</dd>
+                    <dd id="gw-desc-engine">
+                      Water, oil, fuel pressure and voltage under one glance, so
+                      a failing engine is not a surprise.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Battery</dt>
-                    <dd id="gw-desc-battery">Hybrid charge, what the MGU-K is doing with it, and the energy spent on the lap.</dd>
+                    <dd id="gw-desc-battery">
+                      Hybrid charge, what the MGU-K is doing with it, and the
+                      energy spent on the lap.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>DRS</dt>
-                    <dd id="gw-desc-drs">Armed past the detection point, ready inside the zone, open &mdash; the drag reduction system at a glance.</dd>
+                    <dd id="gw-desc-drs">
+                      Armed past the detection point, ready inside the zone,
+                      open &mdash; the drag reduction system at a glance.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Input Trace</dt>
-                    <dd id="gw-desc-input-trace">Throttle, brake and steering as a rolling trace &mdash; see your own hands and feet on the lap.</dd>
+                    <dd id="gw-desc-input-trace">
+                      Throttle, brake and steering as a rolling trace &mdash;
+                      see your own hands and feet on the lap.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>G-Meter</dt>
-                    <dd id="gw-desc-g-metr">Lateral and longitudinal load live, with the peaks of the lap held beside them.</dd>
+                    <dd id="gw-desc-g-metr">
+                      Lateral and longitudinal load live, with the peaks of the
+                      lap held beside them.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Coach</dt>
-                    <dd id="gw-desc-coach">Brake and traction guidance against your reference lap, while you are still in the corner.</dd>
+                    <dd id="gw-desc-coach">
+                      Brake and traction guidance against your reference lap,
+                      while you are still in the corner.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Invisible Dash</dt>
-                    <dd id="gw-desc-invisible-dash">The numbers with no panel under them at all &mdash; speed, gear and position straight on the track.</dd>
+                    <dd id="gw-desc-invisible-dash">
+                      The numbers with no panel under them at all &mdash; speed,
+                      gear and position straight on the track.
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -1292,31 +1630,52 @@
                 <dl class="catalog-list">
                   <div class="catalog-item">
                     <dt>Standings</dt>
-                    <dd id="gw-desc-standings">The multi-class order with gaps, class badges, pit state, licence and tyre stint age.</dd>
+                    <dd id="gw-desc-standings">
+                      The multi-class order with gaps, class badges, pit state,
+                      licence and tyre stint age.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Relative</dt>
-                    <dd id="gw-desc-relative">Who is actually near you on track, ahead and behind, whatever lap they are on.</dd>
+                    <dd id="gw-desc-relative">
+                      Who is actually near you on track, ahead and behind,
+                      whatever lap they are on.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Relative Map</dt>
-                    <dd id="gw-desc-relative-map">The same field laid out along the track, so you read the gaps as distance.</dd>
+                    <dd id="gw-desc-relative-map">
+                      The same field laid out along the track, so you read the
+                      gaps as distance.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Delta HUD</dt>
-                    <dd id="gw-desc-delta">Live delta to your best lap or to the session best, with the trace of how you got there.</dd>
+                    <dd id="gw-desc-delta">
+                      Live delta to your best lap or to the session best, with
+                      the trace of how you got there.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Sector Matrix</dt>
-                    <dd id="gw-desc-sector-matrix">Every sector of every lap side by side &mdash; where the lap was won and where it leaked.</dd>
+                    <dd id="gw-desc-sector-matrix">
+                      Every sector of every lap side by side &mdash; where the
+                      lap was won and where it leaked.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Lap Log</dt>
-                    <dd id="gw-desc-lap-log">Your stint lap by lap, the best one marked, invalid laps called out.</dd>
+                    <dd id="gw-desc-lap-log">
+                      Your stint lap by lap, the best one marked, invalid laps
+                      called out.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Timer</dt>
-                    <dd id="gw-desc-timer">Session clock, stint countdown and the time left before you have to box.</dd>
+                    <dd id="gw-desc-timer">
+                      Session clock, stint countdown and the time left before
+                      you have to box.
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -1325,31 +1684,52 @@
                 <dl class="catalog-list">
                   <div class="catalog-item">
                     <dt>Track Map</dt>
-                    <dd id="gw-desc-map">Live track position and layout, every car on it, your own class picked out.</dd>
+                    <dd id="gw-desc-map">
+                      Live track position and layout, every car on it, your own
+                      class picked out.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Proximity Radar</dt>
-                    <dd id="gw-desc-proximity-radar">360&deg; cover for the blind spots, with the real distance to the car beside you.</dd>
+                    <dd id="gw-desc-proximity-radar">
+                      360&deg; cover for the blind spots, with the real distance
+                      to the car beside you.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Radar Bar</dt>
-                    <dd id="gw-desc-radar-bar">The same warning as two flat bars down the edges of the screen, out of the driving view.</dd>
+                    <dd id="gw-desc-radar-bar">
+                      The same warning as two flat bars down the edges of the
+                      screen, out of the driving view.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Close Battle</dt>
-                    <dd id="gw-desc-close-battle">The cars actually fighting you, on a vertical distance axis: ahead goes up, behind goes down.</dd>
+                    <dd id="gw-desc-close-battle">
+                      The cars actually fighting you, on a vertical distance
+                      axis: ahead goes up, behind goes down.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Wheel to Wheel</dt>
-                    <dd id="gw-desc-wheel-to-wheel">You and your nearest rival side by side: number, position, speed and the gap between you.</dd>
+                    <dd id="gw-desc-wheel-to-wheel">
+                      You and your nearest rival side by side: number, position,
+                      speed and the gap between you.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Flat Flags</dt>
-                    <dd id="gw-desc-flat-flag">Every flag state as a plain panel &mdash; unmistakable at a glance, in any light.</dd>
+                    <dd id="gw-desc-flat-flag">
+                      Every flag state as a plain panel &mdash; unmistakable at
+                      a glance, in any light.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>LED Flags</dt>
-                    <dd id="gw-desc-led-flag-dual">Flags as light panels either side of the screen, seen without looking at them.</dd>
+                    <dd id="gw-desc-led-flag-dual">
+                      Flags as light panels either side of the screen, seen
+                      without looking at them.
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -1358,15 +1738,24 @@
                 <dl class="catalog-list">
                   <div class="catalog-item">
                     <dt>Pit Service</dt>
-                    <dd id="gw-desc-pit-stop">Fuel, tyre sets, pressures and repairs &mdash; the whole stop laid out before you commit to it.</dd>
+                    <dd id="gw-desc-pit-stop">
+                      Fuel, tyre sets, pressures and repairs &mdash; the whole
+                      stop laid out before you commit to it.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Fuel</dt>
-                    <dd id="gw-desc-fuel">Per-lap burn, laps left in the tank, and exactly what to add to reach the flag.</dd>
+                    <dd id="gw-desc-fuel">
+                      Per-lap burn, laps left in the tank, and exactly what to
+                      add to reach the flag.
+                    </dd>
                   </div>
                   <div class="catalog-item">
                     <dt>Weather</dt>
-                    <dd id="gw-desc-weather">Air and track temperature, humidity, wind, and how the session is turning.</dd>
+                    <dd id="gw-desc-weather">
+                      Air and track temperature, humidity, wind, and how the
+                      session is turning.
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -1375,7 +1764,10 @@
                 <dl class="catalog-list">
                   <div class="catalog-item">
                     <dt>Stream Chat</dt>
-                    <dd id="gw-desc-stream-chat">Your chat on the overlay instead of on a second screen &mdash; never on the wheel.</dd>
+                    <dd id="gw-desc-stream-chat">
+                      Your chat on the overlay instead of on a second screen
+                      &mdash; never on the wheel.
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -1551,7 +1943,11 @@
          The scene and the device close-ups are generated renders with blank
          screens; everything on a screen is a real widget picture.
          ==================================================================== -->
-      <section id="screens" class="chapter chapter-screens" aria-labelledby="screens-heading">
+      <section
+        id="screens"
+        class="chapter chapter-screens"
+        aria-labelledby="screens-heading"
+      >
         <div class="container screens" data-screens-demo>
           <div class="screens-head">
             <div class="chapter-lead">
@@ -1568,7 +1964,9 @@
                 needs; nothing is installed on it.
               </p>
 
-              <p class="screens-hint">Pick a screen on the rig to look closer</p>
+              <p class="screens-hint">
+                Pick a screen on the rig to look closer
+              </p>
             </div>
           </div>
 
@@ -1578,35 +1976,86 @@
                the close-up is the preview, only nearer. -->
           <div class="screens-stage" data-screens-stage>
             <div class="screens-scene" data-screens-scene>
-              <img class="screens-scene-shot" src="assets/screens/rig.webp" alt="A sim racing rig with a triple monitor, a monitor above it, a tablet and a phone on the cockpit" decoding="async" />
+              <img
+                class="screens-scene-shot"
+                src="assets/screens/rig.webp"
+                alt="A sim racing rig with a triple monitor, a monitor above it, a tablet and a phone on the cockpit"
+                decoding="async"
+              />
 
-              <button type="button" class="screens-spot" style="--x: 53%; --y: 30%" data-device="triple" data-zoom="0 16 100 52"><span>Triple monitors</span></button>
-              <button type="button" class="screens-spot" style="--x: 53%; --y: 8%" data-device="top" data-zoom="40 0 26 18"><span>Top monitor</span></button>
-              <button type="button" class="screens-spot" style="--x: 33%; --y: 52%" data-device="phone" data-zoom="29.5 46 7 13.5"><span>Phone</span></button>
-              <button type="button" class="screens-spot" style="--x: 69.5%; --y: 56%" data-device="tablet" data-zoom="61.5 47.5 16 16"><span>Tablet</span></button>
+              <button
+                type="button"
+                class="screens-spot"
+                style="--x: 53%; --y: 30%"
+                data-device="triple"
+                data-zoom="0 16 100 52"
+              >
+                <span>Triple monitors</span>
+              </button>
+              <button
+                type="button"
+                class="screens-spot"
+                style="--x: 53%; --y: 8%"
+                data-device="top"
+                data-zoom="40 0 26 18"
+              >
+                <span>Top monitor</span>
+              </button>
+              <button
+                type="button"
+                class="screens-spot"
+                style="--x: 33%; --y: 52%"
+                data-device="phone"
+                data-zoom="29.5 46 7 13.5"
+              >
+                <span>Phone</span>
+              </button>
+              <button
+                type="button"
+                class="screens-spot"
+                style="--x: 69.5%; --y: 56%"
+                data-device="tablet"
+                data-zoom="61.5 47.5 16 16"
+              >
+                <span>Tablet</span>
+              </button>
             </div>
 
             <div class="screens-caption" data-screens-caption hidden>
               <button type="button" class="screens-back" data-screens-back>
-                <svg aria-hidden="true"><use href="assets/icons/sprite.svg#icon-close"></use></svg>
+                <svg aria-hidden="true">
+                  <use href="assets/icons/sprite.svg#icon-close"></use>
+                </svg>
                 <span>Back to the rig</span>
               </button>
 
               <div data-caption="triple" hidden>
                 <h3 class="screens-detail-title">Triple monitors</h3>
-                <p class="lede screens-detail-desc">The overlay you race with, laid over the game on the three screens in front of you.</p>
+                <p class="lede screens-detail-desc">
+                  The overlay you race with, laid over the game on the three
+                  screens in front of you.
+                </p>
               </div>
               <div data-caption="top" hidden>
                 <h3 class="screens-detail-title">Top monitor</h3>
-                <p class="lede screens-detail-desc">Standings, weather and the track map moved off the racing view to a screen above it.</p>
+                <p class="lede screens-detail-desc">
+                  Standings, weather and the track map moved off the racing view
+                  to a screen above it.
+                </p>
               </div>
               <div data-caption="phone" hidden>
                 <h3 class="screens-detail-title">Phone on the cockpit</h3>
-                <p class="lede screens-detail-desc">The stream chat on its own screen, read without leaving the car.</p>
+                <p class="lede screens-detail-desc">
+                  The stream chat on its own screen, read without leaving the
+                  car.
+                </p>
               </div>
               <div data-caption="tablet" hidden>
                 <h3 class="screens-detail-title">Tablet on the wheel deck</h3>
-                <p class="lede screens-detail-desc">The track map across the whole tablet, the field at a glance on a straight.</p>
+                <p class="lede screens-detail-desc">
+                  The track map across the whole tablet, the field at a glance
+                  on a straight.
+                </p>
               </div>
             </div>
           </div>
@@ -1619,47 +2068,159 @@
               <li>
                 <span class="screens-step-num">01</span>
                 <h3 class="screens-detail-title">Add a screen</h3>
-                <p class="lede screens-detail-desc">In the layout editor, beside your monitors, at any size.</p>
+                <p class="lede screens-detail-desc">
+                  In the layout editor, beside your monitors, at any size.
+                </p>
               </li>
               <li>
                 <span class="screens-step-num">02</span>
                 <h3 class="screens-detail-title">Open the link</h3>
-                <p class="lede screens-detail-desc">Or scan its QR code on the device. No app, no account.</p>
+                <p class="lede screens-detail-desc">
+                  Or scan its QR code on the device. No app, no account.
+                </p>
               </li>
               <li>
                 <span class="screens-step-num">03</span>
                 <h3 class="screens-detail-title">Drag widgets on</h3>
-                <p class="lede screens-detail-desc">Each screen keeps its own set, scale and columns.</p>
+                <p class="lede screens-detail-desc">
+                  Each screen keeps its own set, scale and columns.
+                </p>
               </li>
             </ol>
 
             <figure class="screens-net">
-              <svg viewBox="0 0 520 220" role="img" aria-labelledby="screens-net-title">
-                <title id="screens-net-title">The PC sends telemetry one way to devices on the local network; nothing goes to the cloud</title>
+              <svg
+                viewBox="0 0 520 220"
+                role="img"
+                aria-labelledby="screens-net-title"
+              >
+                <title id="screens-net-title">
+                  The PC sends telemetry one way to devices on the local
+                  network; nothing goes to the cloud
+                </title>
                 <defs>
-                  <marker id="screens-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+                  <marker
+                    id="screens-arrow"
+                    viewBox="0 0 8 8"
+                    refX="7"
+                    refY="4"
+                    markerWidth="7"
+                    markerHeight="7"
+                    orient="auto"
+                  >
                     <path d="M0 0 L8 4 L0 8 z" class="screens-net-head" />
                   </marker>
                 </defs>
-                <rect x="6" y="18" width="380" height="196" rx="10" class="screens-net-lan" />
+                <rect
+                  x="6"
+                  y="18"
+                  width="380"
+                  height="196"
+                  rx="10"
+                  class="screens-net-lan"
+                />
                 <text x="20" y="40" class="screens-net-tag">Your network</text>
-                <rect x="30" y="92" width="110" height="52" rx="6" class="screens-net-hub" />
-                <text x="85" y="116" class="screens-net-name screens-net-name-hub" text-anchor="middle">Your PC</text>
-                <text x="85" y="132" class="screens-net-sub screens-net-sub-hub" text-anchor="middle">Marble Trace</text>
-                <path d="M140 108 L262 66" class="screens-net-flow" marker-end="url(#screens-arrow)" />
-                <path d="M140 118 L262 118" class="screens-net-flow" marker-end="url(#screens-arrow)" />
-                <path d="M140 128 L262 170" class="screens-net-flow" marker-end="url(#screens-arrow)" />
-                <rect x="266" y="46" width="100" height="36" rx="6" class="screens-net-node" />
-                <text x="316" y="69" class="screens-net-name" text-anchor="middle">Tablet</text>
-                <rect x="266" y="100" width="100" height="36" rx="6" class="screens-net-node" />
-                <text x="316" y="123" class="screens-net-name" text-anchor="middle">Laptop</text>
-                <rect x="266" y="154" width="100" height="36" rx="6" class="screens-net-node" />
-                <text x="316" y="177" class="screens-net-name" text-anchor="middle">OBS</text>
+                <rect
+                  x="30"
+                  y="92"
+                  width="110"
+                  height="52"
+                  rx="6"
+                  class="screens-net-hub"
+                />
+                <text
+                  x="85"
+                  y="116"
+                  class="screens-net-name screens-net-name-hub"
+                  text-anchor="middle"
+                >
+                  Your PC
+                </text>
+                <text
+                  x="85"
+                  y="132"
+                  class="screens-net-sub screens-net-sub-hub"
+                  text-anchor="middle"
+                >
+                  Marble Trace
+                </text>
+                <path
+                  d="M140 108 L262 66"
+                  class="screens-net-flow"
+                  marker-end="url(#screens-arrow)"
+                />
+                <path
+                  d="M140 118 L262 118"
+                  class="screens-net-flow"
+                  marker-end="url(#screens-arrow)"
+                />
+                <path
+                  d="M140 128 L262 170"
+                  class="screens-net-flow"
+                  marker-end="url(#screens-arrow)"
+                />
+                <rect
+                  x="266"
+                  y="46"
+                  width="100"
+                  height="36"
+                  rx="6"
+                  class="screens-net-node"
+                />
+                <text
+                  x="316"
+                  y="69"
+                  class="screens-net-name"
+                  text-anchor="middle"
+                >
+                  Tablet
+                </text>
+                <rect
+                  x="266"
+                  y="100"
+                  width="100"
+                  height="36"
+                  rx="6"
+                  class="screens-net-node"
+                />
+                <text
+                  x="316"
+                  y="123"
+                  class="screens-net-name"
+                  text-anchor="middle"
+                >
+                  Laptop
+                </text>
+                <rect
+                  x="266"
+                  y="154"
+                  width="100"
+                  height="36"
+                  rx="6"
+                  class="screens-net-node"
+                />
+                <text
+                  x="316"
+                  y="177"
+                  class="screens-net-name"
+                  text-anchor="middle"
+                >
+                  OBS
+                </text>
                 <g class="screens-net-cloud">
-                  <path d="M428 134 a16 16 0 0 1 8 -30 a22 22 0 0 1 42 -4 a16 16 0 0 1 8 34 z" />
+                  <path
+                    d="M428 134 a16 16 0 0 1 8 -30 a22 22 0 0 1 42 -4 a16 16 0 0 1 8 34 z"
+                  />
                   <line x1="420" y1="146" x2="500" y2="90" />
                 </g>
-                <text x="462" y="170" class="screens-net-sub" text-anchor="middle">No cloud</text>
+                <text
+                  x="462"
+                  y="170"
+                  class="screens-net-sub"
+                  text-anchor="middle"
+                >
+                  No cloud
+                </text>
               </svg>
               <figcaption class="lede screens-detail-desc">
                 Devices only watch: nothing a browser sends can change a layout,
@@ -1690,7 +2251,11 @@
            a layout can be assigned to (the app tags a layout with the same four),
            stepped through by layout-demo.js, which brings up that session's
            screenshot on the screen beside it. -->
-      <section id="layouts" class="feature feature-dark" aria-labelledby="layouts-heading">
+      <section
+        id="layouts"
+        class="feature feature-dark"
+        aria-labelledby="layouts-heading"
+      >
         <div class="container feature-grid">
           <div class="feature-copy">
             <p class="feature-kicker">Layouts</p>
@@ -1705,11 +2270,43 @@
               layout and the overlay switches as the session changes.
             </p>
 
-            <div class="session-track" role="group" aria-label="Show the layout for a session">
-              <button class="session-step" type="button" data-session="garage" aria-pressed="false">Garage</button>
-              <button class="session-step" type="button" data-session="practice" aria-pressed="false">Practice</button>
-              <button class="session-step" type="button" data-session="qualify" aria-pressed="false">Qualify</button>
-              <button class="session-step is-active" type="button" data-session="race" aria-pressed="true">Race</button>
+            <div
+              class="session-track"
+              role="group"
+              aria-label="Show the layout for a session"
+            >
+              <button
+                class="session-step"
+                type="button"
+                data-session="garage"
+                aria-pressed="false"
+              >
+                Garage
+              </button>
+              <button
+                class="session-step"
+                type="button"
+                data-session="practice"
+                aria-pressed="false"
+              >
+                Practice
+              </button>
+              <button
+                class="session-step"
+                type="button"
+                data-session="qualify"
+                aria-pressed="false"
+              >
+                Qualify
+              </button>
+              <button
+                class="session-step is-active"
+                type="button"
+                data-session="race"
+                aria-pressed="true"
+              >
+                Race
+              </button>
             </div>
           </div>
 
@@ -1721,17 +2318,54 @@
                empty frame. -->
           <div class="feature-media">
             <div class="layout-screen" data-layout-screen data-zoom>
-              <img sizes="(max-width: 1024px) 92vw, 56vw" class="layout-shot" data-shot="garage" src="assets/layouts/garage.webp" alt="The garage layout on screen" loading="lazy" decoding="async" />
-              <img sizes="(max-width: 1024px) 92vw, 56vw" class="layout-shot" data-shot="practice" src="assets/layouts/practice.webp" alt="The practice layout on screen" loading="lazy" decoding="async" />
-              <img sizes="(max-width: 1024px) 92vw, 56vw" class="layout-shot" data-shot="qualify" src="assets/layouts/qualify.webp" alt="The qualifying layout on screen" loading="lazy" decoding="async" />
-              <img sizes="(max-width: 1024px) 92vw, 56vw" class="layout-shot is-active" data-shot="race" src="assets/layouts/race.webp" alt="The race layout on screen" loading="lazy" decoding="async" />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="garage"
+                src="assets/layouts/garage.webp"
+                alt="The garage layout on screen"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="practice"
+                src="assets/layouts/practice.webp"
+                alt="The practice layout on screen"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="qualify"
+                src="assets/layouts/qualify.webp"
+                alt="The qualifying layout on screen"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot is-active"
+                data-shot="race"
+                src="assets/layouts/race.webp"
+                alt="The race layout on screen"
+                loading="lazy"
+                decoding="async"
+              />
 
               <p class="layout-screen-label" aria-hidden="true">
                 <span data-layout-label>Race</span> layout
               </p>
             </div>
 
-            <button class="layout-screen-proof" type="button" data-zoom data-zoom-from="[data-layout-screen]">
+            <button
+              class="layout-screen-proof"
+              type="button"
+              data-zoom
+              data-zoom-from="[data-layout-screen]"
+            >
               Open this layout full size <span aria-hidden="true">&rarr;</span>
             </button>
           </div>
@@ -1748,7 +2382,10 @@
       </section>
 
       <!-- ---- Widget workbench ---------------------------------------------- -->
-      <section class="feature feature-light feature-flip" aria-labelledby="workbench-heading">
+      <section
+        class="feature feature-light feature-flip"
+        aria-labelledby="workbench-heading"
+      >
         <div class="container feature-grid">
           <div class="feature-copy">
             <p class="feature-kicker">Widget settings</p>
@@ -1801,7 +2438,10 @@
            Hotkeys and devices together: one is what is bound, the other what
            it is bound on. The two crops are the Application group of Input
            bindings (F9, F8, F10 - the real defaults) and the Devices list. -->
-      <section class="feature feature-dark feature-controls" aria-labelledby="controls-heading">
+      <section
+        class="feature feature-dark feature-controls"
+        aria-labelledby="controls-heading"
+      >
         <div class="container feature-grid">
           <div class="feature-copy">
             <p class="feature-kicker">Controls</p>
@@ -1813,8 +2453,8 @@
 
             <p class="feature-desc">
               Hide everything, cycle a view, send the pit order. Every action
-              goes on a key or a wheel button, in every layout, and stays
-              bound after a replug.
+              goes on a key or a wheel button, in every layout, and stays bound
+              after a replug.
             </p>
 
             <ul class="pill-list pill-list-inline">
@@ -1895,28 +2535,76 @@
               <div class="keycap-slot" data-key-slot="interact">
                 <span class="splash">
                   <span class="splash-ring"></span>
-                  <span class="splash-drop" style="--ox: -62px; --dx: -56px; --dy: -120px; --s: 1"></span>
-                  <span class="splash-drop" style="--ox: -62px; --dx: -74px; --dy: -80px; --s: 0.8"></span>
-                  <span class="splash-drop splash-drop-ink" style="--ox: -62px; --dx: -50px; --dy: -160px; --s: 0.7"></span>
-                  <span class="splash-drop" style="--ox: -62px; --dx: -30px; --dy: -140px; --s: 0.55"></span>
-                  <span class="splash-drop" style="--ox: 62px; --dx: 56px; --dy: -126px; --s: 1"></span>
-                  <span class="splash-drop splash-drop-ink" style="--ox: 62px; --dx: 70px; --dy: -76px; --s: 0.8"></span>
-                  <span class="splash-drop" style="--ox: 62px; --dx: 50px; --dy: -156px; --s: 0.7"></span>
-                  <span class="splash-drop" style="--ox: 62px; --dx: 28px; --dy: -138px; --s: 0.55"></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: -62px; --dx: -56px; --dy: -120px; --s: 1"
+                  ></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: -62px; --dx: -74px; --dy: -80px; --s: 0.8"
+                  ></span>
+                  <span
+                    class="splash-drop splash-drop-ink"
+                    style="--ox: -62px; --dx: -50px; --dy: -160px; --s: 0.7"
+                  ></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: -62px; --dx: -30px; --dy: -140px; --s: 0.55"
+                  ></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: 62px; --dx: 56px; --dy: -126px; --s: 1"
+                  ></span>
+                  <span
+                    class="splash-drop splash-drop-ink"
+                    style="--ox: 62px; --dx: 70px; --dy: -76px; --s: 0.8"
+                  ></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: 62px; --dx: 50px; --dy: -156px; --s: 0.7"
+                  ></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: 62px; --dx: 28px; --dy: -138px; --s: 0.55"
+                  ></span>
                 </span>
                 <kbd class="keycap" data-key="interact">F8</kbd>
               </div>
               <div class="keycap-slot" data-key-slot="edit">
                 <span class="splash">
                   <span class="splash-ring"></span>
-                  <span class="splash-drop" style="--ox: -62px; --dx: -56px; --dy: -120px; --s: 1"></span>
-                  <span class="splash-drop" style="--ox: -62px; --dx: -74px; --dy: -80px; --s: 0.8"></span>
-                  <span class="splash-drop splash-drop-ink" style="--ox: -62px; --dx: -50px; --dy: -160px; --s: 0.7"></span>
-                  <span class="splash-drop" style="--ox: -62px; --dx: -30px; --dy: -140px; --s: 0.55"></span>
-                  <span class="splash-drop" style="--ox: 62px; --dx: 56px; --dy: -126px; --s: 1"></span>
-                  <span class="splash-drop splash-drop-ink" style="--ox: 62px; --dx: 70px; --dy: -76px; --s: 0.8"></span>
-                  <span class="splash-drop" style="--ox: 62px; --dx: 50px; --dy: -156px; --s: 0.7"></span>
-                  <span class="splash-drop" style="--ox: 62px; --dx: 28px; --dy: -138px; --s: 0.55"></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: -62px; --dx: -56px; --dy: -120px; --s: 1"
+                  ></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: -62px; --dx: -74px; --dy: -80px; --s: 0.8"
+                  ></span>
+                  <span
+                    class="splash-drop splash-drop-ink"
+                    style="--ox: -62px; --dx: -50px; --dy: -160px; --s: 0.7"
+                  ></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: -62px; --dx: -30px; --dy: -140px; --s: 0.55"
+                  ></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: 62px; --dx: 56px; --dy: -126px; --s: 1"
+                  ></span>
+                  <span
+                    class="splash-drop splash-drop-ink"
+                    style="--ox: 62px; --dx: 70px; --dy: -76px; --s: 0.8"
+                  ></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: 62px; --dx: 50px; --dy: -156px; --s: 0.7"
+                  ></span>
+                  <span
+                    class="splash-drop"
+                    style="--ox: 62px; --dx: 28px; --dy: -138px; --s: 0.55"
+                  ></span>
                 </span>
                 <kbd class="keycap" data-key="edit">F9</kbd>
               </div>
@@ -1940,20 +2628,22 @@
               <div class="interact-key">
                 <dt><kbd>F8</kbd> Interact</dt>
                 <dd>
-                  Scroll the standings, switch classes, click the pit order.
-                  The mouse goes back to the game after 15&nbsp;seconds.
+                  Scroll the standings, switch classes, click the pit order. The
+                  mouse goes back to the game after 15&nbsp;seconds.
                 </dd>
               </div>
               <div class="interact-key">
                 <dt><kbd>F9</kbd> Edit</dt>
                 <dd>
-                  Drag and resize widgets right over the game. Press it again
-                  to lock them in place.
+                  Drag and resize widgets right over the game. Press it again to
+                  lock them in place.
                 </dd>
               </div>
             </dl>
 
-            <p class="interact-note">Both are defaults &mdash; any key or wheel button works.</p>
+            <p class="interact-note">
+              Both are defaults &mdash; any key or wheel button works.
+            </p>
           </div>
         </div>
       </section>
@@ -1972,9 +2662,12 @@
          (kerb src/iracing/connection.rs). Change one of those and this band
          has to change with it.
          ==================================================================== -->
-      <section id="performance" class="perf-band" aria-labelledby="perf-heading">
+      <section
+        id="performance"
+        class="perf-band"
+        aria-labelledby="perf-heading"
+      >
         <div class="container perf">
-
           <div class="perf-lead">
             <p class="perf-kicker">Performance</p>
 
@@ -1999,10 +2692,16 @@
 
           <div class="perf-body">
             <!-- The path a frame takes, left to right. -->
-            <ol class="perf-flow" aria-label="How telemetry reaches your screen">
+            <ol
+              class="perf-flow"
+              aria-label="How telemetry reaches your screen"
+            >
               <li class="perf-node">
                 <span class="perf-node-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M5 21V4" /><path d="M5 4h12l-2.5 4.5L17 13H5" /></svg>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M5 21V4" />
+                    <path d="M5 4h12l-2.5 4.5L17 13H5" />
+                  </svg>
                 </span>
                 <span class="perf-node-name">iRacing</span>
                 <span class="perf-node-sub">Shared memory</span>
@@ -2010,7 +2709,11 @@
 
               <li class="perf-node">
                 <span class="perf-node-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" /><path d="M4 7.5l8 4.5 8-4.5" /><path d="M12 12v9" /></svg>
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" />
+                    <path d="M4 7.5l8 4.5 8-4.5" />
+                    <path d="M12 12v9" />
+                  </svg>
                 </span>
                 <span class="perf-node-name">kerb</span>
                 <span class="perf-node-sub">Our Rust crate</span>
@@ -2018,15 +2721,27 @@
 
               <li class="perf-node">
                 <span class="perf-node-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1" /><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4" /></svg>
+                  <svg viewBox="0 0 24 24">
+                    <rect x="7" y="7" width="10" height="10" rx="1" />
+                    <path
+                      d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"
+                    />
+                  </svg>
                 </span>
                 <span class="perf-node-name">Rust core</span>
-                <span class="perf-node-sub">60 &middot; 10 &middot; 4 &middot; 1 Hz</span>
+                <span class="perf-node-sub"
+                  >60 &middot; 10 &middot; 4 &middot; 1 Hz</span
+                >
               </li>
 
               <li class="perf-node perf-node-app">
                 <span class="perf-node-icon" aria-hidden="true">
-                  <img src="assets/logo-light.svg" alt="" width="50" height="28" />
+                  <img
+                    src="assets/logo-light.svg"
+                    alt=""
+                    width="50"
+                    height="28"
+                  />
                 </span>
                 <span class="perf-node-name">Marble Trace</span>
                 <span class="perf-node-sub">Only what is drawn</span>
@@ -2034,7 +2749,10 @@
 
               <li class="perf-node">
                 <span class="perf-node-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1" /><path d="M8 20h8M12 16v4" /></svg>
+                  <svg viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="12" rx="1" />
+                    <path d="M8 20h8M12 16v4" />
+                  </svg>
                 </span>
                 <span class="perf-node-name">Overlay</span>
                 <span class="perf-node-sub">And remote screens</span>
@@ -2058,13 +2776,18 @@
               </li>
             </ul>
           </div>
-
         </div>
 
         <!-- Outside the container: the still runs to the edge of the window
              on any screen, not to the edge of a 1680px column. -->
         <figure class="perf-shot">
-          <img sizes="34rem" src="assets/why/telemetry.jpg" alt="" loading="lazy" decoding="async" />
+          <img
+            sizes="34rem"
+            src="assets/why/telemetry.jpg"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
           <figcaption class="perf-shot-caption">
             Real telemetry.<br />
             Real racing.
@@ -2078,7 +2801,11 @@
          go into the FAQPage JSON-LD in the head. A light band between the
          dark performance section and the dark footer.
          ==================================================================== -->
-      <section id="faq" class="chapter chapter-faq" aria-labelledby="faq-heading">
+      <section
+        id="faq"
+        class="chapter chapter-faq"
+        aria-labelledby="faq-heading"
+      >
         <div class="container faq">
           <div class="chapter-lead faq-lead">
             <p class="chapter-kicker">FAQ</p>
@@ -2097,43 +2824,105 @@
           <div class="faq-list">
             <details class="faq-item">
               <summary class="faq-question">Is it really free?</summary>
-              <p class="faq-answer">Yes. Marble Trace is open source under GPL-3.0: no account, no ads, no subscription, and nothing is locked behind a paid tier.</p>
+              <p class="faq-answer">
+                Yes. Marble Trace is open source under GPL-3.0: no account, no
+                ads, no subscription, and nothing is locked behind a paid tier.
+              </p>
             </details>
             <details class="faq-item">
-              <summary class="faq-question">Which sims does it support?</summary>
-              <p class="faq-answer">iRacing, on Windows. That is the one sim it is built and tested against today.</p>
+              <summary class="faq-question">
+                Which sims does it support?
+              </summary>
+              <p class="faq-answer">
+                iRacing, on Windows. That is the one sim it is built and tested
+                against today.
+              </p>
             </details>
             <details class="faq-item">
-              <summary class="faq-question">Is it safe to use with iRacing?</summary>
-              <p class="faq-answer">It reads the telemetry iRacing publishes for apps through its official SDK &mdash; the same data every iRacing overlay reads. The overlay is its own window; nothing is injected into the sim.</p>
+              <summary class="faq-question">
+                Is it safe to use with iRacing?
+              </summary>
+              <p class="faq-answer">
+                It reads the telemetry iRacing publishes for apps through its
+                official SDK &mdash; the same data every iRacing overlay reads.
+                The overlay is its own window; nothing is injected into the sim.
+              </p>
             </details>
             <details class="faq-item">
-              <summary class="faq-question">Why can't I see the overlay over the game?</summary>
-              <p class="faq-answer">Run iRacing in windowed or borderless mode. In exclusive fullscreen the game draws over every other window, the overlay included.</p>
+              <summary class="faq-question">
+                Why can't I see the overlay over the game?
+              </summary>
+              <p class="faq-answer">
+                Run iRacing in windowed or borderless mode. In exclusive
+                fullscreen the game draws over every other window, the overlay
+                included.
+              </p>
             </details>
             <details class="faq-item">
               <summary class="faq-question">What do I need to install?</summary>
-              <p class="faq-answer">Only Marble Trace itself: download the <code>-setup.exe</code> from the latest release and run it. The app updates itself when a new release is out.</p>
+              <p class="faq-answer">
+                Only Marble Trace itself: download the
+                <code>-setup.exe</code> from the latest release and run it. The
+                app updates itself when a new release is out.
+              </p>
             </details>
             <details class="faq-item">
               <summary class="faq-question">Can I use it on stream?</summary>
-              <p class="faq-answer">Yes. Add a stream screen to a layout and open its link as a browser source in OBS &mdash; the whole screen, or one widget per source so you can place each in your scene.</p>
+              <p class="faq-answer">
+                Yes. Add a stream screen to a layout and open its link as a
+                browser source in OBS &mdash; the whole screen, or one widget
+                per source so you can place each in your scene.
+              </p>
             </details>
             <details class="faq-item">
-              <summary class="faq-question">Can a phone or tablet show widgets?</summary>
-              <p class="faq-answer">Yes. Any device on your local network opens a screen in its browser, from a QR code in the settings. Nothing is installed on the device, and it can only watch &mdash; it cannot change your settings.</p>
+              <summary class="faq-question">
+                Can a phone or tablet show widgets?
+              </summary>
+              <p class="faq-answer">
+                Yes. Any device on your local network opens a screen in its
+                browser, from a QR code in the settings. Nothing is installed on
+                the device, and it can only watch &mdash; it cannot change your
+                settings.
+              </p>
             </details>
             <details class="faq-item">
-              <summary class="faq-question">Where are my settings kept?</summary>
-              <p class="faq-answer">In <code>%APPDATA%\com.voof.marble-trace</code>, not in the install folder, so layouts and bindings survive updates and reinstalls.</p>
+              <summary class="faq-question">
+                Where are my settings kept?
+              </summary>
+              <p class="faq-answer">
+                In <code>%APPDATA%\com.voof.marble-trace</code>, not in the
+                install folder, so layouts and bindings survive updates and
+                reinstalls.
+              </p>
             </details>
             <details class="faq-item">
               <summary class="faq-question">Does it collect any data?</summary>
-              <p class="faq-answer">One anonymous event on launch through Aptabase, an open-source analytics service: app version, OS, screen resolution and locale. No account, no user id, no telemetry from your sessions.</p>
+              <p class="faq-answer">
+                One anonymous event on launch through Aptabase, an open-source
+                analytics service: app version, OS, screen resolution and
+                locale. No account, no user id, no telemetry from your sessions.
+              </p>
             </details>
             <details class="faq-item">
-              <summary class="faq-question">I found a bug or have an idea &mdash; where do I go?</summary>
-              <p class="faq-answer">Ask on <a href="https://discord.gg/tkdS9sn49b" target="_blank" rel="noopener noreferrer">Discord</a> or open an <a href="https://github.com/mvoof/Marble-Trace/issues" target="_blank" rel="noopener noreferrer">issue on GitHub</a>.</p>
+              <summary class="faq-question">
+                I found a bug or have an idea &mdash; where do I go?
+              </summary>
+              <p class="faq-answer">
+                Ask on
+                <a
+                  href="https://discord.gg/tkdS9sn49b"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Discord</a
+                >
+                or open an
+                <a
+                  href="https://github.com/mvoof/Marble-Trace/issues"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >issue on GitHub</a
+                >.
+              </p>
             </details>
           </div>
         </div>
@@ -2145,7 +2934,11 @@
          block never goes stale; without JavaScript every link still points
          at the releases page and the line reads as plain text.
          ==================================================================== -->
-      <section id="download" class="download-band" aria-labelledby="download-heading">
+      <section
+        id="download"
+        class="download-band"
+        aria-labelledby="download-heading"
+      >
         <div class="container download">
           <div class="download-copy">
             <p class="download-kicker">Download</p>
@@ -2156,8 +2949,8 @@
             </h2>
 
             <p class="download-lede">
-              One installer, nothing else to set
-              up &mdash; and it updates itself from then on.
+              One installer, nothing else to set up &mdash; and it updates
+              itself from then on.
             </p>
           </div>
 
@@ -2174,7 +2967,10 @@
             </a>
 
             <p class="download-meta" data-release-meta hidden>
-              <span data-release-version data-template="Version {version}"></span>
+              <span
+                data-release-version
+                data-template="Version {version}"
+              ></span>
               <span aria-hidden="true">&middot;</span>
               <span data-release-size></span>
               <span aria-hidden="true">&middot;</span>
@@ -2199,7 +2995,6 @@
           </div>
         </div>
       </section>
-
     </main>
 
     <!-- ========================================================================
@@ -2216,11 +3011,21 @@
        kerb alone is MIT.
        ======================================================================== -->
     <footer class="site-footer">
-      <section id="open-source" class="footer-cta" aria-labelledby="oss-heading">
+      <section
+        id="open-source"
+        class="footer-cta"
+        aria-labelledby="oss-heading"
+      >
         <div class="container footer-cta-inner">
           <div class="footer-star">
-            <svg class="footer-star-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" />
+            <svg
+              class="footer-star-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"
+              />
             </svg>
 
             <div class="footer-star-copy">
@@ -2240,7 +3045,9 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            <span class="footer-star-btn-glyph" aria-hidden="true">&#9733;</span>
+            <span class="footer-star-btn-glyph" aria-hidden="true"
+              >&#9733;</span
+            >
             Star on GitHub
             <span aria-hidden="true">&rarr;</span>
           </a>
@@ -2265,7 +3072,9 @@
               rel="noopener noreferrer"
               aria-label="GitHub repository"
             >
-              <svg aria-hidden="true"><use href="assets/icons/sprite.svg#icon-github" /></svg>
+              <svg aria-hidden="true">
+                <use href="assets/icons/sprite.svg#icon-github" />
+              </svg>
             </a>
             <a
               href="https://discord.gg/tkdS9sn49b"
@@ -2273,16 +3082,20 @@
               rel="noopener noreferrer"
               aria-label="Discord server"
             >
-              <svg aria-hidden="true"><use href="assets/icons/sprite.svg#icon-discord" /></svg>
+              <svg aria-hidden="true">
+                <use href="assets/icons/sprite.svg#icon-discord" />
+              </svg>
             </a>
             <a
               href="https://github.com/mvoof/Marble-Trace/releases/latest"
-            data-download
+              data-download
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Download for Windows"
             >
-              <svg aria-hidden="true"><use href="assets/icons/sprite.svg#icon-windows" /></svg>
+              <svg aria-hidden="true">
+                <use href="assets/icons/sprite.svg#icon-windows" />
+              </svg>
             </a>
           </div>
         </div>
@@ -2290,16 +3103,55 @@
 
       <div class="footer-bottom">
         <div class="container footer-bottom-inner">
-          <p>Built with Rust and the Tauri&reg; framework &middot; telemetry by kerb</p>
+          <p>
+            Built with Rust and the Tauri&reg; framework &middot; telemetry by
+            kerb
+          </p>
 
           <nav class="footer-langs" aria-label="Language">
-            <a href="./" hreflang="en" lang="en" class="footer-lang-link" data-lang="en" translate="no" aria-current="page">English</a>
-            <a href="ru/" hreflang="ru" lang="ru" class="footer-lang-link" data-lang="ru" translate="no">Русский</a>
-            <a href="es/" hreflang="es" lang="es" class="footer-lang-link" data-lang="es" translate="no">Español</a>
-            <a href="zh/" hreflang="zh" lang="zh" class="footer-lang-link" data-lang="zh" translate="no">中文</a>
+            <a
+              href="./"
+              hreflang="en"
+              lang="en"
+              class="footer-lang-link"
+              data-lang="en"
+              translate="no"
+              aria-current="page"
+              >English</a
+            >
+            <a
+              href="ru/"
+              hreflang="ru"
+              lang="ru"
+              class="footer-lang-link"
+              data-lang="ru"
+              translate="no"
+              >Русский</a
+            >
+            <a
+              href="es/"
+              hreflang="es"
+              lang="es"
+              class="footer-lang-link"
+              data-lang="es"
+              translate="no"
+              >Español</a
+            >
+            <a
+              href="zh/"
+              hreflang="zh"
+              lang="zh"
+              class="footer-lang-link"
+              data-lang="zh"
+              translate="no"
+              >中文</a
+            >
           </nav>
 
-          <p translate="no">&copy; <span data-current-year>2026</span> Marble Trace &middot; GPL-3.0</p>
+          <p translate="no">
+            &copy; <span data-current-year>2026</span> Marble Trace &middot;
+            GPL-3.0
+          </p>
 
           <!-- Required by the TAURI trademark policy wherever the mark is
                used (v2.tauri.app/about/trademark); the rest are here for the
@@ -2312,9 +3164,9 @@
             a trademark of iRacing.com Motorsport Simulations, LLC. Windows is a
             trademark of the Microsoft group of companies. GitHub is a trademark
             of GitHub, Inc. Discord is a trademark of Discord Inc. All other
-            names are the property of their respective owners. Marble Trace is an independent open-source
-            project and is not affiliated with, sponsored or endorsed by any of
-            them.
+            names are the property of their respective owners. Marble Trace is
+            an independent open-source project and is not affiliated with,
+            sponsored or endorsed by any of them.
           </p>
         </div>
       </div>
@@ -2325,14 +3177,22 @@
     <div class="shot-viewer" data-shot-viewer hidden>
       <div class="shot-viewer-ground" data-shot-viewer-dismiss></div>
 
-      <figure class="shot-viewer-figure" role="dialog" aria-modal="true" aria-label="Screenshot">
+      <figure
+        class="shot-viewer-figure"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Screenshot"
+      >
         <!-- On a phone the picture is opened tall and panned by finger; on a
              wide screen this box is transparent and it simply fits. -->
         <div class="shot-viewer-pan" data-shot-viewer-pan>
           <img class="shot-viewer-shot" data-shot-viewer-shot src="" alt="" />
         </div>
 
-        <figcaption class="shot-viewer-caption" data-shot-viewer-caption></figcaption>
+        <figcaption
+          class="shot-viewer-caption"
+          data-shot-viewer-caption
+        ></figcaption>
       </figure>
 
       <button

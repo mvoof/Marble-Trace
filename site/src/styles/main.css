@@ -2,7 +2,9 @@
    Base & Content Styles
    ========================================================================== */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -24,13 +26,13 @@ body {
   overflow-x: hidden;
 }
 
-
 body.mobile-menu-open {
   overflow: hidden;
 }
 
 /* Accessibility: Focus styles */
-a:focus-visible, button:focus-visible {
+a:focus-visible,
+button:focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 3px;
 }
@@ -335,7 +337,6 @@ a:focus-visible, button:focus-visible {
   color: #a3abb5;
 }
 
-
 /* The blurred side dissolves into the hero ground along the same axis */
 .hero-fade-left {
   position: absolute;
@@ -364,7 +365,11 @@ a:focus-visible, button:focus-visible {
 }
 
 .cut-line-lead {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.4));
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.4)
+  );
   clip-path: polygon(
     var(--lead) 0,
     calc(var(--lead) + 2px) 0,
@@ -384,7 +389,11 @@ a:focus-visible, button:focus-visible {
 }
 
 .cut-line-edge {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.5));
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.5)
+  );
   clip-path: polygon(
     var(--edge) 0,
     calc(var(--edge) + 2px) 0,
@@ -479,7 +488,9 @@ a:focus-visible, button:focus-visible {
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   padding: 2rem;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  transition:
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal);
 }
 
 .section-alt .card {
@@ -544,8 +555,18 @@ a:focus-visible, button:focus-visible {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(66deg, transparent 18%, rgba(255, 255, 255, 0.04) 18.1%, transparent 26%),
-    linear-gradient(66deg, transparent 58%, rgba(255, 255, 255, 0.025) 58.1%, transparent 64%);
+    linear-gradient(
+      66deg,
+      transparent 18%,
+      rgba(255, 255, 255, 0.04) 18.1%,
+      transparent 26%
+    ),
+    linear-gradient(
+      66deg,
+      transparent 58%,
+      rgba(255, 255, 255, 0.025) 58.1%,
+      transparent 64%
+    );
   pointer-events: none;
 }
 
@@ -705,7 +726,6 @@ a:focus-visible, button:focus-visible {
   color: #59616c;
 }
 
-
 @media (max-width: 1180px) {
   .footer-cta-inner {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -828,12 +848,14 @@ a:focus-visible, button:focus-visible {
 
 .chapter-head {
   display: grid;
-  grid-template-columns: auto minmax(20rem, 0.95fr) minmax(0, 1.55fr) minmax(9rem, 0.42fr);
+  grid-template-columns: auto minmax(20rem, 0.95fr) minmax(0, 1.55fr) minmax(
+      9rem,
+      0.42fr
+    );
   align-items: start;
   gap: 0 clamp(1.25rem, 2.6vw, 2.75rem);
   margin-bottom: clamp(3.25rem, 6vw, 5rem);
 }
-
 
 .chapter-lead {
   padding-top: clamp(0.5rem, 1.2vw, 1.1rem);
@@ -877,8 +899,6 @@ a:focus-visible, button:focus-visible {
    white type legible on clouds without dimming the widgets.
    -------------------------------------------------------------------------- */
 
-
-
 /* ---- Claims band --------------------------------------------------------- */
 
 .claim-grid {
@@ -898,8 +918,6 @@ a:focus-visible, button:focus-visible {
   position: relative;
   padding-top: clamp(1.1rem, 1.8vw, 1.6rem);
 }
-
-
 
 .claim-head {
   display: flex;
@@ -965,23 +983,16 @@ a:focus-visible, button:focus-visible {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
-
-
-
-
-
   .claim-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     row-gap: 2.25rem;
   }
-
 }
 
 @media (max-width: 640px) {
   .chapter-head {
     grid-template-columns: minmax(0, 1fr);
   }
-
 
   .chapter-lead {
     padding-top: 0;
@@ -991,9 +1002,7 @@ a:focus-visible, button:focus-visible {
     grid-template-columns: minmax(0, 1fr);
     row-gap: 2rem;
   }
-
 }
-
 
 /* ==========================================================================
    Section 02 — Widget gallery
@@ -1041,7 +1050,6 @@ a:focus-visible, button:focus-visible {
   gap: clamp(1rem, 2vw, 1.75rem);
   min-width: 0;
 }
-
 
 .gallery-title {
   line-height: 0.84;
@@ -1203,15 +1211,24 @@ a:focus-visible, button:focus-visible {
 /* Scaled past the frame so the blur has no soft edge to show */
 .stage-shot::before {
   inset: -2rem;
-  background: url('../../assets/img/why/cockpit-bg-960.webp') center 40% / cover no-repeat;
+  background: url('../../assets/img/why/cockpit-bg-960.webp') center 40% / cover
+    no-repeat;
   filter: blur(14px) saturate(1.1) brightness(0.62);
 }
 
 /* A vignette and a blue floor light, so the widget has somewhere to stand */
 .stage-shot::after {
   background:
-    radial-gradient(ellipse 60% 22% at 50% 100%, rgba(79, 143, 227, 0.28), transparent 70%),
-    radial-gradient(ellipse at center, transparent 35%, rgba(8, 10, 13, 0.7) 100%);
+    radial-gradient(
+      ellipse 60% 22% at 50% 100%,
+      rgba(79, 143, 227, 0.28),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse at center,
+      transparent 35%,
+      rgba(8, 10, 13, 0.7) 100%
+    );
 }
 
 .stage-shot img {
@@ -1949,7 +1966,6 @@ a:focus-visible, button:focus-visible {
   .screens-net {
     grid-template-columns: minmax(0, 1fr);
   }
-
 }
 
 /* ==========================================================================
@@ -2294,7 +2310,6 @@ a:focus-visible, button:focus-visible {
   }
 }
 
-
 /* ==========================================================================
    Section 05 - Performance
    ==========================================================================
@@ -2334,7 +2349,6 @@ a:focus-visible, button:focus-visible {
 }
 
 /* ---- Copy ---------------------------------------------------------------- */
-
 
 .perf-lead {
   align-self: start;
@@ -2604,7 +2618,6 @@ a:focus-visible, button:focus-visible {
     grid-template-columns: minmax(0, 1fr);
     row-gap: 2.5rem;
   }
-
 
   .perf-lead {
     padding-top: 0;
@@ -2979,13 +2992,17 @@ a:focus-visible, button:focus-visible {
 
   55% {
     opacity: 1;
-    transform: translate(calc(var(--ox) + var(--dx)), var(--dy)) scale(var(--s)) rotate(-45deg);
+    transform: translate(calc(var(--ox) + var(--dx)), var(--dy)) scale(var(--s))
+      rotate(-45deg);
   }
 
   100% {
     opacity: 0;
-    transform: translate(calc(var(--ox) + var(--dx) * 1.25), calc(var(--dy) + 80px)) scale(calc(var(--s) * 0.6))
-      rotate(-45deg);
+    transform: translate(
+        calc(var(--ox) + var(--dx) * 1.25),
+        calc(var(--dy) + 80px)
+      )
+      scale(calc(var(--s) * 0.6)) rotate(-45deg);
   }
 }
 
@@ -3873,7 +3890,11 @@ body.is-viewer-open {
     transparent 1.9px
   );
   background-size: 14px 14px;
-  -webkit-mask-image: radial-gradient(circle at 0 100%, #000 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(
+    circle at 0 100%,
+    #000 0%,
+    transparent 70%
+  );
   mask-image: radial-gradient(circle at 0 100%, #000 0%, transparent 70%);
   pointer-events: none;
 }

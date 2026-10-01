@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AppStatus } from '../AppStatus/AppStatus';
 import { HeaderTrace } from './HeaderTrace';
 import { WindowControls } from './WindowControls';
-import Logo from '@assets/logo.svg?react';
-import { useAppSettingsStore } from '@store/root-store-context';
+import Logo from '@assets/brand-mark.svg?react';
 import styles from './AppHeader.module.scss';
 
 export type AppSection = 'layouts' | 'widgets' | 'settings';
@@ -16,10 +15,9 @@ interface AppHeaderProps {
 }
 
 // Single unified header row: brand (left), section switcher (center), live
-// status + version (right). An ambient telemetry waveform animates behind it.
+// status (right). An ambient telemetry waveform animates behind it.
 export const AppHeader = observer(
   ({ activeSection, onSectionChange }: AppHeaderProps) => {
-    const appSettings = useAppSettingsStore();
     const { t } = useTranslation('main-app');
 
     const sectionOptions = [
@@ -48,12 +46,6 @@ export const AppHeader = observer(
         <div className={styles.status} data-tauri-drag-region>
           <div className={styles.statusInfo} data-tauri-drag-region>
             <AppStatus />
-
-            {appSettings.currentVersion && (
-              <span className={styles.version}>
-                v{appSettings.currentVersion}
-              </span>
-            )}
           </div>
 
           <WindowControls />

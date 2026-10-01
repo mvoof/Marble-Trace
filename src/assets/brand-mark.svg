@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 222 124" width="222" height="124">
+  <!-- Three blue strokes for the M, a tail with a hook for the trace: the
+       mark on the livery. The tail is white, for a dark ground. -->
+  <path d="M122 21 L159 99 C163 109 171 113 180 110 C189 107 197 96 205 70 C199 86 192 96 186 96 C182 96 180 93 178 88 L142 11 Z" fill="#ffffff"/>
+  <g fill="none" stroke-width="22" stroke-linecap="round">
+    <path d="M22 100 L56 44" stroke="#72aaec"/>
+    <path d="M56 44 L92 100" stroke="#609de8"/>
+    <path d="M92 100 L132 16" stroke="#4f8fe3"/>
+  </g>
+</svg>
