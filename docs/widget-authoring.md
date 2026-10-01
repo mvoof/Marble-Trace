@@ -331,9 +331,12 @@ A row that only qualifies another takes `dependsOn` (or goes in a
 **`<Name>Widget.stories.tsx`** — spread `defineWidgetStories({ widget, size,
 seed, seedSnapshot, args, argTypes })` from
 `@/storybook/define-widget-stories`, which mounts the widget
-with its background and does the `runInAction` seeding for you. Named `const`
-PascalCase exports, no default export. Nothing that exists only for a story may
-be added to `store/preview/`.
+with its background and does the `runInAction` seeding for you. The widget's
+settings appear on the Controls tab by themselves, read from the manifest; the
+story declares only the telemetry knobs. Named `const` PascalCase exports, no
+default export. Nothing that exists only for a story may be added to
+`store/preview/`. Everything else — the seed, scenarios, which states to cover,
+history widgets — is in [widget-stories.md](widget-stories.md).
 
 > _Enforced by:_ a missing `PANEL_WIDGET_IDS`, or a second export beside it, is
 > silent — the widget simply has no panel, or the wrong one. Together with steps

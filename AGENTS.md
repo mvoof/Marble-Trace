@@ -759,7 +759,7 @@ checklist below is what a reviewer applies to code that already exists.
 2. No hardcoded background
 3. Decompose from the start
 4. Every component `observer()`
-5. Add `*.stories.tsx` (seed via `runInAction` in decorators; include background decorator)
+5. Add `*.stories.tsx` through `defineWidgetStories` — see `docs/widget-stories.md`
 6. Add `*SettingsPanel.tsx` in `src/ui/app/main/components/WidgetSettings/panels/` and export `PANEL_WIDGET_IDS` from it — the panel registry picks it up, nothing else to wire
 7. Add `interface *WidgetSettings` to `src/types/widget-settings.ts`, add it to the `WidgetSpecificSettings` union
 8. Create `manifest.ts` (with an `order`) and `mount.ts` next to the widget — both are collected by glob, so no shared file is edited
@@ -776,7 +776,12 @@ checklist below is what a reviewer applies to code that already exists.
 
 ### Storybook
 
-Named `const` PascalCase exports. No default exports, no anonymous functions. Always include a background decorator. Seed stores via `runInAction` in decorators.
+Full guide: [`docs/widget-stories.md`](docs/widget-stories.md) — read it before writing or changing a story.
+
+- Every widget story goes through `defineWidgetStories` (`src/storybook/define-widget-stories.tsx`): it provides the store, the frame, the scenario base and the `runInAction` seeding. No hand-rolled `render`, decorator or `runInAction` in a story file.
+- **The widget's settings are Controls automatically** — read from its `manifest.ts`, written back with `updateUserSettings`. A story never redeclares them; a new string-union setting needs its members in `SETTING_OPTIONS` (`src/storybook/setting-options.ts`), or it shows as a text field.
+- Seed with the mock builders in `store/preview/mocks/` and data-store setters; scenario knobs are optional and folded with `whenSet` so they do not overwrite a named scenario.
+- Named `const` PascalCase exports; the only default export is `meta`. No anonymous functions.
 
 ---
 

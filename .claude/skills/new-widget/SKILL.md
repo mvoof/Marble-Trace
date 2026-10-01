@@ -207,10 +207,15 @@ hand**, there is no `Divider` in this tree. A row that only qualifies another
 takes `dependsOn="parentKey"` (or goes in a `DependentBlock`) and sits directly
 after its parent — never `{settings.x && …}` in the panel.
 
-`<Name>Widget.stories.tsx`: spread `defineWidgetStories({ widget, size, seed,
-seedSnapshot, args, argTypes })` from `@/storybook/define-widget-stories` — it
-mounts the widget with its background and does the `runInAction` seeding. Named
-`const` PascalCase exports, no default export.
+`<Name>Widget.stories.tsx`: **read [widget-stories.md](../../../docs/widget-stories.md)
+first** and follow it. In short: spread `defineWidgetStories({ widget, size,
+seed, seedSnapshot, args, argTypes })` from `@/storybook/define-widget-stories`
+— it mounts the widget with its frame and does the seeding. The widget's
+settings become Controls by themselves; `StoryArgs` holds only telemetry knobs,
+seeded through `store/preview/mocks/` builders and `whenSet`. Any new
+string-union setting gets its members in `src/storybook/setting-options.ts`.
+One story per state worth seeing, starting with the race look the site picture
+is taken from. Named `const` PascalCase exports, only `meta` as default.
 
 ## Step 9 — The hot/cold split, if a hot field was declared
 
