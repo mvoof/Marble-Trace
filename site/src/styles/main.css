@@ -3523,6 +3523,17 @@ body.is-viewer-open {
   color: #4b5563;
 }
 
+.faq-answer a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.faq-answer a:hover {
+  color: #111827;
+}
+
 .faq-answer code {
   font-family: var(--font-mono);
   font-size: 0.9em;
