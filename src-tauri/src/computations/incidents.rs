@@ -11,7 +11,7 @@
 //! a real coordinate. This processor finds those cars and publishes where they
 //! are; the widgets draw a warning zone around each one.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
@@ -22,16 +22,32 @@ use serde::{Deserialize, Serialize};
 /// Below this a car on track is stopped, not slow. A spun car rolling backwards
 /// and a car crawling out of a gravel trap are both well under it, while the
 /// slowest genuine racing speed — a hairpin in a heavy car — is not.
-const STOPPED_KMH: f32 = 25.0;
+const STOPPED_KMH: f32 = 15.0;
 
-/// A car has to hold the condition this long before it counts. A single tick of
-/// two wheels on the kerb is not an incident, and a position array that repeats
-/// for one frame is not a stopped car.
+/// Speed is measured over this many ticks rather than one. The sim repeats a
+/// remote car's coordinate for a few frames and then jumps it, so a single
+/// 100 ms step reads a car braking for a hairpin as standing still.
+const SPEED_WINDOW_TICKS: usize = 10;
+
+/// Fewer samples than this give no speed at all — the window is still filling.
+const MIN_SPEED_SAMPLES: usize = 5;
+
+/// A car has to hold the condition this long before it counts. Together with
+/// the speed window this is two seconds of a car that is genuinely not moving.
 const CONFIRM_SECONDS: f32 = 1.0;
 
-/// Off-track confirms faster than a stop: leaving the road is unambiguous, and
-/// the driver behind wants to know before the car has settled.
-const OFF_TRACK_CONFIRM_SECONDS: f32 = 0.4;
+/// Off the road and slower than this is a car in trouble: spun into the gravel
+/// or crawling back. Faster is a car running wide out of a corner or cutting a
+/// kerb, which the driver behind does not need warned about.
+const OFF_TRACK_SLOW_KMH: f32 = 80.0;
+
+/// A slow car off the road confirms fast: the driver behind wants to know
+/// before it has settled.
+const OFF_TRACK_CONFIRM_SECONDS: f32 = 0.5;
+
+/// Off the road at speed for this long is no longer running wide — the car is
+/// sliding through a run-off and will come back across the racing line.
+const OFF_TRACK_FAST_CONFIRM_SECONDS: f32 = 2.5;
 
 /// How long a cleared incident stays on the map. A car that spun, recovered and
 /// drove off leaves marbles and a slow rejoining car behind it; the marker
@@ -77,7 +93,8 @@ pub struct IncidentsFrame {
 
 #[derive(Debug, Default, Clone)]
 pub struct CarState {
-    last_lap_dist_pct: Option<f32>,
+    /// The last `SPEED_WINDOW_TICKS` positions, oldest first.
+    recent_pcts: VecDeque<f32>,
     /// Seconds the car has held a trouble condition without a break.
     trouble_seconds: f32,
     /// Which condition those seconds belong to.
@@ -106,6 +123,24 @@ fn lap_delta_pct(from: f32, to: f32) -> f32 {
     }
 
     delta
+}
+
+/// Average speed over the position window, following the lap wrap.
+fn window_speed_kmh(recent_pcts: &VecDeque<f32>, track_length_m: f32, tick: f32) -> Option<f32> {
+    // Without a track length the movement cannot be turned into a speed at
+    // all, and a zero would read as "stopped" for every car on the grid.
+    if recent_pcts.len() < MIN_SPEED_SAMPLES || track_length_m <= 0.0 {
+        return None;
+    }
+
+    let travelled_pct: f32 = recent_pcts
+        .iter()
+        .zip(recent_pcts.iter().skip(1))
+        .map(|(previous, current)| lap_delta_pct(*previous, *current))
+        .sum();
+    let elapsed = (recent_pcts.len() - 1) as f32 * tick;
+
+    Some(travelled_pct.abs() * track_length_m / elapsed * 3.6)
 }
 
 /// The trouble a car is in right now, if any.
@@ -145,7 +180,7 @@ pub fn compute(
         seen.push(car_index);
 
         if surface == TrackSurface::NotInWorld || lap_dist_pct < 0.0 {
-            state.last_lap_dist_pct = None;
+            state.recent_pcts.clear();
             state.trouble_seconds = 0.0;
             state.trouble_kind = None;
             // A car that left the world mid-incident keeps its marker: it was
@@ -164,25 +199,22 @@ pub fn compute(
             continue;
         }
 
-        // Without a track length the movement cannot be turned into a speed at
-        // all, and a zero would read as "stopped" for every car on the grid.
-        let speed_kmh = state
-            .last_lap_dist_pct
-            .filter(|_| track_length_m > 0.0)
-            .map(|previous| {
-                let moved_m = lap_delta_pct(previous, lap_dist_pct).abs() * track_length_m;
+        if state.recent_pcts.len() == SPEED_WINDOW_TICKS {
+            state.recent_pcts.pop_front();
+        }
 
-                moved_m / tick * 3.6
-            });
+        state.recent_pcts.push_back(lap_dist_pct);
 
-        state.last_lap_dist_pct = Some(lap_dist_pct);
-
+        let speed_kmh = window_speed_kmh(&state.recent_pcts, track_length_m, tick);
         let trouble = classify(surface, speed_kmh);
 
-        // The first tick after a car appears has no speed yet, so a stopped car
-        // is only recognised from the second tick on. Off-track needs no speed.
+        // Until the window has filled there is no speed, and an off-track car
+        // is held to the long confirm — it may well be running wide at speed.
         let confirm_seconds = match trouble {
-            Some(IncidentKind::OffTrack) => OFF_TRACK_CONFIRM_SECONDS,
+            Some(IncidentKind::OffTrack) => match speed_kmh {
+                Some(speed) if speed < OFF_TRACK_SLOW_KMH => OFF_TRACK_CONFIRM_SECONDS,
+                _ => OFF_TRACK_FAST_CONFIRM_SECONDS,
+            },
             _ => CONFIRM_SECONDS,
         };
 
@@ -412,6 +444,70 @@ mod tests {
 
             assert!(out.incidents.is_empty());
         }
+    }
+
+    fn run(cars: &mut HashMap<i32, CarState>, pct: f32, surface: TrackSurface) -> IncidentsFrame {
+        compute(&frame(&[pct], &[surface]), TRACK_M, TICK, cars)
+    }
+
+    #[test]
+    fn braking_into_a_hairpin_is_not_an_incident() {
+        let mut cars = HashMap::new();
+        let mut pct = 0.2;
+        // 360 km/h down to 40 km/h and back up, with the sim repeating the
+        // coordinate on every other frame the way it does for remote cars.
+        let speeds_pct: Vec<f32> = (0..60)
+            .map(|tick| {
+                let phase = (tick as f32 - 30.0).abs() / 30.0;
+
+                0.000_222 + (0.002 - 0.000_222) * phase
+            })
+            .collect();
+
+        for (tick, step) in speeds_pct.iter().enumerate() {
+            if tick % 2 == 1 {
+                pct += step * 2.0;
+            }
+
+            assert!(run(&mut cars, pct, TrackSurface::OnTrack)
+                .incidents
+                .is_empty());
+        }
+    }
+
+    #[test]
+    fn running_wide_at_speed_is_not_an_incident() {
+        let mut cars = HashMap::new();
+        let mut pct = 0.6;
+
+        for tick in 0..40 {
+            pct += 0.001;
+
+            let surface = if (10..25).contains(&tick) {
+                TrackSurface::OffTrack
+            } else {
+                TrackSurface::OnTrack
+            };
+
+            assert!(run(&mut cars, pct, surface).incidents.is_empty());
+        }
+    }
+
+    #[test]
+    fn a_long_slide_through_a_run_off_is_marked() {
+        let mut cars = HashMap::new();
+        let mut pct = 0.6;
+        let mut marked = false;
+
+        for _ in 0..40 {
+            pct += 0.001;
+
+            marked |= !run(&mut cars, pct, TrackSurface::OffTrack)
+                .incidents
+                .is_empty();
+        }
+
+        assert!(marked);
     }
 
     #[test]
