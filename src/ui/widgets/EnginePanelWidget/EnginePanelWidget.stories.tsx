@@ -49,7 +49,8 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/EnginePanelWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: EnginePanelWidget,
-    size: { width: 480, height: 80 },
+    // No height: the panel is autoHeight and sizes itself from its rows.
+    size: { width: 480 },
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
       store.units.setSystem(args.system);
@@ -129,6 +130,7 @@ export const FormulaCar: Story = {
   args: {
     car: 'formula',
     horizontalColumns: 4,
+    verticalColumns: 3,
   },
 };
 
@@ -171,13 +173,7 @@ export const Vertical1Col: Story = {
     horizontal: false,
     verticalColumns: 1,
   },
-  decorators: [
-    (Story) => (
-      <div style={{ width: '120px', height: '480px' }}>
-        <Story />
-      </div>
-    ),
-  ],
+  parameters: { widgetFrame: { width: 120 } },
 };
 
 export const Vertical2Cols: Story = {
@@ -185,13 +181,7 @@ export const Vertical2Cols: Story = {
     horizontal: false,
     verticalColumns: 2,
   },
-  decorators: [
-    (Story) => (
-      <div style={{ width: '240px', height: '240px' }}>
-        <Story />
-      </div>
-    ),
-  ],
+  parameters: { widgetFrame: { width: 240 } },
 };
 
 export const Vertical3Cols: Story = {
@@ -199,11 +189,5 @@ export const Vertical3Cols: Story = {
     horizontal: false,
     verticalColumns: 3,
   },
-  decorators: [
-    (Story) => (
-      <div style={{ width: '360px', height: '160px' }}>
-        <Story />
-      </div>
-    ),
-  ],
+  parameters: { widgetFrame: { width: 360 } },
 };

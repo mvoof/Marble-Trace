@@ -22,6 +22,7 @@ interface WidgetDecoratorOptions {
    * stays transparent to mimic the real overlay.
    */
   widgetBg?: string;
+  widgetBorder?: string;
   /**
    * Value for --wfs, the widget scale WidgetContainer derives from
    * width / designWidth. Stories that shrink the frame have to pass it, or the
@@ -49,6 +50,7 @@ export const widgetDecorator = (
     border = WIDGET_BORDER,
     widgetBg = background,
     scale,
+    widgetBorder = WIDGET_BORDER_COLOR,
   } = options;
 
   const WidgetDecoratorWrapper = (Story: Parameters<Decorator>[0]) => (
@@ -65,7 +67,7 @@ export const widgetDecorator = (
           minWidth,
           ['--wfs']: scale,
           ['--widget-bg']: widgetBg,
-          ['--widget-border']: WIDGET_BORDER_COLOR,
+          ['--widget-border']: widgetBorder,
         } as React.CSSProperties
       }
     >

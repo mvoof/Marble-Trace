@@ -56,7 +56,12 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/CloseBattleWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: CloseBattleWidget,
-    size: { width: 440, height: 420, background: '#0e0f12' },
+    size: {
+      width: 440,
+      height: 420,
+      background: 'transparent',
+      border: 'none',
+    },
     seedSnapshot: true,
     seed: (store, args) => {
       const settings: Partial<CloseBattleWidgetSettings> = {

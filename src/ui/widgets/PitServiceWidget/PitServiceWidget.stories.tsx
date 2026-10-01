@@ -63,7 +63,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/PitServiceWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: PitServiceWidget,
-    size: { width: 235, height: 280 },
+    size: { width: 235 },
     seedSnapshot: true,
     seed: (store, args) => {
       // A stint's worth of wear, so the tire block is sized against the spread

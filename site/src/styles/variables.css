@@ -1,0 +1,75 @@
+:root {
+  /* Brand Typography */
+  --font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  /* The app's own instrument face. Nothing is fetched for it: the stack is
+     what every target platform already ships, and a readout that waits on a
+     web font shows the wrong width before it arrives. */
+  --font-mono: Consolas, 'SF Mono', ui-monospace, 'Liberation Mono', monospace;
+  /* Barlow has no Cyrillic or Chinese: Cyrillic falls through to Roboto
+     Condensed (fonts.css), Chinese to the system's own CJK face. */
+  --font-hero-heading: 'Barlow Condensed', 'Roboto Condensed', 'Exo 2', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Layout Dimensions */
+  --container-width: 1680px;
+  --container-padding: clamp(1rem, 3vw, 2rem);
+  --header-height: 64px;
+  /* One vertical rhythm for every full section: the same breath above and
+     below each, so no section reads as louder or quieter by its padding. */
+  --section-pad-y: clamp(4.5rem, 8vw, 7rem);
+
+  /* Colors - Light Theme (matches screenshot navbar) */
+  --color-header-bg: #e3e6ea;
+  --color-header-bg-scrolled: rgba(227, 230, 234, 0.92);
+  --color-header-border: rgba(0, 0, 0, 0.07);
+  --color-header-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+
+  --color-brand: #111418;
+  --color-nav-text: #262a30;
+  --color-nav-text-hover: #000000;
+  --color-nav-hover-bg: rgba(0, 0, 0, 0.04);
+  --color-nav-active-bar: #111418;
+
+  /* The livery's palette: graphite and steel for ground, grey and silver
+     for the light panels, two blues for the accent. */
+  --livery-graphite: #1b2027;
+  --livery-steel: #2a3038;
+  --livery-grey: #aab3bd;
+  --livery-silver: #dde2e8;
+  --livery-blue: #4f8fe3;
+  --livery-sky: #72aaec;
+  --livery-deep: #2f6fd0;
+
+  /* Brand accent - the blue of the logo and the livery. Dark text on it
+     (5.8:1); white would not pass. */
+  --color-btn-download-bg: var(--livery-blue);
+  --color-btn-download-bg-hover: var(--livery-sky);
+  --color-btn-download-text: #0b1015;
+  --color-btn-download-shadow: 0 3px 12px rgba(79, 143, 227, 0.35);
+  --color-btn-download-shadow-hover: 0 6px 18px rgba(79, 143, 227, 0.5);
+
+  /* Social Icons */
+  --color-social: #1d2124;
+  --color-social-hover: #000000;
+
+  /* Mobile Drawer (High-contrast, sleek dark motorsport theme) */
+  --color-drawer-bg: #0f1216;
+  --color-drawer-card: #171b22;
+  --color-drawer-border: rgba(255, 255, 255, 0.08);
+  --color-drawer-text: #f3f4f6;
+  --color-drawer-text-muted: #9ca3af;
+  --color-drawer-hover: rgba(255, 255, 255, 0.06);
+  --color-backdrop: rgba(10, 14, 20, 0.65);
+
+  /* Page Body */
+  /* One ground for the whole page — the same value the header and the hero
+     use, so no section reads as a slightly different shade of white. */
+  --color-body-bg: #e3e6ea;
+  --color-body-text: #1a1d23;
+  --color-card-bg: #ffffff;
+  --color-card-border: rgba(0, 0, 0, 0.08);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}

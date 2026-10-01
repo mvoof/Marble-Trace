@@ -134,3 +134,16 @@ manifests, `GMeterWidget/g-meter-utils.ts`, `utils/weather-utils.ts` and
 
 Fonts: `$font-widget` (`Rajdhani`) for everything, `$font-mono` (`Consolas`) for
 figures that must not jitter between frames.
+
+## `src/storybook/` — story helpers
+
+How to use them: [widget-stories.md](widget-stories.md).
+
+| helper                                   | file                                                          |
+| ---------------------------------------- | ------------------------------------------------------------- |
+| `defineWidgetStories`, `previewScenario` | `define-widget-stories.tsx` — the whole meta but its title    |
+| settings → Controls (automatic)          | `widget-settings-args.ts`                                     |
+| `SETTING_OPTIONS` — string-union selects | `setting-options.ts` — add a new union setting's members here |
+| `whenSet`                                | `story-overrides.ts` — a knob that overrides only when set    |
+| `withReplay`                             | `with-replay.tsx` — a burst of frames for history widgets     |
+| mock builders                            | `src/store/preview/mocks/*.ts`                                |

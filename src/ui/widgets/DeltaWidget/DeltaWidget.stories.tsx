@@ -23,7 +23,12 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/DeltaWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: DeltaWidget,
-    size: { width: 200, height: 100 },
+    size: {
+      width: 200,
+      height: 100,
+      background: 'transparent',
+      border: 'none',
+    },
     seed: (store, args) => {
       store.liveWidgets.updateUserSettings('delta', {
         ...store.liveWidgets.getSettings<DeltaWidgetSettings>('delta'),

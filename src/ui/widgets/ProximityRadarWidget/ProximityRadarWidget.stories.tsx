@@ -23,7 +23,12 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/ProximityRadarWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: ProximityRadarWidget,
-    size: { width: 180, height: 180 },
+    size: {
+      width: 180,
+      height: 180,
+      background: 'transparent',
+      border: 'none',
+    },
     seed: (store, args) => {
       store.appSettings.dragMode = true;
 
@@ -51,6 +56,12 @@ export const CarBehind: Story = {
 };
 
 export const Surrounded: Story = {
+  args: {
+    showAxes: false,
+    showAxisTicks: false,
+    showRangeRings: false,
+  },
+
   parameters: previewScenario('radar-traffic'),
 };
 

@@ -14,6 +14,14 @@ import { useStore } from '@store/root-store-context';
 import { withStore } from '../../.storybook/decorators';
 import { widgetDecorator } from './widgetDecorator';
 import { seedFromSnapshot, seedScenario } from './seed-from-snapshot';
+import {
+  omitSettings,
+  pickSettings,
+  settingsArgTypesOf,
+  settingsDefaultsOf,
+  mergeArgTypes,
+  widgetIdOfComponent,
+} from './widget-settings-args';
 
 interface WidgetStorySize {
   width?: number | string;
@@ -21,6 +29,7 @@ interface WidgetStorySize {
   minWidth?: number;
   background?: string;
   widgetBg?: string;
+  widgetBorder?: string;
   display?: string;
   borderRadius?: number | string;
   overflow?: string;
@@ -49,6 +58,12 @@ export const previewScenario = (id: PreviewScenarioId) => ({
 interface DefineWidgetStoriesOptions<Args> {
   /** The widget component to render (no props — reads its own stores). */
   widget: ComponentType;
+  /**
+   * The widget whose settings become Controls. Found from the component's
+   * `mount.ts` when left out; a story rendering something that is not a
+   * mounted widget gets no settings controls.
+   */
+  widgetId?: string;
   /** Decorator frame size/background that mimics WidgetContainer. */
   size?: WidgetStorySize;
   /** Load the shared telemetry snapshot as a baseline before `seed`. */
@@ -101,6 +116,8 @@ export const defineWidgetStories = <Args,>(
   options: DefineWidgetStoriesOptions<Args>
 ): WidgetMeta<Args> => {
   const { widget: Widget, size, seedSnapshot, seed, args, argTypes } = options;
+  const widgetId = options.widgetId ?? widgetIdOfComponent(Widget);
+  const settingsDefaults = widgetId ? settingsDefaultsOf(widgetId) : {};
 
   const StoryHost = ({
     hostArgs,
@@ -129,6 +146,16 @@ export const defineWidgetStories = <Args,>(
           seedFromSnapshot(store);
         }
 
+        // Every setting is written back, not only the changed ones, so a
+        // control returned to its default restores it. The story's own seed
+        // runs after and keeps the last word on the keys it states.
+        if (widgetId) {
+          store.liveWidgets.updateUserSettings(
+            widgetId,
+            pickSettings(hostArgs as Record<string, unknown>, settingsDefaults)
+          );
+        }
+
         if (seed) {
           seed(store, hostArgs, scenarioId);
         }
@@ -137,7 +164,12 @@ export const defineWidgetStories = <Args,>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [store, argsSignature, scenarioId]);
 
-    return <Widget {...(hostArgs as object)} />;
+    const widgetProps = omitSettings(
+      hostArgs as Record<string, unknown>,
+      settingsDefaults
+    );
+
+    return <Widget {...widgetProps} />;
   };
 
   const frameDecorator: Decorator = (Story, context) => {
@@ -145,7 +177,15 @@ export const defineWidgetStories = <Args,>(
       | WidgetStorySize
       | undefined;
 
-    return widgetDecorator({ ...size, ...override })(Story, context);
+    // --widget-border follows the widget's own borderColor setting, as the
+    // app's frame does, so a plate drawn from it obeys the control.
+    const { borderColor } = context.args as { borderColor?: string };
+
+    return widgetDecorator({
+      ...size,
+      ...(borderColor ? { widgetBorder: borderColor } : undefined),
+      ...override,
+    })(Story, context);
   };
 
   return {
@@ -159,7 +199,7 @@ export const defineWidgetStories = <Args,>(
     ),
     parameters: { layout: 'centered' },
     decorators: [withStore(), frameDecorator],
-    args: args as Args,
-    argTypes,
+    args: { ...settingsDefaults, ...args } as Args,
+    argTypes: mergeArgTypes(settingsArgTypesOf(settingsDefaults), argTypes),
   } as WidgetMeta<Args>;
 };

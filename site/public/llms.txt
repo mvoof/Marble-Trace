@@ -1,0 +1,36 @@
+# Marble Trace
+
+> Marble Trace is a free, open-source telemetry overlay for iRacing on Windows. A small Rust core reads the sim's shared-memory telemetry, and 28 widgets are drawn in one transparent window across all monitors. Layouts switch automatically per session, and any layout can also be opened on a phone, a tablet, a second PC or an OBS browser source over the local network. Licensed GPL-3.0-or-later, no subscription, no account.
+
+## Key facts
+
+- Simulator: iRacing (the telemetry layer is multi-sim by design)
+- Platform: Windows 10/11, installer `Marble Trace_<version>_x64-setup.exe`
+- Price: free; license GPL-3.0-or-later
+- Stack: Rust + Tauri 2 backend, React 19 + MobX frontend
+- Telemetry: official iRacing SDK shared memory only, read-only — the same data every overlay uses
+- Privacy: anonymous launch analytics via Aptabase; no personal data, no iRacing telemetry leaves the PC
+- Download: https://github.com/mvoof/Marble-Trace/releases/latest
+- Source: https://github.com/mvoof/Marble-Trace
+- Community: https://discord.gg/GVaRsHbjxV
+
+## Widgets
+
+- Driving HUD: Race Dash, Invisible Dash, RPM Lights, Engine Panel, Battery, DRS, Input Trace, G-Meter, Coach
+- Timing & standings: Standings, Relative, Relative Map, Delta HUD, Sector Matrix, Lap Log, Timer
+- Awareness: Track Map, Proximity Radar, Radar Bar, Close Battle, Wheel to Wheel, Flags (LED and flat)
+- Car & session: Pit Service, Pit Line, Fuel calculator, Weather
+- Streaming: Stream Chat
+
+## Layouts and screens
+
+- A visual layout editor places widgets across every monitor; each widget has its own position, scale, opacity and columns.
+- Several layouts (practice, qualifying, race, garage) switch automatically by session type or by a hotkey / wheel button.
+- Remote screens: a layout monitor served over the LAN to any browser — phone, tablet, laptop, second PC or an OBS Browser Source with a transparent background. Open by link or QR code; nothing is installed on the device. Links carry a regenerable access token; devices can only watch and cannot change settings. `?widget=<id>` isolates one widget for its own OBS source.
+- Keyboard shortcuts and controller/wheel buttons (DirectInput) are bindable to app actions.
+
+## Docs
+
+- [README — full widget reference](https://github.com/mvoof/Marble-Trace/blob/main/README.md)
+- [Releases and changelog](https://github.com/mvoof/Marble-Trace/releases)
+- [Website](https://marbletrace.com/)

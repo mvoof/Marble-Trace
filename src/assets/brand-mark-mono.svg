@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 222 124" width="222" height="124">
+  <!-- The site header's one-tone mark turned for a dark ground: the strokes
+       step from dim to bright and the tail is the brightest, all in
+       currentColor so the consumer sets the tone. -->
+  <path d="M122 21 L159 99 C163 109 171 113 180 110 C189 107 197 96 205 70 C199 86 192 96 186 96 C182 96 180 93 178 88 L142 11 Z" fill="currentColor"/>
+  <g fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round">
+    <path d="M22 100 L56 44" stroke-opacity="0.5"/>
+    <path d="M56 44 L92 100" stroke-opacity="0.68"/>
+    <path d="M92 100 L132 16" stroke-opacity="0.86"/>
+  </g>
+</svg>

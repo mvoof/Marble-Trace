@@ -1,7 +1,7 @@
 ---
 name: new-widget
 description: Use when building a new overlay widget in this repository, or when the user asks to add a widget, scaffold one, or says "/new-widget". Walks the route in order — telemetry first, boilerplate last — asks the decisions it cannot make, and writes the files it can.
-version: '1.1.0'
+version: '1.2.0'
 ---
 
 # New widget
@@ -19,9 +19,9 @@ last because it is cheap to redo.
 or a `telemetryEvents` it does not read, is worse than one with neither. Where a
 step below says _ask_, ask — do not pick a plausible default and move on.
 
-**Four steps here fail silently** — 1, 7, 8 and 11. Nothing goes red; the widget
-just comes out empty, or unlabelled, or without a panel. Give those four more
-attention than the ones a command checks.
+**Five steps here fail silently** — 1, 7, 8, 11 and 12. Nothing goes red; the
+widget just comes out empty, or unlabelled, or without a panel, or undocumented.
+Give those five more attention than the ones a command checks.
 
 ---
 
@@ -207,10 +207,15 @@ hand**, there is no `Divider` in this tree. A row that only qualifies another
 takes `dependsOn="parentKey"` (or goes in a `DependentBlock`) and sits directly
 after its parent — never `{settings.x && …}` in the panel.
 
-`<Name>Widget.stories.tsx`: spread `defineWidgetStories({ widget, size, seed,
-seedSnapshot, args, argTypes })` from `@/storybook/define-widget-stories` — it
-mounts the widget with its background and does the `runInAction` seeding. Named
-`const` PascalCase exports, no default export.
+`<Name>Widget.stories.tsx`: **read [widget-stories.md](../../../docs/widget-stories.md)
+first** and follow it. In short: spread `defineWidgetStories({ widget, size,
+seed, seedSnapshot, args, argTypes })` from `@/storybook/define-widget-stories`
+— it mounts the widget with its frame and does the seeding. The widget's
+settings become Controls by themselves; `StoryArgs` holds only telemetry knobs,
+seeded through `store/preview/mocks/` builders and `whenSet`. Any new
+string-union setting gets its members in `src/storybook/setting-options.ts`.
+One story per state worth seeing, starting with the race look the site picture
+is taken from. Named `const` PascalCase exports, only `meta` as default.
 
 ## Step 9 — The hot/cold split, if a hot field was declared
 
@@ -254,4 +259,31 @@ Look for the four failures only visible here — one per quiet step:
 4. **Wrong scale** — a `rem`, a `vw`, a raw px where a token belonged, or a
    `WidgetPanel` pinned at its default 200px `minWidth` (steps 3 and 4).
 
-Report what the screenshot shows. Do not call the widget done before this.
+Report what the screenshot shows.
+
+## Step 12 — README and site
+
+[widget-authoring.md → Step 12](../../../docs/widget-authoring.md#step-12--put-it-in-the-readme-and-on-the-site).
+Nothing collects these; do all three.
+
+1. Add `'<file>': ['<Title>Widget', '<story>']` to `SHOTS` in
+   `scripts/capture-widgets.mjs`, pointing at a story seeded the way the widget
+   looks in a race — write one if none is (`withReplay` from
+   `src/storybook/with-replay.tsx` for a widget that draws a history). Ask the
+   user to run `npm run storybook`, or run it if it is not up, then
+   `npm run capture:widgets -- <file>`
+   ([CONTRIBUTING → Widget screenshots](../../../CONTRIBUTING.md#widget-screenshots)).
+   It refreshes the site's WebP copies in `site/assets/img/` too — they are
+   part of the change. Stop Storybook afterwards.
+2. `README.md`: a `### <Name>` section in its group with one or two sentences and
+   `<img src="site/assets/widgets/<file>.png" alt="<Name>" width="…">` — width
+   a third of the PNG's — plus a link in the group's line under **Widgets**.
+3. `site/index.html`: one card in the gallery sheet, in its group — a copy
+   of a neighbour's `<li>` with `id`, `data-shot`, `data-name`, `data-alt`,
+   `data-group`, `data-desc-id` and the caption changed — and its one-line
+   description as a `catalog-item` in the catalogue under the gallery, with
+   `<dd id="gw-desc-<file>">`. Then `npm run i18n:sync` in `site/` and the
+   new strings translated in `site/i18n/{ru,es,zh}.json`; the widget's name
+   stays English.
+
+Do not call the widget done before steps 11 and 12.

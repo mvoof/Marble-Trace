@@ -3,8 +3,10 @@
 import type { InputTraceSettings } from '@/types/widget-settings';
 import { mockCarDynamics } from '@store/preview/mocks/dynamics';
 import { mockCarInputs } from '@store/preview/mocks/inputs';
+import { seedInputHistory } from '@store/preview/preview-animator';
 import { InputTraceWidget } from './InputTraceWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import { withReplay } from '@/storybook/with-replay';
 
 interface StoryArgs {
   throttle: number;
@@ -75,6 +77,16 @@ export default meta;
 type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
+
+/** A few seconds of throttle and brake already drawn, as on the site. */
+export const Showcase: Story = {
+  args: {
+    steeringCenterDisplay: 'speed-gear',
+    steeringWheelStyle: 'formula-conspit',
+  },
+
+  decorators: [withReplay(seedInputHistory)],
+};
 
 export const NoTrace: Story = {
   args: { showTrace: false },

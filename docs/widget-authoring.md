@@ -43,14 +43,17 @@ remember to edit" is unfounded.
 
 ### The shared files you _do_ edit
 
-Four, and no more. They are here in one place because each of them is a glob's
-blind spot, and three of the four fail quietly or late.
+These, and no more. They are here in one place because each of them is a
+glob's blind spot, and all but the first fail quietly or late.
 
 | File                                     | When                    | What happens if you forget                                      |
 | ---------------------------------------- | ----------------------- | --------------------------------------------------------------- |
 | `src/types/widget-settings.ts`           | always                  | Fails `npm run typecheck` — a union cannot be built by a glob   |
 | `src/locales/{en,es,ru,zh}/widgets.json` | always                  | **Nothing fails.** The catalog and the panel show raw i18n keys |
 | `src/ui/app/widget-frame.ts`             | a non-rectangular plate | Nothing fails; the widget just wears a rectangle                |
+| `scripts/capture-widgets.mjs` (`SHOTS`)  | always                  | Nothing fails; the widget's picture is never taken (step 12)    |
+| `README.md`                              | always                  | Nothing fails; the widget is not documented (step 12)           |
+| `site/index.html`                        | always                  | Nothing fails; the widget is missing from the site (step 12)    |
 
 ---
 
@@ -328,9 +331,12 @@ A row that only qualifies another takes `dependsOn` (or goes in a
 **`<Name>Widget.stories.tsx`** — spread `defineWidgetStories({ widget, size,
 seed, seedSnapshot, args, argTypes })` from
 `@/storybook/define-widget-stories`, which mounts the widget
-with its background and does the `runInAction` seeding for you. Named `const`
-PascalCase exports, no default export. Nothing that exists only for a story may
-be added to `store/preview/`.
+with its background and does the `runInAction` seeding for you. The widget's
+settings appear on the Controls tab by themselves, read from the manifest; the
+story declares only the telemetry knobs. Named `const` PascalCase exports, no
+default export. Nothing that exists only for a story may be added to
+`store/preview/`. Everything else — the seed, scenarios, which states to cover,
+history widgets — is in [widget-stories.md](widget-stories.md).
 
 > _Enforced by:_ a missing `PANEL_WIDGET_IDS`, or a second export beside it, is
 > silent — the widget simply has no panel, or the wrong one. Together with steps
@@ -396,6 +402,42 @@ Look for the four failures that only appear here — one per quiet step:
 
 ---
 
+## Step 12 — Put it in the README and on the site
+
+A widget nobody can find has not shipped. The README and the website gallery
+show every widget, from one set of pictures in `site/assets/widgets/` —
+transparent PNGs at 3x, taken from Storybook by a script. Nothing collects any
+of this; it is three edits by hand.
+
+1. **The picture.** It is taken from the widget's story, so write the story
+   the picture should show — seeded the way the widget looks in a race — and
+   add the widget to `SHOTS` in `scripts/capture-widgets.mjs` (file name →
+   story). A widget that draws a history needs a burst of frames after mount:
+   `withReplay` from `src/storybook/with-replay.tsx`. Then, with
+   `npm run storybook` running, `npm run capture:widgets -- <file>`
+   ([CONTRIBUTING → Widget screenshots](../CONTRIBUTING.md#widget-screenshots)).
+   It also refreshes the site's WebP copies in `site/assets/img/`; commit
+   them with the PNG.
+2. **The README.** A `### <Name>` section in the widget's group: one or two
+   sentences on what it shows, then
+   `<img src="site/assets/widgets/<file>.png" alt="<Name>" width="…">` with
+   the width a third of the PNG's — the widget's own size. And a link to the
+   section in the group's line at the top of **Widgets**.
+3. **The site.** One card in the gallery sheet in `site/index.html`, in the
+   widget's group — one per widget, the README's variants stay in the README:
+   copy a neighbour's `<li>` and change `id`, `data-shot`, `data-name`,
+   `data-alt`, `data-group`, `data-desc-id` and the caption. The description
+   itself goes once into the catalogue under the gallery (`<details
+class="catalog">`): a `<div class="catalog-item">` in the same group with
+   `<dd id="gw-desc-<file>">`, the id `data-desc-id` points at. Then
+   `npm run i18n:sync` in `site/` and the new strings translated in
+   `site/i18n/ru.json`, `es.json`, `zh.json` — the widget's name stays
+   English, as it does in the app.
+
+> _Enforced by:_ nothing.
+
+---
+
 ## The short version
 
 1. Does the field exist, at what rate, is it gated → `telemetryEvents` and
@@ -411,7 +453,8 @@ Look for the four failures that only appear here — one per quiet step:
 9. The hot/cold split, reviewed against `rendering.md`, if a hot field was declared
 10. `typecheck`, `lint`, `test`
 11. `tauri:dev`, and look at it
+12. Picture, README section, site card
 
-The four steps nothing enforces: **1** (declaring what you read), **7**
-(strings), **8** (the panel registering), **11** (looking at it). Everything else
-fails a command.
+The steps nothing enforces: **1** (declaring what you read), **7** (strings),
+**8** (the panel registering), **11** (looking at it), **12** (documenting it).
+Everything else fails a command.

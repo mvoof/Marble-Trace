@@ -5,11 +5,13 @@ import type {
   GMeterDisplayMode,
 } from '@/types/widget-settings';
 import { G_ACCEL_MPS2, mockCarDynamics } from '@store/preview/mocks/dynamics';
+import type { RootStore } from '@store/root-store';
 import { GMeterWidget } from './GMeterWidget';
 import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import { withReplay } from '@/storybook/with-replay';
 
 interface StoryArgs {
   displayMode: GMeterDisplayMode;
@@ -27,7 +29,12 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/GMeter',
   ...defineWidgetStories<StoryArgs>({
     widget: GMeterWidget,
-    size: { width: 240, height: 240, background: 'rgba(21, 22, 26, 0.8)' },
+    size: {
+      width: 240,
+      height: 240,
+      background: 'transparent',
+      border: 'none',
+    },
     seed: (store, args) => {
       if (args.latG !== undefined || args.longG !== undefined) {
         store.player.updateCarDynamics(
@@ -54,6 +61,49 @@ const meta: Meta<StoryArgs> = {
 
 export default meta;
 type Story = StoryObj<StoryArgs>;
+
+// One corner at 60 Hz: brake in a straight line, turn in trailing off the
+// brake, hold the lateral load through the apex, and power out of it
+const CORNER_SAMPLES = 240;
+const SAMPLES_PER_SECOND = 60;
+const CORNER_SECONDS = CORNER_SAMPLES / SAMPLES_PER_SECOND;
+const PEAK_BRAKE_G = 2.6;
+const PEAK_LATERAL_G = 2.3;
+const PEAK_EXIT_G = 0.9;
+// Shares of the corner, 0 to 1: braking fades out over its first part, the
+// power comes in from EXIT_START on
+const BRAKE_SPAN = 0.62;
+const EXIT_START = 0.55;
+const EXIT_SPAN = 0.45;
+
+const replayCorner = (store: RootStore): void => {
+  for (let index = 0; index < CORNER_SAMPLES; index++) {
+    const phase = index / SAMPLES_PER_SECOND / CORNER_SECONDS;
+    const braking = Math.max(0, Math.cos((phase / BRAKE_SPAN) * (Math.PI / 2)));
+    const cornering = Math.sin(phase * Math.PI);
+    const exiting = Math.max(
+      0,
+      Math.sin(((phase - EXIT_START) / EXIT_SPAN) * (Math.PI / 2))
+    );
+
+    store.player.updateCarDynamics(
+      mockCarDynamics({
+        lat_accel: cornering * PEAK_LATERAL_G * G_ACCEL_MPS2,
+        long_accel:
+          (exiting * PEAK_EXIT_G - braking * PEAK_BRAKE_G) * G_ACCEL_MPS2,
+      })
+    );
+  }
+};
+
+/** A corner's worth of load already on the dial, as on the site. */
+export const Showcase: Story = {
+  args: {
+    scale: 2,
+  },
+
+  decorators: [withReplay(replayCorner)],
+};
 
 export const Idle: Story = { args: { latG: 0, longG: 0 } };
 

@@ -1,4 +1,4 @@
-import { useRef, useCallback, useLayoutEffect, useContext } from 'react';
+import { useRef, useCallback, useLayoutEffect } from 'react';
 
 import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
 import {
@@ -22,7 +22,7 @@ import type { GMeterWidgetSettings } from '@/types/widget-settings';
 
 import styles from './GMeterTrace.module.scss';
 import { usePlayerStore, useLiveWidgetsStore } from '@store/root-store-context';
-import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
+import { useWidgetInstanceId } from '@ui/hooks/useWidgetSettings';
 
 const BADGE_BASE_WIDTH_PX = 240;
 const BADGE_FONT_SIZE_PX = 18;
@@ -294,7 +294,7 @@ interface GMeterTraceProps {
 // MobX observables directly, so React re-renders are not needed for data updates.
 // observer() would cause 60 Hz React re-renders on every carDynamics change.
 export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
-  const widgetId = useContext(WidgetIdContext);
+  const widgetId = useWidgetInstanceId('g-meter');
   const telemetry = usePlayerStore();
   const liveWidgets = useLiveWidgetsStore();
 

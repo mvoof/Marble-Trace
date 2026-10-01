@@ -23,7 +23,13 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/RadarBarWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: RadarBarWidget,
-    size: { width: 800, height: 380 },
+    size: {
+      width: 800,
+      height: 380,
+      background: 'transparent',
+      widgetBg: 'transparent',
+      border: 'none',
+    },
     seed: (store, args) => {
       store.appSettings.dragMode = true;
 

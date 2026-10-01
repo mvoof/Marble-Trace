@@ -1,0 +1,15 @@
+/* ==========================================================================
+   Page stacking
+
+   The page used to lie on a technical drawing (assets/background.svg); the
+   ground is plain now, the body's own colour. What stays is the stacking
+   the sections were built on: everything the page draws is one layer up.
+   ========================================================================== */
+
+/* Everything the page itself draws stands above the ground */
+.site-header,
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
