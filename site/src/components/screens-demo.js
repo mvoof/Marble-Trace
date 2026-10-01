@@ -4,7 +4,9 @@
  * A node on each screen of the rig. A click dollies the camera into the same
  * picture until that screen fills the stage, and a caption names it; Back,
  * Escape or a click on the picture pulls the camera out again. The close-up
- * is the preview itself, only nearer - nothing is swapped in.
+ * is the preview itself, only nearer. The page loads a srcset copy sized
+ * for the full view; the first zoom fetches the full-resolution source and
+ * swaps it in once decoded, so the close-up has real pixels to show.
  */
 
 (() => {
@@ -12,6 +14,10 @@
 
   const ZOOMED_CLASS = 'is-zoomed';
   const FILL = 0.9;
+  const FULL_SHOT_URL = new URL(
+    '../../assets/screens/rig.webp',
+    import.meta.url
+  ).href;
 
   const initScreensScene = () => {
     const stage = document.querySelector('[data-screens-stage]');
@@ -23,7 +29,31 @@
     }
 
     const captions = Array.from(caption.querySelectorAll('[data-caption]'));
+    const shot = scene.querySelector('.screens-scene-shot');
     let active = null;
+    let fullShotRequested = false;
+
+    const loadFullShot = () => {
+      if (fullShotRequested || !shot) {
+        return;
+      }
+
+      fullShotRequested = true;
+
+      const full = new Image();
+
+      full.src = FULL_SHOT_URL;
+      full
+        .decode()
+        .then(() => {
+          shot.removeAttribute('srcset');
+          shot.removeAttribute('sizes');
+          shot.src = FULL_SHOT_URL;
+        })
+        .catch(() => {
+          fullShotRequested = false;
+        });
+    };
 
     // data-zoom is the screen's box in percent of the picture: x y w h.
     const frame = (spot) => {
@@ -47,6 +77,7 @@
 
     const zoomIn = (spot) => {
       active = spot;
+      loadFullShot();
       frame(spot);
       scene.classList.add(ZOOMED_CLASS);
       captions.forEach((entry) => {

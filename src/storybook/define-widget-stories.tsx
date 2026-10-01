@@ -29,6 +29,7 @@ interface WidgetStorySize {
   minWidth?: number;
   background?: string;
   widgetBg?: string;
+  widgetBorder?: string;
   display?: string;
   borderRadius?: number | string;
   overflow?: string;
@@ -176,7 +177,15 @@ export const defineWidgetStories = <Args,>(
       | WidgetStorySize
       | undefined;
 
-    return widgetDecorator({ ...size, ...override })(Story, context);
+    // --widget-border follows the widget's own borderColor setting, as the
+    // app's frame does, so a plate drawn from it obeys the control.
+    const { borderColor } = context.args as { borderColor?: string };
+
+    return widgetDecorator({
+      ...size,
+      ...(borderColor ? { widgetBorder: borderColor } : undefined),
+      ...override,
+    })(Story, context);
   };
 
   return {
