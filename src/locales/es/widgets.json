@@ -140,7 +140,9 @@
       "nextStopForecastDesc": "Vuelta y tiempo estimados hasta que se abra la ventana de boxes.",
       "lowFuelWarningThreshold": "Umbral de aviso de poco combustible (vueltas)",
       "avgWindow": "Ventana de promediado del consumo, vueltas (0 = todas)",
-      "avgWindowDesc": "Casi todo el widget sale de esta media: la celda AVG del resumen, LAPS LEFT, el combustible restante en meta, la cantidad a repostar y los límites de la ventana de boxes. Una ventana corta sigue el ritmo actual pero salta mucho; una larga se lee estable pero tarda en reaccionar a un cambio de ritmo o de tiempo. La columna AVG ALL siempre abarca todas las vueltas, así que se pueden comparar una al lado de la otra."
+      "avgWindowDesc": "Casi todo el widget sale de esta media: la celda AVG del resumen, LAPS LEFT, el combustible restante en meta, la cantidad a repostar y los límites de la ventana de boxes. Una ventana corta sigue el ritmo actual pero salta mucho; una larga se lee estable pero tarda en reaccionar a un cambio de ritmo o de tiempo. La columna AVG ALL siempre abarca todas las vueltas, así que se pueden comparar una al lado de la otra.",
+      "countYellowFlagLaps": "Contar vueltas con bandera amarilla",
+      "countYellowFlagLapsDesc": "Incluye en la media de consumo las vueltas con bandera amarilla local. En un circuito una amarilla rara vez frena la vuelta lo bastante como para cambiar el consumo. Las vueltas bajo safety car (full-course caution) y bandera roja siempre se excluyen."
     },
     "enginePanel": {
       "moduleParameters": "Parámetros del módulo",

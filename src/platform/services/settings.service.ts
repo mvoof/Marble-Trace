@@ -27,6 +27,15 @@ export const setFuelAvgWindowSilent = (window: number): void => {
   );
 };
 
+export const setFuelCountYellowLapsSilent = (count: boolean): void => {
+  invoke('set_fuel_count_yellow_laps', { count }).catch((error) =>
+    console.error(
+      '[settings.service] set_fuel_count_yellow_laps failed:',
+      error
+    )
+  );
+};
+
 export const setCarLengthSilent = (length: number): void => {
   invoke('set_car_length', { length }).catch((error) =>
     console.error('[settings.service] set_car_length failed:', error)

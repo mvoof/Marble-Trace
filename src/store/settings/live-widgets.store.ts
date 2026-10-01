@@ -8,6 +8,7 @@ import {
 } from '@utils/widget-instance';
 import {
   setFuelAvgWindowSilent,
+  setFuelCountYellowLapsSilent,
   setPitWarningLapsSilent,
 } from '@platform/services/settings.service';
 import type { LayoutsStore } from '@store/settings/layouts.store';
@@ -463,6 +464,7 @@ export class LiveWidgetsStore implements WidgetMap {
 
         setPitWarningLapsSilent(settings.pitWarningLaps);
         setFuelAvgWindowSilent(settings.fuelAvgWindow);
+        setFuelCountYellowLapsSilent(settings.countYellowFlagLaps);
       }
     });
   }
@@ -779,6 +781,12 @@ export class LiveWidgetsStore implements WidgetMap {
     if (type === 'fuel' && 'fuelAvgWindow' in resolvedPartial) {
       setFuelAvgWindowSilent(
         (resolvedPartial as FuelWidgetSettings).fuelAvgWindow
+      );
+    }
+
+    if (type === 'fuel' && 'countYellowFlagLaps' in resolvedPartial) {
+      setFuelCountYellowLapsSilent(
+        (resolvedPartial as FuelWidgetSettings).countYellowFlagLaps
       );
     }
   }

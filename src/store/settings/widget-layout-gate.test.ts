@@ -8,6 +8,7 @@ import type { SavedLayout } from '@/types/widget-settings';
 vi.mock('@platform/services/settings.service', () => ({
   setPitWarningLapsSilent: vi.fn(),
   setFuelAvgWindowSilent: vi.fn(),
+  setFuelCountYellowLapsSilent: vi.fn(),
   setCarLengthSilent: vi.fn(),
 }));
 vi.mock('@platform/services/events.service', () => ({

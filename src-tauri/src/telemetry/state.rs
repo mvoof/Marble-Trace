@@ -19,6 +19,7 @@ pub struct FuelTuning {
     pub pit_warning_laps: AtomicU32,
     /// Laps averaged for consumption. 0 = the whole recorded history.
     pub avg_window: AtomicUsize,
+    pub count_local_yellow_laps: AtomicBool,
 }
 
 impl Default for FuelTuning {
@@ -26,6 +27,7 @@ impl Default for FuelTuning {
         Self {
             pit_warning_laps: AtomicU32::new(DEFAULT_PIT_WARNING_LAPS.to_bits()),
             avg_window: AtomicUsize::new(DEFAULT_FUEL_AVG_WINDOW),
+            count_local_yellow_laps: AtomicBool::new(false),
         }
     }
 }
@@ -35,6 +37,7 @@ impl FuelTuning {
         FuelSettings {
             pit_warning_laps: f32::from_bits(self.pit_warning_laps.load(Ordering::Relaxed)),
             avg_window: self.avg_window.load(Ordering::Relaxed),
+            count_local_yellow_laps: self.count_local_yellow_laps.load(Ordering::Relaxed),
         }
     }
 }

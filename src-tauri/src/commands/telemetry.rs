@@ -176,6 +176,22 @@ pub async fn set_fuel_avg_window(
     Ok(())
 }
 
+/// Whether laps under a local yellow count towards fuel consumption.
+#[tauri::command]
+pub async fn set_fuel_count_yellow_laps(
+    state: State<'_, TelemetryState>,
+    count: bool,
+) -> Result<(), String> {
+    state
+        .fuel_tuning
+        .count_local_yellow_laps
+        .store(count, Ordering::Relaxed);
+
+    debug!("Fuel count local yellow laps updated to: {count}");
+
+    Ok(())
+}
+
 #[tauri::command]
 pub async fn set_car_length(state: State<'_, TelemetryState>, length: f32) -> Result<(), String> {
     if !(0.5..=15.0).contains(&length) || !length.is_finite() {
