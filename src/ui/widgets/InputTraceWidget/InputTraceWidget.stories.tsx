@@ -80,6 +80,11 @@ export const Default: Story = {};
 
 /** A few seconds of throttle and brake already drawn, as on the site. */
 export const Showcase: Story = {
+  args: {
+    steeringCenterDisplay: 'speed-gear',
+    steeringWheelStyle: 'formula-conspit',
+  },
+
   decorators: [withReplay(seedInputHistory)],
 };
 
