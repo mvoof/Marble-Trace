@@ -107,6 +107,15 @@
   text-align: right;
 }
 
+.total {
+  min-width: 4ch;
+  text-align: right;
+}
+
+.slash {
+  color: $widget-label;
+}
+
 .plus {
   color: $widget-label;
 }

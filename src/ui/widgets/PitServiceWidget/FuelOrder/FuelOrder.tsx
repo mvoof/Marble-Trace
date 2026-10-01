@@ -35,7 +35,7 @@ const DRAG_THRESHOLD_PX = 3;
  * and right to set the level to arrive at. A press that does not move is still
  * the on/off toggle.
  *
- * Both halves are shown — `58 + 12` — because the number that decides a stop is
+ * Both halves are shown — `58 + 12/70` — with the sum after the slash, because the number that decides a stop is
  * the sum: an order of twelve liters means nothing until it is read against a
  * tank that is already three quarters full. The order stops at the brim for the
  * same reason: past it the sim keeps the fuel it can hold and the driver reads a
@@ -72,6 +72,11 @@ export const FuelOrder = observer(() => {
       ? Math.min(FULL_RATIO, Math.max(tankRatio, target / capacity))
       : tankRatio;
   const orderedRatio = targetRatio - tankRatio;
+
+  // What the car leaves the box with — the number the order is read against.
+  // The target is anchored to the tank as it was before the crew started, so
+  // it holds still while the fuel goes in instead of climbing with it.
+  const afterStop = target ?? inTank + ordered;
 
   // The bar is the tank, so the pointer names the level to arrive at and the
   // order is whatever is missing to reach it. Dragging below what is already
@@ -180,6 +185,11 @@ export const FuelOrder = observer(() => {
           <span className={styles.added}>
             {ordered > 0 ? wholeUnits(ordered, units.unitSystem) : '0'}
           </span>
+        </span>
+
+        <span className={styles.total}>
+          <span className={styles.slash}>/</span>
+          {wholeUnits(afterStop, units.unitSystem)}
         </span>
       </span>
 
