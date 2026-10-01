@@ -297,7 +297,6 @@
   "GitHub repository": "Репозиторий на GitHub",
   "Discord server": "Сервер Discord",
   "Built with Rust and the Tauri® framework · telemetry by kerb": "Сделано на Rust и фреймворке Tauri® · телеметрия через kerb",
-  "© 2026 Marble Trace · GPL-3.0": "© 2026 Marble Trace · GPL-3.0",
   "TAURI is trademark of The Tauri Programme within the Commons Conservancy. Rust is a trademark of the Rust Foundation. iRacing is a trademark of iRacing.com Motorsport Simulations, LLC. Windows is a trademark of the Microsoft group of companies. GitHub is a trademark of GitHub, Inc. Discord is a trademark of Discord Inc. All other names are the property of their respective owners. Marble Trace is an independent open-source project and is not affiliated with, sponsored or endorsed by any of them.": "TAURI — товарный знак The Tauri Programme within the Commons Conservancy. Rust — товарный знак Rust Foundation. iRacing — товарный знак iRacing.com Motorsport Simulations, LLC. Windows — товарный знак группы компаний Microsoft. GitHub — товарный знак GitHub, Inc. Discord — товарный знак Discord Inc. Все прочие названия принадлежат их владельцам. Marble Trace — независимый проект с открытым кодом, не связанный ни с одной из этих компаний и не спонсируемый и не одобренный ими.",
   "Screenshot": "Скриншот",
   "Close the screenshot": "Закрыть скриншот"
