@@ -29,7 +29,12 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/GMeter',
   ...defineWidgetStories<StoryArgs>({
     widget: GMeterWidget,
-    size: { width: 240, height: 240, background: 'rgba(21, 22, 26, 0.8)' },
+    size: {
+      width: 240,
+      height: 240,
+      background: 'transparent',
+      border: 'none',
+    },
     seed: (store, args) => {
       if (args.latG !== undefined || args.longG !== undefined) {
         store.player.updateCarDynamics(
@@ -93,6 +98,10 @@ const replayCorner = (store: RootStore): void => {
 
 /** A corner's worth of load already on the dial, as on the site. */
 export const Showcase: Story = {
+  args: {
+    scale: 2,
+  },
+
   decorators: [withReplay(replayCorner)],
 };
 

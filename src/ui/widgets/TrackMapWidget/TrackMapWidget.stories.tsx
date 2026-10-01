@@ -75,7 +75,12 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/TrackMapWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: TrackMapView,
-    size: { width: DESIGN_SIZE, height: DESIGN_SIZE },
+    size: {
+      width: DESIGN_SIZE,
+      height: DESIGN_SIZE,
+      background: 'transparent',
+      border: 'none',
+    },
     seedSnapshot: true,
     seed: (store, args) => {
       seedField(store);

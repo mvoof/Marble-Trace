@@ -32,7 +32,12 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/LedFlagWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: LedFlagWidget,
-    size: { width: DESIGN_SIZE, height: DESIGN_SIZE, background: '#111' },
+    size: {
+      width: DESIGN_SIZE,
+      height: DESIGN_SIZE,
+      background: 'transparent',
+      border: 'none',
+    },
     seed: (store, args) => {
       store.liveWidgets.updateUserSettings('led-flags', {
         ...store.liveWidgets.getSettings<FlagDisplaySettings>('led-flags'),
