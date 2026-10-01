@@ -77,7 +77,7 @@ const SHOTS = {
   'radar-bar': ['RadarBarWidget', 'both-sides', { ground: false }],
   relative: ['RelativeWidget', 'default'],
   'relative-map': ['RelativeMapWidget', 'horizontal'],
-  'rpm-lights': ['RpmLightsWidget', 'shift-light'],
+  'rpm-lights': ['RpmLightsWidget', 'mid-rpm'],
   'sector-matrix': ['SectorMatrixWidget', 'in-progress'],
   standings: ['StandingsWidget', 'default'],
   'stream-chat': ['StreamChatWidget', 'default'],
