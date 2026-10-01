@@ -345,24 +345,6 @@
       }
     ]
   },
-  "assets/widgets/race-dash-pit.png": {
-    "width": 1254,
-    "height": 342,
-    "variants": [
-      {
-        "width": 480,
-        "path": "assets/img/widgets/race-dash-pit-480.webp"
-      },
-      {
-        "width": 960,
-        "path": "assets/img/widgets/race-dash-pit-960.webp"
-      },
-      {
-        "width": 1254,
-        "path": "assets/img/widgets/race-dash-pit-1254.webp"
-      }
-    ]
-  },
   "assets/widgets/race-dash.png": {
     "width": 1254,
     "height": 312,
