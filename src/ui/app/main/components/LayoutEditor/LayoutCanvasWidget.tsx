@@ -1,3 +1,4 @@
+import { widgetTypeOf } from '@utils/widget-instance';
 import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { LiveWidgetsStore } from '@store/settings/live-widgets.store';
@@ -91,7 +92,7 @@ export const LayoutCanvasWidget = observer(
       : width / designWidth;
 
     const frameStyle = widgetFrameStyle({
-      widgetId,
+      widgetType: widget ? widgetTypeOf(widget) : widgetId,
       userSettings: widget?.userSettings ?? {},
       widgetScale,
       transparentContainer,
