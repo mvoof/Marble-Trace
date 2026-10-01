@@ -317,17 +317,17 @@
       }
     ]
   },
-  "assets/widgets/pit-stop.png": {
+  "assets/widgets/pit-service.png": {
     "width": 708,
-    "height": 951,
+    "height": 960,
     "variants": [
       {
         "width": 480,
-        "path": "assets/img/widgets/pit-stop-480.webp"
+        "path": "assets/img/widgets/pit-service-480.webp"
       },
       {
         "width": 708,
-        "path": "assets/img/widgets/pit-stop-708.webp"
+        "path": "assets/img/widgets/pit-service-708.webp"
       }
     ]
   },

@@ -33,4 +33,4 @@
 
 - [README — full widget reference](https://github.com/mvoof/Marble-Trace/blob/main/README.md)
 - [Releases and changelog](https://github.com/mvoof/Marble-Trace/releases)
-- [Website](https://mvoof.github.io/Marble-Trace/)
+- [Website](https://marbletrace.com/)

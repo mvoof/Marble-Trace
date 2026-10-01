@@ -45,4 +45,4 @@ Allow: /
 User-agent: YandexAdditional
 Allow: /
 
-Sitemap: https://mvoof.github.io/Marble-Trace/sitemap.xml
+Sitemap: https://marbletrace.com/sitemap.xml

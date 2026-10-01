@@ -253,7 +253,7 @@ Everything about the stop in one plate: live pit-lane speed against the pit limi
 
 Optional automation adds fuel for you and orders new tires once wear drops below a configurable threshold. Blocks (speed, fuel, tires, repairs, footer) are toggled individually.
 
-<img src="site/assets/widgets/pit-stop.png" alt="Pit Service" width="236">
+<img src="site/assets/widgets/pit-service.png" alt="Pit Service" width="236">
 
 ---
 

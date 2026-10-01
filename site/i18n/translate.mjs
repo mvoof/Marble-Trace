@@ -19,7 +19,7 @@ import { parse, NodeType } from 'node-html-parser';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-export const SITE_URL = 'https://mvoof.github.io/Marble-Trace/';
+export const SITE_URL = 'https://marbletrace.com/';
 
 /** Every language the site is published in; English is the source. */
 export const LOCALES = [

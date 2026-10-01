@@ -70,7 +70,7 @@ const SHOTS = {
   map: ['TrackMapWidget', 'with-sectors', { ground: false }],
   'map-record': ['TrackMapWidget', 'recording', { ground: false }],
   'pit-line': ['PitLineWidget', 'on-the-way-in'],
-  'pit-stop': ['PitServiceWidget', 'servicing'],
+  'pit-service': ['PitServiceWidget', 'servicing'],
   'proximity-radar': ['ProximityRadarWidget', 'surrounded', { ground: false }],
   'race-dash': ['RaceDashWidget', 'on-pace'],
   'race-dash-pit': ['RaceDashWidget', 'pit-limiter'],
