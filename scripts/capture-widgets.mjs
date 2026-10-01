@@ -69,7 +69,6 @@ const SHOTS = {
   'pit-service': ['PitServiceWidget', 'servicing'],
   'proximity-radar': ['ProximityRadarWidget', 'surrounded'],
   'race-dash': ['RaceDashWidget', 'on-pace'],
-  'race-dash-pit': ['RaceDashWidget', 'pit-limiter'],
   'radar-bar': ['RadarBarWidget', 'both-sides'],
   relative: ['RelativeWidget', 'default'],
   'relative-map': ['RelativeMapWidget', 'horizontal'],
@@ -102,6 +101,8 @@ const clearGround = (page, keepBorder, keepGround) =>
 
       if (!border) {
         frame.style.borderColor = 'transparent';
+        // A widget that draws its own plate (Race Dash) borders it from this
+        frame.style.setProperty('--widget-border', 'transparent');
       }
 
       if (!ground) {
