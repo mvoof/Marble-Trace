@@ -1,8 +1,14 @@
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Switch, Tooltip } from 'antd';
-import { Copy, Monitor, TabletSmartphone } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Monitor,
+  TabletSmartphone,
+} from 'lucide-react';
 import type {
   LayoutMonitor,
   WidgetDefaultConfig,
@@ -170,38 +176,69 @@ const WidgetTypeRow = observer(
   }
 );
 
-const ScreenHeading = observer(({ monitor }: { monitor: LayoutMonitor }) => {
-  const Icon = isRemoteMonitor(monitor) ? TabletSmartphone : Monitor;
+const ScreenHeading = observer(
+  ({
+    monitor,
+    isCollapsed,
+    onToggle,
+  }: {
+    monitor: LayoutMonitor;
+    isCollapsed: boolean;
+    onToggle: () => void;
+  }) => {
+    const liveWidgets = useLiveWidgetsStore();
+    const Icon = isRemoteMonitor(monitor) ? TabletSmartphone : Monitor;
+    const Chevron = isCollapsed ? ChevronRight : ChevronDown;
+    const switchedOn = liveWidgets.widgetsOnMonitorNamed(monitor.name).length;
 
-  return (
-    <div className={styles.screenHeading}>
-      <Icon size={12} />
+    return (
+      <button
+        type="button"
+        className={styles.screenHeading}
+        aria-expanded={!isCollapsed}
+        onClick={onToggle}
+      >
+        <Chevron size={12} />
 
-      <span className={styles.screenName}>{monitor.name}</span>
+        <Icon size={12} />
 
-      <span className={styles.screenSize}>
-        {monitor.bounds.width}×{monitor.bounds.height}
-      </span>
-    </div>
-  );
-});
+        <span className={styles.screenName}>{monitor.name}</span>
+
+        <span className={styles.screenSize}>
+          {monitor.bounds.width}×{monitor.bounds.height}
+        </span>
+
+        {/* What a folded screen still has to say: how much is on it. */}
+        <span className={styles.screenCount}>{switchedOn}</span>
+      </button>
+    );
+  }
+);
 
 const ScreenGroup = observer(
   ({ monitor, ...selection }: SelectionProps & { monitor: LayoutMonitor }) => {
     const liveWidgets = useLiveWidgetsStore();
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
       <div className={styles.screenGroup}>
-        <ScreenHeading monitor={monitor} />
+        <ScreenHeading
+          monitor={monitor}
+          isCollapsed={isCollapsed}
+          onToggle={() => setIsCollapsed((collapsed) => !collapsed)}
+        />
 
-        {liveWidgets.monitorWidgetRows(monitor.name).map((row) => (
-          <WidgetTypeRow
-            key={row.type}
-            row={row}
-            monitorName={monitor.name}
-            {...selection}
-          />
-        ))}
+        {!isCollapsed &&
+          liveWidgets
+            .monitorWidgetRows(monitor.name)
+            .map((row) => (
+              <WidgetTypeRow
+                key={row.type}
+                row={row}
+                monitorName={monitor.name}
+                {...selection}
+              />
+            ))}
       </div>
     );
   }
