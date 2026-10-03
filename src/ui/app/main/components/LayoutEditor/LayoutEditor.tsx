@@ -366,6 +366,9 @@ export const LayoutEditor = observer(
         okButtonProps: { danger: true },
         cancelText: t('layoutEditor.cancel'),
         onOk: removeIt,
+        // Inside the editor: in fullscreen only the editor's own element is
+        // drawn, and a dialog mounted on the app root would never be seen.
+        getContainer: () => rootRef.current ?? document.body,
       });
     };
 
