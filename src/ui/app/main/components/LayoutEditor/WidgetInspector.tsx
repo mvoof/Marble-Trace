@@ -86,8 +86,8 @@ export const WidgetInspector = observer(
       );
     }
 
-    const isCopy = widget.type !== undefined;
     const { ordinal, total } = liveWidgets.copyOrdinalOf(widget.id);
+    const isCopy = ordinal > 1;
 
     return (
       <div className={styles.root}>
@@ -109,9 +109,9 @@ export const WidgetInspector = observer(
             </Tooltip>
           )}
 
-          {/* Only a copy: deleting the original would have the next layout load
-              put it straight back, which is what the enable switch is for. */}
-          {isCopy && (
+          {/* Never the last instance of a widget: there would be nothing left
+              to switch on again, which is what the enable switch is for. */}
+          {liveWidgets.canRemoveWidget(widget.id) && (
             <Popconfirm
               title={t('layoutWidgetPanel.deleteCopyConfirm')}
               okText={t('layoutWidgetPanel.deleteCopyOk')}

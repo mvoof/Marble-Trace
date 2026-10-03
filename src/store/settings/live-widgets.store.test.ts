@@ -592,6 +592,7 @@ describe('several copies of one widget in a layout', () => {
       [layout('layout-race'), layout('layout-garage')],
       'layout-race'
     );
+    rootStore.liveWidgets.setWidgetEnabled('standings', true);
   });
 
   it('gives a copy its own id and points it back at the original', () => {
@@ -627,22 +628,14 @@ describe('several copies of one widget in a layout', () => {
     expect(store.getWidget('standings')!.userSettings.enabled).toBe(true);
   });
 
-  // The whole point of the split: the original's id doubles as its type, so a
-  // settings file written before copies existed needs no migration.
-  it('keeps a file that predates copies readable as the original', () => {
+  it('puts a copy on the monitor of the widget it was copied from', () => {
     const store = rootStore.liveWidgets;
 
-    store.setWidgets([
-      {
-        ...store.getWidget('standings')!,
-        userSettings: { ...store.getWidget('standings')!.userSettings, x: 42 },
-      },
-    ]);
+    store.moveWidgetToMonitor('standings', 'Stream');
 
-    const restored = store.getWidget('standings')!;
+    const copyId = store.duplicateWidget('standings')!;
 
-    expect(restored.type).toBeUndefined();
-    expect(restored.userSettings.x).toBe(42);
+    expect(store.getWidget(copyId)!.monitor).toBe('Stream');
   });
 
   it('survives the round trip through a layout switch', () => {
@@ -673,16 +666,18 @@ describe('several copies of one widget in a layout', () => {
     expect(store.widgetsOfType('standings')).toHaveLength(3);
   });
 
-  it('deletes a copy but refuses to delete the original', () => {
+  // No instance is special any more — but the last one has to stay, or there
+  // would be nothing left in the layout to switch on again.
+  it('deletes any instance but the last one of its widget', () => {
     const store = rootStore.liveWidgets;
 
     const copyId = store.duplicateWidget('standings')!;
 
     store.removeWidgetCopy('standings');
-    expect(store.getWidget('standings')).toBeDefined();
+    expect(store.getWidget('standings')).toBeUndefined();
 
     store.removeWidgetCopy(copyId);
-    expect(store.getWidget(copyId)).toBeUndefined();
+    expect(store.getWidget(copyId)).toBeDefined();
   });
 
   // What an overlay window and a remote screen do with the list main sends
@@ -1102,12 +1097,12 @@ describe('the widgets a remote screen draws', () => {
     expect(store.liveRemoteScreenWidgets).toHaveLength(0);
   });
 
-  it('carries only the widgets whose centre lands on the remote screen', () => {
+  it('carries only the widgets that belong to the remote screen', () => {
     const rootStore = new RootStore({ skipInit: true });
     const store = rootStore.liveWidgets;
 
     store.setLayouts([layoutWithScreens('layout-race')], 'layout-race');
-    store.updateUserSettings('standings', { x: 2000, y: 100 });
+    store.moveWidgetToMonitor('standings', 'Stream');
 
     expect(store.liveRemoteScreenWidgets.map((widget) => widget.id)).toEqual([
       'standings',
@@ -1133,5 +1128,151 @@ describe('the widgets a remote screen draws', () => {
     store.updateUserSettings('standings', { x: 2000, y: 100 });
 
     expect(store.liveRemoteScreenWidgets).toHaveLength(0);
+  });
+});
+
+/**
+ * Each monitor owns its own widget set. A widget belongs to the monitor its
+ * `monitor` field names — never to whichever one its position falls on — and
+ * only an explicit move hands it to another one.
+ */
+describe('widgets belong to their monitor', () => {
+  const LEFT = {
+    name: 'LEFT',
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  const RIGHT = {
+    name: 'RIGHT',
+    bounds: { x: 1920, y: 0, width: 2560, height: 1440 },
+  };
+
+  const setUp = (primaryMonitor?: string) => {
+    const rootStore = new RootStore({ skipInit: true });
+
+    rootStore.liveWidgets.setLayouts(
+      [
+        {
+          id: 'race',
+          name: 'race',
+          createdAt: 1,
+          monitors: [LEFT, RIGHT],
+          ...(primaryMonitor ? { primaryMonitor } : {}),
+          widgets: [],
+        },
+      ],
+      'race'
+    );
+
+    return rootStore.liveWidgets;
+  };
+
+  it('gives every widget the layout lacks a switched-off instance on the primary monitor', () => {
+    const store = setUp('RIGHT');
+
+    expect(
+      store.allWidgets.every(
+        (widget) =>
+          widget.monitor === 'RIGHT' && widget.userSettings.enabled === false
+      )
+    ).toBe(true);
+  });
+
+  it('defaults the primary monitor to the first display', () => {
+    const store = setUp();
+
+    expect(store.getWidget('standings')!.monitor).toBe('LEFT');
+  });
+
+  // The whole point of storing the owner: dragging can no longer hand a widget
+  // to the neighbouring screen.
+  it('keeps a dragged widget inside its own monitor', () => {
+    const store = setUp();
+    const { currentWidth, currentHeight } =
+      store.getWidget('standings')!.userSettings;
+
+    store.updatePosition('standings', 3000, 5000);
+
+    const widget = store.getWidget('standings')!;
+
+    expect(widget.monitor).toBe('LEFT');
+    expect(widget.userSettings.x).toBe(LEFT.bounds.width - currentWidth);
+    expect(widget.userSettings.y).toBe(LEFT.bounds.height - currentHeight);
+  });
+
+  it('moves a widget to another monitor with every setting it has', () => {
+    const store = setUp();
+
+    store.updateUserSettings('standings', { fontScale: 1.7 });
+    store.updatePosition('standings', 96, 54);
+    store.moveWidgetToMonitor('standings', 'RIGHT');
+
+    const widget = store.getWidget('standings')!;
+
+    expect(widget.monitor).toBe('RIGHT');
+    expect(widget.userSettings.fontScale).toBe(1.7);
+    // The same relative place: 5% in from the left, 5% down.
+    expect(widget.userSettings.x).toBe(RIGHT.bounds.x + 128);
+    expect(widget.userSettings.y).toBe(72);
+  });
+
+  it('undoes a move to another monitor', () => {
+    const store = setUp();
+
+    store.moveWidgetToMonitor('standings', 'RIGHT');
+    store.undo();
+
+    expect(store.getWidget('standings')!.monitor).toBe('LEFT');
+  });
+
+  it('lets the switched-on instance on the primary monitor speak for its widget', () => {
+    const store = setUp();
+
+    const copyId = store.duplicateWidget('fuel')!;
+
+    store.moveWidgetToMonitor(copyId, 'RIGHT');
+    store.setWidgetEnabled(copyId, true);
+
+    // Only the copy on the other monitor is on: it is the one on screen.
+    expect(store.primaryInstanceOf('fuel')!.id).toBe(copyId);
+
+    store.setWidgetEnabled('fuel', true);
+
+    // Both on: the primary monitor's wins.
+    expect(store.primaryInstanceOf('fuel')!.id).toBe('fuel');
+  });
+
+  // A widget store reads by type. Once no instance is special, the record
+  // whose id happens to equal the type may be gone — the store must still find
+  // the user's settings rather than fall back to the shipped ones.
+  it('gives a widget store the settings of the instance that speaks for it', () => {
+    const store = setUp();
+
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.updateUserSettings(copyId, { fontScale: 1.9, enabled: true });
+    store.removeWidgetCopy('standings');
+
+    expect(store.getWidget('standings')).toBeUndefined();
+    expect(store.settingsOfType('standings').fontScale).toBe(1.9);
+  });
+
+  it('keeps every widget on its monitor across a reinstall', () => {
+    const store = setUp();
+
+    store.moveWidgetToMonitor('standings', 'RIGHT');
+    store.loadEditingLayoutWidgets();
+
+    expect(store.getWidget('standings')!.monitor).toBe('RIGHT');
+  });
+
+  it('carries a monitor change to the other window', () => {
+    const main = setUp();
+    const overlay = setUp();
+
+    main.moveWidgetToMonitor('standings', 'RIGHT');
+    overlay.applySettingsSync(main.allWidgets);
+
+    expect(overlay.getWidget('standings')!.monitor).toBe('RIGHT');
   });
 });

@@ -31,7 +31,7 @@ export interface FirstRunLayoutRecords {
 export interface FirstRunWidgetMap {
   setWidgets(widgets: WidgetDefaultConfig[]): void;
   setOverlayResolution(resolution: LayoutResolution): void;
-  starterWidgets(clean?: boolean): WidgetDefaultConfig[];
+  starterWidgets(clean?: boolean, monitorName?: string): WidgetDefaultConfig[];
 }
 
 export interface FirstRunDependencies {
@@ -69,15 +69,17 @@ export const setUpFirstRun = async ({
 
     widgetMap.setOverlayResolution(monitor.resolution);
 
-    layoutRecords.setMonitors(id, [fullScreenMonitor(monitor)]);
+    const anchored = fullScreenMonitor(monitor);
+
+    layoutRecords.setMonitors(id, [anchored]);
 
     // The monitor resolved asynchronously; the driver may have selected a
     // different layout while it did. Its widgets are not this layout's to
     // overwrite, so the starter set goes to the record directly.
     if (layoutRecords.editingLayoutId === id) {
-      widgetMap.setWidgets(widgetMap.starterWidgets());
+      widgetMap.setWidgets(widgetMap.starterWidgets(false, anchored.name));
     } else {
-      target.widgets = widgetMap.starterWidgets();
+      target.widgets = widgetMap.starterWidgets(false, anchored.name);
     }
   });
 };

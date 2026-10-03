@@ -1,4 +1,3 @@
-import { widgetTypeOf } from '@utils/widget-instance';
 import {
   telemetryEventsToMask,
   type TelemetryEventName,
@@ -20,7 +19,7 @@ export const maskOfWidgets = (widgets: WidgetDefaultConfig[]): number => {
   for (const widget of widgets) {
     if (!widget.userSettings.enabled) continue;
 
-    const manifest = WIDGET_BY_ID.get(widgetTypeOf(widget));
+    const manifest = WIDGET_BY_ID.get(widget.type);
 
     for (const event of manifest?.telemetryEvents ?? []) {
       requested.add(event);

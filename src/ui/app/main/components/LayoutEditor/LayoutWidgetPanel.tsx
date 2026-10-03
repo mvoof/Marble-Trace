@@ -32,11 +32,11 @@ const WidgetRow = observer(
     const isAvailable = liveWidgets.availableWidgetIds.includes(widget.id);
     const rowRef = useRef<HTMLDivElement | null>(null);
 
-    // A copy is a record of its own everywhere — its own settings, its own
-    // place, its own enabled flag — so the row has to say which one it is
+    // An instance is a record of its own everywhere — its own settings, its
+    // own place, its own enabled flag — so the row has to say which one it is
     // before the user hides or deletes the wrong one.
-    const isCopy = widget.type !== undefined;
     const { ordinal, total } = liveWidgets.copyOrdinalOf(widget.id);
+    const isCopy = ordinal > 1;
 
     const handleToggle = (checked: boolean) => {
       if (isAvailable) {

@@ -13,7 +13,7 @@ const drsStore = (
 ) =>
   new WidgetAutoHideStore({
     liveWidgets: {
-      getWidget: () => ({ id: 'drs' }),
+      getWidget: () => ({ id: 'drs', type: 'drs' }),
       getSettings: () => ({
         hideWhenUnavailable: false,
         hideWhenCarHasNoDrs: true,
@@ -60,7 +60,9 @@ describe('WidgetAutoHideStore — DRS', () => {
 describe('WidgetAutoHideStore — wheel to wheel', () => {
   const wheelToWheelStore = (isVisible: boolean) =>
     new WidgetAutoHideStore({
-      liveWidgets: { getWidget: () => ({ id: 'wheel-to-wheel' }) },
+      liveWidgets: {
+        getWidget: () => ({ id: 'wheel-to-wheel', type: 'wheel-to-wheel' }),
+      },
       wheelToWheelWidget: { isVisible },
     } as unknown as Deps);
 

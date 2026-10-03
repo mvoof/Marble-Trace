@@ -73,7 +73,10 @@ export const DEFAULT_WIDGETS: WidgetDefaultConfig[] = WIDGETS.map(
       return !NON_SERIALIZABLE_WIDGET_KEYS.has(key);
     });
 
-    return Object.fromEntries(allowedEntries) as WidgetDefaultConfig;
+    return {
+      ...Object.fromEntries(allowedEntries),
+      type: manifest.id,
+    } as WidgetDefaultConfig;
   }
 );
 

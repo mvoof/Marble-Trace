@@ -1130,7 +1130,7 @@ size of everything else. `designWidth` tracks the visible column set through
 > a function of its settings declares **both** halves in its manifest:
 > `resolveLayoutChange` rescales `currentWidth` at the moment of the toggle, so
 > `--wfs` does not jump under the driver, and `deriveDesignWidth` recomputes the
-> width wherever a widget is installed — file load (`restoreWidgets`), layout
+> width wherever a widget is installed — file load (`decodeWidget`), layout
 > switch, and the cross-window sync (`applySettingsSync`). One without the other
 > is the bug: with only the resolver, a stored width left behind by an older
 > setting survives every reload, `--wfs` renders the widget at the wrong scale
@@ -1405,9 +1405,9 @@ Two details of that payload are load-bearing:
 - **The monitor name always travels with the widget list.** Without it, an edit made
   on one screen would overwrite the widgets of another.
 - **Every overlay receives the whole widget list, not its own slice.** A widget
-  dragged across a monitor edge has to appear on the neighbour, and only the
-  receiving window can decide that — by testing centre points against its own
-  bounds. The payload therefore also carries the layout's `monitors`.
+  moved to another monitor has to appear on that one, and each record names its
+  monitor in `monitor` — the receiving window draws the records that name its
+  own. The payload also carries the layout's `monitors`, for their bounds.
 
 ## Cross-window synchronization
 
@@ -1567,15 +1567,18 @@ flowchart LR
 
 Three rules, each of which exists because breaking it corrupts real users' files:
 
-| Rule                                                                                                                                           | Why                                                                                                                              |
-| ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| A migration is a **pure function** and must **never import live types, defaults or registries** — freeze what it needs as a literal            | otherwise a step written today silently rewrites history by next year's rules                                                    |
-| `mergeWithDefaults` runs _after_ the chain, over `defaultWidgets[]` and every `layouts[].widgets[]` — but it only fills in what is **missing** | a new setting with a default needs no migration; rewriting a value that is already there is still the chain's job, in every copy |
-| A file this build cannot migrate **locks settings against every write**                                                                        | better a read-only session than a repaired-or-deleted file                                                                       |
+| Rule                                                                                                                                | Why                                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| A migration is a **pure function** and must **never import live types, defaults or registries** — freeze what it needs as a literal | otherwise a step written today silently rewrites history by next year's rules                                                        |
+| A widget stores only the settings that differ from its manifest; reading back merges them over the shipped defaults                 | a new setting with a default needs no migration; rewriting a value that is already there is still the chain's job, in every instance |
+| A file this build cannot migrate **locks settings against every write**                                                             | better a read-only session than a repaired-or-deleted file                                                                           |
 
 ### The active layout owns the widgets
 
-The widgets a driver sees live in `layouts[].widgets[]` and nowhere else.
+The widgets a driver sees live in the layout and nowhere else — on disk under
+each monitor (`layouts[].monitors[].widgets[]`), in memory as the layout's flat
+`widgets[]`, each record naming its monitor (`platform/sync/settings-file.ts`
+converts between the two).
 `LiveWidgetsStore.widgets` is a **projection** of the active layout's own
 objects — the same objects, not a copy — so every edit the overlay or the editor
 makes lands in the layout record directly. There is nothing to commit afterwards,
@@ -1594,8 +1597,8 @@ Two rules keep the projection honest:
   is active by the time the monitor resolves — the resolution is asynchronous,
   and the driver may have selected another layout meanwhile.
 
-`defaultWidgets[]` in the file is the template catalogue a first layout is built
-from, not what is on screen.
+`widgetTemplates` in the file is the catalogue a new instance and a first
+layout's starter set are built from, not what is on screen.
 
 Most changes need no migration at all. Full guide:
 [`docs/settings-schema.md`](./settings-schema.md).

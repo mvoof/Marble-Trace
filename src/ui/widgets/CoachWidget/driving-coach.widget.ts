@@ -365,7 +365,7 @@ export class DrivingCoachWidgetStore {
   }
 
   private get settings(): CoachWidgetSettings {
-    return this.root.liveWidgets.getSettings<CoachWidgetSettings>('coach');
+    return this.root.liveWidgets.settingsOfType<CoachWidgetSettings>('coach');
   }
 
   /** Append this frame's steering angle to the rolling window and resolve the unsettled flag. */

@@ -16,6 +16,7 @@ const WIDGET_CASCADE_STEP = 40;
 /** A widget offered by the overlay's F9 "add widget" picker. */
 export interface PickableWidget {
   id: string;
+  type: string;
   label: string;
   description?: string;
   available: boolean;
@@ -48,15 +49,14 @@ export const pickableWidgetsForMonitor = (
   const available = new Set(availableWidgetIds);
 
   const drawnHere = new Set(
-    widgetsOnMonitor(enabledWidgets, monitorName, monitors).map(
-      (widget) => widget.id
-    )
+    widgetsOnMonitor(enabledWidgets, monitorName).map((widget) => widget.id)
   );
 
   return allWidgets
     .filter((widget) => !drawnHere.has(widget.id))
     .map((widget) => ({
       id: widget.id,
+      type: widget.type,
       label: widget.label,
       description: widget.description,
       available: available.has(widget.id),

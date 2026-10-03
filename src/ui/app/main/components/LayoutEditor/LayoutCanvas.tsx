@@ -29,7 +29,6 @@ import {
   useSettingsMutationLog,
 } from '@store/root-store-context';
 import { componentForWidget } from '@ui/widgets/registry';
-import { widgetTypeOf } from '@utils/widget-instance';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import {
@@ -689,7 +688,7 @@ export const LayoutCanvas = observer(
                 {liveWidgets.enabledWidgetIds.map((id) => {
                   const widget = liveWidgets.getWidget(id);
                   const Widget = widget
-                    ? componentForWidget(widgetTypeOf(widget))
+                    ? componentForWidget(widget.type)
                     : undefined;
 
                   if (!Widget) {

@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { widgetTypeOf } from '@utils/widget-instance';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
@@ -110,7 +109,7 @@ export const OverlayCanvas = observer(() => {
           neighbouring window. */}
       <div className={styles.monitorOrigin} style={monitorOffset}>
         {liveWidgets.ownMonitorWidgets.map((widget) => {
-          const WidgetComponent = componentForWidget(widgetTypeOf(widget));
+          const WidgetComponent = componentForWidget(widget.type);
 
           if (!WidgetComponent) return null;
 

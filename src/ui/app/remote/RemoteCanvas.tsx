@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react-lite';
-import { widgetTypeOf } from '@utils/widget-instance';
 
 import { componentForWidget } from '@ui/widgets/registry';
 import { RemoteWidgetFrame } from './RemoteWidgetFrame';
@@ -44,7 +43,7 @@ export const RemoteCanvas = observer(() => {
           style={{ transform: `translate(${-bounds.x}px, ${-bounds.y}px)` }}
         >
           {screen.enabledWidgets.map((widget) => {
-            const WidgetComponent = componentForWidget(widgetTypeOf(widget));
+            const WidgetComponent = componentForWidget(widget.type);
 
             if (!WidgetComponent) return null;
 

@@ -296,11 +296,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
 
   const widgetCountOnMonitor = (monitorName: string) =>
     selectedLayout
-      ? widgetsOnMonitor(
-          selectedEnabledWidgets,
-          monitorName,
-          selectedLayout.monitors
-        ).length
+      ? widgetsOnMonitor(selectedEnabledWidgets, monitorName).length
       : 0;
 
   return (

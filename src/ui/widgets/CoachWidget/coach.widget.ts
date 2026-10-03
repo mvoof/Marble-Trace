@@ -147,7 +147,7 @@ export class CoachWidgetStore {
   }
 
   private get settings(): CoachWidgetSettings {
-    return this.root.liveWidgets.getSettings<CoachWidgetSettings>('coach');
+    return this.root.liveWidgets.settingsOfType<CoachWidgetSettings>('coach');
   }
 
   private recordSample(speed: number | undefined) {

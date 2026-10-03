@@ -45,7 +45,7 @@ export interface GestureWidgetMap {
   loadLayout(id: string, options?: { notify?: boolean }): void;
   setWidgets(widgets: WidgetDefaultConfig[]): void;
   setOverlayResolution(resolution: LayoutResolution): void;
-  starterWidgets(clean?: boolean): WidgetDefaultConfig[];
+  starterWidgets(clean?: boolean, monitorName?: string): WidgetDefaultConfig[];
 }
 
 export interface LayoutGestureStores {
@@ -73,12 +73,14 @@ export const createLayout = async (
   if (!monitor) return id;
 
   runInAction(() => {
-    if (!records.anchorToMonitor(id, fullScreenMonitor(monitor))) return;
+    const anchored = fullScreenMonitor(monitor);
+
+    if (!records.anchorToMonitor(id, anchored)) return;
 
     const target = records.byId(id);
 
     if (target) {
-      target.widgets = widgetMap.starterWidgets(true);
+      target.widgets = widgetMap.starterWidgets(true, anchored.name);
     }
 
     // The monitor resolved asynchronously; the driver may have switched
@@ -120,9 +122,9 @@ export const deleteLayout = (
 };
 
 /**
- * Drops a monitor from a layout. The record moves the widgets that lived on it
- * to the first remaining screen; installing the rebuilt list is what puts them
- * on screen, and is why this is a gesture rather than a record operation.
+ * Drops a monitor from a layout, and the widgets that belong to it. Installing
+ * the rebuilt list is what takes them off screen, and is why this is a gesture
+ * rather than a record operation.
  */
 export const removeMonitor = (
   { records, widgetMap }: LayoutGestureStores,

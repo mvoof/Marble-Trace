@@ -278,11 +278,12 @@ export const widgetVisibilityAction = (widgetId: string): HotkeyAction => ({
   trigger: 'press',
   ignoreLayoutGate: true,
   run: (root) => {
-    // The original copy only. A widget duplicated onto a stream screen is there
-    // for an audience that did not press the key, and hiding the pair together
-    // would take the overlay off the stream every time the driver clears their
-    // own screen. Hiding a copy is done on the copy, in the editor.
-    const widget = root.liveWidgets.firstWidgetOfType(widgetId);
+    // One instance only — the one on the driver's own screen. A widget placed
+    // on a stream screen too is there for an audience that did not press the
+    // key, and hiding the pair together would take the overlay off the stream
+    // every time the driver clears their own screen. Hiding another instance
+    // is done on that instance, in the editor.
+    const widget = root.liveWidgets.primaryInstanceOf(widgetId);
 
     if (!widget) return;
 

@@ -108,20 +108,23 @@ fn summarize_enabled_widgets(widgets: &serde_json::Value) -> Vec<String> {
         .iter()
         .filter_map(|widget| {
             let id = widget.get("id").and_then(|id| id.as_str())?;
-            let user_settings = widget.get("userSettings")?;
 
-            let enabled = user_settings
+            let enabled = widget
                 .get("enabled")
                 .and_then(|enabled| enabled.as_bool())
-                .unwrap_or(true);
+                .unwrap_or(false);
 
             if !enabled {
                 return None;
             }
 
-            let settings_json = serde_json::to_string(user_settings).unwrap_or_default();
+            let summary = serde_json::json!({
+                "frame": widget.get("frame"),
+                "settings": widget.get("settings"),
+            });
+            let summary_json = serde_json::to_string(&summary).unwrap_or_default();
 
-            Some(format!("{id}={settings_json}"))
+            Some(format!("{id}={summary_json}"))
         })
         .collect()
 }
@@ -162,14 +165,20 @@ fn summarize_layout(
         .map(|contexts| contexts.join(", "))
         .unwrap_or_default();
 
+    // Each monitor holds its own widgets (settings schema v6), and a widget
+    // stores only the settings that differ from the shipped defaults.
     let widgets: Vec<String> = layout
-        .get("monitorConfigs")
-        .and_then(|configs| configs.as_object())
-        .map(|configs| {
-            configs
+        .get("monitors")
+        .and_then(|monitors| monitors.as_array())
+        .map(|monitors| {
+            monitors
                 .iter()
-                .map(|(monitor_name, config)| {
-                    let widgets = config
+                .map(|monitor| {
+                    let monitor_name = monitor
+                        .get("name")
+                        .and_then(|name| name.as_str())
+                        .unwrap_or("unnamed");
+                    let widgets = monitor
                         .get("widgets")
                         .map(summarize_enabled_widgets)
                         .unwrap_or_default();
@@ -193,8 +202,8 @@ fn summarize_layout(
 }
 
 /// Logs a compact but complete summary of persisted settings — active layouts,
-/// which session context each is assigned to, and the full userSettings for
-/// every enabled widget — to the log file. Tagged under
+/// which session context each is assigned to, and the frame and changed
+/// settings of every enabled widget, per monitor — to the log file. Tagged under
 /// [`SETTINGS_SNAPSHOT_TARGET`] so it never floods the dev console.
 pub fn log_settings_snapshot(settings: &serde_json::Value) {
     let app = settings.get("app");

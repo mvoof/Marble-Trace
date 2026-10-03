@@ -66,11 +66,26 @@ const REMOTE_SCREEN = {
   bounds: { x: 0, y: 1080, width: 1280, height: 720 },
 };
 
+const FIXTURE_MONITORS = [MONITOR_LEFT, MONITOR_RIGHT, REMOTE_SCREEN];
+
+// A widget belongs to the monitor it names, never to the one under it — the
+// fixtures only pick that name from the position, so a test reads as "put it
+// there".
+const monitorAt = (x: number, y: number): string =>
+  FIXTURE_MONITORS.find(
+    ({ bounds }) =>
+      x >= bounds.x &&
+      x < bounds.x + bounds.width &&
+      y >= bounds.y &&
+      y < bounds.y + bounds.height
+  )?.name ?? MONITOR_LEFT.name;
+
 // carDynamics is g-meter's declared appetite, proximity radar-bar's
 // (see their manifest.ts).
 const widgetAt = (id: string, type: string, x: number, y = 0) => ({
   id,
   type,
+  monitor: monitorAt(x, y),
   userSettings: { enabled: true, x, y, currentWidth: 100, currentHeight: 100 },
 });
 

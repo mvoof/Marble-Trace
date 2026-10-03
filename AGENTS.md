@@ -250,20 +250,29 @@ file and hydrating the stores.
 - A migration is a **pure function** and must **never import live types, defaults
   or registries** — freeze what it needs as a literal, or a step written today
   rewrites history by next year's rules.
-- **The active layout owns the widgets.** They live in `layouts[].widgets[]` and
-  nowhere else; `LiveWidgetsStore.widgets` is a projection of that layout's
-  own objects, so an edit lands in the record itself and there is nothing to
-  commit. `defaultWidgets[]` beside it is only the template catalogue a new
-  layout is built from. A layout with no monitors is not an owner and falls back
-  to a detached map.
-- `mergeWithDefaults` runs _after_ the chain, over `defaultWidgets[]` and over
-  every `layouts[].widgets[]` (`restoreLayoutWidgets` in `sync/persistence.ts`),
-  so **a new setting with a default needs no migration**. It only fills what is
-  missing — rewriting a value that is already there is still the chain's job.
-  Walk the blob with the helpers in `settings-schema/blob.ts` (`mapEveryWidget`,
-  `patchWidgetSettings`, `renameWidgetSetting`, `dropWidgetSettings`) rather than
-  by hand; they visit every copy, and they are purely structural so they do not
-  breach the no-live-imports rule.
+- **Each monitor owns its widgets.** On disk (v6) they live in
+  `layouts[].monitors[].widgets[]`, in that monitor's own coordinates, and
+  nowhere else; `widgetTemplates` beside the layouts is only the catalogue the
+  Widgets page edits and a new instance starts from. In memory a layout keeps
+  one flat `widgets[]` in desktop-wide coordinates, each record naming its
+  monitor in `monitor` — `platform/sync/settings-file.ts` is the codec between
+  the two and the only place that knows the file's shape.
+  `LiveWidgetsStore.widgets` is a projection of the active layout's own
+  objects, so an edit lands in the record itself and there is nothing to
+  commit. A layout with no monitors is not an owner and falls back to a
+  detached map.
+- **A widget stores only what differs from its manifest.** `settings` holds the
+  overridden values, nothing the manifest already says (label, flags, a design
+  size it gives) is written, and reading back merges the overrides over the
+  shipped defaults — so **a new setting with a default needs no migration**,
+  and a changed default reaches every widget that never overrode it. Rewriting
+  a value that is already there is still the chain's job. Walk a v6 blob with
+  the `*Stored*` helpers in `settings-schema/blob.ts`
+  (`mapEveryStoredWidget`, `patchStoredWidgetSettings`,
+  `renameStoredWidgetSetting`, `dropStoredWidgetSettings`) rather than by hand;
+  they visit every instance on every monitor and the template, and they are
+  purely structural so they do not breach the no-live-imports rule. The older
+  helpers walk the pre-v6 shape and find nothing in a current file.
 - A file this build cannot migrate locks settings against every write instead of
   being repaired or deleted.
 
@@ -501,8 +510,10 @@ main window.
   behave as they do on the overlay. Prefer that flag over an editor-specific branch.
 - State an in-place control changes outside the preview store is bridged explicitly
   in `LayoutCanvas` (see `useTrackRotationBridge`), in both directions.
-- Widget → monitor is a centre-point test (`store/settings/virtual-desktop.ts`);
-  a remote screen is just a monitor with `kind: 'remote'`.
+- Widget → monitor is the widget's `monitor` field, never its position: a drag
+  is clamped to the widget's own monitor (`updatePosition`), and only
+  `moveWidgetToMonitor` hands it to another one. A remote screen is just a
+  monitor with `kind: 'remote'`.
 
 ---
 
@@ -702,38 +713,42 @@ sync). The stored width is a cache, and with only the resolver it drifts: the
 widget renders at the wrong `--wfs` and crops, and each further toggle reads that
 ratio back as `scale` and grows `currentWidth` again.
 
-### Widget copies
+### Widget instances
 
-A layout may hold **several copies of one widget** — one on the screen being
-raced on, another on a stream screen with its own columns and its own scale.
+Every monitor of a layout has **its own widget set**, and a monitor may hold
+**several instances of one widget** — a big track map and an overview in the
+corner, or the same standings on the screen being raced on and on a stream
+screen with its own columns and its own scale.
 
-| field  | means                                                                                                                                                               |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`   | the copy. Unique within the layout; what every record, patch and selection is addressed by                                                                          |
-| `type` | the widget it is a copy of — manifest, component, shipped defaults, layout resolver. **Optional**: absent means the record is the original and its `id` is its type |
+| field     | means                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------ |
+| `id`      | the instance. Unique within the layout; what every record, patch and selection is addressed by         |
+| `type`    | the widget it is an instance of — manifest, component, shipped defaults, layout resolver. Always set   |
+| `monitor` | the monitor it belongs to. Absent only on templates and on the detached map of a window with no layout |
 
-That fallback is why copies needed no settings migration and why none of the
-frozen ids in the schema chain moved. Always read the type through
-`widgetTypeOf` (`utils/widget-instance.ts`) — never `widget.id`, which is right
-for the original and silently wrong for a copy, the one case nobody has on
-screen while writing the line.
+No instance is special. The record whose `id` equals its type is simply the
+first one a layout got; it may be moved, switched off or deleted like any
+other. Always read the widget as `widget.type`, never `widget.id`.
 
-- A component reads **its own copy's** settings with `useWidgetSettings(type)`,
-  which takes the copy from `WidgetIdContext`; a settings panel uses
-  `usePanelWidgetId`. The canvas widgets read inside their reactive draw loop,
-  where a hook cannot go — they take `useWidgetInstanceId` and read the store
-  themselves.
-- **Widget stores read the original copy** (`firstWidgetOfType`). One store per
-  app cannot be per copy, and what a store holds is computation, not
-  presentation.
-- A **hotkey addresses the widget, not a copy**: `isWidgetOnScreen` is
-  true while any copy is on screen. What an action then does to the copies is
-  its own decision — `standings:cycle-view` advances every copy,
-  `widget:<id>:toggle-visibility` hides only the original, since a copy on a
-  stream screen is there for an audience that did not press the key.
-- Deleting is `removeWidgetCopy`, and it **refuses the original**: `setWidgets`
-  would recreate it on the next load anyway. Switching the original off is the
-  enable toggle's job.
+- A component reads **its own instance's** settings with
+  `useWidgetSettings(type)`, which takes the instance from `WidgetIdContext`; a
+  settings panel uses `usePanelWidgetId`. The canvas widgets read inside their
+  reactive draw loop, where a hook cannot go — they take `useWidgetInstanceId`
+  and read the store themselves.
+- **A widget store reads `settingsOfType(type)`**, never `getSettings(type)`:
+  one store per app cannot be per instance, so it follows the one that speaks
+  for the widget — `primaryInstanceOf`, the switched-on instance on the
+  layout's primary monitor (`primaryMonitor`, else its first display). A
+  `getSettings` keyed by the type finds nothing once that record is deleted.
+- A **hotkey addresses the widget, not an instance**: `isWidgetOnScreen` is
+  true while any instance is on screen. What an action then does to the
+  instances is its own decision — `standings:cycle-view` advances every one,
+  `widget:<id>:toggle-visibility` hides only the primary instance, since one on
+  a stream screen is there for an audience that did not press the key.
+- Deleting is `removeWidgetCopy`, and it refuses only the **last** instance of
+  a widget in the layout: there would be nothing left to switch on, and
+  `setWidgets` puts one back (switched off, on the primary monitor) on the next
+  load anyway. Removing a monitor deletes its widgets with it.
 
 ### Widget appearance
 
