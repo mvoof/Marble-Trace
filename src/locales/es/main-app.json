@@ -205,7 +205,8 @@
     "large": "Grande",
     "remove": "Quitar",
     "loadingBackground": "Cargando el fondo...",
-    "allMonitors": "Todos los monitores"
+    "allMonitors": "Todos los monitores",
+    "nothingToShow": "Nada que mostrar en este escenario"
   },
   "overlayWidgetPicker": {
     "addWidget": "Añadir widget",

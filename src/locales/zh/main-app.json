@@ -203,7 +203,8 @@
     "large": "大",
     "remove": "删除",
     "loadingBackground": "正在加载背景...",
-    "allMonitors": "所有显示器"
+    "allMonitors": "所有显示器",
+    "nothingToShow": "此场景中无可显示内容"
   },
   "overlayWidgetPicker": {
     "addWidget": "添加组件",

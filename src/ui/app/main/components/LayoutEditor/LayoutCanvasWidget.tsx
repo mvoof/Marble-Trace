@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import type { LiveWidgetsStore } from '@store/settings/live-widgets.store';
 import type { MonitorBounds } from '@/types/widget-settings';
 import {
@@ -7,6 +8,7 @@ import {
   widgetFrameStyle,
   type ResizeDirection,
 } from '@ui/app/widget-frame';
+import { useRendersNothing } from './use-renders-nothing';
 import styles from './LayoutCanvas.module.scss';
 
 // Snap distance (overlay px) for centering a widget on the canvas axes.
@@ -46,6 +48,12 @@ export const LayoutCanvasWidget = observer(
     children,
   }: LayoutCanvasWidgetProps) => {
     const widget = mainSettings.getWidget(widgetId);
+    const { t } = useTranslation('main-app');
+
+    // A widget with nothing to show in the preview scenario still has to be
+    // somewhere the user can see, grab and move.
+    const innerRef = useRef<HTMLDivElement | null>(null);
+    const rendersNothing = useRendersNothing(innerRef);
 
     const isDraggingRef = useRef(false);
     const isResizingRef = useRef(false);
@@ -364,13 +372,23 @@ export const LayoutCanvasWidget = observer(
           onMouseDown={handleDragMouseDown}
         >
           <div
+            ref={innerRef}
             className={`${styles.widgetInner} ${
               overflowVisible ? styles.overflowVisible : ''
-            }`}
+            } ${rendersNothing ? styles.widgetInnerEmpty : ''}`}
             style={frameStyle}
           >
             {children}
           </div>
+
+          {rendersNothing && (
+            <div className={styles.emptyWidget} style={{ height }}>
+              <span className={styles.emptyWidgetLabel}>{widget?.label}</span>
+              <span className={styles.emptyWidgetHint}>
+                {t('layoutCanvas.nothingToShow')}
+              </span>
+            </div>
+          )}
 
           {isSelected && (
             <div

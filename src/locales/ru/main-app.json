@@ -209,7 +209,8 @@
     "large": "Крупный",
     "remove": "Удалить",
     "loadingBackground": "Загрузка фона...",
-    "allMonitors": "Все мониторы"
+    "allMonitors": "Все мониторы",
+    "nothingToShow": "В этом сценарии показывать нечего"
   },
   "overlayWidgetPicker": {
     "addWidget": "Добавить виджет",
