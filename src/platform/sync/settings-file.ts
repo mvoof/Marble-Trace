@@ -248,7 +248,10 @@ const decodeShape = (
 
   const derivedWidth = Math.max(1, derive(userSettings));
 
-  if (storedWidth > 0 && derivedWidth !== storedWidth) {
+  // No design size on disk means the one the settings derive — that is when
+  // `encodeWidget` leaves it out. Rescaling against the manifest's width here
+  // would grow the widget on every load.
+  if (design && storedWidth > 0 && derivedWidth !== storedWidth) {
     userSettings.currentWidth = Math.round(
       (userSettings.currentWidth / storedWidth) * derivedWidth
     );

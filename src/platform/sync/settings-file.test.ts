@@ -228,6 +228,36 @@ describe('a widget read back', () => {
     expect(widget.userSettings.currentWidth).toBe(weather.designWidth);
   });
 
+  // A widget whose design width its settings derive (horizontal weather) is
+  // saved without one; reading that back as the manifest's width rescaled
+  // the widget, so it grew on every restart.
+  it('keeps a derived-width widget the same size across restarts', () => {
+    const horizontal = decodeWidget(
+      {
+        id: 'weather',
+        type: 'weather',
+        enabled: true,
+        frame: { x: 2900, y: 1200, width: 500, height: 240 },
+        settings: { horizontal: true },
+      },
+      LEFT
+    )!;
+
+    let reloaded = horizontal;
+
+    for (let restart = 0; restart < 3; restart++) {
+      reloaded = decodeWidget(encodeWidget(reloaded, LEFT.bounds), LEFT)!;
+    }
+
+    expect(horizontal.designWidth).not.toBe(shipped('weather').designWidth);
+    expect(reloaded.userSettings).toMatchObject({
+      x: 2900,
+      y: 1200,
+      currentWidth: 500,
+    });
+    expect(reloaded.designWidth).toBe(horizontal.designWidth);
+  });
+
   it('round-trips through the file unchanged', () => {
     const original = instanceOf(
       CHAT,
