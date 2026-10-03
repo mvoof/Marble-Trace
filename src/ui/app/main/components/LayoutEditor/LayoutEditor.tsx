@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import {
+  App,
   Button,
   Input,
   Popconfirm,
@@ -94,6 +95,7 @@ export const LayoutEditor = observer(
   }) => {
     const liveWidgets = useLiveWidgetsStore();
     const layouts = useLayoutsStore();
+    const { modal } = App.useApp();
     const gestureStores = useLayoutGestureStores();
     const layoutEditor = useLayoutEditorStore();
     const appSettings = useAppSettingsStore();
@@ -343,16 +345,28 @@ export const LayoutEditor = observer(
       .filter((monitor) => monitor.name !== focusedMonitorName)
       .map((monitor) => ({ value: monitor.name, label: monitor.name }));
 
-    // Dropping a screen leaves its widgets on the first remaining monitor
-    // rather than deleting them — a mis-click here must not cost a layout.
+    // A screen's widgets go with it — they are its own set — so a mis-click
+    // here must not remove it without asking.
     const handleRemoveMonitor = (monitorName: string) => {
       if (!activeId) return;
 
-      removeMonitor(gestureStores, activeId, monitorName);
+      const removeIt = () => {
+        removeMonitor(gestureStores, activeId, monitorName);
 
-      if (focusedMonitorName === monitorName) {
-        setFocusedMonitorName(null);
-      }
+        if (focusedMonitorName === monitorName) {
+          setFocusedMonitorName(null);
+        }
+      };
+
+      void modal.confirm({
+        title: t('layoutList.removeMonitorWithWidgets', {
+          count: liveWidgets.widgetsOnMonitorNamed(monitorName).length,
+        }),
+        okText: t('layoutEditor.delete'),
+        okButtonProps: { danger: true },
+        cancelText: t('layoutEditor.cancel'),
+        onOk: removeIt,
+      });
     };
 
     const handleSelectMonitor = (name: string) => {

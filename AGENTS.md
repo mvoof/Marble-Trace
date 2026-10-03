@@ -745,6 +745,12 @@ other. Always read the widget as `widget.type`, never `widget.id`.
   instances is its own decision — `standings:cycle-view` advances every one,
   `widget:<id>:toggle-visibility` hides only the primary instance, since one on
   a stream screen is there for an audience that did not press the key.
+- The editor lists **every widget per monitor**, each with its own switch
+  (`monitorWidgetRows`); the switch and the overlay's F9 picker both go through
+  `setTypeEnabledOnMonitor`, which switches back on an instance already on that
+  monitor — settings intact — or makes one from the widget's template. An
+  overlay may add an instance only to its own monitor
+  (`applySettingsSyncForMonitor`).
 - Deleting is `removeWidgetCopy`, and it refuses only the **last** instance of
   a widget in the layout: there would be nothing left to switch on, and
   `setWidgets` puts one back (switched off, on the primary monitor) on the next

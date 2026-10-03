@@ -55,11 +55,15 @@ export interface MonitorWidgetsPayload {
    */
   layoutId?: string | null;
   /**
-   * The layout's monitors. An overlay window needs them to decide which
-   * widgets are its own — the test is a centre point against monitor bounds,
-   * so a window that only knew its own name could not place anything.
+   * The layout's monitors, for their bounds: a drag is clamped to the
+   * widget's own monitor in the overlay as much as in the editor.
    */
   monitors?: LayoutMonitor[];
+  /**
+   * The layout's primary monitor, absent for "the first display". The widget
+   * stores running in an overlay read the instance on it.
+   */
+  primaryMonitor?: string;
   /**
    * Whether `widgets` is the whole layout or only the widgets the sender just
    * touched.
@@ -195,14 +199,15 @@ export const emitInteractMode = (active: boolean) =>
  * Pushes the active layout to every open overlay window.
  *
  * Every window receives the whole widget list, not a per-monitor slice: a
- * widget dragged over a monitor edge has to appear on the neighbour, and only
- * the receiving window can decide that, by testing centre points against its
- * own bounds. The live widgets are sent rather than the layout's stored copy —
+ * widget moved to another monitor has to appear there, and each record names
+ * its monitor, so the receiving window draws the ones naming its own. The live
+ * widgets are sent rather than the layout's stored copy —
  * the layout is only written back on the debounced commit, which would lag a
  * drag by half a second.
  */
 export const emitActiveLayoutToOverlays = async (
   monitors: LayoutMonitor[],
+  primaryMonitor: string | undefined,
   widgets: WidgetDefaultConfig[],
   layoutId: string | null
 ) => {
@@ -217,6 +222,7 @@ export const emitActiveLayoutToOverlays = async (
       monitorName: monitor.name,
       widgets,
       monitors,
+      ...(primaryMonitor === undefined ? {} : { primaryMonitor }),
       layoutId,
       complete: true,
     } satisfies MonitorWidgetsPayload);

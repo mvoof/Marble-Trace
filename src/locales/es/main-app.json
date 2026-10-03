@@ -128,7 +128,14 @@
     "duplicate": "Duplicar",
     "layerOrder": "Orden de capas",
     "moveToMonitorPlaceholder": "Elige una pantalla",
-    "quickPlacementDesc": "Coloca el widget en una esquina, un borde o el centro de su pantalla."
+    "quickPlacementDesc": "Coloca el widget en una esquina, un borde o el centro de su pantalla.",
+    "copySettingsFrom": "Copiar ajustes de",
+    "copySettingsFromDesc": "Toma los ajustes de otra instancia; esta conserva su posición y tamaño",
+    "copySettingsFromPlaceholder": "Elige una instancia",
+    "resetSettings": "Restablecer ajustes",
+    "resetSettingsConfirm": "¿Devolver los ajustes de este widget a los valores predeterminados?",
+    "resetSettingsOk": "Restablecer",
+    "reset": "Restablecer"
   },
   "layoutList": {
     "moduleLabel": "Diseños",
@@ -175,7 +182,10 @@
     "removeMonitor": "Quitar este monitor del diseño",
     "monitorOffline": "no encontrado",
     "totalWidgets": "Widgets en total",
-    "remoteNoDevice": "sin dispositivo"
+    "remoteNoDevice": "sin dispositivo",
+    "removeMonitorWithWidgets": "¿Quitar este monitor y sus {{count}} widgets?",
+    "primaryMonitor": "Monitor principal: los atajos actúan sobre sus widgets",
+    "makePrimaryMonitor": "Hacer principal: los atajos actuarán sobre los widgets de este monitor"
   },
   "layoutWidgetPanel": {
     "onMonitor": "en {{monitor}}",
@@ -201,7 +211,6 @@
     "addWidget": "Añadir widget",
     "search": "Buscar widgets",
     "empty": "No queda nada por añadir",
-    "moveHere": "mover desde {{monitor}}",
     "unavailable": "No disponible en este simulador"
   },
   "overlayCanvas": {

@@ -128,7 +128,14 @@
     "duplicate": "Дублировать",
     "layerOrder": "Порядок слоёв",
     "moveToMonitorPlaceholder": "Выберите экран",
-    "quickPlacementDesc": "Ставит виджет в угол, к краю или в центр его экрана."
+    "quickPlacementDesc": "Ставит виджет в угол, к краю или в центр его экрана.",
+    "copySettingsFrom": "Скопировать настройки с",
+    "copySettingsFromDesc": "Берёт настройки другого экземпляра; место и размер этого остаются",
+    "copySettingsFromPlaceholder": "Выберите экземпляр",
+    "resetSettings": "Сбросить настройки",
+    "resetSettingsConfirm": "Вернуть настройкам виджета значения по умолчанию?",
+    "resetSettingsOk": "Сбросить",
+    "reset": "Сбросить"
   },
   "layoutList": {
     "moduleLabel": "Раскладки",
@@ -179,7 +186,10 @@
     "removeMonitor": "Убрать монитор из лейаута",
     "monitorOffline": "не найден",
     "totalWidgets": "Всего виджетов",
-    "remoteNoDevice": "нет устройства"
+    "remoteNoDevice": "нет устройства",
+    "removeMonitorWithWidgets": "Убрать монитор вместе с его виджетами ({{count}})?",
+    "primaryMonitor": "Основной монитор — хоткеи действуют на его виджеты",
+    "makePrimaryMonitor": "Сделать основным — хоткеи будут действовать на виджеты этого монитора"
   },
   "layoutWidgetPanel": {
     "onMonitor": "на {{monitor}}",
@@ -205,7 +215,6 @@
     "addWidget": "Добавить виджет",
     "search": "Поиск виджетов",
     "empty": "Добавлять нечего",
-    "moveHere": "перенести с {{monitor}}",
     "unavailable": "Недоступно в этом симуляторе"
   },
   "overlayCanvas": {

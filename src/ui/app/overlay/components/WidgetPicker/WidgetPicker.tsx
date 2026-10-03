@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
-import { Plus, Search, MoveRight } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useClickOutside } from '@ui/hooks/useClickOutside';
 import { useLiveWidgetsStore } from '@store/root-store-context';
 import type { PickableWidget } from '@store/settings/widget-placement';
@@ -22,14 +22,12 @@ const PickerRow = observer(
     const liveWidgets = useLiveWidgetsStore();
     const { t } = useTranslation('main-app');
 
-    const isElsewhere = widget.currentMonitorName !== null;
-
     const handleAdd = () => {
       if (!widget.available) {
         return;
       }
 
-      liveWidgets.addWidgetToMonitor(widget.id, monitorName);
+      liveWidgets.setTypeEnabledOnMonitor(widget.type, monitorName, true);
       onAdded();
     };
 
@@ -38,6 +36,7 @@ const PickerRow = observer(
         type="button"
         className={`${styles.row} ${widget.available ? '' : styles.rowDisabled}`}
         disabled={!widget.available}
+        aria-label={widget.label}
         title={
           widget.available ? undefined : t('overlayWidgetPicker.unavailable')
         }
@@ -49,15 +48,6 @@ const PickerRow = observer(
             {getWidgetDescription(t, widget)}
           </span>
         </span>
-
-        {isElsewhere && (
-          <span className={styles.rowBadge}>
-            <MoveRight />
-            {t('overlayWidgetPicker.moveHere', {
-              monitor: widget.currentMonitorName,
-            })}
-          </span>
-        )}
       </button>
     );
   }

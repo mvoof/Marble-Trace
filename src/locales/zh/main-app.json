@@ -128,7 +128,14 @@
     "duplicate": "复制",
     "layerOrder": "图层顺序",
     "moveToMonitorPlaceholder": "选择屏幕",
-    "quickPlacementDesc": "把小部件放到所在屏幕的角落、边缘或中央。"
+    "quickPlacementDesc": "把小部件放到所在屏幕的角落、边缘或中央。",
+    "copySettingsFrom": "复制设置自",
+    "copySettingsFromDesc": "采用另一个实例的设置；保留此实例的位置和大小",
+    "copySettingsFromPlaceholder": "选择实例",
+    "resetSettings": "重置设置",
+    "resetSettingsConfirm": "将此小组件的设置恢复为默认值？",
+    "resetSettingsOk": "重置",
+    "reset": "重置"
   },
   "layoutList": {
     "moduleLabel": "布局",
@@ -173,7 +180,10 @@
     "removeMonitor": "从布局中移除该显示器",
     "monitorOffline": "未找到",
     "totalWidgets": "部件总数",
-    "remoteNoDevice": "无设备"
+    "remoteNoDevice": "无设备",
+    "removeMonitorWithWidgets": "移除此显示器及其 {{count}} 个小组件？",
+    "primaryMonitor": "主显示器 — 快捷键作用于其小组件",
+    "makePrimaryMonitor": "设为主显示器 — 快捷键将作用于此显示器的小组件"
   },
   "layoutWidgetPanel": {
     "onMonitor": "在 {{monitor}}",
@@ -199,7 +209,6 @@
     "addWidget": "添加组件",
     "search": "搜索组件",
     "empty": "没有可添加的组件",
-    "moveHere": "从 {{monitor}} 移入",
     "unavailable": "此模拟器不支持"
   },
   "overlayCanvas": {

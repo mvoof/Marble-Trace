@@ -1,8 +1,3 @@
-import {
-  monitorForWidget,
-  widgetsOnMonitor,
-} from '@store/settings/virtual-desktop';
-
 import type {
   LayoutMonitor,
   LayoutResolution,
@@ -20,8 +15,6 @@ export interface PickableWidget {
   label: string;
   description?: string;
   available: boolean;
-  /** Monitor it currently lives on, or null when it isn't in the layout yet. */
-  currentMonitorName: string | null;
 }
 
 export interface WidgetSpot {
@@ -29,43 +22,6 @@ export interface WidgetSpot {
   y: number;
   zIndex: number;
 }
-
-/**
- * What the F9 picker offers on one screen: every widget record not already
- * drawn there, copies included — each is listed on its own, since each is
- * placed and enabled on its own.
- *
- * A record enabled on another monitor is kept in the list with that monitor's
- * name, so the picker offers to move that one rather than silently making
- * another copy: duplicating is a deliberate action in the layout editor.
- */
-export const pickableWidgetsForMonitor = (
-  allWidgets: WidgetDefaultConfig[],
-  enabledWidgets: WidgetDefaultConfig[],
-  availableWidgetIds: string[],
-  monitorName: string,
-  monitors: LayoutMonitor[]
-): PickableWidget[] => {
-  const available = new Set(availableWidgetIds);
-
-  const drawnHere = new Set(
-    widgetsOnMonitor(enabledWidgets, monitorName).map((widget) => widget.id)
-  );
-
-  return allWidgets
-    .filter((widget) => !drawnHere.has(widget.id))
-    .map((widget) => ({
-      id: widget.id,
-      type: widget.type,
-      label: widget.label,
-      description: widget.description,
-      available: available.has(widget.id),
-      currentMonitorName: widget.userSettings.enabled
-        ? (monitorForWidget(widget, monitors)?.name ?? null)
-        : null,
-    }))
-    .sort((first, second) => first.label.localeCompare(second.label));
-};
 
 /**
  * Where a widget being added lands: the middle of the screen, cascaded off

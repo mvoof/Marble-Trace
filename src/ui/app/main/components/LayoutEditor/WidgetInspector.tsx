@@ -13,6 +13,7 @@ import {
   BringToFront,
   Copy,
   Maximize2,
+  RotateCcw,
   SendToBack,
   Trash2,
 } from 'lucide-react';
@@ -89,6 +90,20 @@ export const WidgetInspector = observer(
     const { ordinal, total } = liveWidgets.copyOrdinalOf(widget.id);
     const isCopy = ordinal > 1;
 
+    // Never the monitor it already stands on.
+    const moveTargets = moveTargetOptions.filter(
+      (option) => option.value !== widget.monitor
+    );
+
+    const settingsSources = liveWidgets
+      .settingsSourcesFor(widget.id)
+      .map((source) => ({
+        value: source.id,
+        label: `${source.monitor ?? '—'} · ${
+          liveWidgets.copyOrdinalOf(source.id).ordinal
+        }/${total}`,
+      }));
+
     return (
       <div className={styles.root}>
         <header className={styles.header}>
@@ -141,7 +156,7 @@ export const WidgetInspector = observer(
               />
             </SettingRow>
 
-            {moveTargetOptions.length > 0 && (
+            {moveTargets.length > 0 && (
               <SettingRow title={t('layoutEditor.moveToMonitor')}>
                 <Select
                   size="small"
@@ -150,12 +165,44 @@ export const WidgetInspector = observer(
                   onChange={(monitorName: string) =>
                     liveWidgets.moveWidgetToMonitor(widget.id, monitorName)
                   }
-                  options={moveTargetOptions}
+                  options={moveTargets}
                   popupMatchSelectWidth={200}
                   className={styles.moveSelect}
                 />
               </SettingRow>
             )}
+
+            {settingsSources.length > 0 && (
+              <SettingRow
+                title={t('layoutEditor.copySettingsFrom')}
+                desc={t('layoutEditor.copySettingsFromDesc')}
+              >
+                <Select
+                  size="small"
+                  value={null}
+                  placeholder={t('layoutEditor.copySettingsFromPlaceholder')}
+                  onChange={(sourceId: string) =>
+                    liveWidgets.copySettingsFrom(widget.id, sourceId)
+                  }
+                  options={settingsSources}
+                  popupMatchSelectWidth={200}
+                  className={styles.moveSelect}
+                />
+              </SettingRow>
+            )}
+
+            <SettingRow title={t('layoutEditor.resetSettings')}>
+              <Popconfirm
+                title={t('layoutEditor.resetSettingsConfirm')}
+                okText={t('layoutEditor.resetSettingsOk')}
+                cancelText={t('layoutEditor.cancel')}
+                onConfirm={() => liveWidgets.resetSettings(widget.id)}
+              >
+                <Button size="small" icon={<RotateCcw size={ICON_SIZE} />}>
+                  {t('layoutEditor.reset')}
+                </Button>
+              </Popconfirm>
+            </SettingRow>
 
             <SettingRow title={t('layoutEditor.layerOrder')}>
               <div className={styles.buttonPair}>

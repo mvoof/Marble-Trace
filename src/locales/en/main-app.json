@@ -128,7 +128,14 @@
     "duplicate": "Duplicate",
     "layerOrder": "Layer order",
     "moveToMonitorPlaceholder": "Choose a screen",
-    "quickPlacementDesc": "Puts the widget in a corner, an edge or the centre of its screen."
+    "quickPlacementDesc": "Puts the widget in a corner, an edge or the centre of its screen.",
+    "copySettingsFrom": "Copy settings from",
+    "copySettingsFromDesc": "Takes another instance's settings; keeps this one's place and size",
+    "copySettingsFromPlaceholder": "Choose an instance",
+    "resetSettings": "Reset settings",
+    "resetSettingsConfirm": "Put this widget's settings back to the defaults?",
+    "resetSettingsOk": "Reset",
+    "reset": "Reset"
   },
   "layoutList": {
     "moduleLabel": "Layouts",
@@ -175,7 +182,10 @@
     "removeMonitor": "Remove this monitor from the layout",
     "monitorOffline": "not found",
     "totalWidgets": "Total Widgets",
-    "remoteNoDevice": "no device"
+    "remoteNoDevice": "no device",
+    "removeMonitorWithWidgets": "Remove this monitor and its {{count}} widgets?",
+    "primaryMonitor": "Primary monitor — hotkeys act on its widgets",
+    "makePrimaryMonitor": "Make primary — hotkeys will act on this monitor's widgets"
   },
   "layoutWidgetPanel": {
     "onMonitor": "on {{monitor}}",
@@ -201,7 +211,6 @@
     "addWidget": "Add Widget",
     "search": "Search widgets",
     "empty": "Nothing left to add",
-    "moveHere": "move from {{monitor}}",
     "unavailable": "Not available in this sim"
   },
   "overlayCanvas": {

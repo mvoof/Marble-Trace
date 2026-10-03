@@ -43,7 +43,6 @@ import { WidgetHistory } from '@store/settings/widget-history';
 import {
   bottomZIndex,
   buildStarterWidgets,
-  pickableWidgetsForMonitor,
   spotForAddedWidget,
   topZIndex,
   type PickableWidget,
@@ -59,6 +58,43 @@ const LAYOUT_TOAST_DURATION_MS = 3000;
 const DUPLICATE_OFFSET_PX = 24;
 
 export type { PickableWidget };
+
+// Where a widget stands, rather than how it looks: never carried by a settings
+// copy or a reset.
+const GEOMETRY_KEYS = [
+  'enabled',
+  'x',
+  'y',
+  'currentWidth',
+  'currentHeight',
+  'zIndex',
+] as const;
+
+// A deep copy: a nested value (a column set, a colour map) shared by reference
+// between two instances would let an edit to one change the other.
+const withoutGeometry = (
+  settings: WidgetUserSettings
+): Partial<WidgetUserSettings> => {
+  const copied = JSON.parse(
+    JSON.stringify(settings)
+  ) as Partial<WidgetUserSettings>;
+
+  for (const key of GEOMETRY_KEYS) {
+    delete copied[key];
+  }
+
+  return copied;
+};
+
+/** One widget on one monitor's list in the editor. */
+export interface MonitorWidgetRow {
+  type: string;
+  label: string;
+  /** Whether the connected sim can feed it at all. */
+  available: boolean;
+  /** Its instances on this monitor, in layout order. Empty: never switched on here. */
+  instances: WidgetDefaultConfig[];
+}
 
 export class LiveWidgetsStore implements WidgetMap {
   /**
@@ -736,6 +772,48 @@ export class LiveWidgetsStore implements WidgetMap {
     this.bumpMutation();
   }
 
+  /**
+   * The other instances of the same widget a settings copy can be taken from,
+   * on any monitor of the layout.
+   */
+  settingsSourcesFor(id: string): WidgetDefaultConfig[] {
+    const widget = this.getWidget(id);
+
+    if (!widget) return [];
+
+    return this.widgetsOfType(widget.type).filter((entry) => entry.id !== id);
+  }
+
+  /**
+   * Gives an instance another instance's settings — its columns, colours,
+   * scale of text — while it keeps its own place, size and switch. Goes
+   * through `updateUserSettings`, so a copied orientation or column set
+   * reshapes the widget the way a toggle would.
+   */
+  copySettingsFrom(targetId: string, sourceId: string) {
+    const target = this.getWidget(targetId);
+    const source = this.getWidget(sourceId);
+
+    if (!target || !source || target.type !== source.type) return;
+
+    this.pushUndo();
+    this.updateUserSettings(targetId, withoutGeometry(source.userSettings));
+  }
+
+  /**
+   * Puts an instance's settings back to the widget's shipped defaults, keeping
+   * its place, size and switch.
+   */
+  resetSettings(id: string) {
+    const widget = this.getWidget(id);
+    const shipped = widget ? DEFAULT_WIDGET_BY_ID.get(widget.type) : undefined;
+
+    if (!widget || !shipped) return;
+
+    this.pushUndo();
+    this.updateUserSettings(id, withoutGeometry(shipped.userSettings));
+  }
+
   /** Whether `removeWidgetCopy` would take this instance out of the layout. */
   canRemoveWidget(id: string): boolean {
     const widget = this.getWidget(id);
@@ -746,47 +824,23 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
-   * Widgets the F9 picker can drop onto a screen: everything the overlay window
-   * isn't already drawing there. A widget that is enabled but lives on another
-   * monitor is kept in the list with that monitor's name, so the picker offers
-   * to move it instead of pretending a second copy could exist.
+   * Widgets the F9 picker can put on a screen: every widget not already
+   * switched on there. Picking one goes through `setTypeEnabledOnMonitor`, so
+   * it lands on this screen whatever any other screen shows.
    */
   pickableWidgetsForMonitor(monitorName: string): PickableWidget[] {
-    return pickableWidgetsForMonitor(
-      this.allWidgets,
-      this.enabledWidgets,
-      this.availableWidgetIds,
-      monitorName,
-      this.editingLayout?.monitors ?? []
-    );
-  }
-
-  /**
-   * Enables a widget on the given monitor and drops it in the middle of it, on
-   * top of whatever is already there. A widget that belonged to another
-   * monitor now belongs to this one.
-   */
-  addWidgetToMonitor(id: string, monitorName: string) {
-    const widget = this.getWidget(id);
-    const monitor = this.layoutRecords.monitorByName(monitorName);
-
-    if (!widget || !monitor) return;
-
-    this.pushUndo();
-
-    const occupied = widgetsOnMonitor(this.enabledWidgets, monitorName).filter(
-      (placed) => placed.id !== id
-    );
-
-    const spot = spotForAddedWidget(widget, monitor, occupied, this.allWidgets);
-
-    widget.monitor = monitorName;
-    widget.userSettings.x = spot.x;
-    widget.userSettings.y = spot.y;
-    widget.userSettings.zIndex = spot.zIndex;
-    widget.userSettings.enabled = true;
-
-    this.bumpMutation(id);
+    return this.monitorWidgetRows(monitorName)
+      .filter(
+        (row) => !row.instances.some((widget) => widget.userSettings.enabled)
+      )
+      .map((row) => ({
+        id: row.type,
+        type: row.type,
+        label: row.label,
+        description: DEFAULT_WIDGET_BY_ID.get(row.type)?.description,
+        available: row.available,
+      }))
+      .sort((first, second) => first.label.localeCompare(second.label));
   }
 
   /**
@@ -899,12 +953,18 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   // Overlay side: adopt the monitor arrangement the main window just sent.
-  applyMonitorsSync(monitors: LayoutMonitor[]) {
+  applyMonitorsSync(monitors: LayoutMonitor[], primaryMonitor?: string) {
     const layout = this.editingLayout;
 
     if (!layout) return;
 
     layout.monitors = monitors.map(cloneMonitor);
+
+    if (primaryMonitor === undefined) {
+      delete layout.primaryMonitor;
+    } else {
+      layout.primaryMonitor = primaryMonitor;
+    }
   }
 
   loadEditingLayoutWidgets() {
@@ -927,44 +987,122 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
-   * Every widget of the active layout, grouped by the screen it belongs to.
-   *
-   * The editor lists widgets this way because a layout spreads over screens
-   * that are nothing alike — the one being raced on, a tablet, a browser source
-   * — and each of them has its own set. A widget naming no screen of the layout
-   * comes back under a null monitor rather than being dropped: it is exactly
-   * the one the user has lost.
+   * One monitor's own widget list, as the editor shows it: every widget the
+   * build ships, each with its instances on this monitor — none, when it has
+   * never been switched on here. A monitor added a minute ago lists every
+   * widget, all off.
    */
-  get widgetsByScreen(): {
-    monitor: LayoutMonitor | null;
-    widgets: WidgetDefaultConfig[];
-  }[] {
-    const monitors = this.editingLayout?.monitors ?? [];
-    const groups = monitors.map((monitor) => ({
-      monitor: monitor as LayoutMonitor | null,
-      widgets: [] as WidgetDefaultConfig[],
+  monitorWidgetRows(monitorName: string): MonitorWidgetRow[] {
+    const onMonitor = widgetsOnMonitor(this.allWidgets, monitorName);
+    const available = new Set(
+      availableWidgetIdsOf(DEFAULT_WIDGETS, this.capabilitiesOf())
+    );
+
+    return DEFAULT_WIDGETS.map((shipped) => ({
+      type: shipped.id,
+      label: shipped.label,
+      available: available.has(shipped.id),
+      instances: onMonitor.filter((widget) => widget.type === shipped.id),
     }));
+  }
 
-    const offScreen: WidgetDefaultConfig[] = [];
+  /**
+   * The switch of one widget on one monitor's list. On: an instance already
+   * standing on this monitor is switched back on — with every setting it had —
+   * or, when there is none, a new one is made from the widget's template and
+   * placed in a free spot. Off: every instance of it on this monitor goes off;
+   * nothing on any other monitor is touched.
+   *
+   * Returns the instance switched on, so the editor can select it.
+   */
+  setTypeEnabledOnMonitor(
+    type: string,
+    monitorName: string,
+    enabled: boolean
+  ): string | null {
+    const layout = this.widgetOwner;
+    const monitor = this.layoutRecords.monitorByName(monitorName);
 
-    for (const widget of this.allWidgets) {
-      const owner = monitorForWidget(widget, monitors);
-      const group = groups.find((entry) => entry.monitor === owner);
+    if (!layout || !monitor || !DEFAULT_WIDGET_BY_ID.has(type)) return null;
 
-      if (group) {
-        group.widgets.push(widget);
-      } else {
-        offScreen.push(widget);
+    const instances = widgetsOnMonitor(this.allWidgets, monitorName).filter(
+      (widget) => widget.type === type
+    );
+
+    if (!enabled) {
+      const switchedOn = instances.filter(
+        (widget) => widget.userSettings.enabled
+      );
+
+      if (switchedOn.length === 0) return null;
+
+      this.pushUndo();
+
+      for (const widget of switchedOn) {
+        widget.userSettings.enabled = false;
       }
+
+      this.bumpMutation();
+
+      return null;
     }
 
-    const populated = groups.filter((group) => group.widgets.length > 0);
+    const alreadyOn = instances.find((widget) => widget.userSettings.enabled);
 
-    if (offScreen.length > 0) {
-      populated.push({ monitor: null, widgets: offScreen });
+    if (alreadyOn) return alreadyOn.id;
+
+    this.pushUndo();
+
+    const reused = instances[0];
+
+    if (reused) {
+      reused.userSettings.enabled = true;
+      this.bumpMutation(reused.id);
+
+      return reused.id;
     }
 
-    return populated;
+    const created = this.instanceFromTemplate(type, monitor);
+
+    layout.widgets.push(created);
+    this.bumpMutation();
+
+    return created.id;
+  }
+
+  /**
+   * A new, switched-on instance of a widget on a monitor, starting from the
+   * template the Widgets page edits and dropped where nothing else stands.
+   */
+  private instanceFromTemplate(
+    type: string,
+    monitor: LayoutMonitor
+  ): WidgetDefaultConfig {
+    const template =
+      this.widgetDefaults.getWidget(type) ?? DEFAULT_WIDGET_BY_ID.get(type)!;
+    const taken = this.widgets;
+
+    const instance: WidgetDefaultConfig = {
+      ...template,
+      id: taken.has(type) ? nextInstanceId(type, taken.keys()) : type,
+      type,
+      monitor: monitor.name,
+      userSettings: { ...template.userSettings, enabled: true },
+    };
+
+    const occupied = widgetsOnMonitor(this.enabledWidgets, monitor.name);
+    const spot = spotForAddedWidget(
+      instance,
+      monitor,
+      occupied,
+      this.allWidgets
+    );
+
+    instance.userSettings.x = spot.x;
+    instance.userSettings.y = spot.y;
+    instance.userSettings.zIndex = spot.zIndex;
+
+    return instance;
   }
 
   /**
@@ -1078,6 +1216,22 @@ export class LiveWidgetsStore implements WidgetMap {
 
     for (const widget of widgets) {
       const live = layout.widgets.find((entry) => entry.id === widget.id);
+
+      // An instance the window made itself — the F9 picker switching a widget
+      // on there for the first time. Its own monitor is the one thing a window
+      // may add to.
+      if (
+        !live &&
+        widget.monitor === monitorName &&
+        DEFAULT_WIDGET_BY_ID.has(widget.type)
+      ) {
+        layout.widgets.push({
+          ...widget,
+          userSettings: { ...widget.userSettings },
+        });
+
+        continue;
+      }
 
       // Ownership is read off this window's record, not the incoming copy: a
       // widget main has just moved elsewhere is no longer that window's to
