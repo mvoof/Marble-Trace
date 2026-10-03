@@ -148,7 +148,7 @@ export const WidgetInspector = observer(
 
         <div className={styles.body}>
           <Card title={t('layoutEditor.inspectorActions')}>
-            <SettingRow title={t('layoutEditor.lockAspectRatio')}>
+            <SettingRow stacked title={t('layoutEditor.lockAspectRatio')}>
               <Switch
                 size="small"
                 checked={isRatioLocked}
@@ -157,7 +157,7 @@ export const WidgetInspector = observer(
             </SettingRow>
 
             {moveTargets.length > 0 && (
-              <SettingRow title={t('layoutEditor.moveToMonitor')}>
+              <SettingRow stacked title={t('layoutEditor.moveToMonitor')}>
                 <Select
                   size="small"
                   value={null}
@@ -174,6 +174,7 @@ export const WidgetInspector = observer(
 
             {settingsSources.length > 0 && (
               <SettingRow
+                stacked
                 title={t('layoutEditor.copySettingsFrom')}
                 desc={t('layoutEditor.copySettingsFromDesc')}
               >
@@ -191,7 +192,7 @@ export const WidgetInspector = observer(
               </SettingRow>
             )}
 
-            <SettingRow title={t('layoutEditor.resetSettings')}>
+            <SettingRow stacked title={t('layoutEditor.resetSettings')}>
               <Popconfirm
                 title={t('layoutEditor.resetSettingsConfirm')}
                 okText={t('layoutEditor.resetSettingsOk')}
@@ -204,7 +205,7 @@ export const WidgetInspector = observer(
               </Popconfirm>
             </SettingRow>
 
-            <SettingRow title={t('layoutEditor.layerOrder')}>
+            <SettingRow stacked title={t('layoutEditor.layerOrder')}>
               <div className={styles.buttonPair}>
                 <Tooltip title={t('layoutEditor.bringToFront')}>
                   <Button
@@ -224,7 +225,7 @@ export const WidgetInspector = observer(
               </div>
             </SettingRow>
 
-            <SettingRow title={t('layoutEditor.duplicateWidget')}>
+            <SettingRow stacked title={t('layoutEditor.duplicateWidget')}>
               <Button
                 size="small"
                 icon={<Copy size={ICON_SIZE} />}
@@ -243,6 +244,7 @@ export const WidgetInspector = observer(
             </SettingRow>
 
             <SettingRow
+              stacked
               title={t('layoutEditor.quickPlacement')}
               desc={t('layoutEditor.quickPlacementDesc')}
             >
