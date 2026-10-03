@@ -189,7 +189,7 @@
     "onMonitor": "在 {{monitor}}",
     "offScreen": "不在任何屏幕上",
     "copyTooltip": "副本——拥有自己的设置、位置和开关",
-    "originalTooltip": "此布局中副本的来源原件",
+    "originalTooltip": "此屏幕上的第一个实例；此处其余的都是它的副本",
     "deleteCopyConfirm": "删除此副本？",
     "deleteCopyOk": "删除"
   },

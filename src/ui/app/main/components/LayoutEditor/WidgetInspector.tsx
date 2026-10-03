@@ -15,7 +15,6 @@ import {
   Maximize2,
   RotateCcw,
   SendToBack,
-  Trash2,
 } from 'lucide-react';
 
 import { useLiveWidgetsStore } from '@store/root-store-context';
@@ -124,27 +123,6 @@ export const WidgetInspector = observer(
                 {ordinal}/{total}
               </span>
             </Tooltip>
-          )}
-
-          {/* Never the last instance of a widget: there would be nothing left
-              to switch on again, which is what the enable switch is for. */}
-          {liveWidgets.canRemoveWidget(widget.id) && (
-            <Popconfirm
-              title={t('layoutWidgetPanel.deleteCopyConfirm')}
-              okText={t('layoutWidgetPanel.deleteCopyOk')}
-              cancelText={t('layoutEditor.cancel')}
-              onConfirm={() => {
-                liveWidgets.removeWidgetCopy(widget.id);
-                onSelectWidget(null);
-              }}
-            >
-              <Button
-                size="small"
-                type="text"
-                danger
-                icon={<Trash2 size={ICON_SIZE} />}
-              />
-            </Popconfirm>
           )}
         </header>
 

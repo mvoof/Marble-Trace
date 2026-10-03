@@ -1,13 +1,14 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Switch, Tooltip } from 'antd';
+import { Button, Popconfirm, Switch, Tooltip } from 'antd';
 import {
   ChevronDown,
   ChevronRight,
   Copy,
   Monitor,
   TabletSmartphone,
+  Trash2,
 } from 'lucide-react';
 import type {
   LayoutMonitor,
@@ -96,6 +97,29 @@ const InstanceRow = observer(
             </span>
           </Tooltip>
         </button>
+
+        <Popconfirm
+          title={t('layoutWidgetPanel.deleteCopyConfirm')}
+          okText={t('layoutWidgetPanel.deleteCopyOk')}
+          okButtonProps={{ danger: true }}
+          cancelText={t('layoutEditor.cancel')}
+          onConfirm={() => {
+            liveWidgets.removeWidgetCopy(widget.id);
+
+            // An empty id clears the selection — the copy it named is gone.
+            if (isSelected) {
+              onSelectWidget('');
+            }
+          }}
+        >
+          <Button
+            size="small"
+            type="text"
+            danger
+            aria-label={t('layoutWidgetPanel.deleteCopyConfirm')}
+            icon={<Trash2 size={12} />}
+          />
+        </Popconfirm>
       </div>
     );
   }

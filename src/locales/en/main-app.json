@@ -191,7 +191,7 @@
     "onMonitor": "on {{monitor}}",
     "offScreen": "Off every screen",
     "copyTooltip": "A copy — its own settings, place and switch",
-    "originalTooltip": "The original this layout's copies were made from",
+    "originalTooltip": "The first instance on this screen; the others here are its copies",
     "deleteCopyConfirm": "Delete this copy?",
     "deleteCopyOk": "Delete"
   },

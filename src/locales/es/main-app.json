@@ -191,7 +191,7 @@
     "onMonitor": "en {{monitor}}",
     "offScreen": "Fuera de las pantallas",
     "copyTooltip": "Una copia: con sus propios ajustes, lugar e interruptor",
-    "originalTooltip": "El original del que salen las copias de este diseño",
+    "originalTooltip": "La primera instancia en esta pantalla; las demás aquí son sus copias",
     "deleteCopyConfirm": "¿Eliminar esta copia?",
     "deleteCopyOk": "Eliminar"
   },
