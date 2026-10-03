@@ -770,10 +770,10 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
-   * Removes an instance from the layout for good — any instance, as long as
-   * another one of the same widget stays in the layout. The last one can only
-   * be switched off: there would be nothing left to switch on again, and
-   * `setWidgets` would put one back on the next load anyway.
+   * Removes a copy for good: an instance that is not the first of its widget
+   * on its own monitor. The first one is the widget on that screen, and the
+   * monitor's switch is what takes it off — it keeps its settings for the
+   * next time it is switched on.
    */
   removeWidgetCopy(id: string) {
     const widget = this.getWidget(id);
@@ -834,11 +834,7 @@ export class LiveWidgetsStore implements WidgetMap {
 
   /** Whether `removeWidgetCopy` would take this instance out of the layout. */
   canRemoveWidget(id: string): boolean {
-    const widget = this.getWidget(id);
-
-    if (!widget) return false;
-
-    return this.widgetsOfType(widget.type).length > 1;
+    return this.copyOrdinalOf(id).ordinal > 1;
   }
 
   /**
@@ -1126,7 +1122,12 @@ export class LiveWidgetsStore implements WidgetMap {
 
     if (!widget) return { ordinal: 1, total: 1 };
 
-    const copies = this.widgetsOfType(widget.type);
+    // Counted on its own monitor: every monitor has its own set, so the
+    // widget's first instance there is the widget on that screen, not a copy
+    // of one standing somewhere else.
+    const copies = this.widgetsOfType(widget.type).filter(
+      (entry) => entry.monitor === widget.monitor
+    );
 
     return {
       ordinal: copies.findIndex((entry) => entry.id === widgetId) + 1,

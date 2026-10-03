@@ -97,12 +97,14 @@ export const WidgetInspector = observer(
 
     const settingsSources = liveWidgets
       .settingsSourcesFor(widget.id)
-      .map((source) => ({
-        value: source.id,
-        label: `${source.monitor ?? '—'} · ${
-          liveWidgets.copyOrdinalOf(source.id).ordinal
-        }/${total}`,
-      }));
+      .map((source) => {
+        const place = liveWidgets.copyOrdinalOf(source.id);
+
+        return {
+          value: source.id,
+          label: `${source.monitor ?? '—'} · ${place.ordinal}/${place.total}`,
+        };
+      });
 
     return (
       <div className={styles.root}>

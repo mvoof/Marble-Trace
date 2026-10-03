@@ -751,10 +751,11 @@ other. Always read the widget as `widget.type`, never `widget.id`.
   monitor — settings intact — or makes one from the widget's template. An
   overlay may add an instance only to its own monitor
   (`applySettingsSyncForMonitor`).
-- Deleting is `removeWidgetCopy`, and it refuses only the **last** instance of
-  a widget in the layout: there would be nothing left to switch on, and
-  `setWidgets` puts one back (switched off, on the primary monitor) on the next
-  load anyway. Removing a monitor deletes its widgets with it.
+- Instances are numbered **per monitor** (`copyOrdinalOf`): the first one of a
+  widget on a monitor is the widget on that screen, a further one there is a
+  copy. Deleting is `removeWidgetCopy`, and it takes only copies — the first
+  instance is taken off by its monitor's switch and keeps its settings.
+  Removing a monitor deletes its widgets with it.
 
 ### Widget appearance
 

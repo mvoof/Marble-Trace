@@ -12,9 +12,11 @@ field. Ownership is that field and nothing else — never the widget's position.
 - A drag is clamped to the widget's own monitor. Only "move to monitor" hands
   a widget to another one.
 - Every monitor has its own widget set and may hold several instances of one
-  widget. No instance is special: the record whose `id` equals its type is the
-  first one a layout got, and can be moved, switched off or deleted like the
-  rest — only the last instance of a widget in a layout cannot be deleted.
+  widget. No record is special for being the first in the layout: the record
+  whose `id` equals its type is the first one a layout got, nothing more.
+  Instances are numbered per monitor — the first of a widget on a monitor is
+  the widget on that screen and is switched off, not deleted; a further one on
+  the same monitor is a copy and can be deleted.
 - Where one answer is needed for the whole widget — a hotkey, a widget store,
   a value the backend keeps once — the **primary instance** answers: the
   switched-on instance on the layout's primary monitor (`primaryMonitor`, else

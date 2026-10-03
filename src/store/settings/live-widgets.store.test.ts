@@ -705,18 +705,33 @@ describe('several copies of one widget in a layout', () => {
     expect(store.widgetsOfType('standings')).toHaveLength(3);
   });
 
-  // No instance is special any more — but the last one has to stay, or there
-  // would be nothing left in the layout to switch on again.
-  it('deletes any instance but the last one of its widget', () => {
+  // The first instance on a monitor is the widget on that screen — its switch
+  // takes it off. Only a further instance on the same monitor is a copy.
+  it('deletes a copy but not the first instance on its monitor', () => {
     const store = rootStore.liveWidgets;
 
     const copyId = store.duplicateWidget('standings')!;
 
     store.removeWidgetCopy('standings');
-    expect(store.getWidget('standings')).toBeUndefined();
+    expect(store.getWidget('standings')).toBeDefined();
 
     store.removeWidgetCopy(copyId);
-    expect(store.getWidget(copyId)).toBeDefined();
+    expect(store.getWidget(copyId)).toBeUndefined();
+  });
+
+  it('numbers instances per monitor, not across the layout', () => {
+    const store = rootStore.liveWidgets;
+
+    const copyId = store.duplicateWidget('standings')!;
+    const streamId = store.setTypeEnabledOnMonitor(
+      'standings',
+      'Stream',
+      true
+    )!;
+
+    expect(store.copyOrdinalOf(copyId)).toEqual({ ordinal: 2, total: 2 });
+    expect(store.copyOrdinalOf(streamId)).toEqual({ ordinal: 1, total: 1 });
+    expect(store.canRemoveWidget(streamId)).toBe(false);
   });
 
   // What an overlay window and a remote screen do with the list main sends
@@ -1318,12 +1333,13 @@ describe('widgets belong to their monitor', () => {
   it('gives a widget store the settings of the instance that speaks for it', () => {
     const store = setUp();
 
-    const copyId = store.duplicateWidget('standings')!;
+    // The record named after the type stays switched off on the first
+    // monitor; the widget actually on screen is an instance on the other.
+    const rightId = store.setTypeEnabledOnMonitor('standings', 'RIGHT', true)!;
 
-    store.updateUserSettings(copyId, { fontScale: 1.9, enabled: true });
-    store.removeWidgetCopy('standings');
+    store.updateUserSettings(rightId, { fontScale: 1.9 });
 
-    expect(store.getWidget('standings')).toBeUndefined();
+    expect(store.getWidget('standings')!.userSettings.enabled).toBe(false);
     expect(store.settingsOfType('standings').fontScale).toBe(1.9);
   });
 
