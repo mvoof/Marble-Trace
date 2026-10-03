@@ -62,7 +62,7 @@ No React, no stores, no Tauri. Importable from any layer.
 | `telemetry-format.ts`      | Rendering a raw SI number for the driver in their unit system: speed, temperature, fuel, distance — and converting back.                                                                                   |
 | `timer-utils.ts`           | Clocks and session state: wall clock, sim date and time, session ended / race started, lap-limited vs timed, the session clock, `splitTime`.                                                               |
 | `weather-utils.ts`         | Weather rendering: wind color and bearing, track wetness, and the 0..1 fractions the gauges are drawn from.                                                                                                |
-| `widget-instance.ts`       | Anything touching a widget _copy_: `widgetTypeOf` (**always** use it, never `widget.id`), the next instance id, the type behind an id.                                                                     |
+| `widget-instance.ts`       | Widget instances: the next instance id, and the type behind an id the store holds no record for. A record's own type is `widget.type` — never `widget.id`.                                                 |
 
 ---
 

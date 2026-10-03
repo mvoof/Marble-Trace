@@ -6,7 +6,6 @@ import {
 
 export const FLAT_FLAGS_MANIFEST: WidgetManifest = {
   id: 'flat-flags',
-  order: 100,
   previewScenarios: [
     'yellow-flag',
     'safety-car',

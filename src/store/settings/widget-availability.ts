@@ -1,5 +1,4 @@
 import { WIDGET_BY_ID } from '@store/widget-catalog';
-import { widgetTypeOf } from '@utils/widget-instance';
 import type { CapabilitiesPayload } from '@/types/bindings';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 
@@ -16,9 +15,7 @@ export const availableWidgetIdsOf = (
   const ids: string[] = [];
 
   for (const widget of widgets) {
-    const required = WIDGET_BY_ID.get(
-      widgetTypeOf(widget)
-    )?.requiredCapabilities;
+    const required = WIDGET_BY_ID.get(widget.type)?.requiredCapabilities;
 
     if (!required || required.length === 0 || !capabilities) {
       ids.push(widget.id);

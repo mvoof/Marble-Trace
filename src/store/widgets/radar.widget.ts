@@ -157,7 +157,7 @@ export class RadarWidgetStore {
   private settingsOf<Settings extends RadarSettings = RadarSettings>(
     widgetType: RadarWidgetType
   ) {
-    return this.root.liveWidgets.getSettings<Settings>(widgetType);
+    return this.root.liveWidgets.settingsOfType<Settings>(widgetType);
   }
 
   get isLoneQualifying(): boolean {

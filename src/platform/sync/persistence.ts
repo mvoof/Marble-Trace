@@ -4,20 +4,21 @@ import {
   logSettingsSnapshot as logSettingsSnapshotCommand,
   settingsFileExists as settingsFileExistsCommand,
 } from '@platform/services/settings.service';
-import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-catalog';
-import { widgetTypeOf } from '@utils/widget-instance';
 import type { UnitSystem } from '@/types';
-import type {
-  SavedLayout,
-  WidgetDefaultConfig,
-  SessionContext,
-} from '@/types/widget-settings';
+import type { SessionContext } from '@/types/widget-settings';
 import type { AppSettings } from '@store/settings/app-settings.store';
-import { mergeWithDefaults } from '@store/deep-merge';
 import type { RootStore } from '@store/root-store';
 import type { BindingMap } from '@/types/input-bindings';
 import { CURRENT_SCHEMA_VERSION } from '@platform/settings-schema/index';
 import type { InputDevice } from '@/types/bindings';
+import {
+  decodeLayout,
+  decodeTemplates,
+  encodeLayout,
+  encodeTemplates,
+  type StoredLayout,
+  type StoredTemplate,
+} from '@platform/sync/settings-file';
 
 export const SETTINGS_FILE = 'settings.json';
 
@@ -33,12 +34,13 @@ export interface Settings {
     system: UnitSystem;
   };
   /**
-   * The widget templates a new layout is built from. The widgets a driver
-   * actually sees live in `layouts[].widgets[]` and nowhere else — the active
-   * layout owns them.
+   * What a new widget instance starts from, keyed by widget type — the
+   * catalogue the Widgets page edits. A new layout's starter set is built from
+   * it. The widgets a driver actually sees live in `layouts[].monitors[]` and
+   * nowhere else.
    */
-  defaultWidgets: WidgetDefaultConfig[];
-  layouts: SavedLayout[];
+  widgetTemplates: Record<string, StoredTemplate>;
+  layouts: StoredLayout[];
   activeLayoutId: string | null;
   sessionLayouts?: Record<SessionContext, string | null>;
   /**
@@ -50,133 +52,6 @@ export interface Settings {
   /** Devices seen before, so an unplugged one's bindings stay identifiable. */
   inputDevices?: InputDevice[];
 }
-
-const restoreWidgets = (
-  savedWidgets: WidgetDefaultConfig[]
-): WidgetDefaultConfig[] => {
-  const defaultById = new Map(
-    DEFAULT_WIDGETS.map((widget) => [widget.id, widget])
-  );
-
-  const result: WidgetDefaultConfig[] = [];
-
-  for (const saved of savedWidgets) {
-    // By type, not by id: a copy's id names the copy, and the shape being
-    // repaired here — design size, locked ratio, shipped settings — belongs to
-    // the widget it is a copy of.
-    const savedType = widgetTypeOf(saved);
-    const widgetDefaults = defaultById.get(savedType);
-
-    if (!widgetDefaults) continue;
-
-    const mergedUserSettings = mergeWithDefaults(
-      widgetDefaults.userSettings,
-      saved.userSettings ?? {}
-    );
-
-    const hasLockedRatio =
-      !!widgetDefaults.lockAspectRatio && widgetDefaults.designWidth > 0;
-
-    // A locked ratio is part of the widget's shape, not a resize preference:
-    // a file written before the widget locked it (or edited by hand) would
-    // otherwise render at a size the widget cannot draw.
-    if (hasLockedRatio) {
-      const ratio = widgetDefaults.designHeight / widgetDefaults.designWidth;
-
-      mergedUserSettings.currentHeight = Math.round(
-        mergedUserSettings.currentWidth * ratio
-      );
-    }
-
-    // A saved design size only means something for widgets that recompute it
-    // from their visible columns; for a locked ratio it *is* the ratio, so a
-    // stale pair from an older shape has to give way to the manifest — kept,
-    // it stretches the widget back into that shape on the next resize.
-    // A table whose width *is* the sum of its columns derives it rather than
-    // remembering it: a stored width from an older column set would survive as
-    // dead space at the right edge of every row. The widget keeps the size the
-    // user gave it — `currentWidth` is rescaled by the same factor, so `--wfs`,
-    // and with it the text, does not move.
-    const deriveDesignWidth = WIDGET_BY_ID.get(savedType)?.deriveDesignWidth;
-    let normalizedDesignWidth: number | null = null;
-
-    if (!hasLockedRatio && deriveDesignWidth) {
-      const derivedWidth = Math.max(1, deriveDesignWidth(mergedUserSettings));
-      const storedWidth = saved.designWidth ?? widgetDefaults.designWidth;
-
-      if (storedWidth > 0 && derivedWidth !== storedWidth) {
-        mergedUserSettings.currentWidth = Math.round(
-          (mergedUserSettings.currentWidth / storedWidth) * derivedWidth
-        );
-      }
-
-      normalizedDesignWidth = derivedWidth;
-    }
-
-    const designWidth = hasLockedRatio
-      ? widgetDefaults.designWidth
-      : (normalizedDesignWidth ??
-        saved.designWidth ??
-        widgetDefaults.designWidth);
-
-    const designHeight = hasLockedRatio
-      ? widgetDefaults.designHeight
-      : (saved.designHeight ?? widgetDefaults.designHeight);
-
-    result.push({
-      // The copy keeps its own identity; everything else is the widget's.
-      id: saved.id,
-      ...(saved.type === undefined ? {} : { type: saved.type }),
-      label: widgetDefaults.label,
-      description: widgetDefaults.description,
-      designWidth,
-      designHeight,
-      userSettings: mergedUserSettings,
-    });
-  }
-
-  // A widget is unseen when the file holds no copy of it at all — one whose
-  // only copy sits on a stream screen is still seen, and adding the original
-  // back beside it would put a widget on the overlay nobody asked for.
-  const savedTypes = new Set(savedWidgets.map(widgetTypeOf));
-  const unseenWidgets = DEFAULT_WIDGETS.filter(
-    (widget) => !savedTypes.has(widget.id)
-  );
-
-  return [...result, ...unseenWidgets];
-};
-
-/**
- * The same repair for the widgets a layout carries. Since the active layout owns
- * the widgets outright, these are the only copies a driver actually sees; a
- * layout holds every widget, enabled or not (`snapshotWidgets` in the widget
- * settings store), so a widget the file has never seen belongs here as much as
- * it does in `defaultWidgets`.
- *
- * Without this pass every layout keeps whatever shape it was written with. A
- * setting added to an already-shipped widget then reads as `undefined` in each
- * layout — `false` for a boolean — which is the opposite of its default, and it
- * happens silently on the first layout switch. That gap is why anything touching
- * `layouts[].widgets[]` used to need a migration step of its own.
- *
- * A widget the layout never had is forced to `enabled: false` regardless of what
- * it ships as: filling a hole in an old file must not put a new widget on
- * someone's overlay by itself.
- */
-export const restoreLayoutWidgets = (
-  savedWidgets: WidgetDefaultConfig[]
-): WidgetDefaultConfig[] => {
-  const savedIds = new Set(savedWidgets.map((widget) => widget.id));
-
-  return restoreWidgets(savedWidgets).map((widget) =>
-    savedIds.has(widget.id)
-      ? widget
-      : {
-          ...widget,
-          userSettings: { ...widget.userSettings, enabled: false },
-        }
-  );
-};
 
 /**
  * Fills the stores from a settings blob that has already been brought to the
@@ -195,18 +70,15 @@ export const hydrateStores = (
       root.units.setSystem(loadedSettings.units.system);
     }
 
-    if (loadedSettings.defaultWidgets) {
+    if (loadedSettings.widgetTemplates) {
       root.widgetDefaults.setWidgets(
-        restoreWidgets(loadedSettings.defaultWidgets)
+        decodeTemplates(loadedSettings.widgetTemplates)
       );
     }
 
     if (loadedSettings.layouts) {
       root.liveWidgets.setLayouts(
-        loadedSettings.layouts.map((layout) => ({
-          ...layout,
-          widgets: restoreLayoutWidgets(layout.widgets ?? []),
-        })),
+        loadedSettings.layouts.map(decodeLayout),
         loadedSettings.activeLayoutId ?? null
       );
     }
@@ -234,8 +106,8 @@ export const buildSettings = (root: RootStore): Settings => ({
   units: {
     system: root.units.unitSystem,
   },
-  defaultWidgets: Array.from(root.widgetDefaults.widgets.values()),
-  layouts: root.layouts.layouts,
+  widgetTemplates: encodeTemplates(root.widgetDefaults.widgets.values()),
+  layouts: root.layouts.layouts.map(encodeLayout),
   activeLayoutId: root.layouts.liveLayoutId,
   sessionLayouts: root.layouts.sessionLayouts,
   bindings: root.bindings.overrides,

@@ -147,7 +147,7 @@ export class StandingsWidgetStore {
       reaction(
         () => [
           this.activeClassIndex,
-          this.root.liveWidgets.getSettings<StandingsWidgetSettings>(
+          this.root.liveWidgets.settingsOfType<StandingsWidgetSettings>(
             'standings'
           ).viewMode,
         ],
@@ -187,7 +187,7 @@ export class StandingsWidgetStore {
    * by best lap, so the two are genuinely different answers there.
    */
   get useTrackOrder(): boolean {
-    return this.root.liveWidgets.getSettings<StandingsWidgetSettings>(
+    return this.root.liveWidgets.settingsOfType<StandingsWidgetSettings>(
       'standings'
     ).useLivePositions;
   }
@@ -437,7 +437,9 @@ export class StandingsWidgetStore {
     const entries = this.root.backendComputed.driverIdentities;
 
     const settings =
-      this.root.liveWidgets.getSettings<StandingsWidgetSettings>('standings');
+      this.root.liveWidgets.settingsOfType<StandingsWidgetSettings>(
+        'standings'
+      );
 
     const sessionType = this.root.session.currentSessionType;
 
@@ -820,7 +822,7 @@ export class StandingsWidgetStore {
     this.clearScrollReset();
 
     const resetSeconds =
-      this.root.liveWidgets.getSettings<StandingsWidgetSettings>(
+      this.root.liveWidgets.settingsOfType<StandingsWidgetSettings>(
         'standings'
       ).scrollResetSeconds;
 

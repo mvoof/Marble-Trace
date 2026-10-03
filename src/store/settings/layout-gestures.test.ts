@@ -59,16 +59,24 @@ describe('gestures that rebuild a widget list', () => {
       'layout-race'
     );
 
+    root.liveWidgets.moveWidgetToMonitor('fuel', 'DISPLAY2');
     root.liveWidgets.updatePosition('fuel', ON_RIGHT_X, 0);
   });
 
-  it('puts the widgets of a removed screen back on screen', () => {
+  // A screen's widgets are its own set: moving them onto the screen that
+  // remains would silently double what that one shows. What comes back is the
+  // switched-off instance every layout keeps of every widget.
+  it('removes the widgets of a removed screen with it', () => {
     removeMonitor(layoutGestureStores(root), 'layout-race', 'DISPLAY2');
 
+    const fuel = root.liveWidgets.widgetsOfType('fuel');
+
     expect(root.layouts.byId('layout-race')?.monitors).toEqual([LEFT]);
-    expect(root.liveWidgets.getWidget('fuel')!.userSettings.x).toBeLessThan(
-      LEFT.bounds.width
-    );
+    expect(fuel).toHaveLength(1);
+    expect(fuel[0]).toMatchObject({
+      monitor: 'DISPLAY1',
+      userSettings: { enabled: false },
+    });
   });
 
   it('installs the active layout after the screens are realigned', () => {

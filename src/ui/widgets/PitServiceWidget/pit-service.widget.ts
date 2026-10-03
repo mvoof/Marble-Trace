@@ -89,7 +89,7 @@ export class PitServiceWidgetStore {
   }
 
   get settings(): PitServiceWidgetSettings {
-    return this.root.liveWidgets.getSettings<PitServiceWidgetSettings>(
+    return this.root.liveWidgets.settingsOfType<PitServiceWidgetSettings>(
       'pit-service'
     );
   }

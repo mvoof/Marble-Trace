@@ -34,6 +34,11 @@
   opacity: 0.5;
 }
 
+// A further instance of the widget on the row above, on the same screen.
+.instanceRow {
+  padding-left: sp(xxl);
+}
+
 .label {
   flex: 1 1 auto;
   min-width: 0;
@@ -47,18 +52,6 @@
   padding: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.onOtherMonitor {
-  flex: 0 0 auto;
-  font-family: $font-mono;
-  font-size: fs(xxs);
-  color: #5e626d;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: radius(sm);
-  padding: 0 sp(xxs);
   white-space: nowrap;
 }
 
@@ -78,9 +71,26 @@
   display: flex;
   align-items: center;
   gap: sp(xs);
+  width: 100%;
   padding: sp(xxs) sp(sm);
   background: #0f1013;
   color: #8b8e98;
+  border: none;
+  border-radius: radius(sm);
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    color: #c7cad2;
+  }
+}
+
+// Widgets switched on on this screen, pushed to the far end of the heading.
+.screenCount {
+  margin-left: auto;
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  color: #5e626d;
 }
 
 .screenName {
@@ -109,14 +119,4 @@
   border-radius: radius(sm);
   padding: 0 sp(xxs);
   white-space: nowrap;
-}
-
-// The original of a widget that has copies: named, but quieter than the copies
-// — it is the row that was always there.
-.originalTag {
-  @extend .copyTag;
-
-  color: #5e626d;
-  background: none;
-  border-color: rgba(255, 255, 255, 0.06);
 }

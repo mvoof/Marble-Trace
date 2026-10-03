@@ -217,7 +217,8 @@ describe('deleting the layout that is on screen', () => {
   };
 
   const RACE_FUEL_X = 100;
-  const GARAGE_FUEL_X = 900;
+  // Low enough that the fuel widget stays inside the monitor at y = x.
+  const GARAGE_FUEL_X = 600;
 
   let rootStore: RootStore;
 
@@ -288,12 +289,12 @@ describe('deleting the layout that is on screen', () => {
       'layout-garage',
     ]);
 
-    const fuel = persisted.layouts[0].widgets.find(
+    const fuel = persisted.layouts[0].monitors[0].widgets.find(
       (widget) => widget.id === 'fuel'
     )!;
 
-    expect(fuel.userSettings.x).toBe(GARAGE_FUEL_X);
-    expect(fuel.userSettings.y).toBe(GARAGE_FUEL_X);
+    expect(fuel.frame.x).toBe(GARAGE_FUEL_X);
+    expect(fuel.frame.y).toBe(GARAGE_FUEL_X);
   });
 
   it('leaves nothing being edited when the last layout goes', () => {
@@ -382,7 +383,7 @@ describe('the screens of a layout that have something to draw', () => {
 
     expect(rootStore.liveWidgets.populatedMonitorNames).toEqual(['DISPLAY1']);
 
-    rootStore.liveWidgets.updatePosition(widget.id, SECOND_MONITOR_X, 0);
+    rootStore.liveWidgets.moveWidgetToMonitor(widget.id, 'DISPLAY2');
 
     expect(rootStore.liveWidgets.populatedMonitorNames).toEqual(['DISPLAY2']);
   });
@@ -437,7 +438,7 @@ describe('remote screen geometry', () => {
     const [widget] = rootStore.liveWidgets.allWidgets;
 
     rootStore.liveWidgets.setWidgetEnabled(widget.id, true);
-    rootStore.liveWidgets.updatePosition(widget.id, REMOTE_X + 10, 10);
+    rootStore.liveWidgets.moveWidgetToMonitor(widget.id, 'Tablet');
 
     const before = widget.userSettings.x;
 
@@ -458,11 +459,13 @@ describe('remote screen geometry', () => {
     const [widget] = rootStore.liveWidgets.allWidgets;
 
     rootStore.liveWidgets.setWidgetEnabled(widget.id, true);
-    rootStore.liveWidgets.updatePosition(widget.id, REMOTE_X + 10, 10);
+    rootStore.liveWidgets.moveWidgetToMonitor(widget.id, 'Tablet');
+
+    const before = widget.userSettings.y;
 
     rootStore.layouts.moveRemoteScreen('Tablet', REMOTE_X, 2000);
 
-    expect(widget.userSettings.y).toBe(2010);
+    expect(widget.userSettings.y - before).toBe(2000);
   });
 });
 

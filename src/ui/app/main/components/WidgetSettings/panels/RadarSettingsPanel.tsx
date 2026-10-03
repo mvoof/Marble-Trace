@@ -23,7 +23,6 @@ import { useUnitsStore } from '@store/root-store-context';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { widgetTypeOf } from '@utils/widget-instance';
 import { panelRows, usePanelWidgetId } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
@@ -275,9 +274,7 @@ const ScopeCard = observer(() => {
 export const RadarSettingsPanel = observer(
   ({ widgetId }: { widgetId: string }) => {
     const liveWidgets = useWidgetEditor();
-    const widgetType = widgetTypeOf(
-      liveWidgets.getWidget(widgetId) ?? { id: widgetId }
-    );
+    const widgetType = liveWidgets.getWidget(widgetId)?.type ?? widgetId;
     const { t } = useTranslation('widgets');
     const settings = liveWidgets.getSettings<RadarSettings>(widgetId);
 

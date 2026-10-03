@@ -147,7 +147,7 @@ export class CloseBattleWidgetStore {
   }
 
   get settings(): CloseBattleWidgetSettings {
-    return this.root.liveWidgets.getSettings<CloseBattleWidgetSettings>(
+    return this.root.liveWidgets.settingsOfType<CloseBattleWidgetSettings>(
       WIDGET_ID
     );
   }

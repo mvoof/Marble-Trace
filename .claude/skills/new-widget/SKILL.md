@@ -131,19 +131,14 @@ default on the next load. Say so rather than writing one.
 Both in `src/ui/widgets/<Name>Widget/`. Mechanical once steps 1, 3 and 5 are
 answered — generate them.
 
-`order` is the next free multiple of ten. Get it with one command, do not open 24
-manifests:
-
-```bash
-grep -h "order:" src/ui/widgets/*/manifest.ts | sort -t: -k2 -n | tail -1
-```
+Declare no `order` or position: every widget list is alphabetical by `label`,
+so the label alone decides where the widget appears.
 
 `manifest.ts` is **plain data and never imports its own component**:
 
 ```ts
 export const <NAME>_MANIFEST: WidgetManifest = {
   id: '<kebab-id>',
-  order: <next free multiple of ten>,
   telemetryEvents: [/* the gated fields from step 1, and nothing else */],
   requiredCapabilities: [/* from step 1 */],
   label: '<Label>',

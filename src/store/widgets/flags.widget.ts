@@ -141,7 +141,7 @@ export class FlagsStore {
       (flags) => flags.length === 0,
       NO_FLAGS,
       () =>
-        this.root.liveWidgets.getSettings<FlagDisplaySettings>('flat-flags')
+        this.root.liveWidgets.settingsOfType<FlagDisplaySettings>('flat-flags')
           .holdDuration,
       (value) => {
         this.displayFlags = value;
@@ -155,7 +155,7 @@ export class FlagsStore {
       (flag) => flag === NO_FLAG,
       NO_FLAG,
       () =>
-        this.root.liveWidgets.getSettings<FlagDisplaySettings>('led-flags')
+        this.root.liveWidgets.settingsOfType<FlagDisplaySettings>('led-flags')
           .holdDuration,
       (value) => {
         this.ledDisplayFlag = value;

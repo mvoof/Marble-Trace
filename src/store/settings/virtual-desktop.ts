@@ -5,49 +5,52 @@ import type {
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
 
-export const widgetCentre = (
-  widget: WidgetDefaultConfig
-): { x: number; y: number } => ({
-  x: widget.userSettings.x + widget.userSettings.currentWidth / 2,
-  y: widget.userSettings.y + widget.userSettings.currentHeight / 2,
-});
-
-export const boundsContain = (
-  bounds: MonitorBounds,
-  point: { x: number; y: number }
-): boolean =>
-  point.x >= bounds.x &&
-  point.x < bounds.x + bounds.width &&
-  point.y >= bounds.y &&
-  point.y < bounds.y + bounds.height;
-
 /**
- * The monitor a widget is drawn on: the one containing its centre. Screen
- * arrangements are rarely a perfect rectangle, so a widget parked in a gap
- * falls back to the first monitor instead of vanishing.
+ * The monitor a widget belongs to: the one its `monitor` field names. Never
+ * its position — a widget is kept inside its monitor, and only an explicit move
+ * hands it to another one.
  */
 export const monitorForWidget = (
   widget: WidgetDefaultConfig,
   monitors: LayoutMonitor[]
-): LayoutMonitor | undefined => {
-  if (monitors.length === 0) return undefined;
-
-  const centre = widgetCentre(widget);
-
-  return (
-    monitors.find((monitor) => boundsContain(monitor.bounds, centre)) ??
-    monitors[0]
-  );
-};
+): LayoutMonitor | undefined =>
+  monitors.find((monitor) => monitor.name === widget.monitor);
 
 export const widgetsOnMonitor = (
   widgets: WidgetDefaultConfig[],
-  monitorName: string,
-  monitors: LayoutMonitor[]
+  monitorName: string
 ): WidgetDefaultConfig[] =>
-  widgets.filter(
-    (widget) => monitorForWidget(widget, monitors)?.name === monitorName
-  );
+  widgets.filter((widget) => widget.monitor === monitorName);
+
+/**
+ * The monitor a layout's single-answer settings speak for: the one it names as
+ * primary, else its first physical display, else whatever comes first.
+ */
+export const primaryMonitorOf = (layout: {
+  monitors: LayoutMonitor[];
+  primaryMonitor?: string;
+}): LayoutMonitor | undefined =>
+  layout.monitors.find((monitor) => monitor.name === layout.primaryMonitor) ??
+  layout.monitors.find((monitor) => monitor.kind !== 'remote') ??
+  layout.monitors[0];
+
+/**
+ * Where a widget's top-left corner may go so the whole widget stays on its
+ * monitor. A widget larger than the monitor is pinned to its top-left edge.
+ */
+export const clampToBounds = (
+  bounds: MonitorBounds,
+  position: { x: number; y: number },
+  size: { width: number; height: number }
+): { x: number; y: number } => {
+  const maxX = Math.max(bounds.x, bounds.x + bounds.width - size.width);
+  const maxY = Math.max(bounds.y, bounds.y + bounds.height - size.height);
+
+  return {
+    x: Math.min(Math.max(position.x, bounds.x), maxX),
+    y: Math.min(Math.max(position.y, bounds.y), maxY),
+  };
+};
 
 /** Smallest rectangle covering every monitor of the layout. */
 export const monitorsBounds = (monitors: LayoutMonitor[]): MonitorBounds => {
@@ -74,9 +77,9 @@ export const boundsEqual = (first: MonitorBounds, second: MonitorBounds) =>
   first.height === second.height;
 
 /**
- * Moves a widget onto another monitor, keeping its relative placement. Used by
- * the explicit "move to monitor" action; dragging across an edge in the editor
- * needs no conversion, since coordinates are already desktop-wide.
+ * Moves a widget onto another monitor's rectangle, keeping its relative
+ * placement: the explicit "move to monitor" action, and a monitor whose own
+ * rectangle moved or changed size.
  *
  * A screen that has not actually moved returns the widget untouched. The
  * conversion below clamps against `currentHeight`, which for an `autoHeight`

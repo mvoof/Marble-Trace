@@ -79,8 +79,8 @@ const REMOTE_SCREEN_GAP = 200;
 
 /**
  * Whether two screen rectangles share any area. Half-open on the right and
- * bottom edge, matching `boundsContain`, so screens laid edge to edge — the
- * normal Windows arrangement — do not read as overlapping.
+ * bottom edge, so screens laid edge to edge — the normal Windows arrangement —
+ * do not read as overlapping.
  */
 export const boundsOverlap = (
   first: MonitorBounds,

@@ -131,23 +131,3 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-.rowBadge {
-  display: flex;
-  align-items: center;
-  gap: sp(xxs);
-  flex-shrink: 0;
-  padding: 2px sp(xs);
-  border: 1px solid rgba($race-amber, 0.5);
-  border-radius: radius(sm);
-  color: $race-amber;
-  font-family: $font-widget;
-  font-size: fs(xxxs);
-  font-weight: 600;
-  letter-spacing: 0.4px;
-
-  svg {
-    width: 11px;
-    height: 11px;
-  }
-}

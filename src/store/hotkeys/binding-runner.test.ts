@@ -23,7 +23,7 @@ interface TestRoot {
   liveWidgets: {
     isWidgetOnScreen: (id: string) => boolean;
     getWidget: (id: string) => { userSettings: { enabled: boolean } };
-    firstWidgetOfType: (type: string) => {
+    primaryInstanceOf: (type: string) => {
       id: string;
       userSettings: { enabled: boolean };
     };
@@ -45,7 +45,7 @@ const makeRoot = (widgetsInLayout: string[]): TestRoot => ({
     getWidget: (id: string) => ({
       userSettings: { enabled: widgetsInLayout.includes(id) },
     }),
-    firstWidgetOfType: (type: string) => ({
+    primaryInstanceOf: (type: string) => ({
       id: type,
       userSettings: { enabled: widgetsInLayout.includes(type) },
     }),

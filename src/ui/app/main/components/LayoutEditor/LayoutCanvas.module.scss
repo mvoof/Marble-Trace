@@ -145,6 +145,39 @@
   overflow: hidden;
 }
 
+// The widget drew nothing: its own frame folds away and the stand-in below
+// takes its place.
+.widgetInnerEmpty {
+  height: 0;
+  border: none;
+}
+
+// What a widget with nothing to show in this scenario looks like on the
+// canvas: its stored size, its name, and why it is empty.
+.emptyWidget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: rem(4);
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border-radius: rem(6);
+  background: rgba(15, 16, 19, 0.6);
+  text-align: center;
+  overflow: hidden;
+}
+
+.emptyWidgetLabel {
+  color: #c7cad2;
+  font-size: rem(14);
+  font-weight: 600;
+}
+
+.emptyWidgetHint {
+  color: #8b8e98;
+  font-size: rem(11);
+}
+
 .overflowVisible {
   overflow: visible;
 }

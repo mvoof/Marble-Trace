@@ -196,9 +196,13 @@ describe('LiveWidgetsStore overlay widget picker', () => {
   it('centres a newly added widget on the target monitor', () => {
     const [widget] = rootStore.liveWidgets.allWidgets;
 
-    rootStore.liveWidgets.addWidgetToMonitor(widget.id, 'DISPLAY2');
+    const addedId = rootStore.liveWidgets.setTypeEnabledOnMonitor(
+      widget.type,
+      'DISPLAY2',
+      true
+    )!;
 
-    const added = rootStore.liveWidgets.getWidget(widget.id)!;
+    const added = rootStore.liveWidgets.getWidget(addedId)!;
     const { currentWidth, currentHeight } = added.userSettings;
 
     expect(added.userSettings.enabled).toBe(true);
@@ -212,11 +216,19 @@ describe('LiveWidgetsStore overlay widget picker', () => {
   it('cascades a second widget instead of stacking it', () => {
     const [first, second] = rootStore.liveWidgets.allWidgets;
 
-    rootStore.liveWidgets.addWidgetToMonitor(first.id, 'DISPLAY1');
-    rootStore.liveWidgets.addWidgetToMonitor(second.id, 'DISPLAY1');
+    const firstId = rootStore.liveWidgets.setTypeEnabledOnMonitor(
+      first.type,
+      'DISPLAY2',
+      true
+    )!;
+    const secondId = rootStore.liveWidgets.setTypeEnabledOnMonitor(
+      second.type,
+      'DISPLAY2',
+      true
+    )!;
 
-    const placedFirst = rootStore.liveWidgets.getWidget(first.id)!;
-    const placedSecond = rootStore.liveWidgets.getWidget(second.id)!;
+    const placedFirst = rootStore.liveWidgets.getWidget(firstId)!;
+    const placedSecond = rootStore.liveWidgets.getWidget(secondId)!;
 
     expect(placedSecond.userSettings.x).not.toBe(placedFirst.userSettings.x);
     expect(placedSecond.userSettings.zIndex).toBeGreaterThan(
@@ -224,22 +236,49 @@ describe('LiveWidgetsStore overlay widget picker', () => {
     );
   });
 
-  it('offers widgets drawn elsewhere with the monitor they live on', () => {
+  // Each screen has its own set: a widget switched on on one screen is still
+  // there to pick on the other, and picking it there makes a second instance.
+  it('offers a widget on every screen it is not switched on on', () => {
     const [widget] = rootStore.liveWidgets.allWidgets;
 
-    rootStore.liveWidgets.addWidgetToMonitor(widget.id, 'DISPLAY2');
+    rootStore.liveWidgets.setTypeEnabledOnMonitor(
+      widget.type,
+      'DISPLAY2',
+      true
+    );
 
     const onFirst = rootStore.liveWidgets.pickableWidgetsForMonitor('DISPLAY1');
-    const entry = onFirst.find((candidate) => candidate.id === widget.id);
-
-    expect(entry?.currentMonitorName).toBe('DISPLAY2');
-
     const onSecond =
       rootStore.liveWidgets.pickableWidgetsForMonitor('DISPLAY2');
 
-    expect(onSecond.some((candidate) => candidate.id === widget.id)).toBe(
+    expect(onFirst.some((candidate) => candidate.type === widget.type)).toBe(
+      true
+    );
+    expect(onSecond.some((candidate) => candidate.type === widget.type)).toBe(
       false
     );
+  });
+
+  // The overlay window makes the instance; main has to keep it, or the next
+  // save writes the layout without it.
+  it('keeps an instance an overlay window made on its own monitor', () => {
+    const [widget] = rootStore.liveWidgets.allWidgets;
+    const made = {
+      ...widget,
+      id: `${widget.type}-9`,
+      monitor: 'DISPLAY2',
+      userSettings: { ...widget.userSettings, enabled: true },
+    };
+
+    rootStore.liveWidgets.applySettingsSyncForMonitor('DISPLAY2', [made]);
+    rootStore.liveWidgets.applySettingsSyncForMonitor('DISPLAY1', [
+      { ...made, id: `${widget.type}-10` },
+    ]);
+
+    expect(rootStore.liveWidgets.getWidget(made.id)?.monitor).toBe('DISPLAY2');
+    expect(
+      rootStore.liveWidgets.getWidget(`${widget.type}-10`)
+    ).toBeUndefined();
   });
 });
 
@@ -592,6 +631,7 @@ describe('several copies of one widget in a layout', () => {
       [layout('layout-race'), layout('layout-garage')],
       'layout-race'
     );
+    rootStore.liveWidgets.setWidgetEnabled('standings', true);
   });
 
   it('gives a copy its own id and points it back at the original', () => {
@@ -627,22 +667,14 @@ describe('several copies of one widget in a layout', () => {
     expect(store.getWidget('standings')!.userSettings.enabled).toBe(true);
   });
 
-  // The whole point of the split: the original's id doubles as its type, so a
-  // settings file written before copies existed needs no migration.
-  it('keeps a file that predates copies readable as the original', () => {
+  it('puts a copy on the monitor of the widget it was copied from', () => {
     const store = rootStore.liveWidgets;
 
-    store.setWidgets([
-      {
-        ...store.getWidget('standings')!,
-        userSettings: { ...store.getWidget('standings')!.userSettings, x: 42 },
-      },
-    ]);
+    store.moveWidgetToMonitor('standings', 'Stream');
 
-    const restored = store.getWidget('standings')!;
+    const copyId = store.duplicateWidget('standings')!;
 
-    expect(restored.type).toBeUndefined();
-    expect(restored.userSettings.x).toBe(42);
+    expect(store.getWidget(copyId)!.monitor).toBe('Stream');
   });
 
   it('survives the round trip through a layout switch', () => {
@@ -673,7 +705,9 @@ describe('several copies of one widget in a layout', () => {
     expect(store.widgetsOfType('standings')).toHaveLength(3);
   });
 
-  it('deletes a copy but refuses to delete the original', () => {
+  // The first instance on a monitor is the widget on that screen — its switch
+  // takes it off. Only a further instance on the same monitor is a copy.
+  it('deletes a copy but not the first instance on its monitor', () => {
     const store = rootStore.liveWidgets;
 
     const copyId = store.duplicateWidget('standings')!;
@@ -683,6 +717,21 @@ describe('several copies of one widget in a layout', () => {
 
     store.removeWidgetCopy(copyId);
     expect(store.getWidget(copyId)).toBeUndefined();
+  });
+
+  it('numbers instances per monitor, not across the layout', () => {
+    const store = rootStore.liveWidgets;
+
+    const copyId = store.duplicateWidget('standings')!;
+    const streamId = store.setTypeEnabledOnMonitor(
+      'standings',
+      'Stream',
+      true
+    )!;
+
+    expect(store.copyOrdinalOf(copyId)).toEqual({ ordinal: 2, total: 2 });
+    expect(store.copyOrdinalOf(streamId)).toEqual({ ordinal: 1, total: 1 });
+    expect(store.canRemoveWidget(streamId)).toBe(false);
   });
 
   // What an overlay window and a remote screen do with the list main sends
@@ -855,8 +904,17 @@ describe('every settings write leaves its mark', () => {
       expected: { token: 'change', touched: ['fuel'] },
     },
     {
-      name: 'addWidgetToMonitor',
-      run: (store) => store.addWidgetToMonitor('fuel', DISPLAY.name),
+      name: 'setTypeEnabledOnMonitor, switching an instance back on',
+      run: (store) => {
+        store.setTypeEnabledOnMonitor('fuel', DISPLAY.name, false);
+        store.drainTouchedWidgets();
+        store.setTypeEnabledOnMonitor('fuel', DISPLAY.name, true);
+      },
+      expected: { token: 'change', touched: ['fuel'] },
+    },
+    {
+      name: 'resetSettings',
+      run: (store) => store.resetSettings('fuel'),
       expected: { token: 'change', touched: ['fuel'] },
     },
     {
@@ -1102,12 +1160,12 @@ describe('the widgets a remote screen draws', () => {
     expect(store.liveRemoteScreenWidgets).toHaveLength(0);
   });
 
-  it('carries only the widgets whose centre lands on the remote screen', () => {
+  it('carries only the widgets that belong to the remote screen', () => {
     const rootStore = new RootStore({ skipInit: true });
     const store = rootStore.liveWidgets;
 
     store.setLayouts([layoutWithScreens('layout-race')], 'layout-race');
-    store.updateUserSettings('standings', { x: 2000, y: 100 });
+    store.moveWidgetToMonitor('standings', 'Stream');
 
     expect(store.liveRemoteScreenWidgets.map((widget) => widget.id)).toEqual([
       'standings',
@@ -1133,5 +1191,294 @@ describe('the widgets a remote screen draws', () => {
     store.updateUserSettings('standings', { x: 2000, y: 100 });
 
     expect(store.liveRemoteScreenWidgets).toHaveLength(0);
+  });
+});
+
+/**
+ * Each monitor owns its own widget set. A widget belongs to the monitor its
+ * `monitor` field names — never to whichever one its position falls on — and
+ * only an explicit move hands it to another one.
+ */
+describe('widgets belong to their monitor', () => {
+  const LEFT = {
+    name: 'LEFT',
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  const RIGHT = {
+    name: 'RIGHT',
+    bounds: { x: 1920, y: 0, width: 2560, height: 1440 },
+  };
+
+  const setUp = (primaryMonitor?: string) => {
+    const rootStore = new RootStore({ skipInit: true });
+
+    rootStore.liveWidgets.setLayouts(
+      [
+        {
+          id: 'race',
+          name: 'race',
+          createdAt: 1,
+          monitors: [LEFT, RIGHT],
+          ...(primaryMonitor ? { primaryMonitor } : {}),
+          widgets: [],
+        },
+      ],
+      'race'
+    );
+
+    return rootStore.liveWidgets;
+  };
+
+  it('gives every widget the layout lacks a switched-off instance on the primary monitor', () => {
+    const store = setUp('RIGHT');
+
+    expect(
+      store.allWidgets.every(
+        (widget) =>
+          widget.monitor === 'RIGHT' && widget.userSettings.enabled === false
+      )
+    ).toBe(true);
+  });
+
+  it('defaults the primary monitor to the first display', () => {
+    const store = setUp();
+
+    expect(store.getWidget('standings')!.monitor).toBe('LEFT');
+  });
+
+  // The whole point of storing the owner: dragging can no longer hand a widget
+  // to the neighbouring screen.
+  it('keeps a dragged widget inside its own monitor', () => {
+    const store = setUp();
+    const { currentWidth, currentHeight } =
+      store.getWidget('standings')!.userSettings;
+
+    store.updatePosition('standings', 3000, 5000);
+
+    const widget = store.getWidget('standings')!;
+
+    expect(widget.monitor).toBe('LEFT');
+    expect(widget.userSettings.x).toBe(LEFT.bounds.width - currentWidth);
+    expect(widget.userSettings.y).toBe(LEFT.bounds.height - currentHeight);
+  });
+
+  // An auto-height widget draws as tall as its content, and its stored
+  // height is only the manifest's — clamping by it stopped the widget short
+  // of the bottom edge.
+  it('lets an auto-height widget reach the bottom of its monitor', () => {
+    const store = setUp();
+
+    expect(store.getWidget('fuel')!.autoHeight).toBe(true);
+
+    store.updatePosition('fuel', 0, LEFT.bounds.height - 40);
+
+    expect(store.getWidget('fuel')!.userSettings.y).toBe(
+      LEFT.bounds.height - 40
+    );
+
+    store.updatePosition('fuel', 0, LEFT.bounds.height + 500);
+
+    // Never out of sight entirely: a strip along its top stays on screen.
+    expect(store.getWidget('fuel')!.userSettings.y).toBe(
+      LEFT.bounds.height - 24
+    );
+  });
+
+  it('moves a widget to another monitor with every setting it has', () => {
+    const store = setUp();
+
+    store.updateUserSettings('standings', { fontScale: 1.7 });
+    store.updatePosition('standings', 96, 54);
+    store.moveWidgetToMonitor('standings', 'RIGHT');
+
+    const widget = store.getWidget('standings')!;
+
+    expect(widget.monitor).toBe('RIGHT');
+    expect(widget.userSettings.fontScale).toBe(1.7);
+    // The same relative place: 5% in from the left, 5% down.
+    expect(widget.userSettings.x).toBe(RIGHT.bounds.x + 128);
+    expect(widget.userSettings.y).toBe(72);
+  });
+
+  it('undoes a move to another monitor', () => {
+    const store = setUp();
+
+    store.moveWidgetToMonitor('standings', 'RIGHT');
+    store.undo();
+
+    expect(store.getWidget('standings')!.monitor).toBe('LEFT');
+  });
+
+  it('lets the switched-on instance on the primary monitor speak for its widget', () => {
+    const store = setUp();
+
+    const copyId = store.duplicateWidget('fuel')!;
+
+    store.moveWidgetToMonitor(copyId, 'RIGHT');
+    store.setWidgetEnabled(copyId, true);
+
+    // Only the copy on the other monitor is on: it is the one on screen.
+    expect(store.primaryInstanceOf('fuel')!.id).toBe(copyId);
+
+    store.setWidgetEnabled('fuel', true);
+
+    // Both on: the primary monitor's wins.
+    expect(store.primaryInstanceOf('fuel')!.id).toBe('fuel');
+  });
+
+  // A widget store reads by type. Once no instance is special, the record
+  // whose id happens to equal the type may be gone — the store must still find
+  // the user's settings rather than fall back to the shipped ones.
+  it('gives a widget store the settings of the instance that speaks for it', () => {
+    const store = setUp();
+
+    // The record named after the type stays switched off on the first
+    // monitor; the widget actually on screen is an instance on the other.
+    const rightId = store.setTypeEnabledOnMonitor('standings', 'RIGHT', true)!;
+
+    store.updateUserSettings(rightId, { fontScale: 1.9 });
+
+    expect(store.getWidget('standings')!.userSettings.enabled).toBe(false);
+    expect(store.settingsOfType('standings').fontScale).toBe(1.9);
+  });
+
+  it('lists every widget on a monitor that has none of its own yet', () => {
+    const store = setUp();
+    const rows = store.monitorWidgetRows('RIGHT');
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((row) => row.instances.length === 0)).toBe(true);
+  });
+
+  it('switches a widget on on the monitor asked, leaving the other alone', () => {
+    const store = setUp();
+
+    const createdId = store.setTypeEnabledOnMonitor('fuel', 'RIGHT', true)!;
+    const created = store.getWidget(createdId)!;
+
+    expect(createdId).not.toBe('fuel');
+    expect(created.monitor).toBe('RIGHT');
+    expect(created.userSettings.enabled).toBe(true);
+    expect(created.userSettings.x).toBeGreaterThanOrEqual(RIGHT.bounds.x);
+    expect(store.getWidget('fuel')!.userSettings.enabled).toBe(false);
+  });
+
+  it('switches back on the instance a monitor already has, settings and all', () => {
+    const store = setUp();
+
+    const id = store.setTypeEnabledOnMonitor('fuel', 'RIGHT', true)!;
+
+    store.updateUserSettings(id, { fontScale: 1.4 });
+    store.setTypeEnabledOnMonitor('fuel', 'RIGHT', false);
+
+    expect(store.getWidget(id)!.userSettings.enabled).toBe(false);
+    expect(store.setTypeEnabledOnMonitor('fuel', 'RIGHT', true)).toBe(id);
+    expect(store.getWidget(id)!.userSettings.fontScale).toBe(1.4);
+    expect(store.widgetsOfType('fuel')).toHaveLength(2);
+  });
+
+  it('starts a new instance from the template the Widgets page edits', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.liveWidgets;
+
+    store.setLayouts(
+      [
+        {
+          id: 'race',
+          name: 'race',
+          createdAt: 1,
+          monitors: [LEFT, RIGHT],
+          widgets: [],
+        },
+      ],
+      'race'
+    );
+    rootStore.widgetDefaults.updateUserSettings('fuel', { opacity: 0.33 });
+
+    const id = store.setTypeEnabledOnMonitor('fuel', 'RIGHT', true)!;
+
+    expect(store.getWidget(id)!.userSettings.opacity).toBe(0.33);
+  });
+
+  it('switches off every instance on that monitor and none elsewhere', () => {
+    const store = setUp();
+
+    store.setTypeEnabledOnMonitor('fuel', 'LEFT', true);
+
+    const rightId = store.setTypeEnabledOnMonitor('fuel', 'RIGHT', true)!;
+    const copyId = store.duplicateWidget(rightId)!;
+
+    store.setTypeEnabledOnMonitor('fuel', 'RIGHT', false);
+
+    expect(store.getWidget(rightId)!.userSettings.enabled).toBe(false);
+    expect(store.getWidget(copyId)!.userSettings.enabled).toBe(false);
+    expect(store.getWidget('fuel')!.userSettings.enabled).toBe(true);
+  });
+
+  it('copies another instance’s settings but not its place, size or switch', () => {
+    const store = setUp();
+
+    store.setWidgetEnabled('fuel', true);
+
+    const rightId = store.setTypeEnabledOnMonitor('fuel', 'RIGHT', true)!;
+    const before = { ...store.getWidget(rightId)!.userSettings };
+
+    store.updateUserSettings('fuel', { fontScale: 1.6, opacity: 0.4 });
+    store.setWidgetEnabled('fuel', false);
+    store.copySettingsFrom(rightId, 'fuel');
+
+    const copied = store.getWidget(rightId)!.userSettings;
+
+    expect(copied).toMatchObject({ fontScale: 1.6, opacity: 0.4 });
+    expect(copied).toMatchObject({
+      x: before.x,
+      y: before.y,
+      currentWidth: before.currentWidth,
+      enabled: true,
+    });
+  });
+
+  it('offers every other instance of the widget as a settings source', () => {
+    const store = setUp();
+    const rightId = store.setTypeEnabledOnMonitor('fuel', 'RIGHT', true)!;
+
+    expect(
+      store.settingsSourcesFor(rightId).map((widget) => widget.id)
+    ).toEqual(['fuel']);
+  });
+
+  it('resets an instance to the shipped settings and undoes it', () => {
+    const store = setUp();
+    const shippedScale = store.getWidget('fuel')!.userSettings.fontScale;
+
+    store.updateUserSettings('fuel', { fontScale: 1.8, x: 300 });
+    store.resetSettings('fuel');
+
+    expect(store.getWidget('fuel')!.userSettings.fontScale).toBe(shippedScale);
+    expect(store.getWidget('fuel')!.userSettings.x).toBe(300);
+
+    store.undo();
+
+    expect(store.getWidget('fuel')!.userSettings.fontScale).toBe(1.8);
+  });
+
+  it('keeps every widget on its monitor across a reinstall', () => {
+    const store = setUp();
+
+    store.moveWidgetToMonitor('standings', 'RIGHT');
+    store.loadEditingLayoutWidgets();
+
+    expect(store.getWidget('standings')!.monitor).toBe('RIGHT');
+  });
+
+  it('carries a monitor change to the other window', () => {
+    const main = setUp();
+    const overlay = setUp();
+
+    main.moveWidgetToMonitor('standings', 'RIGHT');
+    overlay.applySettingsSync(main.allWidgets);
+
+    expect(overlay.getWidget('standings')!.monitor).toBe('RIGHT');
   });
 });

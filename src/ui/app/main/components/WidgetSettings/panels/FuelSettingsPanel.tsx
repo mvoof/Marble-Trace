@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { InputNumber, Segmented, Slider, Switch } from 'antd';
+import { InputNumber, Segmented, Slider } from 'antd';
 import { FuelWidgetSettings } from '@/types/widget-settings';
 import {
   FUEL_AVG_WINDOW_ALL_LAPS,
@@ -8,7 +8,6 @@ import {
 } from '@utils/fuel-constants';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
-import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows, usePanelWidgetId } from './setting-rows';
 
@@ -49,103 +48,99 @@ export const FuelSettingsPanel = observer(() => {
   };
 
   return (
-    <Card title={t('settingsPanels.fuel.analyticsAndWarnings')}>
-      <SwitchRow
-        settingKey="showChart"
-        title={t('settingsPanels.fuel.historyChart')}
-        desc={t('settingsPanels.fuel.historyChartDesc')}
-      />
-
-      <DependentBlock dependsOn="showChart">
-        <Segmented
-          block
-          value={settings.chartType}
-          options={[
-            { label: t('settingsPanels.fuel.barChart'), value: 'bar' },
-            { label: t('settingsPanels.fuel.lineChart'), value: 'line' },
-          ]}
-          onChange={(v) => update({ chartType: v as 'bar' | 'line' })}
-        />
-      </DependentBlock>
-
-      <DependentBlock dependsOn="showChart">
-        <span className={styles.fieldLabel}>
-          {t('settingsPanels.fuel.chartStepWidth')}
-        </span>
-        <Slider
-          min={5}
-          max={20}
-          value={settings.barWidth}
-          onChange={(v) => update({ barWidth: v })}
-          tooltip={{ formatter: (v) => `${v}px` }}
-        />
-      </DependentBlock>
-
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>
-          {t('settingsPanels.fuel.statColumns')}
-        </span>
-        {STAT_COLUMN_ROWS.map(({ key, labelKey }) => (
-          <SettingRow key={key} title={t(labelKey)}>
-            <Switch
-              checked={settings[key]}
-              onChange={(v) => update({ [key]: v })}
-            />
-          </SettingRow>
-        ))}
-      </div>
-
-      <div className={styles.fieldGroup}>
+    <>
+      <Card title={t('settingsPanels.fuel.analyticsAndWarnings')}>
         <SwitchRow
-          settingKey="showNextStopForecast"
-          title={t('settingsPanels.fuel.nextStopForecast')}
-          desc={t('settingsPanels.fuel.nextStopForecastDesc')}
+          settingKey="showChart"
+          title={t('settingsPanels.fuel.historyChart')}
+          desc={t('settingsPanels.fuel.historyChartDesc')}
         />
-      </div>
 
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>
-          {t('settingsPanels.fuel.lowFuelWarningThreshold')}
-        </span>
-        <InputNumber
-          style={{ width: '100%' }}
-          value={settings.pitWarningLaps}
-          min={1}
-          max={20}
-          onChange={(v) => v !== null && update({ pitWarningLaps: v })}
-        />
-      </div>
+        <DependentBlock dependsOn="showChart">
+          <Segmented
+            block
+            value={settings.chartType}
+            options={[
+              { label: t('settingsPanels.fuel.barChart'), value: 'bar' },
+              { label: t('settingsPanels.fuel.lineChart'), value: 'line' },
+            ]}
+            onChange={(v) => update({ chartType: v as 'bar' | 'line' })}
+          />
+        </DependentBlock>
 
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>
-          {t('settingsPanels.fuel.avgWindow')}
-        </span>
-        <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-          {t('settingsPanels.fuel.avgWindowDesc')}
+        <DependentBlock dependsOn="showChart">
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.fuel.chartStepWidth')}
+          </span>
+          <Slider
+            min={5}
+            max={20}
+            value={settings.barWidth}
+            onChange={(v) => update({ barWidth: v })}
+            tooltip={{ formatter: (v) => `${v}px` }}
+          />
+        </DependentBlock>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showNextStopForecast"
+            title={t('settingsPanels.fuel.nextStopForecast')}
+            desc={t('settingsPanels.fuel.nextStopForecastDesc')}
+          />
         </div>
-        <InputNumber
-          style={{ width: '100%' }}
-          value={settings.fuelAvgWindow}
-          min={FUEL_AVG_WINDOW_ALL_LAPS}
-          max={FUEL_AVG_WINDOW_MAX}
-          step={1}
-          precision={0}
-          parser={(v) =>
-            Number.parseInt(v ?? '', 10) || FUEL_AVG_WINDOW_ALL_LAPS
-          }
-          onChange={(v) =>
-            v !== null && update({ fuelAvgWindow: Math.round(v) })
-          }
-        />
-      </div>
 
-      <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="countYellowFlagLaps"
-          title={t('settingsPanels.fuel.countYellowFlagLaps')}
-          desc={t('settingsPanels.fuel.countYellowFlagLapsDesc')}
-        />
-      </div>
-    </Card>
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.fuel.lowFuelWarningThreshold')}
+          </span>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.pitWarningLaps}
+            min={1}
+            max={20}
+            onChange={(v) => v !== null && update({ pitWarningLaps: v })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.fuel.avgWindow')}
+          </span>
+          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+            {t('settingsPanels.fuel.avgWindowDesc')}
+          </div>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.fuelAvgWindow}
+            min={FUEL_AVG_WINDOW_ALL_LAPS}
+            max={FUEL_AVG_WINDOW_MAX}
+            step={1}
+            precision={0}
+            parser={(v) =>
+              Number.parseInt(v ?? '', 10) || FUEL_AVG_WINDOW_ALL_LAPS
+            }
+            onChange={(v) =>
+              v !== null && update({ fuelAvgWindow: Math.round(v) })
+            }
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="countYellowFlagLaps"
+            title={t('settingsPanels.fuel.countYellowFlagLaps')}
+            desc={t('settingsPanels.fuel.countYellowFlagLapsDesc')}
+          />
+        </div>
+      </Card>
+
+      {/* One row per column, each its own block — a card divides its direct
+        children, so the switches no longer read as one stacked lump. */}
+      <Card title={t('settingsPanels.fuel.statColumns')}>
+        {STAT_COLUMN_ROWS.map(({ key, labelKey }) => (
+          <SwitchRow key={key} settingKey={key} title={t(labelKey)} />
+        ))}
+      </Card>
+    </>
   );
 });

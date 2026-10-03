@@ -162,3 +162,165 @@ export const removeWidgets = (
   mapEveryWidget(blob, (widgets) =>
     widgets.filter((widget) => !ids.includes(String(widget?.id)))
   );
+
+// ── From v6: widgets stored under their monitor ─────────────────────────────
+//
+// v6 moved every widget into `layouts[].monitors[].widgets[]` and turned
+// `defaultWidgets[]` into `widgetTemplates`, keyed by type. The helpers above
+// walk the older shape and find nothing in a v6 file — they stay for the steps
+// written before it. A step after v6 uses these.
+//
+// Two things differ from the older shape and change what a patch sees:
+//
+// - an instance is addressed by its **type** (`widget.type`), a template by its
+//   key — there is no "original" whose id doubles as a type any more;
+// - `settings` holds **only the values that differ from the manifest**. A key
+//   that is absent is on the shipped default, so a step rewriting a value
+//   leaves an absent key absent: the default it means is whatever the build
+//   ships, which is the step's to decide only if it writes one explicitly.
+
+/** A widget instance as it appears in a v6 file. Nothing about it is guaranteed. */
+export interface StoredBlobWidget {
+  id?: string;
+  type?: string;
+  settings?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+/**
+ * Applies `transform` to every widget array of a v6 file — the `widgets[]` of
+ * every monitor of every layout — and returns a new blob. Layouts and monitors
+ * that are not objects are passed through untouched.
+ */
+export const mapEveryStoredWidget = (
+  blob: SettingsBlob,
+  transform: (widgets: StoredBlobWidget[]) => StoredBlobWidget[]
+): SettingsBlob => {
+  if (!('layouts' in blob)) {
+    return { ...blob };
+  }
+
+  return {
+    ...blob,
+    layouts: asArray<unknown>(blob['layouts']).map((layout) => {
+      const entry = asObject(layout);
+
+      if (!entry || !('monitors' in entry)) {
+        return layout;
+      }
+
+      return {
+        ...entry,
+        monitors: asArray<unknown>(entry['monitors']).map((monitor) => {
+          const screen = asObject(monitor);
+
+          if (!screen || !('widgets' in screen)) {
+            return monitor;
+          }
+
+          return {
+            ...screen,
+            widgets: transform(asArray<StoredBlobWidget>(screen['widgets'])),
+          };
+        }),
+      };
+    }),
+  };
+};
+
+/**
+ * Rewrites the `settings` of every instance of one widget type and of its
+ * template. `patch` receives a copy of the overrides — see the note above on
+ * what an absent key means.
+ */
+export const patchStoredWidgetSettings = (
+  blob: SettingsBlob,
+  type: string,
+  patch: (settings: Record<string, unknown>) => Record<string, unknown>
+): SettingsBlob => {
+  const mapped = mapEveryStoredWidget(blob, (widgets) =>
+    widgets.map((widget) =>
+      widget?.type === type
+        ? {
+            ...widget,
+            settings: patch({ ...(asObject(widget.settings) ?? {}) }),
+          }
+        : widget
+    )
+  );
+
+  const templates = asObject(blob['widgetTemplates']);
+  const template = asObject(templates?.[type]);
+
+  if (!templates || !template) {
+    return mapped;
+  }
+
+  return {
+    ...mapped,
+    widgetTemplates: {
+      ...templates,
+      [type]: {
+        ...template,
+        settings: patch({ ...(asObject(template['settings']) ?? {}) }),
+      },
+    },
+  };
+};
+
+/** Moves one setting to a new key in every instance and the template of a type. */
+export const renameStoredWidgetSetting = (
+  blob: SettingsBlob,
+  type: string,
+  from: string,
+  to: string
+): SettingsBlob =>
+  patchStoredWidgetSettings(blob, type, (settings) => {
+    if (!(from in settings)) {
+      return settings;
+    }
+
+    const { [from]: moved, ...rest } = settings;
+
+    return { ...rest, [to]: moved };
+  });
+
+/** Deletes settings from every instance and the template of a type. */
+export const dropStoredWidgetSettings = (
+  blob: SettingsBlob,
+  type: string,
+  keys: readonly string[]
+): SettingsBlob =>
+  patchStoredWidgetSettings(blob, type, (settings) => {
+    for (const key of keys) {
+      delete settings[key];
+    }
+
+    return settings;
+  });
+
+/**
+ * Deletes every instance and the template of the given types — for a widget
+ * removed from the build.
+ */
+export const removeStoredWidgets = (
+  blob: SettingsBlob,
+  types: readonly string[]
+): SettingsBlob => {
+  const mapped = mapEveryStoredWidget(blob, (widgets) =>
+    widgets.filter((widget) => !types.includes(String(widget?.type)))
+  );
+
+  const templates = asObject(blob['widgetTemplates']);
+
+  if (!templates) {
+    return mapped;
+  }
+
+  return {
+    ...mapped,
+    widgetTemplates: Object.fromEntries(
+      Object.entries(templates).filter(([type]) => !types.includes(type))
+    ),
+  };
+};

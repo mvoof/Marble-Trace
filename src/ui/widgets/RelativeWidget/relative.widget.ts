@@ -48,7 +48,7 @@ export class RelativeWidgetStore {
   }
 
   private get settings(): RelativeWidgetSettings {
-    return this.root.liveWidgets.getSettings<RelativeWidgetSettings>(
+    return this.root.liveWidgets.settingsOfType<RelativeWidgetSettings>(
       'relative'
     );
   }

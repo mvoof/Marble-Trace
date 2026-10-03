@@ -1,4 +1,3 @@
-import { widgetTypeOf } from '@utils/widget-instance';
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
@@ -249,7 +248,7 @@ export const WidgetContainer = observer(
     });
 
     const frameStyle = widgetFrameStyle({
-      widgetType: widget ? widgetTypeOf(widget) : widgetId,
+      widgetType: widget ? widget.type : widgetId,
       userSettings: widget?.userSettings ?? {},
       widgetScale,
       transparentContainer,

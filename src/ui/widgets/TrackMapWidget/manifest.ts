@@ -6,7 +6,6 @@ import {
 
 export const TRACK_MAP_MANIFEST: WidgetManifest = {
   id: 'track-map',
-  order: 70,
   telemetryEvents: ['carPositions', 'driverEntries', 'incidents'],
   label: 'Track Map',
   description: 'Dynamic 2D map of the current circuit.',

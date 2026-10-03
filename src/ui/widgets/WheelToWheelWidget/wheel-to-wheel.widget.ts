@@ -209,7 +209,7 @@ export class WheelToWheelWidgetStore {
   }
 
   get settings(): WheelToWheelWidgetSettings {
-    return this.root.liveWidgets.getSettings<WheelToWheelWidgetSettings>(
+    return this.root.liveWidgets.settingsOfType<WheelToWheelWidgetSettings>(
       WIDGET_ID
     );
   }

@@ -38,7 +38,7 @@ const makeStore = () => {
     backendComputed,
     appSettings,
     liveWidgets: {
-      getSettings: () => ({
+      settingsOfType: () => ({
         gapThreshold: 1,
         hideDelay: HIDE_DELAY_S,
         raceOnly: true,

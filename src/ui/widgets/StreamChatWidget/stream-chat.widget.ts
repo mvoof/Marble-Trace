@@ -166,7 +166,7 @@ export class StreamChatWidgetStore {
   }
 
   private get settings(): StreamChatWidgetSettings {
-    return this.root.liveWidgets.getSettings<StreamChatWidgetSettings>(
+    return this.root.liveWidgets.settingsOfType<StreamChatWidgetSettings>(
       WIDGET_ID
     );
   }

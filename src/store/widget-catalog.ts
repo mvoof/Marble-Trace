@@ -14,9 +14,10 @@ import type {
  * `ui/widgets/registry.ts`, and nothing here imports it. That is what lets the
  * store layer read a file under `ui/` without pulling the UI in behind it.
  *
- * `order` decides the position in the catalog list; ties fall back to the id,
- * so two widgets built in parallel that pick the same number still land in a
- * stable order instead of conflicting.
+ * Every list the user sees is alphabetical by label — the Widgets page, each
+ * monitor's list in the layout editor, the F9 picker — so the catalog is kept
+ * in that order and nothing declares a position of its own. A new widget lands
+ * where its name puts it.
  */
 const manifestModules = import.meta.glob<Record<string, WidgetManifest>>(
   '../ui/widgets/*/manifest.ts',
@@ -26,24 +27,19 @@ const manifestModules = import.meta.glob<Record<string, WidgetManifest>>(
 const manifestOf = (module: Record<string, WidgetManifest>): WidgetManifest =>
   Object.values(module).find((exported) => exported?.id !== undefined)!;
 
-const DEFAULT_ORDER = Number.MAX_SAFE_INTEGER;
+// Code-unit comparison, not localeCompare: the order must come out the same on
+// every machine, and collation depends on the runtime's locale data. Labels are
+// English everywhere, so lower-casing is all the folding they need.
+const compareText = (left: string, right: string): number =>
+  left < right ? -1 : left > right ? 1 : 0;
 
-/** Catalog order: the declared `order`, then the id so a tie is deterministic. */
+/** Catalog order: alphabetical by label, then the id so a tie is deterministic. */
 export const compareManifests = (
   left: WidgetManifest,
   right: WidgetManifest
-): number => {
-  const byOrder =
-    (left.order ?? DEFAULT_ORDER) - (right.order ?? DEFAULT_ORDER);
-
-  if (byOrder !== 0) {
-    return byOrder;
-  }
-
-  // Code-unit comparison, not localeCompare: the tie-break must land the same
-  // way on every machine, and collation depends on the runtime's locale data.
-  return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
-};
+): number =>
+  compareText(left.label.toLowerCase(), right.label.toLowerCase()) ||
+  compareText(left.id, right.id);
 
 export const WIDGETS: WidgetManifest[] = Object.values(manifestModules)
   .map(manifestOf)
@@ -64,7 +60,6 @@ const NON_SERIALIZABLE_WIDGET_KEYS = new Set([
   'telemetryEvents',
   'previewScenarios',
   'previewBaseline',
-  'order',
 ]);
 
 export const DEFAULT_WIDGETS: WidgetDefaultConfig[] = WIDGETS.map(
@@ -73,7 +68,10 @@ export const DEFAULT_WIDGETS: WidgetDefaultConfig[] = WIDGETS.map(
       return !NON_SERIALIZABLE_WIDGET_KEYS.has(key);
     });
 
-    return Object.fromEntries(allowedEntries) as WidgetDefaultConfig;
+    return {
+      ...Object.fromEntries(allowedEntries),
+      type: manifest.id,
+    } as WidgetDefaultConfig;
   }
 );
 

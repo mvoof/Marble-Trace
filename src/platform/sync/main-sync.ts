@@ -54,6 +54,7 @@ let mainSyncRefCount = 0;
 const pushActiveLayout = (root: RootStore) =>
   emitActiveLayoutToOverlays(
     root.layouts.liveLayout?.monitors ?? [],
+    root.layouts.liveLayout?.primaryMonitor,
     root.liveWidgets.liveWidgets,
     root.layouts.liveLayoutId
   );

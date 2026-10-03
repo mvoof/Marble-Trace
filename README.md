@@ -300,7 +300,7 @@ Twitch and YouTube live chat merged into a single feed on top of the sim, so you
 
 ### Layout Editor
 
-Every layout is arranged in a visual editor that mirrors your actual desktop: each monitor is drawn to scale in its Windows position, and widgets are dragged straight across a screen edge onto the neighbour. Zoom out for the whole desktop when you are moving things around, or into a single screen for detail work. Each monitor can carry its own background image so you can place widgets against a screenshot of the cockpit instead of an empty rectangle, and everything follows along if you rearrange your displays in Windows.
+Every layout is arranged in a visual editor that mirrors your actual desktop: each monitor is drawn to scale in its Windows position and has its own widget list — switch a widget on for the screen you want it on, run a second instance of it on another screen with its own settings, or move one over with every setting it has. Zoom out for the whole desktop when you are moving things around, or into a single screen for detail work. Each monitor can carry its own background image so you can place widgets against a screenshot of the cockpit instead of an empty rectangle, and everything follows along if you rearrange your displays in Windows.
 
 ![Layout Editor](docs/assets/screenshots/overlay/layout-editor.png)
 
