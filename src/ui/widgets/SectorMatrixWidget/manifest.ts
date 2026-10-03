@@ -6,7 +6,6 @@ import {
 
 export const SECTOR_MATRIX_MANIFEST: WidgetManifest = {
   id: 'sector-matrix',
-  order: 180,
   telemetryEvents: ['lapDelta'],
   label: 'Sector Matrix',
   description:

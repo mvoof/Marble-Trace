@@ -957,7 +957,7 @@ which is what those components are _for_.
 ### The widget system
 
 A widget declares itself in two files of its own, and nothing lists it anywhere:
-`manifest.ts` is **plain data** — id, `order`, label, design size, shipped
+`manifest.ts` is **plain data** — id, label, design size, shipped
 `userSettings`, an optional `resolveLayoutChange` — and `mount.ts` is the pair
 `{ id, component }`. Both are collected by `import.meta.glob`.
 
@@ -998,10 +998,13 @@ flowchart TB
 > file** — it is a new folder plus its settings panel. That is what lets two
 > widgets be built at the same time without conflicting.
 
-`order` fixes the widget's place in the catalog list (what the user sees, and the
-order written to settings.json). Shipped widgets are spaced by ten; a manifest
-without one sorts last, equal numbers fall back to the id, and the field is
-stripped from `DEFAULT_WIDGETS` before anything is persisted.
+**Widget lists are alphabetical by label.** The Widgets page, each monitor's
+list in the layout editor and the F9 picker all show the catalog in that order
+(`compareManifests` in `src/store/widget-catalog.ts`: label, case-insensitive,
+then id), so a manifest declares no position of its own — a new widget lands
+where its name puts it, and two widgets built in parallel cannot collide on a
+number. Any new list of widgets shown to the user keeps that order: build it from
+`WIDGETS` / `DEFAULT_WIDGETS` or sort by label, never by id or by insertion.
 
 Inside a panel, a plain toggle or color is one element: `panelRows<Settings>()`
 returns `SwitchRow` and `ColorRow`, which take a `settingKey`, read the widget
@@ -1222,7 +1225,7 @@ not hand-roll either.
    `PANEL_WIDGET_IDS` from it — the registry picks it up, nothing to wire.
 7. Add `interface *WidgetSettings` to `src/types/widget-settings.ts` and add it to
    the `WidgetSpecificSettings` union.
-8. Create `manifest.ts` (with an `order`) and `mount.ts` next to the widget —
+8. Create `manifest.ts` and `mount.ts` next to the widget —
    both are collected by glob, so no shared file is edited.
 9. Use the `fs()` / `sp()` / `radius()` tokens, `$font-widget`, the
    `$widget-text-*` tokens and the `$race-*` palette.

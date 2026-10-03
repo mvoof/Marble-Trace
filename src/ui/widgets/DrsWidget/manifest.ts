@@ -6,7 +6,6 @@ import {
 
 export const DRS_MANIFEST: WidgetManifest = {
   id: 'drs',
-  order: 260,
   // DRS rides the always-sent 4 Hz carStatus frame, so there is no gated field
   // to declare.
   telemetryEvents: [],

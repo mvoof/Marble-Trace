@@ -18,7 +18,6 @@ const PIT_SERVICE_DESIGN_HEIGHT = 280;
 
 export const PIT_SERVICE_MANIFEST: WidgetManifest = {
   id: 'pit-service',
-  order: 110,
   previewScenarios: ['pit-service', 'pit-tow'],
   telemetryEvents: ['carDynamics', 'driverEntries'],
   label: 'Pit Service',

@@ -587,10 +587,10 @@ is set normally.
 Each widget ships two files of its own next to it, and both are collected by
 glob rather than listed anywhere:
 
-| file          | holds                                                                                                      | collected by                                                                 |
-| ------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `manifest.ts` | id, `order`, label, design size, shipped `userSettings`, optional `resolveLayoutChange`, `telemetryEvents` | `src/store/widget-catalog.ts` → `WIDGETS`, `WIDGET_BY_ID`, `DEFAULT_WIDGETS` |
-| `mount.ts`    | `{ id, component }`                                                                                        | `src/ui/widgets/registry.ts` → `WIDGET_COMPONENTS`                           |
+| file          | holds                                                                                             | collected by                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `manifest.ts` | id, label, design size, shipped `userSettings`, optional `resolveLayoutChange`, `telemetryEvents` | `src/store/widget-catalog.ts` → `WIDGETS`, `WIDGET_BY_ID`, `DEFAULT_WIDGETS` |
+| `mount.ts`    | `{ id, component }`                                                                               | `src/ui/widgets/registry.ts` → `WIDGET_COMPONENTS`                           |
 
 A manifest is **plain data and never imports its own component** — that is why
 the mount is a second file rather than a field. Three reasons, in order of
@@ -602,12 +602,13 @@ unrelated reasons — the manifest when the data moves, the mount when the
 rendering does. A file edited for two unrelated reasons is the file two parallel
 branches collide on.
 
-`order` decides the widget's place in the catalog list (the order the user sees,
-and the order written to settings.json). Shipped widgets are spaced by ten so a
-new one slots in without renumbering; a manifest that declares none sorts last,
-and equal numbers fall back to the id — two widgets built in parallel that pick
-the same number are a stable tie, not a conflict. It never reaches settings.json
-(`NON_SERIALIZABLE_WIDGET_KEYS`).
+**Widget lists are alphabetical by label.** The Widgets page, each monitor's
+list in the layout editor and the F9 picker all show the catalog in that order
+(`compareManifests` in `src/store/widget-catalog.ts`: label, case-insensitive,
+then id), so a manifest declares no position of its own — a new widget lands
+where its name puts it, and two widgets built in parallel cannot collide on a
+number. Any new list of widgets shown to the user keeps that order: build it from
+`WIDGETS` / `DEFAULT_WIDGETS` or sort by label, never by id or by insertion.
 
 A panel's rows bind themselves: `panelRows<Settings>()` (in
 `panels/setting-rows.tsx`) is called once per panel and returns `SwitchRow` /
@@ -784,7 +785,7 @@ checklist below is what a reviewer applies to code that already exists.
 5. Add `*.stories.tsx` through `defineWidgetStories` — see `docs/widget-stories.md`
 6. Add `*SettingsPanel.tsx` in `src/ui/app/main/components/WidgetSettings/panels/` and export `PANEL_WIDGET_IDS` from it — the panel registry picks it up, nothing else to wire
 7. Add `interface *WidgetSettings` to `src/types/widget-settings.ts`, add it to the `WidgetSpecificSettings` union
-8. Create `manifest.ts` (with an `order`) and `mount.ts` next to the widget — both are collected by glob, so no shared file is edited
+8. Create `manifest.ts` and `mount.ts` next to the widget — both are collected by glob, so no shared file is edited
    8a. Declare `telemetryEvents` in the manifest for every gated field the widget
    reads (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `driverEntries`,
    `relative`, `proximity`) — without it the backend never sends them (see

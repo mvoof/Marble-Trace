@@ -19,7 +19,6 @@ const DEFAULT_HEIGHT = 380;
 
 export const PIT_LINE_MANIFEST: WidgetManifest = {
   id: 'pit-line',
-  order: 115,
   previewScenarios: ['pit-lane', 'pit-limiter', 'pit-over-limit'],
   telemetryEvents: ['carDynamics'],
   label: 'Pit Line',

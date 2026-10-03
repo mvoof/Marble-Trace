@@ -6,7 +6,6 @@ import {
 
 export const RADAR_BAR_MANIFEST: WidgetManifest = {
   id: 'radar-bar',
-  order: 30,
   previewScenarios: [
     'radar-traffic',
     'traffic-left',

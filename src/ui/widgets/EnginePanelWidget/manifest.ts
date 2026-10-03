@@ -112,7 +112,6 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
 
 export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
   id: 'engine-panel',
-  order: 200,
   telemetryEvents: ['carInputs'],
   previewScenarios: [
     'engine-formula-car',

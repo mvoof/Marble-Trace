@@ -988,12 +988,6 @@ export type ResolveLayoutChange = (
  */
 export interface WidgetManifest extends WidgetMeta {
   userSettings: WidgetUserSettings;
-  /**
-   * Where the widget sits in the catalog list. Shipped widgets are spaced by
-   * ten so one can be slotted between two without renumbering; a widget that
-   * declares nothing sorts last, and equal numbers fall back to the id.
-   */
-  order?: number;
   resolveLayoutChange?: ResolveLayoutChange;
   /**
    * For a widget whose width is literally the sum of its columns (the standings

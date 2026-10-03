@@ -6,7 +6,6 @@ import {
 
 export const TIMER_MANIFEST: WidgetManifest = {
   id: 'timer',
-  order: 130,
   telemetryEvents: ['driverEntries'],
   previewScenarios: ['timer-final-minute', 'timer-lap-limited'],
   label: 'Timer',

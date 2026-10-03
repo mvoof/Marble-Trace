@@ -44,7 +44,6 @@ const resolveLedFlagsLayout: ResolveLayoutChange = (prev, next, current) => {
 
 export const LED_FLAGS_MANIFEST: WidgetManifest = {
   id: 'led-flags',
-  order: 90,
   previewScenarios: [
     'yellow-flag',
     'safety-car',
