@@ -57,6 +57,10 @@ const LAYOUT_TOAST_DURATION_MS = 3000;
 // are visibly separate the moment the copy appears.
 const DUPLICATE_OFFSET_PX = 24;
 
+// How much of an auto-height widget is kept on its monitor when it is dragged
+// down — its real height is not known to the store.
+const AUTO_HEIGHT_VISIBLE_PX = 24;
+
 export type { PickableWidget };
 
 // Where a widget stands, rather than how it looks: never carried by a settings
@@ -69,6 +73,22 @@ const GEOMETRY_KEYS = [
   'currentHeight',
   'zIndex',
 ] as const;
+
+/**
+ * The box a widget is kept inside its monitor by. An auto-height widget draws
+ * as tall as its content, and its `currentHeight` is only the manifest's number
+ * — usually taller than what it draws — so clamping by it would stop the widget
+ * short of the bottom edge. Only a strip along its top is kept on screen, so
+ * it can never be dragged out of sight entirely.
+ */
+const clampSizeOf = (
+  widget: WidgetDefaultConfig
+): { width: number; height: number } => ({
+  width: widget.userSettings.currentWidth,
+  height: widget.autoHeight
+    ? Math.min(AUTO_HEIGHT_VISIBLE_PX, widget.userSettings.currentHeight)
+    : widget.userSettings.currentHeight,
+});
 
 // A deep copy: a nested value (a column set, a colour map) shared by reference
 // between two instances would let an edit to one change the other.
@@ -521,10 +541,11 @@ export class LiveWidgetsStore implements WidgetMap {
 
     if (monitorForWidget(widget, layout.monitors)) return widget;
 
-    const { x, y } = clampToBounds(primary.bounds, widget.userSettings, {
-      width: widget.userSettings.currentWidth,
-      height: widget.userSettings.currentHeight,
-    });
+    const { x, y } = clampToBounds(
+      primary.bounds,
+      widget.userSettings,
+      clampSizeOf(widget)
+    );
 
     widget.monitor = primary.name;
     widget.userSettings.x = x;
@@ -721,10 +742,7 @@ export class LiveWidgetsStore implements WidgetMap {
     };
     const monitor = monitorForWidget(source, layout.monitors);
     const position = monitor
-      ? clampToBounds(monitor.bounds, offset, {
-          width: source.userSettings.currentWidth,
-          height: source.userSettings.currentHeight,
-        })
+      ? clampToBounds(monitor.bounds, offset, clampSizeOf(source))
       : offset;
 
     const copy: WidgetDefaultConfig = {
@@ -858,14 +876,7 @@ export class LiveWidgetsStore implements WidgetMap {
       this.editingLayout?.monitors ?? []
     );
     const position = monitor
-      ? clampToBounds(
-          monitor.bounds,
-          { x, y },
-          {
-            width: widget.userSettings.currentWidth,
-            height: widget.userSettings.currentHeight,
-          }
-        )
+      ? clampToBounds(monitor.bounds, { x, y }, clampSizeOf(widget))
       : { x, y };
 
     if (
@@ -1275,10 +1286,7 @@ export class LiveWidgetsStore implements WidgetMap {
 
     const moved = from
       ? placeWidgetOnMonitor(widget, from.bounds, to.bounds).userSettings
-      : clampToBounds(to.bounds, widget.userSettings, {
-          width: widget.userSettings.currentWidth,
-          height: widget.userSettings.currentHeight,
-        });
+      : clampToBounds(to.bounds, widget.userSettings, clampSizeOf(widget));
 
     widget.monitor = to.name;
     widget.userSettings.x = moved.x;

@@ -1248,6 +1248,28 @@ describe('widgets belong to their monitor', () => {
     expect(widget.userSettings.y).toBe(LEFT.bounds.height - currentHeight);
   });
 
+  // An auto-height widget draws as tall as its content, and its stored
+  // height is only the manifest's — clamping by it stopped the widget short
+  // of the bottom edge.
+  it('lets an auto-height widget reach the bottom of its monitor', () => {
+    const store = setUp();
+
+    expect(store.getWidget('fuel')!.autoHeight).toBe(true);
+
+    store.updatePosition('fuel', 0, LEFT.bounds.height - 40);
+
+    expect(store.getWidget('fuel')!.userSettings.y).toBe(
+      LEFT.bounds.height - 40
+    );
+
+    store.updatePosition('fuel', 0, LEFT.bounds.height + 500);
+
+    // Never out of sight entirely: a strip along its top stays on screen.
+    expect(store.getWidget('fuel')!.userSettings.y).toBe(
+      LEFT.bounds.height - 24
+    );
+  });
+
   it('moves a widget to another monitor with every setting it has', () => {
     const store = setUp();
 
