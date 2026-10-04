@@ -1,4 +1,5 @@
 import { useLayoutEffect } from 'react';
+import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import type { ComponentType } from 'react';
 import { runInAction } from 'mobx';
 import type {
@@ -173,7 +174,15 @@ export const defineWidgetStories = <Args,>(
       settingsDefaults
     );
 
-    return <Widget {...widgetProps} />;
+    // The scope builds the widget's own store, as the overlay would. The seed
+    // above still finds it: a child's layout effect runs before its parent's.
+    return widgetId ? (
+      <WidgetInstanceScope type={widgetId}>
+        <Widget {...widgetProps} />
+      </WidgetInstanceScope>
+    ) : (
+      <Widget {...widgetProps} />
+    );
   };
 
   const frameDecorator: Decorator = (Story, context) => {

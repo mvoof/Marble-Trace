@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
 import type { RendererCore } from '@store/renderer-core';
 
@@ -91,48 +91,52 @@ export class PaceCarStore {
     { lapDistPct: number; movedAt: number }
   >();
 
+  private readonly disposers: IReactionDisposer[] = [];
+
   constructor(private readonly root: PaceCarDeps) {
-    makeAutoObservable<PaceCarStore, 'motionByCarIdx'>(
+    makeAutoObservable<PaceCarStore, 'disposers' | 'motionByCarIdx'>(
       this,
-      { motionByCarIdx: false },
+      { disposers: false, motionByCarIdx: false },
       { autoBind: true }
     );
   }
 
   init() {
-    reaction(
-      () => this.root.cars.carPositions,
-      (carPositions) => {
-        if (!carPositions) return;
+    this.disposers.push(
+      reaction(
+        () => this.root.cars.carPositions,
+        (carPositions) => {
+          if (!carPositions) return;
 
-        const now = performance.now();
+          const now = performance.now();
 
-        for (const car of this.root.session.sessionInfo?.cars ?? []) {
-          if (!car.isPaceCar) continue;
+          for (const car of this.root.session.sessionInfo?.cars ?? []) {
+            if (!car.isPaceCar) continue;
 
-          const idx = car.carIdx;
-          const surface =
-            carPositions.car_idx_track_surface[idx] ?? NOT_IN_WORLD;
-          const isOnPitRoad =
-            this.root.cars.carIdx?.car_idx_on_pit_road[idx] ?? false;
-          const previousPhase = this.phaseByCarIdx.get(idx) ?? 'unknown';
-          const isStationary = this.trackStillness(
-            idx,
-            carPositions.car_idx_lap_dist_pct[idx] ?? NOT_IN_WORLD,
-            now
-          );
+            const idx = car.carIdx;
+            const surface =
+              carPositions.car_idx_track_surface[idx] ?? NOT_IN_WORLD;
+            const isOnPitRoad =
+              this.root.cars.carIdx?.car_idx_on_pit_road[idx] ?? false;
+            const previousPhase = this.phaseByCarIdx.get(idx) ?? 'unknown';
+            const isStationary = this.trackStillness(
+              idx,
+              carPositions.car_idx_lap_dist_pct[idx] ?? NOT_IN_WORLD,
+              now
+            );
 
-          this.phaseByCarIdx.set(
-            idx,
-            nextPaceCarPitPhase(
-              surface,
-              previousPhase,
-              isOnPitRoad,
-              isStationary
-            )
-          );
+            this.phaseByCarIdx.set(
+              idx,
+              nextPaceCarPitPhase(
+                surface,
+                previousPhase,
+                isOnPitRoad,
+                isStationary
+              )
+            );
+          }
         }
-      }
+      )
     );
   }
 
@@ -150,6 +154,17 @@ export class PaceCarStore {
     }
 
     return now - motion.movedAt >= PARKED_AFTER_MS;
+  }
+
+  // Started by the first widget that reads the phases and stopped by the last
+  // (`SharedWidgetStores`), so it must be able to start again afterwards.
+  dispose() {
+    for (const disposer of this.disposers) {
+      disposer();
+    }
+
+    this.disposers.length = 0;
+    this.reset();
   }
 
   // Split off the session-derived half on purpose: the roster changes once a

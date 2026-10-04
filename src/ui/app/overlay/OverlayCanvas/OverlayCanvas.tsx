@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Layers, MousePointer2 } from 'lucide-react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { componentForWidget } from '@ui/widgets/registry';
+import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetContainer } from '@ui/app/overlay/components/WidgetContainer/WidgetContainer';
 import { usePreviewContentStore } from '@ui/app/preview-content-store';
 import styles from './OverlayCanvas.module.scss';
@@ -107,15 +108,22 @@ export const OverlayCanvas = observer(() => {
           if (!WidgetComponent) return null;
 
           return (
-            <WidgetContainer key={widget.id} widgetId={widget.id}>
-              {previewStore ? (
-                <RendererCoreContext.Provider value={previewStore}>
+            <WidgetInstanceScope
+              key={widget.id}
+              type={widget.type}
+              instanceId={widget.id}
+              core={previewStore ?? undefined}
+            >
+              <WidgetContainer widgetId={widget.id}>
+                {previewStore ? (
+                  <RendererCoreContext.Provider value={previewStore}>
+                    <WidgetComponent />
+                  </RendererCoreContext.Provider>
+                ) : (
                   <WidgetComponent />
-                </RendererCoreContext.Provider>
-              ) : (
-                <WidgetComponent />
-              )}
-            </WidgetContainer>
+                )}
+              </WidgetContainer>
+            </WidgetInstanceScope>
           );
         })}
       </div>

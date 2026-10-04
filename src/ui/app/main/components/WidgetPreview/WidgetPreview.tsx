@@ -5,6 +5,7 @@ import { RendererCore } from '@store/renderer-core';
 import { RendererCoreContext, useUnitsStore } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
+import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameStyle } from '@ui/app/widget-frame';
@@ -116,7 +117,9 @@ export const WidgetPreview = observer(
           >
             <ErrorBoundary>
               <WidgetIdContext.Provider value={previewId}>
-                <Widget />
+                <WidgetInstanceScope type={widget.type} instanceId={previewId}>
+                  <Widget />
+                </WidgetInstanceScope>
               </WidgetIdContext.Provider>
             </ErrorBoundary>
           </div>

@@ -131,9 +131,12 @@ derived logic.** Simple widgets read the data stores directly, and stay simple.
 - Derived values are `computed` getters in a store — never `useMemo` in a
   component.
 - Hooks are for the DOM and the browser only. Everything else is a store.
-- Widget stores read `settingsOfType(type)` — the switched-on instance under
-  the widget's hotkeys — never `getSettings(type)`: one store per app cannot be
-  per instance, and what a store holds is computation, not presentation.
+- A new widget store is **per instance**: declare it in `mount.ts`
+  (`store: (context) => new XWidgetStore(context)`), read settings with
+  `getSettings(context.instanceId)`, and give components a hook over
+  `useWidgetInstanceStore`. It exists only while the instance is mounted. A
+  shared store it reads (`flags`, `paceCar`, `radar`) goes in `sharedStores`.
+  `StandingsWidget` and `InputTraceWidget` are the worked examples.
 
 The full six rules are [architecture.md → The six store rules](architecture.md).
 

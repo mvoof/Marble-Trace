@@ -10,7 +10,7 @@ import {
   useCarsStore,
   usePlayerStore,
   useSessionStore,
-  useStandingsWidgetStore,
+  usePlayerPositionStore,
 } from '@store/root-store-context';
 
 import styles from './StatsStrip.module.scss';
@@ -19,12 +19,12 @@ export const StatsStrip = observer(() => {
   const player = usePlayerStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
-  const standingsWidget = useStandingsWidgetStore();
+  const playerPosition = usePlayerPositionStore();
 
   const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');
 
   const currentLap = player.lapTiming?.lap;
-  const { position } = standingsWidget.playerPositionInfo(
+  const { position } = playerPosition.playerPositionInfo(
     settings.useLivePositions,
     settings.classPositionInMulticlass
   );

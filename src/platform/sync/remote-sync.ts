@@ -5,6 +5,7 @@ import type { TrackRotationPayload } from '@platform/services/events.service';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import type { RemoteScreenStore } from '@store/remote/remote-screen.store';
 import type { RendererCore } from '@store/renderer-core';
+import { standingsHotkeyTargets } from '@store/hotkeys/hotkey-targets';
 import type { RemoteMessage, RemoteScreenSnapshot } from '@/types/remote';
 import type {
   CapabilitiesPayload,
@@ -135,18 +136,22 @@ export const initRemoteSync = (
 
       // The hotkeys are registered in the main window; on the monitors they
       // arrive as Tauri events, here as these three.
-      case 'standings-class-index': {
+      case 'standings-class-step': {
         runInAction(() => {
-          root.standingsWidget.activeClassIndex = message.data as number;
+          for (const table of standingsHotkeyTargets(root)) {
+            table.stepClass(message.data as number);
+          }
         });
 
         return;
       }
 
       case 'standings-scroll': {
-        runInAction(() =>
-          root.standingsWidget.scrollByRows(message.data as number)
-        );
+        runInAction(() => {
+          for (const table of standingsHotkeyTargets(root)) {
+            table.scrollByRows(message.data as number);
+          }
+        });
 
         return;
       }

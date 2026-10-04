@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { componentForWidget } from '@ui/widgets/registry';
+import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { RemoteWidgetFrame } from './RemoteWidgetFrame';
 import styles from './RemoteCanvas.module.scss';
 import { useRemoteScreenStore } from '@store/remote/remote-screen-context';
@@ -48,9 +49,15 @@ export const RemoteCanvas = observer(() => {
             if (!WidgetComponent) return null;
 
             return (
-              <RemoteWidgetFrame key={widget.id} widgetId={widget.id}>
-                <WidgetComponent />
-              </RemoteWidgetFrame>
+              <WidgetInstanceScope
+                key={widget.id}
+                type={widget.type}
+                instanceId={widget.id}
+              >
+                <RemoteWidgetFrame widgetId={widget.id}>
+                  <WidgetComponent />
+                </RemoteWidgetFrame>
+              </WidgetInstanceScope>
             );
           })}
         </div>

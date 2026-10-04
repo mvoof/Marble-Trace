@@ -1,5 +1,6 @@
 import {
   emitPitServiceToggle,
+  emitStandingsClassStep,
   emitStandingsScroll,
   emitStreamChatScroll,
 } from '@platform/services/events.service';
@@ -65,16 +66,14 @@ const STANDINGS_ACTIONS: HotkeyAction[] = [
     owner: 'standings',
     labelKey: 'standingsClassPrev',
     trigger: 'press',
-    run: (root) =>
-      root.standingsWidget.cyclePrev(root.backendComputed.carClassCount),
+    run: () => void emitStandingsClassStep(-1),
   },
   {
     id: 'standings:class-next',
     owner: 'standings',
     labelKey: 'standingsClassNext',
     trigger: 'press',
-    run: (root) =>
-      root.standingsWidget.cycleNext(root.backendComputed.carClassCount),
+    run: () => void emitStandingsClassStep(1),
   },
   {
     id: 'standings:scroll-up',

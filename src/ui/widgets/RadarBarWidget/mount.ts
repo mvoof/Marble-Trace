@@ -5,4 +5,5 @@ import { RadarBarWidget } from './RadarBarWidget';
 export const mount: WidgetMount = {
   id: RADAR_BAR_MANIFEST.id,
   component: RadarBarWidget,
+  sharedStores: ['radar'],
 };

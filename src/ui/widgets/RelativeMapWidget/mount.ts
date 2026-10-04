@@ -5,4 +5,5 @@ import { RelativeMapWidget } from './RelativeMapWidget';
 export const mount: WidgetMount = {
   id: RELATIVE_MAP_MANIFEST.id,
   component: RelativeMapWidget,
+  sharedStores: ['paceCar'],
 };

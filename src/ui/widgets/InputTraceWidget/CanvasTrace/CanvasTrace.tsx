@@ -7,10 +7,10 @@ import { useCanvasAutoResize } from '@ui/hooks/useCanvasAutoResize';
 import styles from './CanvasTrace.module.scss';
 import {
   useAppSettingsStore,
-  useInputTraceWidgetStore,
   usePlayerStore,
   useLiveWidgetsStore,
 } from '@store/root-store-context';
+import { useInputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.widget';
 import {
   createTraceBufferState,
   drawInputTrace,

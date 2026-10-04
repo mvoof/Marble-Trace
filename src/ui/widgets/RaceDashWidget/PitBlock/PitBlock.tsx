@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { usePitState } from '@ui/hooks/usePitState';
 import type { PitState } from '@ui/hooks/usePitState';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import { useStandingsWidgetStore } from '@store/root-store-context';
+import { usePlayerPositionStore } from '@store/root-store-context';
 
 import { pitLimitEmphasis } from '../race-dash-utils';
 import { PitLaneBar } from './PitLaneBar';
@@ -25,7 +25,7 @@ const isLimiterSafe = (pitState: PitState): boolean =>
   pitState === 'limiter-exit';
 
 export const PitBlock = observer(() => {
-  const standingsWidget = useStandingsWidgetStore();
+  const playerPosition = usePlayerPositionStore();
   const {
     pitState,
     speedKmhOrMph,
@@ -71,7 +71,7 @@ export const PitBlock = observer(() => {
   const unit = system === 'metric' ? 'KM/H' : 'MPH';
   const distUnit = system === 'metric' ? 'm' : 'ft';
   const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');
-  const { position } = standingsWidget.playerPositionInfo(
+  const { position } = playerPosition.playerPositionInfo(
     settings.useLivePositions,
     settings.classPositionInMulticlass
   );

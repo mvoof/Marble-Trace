@@ -1,52 +1,39 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { RendererCore } from '@store/renderer-core';
+import type { WidgetStoreFactory } from '@store/widgets/widget-instances';
 import type { CarInputsFrame } from '@/types/bindings';
+import { InputTraceWidgetStore } from './input-trace.widget';
 
-// RendererCore construction reaches the backend through the services; they have
-// no Tauri runtime to talk to under vitest.
-vi.mock('@platform/services/telemetry.service', () => ({
-  startTelemetryStream: vi.fn().mockResolvedValue(undefined),
-  stopTelemetryStream: vi.fn().mockResolvedValue(undefined),
-  getConnectionStatus: vi.fn().mockResolvedValue(false),
-  getLastSessionInfo: vi.fn().mockResolvedValue(null),
-  setActiveEventsSilent: vi.fn(),
-}));
-vi.mock('@platform/services/settings.service', () => ({
-  setPitWarningLapsSilent: vi.fn(),
-  setFuelAvgWindowSilent: vi.fn(),
-  setFuelCountYellowLapsSilent: vi.fn(),
-  setCarLengthSilent: vi.fn(),
-}));
+const INPUT_TRACE = 'input-trace';
 
-// RendererCore subscribes to sim events on construction; the node test
-// environment has no window for the Tauri event bridge to attach to.
-vi.mock('@platform/services/events.service', () => ({
-  listenTo: vi.fn().mockResolvedValue(() => {}),
-  emitToApp: vi.fn().mockResolvedValue(undefined),
-  emitToWindow: vi.fn().mockResolvedValue(undefined),
-  emitToOverlays: vi.fn().mockResolvedValue(undefined),
-}));
+const createInputTrace: WidgetStoreFactory = (context) =>
+  new InputTraceWidgetStore(context);
 
 describe('InputTraceWidgetStore — frameTick', () => {
-  let rootStore: RendererCore;
+  let core: RendererCore;
+  let inputTrace: InputTraceWidgetStore;
 
   const pushFrame = (throttle: number) => {
     runInAction(() => {
-      rootStore.player.updateCarInputs({ throttle } as CarInputsFrame);
+      core.player.updateCarInputs({ throttle } as CarInputsFrame);
     });
   };
 
   beforeEach(() => {
-    rootStore = new RendererCore();
+    core = new RendererCore({ skipInit: true });
+    inputTrace = core.widgetInstances.open(
+      { core, instanceId: INPUT_TRACE, type: INPUT_TRACE },
+      createInputTrace
+    ) as InputTraceWidgetStore;
   });
 
   afterEach(() => {
-    rootStore.inputTraceWidget.dispose();
+    core.dispose();
   });
 
   it('starts at zero so the canvas sentinel counts the first frame', () => {
-    expect(rootStore.inputTraceWidget.frameTick).toBe(0);
+    expect(inputTrace.frameTick).toBe(0);
   });
 
   it('advances exactly once per telemetry frame', () => {
@@ -54,7 +41,7 @@ describe('InputTraceWidgetStore — frameTick', () => {
     pushFrame(0.2);
     pushFrame(0.3);
 
-    expect(rootStore.inputTraceWidget.frameTick).toBe(3);
+    expect(inputTrace.frameTick).toBe(3);
   });
 
   // The trace buffer is sized at 60 samples per second, so an append driven by
@@ -63,18 +50,39 @@ describe('InputTraceWidgetStore — frameTick', () => {
     pushFrame(0.1);
 
     runInAction(() => {
-      rootStore.player.updateCarDynamics({
+      core.player.updateCarDynamics({
         steering_wheel_angle: 1.5,
       } as never);
     });
 
-    expect(rootStore.inputTraceWidget.frameTick).toBe(1);
+    expect(inputTrace.frameTick).toBe(1);
   });
 
   it('returns to zero on reset', () => {
     pushFrame(0.1);
-    rootStore.inputTraceWidget.reset();
+    inputTrace.reset();
 
-    expect(rootStore.inputTraceWidget.frameTick).toBe(0);
+    expect(inputTrace.frameTick).toBe(0);
+  });
+
+  // The store exists only while its instance is mounted: a trace that is not on
+  // screen must not filter a single frame.
+  it('stops on unmount — a replayed frame no longer reaches it', () => {
+    pushFrame(0.5);
+    core.widgetInstances.close(INPUT_TRACE, inputTrace);
+    pushFrame(0.9);
+
+    expect(inputTrace.frameTick).toBe(0);
+    expect(core.widgetInstances.storesOf(INPUT_TRACE)).toEqual([]);
+  });
+
+  it('smooths with its own instance settings', () => {
+    runInAction(() => {
+      core.liveWidgets.updateUserSettings(INPUT_TRACE, { smoothing: 0 });
+    });
+
+    pushFrame(0.8);
+
+    expect(inputTrace.smoothed.throttle).toBeCloseTo(0.8);
   });
 });

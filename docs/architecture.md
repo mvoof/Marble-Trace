@@ -877,7 +877,7 @@ root's hooks either (`.oxlintrc.json`).
 | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `data/`                                                | `player`, `cars`, `session`, `environment`, `chat`, `reference-lap` frame buffers, plus `computed.store.ts` for derived values shared by 2+ widgets                                                            |
 | `settings/`                                            | `app-settings`, `layouts`, `widget-defaults`, `widget-settings`, `units`, `twitch-auth`, plus layout helpers (`layout-resolution`, `layout-resize`, `layout-background`, `widget-history`, `widget-placement`) |
-| `widgets/`                                             | stores read by 2+ widgets — `flags`, `pace-car`, `radar`, `standings` — plus app-level ones (`widget-auto-hide`, `settings-panel-ui`)                                                                          |
+| `widgets/`                                             | stores read by 2+ widgets — `flags`, `pace-car`, `radar`, `player-position` — plus app-level ones (`widget-auto-hide`, `settings-panel-ui`) and the per-instance registry (`widget-instances`)                 |
 | `sim/`                                                 | sim connection state, `track-condition`, `debug`                                                                                                                                                               |
 | `hotkeys/`                                             | `actions` registry, `action-registry`, `bindings.store`, `binding-runner`, `bindings-sync`, `bindings-ui`, `device-input`                                                                                      |
 | `preview/`                                             | neutral sample data — scenarios, sample telemetry, sample track, the preview animator                                                                                                                          |
@@ -1380,7 +1380,7 @@ Emitted from `main-sync.ts` reactions, received in `setupOverlayListeners`.
 | `units-changed`                         | `emitUnitsChanged`              | `UnitSystem`        |
 | `steering-lock-changed`                 | `emitSteeringLockChanged`       | `number`            |
 | `language-changed`                      | `emitLanguageChanged`           | `AppLanguage`       |
-| `standings-class-index-changed`         | `emitStandingsClassIndex`       | `number`            |
+| `standings-class-step`                  | `emitStandingsClassStep`        | `1 \| -1`           |
 | `session-layouts-changed`               | `emitSessionLayoutsChanged`     | `SessionLayoutMap`  |
 | `auto-switch-layouts-changed`           | `emitAutoSwitchLayoutsChanged`  | `boolean`           |
 | `stream-chat-filters-changed`           | `emitStreamChatFilters`         | `StreamChatFilters` |

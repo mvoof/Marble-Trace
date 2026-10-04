@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import type { StandingsWidgetStore } from './standings.widget';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import type { MockFieldRows } from '@store/preview/mocks/field';
 import {
@@ -62,7 +63,13 @@ const meta: Meta<StoryArgs> = {
       }
 
       if (args.activeClassIndex !== undefined) {
-        store.standingsWidget.activeClassIndex = args.activeClassIndex;
+        const classIndex = args.activeClassIndex;
+
+        for (const table of store.widgetInstances.storesOf<StandingsWidgetStore>(
+          'standings'
+        )) {
+          table.activeClassIndex = classIndex;
+        }
       }
     },
     argTypes: {

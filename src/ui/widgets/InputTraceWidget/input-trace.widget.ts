@@ -1,7 +1,9 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
 import type { RendererCore } from '@store/renderer-core';
+import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
 import type { InputTraceSettings } from '@/types/widget-settings';
+import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 
 type InputTraceDeps = Pick<RendererCore, 'player' | 'liveWidgets'>;
 
@@ -25,19 +27,30 @@ export class InputTraceWidgetStore {
 
   private readonly disposers: IReactionDisposer[] = [];
 
-  // Wired in the constructor rather than an init() step: the exponential filter
-  // must advance once per telemetry frame (never per React render), and the
-  // isolated preview stores used by the workbench and Storybook skip init().
-  constructor(private readonly root: InputTraceDeps) {
-    makeAutoObservable(this, {}, { autoBind: true });
+  private readonly root: InputTraceDeps;
+
+  private readonly instanceId: string;
+
+  // Built per instance when it mounts (`mount.ts`), so the filter runs only
+  // while a trace is on screen, at that trace's own smoothing. Wired in the
+  // constructor: it must advance once per telemetry frame, never per render.
+  constructor({ core, instanceId }: WidgetInstanceContext) {
+    this.root = core;
+    this.instanceId = instanceId;
+
+    makeAutoObservable<InputTraceWidgetStore, 'root' | 'disposers'>(
+      this,
+      { root: false, disposers: false },
+      { autoBind: true }
+    );
 
     this.disposers.push(
       reaction(
         () => this.root.player.carInputs,
         (inputs) => {
           const { smoothing } =
-            this.root.liveWidgets.settingsOfType<InputTraceSettings>(
-              'input-trace'
+            this.root.liveWidgets.getSettings<InputTraceSettings>(
+              this.instanceId
             );
 
           this.smoothed = {
@@ -60,8 +73,7 @@ export class InputTraceWidgetStore {
     );
   }
 
-  // Every RendererCore instance (main window, overlay window, each isolated widget
-  // preview) creates its own reaction; without this they outlive the store.
+  // Called when the instance unmounts; the reaction otherwise outlives it.
   dispose() {
     for (const disposer of this.disposers) {
       disposer();
@@ -76,3 +88,6 @@ export class InputTraceWidgetStore {
     this.frameTick = 0;
   }
 }
+
+export const useInputTraceWidgetStore = () =>
+  useWidgetInstanceStore<InputTraceWidgetStore>();

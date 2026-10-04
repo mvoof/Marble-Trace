@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { projectPositionsLost } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import {
   useBackendComputedStore,
-  useStandingsWidgetStore,
+  usePlayerPositionStore,
 } from '@store/root-store-context';
 
 import styles from './PositionBadge.module.scss';
@@ -34,9 +34,9 @@ export const PositionBadge = observer(
     // that reason. See "The hot/cold split" in docs/rendering.md.
     // oxlint-disable-next-line no-restricted-properties
     const { relative } = useBackendComputedStore();
-    const standingsWidget = useStandingsWidgetStore();
+    const playerPosition = usePlayerPositionStore();
 
-    const { position, total } = standingsWidget.playerPositionInfo(
+    const { position, total } = playerPosition.playerPositionInfo(
       useLivePositions,
       classPositionInMulticlass
     );

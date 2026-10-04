@@ -127,7 +127,7 @@ pub const EVENT_TELEMETRY_BUNDLE_MIRROR: &str = "sim://telemetry/bundle/mirror";
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "kebab-case")]
 pub enum RemoteControlKind {
-    StandingsClassIndex,
+    StandingsClassStep,
     StandingsScroll,
     StreamChatScroll,
     TrackRotation,
@@ -169,7 +169,7 @@ impl Replayed for RemoteControlKind {
             // cannot read for itself, so it is replayed like the shape it
             // applies to.
             Self::TrackRotation => true,
-            Self::StandingsClassIndex | Self::StandingsScroll | Self::StreamChatScroll => false,
+            Self::StandingsClassStep | Self::StandingsScroll | Self::StreamChatScroll => false,
         }
     }
 }
@@ -206,7 +206,7 @@ pub trait WireName {
 impl WireName for RemoteControlKind {
     fn wire_name(self) -> &'static str {
         match self {
-            Self::StandingsClassIndex => "standings-class-index",
+            Self::StandingsClassStep => "standings-class-step",
             Self::StandingsScroll => "standings-scroll",
             Self::StreamChatScroll => "stream-chat-scroll",
             Self::TrackRotation => "track-rotation",
@@ -235,7 +235,7 @@ impl WireName for RemoteStreamKind {
 
 impl RemoteControlKind {
     pub const ALL: [Self; 4] = [
-        Self::StandingsClassIndex,
+        Self::StandingsClassStep,
         Self::StandingsScroll,
         Self::StreamChatScroll,
         Self::TrackRotation,

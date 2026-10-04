@@ -11,6 +11,7 @@ import {
 import type { AppLanguage, UnitSystem } from '@/types';
 import type { SessionContext } from '@/types/widget-settings';
 import type { RendererCore } from '@store/renderer-core';
+import { standingsHotkeyTargets } from '@store/hotkeys/hotkey-targets';
 import type { OverlayRoot } from '@store/overlay-root';
 import type { BindingMap } from '@/types/input-bindings';
 
@@ -171,9 +172,11 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listenTo<number>('standings-class-index-changed', (e) => {
+    await listenTo<number>('standings-class-step', (e) => {
       runInAction(() => {
-        root.standingsWidget.activeClassIndex = e.payload;
+        for (const table of standingsHotkeyTargets(root)) {
+          table.stepClass(e.payload);
+        }
       });
     })
   );
@@ -182,7 +185,11 @@ export const setupOverlayListeners = async (
   // many rows fit and how long the target list is, so only it can clamp.
   unlistens.push(
     await listenTo<number>('standings-scroll', (e) => {
-      runInAction(() => root.standingsWidget.scrollByRows(e.payload));
+      runInAction(() => {
+        for (const table of standingsHotkeyTargets(root)) {
+          table.scrollByRows(e.payload);
+        }
+      });
     })
   );
 

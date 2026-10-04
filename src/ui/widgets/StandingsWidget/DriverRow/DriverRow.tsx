@@ -33,9 +33,9 @@ import styles from './DriverRow.module.scss';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import {
   useBackendComputedStore,
-  useStandingsWidgetStore,
   useSessionStore,
 } from '@store/root-store-context';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.widget';
 
 interface DriverRowProps {
   carIdx: number;

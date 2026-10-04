@@ -29,6 +29,7 @@ import {
   useSettingsMutationLog,
 } from '@store/root-store-context';
 import { componentForWidget } from '@ui/widgets/registry';
+import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import {
@@ -694,7 +695,7 @@ export const LayoutCanvas = observer(
                     ? componentForWidget(widget.type)
                     : undefined;
 
-                  if (!Widget) {
+                  if (!widget || !Widget) {
                     return null;
                   }
 
@@ -713,7 +714,12 @@ export const LayoutCanvas = observer(
                     >
                       <ErrorBoundary>
                         <WidgetIdContext.Provider value={id}>
-                          <Widget />
+                          <WidgetInstanceScope
+                            type={widget.type}
+                            instanceId={id}
+                          >
+                            <Widget />
+                          </WidgetInstanceScope>
                         </WidgetIdContext.Provider>
                       </ErrorBoundary>
                     </LayoutCanvasWidget>

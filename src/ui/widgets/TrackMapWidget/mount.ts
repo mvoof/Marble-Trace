@@ -5,4 +5,5 @@ import { TrackMapWidget } from './TrackMapWidget';
 export const mount: WidgetMount = {
   id: TRACK_MAP_MANIFEST.id,
   component: TrackMapWidget,
+  sharedStores: ['paceCar'],
 };

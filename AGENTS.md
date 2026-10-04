@@ -475,7 +475,7 @@ listenTo('event-name', (e) => runInAction(() => (store.value = e.payload)));
 An overlay-synced value is assigned to the sub-store data **directly, never via a
 setter** — a setter bumps `changeToken` and echoes the settings back to main.
 
-Synced events: `drag-mode-changed`, `hide-all-widgets-changed`, `hide-widgets-when-game-closed-changed`, `units-changed`, `widget-settings-updated` (debounced 16 ms), `standings-class-index-changed`, `track-rotation-changed`, `track-map:force-start-pending-changed`, `overlay-monitor-changed`, `session-layouts-changed`, `auto-switch-layouts-changed`.
+Synced events: `drag-mode-changed`, `hide-all-widgets-changed`, `hide-widgets-when-game-closed-changed`, `units-changed`, `widget-settings-updated` (debounced 16 ms), `track-rotation-changed`, `track-map:force-start-pending-changed`, `overlay-monitor-changed`, `session-layouts-changed`, `auto-switch-layouts-changed`.
 
 ### Remote screens
 
@@ -616,7 +616,7 @@ glob rather than listed anywhere:
 | file          | holds                                                                                             | collected by                                                                 |
 | ------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `manifest.ts` | id, label, design size, shipped `userSettings`, optional `resolveLayoutChange`, `telemetryEvents` | `src/store/widget-catalog.ts` → `WIDGETS`, `WIDGET_BY_ID`, `DEFAULT_WIDGETS` |
-| `mount.ts`    | `{ id, component }`                                                                               | `src/ui/widgets/registry.ts` → `WIDGET_COMPONENTS`                           |
+| `mount.ts`    | `{ id, component }`, optional per-instance `store` factory and `sharedStores`                     | `src/ui/widgets/registry.ts` → `WIDGET_COMPONENTS`                           |
 
 A manifest is **plain data and never imports its own component** — that is why
 the mount is a second file rather than a field. Three reasons, in order of
@@ -679,12 +679,12 @@ belonging to a single widget sits in `src/ui/widgets/<Widget>/`: components,
 
 Shared code keeps flat global folders — no category sub-folders:
 
-| folder               | holds                                                                                             |
-| -------------------- | ------------------------------------------------------------------------------------------------- |
-| `src/ui/shared/`     | UI reused by 2+ widgets (`WidgetPanel`, `StatPill`, badges)                                       |
-| `src/ui/hooks/`      | DOM/browser hooks used by 2+ widgets                                                              |
-| `src/utils/`         | pure helpers used by 2+ widgets                                                                   |
-| `src/store/widgets/` | stores read by 2+ widgets (`flags`, `pace-car`, `radar`, `standings`) and app-level widget stores |
+| folder               | holds                                                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------- |
+| `src/ui/shared/`     | UI reused by 2+ widgets (`WidgetPanel`, `StatPill`, badges)                                             |
+| `src/ui/hooks/`      | DOM/browser hooks used by 2+ widgets                                                                    |
+| `src/utils/`         | pure helpers used by 2+ widgets                                                                         |
+| `src/store/widgets/` | stores read by 2+ widgets (`flags`, `pace-car`, `radar`, `player-position`) and app-level widget stores |
 
 `src/utils/` is grouped by **domain, not by kind** — one file per subject, never a
 `constants/` or `formatters/` bucket (those cut across every domain and tell you
@@ -774,11 +774,29 @@ other. Always read the widget as `widget.type`, never `widget.id`.
   switched on one or both, as marked. The primary instance prefers a physical
   display over a browser screen. `isWidgetOnScreen`,
   the dispatch gate, is true while any instance is on screen.
-- **A widget store reads `settingsOfType(type)`**, never `getSettings(type)`:
-  one store per app cannot be per instance, so it follows the one that speaks
-  for the widget — `primaryInstanceOf`, a switched-on instance under the
-  hotkeys. A `getSettings` keyed by the type finds nothing once that record is
-  deleted.
+- **A widget store is per instance** when its `mount.ts` declares one
+  (`store: (context) => new XWidgetStore(context)`; standings and input-trace
+  so far, the rest move in ticket 09). `WidgetInstanceScope` builds it when the
+  instance mounts and disposes it — reactions included — when it leaves, so a
+  widget not in the window's layout runs nothing. It reads its own settings
+  with `getSettings(instanceId)`; components reach it through the widget's own
+  hook over `useWidgetInstanceStore`. The scope sits outside the auto-hide
+  gate: a hidden instance keeps its store.
+- Code outside the render tree reaches instance stores through
+  `core.widgetInstances` — a hotkey arriving on an overlay acts on
+  `hotkeyStoresOf(type)`, the mounted instances marked for hotkeys, typed by an
+  interface in `store/hotkeys/hotkey-targets.ts` (the sync layer may not import
+  the store from `@ui/**`). Main sends a **step**, never a value: only the window
+  an instance is mounted in holds its state.
+- The stores several widget types share (`flags`, `paceCar`, `radar`) are
+  reference-counted: a mount lists them in `sharedStores`, the first instance
+  starts the store and the last stops it (`SharedWidgetStores`). Previews count
+  but start nothing; a remote screen starts them (`startsSharedStores`).
+- **An app-wide widget store reads `settingsOfType(type)`**, never
+  `getSettings(type)`: one store per app cannot be per instance, so it follows
+  the one that speaks for the widget — `primaryInstanceOf`, a switched-on
+  instance under the hotkeys. A `getSettings` keyed by the type finds nothing
+  once that record is deleted.
 - The editor lists **every widget per monitor**, each with its own switch
   (`monitorWidgetRows`); the switch and the overlay's F9 picker both go through
   `setTypeEnabledOnMonitor`, which switches back on an instance already on that

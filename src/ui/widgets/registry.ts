@@ -16,10 +16,17 @@ const mountModules = import.meta.glob<{ mount: WidgetMount }>('./*/mount.ts', {
   eager: true,
 });
 
+const MOUNTS: Record<string, WidgetMount> = Object.fromEntries(
+  Object.values(mountModules).map(({ mount }) => [mount.id, mount])
+);
+
 export const WIDGET_COMPONENTS: Record<string, ComponentType> =
   Object.fromEntries(
-    Object.values(mountModules).map(({ mount }) => [mount.id, mount.component])
+    Object.values(MOUNTS).map((mount) => [mount.id, mount.component])
   );
 
 export const componentForWidget = (id: string): ComponentType | undefined =>
   WIDGET_COMPONENTS[id];
+
+export const mountForWidget = (id: string): WidgetMount | undefined =>
+  MOUNTS[id];

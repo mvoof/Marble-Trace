@@ -5,4 +5,5 @@ import { RelativeWidget } from './RelativeWidget';
 export const mount: WidgetMount = {
   id: RELATIVE_MANIFEST.id,
   component: RelativeWidget,
+  sharedStores: ['paceCar'],
 };

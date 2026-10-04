@@ -18,10 +18,13 @@ import {
 } from '@utils/canvas';
 import { MOVE_DURATION_MS } from '@utils/animation';
 import type { RendererCore } from '@store/renderer-core';
+import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { StandingsHotkeyTarget } from '@store/hotkeys/hotkey-targets';
+import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 
 type StandingsDeps = Pick<
   RendererCore,
-  'backendComputed' | 'liveWidgets' | 'session' | 'player'
+  'backendComputed' | 'liveWidgets' | 'session' | 'playerPosition'
 >;
 
 export type PositionChangeDirection = 'up' | 'down';
@@ -46,7 +49,12 @@ export const SINGLE_LIST_SCROLL_KEY = -1;
 
 type PendingPosition = { position: number; since: number };
 
-export class StandingsWidgetStore {
+/**
+ * One standings table: its class tab, scroll, settle debounce and position
+ * flashes. Built per instance by `mount.ts`, so two tables keep their own
+ * place and a table that is not on screen runs nothing.
+ */
+export class StandingsWidgetStore implements StandingsHotkeyTarget {
   activeClassIndex = 0;
 
   /**
@@ -106,11 +114,19 @@ export class StandingsWidgetStore {
 
   private scrollResetTimer: ReturnType<typeof setTimeout> | null = null;
 
+  private readonly root: StandingsDeps;
+
+  private readonly instanceId: string;
+
   // Wired in the constructor rather than an init() step: the arrows compare
   // consecutive telemetry frames, so the very first frame must already be seen.
-  constructor(private readonly root: StandingsDeps) {
+  constructor({ core, instanceId }: WidgetInstanceContext) {
+    this.root = core;
+    this.instanceId = instanceId;
+
     makeAutoObservable<
       StandingsWidgetStore,
+      | 'root'
       | 'previousPositions'
       | 'pendingPositions'
       | 'changeTimers'
@@ -119,6 +135,7 @@ export class StandingsWidgetStore {
     >(
       this,
       {
+        root: false,
         previousPositions: false,
         pendingPositions: false,
         changeTimers: false,
@@ -145,12 +162,7 @@ export class StandingsWidgetStore {
     // offset collected for the previous one no longer points anywhere sensible.
     this.disposers.push(
       reaction(
-        () => [
-          this.activeClassIndex,
-          this.root.liveWidgets.settingsOfType<StandingsWidgetSettings>(
-            'standings'
-          ).viewMode,
-        ],
+        () => [this.activeClassIndex, this.settings.viewMode],
         () => this.resetScroll()
       )
     );
@@ -187,9 +199,14 @@ export class StandingsWidgetStore {
    * by best lap, so the two are genuinely different answers there.
    */
   get useTrackOrder(): boolean {
-    return this.root.liveWidgets.settingsOfType<StandingsWidgetSettings>(
-      'standings'
-    ).useLivePositions;
+    return this.settings.useLivePositions;
+  }
+
+  /** This instance's own settings — two tables may rank and filter differently. */
+  get settings(): StandingsWidgetSettings {
+    return this.root.liveWidgets.getSettings<StandingsWidgetSettings>(
+      this.instanceId
+    );
   }
 
   /** Rank a car holds under the active ordering — overall. */
@@ -202,127 +219,8 @@ export class StandingsWidgetStore {
     return this.useTrackOrder ? entry.liveClassPosition : entry.classPosition;
   }
 
-  get playerEntry(): CarIdentity | null {
-    return (
-      this.root.backendComputed.driverIdentities.find(
-        (entry) => entry.isPlayer
-      ) ?? null
-    );
-  }
-
-  /** Whether the standings frame carries the player at all, as a stable flag. */
-  get hasPlayerEntry(): boolean {
-    return this.playerEntry !== null;
-  }
-
-  /** The sim's own position, which only refreshes at the start/finish line. */
-  get playerOfficialPosition(): number | null {
-    return this.root.player.lapTiming?.player_car_position ?? null;
-  }
-
-  /**
-   * The on-track order's position, falling back to the official one whenever the
-   * standings frame has no entry for the player yet.
-   */
-  get playerLivePosition(): number | null {
-    return this.playerEntry?.livePosition || this.playerOfficialPosition;
-  }
-
-  /** The field the overall position is counted against. */
-  get overallFieldTotal(): number | null {
-    const entries = this.root.backendComputed.driverIdentities;
-
-    return this.root.session.competingCarCount || entries.length || null;
-  }
-
-  /** How many cars share the player's class. */
-  get playerClassTotal(): number | null {
-    const entry = this.playerEntry;
-
-    if (!entry) {
-      return null;
-    }
-
-    const entries = this.root.backendComputed.driverIdentities;
-
-    return (
-      entries.filter((other) => other.carClassId === entry.carClassId).length ||
-      null
-    );
-  }
-
-  get playerOfficialClassPosition(): number | null {
-    return this.playerEntry?.classPosition || null;
-  }
-
-  get playerLiveClassPosition(): number | null {
-    const entry = this.playerEntry;
-
-    if (!entry) {
-      return null;
-    }
-
-    return entry.liveClassPosition || entry.classPosition || null;
-  }
-
-  /**
-   * Player's overall position for the readouts outside the table. Live follows the
-   * on-track order, official is the sim's own number, which only refreshes at the
-   * start/finish line. Falls back to the official one whenever the standings frame
-   * has no entry for the player yet. Callers pass their own widget's flag — this
-   * readout is not tied to the standings table's own setting.
-   */
-  playerPosition(useLivePositions: boolean): number | null {
-    if (!useLivePositions) {
-      return this.playerOfficialPosition;
-    }
-
-    return this.playerLivePosition;
-  }
-
-  /** More than one car class is entered, so a class position is a different number. */
-  get isMultiClass(): boolean {
-    const entries = this.root.backendComputed.driverIdentities;
-
-    if (entries.length === 0) {
-      return false;
-    }
-
-    const classIds = new Set(entries.map((entry) => entry.carClassId));
-
-    return classIds.size > 1;
-  }
-
-  /**
-   * Player's position and the field it is counted against, for the readouts
-   * outside the table. `byClass` only takes effect in a multiclass field — with a
-   * single class the class position is the overall one anyway. Falls back to the
-   * overall numbers whenever the standings frame has no entry for the player yet.
-   *
-   * Every branch reads a computed that resolves to a primitive, so a caller wakes
-   * when its own number changes rather than on every standings frame.
-   */
-  playerPositionInfo(
-    useLivePositions: boolean,
-    byClass: boolean
-  ): { position: number | null; total: number | null } {
-    if (!byClass || !this.isMultiClass || !this.hasPlayerEntry) {
-      return {
-        position: this.playerPosition(useLivePositions),
-        total: this.overallFieldTotal,
-      };
-    }
-
-    return {
-      position: useLivePositions
-        ? this.playerLiveClassPosition
-        : this.playerOfficialClassPosition,
-      total: this.playerClassTotal,
-    };
-  }
-
-  // Every RendererCore instance (main window, overlay window, each isolated widget
-  // preview) creates its own reaction and timers; without this they outlive the store.
+  // Called when the instance unmounts; the reactions and timers otherwise
+  // outlive it and keep running against telemetry.
   dispose() {
     for (const disposer of this.disposers) {
       disposer();
@@ -436,10 +334,7 @@ export class StandingsWidgetStore {
   private get visibleEntries(): CarIdentity[] {
     const entries = this.root.backendComputed.driverIdentities;
 
-    const settings =
-      this.root.liveWidgets.settingsOfType<StandingsWidgetSettings>(
-        'standings'
-      );
+    const settings = this.settings;
 
     const sessionType = this.root.session.currentSessionType;
 
@@ -581,7 +476,8 @@ export class StandingsWidgetStore {
       }
     }
 
-    const playerClassId = this.playerEntry?.carClassId ?? null;
+    const playerClassId =
+      this.root.playerPosition.playerEntry?.carClassId ?? null;
 
     return Array.from(classMap.entries())
       .sort(([a], [b]) => {
@@ -651,6 +547,17 @@ export class StandingsWidgetStore {
     const clamped = Math.min(this.activeClassIndex, totalClasses - 1);
 
     this.activeClassIndex = clamped === totalClasses - 1 ? 0 : clamped + 1;
+  }
+
+  /** A class hotkey: steps through every class the session has entered. */
+  stepClass(direction: number) {
+    const totalClasses = this.root.backendComputed.carClassCount;
+
+    if (direction < 0) {
+      this.cyclePrev(totalClasses);
+    } else {
+      this.cycleNext(totalClasses);
+    }
   }
 
   setScrollHover(classId: number | null, onClassHeader = false) {
@@ -821,10 +728,7 @@ export class StandingsWidgetStore {
   private armScrollReset() {
     this.clearScrollReset();
 
-    const resetSeconds =
-      this.root.liveWidgets.settingsOfType<StandingsWidgetSettings>(
-        'standings'
-      ).scrollResetSeconds;
+    const resetSeconds = this.settings.scrollResetSeconds;
 
     if (!this.isScrolled || resetSeconds <= 0) {
       return;
@@ -846,3 +750,6 @@ export class StandingsWidgetStore {
     }
   }
 }
+
+export const useStandingsWidgetStore = () =>
+  useWidgetInstanceStore<StandingsWidgetStore>();

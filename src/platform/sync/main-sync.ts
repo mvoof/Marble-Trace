@@ -23,7 +23,6 @@ import {
   emitSteeringLockChanged,
   emitUnitsChanged,
   emitLanguageChanged,
-  emitStandingsClassIndex,
   emitActiveLayoutToOverlays,
   emitSessionLayoutsChanged,
   emitAutoSwitchLayoutsChanged,
@@ -472,12 +471,6 @@ export const initMainSync = async (root: MainRoot) => {
         ...registerBindingReactions(root, onSave),
         ...registerDisplayPreferenceReactions(root, onSave),
         ...registerChatReactions(root, onSave),
-        reaction(
-          () => root.standingsWidget.activeClassIndex,
-          (v) => {
-            void emitStandingsClassIndex(v);
-          }
-        ),
         ...registerPitServiceMirrorReactions(root),
         ...registerPitServiceAutoReactions(root),
       ];

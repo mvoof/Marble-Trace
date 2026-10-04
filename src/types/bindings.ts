@@ -1571,7 +1571,7 @@ export type RelativeFrame = {
  * was.
  */
 export type RemoteControlKind =
-  | 'standings-class-index'
+  | 'standings-class-step'
   | 'standings-scroll'
   | 'stream-chat-scroll'
   | 'track-rotation';

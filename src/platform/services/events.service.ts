@@ -137,11 +137,13 @@ const emitToOverlaysAndRemote = async (
   );
 };
 
-export const emitStandingsClassIndex = (index: number) =>
+// A step rather than an index: the class tab belongs to each standings
+// instance, and only the window it is mounted in holds it.
+export const emitStandingsClassStep = (direction: number) =>
   emitToOverlaysAndRemote(
-    'standings-class-index-changed',
-    'standings-class-index',
-    index
+    'standings-class-step',
+    'standings-class-step',
+    direction
   );
 
 export const emitPitServiceToggle = () =>

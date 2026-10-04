@@ -7,10 +7,8 @@ import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { ClassGroupHeader } from '@ui/widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
 
 import styles from './ClassSwitcher.module.scss';
-import {
-  useAppSettingsStore,
-  useStandingsWidgetStore,
-} from '@store/root-store-context';
+import { useAppSettingsStore } from '@store/root-store-context';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.widget';
 
 const FLASH_DURATION_MS = 300;
 

@@ -10,7 +10,7 @@ import {
 import {
   useCarsStore,
   useSessionStore,
-  useStandingsWidgetStore,
+  usePlayerPositionStore,
 } from '@store/root-store-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 
@@ -20,7 +20,7 @@ import styles from './TimerFooter.module.scss';
 export const TimerFooter = observer(() => {
   const { session, sessionInfo } = useSessionStore();
   const { carIdx, leaderBestLapTime } = useCarsStore();
-  const standingsWidget = useStandingsWidgetStore();
+  const playerPosition = usePlayerPositionStore();
 
   const {
     showLaps,
@@ -56,7 +56,7 @@ export const TimerFooter = observer(() => {
         )
       : null;
 
-  const { position, total: totalDrivers } = standingsWidget.playerPositionInfo(
+  const { position, total: totalDrivers } = playerPosition.playerPositionInfo(
     useLivePositions,
     classPositionInMulticlass
   );
