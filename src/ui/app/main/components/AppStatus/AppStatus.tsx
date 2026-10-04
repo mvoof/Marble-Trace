@@ -8,11 +8,19 @@ export const AppStatus = observer(() => {
   const simStore = useSimStore();
   const { t } = useTranslation('main-app');
 
-  const { status, error, currentSim } = simStore;
+  const { status, error, currentSim, replayTape } = simStore;
 
   const getStatusConfig = () => {
     switch (status) {
       case 'connected':
+        if (replayTape) {
+          return {
+            label: t('appStatus.replaying', { tape: replayTape }),
+            dotClass: styles.connected,
+            textClass: styles.connectedText,
+          };
+        }
+
         return {
           label: t('appStatus.connectedTo', {
             sim: getSimDisplayName(currentSim).toUpperCase(),

@@ -1849,7 +1849,16 @@ export type SimPerfFrame = {
 /**
  * Status payload emitted as `sim://status`.
  */
-export type SimStatus = { status: string; sim: SimType | null };
+export type SimStatus = {
+  status: string;
+  sim: SimType | null;
+  /**
+   * File name of the tape being played instead of the sim. The status
+   * stays `connected` so every gate behaves as it does live; this is what
+   * tells the main window it is not. Only ever set by a `dev` build.
+   */
+  replay: string | null;
+};
 
 /**
  * Which simulator is currently connected.

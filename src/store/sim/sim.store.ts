@@ -80,6 +80,12 @@ export class SimStore {
   isConnected = false;
   status: TelemetryStatus = 'waiting';
   currentSim: SimType | null = null;
+  /**
+   * The tape a `dev` build plays instead of the sim, by file name. The status
+   * still reads `connected` so the app behaves as live; this is what lets the
+   * main window say it is not.
+   */
+  replayTape: string | null = null;
   capabilities: CapabilitiesPayload | null = null;
   error: string | null = null;
   frameCount = 0;
@@ -470,10 +476,13 @@ export class SimStore {
   }
 
   applyRemoteStatus(payload: SimStatus) {
-    runInAction(() => {
-      this.currentSim = payload.sim;
-      this.setStatus(payload.status as TelemetryStatus);
-    });
+    runInAction(() => this.applyStatus(payload));
+  }
+
+  private applyStatus(payload: SimStatus) {
+    this.currentSim = payload.sim;
+    this.replayTape = payload.replay;
+    this.setStatus(payload.status as TelemetryStatus);
   }
 
   applyRemoteDisconnected() {
@@ -492,6 +501,7 @@ export class SimStore {
     } else if (status === 'disconnected') {
       this.isConnected = false;
       this.currentSim = null;
+      this.replayTape = null;
       this.capabilities = null;
       this.resetDataStores();
     }
@@ -502,6 +512,7 @@ export class SimStore {
     this.isConnected = false;
     this.status = 'error';
     this.currentSim = null;
+    this.replayTape = null;
     this.capabilities = null;
   }
 
@@ -509,6 +520,7 @@ export class SimStore {
     this.isConnected = false;
     this.status = 'disconnected';
     this.currentSim = null;
+    this.replayTape = null;
     this.capabilities = null;
     this.resetDataStores();
   }
@@ -548,10 +560,7 @@ export class SimStore {
 
         const payload = event.payload;
         debug.telemetry('status: %o', payload);
-        runInAction(() => {
-          this.currentSim = payload.sim;
-          this.setStatus(payload.status as TelemetryStatus);
-        });
+        runInAction(() => this.applyStatus(payload));
       })
     );
 

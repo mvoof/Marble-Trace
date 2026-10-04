@@ -36,6 +36,8 @@ pub struct ReplaySource {
     started: Option<Instant>,
     /// Tape time the playback starts at; frames before it were skipped.
     offset_ms: u64,
+    /// The tape's file name, shown in the main window in place of the sim's.
+    name: String,
 }
 
 impl ReplaySource {
@@ -50,6 +52,10 @@ impl ReplaySource {
             pending_session: None,
             started: None,
             offset_ms: 0,
+            name: path.file_name().map_or_else(
+                || path.display().to_string(),
+                |name| name.to_string_lossy().into_owned(),
+            ),
         };
 
         source.read_ahead();
@@ -126,6 +132,10 @@ impl TelemetrySource for ReplaySource {
 
     fn session_changed(&mut self) -> bool {
         self.pending_session.is_some()
+    }
+
+    fn replay_name(&self) -> Option<String> {
+        Some(self.name.clone())
     }
 
     fn poll_session(&mut self) -> Option<ParsedSession> {
@@ -399,6 +409,23 @@ mod tests {
 
         assert!(matches!(first, SourceReadResult::Frame(_)));
         assert!(matches!(second, SourceReadResult::NotReady));
+    }
+
+    // The main window shows this in place of the sim's name, so a forgotten
+    // MARBLE_TRACE_REPLAY cannot pass for a live session.
+    #[test]
+    fn a_replay_names_its_tape() {
+        let path = temp_tape("named");
+        record(&path, vec![frame_with_speed(1.0)]);
+
+        let replay = ReplaySource::open(&path, 0).expect("tape replays");
+        let expected = path
+            .file_name()
+            .map(|name| name.to_string_lossy().into_owned());
+
+        std::fs::remove_file(&path).ok();
+
+        assert_eq!(replay.replay_name(), expected);
     }
 
     // A perf run starts mid-tape. The frame it starts on plays at once rather

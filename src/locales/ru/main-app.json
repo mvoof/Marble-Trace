@@ -11,6 +11,7 @@
   },
   "appStatus": {
     "connectedTo": "ПОДКЛЮЧЕНО К {{sim}}",
+    "replaying": "ЗАПИСЬ: {{tape}}",
     "waitingForTelemetry": "ОЖИДАНИЕ ТЕЛЕМЕТРИИ",
     "systemError": "СИСТЕМНАЯ ОШИБКА",
     "waitingForGame": "ОЖИДАНИЕ ЗАПУСКА ИГРЫ"

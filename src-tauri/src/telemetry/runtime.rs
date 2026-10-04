@@ -59,6 +59,7 @@ pub fn spawn_telemetry_thread(
                     &SimStatus {
                         status: "waiting".into(),
                         sim: None,
+                        replay: None,
                     },
                 )
                 .ok();
@@ -155,6 +156,7 @@ fn run_telemetry_loop(
                         &SimStatus {
                             status: "waiting".into(),
                             sim: Some(source.sim_type()),
+                            replay: source.replay_name(),
                         },
                     )
                     .ok();
@@ -180,6 +182,7 @@ fn run_telemetry_loop(
                 &SimStatus {
                     status: "connected".into(),
                     sim: Some(source.sim_type()),
+                    replay: source.replay_name(),
                 },
             )
             .ok();
@@ -205,6 +208,7 @@ fn run_telemetry_loop(
                 &SimStatus {
                     status: "connected".into(),
                     sim: Some(source.sim_type()),
+                    replay: source.replay_name(),
                 },
             )
             .ok();
@@ -325,6 +329,7 @@ fn reset_telemetry_state(
         &SimStatus {
             status: "disconnected".into(),
             sim: None,
+            replay: None,
         },
     )
     .ok();

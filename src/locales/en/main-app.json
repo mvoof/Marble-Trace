@@ -11,6 +11,7 @@
   },
   "appStatus": {
     "connectedTo": "CONNECTED TO {{sim}}",
+    "replaying": "REPLAY: {{tape}}",
     "waitingForTelemetry": "WAITING FOR TELEMETRY",
     "systemError": "SYSTEM ERROR",
     "waitingForGame": "WAITING FOR GAME TO START"

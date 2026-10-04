@@ -73,6 +73,11 @@ pub trait TelemetrySource {
     /// Parse and return updated session data, advancing the internal version counter.
     fn poll_session(&mut self) -> Option<ParsedSession>;
 
+    /// The tape this source plays, when it is a replay rather than a sim.
+    fn replay_name(&self) -> Option<String> {
+        None
+    }
+
     /// The raw session text behind the last `poll_session`, kept for the tape
     /// recorder — which stores what the sim sent, not what we made of it.
     #[cfg(feature = "dev")]
