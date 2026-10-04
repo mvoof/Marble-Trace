@@ -142,21 +142,19 @@ export const WidgetInspector = observer(
                 />
               </SettingRow>
 
-              {liveWidgets.canTakeHotkeys(widget.id) && (
-                <SettingRow
-                  stacked
-                  title={t('layoutEditor.hotkeysActOn')}
-                  desc={t('layoutEditor.hotkeysActOnDesc')}
-                >
-                  <Switch
-                    size="small"
-                    checked={liveWidgets.hotkeysActOnWidget(widget.id)}
-                    onChange={(checked) =>
-                      liveWidgets.setHotkeysActOn(widget.id, checked)
-                    }
-                  />
-                </SettingRow>
-              )}
+              <SettingRow
+                stacked
+                title={t('layoutEditor.hotkeysActOn')}
+                desc={t('layoutEditor.hotkeysActOnDesc')}
+              >
+                <Switch
+                  size="small"
+                  checked={liveWidgets.hotkeysActOnWidget(widget.id)}
+                  onChange={(checked) =>
+                    liveWidgets.setHotkeysActOn(widget.id, checked)
+                  }
+                />
+              </SettingRow>
 
               {moveTargets.length > 0 && (
                 <SettingRow stacked title={t('layoutEditor.moveToMonitor')}>

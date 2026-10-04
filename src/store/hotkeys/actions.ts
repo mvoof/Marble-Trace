@@ -278,9 +278,8 @@ export const widgetVisibilityAction = (widgetId: string): HotkeyAction => ({
   trigger: 'press',
   ignoreLayoutGate: true,
   run: (root) => {
-    // The instances marked for the hotkeys, together. One on a browser screen
-    // is never among them: it is there for an audience that did not press the
-    // key.
+    // The instances marked for the hotkeys, together — a browser screen
+    // included unless it was unmarked.
     root.liveWidgets.toggleVisibilityByHotkey(widgetId);
   },
 });

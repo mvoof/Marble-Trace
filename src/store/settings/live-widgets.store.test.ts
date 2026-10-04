@@ -1328,7 +1328,7 @@ describe('widgets belong to their monitor', () => {
     expect(store.primaryInstanceOf('fuel')!.id).toBe('fuel');
   });
 
-  it('puts every instance on a display under the hotkeys, none on a browser screen', () => {
+  it('puts every instance under the hotkeys by default, a browser screen too', () => {
     const store = setUp();
     const rightId = store.setTypeEnabledOnMonitor('standings', 'RIGHT', true)!;
     const streamId = store.setTypeEnabledOnMonitor(
@@ -1338,15 +1338,29 @@ describe('widgets belong to their monitor', () => {
     )!;
 
     expect(
-      store.hotkeyInstancesOf('standings').map((widget) => widget.id)
-    ).toEqual(['standings', rightId]);
-    expect(store.canTakeHotkeys(streamId)).toBe(false);
-    expect(store.canTakeHotkeys(rightId)).toBe(true);
+      store
+        .hotkeyInstancesOf('standings')
+        .map((widget) => widget.id)
+        .sort()
+    ).toEqual(['standings', rightId, streamId].sort());
+  });
+
+  it('lets a display speak for the widget ahead of a browser screen', () => {
+    const store = setUp();
+    const streamId = store.setTypeEnabledOnMonitor('fuel', 'STREAM', true)!;
+
+    store.setWidgetEnabled('fuel', true);
+
+    expect(store.primaryInstanceOf('fuel')!.id).toBe('fuel');
+
+    store.setWidgetEnabled('fuel', false);
+
+    expect(store.primaryInstanceOf('fuel')!.id).toBe(streamId);
   });
 
   // The visibility hotkey moves the marked instances together: a table on two
-  // displays hides on both, the one on the stream stays where it is.
-  it('hides and shows every marked instance together, the stream untouched', () => {
+  // displays and on the stream hides on all three; an unmarked one stays.
+  it('hides and shows every marked instance together, the stream included', () => {
     const store = setUp();
 
     store.setWidgetEnabled('standings', true);
@@ -1364,12 +1378,16 @@ describe('widgets belong to their monitor', () => {
     expect([isOn('standings'), isOn(rightId), isOn(streamId)]).toEqual([
       false,
       false,
-      true,
+      false,
     ]);
 
     store.toggleVisibilityByHotkey('standings');
 
-    expect([isOn('standings'), isOn(rightId)]).toEqual([true, true]);
+    expect([isOn('standings'), isOn(rightId), isOn(streamId)]).toEqual([
+      true,
+      true,
+      true,
+    ]);
   });
 
   it('leaves an unmarked instance alone', () => {
@@ -1386,6 +1404,31 @@ describe('widgets belong to their monitor', () => {
     expect(store.getWidget(rightId)!.userSettings.enabled).toBe(true);
   });
 
+  it('carries the view the driver switched to onto the stream', () => {
+    const store = setUp();
+    const viewOf = (id: string) =>
+      store.getSettings<StandingsWidgetSettings>(id).viewMode;
+
+    store.setWidgetEnabled('standings', true);
+
+    const streamId = store.setTypeEnabledOnMonitor(
+      'standings',
+      'STREAM',
+      true
+    )!;
+
+    store.updateUserSettings('standings', { viewMode: 'all' });
+    store.updateUserSettings(streamId, { viewMode: 'cycling' });
+
+    store.cycleStandingsViewMode();
+
+    // Advanced from the driver's screen, and the stream brought in line.
+    expect([viewOf('standings'), viewOf(streamId)]).toEqual([
+      'grouped',
+      'grouped',
+    ]);
+  });
+
   it('cycles the view of marked instances only', () => {
     const store = setUp();
     const streamId = store.setTypeEnabledOnMonitor(
@@ -1393,6 +1436,9 @@ describe('widgets belong to their monitor', () => {
       'STREAM',
       true
     )!;
+
+    store.setHotkeysActOn(streamId, false);
+
     const before =
       store.getSettings<StandingsWidgetSettings>('standings').viewMode;
 

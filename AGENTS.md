@@ -763,13 +763,16 @@ other. Always read the widget as `widget.type`, never `widget.id`.
   reactive draw loop, where a hook cannot go — they take `useWidgetInstanceId`
   and read the store themselves.
 - **Hotkeys act on marked instances.** Each instance carries `hotkeys` —
-  absent means the default, which is on for a physical display and never on a
-  browser screen (only shows); read it through `hotkeysActOn`
+  absent means the default, which is on — a browser screen included, so a
+  stream follows what the driver switches; read it through `hotkeysActOn`
   (`store/settings/virtual-desktop.ts`) or `hotkeyInstancesOf(type)`. Every
   widget action works on that set: `widget:<id>:toggle-visibility` hides all of
   them while any is on screen and shows them all otherwise
-  (`toggleVisibilityByHotkey`), `standings:cycle-view` advances each. A table
-  on two displays is switched on one or both, as marked. `isWidgetOnScreen`,
+  (`toggleVisibilityByHotkey`); a cycling action (`standings:cycle-view-mode`,
+  the delta reference) reads the next value off one instance and writes it to
+  all, so a drifted copy is brought back in line. A table on two displays is
+  switched on one or both, as marked. The primary instance prefers a physical
+  display over a browser screen. `isWidgetOnScreen`,
   the dispatch gate, is true while any instance is on screen.
 - **A widget store reads `settingsOfType(type)`**, never `getSettings(type)`:
   one store per app cannot be per instance, so it follows the one that speaks

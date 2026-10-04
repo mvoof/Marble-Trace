@@ -1054,8 +1054,8 @@ export type WidgetDefaultConfig = WidgetMeta & {
   monitor?: string;
   /**
    * Whether the widget's hotkeys act on this instance. Absent means the
-   * default: on for an instance on a physical display, and never on a browser
-   * screen, which only shows. Read it through `hotkeysActOn`.
+   * default, which is on — for a browser screen too. Read it through
+   * `hotkeysActOn`.
    */
   hotkeys?: boolean;
   userSettings: WidgetUserSettings;

@@ -138,7 +138,7 @@
     "resetSettingsOk": "Reset",
     "reset": "Reset",
     "hotkeysActOn": "Hotkeys act on this widget",
-    "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen only shows."
+    "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen follows them too, so a stream shows what you switched to."
   },
   "layoutList": {
     "moduleLabel": "Layouts",

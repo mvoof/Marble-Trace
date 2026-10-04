@@ -34,18 +34,11 @@ export const defaultMonitorOf = (layout: {
 
 /**
  * Whether a widget's hotkeys act on this instance: what the instance says, on
- * by default — but never on a browser screen, which only shows.
+ * by default — on a browser screen too, so a stream shows what the driver
+ * switched to.
  */
-export const hotkeysActOn = (
-  widget: WidgetDefaultConfig,
-  monitors: LayoutMonitor[]
-): boolean => {
-  const monitor = monitorForWidget(widget, monitors);
-
-  if (monitor?.kind === 'remote') return false;
-
-  return widget.hotkeys ?? true;
-};
+export const hotkeysActOn = (widget: WidgetDefaultConfig): boolean =>
+  widget.hotkeys ?? true;
 
 /**
  * Where a widget's top-left corner may go so the whole widget stays on its

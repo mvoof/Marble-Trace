@@ -328,14 +328,18 @@ export class LiveWidgetsStore implements WidgetMap {
 
   cycleStandingsViewMode() {
     const order: StandingsViewMode[] = ['all', 'grouped', 'cycling'];
+    const leader = this.hotkeyLeaderOf('standings');
 
-    // Every instance under the hotkeys, each advanced from where it stands. A
-    // browser screen only shows, so one there keeps the mode it was given.
+    if (!leader) return;
+
+    const current = this.getSettings<StandingsWidgetSettings>(leader.id);
+    const viewMode =
+      order[(order.indexOf(current.viewMode) + 1) % order.length];
+
+    // Every instance under the hotkeys lands on the same mode, so a stream
+    // that had drifted from the driver's screen is brought back in line.
     for (const widget of this.hotkeyInstancesOf('standings')) {
-      const settings = this.getSettings<StandingsWidgetSettings>(widget.id);
-      const nextIdx = (order.indexOf(settings.viewMode) + 1) % order.length;
-
-      this.updateUserSettings(widget.id, { viewMode: order[nextIdx] });
+      this.updateUserSettings(widget.id, { viewMode });
     }
   }
 
@@ -348,13 +352,17 @@ export class LiveWidgetsStore implements WidgetMap {
       'session_last',
     ];
 
-    // Every instance under the hotkeys — same reasoning as the standings view
-    // mode above.
-    for (const widget of this.hotkeyInstancesOf('delta')) {
-      const settings = this.getSettings<DeltaWidgetSettings>(widget.id);
-      const nextIdx = (order.indexOf(settings.reference) + 1) % order.length;
+    const leader = this.hotkeyLeaderOf('delta');
 
-      this.updateUserSettings(widget.id, { reference: order[nextIdx] });
+    if (!leader) return;
+
+    const current = this.getSettings<DeltaWidgetSettings>(leader.id);
+    const reference =
+      order[(order.indexOf(current.reference) + 1) % order.length];
+
+    // Same reasoning as the standings view mode above.
+    for (const widget of this.hotkeyInstancesOf('delta')) {
+      this.updateUserSettings(widget.id, { reference });
     }
   }
 
@@ -690,40 +698,35 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
-   * The instances of a widget its hotkeys act on: the ones marked for it, and
-   * never one on a browser screen (`hotkeysActOn`).
+   * The instances of a widget its hotkeys act on: the ones marked for it
+   * (`hotkeysActOn`), browser screens included.
    */
   hotkeyInstancesOf(type: string): WidgetDefaultConfig[] {
-    const monitors = this.editingLayout?.monitors ?? [];
-
-    return this.widgetsOfType(type).filter((widget) =>
-      hotkeysActOn(widget, monitors)
-    );
+    return this.widgetsOfType(type).filter(hotkeysActOn);
   }
 
-  /** Whether this instance can be put under the hotkeys at all — not on a browser screen. */
-  canTakeHotkeys(id: string): boolean {
-    const widget = this.getWidget(id);
-    const monitor = widget
-      ? monitorForWidget(widget, this.editingLayout?.monitors ?? [])
-      : undefined;
+  /**
+   * The instance a cycling hotkey reads the current value from before writing
+   * the next one to every marked instance: the primary one when it is marked,
+   * else the first marked.
+   */
+  private hotkeyLeaderOf(type: string): WidgetDefaultConfig | undefined {
+    const marked = this.hotkeyInstancesOf(type);
+    const primary = this.primaryInstanceOf(type);
 
-    return monitor !== undefined && monitor.kind !== 'remote';
+    return primary && marked.includes(primary) ? primary : marked[0];
   }
 
   /** Whether the widget's hotkeys act on this instance. */
   hotkeysActOnWidget(id: string): boolean {
     const widget = this.getWidget(id);
 
-    return widget
-      ? hotkeysActOn(widget, this.editingLayout?.monitors ?? [])
-      : false;
+    return widget ? hotkeysActOn(widget) : false;
   }
 
   /**
    * Marks an instance for the widget's hotkeys, or unmarks it. Stored only
-   * where it departs from the default, so a widget moved between a display and
-   * a browser screen follows the default of where it stands.
+   * where it departs from the default.
    */
   setHotkeysActOn(id: string, actsOn: boolean) {
     const widget = this.getWidget(id);
@@ -766,10 +769,19 @@ export class LiveWidgetsStore implements WidgetMap {
    *
    * The one the driver works with wins — switched on and under the widget's
    * hotkeys — then any switched-on instance, then any under the hotkeys, then
-   * the first.
+   * the first. Within each, a physical display goes ahead of a browser screen:
+   * the driver's own screen speaks for the widget, not the stream copying it.
    */
   primaryInstanceOf(type: string): WidgetDefaultConfig | undefined {
-    const instances = this.widgetsOfType(type);
+    const monitors = this.editingLayout?.monitors ?? [];
+    const isOnBrowserScreen = (widget: WidgetDefaultConfig) =>
+      monitorForWidget(widget, monitors)?.kind === 'remote';
+    const instances = [
+      ...this.widgetsOfType(type).filter(
+        (widget) => !isOnBrowserScreen(widget)
+      ),
+      ...this.widgetsOfType(type).filter(isOnBrowserScreen),
+    ];
     const hotkeyed = new Set(this.hotkeyInstancesOf(type));
 
     return (

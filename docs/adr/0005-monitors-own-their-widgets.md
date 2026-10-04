@@ -18,7 +18,8 @@ field. Ownership is that field and nothing else — never the widget's position.
   the widget on that screen and is switched off, not deleted; a further one on
   the same monitor is a copy and can be deleted.
 - A widget's hotkeys act on the instances **marked** for them (`hotkeys`): on
-  by default on a physical display, never on a browser screen. A table on two
+  by default on every screen, a browser screen included (it was first kept
+  off one; a stream is meant to show what the driver switched to). A table on two
   displays is switched on one or both, as marked. Where one answer is needed —
   a widget store, a value the backend keeps once — the **primary instance**
   answers: a switched-on instance under the hotkeys. (A first cut named a

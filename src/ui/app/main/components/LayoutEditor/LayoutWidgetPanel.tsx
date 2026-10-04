@@ -35,7 +35,7 @@ interface SelectionProps {
 
 /**
  * Whether the widget's hotkeys act on this instance, and a click to change
- * it. Not offered on a browser screen, which only shows.
+ * it.
  */
 const HotkeyToggle = observer(({ widgetId }: { widgetId: string }) => {
   const liveWidgets = useLiveWidgetsStore();
@@ -83,7 +83,6 @@ const InstanceRow = observer(
     ordinal,
     total,
     available,
-    isBrowserScreen,
     selectedWidgetId,
     onSelectWidget,
   }: SelectionProps & {
@@ -91,7 +90,6 @@ const InstanceRow = observer(
     ordinal: number;
     total: number;
     available: boolean;
-    isBrowserScreen: boolean;
   }) => {
     const liveWidgets = useLiveWidgetsStore();
     const { t } = useTranslation('main-app');
@@ -128,7 +126,7 @@ const InstanceRow = observer(
           </Tooltip>
         </button>
 
-        {!isBrowserScreen && <HotkeyToggle widgetId={widget.id} />}
+        <HotkeyToggle widgetId={widget.id} />
 
         <Popconfirm
           title={t('layoutWidgetPanel.deleteCopyConfirm')}
@@ -166,13 +164,11 @@ const WidgetTypeRow = observer(
   ({
     row,
     monitorName,
-    isBrowserScreen,
     selectedWidgetId,
     onSelectWidget,
   }: SelectionProps & {
     row: MonitorWidgetRow;
     monitorName: string;
-    isBrowserScreen: boolean;
   }) => {
     const liveWidgets = useLiveWidgetsStore();
     const { instances, available } = row;
@@ -217,9 +213,7 @@ const WidgetTypeRow = observer(
             {row.label}
           </button>
 
-          {first !== undefined && !isBrowserScreen && (
-            <HotkeyToggle widgetId={first.id} />
-          )}
+          {first !== undefined && <HotkeyToggle widgetId={first.id} />}
         </div>
 
         {instances.length > 1 &&
@@ -232,7 +226,6 @@ const WidgetTypeRow = observer(
                 ordinal={index + 2}
                 total={instances.length}
                 available={available}
-                isBrowserScreen={isBrowserScreen}
                 selectedWidgetId={selectedWidgetId}
                 onSelectWidget={onSelectWidget}
               />
@@ -302,7 +295,6 @@ const ScreenGroup = observer(
                 key={row.type}
                 row={row}
                 monitorName={monitor.name}
-                isBrowserScreen={isRemoteMonitor(monitor)}
                 {...selection}
               />
             ))}

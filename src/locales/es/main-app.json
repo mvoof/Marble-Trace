@@ -138,7 +138,7 @@
     "resetSettingsOk": "Restablecer",
     "reset": "Restablecer",
     "hotkeysActOn": "Los atajos actúan sobre este widget",
-    "hotkeysActOnDesc": "Sus atajos muestran, ocultan y cambian esta instancia. Si hay varias marcadas, cambian juntas. Una pantalla para navegador solo muestra."
+    "hotkeysActOnDesc": "Sus atajos muestran, ocultan y cambian esta instancia. Si hay varias marcadas, cambian juntas. Una pantalla para navegador también los sigue, así el stream muestra lo que cambiaste."
   },
   "layoutList": {
     "moduleLabel": "Diseños",
