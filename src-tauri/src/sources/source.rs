@@ -1,6 +1,6 @@
 //! Sim-agnostic telemetry source trait.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::enums::SimType;
@@ -21,7 +21,7 @@ use crate::telemetry::capabilities::Capabilities;
 /// the sim actually gave us, which is the only useful thing for an inspector to
 /// show.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SourceFrame {
     pub car_dynamics: CarDynamicsFrame,
@@ -72,4 +72,9 @@ pub trait TelemetrySource {
 
     /// Parse and return updated session data, advancing the internal version counter.
     fn poll_session(&mut self) -> Option<ParsedSession>;
+
+    /// The raw session text behind the last `poll_session`, kept for the tape
+    /// recorder — which stores what the sim sent, not what we made of it.
+    #[cfg(feature = "dev")]
+    fn last_session_yaml(&self) -> Option<&str>;
 }

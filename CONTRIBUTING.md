@@ -89,6 +89,57 @@ Before creating an issue please ensure that the problem is not [already reported
 
 7. **Create a Pull Request**
 
+## Environment variables
+
+None of these is needed to build or run the app. They switch on diagnostics,
+recording and generation steps you use while developing.
+
+On PowerShell set a variable for one run with `$env:NAME = 'value'; npm run tauri:dev`
+(it stays set for the rest of that terminal; `Remove-Item Env:NAME` clears it).
+In Git Bash, prefix the command: `NAME=value npm run tauri:dev`.
+
+### Runtime — read when the app starts
+
+| Variable              | Build      | Effect                                                                                                                                                                                                                                                                                |
+| --------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RUST_LOG`            | any        | `tracing` filter for the backend console and the log file, replacing the default (`marble_trace_lib=info` for the file). `RUST_LOG=marble_trace_lib=debug` gives verbose backend logs; `marble_trace_lib::telemetry=debug` narrows them to one module.                                |
+| `MARBLE_TRACE_RECORD` | `dev` only | A directory. Every live sim connection is recorded into it as its own tape, `session-<unix seconds>.tape.jsonl.gz`: each tick's adapted frame plus the raw session YAML. The directory is created if missing. Writing happens on a thread of its own, off the telemetry loop.         |
+| `MARBLE_TRACE_REPLAY` | `dev` only | Path to a tape. The app plays it at the pace it was recorded **instead of** connecting to the sim, and loops it: at the end of the tape the source disconnects, the runtime resets and reconnects, and the tape starts over. A tape that cannot be opened falls back to the live sim. |
+
+`dev` is the cargo feature `npm run tauri:dev` and `npm run tauri:build:dev`
+enable; a release build ignores both tape variables. Use **absolute paths** for
+them — `tauri dev` runs the backend with `src-tauri/` as its working directory,
+so a relative path lands there.
+
+```powershell
+# record a session: start iRacing, then
+$env:MARBLE_TRACE_RECORD = 'D:\tapes'; npm run tauri:dev
+
+# replay it without iRacing
+$env:MARBLE_TRACE_REPLAY = 'D:\tapes\session-1790000000.tape.jsonl.gz'; npm run tauri:dev
+```
+
+Tapes are for performance measurement only — widget previews and Storybook run
+on mock builders, never on a recording (ADR-0004). Keep large tapes out of git.
+
+### Build time — baked into the executable
+
+Read by `src-tauri/build.rs` from the environment or from `src-tauri/.env`
+(gitignored). A missing value still builds.
+
+| Variable           | Effect                                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `APTABASE_KEY`     | Analytics key. Unset, the analytics plugin gets an empty key.                                                 |
+| `TWITCH_CLIENT_ID` | Twitch application id for stream chat. Unset, Twitch sign-in needs a client id entered in the app's settings. |
+
+### Tooling
+
+| Variable          | Used by                     | Effect                                                                                                                                                                                                                                           |
+| ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `UPDATE_BINDINGS` | `cargo test --features dev` | Lets the test `regenerates_the_contract_on_demand` rewrite `src/types/bindings.ts` and the generated constants; without it the test does nothing: `UPDATE_BINDINGS=1 cargo test --features dev regenerates_the_contract`, then `npm run format`. |
+| `STORYBOOK_URL`   | `npm run capture:widgets`   | Storybook to take widget pictures from. Default `http://localhost:6006`.                                                                                                                                                                         |
+| `TAURI_DEV_HOST`  | `vite.config.ts`            | Host the dev server binds and serves HMR on, for running the frontend on another device. Set by the Tauri CLI when needed.                                                                                                                       |
+
 ## Commit messages
 
 Commit messages should follow the [Conventional Commits](https://conventionalcommits.org) specification:

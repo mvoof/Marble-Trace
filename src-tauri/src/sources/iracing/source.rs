@@ -16,6 +16,8 @@ pub struct IracingSource {
     /// What this car declares. Read once — the sim fixes the variable list for
     /// the session when the connection opens.
     declared: DeclaredVars,
+    #[cfg(feature = "dev")]
+    last_session_yaml: Option<String>,
 }
 
 impl IracingSource {
@@ -71,6 +73,8 @@ impl IracingSource {
                     connection: conn,
                     last_session_version: -1,
                     declared,
+                    #[cfg(feature = "dev")]
+                    last_session_yaml: None,
                 })
             }
             Ok(_) => {
@@ -145,6 +149,16 @@ impl TelemetrySource for IracingSource {
 
         self.last_session_version = current_version;
 
+        #[cfg(feature = "dev")]
+        {
+            self.last_session_yaml = Some(raw_yaml);
+        }
+
         result
+    }
+
+    #[cfg(feature = "dev")]
+    fn last_session_yaml(&self) -> Option<&str> {
+        self.last_session_yaml.as_deref()
     }
 }
