@@ -1,8 +1,5 @@
-import type {
-  ChassisFrame,
-  DriverEntry,
-  PitServiceFrame,
-} from '@/types/bindings';
+import type { ChassisFrame, PitServiceFrame } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import type { UnitSystem } from '@/types';
 import type { CornerPosition } from '@utils/pit-tires';
 import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';

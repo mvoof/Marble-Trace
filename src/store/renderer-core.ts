@@ -101,7 +101,7 @@ export class RendererCore {
     this.simPerf = new SimPerfStore();
     this.referenceLap = new ReferenceLapStore();
     this.chat = new ChatStore();
-    this.backendComputed = new BackendComputedStore();
+    this.backendComputed = new BackendComputedStore(this.session);
     this.widgetDefaults = new WidgetDefaultsStore(this);
     this.settingsMutations = new SettingsMutationLog();
     // Built in dependency order, so neither needs a deferred reference to the

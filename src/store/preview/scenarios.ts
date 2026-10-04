@@ -18,9 +18,8 @@ import {
   mockPitTarget,
 } from './mocks/pit';
 import { mockFuel } from './mocks/fuel';
-import type { MockFieldOptions } from './mocks/field';
+import { respaceField } from './field-seed';
 import {
-  mockField,
   mockIncidents,
   mockPaceCarEntry,
   PACE_CAR_IDX,
@@ -190,25 +189,9 @@ const applyCoachReference = (
   });
 };
 
-// The standings and the relative draw the same field frames, so a field
-// scenario always states both — a driver sizing one and then the other must be
-// looking at the same grid.
-const applyField = (store: RendererCore, options: MockFieldOptions) => {
-  const standings = store.backendComputed.driverEntries;
-
-  if (!standings) {
-    return;
-  }
-
-  const frames = mockField(standings.entries, options);
-
-  store.backendComputed.updateDriverEntries(frames.driverEntries);
-  store.backendComputed.updateRelative(frames.relative);
-};
-
 // The incident counter is the player's own, so a scenario states it on their
-// entry and on the session that caps it and hands out penalties — the halves of
-// what the badges print, and of whether they are alarmed.
+// roster entry and on the session that caps it and hands out penalties — the
+// halves of what the badges print, and of whether they are alarmed.
 const applyIncidents = (
   store: RendererCore,
   {
@@ -223,21 +206,16 @@ const applyIncidents = (
     incidentPenaltySubsequent: number | null;
   }
 ) => {
-  const standings = store.backendComputed.driverEntries;
   const sessionInfo = store.session.sessionInfo;
-
-  if (standings) {
-    store.backendComputed.updateDriverEntries({
-      ...standings,
-      entries: standings.entries.map((entry) =>
-        entry.isPlayer ? { ...entry, incidents } : entry
-      ),
-    });
-  }
 
   if (sessionInfo) {
     store.session.updateSessionInfo({
       ...sessionInfo,
+      cars: sessionInfo.cars.map((car) =>
+        car.carIdx === sessionInfo.playerCarIdx
+          ? { ...car, incidentCount: incidents }
+          : car
+      ),
       incidentLimit,
       incidentPenaltyInitial,
       incidentPenaltySubsequent,
@@ -255,7 +233,7 @@ const PACE_CAR_LAP_PCT = 0.35;
 const applyPaceCar = (store: RendererCore) => {
   const sessionInfo = store.session.sessionInfo;
   const positions = store.cars.carPositions;
-  const player = store.backendComputed.driverEntries?.entries.find(
+  const player = store.backendComputed.fieldEntries.find(
     (entry) => entry.isPlayer
   );
 
@@ -652,7 +630,7 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       // three-class grid, the longest names a driver can carry, cars sitting in
       // their boxes — the snapshot already holds, so the baseline shows it and
       // no scenario repeats it.
-      applyField(store, { gapS: 0.4 });
+      respaceField(store, { gapS: 0.4 });
     },
   },
   {
@@ -1083,7 +1061,7 @@ const SESSION_SCENARIOS: PreviewScenario[] = [
         { session_time_remain: 2384.6, session_time: 615.4 },
         { sessionLaps: 'unlimited' }
       );
-      applyField(store, { gapS: 1.6 });
+      respaceField(store, { gapS: 1.6 });
       applyDelta(store, -0.142);
     },
   },
@@ -1097,7 +1075,7 @@ const SESSION_SCENARIOS: PreviewScenario[] = [
       // The field nose to tail and cars on both sides at once: the moment every
       // widget that reads other cars is at its busiest, which is the one a
       // driver wants the whole canvas measured against.
-      applyField(store, { gapS: 0.4 });
+      respaceField(store, { gapS: 0.4 });
       applyTraffic(store, [
         { carIdx: 7, longitudinalDist: 0.9, side: 'left' },
         { carIdx: 3, longitudinalDist: -0.6, side: 'right' },
@@ -1116,7 +1094,7 @@ const SESSION_SCENARIOS: PreviewScenario[] = [
       applyFlags(store, { yellow: true, caution: true, cautionWaving: true });
       // Behind the pace car: the field is bunched and the whole canvas is being
       // read at a speed a driver actually has time to read it at.
-      applyField(store, { gapS: 0.8 });
+      respaceField(store, { gapS: 0.8 });
       applyDynamics(store, {
         speed: CAUTION_SPEED_KMH / 3.6,
         rpm: 3400,
@@ -1157,7 +1135,7 @@ const SESSION_SCENARIOS: PreviewScenario[] = [
       applyWeather(store, 'wet');
       // Wet running spreads the field out and slows the lap, so the gaps are
       // stated wider than the green moment's rather than left at its numbers.
-      applyField(store, { gapS: 2.4, lapTimeS: WET_LAP_TIME_S });
+      respaceField(store, { gapS: 2.4, lapTimeS: WET_LAP_TIME_S });
       applyDelta(store, 0.734);
     },
   },
@@ -1179,7 +1157,7 @@ const SESSION_SCENARIOS: PreviewScenario[] = [
         },
         { sessionLaps: 'unlimited' }
       );
-      applyField(store, { gapS: 1.1 });
+      respaceField(store, { gapS: 1.1 });
     },
   },
 ];

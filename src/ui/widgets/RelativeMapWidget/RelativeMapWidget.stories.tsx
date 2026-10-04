@@ -2,11 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
 import type { RendererCore } from '@store/renderer-core';
-import {
-  PACE_CAR_IDX,
-  mockField,
-  mockPaceCarEntry,
-} from '@store/preview/mocks/field';
+import { PACE_CAR_IDX, mockPaceCarEntry } from '@store/preview/mocks/field';
+import { respaceField } from '@store/preview/field-seed';
 import { RelativeMapWidget } from './RelativeMapWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
@@ -20,19 +17,13 @@ const TRACK_SURFACE_ON_TRACK = 3;
 // spread over the whole lap rather than packed into the seconds around the
 // player: a gap of a lap divided by the field is one car every equal step.
 const spreadOverLap = (store: RendererCore) => {
-  const base = store.backendComputed.driverEntries;
+  const carCount = store.backendComputed.fieldEntries.length;
 
-  if (!base || base.entries.length === 0) {
+  if (carCount === 0) {
     return;
   }
 
-  const { driverEntries, relative } = mockField(base.entries, {
-    gapS: LAP_TIME_S / base.entries.length,
-    lapTimeS: LAP_TIME_S,
-  });
-
-  store.backendComputed.updateDriverEntries(driverEntries);
-  store.backendComputed.updateRelative(relative);
+  respaceField(store, { gapS: LAP_TIME_S / carCount, lapTimeS: LAP_TIME_S });
 };
 
 // A safety car reaches the map through the session roster and the per-car

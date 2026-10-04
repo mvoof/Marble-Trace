@@ -338,4 +338,11 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn a_late_screen_gets_the_session_the_driver_list_joins_on() {
+        // `DriverEntry` carries no name, number or class — a browser that
+        // connects mid-session draws a field of blanks without the snapshot.
+        assert!(RemoteStreamKind::Session.replayed());
+    }
 }

@@ -1,5 +1,5 @@
 import { MOVING_CAR_FIELDS, type CarIdentity } from '@/types/car-identity';
-import type { DriverEntry } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 
 /**
  * Strips the four per-tick numbers off an entry, leaving what a widget draws.

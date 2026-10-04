@@ -1,17 +1,16 @@
 import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
 import type {
   ChassisFrame,
-  DriverEntriesFrame,
   FuelComputedFrame,
   PitServiceFrame,
   ProximityFrame,
-  RelativeFrame,
 } from '@/types/bindings';
 import { action } from 'mobx';
 import { TrackSurface } from '@/types';
 import type { RendererCore } from '@store/renderer-core';
 import { computeDriverEntries } from './mocks/driver-entries';
 import { mockCarPositions } from './mocks/field';
+import { seedField } from './field-seed';
 import { mockLapDelta, mockLapLog, mockLapTiming } from './mocks/delta';
 import { mockPitService } from './mocks/pit';
 import { sampleTrack, SAMPLE_TRACK_ID } from './sample-track';
@@ -162,15 +161,7 @@ export const seedSampleTelemetry = action((store: RendererCore) => {
       playerEntry.trackSurface = TrackSurface.OnTrack;
     }
 
-    store.backendComputed.updateDriverEntries({
-      entries,
-      playerCarIdx,
-    } as DriverEntriesFrame);
-
-    store.backendComputed.updateRelative({
-      entries,
-      playerCarIdx,
-    } as RelativeFrame);
+    seedField(store, { entries, relativeEntries: entries, playerCarIdx });
 
     // The map and the pace-car store read the positions frame rather than the
     // driver list, so the same field is handed to them in the shape they read.

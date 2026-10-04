@@ -12,27 +12,24 @@ use crate::model::enums::{PitState, SessionState, TrackSurface};
 use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot, SessionType};
 use crate::utils::lock_or_recover;
 
-const NO_CLASS_LABEL: &str = "No Class";
 const FALLBACK_SORT_POSITION: i32 = 999;
 const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
 const IR_CHANGE_OFFSET: f64 = 100.0;
 
+/// One car's standing at this tick. Only what moves during a session travels
+/// here: who the car is — driver, number, class, car, licence, rating — is the
+/// same for the whole session and reaches the frontend once, in
+/// `SessionSnapshot.cars`, which joins it back on by `car_idx`.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DriverEntry {
     pub car_idx: i32,
-    pub user_name: String,
-    pub car_number: String,
+    /// Copied from the session for the processors that rank and score by class;
+    /// never sent.
+    #[serde(skip)]
     pub car_class_id: i32,
-    pub car_class_short_name: String,
-    pub car_class_color: String,
-    pub car_screen_name: String,
-    pub car_screen_name_short: String,
-    /// iRacing's `FlairID` — the country flag on the driver's profile, `0` when unset.
-    pub flair_id: i32,
-    /// The sim drives this car. AI entries never carry a flair.
-    pub is_ai: bool,
+    /// Live, not static: the compound the car is on now, which a pit stop changes.
     pub tire_compound: String,
     pub position: i32,
     pub class_position: i32,
@@ -62,10 +59,9 @@ pub struct DriverEntry {
     pub f2_time: f32,
     pub est_time: f32,
     pub track_surface: TrackSurface,
+    /// Copied from the session for the iRating estimate; never sent.
+    #[serde(skip)]
     pub i_rating: i32,
-    pub lic_string: String,
-    pub lic_color: String,
-    pub incidents: i32,
     pub is_player: bool,
     pub on_pit_road: bool,
     pub estimated_ir_delta_live: Option<i32>,
@@ -262,27 +258,9 @@ pub fn compute(
                 .filter(|&pos| pos > 0);
             let start_class = start_slot.map(|(_, class)| class).filter(|&pos| pos > 0);
 
-            let car_screen_name_short = driver.car_screen_name_short.clone();
-
-            let sim_class_short_name = driver.car_class_short_name.trim();
-
-            let car_class_short_name = if sim_class_short_name.is_empty() {
-                NO_CLASS_LABEL.to_string()
-            } else {
-                sim_class_short_name.to_string()
-            };
-
             DriverEntry {
                 car_idx: driver.car_idx,
-                user_name: driver.user_name.clone(),
-                car_number: driver.car_number.clone(),
                 car_class_id: driver.car_class_id,
-                car_class_short_name,
-                car_class_color: driver.car_class_color.clone(),
-                car_screen_name: driver.car_screen_name.clone(),
-                car_screen_name_short,
-                flair_id: driver.flair_id,
-                is_ai: driver.is_ai,
                 tire_compound,
                 position: car_idx
                     .car_idx_position
@@ -344,17 +322,6 @@ pub fn compute(
                     .copied()
                     .unwrap_or(TrackSurface::NotInWorld),
                 i_rating: driver.i_rating,
-                lic_string: if driver.lic_string.is_empty() {
-                    "R 0.00".to_string()
-                } else {
-                    driver.lic_string.clone()
-                },
-                lic_color: if driver.lic_color.is_empty() {
-                    "000000".to_string()
-                } else {
-                    driver.lic_color.clone()
-                },
-                incidents: driver.incident_count,
                 is_player: driver.car_idx == player_car_idx,
                 on_pit_road: car_idx
                     .car_idx_on_pit_road
@@ -1099,7 +1066,6 @@ pub(crate) mod tests {
             current_session_num: 0,
             cars: vec![CarEntry {
                 car_idx: 0,
-                user_name: "Driver".to_string(),
                 ..Default::default()
             }],
             sessions: vec![SessionEntry {
@@ -1116,7 +1082,6 @@ pub(crate) mod tests {
             current_session_num: 0,
             cars: vec![CarEntry {
                 car_idx: 0,
-                user_name: "Driver".to_string(),
                 ..Default::default()
             }],
             sessions: vec![SessionEntry {
@@ -1132,7 +1097,6 @@ pub(crate) mod tests {
 
         session.cars.push(CarEntry {
             car_idx: 1,
-            user_name: "Rival".to_string(),
             ..Default::default()
         });
 
@@ -2062,15 +2026,7 @@ pub(crate) mod tests {
     ) -> DriverEntry {
         DriverEntry {
             car_idx,
-            user_name: String::new(),
-            car_number: String::new(),
             car_class_id: 0,
-            car_class_short_name: String::new(),
-            car_class_color: String::new(),
-            car_screen_name: String::new(),
-            car_screen_name_short: String::new(),
-            flair_id: 0,
-            is_ai: false,
             tire_compound: String::new(),
             position,
             class_position: position,
@@ -2087,9 +2043,6 @@ pub(crate) mod tests {
             est_time: 0.0,
             track_surface,
             i_rating: 0,
-            lic_string: String::new(),
-            lic_color: String::new(),
-            incidents: 0,
             is_player: false,
             on_pit_road: false,
             estimated_ir_delta_live: None,
@@ -2120,6 +2073,21 @@ pub(crate) mod tests {
         entry.i_rating = i_rating;
 
         entry
+    }
+
+    #[test]
+    fn test_static_car_fields_stay_off_the_wire() {
+        // The frontend joins these on from `SessionSnapshot.cars`; sending them
+        // again would put them back on every 10 Hz tick.
+        let mut entry = make_live_entry(3, 1, 0, 0.5, TrackSurface::OnTrack);
+        entry.car_class_id = 4029;
+        entry.i_rating = 2500;
+
+        let json = serde_json::to_value(&entry).unwrap();
+
+        assert!(json.get("carIdx").is_some());
+        assert!(json.get("carClassId").is_none());
+        assert!(json.get("iRating").is_none());
     }
 
     #[test]

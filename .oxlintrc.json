@@ -326,6 +326,10 @@
           {
             "property": "driverEntries",
             "message": "Heavy per-car frame (10 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+          },
+          {
+            "property": "fieldEntries",
+            "message": "Heavy per-car frame (10 Hz), joined with the session roster — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
           }
         ]
       }

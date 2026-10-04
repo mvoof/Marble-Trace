@@ -1,4 +1,4 @@
-import type { DriverEntry } from './bindings';
+import type { DriverEntry } from './driver-entry';
 
 /**
  * The fields of a `DriverEntry` that move on every telemetry tick. Everything

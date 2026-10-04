@@ -1,5 +1,6 @@
 import { parseClassColor } from '@utils/colors';
-import type { CarEntry, CarIdxFrame, DriverEntry } from '@/types/bindings';
+import type { CarEntry, CarIdxFrame } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import type { CarIdentity } from '@/types/car-identity';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import type { PaceCarPitPhase } from '@store/widgets/pace-car.widget';

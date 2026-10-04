@@ -6,8 +6,8 @@ import type { MockFieldRows } from '@store/preview/mocks/field';
 import {
   MOCK_DRIVER_FLAG_ROWS,
   MOCK_PIT_ROWS,
-  mockField,
 } from '@store/preview/mocks/field';
+import { respaceField } from '@store/preview/field-seed';
 import { StandingsWidget } from './StandingsWidget';
 import {
   defineWidgetStories,
@@ -39,8 +39,6 @@ const meta: Meta<StoryArgs> = {
     size: { width: 796, height: 500 },
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
-      const base = store.backendComputed.driverEntries;
-
       // A scenario has already spaced the field the way it means to show it, so
       // only a story that states a spacing of its own re-spaces it.
       const respaces =
@@ -48,14 +46,11 @@ const meta: Meta<StoryArgs> = {
         args.gapS !== undefined ||
         args.rows !== undefined;
 
-      if (base && respaces) {
-        const { driverEntries, relative } = mockField(base.entries, {
+      if (respaces) {
+        respaceField(store, {
           gapS: args.gapS ?? DEFAULT_GAP_S,
           rows: args.rows,
         });
-
-        store.backendComputed.updateDriverEntries(driverEntries);
-        store.backendComputed.updateRelative(relative);
       }
 
       if (args.settings) {

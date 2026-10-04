@@ -1,10 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { BackendComputedStore } from './computed.store';
+import { SessionStore } from './session.store';
 import type {
+  CarEntry,
   DriverEntriesFrame,
   DriverEntry,
   LapLogFrame,
+  SessionSnapshot,
 } from '@/types/bindings';
 
 const makeFrame = (
@@ -19,7 +22,7 @@ describe('BackendComputedStore lap log buffer', () => {
   let store: BackendComputedStore;
 
   beforeEach(() => {
-    store = new BackendComputedStore();
+    store = new BackendComputedStore(new SessionStore());
   });
 
   it('starts empty', () => {
@@ -87,19 +90,33 @@ describe('BackendComputedStore lap log buffer', () => {
   });
 });
 
-const makeEntries = (carClassIds: number[]): DriverEntriesFrame => ({
-  entries: carClassIds.map(
-    (carClassId, index) =>
-      ({ carIdx: index, carClassId }) as unknown as DriverEntry
+const makeEntries = (carCount: number): DriverEntriesFrame => ({
+  entries: Array.from(
+    { length: carCount },
+    (_unused, carIdx) => ({ carIdx }) as unknown as DriverEntry
   ),
   playerCarIdx: 0,
 });
 
+const makeRoster = (carClassIds: number[]): SessionSnapshot =>
+  ({
+    cars: carClassIds.map(
+      (carClassId, carIdx) => ({ carIdx, carClassId }) as unknown as CarEntry
+    ),
+  }) as unknown as SessionSnapshot;
+
 describe('BackendComputedStore carClassCount', () => {
+  let session: SessionStore;
   let store: BackendComputedStore;
 
+  const seedField = (carClassIds: number[]) => {
+    session.updateSessionInfo(makeRoster(carClassIds));
+    store.updateDriverEntries(makeEntries(carClassIds.length));
+  };
+
   beforeEach(() => {
-    store = new BackendComputedStore();
+    session = new SessionStore();
+    store = new BackendComputedStore(session);
   });
 
   it('starts at zero with neither source present', () => {
@@ -107,7 +124,7 @@ describe('BackendComputedStore carClassCount', () => {
   });
 
   it('counts distinct classes from driverEntries', () => {
-    runInAction(() => store.updateDriverEntries(makeEntries([1, 1, 2, 3, 3])));
+    runInAction(() => seedField([1, 1, 2, 3, 3]));
 
     expect(store.carClassCount).toBe(3);
   });
@@ -121,7 +138,7 @@ describe('BackendComputedStore carClassCount', () => {
   it('driverEntries take precedence over the slow slice count', () => {
     runInAction(() => {
       store.updateSlowCarClassCount(4);
-      store.updateDriverEntries(makeEntries([1, 2]));
+      seedField([1, 2]);
     });
 
     expect(store.carClassCount).toBe(2);
@@ -130,7 +147,7 @@ describe('BackendComputedStore carClassCount', () => {
   it('reset drops driverEntries and the slow count back to zero', () => {
     runInAction(() => {
       store.updateSlowCarClassCount(4);
-      store.updateDriverEntries(makeEntries([1, 2]));
+      seedField([1, 2]);
     });
 
     runInAction(() => store.reset());

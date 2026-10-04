@@ -1,8 +1,8 @@
 import { computed, makeAutoObservable, observable } from 'mobx';
 
 import type {
+  CarEntry,
   DriverEntriesFrame,
-  DriverEntry,
   FuelComputedFrame,
   IncidentsFrame,
   LapDeltaFrame,
@@ -14,7 +14,11 @@ import type {
   RelativeFrame,
 } from '@/types/bindings';
 import type { CarIdentity } from '@/types/car-identity';
+import type { DriverEntry } from '@/types/driver-entry';
 import { carIdentityOf } from '@utils/car-identity';
+
+import { joinDriverEntries, rosterByCarIdx } from './driver-entry-join';
+import type { SessionStore } from './session.store';
 
 export class BackendComputedStore {
   /**
@@ -63,8 +67,9 @@ export class BackendComputedStore {
   // observability would rebuild a proxy for each frame, and for the per-car
   // arrays it would convert ~15 arrays of 64 entries on every tick, purely to
   // observe fields nobody writes.
-  constructor() {
-    makeAutoObservable(this, {
+  constructor(private readonly session: SessionStore) {
+    makeAutoObservable<this, 'session'>(this, {
+      session: false,
       proximity: observable.ref,
       fuel: observable.ref,
       relative: observable.ref,
@@ -79,6 +84,8 @@ export class BackendComputedStore {
       // sector is actually posted rather than sixty times a second.
       sectorTimes: computed.struct,
       sectorDeltas: computed.struct,
+      // Rebuilt when the session roster is, not when a frame arrives.
+      roster: computed,
       // The per-car frames are replaced on every tick, but all a row or a dot
       // draws apart from four numbers stays put for a whole lap. Compared by
       // content, these wake a widget when a car actually changes rather than
@@ -132,17 +139,28 @@ export class BackendComputedStore {
    */
   get carClassCount(): number {
     if (this.driverEntries) {
-      return new Set(
-        this.driverEntries.entries.map((entry) => entry.carClassId)
-      ).size;
+      return new Set(this.fieldEntries.map((entry) => entry.carClassId)).size;
     }
 
     return this.slowCarClassCount;
   }
 
+  get roster(): Map<number, CarEntry> {
+    return rosterByCarIdx(this.session.sessionInfo?.cars ?? []);
+  }
+
+  /**
+   * The standings field in official order: the live entries joined with the
+   * session roster, which carries everything about a car that does not move.
+   * Heavy and replaced on every frame — read it where `driverEntries` may be.
+   */
+  get fieldEntries(): DriverEntry[] {
+    return joinDriverEntries(this.driverEntries?.entries ?? [], this.roster);
+  }
+
   /** The standings field as it is drawn, without the numbers that move. */
   get driverIdentities(): CarIdentity[] {
-    return (this.driverEntries?.entries ?? []).map(carIdentityOf);
+    return this.fieldEntries.map(carIdentityOf);
   }
 
   /**
@@ -150,10 +168,7 @@ export class BackendComputedStore {
    * writes to the DOM — a component that reads it in render wakes on every tick.
    */
   driverEntryOf(carIdx: number): DriverEntry | null {
-    return (
-      this.driverEntries?.entries.find((entry) => entry.carIdx === carIdx) ??
-      null
-    );
+    return this.fieldEntries.find((entry) => entry.carIdx === carIdx) ?? null;
   }
 
   /** The relative field as it is drawn, without the numbers that move. */
@@ -161,8 +176,9 @@ export class BackendComputedStore {
     return this.relativeEntries.map(carIdentityOf);
   }
 
+  /** The relative field, joined with the roster like `fieldEntries`. */
   get relativeEntries(): DriverEntry[] {
-    return this.relative?.entries ?? [];
+    return joinDriverEntries(this.relative?.entries ?? [], this.roster);
   }
 
   updateRelative(frame: RelativeFrame) {

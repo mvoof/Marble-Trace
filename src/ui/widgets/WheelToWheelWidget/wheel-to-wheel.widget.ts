@@ -9,7 +9,7 @@ import {
 } from 'mobx';
 
 import type { UnitSystem } from '@/types';
-import type { DriverEntry } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
 import type { RendererCore } from '@store/renderer-core';
 import type { WidgetInstanceContext } from '@store/widgets/widget-instances';

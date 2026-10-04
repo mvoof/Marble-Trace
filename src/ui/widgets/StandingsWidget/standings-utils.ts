@@ -1,5 +1,5 @@
 import type { CarIdentity } from '@/types/car-identity';
-import type { DriverEntry } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { licColumnWidthPx } from '@ui/shared/RatingBadge/LicBadge.utils';
 

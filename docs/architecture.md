@@ -510,13 +510,22 @@ Being due is necessary but not sufficient: a gated field is filled only while
 some widget actually wants it. Two groups are gated — the four raw 60 Hz frames,
 where the whole cost is downstream of the sim, and the three per-car frames on
 the 10 Hz tier, which are by far the largest payloads the app moves (a
-`DriverEntry` is ~35 fields including nine strings, times the whole field).
+`DriverEntry` is ~25 fields, times the whole field).
 
 > [!NOTE]
 > `driver_entries` is the table of the whole field — positions, laps, times, pit
-> state, licence, class — not "the Standings widget's data". Six widgets read it;
-> the Standings widget is only the one that draws all of it. The processor that
-> builds it is `computations/driver_entries.rs`.
+> state — not "the Standings widget's data". Six widgets read it; the Standings
+> widget is only the one that draws all of it. The processor that builds it is
+> `computations/driver_entries.rs`.
+>
+> Who a car is — driver, number, class, car, licence, rating, incidents — is not
+> on it: that holds for the session and arrives once, in `SessionSnapshot.cars`
+> on `sim://session`. `BackendComputedStore` joins the two by `carIdx`
+> (`store/data/driver-entry-join.ts`) and every widget reads the joined row
+> (`types/driver-entry.ts`) through `fieldEntries`, `relativeEntries`,
+> `driverIdentities` or `driverEntryOf` — never the bindings type, which is the
+> wire half. A fixture that states whole rows seeds them with
+> `store/preview/field-seed.ts`, which splits them back the same way.
 
 | Gated field                                                | Tier  |
 | ---------------------------------------------------------- | ----- |

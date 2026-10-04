@@ -70,13 +70,14 @@ Limits of the method:
 
 One row per measurement. Later tickets add rows here.
 
-| date       | code                                                                  | mode        | tick p99 (µs) | overlay KiB/s | alloc (MiB/s) | DOM mut/s | apply p99 (ms) | apply 1 Hz max (ms) | note                                                          |
-| ---------- | --------------------------------------------------------------------- | ----------- | ------------- | ------------- | ------------- | --------- | -------------- | ------------------- | ------------------------------------------------------------- |
-| 2026-10-04 | `refactor/architecture-rework` @ 4c1c2f0e + ticket 01                 | widgets     | 789 / 768     | 1060          | 11.64 / 11.65 | 7538      | 0.9            | 1.2 / 1.0           | baseline, two runs                                            |
-| 2026-10-04 | same                                                                  | stores-only | 756 / 747     | 1060          | 4.65 / 4.69   | 0         | 0.5            | 0.5                 | baseline, two runs                                            |
-| 2026-10-04 | `refactor/architecture-rework` @ fd5f1819 + ticket 03                 | widgets     | 800 / 785     | 1059          | 11.62 / 11.67 | 7530      | 1.0 / 0.9      | 0.9 / 0.8           | tick span widened                                             |
-| 2026-10-04 | `refactor/architecture-rework` @ 9eae162e (ticket 06) + harness of 07 | widgets     | 2048 / 903    | 1060          | 12.01 / 12.08 | 7542      | 1.1            | 1.3 / 0.9           | before 07; first paint 1592 / 1812 ms, heap 15.17 / 15.25 MiB |
-| 2026-10-04 | same + ticket 07                                                      | widgets     | 770 / 775     | 1059          | 12.50 / 12.33 | 7572      | 0.9            | 1.0 / 0.9           | after 07; first paint 1664 / 1600 ms, heap 13.16 / 13.23 MiB  |
+| date       | code                                                                  | mode        | tick p99 (µs) | overlay KiB/s | alloc (MiB/s) | DOM mut/s | apply p99 (ms) | apply 1 Hz max (ms) | note                                                               |
+| ---------- | --------------------------------------------------------------------- | ----------- | ------------- | ------------- | ------------- | --------- | -------------- | ------------------- | ------------------------------------------------------------------ |
+| 2026-10-04 | `refactor/architecture-rework` @ 4c1c2f0e + ticket 01                 | widgets     | 789 / 768     | 1060          | 11.64 / 11.65 | 7538      | 0.9            | 1.2 / 1.0           | baseline, two runs                                                 |
+| 2026-10-04 | same                                                                  | stores-only | 756 / 747     | 1060          | 4.65 / 4.69   | 0         | 0.5            | 0.5                 | baseline, two runs                                                 |
+| 2026-10-04 | `refactor/architecture-rework` @ fd5f1819 + ticket 03                 | widgets     | 800 / 785     | 1059          | 11.62 / 11.67 | 7530      | 1.0 / 0.9      | 0.9 / 0.8           | tick span widened                                                  |
+| 2026-10-04 | `refactor/architecture-rework` @ 9eae162e (ticket 06) + harness of 07 | widgets     | 2048 / 903    | 1060          | 12.01 / 12.08 | 7542      | 1.1            | 1.3 / 0.9           | before 07; first paint 1592 / 1812 ms, heap 15.17 / 15.25 MiB      |
+| 2026-10-04 | same + ticket 07                                                      | widgets     | 770 / 775     | 1059          | 12.50 / 12.33 | 7572      | 0.9            | 1.0 / 0.9           | after 07; first paint 1664 / 1600 ms, heap 13.16 / 13.23 MiB       |
+| 2026-10-05 | `refactor/architecture-rework` @ deb97eee + ticket 11                 | widgets     | 570 / 575     | 761           | 9.42 / 9.41   | 7405      | 0.7            | 1.0 / 0.7           | static driver fields off `DriverEntry`; first paint 1616 / 1624 ms |
 
 ## 2026-10-04 — baseline (ticket 01)
 
@@ -228,3 +229,34 @@ change.
   of 2048 µs in run 1 is that load, not the code), so its alloc and apply rows
   are not comparable to the "after" pair. The heap reading is taken before any
   telemetry arrives and agrees between both runs of each pair.
+
+## 2026-10-05 — static driver data travels once (ticket 11)
+
+Same machine, tape, offset, layout and command as ticket 03, widgets mode, two
+runs. `DriverEntry` (in `driverEntries` and in `relative`) no longer carries
+name, number, class id/badge/colour, car names, flair, AI flag, iRating,
+licence or incidents; the overlay joins them back from `SessionSnapshot.cars`
+(`store/data/driver-entry-join.ts`).
+
+| metric                           | before (07) | after (11)  |
+| -------------------------------- | ----------- | ----------- |
+| tick p99 (µs)                    | 770 / 775   | 570 / 575   |
+| overlay-DISPLAY1 KiB/s           | 1059        | 762 / 760   |
+| overlay-DISPLAY1 alloc (MiB/s)   | 12.50/12.33 | 9.42 / 9.41 |
+| overlay-DISPLAY1 DOM mutations/s | 7572        | 7403 / 7407 |
+| overlay-DISPLAY1 apply p99 (ms)  | 0.9 / 0.9   | 0.7 / 0.7   |
+
+- **The wire is 28 % lighter** (1059 → 761 KiB/s at the same 52.87
+  bundles/s), every recipient alike — `@remote` carries the same bytes as the
+  overlay. The bundle rate and the gated-field counts are unchanged, so the
+  whole difference is the strings that left each 10 Hz entry.
+- **Allocation fell by a quarter** (12.4 → 9.4 MiB/s) although the overlay now
+  builds the joined rows itself: the payload literal Tauri evaluates for every
+  bundle shrank by more than the join allocates.
+- **The tick got cheaper** (p99 ~770 → ~570 µs): the processors no longer clone
+  eleven strings per car per tick, and there is less to serialize.
+- DOM mutations stayed where they were, as they should: the widgets draw the
+  same rows.
+- Caveat: tickets 08–10 landed between the "before" pair and this one without
+  a measurement of their own. None of them changes what `DriverEntry` carries,
+  but their share of the tick and alloc rows is not separated out here.

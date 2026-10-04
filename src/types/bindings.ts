@@ -721,23 +721,17 @@ export type DriverEntriesFrame = {
   playerCarIdx: number;
 };
 
+/**
+ * One car's standing at this tick. Only what moves during a session travels
+ * here: who the car is — driver, number, class, car, licence, rating — is the
+ * same for the whole session and reaches the frontend once, in
+ * `SessionSnapshot.cars`, which joins it back on by `car_idx`.
+ */
 export type DriverEntry = {
   carIdx: number;
-  userName: string;
-  carNumber: string;
-  carClassId: number;
-  carClassShortName: string;
-  carClassColor: string;
-  carScreenName: string;
-  carScreenNameShort: string;
   /**
-   * iRacing's `FlairID` — the country flag on the driver's profile, `0` when unset.
+   * Live, not static: the compound the car is on now, which a pit stop changes.
    */
-  flairId: number;
-  /**
-   * The sim drives this car. AI entries never carry a flair.
-   */
-  isAi: boolean;
   tireCompound: string;
   position: number;
   classPosition: number;
@@ -779,10 +773,6 @@ export type DriverEntry = {
   f2Time: number;
   estTime: number;
   trackSurface: TrackSurface;
-  iRating: number;
-  licString: string;
-  licColor: string;
-  incidents: number;
   isPlayer: boolean;
   onPitRoad: boolean;
   estimatedIrDeltaLive: number | null;

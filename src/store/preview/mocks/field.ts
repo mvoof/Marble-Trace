@@ -1,19 +1,19 @@
 import type {
   CarEntry,
   CarPositionsFrame,
-  DriverEntriesFrame,
-  DriverEntry,
   IncidentPoint,
   IncidentsFrame,
-  RelativeFrame,
 } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import { TrackSurface } from '@/types';
 
 // Mock builders for the field domain — the driver list the standings and the
 // relative draw. Pure: the field is varied on top of the snapshot's own drivers
-// and returned as *complete* frames typed from the generated bindings, so a
-// field added to the contract breaks this file rather than leaking silently
-// into every fixture. Nothing here touches a store.
+// and returned as *complete* rows — the live entry and the car's roster fields
+// together, the shape every widget reads — so a field added to the contract
+// breaks this file rather than leaking silently into every fixture. Nothing
+// here touches a store; `seedField` splits the rows back into the two halves
+// the backend sends.
 //
 // Deliberately small. The snapshot already holds a full three-class grid, the
 // longest names a driver can carry and six cars sitting in their boxes, so the
@@ -40,9 +40,12 @@ export interface MockFieldOptions {
 /** Overrides for rows around the player, keyed by offset from the player. */
 export type MockFieldRows = Record<number, Partial<DriverEntry>>;
 
-export interface MockFieldFrames {
-  driverEntries: DriverEntriesFrame;
-  relative: RelativeFrame;
+export interface MockField {
+  /** Standings order. */
+  entries: DriverEntry[];
+  /** Relative order: most-ahead first, the player in the middle. */
+  relativeEntries: DriverEntry[];
+  playerCarIdx: number;
 }
 
 /** A GT3 on a straight, in m/s — the speed of a car put back on track. */
@@ -199,7 +202,7 @@ const applyRows = (
 export const mockField = (
   base: DriverEntry[],
   { gapS, lapTimeS = DEFAULT_LAP_TIME_S, rows }: MockFieldOptions
-): MockFieldFrames => {
+): MockField => {
   const playerCarIdx = base.find((entry) => entry.isPlayer)?.carIdx ?? 0;
   const spaced = withClassPositions(spaceField(base, gapS, lapTimeS));
   const field = rows ? applyRows(spaced, rows) : spaced;
@@ -207,10 +210,7 @@ export const mockField = (
     (first, second) => second.relativeLapDist - first.relativeLapDist
   );
 
-  return {
-    driverEntries: { entries: field, playerCarIdx },
-    relative: { entries: relativeEntries, playerCarIdx },
-  };
+  return { entries: field, relativeEntries, playerCarIdx };
 };
 
 /**

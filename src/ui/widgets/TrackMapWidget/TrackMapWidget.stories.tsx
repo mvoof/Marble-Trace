@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { RendererCore } from '@store/renderer-core';
-import { mockField } from '@store/preview/mocks/field';
+import { respaceField } from '@store/preview/field-seed';
 import { mockSectors } from '@store/preview/mocks/timing';
 import { sampleTrack } from '@store/preview/sample-track';
 import {
@@ -41,19 +41,10 @@ interface StoryArgs {
 // spread over the whole lap rather than packed into the seconds around the
 // player: a gap of a lap divided by the field is one car every equal step.
 const seedField = (store: RendererCore) => {
-  const base = store.backendComputed.driverEntries;
-
-  if (!base || base.entries.length === 0) {
-    return;
-  }
-
-  const { driverEntries, relative } = mockField(base.entries, {
+  respaceField(store, {
     gapS: LAP_TIME_S / MAPPED_CAR_COUNT,
     lapTimeS: LAP_TIME_S,
   });
-
-  store.backendComputed.updateDriverEntries(driverEntries);
-  store.backendComputed.updateRelative(relative);
 };
 
 // The lap's splits are on the session rather than on a frame, and the recorded

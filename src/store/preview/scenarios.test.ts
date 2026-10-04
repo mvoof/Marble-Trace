@@ -215,8 +215,7 @@ describe('pit scenarios', () => {
 // state the baseline already shows.
 describe('the field the baseline already holds', () => {
   const baselineEntries = () =>
-    seed(DEFAULT_PREVIEW_SCENARIO_ID).backendComputed.driverEntries?.entries ??
-    [];
+    seed(DEFAULT_PREVIEW_SCENARIO_ID).backendComputed.fieldEntries;
 
   it('fields more than one class', () => {
     const classes = new Set(baselineEntries().map((entry) => entry.carClassId));
@@ -266,8 +265,7 @@ describe('the field the baseline already holds', () => {
 // column is the one thing in the two tables that the recording cannot supply.
 describe('the driver roster', () => {
   it('gives every driver a country flag to draw', () => {
-    const entries =
-      seed('baseline').backendComputed.driverEntries?.entries ?? [];
+    const entries = seed('baseline').backendComputed.fieldEntries;
 
     expect(entries.length).toBeGreaterThan(0);
 
@@ -277,9 +275,8 @@ describe('the driver roster', () => {
   });
 
   it('keeps a car on the same flag across re-seeds', () => {
-    const first = seed('baseline').backendComputed.driverEntries?.entries ?? [];
-    const second =
-      seed('field-close-pack').backendComputed.driverEntries?.entries ?? [];
+    const first = seed('baseline').backendComputed.fieldEntries;
+    const second = seed('field-close-pack').backendComputed.fieldEntries;
     const flagOf = (entries: typeof first, carIdx: number) =>
       entries.find((entry) => entry.carIdx === carIdx)?.flairId;
 
@@ -295,8 +292,7 @@ describe('the driver roster', () => {
 // composed it.
 describe('the close-pack scenario', () => {
   it('packs the field inside a second', () => {
-    const entries =
-      seed('field-close-pack').backendComputed.driverEntries?.entries ?? [];
+    const entries = seed('field-close-pack').backendComputed.fieldEntries;
     const gaps = entries
       .slice(1)
       .map((entry, index) => entry.f2Time - (entries[index]?.f2Time ?? 0));
@@ -310,8 +306,7 @@ describe('the close-pack scenario', () => {
   });
 
   it('spaces the relative from the same gap the standings show', () => {
-    const entries =
-      seed('field-close-pack').backendComputed.relative?.entries ?? [];
+    const entries = seed('field-close-pack').backendComputed.relativeEntries;
     const playerRow = entries.findIndex((entry) => entry.isPlayer);
     // The row directly above the player's in the strip is the car it is
     // actually racing, and that is the gap the close pack is about.
@@ -327,8 +322,7 @@ describe('the close-pack scenario', () => {
   });
 
   it('runs the whole pack on track and on the same lap', () => {
-    const entries =
-      seed('field-close-pack').backendComputed.driverEntries?.entries ?? [];
+    const entries = seed('field-close-pack').backendComputed.fieldEntries;
     const laps = new Set(entries.map((entry) => entry.lap));
 
     // A pack is not a pack with a fifth of it parked or out of the world, which
@@ -343,8 +337,8 @@ describe('the close-pack scenario', () => {
 
   it('orders the standings by position and the relative by track order', () => {
     const store = seed('field-close-pack');
-    const standings = store.backendComputed.driverEntries?.entries ?? [];
-    const relative = store.backendComputed.relative?.entries ?? [];
+    const standings = store.backendComputed.fieldEntries;
+    const relative = store.backendComputed.relativeEntries;
 
     expect(standings.map((entry) => entry.position)).toEqual(
       standings.map((_entry, index) => index + 1)

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DriverEntry } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import {
   countdownUnit,
   formatCountdown,

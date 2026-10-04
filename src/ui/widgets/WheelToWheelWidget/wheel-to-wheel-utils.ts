@@ -1,4 +1,4 @@
-import type { DriverEntry } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import { TrackSurface } from '@/types';
 import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
 
