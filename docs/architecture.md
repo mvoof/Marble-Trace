@@ -1628,13 +1628,13 @@ Most changes need no migration at all. Full guide:
 ## Content Security Policy
 
 Every page the app shows runs under a policy that allows only what it uses.
-Two pages, three places a policy is set:
+Two kinds of page, three places a policy is set:
 
-| page                            | policy from                             | reaches the page as                 |
-| ------------------------------- | --------------------------------------- | ----------------------------------- |
-| app windows (`index.html`)      | `app.security.csp` in `tauri.conf.json` | header, from Tauri's asset protocol |
-| the same, in `tauri:dev`        | `app.security.devCsp`                   | `<meta>`, injected by `vite.csp.ts` |
-| remote page, server's own pages | `src-tauri/src/remote/csp.rs`           | header, from the remote server      |
+| page                                  | policy from                             | reaches the page as                 |
+| ------------------------------------- | --------------------------------------- | ----------------------------------- |
+| app windows (`main/overlay/hud.html`) | `app.security.csp` in `tauri.conf.json` | header, from Tauri's asset protocol |
+| the same, in `tauri:dev`              | `app.security.devCsp`                   | `<meta>`, injected by `vite.csp.ts` |
+| remote page, server's own pages       | `src-tauri/src/remote/csp.rs`           | header, from the remote server      |
 
 On desktop Tauri injects its policy only into pages it serves itself, and a
 dev window loads straight from Vite — without `vite.csp.ts` a violation would

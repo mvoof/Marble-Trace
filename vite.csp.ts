@@ -6,7 +6,7 @@ import type { Plugin } from 'vite';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const TAURI_CONF_PATH = path.resolve(rootDir, 'src-tauri/tauri.conf.json');
-const APP_ENTRY = 'index.html';
+const APP_ENTRIES = new Set(['main.html', 'overlay.html', 'hud.html']);
 
 type DirectiveMap = Record<string, string | string[]>;
 
@@ -29,7 +29,7 @@ const readDevPolicy = (): string => {
  * Tauri injects `devCsp` only into pages it serves itself. On desktop the dev
  * windows load straight from Vite, so without this the policy would be
  * checked in release builds alone and a violation would surface only there.
- * The app windows' entry only: `remote.html` gets its policy as a header from
+ * The app windows' entries only: `remote.html` gets its policy as a header from
  * the remote server, and a second policy here would be enforced on top of it.
  */
 export const devContentSecurityPolicy = (): Plugin => ({
@@ -38,7 +38,7 @@ export const devContentSecurityPolicy = (): Plugin => ({
   transformIndexHtml: {
     order: 'pre',
     handler: (_html, context) => {
-      if (path.basename(context.filename) !== APP_ENTRY) {
+      if (!APP_ENTRIES.has(path.basename(context.filename))) {
         return [];
       }
 

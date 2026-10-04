@@ -14,6 +14,7 @@
     "windows": [
       {
         "label": "main",
+        "url": "main.html",
         "title": "Marble Trace",
         "width": 800,
         "height": 600,

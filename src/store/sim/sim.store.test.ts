@@ -115,22 +115,22 @@ const lastMaskOf = (spy: typeof setActiveEventsSilent): number => {
 };
 
 /**
- * An overlay window is told apart from main by its hash — see `drawsWidgets`.
+ * An overlay window is told apart from main by its page — see `drawsWidgets`.
  * These run in the node environment, so the window itself is the stub.
  */
-const setWindowHash = (hash: string | null) => {
-  if (hash === null) {
+const setWindowPath = (pathname: string | null) => {
+  if (pathname === null) {
     delete (globalThis as { window?: unknown }).window;
 
     return;
   }
 
-  (globalThis as { window?: unknown }).window = { location: { hash } };
+  (globalThis as { window?: unknown }).window = { location: { pathname } };
 };
 
-const asOverlayWindow = () => setWindowHash('#/overlay');
+const asOverlayWindow = () => setWindowPath('/overlay.html');
 
-const asMainWindow = () => setWindowHash(null);
+const asMainWindow = () => setWindowPath(null);
 
 describe('SimStore active-events mask', () => {
   let root: RootStore;

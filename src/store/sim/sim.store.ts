@@ -63,12 +63,16 @@ import {
   TRACK_MAP_CLEAR,
 } from '@platform/sync/sim-events';
 
+/** The page every overlay window loads (`overlay-windows.ts`). */
+const OVERLAY_PAGE = '/overlay.html';
+
 /**
  * True in the overlay windows, which are the only ones that render widgets and
  * therefore the only ones that need 60 Hz telemetry.
  */
 const drawsWidgets = () =>
-  typeof window !== 'undefined' && window.location.hash.includes('overlay');
+  typeof window !== 'undefined' &&
+  window.location.pathname.endsWith(OVERLAY_PAGE);
 
 /**
  * Told how long one bundle took to apply, and whether it was a 1 Hz full

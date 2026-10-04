@@ -29,8 +29,11 @@ export default defineConfig(() => ({
     sourcemap: process.env.MARBLE_TRACE_SOURCEMAPS === '1' ? 'hidden' : false,
     rollupOptions: {
       input: {
-        // The windows Tauri opens.
-        main: resolve(__dirname, 'index.html'),
+        // The windows Tauri opens, one page each, so a window bundles only
+        // its own shell: the overlay never loads antd or the settings UI.
+        main: resolve(__dirname, 'main.html'),
+        overlay: resolve(__dirname, 'overlay.html'),
+        hud: resolve(__dirname, 'hud.html'),
         // A layout rendered in a browser on another device. A separate entry
         // because it must not pull in the Tauri API.
         remote: resolve(__dirname, 'remote.html'),

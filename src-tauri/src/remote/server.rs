@@ -29,7 +29,7 @@ use super::pages::{index_page, unauthorized_page};
 use crate::model::remote::RemoteDevice;
 use crate::utils::lock_or_recover;
 
-/// The page every remote screen loads. A separate entry from `index.html`: it
+/// The page every remote screen loads. A separate entry from the app windows': it
 /// pulls no Tauri API, so it also runs in a plain browser.
 const REMOTE_ENTRY: &str = "remote.html";
 
@@ -267,8 +267,9 @@ async fn serve_asset_with_query(state: &ServerState, path: &str, query: Option<&
 
     // The embedded bundle is keyed by path relative to frontendDist (`assets/...`,
     // `fonts/...`, `remote.html`). The screen prefix has to come off before the
-    // lookup, not after a miss: the resolver never misses — an unknown path
-    // resolves to `index.html`, which a browser then refuses as a module.
+    // lookup, not after a miss: a prefixed path names no asset, and the
+    // resolver's own fallback (`index.html`, which no entry is called any
+    // more) would never find the file behind it.
     let asset = state
         .app
         .asset_resolver()
