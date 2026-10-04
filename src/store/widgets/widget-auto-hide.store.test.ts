@@ -58,19 +58,45 @@ describe('WidgetAutoHideStore — DRS', () => {
 });
 
 describe('WidgetAutoHideStore — wheel to wheel', () => {
-  const wheelToWheelStore = (isVisible: boolean) =>
+  const wheelToWheelStore = (visibleByInstance: Record<string, boolean>) =>
     new WidgetAutoHideStore({
       liveWidgets: {
-        getWidget: () => ({ id: 'wheel-to-wheel', type: 'wheel-to-wheel' }),
+        getWidget: (instanceId: string) => ({
+          id: instanceId,
+          type: 'wheel-to-wheel',
+        }),
       },
-      wheelToWheelWidget: { isVisible },
+      widgetInstances: {
+        storeOf: (instanceId: string) =>
+          instanceId in visibleByInstance
+            ? { isVisible: visibleByInstance[instanceId] }
+            : null,
+      },
     } as unknown as Deps);
 
   it('takes the plate off while nobody is inside the threshold', () => {
-    expect(wheelToWheelStore(false).isVisible('wheel-to-wheel')).toBe(false);
+    expect(
+      wheelToWheelStore({ 'wheel-to-wheel': false }).isVisible('wheel-to-wheel')
+    ).toBe(false);
   });
 
   it('puts it back when a rival is', () => {
-    expect(wheelToWheelStore(true).isVisible('wheel-to-wheel')).toBe(true);
+    expect(
+      wheelToWheelStore({ 'wheel-to-wheel': true }).isVisible('wheel-to-wheel')
+    ).toBe(true);
+  });
+
+  it('answers each plate from its own instance', () => {
+    const store = wheelToWheelStore({
+      'wheel-to-wheel': true,
+      'wheel-to-wheel-2': false,
+    });
+
+    expect(store.isVisible('wheel-to-wheel')).toBe(true);
+    expect(store.isVisible('wheel-to-wheel-2')).toBe(false);
+  });
+
+  it('keeps an instance that is not mounted off screen', () => {
+    expect(wheelToWheelStore({}).isVisible('wheel-to-wheel')).toBe(false);
   });
 });

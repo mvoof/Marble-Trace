@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import type { PitServiceWidgetStore } from '@ui/widgets/PitServiceWidget/pit-service.widget';
+import type { PitServiceWidgetStore } from './pit-service.widget';
 
 // The panel lingers briefly after pit exit so the last service result stays
 // readable while the car is already accelerating away.

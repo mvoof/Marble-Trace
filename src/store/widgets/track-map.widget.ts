@@ -9,16 +9,29 @@ import {
   emitTrackMapClear,
   emitTrackRotation,
 } from '@platform/services/events.service';
-import type {
-  StoredTracks,
-  TrackRotateDirection,
-} from '@ui/widgets/TrackMapWidget/types';
-import { TRACKS_STORE_KEY } from '@ui/widgets/TrackMapWidget/types';
-import { TRACK_SETTINGS_STORE } from '@ui/widgets/TrackMapWidget/track-store';
+
+export type TrackRotateDirection = 'cw' | 'ccw';
+
+interface StoredTrackData {
+  rotation?: number;
+}
+
+interface StoredTracks {
+  [trackId: string]: StoredTrackData;
+}
+
+const TRACKS_STORE_KEY = 'recorded-tracks';
+const TRACK_SETTINGS_STORE = 'track-settings.json';
 
 const ROTATION_STEP_DEGREES = 90;
 const FULL_TURN_DEGREES = 360;
 
+/**
+ * The recorded track: its shape, the recording in progress and the angle the
+ * map is turned to. App-wide rather than per map instance — the shape arrives
+ * from the backend once per track, the pit service measures its lane against
+ * it, and the angle is the same on every screen (and is synced to them).
+ */
 export class TrackMapWidgetStore {
   isRecording = false;
   isWaitingForSF = false;

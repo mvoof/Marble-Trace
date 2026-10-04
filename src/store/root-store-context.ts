@@ -56,17 +56,10 @@ export const usePaceCarStore = () => useStore().paceCar;
 export const useIncidentsWidgetStore = () => useStore().incidentsWidget;
 
 export const useRadarWidgetStore = () => useStore().radar;
-export const useCloseBattleWidgetStore = () => useStore().closeBattleWidget;
-export const useWheelToWheelWidgetStore = () => useStore().wheelToWheelWidget;
-export const useRelativeWidgetStore = () => useStore().relativeWidget;
 export const usePlayerPositionStore = () => useStore().playerPosition;
 export const usePitServiceWidgetStore = () => useStore().pitServiceWidget;
 export const useTrackMapWidgetStore = () => useStore().trackMapWidget;
-export const useDrivingCoachWidgetStore = () => useStore().drivingCoachWidget;
-export const useCoachWidgetStore = () => useStore().coachWidget;
-export const useEnginePanelWidgetStore = () => useStore().enginePanelWidget;
 export const useChatStore = () => useStore().chat;
-export const useStreamChatWidgetStore = () => useStore().streamChatWidget;
 export const useLiveWidgetsStore = () => useStore().liveWidgets;
 export const useWidgetDefaultsStore = () => useStore().widgetDefaults;
 export const useLayoutsStore = () => useStore().layouts;

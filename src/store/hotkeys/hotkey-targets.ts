@@ -23,3 +23,15 @@ export const standingsHotkeyTargets = (
   core: Pick<RendererCore, 'widgetInstances'>
 ): StandingsHotkeyTarget[] =>
   core.widgetInstances.hotkeyStoresOf<StandingsHotkeyTarget>('standings');
+
+/** What a chat instance store answers to when the scroll hotkey reaches the window. */
+export interface StreamChatHotkeyTarget extends WidgetInstanceStore {
+  /** Positive lifts the view towards older messages. */
+  scrollByRows(delta: number): void;
+}
+
+/** The chat windows in this window the scroll hotkey acts on. */
+export const streamChatHotkeyTargets = (
+  core: Pick<RendererCore, 'widgetInstances'>
+): StreamChatHotkeyTarget[] =>
+  core.widgetInstances.hotkeyStoresOf<StreamChatHotkeyTarget>('stream-chat');

@@ -8,7 +8,7 @@ import type { CoachInactiveReason } from '@ui/widgets/CoachWidget/driving-coach.
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,
-} from '@store/root-store-context';
+} from '@ui/widgets/CoachWidget/coach-stores';
 
 import styles from './CallRow.module.scss';
 

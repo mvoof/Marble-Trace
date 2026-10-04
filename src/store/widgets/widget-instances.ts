@@ -1,3 +1,5 @@
+import { action, observable, runInAction, type ObservableMap } from 'mobx';
+
 import type { RendererCore } from '@store/renderer-core';
 
 /** What a widget instance's store is built from when that instance mounts. */
@@ -19,6 +21,8 @@ export type WidgetStoreFactory = (
   context: WidgetInstanceContext
 ) => WidgetInstanceStore;
 
+type StoreSeed = (store: WidgetInstanceStore) => void;
+
 interface RegisteredStore {
   type: string;
   store: WidgetInstanceStore;
@@ -34,19 +38,29 @@ interface RegisteredStore {
  * overlay acts on the stores of the instances marked for hotkeys.
  */
 export class WidgetInstanceRegistry {
-  private readonly entries = new Map<string, RegisteredStore>();
+  // Observable, shallow: a derivation that asks for an instance's store (the
+  // auto-hide answer) re-runs when it opens, and the stores themselves are not
+  // made observable a second time.
+  private readonly entries: ObservableMap<string, RegisteredStore> =
+    observable.map({}, { deep: false });
+
+  /** The latest preview seed per widget type — see `seed`. */
+  private readonly seeds = new Map<string, StoreSeed>();
 
   constructor(private readonly hotkeysActOn: (instanceId: string) => boolean) {}
 
-  open(context: WidgetInstanceContext, factory: WidgetStoreFactory) {
-    const store = factory(context);
+  open = action(
+    (context: WidgetInstanceContext, factory: WidgetStoreFactory) => {
+      const store = factory(context);
 
-    this.entries.set(context.instanceId, { type: context.type, store });
+      this.seeds.get(context.type)?.(store);
+      this.entries.set(context.instanceId, { type: context.type, store });
 
-    return store;
-  }
+      return store;
+    }
+  );
 
-  close(instanceId: string, store: WidgetInstanceStore) {
+  close = action((instanceId: string, store: WidgetInstanceStore) => {
     // A remount opens the next store before React closes the previous one, so
     // only the entry that still names this store is removed.
     if (this.entries.get(instanceId)?.store === store) {
@@ -54,6 +68,11 @@ export class WidgetInstanceRegistry {
     }
 
     store.dispose();
+  });
+
+  /** The store of one mounted instance, or null while it is not mounted. */
+  storeOf<Store extends WidgetInstanceStore>(instanceId: string): Store | null {
+    return (this.entries.get(instanceId)?.store as Store | undefined) ?? null;
   }
 
   /**
@@ -76,13 +95,35 @@ export class WidgetInstanceRegistry {
       .map(([, entry]) => entry.store as Store);
   }
 
-  disposeAll() {
+  /**
+   * Preview only: state a scenario forces into one widget's stores, because the
+   * reaction that would produce it never runs on a preview core. Applied to
+   * every instance open now and to each one opened later, so a widget switched
+   * on in the editor under a scenario shows it too. The latest seed per type
+   * replaces the one before.
+   */
+  seed<Store extends WidgetInstanceStore>(
+    type: string,
+    apply: (store: Store) => void
+  ) {
+    const seed = apply as StoreSeed;
+
+    this.seeds.set(type, seed);
+
+    runInAction(() => {
+      for (const store of this.storesOf(type)) {
+        seed(store);
+      }
+    });
+  }
+
+  disposeAll = action(() => {
     for (const { store } of this.entries.values()) {
       store.dispose();
     }
 
     this.entries.clear();
-  }
+  });
 }
 
 /** The stores several widget types read, started only while one is mounted. */

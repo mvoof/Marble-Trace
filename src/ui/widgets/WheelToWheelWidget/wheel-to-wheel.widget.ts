@@ -12,6 +12,8 @@ import type { UnitSystem } from '@/types';
 import type { DriverEntry } from '@/types/bindings';
 import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
 import type { RendererCore } from '@store/renderer-core';
+import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { SelfHidingWidgetStore } from '@store/widgets/widget-auto-hide.store';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import { formatSpeed } from '@utils/telemetry-format';
 import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
@@ -21,13 +23,17 @@ import {
   pickRivals,
   type WheelToWheelRivals,
 } from './wheel-to-wheel-utils';
+import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 
 type WheelToWheelDeps = Pick<
   RendererCore,
-  'units' | 'appSettings' | 'liveWidgets' | 'backendComputed' | 'session'
+  | 'units'
+  | 'appSettings'
+  | 'liveWidgets'
+  | 'backendComputed'
+  | 'session'
+  | 'startsWidgetStores'
 >;
-
-const WIDGET_ID = 'wheel-to-wheel';
 
 /** A place on the plate: you, and a rival on either side of you. */
 export type BattleSlot = 'player' | 'ahead' | 'behind';
@@ -104,7 +110,12 @@ export class BattleSlotView {
   }
 }
 
-export class WheelToWheelWidgetStore {
+/**
+ * One wheel-to-wheel plate: the fight, the rivals held for the fade-out, and
+ * whether it is on screen — which the auto-hide reads from here. Built per
+ * instance (`mount.ts`), so two plates follow their own thresholds.
+ */
+export class WheelToWheelWidgetStore implements SelfHidingWidgetStore {
   visible = false;
 
   /**
@@ -120,9 +131,17 @@ export class WheelToWheelWidgetStore {
 
   private disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: WheelToWheelDeps) {
-    makeAutoObservable<WheelToWheelWidgetStore, 'root'>(this, {
+  private readonly root: WheelToWheelDeps;
+
+  private readonly instanceId: string;
+
+  constructor({ core, instanceId }: WidgetInstanceContext) {
+    this.root = core;
+    this.instanceId = instanceId;
+
+    makeAutoObservable<WheelToWheelWidgetStore, 'root' | 'instanceId'>(this, {
       root: false,
+      instanceId: false,
       slots: false,
     });
 
@@ -149,9 +168,13 @@ export class WheelToWheelWidgetStore {
         unitSystem
       ),
     };
+
+    if (core.startsWidgetStores) {
+      this.start();
+    }
   }
 
-  init() {
+  private start() {
     this.disposers.push(
       reaction(
         () => [
@@ -209,15 +232,15 @@ export class WheelToWheelWidgetStore {
   }
 
   get settings(): WheelToWheelWidgetSettings {
-    return this.root.liveWidgets.settingsOfType<WheelToWheelWidgetSettings>(
-      WIDGET_ID
+    return this.root.liveWidgets.getSettings<WheelToWheelWidgetSettings>(
+      this.instanceId
     );
   }
 
   /**
    * Drag mode always draws the widget, or it could not be placed. A fight in
-   * progress draws it too without waiting for the reaction: a preview store
-   * runs with `skipInit`, so `visible` would never be raised there.
+   * progress draws it too without waiting for the reaction: a preview core
+   * starts no reactions, so `visible` would never be raised there.
    */
   get isVisible(): boolean {
     if (!this.playerEntry) {
@@ -384,3 +407,6 @@ export class WheelToWheelWidgetStore {
     }
   }
 }
+
+export const useWheelToWheelWidgetStore = () =>
+  useWidgetInstanceStore<WheelToWheelWidgetStore>();

@@ -194,7 +194,7 @@
     {
       "files": [
         "src/platform/sync/persistence-sync.ts",
-        "src/ui/widgets/TrackMapWidget/track-map.widget.ts"
+        "src/store/widgets/track-map.widget.ts"
       ],
       "rules": {
         "no-restricted-imports": [
@@ -208,26 +208,10 @@
               {
                 "group": ["@tauri-apps/api/event"],
                 "message": "Tauri events are wrapped by src/platform/services/events.service.ts — use listenTo/emitToApp/emitToOverlays."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": ["src/store/renderer-core.ts"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
+              },
               {
-                "group": [
-                  "@tauri-apps/api/core",
-                  "@tauri-apps/api/event",
-                  "@tauri-apps/plugin-store"
-                ],
-                "message": "Tauri access lives in src/platform/."
+                "group": ["@ui/**"],
+                "message": "Layer direction is ui -> store -> platform. A store must not reach into the UI."
               }
             ]
           }

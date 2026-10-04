@@ -2,6 +2,7 @@ import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
 import { REFERENCE_LAP_BUCKET_COUNT } from '@utils/backend-constants';
 import type { RendererCore } from '@store/renderer-core';
+import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
 import type { ReferenceLapSample, TrackCondition } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import {
@@ -15,7 +16,7 @@ import {
 
 type CoachDeps = Pick<
   RendererCore,
-  'player' | 'referenceLap' | 'liveWidgets' | 'session'
+  'player' | 'referenceLap' | 'liveWidgets' | 'session' | 'startsWidgetStores'
 >;
 
 /**
@@ -86,10 +87,21 @@ export class CoachWidgetStore {
   private previousBucket: number | null = null;
   private readonly disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: CoachDeps) {
+  private readonly root: CoachDeps;
+
+  private readonly instanceId: string;
+
+  constructor({
+    core,
+    instanceId,
+  }: Pick<WidgetInstanceContext, 'core' | 'instanceId'>) {
+    this.root = core;
+    this.instanceId = instanceId;
+
     makeAutoObservable<
       CoachWidgetStore,
       | 'root'
+      | 'instanceId'
       | 'previousDistPct'
       | 'previousBucket'
       | 'disposers'
@@ -101,6 +113,7 @@ export class CoachWidgetStore {
       this,
       {
         root: false,
+        instanceId: false,
         previousDistPct: false,
         previousBucket: false,
         disposers: false,
@@ -111,11 +124,13 @@ export class CoachWidgetStore {
       },
       { autoBind: true }
     );
+
+    if (core.startsWidgetStores) {
+      this.start();
+    }
   }
 
-  init() {
-    this.dispose();
-
+  private start() {
     // Speed arrives at 60 Hz and position at 10 Hz; recording on the speed
     // frame keeps the trace as dense as the bucket grid allows, and repeated
     // writes to one bucket simply keep the latest value for it.
@@ -147,7 +162,9 @@ export class CoachWidgetStore {
   }
 
   private get settings(): CoachWidgetSettings {
-    return this.root.liveWidgets.settingsOfType<CoachWidgetSettings>('coach');
+    return this.root.liveWidgets.getSettings<CoachWidgetSettings>(
+      this.instanceId
+    );
   }
 
   private recordSample(speed: number | undefined) {

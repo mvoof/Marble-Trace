@@ -4,19 +4,13 @@ import { FlagsStore } from './widgets/flags.widget';
 import { IncidentsWidgetStore } from './widgets/incidents.widget';
 import { PaceCarStore } from './widgets/pace-car.widget';
 import { RadarWidgetStore } from './widgets/radar.widget';
-import { CloseBattleWidgetStore } from '@ui/widgets/CloseBattleWidget/close-battle.widget';
-import { WheelToWheelWidgetStore } from '@ui/widgets/WheelToWheelWidget/wheel-to-wheel.widget';
-import { RelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.widget';
-import { PitServiceWidgetStore } from '@ui/widgets/PitServiceWidget/pit-service.widget';
+import { PitServiceWidgetStore } from './widgets/pit-service/pit-service.widget';
 import { PlayerPositionStore } from './widgets/player-position';
 import {
   SharedWidgetStores,
   WidgetInstanceRegistry,
 } from './widgets/widget-instances';
-import { TrackMapWidgetStore } from '@ui/widgets/TrackMapWidget/track-map.widget';
-import { DrivingCoachWidgetStore } from '@ui/widgets/CoachWidget/driving-coach.widget';
-import { CoachWidgetStore } from '@ui/widgets/CoachWidget/coach.widget';
-import { EnginePanelWidgetStore } from '@ui/widgets/EnginePanelWidget/engine-panel.widget';
+import { TrackMapWidgetStore } from './widgets/track-map.widget';
 import { LiveWidgetsStore } from './settings/live-widgets.store';
 import { WidgetDefaultsStore } from './settings/widget-defaults.store';
 import { LayoutsStore } from './settings/layouts.store';
@@ -31,24 +25,26 @@ import { EnvironmentStore } from './data/environment.store';
 import { SimPerfStore } from './data/sim-perf.store';
 import { ReferenceLapStore } from './data/reference-lap.store';
 import { ChatStore } from './data/chat.store';
-import { StreamChatWidgetStore } from '@ui/widgets/StreamChatWidget/stream-chat.widget';
 
 interface RendererCoreOptions {
   /** A preview: no Tauri channels, nothing persisted, no store started. */
   skipInit?: boolean;
   /**
-   * Starts the shared widget stores as their widgets mount, even under
-   * `skipInit` — a remote screen opens no Tauri channel but derives the flags
-   * and the radar from the data it is sent. Defaults to `!skipInit`.
+   * Starts the widget stores as their widgets mount, even under `skipInit` — a
+   * remote screen opens no Tauri channel but derives the flags, the radar and
+   * every widget's own state from the data it is sent. Defaults to
+   * `!skipInit`.
    */
-  startsSharedStores?: boolean;
+  startsWidgetStores?: boolean;
 }
 
 /**
  * The stores every renderer needs: the telemetry data, the sim, the settings
- * projection widgets read, units, and the app-wide widget stores. A widget
- * whose store is per instance declares it in its `mount.ts` instead; it is
- * built when the instance mounts and lives in `widgetInstances`. Nothing that only the
+ * projection widgets read, units, and the few widget stores that are one per
+ * app — shared by several widget types, or read with no widget mounted (the
+ * pit order, the recorded track). A widget's own store is per instance and is
+ * declared in its `mount.ts`; it is built when the instance mounts and lives
+ * in `widgetInstances`. Nothing here imports a widget. Nothing that only the
  * settings UI uses — that lives on the window roots built over this one
  * (`MainRoot`, `OverlayRoot`, `RemoteRoot`), so an overlay never constructs
  * the editor, the inspector or the chat sign-in, and a component that only
@@ -78,15 +74,15 @@ export class RendererCore {
 
   /** The per-instance stores of the widgets mounted against this core. */
   widgetInstances: WidgetInstanceRegistry;
-  closeBattleWidget: CloseBattleWidgetStore;
-  wheelToWheelWidget: WheelToWheelWidgetStore;
-  relativeWidget: RelativeWidgetStore;
+
+  /**
+   * Whether widget stores built against this core run their reactions and
+   * timers. False on a preview, whose stores are seeded by hand and must not
+   * have what was seeded overwritten; true on the overlay and a remote screen.
+   */
+  readonly startsWidgetStores: boolean;
   pitServiceWidget: PitServiceWidgetStore;
   trackMapWidget: TrackMapWidgetStore;
-  drivingCoachWidget: DrivingCoachWidgetStore;
-  coachWidget: CoachWidgetStore;
-  enginePanelWidget: EnginePanelWidgetStore;
-  streamChatWidget: StreamChatWidgetStore;
   liveWidgets: LiveWidgetsStore;
   widgetDefaults: WidgetDefaultsStore;
   layouts: LayoutsStore;
@@ -125,37 +121,26 @@ export class RendererCore {
     this.incidentsWidget = new IncidentsWidgetStore(this);
     this.radar = new RadarWidgetStore(this);
     this.playerPosition = new PlayerPositionStore(this);
+    this.startsWidgetStores = options?.startsWidgetStores ?? !options?.skipInit;
     this.sharedWidgetStores = new SharedWidgetStores(
       { flags: this.flags, paceCar: this.paceCar, radar: this.radar },
-      options?.startsSharedStores ?? !options?.skipInit
+      this.startsWidgetStores
     );
     this.widgetInstances = new WidgetInstanceRegistry((instanceId) =>
       this.liveWidgets.hotkeysActOnWidget(instanceId)
     );
-    this.closeBattleWidget = new CloseBattleWidgetStore(this);
-    this.wheelToWheelWidget = new WheelToWheelWidgetStore(this);
-    this.relativeWidget = new RelativeWidgetStore(this);
     this.pitServiceWidget = new PitServiceWidgetStore(this);
     // A preview store shows a sample track: turning that map must not write an
     // angle to disk under a track id the user never drove.
     this.trackMapWidget = new TrackMapWidgetStore({
       persists: !options?.skipInit,
     });
-    this.drivingCoachWidget = new DrivingCoachWidgetStore(this);
-    this.coachWidget = new CoachWidgetStore(this);
-    this.enginePanelWidget = new EnginePanelWidgetStore(this);
-    this.streamChatWidget = new StreamChatWidgetStore(this);
     this.sim = new SimStore(this);
     this.widgetAutoHide = new WidgetAutoHideStore(this);
 
     if (!options?.skipInit) {
-      this.closeBattleWidget.init();
-      this.wheelToWheelWidget.init();
       this.sim.init();
       this.appSettings.init();
-      this.drivingCoachWidget.init();
-      this.coachWidget.init();
-      this.streamChatWidget.init();
       this.pitServiceWidget.init();
       void this.chat.init();
     }
@@ -164,14 +149,9 @@ export class RendererCore {
   // Short-lived stores (widget previews, layout canvas, Storybook) must call
   // this on unmount — their reactions otherwise keep running against telemetry.
   dispose() {
-    this.closeBattleWidget.dispose();
-    this.wheelToWheelWidget.dispose();
-    this.streamChatWidget.dispose();
     this.pitServiceWidget.dispose();
     this.chat.dispose();
     this.widgetInstances.disposeAll();
-    this.enginePanelWidget.dispose();
-    this.coachWidget.dispose();
     this.flags.dispose();
     this.sim.dispose();
     this.radar.dispose();

@@ -3,14 +3,16 @@ import { Check } from 'lucide-react';
 
 import styles from './TireCorner.module.scss';
 import { OrderToggle } from '@ui/widgets/PitServiceWidget/OrderToggle/OrderToggle';
-import type { CornerPosition } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import {
   buildTireCorner,
   convertPressure,
-  isCornerOrdered,
-  orderedPressure,
   wearLevel,
 } from '@ui/widgets/PitServiceWidget/pit-service-utils';
+import {
+  isCornerOrdered,
+  orderedPressure,
+  type CornerPosition,
+} from '@utils/pit-tires';
 import {
   usePitServiceWidgetStore,
   usePlayerStore,

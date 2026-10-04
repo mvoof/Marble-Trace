@@ -15,6 +15,7 @@ import { mockCarPositions } from './mocks/field';
 import { mockLapDelta, mockLapLog, mockLapTiming } from './mocks/delta';
 import { mockPitService } from './mocks/pit';
 import { sampleTrack, SAMPLE_TRACK_ID } from './sample-track';
+import { seedCoachAdvisory } from './coach-advisory-seed';
 
 // Mirror the active race flags into the FlagsStore's display state. The hold /
 // blink reactions that normally do this only run via FlagsStore.init(), which is
@@ -248,10 +249,7 @@ export const seedSampleTelemetry = action((store: RendererCore) => {
   // picked once would still be on screen after switching back to the baseline.
   store.player.updatePitTarget(null);
   store.referenceLap.reset();
-  store.drivingCoachWidget.displayedAdvisory = 'neutral';
-  store.drivingCoachWidget.displayedBrakeUrgency = 0;
-  store.drivingCoachWidget.displayedExitLateM = null;
-  store.drivingCoachWidget.displayedExitThrottleDeficit = 0;
+  seedCoachAdvisory(store);
 
   syncFlagDisplay(store);
 });

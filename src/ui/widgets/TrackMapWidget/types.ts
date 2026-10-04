@@ -16,15 +16,3 @@ export interface CarOnTrack {
   isPaceCar?: boolean;
   pitPhase?: PaceCarPitPhase;
 }
-
-export type TrackRotateDirection = 'cw' | 'ccw';
-
-interface StoredTrackData {
-  rotation?: number;
-}
-
-export interface StoredTracks {
-  [trackId: string]: StoredTrackData;
-}
-
-export const TRACKS_STORE_KEY = 'recorded-tracks';

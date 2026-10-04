@@ -1,13 +1,13 @@
 import { makeAutoObservable } from 'mobx';
 
 import type { PitCommandRequest } from '@/types/bindings';
-import type { CornerPosition } from '@ui/widgets/PitServiceWidget/pit-service-utils';
+import type { CornerPosition } from '@utils/pit-tires';
 import {
   ALL_CORNERS,
   cornerWorstWear,
   cornersBelowWearThreshold,
-} from '@ui/widgets/PitServiceWidget/pit-service-utils';
-import type { PitServiceWidgetStore } from '@ui/widgets/PitServiceWidget/pit-service.widget';
+} from '@utils/pit-tires';
+import type { PitServiceWidgetStore } from './pit-service.widget';
 
 /**
  * Auto mode: what the widget orders on the driver's behalf, and when it stands

@@ -11,7 +11,10 @@ import {
 import type { AppLanguage, UnitSystem } from '@/types';
 import type { SessionContext } from '@/types/widget-settings';
 import type { RendererCore } from '@store/renderer-core';
-import { standingsHotkeyTargets } from '@store/hotkeys/hotkey-targets';
+import {
+  standingsHotkeyTargets,
+  streamChatHotkeyTargets,
+} from '@store/hotkeys/hotkey-targets';
 import type { OverlayRoot } from '@store/overlay-root';
 import type { BindingMap } from '@/types/input-bindings';
 
@@ -195,7 +198,11 @@ export const setupOverlayListeners = async (
 
   unlistens.push(
     await listenTo<number>('stream-chat-scroll', (e) => {
-      runInAction(() => root.streamChatWidget.scrollByRows(e.payload));
+      runInAction(() => {
+        for (const chat of streamChatHotkeyTargets(root)) {
+          chat.scrollByRows(e.payload);
+        }
+      });
     })
   );
 

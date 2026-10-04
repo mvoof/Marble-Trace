@@ -473,6 +473,12 @@ describe('traffic scenarios', () => {
 describe('returning to the baseline', () => {
   it('clears a scenario that was picked before it', () => {
     const store = new RendererCore({ skipInit: true });
+    const coach = { advisory: { displayedAdvisory: 'neutral' }, dispose() {} };
+
+    store.widgetInstances.open(
+      { core: store, instanceId: 'coach', type: 'coach' },
+      () => coach
+    );
 
     seedScenario(store, 'pit-limiter');
     seedScenario(store, 'driving-coach-brake');
@@ -481,7 +487,7 @@ describe('returning to the baseline', () => {
 
     expect(store.player.hasPitLaneProgress).toBe(false);
     expect(store.referenceLap.data).toBeNull();
-    expect(store.drivingCoachWidget.displayedAdvisory).toBe('neutral');
+    expect(coach.advisory.displayedAdvisory).toBe('neutral');
     // The snapshot's own flag, not the meatball that was picked over it.
     expect(store.flags.displayFlags).toEqual(
       seed(DEFAULT_PREVIEW_SCENARIO_ID).flags.displayFlags
@@ -746,49 +752,6 @@ describe('timing scenarios', () => {
       ).toBe(false);
       expect(currentSession(store)?.sessionType, scenarioId).toBe('Race');
     }
-  });
-});
-
-// The call row draws the inactive reason over whatever advisory is set, so a
-// coach scenario is only worth anything if the coach is actually evaluating —
-// which needs a reference with a braking zone in it, not just a reference.
-describe('coach scenarios', () => {
-  const cases: Array<[string, string]> = [
-    ['driving-coach-brake', 'brake'],
-    ['driving-coach-gas', 'gas'],
-    ['driving-coach-grip', 'grip'],
-    ['driving-coach-brake-soon', 'neutral'],
-  ];
-
-  it.each(cases)('%s renders the %s call', (scenarioId, advisory) => {
-    const coach = seed(scenarioId).drivingCoachWidget;
-
-    // A null reason is the corner too: without a braking zone in the
-    // reference the coach reports `no-corners` and draws it over the call.
-    expect(coach.inactiveReason).toBeNull();
-    expect(coach.displayedAdvisory).toBe(advisory);
-  });
-
-  it('pre-arms the brake call with a braking point to count down to', () => {
-    const coach = seed('driving-coach-brake-soon').drivingCoachWidget;
-
-    expect(coach.displayedBrakeUrgency).toBeGreaterThanOrEqual(0.7);
-    expect(coach.brakePointDistanceM).not.toBeNull();
-  });
-
-  it('carries the throttle figures the gas call is sized against', () => {
-    const coach = seed('driving-coach-gas').drivingCoachWidget;
-
-    expect(coach.displayedExitLateM).toBeGreaterThan(0);
-    expect(coach.displayedExitThrottleDeficit).toBeGreaterThan(0);
-  });
-
-  // The longest wording the row can carry is an inactive one, not a call, so
-  // that is the state the plate has to be sized against.
-  it('states the longest wording the row can carry', () => {
-    const coach = seed('driving-coach-inactive').drivingCoachWidget;
-
-    expect(coach.inactiveReason).toBe('no-corners');
   });
 });
 

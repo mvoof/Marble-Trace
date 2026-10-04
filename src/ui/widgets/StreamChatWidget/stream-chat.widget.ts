@@ -8,14 +8,15 @@ import {
 import type { ChatMessage, ChatPresence } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 import type { RendererCore } from '@store/renderer-core';
+import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { StreamChatHotkeyTarget } from '@store/hotkeys/hotkey-targets';
 import { scrollThumbFor, type ScrollThumb } from '@utils/canvas';
+import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 
 type StreamChatDeps = Pick<
   RendererCore,
-  'appSettings' | 'liveWidgets' | 'chat'
+  'appSettings' | 'liveWidgets' | 'chat' | 'startsWidgetStores'
 >;
-
-const WIDGET_ID = 'stream-chat';
 
 // Sliding window for the messages-per-minute readout.
 const RATE_WINDOW_MS = 60_000;
@@ -33,7 +34,12 @@ const INITIAL_FIT_ROWS = 8;
 // second is enough for both and keeps the overlay off a per-frame timer.
 const TICK_MS = 1_000;
 
-export class StreamChatWidgetStore {
+/**
+ * One chat window: its filters, its scroll and how many rows fit it. The
+ * messages are the app's (`ChatStore`); built per instance (`mount.ts`), so a
+ * chat on the stream screen keeps its own place while the driver's scrolls.
+ */
+export class StreamChatWidgetStore implements StreamChatHotkeyTarget {
   /** Advanced by a timer so time-based getters re-run without telemetry. */
   private tick = 0;
   private tickTimer: ReturnType<typeof setInterval> | null = null;
@@ -54,19 +60,29 @@ export class StreamChatWidgetStore {
 
   private disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: StreamChatDeps) {
-    makeAutoObservable<StreamChatWidgetStore, 'tickTimer' | 'disposers'>(
+  private readonly root: StreamChatDeps;
+
+  private readonly instanceId: string;
+
+  constructor({ core, instanceId }: WidgetInstanceContext) {
+    this.root = core;
+    this.instanceId = instanceId;
+
+    makeAutoObservable<
+      StreamChatWidgetStore,
+      'tickTimer' | 'disposers' | 'root' | 'instanceId'
+    >(
       this,
-      { tickTimer: false, disposers: false },
+      { tickTimer: false, disposers: false, root: false, instanceId: false },
       { autoBind: true }
     );
+
+    if (core.startsWidgetStores) {
+      this.start();
+    }
   }
 
-  init() {
-    if (this.tickTimer !== null) {
-      return;
-    }
-
+  private start() {
     this.tickTimer = setInterval(() => {
       runInAction(() => {
         this.tick += 1;
@@ -169,8 +185,8 @@ export class StreamChatWidgetStore {
   }
 
   private get settings(): StreamChatWidgetSettings {
-    return this.root.liveWidgets.settingsOfType<StreamChatWidgetSettings>(
-      WIDGET_ID
+    return this.root.liveWidgets.getSettings<StreamChatWidgetSettings>(
+      this.instanceId
     );
   }
 
@@ -304,3 +320,6 @@ export class StreamChatWidgetStore {
     return this.visibleMessages.length === 0;
   }
 }
+
+export const useStreamChatWidgetStore = () =>
+  useWidgetInstanceStore<StreamChatWidgetStore>();

@@ -7,6 +7,7 @@ import type {
 import type { RendererCore } from '@store/renderer-core';
 import { mockProximity } from '@store/preview/mocks/traffic';
 import { CloseBattleWidget } from './CloseBattleWidget';
+import type { CloseBattleWidgetStore } from './close-battle.widget';
 import {
   defineWidgetStories,
   previewScenario,
@@ -76,7 +77,12 @@ const meta: Meta<StoryArgs> = {
       };
 
       store.liveWidgets.updateUserSettings('close-battle', settings);
-      store.closeBattleWidget.visible = true;
+
+      for (const plate of store.widgetInstances.storesOf<CloseBattleWidgetStore>(
+        'close-battle'
+      )) {
+        plate.visible = true;
+      }
 
       if (args.distances !== undefined) {
         seedTraffic(store, args.distances);

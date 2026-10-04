@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type { DrivingAdvisory } from '@utils/driving-coach-utils';
 import type {
   RaceDashWidgetSettings,
   RpmIndicatorMode,
@@ -24,8 +23,6 @@ import {
 import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
 interface StoryArgs {
-  /** Which call the coach is making, which is what colors the dash. */
-  advisory: DrivingAdvisory;
   /** Where on the lap the car sits — the reference speed is read at this point. */
   atPct: number;
   /**
@@ -82,8 +79,6 @@ const meta: Meta<StoryArgs> = {
         return;
       }
 
-      store.drivingCoachWidget.displayedAdvisory = args.advisory;
-
       if (args.referenceLap) {
         store.referenceLap.updateReferenceLap(mockReferenceLap());
       } else {
@@ -126,7 +121,6 @@ const meta: Meta<StoryArgs> = {
       );
     },
     args: {
-      advisory: 'neutral',
       atPct: PREVIEW_CORNER_CENTER_PCT,
       speedDeltaKmh: -1,
       referenceLap: true,
@@ -140,7 +134,6 @@ const meta: Meta<StoryArgs> = {
       steeringWheelAngle: 0,
     },
     argTypes: {
-      advisory: { control: 'radio', options: ['neutral', 'brake', 'gas'] },
       atPct: { control: { type: 'range', min: 0, max: 1, step: 0.01 } },
       speedDeltaKmh: { control: { type: 'number' } },
       speedKmh: { control: { type: 'number' } },
@@ -240,14 +233,14 @@ export const RpmSweepAnimationOff: Story = {
 
 export const OnPace: Story = {};
 
-/** Into the corner carrying too much speed — the call the dash turns red for. */
+/** Into the corner carrying too much speed for the reference. */
 export const Brake: Story = {
-  args: { advisory: 'brake', speedDeltaKmh: 12, gear: 5 },
+  args: { speedDeltaKmh: 12, gear: 5 },
 };
 
 /** Off the corner short of the reference, with throttle still to come. */
 export const Gas: Story = {
-  args: { advisory: 'gas', speedDeltaKmh: -9, rpm: 4200, gear: 3 },
+  args: { speedDeltaKmh: -9, rpm: 4200, gear: 3 },
 };
 
 /** The coach's own braking call, as the scenario states the whole corner. */

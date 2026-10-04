@@ -5,7 +5,10 @@ import type { TrackRotationPayload } from '@platform/services/events.service';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import type { RemoteScreenStore } from '@store/remote/remote-screen.store';
 import type { RendererCore } from '@store/renderer-core';
-import { standingsHotkeyTargets } from '@store/hotkeys/hotkey-targets';
+import {
+  standingsHotkeyTargets,
+  streamChatHotkeyTargets,
+} from '@store/hotkeys/hotkey-targets';
 import type { RemoteMessage, RemoteScreenSnapshot } from '@/types/remote';
 import type {
   CapabilitiesPayload,
@@ -157,9 +160,11 @@ export const initRemoteSync = (
       }
 
       case 'stream-chat-scroll': {
-        runInAction(() =>
-          root.streamChatWidget.scrollByRows(message.data as number)
-        );
+        runInAction(() => {
+          for (const chat of streamChatHotkeyTargets(root)) {
+            chat.scrollByRows(message.data as number);
+          }
+        });
 
         return;
       }

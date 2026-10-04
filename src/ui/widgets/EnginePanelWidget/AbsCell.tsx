@@ -2,10 +2,8 @@ import { observer } from 'mobx-react-lite';
 import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
 import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import { EngineCell } from './EngineCell';
-import {
-  useEnginePanelWidgetStore,
-  usePlayerStore,
-} from '@store/root-store-context';
+import { usePlayerStore } from '@store/root-store-context';
+import { useEnginePanelWidgetStore } from '@ui/widgets/EnginePanelWidget/engine-panel.widget';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
 import type { CellRenderWeight } from './engine-panel-utils';

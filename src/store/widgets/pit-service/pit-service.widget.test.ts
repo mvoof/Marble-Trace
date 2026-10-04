@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
 import { RendererCore } from '@store/renderer-core';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
-import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
+import { PIT_LIMITER_BIT } from '@utils/car-signals';
 
 const sendPitOrderMock = vi.hoisted(() => vi.fn());
 

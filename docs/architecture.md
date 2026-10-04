@@ -732,10 +732,11 @@ Summarized as a direction: `utils/ ← ui/ → store/ → platform/`.
 > **The direction is enforced by lint, not by convention.** `no-restricted-imports`
 > overrides in `.oxlintrc.json` fail `npm run lint` on any violation.
 
-One file is exempt and says why in a comment: `store/renderer-core.ts` (composes
-widget stores that live next to their widgets). `store/widget-catalog.ts` reads
-the per-widget manifests, which also live next to their widgets, but collects
-them with `import.meta.glob` — a path, not an import — so it needs no exemption.
+No file is exempt. A widget's own store lives next to the widget and is built
+per instance from its `mount.ts`, so the store layer never imports it.
+`store/widget-catalog.ts` reads the per-widget manifests, which also live next
+to their widgets, but collects them with `import.meta.glob` — a path, not an
+import — so it needs no exemption.
 
 Path aliases match the layers one-to-one: `@platform/*`, `@store/*`, `@ui/*`,
 `@utils/*`, and `@/*` for `types`, `styles`, `locales` and `storybook`.
@@ -856,7 +857,8 @@ flowchart TB
 
 Every window builds one root over a shared `RendererCore`
 (`src/store/renderer-core.ts`): the data stores, the sim, the settings projection
-widgets read, units and the widget stores. `MainRoot` adds what only the settings
+widgets read, units, the app-wide widget stores (shared ones, the pit service,
+the recorded track) and the registry of per-instance widget stores. `MainRoot` adds what only the settings
 UI uses (editor, inspector, diagnostics, companion apps, chat sign-in, device
 list), `OverlayRoot` adds only the bindings and the settings-panel state its
 drag-mode popup needs, `RemoteRoot` starts the core without Tauri, and `HudRoot`

@@ -2,13 +2,13 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import { sendPitOrder } from '@platform/services/pit.service';
 import type { PitCommandRequest, TireCompoundEntry } from '@/types/bindings';
-import type { CornerPosition } from '@ui/widgets/PitServiceWidget/pit-service-utils';
+import type { CornerPosition } from '@utils/pit-tires';
 import {
   ALL_CORNERS,
   isCornerOrdered,
   orderedPressure,
-} from '@ui/widgets/PitServiceWidget/pit-service-utils';
-import type { PitServiceWidgetStore } from '@ui/widgets/PitServiceWidget/pit-service.widget';
+} from '@utils/pit-tires';
+import type { PitServiceWidgetStore } from './pit-service.widget';
 
 // How long the widget confirms a sent order. The sim never acknowledges a
 // broadcast, so this only reports that the message left, not that it landed.

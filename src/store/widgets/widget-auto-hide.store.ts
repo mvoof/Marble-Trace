@@ -7,6 +7,7 @@ import type {
   PitServiceWidgetSettings,
 } from '@/types/widget-settings';
 import type { RendererCore } from '@store/renderer-core';
+import type { WidgetInstanceStore } from '@store/widgets/widget-instances';
 import { widgetTypeFromId } from '@utils/widget-instance';
 
 type WidgetAutoHideDeps = Pick<
@@ -16,10 +17,19 @@ type WidgetAutoHideDeps = Pick<
   | 'flags'
   | 'pitServiceWidget'
   | 'player'
-  | 'wheelToWheelWidget'
+  | 'widgetInstances'
 >;
 
 const NO_LED_FLAG = 'none';
+
+/**
+ * A per-instance widget store that decides whether its own instance is on
+ * screen. Declared here, not taken from the store: the store lives with its
+ * widget under `@ui/**`, which this layer may not import.
+ */
+export interface SelfHidingWidgetStore extends WidgetInstanceStore {
+  readonly isVisible: boolean;
+}
 
 /**
  * Whether a widget that hides itself wants to be on screen right now.
@@ -29,7 +39,8 @@ const NO_LED_FLAG = 'none';
  * body would latch off the first time it went quiet: the only code that could
  * ever ask for it back went away with the subtree. Every answer here is read
  * from a store instead, all of which keep running whether anything is mounted
- * or not.
+ * or not — a per-instance store included, since it lives outside the frame
+ * that hides its widget (`WidgetInstanceScope`).
  *
  * A widget absent from the switch is always visible — self-hiding is opt-in.
  */
@@ -78,9 +89,14 @@ export class WidgetAutoHideStore {
     }
 
     // Nobody inside the gap threshold means nothing to show, and the plate the
-    // container draws around an empty body would say otherwise.
+    // container draws around an empty body would say otherwise. Each plate has
+    // its own threshold, so the answer is its own instance's store — which
+    // exists for as long as the instance is mounted, hidden or not.
     if (widgetType === 'wheel-to-wheel') {
-      return this.root.wheelToWheelWidget.isVisible;
+      return (
+        this.root.widgetInstances.storeOf<SelfHidingWidgetStore>(widgetId)
+          ?.isVisible ?? false
+      );
     }
 
     if (widgetType === 'pit-service') {

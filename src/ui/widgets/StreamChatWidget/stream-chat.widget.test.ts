@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { RendererCore } from '@store/renderer-core';
+import { StreamChatWidgetStore } from './stream-chat.widget';
 import type { ChatMessage, ChatPlatform } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 
@@ -23,6 +24,7 @@ const makeMessage = (
 
 describe('StreamChatWidgetStore', () => {
   let rootStore: RendererCore;
+  let chatWidget: StreamChatWidgetStore;
 
   const setSettings = (partial: Partial<StreamChatWidgetSettings>) => {
     runInAction(() => {
@@ -46,6 +48,11 @@ describe('StreamChatWidgetStore', () => {
 
   beforeEach(() => {
     rootStore = new RendererCore({ skipInit: true });
+    chatWidget = new StreamChatWidgetStore({
+      core: rootStore,
+      instanceId: 'stream-chat',
+      type: 'stream-chat',
+    });
   });
 
   it('hides bot commands when the filter is on', () => {
@@ -55,8 +62,8 @@ describe('StreamChatWidgetStore', () => {
       makeMessage('2', 'viewer', 'hello'),
     ]);
 
-    expect(rootStore.streamChatWidget.visibleMessages).toHaveLength(1);
-    expect(rootStore.streamChatWidget.visibleMessages[0].id).toBe('2');
+    expect(chatWidget.visibleMessages).toHaveLength(1);
+    expect(chatWidget.visibleMessages[0].id).toBe('2');
   });
 
   it('hides only subs and raids when events are off', () => {
@@ -90,9 +97,10 @@ describe('StreamChatWidgetStore', () => {
       },
     ]);
 
-    expect(
-      rootStore.streamChatWidget.visibleMessages.map((message) => message.id)
-    ).toEqual(['3', '4']);
+    expect(chatWidget.visibleMessages.map((message) => message.id)).toEqual([
+      '3',
+      '4',
+    ]);
   });
 
   const followRow = (id: string): ChatMessage => ({
@@ -114,24 +122,24 @@ describe('StreamChatWidgetStore', () => {
     setSettings({ showEvents: true, showFollows: false });
     seed([followRow('1'), subRow('2')]);
 
-    expect(
-      rootStore.streamChatWidget.visibleMessages.map((message) => message.id)
-    ).toEqual(['2']);
+    expect(chatWidget.visibleMessages.map((message) => message.id)).toEqual([
+      '2',
+    ]);
   });
 
   it('hides follows when events are off even with follows on', () => {
     setSettings({ showEvents: false, showFollows: true });
     seed([followRow('1'), subRow('2')]);
 
-    expect(rootStore.streamChatWidget.visibleMessages).toHaveLength(1);
-    expect(rootStore.streamChatWidget.visibleMessages[0].id).toBe('1');
+    expect(chatWidget.visibleMessages).toHaveLength(1);
+    expect(chatWidget.visibleMessages[0].id).toBe('1');
   });
 
   it('keeps commands when the filter is off', () => {
     runInAction(() => rootStore.appSettings.setStreamChatHideCommands(false));
     seed([makeMessage('1', 'viewer', '!drops')]);
 
-    expect(rootStore.streamChatWidget.visibleMessages).toHaveLength(1);
+    expect(chatWidget.visibleMessages).toHaveLength(1);
   });
 
   it('drops messages from ignored bots regardless of casing', () => {
@@ -143,9 +151,7 @@ describe('StreamChatWidgetStore', () => {
       makeMessage('2', 'human', 'nice lap'),
     ]);
 
-    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
-      ['2']
-    );
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['2']);
   });
 
   it('scrolls the window back through the history and clamps at both ends', () => {
@@ -157,21 +163,15 @@ describe('StreamChatWidgetStore', () => {
       makeMessage('4', 'd', 'four'),
     ]);
 
-    runInAction(() => rootStore.streamChatWidget.scrollByRows(1));
-    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
-      ['2', '3']
-    );
+    runInAction(() => chatWidget.scrollByRows(1));
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['2', '3']);
 
-    runInAction(() => rootStore.streamChatWidget.scrollByRows(10));
-    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
-      ['1', '2']
-    );
+    runInAction(() => chatWidget.scrollByRows(10));
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['1', '2']);
 
-    runInAction(() => rootStore.streamChatWidget.scrollByRows(-10));
-    expect(rootStore.streamChatWidget.isScrolled).toBe(false);
-    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
-      ['3', '4']
-    );
+    runInAction(() => chatWidget.scrollByRows(-10));
+    expect(chatWidget.isScrolled).toBe(false);
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['3', '4']);
   });
 
   it('caps the feed at maxMessages keeping the newest', () => {
@@ -182,9 +182,7 @@ describe('StreamChatWidgetStore', () => {
       makeMessage('3', 'c', 'three'),
     ]);
 
-    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
-      ['2', '3']
-    );
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['2', '3']);
   });
 
   it('scrolls once fewer messages fit than the history holds', () => {
@@ -197,15 +195,13 @@ describe('StreamChatWidgetStore', () => {
     ]);
 
     // The rendered list reports that only two rows are on screen.
-    runInAction(() => rootStore.streamChatWidget.setFittingCount(2));
+    runInAction(() => chatWidget.setFittingCount(2));
 
-    expect(rootStore.streamChatWidget.maxScrollOffset).toBe(2);
-    expect(rootStore.streamChatWidget.scrollThumb).not.toBeNull();
+    expect(chatWidget.maxScrollOffset).toBe(2);
+    expect(chatWidget.scrollThumb).not.toBeNull();
 
-    runInAction(() => rootStore.streamChatWidget.scrollByRows(2));
-    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
-      ['1', '2']
-    );
+    runInAction(() => chatWidget.scrollByRows(2));
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['1', '2']);
   });
 
   it('expires messages older than the configured lifetime', () => {
@@ -215,16 +211,14 @@ describe('StreamChatWidgetStore', () => {
       makeMessage('new', 'b', 'fresh'),
     ]);
 
-    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
-      ['new']
-    );
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['new']);
   });
 
   it('keeps everything when the lifetime is zero', () => {
     setSettings({ messageLifetimeSeconds: 0 });
     seed([makeMessage('old', 'a', 'stale', 'twitch', 600_000)]);
 
-    expect(rootStore.streamChatWidget.visibleMessages).toHaveLength(1);
+    expect(chatWidget.visibleMessages).toHaveLength(1);
   });
 
   it('sums viewers only across platforms that report a number', () => {
@@ -249,7 +243,7 @@ describe('StreamChatWidgetStore', () => {
       });
     });
 
-    expect(rootStore.streamChatWidget.totalViewers).toBe(312);
+    expect(chatWidget.totalViewers).toBe(312);
   });
 
   it('counts only messages inside the activity window', () => {
@@ -258,7 +252,7 @@ describe('StreamChatWidgetStore', () => {
       makeMessage('2', 'b', 'ancient', 'twitch', 120_000),
     ]);
 
-    expect(rootStore.streamChatWidget.messagesPerMinute).toBe(1);
+    expect(chatWidget.messagesPerMinute).toBe(1);
   });
 });
 

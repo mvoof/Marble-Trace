@@ -34,11 +34,12 @@ const makeStore = () => {
     relativeEntries: [carAt(0, 0, true), carAt(1, -0.3)],
   });
   const appSettings = observable({ dragMode: false });
-  const store = new WheelToWheelWidgetStore({
+  const core = {
     backendComputed,
     appSettings,
+    startsWidgetStores: true,
     liveWidgets: {
-      settingsOfType: () => ({
+      getSettings: () => ({
         gapThreshold: 1,
         hideDelay: HIDE_DELAY_S,
         raceOnly: true,
@@ -47,9 +48,12 @@ const makeStore = () => {
     },
     session: { currentSessionType: 'Race', sessionInfo: null },
     units: { unitSystem: 'metric' },
+  };
+  const store = new WheelToWheelWidgetStore({
+    core,
+    instanceId: 'wheel-to-wheel',
+    type: 'wheel-to-wheel',
   } as unknown as Deps);
-
-  store.init();
 
   const moveRivalTo = (gapSeconds: number) =>
     runInAction(() => {

@@ -32,7 +32,7 @@ describe('EnginePanelWidgetStore', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     deps = makeDeps();
-    store = new EnginePanelWidgetStore(deps as never);
+    store = new EnginePanelWidgetStore({ core: deps } as never);
   });
 
   afterEach(() => {

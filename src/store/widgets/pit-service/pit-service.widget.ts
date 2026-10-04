@@ -2,11 +2,11 @@ import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
 import type { RendererCore } from '@store/renderer-core';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
-import { PitAutoService } from '@ui/widgets/PitServiceWidget/pit-auto-service';
-import { PitOrder } from '@ui/widgets/PitServiceWidget/pit-order';
-import { PitPanelState } from '@ui/widgets/PitServiceWidget/pit-panel';
+import { PitAutoService } from './pit-auto-service';
+import { PitOrder } from './pit-order';
+import { PitPanelState } from './pit-panel';
 import { distanceToPitEntryM } from '@utils/pit-approach';
-import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
+import { PIT_LIMITER_BIT } from '@utils/car-signals';
 
 type PitServiceDeps = Pick<
   RendererCore,
@@ -33,6 +33,11 @@ type PitServiceDeps = Pick<
  *
  * What stays here is what all three need: the root store, the widget's
  * settings, the raw pit telemetry, and the lifecycle.
+ *
+ * App-wide, not per instance: the main window sends the order from hotkeys
+ * and from the auto service with no widget mounted there, the pit-line widget
+ * and the auto-hide ride the same panel, and the race dash measures against
+ * the same lane. The auto service moves to the backend in its own ticket.
  */
 export class PitServiceWidgetStore {
   readonly panel: PitPanelState;
@@ -88,6 +93,12 @@ export class PitServiceWidgetStore {
     this.disposers.length = 0;
   }
 
+  /**
+   * The settings of the instance that speaks for the widget. One answer for
+   * the app, not one per instance: the order goes to the one car in the sim —
+   * the fuel to add, the tires to change, when to arm it — so two pit boxes
+   * holding different auto-fuel rules would send two orders for one stop.
+   */
   get settings(): PitServiceWidgetSettings {
     return this.root.liveWidgets.settingsOfType<PitServiceWidgetSettings>(
       'pit-service'

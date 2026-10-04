@@ -1,13 +1,15 @@
 import { computed, makeAutoObservable } from 'mobx';
 
 import type { RendererCore } from '@store/renderer-core';
+import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import {
   buildPaceCarRowEntries,
   mergePaceCarRows,
   type PaceCarRowEntry,
-} from '@ui/widgets/RelativeWidget/relative-utils';
+} from './relative-utils';
+import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 
 type RelativeDeps = Pick<
   RendererCore,
@@ -36,20 +38,31 @@ export interface RelativeRow {
  *
  * It lives here rather than in `BackendComputedStore` because the pace-car rows
  * are merged in from the session roster, the car-index frame and a setting —
- * none of which a data store may know about.
+ * none of which a data store may know about. Built per instance (`mount.ts`),
+ * so two strips follow their own pace-car and qualifying settings.
  */
 export class RelativeWidgetStore {
-  constructor(private readonly root: RelativeDeps) {
-    makeAutoObservable<RelativeWidgetStore, 'root'>(
+  private readonly root: RelativeDeps;
+
+  private readonly instanceId: string;
+
+  constructor({ core, instanceId }: WidgetInstanceContext) {
+    this.root = core;
+    this.instanceId = instanceId;
+
+    makeAutoObservable<RelativeWidgetStore, 'root' | 'instanceId'>(
       this,
-      { root: false, rowOrder: computed.struct },
+      { root: false, instanceId: false, rowOrder: computed.struct },
       { autoBind: true }
     );
   }
 
+  /** Nothing to stop: the store is derivations only. */
+  dispose() {}
+
   private get settings(): RelativeWidgetSettings {
-    return this.root.liveWidgets.settingsOfType<RelativeWidgetSettings>(
-      'relative'
+    return this.root.liveWidgets.getSettings<RelativeWidgetSettings>(
+      this.instanceId
     );
   }
 
@@ -102,3 +115,6 @@ export class RelativeWidgetStore {
     }));
   }
 }
+
+export const useRelativeWidgetStore = () =>
+  useWidgetInstanceStore<RelativeWidgetStore>();

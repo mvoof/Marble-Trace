@@ -46,6 +46,7 @@ import {
   referenceSpeedKmhAt,
 } from './mocks/coach';
 import type { MockTrackCondition } from './mocks/weather';
+import { seedCoachAdvisory } from './coach-advisory-seed';
 import { mockEnvironment } from './mocks/weather';
 import {
   mockSession,
@@ -578,16 +579,16 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
     label: 'Driving Coach — Brake',
     apply: (store) => {
       seedSampleTelemetry(store);
-      // The advisory itself is forced rather than computed: the reaction that
-      // evaluates it never runs in this isolated preview store, so nothing
-      // overrides what is written here — same reasoning as `radar.visible`
-      // above. The reference lap still has to be a real one, corner and all:
-      // without a braking zone in it the coach reports `no-corners` and draws
-      // that over every call a scenario asks for.
-      store.drivingCoachWidget.displayedAdvisory = 'brake';
+      // The advisory itself is forced rather than computed (see
+      // `seedCoachAdvisory`). The reference lap still has to be a real one,
+      // corner and all: without a braking zone in it the coach reports
+      // `no-corners` and draws that over every call a scenario asks for.
+      seedCoachAdvisory(store, {
+        displayedAdvisory: 'brake',
+        displayedBrakeUrgency: 1,
+      });
       // Into the braking zone and carrying too much speed for it.
       applyCoachReference(store, { atPct: 0.475, deltaKmh: 12 });
-      store.drivingCoachWidget.displayedBrakeUrgency = 1;
     },
   },
   {
@@ -599,7 +600,7 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       // but pre-armed, which is the one state that swaps the delta for a
       // countdown to the braking point.
       applyCoachReference(store, { atPct: 0.44, deltaKmh: 0 });
-      store.drivingCoachWidget.displayedBrakeUrgency = 0.85;
+      seedCoachAdvisory(store, { displayedBrakeUrgency: 0.85 });
     },
   },
   {
@@ -607,11 +608,13 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
     label: 'Driving Coach — Gas',
     apply: (store) => {
       seedSampleTelemetry(store);
-      store.drivingCoachWidget.displayedAdvisory = 'gas';
       // Out of the corner, short of the reference's speed and its pedal.
+      seedCoachAdvisory(store, {
+        displayedAdvisory: 'gas',
+        displayedExitLateM: 14,
+        displayedExitThrottleDeficit: 0.22,
+      });
       applyCoachReference(store, { atPct: 0.52, deltaKmh: -8 });
-      store.drivingCoachWidget.displayedExitLateM = 14;
-      store.drivingCoachWidget.displayedExitThrottleDeficit = 0.22;
     },
   },
   {
@@ -621,7 +624,7 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       seedSampleTelemetry(store);
       // Not an instruction but a refusal to give one — the car is being caught
       // and corrected, and the call takes neither of the two configured colors.
-      store.drivingCoachWidget.displayedAdvisory = 'grip';
+      seedCoachAdvisory(store, { displayedAdvisory: 'grip' });
       applyCoachReference(store, { atPct: 0.52, deltaKmh: -6 });
     },
   },

@@ -136,7 +136,10 @@ derived logic.** Simple widgets read the data stores directly, and stay simple.
   `getSettings(context.instanceId)`, and give components a hook over
   `useWidgetInstanceStore`. It exists only while the instance is mounted. A
   shared store it reads (`flags`, `paceCar`, `radar`) goes in `sharedStores`.
-  `StandingsWidget` and `InputTraceWidget` are the worked examples.
+  A reaction or timer that would overwrite what a preview seeds by hand starts
+  only when `context.core.startsWidgetStores`. `StandingsWidget` and `InputTraceWidget`
+  are the worked examples; `WheelToWheelWidget` for a store that also decides
+  the auto-hide.
 
 The full six rules are [architecture.md → The six store rules](architecture.md).
 

@@ -7,7 +7,9 @@ import {
 } from 'mobx';
 
 import type { RendererCore } from '@store/renderer-core';
+import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
 import type { CarStatusFrame } from '@/types/bindings';
+import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 import { ADJUSTMENT_FIELDS } from './engine-panel-utils';
 
 type EnginePanelDeps = Pick<RendererCore, 'player'>;
@@ -46,10 +48,19 @@ export class EnginePanelWidgetStore {
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
   private readonly disposers: IReactionDisposer[] = [];
 
-  // Wired in the constructor rather than an init() step: the highlight must
-  // follow the telemetry frame, and it costs nothing when no adjustment moves.
-  constructor(private readonly root: EnginePanelDeps) {
-    makeAutoObservable(this, {}, { autoBind: true });
+  private readonly root: EnginePanelDeps;
+
+  // Built per instance when it mounts (`mount.ts`), and wired in the
+  // constructor rather than an init() step: the highlight must follow the
+  // telemetry frame, and it costs nothing when no adjustment moves.
+  constructor({ core }: Pick<WidgetInstanceContext, 'core'>) {
+    this.root = core;
+
+    makeAutoObservable<EnginePanelWidgetStore, 'root'>(
+      this,
+      { root: false },
+      { autoBind: true }
+    );
 
     this.disposers.push(
       reaction(
@@ -132,3 +143,6 @@ export class EnginePanelWidgetStore {
     this.reset();
   }
 }
+
+export const useEnginePanelWidgetStore = () =>
+  useWidgetInstanceStore<EnginePanelWidgetStore>();

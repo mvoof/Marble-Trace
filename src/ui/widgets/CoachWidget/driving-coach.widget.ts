@@ -1,6 +1,7 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
 
 import type { RendererCore } from '@store/renderer-core';
+import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
 import type { ReferenceLapSample } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import {
@@ -18,7 +19,12 @@ import {
 
 type DrivingCoachDeps = Pick<
   RendererCore,
-  'player' | 'referenceLap' | 'session' | 'liveWidgets'
+  | 'player'
+  | 'referenceLap'
+  | 'session'
+  | 'liveWidgets'
+  | 'sim'
+  | 'startsWidgetStores'
 >;
 
 /**
@@ -87,6 +93,10 @@ const countdownM = (
   );
 };
 
+/**
+ * The coach's call — BRAKE / GAS / GRIP and the countdowns beside it. Built
+ * per instance (`mount.ts`), at that coach's own settings.
+ */
 export class DrivingCoachWidgetStore {
   displayedAdvisory: DrivingAdvisory = 'neutral';
   /** Quantized `brakeUrgency` from the latest advisory evaluation, for pre-arm UI (0..1). */
@@ -114,9 +124,21 @@ export class DrivingCoachWidgetStore {
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private reactionDisposers: (() => void)[] = [];
 
-  constructor(private readonly root: DrivingCoachDeps) {
+  private readonly root: DrivingCoachDeps;
+
+  private readonly instanceId: string;
+
+  constructor({
+    core,
+    instanceId,
+  }: Pick<WidgetInstanceContext, 'core' | 'instanceId'>) {
+    this.root = core;
+    this.instanceId = instanceId;
+
     makeAutoObservable<
       DrivingCoachWidgetStore,
+      | 'root'
+      | 'instanceId'
       | 'advisoryState'
       | 'lastDistPctUpdateAt'
       | 'steeringHistory'
@@ -124,6 +146,8 @@ export class DrivingCoachWidgetStore {
     >(
       this,
       {
+        root: false,
+        instanceId: false,
         advisoryState: false,
         lastDistPctUpdateAt: false,
         steeringHistory: false,
@@ -131,10 +155,24 @@ export class DrivingCoachWidgetStore {
       },
       { autoBind: true }
     );
+
+    if (core.startsWidgetStores) {
+      this.start();
+    }
   }
 
-  init() {
-    this.disposeReactions();
+  private start() {
+    // A lost connection ends the lap the latched advisory belongs to.
+    this.reactionDisposers.push(
+      reaction(
+        () => this.root.sim.isConnected,
+        (connected) => {
+          if (!connected) {
+            this.reset();
+          }
+        }
+      )
+    );
 
     this.reactionDisposers.push(
       reaction(
@@ -163,9 +201,10 @@ export class DrivingCoachWidgetStore {
     );
   }
 
-  private disposeReactions() {
+  dispose() {
     this.reactionDisposers.forEach((dispose) => dispose());
     this.reactionDisposers = [];
+    this.reset();
   }
 
   /** Whether a best-lap reference has been recorded at all for this track+car. */
@@ -365,7 +404,9 @@ export class DrivingCoachWidgetStore {
   }
 
   private get settings(): CoachWidgetSettings {
-    return this.root.liveWidgets.settingsOfType<CoachWidgetSettings>('coach');
+    return this.root.liveWidgets.getSettings<CoachWidgetSettings>(
+      this.instanceId
+    );
   }
 
   /** Append this frame's steering angle to the rolling window and resolve the unsettled flag. */

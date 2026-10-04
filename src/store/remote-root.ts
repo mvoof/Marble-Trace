@@ -5,15 +5,14 @@ import { RendererCore } from './renderer-core';
  *
  * Built with `skipInit` because the core's init opens Tauri channels — the
  * telemetry stream, the settings file, the chat connectors — none of which a
- * browser has. Only the widget stores that derive their state from the data
- * stores are started — the shared ones as their widgets mount; everything else arrives over the socket.
+ * browser has. The widget stores derive their state from the data stores and
+ * start as their widgets mount (`startsWidgetStores`); the pit service, which
+ * is app-wide, is started here. Everything else arrives over the socket.
  */
 export class RemoteRoot extends RendererCore {
   constructor() {
-    super({ skipInit: true, startsSharedStores: true });
+    super({ skipInit: true, startsWidgetStores: true });
 
-    this.drivingCoachWidget.init();
-    this.coachWidget.init();
     this.pitServiceWidget.init();
   }
 }

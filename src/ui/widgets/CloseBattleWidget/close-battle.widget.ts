@@ -8,6 +8,8 @@ import {
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import type { RendererCore } from '@store/renderer-core';
+import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 import {
   buildOpponents,
   buildPlateGroups,
@@ -27,9 +29,8 @@ type CloseBattleDeps = Pick<
   | 'backendComputed'
   | 'session'
   | 'player'
+  | 'startsWidgetStores'
 >;
-
-const WIDGET_ID = 'close-battle';
 
 const setsMatch = (first: Set<number>, second: Set<number>): boolean =>
   first.size === second.size && [...first].every((idx) => second.has(idx));
@@ -37,6 +38,10 @@ const setsMatch = (first: Set<number>, second: Set<number>): boolean =>
 /** A row leaves at 1.3 × the threshold, or it blinks on every straight. */
 const LEAVE_HYSTERESIS = 1.3;
 
+/**
+ * One close-battle plate: who is inside its threshold and how long it lingers.
+ * Built per instance (`mount.ts`), so two plates follow their own settings.
+ */
 export class CloseBattleWidgetStore {
   visible = false;
 
@@ -52,11 +57,25 @@ export class CloseBattleWidgetStore {
 
   private disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: CloseBattleDeps) {
-    makeAutoObservable(this);
+  private readonly root: CloseBattleDeps;
+
+  private readonly instanceId: string;
+
+  constructor({ core, instanceId }: WidgetInstanceContext) {
+    this.root = core;
+    this.instanceId = instanceId;
+
+    makeAutoObservable<CloseBattleWidgetStore, 'root' | 'instanceId'>(this, {
+      root: false,
+      instanceId: false,
+    });
+
+    if (core.startsWidgetStores) {
+      this.start();
+    }
   }
 
-  init() {
+  private start() {
     this.disposers.push(
       reaction(
         () => mergedCarIdxs(this.plateGroups),
@@ -134,7 +153,7 @@ export class CloseBattleWidgetStore {
   /**
    * Drag mode always draws the widget, or it could not be placed. Someone in
    * the threshold draws it too, without waiting for the reaction: a preview
-   * store runs with `skipInit`, so `visible` would never be raised there and
+   * core starts no reactions, so `visible` would never be raised there and
    * the widget-settings preview would stay blank with data right in front of it.
    * The flag then only holds the widget on screen for the fade-out delay.
    */
@@ -147,8 +166,8 @@ export class CloseBattleWidgetStore {
   }
 
   get settings(): CloseBattleWidgetSettings {
-    return this.root.liveWidgets.settingsOfType<CloseBattleWidgetSettings>(
-      WIDGET_ID
+    return this.root.liveWidgets.getSettings<CloseBattleWidgetSettings>(
+      this.instanceId
     );
   }
 
@@ -230,3 +249,6 @@ export class CloseBattleWidgetStore {
     }
   }
 }
+
+export const useCloseBattleWidgetStore = () =>
+  useWidgetInstanceStore<CloseBattleWidgetStore>();
