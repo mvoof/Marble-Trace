@@ -37,12 +37,17 @@ pub struct SourceFrame {
     pub sim_perf: SimPerfFrame,
 }
 
-/// Result of one session poll: the normalized snapshot plus the
+/// Result of one session parse: the normalized snapshot plus the
 /// weather forecast (emitted as a separate `sim://weather` event).
 pub struct ParsedSession {
     pub snapshot: SessionSnapshot,
     pub weather_forecast: Vec<WeatherForecastEntry>,
 }
+
+/// Turns a source's raw session text into the normalized session. A plain
+/// function rather than a method: it runs on the I/O worker, away from the
+/// source, whose connection may not leave the telemetry thread.
+pub type SessionParser = fn(&str) -> Option<ParsedSession>;
 
 /// Result of a single telemetry read attempt from a source.
 #[derive(Debug)]
@@ -70,16 +75,16 @@ pub trait TelemetrySource {
     /// Returns `true` if the session YAML version has changed since the last `poll_session`.
     fn session_changed(&mut self) -> bool;
 
-    /// Parse and return updated session data, advancing the internal version counter.
-    fn poll_session(&mut self) -> Option<ParsedSession>;
+    /// Copy out the raw session text, advancing the internal version counter.
+    /// Only the copy happens here — parsing is the I/O worker's, through
+    /// `session_parser`, so a session change never costs the tick it lands on.
+    fn poll_session(&mut self) -> Option<String>;
+
+    /// How this source's session text is parsed.
+    fn session_parser(&self) -> SessionParser;
 
     /// The tape this source plays, when it is a replay rather than a sim.
     fn replay_name(&self) -> Option<String> {
         None
     }
-
-    /// The raw session text behind the last `poll_session`, kept for the tape
-    /// recorder — which stores what the sim sent, not what we made of it.
-    #[cfg(feature = "dev")]
-    fn last_session_yaml(&self) -> Option<&str>;
 }

@@ -14,7 +14,7 @@ use tracing::{info, warn};
 
 use crate::model::enums::SimType;
 use crate::sources::iracing::session_parse::parse_session;
-use crate::sources::source::{ParsedSession, SourceFrame, SourceReadResult, TelemetrySource};
+use crate::sources::source::{SessionParser, SourceFrame, SourceReadResult, TelemetrySource};
 use crate::sources::tape::{TapeHeader, TapeReader, TapeRecord, TapeWriter};
 use crate::telemetry::capabilities::Capabilities;
 
@@ -138,12 +138,14 @@ impl TelemetrySource for ReplaySource {
         Some(self.name.clone())
     }
 
-    fn poll_session(&mut self) -> Option<ParsedSession> {
-        parse_session(&self.pending_session.take()?)
+    fn poll_session(&mut self) -> Option<String> {
+        self.pending_session.take()
     }
 
-    fn last_session_yaml(&self) -> Option<&str> {
-        None
+    // Tapes are recorded from iRacing only; the header's sim is not consulted
+    // until a second sim exists to record.
+    fn session_parser(&self) -> SessionParser {
+        parse_session
     }
 }
 
@@ -192,20 +194,16 @@ impl TelemetrySource for RecordingSource {
         self.inner.session_changed()
     }
 
-    fn poll_session(&mut self) -> Option<ParsedSession> {
-        let parsed = self.inner.poll_session();
+    fn poll_session(&mut self) -> Option<String> {
+        let yaml = self.inner.poll_session()?;
 
-        if let Some(yaml) = self.inner.last_session_yaml() {
-            self.writer.push(TapeRecord::Session {
-                yaml: yaml.to_string(),
-            });
-        }
+        self.writer.push(TapeRecord::Session { yaml: yaml.clone() });
 
-        parsed
+        Some(yaml)
     }
 
-    fn last_session_yaml(&self) -> Option<&str> {
-        self.inner.last_session_yaml()
+    fn session_parser(&self) -> SessionParser {
+        self.inner.session_parser()
     }
 }
 
@@ -291,7 +289,6 @@ mod tests {
     /// Fakes a live sim: hands out its frames, then disconnects.
     struct ScriptedSource {
         frames: Vec<SourceFrame>,
-        yaml: Option<String>,
         session_due: bool,
     }
 
@@ -316,15 +313,14 @@ mod tests {
             self.session_due
         }
 
-        fn poll_session(&mut self) -> Option<ParsedSession> {
+        fn poll_session(&mut self) -> Option<String> {
             self.session_due = false;
-            self.yaml = Some(SESSION_YAML.into());
 
-            parse_session(SESSION_YAML)
+            Some(SESSION_YAML.into())
         }
 
-        fn last_session_yaml(&self) -> Option<&str> {
-            self.yaml.as_deref()
+        fn session_parser(&self) -> SessionParser {
+            parse_session
         }
     }
 
@@ -334,7 +330,6 @@ mod tests {
         let mut recorder = RecordingSource::new(
             Box::new(ScriptedSource {
                 frames,
-                yaml: None,
                 session_due: true,
             }),
             writer,
@@ -373,7 +368,8 @@ mod tests {
         let mut replay = ReplaySource::open(&path, 0).expect("tape replays");
         let first = replay.read_frame(1000);
         let changed = replay.session_changed();
-        let parsed = replay.poll_session();
+        let parser = replay.session_parser();
+        let parsed = replay.poll_session().and_then(|yaml| parser(&yaml));
         let changed_after_poll = replay.session_changed();
 
         std::fs::remove_file(&path).ok();

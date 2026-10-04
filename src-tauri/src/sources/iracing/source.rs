@@ -7,7 +7,7 @@ use tracing::{debug, warn};
 use super::frame_map::DeclaredVars;
 use super::session_parse;
 use crate::model::enums::SimType;
-use crate::sources::source::{ParsedSession, SourceFrame, SourceReadResult, TelemetrySource};
+use crate::sources::source::{SessionParser, SourceFrame, SourceReadResult, TelemetrySource};
 use crate::telemetry::capabilities::Capabilities;
 
 pub struct IracingSource {
@@ -16,8 +16,6 @@ pub struct IracingSource {
     /// What this car declares. Read once — the sim fixes the variable list for
     /// the session when the connection opens.
     declared: DeclaredVars,
-    #[cfg(feature = "dev")]
-    last_session_yaml: Option<String>,
 }
 
 impl IracingSource {
@@ -73,8 +71,6 @@ impl IracingSource {
                     connection: conn,
                     last_session_version: -1,
                     declared,
-                    #[cfg(feature = "dev")]
-                    last_session_yaml: None,
                 })
             }
             Ok(_) => {
@@ -119,9 +115,9 @@ impl TelemetrySource for IracingSource {
         self.connection.session_info_update() != self.last_session_version
     }
 
-    /// Reads the current session YAML, parses it, advances `last_session_version`.
-    /// Returns the parsed session on success, `None` on missing YAML or parse failure.
-    fn poll_session(&mut self) -> Option<ParsedSession> {
+    /// Copies the current session YAML out of shared memory and advances
+    /// `last_session_version`. `None` when the sim has no YAML to give.
+    fn poll_session(&mut self) -> Option<String> {
         let current_version = self.connection.session_info_update();
 
         debug!(
@@ -129,36 +125,20 @@ impl TelemetrySource for IracingSource {
             self.last_session_version, current_version
         );
 
+        self.last_session_version = current_version;
+
         let Some(raw_yaml) = self.connection.session_yaml() else {
             warn!("session_yaml() returned None (version {})", current_version);
-            self.last_session_version = current_version;
 
             return None;
         };
 
         debug!("Fetched session YAML ({} bytes)", raw_yaml.len());
 
-        let result = session_parse::parse_session(&raw_yaml);
-
-        if result.is_none() {
-            warn!(
-                "Session YAML parse error (version {}). YAML snippet: {:.100}",
-                current_version, raw_yaml
-            );
-        }
-
-        self.last_session_version = current_version;
-
-        #[cfg(feature = "dev")]
-        {
-            self.last_session_yaml = Some(raw_yaml);
-        }
-
-        result
+        Some(raw_yaml)
     }
 
-    #[cfg(feature = "dev")]
-    fn last_session_yaml(&self) -> Option<&str> {
-        self.last_session_yaml.as_deref()
+    fn session_parser(&self) -> SessionParser {
+        session_parse::parse_session
     }
 }

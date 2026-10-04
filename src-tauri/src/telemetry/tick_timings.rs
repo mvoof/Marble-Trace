@@ -1,7 +1,8 @@
 //! How long each telemetry tick took, for the perf harness.
 //!
-//! A tick is one pass of `emit_domain_frames`: processors, assembly, mask,
-//! quantization and delivery. The samples are kept whole rather than folded
+//! A tick is everything the loop does with one frame once it has it: applying
+//! a parsed session, then one pass of `emit_domain_frames` — processors,
+//! assembly, mask, quantization and delivery. The samples are kept whole rather than folded
 //! into a running histogram, because p99 over a sixty-second run is a sort of
 //! a few thousand numbers and nothing cheaper is worth its error.
 

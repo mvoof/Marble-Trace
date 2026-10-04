@@ -72,6 +72,7 @@ One row per measurement. Later tickets add rows here.
 | ---------- | ----------------------------------------------------- | ----------- | ------------- | ------------- | ------------- | --------- | -------------- | ------------------- | ------------------ |
 | 2026-10-04 | `refactor/architecture-rework` @ 4c1c2f0e + ticket 01 | widgets     | 789 / 768     | 1060          | 11.64 / 11.65 | 7538      | 0.9            | 1.2 / 1.0           | baseline, two runs |
 | 2026-10-04 | same                                                  | stores-only | 756 / 747     | 1060          | 4.65 / 4.69   | 0         | 0.5            | 0.5                 | baseline, two runs |
+| 2026-10-04 | `refactor/architecture-rework` @ fd5f1819 + ticket 03 | widgets     | 800 / 785     | 1059          | 11.62 / 11.67 | 7530      | 1.0 / 0.9      | 0.9 / 0.8           | tick span widened  |
 
 ## 2026-10-04 — baseline (ticket 01)
 
@@ -152,3 +153,29 @@ still allocates 1.06 MiB/s, which makes it store-side work that runs per bundle.
   monitor.
 - The backend tick is cheap: p50 ~50 µs, p99 ~0.8 ms, max under 2 ms, no
   long tasks, no dropped frames.
+
+## 2026-10-04 — disk and session YAML off the telemetry loop (ticket 03)
+
+Same machine, tape, offset, layout and command as the baseline, widgets mode,
+two runs. Over the 60 s the tape sends 16 session updates and one pit lane
+calibration, so the span holds both cases the ticket names.
+
+**The tick span is wider than the baseline's.** It now starts before the
+parsed sessions are applied instead of at `emit_domain_frames`, because applying
+a session is tick work too. The old parse ran outside the old span, so the
+baseline never saw it; these rows count strictly more than the baseline rows do.
+
+| metric                          | run 1 | run 2 | spread |
+| ------------------------------- | ----- | ----- | ------ |
+| tick p50 (µs)                   | 53    | 49    | 7.5 %  |
+| tick p99 (µs)                   | 800   | 785   | 1.9 %  |
+| tick max (µs)                   | 1169  | 1039  | 11.1 % |
+| overlay-DISPLAY1 KiB/s          | 1060  | 1058  | 0.2 %  |
+| overlay-DISPLAY1 alloc (MiB/s)  | 11.62 | 11.67 | 0.4 %  |
+| overlay-DISPLAY1 apply p99 (ms) | 1.0   | 0.9   | 1 step |
+
+- **p99 is unchanged** (800 / 785 against 789 / 768) with the session apply now
+  inside the span.
+- **The worst tick dropped by about a third** (1169 / 1039 against 1593 / 1690 µs).
+  The file writes inside the emit were the outliers.
+- Nothing on the frontend moved, as expected for a backend-only change.

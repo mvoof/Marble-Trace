@@ -9,11 +9,12 @@ use std::time::Duration;
 #[cfg(feature = "dev")]
 use std::time::Instant;
 
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter};
 use tracing::warn;
 
 use super::delivery::DeliveryCounters;
 use super::dispatch::{mirrors, plan, BundleSink, DeliveryGroup, Recipient};
+use super::io_worker::IoWorker;
 use super::publications::PublicationRegistry;
 use super::quantize;
 use super::scheduler::DueGroups;
@@ -33,10 +34,9 @@ use crate::model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
     PitServiceFrame, PitTargetFrame,
 };
-use crate::model::reference_lap::{ReferenceLapData, TrackCondition};
 use crate::model::relative::RelativeFrame;
 use crate::model::session::SessionFrame;
-use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
+use crate::model::track_shape::TrackRecordingFrame;
 use crate::sources::source::SourceFrame;
 use crate::utils::lock_or_recover;
 
@@ -51,6 +51,8 @@ pub use crate::model::events::{
 
 pub struct EmitContext<'a> {
     pub app: &'a AppHandle,
+    /// Where the files a processor produces are written, off this thread.
+    pub io: &'a IoWorker,
     pub frame: &'a SourceFrame,
     pub due: DueGroups,
     pub service: &'a TelemetryServiceState,
@@ -189,19 +191,19 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         // 60 Hz computed (lap delta, gated by lap_delta_active inside processor)
         for output in registry.run(TickRate::Hz60, ctx.capabilities, &compute_ctx) {
             match output {
-                ComputedOutput::TrackShape(ref payload) => {
-                    if let Err(e) = app.emit(EVENT_TRACK_SHAPE, payload) {
+                ComputedOutput::TrackShape(payload) => {
+                    if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &payload) {
                         warn!("Failed to emit track shape: {}", e);
                     }
 
-                    save_track_shape(app, payload);
+                    ctx.io.save_track_shape(payload);
                 }
-                ComputedOutput::ReferenceLap(ref data) => {
-                    if let Err(e) = app.emit(EVENT_REFERENCE_LAP_UPDATED, data) {
+                ComputedOutput::ReferenceLap(data) => {
+                    if let Err(e) = app.emit(EVENT_REFERENCE_LAP_UPDATED, &data) {
                         warn!("Failed to emit reference lap update: {}", e);
                     }
 
-                    save_reference_lap(app, data);
+                    ctx.io.save_reference_lap(data);
                 }
                 ComputedOutput::PitLanePct {
                     track_id,
@@ -214,7 +216,8 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
                     if let Ok(mut lock) = ctx.service.pit_exit_pct.lock() {
                         *lock = Some(pit_exit_pct);
                     }
-                    patch_pit_lane_pct(app, track_id, pit_in_pct, pit_exit_pct);
+                    ctx.io
+                        .patch_pit_lane_pct(track_id, pit_in_pct, pit_exit_pct);
                 }
                 other => scatter_output(&mut bundle, other),
             }
@@ -577,135 +580,6 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::TrackShape(_) => {} // handled in Hz60 loop directly
         ComputedOutput::ReferenceLap(_) => {} // handled in Hz60 loop directly
         ComputedOutput::PitLanePct { .. } => {} // handled in Hz60 loop directly
-    }
-}
-
-fn save_track_shape(app: &AppHandle, payload: &TrackShapePayload) {
-    use std::fs;
-
-    #[derive(serde::Serialize)]
-    struct StoredTrack<'a> {
-        version: u32,
-        #[serde(flatten)]
-        payload: &'a TrackShapePayload,
-    }
-
-    let Ok(data_dir) = app.path().app_data_dir() else {
-        return;
-    };
-
-    let dir = data_dir.join("tracks");
-
-    if fs::create_dir_all(&dir).is_err() {
-        return;
-    }
-
-    let path = dir.join(format!("{}.json", payload.track_id));
-    let stored = StoredTrack {
-        version: 1,
-        payload,
-    };
-
-    if let Ok(json) = serde_json::to_string(&stored) {
-        let _ = fs::write(&path, json);
-    }
-}
-
-/// Filesystem-safe key for a track+car reference lap file, shared with the
-/// `get_reference_lap`/`delete_reference_lap` commands.
-pub fn reference_lap_key(
-    track_id: i32,
-    car_screen_name: &str,
-    condition: TrackCondition,
-) -> String {
-    let sanitized: String = car_screen_name
-        .chars()
-        .map(|c| if c.is_alphanumeric() { c } else { '_' })
-        .collect();
-
-    format!("{track_id}__{sanitized}__{}", condition.as_key())
-}
-
-fn save_reference_lap(app: &AppHandle, data: &ReferenceLapData) {
-    use std::fs;
-
-    #[derive(serde::Serialize)]
-    struct StoredReferenceLap<'a> {
-        version: u32,
-        #[serde(flatten)]
-        payload: &'a ReferenceLapData,
-    }
-
-    let Ok(data_dir) = app.path().app_data_dir() else {
-        return;
-    };
-
-    let dir = data_dir.join("reference_laps");
-
-    if fs::create_dir_all(&dir).is_err() {
-        return;
-    }
-
-    let key = reference_lap_key(data.track_id, &data.car_screen_name, data.condition);
-    let path = dir.join(format!("{key}.json"));
-    let stored = StoredReferenceLap {
-        version: 1,
-        payload: data,
-    };
-
-    if let Ok(json) = serde_json::to_string(&stored) {
-        let _ = fs::write(&path, json);
-    }
-}
-
-fn patch_pit_lane_pct(app: &AppHandle, track_id: i32, pit_in_pct: f32, pit_exit_pct: f32) {
-    use std::fs;
-    use tracing::info;
-
-    info!(
-        "patch_pit_lane_pct triggered for track {} (in: {}, exit: {})",
-        track_id, pit_in_pct, pit_exit_pct
-    );
-
-    let Ok(data_dir) = app.path().app_data_dir() else {
-        warn!("Failed to resolve app data dir in patch_pit_lane_pct");
-        return;
-    };
-
-    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
-
-    let Ok(bytes) = fs::read(&path) else {
-        warn!("Failed to read track JSON file from {:?} in patch_pit_lane_pct (maybe track is not complete/recorded yet)", path);
-        return;
-    };
-
-    let Ok(mut value) = serde_json::from_slice::<serde_json::Value>(&bytes) else {
-        warn!("Failed to parse track JSON from {:?}", path);
-        return;
-    };
-
-    if let Some(obj) = value.as_object_mut() {
-        obj.insert("pitInPct".to_string(), serde_json::json!(pit_in_pct));
-        obj.insert("pitExitPct".to_string(), serde_json::json!(pit_exit_pct));
-    }
-
-    let Ok(json) = serde_json::to_string(&value) else {
-        warn!("Failed to serialize patched JSON in patch_pit_lane_pct");
-        return;
-    };
-
-    if fs::write(&path, &json).is_ok() {
-        info!(
-            "Successfully patched and saved pit lane calibration to {:?}",
-            path
-        );
-        if let Ok(payload) = serde_json::from_str::<TrackShapePayload>(&json) {
-            if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &payload) {
-                warn!("Failed to re-emit track shape after pit pct patch: {}", e);
-            }
-        }
-    } else {
-        warn!("Failed to write patched track JSON back to {:?}", path);
     }
 }
 

@@ -13,12 +13,11 @@ use tauri::{AppHandle, Emitter, Manager};
 use crate::utils::lock_or_recover;
 use tracing::{debug, info, warn};
 
-use crate::model::reference_lap::{StoredReferenceTimes, TrackCondition};
-
 use super::emitter::{
-    emit_domain_frames, reference_lap_key, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED,
-    EVENT_SESSION_INFO, EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
+    emit_domain_frames, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_SESSION_INFO,
+    EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
 };
+use super::io_worker::{IoWorker, SessionUpdate};
 use super::scheduler::EmitScheduler;
 use super::state::TelemetryServiceState;
 use crate::computations::{driver_entries, ProcessorRegistry};
@@ -27,7 +26,7 @@ use crate::model::enums::{SimStatus, SimType};
 use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::TrackShapePayload;
 use crate::sources::create_source;
-use crate::sources::source::{ParsedSession, SourceReadResult, TelemetrySource};
+use crate::sources::source::{SourceReadResult, TelemetrySource};
 
 const CONNECT_RETRY_DELAY: Duration = Duration::from_secs(1);
 /// How long a single `wait_for_data` call blocks before we re-check state.
@@ -135,6 +134,7 @@ fn run_telemetry_loop(
     let mut is_waiting = false;
     let mut missed_waits: u32 = 0;
     let mut scheduler = EmitScheduler::new();
+    let io = spawn_io_worker(app, source);
 
     loop {
         if !service.running.load(Ordering::SeqCst) {
@@ -188,9 +188,19 @@ fn run_telemetry_loop(
             .ok();
         }
 
+        // Timed from here rather than around the emit alone: applying a
+        // session is tick work too, and the reason it moved off this thread.
+        let started = Instant::now();
+
+        // Applied before the processors run, so a session that is parsed by
+        // now is the one this tick computes on.
+        for update in io.parsed_sessions() {
+            apply_session_update(app, update, service);
+        }
+
         if (tick == 1 || tick.is_multiple_of(SESSION_POLL_TICKS)) && source.session_changed() {
-            if let Some(parsed) = source.poll_session() {
-                apply_session_update(app, parsed, service);
+            if let Some(yaml) = source.poll_session() {
+                io.parse_session(yaml);
             }
         }
 
@@ -219,6 +229,7 @@ fn run_telemetry_loop(
 
         let ctx = EmitContext {
             app,
+            io: &io,
             frame: &frame,
             due,
             service,
@@ -227,7 +238,6 @@ fn run_telemetry_loop(
             capabilities,
         };
 
-        let started = Instant::now();
         let measuring = emit_domain_frames(ctx);
         let elapsed = started.elapsed().saturating_sub(measuring);
 
@@ -235,7 +245,32 @@ fn run_telemetry_loop(
     }
 }
 
-fn apply_session_update(app: &AppHandle, parsed: ParsedSession, service: &TelemetryServiceState) {
+/// The worker answering this connection's sessions and writing its files.
+fn spawn_io_worker(app: &AppHandle, source: &dyn TelemetrySource) -> IoWorker {
+    let data_dir = app
+        .path()
+        .app_data_dir()
+        .inspect_err(|e| warn!("No app data dir, tracks and laps are not stored: {e}"))
+        .ok();
+    let emitting_app = app.clone();
+
+    IoWorker::spawn(
+        data_dir,
+        source.session_parser(),
+        Box::new(move |payload: &TrackShapePayload| {
+            if let Err(e) = emitting_app.emit(EVENT_TRACK_SHAPE, payload) {
+                warn!("Failed to re-emit track shape after pit pct patch: {}", e);
+            }
+        }),
+    )
+}
+
+fn apply_session_update(app: &AppHandle, update: SessionUpdate, service: &TelemetryServiceState) {
+    let SessionUpdate {
+        parsed,
+        cached_track,
+        stored_reference_times,
+    } = update;
     let snapshot = parsed.snapshot;
     let new_track_id = snapshot.track_id;
 
@@ -274,11 +309,15 @@ fn apply_session_update(app: &AppHandle, parsed: ParsedSession, service: &Teleme
         *lock = Some(Arc::new(snapshot));
     }
 
-    if prev_track_id != Some(new_track_id) {
-        try_load_and_emit_track(app, new_track_id, service);
+    // The worker reads the shape only on a track change, judged against the
+    // session it parsed before — the same one applied here before this.
+    if let Some(payload) = cached_track {
+        apply_cached_track(app, payload, service);
     }
 
-    refresh_stored_reference_lap_time(app, service);
+    if let Ok(mut lock) = service.stored_reference_lap_time.lock() {
+        *lock = stored_reference_times;
+    }
 
     if !parsed.weather_forecast.is_empty() {
         debug!(
@@ -336,38 +375,11 @@ fn reset_telemetry_state(
     app.emit(EVENT_DISCONNECTED, &()).ok();
 }
 
-/// Reads a previously recorded track shape from disk. Returns `None` when no
-/// cached file exists for this track or it was written by an older version.
-///
-/// Shared with the `get_cached_track_shape` command, which re-hydrates windows
-/// that subscribed after the one-shot `sim://track-shape` emit.
-pub fn load_cached_track_shape(app: &AppHandle, track_id: i32) -> Option<TrackShapePayload> {
-    use std::fs;
-
-    #[derive(serde::Deserialize)]
-    struct StoredTrack {
-        version: u32,
-        #[serde(flatten)]
-        payload: TrackShapePayload,
-    }
-
-    let data_dir = app.path().app_data_dir().ok()?;
-    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
-    let json = fs::read_to_string(&path).ok()?;
-    let stored = serde_json::from_str::<StoredTrack>(&json).ok()?;
-
-    if stored.version < 1 {
-        return None;
-    }
-
-    Some(stored.payload)
-}
-
-fn try_load_and_emit_track(app: &AppHandle, track_id: i32, service: &TelemetryServiceState) {
-    let Some(payload) = load_cached_track_shape(app, track_id) else {
-        return;
-    };
-
+fn apply_cached_track(
+    app: &AppHandle,
+    payload: TrackShapePayload,
+    service: &TelemetryServiceState,
+) {
     if let Ok(mut lock) = service.pit_in_pct.lock() {
         *lock = payload.pit_in_pct;
     }
@@ -380,63 +392,9 @@ fn try_load_and_emit_track(app: &AppHandle, track_id: i32, service: &TelemetrySe
     }
 
     // Signal TrackShapeProcessor to skip re-recording since the track already exists.
-    service.track_cached.store(track_id, Ordering::Relaxed);
-}
-
-/// Reads the lap time of the persisted reference lap for the current track+car
-/// and publishes it for ReferenceLapProcessor, so a slower session best never
-/// overwrites a faster stored reference.
-fn refresh_stored_reference_lap_time(app: &AppHandle, service: &TelemetryServiceState) {
-    use std::fs;
-
-    #[derive(serde::Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct StoredLapTime {
-        lap_time: f32,
-    }
-
-    let identity = {
-        let lock = lock_or_recover(&service.last_session_info);
-        lock.as_deref().map(|session| {
-            let car_screen_name = session
-                .cars
-                .iter()
-                .find(|car| car.car_idx == session.player_car_idx)
-                .map(|car| car.car_screen_name.clone())
-                .unwrap_or_default();
-            (session.track_id, car_screen_name)
-        })
-    };
-
-    let Some((track_id, car_screen_name)) = identity else {
-        return;
-    };
-
-    let Ok(data_dir) = app.path().app_data_dir() else {
-        return;
-    };
-
-    let read_time = |condition: TrackCondition| {
-        let key = reference_lap_key(track_id, &car_screen_name, condition);
-
-        fs::read_to_string(data_dir.join("reference_laps").join(format!("{key}.json")))
-            .ok()
-            .and_then(|json| serde_json::from_str::<StoredLapTime>(&json).ok())
-            .map(|stored| stored.lap_time)
-            .filter(|lap_time| *lap_time > 0.0)
-    };
-
-    // Both conditions are read up front: the weather can turn at any point in
-    // the session, and the processor must already know what a wet lap has to
-    // beat by the time one is driven.
-    let stored = StoredReferenceTimes {
-        dry: read_time(TrackCondition::Dry),
-        wet: read_time(TrackCondition::Wet),
-    };
-
-    if let Ok(mut lock) = service.stored_reference_lap_time.lock() {
-        *lock = stored;
-    }
+    service
+        .track_cached
+        .store(payload.track_id, Ordering::Relaxed);
 }
 
 /// Forgets the cached grid, so the next session snapshots its own.

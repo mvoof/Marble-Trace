@@ -296,9 +296,15 @@ pub trait TelemetrySource {
     fn capabilities(&self) -> Capabilities;
     fn read_frame(&mut self, timeout_ms: u32) -> SourceReadResult<SourceFrame>;
     fn session_changed(&mut self) -> bool;
-    fn poll_session(&mut self) -> Option<ParsedSession>;
+    fn poll_session(&mut self) -> Option<String>;
+    fn session_parser(&self) -> SessionParser;
 }
 ```
+
+`poll_session` only copies the raw session text out — the connection may not
+leave the telemetry thread. The text is parsed on the telemetry I/O worker
+(`telemetry/io_worker.rs`) with the function `session_parser` names, and the
+parsed session comes back to the loop with the files read for it.
 
 > [!IMPORTANT]
 > **This is the only place `use kerb` is allowed.** Adding a second sim means
@@ -403,6 +409,8 @@ unit-test — and why sim quirks must be resolved upstream before they reach it.
 | `state.rs`        | what persists between ticks                                            |
 | `scheduler.rs`    | decides which rate tiers are due this tick                             |
 | `emitter.rs`      | runs the processor registry, assembles one `TelemetryBundle`, emits it |
+| `io_worker.rs`    | session-YAML parsing and every file read or write, off the loop        |
+| `storage.rs`      | the track-shape and reference-lap files, shared with the commands      |
 | `capabilities.rs` | reports what the connected sim can actually provide                    |
 
 ### Rate tiers

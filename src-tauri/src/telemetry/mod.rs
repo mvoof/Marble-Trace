@@ -6,6 +6,7 @@ pub mod capabilities;
 pub mod delivery;
 pub mod dispatch;
 pub mod emitter;
+pub mod io_worker;
 pub mod masks;
 #[cfg(feature = "dev")]
 pub mod perf_run;
@@ -14,6 +15,7 @@ pub mod quantize;
 pub mod runtime;
 pub mod scheduler;
 pub mod state;
+pub mod storage;
 pub mod tick_timings;
 
 /// The two bundles this layer assembles, and the counters that say what was

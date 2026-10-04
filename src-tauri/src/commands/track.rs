@@ -7,9 +7,10 @@ use tracing::{info, warn};
 
 use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes, TrackCondition};
 use crate::model::track_shape::TrackShapePayload;
-use crate::telemetry::emitter::reference_lap_key;
-use crate::telemetry::runtime::load_cached_track_shape;
 use crate::telemetry::state::TelemetryState;
+use crate::telemetry::storage::{
+    load_cached_track_shape, reference_lap_key, reference_lap_path, track_shape_path,
+};
 use crate::utils::lock_or_recover;
 
 #[tauri::command]
@@ -28,7 +29,7 @@ pub async fn reset_pit_lane_pct(
         return Err("Cannot resolve app data dir".to_string());
     };
 
-    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
+    let path = track_shape_path(&data_dir, track_id);
 
     let Ok(bytes) = fs::read(&path) else {
         warn!("No track file found at {:?}, nothing to reset", path);
@@ -86,7 +87,7 @@ pub async fn get_reference_lap(
     };
 
     let key = reference_lap_key(track_id, &car_screen_name, condition);
-    let path = data_dir.join("reference_laps").join(format!("{key}.json"));
+    let path = reference_lap_path(&data_dir, &key);
 
     let Ok(bytes) = tokio::fs::read(&path).await else {
         return Ok(None);
@@ -117,7 +118,7 @@ pub async fn delete_reference_lap(
     // a reference the driver just deleted the next time it rained.
     for condition in [TrackCondition::Dry, TrackCondition::Wet] {
         let key = reference_lap_key(track_id, &car_screen_name, condition);
-        let path = data_dir.join("reference_laps").join(format!("{key}.json"));
+        let path = reference_lap_path(&data_dir, &key);
 
         match tokio::fs::remove_file(&path).await {
             Ok(_) => {}
@@ -159,7 +160,11 @@ pub async fn get_cached_track_shape(
         return Ok(None);
     };
 
-    Ok(load_cached_track_shape(&app, track_id))
+    let Ok(data_dir) = app.path().app_data_dir() else {
+        return Err("Cannot resolve app data dir".to_string());
+    };
+
+    Ok(load_cached_track_shape(&data_dir, track_id))
 }
 
 #[tauri::command]
@@ -168,7 +173,7 @@ pub async fn delete_track_shape(app: AppHandle, track_id: i32) -> Result<(), Str
         return Err("Cannot resolve app data dir".to_string());
     };
 
-    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
+    let path = track_shape_path(&data_dir, track_id);
 
     match std::fs::remove_file(&path) {
         Ok(_) => {}
