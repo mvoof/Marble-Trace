@@ -12,6 +12,10 @@
 //! come out of the one list below into `src/utils/backend-events.ts` — see
 //! [`ts_values`](super::ts_values).
 
+// The perf run's two names are emitted only by `dev` code; a release build
+// would otherwise flag them unused. A `dev` build still lints this file whole.
+#![cfg_attr(not(feature = "dev"), allow(dead_code))]
+
 use serde::{Deserialize, Serialize};
 
 use crate::model::ts_values::ts_values;
@@ -83,6 +87,13 @@ ts_values! {
 
     /// A controller button edge, for the global input bindings.
     pub const INPUT_BUTTON_EVENT: &str = "input://button" => INPUT_BUTTON_EVENT;
+
+    /// A perf run's measured span starts: the overlays begin collecting.
+    /// Emitted only by a `dev` build running `MARBLE_TRACE_PERF`.
+    pub const EVENT_PERF_BEGIN: &str = "perf://begin" => PERF_BEGIN;
+
+    /// A perf run's measured span is over: each overlay sends its report.
+    pub const EVENT_PERF_END: &str = "perf://end" => PERF_END;
 
     /// A connected remote device came, went, or reported a new viewport.
     pub const EVENT_REMOTE_DEVICE: &str = "remote://device" => REMOTE_DEVICE_EVENT;

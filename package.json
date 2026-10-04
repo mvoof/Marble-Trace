@@ -26,6 +26,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "capture:widgets": "node scripts/capture-widgets.mjs",
+    "perf": "node scripts/perf-run.mjs",
     "cargo:format": "cd src-tauri && cargo fmt",
     "test": "vitest run",
     "prepare": "lefthook install"

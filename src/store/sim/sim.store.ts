@@ -70,6 +70,12 @@ import {
 const drawsWidgets = () =>
   typeof window !== 'undefined' && window.location.hash.includes('overlay');
 
+/**
+ * Told how long one bundle took to apply, and whether it was a 1 Hz full
+ * bundle. Installed only for a perf run.
+ */
+export type BundleApplyProbe = (durationMs: number, isFull: boolean) => void;
+
 export class SimStore {
   isConnected = false;
   status: TelemetryStatus = 'waiting';
@@ -77,6 +83,13 @@ export class SimStore {
   capabilities: CapabilitiesPayload | null = null;
   error: string | null = null;
   frameCount = 0;
+  /**
+   * A perf run in stores-only mode: telemetry is received and applied as
+   * usual, but the overlay mounts no widget, so the transport's share of the
+   * cost reads off an A/B against a run with widgets.
+   */
+  widgetsSuppressed = false;
+  bundleApplyProbe: BundleApplyProbe | null = null;
 
   /** Condition the currently loaded reference lap was asked for. */
   private referenceCondition: TrackCondition | null = null;
@@ -92,7 +105,15 @@ export class SimStore {
   private readonly disposers: IReactionDisposer[] = [];
 
   constructor(private readonly root: RootStore) {
-    makeAutoObservable(this, {}, { autoBind: true });
+    makeAutoObservable(this, { bundleApplyProbe: false }, { autoBind: true });
+  }
+
+  suppressWidgets() {
+    this.widgetsSuppressed = true;
+  }
+
+  setBundleApplyProbe(probe: BundleApplyProbe | null) {
+    this.bundleApplyProbe = probe;
   }
 
   init() {
@@ -612,9 +633,16 @@ export class SimStore {
       await listenTo<TelemetryBundle>(SIM_TELEMETRY_BUNDLE, (event) => {
         if (this.initId !== guardId) return;
 
+        const probe = this.bundleApplyProbe;
+        const started = probe ? performance.now() : 0;
+
         applyTelemetryBundle(this.root, event.payload, () =>
           this.onFrameReceived()
         );
+
+        if (probe) {
+          probe(performance.now() - started, Boolean(event.payload.session));
+        }
       })
     );
   }

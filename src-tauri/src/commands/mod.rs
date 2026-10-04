@@ -7,6 +7,8 @@
 
 pub mod companions;
 pub mod install;
+#[cfg(feature = "dev")]
+pub mod perf;
 pub mod pit;
 pub mod settings;
 pub mod telemetry;
@@ -23,9 +25,10 @@ pub use settings::{
 };
 pub use telemetry::{
     clear_active_events, clear_remote_active_events, get_connection_status, get_delivery_counters,
-    get_inspector_frame, get_last_session_info, reset_delivery_counters, set_active_events,
-    set_car_length, set_fuel_avg_window, set_fuel_count_yellow_laps, set_inspector_active,
-    set_pit_warning_laps, set_remote_active_events, start_telemetry_stream, stop_telemetry_stream,
+    get_inspector_frame, get_last_session_info, get_tick_summary, reset_delivery_counters,
+    set_active_events, set_car_length, set_fuel_avg_window, set_fuel_count_yellow_laps,
+    set_inspector_active, set_pit_warning_laps, set_remote_active_events, start_telemetry_stream,
+    stop_telemetry_stream,
 };
 pub use track::{
     delete_reference_lap, delete_track_shape, get_cached_track_shape, get_reference_lap,

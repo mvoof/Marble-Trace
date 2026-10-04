@@ -5,6 +5,9 @@
 /// event per tick.
 use std::sync::atomic::Ordering;
 use std::sync::Mutex;
+use std::time::Duration;
+#[cfg(feature = "dev")]
+use std::time::Instant;
 
 use tauri::{AppHandle, Emitter, Manager};
 use tracing::warn;
@@ -125,7 +128,9 @@ pub struct TelemetrySlowBundle {
     pub car_class_count: u32,
 }
 
-pub fn emit_domain_frames(ctx: EmitContext<'_>) {
+/// Returns the time spent measuring rather than delivering — the `dev`-only
+/// sizing of each bundle — so the tick timing can leave it out.
+pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     let app = ctx.app;
     let frame = ctx.frame;
     let due = ctx.due;
@@ -352,7 +357,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         bundle,
         groups,
         &mut TauriSink { app: ctx.app },
-    );
+    )
 }
 
 /// The real transport: `emit_to` per window, `app.emit` for the broadcast and
@@ -388,7 +393,7 @@ impl BundleSink for TauriSink<'_> {
 ///
 /// `assembled` is filled from the union and already quantized; each group is
 /// that bundle narrowed to its own mask, pruned against its own record and put
-/// on the wire once.
+/// on the wire once. Returns the time spent sizing bundles for the counters.
 fn deliver(
     publications: &Mutex<PublicationRegistry>,
     counters: &Mutex<DeliveryCounters>,
@@ -396,7 +401,7 @@ fn deliver(
     assembled: TelemetryBundle,
     groups: Vec<DeliveryGroup>,
     sink: &mut impl BundleSink,
-) {
+) -> Duration {
     // Handed to the last group by value: with one group — one monitor, or two
     // monitors whose widgets want the same fields, which is the common case —
     // nothing is cloned and the tick costs exactly what it did before.
@@ -405,6 +410,7 @@ fn deliver(
     let live: Vec<u32> = groups.iter().map(|group| group.mask).collect();
     let mut publications = lock_or_recover(publications);
     let mut delivery = lock_or_recover(counters);
+    let mut sizing = Duration::ZERO;
 
     publications.retain(&live);
 
@@ -437,11 +443,14 @@ fn deliver(
             continue;
         }
 
+        let (size, spent) = measure_size(&bundle);
+        sizing += spent;
+
         for recipient in &group.recipients {
             // Counted here rather than at assembly: what the counters answer is
             // what went on the wire, after the mask and after the repeat
             // suppression have both had their say.
-            delivery.record(recipient.label(), &bundle);
+            delivery.record(recipient.label(), &bundle, size);
 
             match recipient {
                 Recipient::Window(label) => sink.to_window(label, &bundle),
@@ -456,6 +465,24 @@ fn deliver(
             sink.to_mirror(&bundle);
         }
     }
+
+    sizing
+}
+
+/// The bundle's JSON length and what finding it out cost. A second
+/// serialization of what Tauri is about to serialize anyway — the transport
+/// keeps its own string to itself — so only a `dev` build pays for it.
+#[cfg(feature = "dev")]
+fn measure_size(bundle: &TelemetryBundle) -> (Option<usize>, Duration) {
+    let started = Instant::now();
+    let size = serde_json::to_vec(bundle).ok().map(|bytes| bytes.len());
+
+    (size, started.elapsed())
+}
+
+#[cfg(not(feature = "dev"))]
+fn measure_size(_bundle: &TelemetryBundle) -> (Option<usize>, Duration) {
+    (None, Duration::ZERO)
 }
 
 /// Removes from `bundle` every demand-gated field the mask does not ask for.

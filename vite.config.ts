@@ -22,6 +22,9 @@ export default defineConfig(() => ({
   base: './',
 
   build: {
+    // Hidden maps for `npm run perf -- --build`, which resolves a heap
+    // profile's minified frames back to source files. Never in a release.
+    sourcemap: process.env.MARBLE_TRACE_SOURCEMAPS === '1' ? 'hidden' : false,
     rollupOptions: {
       input: {
         // The windows Tauri opens.

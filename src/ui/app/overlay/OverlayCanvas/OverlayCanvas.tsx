@@ -71,7 +71,7 @@ export const OverlayCanvas = observer(() => {
     transform: `translate(${-(ownBounds?.x ?? 0)}px, ${-(ownBounds?.y ?? 0)}px)`,
   };
 
-  if (hideAllWidgets) {
+  if (hideAllWidgets || simStore.widgetsSuppressed) {
     return null;
   }
 

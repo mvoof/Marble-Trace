@@ -688,6 +688,12 @@ export type DeliverySet = {
    */
   elapsedMs: number;
   bundles: number;
+  /**
+   * Serialized JSON bytes of those bundles. `None` in a build that does not
+   * size them — sizing is a second serialization, so only `dev` pays it.
+   * Saturates rather than wraps; a measurement run resets it first.
+   */
+  bytes: number | null;
   fields: FieldDelivery[];
 };
 
@@ -1201,6 +1207,65 @@ export type NearbyCar = {
    * centre.
    */
   bumperDist: number;
+};
+
+/**
+ * One overlay window's measurements over the run.
+ */
+export type OverlayPerfReport = {
+  label: string;
+  elapsedMs: number;
+  /**
+   * Widget types mounted on this overlay's monitor; empty in stores-only.
+   */
+  widgets: string[];
+  /**
+   * Sum of positive `usedJSHeapSize` deltas, sampled every 50 ms. `None`
+   * when the reading never moved: without `--enable-precise-memory-info`
+   * Chromium serves a cached, bucketed figure.
+   */
+  allocBytesPerSec: number | null;
+  /**
+   * Tasks of 50 ms or more — the floor of the browser's long-task API.
+   */
+  longTasks: number;
+  longTaskMs: number;
+  /**
+   * Animation frames, and those that took longer than a 60 Hz frame and a
+   * half — the finer-grained stand-in for "tasks over 16 ms".
+   */
+  frames: number;
+  framesOverBudget: number;
+  domMutationsPerSec: number;
+  /**
+   * `None` in a production frontend, where `mobx.spy` is a no-op.
+   */
+  observerWakeupsPerSec: number | null;
+  /**
+   * `applyTelemetryBundle` on ticks that carry no 1 Hz tier.
+   */
+  apply: TimingSummary;
+  /**
+   * `applyTelemetryBundle` on the 1 Hz full-bundle ticks.
+   */
+  applyFull: TimingSummary;
+};
+
+/**
+ * What an overlay needs to know about the run, read once when it loads.
+ */
+export type PerfRunConfig = {
+  durationMs: number;
+  warmupMs: number;
+  /**
+   * Receive and apply telemetry with no widget mounted, so the transport's
+   * share of the cost can be read off against a run with widgets.
+   */
+  storesOnly: boolean;
+  /**
+   * A heap profile is being taken from outside; see `PERF_HEAP_ENV`.
+   */
+  heapProfile: boolean;
 };
 
 /**
@@ -1878,6 +1943,27 @@ export type TelemetrySlowBundle = {
    * per-car frame is exactly what main is off the bundle to avoid.
    */
   carClassCount: number;
+};
+
+/**
+ * Tick duration percentiles over the span since the last reset, in
+ * microseconds.
+ */
+export type TickSummary = {
+  ticks: number;
+  p50Us: number;
+  p99Us: number;
+  maxUs: number;
+};
+
+/**
+ * Percentiles of one timed operation, in milliseconds.
+ */
+export type TimingSummary = {
+  count: number;
+  p50Ms: number;
+  p99Ms: number;
+  maxMs: number;
 };
 
 export type TireCompoundEntry = { tireIndex: number; tireCompoundType: string };

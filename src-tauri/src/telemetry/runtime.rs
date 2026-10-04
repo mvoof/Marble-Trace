@@ -223,7 +223,11 @@ fn run_telemetry_loop(
             capabilities,
         };
 
-        emit_domain_frames(ctx);
+        let started = Instant::now();
+        let measuring = emit_domain_frames(ctx);
+        let elapsed = started.elapsed().saturating_sub(measuring);
+
+        lock_or_recover(&service.tick_timings).record(elapsed);
     }
 }
 

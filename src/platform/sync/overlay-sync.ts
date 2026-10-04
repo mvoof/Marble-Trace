@@ -7,6 +7,7 @@ import {
 } from '@platform/services/events.service';
 import { publishRemoteControl } from '@platform/services/remote.service';
 import { setupOverlayListeners } from './listeners';
+import { initPerfRun } from './perf-run';
 import { registerPitServiceMirrorReactions } from './pit-service-sync';
 import type { RootStore } from '@store/root-store';
 
@@ -38,6 +39,7 @@ export const initOverlaySync = async (root: RootStore) => {
   root.liveWidgets.loadEditingLayoutWidgets();
 
   const unlistens = await setupOverlayListeners(root);
+  const stopPerfRun = await initPerfRun(root);
 
   const disposers = [
     reaction(
@@ -97,5 +99,6 @@ export const initOverlaySync = async (root: RootStore) => {
   return () => {
     unlistens.forEach((u) => u());
     disposers.forEach((d) => d());
+    stopPerfRun();
   };
 };

@@ -11,6 +11,7 @@ use crate::sources::source::SourceFrame;
 use crate::telemetry::delivery::DeliveryCounters;
 use crate::telemetry::masks::MaskRegistry;
 use crate::telemetry::publications::PublicationRegistry;
+use crate::telemetry::tick_timings::TickTimings;
 
 /// User-configured fuel parameters, written by commands and read once per tick
 /// by the telemetry thread.
@@ -99,6 +100,9 @@ pub struct TelemetryServiceState {
     /// each demand-gated field. The instrument the per-window mask work is
     /// measured with; see `telemetry::delivery`.
     pub delivery: Mutex<DeliveryCounters>,
+    /// How long each `emit_domain_frames` pass took, reset together with the
+    /// delivery counters so one measurement run reads both over one span.
+    pub tick_timings: Mutex<TickTimings>,
 }
 
 /// Bitmask flags for high-frequency events.

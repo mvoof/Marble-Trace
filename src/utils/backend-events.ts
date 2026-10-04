@@ -97,6 +97,17 @@ export const INPUT_DEVICES_EVENT = 'input://devices';
 export const INPUT_BUTTON_EVENT = 'input://button';
 
 /**
+ * A perf run's measured span starts: the overlays begin collecting.
+ * Emitted only by a `dev` build running `MARBLE_TRACE_PERF`.
+ */
+export const PERF_BEGIN = 'perf://begin';
+
+/**
+ * A perf run's measured span is over: each overlay sends its report.
+ */
+export const PERF_END = 'perf://end';
+
+/**
  * A connected remote device came, went, or reported a new viewport.
  */
 export const REMOTE_DEVICE_EVENT = 'remote://device';

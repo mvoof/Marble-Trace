@@ -22,6 +22,11 @@ use crate::telemetry::capabilities::Capabilities;
 pub const REPLAY_ENV: &str = "MARBLE_TRACE_REPLAY";
 /// Directory to record every live connection into, one tape each.
 pub const RECORD_ENV: &str = "MARBLE_TRACE_RECORD";
+/// Seconds into the tape to start playing from, so a perf run measures the
+/// same stretch of driving every time rather than the garage at its start.
+pub const REPLAY_FROM_ENV: &str = "MARBLE_TRACE_REPLAY_FROM";
+
+const MILLIS_PER_SECOND: f64 = 1000.0;
 
 pub struct ReplaySource {
     reader: TapeReader,
@@ -29,18 +34,38 @@ pub struct ReplaySource {
     upcoming: Option<(u64, SourceFrame)>,
     pending_session: Option<String>,
     started: Option<Instant>,
+    /// Tape time the playback starts at; frames before it were skipped.
+    offset_ms: u64,
 }
 
 impl ReplaySource {
-    pub fn open(path: &Path) -> std::io::Result<Self> {
+    /// Opens a tape, skipping everything recorded before `from_ms`. The last
+    /// session seen on the way is kept, so the first tick played still has
+    /// the session it had live.
+    pub fn open(path: &Path, from_ms: u64) -> std::io::Result<Self> {
         let reader = TapeReader::open(path)?;
-
-        Ok(Self {
+        let mut source = Self {
             reader,
             upcoming: None,
             pending_session: None,
             started: None,
-        })
+            offset_ms: 0,
+        };
+
+        source.read_ahead();
+
+        while source
+            .upcoming
+            .as_ref()
+            .is_some_and(|(at_ms, _)| *at_ms < from_ms)
+        {
+            source.upcoming = None;
+            source.read_ahead();
+        }
+
+        source.offset_ms = source.upcoming.as_ref().map_or(0, |(at_ms, _)| *at_ms);
+
+        Ok(source)
     }
 
     /// Reads up to the next frame, keeping the latest session seen on the way.
@@ -73,7 +98,7 @@ impl TelemetrySource for ReplaySource {
 
         let now = Instant::now();
         let started = *self.started.get_or_insert(now);
-        let due = started + Duration::from_millis(*at_ms);
+        let due = started + Duration::from_millis(at_ms.saturating_sub(self.offset_ms));
         let timeout = Duration::from_millis(u64::from(timeout_ms));
 
         if due > now {
@@ -178,10 +203,11 @@ impl TelemetrySource for RecordingSource {
 /// be opened is reported once per attempt and the live sim is used instead.
 pub fn replay_from_env() -> Option<Box<dyn TelemetrySource>> {
     let path = PathBuf::from(std::env::var_os(REPLAY_ENV)?);
+    let from_ms = replay_offset_ms();
 
-    match ReplaySource::open(&path) {
+    match ReplaySource::open(&path, from_ms) {
         Ok(source) => {
-            info!("Replaying tape {}", path.display());
+            info!("Replaying tape {} from {} ms", path.display(), from_ms);
 
             Some(Box::new(source))
         }
@@ -191,6 +217,15 @@ pub fn replay_from_env() -> Option<Box<dyn TelemetrySource>> {
             None
         }
     }
+}
+
+/// `MARBLE_TRACE_REPLAY_FROM` in milliseconds; zero when unset or unreadable.
+fn replay_offset_ms() -> u64 {
+    std::env::var(REPLAY_FROM_ENV)
+        .ok()
+        .and_then(|value| value.trim().parse::<f64>().ok())
+        .filter(|seconds| seconds.is_finite() && *seconds > 0.0)
+        .map_or(0, |seconds| (seconds * MILLIS_PER_SECOND) as u64)
 }
 
 /// Wraps a live source in a recorder when `MARBLE_TRACE_RECORD` names a
@@ -308,7 +343,7 @@ mod tests {
         let path = temp_tape("frames");
         record(&path, vec![frame_with_speed(1.0), frame_with_speed(2.0)]);
 
-        let mut replay = ReplaySource::open(&path).expect("tape replays");
+        let mut replay = ReplaySource::open(&path, 0).expect("tape replays");
         let mut speeds = Vec::new();
 
         while let SourceReadResult::Frame(frame) = replay.read_frame(1000) {
@@ -325,7 +360,7 @@ mod tests {
         let path = temp_tape("session");
         record(&path, vec![frame_with_speed(1.0), frame_with_speed(2.0)]);
 
-        let mut replay = ReplaySource::open(&path).expect("tape replays");
+        let mut replay = ReplaySource::open(&path, 0).expect("tape replays");
         let first = replay.read_frame(1000);
         let changed = replay.session_changed();
         let parsed = replay.poll_session();
@@ -356,7 +391,7 @@ mod tests {
             });
         }
 
-        let mut replay = ReplaySource::open(&path).expect("tape replays");
+        let mut replay = ReplaySource::open(&path, 0).expect("tape replays");
         let first = replay.read_frame(1);
         let second = replay.read_frame(1);
 
@@ -364,5 +399,41 @@ mod tests {
 
         assert!(matches!(first, SourceReadResult::Frame(_)));
         assert!(matches!(second, SourceReadResult::NotReady));
+    }
+
+    // A perf run starts mid-tape. The frame it starts on plays at once rather
+    // than after the skipped stretch, and the session recorded before it is
+    // still delivered with it.
+    #[test]
+    fn a_tape_opened_from_an_offset_starts_there_with_its_session() {
+        let path = temp_tape("offset");
+
+        {
+            let writer = TapeWriter::create(&path, &TapeHeader::new(SimType::IRacing))
+                .expect("tape opens for writing");
+            writer.push(TapeRecord::Frame {
+                at_ms: 0,
+                frame: Box::new(frame_with_speed(1.0)),
+            });
+            writer.push(TapeRecord::Session {
+                yaml: SESSION_YAML.into(),
+            });
+            writer.push(TapeRecord::Frame {
+                at_ms: 60_000,
+                frame: Box::new(frame_with_speed(2.0)),
+            });
+        }
+
+        let mut replay = ReplaySource::open(&path, 30_000).expect("tape replays");
+        let first = replay.read_frame(1);
+        let changed = replay.session_changed();
+
+        std::fs::remove_file(&path).ok();
+
+        let SourceReadResult::Frame(frame) = first else {
+            panic!("the frame at the offset plays without waiting for it");
+        };
+        assert_eq!(frame.car_dynamics.speed, 2.0);
+        assert!(changed, "the session recorded before the offset is kept");
     }
 }

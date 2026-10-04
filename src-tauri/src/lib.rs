@@ -19,15 +19,18 @@ use chat::commands::{
     twitch_poll_device_token, twitch_request_device_code, twitch_sign_out,
 };
 use chat::state::{ChatServiceState, ChatState};
+#[cfg(feature = "dev")]
+use commands::perf::{get_perf_run, submit_overlay_perf};
 use commands::{
     backup_settings_file, check_install_integrity, clear_active_events, clear_remote_active_events,
     close_companion_app, close_companion_apps, companion_app_icon, companion_app_statuses,
     delete_reference_lap, delete_settings_file, delete_track_shape, detect_companion_apps,
     get_cached_track_shape, get_connection_status, get_delivery_counters, get_inspector_frame,
-    get_last_session_info, get_reference_lap, launch_companion_app, log_settings_snapshot,
-    reset_delivery_counters, reset_pit_lane_pct, send_pit_order, set_active_events, set_car_length,
-    set_fuel_avg_window, set_fuel_count_yellow_laps, set_inspector_active, set_pit_warning_laps,
-    set_remote_active_events, settings_file_exists, start_telemetry_stream, stop_telemetry_stream,
+    get_last_session_info, get_reference_lap, get_tick_summary, launch_companion_app,
+    log_settings_snapshot, reset_delivery_counters, reset_pit_lane_pct, send_pit_order,
+    set_active_events, set_car_length, set_fuel_avg_window, set_fuel_count_yellow_laps,
+    set_inspector_active, set_pit_warning_laps, set_remote_active_events, settings_file_exists,
+    start_telemetry_stream, stop_telemetry_stream,
 };
 use companions::CompanionsState;
 use computations::ProcessorRegistry;
@@ -38,6 +41,8 @@ use remote::commands::{
     remote_screen_url, start_remote_server, stop_remote_server, RemoteState,
 };
 use telemetry::delivery::DeliveryCounters;
+#[cfg(feature = "dev")]
+use telemetry::perf_run::{spawn_if_requested, PerfRunConfig, PerfRunState};
 use telemetry::state::TelemetryState;
 use utils::lock_or_recover;
 
@@ -112,6 +117,15 @@ pub fn run() {
             remote::mirror::attach(app.handle(), std::sync::Arc::clone(&remote_state.hub));
             app.manage(remote_state);
 
+            #[cfg(feature = "dev")]
+            {
+                app.manage(PerfRunState {
+                    config: PerfRunConfig::from_env(),
+                    ..Default::default()
+                });
+                spawn_if_requested(app.handle());
+            }
+
             {
                 let flag = force_track_start_listener;
                 app.listen("track-map:force-start", move |_| {
@@ -180,6 +194,11 @@ pub fn run() {
             get_inspector_frame,
             get_delivery_counters,
             reset_delivery_counters,
+            get_tick_summary,
+            #[cfg(feature = "dev")]
+            get_perf_run,
+            #[cfg(feature = "dev")]
+            submit_overlay_perf,
             set_car_length,
             get_connection_status,
             delete_track_shape,
@@ -229,6 +248,7 @@ pub fn run() {
                 inspector_active: AtomicBool::new(false),
                 car_class_count: AtomicU32::new(0),
                 delivery: Mutex::new(DeliveryCounters::with_broadcast()),
+                tick_timings: Mutex::new(Default::default()),
                 inspector_frame: Mutex::new(None),
                 car_length_m: Mutex::new(model::defaults::DEFAULT_CAR_LENGTH_M),
                 track_cached: track_cached_service,

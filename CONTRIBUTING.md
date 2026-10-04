@@ -100,14 +100,20 @@ In Git Bash, prefix the command: `NAME=value npm run tauri:dev`.
 
 ### Runtime — read when the app starts
 
-| Variable              | Build      | Effect                                                                                                                                                                                                                                                                                |
-| --------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `RUST_LOG`            | any        | `tracing` filter for the backend console and the log file, replacing the default (`marble_trace_lib=info` for the file). `RUST_LOG=marble_trace_lib=debug` gives verbose backend logs; `marble_trace_lib::telemetry=debug` narrows them to one module.                                |
-| `MARBLE_TRACE_RECORD` | `dev` only | A directory. Every live sim connection is recorded into it as its own tape, `session-<unix seconds>.tape.jsonl.gz`: each tick's adapted frame plus the raw session YAML. The directory is created if missing. Writing happens on a thread of its own, off the telemetry loop.         |
-| `MARBLE_TRACE_REPLAY` | `dev` only | Path to a tape. The app plays it at the pace it was recorded **instead of** connecting to the sim, and loops it: at the end of the tape the source disconnects, the runtime resets and reconnects, and the tape starts over. A tape that cannot be opened falls back to the live sim. |
+| Variable                    | Build      | Effect                                                                                                                                                                                                                                                                                |
+| --------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RUST_LOG`                  | any        | `tracing` filter for the backend console and the log file, replacing the default (`marble_trace_lib=info` for the file). `RUST_LOG=marble_trace_lib=debug` gives verbose backend logs; `marble_trace_lib::telemetry=debug` narrows them to one module.                                |
+| `MARBLE_TRACE_RECORD`       | `dev` only | A directory. Every live sim connection is recorded into it as its own tape, `session-<unix seconds>.tape.jsonl.gz`: each tick's adapted frame plus the raw session YAML. The directory is created if missing. Writing happens on a thread of its own, off the telemetry loop.         |
+| `MARBLE_TRACE_REPLAY`       | `dev` only | Path to a tape. The app plays it at the pace it was recorded **instead of** connecting to the sim, and loops it: at the end of the tape the source disconnects, the runtime resets and reconnects, and the tape starts over. A tape that cannot be opened falls back to the live sim. |
+| `MARBLE_TRACE_REPLAY_FROM`  | `dev` only | Seconds into the tape to start from, so a perf run measures the same stretch of driving every time. Frames before it are skipped; the last session recorded before it is kept.                                                                                                        |
+| `MARBLE_TRACE_PERF`         | `dev` only | Path of a JSON report. Starts a perf run on the replayed tape: after the warm-up the delivery counters and tick timings reset, every overlay collects for the measured span, the report is written and the app exits. `npm run perf` sets this and the three below for you.           |
+| `MARBLE_TRACE_PERF_SECONDS` | `dev` only | Measured span of a perf run, default 60.                                                                                                                                                                                                                                              |
+| `MARBLE_TRACE_PERF_WARMUP`  | `dev` only | Playback before the measured span starts, default 10.                                                                                                                                                                                                                                 |
+| `MARBLE_TRACE_PERF_MODE`    | `dev` only | `widgets` (default) or `stores-only`: telemetry is received and applied, no widget is mounted.                                                                                                                                                                                        |
+| `MARBLE_TRACE_PERF_HEAP`    | `dev` only | `1` while `npm run perf -- --heap` takes a heap profile over CDP: the overlays hold their report until the profile is taken.                                                                                                                                                          |
 
 `dev` is the cargo feature `npm run tauri:dev` and `npm run tauri:build:dev`
-enable; a release build ignores both tape variables. Use **absolute paths** for
+enable; a release build ignores every tape and perf variable. Use **absolute paths** for
 them — `tauri dev` runs the backend with `src-tauri/` as its working directory,
 so a relative path lands there.
 
@@ -127,10 +133,11 @@ on mock builders, never on a recording (ADR-0004). Keep large tapes out of git.
 Read by `src-tauri/build.rs` from the environment or from `src-tauri/.env`
 (gitignored). A missing value still builds.
 
-| Variable           | Effect                                                                                                        |
-| ------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `APTABASE_KEY`     | Analytics key. Unset, the analytics plugin gets an empty key.                                                 |
-| `TWITCH_CLIENT_ID` | Twitch application id for stream chat. Unset, Twitch sign-in needs a client id entered in the app's settings. |
+| Variable                  | Effect                                                                                                                                                                                                                |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `APTABASE_KEY`            | Analytics key. Unset, the analytics plugin gets an empty key.                                                                                                                                                         |
+| `MARBLE_TRACE_SOURCEMAPS` | Read by `vite.config.ts`, not `build.rs`, and not from `.env`. `1` makes `vite build` emit hidden source maps; `npm run perf -- --build` sets it so a heap profile resolves to source files. Never set for a release. |
+| `TWITCH_CLIENT_ID`        | Twitch application id for stream chat. Unset, Twitch sign-in needs a client id entered in the app's settings.                                                                                                         |
 
 ### Tooling
 
