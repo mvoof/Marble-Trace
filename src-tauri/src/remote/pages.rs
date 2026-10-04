@@ -3,8 +3,10 @@
 //! Everything a widget draws comes from the frontend bundle; this is only what
 //! a browser needs before it gets there — the landing page listing the screens,
 //! and the message shown when a link arrives without its token.
-use axum::http::{header, HeaderMap, StatusCode};
+use axum::http::{header, HeaderMap, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
+
+use super::csp::SERVER_PAGE_POLICY;
 
 /// Dark, because every device that opens this is about to show an overlay, and
 /// a white flash on a tablet strapped to a wheel is unpleasant.
@@ -37,6 +39,11 @@ pub fn html_page(status: StatusCode, language: &str, body: &str) -> Response {
     if let Ok(value) = "text/html; charset=utf-8".parse() {
         headers.insert(header::CONTENT_TYPE, value);
     }
+
+    headers.insert(
+        header::CONTENT_SECURITY_POLICY,
+        HeaderValue::from_static(SERVER_PAGE_POLICY),
+    );
 
     (status, headers, html).into_response()
 }

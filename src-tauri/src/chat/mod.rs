@@ -16,6 +16,22 @@ pub mod youtube;
 
 pub use crate::model::events::{EVENT_CHAT_DELETION, EVENT_CHAT_MESSAGE, EVENT_CHAT_PRESENCE};
 
+/// Every host an emote or badge URL handed to the frontend points at — the
+/// widget loads them straight into an `<img>`, so each one must be allowed by
+/// the `img-src` of both Content Security Policies: the app windows'
+/// (`tauri.conf.json`, pinned by a test in `remote/csp.rs`) and the remote
+/// page's. A host missing here renders as a broken image, not an error.
+pub const CHAT_IMAGE_SOURCES: [&str; 5] = [
+    // Twitch emotes (`twitch::EMOTE_CDN`) and the Helix badge artwork.
+    "https://static-cdn.jtvnw.net",
+    // YouTube channel emoji and member badges.
+    "https://*.ggpht.com",
+    "https://*.googleusercontent.com",
+    // YouTube's standard emoji: Noto images, and SVGs under `/s/gaming/emoji/`.
+    "https://fonts.gstatic.com",
+    "https://www.youtube.com",
+];
+
 /// Palette mirrored from `_widget-tokens.scss` ($race-*). YouTube gives authors
 /// no colour, so one is derived from the name — a grey wall of identical nicks
 /// is far worse than an arbitrary but stable colour.

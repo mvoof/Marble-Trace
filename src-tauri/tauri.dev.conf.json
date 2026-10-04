@@ -1,5 +1,13 @@
 {
   "identifier": "com.voof.marble-trace",
+  "app": {
+    "security": {
+      "csp": {
+        "script-src": ["'self'", "'unsafe-inline'"]
+      },
+      "dangerousDisableAssetCspModification": true
+    }
+  },
   "bundle": {
     "targets": ["nsis"],
     "createUpdaterArtifacts": false

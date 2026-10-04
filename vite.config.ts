@@ -4,12 +4,14 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { createLayerAliases, SCSS_ADDITIONAL_DATA } from './vite.aliases';
+import { devContentSecurityPolicy } from './vite.csp';
 
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(() => ({
   plugins: [
+    devContentSecurityPolicy(),
     react(),
     svgr({
       svgrOptions: {

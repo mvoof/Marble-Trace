@@ -51,6 +51,7 @@ no single layer: performance, settings, testing.
 
 - [Performance](#performance)
 - [Settings and persistence](#settings-and-persistence)
+- [Content Security Policy](#content-security-policy)
 - [Testing](#testing)
 - [Where does my code go?](#where-does-my-code-go)
 - [Commands](#commands)
@@ -1623,6 +1624,52 @@ layout's starter set are built from, not what is on screen.
 
 Most changes need no migration at all. Full guide:
 [`docs/settings-schema.md`](./settings-schema.md).
+
+## Content Security Policy
+
+Every page the app shows runs under a policy that allows only what it uses.
+Two pages, three places a policy is set:
+
+| page                            | policy from                             | reaches the page as                 |
+| ------------------------------- | --------------------------------------- | ----------------------------------- |
+| app windows (`index.html`)      | `app.security.csp` in `tauri.conf.json` | header, from Tauri's asset protocol |
+| the same, in `tauri:dev`        | `app.security.devCsp`                   | `<meta>`, injected by `vite.csp.ts` |
+| remote page, server's own pages | `src-tauri/src/remote/csp.rs`           | header, from the remote server      |
+
+On desktop Tauri injects its policy only into pages it serves itself, and a
+dev window loads straight from Vite — without `vite.csp.ts` a violation would
+first appear in a release build.
+
+What is allowed beyond `'self'`, and why:
+
+- **`style-src 'unsafe-inline'`** in the app windows — Ant Design's CSS-in-JS
+  (`@ant-design/cssinjs`) writes `<style>` tags at runtime.
+  `dangerousDisableAssetCspModification: ["style-src"]` keeps Tauri from adding
+  a nonce there, which would make browsers ignore `'unsafe-inline'`. The
+  remote page carries no Ant Design and allows no inline style.
+- **`script-src 'unsafe-inline'`** in development only — React Refresh's
+  preamble from `@vitejs/plugin-react` is an inline script — and in the
+  `tauri:build:dev` build, whose `tauri.dev.conf.json` patches the policy for
+  `tauri-plugin-mcp-bridge`: the bridge injects inline `<script>` tags, and
+  without them every `webview_*` tool fails ("Resolve-ref helper was not
+  available"). That file also turns Tauri's nonce injection off entirely,
+  because a nonce in `script-src` makes browsers ignore `'unsafe-inline'`. No
+  build has `unsafe-eval`, and a test in `remote/csp.rs` fails if the release
+  policy gains either.
+- **`img-src`**: `data:` (Vite inlines small images, flag sprites among them;
+  companion app icons arrive as data URLs), `http://asset.localhost` (layout
+  backgrounds), and the chat image hosts. Those are `CHAT_IMAGE_SOURCES` in
+  `chat/mod.rs`; the remote policy is built from that list and a test pins both
+  `tauri.conf.json` policies to it. **A new chat source with images on another
+  host is one line there plus the two lists in the config** — miss it and its
+  emotes render as broken images, nothing else complains.
+- **`connect-src`**: `http://ipc.localhost` (Tauri IPC); on the remote page
+  `ws://<host>` back to the server it came from; in development the Vite HMR
+  socket.
+
+The remote server adds its policy to any HTML response that does not carry one
+(`csp::apply`, a middleware), so a new route serving HTML is covered without
+remembering to.
 
 ## Testing
 
