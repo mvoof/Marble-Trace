@@ -102,9 +102,9 @@
     "moveToMonitor": "Move to monitor",
     "allMonitors": "All monitors",
     "removeMonitor": "Remove monitor from layout",
-    "addRemoteScreen": "Add screen",
-    "addRemoteScreenTooltip": "Add another screen to this layout — a tablet, a phone, or a browser source in OBS",
-    "addRemoteScreenConfirm": "Add screen",
+    "addRemoteScreen": "Browser screen",
+    "addRemoteScreenTooltip": "Add a virtual screen — not a monitor of this PC, but a page a browser opens by link: a tablet, a phone, or a browser source in OBS",
+    "addRemoteScreenConfirm": "Add browser screen",
     "remoteScreenNamePlaceholder": "Screen name, e.g. Wheel tablet",
     "remoteScreenDefaultName": "Remote screen",
     "remoteScreenTag": "remote",
@@ -128,7 +128,16 @@
     "duplicate": "Duplicate",
     "layerOrder": "Layer order",
     "moveToMonitorPlaceholder": "Choose a screen",
-    "quickPlacementDesc": "Puts the widget in a corner, an edge or the centre of its screen."
+    "quickPlacementDesc": "Puts the widget in a corner, an edge or the centre of its screen.",
+    "copySettingsFrom": "Copy settings from",
+    "copySettingsFromDesc": "Takes another instance's settings; keeps this one's place and size",
+    "copySettingsFromPlaceholder": "Choose an instance",
+    "resetSettings": "Reset settings",
+    "resetSettingsConfirm": "Put this widget's settings back to the defaults?",
+    "resetSettingsOk": "Reset",
+    "reset": "Reset",
+    "hotkeysActOn": "Hotkeys act on this widget",
+    "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen only shows."
   },
   "layoutList": {
     "moduleLabel": "Layouts",
@@ -175,15 +184,18 @@
     "removeMonitor": "Remove this monitor from the layout",
     "monitorOffline": "not found",
     "totalWidgets": "Total Widgets",
-    "remoteNoDevice": "no device"
+    "remoteNoDevice": "no device",
+    "removeMonitorWithWidgets": "Remove this monitor and its {{count}} widgets?"
   },
   "layoutWidgetPanel": {
     "onMonitor": "on {{monitor}}",
     "offScreen": "Off every screen",
     "copyTooltip": "A copy — its own settings, place and switch",
-    "originalTooltip": "The original this layout's copies were made from",
+    "originalTooltip": "The first instance on this screen; the others here are its copies",
     "deleteCopyConfirm": "Delete this copy?",
-    "deleteCopyOk": "Delete"
+    "deleteCopyOk": "Delete",
+    "hotkeysOn": "Hotkeys act on this widget — click to exclude it",
+    "hotkeysOff": "Hotkeys skip this widget — click to include it"
   },
   "widgetWorkbench": {
     "scenario": "Scenario",
@@ -195,13 +207,13 @@
     "large": "Large",
     "remove": "Remove",
     "loadingBackground": "Loading background...",
-    "allMonitors": "All monitors"
+    "allMonitors": "All monitors",
+    "nothingToShow": "Nothing to show in this scenario"
   },
   "overlayWidgetPicker": {
     "addWidget": "Add Widget",
     "search": "Search widgets",
     "empty": "Nothing left to add",
-    "moveHere": "move from {{monitor}}",
     "unavailable": "Not available in this sim"
   },
   "overlayCanvas": {

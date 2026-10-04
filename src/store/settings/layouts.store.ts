@@ -2,7 +2,6 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import { cloneBackgroundImage } from '@store/settings/layout-background';
 import {
-  monitorForWidget,
   monitorsBounds,
   placeWidgetOnMonitor,
   widgetsOnMonitor,
@@ -55,8 +54,8 @@ const DEFAULT_LAYOUT_NAME = 'Default';
 
 // Parks a monitor the machine no longer has to the right of every attached
 // screen. Its placeholder bounds would otherwise sit on top of a real monitor
-// in desktop space, and the centre-point test would hand its widgets over to
-// whichever screen it collided with.
+// in desktop space, and the editor would draw the two screens' widgets over
+// each other.
 const parkedBounds = (
   attached: LayoutMonitor[],
   monitor: LayoutMonitor,
@@ -93,6 +92,10 @@ const parkedBounds = (
  * needs no gesture at all: it carries its widgets by writing to the record's
  * own widget objects, which the map projects rather than copies — see
  * `carryWidgets`.
+ *
+ * A widget belongs to the monitor its `monitor` field names, so every
+ * operation on a monitor finds that monitor's widgets by name — never by where
+ * they happen to stand.
  */
 export class LayoutsStore {
   layouts: SavedLayout[] = [];
@@ -554,10 +557,10 @@ export class LayoutsStore {
   }
 
   /**
-   * Drops a monitor from a layout. Its overlay window closes on the next window
-   * sync, and the widgets that lived on it move to the first remaining monitor
-   * rather than being deleted — losing them to a mis-click would be
-   * unrecoverable.
+   * Drops a monitor from a layout, and its widgets with it: they are that
+   * monitor's own set, and moving them onto another screen would silently
+   * double that screen's widgets. Its overlay window closes on the next window
+   * sync. The editor asks before calling this.
    *
    * The widget list is rebuilt here, so the caller installs it: reach this
    * through the `removeMonitor` gesture rather than calling it directly.
@@ -570,24 +573,12 @@ export class LayoutsStore {
 
     if (!layout || !removed) return;
 
-    const remaining = layout.monitors.filter(
+    layout.monitors = layout.monitors.filter(
       (monitor) => monitor.name !== monitorName
     );
 
-    const orphans = new Set(
-      widgetsOnMonitor(layout.widgets, monitorName, layout.monitors).map(
-        (widget) => widget.id
-      )
-    );
-
-    layout.monitors = remaining;
-
-    const fallback = remaining[0];
-
-    layout.widgets = layout.widgets.map((widget) =>
-      orphans.has(widget.id) && fallback
-        ? placeWidgetOnMonitor(widget, removed.bounds, fallback.bounds)
-        : widget
+    layout.widgets = layout.widgets.filter(
+      (widget) => widget.monitor !== monitorName
     );
 
     delete layout.backgroundImages?.[monitorName];
@@ -616,19 +607,6 @@ export class LayoutsStore {
     for (const layout of this.layouts) {
       if (layout.monitors.length === 0) continue;
 
-      // Which monitor each widget belongs to has to be resolved against the
-      // OLD bounds — once a monitor moves, the centre-point test would report
-      // the widget as belonging to whatever now covers its stale position.
-      const ownerByWidget = new Map<WidgetDefaultConfig, string>();
-
-      for (const widget of layout.widgets) {
-        const owner = monitorForWidget(widget, layout.monitors);
-
-        if (owner) {
-          ownerByWidget.set(widget, owner.name);
-        }
-      }
-
       const previousBounds = new Map(
         layout.monitors.map((monitor) => [monitor.name, { ...monitor.bounds }])
       );
@@ -656,10 +634,11 @@ export class LayoutsStore {
       }
 
       layout.widgets = layout.widgets.map((widget) => {
-        const ownerName = ownerByWidget.get(widget);
-        const from = ownerName ? previousBounds.get(ownerName) : undefined;
+        const from = widget.monitor
+          ? previousBounds.get(widget.monitor)
+          : undefined;
         const to = layout.monitors.find(
-          (monitor) => monitor.name === ownerName
+          (monitor) => monitor.name === widget.monitor
         )?.bounds;
 
         if (!from || !to) return widget;
@@ -690,8 +669,8 @@ export class LayoutsStore {
 
   /**
    * Adds a device screen to the active layout. It is a monitor in every way
-   * that matters for the layout — widgets belong to it by their centre point,
-   * it gets its own widget set — but the machine has no display behind it, so
+   * that matters for the layout — it gets its own widget set — but the
+   * machine has no display behind it, so
    * it is parked in free desktop space and never gets an overlay window.
    */
   addRemoteScreen(
@@ -753,9 +732,9 @@ export class LayoutsStore {
     if (!layout || !monitor) return;
 
     // Growing a screen in place can push it into its neighbours, which the
-    // drag path refuses outright — the widened rectangle would take over the
-    // widgets whose centres it now covers. It is slid clear the short way, and
-    // its own widgets travel with it.
+    // drag path refuses outright — two screens drawn over each other cannot be
+    // edited. It is slid clear the short way, and its own widgets travel with
+    // it.
     const others = layout.monitors.filter(
       (candidate) => candidate.name !== monitorName
     );
@@ -774,11 +753,7 @@ export class LayoutsStore {
       ? nextRemoteBounds(others, width, height)
       : slid;
 
-    const carried = widgetsOnMonitor(
-      layout.widgets,
-      monitorName,
-      layout.monitors
-    );
+    const carried = widgetsOnMonitor(layout.widgets, monitorName);
 
     monitor.bounds = landed;
     this.carryWidgets(carried, landed.x - grown.x, landed.y - grown.y);
@@ -846,11 +821,10 @@ export class LayoutsStore {
 
   /**
    * Moves a remote screen across the virtual desktop, carrying its widgets with
-   * it: widget coordinates are desktop-wide and a widget belongs to the monitor
-   * containing its centre, so a screen that moved alone would leave every
-   * widget behind on whatever rectangle they landed in. A move onto another
-   * monitor is refused for the same reason — it would steal that screen's
-   * widgets.
+   * it: widget coordinates are desktop-wide while the app runs, so a screen
+   * that moved alone would leave its widgets behind outside its own bounds. A
+   * move onto another monitor is refused — two screens drawn over each other
+   * cannot be edited.
    *
    * Deliberately outside undo/redo: the history holds widget snapshots only, so
    * an undo here would put the widgets back and leave the screen moved.
@@ -880,11 +854,7 @@ export class LayoutsStore {
 
     if (collides) return;
 
-    const carried = widgetsOnMonitor(
-      layout.widgets,
-      monitorName,
-      layout.monitors
-    );
+    const carried = widgetsOnMonitor(layout.widgets, monitorName);
 
     monitor.bounds = target;
     this.carryWidgets(carried, dx, dy);
@@ -904,13 +874,10 @@ export class LayoutsStore {
 
     const targets = remoteScreenGrid(layout.monitors);
 
-    // Ownership is read against the arrangement as it stands, before any
-    // rectangle moves — halfway through, a widget's centre could fall inside a
-    // screen that has already been re-parked.
     const carried = new Map(
       Object.keys(targets).map((name) => [
         name,
-        widgetsOnMonitor(layout.widgets, name, layout.monitors),
+        widgetsOnMonitor(layout.widgets, name),
       ])
     );
 

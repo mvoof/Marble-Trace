@@ -102,9 +102,9 @@
     "moveToMonitor": "Mover a otro monitor",
     "allMonitors": "Todos los monitores",
     "removeMonitor": "Quitar el monitor del diseño",
-    "addRemoteScreen": "Añadir pantalla",
-    "addRemoteScreenTooltip": "Añade otra pantalla a este diseño: una tablet, un móvil o un Browser Source en OBS",
-    "addRemoteScreenConfirm": "Añadir pantalla",
+    "addRemoteScreen": "Pantalla para navegador",
+    "addRemoteScreenTooltip": "Añadir una pantalla virtual: no un monitor de este PC, sino una página que un navegador abre por enlace — una tableta, un teléfono o una fuente de navegador en OBS",
+    "addRemoteScreenConfirm": "Añadir pantalla para navegador",
     "remoteScreenNamePlaceholder": "Nombre de la pantalla, p. ej. Tablet del volante",
     "remoteScreenDefaultName": "Pantalla remota",
     "remoteScreenTag": "remota",
@@ -128,7 +128,16 @@
     "duplicate": "Duplicar",
     "layerOrder": "Orden de capas",
     "moveToMonitorPlaceholder": "Elige una pantalla",
-    "quickPlacementDesc": "Coloca el widget en una esquina, un borde o el centro de su pantalla."
+    "quickPlacementDesc": "Coloca el widget en una esquina, un borde o el centro de su pantalla.",
+    "copySettingsFrom": "Copiar ajustes de",
+    "copySettingsFromDesc": "Toma los ajustes de otra instancia; esta conserva su posición y tamaño",
+    "copySettingsFromPlaceholder": "Elige una instancia",
+    "resetSettings": "Restablecer ajustes",
+    "resetSettingsConfirm": "¿Devolver los ajustes de este widget a los valores predeterminados?",
+    "resetSettingsOk": "Restablecer",
+    "reset": "Restablecer",
+    "hotkeysActOn": "Los atajos actúan sobre este widget",
+    "hotkeysActOnDesc": "Sus atajos muestran, ocultan y cambian esta instancia. Si hay varias marcadas, cambian juntas. Una pantalla para navegador solo muestra."
   },
   "layoutList": {
     "moduleLabel": "Diseños",
@@ -175,15 +184,18 @@
     "removeMonitor": "Quitar este monitor del diseño",
     "monitorOffline": "no encontrado",
     "totalWidgets": "Widgets en total",
-    "remoteNoDevice": "sin dispositivo"
+    "remoteNoDevice": "sin dispositivo",
+    "removeMonitorWithWidgets": "¿Quitar este monitor y sus {{count}} widgets?"
   },
   "layoutWidgetPanel": {
     "onMonitor": "en {{monitor}}",
     "offScreen": "Fuera de las pantallas",
     "copyTooltip": "Una copia: con sus propios ajustes, lugar e interruptor",
-    "originalTooltip": "El original del que salen las copias de este diseño",
+    "originalTooltip": "La primera instancia en esta pantalla; las demás aquí son sus copias",
     "deleteCopyConfirm": "¿Eliminar esta copia?",
-    "deleteCopyOk": "Eliminar"
+    "deleteCopyOk": "Eliminar",
+    "hotkeysOn": "Los atajos actúan sobre este widget — pulsa para excluirlo",
+    "hotkeysOff": "Los atajos omiten este widget — pulsa para incluirlo"
   },
   "widgetWorkbench": {
     "scenario": "Escenario",
@@ -195,13 +207,13 @@
     "large": "Grande",
     "remove": "Quitar",
     "loadingBackground": "Cargando el fondo...",
-    "allMonitors": "Todos los monitores"
+    "allMonitors": "Todos los monitores",
+    "nothingToShow": "Nada que mostrar en este escenario"
   },
   "overlayWidgetPicker": {
     "addWidget": "Añadir widget",
     "search": "Buscar widgets",
     "empty": "No queda nada por añadir",
-    "moveHere": "mover desde {{monitor}}",
     "unavailable": "No disponible en este simulador"
   },
   "overlayCanvas": {

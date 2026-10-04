@@ -36,7 +36,7 @@ export class InputTraceWidgetStore {
         () => this.root.player.carInputs,
         (inputs) => {
           const { smoothing } =
-            this.root.liveWidgets.getSettings<InputTraceSettings>(
+            this.root.liveWidgets.settingsOfType<InputTraceSettings>(
               'input-trace'
             );
 

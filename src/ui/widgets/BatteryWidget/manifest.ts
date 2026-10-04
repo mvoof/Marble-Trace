@@ -6,7 +6,6 @@ import {
 
 export const BATTERY_MANIFEST: WidgetManifest = {
   id: 'battery',
-  order: 250,
   // Everything it reads rides the always-sent 4 Hz carStatus frame, so there is
   // no gated field to declare. An entry here would cost every window traffic
   // this widget never looks at.

@@ -34,12 +34,8 @@ const snapshotFor = (
   const { layout, screen: monitor } = target;
   const isLive = layout.id === root.layouts.liveLayoutId;
   const widgets = isLive
-    ? widgetsOnMonitor(
-        root.liveWidgets.liveWidgets,
-        monitor.name,
-        layout.monitors
-      )
-    : widgetsOnMonitor(layout.widgets, monitor.name, layout.monitors);
+    ? widgetsOnMonitor(root.liveWidgets.liveWidgets, monitor.name)
+    : widgetsOnMonitor(layout.widgets, monitor.name);
 
   return {
     slug,

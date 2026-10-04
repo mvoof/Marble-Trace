@@ -6,7 +6,6 @@ import {
 
 export const RACE_DASH_MANIFEST: WidgetManifest = {
   id: 'race-dash',
-  order: 220,
   telemetryEvents: ['carDynamics', 'driverEntries'],
   // The dash draws no flags — its own state is the pit block: the lane bar,
   // the box countdown and the limiter banner, all off `usePitState`, which

@@ -32,7 +32,6 @@ const WHEEL_TO_WHEEL_DEFAULTS: WheelToWheelWidgetSettings = {
 
 export const WHEEL_TO_WHEEL_MANIFEST: WidgetManifest = {
   id: 'wheel-to-wheel',
-  order: 270,
   previewScenarios: ['field-close-pack'],
   telemetryEvents: ['relative'],
   requiredCapabilities: ['relative'],

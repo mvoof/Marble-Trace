@@ -2,7 +2,6 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Row, Col, ColorPicker, Slider } from 'antd';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
-import { widgetTypeOf } from '@utils/widget-instance';
 import styles from './WidgetSettings.module.scss';
 import { Card, PanelWidgetProvider } from './panels/Card';
 import { useWidgetEditor } from './WidgetEditorContext';
@@ -42,7 +41,7 @@ export const WidgetSettings = observer(
     // Panels and the aesthetics exclusion below belong to the widget, not to
     // the copy — a copy's id is its own, and looking either up by it would
     // leave a copy with nothing but the common settings.
-    const widgetType = widgetTypeOf(widget);
+    const widgetType = widget.type;
     const SettingsPanel = settingsPanelForWidget(widgetType);
 
     return (

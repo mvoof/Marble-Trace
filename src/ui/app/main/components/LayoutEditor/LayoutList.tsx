@@ -296,11 +296,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
 
   const widgetCountOnMonitor = (monitorName: string) =>
     selectedLayout
-      ? widgetsOnMonitor(
-          selectedEnabledWidgets,
-          monitorName,
-          selectedLayout.monitors
-        ).length
+      ? widgetsOnMonitor(selectedEnabledWidgets, monitorName).length
       : 0;
 
   return (
@@ -593,7 +589,9 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                             {` · ${widgetCount}`}
                           </span>
                           <Popconfirm
-                            title={t('layoutList.removeMonitor')}
+                            title={t('layoutList.removeMonitorWithWidgets', {
+                              count: widgetCount,
+                            })}
                             okText={t('layoutEditor.delete')}
                             okButtonProps={{ danger: true }}
                             cancelText={t('layoutEditor.cancel')}

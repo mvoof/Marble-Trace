@@ -23,11 +23,7 @@ interface TestRoot {
   liveWidgets: {
     isWidgetOnScreen: (id: string) => boolean;
     getWidget: (id: string) => { userSettings: { enabled: boolean } };
-    firstWidgetOfType: (type: string) => {
-      id: string;
-      userSettings: { enabled: boolean };
-    };
-    setWidgetEnabled: (id: string, enabled: boolean) => void;
+    toggleVisibilityByHotkey: (type: string) => void;
   };
   pitServiceWidget: { panel: { toggleManualShow: () => void } };
   appSettings: {
@@ -45,11 +41,7 @@ const makeRoot = (widgetsInLayout: string[]): TestRoot => ({
     getWidget: (id: string) => ({
       userSettings: { enabled: widgetsInLayout.includes(id) },
     }),
-    firstWidgetOfType: (type: string) => ({
-      id: type,
-      userSettings: { enabled: widgetsInLayout.includes(type) },
-    }),
-    setWidgetEnabled: vi.fn(),
+    toggleVisibilityByHotkey: vi.fn(),
   },
   pitServiceWidget: { panel: { toggleManualShow: vi.fn() } },
   appSettings: {
@@ -120,7 +112,7 @@ describe('dispatchBinding', () => {
     expect(root.appSettings.setInteractMode).toHaveBeenNthCalledWith(2, false);
   });
 
-  it('hides a widget that is on screen by switching it off in the layout', () => {
+  it('toggles the instances a widget hotkey acts on', () => {
     const root = makeRoot(['standings']);
 
     root.bindings.applyBindings({
@@ -129,9 +121,8 @@ describe('dispatchBinding', () => {
 
     dispatch(root, 'F5');
 
-    expect(root.liveWidgets.setWidgetEnabled).toHaveBeenCalledWith(
-      'standings',
-      false
+    expect(root.liveWidgets.toggleVisibilityByHotkey).toHaveBeenCalledWith(
+      'standings'
     );
   });
 
@@ -146,9 +137,8 @@ describe('dispatchBinding', () => {
 
     dispatch(root, 'F5');
 
-    expect(root.liveWidgets.setWidgetEnabled).toHaveBeenCalledWith(
-      'standings',
-      true
+    expect(root.liveWidgets.toggleVisibilityByHotkey).toHaveBeenCalledWith(
+      'standings'
     );
   });
 

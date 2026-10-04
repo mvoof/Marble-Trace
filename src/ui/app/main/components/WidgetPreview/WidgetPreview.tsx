@@ -5,7 +5,6 @@ import { RootStore } from '@store/root-store';
 import { RootStoreContext, useUnitsStore } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
-import { widgetTypeOf } from '@utils/widget-instance';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameStyle } from '@ui/app/widget-frame';
@@ -58,7 +57,7 @@ export const WidgetPreview = observer(
     // so a copy is mirrored onto its type's record there rather than added
     // beside it: the preview shows what this copy looks like, and only ever one
     // widget at a time.
-    const previewId = widget ? widgetTypeOf(widget) : widgetId;
+    const previewId = widget ? widget.type : widgetId;
 
     // Read the change token so the effect re-mirrors on any settings change.
     const mutationToken = editor.getChangeToken();
@@ -69,6 +68,7 @@ export const WidgetPreview = observer(
       previewStore.liveWidgets.applySettingsSync([
         {
           id: previewId,
+          type: widget.type,
           label: widget.label,
           description: widget.description,
           designWidth: widget.designWidth,
@@ -91,7 +91,7 @@ export const WidgetPreview = observer(
     const { userSettings, designWidth, autoHeight, overflowVisible } = widget;
     const widgetScale = userSettings.currentWidth / designWidth;
     const frameStyle = widgetFrameStyle({
-      widgetType: widget ? widgetTypeOf(widget) : widgetId,
+      widgetType: widget ? widget.type : widgetId,
       userSettings,
       widgetScale,
       transparentContainer: widget.transparentContainer,

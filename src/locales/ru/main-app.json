@@ -102,9 +102,9 @@
     "moveToMonitor": "Перенести на монитор",
     "allMonitors": "Все мониторы",
     "removeMonitor": "Убрать монитор из раскладки",
-    "addRemoteScreen": "Добавить экран",
-    "addRemoteScreenTooltip": "Добавить этой раскладке ещё один экран — планшет, телефон или Browser Source в OBS",
-    "addRemoteScreenConfirm": "Добавить экран",
+    "addRemoteScreen": "Экран для браузера",
+    "addRemoteScreenTooltip": "Добавить виртуальный экран — не монитор компьютера, а страницу, которую по ссылке откроет браузер: планшет, телефон или Browser Source в OBS",
+    "addRemoteScreenConfirm": "Добавить экран для браузера",
     "remoteScreenNamePlaceholder": "Название экрана, например «Планшет на руле»",
     "remoteScreenDefaultName": "Внешний экран",
     "remoteScreenTag": "внешний",
@@ -128,7 +128,16 @@
     "duplicate": "Дублировать",
     "layerOrder": "Порядок слоёв",
     "moveToMonitorPlaceholder": "Выберите экран",
-    "quickPlacementDesc": "Ставит виджет в угол, к краю или в центр его экрана."
+    "quickPlacementDesc": "Ставит виджет в угол, к краю или в центр его экрана.",
+    "copySettingsFrom": "Скопировать настройки с",
+    "copySettingsFromDesc": "Берёт настройки другого экземпляра; место и размер этого остаются",
+    "copySettingsFromPlaceholder": "Выберите экземпляр",
+    "resetSettings": "Сбросить настройки",
+    "resetSettingsConfirm": "Вернуть настройкам виджета значения по умолчанию?",
+    "resetSettingsOk": "Сбросить",
+    "reset": "Сбросить",
+    "hotkeysActOn": "Хоткеи действуют на этот виджет",
+    "hotkeysActOnDesc": "Хоткеи виджета показывают, скрывают и переключают этот экземпляр. Если отмечено несколько — меняются все вместе. Экран для браузера только показывает."
   },
   "layoutList": {
     "moduleLabel": "Раскладки",
@@ -179,15 +188,18 @@
     "removeMonitor": "Убрать монитор из лейаута",
     "monitorOffline": "не найден",
     "totalWidgets": "Всего виджетов",
-    "remoteNoDevice": "нет устройства"
+    "remoteNoDevice": "нет устройства",
+    "removeMonitorWithWidgets": "Убрать монитор вместе с его виджетами ({{count}})?"
   },
   "layoutWidgetPanel": {
     "onMonitor": "на {{monitor}}",
     "offScreen": "Вне экранов",
     "copyTooltip": "Копия — со своими настройками, местом и переключателем",
-    "originalTooltip": "Оригинал, с которого сделаны копии в этой раскладке",
+    "originalTooltip": "Первый экземпляр на этом экране; остальные здесь — его копии",
     "deleteCopyConfirm": "Удалить эту копию?",
-    "deleteCopyOk": "Удалить"
+    "deleteCopyOk": "Удалить",
+    "hotkeysOn": "Хоткеи действуют на этот виджет — нажмите, чтобы исключить",
+    "hotkeysOff": "Хоткеи этот виджет пропускают — нажмите, чтобы включить"
   },
   "widgetWorkbench": {
     "scenario": "Сценарий",
@@ -199,13 +211,13 @@
     "large": "Крупный",
     "remove": "Удалить",
     "loadingBackground": "Загрузка фона...",
-    "allMonitors": "Все мониторы"
+    "allMonitors": "Все мониторы",
+    "nothingToShow": "В этом сценарии показывать нечего"
   },
   "overlayWidgetPicker": {
     "addWidget": "Добавить виджет",
     "search": "Поиск виджетов",
     "empty": "Добавлять нечего",
-    "moveHere": "перенести с {{monitor}}",
     "unavailable": "Недоступно в этом симуляторе"
   },
   "overlayCanvas": {

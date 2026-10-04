@@ -13,19 +13,22 @@ import {
   BringToFront,
   Copy,
   Maximize2,
+  RotateCcw,
   SendToBack,
-  Trash2,
 } from 'lucide-react';
 
 import { useLiveWidgetsStore } from '@store/root-store-context';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
-import { Card } from '../WidgetSettings/panels/Card';
+import { Card, PanelWidgetProvider } from '../WidgetSettings/panels/Card';
 import { SettingRow } from '../WidgetSettings/panels/SettingRow';
 import type { SnapPosition } from './snap-position';
 import styles from './WidgetInspector.module.scss';
 
 const ICON_SIZE = 14;
+
+// The fold-state key the inspector's action card is remembered under.
+const EDITOR_ACTIONS_GROUP = 'layout-editor';
 
 interface WidgetInspectorProps {
   selectedWidgetId: string | null;
@@ -86,8 +89,24 @@ export const WidgetInspector = observer(
       );
     }
 
-    const isCopy = widget.type !== undefined;
     const { ordinal, total } = liveWidgets.copyOrdinalOf(widget.id);
+    const isCopy = ordinal > 1;
+
+    // Never the monitor it already stands on.
+    const moveTargets = moveTargetOptions.filter(
+      (option) => option.value !== widget.monitor
+    );
+
+    const settingsSources = liveWidgets
+      .settingsSourcesFor(widget.id)
+      .map((source) => {
+        const place = liveWidgets.copyOrdinalOf(source.id);
+
+        return {
+          value: source.id,
+          label: `${source.monitor ?? '—'} · ${place.ordinal}/${place.total}`,
+        };
+      });
 
     return (
       <div className={styles.root}>
@@ -108,110 +127,143 @@ export const WidgetInspector = observer(
               </span>
             </Tooltip>
           )}
-
-          {/* Only a copy: deleting the original would have the next layout load
-              put it straight back, which is what the enable switch is for. */}
-          {isCopy && (
-            <Popconfirm
-              title={t('layoutWidgetPanel.deleteCopyConfirm')}
-              okText={t('layoutWidgetPanel.deleteCopyOk')}
-              cancelText={t('layoutEditor.cancel')}
-              onConfirm={() => {
-                liveWidgets.removeWidgetCopy(widget.id);
-                onSelectWidget(null);
-              }}
-            >
-              <Button
-                size="small"
-                type="text"
-                danger
-                icon={<Trash2 size={ICON_SIZE} />}
-              />
-            </Popconfirm>
-          )}
         </header>
 
         <div className={styles.body}>
-          <Card title={t('layoutEditor.inspectorActions')}>
-            <SettingRow title={t('layoutEditor.lockAspectRatio')}>
-              <Switch
-                size="small"
-                checked={isRatioLocked}
-                onChange={onToggleRatioLock}
-              />
-            </SettingRow>
-
-            {moveTargetOptions.length > 0 && (
-              <SettingRow title={t('layoutEditor.moveToMonitor')}>
-                <Select
+          {/* One fold for the whole editor, not per widget: folded once, the
+              actions stay out of the way whichever widget is selected next. */}
+          <PanelWidgetProvider widgetId={EDITOR_ACTIONS_GROUP}>
+            <Card title={t('layoutEditor.inspectorActions')} defaultOpen>
+              <SettingRow stacked title={t('layoutEditor.lockAspectRatio')}>
+                <Switch
                   size="small"
-                  value={null}
-                  placeholder={t('layoutEditor.moveToMonitorPlaceholder')}
-                  onChange={(monitorName: string) =>
-                    liveWidgets.moveWidgetToMonitor(widget.id, monitorName)
-                  }
-                  options={moveTargetOptions}
-                  popupMatchSelectWidth={200}
-                  className={styles.moveSelect}
+                  checked={isRatioLocked}
+                  onChange={onToggleRatioLock}
                 />
               </SettingRow>
-            )}
 
-            <SettingRow title={t('layoutEditor.layerOrder')}>
-              <div className={styles.buttonPair}>
-                <Tooltip title={t('layoutEditor.bringToFront')}>
-                  <Button
+              {liveWidgets.canTakeHotkeys(widget.id) && (
+                <SettingRow
+                  stacked
+                  title={t('layoutEditor.hotkeysActOn')}
+                  desc={t('layoutEditor.hotkeysActOnDesc')}
+                >
+                  <Switch
                     size="small"
-                    icon={<BringToFront size={ICON_SIZE} />}
-                    onClick={() => liveWidgets.bringToFront(widget.id)}
+                    checked={liveWidgets.hotkeysActOnWidget(widget.id)}
+                    onChange={(checked) =>
+                      liveWidgets.setHotkeysActOn(widget.id, checked)
+                    }
                   />
-                </Tooltip>
+                </SettingRow>
+              )}
 
-                <Tooltip title={t('layoutEditor.sendToBack')}>
-                  <Button
+              {moveTargets.length > 0 && (
+                <SettingRow stacked title={t('layoutEditor.moveToMonitor')}>
+                  <Select
                     size="small"
-                    icon={<SendToBack size={ICON_SIZE} />}
-                    onClick={() => liveWidgets.sendToBack(widget.id)}
+                    value={null}
+                    placeholder={t('layoutEditor.moveToMonitorPlaceholder')}
+                    onChange={(monitorName: string) =>
+                      liveWidgets.moveWidgetToMonitor(widget.id, monitorName)
+                    }
+                    options={moveTargets}
+                    popupMatchSelectWidth={200}
+                    className={styles.moveSelect}
                   />
-                </Tooltip>
-              </div>
-            </SettingRow>
+                </SettingRow>
+              )}
 
-            <SettingRow title={t('layoutEditor.duplicateWidget')}>
-              <Button
-                size="small"
-                icon={<Copy size={ICON_SIZE} />}
-                onClick={() => {
-                  const copyId = liveWidgets.duplicateWidget(widget.id);
+              {settingsSources.length > 0 && (
+                <SettingRow
+                  stacked
+                  title={t('layoutEditor.copySettingsFrom')}
+                  desc={t('layoutEditor.copySettingsFromDesc')}
+                >
+                  <Select
+                    size="small"
+                    value={null}
+                    placeholder={t('layoutEditor.copySettingsFromPlaceholder')}
+                    onChange={(sourceId: string) =>
+                      liveWidgets.copySettingsFrom(widget.id, sourceId)
+                    }
+                    options={settingsSources}
+                    popupMatchSelectWidth={200}
+                    className={styles.moveSelect}
+                  />
+                </SettingRow>
+              )}
 
-                  // Selection follows the copy: it is offset from the widget it
-                  // came from and on top, so it is the one about to be placed.
-                  if (copyId !== null) {
-                    onSelectWidget(copyId);
-                  }
-                }}
+              <SettingRow stacked title={t('layoutEditor.resetSettings')}>
+                <Popconfirm
+                  title={t('layoutEditor.resetSettingsConfirm')}
+                  okText={t('layoutEditor.resetSettingsOk')}
+                  cancelText={t('layoutEditor.cancel')}
+                  onConfirm={() => liveWidgets.resetSettings(widget.id)}
+                >
+                  <Button size="small" icon={<RotateCcw size={ICON_SIZE} />}>
+                    {t('layoutEditor.reset')}
+                  </Button>
+                </Popconfirm>
+              </SettingRow>
+
+              <SettingRow stacked title={t('layoutEditor.layerOrder')}>
+                <div className={styles.buttonPair}>
+                  <Tooltip title={t('layoutEditor.bringToFront')}>
+                    <Button
+                      size="small"
+                      icon={<BringToFront size={ICON_SIZE} />}
+                      onClick={() => liveWidgets.bringToFront(widget.id)}
+                    />
+                  </Tooltip>
+
+                  <Tooltip title={t('layoutEditor.sendToBack')}>
+                    <Button
+                      size="small"
+                      icon={<SendToBack size={ICON_SIZE} />}
+                      onClick={() => liveWidgets.sendToBack(widget.id)}
+                    />
+                  </Tooltip>
+                </div>
+              </SettingRow>
+
+              <SettingRow stacked title={t('layoutEditor.duplicateWidget')}>
+                <Button
+                  size="small"
+                  icon={<Copy size={ICON_SIZE} />}
+                  onClick={() => {
+                    const copyId = liveWidgets.duplicateWidget(widget.id);
+
+                    // Selection follows the copy: it is offset from the widget it
+                    // came from and on top, so it is the one about to be placed.
+                    if (copyId !== null) {
+                      onSelectWidget(copyId);
+                    }
+                  }}
+                >
+                  {t('layoutEditor.duplicate')}
+                </Button>
+              </SettingRow>
+
+              <SettingRow
+                stacked
+                title={t('layoutEditor.quickPlacement')}
+                desc={t('layoutEditor.quickPlacementDesc')}
               >
-                {t('layoutEditor.duplicate')}
-              </Button>
-            </SettingRow>
-
-            <SettingRow
-              title={t('layoutEditor.quickPlacement')}
-              desc={t('layoutEditor.quickPlacementDesc')}
-            >
-              <div className={styles.snapGrid}>
-                {SNAP_BUTTONS.map(({ position, Icon }) => (
-                  <Button
-                    key={position}
-                    size="small"
-                    type="text"
-                    icon={<Icon size={ICON_SIZE} />}
-                    onClick={() => onSnap(position)}
-                  />
-                ))}
-              </div>
-            </SettingRow>
-          </Card>
+                <div className={styles.snapGrid}>
+                  {SNAP_BUTTONS.map(({ position, Icon }) => (
+                    <Button
+                      key={position}
+                      size="small"
+                      type="text"
+                      icon={<Icon size={ICON_SIZE} />}
+                      onClick={() => onSnap(position)}
+                    />
+                  ))}
+                </div>
+              </SettingRow>
+            </Card>
+          </PanelWidgetProvider>
 
           <WidgetSettings widgetId={selectedWidgetId} hideHeader />
         </div>

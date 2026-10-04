@@ -59,8 +59,9 @@
   padding: sp(sm) sp(xs) 0 0;
 }
 
+// Under its label, so it takes the whole column.
 .moveSelect {
-  min-width: 120px;
+  width: 100%;
 }
 
 .buttonPair {

@@ -1,4 +1,3 @@
-import { widgetTypeOf } from '@utils/widget-instance';
 import { observer } from 'mobx-react-lite';
 import type { ReactNode } from 'react';
 
@@ -56,7 +55,7 @@ export const RemoteWidgetFrame = observer(
       : width / widget.designWidth;
 
     const frameStyle = widgetFrameStyle({
-      widgetType: widget ? widgetTypeOf(widget) : widgetId,
+      widgetType: widget ? widget.type : widgetId,
       userSettings,
       widgetScale,
       transparentContainer,

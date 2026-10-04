@@ -30,8 +30,9 @@ export const GMeterCanvas = observer(() => {
 
     resizeObserver.observe(wrap);
 
-    const rect = wrap.getBoundingClientRect();
-    setDimensions({ width: rect.width, height: rect.height });
+    // Layout size, like the observer's: a bounding rect would carry the layout
+    // editor's canvas zoom.
+    setDimensions({ width: wrap.clientWidth, height: wrap.clientHeight });
 
     return () => {
       resizeObserver.disconnect();

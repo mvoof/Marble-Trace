@@ -224,8 +224,16 @@ export const TrackMapSvg = observer(
 
       if (!el) return;
 
-      const obs = new ResizeObserver(() => {
-        const { width, height } = el.getBoundingClientRect();
+      // The layout size, not `getBoundingClientRect`: the editor scales its
+      // whole canvas with a CSS transform, and a size read through it changes
+      // when the editor zooms or goes fullscreen while nothing here fires
+      // again — the markers then kept the size of the old zoom. On the overlay
+      // the two are the same.
+      const obs = new ResizeObserver((entries) => {
+        const { width, height } = entries[0]?.contentRect ?? {
+          width: 0,
+          height: 0,
+        };
 
         if (width === 0 || height === 0) return;
 

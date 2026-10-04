@@ -20,16 +20,38 @@ A file with no `schemaVersion` is version 0 — anything written before 0.21.
 
 ### Who owns the widgets
 
-`layouts[]` is where the widgets live. The active layout **owns** them outright:
-the store's live widget map is a projection of that layout's own objects, so an
-edit in the overlay or the editor lands in the layout record itself — there is no
-second copy to commit, debounce or lose.
+Since v6, **each monitor of a layout owns its widgets**:
+`layouts[].monitors[].widgets[]`. A widget is stored in that monitor's own
+coordinates, with its geometry in `frame`, its switch in `enabled`, and in
+`settings` **only the values that differ from its manifest**. Nothing the
+manifest already says — label, description, flags, a design size it gives — is
+written at all.
 
-`defaultWidgets[]` beside it is only the template catalogue a _new_ layout is
-built from, never what is on screen.
+```json
+{
+  "id": "track-map-2",
+  "type": "track-map",
+  "enabled": true,
+  "frame": { "x": 1500, "y": 40, "width": 360, "height": 360, "z": 4 },
+  "settings": { "showSectors": false }
+}
+```
 
-Before v3 the file also carried a top-level `widgets[]`. It was written on every
-save and discarded on the next load, and it is gone.
+In memory the shape is different: a layout keeps one flat `widgets[]` in
+desktop-wide coordinates, each record carrying every setting resolved and naming
+its monitor in `monitor`. `platform/sync/settings-file.ts` converts between the
+two, and is the only module that knows the file's shape. The active layout
+**owns** its records outright: the store's live widget map is a projection of
+that layout's own objects, so an edit in the overlay or the editor lands in the
+layout record itself — there is no second copy to commit, debounce or lose.
+
+`widgetTemplates` beside the layouts, keyed by widget type, is only the catalogue
+the Widgets page edits — what a new instance starts from, with a size and no
+position — never what is on screen.
+
+Before v6 a layout held one flat `widgets[]` in desktop-wide coordinates, and a
+widget belonged to whichever monitor contained its centre; the catalogue was
+`defaultWidgets[]`. Before v3 the file also carried a top-level `widgets[]`.
 
 ## Load pipeline
 
@@ -39,6 +61,8 @@ store.get('settings')
 runMigrations(blob)          ← platform/settings-schema, pure, works on raw JSON
       ▼
 hydrateStores(root, blob)    ← platform/sync/persistence
+      ▼
+decodeLayout / decodeTemplates ← platform/sync/settings-file
       ▼
 mergeWithDefaults(...)       ← store/deep-merge, per widget and for app settings
 ```
@@ -52,19 +76,19 @@ Four things about this order matter:
    field to its default and logs a `console.warn`. It runs _after_ migrations, so
    a migration that writes a wrong-typed value has its work silently undone. Test
    for it — see below.
-3. **Restoration reaches every layout's copy too, but only for defaults.**
-   `mergeWithDefaults` merges one settings object; `hydrateStores` is what applies
-   it everywhere — `defaultWidgets[]` through `restoreWidgets`, and every loaded
-   layout's `widgets[]` through `restoreLayoutWidgets`, the same repair plus one
-   rule: a widget the layout never had is forced to `enabled: false`, so filling a
-   hole in an old file cannot put a new widget on someone's overlay. The app block
-   is merged separately.
+3. **A widget's settings are its overrides merged over the manifest.**
+   `decodeWidget` and `decodeTemplates` merge every stored `settings` over the
+   shipped defaults, so a key the file does not hold is simply the default. A
+   widget type the layout holds no instance of is added by `setWidgets` when the
+   layout is installed — switched **off**, on the first display — so a new
+   widget never appears on someone's overlay by itself. The app block is merged
+   separately.
 
    That covers **a missing key**, which is why adding a setting needs no
-   migration even though the widget is stored once per layout. It does **not**
-   cover a key that is present and now means something else — merging keeps the
-   value it finds. A migration that rewrites values still has to walk every copy
-   itself, with the `blob.ts` helpers.
+   migration, and why a changed default reaches every widget that never
+   overrode it. It does **not** cover a key that is present and now means
+   something else — merging keeps the value it finds. A migration that rewrites
+   values still has to walk every instance itself, with the `blob.ts` helpers.
 
 4. **Both windows run the chain**, each on its own parse of the file, but only
    the main window writes. That is why a migration must be pure — a side effect
@@ -97,9 +121,12 @@ Before the first save at a new version, the old file is copied to
 
 ## When you do NOT need a migration
 
-- **Adding a field with a default.** `mergeWithDefaults` fills it in on the next
-  load, in `defaultWidgets[]` and in every layout's copy alike. Add it to
-  `DEFAULT_APP_SETTINGS` or to the widget's manifest defaults.
+- **Adding a field with a default.** A widget stores only its overrides, so the
+  new key is read from the manifest everywhere — every template and every
+  instance on every monitor. Add it to `DEFAULT_APP_SETTINGS` or to the widget's
+  manifest defaults.
+- **Changing a widget's default or its design size.** The file holds neither
+  unless the user changed it, so the new value reaches everyone who did not.
 - **Removing a field.** It is pruned from disk on the next save.
 - **Renaming a field whose value the user can trivially re-enter.** They set it
   again once; a migration is not worth its permanent cost.
@@ -171,47 +198,50 @@ written, or the plaintext lives on in `settings.v{n}.bak`.
 
 ### Walking the blob — use `blob.ts`
 
-**A widget is in the file once per layout, plus once more.** Every entry of
-`layouts[].widgets[]` carries the full catalogue — the active layout _owns_ the
-widgets a driver sees — and `defaultWidgets[]` carries the templates a new layout
-is built from. (A file written before v3 also has a top-level `widgets[]`; the
-helpers still visit it, so an old blob migrates cleanly.) Restoration reaches all
-of them — `hydrateStores` runs `restoreWidgets` over `defaultWidgets` and
-`restoreLayoutWidgets` over each loaded layout — but all it does is fill in
-**missing** keys from the shipped defaults. A value the file already holds is
-left exactly as found, in every copy. So a migration that rewrites values and
-touches one array leaves every other copy carrying the old ones, and the failure
-is quiet: the app starts, the widget looks right, and the bad copy only surfaces
-when the user switches layout.
+**A widget is in the file once per instance, plus once more.** Every monitor of
+every layout carries its own instances in `layouts[].monitors[].widgets[]`, and
+`widgetTemplates[type]` carries what a new instance starts from. Reading back
+fills in **missing** keys from the shipped defaults, but a value the file already
+holds is left exactly as found, in every instance. So a migration that rewrites
+values and touches one array leaves every other instance carrying the old ones,
+and the failure is quiet: the app starts, the widget looks right, and the bad
+instance only surfaces when the user switches layout or looks at another screen.
 
 `settings-schema/blob.ts` exists so that forgetting is not possible:
 
-| Helper                                    | Use it for                                  |
-| ----------------------------------------- | ------------------------------------------- |
-| `mapEveryWidget(blob, fn)`                | any rewrite of the widget list itself       |
-| `patchWidgetSettings(blob, id, fn)`       | changing one widget's `userSettings`        |
-| `renameWidgetSetting(blob, id, from, to)` | a key that changed name                     |
-| `dropWidgetSettings(blob, id, keys)`      | settings that no longer exist               |
-| `asObject` / `asArray`                    | guarding a shape read out of an older build |
+| Helper                                            | Use it for                                  |
+| ------------------------------------------------- | ------------------------------------------- |
+| `mapEveryStoredWidget(blob, fn)`                  | any rewrite of a monitor's widget list      |
+| `patchStoredWidgetSettings(blob, type, fn)`       | changing one widget's `settings`            |
+| `renameStoredWidgetSetting(blob, type, from, to)` | a key that changed name                     |
+| `dropStoredWidgetSettings(blob, type, keys)`      | settings that no longer exist               |
+| `removeStoredWidgets(blob, types)`                | a widget removed from the build             |
+| `asObject` / `asArray`                            | guarding a shape read out of an older build |
 
 ```ts
 const migrate = (blob: SettingsBlob): SettingsBlob =>
-  renameWidgetSetting(blob, 'fuel', 'avgWindow', 'averageWindowLaps');
+  renameStoredWidgetSetting(blob, 'fuel', 'avgWindow', 'averageWindowLaps');
 ```
+
+A widget is addressed by its **type**, and the patch reaches the template too.
+A patch sees **only the overrides**: a key that is absent is on the shipped
+default, and should usually stay absent — writing a value pins it for good.
+
+The helpers without `Stored` in their name (`mapEveryWidget`,
+`patchWidgetSettings`, …) walk the shape before v6 and find nothing in a current
+file. They stay for the steps written before it.
 
 All of them are purely structural: they know no widget id, no setting name and
 no default, so using them does not breach the rule below about live imports.
-`v1-legacy-consolidation` is written on top of `mapEveryWidget` — copy its shape.
 
 Two behaviours are deliberate and worth knowing before you fight them:
 
-- **A widget the file does not contain is never added.** The widget map is filled
-  from the shipped defaults afterwards; an entry invented by a migration would
-  outrank them.
-- **A key that is absent is not written as `undefined`.** `renameWidgetSetting`
-  skips a widget with no old value, because `undefined` survives into the merge
-  and beats the shipped default — which is the value the user should actually
-  get.
+- **A widget the file does not contain is never added.** `setWidgets` adds a
+  switched-off instance of every widget a layout lacks; an entry invented by a
+  migration would land on someone's screen.
+- **A key that is absent is not written as `undefined`.** The rename helpers skip
+  an instance with no old value, because that instance is on the shipped
+  default — which is the value the user should actually get.
 
 ### Rules for the migration itself
 
@@ -249,9 +279,10 @@ idempotency.
 Each migration gets its own test next to it, from fixtures. Mandatory cases:
 
 - the values it is meant to lift end up where they belong;
-- the legacy fields are gone — from the app block, from `defaultWidgets[]`
-  **and** from every `layouts[].widgets[]` (free if you used `blob.ts`, but assert it anyway:
-  the assertion is what catches a later rewrite that stops using the helper);
+- the legacy fields are gone — from the app block, from `widgetTemplates`
+  **and** from every instance on every monitor (free if you used `blob.ts`, but
+  assert it anyway: the assertion is what catches a later rewrite that stops
+  using the helper);
 - nothing the step writes is a type `mergeWithDefaults` would reject — it runs
   _after_ the chain and silently resets a wrong-typed field to its default, so a
   migration can otherwise appear to work and do nothing. `v1` covers this in

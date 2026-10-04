@@ -4,6 +4,8 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 interface SettingRowProps {
   title: string;
   desc?: string;
+  /** Control below the texts rather than beside them, for a narrow column. */
+  stacked?: boolean;
   style?: CSSProperties;
   children: ReactNode;
 }
@@ -11,10 +13,14 @@ interface SettingRowProps {
 export const SettingRow = ({
   title,
   desc,
+  stacked = false,
   style,
   children,
 }: SettingRowProps) => (
-  <div className={styles.fieldRow} style={style}>
+  <div
+    className={`${styles.fieldRow} ${stacked ? styles.fieldRowStacked : ''}`}
+    style={style}
+  >
     <div className={styles.fieldTexts}>
       <div className={styles.fieldTitle}>{title}</div>
       {desc && <div className={styles.fieldDesc}>{desc}</div>}

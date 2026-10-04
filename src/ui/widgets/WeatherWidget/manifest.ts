@@ -23,7 +23,6 @@ const weatherDesignWidth = (settings: WeatherWidgetSettings) =>
 
 export const WEATHER_MANIFEST: WidgetManifest = {
   id: 'weather',
-  order: 150,
   previewScenarios: ['rain', 'heavy-rain'],
   telemetryEvents: ['carDynamics'],
   label: 'Weather',

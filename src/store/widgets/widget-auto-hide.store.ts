@@ -7,7 +7,7 @@ import type {
   PitServiceWidgetSettings,
 } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
-import { widgetTypeFromId, widgetTypeOf } from '@utils/widget-instance';
+import { widgetTypeFromId } from '@utils/widget-instance';
 
 type WidgetAutoHideDeps = Pick<
   RootStore,
@@ -41,9 +41,7 @@ export class WidgetAutoHideStore {
   /** `widgetId` is a copy's id: settings are read per copy, state per widget. */
   isVisible = (widgetId: string): boolean => {
     const widget = this.root.liveWidgets.getWidget(widgetId);
-    const widgetType = widget
-      ? widgetTypeOf(widget)
-      : widgetTypeFromId(widgetId);
+    const widgetType = widget ? widget.type : widgetTypeFromId(widgetId);
 
     if (widgetType === 'proximity-radar' || widgetType === 'radar-bar') {
       return this.root.radar.isVisibleForWidget(widgetType);

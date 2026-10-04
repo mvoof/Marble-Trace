@@ -920,23 +920,11 @@ export type WidgetSpecificSettings =
   | StreamChatWidgetSettings;
 export interface WidgetMeta {
   /**
-   * Unique *instance* id. A layout may hold several copies of the same widget —
-   * one on the monitor being raced on, another on a stream screen with its own
-   * columns and its own scale — and each copy is a record of its own, keyed by
-   * this.
-   *
-   * For the one copy a widget ships with, this stays the manifest id, which is
-   * what makes `type` optional: a file written before copies existed reads back
-   * unchanged, its id doubling as its type. Nothing has to migrate.
+   * On a manifest, the widget's id. On a widget record, the *instance* id —
+   * unique within its layout, since a monitor may hold several instances of
+   * one widget (a big track map and an overview in the corner).
    */
   id: string;
-  /**
-   * Which widget this is a copy of — the manifest id, and with it the
-   * component, the shipped defaults and the layout resolver. Absent means the
-   * record is the original copy and `id` names the type; always read it through
-   * `widgetTypeOf` rather than reaching for either field directly.
-   */
-  type?: string;
   label: string;
   description?: string;
   designWidth: number;
@@ -1000,12 +988,6 @@ export type ResolveLayoutChange = (
  */
 export interface WidgetManifest extends WidgetMeta {
   userSettings: WidgetUserSettings;
-  /**
-   * Where the widget sits in the catalog list. Shipped widgets are spaced by
-   * ten so one can be slotted between two without renumbering; a widget that
-   * declares nothing sorts last, and equal numbers fall back to the id.
-   */
-  order?: number;
   resolveLayoutChange?: ResolveLayoutChange;
   /**
    * For a widget whose width is literally the sum of its columns (the standings
@@ -1056,6 +1038,26 @@ export interface WidgetConfig extends WidgetManifest {
 }
 
 export type WidgetDefaultConfig = WidgetMeta & {
+  /**
+   * Which widget this is an instance of — the manifest id, and with it the
+   * component, the shipped defaults and the layout resolver.
+   */
+  type: string;
+  /**
+   * Name of the layout monitor this instance belongs to. Ownership is this
+   * field and nothing else — never the widget's position: a widget is kept
+   * inside its monitor's bounds, and only "move to monitor" changes it.
+   *
+   * Absent only on records that stand on no monitor: the template catalogue
+   * the Widgets page edits, and the stand-in map of a window with no layout.
+   */
+  monitor?: string;
+  /**
+   * Whether the widget's hotkeys act on this instance. Absent means the
+   * default: on for an instance on a physical display, and never on a browser
+   * screen, which only shows. Read it through `hotkeysActOn`.
+   */
+  hotkeys?: boolean;
   userSettings: WidgetUserSettings;
 };
 
@@ -1082,9 +1084,9 @@ export interface LayoutMonitor {
   bounds: MonitorBounds;
   /**
    * A remote screen is a device on the network rendering the layout in a
-   * browser. It behaves as a monitor everywhere it matters — widgets belong to
-   * it by their centre point, it gets its own widget set, the editor lays it
-   * out — but no overlay window is ever opened for it. Absent means a physical
+   * browser. It behaves as a monitor everywhere it matters — it owns its own
+   * widget set, the editor lays it out — but no overlay window is ever opened
+   * for it. Absent means a physical
    * display, so files written before remote screens existed stay valid.
    */
   kind?: 'display' | 'remote';
@@ -1121,13 +1123,14 @@ export interface SavedLayout {
   /** Monitors this layout covers. One overlay window is opened per monitor. */
   monitors: LayoutMonitor[];
   /**
-   * Every widget of the layout, positioned in virtual-desktop space. The
-   * monitor a widget belongs to follows from its centre point, so dragging it
-   * over an edge reassigns it.
+   * Every widget of the layout, positioned in virtual-desktop space while the
+   * app runs. Each belongs to the monitor its `monitor` field names — on disk
+   * they are stored nested under that monitor, in its own coordinates (see
+   * `platform/sync/settings-file.ts`).
    *
-   * A widget may appear more than once: each entry is an independent copy with
-   * its own geometry, its own settings and its own enabled flag, keyed by its
-   * instance `id` and pointing at the shared manifest through `type`.
+   * A widget may appear more than once on a monitor: each entry is an
+   * independent instance with its own geometry, settings and enabled flag,
+   * keyed by its `id` and pointing at the shared manifest through `type`.
    */
   widgets: WidgetDefaultConfig[];
 }

@@ -102,9 +102,9 @@
     "moveToMonitor": "移动到显示器",
     "allMonitors": "所有显示器",
     "removeMonitor": "从布局中移除显示器",
-    "addRemoteScreen": "添加屏幕",
-    "addRemoteScreenTooltip": "为此布局添加另一个屏幕——平板、手机或 OBS 中的浏览器源",
-    "addRemoteScreenConfirm": "添加屏幕",
+    "addRemoteScreen": "浏览器屏幕",
+    "addRemoteScreenTooltip": "添加一个虚拟屏幕——不是这台电脑的显示器，而是浏览器通过链接打开的页面：平板、手机或 OBS 中的浏览器源",
+    "addRemoteScreenConfirm": "添加浏览器屏幕",
     "remoteScreenNamePlaceholder": "屏幕名称，例如“方向盘平板”",
     "remoteScreenDefaultName": "远程屏幕",
     "remoteScreenTag": "远程",
@@ -128,7 +128,16 @@
     "duplicate": "复制",
     "layerOrder": "图层顺序",
     "moveToMonitorPlaceholder": "选择屏幕",
-    "quickPlacementDesc": "把小部件放到所在屏幕的角落、边缘或中央。"
+    "quickPlacementDesc": "把小部件放到所在屏幕的角落、边缘或中央。",
+    "copySettingsFrom": "复制设置自",
+    "copySettingsFromDesc": "采用另一个实例的设置；保留此实例的位置和大小",
+    "copySettingsFromPlaceholder": "选择实例",
+    "resetSettings": "重置设置",
+    "resetSettingsConfirm": "将此小组件的设置恢复为默认值？",
+    "resetSettingsOk": "重置",
+    "reset": "重置",
+    "hotkeysActOn": "快捷键作用于此小组件",
+    "hotkeysActOnDesc": "其快捷键显示、隐藏和切换此实例。标记多个时会一起变化。浏览器屏幕仅用于显示。"
   },
   "layoutList": {
     "moduleLabel": "布局",
@@ -173,15 +182,18 @@
     "removeMonitor": "从布局中移除该显示器",
     "monitorOffline": "未找到",
     "totalWidgets": "部件总数",
-    "remoteNoDevice": "无设备"
+    "remoteNoDevice": "无设备",
+    "removeMonitorWithWidgets": "移除此显示器及其 {{count}} 个小组件？"
   },
   "layoutWidgetPanel": {
     "onMonitor": "在 {{monitor}}",
     "offScreen": "不在任何屏幕上",
     "copyTooltip": "副本——拥有自己的设置、位置和开关",
-    "originalTooltip": "此布局中副本的来源原件",
+    "originalTooltip": "此屏幕上的第一个实例；此处其余的都是它的副本",
     "deleteCopyConfirm": "删除此副本？",
-    "deleteCopyOk": "删除"
+    "deleteCopyOk": "删除",
+    "hotkeysOn": "快捷键作用于此小组件 — 点击排除",
+    "hotkeysOff": "快捷键跳过此小组件 — 点击加入"
   },
   "widgetWorkbench": {
     "scenario": "场景",
@@ -193,13 +205,13 @@
     "large": "大",
     "remove": "删除",
     "loadingBackground": "正在加载背景...",
-    "allMonitors": "所有显示器"
+    "allMonitors": "所有显示器",
+    "nothingToShow": "此场景中无可显示内容"
   },
   "overlayWidgetPicker": {
     "addWidget": "添加组件",
     "search": "搜索组件",
     "empty": "没有可添加的组件",
-    "moveHere": "从 {{monitor}} 移入",
     "unavailable": "此模拟器不支持"
   },
   "overlayCanvas": {

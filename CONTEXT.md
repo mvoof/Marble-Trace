@@ -60,16 +60,25 @@ without knowing anything about widgets. See
 [ADR-0002](docs/adr/0002-settings-writes-mark-themselves.md) and
 [ADR-0003](docs/adr/0003-widget-state-lives-in-three-stores.md).
 
-**Widget copy** — a second instance of one widget in the same layout, with its
-own settings: one on the screen being raced on, another on a stream screen. Its
-`id` addresses the copy, its `type` names the widget it is a copy of. `type`
-absent means the record is the original and its `id` is its type — always read
-it through `widgetTypeOf`.
+**Widget instance** — one placement of a widget on one monitor, with its own
+geometry, settings and enabled flag. Every monitor of a layout owns its own set,
+and may hold several instances of one widget (a big track map and an overview in
+the corner). Its `id` addresses the instance, its `type` names the widget, its
+`monitor` the monitor it belongs to. No instance is special; a _copy_ is just a
+further instance made by duplicating one.
+
+**Hotkey mark** — whether a widget's hotkeys act on an instance (`hotkeys`).
+On by default on a physical display, never on a browser screen, which only
+shows. The marked, switched-on instance is the widget's **primary instance**
+(`primaryInstanceOf`), the one widget stores read.
+
+**Browser screen** — the user-facing name of a remote screen: a virtual screen
+a browser opens by link (tablet, phone, OBS), not a monitor of the PC.
 
 **Remote screen** — a layout monitor with no display behind it, rendered by a
-browser on the LAN. A monitor in every way that matters to a layout: widgets
-belong to it by their centre point, it gets its own widget set, it is parked in
-free desktop space, and no overlay window is opened for it.
+browser on the LAN. A monitor in every way that matters to a layout: it owns its
+own widget set, it is parked in free desktop space, and no overlay window is
+opened for it.
 
 ## Widget preview
 
