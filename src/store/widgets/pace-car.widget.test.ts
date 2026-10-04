@@ -50,4 +50,40 @@ describe('nextPaceCarPitPhase', () => {
     phase = nextPaceCarPitPhase(NOT_IN_WORLD, phase);
     expect(phase).toBe('unknown');
   });
+
+  it('reads a car standing still in the pit lane as parked', () => {
+    expect(nextPaceCarPitPhase(APPROACHING_PITS, 'pitOut', false, true)).toBe(
+      'parked'
+    );
+    expect(nextPaceCarPitPhase(APPROACHING_PITS, 'unknown', false, true)).toBe(
+      'parked'
+    );
+    expect(nextPaceCarPitPhase(ON_TRACK, 'stall', true, true)).toBe('parked');
+  });
+
+  it('does not hold a pit exit open while the car is parked after its stall', () => {
+    let phase = nextPaceCarPitPhase(IN_PIT_STALL, 'unknown');
+    phase = nextPaceCarPitPhase(APPROACHING_PITS, phase);
+    expect(phase).toBe('pitOut');
+
+    phase = nextPaceCarPitPhase(APPROACHING_PITS, phase, false, true);
+    expect(phase).toBe('parked');
+
+    phase = nextPaceCarPitPhase(APPROACHING_PITS, phase, false, true);
+    expect(phase).toBe('parked');
+  });
+
+  it('reads a parked car that moves off as leaving the pits', () => {
+    expect(nextPaceCarPitPhase(APPROACHING_PITS, 'parked')).toBe('pitOut');
+    expect(nextPaceCarPitPhase(ON_TRACK, 'parked', true)).toBe('pitOut');
+  });
+
+  it('never parks a car standing on the track itself', () => {
+    expect(nextPaceCarPitPhase(ON_TRACK, 'onTrack', false, true)).toBe(
+      'onTrack'
+    );
+    expect(nextPaceCarPitPhase(IN_PIT_STALL, 'pitIn', false, true)).toBe(
+      'stall'
+    );
+  });
 });
