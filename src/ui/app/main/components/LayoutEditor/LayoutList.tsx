@@ -11,7 +11,6 @@ import {
   X,
   LayoutTemplate,
   Copy,
-  Star,
 } from 'lucide-react';
 import {
   useLayoutsStore,
@@ -29,7 +28,6 @@ import {
 import { listOverlayMonitors } from '@platform/sync/overlay-resolution';
 import {
   monitorsBounds,
-  primaryMonitorOf,
   widgetsOnMonitor,
 } from '@store/settings/virtual-desktop';
 import type { SavedLayout, SessionContext } from '@/types/widget-settings';
@@ -291,9 +289,6 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   };
 
   const selectedMonitors = selectedLayout?.monitors ?? [];
-  const primaryName = selectedLayout
-    ? primaryMonitorOf(selectedLayout)?.name
-    : undefined;
 
   const selectedEnabledWidgets = (selectedLayout?.widgets ?? []).filter(
     (widget) => widget.userSettings.enabled
@@ -593,30 +588,6 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                             {meta}
                             {` · ${widgetCount}`}
                           </span>
-                          {!isRemote && (
-                            <Button
-                              size="small"
-                              type="text"
-                              className={
-                                primaryName === monitorName
-                                  ? styles.primaryMonitor
-                                  : styles.secondaryMonitor
-                              }
-                              icon={<Star size={12} />}
-                              title={
-                                primaryName === monitorName
-                                  ? t('layoutList.primaryMonitor')
-                                  : t('layoutList.makePrimaryMonitor')
-                              }
-                              aria-pressed={primaryName === monitorName}
-                              onClick={() =>
-                                layouts.setPrimaryMonitor(
-                                  selectedLayout.id,
-                                  monitorName
-                                )
-                              }
-                            />
-                          )}
                           <Popconfirm
                             title={t('layoutList.removeMonitorWithWidgets', {
                               count: widgetCount,

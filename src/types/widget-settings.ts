@@ -1052,6 +1052,12 @@ export type WidgetDefaultConfig = WidgetMeta & {
    * the Widgets page edits, and the stand-in map of a window with no layout.
    */
   monitor?: string;
+  /**
+   * Whether the widget's hotkeys act on this instance. Absent means the
+   * default: on for an instance on a physical display, and never on a browser
+   * screen, which only shows. Read it through `hotkeysActOn`.
+   */
+  hotkeys?: boolean;
   userSettings: WidgetUserSettings;
 };
 
@@ -1116,11 +1122,6 @@ export interface SavedLayout {
   backgroundImages?: Record<string, string>;
   /** Monitors this layout covers. One overlay window is opened per monitor. */
   monitors: LayoutMonitor[];
-  /**
-   * Name of the monitor hotkeys and single-answer settings speak for. Absent
-   * means the first physical display of `monitors`.
-   */
-  primaryMonitor?: string;
   /**
    * Every widget of the layout, positioned in virtual-desktop space while the
    * app runs. Each belongs to the monitor its `monitor` field names — on disk

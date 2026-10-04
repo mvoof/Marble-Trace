@@ -33,9 +33,10 @@ import type {
 import { DEFAULT_LAYOUT_RESOLUTION } from '@store/settings/layout-resolution';
 import {
   clampToBounds,
+  defaultMonitorOf,
+  hotkeysActOn,
   monitorForWidget,
   placeWidgetOnMonitor,
-  primaryMonitorOf,
   widgetsOnMonitor,
 } from '@store/settings/virtual-desktop';
 import { cloneMonitor, isDisplayMonitor } from '@utils/remote-screen';
@@ -328,10 +329,9 @@ export class LiveWidgetsStore implements WidgetMap {
   cycleStandingsViewMode() {
     const order: StandingsViewMode[] = ['all', 'grouped', 'cycling'];
 
-    // Every copy, each advanced from where it stands: a hotkey means the widget,
-    // and a copy left behind on a stream screen showing a mode nobody chose is
-    // worse than all of them moving together.
-    for (const widget of this.widgetsOfType('standings')) {
+    // Every instance under the hotkeys, each advanced from where it stands. A
+    // browser screen only shows, so one there keeps the mode it was given.
+    for (const widget of this.hotkeyInstancesOf('standings')) {
       const settings = this.getSettings<StandingsWidgetSettings>(widget.id);
       const nextIdx = (order.indexOf(settings.viewMode) + 1) % order.length;
 
@@ -348,9 +348,9 @@ export class LiveWidgetsStore implements WidgetMap {
       'session_last',
     ];
 
-    // Every copy, each advanced from where it stands — same reasoning as the
-    // standings view mode above.
-    for (const widget of this.widgetsOfType('delta')) {
+    // Every instance under the hotkeys — same reasoning as the standings view
+    // mode above.
+    for (const widget of this.hotkeyInstancesOf('delta')) {
       const settings = this.getSettings<DeltaWidgetSettings>(widget.id);
       const nextIdx = (order.indexOf(settings.reference) + 1) % order.length;
 
@@ -445,7 +445,7 @@ export class LiveWidgetsStore implements WidgetMap {
    * and every widget is given a monitor of this layout to belong to.
    *
    * A widget the list holds no instance of at all is added, switched off, on
-   * the primary monitor: every widget the build ships has at least one record
+   * the first display: every widget the build ships has at least one record
    * in a layout, so there is always one to switch on.
    *
    * Normalizing here rather than on read is what lets `widgets` be a plain
@@ -455,7 +455,7 @@ export class LiveWidgetsStore implements WidgetMap {
   setWidgets(widgets: WidgetDefaultConfig[]) {
     runInAction(() => {
       const layout = this.widgetOwner;
-      const primary = layout ? primaryMonitorOf(layout) : undefined;
+      const primary = layout ? defaultMonitorOf(layout) : undefined;
 
       const normalized = DEFAULT_WIDGETS.flatMap((defaultWidget) => {
         // Every instance of this widget the list holds, in the order it held
@@ -489,6 +489,9 @@ export class LiveWidgetsStore implements WidgetMap {
             ...(savedWidget.monitor === undefined
               ? {}
               : { monitor: savedWidget.monitor }),
+            ...(savedWidget.hotkeys === undefined
+              ? {}
+              : { hotkeys: savedWidget.hotkeys }),
             userSettings: mergeWithDefaults(
               defaultWidget.userSettings,
               savedWidget.userSettings ?? {}
@@ -526,7 +529,7 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
-   * Gives a widget that stands on no monitor of this layout the primary one,
+   * Gives a widget that stands on no monitor of this layout the first display,
    * and moves it inside that monitor — a widget is drawn only by its own
    * monitor's window, and one left at stale coordinates would be invisible.
    * A widget that already names a monitor of the layout is left exactly where
@@ -651,6 +654,12 @@ export class LiveWidgetsStore implements WidgetMap {
       existing.monitor = incoming.monitor;
     }
 
+    if (incoming.hotkeys === undefined) {
+      delete existing.hotkeys;
+    } else {
+      existing.hotkeys = incoming.hotkeys;
+    }
+
     existing.designWidth = deriveWidgetDesignWidth(
       incoming.type,
       existing.userSettings,
@@ -681,27 +690,94 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
+   * The instances of a widget its hotkeys act on: the ones marked for it, and
+   * never one on a browser screen (`hotkeysActOn`).
+   */
+  hotkeyInstancesOf(type: string): WidgetDefaultConfig[] {
+    const monitors = this.editingLayout?.monitors ?? [];
+
+    return this.widgetsOfType(type).filter((widget) =>
+      hotkeysActOn(widget, monitors)
+    );
+  }
+
+  /** Whether this instance can be put under the hotkeys at all — not on a browser screen. */
+  canTakeHotkeys(id: string): boolean {
+    const widget = this.getWidget(id);
+    const monitor = widget
+      ? monitorForWidget(widget, this.editingLayout?.monitors ?? [])
+      : undefined;
+
+    return monitor !== undefined && monitor.kind !== 'remote';
+  }
+
+  /** Whether the widget's hotkeys act on this instance. */
+  hotkeysActOnWidget(id: string): boolean {
+    const widget = this.getWidget(id);
+
+    return widget
+      ? hotkeysActOn(widget, this.editingLayout?.monitors ?? [])
+      : false;
+  }
+
+  /**
+   * Marks an instance for the widget's hotkeys, or unmarks it. Stored only
+   * where it departs from the default, so a widget moved between a display and
+   * a browser screen follows the default of where it stands.
+   */
+  setHotkeysActOn(id: string, actsOn: boolean) {
+    const widget = this.getWidget(id);
+
+    if (!widget) return;
+
+    this.pushUndo();
+
+    if (actsOn) {
+      delete widget.hotkeys;
+    } else {
+      widget.hotkeys = false;
+    }
+
+    this.bumpMutation(id);
+  }
+
+  /**
+   * The visibility hotkey: every instance it acts on goes the same way — off
+   * while any of them is on screen, on when none is.
+   */
+  toggleVisibilityByHotkey(type: string) {
+    const instances = this.hotkeyInstancesOf(type);
+
+    if (instances.length === 0) return;
+
+    const show = !instances.some((widget) => widget.userSettings.enabled);
+
+    this.pushUndo();
+
+    for (const widget of instances) {
+      this.updateUserSettings(widget.id, { enabled: show });
+    }
+  }
+
+  /**
    * The instance that speaks for a widget where only one answer is possible: a
    * setting the backend keeps once, or a widget store, which is one per app and
    * so cannot be per instance.
    *
-   * The one the driver is looking at wins — switched on, on the layout's
-   * primary monitor — then any switched-on instance, then any instance on the
-   * primary monitor, then the first.
+   * The one the driver works with wins — switched on and under the widget's
+   * hotkeys — then any switched-on instance, then any under the hotkeys, then
+   * the first.
    */
   primaryInstanceOf(type: string): WidgetDefaultConfig | undefined {
     const instances = this.widgetsOfType(type);
-    const layout = this.widgetOwner;
-    const primaryName = layout ? primaryMonitorOf(layout)?.name : undefined;
-    const isOnPrimary = (widget: WidgetDefaultConfig) =>
-      primaryName !== undefined && widget.monitor === primaryName;
+    const hotkeyed = new Set(this.hotkeyInstancesOf(type));
 
     return (
       instances.find(
-        (widget) => widget.userSettings.enabled && isOnPrimary(widget)
+        (widget) => widget.userSettings.enabled && hotkeyed.has(widget)
       ) ??
       instances.find((widget) => widget.userSettings.enabled) ??
-      instances.find(isOnPrimary) ??
+      instances.find((widget) => hotkeyed.has(widget)) ??
       instances[0]
     );
   }
@@ -960,18 +1036,12 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   // Overlay side: adopt the monitor arrangement the main window just sent.
-  applyMonitorsSync(monitors: LayoutMonitor[], primaryMonitor?: string) {
+  applyMonitorsSync(monitors: LayoutMonitor[]) {
     const layout = this.editingLayout;
 
     if (!layout) return;
 
     layout.monitors = monitors.map(cloneMonitor);
-
-    if (primaryMonitor === undefined) {
-      delete layout.primaryMonitor;
-    } else {
-      layout.primaryMonitor = primaryMonitor;
-    }
   }
 
   loadEditingLayoutWidgets() {
@@ -1321,8 +1391,8 @@ export class LiveWidgetsStore implements WidgetMap {
   /**
    * The starter set a fresh layout opens with — read by the record store when
    * it creates one, which is why this is public. `monitorName` is the monitor
-   * the set stands on; without one, `setWidgets` gives it the layout's
-   * primary monitor when it is installed.
+   * the set stands on; without one, `setWidgets` gives it the layout's first
+   * display when it is installed.
    */
   starterWidgets(
     clean: boolean = false,

@@ -67,9 +67,13 @@ the corner). Its `id` addresses the instance, its `type` names the widget, its
 `monitor` the monitor it belongs to. No instance is special; a _copy_ is just a
 further instance made by duplicating one.
 
-**Primary monitor** — the monitor of a layout that hotkeys and widget stores
-speak for: `primaryMonitor`, else the layout's first physical display. The
-instance on it is the widget's **primary instance** (`primaryInstanceOf`).
+**Hotkey mark** — whether a widget's hotkeys act on an instance (`hotkeys`).
+On by default on a physical display, never on a browser screen, which only
+shows. The marked, switched-on instance is the widget's **primary instance**
+(`primaryInstanceOf`), the one widget stores read.
+
+**Browser screen** — the user-facing name of a remote screen: a virtual screen
+a browser opens by link (tablet, phone, OBS), not a monitor of the PC.
 
 **Remote screen** — a layout monitor with no display behind it, rendered by a
 browser on the LAN. A monitor in every way that matters to a layout: it owns its

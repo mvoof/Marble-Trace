@@ -131,9 +131,9 @@ derived logic.** Simple widgets read the data stores directly, and stay simple.
 - Derived values are `computed` getters in a store — never `useMemo` in a
   component.
 - Hooks are for the DOM and the browser only. Everything else is a store.
-- Widget stores read `settingsOfType(type)` — the instance on the driver's
-  primary monitor — never `getSettings(type)`: one store per app cannot be per
-  instance, and what a store holds is computation, not presentation.
+- Widget stores read `settingsOfType(type)` — the switched-on instance under
+  the widget's hotkeys — never `getSettings(type)`: one store per app cannot be
+  per instance, and what a store holds is computation, not presentation.
 
 The full six rules are [architecture.md → The six store rules](architecture.md).
 

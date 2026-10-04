@@ -135,7 +135,9 @@
     "resetSettings": "Restablecer ajustes",
     "resetSettingsConfirm": "¿Devolver los ajustes de este widget a los valores predeterminados?",
     "resetSettingsOk": "Restablecer",
-    "reset": "Restablecer"
+    "reset": "Restablecer",
+    "hotkeysActOn": "Los atajos actúan sobre este widget",
+    "hotkeysActOnDesc": "Sus atajos muestran, ocultan y cambian esta instancia. Si hay varias marcadas, cambian juntas. Una pantalla para navegador solo muestra."
   },
   "layoutList": {
     "moduleLabel": "Diseños",
@@ -183,9 +185,7 @@
     "monitorOffline": "no encontrado",
     "totalWidgets": "Widgets en total",
     "remoteNoDevice": "sin dispositivo",
-    "removeMonitorWithWidgets": "¿Quitar este monitor y sus {{count}} widgets?",
-    "primaryMonitor": "Monitor principal: los atajos actúan sobre sus widgets",
-    "makePrimaryMonitor": "Hacer principal: los atajos actuarán sobre los widgets de este monitor"
+    "removeMonitorWithWidgets": "¿Quitar este monitor y sus {{count}} widgets?"
   },
   "layoutWidgetPanel": {
     "onMonitor": "en {{monitor}}",
@@ -193,7 +193,9 @@
     "copyTooltip": "Una copia: con sus propios ajustes, lugar e interruptor",
     "originalTooltip": "La primera instancia en esta pantalla; las demás aquí son sus copias",
     "deleteCopyConfirm": "¿Eliminar esta copia?",
-    "deleteCopyOk": "Eliminar"
+    "deleteCopyOk": "Eliminar",
+    "hotkeysOn": "Los atajos actúan sobre este widget — pulsa para excluirlo",
+    "hotkeysOff": "Los atajos omiten este widget — pulsa para incluirlo"
   },
   "widgetWorkbench": {
     "scenario": "Escenario",

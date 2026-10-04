@@ -135,7 +135,9 @@
     "resetSettings": "Reset settings",
     "resetSettingsConfirm": "Put this widget's settings back to the defaults?",
     "resetSettingsOk": "Reset",
-    "reset": "Reset"
+    "reset": "Reset",
+    "hotkeysActOn": "Hotkeys act on this widget",
+    "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen only shows."
   },
   "layoutList": {
     "moduleLabel": "Layouts",
@@ -183,9 +185,7 @@
     "monitorOffline": "not found",
     "totalWidgets": "Total Widgets",
     "remoteNoDevice": "no device",
-    "removeMonitorWithWidgets": "Remove this monitor and its {{count}} widgets?",
-    "primaryMonitor": "Primary monitor — hotkeys act on its widgets",
-    "makePrimaryMonitor": "Make primary — hotkeys will act on this monitor's widgets"
+    "removeMonitorWithWidgets": "Remove this monitor and its {{count}} widgets?"
   },
   "layoutWidgetPanel": {
     "onMonitor": "on {{monitor}}",
@@ -193,7 +193,9 @@
     "copyTooltip": "A copy — its own settings, place and switch",
     "originalTooltip": "The first instance on this screen; the others here are its copies",
     "deleteCopyConfirm": "Delete this copy?",
-    "deleteCopyOk": "Delete"
+    "deleteCopyOk": "Delete",
+    "hotkeysOn": "Hotkeys act on this widget — click to exclude it",
+    "hotkeysOff": "Hotkeys skip this widget — click to include it"
   },
   "widgetWorkbench": {
     "scenario": "Scenario",

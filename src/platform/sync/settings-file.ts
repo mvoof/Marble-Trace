@@ -1,6 +1,6 @@
 import { isPlainObject, mergeWithDefaults } from '@store/deep-merge';
 import { DEFAULT_WIDGET_BY_ID, WIDGET_BY_ID } from '@store/widget-catalog';
-import { primaryMonitorOf } from '@store/settings/virtual-desktop';
+import { defaultMonitorOf } from '@store/settings/virtual-desktop';
 import { cloneMonitor } from '@utils/remote-screen';
 import type {
   LayoutMonitor,
@@ -51,6 +51,8 @@ export interface StoredWidget {
   id: string;
   type: string;
   enabled: boolean;
+  /** Absent unless it departs from the default — see `hotkeysActOn`. */
+  hotkeys?: boolean;
   frame: StoredFrame;
   /** Absent unless the widget is drawn at a design size the manifest does not give. */
   design?: StoredDesignSize;
@@ -68,7 +70,6 @@ export interface StoredLayout {
   id: string;
   name: string;
   createdAt: number;
-  primaryMonitor?: string;
   monitors: StoredMonitor[];
 }
 
@@ -282,6 +283,7 @@ export const encodeWidget = (
     id: widget.id,
     type: widget.type,
     enabled: userSettings.enabled === true,
+    ...(widget.hotkeys === undefined ? {} : { hotkeys: widget.hotkeys }),
     frame: {
       x: userSettings.x - origin.x,
       y: userSettings.y - origin.y,
@@ -331,6 +333,7 @@ export const decodeWidget = (
     id: String(stored.id),
     type: shipped.id,
     monitor: monitor.name,
+    ...(typeof stored.hotkeys === 'boolean' ? { hotkeys: stored.hotkeys } : {}),
     ...shape,
   };
 };
@@ -392,8 +395,8 @@ export const encodeTemplates = (
 export const encodeLayout = (layout: SavedLayout): StoredLayout => {
   // Every widget belongs to a monitor of its layout once installed. One that
   // names none — a record written straight into a layout that was never
-  // loaded — goes with the primary monitor rather than being lost.
-  const fallbackName = primaryMonitorOf(layout)?.name;
+  // loaded — goes with the default monitor rather than being lost.
+  const fallbackName = defaultMonitorOf(layout)?.name;
   const ownerOf = (widget: WidgetDefaultConfig) =>
     layout.monitors.some((monitor) => monitor.name === widget.monitor)
       ? widget.monitor
@@ -403,9 +406,6 @@ export const encodeLayout = (layout: SavedLayout): StoredLayout => {
     id: layout.id,
     name: layout.name,
     createdAt: layout.createdAt,
-    ...(layout.primaryMonitor === undefined
-      ? {}
-      : { primaryMonitor: layout.primaryMonitor }),
     monitors: layout.monitors.map((monitor) => {
       const backgroundImage = layout.backgroundImages?.[monitor.name];
 
@@ -452,9 +452,6 @@ export const decodeLayout = (stored: StoredLayout): SavedLayout => {
     createdAt: stored.createdAt,
     backgroundImages,
     monitors,
-    ...(stored.primaryMonitor === undefined
-      ? {}
-      : { primaryMonitor: stored.primaryMonitor }),
     widgets,
   };
 };

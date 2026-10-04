@@ -17,10 +17,13 @@ field. Ownership is that field and nothing else — never the widget's position.
   Instances are numbered per monitor — the first of a widget on a monitor is
   the widget on that screen and is switched off, not deleted; a further one on
   the same monitor is a copy and can be deleted.
-- Where one answer is needed for the whole widget — a hotkey, a widget store,
-  a value the backend keeps once — the **primary instance** answers: the
-  switched-on instance on the layout's primary monitor (`primaryMonitor`, else
-  its first display).
+- A widget's hotkeys act on the instances **marked** for them (`hotkeys`): on
+  by default on a physical display, never on a browser screen. A table on two
+  displays is switched on one or both, as marked. Where one answer is needed —
+  a widget store, a value the backend keeps once — the **primary instance**
+  answers: a switched-on instance under the hotkeys. (A first cut named a
+  primary monitor per layout instead; it could not say "this table, not that
+  one" for two instances on two displays, and was dropped before release.)
 - Removing a monitor removes its widgets.
 
 On disk (schema v6) a widget is stored **under its monitor**, in that monitor's
@@ -72,7 +75,7 @@ install — a stored copy of the old value always won.
   differs.
 - **Dropping the "every widget has a record in every layout" rule.** Kept, for
   now: `setWidgets` adds a switched-off instance of every widget a layout lacks,
-  on the primary monitor, so the editor always has one to switch on. The
+  on the first display, so the editor always has one to switch on. The
   per-monitor editor panel is what makes this rule unnecessary.
 
 ## Consequences

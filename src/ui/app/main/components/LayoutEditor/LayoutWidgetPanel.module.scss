@@ -34,6 +34,16 @@
   opacity: 0.5;
 }
 
+// Whether the widget's hotkeys act on this instance: quiet when they do not,
+// lit when they do.
+.hotkeyToggle {
+  color: #5e626d;
+}
+
+.hotkeyToggleOn {
+  color: $widget-text-accent;
+}
+
 // A further instance of the widget on the row above, on the same screen.
 .instanceRow {
   padding-left: sp(xxl);

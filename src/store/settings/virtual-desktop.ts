@@ -23,16 +23,29 @@ export const widgetsOnMonitor = (
   widgets.filter((widget) => widget.monitor === monitorName);
 
 /**
- * The monitor a layout's single-answer settings speak for: the one it names as
- * primary, else its first physical display, else whatever comes first.
+ * Where a widget with nowhere else to stand is put: the layout's first physical
+ * display, else whatever monitor comes first.
  */
-export const primaryMonitorOf = (layout: {
+export const defaultMonitorOf = (layout: {
   monitors: LayoutMonitor[];
-  primaryMonitor?: string;
 }): LayoutMonitor | undefined =>
-  layout.monitors.find((monitor) => monitor.name === layout.primaryMonitor) ??
   layout.monitors.find((monitor) => monitor.kind !== 'remote') ??
   layout.monitors[0];
+
+/**
+ * Whether a widget's hotkeys act on this instance: what the instance says, on
+ * by default — but never on a browser screen, which only shows.
+ */
+export const hotkeysActOn = (
+  widget: WidgetDefaultConfig,
+  monitors: LayoutMonitor[]
+): boolean => {
+  const monitor = monitorForWidget(widget, monitors);
+
+  if (monitor?.kind === 'remote') return false;
+
+  return widget.hotkeys ?? true;
+};
 
 /**
  * Where a widget's top-left corner may go so the whole widget stays on its

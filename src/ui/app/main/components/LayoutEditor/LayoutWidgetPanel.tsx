@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronRight,
   Copy,
+  Keyboard,
   Monitor,
   TabletSmartphone,
   Trash2,
@@ -32,6 +33,33 @@ interface SelectionProps {
   onSelectWidget: (id: string) => void;
 }
 
+/**
+ * Whether the widget's hotkeys act on this instance, and a click to change
+ * it. Not offered on a browser screen, which only shows.
+ */
+const HotkeyToggle = observer(({ widgetId }: { widgetId: string }) => {
+  const liveWidgets = useLiveWidgetsStore();
+  const { t } = useTranslation('main-app');
+  const isOn = liveWidgets.hotkeysActOnWidget(widgetId);
+  const label = isOn
+    ? t('layoutWidgetPanel.hotkeysOn')
+    : t('layoutWidgetPanel.hotkeysOff');
+
+  return (
+    <Tooltip title={label}>
+      <Button
+        size="small"
+        type="text"
+        className={isOn ? styles.hotkeyToggleOn : styles.hotkeyToggle}
+        aria-label={label}
+        aria-pressed={isOn}
+        icon={<Keyboard size={12} />}
+        onClick={() => liveWidgets.setHotkeysActOn(widgetId, !isOn)}
+      />
+    </Tooltip>
+  );
+});
+
 const useScrollIntoViewWhen = (isSelected: boolean) => {
   const rowRef = useRef<HTMLDivElement | null>(null);
 
@@ -55,6 +83,7 @@ const InstanceRow = observer(
     ordinal,
     total,
     available,
+    isBrowserScreen,
     selectedWidgetId,
     onSelectWidget,
   }: SelectionProps & {
@@ -62,6 +91,7 @@ const InstanceRow = observer(
     ordinal: number;
     total: number;
     available: boolean;
+    isBrowserScreen: boolean;
   }) => {
     const liveWidgets = useLiveWidgetsStore();
     const { t } = useTranslation('main-app');
@@ -97,6 +127,8 @@ const InstanceRow = observer(
             </span>
           </Tooltip>
         </button>
+
+        {!isBrowserScreen && <HotkeyToggle widgetId={widget.id} />}
 
         <Popconfirm
           title={t('layoutWidgetPanel.deleteCopyConfirm')}
@@ -134,9 +166,14 @@ const WidgetTypeRow = observer(
   ({
     row,
     monitorName,
+    isBrowserScreen,
     selectedWidgetId,
     onSelectWidget,
-  }: SelectionProps & { row: MonitorWidgetRow; monitorName: string }) => {
+  }: SelectionProps & {
+    row: MonitorWidgetRow;
+    monitorName: string;
+    isBrowserScreen: boolean;
+  }) => {
     const liveWidgets = useLiveWidgetsStore();
     const { instances, available } = row;
     const [first] = instances;
@@ -179,6 +216,10 @@ const WidgetTypeRow = observer(
           >
             {row.label}
           </button>
+
+          {first !== undefined && !isBrowserScreen && (
+            <HotkeyToggle widgetId={first.id} />
+          )}
         </div>
 
         {instances.length > 1 &&
@@ -191,6 +232,7 @@ const WidgetTypeRow = observer(
                 ordinal={index + 2}
                 total={instances.length}
                 available={available}
+                isBrowserScreen={isBrowserScreen}
                 selectedWidgetId={selectedWidgetId}
                 onSelectWidget={onSelectWidget}
               />
@@ -260,6 +302,7 @@ const ScreenGroup = observer(
                 key={row.type}
                 row={row}
                 monitorName={monitor.name}
+                isBrowserScreen={isRemoteMonitor(monitor)}
                 {...selection}
               />
             ))}

@@ -80,7 +80,7 @@ Four things about this order matter:
    `decodeWidget` and `decodeTemplates` merge every stored `settings` over the
    shipped defaults, so a key the file does not hold is simply the default. A
    widget type the layout holds no instance of is added by `setWidgets` when the
-   layout is installed — switched **off**, on the primary monitor — so a new
+   layout is installed — switched **off**, on the first display — so a new
    widget never appears on someone's overlay by itself. The app block is merged
    separately.
 

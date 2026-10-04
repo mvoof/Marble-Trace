@@ -60,11 +60,6 @@ export interface MonitorWidgetsPayload {
    */
   monitors?: LayoutMonitor[];
   /**
-   * The layout's primary monitor, absent for "the first display". The widget
-   * stores running in an overlay read the instance on it.
-   */
-  primaryMonitor?: string;
-  /**
    * Whether `widgets` is the whole layout or only the widgets the sender just
    * touched.
    *
@@ -207,7 +202,6 @@ export const emitInteractMode = (active: boolean) =>
  */
 export const emitActiveLayoutToOverlays = async (
   monitors: LayoutMonitor[],
-  primaryMonitor: string | undefined,
   widgets: WidgetDefaultConfig[],
   layoutId: string | null
 ) => {
@@ -222,7 +216,6 @@ export const emitActiveLayoutToOverlays = async (
       monitorName: monitor.name,
       widgets,
       monitors,
-      ...(primaryMonitor === undefined ? {} : { primaryMonitor }),
       layoutId,
       complete: true,
     } satisfies MonitorWidgetsPayload);

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { RootStore } from '../root-store';
 import type { CapabilitiesPayload } from '@/types/bindings';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { deleteLayout } from './layout-gestures';
 import type { LayoutsStore } from './layouts.store';
 import type { LayoutEditorStore } from './layout-editor.store';
@@ -1210,7 +1211,14 @@ describe('widgets belong to their monitor', () => {
     bounds: { x: 1920, y: 0, width: 2560, height: 1440 },
   };
 
-  const setUp = (primaryMonitor?: string) => {
+  const STREAM = {
+    name: 'STREAM',
+    kind: 'remote' as const,
+    slug: 'stream',
+    bounds: { x: 0, y: 1440, width: 1920, height: 1080 },
+  };
+
+  const setUp = () => {
     const rootStore = new RootStore({ skipInit: true });
 
     rootStore.liveWidgets.setLayouts(
@@ -1219,8 +1227,7 @@ describe('widgets belong to their monitor', () => {
           id: 'race',
           name: 'race',
           createdAt: 1,
-          monitors: [LEFT, RIGHT],
-          ...(primaryMonitor ? { primaryMonitor } : {}),
+          monitors: [STREAM, LEFT, RIGHT],
           widgets: [],
         },
       ],
@@ -1230,21 +1237,17 @@ describe('widgets belong to their monitor', () => {
     return rootStore.liveWidgets;
   };
 
-  it('gives every widget the layout lacks a switched-off instance on the primary monitor', () => {
-    const store = setUp('RIGHT');
+  // The first display, not the first monitor: a browser screen listed ahead
+  // of it is never where a widget with nowhere else to stand goes.
+  it('gives every widget the layout lacks a switched-off instance on the first display', () => {
+    const store = setUp();
 
     expect(
       store.allWidgets.every(
         (widget) =>
-          widget.monitor === 'RIGHT' && widget.userSettings.enabled === false
+          widget.monitor === 'LEFT' && widget.userSettings.enabled === false
       )
     ).toBe(true);
-  });
-
-  it('defaults the primary monitor to the first display', () => {
-    const store = setUp();
-
-    expect(store.getWidget('standings')!.monitor).toBe('LEFT');
   });
 
   // The whole point of storing the owner: dragging can no longer hand a widget
@@ -1310,21 +1313,109 @@ describe('widgets belong to their monitor', () => {
     expect(store.getWidget('standings')!.monitor).toBe('LEFT');
   });
 
-  it('lets the switched-on instance on the primary monitor speak for its widget', () => {
+  it('lets the switched-on instance under the hotkeys speak for its widget', () => {
     const store = setUp();
 
-    const copyId = store.duplicateWidget('fuel')!;
+    const rightId = store.setTypeEnabledOnMonitor('fuel', 'RIGHT', true)!;
 
-    store.moveWidgetToMonitor(copyId, 'RIGHT');
-    store.setWidgetEnabled(copyId, true);
-
-    // Only the copy on the other monitor is on: it is the one on screen.
-    expect(store.primaryInstanceOf('fuel')!.id).toBe(copyId);
+    // Only the instance on the other monitor is on: it is the one on screen.
+    expect(store.primaryInstanceOf('fuel')!.id).toBe(rightId);
 
     store.setWidgetEnabled('fuel', true);
+    store.setHotkeysActOn(rightId, false);
 
-    // Both on: the primary monitor's wins.
+    // Both on: the one the hotkeys act on wins.
     expect(store.primaryInstanceOf('fuel')!.id).toBe('fuel');
+  });
+
+  it('puts every instance on a display under the hotkeys, none on a browser screen', () => {
+    const store = setUp();
+    const rightId = store.setTypeEnabledOnMonitor('standings', 'RIGHT', true)!;
+    const streamId = store.setTypeEnabledOnMonitor(
+      'standings',
+      'STREAM',
+      true
+    )!;
+
+    expect(
+      store.hotkeyInstancesOf('standings').map((widget) => widget.id)
+    ).toEqual(['standings', rightId]);
+    expect(store.canTakeHotkeys(streamId)).toBe(false);
+    expect(store.canTakeHotkeys(rightId)).toBe(true);
+  });
+
+  // The visibility hotkey moves the marked instances together: a table on two
+  // displays hides on both, the one on the stream stays where it is.
+  it('hides and shows every marked instance together, the stream untouched', () => {
+    const store = setUp();
+
+    store.setWidgetEnabled('standings', true);
+
+    const rightId = store.setTypeEnabledOnMonitor('standings', 'RIGHT', true)!;
+    const streamId = store.setTypeEnabledOnMonitor(
+      'standings',
+      'STREAM',
+      true
+    )!;
+    const isOn = (id: string) => store.getWidget(id)!.userSettings.enabled;
+
+    store.toggleVisibilityByHotkey('standings');
+
+    expect([isOn('standings'), isOn(rightId), isOn(streamId)]).toEqual([
+      false,
+      false,
+      true,
+    ]);
+
+    store.toggleVisibilityByHotkey('standings');
+
+    expect([isOn('standings'), isOn(rightId)]).toEqual([true, true]);
+  });
+
+  it('leaves an unmarked instance alone', () => {
+    const store = setUp();
+
+    store.setWidgetEnabled('standings', true);
+
+    const rightId = store.setTypeEnabledOnMonitor('standings', 'RIGHT', true)!;
+
+    store.setHotkeysActOn(rightId, false);
+    store.toggleVisibilityByHotkey('standings');
+
+    expect(store.getWidget('standings')!.userSettings.enabled).toBe(false);
+    expect(store.getWidget(rightId)!.userSettings.enabled).toBe(true);
+  });
+
+  it('cycles the view of marked instances only', () => {
+    const store = setUp();
+    const streamId = store.setTypeEnabledOnMonitor(
+      'standings',
+      'STREAM',
+      true
+    )!;
+    const before =
+      store.getSettings<StandingsWidgetSettings>('standings').viewMode;
+
+    store.cycleStandingsViewMode();
+
+    expect(
+      store.getSettings<StandingsWidgetSettings>('standings').viewMode
+    ).not.toBe(before);
+    expect(store.getSettings<StandingsWidgetSettings>(streamId).viewMode).toBe(
+      before
+    );
+  });
+
+  it('stores the hotkey mark only while it departs from the default', () => {
+    const store = setUp();
+
+    store.setHotkeysActOn('standings', false);
+
+    expect(store.getWidget('standings')!.hotkeys).toBe(false);
+
+    store.setHotkeysActOn('standings', true);
+
+    expect(store.getWidget('standings')).not.toHaveProperty('hotkeys');
   });
 
   // A widget store reads by type. Once no instance is special, the record

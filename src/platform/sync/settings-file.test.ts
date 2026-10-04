@@ -276,7 +276,6 @@ describe('a layout on disk', () => {
     id: 'race',
     name: 'Race',
     createdAt: 1,
-    primaryMonitor: 'RIGHT',
     backgroundImages: { LEFT: 'cockpit.png' },
     monitors: [LEFT, RIGHT],
     widgets: [
@@ -308,17 +307,29 @@ describe('a layout on disk', () => {
 
   // Written straight into a record that was never loaded, a widget can arrive
   // here without an owner; losing it on save would be silent.
-  it('files a widget that names no monitor under the primary one', () => {
+  it('files a widget that names no monitor under the first display', () => {
     const unowned = layout();
 
-    unowned.widgets[0]!.monitor = undefined;
+    unowned.widgets[1]!.monitor = undefined;
 
     const encoded = encodeLayout(unowned);
 
-    expect(encoded.monitors[1]?.widgets.map((widget) => widget.id)).toEqual([
+    expect(encoded.monitors[0]?.widgets.map((widget) => widget.id)).toEqual([
       CHAT,
       'stream-chat-2',
     ]);
+  });
+
+  it('writes the hotkey mark only where it departs from the default', () => {
+    const marked = layout();
+
+    marked.widgets[1]!.hotkeys = false;
+
+    const encoded = encodeLayout(marked);
+
+    expect(encoded.monitors[0]?.widgets[0]).not.toHaveProperty('hotkeys');
+    expect(encoded.monitors[1]?.widgets[0]?.hotkeys).toBe(false);
+    expect(decodeLayout(encoded).widgets[1]?.hotkeys).toBe(false);
   });
 
   it('round-trips through the file unchanged', () => {

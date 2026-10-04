@@ -320,9 +320,6 @@ export class LayoutsStore {
       createdAt: Date.now(),
       backgroundImages,
       monitors: layout.monitors.map(cloneMonitor),
-      ...(layout.primaryMonitor === undefined
-        ? {}
-        : { primaryMonitor: layout.primaryMonitor }),
       widgets: layout.widgets.map((widget) => ({
         ...widget,
         userSettings: { ...widget.userSettings },
@@ -584,29 +581,8 @@ export class LayoutsStore {
       (widget) => widget.monitor !== monitorName
     );
 
-    if (layout.primaryMonitor === monitorName) {
-      delete layout.primaryMonitor;
-    }
-
     delete layout.backgroundImages?.[monitorName];
 
-    this.mutations.recordEveryWidget();
-  }
-
-  /**
-   * Names the monitor a layout's hotkeys and single-answer settings speak for.
-   * Only a physical display can be primary: a remote screen is never the one
-   * being raced on.
-   */
-  setPrimaryMonitor(layoutId: string, monitorName: string) {
-    const layout = this.byId(layoutId);
-    const monitor = layout?.monitors.find(
-      (candidate) => candidate.name === monitorName
-    );
-
-    if (!layout || !monitor || isRemoteMonitor(monitor)) return;
-
-    layout.primaryMonitor = monitorName;
     this.mutations.recordEveryWidget();
   }
 
