@@ -17,10 +17,10 @@ import {
   type ScrollThumb,
 } from '@utils/canvas';
 import { MOVE_DURATION_MS } from '@utils/animation';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 
 type StandingsDeps = Pick<
-  RootStore,
+  RendererCore,
   'backendComputed' | 'liveWidgets' | 'session' | 'player'
 >;
 
@@ -321,7 +321,7 @@ export class StandingsWidgetStore {
     };
   }
 
-  // Every RootStore instance (main window, overlay window, each isolated widget
+  // Every RendererCore instance (main window, overlay window, each isolated widget
   // preview) creates its own reaction and timers; without this they outlive the store.
   dispose() {
     for (const disposer of this.disposers) {

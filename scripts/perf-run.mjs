@@ -190,6 +190,13 @@ const metricsOf = (report) => {
     const name = overlay.label;
     const overlaySeconds = overlay.elapsedMs / MS_PER_SECOND;
 
+    rows.set(`${name} first paint (ms)`, overlay.firstPaintMs ?? null);
+    rows.set(
+      `${name} heap at first paint (MiB)`,
+      overlay.heapAtFirstPaintBytes == null
+        ? null
+        : overlay.heapAtFirstPaintBytes / KIB / KIB
+    );
     rows.set(
       `${name} alloc (MiB/s)`,
       overlay.allocBytesPerSec === null

@@ -1,5 +1,5 @@
 import { listenTo, type UnlistenFn } from '@platform/services/events.service';
-import type { RootStore } from '@store/root-store';
+import type { MainRoot } from '@store/main-root';
 import type { InputButtonEvent, InputDevice } from '@/types/bindings';
 import {
   INPUT_BUTTON_EVENT,
@@ -13,7 +13,7 @@ import { dispatchDeviceButton } from './binding-runner';
  * `emitToOverlays` helpers inside the actions themselves.
  */
 export const setupDeviceBindings = async (
-  root: RootStore
+  root: MainRoot
 ): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 
@@ -48,7 +48,7 @@ export const setupDeviceBindings = async (
  * the backend matches it by vendor/product and the stored id is rewritten here,
  * so the fallback is used at most once.
  */
-const reconcileDevices = async (root: RootStore) => {
+const reconcileDevices = async (root: MainRoot) => {
   const remaps = await root.deviceInput.resolveDevices(
     root.bindings.referencedDeviceIds
   );

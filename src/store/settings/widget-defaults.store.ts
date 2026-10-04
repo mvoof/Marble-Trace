@@ -8,7 +8,7 @@ import {
 } from '@store/settings/layout-resize';
 import { availableWidgetIdsOf } from '@store/settings/widget-availability';
 import type { WidgetMap } from '@store/settings/widget-map';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type {
   BaseUserSettings,
   WidgetDefaultConfig,
@@ -16,7 +16,7 @@ import type {
   WidgetUserSettings,
 } from '@/types/widget-settings';
 
-type WidgetDefaultsDeps = Pick<RootStore, 'sim'>;
+type WidgetDefaultsDeps = Pick<RendererCore, 'sim'>;
 
 const FUEL_BAR_WIDTH_MIN = 5;
 const FUEL_BAR_WIDTH_MAX = 20;

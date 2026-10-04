@@ -1,7 +1,7 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { availableMonitors } from '@tauri-apps/api/window';
 import { PhysicalPosition, PhysicalSize } from '@tauri-apps/api/dpi';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type { LayoutResolution } from '@/types/widget-settings';
 import { monitorLabel, listOverlayWindowLabels } from './overlay-labels';
 
@@ -85,7 +85,7 @@ const createOverlayWindow = async (monitor: PhysicalMonitor) => {
 // is the exception: it needs a window on every configured screen, empty ones
 // included, or a widget dragged over the edge would land on a monitor that
 // draws nothing and vanish.
-export const overlayMonitorNames = (root: RootStore): string[] => {
+export const overlayMonitorNames = (root: RendererCore): string[] => {
   if (root.appSettings.dragMode) {
     return root.layouts.liveMonitorNames;
   }
@@ -102,7 +102,7 @@ let syncInFlight: Promise<void> = Promise.resolve();
 // Runs are chained rather than awaited-then-replaced: two concurrent callers
 // awaiting the same promise before replacing it would both start a body, and
 // the same monitor would get two window creations.
-export const syncOverlayWindows = (root: RootStore): Promise<void> => {
+export const syncOverlayWindows = (root: RendererCore): Promise<void> => {
   syncInFlight = syncInFlight.then(async () => {
     try {
       const configuredNames = overlayMonitorNames(root);

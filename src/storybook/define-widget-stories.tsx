@@ -9,7 +9,7 @@ import type {
 } from '@storybook/react-vite';
 
 import type { PreviewScenarioId } from '@/types/preview-scenarios';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import { useStore } from '@store/root-store-context';
 import { withStore } from '../../.storybook/decorators';
 import { widgetDecorator } from './widgetDecorator';
@@ -73,7 +73,11 @@ interface DefineWidgetStoriesOptions<Args> {
    * the story's scenario base, and is handed that scenario's id so a seed can
    * leave the domain the scenario already stated alone.
    */
-  seed?: (store: RootStore, args: Args, scenarioId?: PreviewScenarioId) => void;
+  seed?: (
+    store: RendererCore,
+    args: Args,
+    scenarioId?: PreviewScenarioId
+  ) => void;
   /** Default control values shared by every story. */
   args?: Partial<Args>;
   /** Storybook control config per arg. */

@@ -1,6 +1,6 @@
 import { computed, makeAutoObservable } from 'mobx';
 
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import {
@@ -10,7 +10,7 @@ import {
 } from '@ui/widgets/RelativeWidget/relative-utils';
 
 type RelativeDeps = Pick<
-  RootStore,
+  RendererCore,
   | 'liveWidgets'
   | 'cars'
   | 'session'

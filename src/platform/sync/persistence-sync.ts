@@ -7,10 +7,11 @@ import {
   saveSettings,
   SETTINGS_FILE,
   type Settings,
+  type SettingsHydrationTarget,
 } from './persistence';
 import { runMigrations } from '@platform/settings-schema/index';
 import type { MigrationResult } from '@platform/settings-schema/types';
-import type { RootStore } from '@store/root-store';
+import type { MainRoot } from '@store/main-root';
 
 /**
  * Settings-file bootstrap shared by both windows.
@@ -48,7 +49,7 @@ export const readSettingsFile = async (): Promise<{
  * only one of them may touch the file.
  */
 export const hydrateFromDisk = async (
-  root: RootStore,
+  root: SettingsHydrationTarget,
   loaded: Settings | null | undefined,
   { backup }: { backup: boolean }
 ) => {
@@ -108,7 +109,7 @@ export const hydrateFromDisk = async (
  * build could not migrate must survive the session untouched.
  */
 export const createSaveHandle =
-  (root: RootStore, store: SettingsFileHandle) => (): Promise<void> =>
+  (root: MainRoot, store: SettingsFileHandle) => (): Promise<void> =>
     root.appSettings.settingsLocked
       ? Promise.resolve()
       : saveSettings(store, root);

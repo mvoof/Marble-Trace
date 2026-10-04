@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type { MockFieldRows } from '@store/preview/mocks/field';
 import {
   MOCK_DRIVER_FLAG_ROWS,
@@ -29,7 +29,7 @@ const SECOND_PACE_CAR_LEAD_S = -3;
 // A safety car is not a driver entry: it reaches the widget through the session
 // roster and the per-car arrays, the way the sim reports it. Both halves are
 // stated here so the row cannot appear in one and be missing from the other.
-const seedPaceCars = (store: RootStore, multiclass: boolean) => {
+const seedPaceCars = (store: RendererCore, multiclass: boolean) => {
   const sessionInfo = store.session.sessionInfo;
   const carIdx = store.cars.carIdx;
   const player = store.backendComputed.relativeEntries.find(

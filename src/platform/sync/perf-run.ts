@@ -8,7 +8,8 @@ import {
   getPerfRun,
   submitOverlayPerf,
 } from '@platform/services/perf.service';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
+import { coldStartSample } from './perf-cold-start';
 
 /**
  * The overlay's half of a perf run (see `telemetry/perf_run.rs`).
@@ -92,7 +93,7 @@ const summarize = (samples: number[]): TimingSummary => {
 type FinishCollecting = () => OverlayPerfReport;
 
 const startCollecting = (
-  root: RootStore,
+  root: RendererCore,
   storesOnly: boolean
 ): FinishCollecting => {
   const startedAt = performance.now();
@@ -208,11 +209,12 @@ const startCollecting = (
       observerWakeupsPerSec: countsWakeups ? wakeups / seconds : null,
       apply: summarize(applyTimes),
       applyFull: summarize(fullApplyTimes),
+      ...coldStartSample(),
     };
   };
 };
 
-export const initPerfRun = async (root: RootStore): Promise<() => void> => {
+export const initPerfRun = async (root: RendererCore): Promise<() => void> => {
   const config = await getPerfRun();
 
   if (!config) {

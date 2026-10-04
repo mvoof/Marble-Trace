@@ -6,11 +6,11 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type { CarStatusFrame } from '@/types/bindings';
 import { ADJUSTMENT_FIELDS } from './engine-panel-utils';
 
-type EnginePanelDeps = Pick<RootStore, 'player'>;
+type EnginePanelDeps = Pick<RendererCore, 'player'>;
 
 /** The ABS cell is not in the spec list — it has its own component. */
 const ABS_FIELD: keyof CarStatusFrame = 'dc_abs';

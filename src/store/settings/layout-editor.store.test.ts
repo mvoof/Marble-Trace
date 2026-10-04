@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-import { RootStore } from '@store/root-store';
+import { MainRoot } from '@store/main-root';
 import { emitLayoutActivated } from '@platform/services/events.service';
 
 // Nothing here crosses the Tauri boundary; the editing session is main-window
@@ -34,10 +34,10 @@ const layout = (id: string) => ({
 });
 
 describe('the layout under the editor and the one on screen', () => {
-  let root: RootStore;
+  let root: MainRoot;
 
   beforeEach(() => {
-    root = new RootStore({ skipInit: true });
+    root = new MainRoot({ skipInit: true });
 
     root.liveWidgets.setLayouts(
       [layout('layout-garage'), layout('layout-practice')],

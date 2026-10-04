@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
-import { RootStore } from '@store/root-store';
+import { RendererCore } from '@store/renderer-core';
 import type { CarInputsFrame } from '@/types/bindings';
 
-// RootStore construction reaches the backend through the services; they have
+// RendererCore construction reaches the backend through the services; they have
 // no Tauri runtime to talk to under vitest.
 vi.mock('@platform/services/telemetry.service', () => ({
   startTelemetryStream: vi.fn().mockResolvedValue(undefined),
@@ -19,7 +19,7 @@ vi.mock('@platform/services/settings.service', () => ({
   setCarLengthSilent: vi.fn(),
 }));
 
-// RootStore subscribes to sim events on construction; the node test
+// RendererCore subscribes to sim events on construction; the node test
 // environment has no window for the Tauri event bridge to attach to.
 vi.mock('@platform/services/events.service', () => ({
   listenTo: vi.fn().mockResolvedValue(() => {}),
@@ -29,7 +29,7 @@ vi.mock('@platform/services/events.service', () => ({
 }));
 
 describe('InputTraceWidgetStore — frameTick', () => {
-  let rootStore: RootStore;
+  let rootStore: RendererCore;
 
   const pushFrame = (throttle: number) => {
     runInAction(() => {
@@ -38,7 +38,7 @@ describe('InputTraceWidgetStore — frameTick', () => {
   };
 
   beforeEach(() => {
-    rootStore = new RootStore();
+    rootStore = new RendererCore();
   });
 
   afterEach(() => {

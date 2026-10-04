@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { reaction, runInAction } from 'mobx';
 
-import { RootStore } from '@store/root-store';
+import { RendererCore } from '@store/renderer-core';
 import { seedScenario } from '@store/preview/scenarios';
 import { seedInputHistory } from '@store/preview/preview-animator';
 import {
@@ -19,7 +19,7 @@ import type { WidgetDefaultConfig } from '@/types/widget-settings';
  */
 export const mirrorWidgetsIntoPreview = (
   source: WidgetDefaultConfig[],
-  previewStore: RootStore
+  previewStore: RendererCore
 ) => {
   // The whole set rather than a patch: the preview world starts as the shipped
   // catalog, so a layout holding a copy has records it has never heard of, and
@@ -47,20 +47,22 @@ export const mirrorWidgetsIntoPreview = (
  * the truth, and seeding over them would show the driver a race they are not in.
  *
  * The store is built on first use and kept afterwards — leaving and re-entering
- * edit mode is a keystroke, and rebuilding a whole `RootStore` on it would
+ * edit mode is a keystroke, and rebuilding a whole `RendererCore` on it would
  * restart every widget's animation.
  */
-export const usePreviewContentStore = (active: boolean): RootStore | null => {
+export const usePreviewContentStore = (
+  active: boolean
+): RendererCore | null => {
   const liveWidgets = useLiveWidgetsStore();
   const settingsMutations = useSettingsMutationLog();
   const units = useUnitsStore();
 
-  const [previewStore, setPreviewStore] = useState<RootStore | null>(null);
+  const [previewStore, setPreviewStore] = useState<RendererCore | null>(null);
 
   useEffect(() => {
     if (!active || previewStore) return;
 
-    setPreviewStore(new RootStore({ skipInit: true }));
+    setPreviewStore(new RendererCore({ skipInit: true }));
   }, [active, previewStore]);
 
   useEffect(() => () => previewStore?.dispose(), [previewStore]);

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import {
   PACE_CAR_IDX,
   mockField,
@@ -19,7 +19,7 @@ const TRACK_SURFACE_ON_TRACK = 3;
 // The map draws one dot per car off its own lap distance, so the field is
 // spread over the whole lap rather than packed into the seconds around the
 // player: a gap of a lap divided by the field is one car every equal step.
-const spreadOverLap = (store: RootStore) => {
+const spreadOverLap = (store: RendererCore) => {
   const base = store.backendComputed.driverEntries;
 
   if (!base || base.entries.length === 0) {
@@ -37,7 +37,7 @@ const spreadOverLap = (store: RootStore) => {
 
 // A safety car reaches the map through the session roster and the per-car
 // arrays rather than as a driver entry, the way the sim reports it.
-const seedPaceCar = (store: RootStore) => {
+const seedPaceCar = (store: RendererCore) => {
   const sessionInfo = store.session.sessionInfo;
   const positions = store.cars.carPositions;
   const player = store.backendComputed.relativeEntries.find(

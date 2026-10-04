@@ -4,7 +4,7 @@ import type {
   BattleNameMode,
   CloseBattleWidgetSettings,
 } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import { mockProximity } from '@store/preview/mocks/traffic';
 import { CloseBattleWidget } from './CloseBattleWidget';
 import {
@@ -30,7 +30,7 @@ const DISTANCE_THRESHOLD_M = 200;
 // The snapshot's own opponents, so names, numbers and class colors are real —
 // the widget looks every car up by its index. The frame itself is the traffic
 // builder's, so the radar distances and the spotter flags agree with the cars.
-const seedTraffic = (store: RootStore, distances: number[]) => {
+const seedTraffic = (store: RendererCore, distances: number[]) => {
   const opponents = store.backendComputed.relativeEntries.filter(
     (entry) => !entry.isPlayer
   );

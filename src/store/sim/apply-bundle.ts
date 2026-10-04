@@ -1,7 +1,7 @@
 import { runInAction } from 'mobx';
 
 import type { TelemetryBundle } from '@/types/bindings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 
 /**
  * Scatters one bundle across the data stores.
@@ -11,7 +11,7 @@ import type { RootStore } from '@store/root-store';
  * mapping must not. Every field a widget reads is filled here and nowhere else.
  */
 export const applyTelemetryBundle = (
-  root: RootStore,
+  root: RendererCore,
   bundle: TelemetryBundle,
   onFrame?: () => void
 ) => {

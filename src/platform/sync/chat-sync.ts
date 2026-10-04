@@ -8,7 +8,7 @@ import {
   emitStreamChatCleared,
   emitStreamChatFilters,
 } from '@platform/services/events.service';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 
 const STREAM_CHAT_WIDGET_ID = 'stream-chat';
 
@@ -21,7 +21,7 @@ const STREAM_CHAT_WIDGET_ID = 'stream-chat';
  * defaults rather than the user's channel.
  */
 export const registerChatReactions = (
-  root: RootStore,
+  root: RendererCore,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
   // Restarting on any source change keeps a single code path for "connect" and

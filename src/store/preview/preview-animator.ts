@@ -1,4 +1,4 @@
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 
 // Time-series widgets (input trace) build a rolling history from successive
 // carInputs frames, which a single seeded frame can't provide. Instead of
@@ -7,7 +7,7 @@ import type { RootStore } from '@store/root-store';
 // frame and fills its internal ring buffer, leaving a static-looking trace.
 const HISTORY_SAMPLES = 360; // ~6 s at 60 Hz, covers the max history window
 
-export const seedInputHistory = (store: RootStore): void => {
+export const seedInputHistory = (store: RendererCore): void => {
   const base = store.player.carInputs;
 
   if (!base) {

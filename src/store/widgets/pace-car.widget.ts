@@ -1,8 +1,8 @@
 import { makeAutoObservable, reaction } from 'mobx';
 
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 
-type PaceCarDeps = Pick<RootStore, 'cars' | 'session'>;
+type PaceCarDeps = Pick<RendererCore, 'cars' | 'session'>;
 
 export type PaceCarPitPhase =
   | 'unknown'

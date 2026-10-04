@@ -4,7 +4,7 @@
  * Lives with the other contracts rather than in `store/hotkeys/` because a
  * binding map travels between windows as an event payload, so the transport
  * layer has to name it without importing a store. The action registry itself
- * (`HotkeyAction`, which closes over `RootStore`) stays in the store.
+ * (`HotkeyAction`, which closes over `MainRoot`) stays in the store.
  */
 
 /**

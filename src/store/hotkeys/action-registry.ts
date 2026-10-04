@@ -14,10 +14,10 @@ export interface ActionOwnerWidget {
  * Built explicitly rather than exported as a module constant: the per-widget
  * visibility actions are generated from the catalog, and a module-level
  * `ACTIONS` would force every importer to pull the catalog in at import time —
- * which is what kept the catalog from being handed to `RootStore` instead.
+ * which is what kept the catalog from being handed to the root instead.
  *
- * There is exactly one instance, created by `RootStore`; everything else reads
- * it from there.
+ * There is exactly one instance per app window, built with its `BindingsStore`
+ * (`buildAppWindowStores`); everything else reads it from there.
  */
 export class ActionRegistry {
   readonly actions: HotkeyAction[];

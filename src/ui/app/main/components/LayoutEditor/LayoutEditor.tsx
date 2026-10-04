@@ -37,10 +37,10 @@ import {
 import {
   useAppSettingsStore,
   useLayoutsStore,
-  useLayoutEditorStore,
   useLiveWidgetsStore,
   useLayoutGestureStores,
 } from '@store/root-store-context';
+import { useLayoutEditorStore } from '@store/main-root-context';
 import {
   SESSION_PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,

@@ -4,12 +4,12 @@ import {
   fileStamp,
   saveTextFileAndReveal,
 } from '@platform/services/file-export.service';
-import type { RootStore } from '@store/root-store';
+import type { MainRoot } from '@store/main-root';
 import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
 import { resultsToCsv } from './report';
 
 type DiagnosticsExportDeps = Pick<
-  RootStore,
+  MainRoot,
   'fpsDiagnostics' | 'telemetryInspector' | 'session'
 >;
 

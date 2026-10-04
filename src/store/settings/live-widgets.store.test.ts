@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
-import { RootStore } from '../root-store';
+import { MainRoot } from '../main-root';
 import type { CapabilitiesPayload } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { deleteLayout } from './layout-gestures';
@@ -22,10 +22,10 @@ const FULL_CAPABILITIES: CapabilitiesPayload = {
 };
 
 describe('LiveWidgetsStore capabilities gating', () => {
-  let rootStore: RootStore;
+  let rootStore: MainRoot;
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new MainRoot({ skipInit: true });
   });
 
   it('makes all widgets available when all capabilities are met', () => {
@@ -93,10 +93,10 @@ describe('LiveWidgetsStore capabilities gating', () => {
 // The mapping itself is a layout record and is pinned in `layouts.store.test.ts`;
 // what is left here is which session the sim is actually in.
 describe('the session a layout would be picked for', () => {
-  let rootStore: RootStore;
+  let rootStore: MainRoot;
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new MainRoot({ skipInit: true });
     // Создаем несколько фейковых лейаутов
     rootStore.liveWidgets.setLayouts([
       {
@@ -156,11 +156,11 @@ describe('the session a layout would be picked for', () => {
 });
 
 describe('LiveWidgetsStore overlay widget picker', () => {
-  let rootStore: RootStore;
+  let rootStore: MainRoot;
   const SECOND_MONITOR_X = 1920;
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new MainRoot({ skipInit: true });
     rootStore.liveWidgets.setLayouts(
       [
         {
@@ -285,7 +285,7 @@ describe('LiveWidgetsStore overlay widget picker', () => {
 
 describe('derived design width', () => {
   it('rebuilds a stale design width when a layout copy is installed', () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
     const relative = store.getWidget('relative');
 
@@ -309,7 +309,7 @@ describe('derived design width', () => {
   });
 
   it('rescales currentWidth with it, so the repair does not resize the text', () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
     const relative = store.getWidget('relative')!;
     const shippedWidth = relative.designWidth;
@@ -331,7 +331,7 @@ describe('derived design width', () => {
   });
 
   it('leaves the size alone when the derived width already agrees', () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
     const relative = store.getWidget('relative')!;
     const userChosenWidth = relative.designWidth * 2;
@@ -352,7 +352,7 @@ describe('derived design width', () => {
   });
 
   it('rebuilds it from settings synced in by an overlay window', () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
 
     const monitorName = 'DISPLAY1';
@@ -397,7 +397,7 @@ describe('derived design width', () => {
   });
 
   it('follows the name column width without touching other widgets', () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
     const before = store.getWidget('standings')!.designWidth;
     const timerWidth = store.getWidget('timer')!.designWidth;
@@ -415,7 +415,7 @@ describe('derived design width', () => {
 });
 
 describe('the active layout owns the widgets', () => {
-  let rootStore: RootStore;
+  let rootStore: MainRoot;
 
   const MONITOR = {
     name: 'DISPLAY1',
@@ -431,7 +431,7 @@ describe('the active layout owns the widgets', () => {
   });
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new MainRoot({ skipInit: true });
     rootStore.liveWidgets.setLayouts(
       [layout('layout-race'), layout('layout-garage')],
       'layout-race'
@@ -507,7 +507,7 @@ describe('a layout with no monitors is not written to', () => {
   // it falls back to a blank starter set, and that set must not be mistaken for
   // an edit and saved over the arrangement the driver still has.
   it('keeps the saved widgets when the layout is loaded without a screen', () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
 
     store.setLayouts(
@@ -547,10 +547,10 @@ describe('the overlay reports only what it edited', () => {
     bounds: { x: 0, y: 0, width: 1920, height: 1080 },
   };
 
-  let rootStore: RootStore;
+  let rootStore: MainRoot;
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new MainRoot({ skipInit: true });
     rootStore.liveWidgets.setLayouts(
       [
         {
@@ -604,7 +604,7 @@ describe('the overlay reports only what it edited', () => {
 });
 
 describe('several copies of one widget in a layout', () => {
-  let rootStore: RootStore;
+  let rootStore: MainRoot;
 
   const MONITOR = {
     name: 'DISPLAY1',
@@ -627,7 +627,7 @@ describe('several copies of one widget in a layout', () => {
   });
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new MainRoot({ skipInit: true });
     rootStore.liveWidgets.setLayouts(
       [layout('layout-race'), layout('layout-garage')],
       'layout-race'
@@ -1075,7 +1075,7 @@ describe('every settings write leaves its mark', () => {
   ];
 
   it.each(WRITES)('$name', ({ setup, run, expected }) => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
 
     store.setLayouts(
@@ -1153,7 +1153,7 @@ describe('the widgets a remote screen draws', () => {
   });
 
   it('is empty while every widget sits on a display', () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
 
     store.setLayouts([layoutWithScreens('layout-race')], 'layout-race');
@@ -1162,7 +1162,7 @@ describe('the widgets a remote screen draws', () => {
   });
 
   it('carries only the widgets that belong to the remote screen', () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
 
     store.setLayouts([layoutWithScreens('layout-race')], 'layout-race');
@@ -1174,7 +1174,7 @@ describe('the widgets a remote screen draws', () => {
   });
 
   it('is empty when the layout has no remote screen at all', () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
 
     store.setLayouts(
@@ -1219,7 +1219,7 @@ describe('widgets belong to their monitor', () => {
   };
 
   const setUp = () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
 
     rootStore.liveWidgets.setLayouts(
       [
@@ -1470,7 +1470,7 @@ describe('widgets belong to their monitor', () => {
   });
 
   it('starts a new instance from the template the Widgets page edits', () => {
-    const rootStore = new RootStore({ skipInit: true });
+    const rootStore = new MainRoot({ skipInit: true });
     const store = rootStore.liveWidgets;
 
     store.setLayouts(

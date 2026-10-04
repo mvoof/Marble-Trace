@@ -124,17 +124,18 @@ flowchart TB
         direction LR
         subgraph m["main — label 'main', exactly one"]
             M1["Ant Design settings UI"]
-            M2["its own MobX RootStore"]
+            M2["its own MobX MainRoot"]
         end
         subgraph o["overlay — one per monitor"]
             O1["OverlayCanvas → all widgets"]
-            O2["its own MobX RootStore"]
+            O2["its own MobX OverlayRoot"]
         end
     end
     m <-->|"Tauri events — see Part III"| o
 ```
 
-**The windows share no memory.** They each boot their own `RootStore`, their own
+**The windows share no memory.** They each boot their own root (`MainRoot`,
+`OverlayRoot`, `HudRoot`; `RemoteRoot` in a browser), their own
 MobX observables, their own React tree. A value you mutate in main does not exist
 in the overlay until an event carries it there. This is the single most common
 source of confusion for newcomers, and
@@ -731,7 +732,7 @@ Summarized as a direction: `utils/ ← ui/ → store/ → platform/`.
 > **The direction is enforced by lint, not by convention.** `no-restricted-imports`
 > overrides in `.oxlintrc.json` fail `npm run lint` on any violation.
 
-One file is exempt and says why in a comment: `store/root-store.ts` (composes
+One file is exempt and says why in a comment: `store/renderer-core.ts` (composes
 widget stores that live next to their widgets). `store/widget-catalog.ts` reads
 the per-widget manifests, which also live next to their widgets, but collects
 them with `import.meta.glob` — a path, not an import — so it needs no exemption.
@@ -853,35 +854,45 @@ flowchart TB
     SET -.-> COMP
 ```
 
-Every store hangs off one `RootStore` (`src/store/root-store.ts`), reached through
-the context hooks in `src/store/root-store-context.ts`.
+Every window builds one root over a shared `RendererCore`
+(`src/store/renderer-core.ts`): the data stores, the sim, the settings projection
+widgets read, units and the widget stores. `MainRoot` adds what only the settings
+UI uses (editor, inspector, diagnostics, companion apps, chat sign-in, device
+list), `OverlayRoot` adds only the bindings and the settings-panel state its
+drag-mode popup needs, `RemoteRoot` starts the core without Tauri, and `HudRoot`
+holds the banner's one store and no core at all. Components reach them through
+context hooks per root: `root-store-context.ts` (core, typed `RendererCore`, plus
+the two app-window stores), `main-root-context.ts`, `overlay-root-context.ts`,
+`hud-root-context.ts`. A main-only store is not on the core's type, so a widget
+cannot reach it; the widget, shared and overlay folders may not import the main
+root's hooks either (`.oxlintrc.json`).
 
 > [!WARNING]
 > **Never import a store as a singleton.** Each window constructs its own
-> `RootStore`; a module-level instance would silently be the wrong one.
+> root; a module-level instance would silently be the wrong one.
 
 ### Module map
 
-| Folder                                    | Holds                                                                                                                                                                                                          |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data/`                                   | `player`, `cars`, `session`, `environment`, `chat`, `reference-lap` frame buffers, plus `computed.store.ts` for derived values shared by 2+ widgets                                                            |
-| `settings/`                               | `app-settings`, `layouts`, `widget-defaults`, `widget-settings`, `units`, `twitch-auth`, plus layout helpers (`layout-resolution`, `layout-resize`, `layout-background`, `widget-history`, `widget-placement`) |
-| `widgets/`                                | stores read by 2+ widgets — `flags`, `pace-car`, `radar`, `standings` — plus app-level ones (`widget-auto-hide`, `settings-panel-ui`)                                                                          |
-| `sim/`                                    | sim connection state, `track-condition`, `debug`                                                                                                                                                               |
-| `hotkeys/`                                | `actions` registry, `action-registry`, `bindings.store`, `binding-runner`, `bindings-sync`, `bindings-ui`, `device-input`                                                                                      |
-| `preview/`                                | neutral sample data — scenarios, sample telemetry, sample track, the preview animator                                                                                                                          |
-| `root-store.ts` · `root-store-context.ts` | composition and access                                                                                                                                                                                         |
-| `widget-catalog.ts`                       | collects the per-widget manifests                                                                                                                                                                              |
+| Folder                                                 | Holds                                                                                                                                                                                                          |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data/`                                                | `player`, `cars`, `session`, `environment`, `chat`, `reference-lap` frame buffers, plus `computed.store.ts` for derived values shared by 2+ widgets                                                            |
+| `settings/`                                            | `app-settings`, `layouts`, `widget-defaults`, `widget-settings`, `units`, `twitch-auth`, plus layout helpers (`layout-resolution`, `layout-resize`, `layout-background`, `widget-history`, `widget-placement`) |
+| `widgets/`                                             | stores read by 2+ widgets — `flags`, `pace-car`, `radar`, `standings` — plus app-level ones (`widget-auto-hide`, `settings-panel-ui`)                                                                          |
+| `sim/`                                                 | sim connection state, `track-condition`, `debug`                                                                                                                                                               |
+| `hotkeys/`                                             | `actions` registry, `action-registry`, `bindings.store`, `binding-runner`, `bindings-sync`, `bindings-ui`, `device-input`                                                                                      |
+| `preview/`                                             | neutral sample data — scenarios, sample telemetry, sample track, the preview animator                                                                                                                          |
+| `renderer-core.ts` · `*-root.ts` · `*-root-context.ts` | composition per window and access                                                                                                                                                                              |
+| `widget-catalog.ts`                                    | collects the per-widget manifests                                                                                                                                                                              |
 
 > [!NOTE]
 > `preview/` exists so the app never imports from `src/storybook`. Shared fixtures
 > live in this neutral place, which both the app and Storybook may read.
 
 **The preview store is isolated, and the linter holds it there.** A scenario and
-every mock builder write only into the `RootStore({ skipInit: true })` handed to
+every mock builder write only into the `RendererCore({ skipInit: true })` handed to
 them — never into the stores a running widget reads. So `src/store/preview/**`
 carries its own `no-restricted-imports` override: the context hooks in
-`root-store-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are all
+`*-root-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are all
 refused there, the way every other layer boundary in this project is enforced. A
 fixture that reached a live store would go unnoticed in the layout editor and
 surface as a wrong number in a driver's session; see

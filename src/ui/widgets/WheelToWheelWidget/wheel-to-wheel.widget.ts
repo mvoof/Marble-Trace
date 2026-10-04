@@ -11,7 +11,7 @@ import {
 import type { UnitSystem } from '@/types';
 import type { DriverEntry } from '@/types/bindings';
 import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import { formatSpeed } from '@utils/telemetry-format';
 import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
@@ -23,7 +23,7 @@ import {
 } from './wheel-to-wheel-utils';
 
 type WheelToWheelDeps = Pick<
-  RootStore,
+  RendererCore,
   'units' | 'appSettings' | 'liveWidgets' | 'backendComputed' | 'session'
 >;
 

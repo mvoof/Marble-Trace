@@ -16,10 +16,10 @@ import {
   useLayoutsStore,
   useLiveWidgetsStore,
   useAppSettingsStore,
-  useRemoteDevicesStore,
   useSimStore,
   useLayoutGestureStores,
 } from '@store/root-store-context';
+import { useRemoteDevicesStore } from '@store/main-root-context';
 import { isRemoteMonitor } from '@utils/remote-screen';
 import {
   resolveBackgroundSrc,

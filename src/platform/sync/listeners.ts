@@ -10,7 +10,8 @@ import {
 } from '@platform/services/events.service';
 import type { AppLanguage, UnitSystem } from '@/types';
 import type { SessionContext } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
+import type { OverlayRoot } from '@store/overlay-root';
 import type { BindingMap } from '@/types/input-bindings';
 
 /**
@@ -22,7 +23,7 @@ import type { BindingMap } from '@/types/input-bindings';
 type SessionLayoutMap = Record<SessionContext, string | null>;
 
 export const setupMainListeners = async (
-  root: RootStore
+  root: RendererCore
 ): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 
@@ -43,7 +44,7 @@ export const setupMainListeners = async (
  * The map is turned in whichever window shows it — an overlay in drag mode, or
  * the layout editor in main — and both windows draw the same angle afterwards.
  */
-const listenTrackRotation = (root: RootStore) =>
+const listenTrackRotation = (root: RendererCore) =>
   listenTo<TrackRotationPayload>('track-rotation-changed', (e) => {
     runInAction(() =>
       root.trackMapWidget.applyTrackRotation(
@@ -59,7 +60,7 @@ const listenTrackRotation = (root: RootStore) =>
  * clicked in the overlay, the hotkeys are registered in main. Both windows
  * mirror the flag so the AUTO / MANUAL badge and the pit entry trigger agree.
  */
-const listenPitServiceAutoSuspended = (root: RootStore) =>
+const listenPitServiceAutoSuspended = (root: RendererCore) =>
   listenTo<boolean>('pit-service-auto-suspended', (e) => {
     runInAction(() => root.pitServiceWidget.auto.setAutoSuspended(e.payload));
   });
@@ -69,7 +70,7 @@ const listenPitServiceAutoSuspended = (root: RootStore) =>
  * nudge from a hotkey in main and a tire checkbox clicked in the overlay each
  * claim one half, and both windows draw the badges off the result.
  */
-const listenPitServiceHalvesTakenOver = (root: RootStore) =>
+const listenPitServiceHalvesTakenOver = (root: RendererCore) =>
   listenTo<HalvesTakenOver>('pit-service-halves-taken-over', (e) => {
     runInAction(() =>
       root.pitServiceWidget.auto.setHalvesTakenOver(
@@ -80,7 +81,7 @@ const listenPitServiceHalvesTakenOver = (root: RootStore) =>
   });
 
 export const setupOverlayListeners = async (
-  root: RootStore
+  root: OverlayRoot
 ): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 

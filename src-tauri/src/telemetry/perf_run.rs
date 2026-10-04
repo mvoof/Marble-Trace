@@ -103,6 +103,14 @@ pub struct OverlayPerfReport {
     pub apply: TimingSummary,
     /// `applyTelemetryBundle` on the 1 Hz full-bundle ticks.
     pub apply_full: TimingSummary,
+    /// Navigation start to the window's first contentful paint — the overlay's
+    /// cold start. `None` when the page had painted nothing by the report.
+    #[serde(default)]
+    pub first_paint_ms: Option<f64>,
+    /// `usedJSHeapSize` read as that first paint was observed: the heap the
+    /// window boots into, before the run's telemetry fills it.
+    #[serde(default)]
+    pub heap_at_first_paint_bytes: Option<f64>,
 }
 
 #[derive(serde::Serialize)]

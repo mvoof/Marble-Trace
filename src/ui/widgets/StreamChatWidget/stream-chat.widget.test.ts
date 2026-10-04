@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
-import { RootStore } from '@store/root-store';
+import { RendererCore } from '@store/renderer-core';
 import type { ChatMessage, ChatPlatform } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 
@@ -22,7 +22,7 @@ const makeMessage = (
 });
 
 describe('StreamChatWidgetStore', () => {
-  let rootStore: RootStore;
+  let rootStore: RendererCore;
 
   const setSettings = (partial: Partial<StreamChatWidgetSettings>) => {
     runInAction(() => {
@@ -45,7 +45,7 @@ describe('StreamChatWidgetStore', () => {
   };
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new RendererCore({ skipInit: true });
   });
 
   it('hides bot commands when the filter is on', () => {
@@ -263,10 +263,10 @@ describe('StreamChatWidgetStore', () => {
 });
 
 describe('ChatStore', () => {
-  let rootStore: RootStore;
+  let rootStore: RendererCore;
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new RendererCore({ skipInit: true });
   });
 
   it('merges presence so a status update keeps the last viewer count', () => {

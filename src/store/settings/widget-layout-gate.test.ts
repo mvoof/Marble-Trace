@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInAction } from 'mobx';
-import { RootStore } from '@store/root-store';
+import { MainRoot } from '@store/main-root';
 import type { SavedLayout } from '@/types/widget-settings';
 
 // setWidgets pushes a few settings to the backend through the service layer,
@@ -25,7 +25,7 @@ const MONITOR = {
 
 /** A layout holding exactly the given widgets, everything else switched off. */
 const layoutWith = (
-  root: RootStore,
+  root: MainRoot,
   id: string,
   enabledIds: string[]
 ): SavedLayout => ({
@@ -44,10 +44,10 @@ const layoutWith = (
 });
 
 describe('isWidgetOnScreen', () => {
-  let root: RootStore;
+  let root: MainRoot;
 
   beforeEach(() => {
-    root = new RootStore({ skipInit: true });
+    root = new MainRoot({ skipInit: true });
 
     runInAction(() => {
       root.liveWidgets.setLayouts(

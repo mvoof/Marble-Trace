@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 
-import { RootStore } from '@store/root-store';
+import { MainRoot } from '@store/main-root';
 import type { SavedLayout } from '@/types/widget-settings';
 import { TELEMETRY_EVENT_BITS } from '@/types/telemetry-events';
 
@@ -133,7 +133,7 @@ const asOverlayWindow = () => setWindowPath('/overlay.html');
 const asMainWindow = () => setWindowPath(null);
 
 describe('SimStore active-events mask', () => {
-  let root: RootStore;
+  let root: MainRoot;
 
   beforeEach(() => {
     setActiveEventsSilent.mockClear();
@@ -152,7 +152,7 @@ describe('SimStore active-events mask', () => {
   describe('in an overlay window', () => {
     beforeEach(() => {
       asOverlayWindow();
-      root = new RootStore({ skipInit: true });
+      root = new MainRoot({ skipInit: true });
     });
 
     it('registers only the widgets on its own monitor', () => {
@@ -329,7 +329,7 @@ describe('SimStore active-events mask', () => {
   describe('in the main window', () => {
     beforeEach(() => {
       asMainWindow();
-      root = new RootStore({ skipInit: true });
+      root = new MainRoot({ skipInit: true });
     });
 
     it('computes no mask of its own — the editor contributes nothing', () => {

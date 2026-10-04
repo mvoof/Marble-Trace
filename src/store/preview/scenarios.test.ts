@@ -13,7 +13,7 @@ import {
   isSessionEnded,
   resolveSessionClock,
 } from '@utils/timer-utils';
-import { RootStore } from '@store/root-store';
+import { RendererCore } from '@store/renderer-core';
 import { WIDGETS } from '@store/widget-catalog';
 import { PACE_CAR_IDX } from './mocks/field';
 import { PREVIEW_CAR_LENGTH_M } from './mocks/traffic';
@@ -37,7 +37,7 @@ const MAX_TRACK_WETNESS = 7;
 const NO_CAR_DIST_M = 999;
 
 const seed = (scenarioId: string) => {
-  const store = new RootStore({ skipInit: true });
+  const store = new RendererCore({ skipInit: true });
 
   seedScenario(store, scenarioId);
 
@@ -74,7 +74,7 @@ describe('fuel scenarios', () => {
   });
 
   it('leaves the widget settings alone', () => {
-    const store = new RootStore({ skipInit: true });
+    const store = new RendererCore({ skipInit: true });
     const before = JSON.stringify(store.liveWidgets.widgets);
 
     seedScenario(store, 'fuel-short');
@@ -472,7 +472,7 @@ describe('traffic scenarios', () => {
 // sets, and clears the ones no baseline frame covers.
 describe('returning to the baseline', () => {
   it('clears a scenario that was picked before it', () => {
-    const store = new RootStore({ skipInit: true });
+    const store = new RendererCore({ skipInit: true });
 
     seedScenario(store, 'pit-limiter');
     seedScenario(store, 'driving-coach-brake');
@@ -489,7 +489,7 @@ describe('returning to the baseline', () => {
   });
 
   it('takes the incident markers back off the map', () => {
-    const store = new RootStore({ skipInit: true });
+    const store = new RendererCore({ skipInit: true });
 
     seedScenario(store, 'incident-zones');
     seedScenario(store, DEFAULT_PREVIEW_SCENARIO_ID);
@@ -498,7 +498,7 @@ describe('returning to the baseline', () => {
   });
 
   it('matches a store that never left it', () => {
-    const visited = new RootStore({ skipInit: true });
+    const visited = new RendererCore({ skipInit: true });
 
     seedScenario(visited, 'red-flag');
     seedScenario(visited, DEFAULT_PREVIEW_SCENARIO_ID);
@@ -683,13 +683,13 @@ describe('engine scenarios', () => {
 // rather than by the clock, so a timing scenario is only right if the frame and
 // the entry describe the same session.
 describe('timing scenarios', () => {
-  const currentSession = (store: RootStore) => {
+  const currentSession = (store: RendererCore) => {
     const sessionNum = store.session.session?.session_num ?? 0;
 
     return store.session.sessionInfo?.sessions[sessionNum] ?? null;
   };
 
-  const clockOf = (store: RootStore) => {
+  const clockOf = (store: RendererCore) => {
     const session = currentSession(store);
 
     return resolveSessionClock(

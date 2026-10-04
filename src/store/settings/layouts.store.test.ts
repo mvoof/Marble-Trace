@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { RootStore } from '../root-store';
+import { MainRoot } from '../main-root';
 import { buildSettings } from '@platform/sync/persistence';
 
 import { LayoutsStore } from './layouts.store';
@@ -220,7 +220,7 @@ describe('deleting the layout that is on screen', () => {
   // Low enough that the fuel widget stays inside the monitor at y = x.
   const GARAGE_FUEL_X = 600;
 
-  let rootStore: RootStore;
+  let rootStore: MainRoot;
 
   const layoutRecord = (id: string) => ({
     id,
@@ -242,7 +242,7 @@ describe('deleting the layout that is on screen', () => {
   };
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new MainRoot({ skipInit: true });
 
     const store = rootStore.liveWidgets;
 
@@ -334,11 +334,11 @@ describe('deleting the layout that is on screen', () => {
 });
 
 describe('the screens of a layout that have something to draw', () => {
-  let rootStore: RootStore;
+  let rootStore: MainRoot;
   const SECOND_MONITOR_X = 1920;
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new MainRoot({ skipInit: true });
     rootStore.liveWidgets.setLayouts(
       [
         {
@@ -390,11 +390,11 @@ describe('the screens of a layout that have something to draw', () => {
 });
 
 describe('remote screen geometry', () => {
-  let rootStore: RootStore;
+  let rootStore: MainRoot;
   const REMOTE_X = 2500;
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new MainRoot({ skipInit: true });
     rootStore.liveWidgets.setLayouts(
       [
         {
@@ -470,10 +470,10 @@ describe('remote screen geometry', () => {
 });
 
 describe('a screen added to a layout', () => {
-  let rootStore: RootStore;
+  let rootStore: MainRoot;
 
   beforeEach(() => {
-    rootStore = new RootStore({ skipInit: true });
+    rootStore = new MainRoot({ skipInit: true });
     rootStore.liveWidgets.setLayouts(
       [
         {

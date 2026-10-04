@@ -7,10 +7,13 @@ import {
 
 import type { ChatMessage, ChatPresence } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import { scrollThumbFor, type ScrollThumb } from '@utils/canvas';
 
-type StreamChatDeps = Pick<RootStore, 'appSettings' | 'liveWidgets' | 'chat'>;
+type StreamChatDeps = Pick<
+  RendererCore,
+  'appSettings' | 'liveWidgets' | 'chat'
+>;
 
 const WIDGET_ID = 'stream-chat';
 

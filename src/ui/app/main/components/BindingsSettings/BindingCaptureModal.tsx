@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Modal } from 'antd';
 import { reaction } from 'mobx';
 import type { Binding } from '@/types/input-bindings';
+import { useBindingsStore } from '@store/root-store-context';
 import {
-  useBindingsStore,
   useBindingsUiStore,
   useDeviceInputStore,
-} from '@store/root-store-context';
+} from '@store/main-root-context';
 import { actionLabel } from './binding-labels';
 import { toAccelerator } from './accelerator';
 import styles from './BindingsSettings.module.scss';

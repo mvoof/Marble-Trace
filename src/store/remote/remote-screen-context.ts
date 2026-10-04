@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react';
 import type { RemoteScreenStore } from '@store/remote/remote-screen.store';
 
 /**
- * Only the remote entry point provides this. Kept out of `RootStore` on
+ * Only the remote entry point provides this. Kept out of `RendererCore` on
  * purpose: the main window and the overlay windows have no remote screen, and
  * a store nobody there can use has no business hanging off the root.
  */

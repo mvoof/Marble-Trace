@@ -1,5 +1,5 @@
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
-import type { RootStore } from '@store/root-store';
+import type { MainRoot } from '@store/main-root';
 import { APP_OWNER, bindingKey, type Binding } from '@/types/input-bindings';
 import type { HotkeyAction } from './binding-types';
 
@@ -14,12 +14,12 @@ import type { HotkeyAction } from './binding-types';
  * way; unregistering them per layout would hand the key back to the sim
  * mid-session, which is worse than a no-op handler.
  */
-const isActionLive = (action: HotkeyAction, root: RootStore): boolean =>
+const isActionLive = (action: HotkeyAction, root: MainRoot): boolean =>
   action.owner === APP_OWNER ||
   action.ignoreLayoutGate === true ||
   root.liveWidgets.isWidgetOnScreen(action.owner);
 
-const runAction = (action: HotkeyAction, root: RootStore, pressed: boolean) => {
+const runAction = (action: HotkeyAction, root: MainRoot, pressed: boolean) => {
   if (action.trigger === 'press' && !pressed) return;
 
   if (!isActionLive(action, root)) return;
@@ -33,7 +33,7 @@ const runAction = (action: HotkeyAction, root: RootStore, pressed: boolean) => {
 
 /** Runs every action bound to `binding`. Conflicts are allowed, so this is a fan-out. */
 export const dispatchBinding = (
-  root: RootStore,
+  root: MainRoot,
   binding: Binding,
   pressed: boolean
 ) => {
@@ -51,7 +51,7 @@ export const dispatchBinding = (
 };
 
 export const dispatchDeviceButton = (
-  root: RootStore,
+  root: MainRoot,
   deviceId: string,
   button: number,
   pressed: boolean
@@ -66,7 +66,7 @@ let reapplyPending = false;
  * Re-entrant calls are collapsed into one trailing run — MobX reactions can
  * fire again while the async unregister/register round-trip is still going.
  */
-export const applyKeyboardBindings = async (root: RootStore) => {
+export const applyKeyboardBindings = async (root: MainRoot) => {
   if (isApplying) {
     reapplyPending = true;
 

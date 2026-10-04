@@ -8,9 +8,9 @@ import {
 import type { FlagType } from '@/types';
 import type { RaceFlags } from '@/types/bindings';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 
-type FlagsDeps = Pick<RootStore, 'liveWidgets' | 'player' | 'paceCar'>;
+type FlagsDeps = Pick<RendererCore, 'liveWidgets' | 'player' | 'paceCar'>;
 
 const NO_FLAG: FlagType = 'none';
 const NO_FLAGS: FlagType[] = [];
@@ -271,7 +271,7 @@ export class FlagsStore {
     );
   }
 
-  // Every RootStore instance (main window, overlay window, each isolated widget
+  // Every RendererCore instance (main window, overlay window, each isolated widget
   // preview) creates its own reactions; without this they outlive the store.
   dispose() {
     for (const disposer of this.disposers) {

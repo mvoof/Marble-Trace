@@ -4,7 +4,7 @@ import { openRemoteSocket } from '@platform/services/remote-socket.service';
 import type { TrackRotationPayload } from '@platform/services/events.service';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import type { RemoteScreenStore } from '@store/remote/remote-screen.store';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type { RemoteMessage, RemoteScreenSnapshot } from '@/types/remote';
 import type {
   CapabilitiesPayload,
@@ -28,7 +28,7 @@ import type {
  * network cannot write into the user's layout.
  */
 export const initRemoteSync = (
-  root: RootStore,
+  root: RendererCore,
   screen: RemoteScreenStore,
   token: string
 ) => {

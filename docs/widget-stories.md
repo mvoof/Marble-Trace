@@ -23,7 +23,7 @@ and not throwaway.
 | `src/storybook/story-overrides.ts`        | `whenSet` — a story argument that only overrides the frame when the story set it                                |
 | `src/storybook/with-replay.tsx`           | `withReplay` — plays a burst of frames after mount, for widgets that draw a history                             |
 | `src/storybook/widgetDecorator.tsx`       | the frame standing in for `WidgetContainer` — size, ground, border, `--wfs`                                     |
-| `.storybook/decorators.tsx`               | `withStore` — a fresh `RootStore({ skipInit: true })` per story, provided through the context                   |
+| `.storybook/decorators.tsx`               | `withStore` — a fresh `RendererCore({ skipInit: true })` per story, provided through the context                |
 | `src/store/preview/scenarios.ts`          | the named scenarios (`PreviewScenarioId`) shared with the in-app layout-editor preview                          |
 | `src/store/preview/mocks/*.ts`            | mock builders — `mockFuel`, `mockProximity`, `mockField`… — that derive a frame the way the backend does        |
 
@@ -36,7 +36,7 @@ the app; a story only decides what is in those stores.
 
 For every story, on mount and again on every change of a control:
 
-1. Provides a fresh `RootStore` (`withStore`) and marks the sim connected, so
+1. Provides a fresh `RendererCore` (`withStore`) and marks the sim connected, so
    the widget does not show its "no data" placeholder.
 2. Lays down the base: the story's **scenario** if it names one
    (`parameters: previewScenario(id)`), otherwise the shared telemetry snapshot

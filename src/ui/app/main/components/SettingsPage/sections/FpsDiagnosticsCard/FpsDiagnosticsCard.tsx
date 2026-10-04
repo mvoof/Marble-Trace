@@ -5,7 +5,7 @@ import { Activity, Save, Square } from 'lucide-react';
 import {
   useDiagnosticsExportStore,
   useFpsDiagnosticsStore,
-} from '@store/root-store-context';
+} from '@store/main-root-context';
 import { SettingsCard } from '../../SettingsCard';
 import { DiagnosticsProgress } from './DiagnosticsProgress';
 import { DiagnosticsResultsTable } from './DiagnosticsResultsTable';

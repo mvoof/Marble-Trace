@@ -8,7 +8,7 @@ import { WidgetContainer } from '@ui/app/overlay/components/WidgetContainer/Widg
 import { usePreviewContentStore } from '@ui/app/preview-content-store';
 import styles from './OverlayCanvas.module.scss';
 import {
-  RootStoreContext,
+  RendererCoreContext,
   useAppSettingsStore,
   useBindingsStore,
   useSimStore,
@@ -109,9 +109,9 @@ export const OverlayCanvas = observer(() => {
           return (
             <WidgetContainer key={widget.id} widgetId={widget.id}>
               {previewStore ? (
-                <RootStoreContext.Provider value={previewStore}>
+                <RendererCoreContext.Provider value={previewStore}>
                   <WidgetComponent />
-                </RootStoreContext.Provider>
+                </RendererCoreContext.Provider>
               ) : (
                 <WidgetComponent />
               )}

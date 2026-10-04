@@ -2,7 +2,7 @@ import { observable, runInAction } from 'mobx';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SimPerfFrame } from '@/types/bindings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import { FpsDiagnosticsStore } from './fps-diagnostics.store';
 
 // The banner is a real Tauri window; the state machine under test is the point.
@@ -21,7 +21,7 @@ const STEP_SECONDS = 5 + 12;
 const COUNTDOWN_SECONDS = 8;
 
 interface FakeRoot {
-  root: RootStore;
+  root: RendererCore;
   enabled: Map<string, boolean>;
   hideAll: () => boolean;
   pushCounter: (frame: SimPerfFrame) => void;
@@ -55,7 +55,7 @@ const makeRoot = (): FakeRoot => {
       },
     },
     simPerf,
-  } as unknown as RootStore;
+  } as unknown as RendererCore;
 
   return {
     root,

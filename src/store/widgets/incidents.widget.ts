@@ -2,9 +2,9 @@ import { makeAutoObservable } from 'mobx';
 
 import type { IncidentPoint } from '@/types/bindings';
 import { computeIncidentZones, type FlagZone } from '@utils/flag-zones';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 
-type IncidentsDeps = Pick<RootStore, 'backendComputed' | 'session'>;
+type IncidentsDeps = Pick<RendererCore, 'backendComputed' | 'session'>;
 
 /**
  * Where the trouble is, as both maps draw it.

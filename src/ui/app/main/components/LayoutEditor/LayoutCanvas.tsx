@@ -18,9 +18,9 @@ import {
   Monitor,
   GripHorizontal,
 } from 'lucide-react';
-import { RootStore } from '@store/root-store';
+import { RendererCore } from '@store/renderer-core';
 import {
-  RootStoreContext,
+  RendererCoreContext,
   useSessionStore,
   useTrackMapWidgetStore,
   useUnitsStore,
@@ -59,7 +59,7 @@ import styles from './LayoutCanvas.module.scss';
  * its own and never writes to disk. The reverse direction matters just as much:
  * a map turned in an overlay must already look turned when the editor opens.
  */
-const useTrackRotationBridge = (previewStore: RootStore) => {
+const useTrackRotationBridge = (previewStore: RendererCore) => {
   const trackMapWidget = useTrackMapWidgetStore();
   const sessionStore = useSessionStore();
 
@@ -119,7 +119,7 @@ interface LayoutCanvasProps {
 // canvas; only content-affecting settings need mirroring here.
 const mirrorAllWidgets = (
   source: WidgetDefaultConfig[],
-  previewStore: RootStore
+  previewStore: RendererCore
 ) => {
   const mirrored = source.map((widget) => ({
     ...widget,
@@ -256,7 +256,10 @@ export const LayoutCanvas = observer(
       ? monitors.find((monitor) => monitor.name === focusedMonitorName)
       : undefined;
     const { t } = useTranslation('main-app');
-    const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
+    const previewStore = useMemo(
+      () => new RendererCore({ skipInit: true }),
+      []
+    );
 
     const paneRef = useRef<HTMLDivElement | null>(null);
     const [paneSize, setPaneSize] = useState({ width: 0, height: 0 });
@@ -603,7 +606,7 @@ export const LayoutCanvas = observer(
     }, [rawBackground]);
 
     return (
-      <RootStoreContext.Provider value={previewStore}>
+      <RendererCoreContext.Provider value={previewStore}>
         <div
           className={`${styles.pane} ${
             fullscreen ? styles.paneFullscreen : ''
@@ -750,7 +753,7 @@ export const LayoutCanvas = observer(
             </div>
           )}
         </div>
-      </RootStoreContext.Provider>
+      </RendererCoreContext.Provider>
     );
   }
 );

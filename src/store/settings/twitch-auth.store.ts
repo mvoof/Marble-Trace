@@ -8,9 +8,9 @@ import {
   twitchSignOut,
 } from '@platform/services/twitch.service';
 import type { TwitchDeviceCode } from '@/types/bindings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 
-type TwitchAuthDeps = Pick<RootStore, 'appSettings'>;
+type TwitchAuthDeps = Pick<RendererCore, 'appSettings'>;
 
 const MS_PER_SECOND = 1000;
 

@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
-import { RootStore } from '@store/root-store';
+import { RendererCore } from '@store/renderer-core';
 import type { LateralSide, ProximityFrame } from '@/types/bindings';
 import type { ProximityRadarSettings } from '@/types/widget-settings';
 
-// RootStore construction reaches the backend through these services; there is
+// RendererCore construction reaches the backend through these services; there is
 // no Tauri runtime under vitest.
 vi.mock('@platform/services/telemetry.service', () => ({
   startTelemetryStream: vi.fn().mockResolvedValue(undefined),
@@ -35,7 +35,7 @@ const carAt = (longitudinalDist: number, lateralSide: LateralSide) => ({
 });
 
 describe('RadarWidgetStore activation', () => {
-  let rootStore: RootStore;
+  let rootStore: RendererCore;
 
   const setProximity = (frame: Partial<ProximityFrame>) => {
     runInAction(() => {
@@ -71,7 +71,7 @@ describe('RadarWidgetStore activation', () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    rootStore = new RootStore();
+    rootStore = new RendererCore();
     rootStore.radar.init();
   });
 

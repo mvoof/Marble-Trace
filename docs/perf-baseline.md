@@ -33,19 +33,21 @@ prints saved reports side by side.
 
 ### What each row is
 
-| row                     | source                                                                                                                                                                            |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| tick p50/p99/max        | wall time of one `emit_domain_frames` pass (processors, assembly, mask, quantize, delivery), every tick of the span. The time the `dev` build spends sizing bundles is subtracted |
-| `<recipient>` bundles/s | `telemetry/delivery.rs`, per window label. `@remote` is the remote-screen mirror                                                                                                  |
-| `<recipient>` KiB/s     | serialized JSON length of what that recipient was sent (a second serialization, `dev` only)                                                                                       |
-| alloc MiB/s             | sum of positive `usedJSHeapSize` deltas every 50 ms. Run with `--enable-precise-memory-info`, which the script sets. Never RSS                                                    |
-| long tasks ≥50 ms       | `PerformanceObserver('longtask')`. 50 ms is the API's floor                                                                                                                       |
-| frames over budget      | `requestAnimationFrame` gaps over 25 ms (a 60 Hz frame and a half). The finer-grained stand-in for "tasks over 16 ms", which no browser API reports                               |
-| DOM mutations/s         | `MutationObserver` records on the overlay's `body`                                                                                                                                |
-| observer wake-ups/s     | `mobx.spy` reactions. A no-op in a production MobX, so always `—` in these runs                                                                                                   |
-| apply p50/p99/max       | `applyTelemetryBundle` per bundle, MobX reactions included. Ticks that do not carry the 1 Hz tier                                                                                 |
-| apply 1 Hz full         | the same, on the 1 Hz full bundles (`session` present)                                                                                                                            |
-| heap bucket             | sampling heap profile (16 KiB interval, collected objects included), each sample charged to the first matching frame on its stack                                                 |
+| row                     | source                                                                                                                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| tick p50/p99/max        | wall time of one `emit_domain_frames` pass (processors, assembly, mask, quantize, delivery), every tick of the span. The time the `dev` build spends sizing bundles is subtracted                      |
+| `<recipient>` bundles/s | `telemetry/delivery.rs`, per window label. `@remote` is the remote-screen mirror                                                                                                                       |
+| `<recipient>` KiB/s     | serialized JSON length of what that recipient was sent (a second serialization, `dev` only)                                                                                                            |
+| first paint             | navigation start to the overlay's `first-contentful-paint`, observed from the entry module before React mounts (`platform/sync/perf-cold-start.ts`) — the overlay's cold start, settings read included |
+| heap at first paint     | `usedJSHeapSize` read as that paint is observed: what the window boots into, before the tape fills the stores                                                                                          |
+| alloc MiB/s             | sum of positive `usedJSHeapSize` deltas every 50 ms. Run with `--enable-precise-memory-info`, which the script sets. Never RSS                                                                         |
+| long tasks ≥50 ms       | `PerformanceObserver('longtask')`. 50 ms is the API's floor                                                                                                                                            |
+| frames over budget      | `requestAnimationFrame` gaps over 25 ms (a 60 Hz frame and a half). The finer-grained stand-in for "tasks over 16 ms", which no browser API reports                                                    |
+| DOM mutations/s         | `MutationObserver` records on the overlay's `body`                                                                                                                                                     |
+| observer wake-ups/s     | `mobx.spy` reactions. A no-op in a production MobX, so always `—` in these runs                                                                                                                        |
+| apply p50/p99/max       | `applyTelemetryBundle` per bundle, MobX reactions included. Ticks that do not carry the 1 Hz tier                                                                                                      |
+| apply 1 Hz full         | the same, on the 1 Hz full bundles (`session` present)                                                                                                                                                 |
+| heap bucket             | sampling heap profile (16 KiB interval, collected objects included), each sample charged to the first matching frame on its stack                                                                      |
 
 Limits of the method:
 
@@ -68,11 +70,13 @@ Limits of the method:
 
 One row per measurement. Later tickets add rows here.
 
-| date       | code                                                  | mode        | tick p99 (µs) | overlay KiB/s | alloc (MiB/s) | DOM mut/s | apply p99 (ms) | apply 1 Hz max (ms) | note               |
-| ---------- | ----------------------------------------------------- | ----------- | ------------- | ------------- | ------------- | --------- | -------------- | ------------------- | ------------------ |
-| 2026-10-04 | `refactor/architecture-rework` @ 4c1c2f0e + ticket 01 | widgets     | 789 / 768     | 1060          | 11.64 / 11.65 | 7538      | 0.9            | 1.2 / 1.0           | baseline, two runs |
-| 2026-10-04 | same                                                  | stores-only | 756 / 747     | 1060          | 4.65 / 4.69   | 0         | 0.5            | 0.5                 | baseline, two runs |
-| 2026-10-04 | `refactor/architecture-rework` @ fd5f1819 + ticket 03 | widgets     | 800 / 785     | 1059          | 11.62 / 11.67 | 7530      | 1.0 / 0.9      | 0.9 / 0.8           | tick span widened  |
+| date       | code                                                                  | mode        | tick p99 (µs) | overlay KiB/s | alloc (MiB/s) | DOM mut/s | apply p99 (ms) | apply 1 Hz max (ms) | note                                                          |
+| ---------- | --------------------------------------------------------------------- | ----------- | ------------- | ------------- | ------------- | --------- | -------------- | ------------------- | ------------------------------------------------------------- |
+| 2026-10-04 | `refactor/architecture-rework` @ 4c1c2f0e + ticket 01                 | widgets     | 789 / 768     | 1060          | 11.64 / 11.65 | 7538      | 0.9            | 1.2 / 1.0           | baseline, two runs                                            |
+| 2026-10-04 | same                                                                  | stores-only | 756 / 747     | 1060          | 4.65 / 4.69   | 0         | 0.5            | 0.5                 | baseline, two runs                                            |
+| 2026-10-04 | `refactor/architecture-rework` @ fd5f1819 + ticket 03                 | widgets     | 800 / 785     | 1059          | 11.62 / 11.67 | 7530      | 1.0 / 0.9      | 0.9 / 0.8           | tick span widened                                             |
+| 2026-10-04 | `refactor/architecture-rework` @ 9eae162e (ticket 06) + harness of 07 | widgets     | 2048 / 903    | 1060          | 12.01 / 12.08 | 7542      | 1.1            | 1.3 / 0.9           | before 07; first paint 1592 / 1812 ms, heap 15.17 / 15.25 MiB |
+| 2026-10-04 | same + ticket 07                                                      | widgets     | 770 / 775     | 1059          | 12.50 / 12.33 | 7572      | 0.9            | 1.0 / 0.9           | after 07; first paint 1664 / 1600 ms, heap 13.16 / 13.23 MiB  |
 
 ## 2026-10-04 — baseline (ticket 01)
 
@@ -199,3 +203,28 @@ runs.
   cost almost nothing per tick. The ticket is about ownership, not time.
 - **The wire is unchanged to the byte** (1059.94 / 1059.96 KiB/s, same bundle
   rate), so the bundles the loop builds are the same ones.
+
+## 2026-10-04 — per-window composition roots (ticket 07)
+
+Same machine, tape, offset, layout and command as ticket 03, widgets mode, two
+runs each. The harness gained two rows for this ticket (first paint, heap at
+first paint); the "before" runs are ticket 06's code with only that harness
+change.
+
+| metric                                     | before (06)   | after (07)    |
+| ------------------------------------------ | ------------- | ------------- |
+| overlay-DISPLAY1 first paint (ms)          | 1592 / 1812   | 1664 / 1600   |
+| overlay-DISPLAY1 heap at first paint (MiB) | 15.17 / 15.25 | 13.16 / 13.23 |
+| overlay-DISPLAY1 alloc (MiB/s)             | 12.01 / 12.08 | 12.50 / 12.33 |
+| overlay-DISPLAY1 apply p99 (ms)            | 1.1 / 1.1     | 0.9 / 0.9     |
+
+- **The overlay boots into 2 MiB less heap** (13.2 against 15.2 MiB, both
+  pairs within 0.5 %): it no longer constructs the editor, the inspector,
+  diagnostics, companion apps, the chat sign-in or the device list.
+- **First paint did not move** beyond the spread between runs. It is dominated
+  by reading and migrating the settings file and by the widgets' first render,
+  not by store construction.
+- The "before" pair ran while type checks and tests were running beside it (its tick p99
+  of 2048 µs in run 1 is that load, not the code), so its alloc and apply rows
+  are not comparable to the "after" pair. The heap reading is taken before any
+  telemetry arrives and agrees between both runs of each pair.

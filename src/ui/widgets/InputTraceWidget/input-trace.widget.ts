@@ -1,9 +1,9 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type { InputTraceSettings } from '@/types/widget-settings';
 
-type InputTraceDeps = Pick<RootStore, 'player' | 'liveWidgets'>;
+type InputTraceDeps = Pick<RendererCore, 'player' | 'liveWidgets'>;
 
 export type InputChannel = 'throttle' | 'brake' | 'clutch';
 
@@ -60,7 +60,7 @@ export class InputTraceWidgetStore {
     );
   }
 
-  // Every RootStore instance (main window, overlay window, each isolated widget
+  // Every RendererCore instance (main window, overlay window, each isolated widget
   // preview) creates its own reaction; without this they outlive the store.
   dispose() {
     for (const disposer of this.disposers) {

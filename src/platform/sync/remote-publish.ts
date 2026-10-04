@@ -8,7 +8,7 @@ import {
 } from '@platform/services/remote.service';
 import { resolveAppLanguage } from '@store/settings/app-settings.store';
 import { widgetsOnMonitor } from '@store/settings/virtual-desktop';
-import type { RootStore } from '@store/root-store';
+import type { MainRoot } from '@store/main-root';
 import type { RemoteScreenSnapshot } from '@/types/remote';
 import type { RemoteDevice } from '@/types/bindings';
 
@@ -24,7 +24,7 @@ import type { RemoteDevice } from '@/types/bindings';
 const PUBLISH_DEBOUNCE_MS = 150;
 
 const snapshotFor = (
-  root: RootStore,
+  root: MainRoot,
   slug: string
 ): RemoteScreenSnapshot | null => {
   const target = root.layouts.remoteScreenBySlug(slug);
@@ -52,7 +52,7 @@ const snapshotFor = (
   };
 };
 
-const publishAll = (root: RootStore) => {
+const publishAll = (root: MainRoot) => {
   for (const group of root.layouts.groupedRemoteScreens) {
     const snapshot = snapshotFor(root, group.slug);
 
@@ -74,7 +74,7 @@ const publishAll = (root: RootStore) => {
  * been built. Resizing the browser window needs no help either — the page
  * scales the whole layout to whatever viewport it has.
  */
-const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
+const fitScreenOnFirstConnect = (root: MainRoot, device: RemoteDevice) => {
   // A backgrounded tab can report a real width with a zero height; fitting to
   // that would flatten the screen, and the one-shot flag means nothing repairs
   // it later.
@@ -107,7 +107,7 @@ const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
   );
 };
 
-export const registerRemotePublishing = (root: RootStore) => {
+export const registerRemotePublishing = (root: MainRoot) => {
   const applyServerState = async () => {
     const settings = root.appSettings.appSettings;
 

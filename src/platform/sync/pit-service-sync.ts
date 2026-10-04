@@ -5,7 +5,7 @@ import {
   emitPitServiceHalvesTakenOver,
   emitPitServiceReveal,
 } from '@platform/services/events.service';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 
 /**
  * Which halves of the pit order the driver has taken over, mirrored to the
@@ -16,7 +16,7 @@ import type { RootStore } from '@store/root-store';
  * exist.
  */
 export const registerPitServiceMirrorReactions = (
-  root: RootStore
+  root: RendererCore
 ): IReactionDisposer[] => [
   reaction(
     () => root.pitServiceWidget.auto.autoSuspended,
@@ -46,7 +46,7 @@ export const registerPitServiceMirrorReactions = (
  * reactions is `fireImmediately`.
  */
 export const registerPitServiceAutoReactions = (
-  root: RootStore
+  root: RendererCore
 ): IReactionDisposer[] => [
   // One emit per command rather than per change of the flag: pressing a
   // second key while the panel is already up has to restart the overlay's

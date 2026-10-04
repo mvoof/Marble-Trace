@@ -11,10 +11,10 @@ import {
   scopeDistanceOf,
 } from '@utils/radar-constants';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 
 type RadarDeps = Pick<
-  RootStore,
+  RendererCore,
   'backendComputed' | 'liveWidgets' | 'session' | 'appSettings'
 >;
 

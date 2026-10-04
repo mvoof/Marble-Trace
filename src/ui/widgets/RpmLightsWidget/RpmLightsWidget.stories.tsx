@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import { useStore } from '@store/root-store-context';
 import { MPS_PER_KMH, mockCarDynamics } from '@store/preview/mocks/dynamics';
 import { mockPitCarStatus } from '@store/preview/mocks/pit';
@@ -16,7 +16,7 @@ const BLINK_RPM = 8200;
 const IDLE_RPM = 800;
 
 /** The engine the lights are laid out against, on top of the recorded session. */
-const seedEngineLimits = (store: RootStore) => {
+const seedEngineLimits = (store: RendererCore) => {
   const sessionInfo = store.session.sessionInfo;
 
   if (!sessionInfo) {
@@ -35,7 +35,7 @@ const seedEngineLimits = (store: RootStore) => {
 /** The gear the car would plausibly be in at a given rpm, so the readout agrees. */
 const gearAtRpm = (rpm: number): number => Math.max(1, Math.ceil(rpm / 1500));
 
-const seedDynamics = (store: RootStore, rpm: number, gear: number) =>
+const seedDynamics = (store: RendererCore, rpm: number, gear: number) =>
   store.player.updateCarDynamics(
     mockCarDynamics({ speed: rpm / 140, rpm, gear })
   );

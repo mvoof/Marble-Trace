@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { RootStore } from '@store/root-store';
-import { RootStoreContext, useUnitsStore } from '@store/root-store-context';
+import { RendererCore } from '@store/renderer-core';
+import { RendererCoreContext, useUnitsStore } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
@@ -32,7 +32,10 @@ export const WidgetPreview = observer(
     const units = useUnitsStore();
     const { t } = useTranslation('main-app');
 
-    const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
+    const previewStore = useMemo(
+      () => new RendererCore({ skipInit: true }),
+      []
+    );
 
     useEffect(() => () => previewStore.dispose(), [previewStore]);
 
@@ -99,7 +102,7 @@ export const WidgetPreview = observer(
     });
 
     return (
-      <RootStoreContext.Provider value={previewStore}>
+      <RendererCoreContext.Provider value={previewStore}>
         <div className={styles.stage}>
           <div
             className={`${styles.widgetInner} ${
@@ -118,7 +121,7 @@ export const WidgetPreview = observer(
             </ErrorBoundary>
           </div>
         </div>
-      </RootStoreContext.Provider>
+      </RendererCoreContext.Provider>
     );
   }
 );

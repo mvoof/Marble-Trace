@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
-import { RootStore } from '@store/root-store';
+import { RendererCore } from '@store/renderer-core';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
 
@@ -10,7 +10,7 @@ vi.mock('@platform/services/pit.service', () => ({
   sendPitOrder: sendPitOrderMock,
 }));
 
-// RootStore construction reaches the backend through the other services; they
+// RendererCore construction reaches the backend through the other services; they
 // have no Tauri runtime to talk to under vitest.
 vi.mock('@platform/services/telemetry.service', () => ({
   startTelemetryStream: vi.fn().mockResolvedValue(undefined),
@@ -26,7 +26,7 @@ vi.mock('@platform/services/settings.service', () => ({
   setCarLengthSilent: vi.fn(),
 }));
 
-// RootStore subscribes to sim events on construction; the node test
+// RendererCore subscribes to sim events on construction; the node test
 // environment has no window for the Tauri event bridge to attach to.
 vi.mock('@platform/services/events.service', () => ({
   listenTo: vi.fn().mockResolvedValue(() => {}),
@@ -36,7 +36,7 @@ vi.mock('@platform/services/events.service', () => ({
 }));
 
 describe('PitServiceWidgetStore — pit orders', () => {
-  let rootStore: RootStore;
+  let rootStore: RendererCore;
 
   // `enabled` comes from BaseUserSettings rather than the widget's own settings,
   // but auto mode depends on it, so the helper takes both.
@@ -94,7 +94,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
   beforeEach(() => {
     sendPitOrderMock.mockReset();
     sendPitOrderMock.mockResolvedValue(undefined);
-    rootStore = new RootStore();
+    rootStore = new RendererCore();
   });
 
   it('caps the planned fuel at tank capacity', () => {

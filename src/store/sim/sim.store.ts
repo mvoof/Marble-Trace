@@ -48,7 +48,7 @@ import {
   trackConditionForWetness,
 } from '@store/sim/track-condition';
 import type { TelemetryStatus } from '@/types';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import {
   SIM_TELEMETRY_BUNDLE,
   SIM_SESSION,
@@ -114,7 +114,7 @@ export class SimStore {
   private unlistens: UnlistenFn[] = [];
   private readonly disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: RootStore) {
+  constructor(private readonly root: RendererCore) {
     makeAutoObservable(this, { bundleApplyProbe: false }, { autoBind: true });
   }
 
@@ -233,7 +233,7 @@ export class SimStore {
     );
   }
 
-  // Every RootStore instance creates its own reactions; without this they
+  // Every RendererCore instance creates its own reactions; without this they
   // outlive the store that owns them.
   dispose() {
     for (const disposer of this.disposers) {

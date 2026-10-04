@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
 import { REFERENCE_LAP_BUCKET_COUNT } from '@utils/backend-constants';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type { ReferenceLapSample, TrackCondition } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import {
@@ -14,7 +14,7 @@ import {
 } from './coach-trace-utils';
 
 type CoachDeps = Pick<
-  RootStore,
+  RendererCore,
   'player' | 'referenceLap' | 'liveWidgets' | 'session'
 >;
 

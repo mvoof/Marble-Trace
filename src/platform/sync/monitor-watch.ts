@@ -1,4 +1,4 @@
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type { LayoutMonitor } from '@/types/widget-settings';
 import { alignMonitorsToHardware } from '@store/settings/layout-gestures';
 import { layoutGestureStores } from '@store/root-store-context';
@@ -24,7 +24,7 @@ const signatureOf = (monitors: LayoutMonitor[]): string =>
     .join('|');
 
 export const watchMonitorArrangement = (
-  root: RootStore,
+  root: RendererCore,
   onChange: () => void
 ): (() => void) => {
   let lastSignature: string | null = null;

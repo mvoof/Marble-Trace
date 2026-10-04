@@ -215,7 +215,7 @@
       }
     },
     {
-      "files": ["src/store/root-store.ts"],
+      "files": ["src/store/renderer-core.ts"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -245,11 +245,14 @@
                 "group": [
                   "@store/root-store-context",
                   "**/root-store-context",
+                  "**/main-root-context",
+                  "**/overlay-root-context",
+                  "**/hud-root-context",
                   "@ui/**",
                   "@platform/**",
                   "@tauri-apps/**"
                 ],
-                "message": "The preview store is isolated (ADR-0004 rule 1): a scenario or builder writes only into the RootStore({ skipInit: true }) handed to it. No context hooks onto the running stores, no UI, no persistence."
+                "message": "The preview store is isolated (ADR-0004 rule 1): a scenario or builder writes only into the RendererCore({ skipInit: true }) handed to it. No context hooks onto the running stores, no UI, no persistence."
               }
             ]
           }
@@ -273,6 +276,34 @@
                   "@tauri-apps/**"
                 ],
                 "message": "A migration must keep meaning what it meant the day it was written, and live types, defaults and registries move under it. Freeze what you need as a literal, and walk the blob with the structural helpers in ../blob."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/ui/widgets/**",
+        "src/ui/shared/**",
+        "src/ui/hooks/**",
+        "src/ui/app/overlay/**",
+        "src/ui/app/remote/**",
+        "src/ui/app/diagnostics/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@store/main-root",
+                  "@store/main-root-context",
+                  "**/main-root",
+                  "**/main-root-context"
+                ],
+                "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps and the device list exist in the main window only. Read the renderer core (root-store-context) instead."
               }
             ]
           }

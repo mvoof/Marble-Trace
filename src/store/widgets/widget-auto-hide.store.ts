@@ -6,11 +6,11 @@ import type {
   PitLineWidgetSettings,
   PitServiceWidgetSettings,
 } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import { widgetTypeFromId } from '@utils/widget-instance';
 
 type WidgetAutoHideDeps = Pick<
-  RootStore,
+  RendererCore,
   | 'liveWidgets'
   | 'radar'
   | 'flags'

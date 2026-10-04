@@ -42,7 +42,7 @@ import { listMonitorBounds, resolveMonitorByName } from './overlay-resolution';
 import { setUpFirstRun } from '@store/settings/first-run';
 import { watchMonitorArrangement } from './monitor-watch';
 import type { SessionContext } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { MainRoot } from '@store/main-root';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;
@@ -51,7 +51,7 @@ let mainSyncRefCount = 0;
  * The active layout as the overlays need it. The emitter takes plain data rather
  * than the store, so the service layer stays free of store imports.
  */
-const pushActiveLayout = (root: RootStore) =>
+const pushActiveLayout = (root: MainRoot) =>
   emitActiveLayoutToOverlays(
     root.layouts.liveLayout?.monitors ?? [],
     root.liveWidgets.liveWidgets,
@@ -60,7 +60,7 @@ const pushActiveLayout = (root: RootStore) =>
 
 /** Values the overlay windows mirror. Requires a hydrated settings store. */
 const registerBroadcastReactions = (
-  root: RootStore,
+  root: MainRoot,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
   reaction(
@@ -118,7 +118,7 @@ const registerBroadcastReactions = (
  * context against an empty layout list.
  */
 export const registerLayoutAutoSwitchReaction = (
-  root: RootStore
+  root: MainRoot
 ): IReactionDisposer =>
   reaction(
     () => ({
@@ -160,7 +160,7 @@ export const registerLayoutAutoSwitchReaction = (
 
 /** App settings that only need persisting — nothing mirrors them. */
 const registerAppSettingsSaveReactions = (
-  root: RootStore,
+  root: MainRoot,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
   reaction(
@@ -230,7 +230,7 @@ const registerAppSettingsSaveReactions = (
  * puts it on the wrong screen.
  */
 const registerOverlayWindowReactions = (
-  root: RootStore,
+  root: MainRoot,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
   reaction(
@@ -279,7 +279,7 @@ const registerOverlayWindowReactions = (
 
 /** Input bindings, and the device polling their existence justifies. */
 const registerBindingReactions = (
-  root: RootStore,
+  root: MainRoot,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
   // One binding registry, one dependency. Adding a bindable action is an entry
@@ -315,7 +315,7 @@ const registerBindingReactions = (
 
 /** Units and steering lock — mirrored and persisted. */
 const registerDisplayPreferenceReactions = (
-  root: RootStore,
+  root: MainRoot,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
   reaction(
@@ -341,7 +341,7 @@ const registerDisplayPreferenceReactions = (
  * The startup order below is load-bearing and must not be rearranged — each
  * step's preconditions are documented on the function it calls.
  */
-export const initMainSync = async (root: RootStore) => {
+export const initMainSync = async (root: MainRoot) => {
   mainSyncRefCount++;
 
   if (!mainSyncInitPromise) {

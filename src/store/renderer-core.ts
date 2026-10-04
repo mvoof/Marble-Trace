@@ -17,10 +17,8 @@ import { EnginePanelWidgetStore } from '@ui/widgets/EnginePanelWidget/engine-pan
 import { LiveWidgetsStore } from './settings/live-widgets.store';
 import { WidgetDefaultsStore } from './settings/widget-defaults.store';
 import { LayoutsStore } from './settings/layouts.store';
-import { LayoutEditorStore } from './settings/layout-editor.store';
 import { SettingsMutationLog } from './settings/mutation-log';
 import { AppSettingsStore } from './settings/app-settings.store';
-import { CompanionAppsStore } from './settings/companion-apps.store';
 import { UnitsStore } from './settings/units.store';
 import { WidgetAutoHideStore } from './widgets/widget-auto-hide.store';
 import { PlayerStore } from './data/player.store';
@@ -28,23 +26,22 @@ import { CarsStore } from './data/cars.store';
 import { SessionStore } from './data/session.store';
 import { EnvironmentStore } from './data/environment.store';
 import { SimPerfStore } from './data/sim-perf.store';
-import { FpsDiagnosticsStore } from './diagnostics/fps-diagnostics.store';
-import { DiagnosticsHudStore } from './diagnostics/diagnostics-hud.store';
-import { DiagnosticsExportStore } from './diagnostics/diagnostics-export.store';
-import { TelemetryInspectorStore } from './diagnostics/telemetry-inspector.store';
 import { ReferenceLapStore } from './data/reference-lap.store';
 import { ChatStore } from './data/chat.store';
-import { TwitchAuthStore } from './settings/twitch-auth.store';
 import { StreamChatWidgetStore } from '@ui/widgets/StreamChatWidget/stream-chat.widget';
-import { BindingsStore } from './hotkeys/bindings.store';
-import { ActionRegistry } from '@store/hotkeys/action-registry';
-import { DEFAULT_WIDGETS } from '@store/widget-catalog';
-import { DeviceInputStore } from './hotkeys/device-input.store';
-import { BindingsUiStore } from './hotkeys/bindings-ui.store';
-import { RemoteDevicesStore } from './remote/remote-devices.store';
-import { SettingsPanelUiStore } from './widgets/settings-panel-ui.store';
 
-export class RootStore {
+/**
+ * The stores every renderer needs: the telemetry data, the sim, the settings
+ * projection widgets read, units, and the widget stores. Nothing that only the
+ * settings UI uses — that lives on the window roots built over this one
+ * (`MainRoot`, `OverlayRoot`, `RemoteRoot`), so an overlay never constructs
+ * the editor, the inspector or the chat sign-in, and a component that only
+ * holds a `RendererCore` cannot reach them by type.
+ *
+ * A preview (layout editor canvas, widget preview, Storybook) is a bare
+ * `RendererCore({ skipInit: true })`.
+ */
+export class RendererCore {
   player: PlayerStore;
   cars: CarsStore;
   session: SessionStore;
@@ -73,23 +70,11 @@ export class RootStore {
   widgetDefaults: WidgetDefaultsStore;
   layouts: LayoutsStore;
 
-  layoutEditor: LayoutEditorStore;
   /** What every settings write marks itself in — see `SettingsMutationLog`. */
   settingsMutations: SettingsMutationLog;
   appSettings: AppSettingsStore;
-  companionApps: CompanionAppsStore;
-  twitchAuth: TwitchAuthStore;
   units: UnitsStore;
   widgetAutoHide: WidgetAutoHideStore;
-  bindings: BindingsStore;
-  deviceInput: DeviceInputStore;
-  bindingsUi: BindingsUiStore;
-  settingsPanelUi: SettingsPanelUiStore;
-  remoteDevices: RemoteDevicesStore;
-  fpsDiagnostics: FpsDiagnosticsStore;
-  diagnosticsHud: DiagnosticsHudStore;
-  diagnosticsExport: DiagnosticsExportStore;
-  telemetryInspector: TelemetryInspectorStore;
 
   constructor(options?: { skipInit?: boolean }) {
     this.player = new PlayerStore();
@@ -102,9 +87,9 @@ export class RootStore {
     this.backendComputed = new BackendComputedStore();
     this.widgetDefaults = new WidgetDefaultsStore(this);
     this.settingsMutations = new SettingsMutationLog();
-    // Built in dependency order, so none of the three needs a deferred
-    // reference to another: the records know nothing, the live map projects
-    // the records, the editing session drives both.
+    // Built in dependency order, so neither needs a deferred reference to the
+    // other: the records know nothing, the live map projects the records. The
+    // editing session that drives both belongs to the main window (`MainRoot`).
     this.layouts = new LayoutsStore(this.settingsMutations);
     this.liveWidgets = new LiveWidgetsStore(
       this.settingsMutations,
@@ -112,10 +97,7 @@ export class RootStore {
       this.widgetDefaults,
       () => this.sim.capabilities
     );
-    this.layoutEditor = new LayoutEditorStore(this.layouts, this.liveWidgets);
     this.appSettings = new AppSettingsStore();
-    this.companionApps = new CompanionAppsStore(this);
-    this.twitchAuth = new TwitchAuthStore(this);
     this.units = new UnitsStore();
     this.flags = new FlagsStore(this);
     this.paceCar = new PaceCarStore(this);
@@ -138,15 +120,6 @@ export class RootStore {
     this.streamChatWidget = new StreamChatWidgetStore(this);
     this.sim = new SimStore(this);
     this.widgetAutoHide = new WidgetAutoHideStore(this);
-    this.bindings = new BindingsStore(new ActionRegistry(DEFAULT_WIDGETS));
-    this.deviceInput = new DeviceInputStore();
-    this.bindingsUi = new BindingsUiStore();
-    this.settingsPanelUi = new SettingsPanelUiStore();
-    this.remoteDevices = new RemoteDevicesStore();
-    this.fpsDiagnostics = new FpsDiagnosticsStore(this);
-    this.diagnosticsHud = new DiagnosticsHudStore();
-    this.diagnosticsExport = new DiagnosticsExportStore(this);
-    this.telemetryInspector = new TelemetryInspectorStore(this);
 
     if (!options?.skipInit) {
       this.flags.init();
@@ -161,7 +134,6 @@ export class RootStore {
       this.streamChatWidget.init();
       this.pitServiceWidget.init();
       void this.chat.init();
-      void this.twitchAuth.init();
     }
   }
 
@@ -170,12 +142,9 @@ export class RootStore {
   dispose() {
     this.closeBattleWidget.dispose();
     this.wheelToWheelWidget.dispose();
-    this.fpsDiagnostics.dispose();
-    this.twitchAuth.dispose();
     this.streamChatWidget.dispose();
     this.pitServiceWidget.dispose();
     this.chat.dispose();
-    this.companionApps.dispose();
     this.inputTraceWidget.dispose();
     this.enginePanelWidget.dispose();
     this.coachWidget.dispose();

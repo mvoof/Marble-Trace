@@ -9,7 +9,7 @@ import { publishRemoteControl } from '@platform/services/remote.service';
 import { setupOverlayListeners } from './listeners';
 import { initPerfRun } from './perf-run';
 import { registerPitServiceMirrorReactions } from './pit-service-sync';
-import type { RootStore } from '@store/root-store';
+import type { OverlayRoot } from '@store/overlay-root';
 
 /**
  * Everything an overlay window owns. It never writes the settings file — the
@@ -18,7 +18,7 @@ import type { RootStore } from '@store/root-store';
  * Order is load-bearing: the listeners are subscribed before this returns, so
  * the window is ready for the first `widget-settings-updated` main emits.
  */
-export const initOverlaySync = async (root: RootStore) => {
+export const initOverlaySync = async (root: OverlayRoot) => {
   const { loaded } = await readSettingsFile();
 
   // The main window owns the backup — both windows run the chain, but only one

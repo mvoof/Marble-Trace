@@ -7,7 +7,7 @@ import {
 
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import {
   buildOpponents,
   buildPlateGroups,
@@ -20,7 +20,7 @@ import {
 } from './close-battle-utils';
 
 type CloseBattleDeps = Pick<
-  RootStore,
+  RendererCore,
   | 'units'
   | 'appSettings'
   | 'liveWidgets'

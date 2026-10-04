@@ -1,6 +1,6 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { PitAutoService } from '@ui/widgets/PitServiceWidget/pit-auto-service';
 import { PitOrder } from '@ui/widgets/PitServiceWidget/pit-order';
@@ -9,7 +9,7 @@ import { distanceToPitEntryM } from '@utils/pit-approach';
 import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
 
 type PitServiceDeps = Pick<
-  RootStore,
+  RendererCore,
   | 'liveWidgets'
   | 'player'
   | 'trackMapWidget'

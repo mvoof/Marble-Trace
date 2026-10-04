@@ -1,6 +1,6 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
 
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
 import type { ReferenceLapSample } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import {
@@ -17,7 +17,7 @@ import {
 } from '@utils/driving-coach-utils';
 
 type DrivingCoachDeps = Pick<
-  RootStore,
+  RendererCore,
   'player' | 'referenceLap' | 'session' | 'liveWidgets'
 >;
 

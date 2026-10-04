@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import type { RootStore } from '@store/root-store';
+import type { MainRoot } from '@store/main-root';
 import { BindingsStore } from './bindings.store';
 import { ActionRegistry } from '@store/hotkeys/action-registry';
 import { DEFAULT_WIDGETS } from '@store/widget-catalog';
@@ -53,7 +53,7 @@ const makeRoot = (widgetsInLayout: string[]): TestRoot => ({
 });
 
 const dispatch = (root: TestRoot, accelerator: string, pressed = true) =>
-  dispatchBinding(root as unknown as RootStore, keyboard(accelerator), pressed);
+  dispatchBinding(root as unknown as MainRoot, keyboard(accelerator), pressed);
 
 describe('dispatchBinding', () => {
   beforeEach(() => {

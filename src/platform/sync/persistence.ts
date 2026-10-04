@@ -7,7 +7,9 @@ import {
 import type { UnitSystem } from '@/types';
 import type { SessionContext } from '@/types/widget-settings';
 import type { AppSettings } from '@store/settings/app-settings.store';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/renderer-core';
+import type { AppWindowStores } from '@store/app-window-stores';
+import type { MainRoot } from '@store/main-root';
 import type { BindingMap } from '@/types/input-bindings';
 import { CURRENT_SCHEMA_VERSION } from '@platform/settings-schema/index';
 import type { InputDevice } from '@/types/bindings';
@@ -54,13 +56,21 @@ export interface Settings {
 }
 
 /**
+ * What a window that reads the settings file fills from it. The device list is
+ * main's alone: an overlay names keys, it never matches devices.
+ */
+export type SettingsHydrationTarget = RendererCore &
+  AppWindowStores &
+  Partial<Pick<MainRoot, 'deviceInput'>>;
+
+/**
  * Fills the stores from a settings blob that has already been brought to the
  * current schema by `runMigrations`. Nothing here knows about older formats —
  * that is the migration chain's job, and keeping it there is what makes it
  * testable against a real old file.
  */
 export const hydrateStores = (
-  root: RootStore,
+  root: SettingsHydrationTarget,
   loadedSettings: Partial<Settings>
 ) => {
   runInAction(() => {
@@ -89,7 +99,7 @@ export const hydrateStores = (
 
     root.bindings.applyBindings(loadedSettings.bindings);
 
-    if (loadedSettings.inputDevices) {
+    if (loadedSettings.inputDevices && root.deviceInput) {
       root.deviceInput.setKnownDevices(loadedSettings.inputDevices);
     }
   });
@@ -100,7 +110,7 @@ interface Store {
   save(): Promise<void>;
 }
 
-export const buildSettings = (root: RootStore): Settings => ({
+export const buildSettings = (root: MainRoot): Settings => ({
   schemaVersion: CURRENT_SCHEMA_VERSION,
   app: { ...root.appSettings.appSettings },
   units: {
@@ -114,7 +124,7 @@ export const buildSettings = (root: RootStore): Settings => ({
   inputDevices: root.deviceInput.knownDevices,
 });
 
-export const saveSettings = async (store: Store, root: RootStore) => {
+export const saveSettings = async (store: Store, root: MainRoot) => {
   const settings = buildSettings(root);
 
   await store.set('settings', settings);
@@ -153,6 +163,6 @@ export const backupSettingsFile = async (fromVersion: number) => {
   }
 };
 
-export const logSettingsSnapshot = async (root: RootStore) => {
+export const logSettingsSnapshot = async (root: MainRoot) => {
   await logSettingsSnapshotCommand(buildSettings(root));
 };
