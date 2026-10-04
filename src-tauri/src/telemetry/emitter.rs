@@ -3,7 +3,6 @@
 /// Receives the adapted frame plus the due emit groups from the scheduler,
 /// runs the computations via `ProcessorRegistry` and emits a single bundle
 /// event per tick.
-use std::sync::atomic::Ordering;
 use std::sync::Mutex;
 use std::time::Duration;
 #[cfg(feature = "dev")]
@@ -15,6 +14,7 @@ use tracing::warn;
 use super::delivery::DeliveryCounters;
 use super::dispatch::{mirrors, plan, BundleSink, DeliveryGroup, Recipient};
 use super::io_worker::IoWorker;
+use super::loop_state::LoopState;
 use super::publications::PublicationRegistry;
 use super::quantize;
 use super::scheduler::DueGroups;
@@ -25,7 +25,7 @@ use super::state::{
 use crate::capabilities::Capabilities;
 use crate::computations::{
     driver_entries, fuel, incidents, lap_delta, pit_stops, proximity, ComputeContext,
-    ComputedOutput, ProcessorRegistry, TickRate,
+    ComputedOutput, TickRate,
 };
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::environment::EnvironmentFrame;
@@ -56,8 +56,8 @@ pub struct EmitContext<'a> {
     pub frame: &'a SourceFrame,
     pub due: DueGroups,
     pub service: &'a TelemetryServiceState,
-    pub registry: &'a Mutex<ProcessorRegistry>,
-    pub fuel_settings: fuel::FuelSettings,
+    /// What the loop owns: the session, the processors, the pit lane markers.
+    pub state: &'a mut LoopState,
     pub capabilities: Capabilities,
 }
 
@@ -133,11 +133,17 @@ pub struct TelemetrySlowBundle {
 /// Returns the time spent measuring rather than delivering — the `dev`-only
 /// sizing of each bundle — so the tick timing can leave it out.
 pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
-    let app = ctx.app;
-    let frame = ctx.frame;
-    let due = ctx.due;
+    let EmitContext {
+        app,
+        io,
+        frame,
+        due,
+        service,
+        state,
+        capabilities,
+    } = ctx;
 
-    let active_mask = ctx.service.masks.effective_mask();
+    let active_mask = service.masks.effective_mask();
     // Every field is an `Option` the tiers below fill in, so the empty bundle
     // is the derived default rather than twenty-two `None`s written out.
     let mut bundle = TelemetryBundle::default();
@@ -151,8 +157,8 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         bundle.car_inputs = Some(frame.car_inputs.clone());
     }
 
-    // Clone session_info Arc — cheap enough to do at 60Hz for accurate computations
-    let session_snapshot = lock_or_recover(&ctx.service.last_session_info).clone();
+    // A clone of the Arc, so the processors below can borrow the rest of the state.
+    let session_snapshot = state.session.clone();
     let session_info = session_snapshot.as_deref();
 
     // 60 Hz — lightweight car positions for smooth map/relative rendering
@@ -162,9 +168,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
 
     // Run processors — only when session is available (mirrors previous behavior)
     if let Some(session) = session_info {
-        let track_length = lock_or_recover(&ctx.service.track_length_m).unwrap_or(0.0);
-        let car_length = *lock_or_recover(&ctx.service.car_length_m);
-        let start_pos_snapshot = lock_or_recover(&ctx.service.start_positions).clone();
+        let track_length = state.track_length_m.unwrap_or(0.0);
 
         let compute_ctx = ComputeContext {
             car_dynamics: &frame.car_dynamics,
@@ -176,9 +180,9 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
             environment: &frame.environment,
             session,
             track_length_m: track_length,
-            car_length_m: car_length,
-            start_positions: &start_pos_snapshot,
-            fuel_settings: ctx.fuel_settings,
+            car_length_m: state.config.car_length_m,
+            start_positions: &state.start_positions,
+            fuel_settings: state.config.fuel,
             lap_delta_active: (active_mask & EVENT_LAP_DELTA) != 0,
             session_num: frame.session.session_num,
             session_time: frame.session.session_time,
@@ -186,38 +190,34 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
             session_state: frame.session.session_state,
         };
 
-        let mut registry = lock_or_recover(ctx.registry);
-
         // 60 Hz computed (lap delta, gated by lap_delta_active inside processor)
-        for output in registry.run(TickRate::Hz60, ctx.capabilities, &compute_ctx) {
+        for output in state
+            .registry
+            .run(TickRate::Hz60, capabilities, &compute_ctx)
+        {
             match output {
                 ComputedOutput::TrackShape(payload) => {
                     if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &payload) {
                         warn!("Failed to emit track shape: {}", e);
                     }
 
-                    ctx.io.save_track_shape(payload);
+                    io.save_track_shape(payload);
                 }
                 ComputedOutput::ReferenceLap(data) => {
                     if let Err(e) = app.emit(EVENT_REFERENCE_LAP_UPDATED, &data) {
                         warn!("Failed to emit reference lap update: {}", e);
                     }
 
-                    ctx.io.save_reference_lap(data);
+                    io.save_reference_lap(data);
                 }
                 ComputedOutput::PitLanePct {
                     track_id,
                     pit_in_pct,
                     pit_exit_pct,
                 } => {
-                    if let Ok(mut lock) = ctx.service.pit_in_pct.lock() {
-                        *lock = Some(pit_in_pct);
-                    }
-                    if let Ok(mut lock) = ctx.service.pit_exit_pct.lock() {
-                        *lock = Some(pit_exit_pct);
-                    }
-                    ctx.io
-                        .patch_pit_lane_pct(track_id, pit_in_pct, pit_exit_pct);
+                    state.pit_in_pct = Some(pit_in_pct);
+                    state.pit_exit_pct = Some(pit_exit_pct);
+                    io.patch_pit_lane_pct(track_id, pit_in_pct, pit_exit_pct);
                 }
                 other => scatter_output(&mut bundle, other),
             }
@@ -225,18 +225,8 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
 
         // Where the car is in the pit lane, and how far its box or the exit is.
         let lap_dist_pct = frame.lap_timing.lap_dist_pct;
-        let pit_in_pct = ctx
-            .service
-            .pit_in_pct
-            .lock()
-            .map(|lock| *lock)
-            .unwrap_or(None);
-        let pit_exit_pct = ctx
-            .service
-            .pit_exit_pct
-            .lock()
-            .map(|lock| *lock)
-            .unwrap_or(None);
+        let pit_in_pct = state.pit_in_pct;
+        let pit_exit_pct = state.pit_exit_pct;
         let pitbox_pct = session.driver_pit_trk_pct;
 
         // The entry this stint actually used: taken on the first frame the sim
@@ -245,7 +235,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         // recorded entry point sits a few meters the other side of the car.
         let live_pit_in_pct = {
             let on_pit_road = frame.car_status.on_pit_road.unwrap_or(false);
-            let mut live = lock_or_recover(&ctx.service.live_pit_in_pct);
+            let live = &mut state.live_pit_in_pct;
 
             if !on_pit_road {
                 *live = None;
@@ -276,21 +266,25 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         }
 
         if due.hz10 {
-            for output in registry.run(TickRate::Hz10, ctx.capabilities, &compute_ctx) {
+            for output in state
+                .registry
+                .run(TickRate::Hz10, capabilities, &compute_ctx)
+            {
                 scatter_output(&mut bundle, output);
             }
 
             // Recorded before the demand gate below, so the count survives even
             // when no widget asks for the entries themselves.
             if let Some(entries) = &bundle.driver_entries {
-                ctx.service
-                    .car_class_count
-                    .store(count_car_classes(entries), Ordering::Relaxed);
+                state.car_class_count = count_car_classes(entries);
             }
         }
 
         if due.hz4 {
-            for output in registry.run(TickRate::Hz4, ctx.capabilities, &compute_ctx) {
+            for output in state
+                .registry
+                .run(TickRate::Hz4, capabilities, &compute_ctx)
+            {
                 scatter_output(&mut bundle, output);
             }
         }
@@ -314,7 +308,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
             lap_timing: frame.lap_timing.clone(),
             pit_service: frame.pit_service.clone(),
             fuel: bundle.fuel.clone(),
-            car_class_count: ctx.service.car_class_count.load(Ordering::Relaxed),
+            car_class_count: state.car_class_count,
         };
 
         if let Err(e) = app.emit(EVENT_TELEMETRY_SLOW, &slow) {
@@ -324,8 +318,8 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         // The inspector pulls this over a command instead of subscribing, so the
         // settings window never takes the bundle. Nothing is written — not even
         // the clone — while its panel is closed.
-        if ctx.service.inspector_active.load(Ordering::Relaxed) {
-            *lock_or_recover(&ctx.service.inspector_frame) = Some(frame.clone());
+        if state.config.inspector_active {
+            *lock_or_recover(&service.inspector_frame) = Some(frame.clone());
         }
     }
 
@@ -351,15 +345,15 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     // rather than once per group, since the groups are subsets of this bundle.
     quantize_bundle(&mut bundle);
 
-    let groups = plan(ctx.service.masks.entries());
+    let groups = plan(service.masks.entries());
 
     deliver(
-        &ctx.service.publications,
-        &ctx.service.delivery,
-        ctx.due,
+        &mut state.publications,
+        &service.delivery,
+        due,
         bundle,
         groups,
-        &mut TauriSink { app: ctx.app },
+        &mut TauriSink { app },
     )
 }
 
@@ -398,7 +392,7 @@ impl BundleSink for TauriSink<'_> {
 /// that bundle narrowed to its own mask, pruned against its own record and put
 /// on the wire once. Returns the time spent sizing bundles for the counters.
 fn deliver(
-    publications: &Mutex<PublicationRegistry>,
+    publications: &mut PublicationRegistry,
     counters: &Mutex<DeliveryCounters>,
     due: DueGroups,
     assembled: TelemetryBundle,
@@ -411,7 +405,6 @@ fn deliver(
     let mut assembled = Some(assembled);
     let last = groups.len().saturating_sub(1);
     let live: Vec<u32> = groups.iter().map(|group| group.mask).collect();
-    let mut publications = lock_or_recover(publications);
     let mut delivery = lock_or_recover(counters);
     let mut sizing = Duration::ZERO;
 
@@ -674,7 +667,7 @@ mod tests {
     }
 
     struct Harness {
-        publications: Mutex<PublicationRegistry>,
+        publications: PublicationRegistry,
         counters: Mutex<DeliveryCounters>,
         sink: RecordingSink,
     }
@@ -688,7 +681,7 @@ mod tests {
             }
 
             Self {
-                publications: Mutex::new(PublicationRegistry::default()),
+                publications: PublicationRegistry::default(),
                 counters: Mutex::new(counters),
                 sink: RecordingSink::default(),
             }
@@ -701,7 +694,7 @@ mod tests {
                 .collect();
 
             deliver(
-                &self.publications,
+                &mut self.publications,
                 &self.counters,
                 due,
                 bundle,

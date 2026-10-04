@@ -33,21 +33,19 @@ use commands::{
     start_telemetry_stream, stop_telemetry_stream,
 };
 use companions::CompanionsState;
-use computations::ProcessorRegistry;
 use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
 use input::InputRuntime;
 use remote::commands::{
     get_remote_devices, get_remote_server_info, publish_remote_control, publish_remote_snapshot,
     remote_screen_url, start_remote_server, stop_remote_server, RemoteState,
 };
-use telemetry::delivery::DeliveryCounters;
+use telemetry::control::TelemetryCommand;
 #[cfg(feature = "dev")]
 use telemetry::perf_run::{spawn_if_requested, PerfRunConfig, PerfRunState};
 use telemetry::state::TelemetryState;
 use utils::lock_or_recover;
 
-use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tauri::{generate_context, generate_handler, Builder, Listener, Manager, WindowEvent};
 use tauri_plugin_aptabase::EventTracker;
 use tauri_plugin_store::StoreExt;
@@ -58,27 +56,6 @@ pub fn run() {
     bindings::export();
 
     let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
-    let force_track_start = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let reset_pit_pcts = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let track_cached = std::sync::Arc::new(std::sync::atomic::AtomicI32::new(-1));
-    let reset_track_shape = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-
-    let force_track_start_listener = std::sync::Arc::clone(&force_track_start);
-    let force_track_start_registry = std::sync::Arc::clone(&force_track_start);
-    let reset_pit_pcts_registry = std::sync::Arc::clone(&reset_pit_pcts);
-    let reset_pit_pcts_state = std::sync::Arc::clone(&reset_pit_pcts);
-    let track_cached_registry = std::sync::Arc::clone(&track_cached);
-    let track_cached_service = std::sync::Arc::clone(&track_cached);
-    let reset_track_shape_listener = std::sync::Arc::clone(&reset_track_shape);
-    let reset_track_shape_registry = reset_track_shape;
-    let reset_reference_lap = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let reset_reference_lap_registry = std::sync::Arc::clone(&reset_reference_lap);
-    let reset_reference_lap_state = reset_reference_lap;
-    let stored_reference_lap_time = std::sync::Arc::new(Mutex::new(
-        crate::model::reference_lap::StoredReferenceTimes::default(),
-    ));
-    let stored_reference_lap_time_registry = std::sync::Arc::clone(&stored_reference_lap_time);
-    let stored_reference_lap_time_service = stored_reference_lap_time;
 
     let builder = Builder::default()
         .plugin(
@@ -127,15 +104,17 @@ pub fn run() {
             }
 
             {
-                let flag = force_track_start_listener;
+                let handle = app.handle().clone();
                 app.listen("track-map:force-start", move |_| {
-                    flag.store(true, std::sync::atomic::Ordering::Relaxed);
+                    let telemetry = handle.state::<TelemetryState>();
+                    telemetry.service.send(TelemetryCommand::ForceTrackStart);
                 });
             }
             {
-                let flag = reset_track_shape_listener;
+                let handle = app.handle().clone();
                 app.listen("track-map:clear", move |_| {
-                    flag.store(true, std::sync::atomic::Ordering::Relaxed);
+                    let telemetry = handle.state::<TelemetryState>();
+                    telemetry.service.send(TelemetryCommand::ClearTrackShape);
                 });
             }
 
@@ -232,40 +211,7 @@ pub fn run() {
         .manage(ChatState {
             service: Arc::new(ChatServiceState::new()),
         })
-        .manage(TelemetryState {
-            service: Arc::new(telemetry::state::TelemetryServiceState {
-                running: AtomicBool::new(false),
-                is_connected: AtomicBool::new(false),
-                last_session_info: Mutex::new(None),
-                start_positions: Mutex::new(std::collections::HashMap::new()),
-                start_positions_session_num: AtomicI32::new(-1),
-                track_length_m: Mutex::new(None),
-                pit_in_pct: Mutex::new(None),
-                pit_exit_pct: Mutex::new(None),
-                live_pit_in_pct: Mutex::new(None),
-                masks: telemetry::masks::MaskRegistry::bootstrapped(),
-                publications: Default::default(),
-                inspector_active: AtomicBool::new(false),
-                car_class_count: AtomicU32::new(0),
-                delivery: Mutex::new(DeliveryCounters::with_broadcast()),
-                tick_timings: Mutex::new(Default::default()),
-                inspector_frame: Mutex::new(None),
-                car_length_m: Mutex::new(model::defaults::DEFAULT_CAR_LENGTH_M),
-                track_cached: track_cached_service,
-                stored_reference_lap_time: stored_reference_lap_time_service,
-            }),
-            registry: Arc::new(Mutex::new(ProcessorRegistry::new(
-                force_track_start_registry,
-                reset_pit_pcts_registry,
-                track_cached_registry,
-                reset_track_shape_registry,
-                reset_reference_lap_registry,
-                stored_reference_lap_time_registry,
-            ))),
-            fuel_tuning: Arc::new(crate::telemetry::state::FuelTuning::default()),
-            reset_pit_pcts: reset_pit_pcts_state,
-            reset_reference_lap: reset_reference_lap_state,
-        })
+        .manage(TelemetryState::default())
         .on_window_event(|window, event| match event {
             WindowEvent::Destroyed => {
                 tracing::info!(window = window.label(), "window destroyed");

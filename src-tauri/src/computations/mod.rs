@@ -25,7 +25,7 @@ use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
 
 use crate::model::lap_log::LapLogFrame;
-use crate::model::reference_lap::ReferenceLapData;
+use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes};
 use crate::model::relative::RelativeFrame;
 use driver_entries::{DriverEntriesFrame, DriverEntriesProcessor};
 use fuel::{FuelComputedFrame, FuelProcessor};
@@ -112,6 +112,25 @@ pub enum ComputedOutput {
     },
 }
 
+/// Something outside the tick tells a processor: a user action, or what the
+/// runtime learned from disk alongside a session. Handed to every processor
+/// before the tick it applies to; each one ignores what is not about it.
+#[derive(Debug, Clone, Copy)]
+pub enum ProcessorCommand {
+    /// Start recording the track shape from where the car is, not from the line.
+    ForceTrackStart,
+    /// The user cleared the current track's recorded shape.
+    ClearTrackShape,
+    /// The user asked to recalibrate the pit lane markers.
+    ResetPitLane,
+    /// A shape for this track id was loaded from disk, so it is not recorded again.
+    TrackCached(i32),
+    /// The lap times of the references stored for the session's track and car.
+    StoredReferenceTimes(StoredReferenceTimes),
+    /// The stored reference was deleted; record a new one from the next lap.
+    ResetReferenceLap,
+}
+
 pub trait Processor: Send {
     #[allow(dead_code)]
     fn id(&self) -> ProcessorId;
@@ -119,23 +138,15 @@ pub trait Processor: Send {
     fn rate(&self) -> TickRate;
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput>;
     fn reset(&mut self);
+    fn command(&mut self, _command: &ProcessorCommand) {}
 }
 
 pub struct ProcessorRegistry {
     processors: Vec<Box<dyn Processor + Send>>,
 }
 
-impl ProcessorRegistry {
-    pub fn new(
-        force_track_start: std::sync::Arc<std::sync::atomic::AtomicBool>,
-        reset_pit_pcts: std::sync::Arc<std::sync::atomic::AtomicBool>,
-        track_cached: std::sync::Arc<std::sync::atomic::AtomicI32>,
-        reset_track_shape: std::sync::Arc<std::sync::atomic::AtomicBool>,
-        reset_reference_lap: std::sync::Arc<std::sync::atomic::AtomicBool>,
-        stored_reference_lap_time: std::sync::Arc<
-            std::sync::Mutex<crate::model::reference_lap::StoredReferenceTimes>,
-        >,
-    ) -> Self {
+impl Default for ProcessorRegistry {
+    fn default() -> Self {
         Self {
             processors: vec![
                 Box::new(FuelProcessor::default()),
@@ -144,19 +155,19 @@ impl ProcessorRegistry {
                 Box::new(PitStopsProcessor::default()),
                 Box::new(ProximityProcessor),
                 Box::new(IncidentsProcessor::default()),
-                Box::new(ReferenceLapProcessor::new(
-                    reset_reference_lap,
-                    stored_reference_lap_time,
-                )),
+                Box::new(ReferenceLapProcessor::default()),
                 Box::new(RelativeProcessor::default()),
                 Box::new(DriverEntriesProcessor::default()),
-                Box::new(TrackShapeProcessor::new(
-                    force_track_start,
-                    reset_pit_pcts,
-                    track_cached,
-                    reset_track_shape,
-                )),
+                Box::new(TrackShapeProcessor::default()),
             ],
+        }
+    }
+}
+
+impl ProcessorRegistry {
+    pub fn command(&mut self, command: ProcessorCommand) {
+        for processor in &mut self.processors {
+            processor.command(&command);
         }
     }
 

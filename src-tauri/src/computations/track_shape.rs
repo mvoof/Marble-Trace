@@ -1,12 +1,12 @@
 //! Track shape processor — dead reckoning from 60 Hz speed/yaw telemetry.
 //! Ports the TypeScript `TrackRecorder` class in full.
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
 use std::time::Instant;
 
 use crate::capabilities::Capabilities;
-use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::computations::{
+    ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate,
+};
 use crate::model::enums::TrackSurface;
 use crate::model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
@@ -232,14 +232,17 @@ impl TrackShapeState {
 pub struct TrackShapeProcessor {
     state: TrackShapeState,
     last_track_id: Option<i32>,
-    force_start: Arc<AtomicBool>,
-    reset_pit_pcts: Arc<AtomicBool>,
-    /// Set to a loaded track_id when a cached track was loaded from disk; -1 = unset.
-    /// Consumed by compute() on the first tick after a track_id change to skip re-recording.
-    track_cached: Arc<std::sync::atomic::AtomicI32>,
+    /// The user asked to start recording without waiting for the line.
+    /// Consumed once the car is moving and out of the pits.
+    force_start: bool,
+    /// The user asked to recalibrate the pit lane. Consumed on the next tick.
+    reset_pit_pcts: bool,
+    /// The track id a cached shape was loaded for. Consumed by compute() on the
+    /// first tick after a track_id change to skip re-recording.
+    track_cached: Option<i32>,
     /// Set when the user manually clears the current track's recorded shape.
     /// Consumed on next tick to un-complete the in-memory recording state.
-    reset_track_shape: Arc<AtomicBool>,
+    reset_track_shape: bool,
     status_tick: u64,
     last_lap_dist_pct: f32,
     /// Previous frame's on_pit_road per car (CarIdx-indexed).
@@ -252,20 +255,15 @@ pub struct TrackShapeProcessor {
     off_pit_ticks: u32,
 }
 
-impl TrackShapeProcessor {
-    pub fn new(
-        force_start: Arc<AtomicBool>,
-        reset_pit_pcts: Arc<AtomicBool>,
-        track_cached: Arc<std::sync::atomic::AtomicI32>,
-        reset_track_shape: Arc<AtomicBool>,
-    ) -> Self {
+impl Default for TrackShapeProcessor {
+    fn default() -> Self {
         Self {
             state: TrackShapeState::default(),
             last_track_id: None,
-            force_start,
-            reset_pit_pcts,
-            track_cached,
-            reset_track_shape,
+            force_start: false,
+            reset_pit_pcts: false,
+            track_cached: None,
+            reset_track_shape: false,
             status_tick: 0,
             last_lap_dist_pct: -1.0,
             prev_on_pit_road: Vec::new(),
@@ -293,7 +291,7 @@ impl Processor for TrackShapeProcessor {
         let track_id = ctx.session.track_id;
         let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
 
-        if self.reset_track_shape.swap(false, Ordering::Relaxed) {
+        if std::mem::take(&mut self.reset_track_shape) {
             self.state.reset();
             self.status_tick = 0;
             self.last_lap_dist_pct = -1.0;
@@ -309,7 +307,7 @@ impl Processor for TrackShapeProcessor {
             self.off_pit_ticks = 0;
 
             // A cached track was loaded from disk for this track_id — skip re-recording.
-            if self.track_cached.swap(-1, Ordering::Relaxed) == track_id {
+            if self.track_cached.take() == Some(track_id) {
                 self.state.complete = true;
             }
         }
@@ -342,7 +340,7 @@ impl Processor for TrackShapeProcessor {
         }
 
         // Reset pit tracking if commanded by the user (manual recalibrate).
-        if self.reset_pit_pcts.swap(false, Ordering::Relaxed) {
+        if std::mem::take(&mut self.reset_pit_pcts) {
             self.prev_on_pit_road.clear();
             self.prev_track_surface.clear();
             self.pit_in_pcts_by_car.clear();
@@ -422,7 +420,7 @@ impl Processor for TrackShapeProcessor {
             return None;
         }
 
-        let force = self.force_start.swap(false, Ordering::Relaxed);
+        let force = std::mem::take(&mut self.force_start);
 
         if !self.state.recording && !self.state.complete && is_moving {
             let lap_dist = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
@@ -487,6 +485,16 @@ impl Processor for TrackShapeProcessor {
         self.prev_track_surface.clear();
         self.pit_in_pcts_by_car.clear();
         self.off_pit_ticks = 0;
+    }
+
+    fn command(&mut self, command: &ProcessorCommand) {
+        match *command {
+            ProcessorCommand::ForceTrackStart => self.force_start = true,
+            ProcessorCommand::ClearTrackShape => self.reset_track_shape = true,
+            ProcessorCommand::ResetPitLane => self.reset_pit_pcts = true,
+            ProcessorCommand::TrackCached(track_id) => self.track_cached = Some(track_id),
+            _ => {}
+        }
     }
 }
 
@@ -619,19 +627,13 @@ fn get_point_at_pct(points: &[TrackPoint], pct: f32) -> (f32, f32) {
 mod tests {
     use super::*;
     use std::collections::HashMap;
-    use std::sync::atomic::AtomicBool;
 
     use crate::model::cars::CarIdxFrame;
     use crate::model::player::{CarDynamicsFrame, CarInputsFrame, CarStatusFrame, LapTimingFrame};
     use crate::model::session::SessionSnapshot;
 
     fn make_processor() -> TrackShapeProcessor {
-        TrackShapeProcessor::new(
-            Arc::new(AtomicBool::new(false)),
-            Arc::new(AtomicBool::new(false)),
-            Arc::new(std::sync::atomic::AtomicI32::new(-1)),
-            Arc::new(AtomicBool::new(false)),
-        )
+        TrackShapeProcessor::default()
     }
 
     fn make_dynamics(speed: f32, yaw: f32) -> CarDynamicsFrame {
@@ -803,13 +805,8 @@ mod tests {
 
     #[test]
     fn track_cached_flag_skips_recording() {
-        let track_cached = Arc::new(std::sync::atomic::AtomicI32::new(1));
-        let mut proc = TrackShapeProcessor::new(
-            Arc::new(AtomicBool::new(false)),
-            Arc::new(AtomicBool::new(false)),
-            Arc::clone(&track_cached),
-            Arc::new(AtomicBool::new(false)),
-        );
+        let mut proc = TrackShapeProcessor::default();
+        proc.command(&ProcessorCommand::TrackCached(1));
         let session = make_session(1);
         let dynamics = make_dynamics(10.0, 0.0);
         let lap_timing = make_lap_timing(0.5);
@@ -842,9 +839,8 @@ mod tests {
             "processor must not start recording when track_cached was set"
         );
         assert_eq!(
-            track_cached.load(Ordering::Relaxed),
-            -1,
-            "track_cached must be reset to -1 after being consumed"
+            proc.track_cached, None,
+            "track_cached must be cleared after being consumed"
         );
     }
 
@@ -884,13 +880,8 @@ mod tests {
 
     #[test]
     fn force_start_triggers_recording() {
-        let flag = Arc::new(AtomicBool::new(true));
-        let mut proc = TrackShapeProcessor::new(
-            Arc::clone(&flag),
-            Arc::new(AtomicBool::new(false)),
-            Arc::new(std::sync::atomic::AtomicI32::new(-1)),
-            Arc::new(AtomicBool::new(false)),
-        );
+        let mut proc = TrackShapeProcessor::default();
+        proc.command(&ProcessorCommand::ForceTrackStart);
 
         let session = make_session(1);
         let dynamics = make_dynamics(10.0, 0.0);
@@ -916,20 +907,12 @@ mod tests {
         let _ = proc.compute(&ctx);
 
         assert!(proc.state.recording);
-        assert!(
-            !flag.load(Ordering::Relaxed),
-            "flag should be cleared after consume"
-        );
+        assert!(!proc.force_start, "flag should be cleared after consume");
     }
 
     #[test]
     fn pit_exit_does_not_start_recording_until_clear_of_the_lane() {
-        let mut proc = TrackShapeProcessor::new(
-            Arc::new(AtomicBool::new(false)),
-            Arc::new(AtomicBool::new(false)),
-            Arc::new(std::sync::atomic::AtomicI32::new(-1)),
-            Arc::new(AtomicBool::new(false)),
-        );
+        let mut proc = TrackShapeProcessor::default();
 
         let session = make_session(1);
         let dynamics = make_dynamics(30.0, 0.0);
@@ -982,13 +965,7 @@ mod tests {
     #[test]
     fn pit_surfaces_gate_recording_even_when_on_pit_road_is_false() {
         for surface in [TrackSurface::InPitStall, TrackSurface::AproachingPits] {
-            let force = Arc::new(AtomicBool::new(false));
-            let mut proc = TrackShapeProcessor::new(
-                Arc::clone(&force),
-                Arc::new(AtomicBool::new(false)),
-                Arc::new(std::sync::atomic::AtomicI32::new(-1)),
-                Arc::new(AtomicBool::new(false)),
-            );
+            let mut proc = TrackShapeProcessor::default();
 
             let session = make_session(1);
             let dynamics = make_dynamics(30.0, 0.0);
@@ -1049,12 +1026,8 @@ mod tests {
 
     #[test]
     fn entering_the_pit_lane_discards_the_recording_in_progress() {
-        let mut proc = TrackShapeProcessor::new(
-            Arc::new(AtomicBool::new(true)),
-            Arc::new(AtomicBool::new(false)),
-            Arc::new(std::sync::atomic::AtomicI32::new(-1)),
-            Arc::new(AtomicBool::new(false)),
-        );
+        let mut proc = TrackShapeProcessor::default();
+        proc.command(&ProcessorCommand::ForceTrackStart);
 
         let session = make_session(1);
         let dynamics = make_dynamics(30.0, 0.0);

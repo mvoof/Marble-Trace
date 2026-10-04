@@ -5,13 +5,14 @@
 use tauri::{AppHandle, Emitter, Manager, State};
 use tracing::{info, warn};
 
-use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes, TrackCondition};
+use crate::model::reference_lap::{ReferenceLapData, TrackCondition};
 use crate::model::track_shape::TrackShapePayload;
+use crate::telemetry::control::TelemetryCommand;
+use crate::telemetry::emitter::EVENT_TRACK_SHAPE;
 use crate::telemetry::state::TelemetryState;
 use crate::telemetry::storage::{
     load_cached_track_shape, reference_lap_key, reference_lap_path, track_shape_path,
 };
-use crate::utils::lock_or_recover;
 
 #[tauri::command]
 pub async fn reset_pit_lane_pct(
@@ -19,9 +20,6 @@ pub async fn reset_pit_lane_pct(
     state: State<'_, TelemetryState>,
     track_id: i32,
 ) -> Result<(), String> {
-    use crate::telemetry::emitter::EVENT_TRACK_SHAPE;
-    use std::fs;
-
     info!("reset_pit_lane_pct command received for track {}", track_id);
 
     let Ok(data_dir) = app.path().app_data_dir() else {
@@ -31,7 +29,7 @@ pub async fn reset_pit_lane_pct(
 
     let path = track_shape_path(&data_dir, track_id);
 
-    let Ok(bytes) = fs::read(&path) else {
+    let Ok(bytes) = tokio::fs::read(&path).await else {
         warn!("No track file found at {:?}, nothing to reset", path);
         return Ok(());
     };
@@ -51,7 +49,7 @@ pub async fn reset_pit_lane_pct(
         return Ok(());
     };
 
-    if fs::write(&path, &json).is_ok() {
+    if tokio::fs::write(&path, &json).await.is_ok() {
         info!("Successfully removed pit pcts from {:?} on disk", path);
         if let Ok(payload) = serde_json::from_str::<TrackShapePayload>(&json) {
             let _ = app.emit(EVENT_TRACK_SHAPE, &payload);
@@ -60,16 +58,7 @@ pub async fn reset_pit_lane_pct(
         warn!("Failed to write updated track JSON to {:?}", path);
     }
 
-    if let Ok(mut lock) = state.service.pit_in_pct.lock() {
-        *lock = None;
-    }
-    if let Ok(mut lock) = state.service.pit_exit_pct.lock() {
-        *lock = None;
-    }
-
-    state
-        .reset_pit_pcts
-        .store(true, std::sync::atomic::Ordering::Relaxed);
+    state.service.send(TelemetryCommand::ResetPitLane);
 
     info!("Pit lane pcts successfully reset in memory and scheduled for processor");
     Ok(())
@@ -130,13 +119,7 @@ pub async fn delete_reference_lap(
     // The processor keeps the session's best time in memory and would refuse
     // to commit a slower lap as the new reference — reset it so recording
     // starts fresh from the next completed lap.
-    state
-        .reset_reference_lap
-        .store(true, std::sync::atomic::Ordering::Relaxed);
-
-    if let Ok(mut stored) = state.service.stored_reference_lap_time.lock() {
-        *stored = StoredReferenceTimes::default();
-    }
+    state.service.send(TelemetryCommand::ResetReferenceLap);
 
     info!("Reference lap deleted for track {track_id} / {car_screen_name}");
     Ok(())
@@ -151,10 +134,7 @@ pub async fn get_cached_track_shape(
     app: AppHandle,
     state: State<'_, TelemetryState>,
 ) -> Result<Option<TrackShapePayload>, String> {
-    let track_id = {
-        let lock = lock_or_recover(&state.service.last_session_info);
-        lock.as_deref().map(|session| session.track_id)
-    };
+    let track_id = state.service.session().map(|session| session.track_id);
 
     let Some(track_id) = track_id else {
         return Ok(None);
@@ -164,7 +144,9 @@ pub async fn get_cached_track_shape(
         return Err("Cannot resolve app data dir".to_string());
     };
 
-    Ok(load_cached_track_shape(&data_dir, track_id))
+    tokio::task::spawn_blocking(move || load_cached_track_shape(&data_dir, track_id))
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -175,7 +157,7 @@ pub async fn delete_track_shape(app: AppHandle, track_id: i32) -> Result<(), Str
 
     let path = track_shape_path(&data_dir, track_id);
 
-    match std::fs::remove_file(&path) {
+    match tokio::fs::remove_file(&path).await {
         Ok(_) => {}
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
         Err(e) => return Err(e.to_string()),

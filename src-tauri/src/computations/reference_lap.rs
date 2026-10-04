@@ -10,13 +10,13 @@
 //! faster stored reference.
 use crate::capabilities::Capabilities;
 use crate::computations::lap_time_settle::is_settled_for_reference;
-use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::computations::{
+    ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate,
+};
 use crate::model::reference_lap::{
     ReferenceLapData, ReferenceLapSample, StoredReferenceTimes, TrackCondition,
     REFERENCE_LAP_BUCKET_COUNT,
 };
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
 use tracing::{debug, info, warn};
 
 /// Above this `lap_dist_pct` we consider the car "near the finish line".
@@ -75,13 +75,13 @@ pub struct ReferenceLapProcessor {
     /// Set by the delete_reference_lap command; consumed on the next tick so
     /// the in-memory best does not block re-recording after the stored
     /// reference file was deleted.
-    reset_requested: Arc<AtomicBool>,
+    reset_requested: bool,
     /// Lap times of the references persisted on disk for the current track+car,
     /// one per condition (refreshed by the telemetry runtime on session-info
     /// updates). A lap is committed only when it beats the stored time *for its
     /// own condition* — which is also what lets a wet lap be recorded at all,
     /// since it will never approach the dry time.
-    stored_best_lap_time: Arc<Mutex<StoredReferenceTimes>>,
+    stored_best_lap_time: StoredReferenceTimes,
 }
 
 /// A lap that has crossed the line but whose time the sim has not published yet.
@@ -137,17 +137,6 @@ fn average_tire_wear(chassis: &crate::model::player::ChassisFrame) -> Option<f32
 }
 
 impl ReferenceLapProcessor {
-    pub fn new(
-        reset_requested: Arc<AtomicBool>,
-        stored_best_lap_time: Arc<Mutex<StoredReferenceTimes>>,
-    ) -> Self {
-        Self {
-            reset_requested,
-            stored_best_lap_time,
-            ..Self::default()
-        }
-    }
-
     fn ensure_working_buffer(&mut self) {
         if self.working.len() != REFERENCE_LAP_BUCKET_COUNT {
             self.working = vec![ReferenceLapSample::default(); REFERENCE_LAP_BUCKET_COUNT];
@@ -216,11 +205,7 @@ impl ReferenceLapProcessor {
         let pending = self.pending.take()?;
         let lap_time = lap_time?;
 
-        let stored_time = self
-            .stored_best_lap_time
-            .lock()
-            .ok()
-            .and_then(|stored| stored.get(pending.condition));
+        let stored_time = self.stored_best_lap_time.get(pending.condition);
         let beats_stored =
             stored_time.is_none_or(|stored| stored <= 0.0 || lap_time < stored - BEST_TIME_EPSILON);
 
@@ -238,9 +223,8 @@ impl ReferenceLapProcessor {
             lap_time, pending.condition, stored_time
         );
 
-        if let Ok(mut stored) = self.stored_best_lap_time.lock() {
-            stored.set(pending.condition, Some(lap_time));
-        }
+        self.stored_best_lap_time
+            .set(pending.condition, Some(lap_time));
 
         Some(ComputedOutput::ReferenceLap(ReferenceLapData {
             track_id,
@@ -271,7 +255,7 @@ impl Processor for ReferenceLapProcessor {
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
         self.ensure_working_buffer();
 
-        if self.reset_requested.swap(false, Ordering::Relaxed) {
+        if std::mem::take(&mut self.reset_requested) {
             self.reset_for_new_identity();
         }
 
@@ -412,6 +396,19 @@ impl Processor for ReferenceLapProcessor {
         self.reset_for_new_identity();
         self.last_track_id = None;
         self.last_car_screen_name = None;
+    }
+
+    fn command(&mut self, command: &ProcessorCommand) {
+        match *command {
+            ProcessorCommand::StoredReferenceTimes(times) => self.stored_best_lap_time = times,
+            // The in-memory best would otherwise refuse a slower lap as the
+            // new reference after the stored one was deleted.
+            ProcessorCommand::ResetReferenceLap => {
+                self.stored_best_lap_time = StoredReferenceTimes::default();
+                self.reset_requested = true;
+            }
+            _ => {}
+        }
     }
 }
 
@@ -875,12 +872,13 @@ mod tests {
 
     #[test]
     fn wet_lap_is_stored_against_the_wet_reference_not_the_dry_one() {
-        let stored = Arc::new(Mutex::new(StoredReferenceTimes {
-            dry: Some(85.0),
-            wet: None,
-        }));
-        let mut proc =
-            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let mut proc = ReferenceLapProcessor::default();
+        proc.command(&ProcessorCommand::StoredReferenceTimes(
+            StoredReferenceTimes {
+                dry: Some(85.0),
+                wet: None,
+            },
+        ));
         let session = make_session(1);
         let wet = crate::model::environment::EnvironmentFrame {
             track_wetness: Some(5),
@@ -903,7 +901,7 @@ mod tests {
             other => panic!("expected a wet ReferenceLap, got {other:?}"),
         }
 
-        let times = *stored.lock().unwrap();
+        let times = proc.stored_best_lap_time;
         assert_eq!(times.wet, Some(110.0));
         // The dry reference must be left exactly as it was.
         assert_eq!(times.dry, Some(85.0));
@@ -943,12 +941,13 @@ mod tests {
     /// a genuine personal best.
     #[test]
     fn a_lap_timed_before_the_line_is_still_committed() {
-        let stored = Arc::new(Mutex::new(StoredReferenceTimes {
-            dry: Some(95.0),
-            wet: None,
-        }));
-        let mut proc =
-            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let mut proc = ReferenceLapProcessor::default();
+        proc.command(&ProcessorCommand::StoredReferenceTimes(
+            StoredReferenceTimes {
+                dry: Some(95.0),
+                wet: None,
+            },
+        ));
         let session = make_session(1);
 
         // Through the lap the sim reports the previous lap's time.
@@ -966,7 +965,7 @@ mod tests {
             other => panic!("expected ReferenceLap output, got {other:?}"),
         }
 
-        assert_eq!(stored.lock().unwrap().dry, Some(90.0));
+        assert_eq!(proc.stored_best_lap_time.dry, Some(90.0));
     }
 
     #[test]
@@ -1013,12 +1012,13 @@ mod tests {
     /// finished timing this lap.
     #[test]
     fn a_lap_timed_the_same_as_the_previous_reading_settles_after_the_grace_window() {
-        let stored = Arc::new(Mutex::new(StoredReferenceTimes {
-            dry: Some(90.0),
-            wet: None,
-        }));
-        let mut proc =
-            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let mut proc = ReferenceLapProcessor::default();
+        proc.command(&ProcessorCommand::StoredReferenceTimes(
+            StoredReferenceTimes {
+                dry: Some(90.0),
+                wet: None,
+            },
+        ));
         let session = make_session(1);
 
         // Mid-lap the sim reports 89.0 as the previous lap's time, with the
@@ -1053,7 +1053,7 @@ mod tests {
             other => panic!("expected ReferenceLap output, got {other:?}"),
         }
 
-        assert_eq!(stored.lock().unwrap().dry, Some(89.0));
+        assert_eq!(proc.stored_best_lap_time.dry, Some(89.0));
     }
 
     /// A best that already stood at the reading confirms nothing: the previous
@@ -1061,12 +1061,13 @@ mod tests {
     /// is exactly what a sim which has published nothing since looks like.
     #[test]
     fn a_best_that_already_stood_at_the_reading_does_not_settle_the_lap() {
-        let stored = Arc::new(Mutex::new(StoredReferenceTimes {
-            dry: Some(90.0),
-            wet: None,
-        }));
-        let mut proc =
-            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let mut proc = ReferenceLapProcessor::default();
+        proc.command(&ProcessorCommand::StoredReferenceTimes(
+            StoredReferenceTimes {
+                dry: Some(90.0),
+                wet: None,
+            },
+        ));
         let session = make_session(1);
 
         // The previous lap was 89.0 and was the session best, so both fields
@@ -1104,7 +1105,7 @@ mod tests {
         )
         .is_none());
 
-        assert_eq!(stored.lock().unwrap().dry, Some(90.0));
+        assert_eq!(proc.stored_best_lap_time.dry, Some(90.0));
     }
 
     /// The other side of the same reading: the sim is late, so what stands is
@@ -1112,12 +1113,13 @@ mod tests {
     /// driven under a time it did not set, so the lap stays parked instead.
     #[test]
     fn an_ambiguous_reading_the_session_best_denies_is_not_committed() {
-        let stored = Arc::new(Mutex::new(StoredReferenceTimes {
-            dry: Some(90.0),
-            wet: None,
-        }));
-        let mut proc =
-            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let mut proc = ReferenceLapProcessor::default();
+        proc.command(&ProcessorCommand::StoredReferenceTimes(
+            StoredReferenceTimes {
+                dry: Some(90.0),
+                wet: None,
+            },
+        ));
         let session = make_session(1);
 
         let mut pct = 0.005;
@@ -1138,26 +1140,28 @@ mod tests {
         )
         .is_none());
 
-        assert_eq!(stored.lock().unwrap().dry, Some(90.0));
+        assert_eq!(proc.stored_best_lap_time.dry, Some(90.0));
     }
 
     #[test]
     fn cleared_stored_reference_allows_recommit() {
-        let stored = Arc::new(Mutex::new(StoredReferenceTimes::default()));
-        let mut proc =
-            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let mut proc = ReferenceLapProcessor::default();
+        proc.command(&ProcessorCommand::StoredReferenceTimes(
+            StoredReferenceTimes::default(),
+        ));
         let session = make_session(1);
 
         drive_segment(&mut proc, &session, 0.005, 0.995);
         assert!(cross_line(&mut proc, &session, 90.0).is_some());
-        assert_eq!(stored.lock().unwrap().dry, Some(90.0));
+        assert_eq!(proc.stored_best_lap_time.dry, Some(90.0));
     }
 
     #[test]
     fn track_change_resets_prior_best() {
-        let stored = Arc::new(Mutex::new(StoredReferenceTimes::default()));
-        let mut proc =
-            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let mut proc = ReferenceLapProcessor::default();
+        proc.command(&ProcessorCommand::StoredReferenceTimes(
+            StoredReferenceTimes::default(),
+        ));
 
         let session1 = make_session(1);
         drive_segment(&mut proc, &session1, 0.005, 0.995);
@@ -1166,7 +1170,9 @@ mod tests {
         // Switch tracks — a slower time than the old best should still count as
         // new best. The runtime refreshes the shared stored time on the
         // session-info update that changes the track; mimic finding no file.
-        *stored.lock().unwrap() = StoredReferenceTimes::default();
+        proc.command(&ProcessorCommand::StoredReferenceTimes(
+            StoredReferenceTimes::default(),
+        ));
         let session2 = make_session(2);
         drive_segment(&mut proc, &session2, 0.005, 0.995);
         assert!(cross_line(&mut proc, &session2, 95.0).is_some());

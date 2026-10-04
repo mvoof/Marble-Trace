@@ -1,101 +1,37 @@
 /// Managed state shared between Tauri commands and the telemetry thread.
-use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, AtomicUsize, Ordering};
+///
+/// Only what actually crosses threads lives here. Everything the loop alone
+/// writes — the session it computes on, the grid, the pit lane markers, the
+/// processors — is owned by the thread (`telemetry::loop_state`), and commands
+/// reach it through `TelemetryCommand`s rather than shared fields.
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
-use crate::computations::fuel::{FuelSettings, DEFAULT_FUEL_AVG_WINDOW, DEFAULT_PIT_WARNING_LAPS};
-use crate::computations::ProcessorRegistry;
-use crate::model::reference_lap::StoredReferenceTimes;
 use crate::model::session::SessionSnapshot;
 use crate::sources::source::SourceFrame;
+use crate::telemetry::control::{Control, TelemetryCommand, TelemetryConfig, TelemetryRun};
 use crate::telemetry::delivery::DeliveryCounters;
 use crate::telemetry::masks::MaskRegistry;
-use crate::telemetry::publications::PublicationRegistry;
 use crate::telemetry::tick_timings::TickTimings;
-
-/// User-configured fuel parameters, written by commands and read once per tick
-/// by the telemetry thread.
-pub struct FuelTuning {
-    /// Pit warning laps, stored as the bits of an f32.
-    pub pit_warning_laps: AtomicU32,
-    /// Laps averaged for consumption. 0 = the whole recorded history.
-    pub avg_window: AtomicUsize,
-    pub count_local_yellow_laps: AtomicBool,
-}
-
-impl Default for FuelTuning {
-    fn default() -> Self {
-        Self {
-            pit_warning_laps: AtomicU32::new(DEFAULT_PIT_WARNING_LAPS.to_bits()),
-            avg_window: AtomicUsize::new(DEFAULT_FUEL_AVG_WINDOW),
-            count_local_yellow_laps: AtomicBool::new(false),
-        }
-    }
-}
-
-impl FuelTuning {
-    pub fn snapshot(&self) -> FuelSettings {
-        FuelSettings {
-            pit_warning_laps: f32::from_bits(self.pit_warning_laps.load(Ordering::Relaxed)),
-            avg_window: self.avg_window.load(Ordering::Relaxed),
-            count_local_yellow_laps: self.count_local_yellow_laps.load(Ordering::Relaxed),
-        }
-    }
-}
+use crate::utils::lock_or_recover;
 
 /// Shared state for the telemetry service.
 pub struct TelemetryServiceState {
-    pub running: AtomicBool,
+    /// The id of the run allowed to go on; 0 = stopped.
+    running: AtomicU64,
+    /// Published by the loop: a frame has arrived on the current connection.
     pub is_connected: AtomicBool,
-    pub last_session_info: Mutex<Option<Arc<SessionSnapshot>>>,
-    /// Start grid positions keyed by carIdx: (overall_pos, class_pos), 1-indexed.
-    pub start_positions: Mutex<HashMap<i32, (i32, i32)>>,
-    /// Session number for which start_positions was last populated. -1 = never set.
-    pub start_positions_session_num: AtomicI32,
-    /// Cached track length in meters.
-    pub track_length_m: Mutex<Option<f32>>,
-    pub pit_in_pct: Mutex<Option<f32>>,
-    pub pit_exit_pct: Mutex<Option<f32>>,
-    /// Lap distance where the player's `on_pit_road` last went true, cleared on
-    /// the way out. The recorded `pit_in_pct` says how long the lane is; this
-    /// says where this particular entry began, which is what the pit approach
-    /// rail counts from.
-    pub live_pit_in_pct: Mutex<Option<f32>>,
-    /// What each recipient is asking for, keyed by its window label, and the
-    /// union of it that the emitter fills the bundle from.
-    pub masks: MaskRegistry,
-    /// The telemetry inspector in the settings window is open. While this is
-    /// false nothing below is written at all — the inspector costs the running
-    /// app exactly nothing when nobody is looking at it, which is why it pulls
-    /// instead of subscribing: the settings window must never take the 60 Hz
-    /// bundle again.
-    pub inspector_active: AtomicBool,
+    /// The command sender and the config the next run starts with.
+    control: Mutex<Control>,
+    /// The session the loop computes on, published each time it applies one.
+    session: Mutex<Option<Arc<SessionSnapshot>>>,
     /// Last adapted frame, refreshed on the 4 Hz tier while the inspector is
     /// open. 4 Hz because that is already faster than a person can read a table
     /// of a hundred numbers.
     pub inspector_frame: Mutex<Option<SourceFrame>>,
-    /// What was last put on the wire for each delivery group, so an unchanged
-    /// frame can be held back. One record per mask value: a group seen for the
-    /// first time must get a full bundle rather than inherit what another group
-    /// was sent. Lives with the connection: a reconnect clears it, because the
-    /// windows have reset their stores too and need a full bundle again.
-    pub publications: Mutex<PublicationRegistry>,
-    /// Configurable player car length in meters.
-    pub car_length_m: Mutex<f32>,
-    /// Set when a cached track was loaded from disk; consumed by TrackShapeProcessor
-    /// on the first tick after a track_id change to skip re-recording.
-    pub track_cached: Arc<std::sync::atomic::AtomicI32>,
-    /// Lap time of the reference lap stored on disk for the current track+car,
-    /// refreshed on every session-info update. ReferenceLapProcessor commits a
-    /// new reference only when a lap beats this time, so a slower session best
-    /// never overwrites a faster persisted reference.
-    pub stored_reference_lap_time: Arc<Mutex<StoredReferenceTimes>>,
-    /// How many distinct car classes the last computed `driver_entries` held.
-    /// Recorded on every Hz10 tick, before the demand gate, so the slow slice
-    /// can carry it to the main window: the hotkey runner lives there and has
-    /// to know how far the standings class cycle wraps without taking the
-    /// per-car frame itself.
-    pub car_class_count: AtomicU32,
+    /// What each recipient is asking for, keyed by its window label, and the
+    /// union of it that the emitter fills the bundle from.
+    pub masks: MaskRegistry,
     /// How many bundles each recipient received, and how many of those carried
     /// each demand-gated field. The instrument the per-window mask work is
     /// measured with; see `telemetry::delivery`.
@@ -103,6 +39,74 @@ pub struct TelemetryServiceState {
     /// How long each `emit_domain_frames` pass took, reset together with the
     /// delivery counters so one measurement run reads both over one span.
     pub tick_timings: Mutex<TickTimings>,
+}
+
+impl Default for TelemetryServiceState {
+    fn default() -> Self {
+        Self {
+            running: AtomicU64::new(0),
+            is_connected: AtomicBool::new(false),
+            control: Mutex::new(Control::default()),
+            session: Mutex::new(None),
+            inspector_frame: Mutex::new(None),
+            masks: MaskRegistry::bootstrapped(),
+            delivery: Mutex::new(DeliveryCounters::with_broadcast()),
+            tick_timings: Mutex::new(TickTimings::default()),
+        }
+    }
+}
+
+impl TelemetryServiceState {
+    /// Hands a change to the running thread, if there is one. A one-shot
+    /// command sent while the stream is stopped is dropped: what it would reset
+    /// is rebuilt from disk when the next run reads its session.
+    pub fn send(&self, command: TelemetryCommand) {
+        lock_or_recover(&self.control).send(command);
+    }
+
+    /// Changes a value that has to survive a stop, and tells the thread.
+    pub fn configure(&self, change: impl FnOnce(&mut TelemetryConfig)) {
+        lock_or_recover(&self.control).configure(change);
+    }
+
+    /// Makes a new run the current one and returns what its thread starts
+    /// with. A thread of an older run sees it is no longer current and stops.
+    pub fn begin_run(&self) -> TelemetryRun {
+        let run = lock_or_recover(&self.control).begin_run();
+
+        self.running.store(run.id, Ordering::SeqCst);
+
+        run
+    }
+
+    pub fn stop(&self) {
+        self.running.store(0, Ordering::SeqCst);
+    }
+
+    pub fn is_current(&self, run: u64) -> bool {
+        self.running.load(Ordering::SeqCst) == run
+    }
+
+    /// A newer run was started over this one, as opposed to the stream being
+    /// stopped. The newer thread now speaks for the connection, so this one
+    /// must leave without announcing a disconnect.
+    pub fn is_superseded(&self, run: u64) -> bool {
+        let current = self.running.load(Ordering::SeqCst);
+
+        current != 0 && current != run
+    }
+
+    pub fn session(&self) -> Option<Arc<SessionSnapshot>> {
+        lock_or_recover(&self.session).clone()
+    }
+
+    pub fn publish_session(&self, session: Option<Arc<SessionSnapshot>>) {
+        *lock_or_recover(&self.session) = session;
+    }
+
+    pub fn clear_inspector_frame(&self) {
+        *lock_or_recover(&self.inspector_frame) = None;
+    }
 }
 
 /// Bitmask flags for high-frequency events.
@@ -124,15 +128,8 @@ pub const EVENT_RELATIVE: u32 = 1 << 5;
 pub const EVENT_PROXIMITY: u32 = 1 << 6;
 pub const EVENT_INCIDENTS: u32 = 1 << 7;
 
-/// Compose domain-specific states.
+/// The telemetry service as Tauri manages it.
+#[derive(Default)]
 pub struct TelemetryState {
     pub service: Arc<TelemetryServiceState>,
-    /// All stateful processors. Reset on disconnect.
-    pub registry: Arc<Mutex<ProcessorRegistry>>,
-    /// User-configured fuel parameters.
-    pub fuel_tuning: Arc<FuelTuning>,
-    /// Set by reset_pit_lane_pct command; consumed by TrackShapeProcessor on next tick.
-    pub reset_pit_pcts: Arc<AtomicBool>,
-    /// Set by delete_reference_lap command; consumed by ReferenceLapProcessor on next tick.
-    pub reset_reference_lap: Arc<AtomicBool>,
 }

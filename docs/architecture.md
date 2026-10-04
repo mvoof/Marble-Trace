@@ -406,12 +406,22 @@ unit-test — and why sim quirks must be resolved upstream before they reach it.
 | File              | Role                                                                   |
 | ----------------- | ---------------------------------------------------------------------- |
 | `runtime.rs`      | owns the telemetry thread and the connection lifecycle                 |
-| `state.rs`        | what persists between ticks                                            |
+| `state.rs`        | only what crosses threads: command sender, snapshots, masks, counters  |
+| `loop_state.rs`   | what the loop alone writes — session, grid, pit markers, processors    |
+| `control.rs`      | `TelemetryCommand`s and the config a run starts with                   |
 | `scheduler.rs`    | decides which rate tiers are due this tick                             |
 | `emitter.rs`      | runs the processor registry, assembles one `TelemetryBundle`, emits it |
 | `io_worker.rs`    | session-YAML parsing and every file read or write, off the loop        |
 | `storage.rs`      | the track-shape and reference-lap files, shared with the commands      |
 | `capabilities.rs` | reports what the connected sim can actually provide                    |
+
+The thread owns its state. A command never writes it: it sends a
+`TelemetryCommand`, drained at the top of the next tick, and a value that must
+survive a stop (car length, fuel tuning, inspector open) is also kept in the
+config the next run starts with. What commands read back — the session, the
+inspector frame, whether a frame has arrived — is published by the loop when it
+changes. A tick takes three locks: the masks, the delivery counters and the
+tick timings.
 
 ### Rate tiers
 

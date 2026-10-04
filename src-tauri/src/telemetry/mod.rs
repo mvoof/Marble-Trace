@@ -3,10 +3,12 @@
 //! this layer only consumes normalized `model` types.
 
 pub mod capabilities;
+pub mod control;
 pub mod delivery;
 pub mod dispatch;
 pub mod emitter;
 pub mod io_worker;
+pub mod loop_state;
 pub mod masks;
 #[cfg(feature = "dev")]
 pub mod perf_run;

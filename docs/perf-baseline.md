@@ -179,3 +179,23 @@ baseline never saw it; these rows count strictly more than the baseline rows do.
 - **The worst tick dropped by about a third** (1169 / 1039 against 1593 / 1690 µs).
   The file writes inside the emit were the outliers.
 - Nothing on the frontend moved, as expected for a backend-only change.
+
+## 2026-10-04 — the telemetry thread owns its state (ticket 04)
+
+Same machine, tape, offset, layout and command as ticket 03, widgets mode, two
+runs.
+
+| metric                          | run 1 | run 2 | spread |
+| ------------------------------- | ----- | ----- | ------ |
+| tick p50 (µs)                   | 55    | 52    | 5.5 %  |
+| tick p99 (µs)                   | 838   | 809   | 3.5 %  |
+| tick max (µs)                   | 1617  | 1227  | 24.1 % |
+| overlay-DISPLAY1 KiB/s          | 1060  | 1060  | 0.0 %  |
+| overlay-DISPLAY1 alloc (MiB/s)  | 11.64 | 11.72 | 0.7 %  |
+| overlay-DISPLAY1 apply p99 (ms) | 1.0   | 0.9   | 1 step |
+
+- **No speed-up.** p99 is 838 / 809 against 800 / 785 after 03, about the
+  spread between two runs. The locks that went away were uncontended, so they
+  cost almost nothing per tick. The ticket is about ownership, not time.
+- **The wire is unchanged to the byte** (1059.94 / 1059.96 KiB/s, same bundle
+  rate), so the bundles the loop builds are the same ones.
