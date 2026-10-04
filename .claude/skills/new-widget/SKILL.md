@@ -32,9 +32,9 @@ Give those five more attention than the ones a command checks.
 Then confirm each field exists, in this order:
 
 1. Offline: grep `src/types/bindings.ts`. It is the generated contract and the
-   only honest list. It is **snake_case** (`velocity_x`) even though the wire is
-   camelCase — serde renames the payload, specta exports the Rust names. Search
-   in snake_case.
+   only honest list. Raw sim frames are **snake_case** (`velocity_x`) — they keep
+   kerb's names; the envelope and computed frames are camelCase. Search a raw
+   field in snake_case.
 2. Against a live sim: the Telemetry Inspector (Settings → Maintenance) shows the
    raw `SourceFrame`, a superset of the bundle.
 
@@ -44,8 +44,8 @@ If a field does not exist, **stop and say so.** Adding it is the backend route
 Record for each field its **rate tier** — the table is in
 [architecture.md](../../../docs/architecture.md) → Rate tiers.
 
-**The gated fields are the `TelemetryEventName` union in
-`src/types/telemetry-events.ts`. Open that file — it is the list, and it grows.**
+**The gated fields are the exports of `src/types/telemetry-event-bits.ts`
+(generated from Rust). Open that file — it is the list, and it grows.**
 The four on the 60 Hz tier (`carDynamics`, `carInputs`, `carPositions`,
 `lapDelta`) are **hot**; note which you use, steps 3 and 9 depend on it.
 

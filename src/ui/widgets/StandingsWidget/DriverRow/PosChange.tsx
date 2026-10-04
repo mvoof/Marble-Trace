@@ -45,7 +45,7 @@ export const PosChange = observer(({ carIdx }: PosChangeProps) => {
   const startPos = useClassPos ? driver.startPosClass : driver.startPosOverall;
 
   // No grid slot, or a car the sim has not placed at all: nothing to subtract.
-  if (startPos <= 0 || position <= 0) {
+  if (startPos === null || position <= 0) {
     return <span className={styles.posChangeNeutral}>-</span>;
   }
 

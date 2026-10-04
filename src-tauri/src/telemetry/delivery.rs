@@ -181,8 +181,8 @@ mod tests {
     use super::*;
     use crate::computations::driver_entries::DriverEntriesFrame;
     use crate::model::cars::CarPositionsFrame;
+    use crate::model::telemetry_events::EVENT_CAR_POSITIONS;
     use crate::telemetry::emitter::{apply_event_mask, TelemetryBundle};
-    use crate::telemetry::state::EVENT_CAR_POSITIONS;
 
     fn positions() -> CarPositionsFrame {
         CarPositionsFrame {

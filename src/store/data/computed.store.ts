@@ -97,9 +97,12 @@ export class BackendComputedStore {
     return this.proximity !== null;
   }
 
-  /** The sector the car is in, off a lap-delta frame replaced on every tick. */
-  get currentSectorIdx(): number {
-    return this.lapDelta?.currentSectorIdx ?? 0;
+  /**
+   * The sector the car is in, off a lap-delta frame replaced on every tick.
+   * Null while the car is off the lap, or before the first frame.
+   */
+  get currentSectorIdx(): number | null {
+    return this.lapDelta?.currentSectorIdx ?? null;
   }
 
   /** Sector times for the lap so far, compared by content. */

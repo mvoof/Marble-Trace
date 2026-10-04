@@ -18,10 +18,7 @@ use super::loop_state::LoopState;
 use super::publications::PublicationRegistry;
 use super::quantize;
 use super::scheduler::DueGroups;
-use super::state::{
-    TelemetryServiceState, EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS,
-    EVENT_DRIVER_ENTRIES, EVENT_INCIDENTS, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
-};
+use super::state::TelemetryServiceState;
 use crate::capabilities::Capabilities;
 use crate::computations::{
     driver_entries, fuel, incidents, lap_delta, pit_stops, proximity, ComputeContext,
@@ -36,6 +33,10 @@ use crate::model::player::{
 };
 use crate::model::relative::RelativeFrame;
 use crate::model::session::SessionFrame;
+use crate::model::telemetry_events::{
+    EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS, EVENT_DRIVER_ENTRIES,
+    EVENT_INCIDENTS, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
+};
 use crate::model::track_shape::TrackRecordingFrame;
 use crate::sources::source::SourceFrame;
 use crate::utils::lock_or_recover;
@@ -581,9 +582,9 @@ mod tests {
     use super::*;
     use crate::computations::driver_entries::DriverEntriesFrame;
     use crate::model::cars::CarPositionsFrame;
+    use crate::model::telemetry_events::{EVENT_CAR_POSITIONS, EVENT_DRIVER_ENTRIES};
     use crate::telemetry::delivery::BROADCAST_LABEL;
     use crate::telemetry::masks::{BOOTSTRAP_LABEL, REMOTE_LABEL};
-    use crate::telemetry::state::{EVENT_CAR_POSITIONS, EVENT_DRIVER_ENTRIES};
 
     /// One bundle as it was delivered, and who it went to.
     #[derive(Debug)]

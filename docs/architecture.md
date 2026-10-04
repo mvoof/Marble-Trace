@@ -207,17 +207,22 @@ specta: `types/` holds types. Both generated files are checked in and pinned by
 a test, so a constant changed in Rust without regenerating fails `cargo test`
 rather than silently leaving the two halves on different numbers.
 
-### Everything on the wire is camelCase
+### Envelope and computed frames are camelCase; raw frames carry kerb's names
 
 `TelemetryBundle`, `TelemetrySlowBundle` and `SourceFrame` all carry
 `#[serde(rename_all = "camelCase")]`, so every field _they_ name is camelCase.
 The outer bundles used to be the exception, which produced reads like
 `bundle.track_recording.isRecording` — two conventions in one expression.
 
-The nested frames each carry the rename or not on their own, and several of the
-raw sim frames still do not: `CarStatusFrame.fuel_level` and the
-`LapTimingFrame.lap_delta_to_*` fields keep the sim's own snake_case. Check
-`bindings.ts` for the frame you are reading rather than assuming.
+Every frame the project _produces_ is camelCase too — the `computations/`
+output, the parsed session snapshot — and says "no value" with `Option` (`null`
+on the wire), never with a `-1` or `0` marker.
+
+The raw sim frames are not, on purpose: `carDynamics`, `carInputs`,
+`carStatus`, `chassis`, `lapTiming`, `carIdx` and `carPositions` keep kerb's
+snake_case names (`CarStatusFrame.fuel_level`, `car_idx_lap_dist_pct`) and the
+sim's own markers, so a field reads the same here as in kerb and in the SDK
+docs. Check `bindings.ts` for the frame you are reading rather than assuming.
 
 > [!WARNING]
 > If you add or change a rename, check `SLOW_FIELD_KEYS` in `remote/hub.rs`. It
@@ -532,8 +537,9 @@ export const G_METER_MANIFEST: WidgetManifest = {
 `SimStore.updateActiveEvents` unions the declarations of the enabled widgets in
 the active layout and sends the result to `set_active_events` as a bitmask;
 `emitter.rs` reads it and leaves an unrequested field out of the bundle. The
-names and their bit values live in `src/types/telemetry-events.ts` and mirror
-`telemetry/state.rs`.
+names and their bit values are declared once in `model/telemetry_events.rs` and
+generated into `src/types/telemetry-event-bits.ts`, which
+`src/types/telemetry-events.ts` derives `TelemetryEventName` from.
 
 ```mermaid
 flowchart LR

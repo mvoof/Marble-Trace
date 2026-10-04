@@ -14,7 +14,6 @@ use crate::utils::lock_or_recover;
 
 const NO_CLASS_LABEL: &str = "No Class";
 const FALLBACK_SORT_POSITION: i32 = 999;
-const NO_TIME: f32 = -1.0;
 const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
 const IR_CHANGE_OFFSET: f64 = 100.0;
 
@@ -45,17 +44,21 @@ pub struct DriverEntry {
     pub live_position: i32,
     /// Same as `live_position`, but ranked within the car's class.
     pub live_class_position: i32,
-    pub start_pos_overall: i32,
-    pub start_pos_class: i32,
+    /// Starting grid slot, overall and within the class. `None` when the car
+    /// holds none — no qualifying and no results to read one from.
+    pub start_pos_overall: Option<i32>,
+    pub start_pos_class: Option<i32>,
     pub lap: i32,
     pub lap_dist_pct: f32,
-    pub last_lap_time: f32,
-    pub best_lap_time: f32,
+    /// `None` until the car completes a timed lap.
+    pub last_lap_time: Option<f32>,
+    /// `None` until the car sets a lap time.
+    pub best_lap_time: Option<f32>,
     /// Lap time that earned the car its grid slot, from `QualifyResultsInfo`.
-    /// `-1.0` when the car set no qualifying time — the same "no time" marker
-    /// `best_lap_time` uses. Survives into the race, where it is the only lap
-    /// time the field has until the first one is completed.
-    pub qualify_time: f32,
+    /// `None` when the car set no qualifying time. Survives into the race,
+    /// where it is the only lap time the field has until the first one is
+    /// completed.
+    pub qualify_time: Option<f32>,
     pub f2_time: f32,
     pub est_time: f32,
     pub track_surface: TrackSurface,
@@ -82,10 +85,10 @@ pub struct DriverEntry {
     /// without ever entering the pit lane. Cleared once it is back in the world.
     pub is_towed: bool,
     pub pit_state: PitState,
-    /// Speed along the track in m/s, `0` until two samples of the car exist.
+    /// Speed along the track in m/s, `None` until two samples of the car exist.
     /// The sim reports it only for the player; every other car's is derived
     /// from its lap distance — see `CarSpeedTracker`.
-    pub speed: f32,
+    pub speed: Option<f32>,
 }
 
 #[derive(Default)]
@@ -253,10 +256,11 @@ pub fn compute(
                 String::new()
             };
 
-            let (start_overall, start_class) = start_positions
-                .get(&driver.car_idx)
-                .copied()
-                .unwrap_or((0, 0));
+            let start_slot = start_positions.get(&driver.car_idx).copied();
+            let start_overall = start_slot
+                .map(|(overall, _)| overall)
+                .filter(|&pos| pos > 0);
+            let start_class = start_slot.map(|(_, class)| class).filter(|&pos| pos > 0);
 
             let car_screen_name_short = driver.car_screen_name_short.clone();
 
@@ -290,14 +294,16 @@ pub fn compute(
                             .map(|position| position.position)
                             .filter(|&pos| pos > 0)
                     })
-                    .unwrap_or(start_overall),
+                    .or(start_overall)
+                    .unwrap_or(0),
                 class_position: car_idx
                     .car_idx_class_position
                     .get(idx)
                     .copied()
                     .filter(|&pos| pos > 0)
                     .or_else(|| result.and_then(|position| position.class_position))
-                    .unwrap_or(start_class),
+                    .or(start_class)
+                    .unwrap_or(0),
                 live_position: 0,
                 live_class_position: 0,
                 start_pos_overall: start_overall,
@@ -322,19 +328,14 @@ pub fn compute(
                     .get(idx)
                     .copied()
                     .filter(|time| *time > 0.0)
-                    .or_else(|| result.and_then(|position| position.last_time))
-                    .unwrap_or(-1.0),
+                    .or_else(|| result.and_then(|position| position.last_time)),
                 best_lap_time: car_idx
                     .car_idx_best_lap_time
                     .get(idx)
                     .copied()
                     .filter(|time| *time > 0.0)
-                    .or_else(|| result.and_then(|position| position.fastest_time))
-                    .unwrap_or(NO_TIME),
-                qualify_time: qualify_times
-                    .get(&driver.car_idx)
-                    .copied()
-                    .unwrap_or(NO_TIME),
+                    .or_else(|| result.and_then(|position| position.fastest_time)),
+                qualify_time: qualify_times.get(&driver.car_idx).copied(),
                 f2_time: car_idx.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
                 est_time: car_idx.car_idx_est_time.get(idx).copied().unwrap_or(0.0),
                 track_surface: car_idx
@@ -373,20 +374,12 @@ pub fn compute(
                 is_finished: false,
                 is_towed: false,
                 pit_state: PitState::None,
-                speed: 0.0,
+                speed: None,
             }
         })
         .collect();
 
-    entries.sort_by_key(|e| {
-        if e.position > 0 {
-            e.position
-        } else if e.start_pos_overall > 0 {
-            e.start_pos_overall
-        } else {
-            FALLBACK_SORT_POSITION
-        }
-    });
+    entries.sort_by_key(official_sort_key);
 
     // Laps completed, resolved once and kept beside the entries rather than on
     // them: only the finish latch needs it, and the wire does not.
@@ -625,21 +618,17 @@ fn resolve_ranking_mode(is_race: bool, session_state: Option<SessionState>) -> R
 /// the official position so a race run without qualifying — where there is no grid
 /// to read — still ranks by something the sim provided.
 fn grid_sort_key(entry: &DriverEntry) -> i32 {
-    if entry.start_pos_overall > 0 {
-        entry.start_pos_overall
-    } else {
-        FALLBACK_SORT_POSITION + official_sort_key(entry)
-    }
+    entry
+        .start_pos_overall
+        .unwrap_or_else(|| FALLBACK_SORT_POSITION + official_sort_key(entry))
 }
 
 /// Official race position, with cars the sim has not placed yet pushed to the back.
 fn official_sort_key(entry: &DriverEntry) -> i32 {
     if entry.position > 0 {
         entry.position
-    } else if entry.start_pos_overall > 0 {
-        entry.start_pos_overall
     } else {
-        FALLBACK_SORT_POSITION
+        entry.start_pos_overall.unwrap_or(FALLBACK_SORT_POSITION)
     }
 }
 
@@ -1858,8 +1847,8 @@ pub(crate) mod tests {
         assert_eq!(entry.position, 4);
         assert_eq!(entry.class_position, 2);
         assert_eq!(entry.lap, 17);
-        assert_eq!(entry.best_lap_time, 91.2);
-        assert_eq!(entry.last_lap_time, 92.4);
+        assert_eq!(entry.best_lap_time, Some(91.2));
+        assert_eq!(entry.last_lap_time, Some(92.4));
         assert!(!entry.is_retired);
     }
 
@@ -1895,8 +1884,8 @@ pub(crate) mod tests {
         assert_eq!(entry.position, 2);
         assert_eq!(entry.class_position, 1);
         assert_eq!(entry.lap, 19);
-        assert_eq!(entry.best_lap_time, 90.0);
-        assert_eq!(entry.last_lap_time, 90.5);
+        assert_eq!(entry.best_lap_time, Some(90.0));
+        assert_eq!(entry.last_lap_time, Some(90.5));
     }
 
     #[test]
@@ -2087,13 +2076,13 @@ pub(crate) mod tests {
             class_position: position,
             live_position: 0,
             live_class_position: 0,
-            start_pos_overall: position,
-            start_pos_class: position,
+            start_pos_overall: Some(position),
+            start_pos_class: Some(position),
             lap,
             lap_dist_pct,
-            last_lap_time: -1.0,
-            best_lap_time: -1.0,
-            qualify_time: -1.0,
+            last_lap_time: None,
+            best_lap_time: None,
+            qualify_time: None,
             f2_time: 0.0,
             est_time: 0.0,
             track_surface,
@@ -2114,7 +2103,7 @@ pub(crate) mod tests {
             is_finished: false,
             is_towed: false,
             pit_state: PitState::None,
-            speed: 0.0,
+            speed: None,
         }
     }
 
@@ -2213,9 +2202,9 @@ pub(crate) mod tests {
             make_live_entry(5, 2, 0, 0.995, TrackSurface::OnTrack),
         ];
 
-        entries[0].start_pos_overall = 3;
-        entries[1].start_pos_overall = 1;
-        entries[2].start_pos_overall = 2;
+        entries[0].start_pos_overall = Some(3);
+        entries[1].start_pos_overall = Some(1);
+        entries[2].start_pos_overall = Some(2);
 
         assign_static_positions(&mut entries, grid_sort_key);
 
@@ -2234,8 +2223,8 @@ pub(crate) mod tests {
             make_live_entry(1, 2, 0, 0.5, TrackSurface::OnTrack),
         ];
 
-        entries[0].start_pos_overall = 0;
-        entries[1].start_pos_overall = 20;
+        entries[0].start_pos_overall = None;
+        entries[1].start_pos_overall = Some(20);
 
         assign_static_positions(&mut entries, grid_sort_key);
 
@@ -2281,7 +2270,7 @@ pub(crate) mod tests {
             &state,
         );
 
-        assert_eq!(frame.entries[0].qualify_time, 88.5);
+        assert_eq!(frame.entries[0].qualify_time, Some(88.5));
     }
 
     #[test]
@@ -2298,7 +2287,7 @@ pub(crate) mod tests {
             &state,
         );
 
-        assert_eq!(frame.entries[0].qualify_time, NO_TIME);
+        assert_eq!(frame.entries[0].qualify_time, None);
     }
 
     #[test]

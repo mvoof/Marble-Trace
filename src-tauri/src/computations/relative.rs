@@ -124,13 +124,13 @@ mod tests {
             class_position: 0,
             live_position: 0,
             live_class_position: 0,
-            start_pos_overall: 0,
-            start_pos_class: 0,
+            start_pos_overall: None,
+            start_pos_class: None,
             lap: 0,
             lap_dist_pct,
-            last_lap_time: -1.0,
-            best_lap_time: -1.0,
-            qualify_time: -1.0,
+            last_lap_time: None,
+            best_lap_time: None,
+            qualify_time: None,
             f2_time: 0.0,
             est_time: 0.0,
             track_surface: TrackSurface::OnTrack,
@@ -161,7 +161,7 @@ mod tests {
             is_finished: false,
             is_towed: false,
             pit_state: PitState::None,
-            speed: 0.0,
+            speed: None,
         }
     }
 

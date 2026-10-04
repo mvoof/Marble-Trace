@@ -80,10 +80,10 @@ const previewSpeed = (
   idx: number,
   onPitRoad: boolean,
   trackSurface: DriverEntry['trackSurface']
-): number => {
+): number | null => {
   if (trackSurface === TrackSurface.InPitStall) return 0;
 
-  if (trackSurface === TrackSurface.NotInWorld) return 0;
+  if (trackSurface === TrackSurface.NotInWorld) return null;
 
   if (onPitRoad) return PREVIEW_PIT_SPEED_MPS;
 
@@ -92,6 +92,10 @@ const previewSpeed = (
     (idx % PREVIEW_SPEED_VARIANTS) * PREVIEW_SPEED_SPREAD_MPS
   );
 };
+
+/** The sim marks a lap not yet timed with `-1` or `0`; the backend sends null. */
+const lapTimeOrNull = (lapTime: number | undefined): number | null =>
+  lapTime !== undefined && lapTime > 0 ? lapTime : null;
 
 export const computeDriverEntries = (
   carIdx: CarIdxFrame | null,
@@ -131,13 +135,13 @@ export const computeDriverEntries = (
       classPosition: carIdx.car_idx_class_position[idx] ?? 0,
       livePosition: carIdx.car_idx_position[idx] ?? 0,
       liveClassPosition: carIdx.car_idx_class_position[idx] ?? 0,
-      startPosOverall: 0,
-      startPosClass: 0,
+      startPosOverall: null,
+      startPosClass: null,
       lap: carIdx.car_idx_lap[idx] ?? 0,
       lapDistPct: carIdx.car_idx_lap_dist_pct[idx] ?? 0,
-      lastLapTime: carIdx.car_idx_last_lap_time[idx] ?? -1,
-      bestLapTime: carIdx.car_idx_best_lap_time[idx] ?? -1,
-      qualifyTime: -1,
+      lastLapTime: lapTimeOrNull(carIdx.car_idx_last_lap_time[idx]),
+      bestLapTime: lapTimeOrNull(carIdx.car_idx_best_lap_time[idx]),
+      qualifyTime: null,
       f2Time: carIdx.car_idx_f2_time[idx] ?? 0,
       trackSurface,
       iRating: car.iRating,

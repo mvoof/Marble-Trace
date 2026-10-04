@@ -511,12 +511,14 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     const result = new Map<number, number>();
 
     for (const entry of this.root.backendComputed.driverIdentities) {
-      if (!(entry.bestLapTime > 0)) continue;
+      const { bestLapTime } = entry;
+
+      if (bestLapTime === null) continue;
 
       const current = result.get(entry.carClassId);
 
-      if (current === undefined || entry.bestLapTime < current) {
-        result.set(entry.carClassId, entry.bestLapTime);
+      if (current === undefined || bestLapTime < current) {
+        result.set(entry.carClassId, bestLapTime);
       }
     }
 

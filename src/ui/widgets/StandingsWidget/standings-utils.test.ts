@@ -151,7 +151,7 @@ describe('maxScrollOffset', () => {
 
 const makeGapEntry = (entry: Partial<DriverEntry>): DriverEntry =>
   ({
-    bestLapTime: 0,
+    bestLapTime: null,
     f2Time: 0,
     resultsPositionLap: null,
     resultsPositionTime: null,
@@ -215,8 +215,10 @@ describe('getStandingsGap', () => {
   });
 });
 
-const makeBestLapEntry = (bestLapTime: number, qualifyTime: number) =>
-  ({ bestLapTime, qualifyTime }) as DriverEntry;
+const makeBestLapEntry = (
+  bestLapTime: number | null,
+  qualifyTime: number | null
+) => ({ bestLapTime, qualifyTime }) as DriverEntry;
 
 describe('resolveBestLapDisplay', () => {
   it('prefers a lap set in this session', () => {
@@ -227,14 +229,14 @@ describe('resolveBestLapDisplay', () => {
   });
 
   it('stands in the qualifying time until a lap is completed', () => {
-    expect(resolveBestLapDisplay(makeBestLapEntry(-1, 90.4))).toEqual({
+    expect(resolveBestLapDisplay(makeBestLapEntry(null, 90.4))).toEqual({
       time: 90.4,
       isQualifying: true,
     });
   });
 
   it('is empty for a car that never set a time at all', () => {
-    expect(resolveBestLapDisplay(makeBestLapEntry(-1, -1))).toEqual({
+    expect(resolveBestLapDisplay(makeBestLapEntry(null, null))).toEqual({
       time: null,
       isQualifying: false,
     });

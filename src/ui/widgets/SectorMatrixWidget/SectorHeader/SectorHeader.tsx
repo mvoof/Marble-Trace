@@ -70,7 +70,7 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
           className={styles.progressFill}
           style={{
             width: `${lapDistPct * 100}%`,
-            background: getSectorColor(currentSectorIdx),
+            background: getSectorColor(currentSectorIdx ?? 0),
           }}
         />
       </div>
@@ -79,7 +79,8 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
         <span>{Math.round(lapDistPct * 100)}% LAP</span>
 
         <span>
-          S{currentSectorIdx + 1}/{sectorCount}
+          S{currentSectorIdx === null ? '-' : currentSectorIdx + 1}/
+          {sectorCount}
         </span>
       </div>
     </div>

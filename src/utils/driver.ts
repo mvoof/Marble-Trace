@@ -180,6 +180,6 @@ export const computeClassSof = (drivers: CarIdentity[]): number => {
  * the qualifying time standing in for it before the first flying lap.
  */
 export const hasSetALap = (driver: {
-  bestLapTime: number;
-  qualifyTime: number;
-}): boolean => driver.bestLapTime > 0 || driver.qualifyTime > 0;
+  bestLapTime: number | null;
+  qualifyTime: number | null;
+}): boolean => driver.bestLapTime !== null || driver.qualifyTime !== null;

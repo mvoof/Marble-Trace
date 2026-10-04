@@ -1,4 +1,4 @@
-//! Generation of the frontend contract: `src/types/bindings.ts` and the two
+//! Generation of the frontend contract: `src/types/bindings.ts` and the
 //! generated value files beside it.
 //!
 //! This used to sit inline in `run()`, together with thirty `#[cfg(feature =
@@ -26,8 +26,8 @@ use specta_typescript::Typescript;
 /// run`/`tauri dev` happen to set cwd to `src-tauri/`, and panicked on
 /// `NotFound` the moment that stopped being true.
 ///
-/// The types land in `src/types/`, which is the contract layer. The two value
-/// files do not: a default and an event name are values, and `types/` holds
+/// The types land in `src/types/`, which is the contract layer. The value
+/// files mostly do not: a default and an event name are values, and `types/` holds
 /// types. They go to `src/utils/`, which is where the frontend already keeps
 /// its shared constants and which every layer above it may import — including
 /// the widget manifests, whose shipped defaults are the reason these have to be
@@ -40,6 +40,13 @@ pub const CONSTANTS_PATH: &str = concat!(
 pub const EVENTS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../src/utils/backend-events.ts"
+);
+/// The telemetry mask bits are the one value file that lands in `src/types/`:
+/// their export names are `TelemetryEventName`, a contract type that
+/// `src/types/` has to be able to name without importing from `src/utils/`.
+pub const TELEMETRY_EVENT_BITS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../src/types/telemetry-event-bits.ts"
 );
 
 /// Every type the frontend may name, collected from the modules that declare
@@ -55,7 +62,7 @@ pub fn collect_types() -> TypeCollection {
     types
 }
 
-/// Writes all three generated files.
+/// Writes every generated file.
 pub fn export() {
     Typescript::default()
         .export_to(BINDINGS_PATH, &collect_types())
@@ -63,6 +70,7 @@ pub fn export() {
 
     crate::model::defaults::export_constants(CONSTANTS_PATH).unwrap();
     crate::model::events::export_event_names(EVENTS_PATH).unwrap();
+    crate::model::telemetry_events::export_telemetry_event_bits(TELEMETRY_EVENT_BITS_PATH).unwrap();
 }
 
 #[cfg(test)]

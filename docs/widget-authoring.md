@@ -66,11 +66,10 @@ expensive.
 Three questions, in order.
 
 **Does the field exist?** Offline, the answer is `src/types/bindings.ts` — the
-generated contract, and the only honest list. It is written in **snake_case**
-(`velocity_x`, `steering_wheel_angle`) even though `AGENTS.md` says everything on
-the wire is camelCase. Both are true and neither is a bug: serde renames the
-payload, specta exports the Rust field names, and the store reads the generated
-type. Search it in snake*case. Against a live sim, the answer is the
+generated contract, and the only honest list. The raw sim frames in it are
+**snake_case** (`velocity_x`, `steering_wheel_angle`) — they keep kerb's names —
+while the bundle envelope and every computed frame are camelCase (`AGENTS.md`
+→ Rust Backend). Search for a raw field in snake*case. Against a live sim, the answer is the
 **Telemetry Inspector** (Settings → Maintenance): it browses the raw
 `SourceFrame`, which is a \_superset* of the bundle — every field the adapter
 produced, including ones no widget receives — and the parsed session snapshot
@@ -93,9 +92,10 @@ budget test (step 9).
 **Never** integrate 60 Hz against telemetry `sessionTime` — use
 `performance.now()`.
 
-**Is it demand-gated?** The gated fields are the members of the
-`TelemetryEventName` union in `src/types/telemetry-events.ts` — **read that file,
-it is the list**, and it grows. At the time of writing it holds eight:
+**Is it demand-gated?** The gated fields are the
+exports of `src/types/telemetry-event-bits.ts` (generated from
+`src-tauri/src/model/telemetry_events.rs`) — **read that file, it is the list**,
+and it grows. At the time of writing it holds eight:
 `carDynamics`, `carInputs`, `carPositions`, `lapDelta` (the 60 Hz four, the
 **hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`.
 

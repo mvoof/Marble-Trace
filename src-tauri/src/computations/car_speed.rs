@@ -20,10 +20,13 @@ const MAX_SAMPLE_GAP_S: f64 = 1.0;
 struct Sample {
     lap_dist_pct: f32,
     session_time: f64,
-    speed: f64,
+    /// `None` until a second sample of the car has produced a first estimate.
+    speed: Option<f64>,
 }
 
 /// Every car's speed along the track, in m/s, derived from its lap distance.
+/// `None` while there is no estimate — a car out of the world, one sampled only
+/// once, or one whose last sample was a teleport.
 ///
 /// The sim reports speed only for the player's own car; for everyone else the
 /// lap distance is the only thing that moves. The player's entry takes the real
@@ -52,7 +55,7 @@ impl CarSpeedTracker {
 
         for entry in entries.iter_mut() {
             if entry.is_player {
-                entry.speed = player_speed.max(0.0);
+                entry.speed = Some(player_speed.max(0.0));
 
                 continue;
             }
@@ -65,32 +68,32 @@ impl CarSpeedTracker {
         self.samples.clear();
     }
 
-    fn track(&mut self, entry: &DriverEntry, now: f64, track_length_m: f64) -> f32 {
+    fn track(&mut self, entry: &DriverEntry, now: f64, track_length_m: f64) -> Option<f32> {
         let in_world = entry.track_surface != TrackSurface::NotInWorld && entry.lap_dist_pct >= 0.0;
 
         if !in_world {
             self.samples.remove(&entry.car_idx);
 
-            return 0.0;
+            return None;
         }
 
         let fresh = Sample {
             lap_dist_pct: entry.lap_dist_pct,
             session_time: now,
-            speed: 0.0,
+            speed: None,
         };
 
         let Some(previous) = self.samples.get(&entry.car_idx) else {
             self.samples.insert(entry.car_idx, fresh);
 
-            return 0.0;
+            return None;
         };
 
         let elapsed = now - previous.session_time;
 
         // Same tick twice, or the sim paused: nothing moved, keep the estimate.
         if elapsed <= 0.0 {
-            return previous.speed as f32;
+            return previous.speed.map(|speed| speed as f32);
         }
 
         let raw =
@@ -99,21 +102,24 @@ impl CarSpeedTracker {
         if elapsed > MAX_SAMPLE_GAP_S || !(0.0..=MAX_PLAUSIBLE_SPEED_MPS).contains(&raw) {
             self.samples.insert(entry.car_idx, fresh);
 
-            return 0.0;
+            return None;
         }
 
         let weight = elapsed / (SMOOTHING_TAU_S + elapsed);
-        let seeded = previous.speed <= 0.0;
-        let speed = if seeded {
-            raw
-        } else {
-            previous.speed + (raw - previous.speed) * weight
+        let speed = match previous.speed {
+            Some(previous_speed) => previous_speed + (raw - previous_speed) * weight,
+            None => raw,
         };
 
-        self.samples
-            .insert(entry.car_idx, Sample { speed, ..fresh });
+        self.samples.insert(
+            entry.car_idx,
+            Sample {
+                speed: Some(speed),
+                ..fresh
+            },
+        );
 
-        speed as f32
+        Some(speed as f32)
     }
 }
 
@@ -144,8 +150,8 @@ mod tests {
         make_live_entry(1, 1, 0, lap_dist_pct, TrackSurface::OnTrack)
     }
 
-    fn drive(tracker: &mut CarSpeedTracker, pcts: &[f32]) -> f32 {
-        let mut last = 0.0;
+    fn drive(tracker: &mut CarSpeedTracker, pcts: &[f32]) -> Option<f32> {
+        let mut last = None;
 
         for (tick, pct) in pcts.iter().enumerate() {
             let mut entries = [entry_at(*pct)];
@@ -160,7 +166,7 @@ mod tests {
     fn test_steady_progress_reads_as_its_speed() {
         let mut tracker = CarSpeedTracker::default();
         // 0.001 of 5 km per 0.1 s = 50 m/s
-        let speed = drive(&mut tracker, &[0.100, 0.101, 0.102, 0.103]);
+        let speed = drive(&mut tracker, &[0.100, 0.101, 0.102, 0.103]).unwrap();
 
         assert!((speed - 50.0).abs() < 0.5, "got {speed}");
     }
@@ -168,7 +174,7 @@ mod tests {
     #[test]
     fn test_crossing_the_line_does_not_spike() {
         let mut tracker = CarSpeedTracker::default();
-        let speed = drive(&mut tracker, &[0.998, 0.999, 0.000, 0.001]);
+        let speed = drive(&mut tracker, &[0.998, 0.999, 0.000, 0.001]).unwrap();
 
         assert!((speed - 50.0).abs() < 0.5, "got {speed}");
     }
@@ -178,7 +184,7 @@ mod tests {
         let mut tracker = CarSpeedTracker::default();
         let speed = drive(&mut tracker, &[0.100, 0.101, 0.400]);
 
-        assert_eq!(speed, 0.0);
+        assert_eq!(speed, None);
     }
 
     #[test]
@@ -190,6 +196,6 @@ mod tests {
 
         tracker.apply(&mut entries, Some(0.0), TRACK_M, 61.5);
 
-        assert_eq!(entries[0].speed, 61.5);
+        assert_eq!(entries[0].speed, Some(61.5));
     }
 }

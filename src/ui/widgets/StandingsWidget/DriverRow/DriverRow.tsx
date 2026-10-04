@@ -166,7 +166,7 @@ export const DriverRow = observer(
 
     const classBest = standingsWidget.classBestLapMap.get(driver.carClassId);
     const isClassBestLap =
-      driver.bestLapTime > 0 &&
+      driver.bestLapTime !== null &&
       classBest !== undefined &&
       driver.bestLapTime === classBest;
 
@@ -278,11 +278,7 @@ export const DriverRow = observer(
         {settings.showLastLap && (
           <div className={`${styles.cell} ${styles.cellRight}`}>
             <span className={`${styles.lastLap} ${dimClass}`}>
-              {isPit
-                ? '-'
-                : formatLapTime(
-                    driver.lastLapTime > 0 ? driver.lastLapTime : null
-                  )}
+              {isPit ? '-' : formatLapTime(driver.lastLapTime)}
             </span>
           </div>
         )}

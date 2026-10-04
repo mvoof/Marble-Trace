@@ -28,7 +28,8 @@ export interface SectorChipState {
 
 export interface SectorChipInput {
   sectorIndex: number;
-  currentSectorIdx: number;
+  /** Null while the car is off the lap: every sector is still ahead. */
+  currentSectorIdx: number | null;
   sectorTimes: readonly (number | null)[];
   sectorDeltas: readonly (number | null)[];
   currentLapTime: number;
@@ -63,11 +64,14 @@ export const sectorChipStateOf = ({
 }: SectorChipInput): SectorChipState => {
   const sectorTime = sectorTimes[sectorIndex] ?? null;
 
+  const isOnLap = currentSectorIdx !== null;
+
   const isDone =
-    sectorIndex < currentSectorIdx || (sectorTime !== null && sectorTime > 0);
+    (isOnLap && sectorIndex < currentSectorIdx) ||
+    (sectorTime !== null && sectorTime > 0);
 
   const isCurrent = sectorIndex === currentSectorIdx && !isDone;
-  const isFuture = sectorIndex > currentSectorIdx;
+  const isFuture = !isOnLap || sectorIndex > currentSectorIdx;
 
   const delta = sectorDeltas[sectorIndex] ?? null;
 

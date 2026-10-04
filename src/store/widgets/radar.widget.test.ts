@@ -42,8 +42,8 @@ describe('RadarWidgetStore activation', () => {
       rootStore.backendComputed.updateProximity({
         nearbyCars: [],
         radarDistances: {
-          frontDist: 999,
-          rearDist: 999,
+          frontDist: null,
+          rearDist: null,
           leftDist: null,
           rightDist: null,
         },

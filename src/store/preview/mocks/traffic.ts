@@ -36,8 +36,6 @@ export const PREVIEW_CAR_LENGTH_M = 4.4;
 
 /** Beyond this the backend stops calling a car ahead or behind a bumper gap. */
 const BUMPER_THRESHOLD_M = 2.2;
-/** What the backend reports when nothing is in range on that side. */
-const NO_CAR_DIST_M = 999;
 
 const bumperGap = (clearance: number): number =>
   Math.max(0, clearance - PREVIEW_CAR_LENGTH_M);
@@ -85,8 +83,8 @@ const computeRadarDistances = (cars: NearbyCar[]): RadarDistances => {
     [left?.carIdx, right?.carIdx].filter((carIdx) => carIdx !== undefined)
   );
 
-  let frontDist = NO_CAR_DIST_M;
-  let rearDist = NO_CAR_DIST_M;
+  let frontDist: number | null = null;
+  let rearDist: number | null = null;
 
   for (const car of cars) {
     if (claimed.has(car.carIdx)) {
@@ -94,11 +92,11 @@ const computeRadarDistances = (cars: NearbyCar[]): RadarDistances => {
     }
 
     if (car.longitudinalDist > BUMPER_THRESHOLD_M) {
-      frontDist = Math.min(frontDist, bumperGap(car.clearance));
+      frontDist = Math.min(frontDist ?? Infinity, bumperGap(car.clearance));
     }
 
     if (car.longitudinalDist < -BUMPER_THRESHOLD_M) {
-      rearDist = Math.min(rearDist, bumperGap(car.clearance));
+      rearDist = Math.min(rearDist ?? Infinity, bumperGap(car.clearance));
     }
   }
 

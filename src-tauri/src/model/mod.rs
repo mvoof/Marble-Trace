@@ -21,6 +21,7 @@ pub mod relative;
 pub mod remote;
 pub mod session;
 pub mod sim_perf;
+pub mod telemetry_events;
 pub mod track_shape;
 pub mod ts_values;
 

@@ -127,15 +127,21 @@ Four layers with strict one-way imports:
   event name is a value the frontend needs as a compile-time literal (widget
   manifests are read at import time, long before anything could `await` a
   command). Those are declared once via the `ts_values!` macro
-  (`model/ts_values.rs`) and generated into `src/utils/backend-constants.ts` and
-  `src/utils/backend-events.ts`. Both are checked in and pinned by a test, so a
-  Rust constant changed without regenerating fails `cargo test`.
-- **Everything on the wire is camelCase.** `TelemetryBundle`,
-  `TelemetrySlowBundle` and `SourceFrame` all carry
-  `#[serde(rename_all = "camelCase")]` like the frames inside them. If you add a
-  rename, check `SLOW_FIELD_KEYS` in `remote/hub.rs`: it matches field names
-  against the _encoded_ bundle, and a stale entry there silently strips the slow
-  tiers off every remote screen rather than failing.
+  (`model/ts_values.rs`) and generated into `src/utils/backend-constants.ts`,
+  `src/utils/backend-events.ts` and `src/types/telemetry-event-bits.ts` (the
+  demand mask). All are checked in and pinned by a test, so a Rust constant
+  changed without regenerating fails `cargo test`.
+- **The envelope and computed frames are camelCase; raw frames carry kerb's
+  names.** `TelemetryBundle`, `TelemetrySlowBundle` and `SourceFrame` carry
+  `#[serde(rename_all = "camelCase")]`, and so does every frame the project
+  produces (`computations/`, the parsed session snapshot). The raw sim frames —
+  `carDynamics`, `carInputs`, `carStatus`, `chassis`, `lapTiming`, `carIdx`,
+  `carPositions` — keep kerb's snake*case names and the sim's own `-1`/`0`
+  markers; that is a decision, not a backlog. A computed frame says "no value"
+  with `Option`, never a marker. Check `bindings.ts` for the frame you read. If
+  you add a rename, check `SLOW_FIELD_KEYS` in `remote/hub.rs`: it matches field
+  names against the \_encoded* bundle, and a stale entry there silently strips
+  the slow tiers off every remote screen rather than failing.
 - Never use `f32::INFINITY`/`f32::NAN` in payloads — use finite placeholders or `Option<f32>`.
 - All imports at top of file; no fully-qualified paths in logic.
 
@@ -322,10 +328,10 @@ the bundle.
 
 ### Demand-gated bundle fields
 
-Seven bundle fields are filled **only while a widget asks for them**: the four
-60 Hz frames (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`) and the
+Eight bundle fields are filled **only while a widget asks for them**: the four
+60 Hz frames (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`), the
 three heavy per-car frames on the 10 Hz tier (`driverEntries`, `relative`,
-`proximity`). Everything else is always sent. Every
+`proximity`) and `incidents`. Everything else is always sent. Every
 widget declares its appetite in its own `manifest.ts`:
 
 ```ts
@@ -339,9 +345,10 @@ export const G_METER_MANIFEST: WidgetManifest = {
 `SimStore.updateActiveEvents` unions the declarations of every **enabled** widget
 in the active layout and sends the mask to the backend
 (`set_active_events`); `emitter.rs` leaves an unrequested field out of the
-bundle. The names and their bit values live in `src/types/telemetry-events.ts`
-and must match `src-tauri/src/telemetry/state.rs` (`EVENT_DRIVER_ENTRIES` and
-friends).
+bundle. The names and their bit values are declared once, in
+`src-tauri/src/model/telemetry_events.rs` (`ts_values!`), and generated into
+`src/types/telemetry-event-bits.ts`; `src/types/telemetry-events.ts` derives
+`TelemetryEventName` from it. A new gated field is one line there.
 
 **Gate the publication, never the computation.** A processor that carries state
 — fuel, lap log, pit stops, standings, the reference lap — keeps running whether

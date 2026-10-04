@@ -34,7 +34,6 @@ const DRY_TRACK_WETNESS = 1;
 const MAX_TRACK_WETNESS = 7;
 
 /** What the backend reports when nothing is in range on that side. */
-const NO_CAR_DIST_M = 999;
 
 const seed = (scenarioId: string) => {
   const store = new RendererCore({ skipInit: true });
@@ -407,7 +406,7 @@ describe('traffic scenarios', () => {
     // Bumper to bumper, which is a clearance of about one car length.
     expect(Math.abs(car?.bumperDist ?? 9)).toBeLessThan(1);
     expect(proximity?.radarDistances.rearDist ?? 9).toBeLessThan(1);
-    expect(proximity?.radarDistances.frontDist).toBe(NO_CAR_DIST_M);
+    expect(proximity?.radarDistances.frontDist).toBeNull();
   });
 
   it('derives every per-car value from the car the scenario stated', () => {
@@ -958,8 +957,8 @@ describe('session scenarios', () => {
 
     expect(radar?.leftDist).not.toBeNull();
     expect(radar?.rightDist).not.toBeNull();
-    expect(radar?.rearDist ?? NO_CAR_DIST_M).toBeLessThan(NO_CAR_DIST_M);
-    expect(radar?.frontDist ?? NO_CAR_DIST_M).toBeLessThan(NO_CAR_DIST_M);
+    expect(radar?.rearDist).not.toBeNull();
+    expect(radar?.frontDist).not.toBeNull();
   });
 
   it('runs the caution at pace-car speed', () => {

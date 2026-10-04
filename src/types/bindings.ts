@@ -753,19 +753,29 @@ export type DriverEntry = {
    * Same as `live_position`, but ranked within the car's class.
    */
   liveClassPosition: number;
-  startPosOverall: number;
-  startPosClass: number;
+  /**
+   * Starting grid slot, overall and within the class. `None` when the car
+   * holds none — no qualifying and no results to read one from.
+   */
+  startPosOverall: number | null;
+  startPosClass: number | null;
   lap: number;
   lapDistPct: number;
-  lastLapTime: number;
-  bestLapTime: number;
+  /**
+   * `None` until the car completes a timed lap.
+   */
+  lastLapTime: number | null;
+  /**
+   * `None` until the car sets a lap time.
+   */
+  bestLapTime: number | null;
   /**
    * Lap time that earned the car its grid slot, from `QualifyResultsInfo`.
-   * `-1.0` when the car set no qualifying time — the same "no time" marker
-   * `best_lap_time` uses. Survives into the race, where it is the only lap
-   * time the field has until the first one is completed.
+   * `None` when the car set no qualifying time. Survives into the race,
+   * where it is the only lap time the field has until the first one is
+   * completed.
    */
-  qualifyTime: number;
+  qualifyTime: number | null;
   f2Time: number;
   estTime: number;
   trackSurface: TrackSurface;
@@ -799,11 +809,11 @@ export type DriverEntry = {
   isTowed: boolean;
   pitState: PitState;
   /**
-   * Speed along the track in m/s, `0` until two samples of the car exist.
+   * Speed along the track in m/s, `None` until two samples of the car exist.
    * The sim reports it only for the player; every other car's is derived
    * from its lap distance — see `CarSpeedTracker`.
    */
-  speed: number;
+  speed: number | null;
 };
 
 /**
@@ -1057,7 +1067,11 @@ export type InstallMismatch = {
  */
 export type LapDeltaFrame = {
   sectorTimes: (number | null)[];
-  currentSectorIdx: number;
+  /**
+   * `None` while the player is off the lap: no lap distance, a reset, or a
+   * track without sector boundaries.
+   */
+  currentSectorIdx: number | null;
   /**
    * Per-sector delta vs driver's personal best lap (sector matrix display only)
    */
@@ -1457,8 +1471,14 @@ export type RaceFlags = {
 };
 
 export type RadarDistances = {
-  frontDist: number;
-  rearDist: number;
+  /**
+   * Bumper gap to the nearest car ahead, in meters. `None` when there is none.
+   */
+  frontDist: number | null;
+  /**
+   * Bumper gap to the nearest car behind, in meters. `None` when there is none.
+   */
+  rearDist: number | null;
   leftDist: number | null;
   rightDist: number | null;
 };

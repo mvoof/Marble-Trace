@@ -105,12 +105,12 @@ fn driver_entry(entry: &mut DriverEntry) {
     entry.relative_lap_dist = round(entry.relative_lap_dist, POSITION_DP);
     entry.est_time = round(entry.est_time, GAP_DP);
     entry.f2_time = round(entry.f2_time, GAP_DP);
-    entry.last_lap_time = round(entry.last_lap_time, LAP_TIME_DP);
-    entry.best_lap_time = round(entry.best_lap_time, LAP_TIME_DP);
-    entry.qualify_time = round(entry.qualify_time, LAP_TIME_DP);
+    round_opt(&mut entry.last_lap_time, LAP_TIME_DP);
+    round_opt(&mut entry.best_lap_time, LAP_TIME_DP);
+    round_opt(&mut entry.qualify_time, LAP_TIME_DP);
     entry.class_est_lap_time = round(entry.class_est_lap_time, LAP_TIME_DP);
     round_opt(&mut entry.results_position_time, LAP_TIME_DP);
-    entry.speed = round(entry.speed, SPEED_DP);
+    round_opt(&mut entry.speed, SPEED_DP);
 }
 
 pub fn driver_entries(frame: &mut DriverEntriesFrame) {
@@ -132,8 +132,8 @@ pub fn proximity(frame: &mut ProximityFrame) {
         car.bumper_dist = round(car.bumper_dist, DISTANCE_DP);
     }
 
-    frame.radar_distances.front_dist = round(frame.radar_distances.front_dist, DISTANCE_DP);
-    frame.radar_distances.rear_dist = round(frame.radar_distances.rear_dist, DISTANCE_DP);
+    round_opt(&mut frame.radar_distances.front_dist, DISTANCE_DP);
+    round_opt(&mut frame.radar_distances.rear_dist, DISTANCE_DP);
     round_opt(&mut frame.radar_distances.left_dist, DISTANCE_DP);
     round_opt(&mut frame.radar_distances.right_dist, DISTANCE_DP);
 }

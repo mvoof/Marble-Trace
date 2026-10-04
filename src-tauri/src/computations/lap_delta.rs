@@ -64,7 +64,9 @@ impl LapDeltaState {
 #[serde(rename_all = "camelCase")]
 pub struct LapDeltaFrame {
     pub sector_times: Vec<Option<f32>>,
-    pub current_sector_idx: i32,
+    /// `None` while the player is off the lap: no lap distance, a reset, or a
+    /// track without sector boundaries.
+    pub current_sector_idx: Option<i32>,
     /// Per-sector delta vs driver's personal best lap (sector matrix display only)
     pub sector_deltas: Vec<Option<f32>>,
 }
@@ -426,7 +428,7 @@ fn build_frame(
 
     LapDeltaFrame {
         sector_times: state.sector_times.clone(),
-        current_sector_idx,
+        current_sector_idx: (current_sector_idx >= 0).then_some(current_sector_idx),
         sector_deltas,
     }
 }
