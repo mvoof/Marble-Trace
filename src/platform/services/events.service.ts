@@ -124,10 +124,25 @@ export interface TrackRotationPayload {
   rotation: number;
 }
 
+export type TrackRotateDirection = 'cw' | 'ccw';
+
+export interface TrackRotationRequest {
+  trackId: string;
+  direction: TrackRotateDirection;
+}
+
 /**
- * Broadcast rather than targeted: the map is turned from whichever window shows
- * it — an overlay in drag mode, or the layout editor in main — and every window
- * plus every remote screen has to end up on the same angle.
+ * An overlay's rotate button. It asks main for a step rather than sending the
+ * angle it computed: two screens turned in quick succession both start from
+ * the angle they last heard of, and only main, applying the steps in order,
+ * ends up with both turns.
+ */
+export const emitTrackRotationRequest = (request: TrackRotationRequest) =>
+  emitTo(MAIN, 'track-rotation-requested', request);
+
+/**
+ * Main's answer to every rotation, broadcast: every overlay plus every remote
+ * screen has to end up on the angle main stored.
  */
 export const emitTrackRotation = async (payload: TrackRotationPayload) => {
   await emit('track-rotation-changed', payload);

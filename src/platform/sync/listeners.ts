@@ -41,7 +41,6 @@ export const setupMainListeners = async (
   const unlistens: UnlistenFn[] = [];
 
   unlistens.push(await listenOverlayModes(root));
-  unlistens.push(await listenTrackRotation(root));
 
   return unlistens;
 };
@@ -64,8 +63,8 @@ const listenOverlayModes = async (root: RendererCore) => {
 };
 
 /**
- * The map is turned in whichever window shows it — an overlay in drag mode, or
- * the layout editor in main — and both windows draw the same angle afterwards.
+ * Main owns the angle (`TrackRotationStore`); an overlay mirrors every turn it
+ * broadcasts, its own included, which replaces the angle shown in advance.
  */
 const listenTrackRotation = (root: RendererCore) =>
   listenTo<TrackRotationPayload>('track-rotation-changed', (e) => {

@@ -14,6 +14,7 @@ import { RemoteDevicesStore } from './remote/remote-devices.store';
 import { FpsDiagnosticsStore } from './diagnostics/fps-diagnostics.store';
 import { DiagnosticsExportStore } from './diagnostics/diagnostics-export.store';
 import { TelemetryInspectorStore } from './diagnostics/telemetry-inspector.store';
+import { TrackRotationStore } from './widgets/track-rotation.store';
 
 /**
  * The main window: the renderer core, the app-window stores, and everything
@@ -33,6 +34,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
   fpsDiagnostics: FpsDiagnosticsStore;
   diagnosticsExport: DiagnosticsExportStore;
   telemetryInspector: TelemetryInspectorStore;
+  trackRotation: TrackRotationStore;
 
   constructor(options?: { skipInit?: boolean }) {
     super(options);
@@ -50,6 +52,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     this.fpsDiagnostics = new FpsDiagnosticsStore(this);
     this.telemetryInspector = new TelemetryInspectorStore(this);
     this.diagnosticsExport = new DiagnosticsExportStore(this);
+    this.trackRotation = new TrackRotationStore();
 
     if (!options?.skipInit) {
       void this.twitchAuth.init();

@@ -31,6 +31,7 @@ import { pitStrategyOf } from '@store/settings/app-settings.store';
 import { registerPitServiceMainReactions } from './pit-service-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { registerRemotePublishing } from './remote-publish';
+import { registerTrackRotationOwnership } from './track-rotation-sync';
 import { listMonitorBounds, resolveMonitorByName } from './overlay-resolution';
 import { setUpFirstRun } from '@store/settings/first-run';
 import { watchMonitorArrangement } from './monitor-watch';
@@ -391,6 +392,7 @@ export const initMainSync = async (root: MainRoot) => {
         mainUnlistens,
         settingsActionUnlisten,
         deviceBindingUnlistens,
+        trackRotationUnlisten,
         closeRequestedUnlisten,
       ] = await Promise.all([
         listenTo<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
@@ -417,6 +419,7 @@ export const initMainSync = async (root: MainRoot) => {
         setupMainListeners(root),
         listenSettingsActions(root),
         setupDeviceBindings(root),
+        registerTrackRotationOwnership(root),
         getCurrentWindow().onCloseRequested(async (event) => {
           event.preventDefault();
 
@@ -472,6 +475,7 @@ export const initMainSync = async (root: MainRoot) => {
         stopRemotePublishing();
         overlaySettingsUnlisten();
         settingsActionUnlisten();
+        trackRotationUnlisten();
         closeRequestedUnlisten();
 
         mainUnlistens.forEach((u) => u());

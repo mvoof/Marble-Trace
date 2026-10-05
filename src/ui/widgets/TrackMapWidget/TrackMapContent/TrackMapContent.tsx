@@ -12,10 +12,7 @@ export const TrackMapContent = observer(() => {
   const sessionData = useSessionStore();
   const trackMapWidget = useTrackMapWidgetStore();
 
-  const { sessionInfo } = sessionData;
-
-  const trackId =
-    sessionInfo && sessionInfo.trackId >= 0 ? String(sessionInfo.trackId) : '';
+  const trackId = sessionData.trackKey;
 
   useEffect(() => {
     if (!trackId) return;

@@ -29,6 +29,20 @@ export class SessionStore {
     return this.sessionInfo.sessions[num]?.sessionType ?? null;
   }
 
+  /**
+   * The track as the stored track settings key it, or `''` while no session
+   * names one (the sim sends `-1`).
+   */
+  get trackKey(): string {
+    const info = this.sessionInfo;
+
+    if (!info || info.trackId < 0) {
+      return '';
+    }
+
+    return String(info.trackId);
+  }
+
   private get currentSessionLabel(): string | null {
     const info = this.sessionInfo;
 

@@ -8,12 +8,14 @@ import {
   useStore,
   useTrackMapWidgetStore,
 } from '@store/root-store-context';
+import { useTrackRotationStore } from '@store/main-root-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
 export const TrackMapSection = observer(() => {
   const store = useStore();
   const trackMap = useTrackMapWidgetStore();
+  const trackRotation = useTrackRotationStore();
   const session = useSessionStore();
   const { message } = App.useApp();
   const { t } = useTranslation('main-app');
@@ -73,6 +75,7 @@ export const TrackMapSection = observer(() => {
               if (sessionTrackId === null) return;
 
               void trackMap.deleteTrackData(String(sessionTrackId));
+              void trackRotation.forget(String(sessionTrackId));
             }}
           >
             {t('settingsPage.trackMap.resetCurrentTrackData')}

@@ -5,32 +5,38 @@ import {
   deleteTrackShape,
   resetPitLanePct,
 } from '@platform/services/track.service';
+import { readTrackRotations } from '@platform/services/track-settings.service';
 import {
   emitTrackMapClear,
-  emitTrackRotation,
+  emitTrackRotationRequest,
+  type TrackRotateDirection,
 } from '@platform/services/events.service';
 
-export type TrackRotateDirection = 'cw' | 'ccw';
-
-interface StoredTrackData {
-  rotation?: number;
-}
-
-interface StoredTracks {
-  [trackId: string]: StoredTrackData;
-}
-
-const TRACKS_STORE_KEY = 'recorded-tracks';
-const TRACK_SETTINGS_STORE = 'track-settings.json';
+export type { TrackRotateDirection };
 
 const ROTATION_STEP_DEGREES = 90;
 const FULL_TURN_DEGREES = 360;
+
+/** The angle one press of a rotate button turns the map to. */
+export const nextTrackRotation = (
+  rotation: number,
+  direction: TrackRotateDirection
+): number => {
+  const step =
+    direction === 'cw' ? ROTATION_STEP_DEGREES : -ROTATION_STEP_DEGREES;
+
+  return (rotation + step + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
+};
 
 /**
  * The recorded track: its shape, the recording in progress and the angle the
  * map is turned to. App-wide rather than per map instance — the shape arrives
  * from the backend once per track, the pit service measures its lane against
- * it, and the angle is the same on every screen (and is synced to them).
+ * it, and the angle is the same on every screen.
+ *
+ * The angle is a mirror of main's: main owns the file it is stored in
+ * (`TrackRotationStore`), applies every turn and broadcasts the result. A
+ * rotate button here only shows the new angle until main's answer lands.
  */
 export class TrackMapWidgetStore {
   isRecording = false;
@@ -42,7 +48,7 @@ export class TrackMapWidgetStore {
   trackRotation = 0;
 
   /**
-   * Angles received from another window, by track id.
+   * Angles received from main, by track id.
    *
    * A remote screen has no settings file to read them from, and the messages
    * that carry the shape, the session and the rotation arrive in no fixed
@@ -51,7 +57,10 @@ export class TrackMapWidgetStore {
    */
   private readonly receivedRotations = new Map<string, number>();
 
-  /** False in the layout editor's preview store, which owns no track of its own. */
+  /**
+   * False in the layout editor's preview store, which owns no track of its own:
+   * its rotate buttons turn the sample map and never reach main.
+   */
   private readonly persists: boolean;
 
   constructor({ persists = true }: { persists?: boolean } = {}) {
@@ -86,7 +95,7 @@ export class TrackMapWidgetStore {
   }
 
   /**
-   * Applies an angle another window turned the map to.
+   * Applies the angle main stored for a track.
    *
    * The value is remembered per track as well as applied, because it can reach
    * a window before the track it belongs to has loaded there.
@@ -96,7 +105,11 @@ export class TrackMapWidgetStore {
     this.trackRotation = rotation;
   }
 
-  /** Clears stale shape on a track change and restores the saved rotation. */
+  /**
+   * Clears stale shape on a track change and restores the saved rotation. The
+   * file is only read: an angle main broadcast before this window was listening
+   * is on disk already.
+   */
   async onTrackChanged(trackId: string) {
     if (this.currentTrackId !== trackId) {
       this.clearTrackShape();
@@ -111,8 +124,7 @@ export class TrackMapWidgetStore {
     }
 
     try {
-      const tracks = await this.readStoredTracks();
-      const savedRotation = tracks[trackId]?.rotation;
+      const savedRotation = (await readTrackRotations())[trackId];
 
       if (savedRotation != null) {
         runInAction(() => this.setTrackRotation(savedRotation));
@@ -122,31 +134,23 @@ export class TrackMapWidgetStore {
     }
   }
 
+  /**
+   * Turns the map here at once and asks main for the same step. Main's answer
+   * replaces this angle, so a turn made on another screen meanwhile is not lost.
+   */
   rotateTrack(trackId: string, direction: TrackRotateDirection) {
     if (!this.trackShape) return;
 
-    const step =
-      direction === 'cw' ? ROTATION_STEP_DEGREES : -ROTATION_STEP_DEGREES;
-    const newRotation =
-      (this.trackRotation + step + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
-
-    this.rotateTo(trackId, newRotation);
-  }
-
-  /**
-   * The single way a rotation is applied by the user: it stores the angle,
-   * writes it to disk and tells the other windows and the remote screens, so
-   * the map on a tablet ends up turned the same way as the one on the monitor.
-   */
-  rotateTo(trackId: string, rotation: number) {
-    this.setTrackRotation(rotation);
+    this.setTrackRotation(nextTrackRotation(this.trackRotation, direction));
 
     if (!this.persists) {
       return;
     }
 
-    void this.persistRotation(trackId, rotation);
-    void emitTrackRotation({ trackId, rotation });
+    void emitTrackRotationRequest({ trackId, direction }).catch(
+      (error: unknown) =>
+        console.error('[track-map] failed to reach main:', error)
+    );
   }
 
   async resetPitLaneCalibration(trackId: number) {
@@ -154,9 +158,9 @@ export class TrackMapWidgetStore {
   }
 
   /**
-   * Wipes the recorded shape and everything stored about the track. The clear
-   * event fans out so every window (and the backend recorder) drops its copy;
-   * the disk-side deletion runs once, here.
+   * Wipes the recorded shape. The clear event fans out so every window (and the
+   * backend recorder) drops its copy; the disk-side deletion runs once, here.
+   * The angle is main's to forget (`TrackRotationStore.forget`).
    */
   async deleteTrackData(trackId: string) {
     this.clearTrackShape();
@@ -164,7 +168,6 @@ export class TrackMapWidgetStore {
     await Promise.allSettled([
       emitTrackMapClear(),
       deleteTrackShape(Number(trackId)),
-      this.removeStoredTrack(trackId),
     ]);
   }
 
@@ -186,49 +189,5 @@ export class TrackMapWidgetStore {
     this.trackShape = null;
     this.currentTrackId = null;
     this.trackRotation = 0;
-  }
-
-  // Imported lazily so windows that never touch the track map do not load the
-  // store plugin.
-  private async openTrackSettings() {
-    const { load } = await import('@tauri-apps/plugin-store');
-
-    return load(TRACK_SETTINGS_STORE);
-  }
-
-  private async readStoredTracks(): Promise<StoredTracks> {
-    const store = await this.openTrackSettings();
-
-    return (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
-  }
-
-  private async persistRotation(trackId: string, rotation: number) {
-    // Editing a layout with no session running still turns the map on every
-    // screen; there is simply no track to file the angle under.
-    if (!trackId) {
-      return;
-    }
-
-    try {
-      const store = await this.openTrackSettings();
-      const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
-
-      tracks[trackId] = { rotation };
-
-      await store.set(TRACKS_STORE_KEY, tracks);
-      await store.save();
-    } catch {
-      // ignore
-    }
-  }
-
-  private async removeStoredTrack(trackId: string) {
-    const store = await this.openTrackSettings();
-    const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
-
-    delete tracks[trackId];
-
-    await store.set(TRACKS_STORE_KEY, tracks);
-    await store.save();
   }
 }

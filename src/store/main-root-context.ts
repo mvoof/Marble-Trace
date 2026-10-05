@@ -30,3 +30,4 @@ export const useCompanionAppsStore = () => useMainRoot().companionApps;
 export const useBindingsUiStore = () => useMainRoot().bindingsUi;
 export const useDeviceInputStore = () => useMainRoot().deviceInput;
 export const useRemoteDevicesStore = () => useMainRoot().remoteDevices;
+export const useTrackRotationStore = () => useMainRoot().trackRotation;

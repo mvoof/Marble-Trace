@@ -22,12 +22,12 @@ import { RendererCore } from '@store/renderer-core';
 import {
   RendererCoreContext,
   useSessionStore,
-  useTrackMapWidgetStore,
   useUnitsStore,
   useLayoutsStore,
   useLiveWidgetsStore,
   useSettingsMutationLog,
 } from '@store/root-store-context';
+import { useTrackRotationStore } from '@store/main-root-context';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
@@ -57,47 +57,39 @@ import styles from './LayoutCanvas.module.scss';
  *
  * The editor draws a synthetic track, so rotating it there has to be filed
  * under the track the user is actually on — the preview store owns no track of
- * its own and never writes to disk. The reverse direction matters just as much:
- * a map turned in an overlay must already look turned when the editor opens.
+ * its own and never reaches the file. The reverse direction matters just as
+ * much: a map turned in an overlay must already look turned when the editor
+ * opens.
  */
 const useTrackRotationBridge = (previewStore: RendererCore) => {
-  const trackMapWidget = useTrackMapWidgetStore();
+  const trackRotation = useTrackRotationStore();
   const sessionStore = useSessionStore();
 
   useLayoutEffect(() => {
     const previewMap = previewStore.trackMapWidget;
+    const storedRotation = () =>
+      trackRotation.rotationOf(sessionStore.trackKey);
 
-    runInAction(() =>
-      previewMap.setTrackRotation(trackMapWidget.trackRotation)
-    );
+    runInAction(() => previewMap.setTrackRotation(storedRotation()));
 
     const disposers = [
       reaction(
         () => previewMap.trackRotation,
         (rotation) => {
-          if (rotation === trackMapWidget.trackRotation) {
+          if (rotation === storedRotation()) {
             return;
           }
 
-          const { sessionInfo } = sessionStore;
-          const trackId =
-            sessionInfo && sessionInfo.trackId >= 0
-              ? String(sessionInfo.trackId)
-              : '';
-
-          trackMapWidget.rotateTo(trackId, rotation);
+          void trackRotation.setRotation(sessionStore.trackKey, rotation);
         }
       ),
-      reaction(
-        () => trackMapWidget.trackRotation,
-        (rotation) => {
-          runInAction(() => previewMap.setTrackRotation(rotation));
-        }
-      ),
+      reaction(storedRotation, (rotation) => {
+        runInAction(() => previewMap.setTrackRotation(rotation));
+      }),
     ];
 
     return () => disposers.forEach((dispose) => dispose());
-  }, [previewStore, sessionStore, trackMapWidget]);
+  }, [previewStore, sessionStore, trackRotation]);
 };
 
 interface LayoutCanvasProps {

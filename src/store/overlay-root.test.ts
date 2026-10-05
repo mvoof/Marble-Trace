@@ -155,6 +155,19 @@ vi.mock('./diagnostics/diagnostics-hud.store', async (importOriginal) => {
   };
 });
 
+vi.mock('./widgets/track-rotation.store', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('./widgets/track-rotation.store')>();
+
+  return {
+    ...actual,
+    TrackRotationStore: tracked(
+      'TrackRotationStore',
+      actual.TrackRotationStore
+    ),
+  };
+});
+
 const MAIN_ONLY_STORES = [
   'LayoutEditorStore',
   'CompanionAppsStore',
@@ -165,6 +178,7 @@ const MAIN_ONLY_STORES = [
   'FpsDiagnosticsStore',
   'DiagnosticsExportStore',
   'TelemetryInspectorStore',
+  'TrackRotationStore',
 ];
 
 describe('window roots', () => {
