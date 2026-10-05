@@ -26,6 +26,7 @@ use tracing::{info, warn};
 use super::csp;
 use super::hub::RemoteHub;
 use super::pages::{index_page, unauthorized_page};
+use crate::model::client_protocol::ClientEnvelope;
 use crate::model::remote::RemoteDevice;
 use crate::utils::lock_or_recover;
 
@@ -434,10 +435,51 @@ async fn client_loop(socket: WebSocket, app: AppHandle, hub: Arc<RemoteHub>, scr
     info!("remote: client for screen '{}' disconnected", screen);
 }
 
+/// What one frame from a browser turns out to be.
+#[derive(Debug, PartialEq)]
+enum ClientFrame {
+    /// A report of the device's own display — the one thing a client may send.
+    Device,
+    /// A settings command of the client protocol (ADR-0007). Overlays send
+    /// these to main; a remote screen never may, so it is refused here, before
+    /// anything else could read it.
+    Command,
+    /// Anything else, malformed frames included.
+    Ignored,
+}
+
+fn classify_client_frame(text: &str) -> ClientFrame {
+    if matches!(
+        serde_json::from_str::<ClientEnvelope>(text),
+        Ok(ClientEnvelope::Command { .. })
+    ) {
+        return ClientFrame::Command;
+    }
+
+    match serde_json::from_str::<ClientMessage>(text) {
+        Ok(ClientMessage::Hello { .. }) => ClientFrame::Device,
+        Err(_) => ClientFrame::Ignored,
+    }
+}
+
 /// Parses the one message a client is allowed to send. Anything else is
-/// dropped without a word: a malformed frame from a device on the network must
-/// not be able to disturb the server.
+/// dropped: a malformed frame from a device on the network must not be able
+/// to disturb the server, and a settings command from one is refused — remote
+/// screens are read-only by protocol.
 fn record_client_message(app: &AppHandle, hub: &RemoteHub, screen: &str, text: &str) {
+    match classify_client_frame(text) {
+        ClientFrame::Device => {}
+        ClientFrame::Command => {
+            warn!(
+                "remote: refused a settings command from screen '{}'",
+                screen
+            );
+
+            return;
+        }
+        ClientFrame::Ignored => return,
+    }
+
     let Ok(ClientMessage::Hello {
         viewport_width,
         viewport_height,
@@ -505,7 +547,30 @@ fn language_of(hub: &RemoteHub) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::strip_screen_path;
+    use super::{classify_client_frame, strip_screen_path, ClientFrame};
+
+    #[test]
+    fn refuses_a_settings_command_from_a_browser() {
+        let command = r#"{"kind":"command","clientId":"overlay-1","commandNo":1,"layoutId":"layout","command":{"kind":"setEnabled","widgetId":"fuel","enabled":false}}"#;
+
+        assert_eq!(classify_client_frame(command), ClientFrame::Command);
+    }
+
+    #[test]
+    fn still_takes_the_device_report() {
+        let report = r#"{"type":"hello","viewportWidth":1280,"viewportHeight":800}"#;
+
+        assert_eq!(classify_client_frame(report), ClientFrame::Device);
+    }
+
+    #[test]
+    fn ignores_anything_else() {
+        assert_eq!(classify_client_frame("not json"), ClientFrame::Ignored);
+        assert_eq!(
+            classify_client_frame(r#"{"kind":"hello","clientId":"overlay-1"}"#),
+            ClientFrame::Ignored
+        );
+    }
 
     #[test]
     fn leaves_direct_assets_untouched() {

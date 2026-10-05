@@ -9,10 +9,8 @@
 //! reads a widget record, and declaring one here would put the whole settings shape
 //! into the backend contract for a value it only passes on.
 
-// Nothing in Rust builds or reads a message yet — the overlays talk to main
-// over Tauri events that never enter a Rust handler; the remote hub will, to
-// refuse a command from a browser. The type exists for the contract, which
-// only a `dev` build exports.
+// Built and read by the frontend; in Rust only the remote hub reads one, to
+// refuse a command arriving from a browser.
 #![cfg_attr(not(feature = "dev"), allow(dead_code))]
 
 use serde::{Deserialize, Serialize};

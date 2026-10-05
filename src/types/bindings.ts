@@ -1755,21 +1755,36 @@ export type RelativeFrame = {
 };
 
 /**
- * Control messages the main window may push to the remote screens.
+ * Signals to the widgets of every client — the overlays, over
+ * `EVENT_CLIENT_CONTROL`, and the remote screens, over their socket. The one
+ * vocabulary for both (ADR-0007): each client handles it in one exhaustive
+ * switch, so a kind added here without a handler does not compile.
  *
  * A whitelist rather than a free-form kind: the value reaching the socket is
  * one of these or nothing, so a typo in the main window cannot invent a
  * message the browser will never understand.
  *
- * **A Tauri event never leaves the app.** Anything a hotkey does to a widget
- * needs a variant here too, or the monitors move and the tablet stays where it
- * was.
+ * State never travels here — a value a client must still show after a reload
+ * belongs in its snapshot.
  */
 export type RemoteControlKind =
   | 'standings-class-step'
   | 'standings-scroll'
   | 'stream-chat-scroll'
-  | 'track-rotation';
+  | 'track-rotation'
+  /**
+   * The order box popped up or down. The driver's alone — see
+   * `reaches_remote_screens`.
+   */
+  | 'pit-service-toggle'
+  /**
+   * The chat connectors were shut down; drop the buffered messages.
+   */
+  | 'stream-chat-cleared'
+  /**
+   * The session switched the layout in; show its name for a moment.
+   */
+  | 'layout-activated';
 
 /**
  * What a connected device says about itself.

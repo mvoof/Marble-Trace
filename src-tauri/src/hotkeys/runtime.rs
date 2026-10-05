@@ -12,9 +12,8 @@ use tracing::{debug, info, warn};
 
 use crate::computations::pit_auto::PitAutoCommand;
 use crate::model::events::{
-    RemoteControlKind, WireName, EVENT_HOTKEY_SETTINGS_ACTION, EVENT_OVERLAY_MODES,
-    EVENT_PIT_SERVICE_TOGGLE, EVENT_STANDINGS_CLASS_STEP, EVENT_STANDINGS_SCROLL,
-    EVENT_STREAM_CHAT_SCROLL,
+    RemoteControlKind, WireName, EVENT_CLIENT_CONTROL, EVENT_HOTKEY_SETTINGS_ACTION,
+    EVENT_OVERLAY_MODES,
 };
 use crate::model::hotkeys::{
     Binding, HotkeyContext, HotkeyEffect, HotkeySettingsAction, OverlayModes, ViewControl,
@@ -153,36 +152,30 @@ fn send_to_main(app: &AppHandle, action_id: String) {
 /// To every overlay and every remote screen; each applies it to the instances
 /// it holds that are marked for hotkeys.
 fn send_view_control(app: &AppHandle, control: ViewControl) {
-    let (event, payload, remote) = match control {
-        ViewControl::StandingsClassStep(step) => (
-            EVENT_STANDINGS_CLASS_STEP,
-            json!(step),
-            Some(RemoteControlKind::StandingsClassStep),
-        ),
-        ViewControl::StandingsScroll(rows) => (
-            EVENT_STANDINGS_SCROLL,
-            json!(rows),
-            Some(RemoteControlKind::StandingsScroll),
-        ),
-        ViewControl::StreamChatScroll(rows) => (
-            EVENT_STREAM_CHAT_SCROLL,
-            json!(rows),
-            Some(RemoteControlKind::StreamChatScroll),
-        ),
-        // The order box is the driver's; no remote screen pops it up.
-        ViewControl::PitServiceToggle => (EVENT_PIT_SERVICE_TOGGLE, json!(null), None),
+    let (kind, data) = match control {
+        ViewControl::StandingsClassStep(step) => {
+            (RemoteControlKind::StandingsClassStep, json!(step))
+        }
+        ViewControl::StandingsScroll(rows) => (RemoteControlKind::StandingsScroll, json!(rows)),
+        ViewControl::StreamChatScroll(rows) => (RemoteControlKind::StreamChatScroll, json!(rows)),
+        ViewControl::PitServiceToggle => (RemoteControlKind::PitServiceToggle, json!(null)),
     };
+
+    // The message a remote screen receives over its socket, so an overlay
+    // handles it in the same switch.
+    let message = json!({ "type": kind.wire_name(), "data": data });
 
     for label in app.webview_windows().into_keys() {
         if label.starts_with(OVERLAY_LABEL_PREFIX) {
-            if let Err(error) = app.emit_to(label.as_str(), event, &payload) {
+            if let Err(error) = app.emit_to(label.as_str(), EVENT_CLIENT_CONTROL, &message) {
                 warn!(window = label, "hotkey: overlay unreachable: {error}");
             }
         }
     }
 
-    if let (Some(kind), Some(remote)) = (remote, app.try_state::<RemoteState>()) {
-        remote.hub.publish_control(kind.wire_name(), payload);
+    // The hub drops the kinds that stay on the driver's screens.
+    if let Some(remote) = app.try_state::<RemoteState>() {
+        remote.hub.publish_control(kind.wire_name(), data);
     }
 }
 

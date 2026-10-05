@@ -4,9 +4,8 @@ import {
   emitSnapshotToClient,
   listenToClients,
 } from '@platform/services/events.service';
-import { pitStrategyOf } from '@store/settings/app-settings.store';
 import { listOverlayWindowLabels, monitorLabel } from './overlay-labels';
-import { overlaySnapshotFor } from './client-snapshot';
+import { overlaySnapshotFor, snapshotAppInputs } from './client-snapshot';
 import type { MainRoot } from '@store/main-root';
 import type { RejectedCommand } from '@/types/bindings';
 import type { ClientCommand, CommandMessage } from '@/types/client-protocol';
@@ -230,28 +229,11 @@ export const registerClientPublishing = async (root: MainRoot) => {
   });
 
   const disposePublishing = reaction(
-    () => {
-      const settings = root.appSettings.appSettings;
-
-      return [
-        root.settingsMutations.changeToken,
-        root.layouts.liveLayoutId,
-        settings.hideAllWidgets,
-        settings.hideWidgetsWhenGameClosed,
-        settings.autoSwitchLayouts,
-        root.layouts.sessionLayouts.Garage,
-        root.units.unitSystem,
-        settings.language,
-        settings.steeringLock,
-        settings.carLength,
-        pitStrategyOf(settings),
-        settings.interactHotkeyMode,
-        root.bindings.mutationId,
-        settings.streamChatHideCommands,
-        settings.streamChatIgnoredBots,
-        Array.from(clients.values(), (state) => state.lastHandledCommandNo),
-      ];
-    },
+    () => [
+      root.settingsMutations.changeToken,
+      ...snapshotAppInputs(root),
+      Array.from(clients.values(), (state) => state.lastHandledCommandNo),
+    ],
     () => void publishAll(),
     { delay: PUBLISH_DEBOUNCE_MS, equals: comparer.structural }
   );

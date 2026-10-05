@@ -1,5 +1,9 @@
 import type { AppLanguage, UnitSystem } from '@/types';
-import type { ClientEnvelope, InteractHotkeyMode } from '@/types/bindings';
+import type {
+  ClientEnvelope,
+  InteractHotkeyMode,
+  RemoteControlKind,
+} from '@/types/bindings';
 import type { BindingMap } from '@/types/input-bindings';
 import type { PitStrategy } from '@/types/pit-strategy';
 import type {
@@ -16,15 +20,19 @@ import type {
  */
 
 /**
- * What one overlay draws, and nothing else: its own monitor, the widgets
- * standing on it, and the app-level values those widgets read. It replaces the
- * overlay's state whole — main sends one on every change.
+ * What one client draws, and nothing else: its own screen — an overlay's
+ * monitor or a remote screen — the widgets standing on it, and the app-level
+ * values those widgets read. It replaces the client's state whole; main sends
+ * one on every change. An overlay gets it inside a `snapshot` envelope with
+ * its acknowledgement; a remote screen gets it bare, having no commands to
+ * acknowledge.
  */
-export interface OverlaySnapshot {
+export interface ClientSnapshot {
   /** The live layout these widgets belong to; a command names it back. */
   layoutId: string;
   layoutName: string;
-  /** The overlay's own monitor, for its bounds. */
+  /** The client's own screen: its bounds, and for a remote screen its slug
+   *  and background. */
   monitor: LayoutMonitor;
   /** Every widget on that monitor, switched off ones included. */
   widgets: WidgetDefaultConfig[];
@@ -98,8 +106,17 @@ export type CommandMessage = Extract<ClientEnvelope, { kind: 'command' }> & {
 };
 
 export type SnapshotMessage = Extract<ClientEnvelope, { kind: 'snapshot' }> & {
-  snapshot: OverlaySnapshot;
+  snapshot: ClientSnapshot;
 };
 
 /** What a client sends main. */
 export type ClientToMainMessage = HelloMessage | CommandMessage;
+
+/**
+ * A signal to the widgets of a client — the same message whether it arrives
+ * over a Tauri event (an overlay) or over the socket (a remote screen).
+ */
+export interface ControlMessage {
+  type: RemoteControlKind;
+  data: unknown;
+}

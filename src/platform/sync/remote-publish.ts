@@ -1,4 +1,4 @@
-import { reaction, runInAction } from 'mobx';
+import { comparer, reaction, runInAction } from 'mobx';
 
 import { listenRemoteDevice } from '@platform/services/events.service';
 import {
@@ -6,13 +6,10 @@ import {
   startRemoteServer,
   stopRemoteServer,
 } from '@platform/services/remote.service';
-import {
-  pitStrategyOf,
-  resolveAppLanguage,
-} from '@store/settings/app-settings.store';
-import { widgetsOnMonitor } from '@store/settings/virtual-desktop';
+import { resolveAppLanguage } from '@store/settings/app-settings.store';
+import { clientSnapshotFor, snapshotAppInputs } from './client-snapshot';
 import type { MainRoot } from '@store/main-root';
-import type { RemoteScreenSnapshot } from '@/types/remote';
+import type { ClientSnapshot } from '@/types/client-protocol';
 import type { RemoteDevice } from '@/types/bindings';
 
 /**
@@ -26,34 +23,14 @@ import type { RemoteDevice } from '@/types/bindings';
 /** Enough to coalesce a drag in the layout editor into one publish. */
 const PUBLISH_DEBOUNCE_MS = 150;
 
-const snapshotFor = (
-  root: MainRoot,
-  slug: string
-): RemoteScreenSnapshot | null => {
+/**
+ * A remote screen's snapshot: the client snapshot (ADR-0007) of its screen, in
+ * the layout that holds it — which need not be the live one.
+ */
+const snapshotFor = (root: MainRoot, slug: string): ClientSnapshot | null => {
   const target = root.layouts.remoteScreenBySlug(slug);
 
-  if (!target) return null;
-
-  const { layout, screen: monitor } = target;
-  const isLive = layout.id === root.layouts.liveLayoutId;
-  const widgets = isLive
-    ? widgetsOnMonitor(root.liveWidgets.liveWidgets, monitor.name)
-    : widgetsOnMonitor(layout.widgets, monitor.name);
-
-  return {
-    slug,
-    name: monitor.name,
-    bounds: { ...monitor.bounds },
-    // The widgets of this screen only: a tablet never receives the layout of
-    // the monitors it is not showing.
-    widgets,
-    units: root.units.unitSystem,
-    language: root.appSettings.appSettings.language,
-    steeringLock: root.appSettings.appSettings.steeringLock,
-    pitStrategy: pitStrategyOf(root.appSettings.appSettings),
-    layoutName: layout.name,
-    background: monitor.background,
-  };
+  return target ? clientSnapshotFor(root, target.layout, target.screen) : null;
 };
 
 const publishAll = (root: MainRoot) => {
@@ -185,19 +162,13 @@ export const registerRemotePublishing = (root: MainRoot) => {
     // layout id on every switch — a remote screen follows the session the same
     // way a monitor does.
     reaction(
-      () => [
-        root.settingsMutations.changeToken,
-        root.layouts.liveLayoutId,
-        root.units.unitSystem,
-        root.appSettings.appSettings.steeringLock,
-        ...Object.values(pitStrategyOf(root.appSettings.appSettings)),
-      ],
+      () => [root.settingsMutations.changeToken, ...snapshotAppInputs(root)],
       () => {
         if (!root.appSettings.appSettings.remoteEnabled) return;
 
         publishAll(root);
       },
-      { delay: PUBLISH_DEBOUNCE_MS }
+      { delay: PUBLISH_DEBOUNCE_MS, equals: comparer.structural }
     ),
   ];
 

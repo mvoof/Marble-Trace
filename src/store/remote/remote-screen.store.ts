@@ -4,10 +4,8 @@ import type {
   MonitorBounds,
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
-import type {
-  RemoteConnectionState,
-  RemoteScreenSnapshot,
-} from '@/types/remote';
+import type { RemoteConnectionState } from '@/types/remote';
+import type { ClientSnapshot } from '@/types/client-protocol';
 import { DEFAULT_REMOTE_BACKGROUND, fitScale } from '@utils/remote-screen';
 
 /**
@@ -20,7 +18,7 @@ import { DEFAULT_REMOTE_BACKGROUND, fitScale } from '@utils/remote-screen';
 export class RemoteScreenStore {
   slug = '';
   connection: RemoteConnectionState = 'connecting';
-  snapshot: RemoteScreenSnapshot | null = null;
+  snapshot: ClientSnapshot | null = null;
 
   /** Live browser viewport, which is not the device screen: the address bar
    * takes a slice of it and gives it back when the user scrolls. */
@@ -35,7 +33,7 @@ export class RemoteScreenStore {
 
   /** What the page paints behind the widgets, as the screen was set up. */
   get background(): string {
-    return this.snapshot?.background ?? DEFAULT_REMOTE_BACKGROUND;
+    return this.snapshot?.monitor.background ?? DEFAULT_REMOTE_BACKGROUND;
   }
 
   /**
@@ -51,7 +49,7 @@ export class RemoteScreenStore {
     this.connection = state;
   }
 
-  setSnapshot(snapshot: RemoteScreenSnapshot) {
+  setSnapshot(snapshot: ClientSnapshot) {
     this.snapshot = snapshot;
   }
 
@@ -61,7 +59,7 @@ export class RemoteScreenStore {
   }
 
   get bounds(): MonitorBounds | null {
-    return this.snapshot?.bounds ?? null;
+    return this.snapshot?.monitor.bounds ?? null;
   }
 
   /** True once there is something to draw — a socket that is up but has not

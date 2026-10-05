@@ -95,17 +95,11 @@ ts_values! {
     /// the settings it writes.
     pub const EVENT_HOTKEY_SETTINGS_ACTION: &str = "hotkey://settings-action" => HOTKEY_SETTINGS_ACTION_EVENT;
 
-    /// The standings class hotkeys, to the overlays: one class forward or back.
-    pub const EVENT_STANDINGS_CLASS_STEP: &str = "standings-class-step" => STANDINGS_CLASS_STEP_EVENT;
-
-    /// The standings scroll hotkeys, to the overlays: rows to move by.
-    pub const EVENT_STANDINGS_SCROLL: &str = "standings-scroll" => STANDINGS_SCROLL_EVENT;
-
-    /// The chat scroll hotkeys, to the overlays: rows to move by.
-    pub const EVENT_STREAM_CHAT_SCROLL: &str = "stream-chat-scroll" => STREAM_CHAT_SCROLL_EVENT;
-
-    /// The pit service key, to the overlays: pop the order box up or down.
-    pub const EVENT_PIT_SERVICE_TOGGLE: &str = "pit-service-toggle" => PIT_SERVICE_TOGGLE_EVENT;
+    /// A signal to the widgets of every overlay — a hotkey's scroll or class
+    /// step, the track map turned, the chat cleared, a layout switched in. The
+    /// payload is `{ type: RemoteControlKind, data }`, the very message a
+    /// remote screen receives over its socket, so both clients run one handler.
+    pub const EVENT_CLIENT_CONTROL: &str = "client://control" => CLIENT_CONTROL_EVENT;
 
     /// A perf run's measured span starts: the overlays begin collecting.
     /// Emitted only by a `dev` build running `MARBLE_TRACE_PERF`.
@@ -140,15 +134,17 @@ pub const EVENT_TELEMETRY_BUNDLE_MIRROR: &str = "sim://telemetry/bundle/mirror";
 
 // --- Remote socket message kinds ----------------------------------------
 
-/// Control messages the main window may push to the remote screens.
+/// Signals to the widgets of every client — the overlays, over
+/// `EVENT_CLIENT_CONTROL`, and the remote screens, over their socket. The one
+/// vocabulary for both (ADR-0007): each client handles it in one exhaustive
+/// switch, so a kind added here without a handler does not compile.
 ///
 /// A whitelist rather than a free-form kind: the value reaching the socket is
 /// one of these or nothing, so a typo in the main window cannot invent a
 /// message the browser will never understand.
 ///
-/// **A Tauri event never leaves the app.** Anything a hotkey does to a widget
-/// needs a variant here too, or the monitors move and the tablet stays where it
-/// was.
+/// State never travels here — a value a client must still show after a reload
+/// belongs in its snapshot.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "kebab-case")]
@@ -157,6 +153,13 @@ pub enum RemoteControlKind {
     StandingsScroll,
     StreamChatScroll,
     TrackRotation,
+    /// The order box popped up or down. The driver's alone — see
+    /// `reaches_remote_screens`.
+    PitServiceToggle,
+    /// The chat connectors were shut down; drop the buffered messages.
+    StreamChatCleared,
+    /// The session switched the layout in; show its name for a moment.
+    LayoutActivated,
 }
 
 /// Message kinds the server pushes on its own — the mirrored sim events, plus
@@ -195,7 +198,12 @@ impl Replayed for RemoteControlKind {
             // cannot read for itself, so it is replayed like the shape it
             // applies to.
             Self::TrackRotation => true,
-            Self::StandingsClassStep | Self::StandingsScroll | Self::StreamChatScroll => false,
+            Self::StandingsClassStep
+            | Self::StandingsScroll
+            | Self::StreamChatScroll
+            | Self::PitServiceToggle
+            | Self::StreamChatCleared
+            | Self::LayoutActivated => false,
         }
     }
 }
@@ -236,6 +244,9 @@ impl WireName for RemoteControlKind {
             Self::StandingsScroll => "standings-scroll",
             Self::StreamChatScroll => "stream-chat-scroll",
             Self::TrackRotation => "track-rotation",
+            Self::PitServiceToggle => "pit-service-toggle",
+            Self::StreamChatCleared => "stream-chat-cleared",
+            Self::LayoutActivated => "layout-activated",
         }
     }
 }
@@ -260,12 +271,22 @@ impl WireName for RemoteStreamKind {
 }
 
 impl RemoteControlKind {
-    pub const ALL: [Self; 4] = [
+    pub const ALL: [Self; 7] = [
         Self::StandingsClassStep,
         Self::StandingsScroll,
         Self::StreamChatScroll,
         Self::TrackRotation,
+        Self::PitServiceToggle,
+        Self::StreamChatCleared,
+        Self::LayoutActivated,
     ];
+
+    /// Whether the kind goes to the remote screens at all. The pit order box
+    /// is the driver's: a stream copy of the pit service shows the order, but
+    /// a key popping it up on the driver's screen must not pop it up on air.
+    pub fn reaches_remote_screens(self) -> bool {
+        !matches!(self, Self::PitServiceToggle)
+    }
 
     /// Resolves a kind arriving from the frontend. `None` means an unknown
     /// string, which the hub drops with a warning rather than forwarding.

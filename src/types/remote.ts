@@ -1,44 +1,7 @@
-import type { AppLanguage, UnitSystem } from '@/types';
-import type { PitStrategy } from '@/types/pit-strategy';
-import type {
-  MonitorBounds,
-  WidgetDefaultConfig,
-} from '@/types/widget-settings';
-
 /**
- * Everything a remote screen needs to paint itself, published by the main
- * window and cached by the backend.
- *
- * It carries one screen's widgets and nothing else: a device on the network
- * never sees the other layouts, the other monitors, or any setting its widgets
- * do not read.
- */
-export interface RemoteScreenSnapshot {
-  slug: string;
-  name: string;
-  /** The device screen this layout was drawn for, in logical pixels. */
-  bounds: MonitorBounds;
-  widgets: WidgetDefaultConfig[];
-  units: UnitSystem;
-  language: AppLanguage;
-  steeringLock: number;
-  /** The pit box on a stream shows the auto mode, so it needs the rules. */
-  pitStrategy: PitStrategy;
-  /** Name of the layout these widgets came from, shown while connecting. */
-  layoutName: string;
-  /**
-   * What the page paints behind the widgets: any CSS color, or `'transparent'`
-   * for a browser source that has to composite over the game capture. Absent
-   * means the dark default, and a transparent screen also keeps its status
-   * messages off the canvas — a card mid-reconnect is worse on a broadcast than
-   * nothing at all.
-   */
-  background?: string;
-}
-
-/**
- * Control messages the main window pushes to the remote screens — whatever a
- * hotkey does to an overlay window, which cannot be reached by a Tauri event.
+ * Signals to the widgets of every client — whatever a hotkey or main does to
+ * an overlay's widgets reaches a remote screen the same way. The snapshot a
+ * screen paints from is `ClientSnapshot` (`@/types/client-protocol`).
  *
  * Declared in `src-tauri/src/model/events.rs` and generated into `bindings.ts`,
  * so the whitelist cannot drift: the hub resolves the same enum, and a kind

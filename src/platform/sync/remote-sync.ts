@@ -1,15 +1,12 @@
 import { runInAction } from 'mobx';
 
 import { openRemoteSocket } from '@platform/services/remote-socket.service';
-import type { TrackRotationPayload } from '@platform/services/events.service';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import type { RemoteScreenStore } from '@store/remote/remote-screen.store';
 import type { RendererCore } from '@store/renderer-core';
-import {
-  standingsHotkeyTargets,
-  streamChatHotkeyTargets,
-} from '@store/hotkeys/hotkey-targets';
-import type { RemoteMessage, RemoteScreenSnapshot } from '@/types/remote';
+import type { RemoteMessage } from '@/types/remote';
+import type { ClientSnapshot } from '@/types/client-protocol';
+import { applyClientSnapshot, applyControl } from './client-sync';
 import type {
   CapabilitiesPayload,
   ChatDeletion,
@@ -24,45 +21,38 @@ import type {
 } from '@/types/bindings';
 
 /**
- * Everything a remote screen owns.
+ * The remote screen's transport for the client of ADR-0007
+ * (`client-sync.ts`): one WebSocket, carrying the snapshot, the signals and
+ * the mirrored sim streams.
  *
- * The overlay equivalent is `overlay-sync.ts`, and the difference is the point:
- * that one reads the settings file and emits back to the main window, this one
- * does neither. A remote screen receives, and never sends — so a browser on the
- * network cannot write into the user's layout.
+ * Its difference from the overlay is the point: a remote screen sends no
+ * `hello` and no command — the hub refuses one — so a browser on the network
+ * cannot write into the user's layout. The one thing it reports is its own
+ * viewport (`openRemoteSocket`).
  */
 export const initRemoteSync = (
   root: RendererCore,
   screen: RemoteScreenStore,
   token: string
 ) => {
-  const applySnapshot = (snapshot: RemoteScreenSnapshot) => {
-    runInAction(() => {
-      screen.setSnapshot(snapshot);
-      root.units.setSystem(snapshot.units);
-      root.appSettings.setSteeringLock(snapshot.steeringLock);
-      root.appSettings.setPitStrategy(snapshot.pitStrategy);
-      root.liveWidgets.syncWidgetSet(snapshot.widgets);
-    });
-
-    root.appSettings.setLanguage(snapshot.language);
+  const applySnapshot = (snapshot: ClientSnapshot) => {
+    runInAction(() => screen.setSnapshot(snapshot));
+    applyClientSnapshot(root, snapshot);
   };
 
   const handle = (message: RemoteMessage) => {
-    switch (message.type) {
+    const kind = message.type;
+
+    switch (kind) {
       case 'snapshot': {
         const payload = message.data as
-          | RemoteScreenSnapshot
-          | { slug: string; snapshot: RemoteScreenSnapshot };
+          | ClientSnapshot
+          | { slug: string; snapshot: ClientSnapshot };
 
         // Cached snapshots arrive bare, live ones carry the slug they belong
         // to — a screen ignores updates meant for another device.
-        const snapshot =
-          'snapshot' in payload
-            ? payload.snapshot
-            : (payload as RemoteScreenSnapshot);
-
-        const slug = 'slug' in payload ? payload.slug : snapshot.slug;
+        const snapshot = 'snapshot' in payload ? payload.snapshot : payload;
+        const slug = 'slug' in payload ? payload.slug : snapshot.monitor.slug;
 
         if (slug && slug !== screen.slug) return;
 
@@ -138,53 +128,6 @@ export const initRemoteSync = (
         return;
       }
 
-      // The hotkeys are registered in the main window; on the monitors they
-      // arrive as Tauri events, here as these three.
-      case 'standings-class-step': {
-        runInAction(() => {
-          for (const table of standingsHotkeyTargets(root)) {
-            table.stepClass(message.data as number);
-          }
-        });
-
-        return;
-      }
-
-      case 'standings-scroll': {
-        runInAction(() => {
-          for (const table of standingsHotkeyTargets(root)) {
-            table.scrollByRows(message.data as number);
-          }
-        });
-
-        return;
-      }
-
-      case 'stream-chat-scroll': {
-        runInAction(() => {
-          for (const chat of streamChatHotkeyTargets(root)) {
-            chat.scrollByRows(message.data as number);
-          }
-        });
-
-        return;
-      }
-
-      // Replayed by the server, so a device connecting later still gets a map
-      // turned the way the user left it.
-      case 'track-rotation': {
-        const payload = message.data as TrackRotationPayload;
-
-        runInAction(() =>
-          root.trackMapWidget.applyTrackRotation(
-            payload.trackId,
-            payload.rotation
-          )
-        );
-
-        return;
-      }
-
       // Chat runs with no sim connected at all, so these keep arriving on a
       // remote screen even between sessions.
       case 'chat-message': {
@@ -207,6 +150,12 @@ export const initRemoteSync = (
         );
 
         return;
+      }
+
+      // Every stream kind is handled above, so what is left is a signal to
+      // the widgets — run exactly as an overlay runs it.
+      default: {
+        applyControl(root, { type: kind, data: message.data });
       }
     }
   };

@@ -215,16 +215,20 @@ impl RemoteHub {
         );
     }
 
-    /// A command from the main window aimed at the widgets themselves — which
-    /// class the standings show, how far they are scrolled, how the track map
-    /// is turned. The overlay windows get these as Tauri events, which never
-    /// leave the app; a remote screen gets them here.
+    /// A signal aimed at the widgets themselves — which class the standings
+    /// show, how far they are scrolled, how the track map is turned. The
+    /// overlay windows get the same message as a Tauri event, which never
+    /// leaves the app; a remote screen gets it here.
     pub fn publish_control(&self, kind: &str, data: serde_json::Value) {
         let Some(kind) = RemoteControlKind::from_wire(kind) else {
             warn!("remote: ignoring unknown control message '{}'", kind);
 
             return;
         };
+
+        if !kind.reaches_remote_screens() {
+            return;
+        }
 
         self.send(kind.wire_name(), data, kind.replayed());
     }
@@ -240,8 +244,10 @@ impl RemoteHub {
         let mut screens: Vec<(String, String)> = lock_or_recover(&self.snapshots)
             .iter()
             .map(|(slug, snapshot)| {
+                // The client snapshot (ADR-0007) names its screen on the
+                // monitor it describes.
                 let name = snapshot
-                    .get("name")
+                    .pointer("/monitor/name")
                     .and_then(|value| value.as_str())
                     .unwrap_or(slug.as_str());
 

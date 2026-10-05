@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { RemoteScreenStore } from './remote-screen.store';
-import type { RemoteScreenSnapshot } from '@/types/remote';
+import type { ClientSnapshot } from '@/types/client-protocol';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 
 const widget = (
@@ -26,18 +26,21 @@ const widget = (
 const snapshot = (
   widgets: WidgetDefaultConfig[],
   background?: string
-): RemoteScreenSnapshot =>
+): ClientSnapshot =>
   ({
-    slug: 'stream',
-    name: 'Stream',
-    bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
+    monitor: {
+      name: 'Stream',
+      kind: 'remote',
+      slug: 'stream',
+      bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
+      background,
+    },
     widgets,
     units: 'metric',
     language: 'en',
     steeringLock: 900,
     layoutName: 'Race',
-    background,
-  }) as RemoteScreenSnapshot;
+  }) as ClientSnapshot;
 
 describe('what a remote screen paints behind its widgets', () => {
   it('contributes no ground when the screen was set transparent', () => {

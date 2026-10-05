@@ -24,12 +24,9 @@ export {
   REMOTE_DEVICE_EVENT,
   OVERLAY_MODES_EVENT,
   HOTKEY_SETTINGS_ACTION_EVENT,
-  STANDINGS_CLASS_STEP_EVENT,
-  STANDINGS_SCROLL_EVENT,
-  STREAM_CHAT_SCROLL_EVENT,
-  PIT_SERVICE_TOGGLE_EVENT,
   CLIENT_TO_MAIN_EVENT,
   CLIENT_FROM_MAIN_EVENT,
+  CLIENT_CONTROL_EVENT,
 } from '@utils/backend-events';
 
 /** Frontend-only: the overlay asks the track map to drop its recording. */

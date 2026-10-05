@@ -7,12 +7,14 @@ import {
 } from '@tauri-apps/api/event';
 
 import { listOverlayWindowLabels } from '@platform/sync/overlay-labels';
-import type { RemoteDevice } from '@/types/bindings';
+import type { RemoteControlKind, RemoteDevice } from '@/types/bindings';
 import type {
   ClientToMainMessage,
+  ControlMessage,
   SnapshotMessage,
 } from '@/types/client-protocol';
 import {
+  CLIENT_CONTROL_EVENT,
   CLIENT_FROM_MAIN_EVENT,
   CLIENT_TO_MAIN_EVENT,
   TRACK_MAP_CLEAR,
@@ -70,8 +72,25 @@ export const listenToMain = (handler: (message: SnapshotMessage) => void) =>
     handler(event.payload)
   );
 
+/**
+ * A signal to the widgets of every client: each overlay over a Tauri event,
+ * each remote screen over its socket — the same `{ type, data }` both ways, so
+ * both run it through one switch (`client-sync.ts`). The hub keeps the kinds
+ * that are the driver's alone off the remote screens.
+ */
+const broadcastControl = async (kind: RemoteControlKind, data: unknown) => {
+  await emitToOverlays(CLIENT_CONTROL_EVENT, {
+    type: kind,
+    data,
+  } satisfies ControlMessage);
+
+  await publishRemoteControl(kind, data).catch((error: unknown) =>
+    console.error('[events] failed to reach the remote screens:', error)
+  );
+};
+
 export const emitStreamChatCleared = () =>
-  emitToOverlays('stream-chat-cleared', null);
+  broadcastControl('stream-chat-cleared', null);
 
 export interface TrackRotationPayload {
   trackId: string;
@@ -98,23 +117,17 @@ export const emitTrackRotationRequest = (request: TrackRotationRequest) =>
  * Main's answer to every rotation, broadcast: every overlay plus every remote
  * screen has to end up on the angle main stored.
  */
-export const emitTrackRotation = async (payload: TrackRotationPayload) => {
-  await emit('track-rotation-changed', payload);
-
-  await publishRemoteControl('track-rotation', payload).catch(
-    (error: unknown) =>
-      console.error('[events] failed to reach the remote screens:', error)
-  );
-};
+export const emitTrackRotation = (payload: TrackRotationPayload) =>
+  broadcastControl('track-rotation', payload);
 
 export const emitLayoutActivated = (layoutName: string) =>
-  emit('layout-activated', layoutName);
+  broadcastControl('layout-activated', layoutName);
 
-// Both windows and the backend recorder drop their copy of the track.
 /** A device showing a remote screen connected, resized or went away. */
 export const listenRemoteDevice = (handler: (device: RemoteDevice) => void) =>
   listenTo<RemoteDevice>('remote://device', (event) => handler(event.payload));
 
+// Every window and the backend recorder drop their copy of the track.
 export const emitTrackMapClear = () => emit(TRACK_MAP_CLEAR);
 
 // Heard by the backend recorder, not by a window.

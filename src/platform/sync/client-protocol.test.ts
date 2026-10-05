@@ -6,7 +6,7 @@ import { OverlayRoot } from '@store/overlay-root';
 import type {
   ClientToMainMessage,
   CommandMessage,
-  OverlaySnapshot,
+  ClientSnapshot,
   SnapshotMessage,
 } from '@/types/client-protocol';
 
@@ -104,7 +104,7 @@ const mainWithTwoMonitors = () => {
   return root;
 };
 
-const asMessage = (snapshot: OverlaySnapshot): SnapshotMessage => ({
+const asMessage = (snapshot: ClientSnapshot): SnapshotMessage => ({
   kind: 'snapshot',
   clientId: 'overlay-LEFT',
   lastHandledCommandNo: 0,
