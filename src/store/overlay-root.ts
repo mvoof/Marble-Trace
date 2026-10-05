@@ -4,16 +4,19 @@ import {
   type AppWindowStores,
 } from './app-window-stores';
 import type { BindingsStore } from './hotkeys/bindings.store';
+import { SettingsClientStore } from './settings/settings-client.store';
 import type { SettingsPanelUiStore } from './widgets/settings-panel-ui.store';
 
 /**
  * An overlay window: the renderer core plus the two stores every app window
- * holds. Nothing of the settings UI — no editor, no inspector, no chat sign-in,
- * no device list. `overlay-root.test.ts` holds it to that.
+ * holds, and its end of the client protocol. Nothing of the settings UI — no
+ * editor, no inspector, no chat sign-in, no device list.
+ * `overlay-root.test.ts` holds it to that.
  */
 export class OverlayRoot extends RendererCore implements AppWindowStores {
   bindings: BindingsStore;
   settingsPanelUi: SettingsPanelUiStore;
+  settingsClient: SettingsClientStore;
 
   constructor(options?: { skipInit?: boolean }) {
     super(options);
@@ -22,5 +25,8 @@ export class OverlayRoot extends RendererCore implements AppWindowStores {
 
     this.bindings = appWindow.bindings;
     this.settingsPanelUi = appWindow.settingsPanelUi;
+    this.settingsClient = new SettingsClientStore(
+      () => this.liveWidgets.syncedLayoutId
+    );
   }
 }

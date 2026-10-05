@@ -151,6 +151,14 @@ export class AppSettingsStore {
    */
   dragMode = false;
   interactMode = false;
+
+  /**
+   * Whether widgets are hidden while the car is off track. A client's copy:
+   * main derives it from `autoSwitchLayouts` and the garage layout and sends
+   * it in the snapshot, so an overlay needs neither. The default is what those
+   * two default to — auto-switch on, no garage layout.
+   */
+  hidesOffTrack = true;
   updateStatus: UpdateStatus = 'idle';
   availableVersion: string | null = null;
   releaseNotes: string | null = null;

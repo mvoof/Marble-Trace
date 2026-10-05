@@ -1,40 +1,90 @@
-import { reaction } from 'mobx';
+import { comparer, reaction, runInAction } from 'mobx';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
-import { hydrateFromDisk, readSettingsFile } from './persistence-sync';
-import { emitWidgetSettingsToMain } from '@platform/services/events.service';
+import {
+  emitToMain,
+  emitWidgetSettingsToMain,
+  listenToMain,
+} from '@platform/services/events.service';
 import { setupOverlayListeners } from './listeners';
 import { initPerfRun } from './perf-run';
 import type { OverlayRoot } from '@store/overlay-root';
+import type { OverlaySnapshot } from '@/types/client-protocol';
 
 /**
- * Everything an overlay window owns. It never writes the settings file — the
- * main window is the only writer — and it never opens chat connections.
+ * Installs main's snapshot of this overlay's monitor. It replaces what the
+ * window held: the screen and its widgets, and every app-level value its
+ * widgets read.
  *
- * Order is load-bearing: the listeners are subscribed before this returns, so
- * the window is ready for the first `widget-settings-updated` main emits.
+ * Assigned directly, never through a setter: a setter is main's — it bumps
+ * `changeToken`, and some reach the backend, which main has already told.
+ */
+export const applyOverlaySnapshot = (
+  root: OverlayRoot,
+  snapshot: OverlaySnapshot
+) => {
+  runInAction(() => {
+    Object.assign(root.appSettings.appSettings, {
+      hideAllWidgets: snapshot.hideAllWidgets,
+      hideWidgetsWhenGameClosed: snapshot.hideWidgetsWhenGameClosed,
+      steeringLock: snapshot.steeringLock,
+      carLength: snapshot.carLength,
+      interactHotkeyMode: snapshot.interactHotkeyMode,
+      streamChatHideCommands: snapshot.streamChatHideCommands,
+      streamChatIgnoredBots: snapshot.streamChatIgnoredBots,
+      ...snapshot.pitStrategy,
+    });
+
+    root.appSettings.hidesOffTrack = snapshot.hidesOffTrack;
+    root.appSettings.settingsLocked = snapshot.settingsLocked;
+    root.units.setSystem(snapshot.units);
+
+    if (!comparer.structural(root.bindings.overrides, snapshot.bindings)) {
+      root.bindings.applyBindings(snapshot.bindings);
+    }
+
+    root.liveWidgets.applyClientScreen({
+      layoutId: snapshot.layoutId,
+      layoutName: snapshot.layoutName,
+      monitor: snapshot.monitor,
+      widgets: snapshot.widgets,
+    });
+  });
+
+  // Switching the language reloads every translated string; done only when
+  // it actually changed, not on every drag main reports.
+  if (root.appSettings.appSettings.language !== snapshot.language) {
+    root.appSettings.setLanguage(snapshot.language);
+  }
+};
+
+/**
+ * Everything an overlay window owns. It reads no settings file and writes
+ * none: main holds the settings and sends this window a snapshot of its own
+ * monitor, on `hello` and on every change (ADR-0007). It never opens chat
+ * connections either.
+ *
+ * Order is load-bearing: the snapshot listener is subscribed before `hello`
+ * goes out, so the answer cannot arrive unheard.
  */
 export const initOverlaySync = async (root: OverlayRoot) => {
-  const { loaded } = await readSettingsFile();
+  const clientId = getCurrentWebviewWindow().label;
 
-  // The main window owns the backup — both windows run the chain, but only one
-  // of them may touch the file.
-  await hydrateFromDisk(root, loaded, { backup: false });
-
-  // Locked: the widget map still holds the shipped defaults, so loading the
-  // active layout here would paint a default overlay across the user's screen —
-  // indistinguishable from having lost their config. OverlayCanvas draws
-  // nothing while the lock holds.
-  if (root.appSettings.settingsLocked) {
-    return () => {};
-  }
-
-  // hydrateStores fills the live widget map from the persisted snapshot, which
-  // can lag behind the active layout. The window renders the layout, so it is
-  // the layout that has to win.
-  root.liveWidgets.loadEditingLayoutWidgets();
+  root.settingsClient.connect(clientId);
 
   const unlistens = await setupOverlayListeners(root);
+
+  unlistens.push(
+    await listenToMain((message) => {
+      if (message.clientId !== clientId) return;
+
+      applyOverlaySnapshot(root, message.snapshot);
+    })
+  );
+
   const stopPerfRun = await initPerfRun(root);
+
+  await emitToMain({ kind: 'hello', clientId });
 
   const disposers = [
     reaction(
@@ -54,8 +104,7 @@ export const initOverlaySync = async (root: OverlayRoot) => {
         void emitWidgetSettingsToMain({
           monitorName,
           widgets,
-          layoutId:
-            root.liveWidgets.syncedLayoutId ?? root.layouts.editingLayoutId,
+          layoutId: root.liveWidgets.syncedLayoutId,
         });
       },
       { delay: 100 }

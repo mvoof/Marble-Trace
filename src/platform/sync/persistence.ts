@@ -7,8 +7,6 @@ import {
 import type { UnitSystem } from '@/types';
 import type { SessionContext } from '@/types/widget-settings';
 import type { AppSettings } from '@store/settings/app-settings.store';
-import type { RendererCore } from '@store/renderer-core';
-import type { AppWindowStores } from '@store/app-window-stores';
 import type { MainRoot } from '@store/main-root';
 import type { BindingMap } from '@/types/input-bindings';
 import { CURRENT_SCHEMA_VERSION } from '@platform/settings-schema/index';
@@ -56,21 +54,13 @@ export interface Settings {
 }
 
 /**
- * What a window that reads the settings file fills from it. The device list is
- * main's alone: an overlay names keys, it never matches devices.
- */
-export type SettingsHydrationTarget = RendererCore &
-  AppWindowStores &
-  Partial<Pick<MainRoot, 'deviceInput'>>;
-
-/**
  * Fills the stores from a settings blob that has already been brought to the
  * current schema by `runMigrations`. Nothing here knows about older formats —
  * that is the migration chain's job, and keeping it there is what makes it
  * testable against a real old file.
  */
 export const hydrateStores = (
-  root: SettingsHydrationTarget,
+  root: MainRoot,
   loadedSettings: Partial<Settings>
 ) => {
   runInAction(() => {
@@ -99,7 +89,7 @@ export const hydrateStores = (
 
     root.bindings.applyBindings(loadedSettings.bindings);
 
-    if (loadedSettings.inputDevices && root.deviceInput) {
+    if (loadedSettings.inputDevices) {
       root.deviceInput.setKnownDevices(loadedSettings.inputDevices);
     }
   });

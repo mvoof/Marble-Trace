@@ -4,10 +4,7 @@ import {
   startChatStreamSilent,
   stopChatStreamSilent,
 } from '@platform/services/twitch.service';
-import {
-  emitStreamChatCleared,
-  emitStreamChatFilters,
-} from '@platform/services/events.service';
+import { emitStreamChatCleared } from '@platform/services/events.service';
 import type { RendererCore } from '@store/renderer-core';
 
 const STREAM_CHAT_WIDGET_ID = 'stream-chat';
@@ -73,8 +70,8 @@ export const registerChatReactions = (
       hideCommands: root.appSettings.appSettings.streamChatHideCommands,
       ignoredBots: root.appSettings.appSettings.streamChatIgnoredBots,
     }),
-    (filters) => {
-      void emitStreamChatFilters(filters);
+    // The overlays read the filters from their snapshot.
+    () => {
       void onSave();
     },
     { equals: comparer.structural }

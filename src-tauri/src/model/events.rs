@@ -114,6 +114,13 @@ ts_values! {
     /// A perf run's measured span is over: each overlay sends its report.
     pub const EVENT_PERF_END: &str = "perf://end" => PERF_END;
 
+    /// A client of the settings (ADR-0007) to main: an overlay's `hello`.
+    /// Sent by one webview to another — the backend only carries it.
+    pub const EVENT_CLIENT_TO_MAIN: &str = "client://to-main" => CLIENT_TO_MAIN_EVENT;
+
+    /// Main to one client of the settings: the snapshot of what it draws.
+    pub const EVENT_CLIENT_FROM_MAIN: &str = "client://from-main" => CLIENT_FROM_MAIN_EVENT;
+
     /// A connected remote device came, went, or reported a new viewport.
     pub const EVENT_REMOTE_DEVICE: &str = "remote://device" => REMOTE_DEVICE_EVENT;
 }

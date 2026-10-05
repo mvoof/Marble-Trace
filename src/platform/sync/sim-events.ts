@@ -28,6 +28,8 @@ export {
   STANDINGS_SCROLL_EVENT,
   STREAM_CHAT_SCROLL_EVENT,
   PIT_SERVICE_TOGGLE_EVENT,
+  CLIENT_TO_MAIN_EVENT,
+  CLIENT_FROM_MAIN_EVENT,
 } from '@utils/backend-events';
 
 /** Frontend-only: the overlay asks the track map to drop its recording. */

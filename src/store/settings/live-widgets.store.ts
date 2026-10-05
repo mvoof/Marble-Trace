@@ -39,7 +39,7 @@ import {
   placeWidgetOnMonitor,
   widgetsOnMonitor,
 } from '@store/settings/virtual-desktop';
-import { cloneMonitor, isDisplayMonitor } from '@utils/remote-screen';
+import { isDisplayMonitor } from '@utils/remote-screen';
 import { WidgetHistory } from '@store/settings/widget-history';
 import {
   bottomZIndex,
@@ -1059,21 +1059,30 @@ export class LiveWidgetsStore implements WidgetMap {
     this.ownMonitorName = monitorName;
   }
 
-  // Overlay side: adopt the monitor arrangement the main window just sent.
-  applyMonitorsSync(monitors: LayoutMonitor[]) {
-    const layout = this.editingLayout;
-
-    if (!layout) return;
-
-    layout.monitors = monitors.map(cloneMonitor);
-  }
-
-  loadEditingLayoutWidgets() {
-    const layout = this.editingLayout;
-
-    if (!layout) return;
-
-    this.setWidgets(layout.widgets);
+  /**
+   * Client side (an overlay): installs the screen main sent — the live
+   * layout's id and name, this window's monitor, and the widgets standing on
+   * it. The widgets are adopted as `syncWidgetSet` adopts them: main sent them
+   * already normalized, and a widget it no longer lists is gone.
+   *
+   * Moves `syncToken` only, so nothing here is reported back to main as an
+   * edit.
+   */
+  applyClientScreen(screen: {
+    layoutId: string;
+    layoutName: string;
+    monitor: LayoutMonitor;
+    widgets: WidgetDefaultConfig[];
+  }) {
+    runInAction(() => {
+      this.layoutRecords.installClientLayout(
+        screen.layoutId,
+        screen.layoutName,
+        screen.monitor
+      );
+      this.syncedLayoutId = screen.layoutId;
+      this.syncWidgetSet(screen.widgets);
+    });
   }
 
   /**
@@ -1115,11 +1124,16 @@ export class LiveWidgetsStore implements WidgetMap {
    * nothing on any other monitor is touched.
    *
    * Returns the instance switched on, so the editor can select it.
+   *
+   * An overlay's F9 picker reaches this as a command, with `recordUndo` off:
+   * the editor's undo history is the editor's, not a list of every widget
+   * added from the overlay.
    */
   setTypeEnabledOnMonitor(
     type: string,
     monitorName: string,
-    enabled: boolean
+    enabled: boolean,
+    { recordUndo = true }: { recordUndo?: boolean } = {}
   ): string | null {
     const layout = this.widgetOwner;
     const monitor = this.layoutRecords.monitorByName(monitorName);
@@ -1137,7 +1151,9 @@ export class LiveWidgetsStore implements WidgetMap {
 
       if (switchedOn.length === 0) return null;
 
-      this.pushUndo();
+      if (recordUndo) {
+        this.pushUndo();
+      }
 
       for (const widget of switchedOn) {
         widget.userSettings.enabled = false;
@@ -1152,7 +1168,9 @@ export class LiveWidgetsStore implements WidgetMap {
 
     if (alreadyOn) return alreadyOn.id;
 
-    this.pushUndo();
+    if (recordUndo) {
+      this.pushUndo();
+    }
 
     const reused = instances[0];
 

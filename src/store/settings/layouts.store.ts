@@ -167,6 +167,38 @@ export class LayoutsStore {
     this.mutations.recordEveryWidget();
   }
 
+  /**
+   * Client side (an overlay): holds the one layout main described — its id,
+   * its name, and the client's own monitor, nothing of the others. The record
+   * is kept while the id stays the same, so a snapshot updates it in place and
+   * the widgets standing in it are patched rather than rebuilt.
+   *
+   * Records nothing in the mutation log: this is main's state arriving, not an
+   * edit made here, and an edit is what the log reports back.
+   */
+  installClientLayout(id: string, name: string, monitor: LayoutMonitor) {
+    const current = this.editingLayout;
+
+    if (current?.id === id) {
+      current.name = name;
+      current.monitors = [cloneMonitor(monitor)];
+
+      return;
+    }
+
+    this.layouts = [
+      {
+        id,
+        name,
+        createdAt: 0,
+        monitors: [cloneMonitor(monitor)],
+        widgets: [],
+      },
+    ];
+    this.editingLayoutId = id;
+    this.pinnedLiveLayoutId = null;
+  }
+
   setEditingLayoutId(id: string | null) {
     this.editingLayoutId = id;
     this.mutations.recordEveryWidget();

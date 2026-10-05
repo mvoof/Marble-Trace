@@ -5,6 +5,7 @@
 pub mod capabilities;
 pub mod cars;
 pub mod chat;
+pub mod client_protocol;
 pub mod companions;
 pub mod defaults;
 pub mod enums;
@@ -39,6 +40,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<capabilities::CapabilitiesPayload>()
         .register::<cars::CarIdxFrame>()
         .register::<cars::CarPositionsFrame>()
+        .register::<client_protocol::ClientEnvelope>()
         .register::<companions::CompanionApp>()
         .register::<companions::CompanionStatus>()
         .register::<companions::DetectedApp>()

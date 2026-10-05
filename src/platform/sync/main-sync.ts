@@ -12,18 +12,6 @@ import {
 } from './persistence-sync';
 import { setupDeviceBindings } from '@store/hotkeys/bindings-sync';
 import { listenSettingsActions, registerHotkeyReactions } from './hotkey-sync';
-import {
-  emitHideAllWidgets,
-  emitHideWidgetsWhenGameClosed,
-  emitSteeringLockChanged,
-  emitPitStrategyChanged,
-  emitUnitsChanged,
-  emitLanguageChanged,
-  emitActiveLayoutToOverlays,
-  emitSessionLayoutsChanged,
-  emitAutoSwitchLayoutsChanged,
-  emitBindingsChanged,
-} from '@platform/services/events.service';
 import { setupMainListeners } from './listeners';
 import type { MonitorWidgetsPayload } from '@platform/services/events.service';
 import { registerChatReactions } from './chat-sync';
@@ -31,6 +19,7 @@ import { pitStrategyOf } from '@store/settings/app-settings.store';
 import { registerPitServiceMainReactions } from './pit-service-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { registerRemotePublishing } from './remote-publish';
+import { registerClientPublishing } from './client-publish';
 import { registerTrackRotationOwnership } from './track-rotation-sync';
 import { listMonitorBounds, resolveMonitorByName } from './overlay-resolution';
 import { setUpFirstRun } from '@store/settings/first-run';
@@ -42,55 +31,26 @@ let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;
 
 /**
- * The active layout as the overlays need it. The emitter takes plain data rather
- * than the store, so the service layer stays free of store imports.
+ * App settings the overlays read. They reach the overlays in the snapshot
+ * (`client-publish.ts`); here they are only persisted. Requires a hydrated
+ * settings store.
  */
-const pushActiveLayout = (root: MainRoot) =>
-  emitActiveLayoutToOverlays(
-    root.layouts.liveLayout?.monitors ?? [],
-    root.liveWidgets.liveWidgets,
-    root.layouts.liveLayoutId
-  );
-
-/** Values the overlay windows mirror. Requires a hydrated settings store. */
-const registerBroadcastReactions = (
+const registerOverlayReadSaveReactions = (
   root: MainRoot,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
   reaction(
-    () => root.appSettings.appSettings.hideAllWidgets,
-    (v) => {
-      void emitHideAllWidgets(v);
-      void onSave();
-    }
-  ),
-  reaction(
-    () => root.appSettings.appSettings.hideWidgetsWhenGameClosed,
-    (v) => {
-      void emitHideWidgetsWhenGameClosed(v);
-      void onSave();
-    }
-  ),
-  reaction(
-    () => root.appSettings.appSettings.autoSwitchLayouts,
-    (v) => {
-      void emitAutoSwitchLayoutsChanged(v);
-      void onSave();
-    }
-  ),
-  reaction(
-    () => root.appSettings.appSettings.language,
-    (v) => {
-      void emitLanguageChanged(v);
-      void onSave();
-    }
-  ),
-  reaction(
-    () => JSON.stringify(root.layouts.sessionLayouts),
+    () => [
+      root.appSettings.appSettings.hideAllWidgets,
+      root.appSettings.appSettings.hideWidgetsWhenGameClosed,
+      root.appSettings.appSettings.autoSwitchLayouts,
+      root.appSettings.appSettings.language,
+      JSON.stringify(root.layouts.sessionLayouts),
+    ],
     () => {
-      void emitSessionLayoutsChanged(root.layouts.sessionLayouts);
       void onSave();
-    }
+    },
+    { equals: comparer.structural }
   ),
 ];
 
@@ -219,17 +179,11 @@ const registerOverlayWindowReactions = (
     // One overlay window per monitor that has widgets on it. Switching layouts,
     // adding or removing a monitor config, enabling a widget, dragging one to
     // another screen and entering drag mode all change that set.
+    // A window opened here asks for its snapshot itself (`hello`).
     () => [root.layouts.liveLayoutId, overlayMonitorNames(root).join('|')],
     () => {
-      void syncOverlayWindows(root).then(() => pushActiveLayout(root));
+      void syncOverlayWindows(root);
     }
-  ),
-  reaction(
-    () => root.settingsMutations.changeToken,
-    () => {
-      void pushActiveLayout(root);
-    },
-    { delay: 16 }
   ),
   reaction(
     // Widgets-catalog (preview page) edits only touch the defaults store, which
@@ -269,10 +223,6 @@ const registerBindingReactions = (
   reaction(
     () => root.bindings.mutationId,
     () => {
-      // Overrides, not the effective map: the overlay layers the same registry
-      // defaults underneath, so sending them would only make every default look
-      // like a user choice on the other side.
-      void emitBindingsChanged(root.bindings.overrides);
       void onSave();
     }
   ),
@@ -294,29 +244,21 @@ const registerBindingReactions = (
   ),
 ];
 
-/** Units, steering lock and the pit strategy — mirrored and persisted. */
+/**
+ * Units, the wheel and the pit strategy — read by the overlays through the
+ * snapshot, persisted here.
+ */
 const registerDisplayPreferenceReactions = (
   root: MainRoot,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
   reaction(
-    () => root.units.unitSystem,
-    (v) => {
-      void emitUnitsChanged(v);
-      void onSave();
-    }
-  ),
-  reaction(
-    () => root.appSettings.appSettings.steeringLock,
-    (v) => {
-      void emitSteeringLockChanged(v);
-      void onSave();
-    }
-  ),
-  reaction(
-    () => pitStrategyOf(root.appSettings.appSettings),
-    (strategy) => {
-      void emitPitStrategyChanged(strategy);
+    () => [
+      root.units.unitSystem,
+      root.appSettings.appSettings.steeringLock,
+      pitStrategyOf(root.appSettings.appSettings),
+    ],
+    () => {
       void onSave();
     },
     { equals: comparer.structural }
@@ -337,7 +279,7 @@ export const initMainSync = async (root: MainRoot) => {
     mainSyncInitPromise = (async () => {
       const { store, loaded } = await readSettingsFile();
 
-      await hydrateFromDisk(root, loaded, { backup: true });
+      await hydrateFromDisk(root, loaded);
 
       // A file this build cannot bring to the current schema is left untouched:
       // no hydration, no default layout, no save reactions. Everything below
@@ -378,12 +320,19 @@ export const initMainSync = async (root: MainRoot) => {
 
       await onSave();
 
+      // Before any overlay is opened: each one asks for its snapshot as it
+      // starts, and a `hello` sent before main listens would go unanswered.
+      const clientPublishing = await registerClientPublishing(root);
+
       await syncOverlayWindows(root);
+
+      // Overlays that outlived a reload of this window never say hello again.
+      void clientPublishing.publishAll();
 
       // Windows raises no event a Tauri app can subscribe to when displays are
       // rearranged, so the arrangement is polled while the app has focus.
       const stopMonitorWatch = watchMonitorArrangement(root, () => {
-        void pushActiveLayout(root);
+        void clientPublishing.publishAll();
         void onSave();
       });
 
@@ -456,7 +405,7 @@ export const initMainSync = async (root: MainRoot) => {
       // `fireImmediately` reactions (layout auto-switch, device polling, chat
       // connect, sim-armed pit order) run in this sequence at startup.
       const disposers = [
-        ...registerBroadcastReactions(root, onSave),
+        ...registerOverlayReadSaveReactions(root, onSave),
         registerLayoutAutoSwitchReaction(root),
         ...registerAppSettingsSaveReactions(root, onSave),
         ...registerOverlayWindowReactions(root, onSave),
@@ -473,6 +422,7 @@ export const initMainSync = async (root: MainRoot) => {
       const cleanup = () => {
         stopMonitorWatch();
         stopRemotePublishing();
+        clientPublishing.dispose();
         overlaySettingsUnlisten();
         settingsActionUnlisten();
         trackRotationUnlisten();

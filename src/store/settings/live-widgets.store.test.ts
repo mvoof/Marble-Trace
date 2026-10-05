@@ -1048,15 +1048,32 @@ describe('every settings write leaves its mark', () => {
       expected: { token: 'sync', touched: 'none' },
     },
 
-    // Writes that mark nothing at all. Pinned deliberately: the monitor
-    // arrangement the overlay adopts is written into the active layout record
-    // and left unmarked, so nothing saves it on its own — the main window's own
-    // write is what carries it to disk.
+    // An overlay installing main's snapshot: main's state arriving, so it is
+    // neither saved nor reported back — whether the layout changed or not.
     {
-      name: 'applyMonitorsSync',
-      run: (store) => store.applyMonitorsSync([DISPLAY]),
-      expected: { token: 'none', touched: 'none' },
+      name: 'applyClientScreen (same layout)',
+      run: (store, layouts) =>
+        store.applyClientScreen({
+          layoutId: layouts.editingLayoutId!,
+          layoutName: 'Race',
+          monitor: DISPLAY,
+          widgets: clonedWidgets(store),
+        }),
+      expected: { token: 'sync', touched: 'none' },
     },
+    {
+      name: 'applyClientScreen (another layout)',
+      run: (store) =>
+        store.applyClientScreen({
+          layoutId: 'layout-from-main',
+          layoutName: 'Qualifying',
+          monitor: DISPLAY,
+          widgets: clonedWidgets(store),
+        }),
+      expected: { token: 'sync', touched: 'none' },
+    },
+
+    // Writes that mark nothing at all.
     {
       name: 'setOverlayResolution',
       run: (store) => store.setOverlayResolution({ width: 1280, height: 720 }),
@@ -1604,7 +1621,7 @@ describe('widgets belong to their monitor', () => {
     const store = setUp();
 
     store.moveWidgetToMonitor('standings', 'RIGHT');
-    store.loadEditingLayoutWidgets();
+    store.setWidgets(store.allWidgets);
 
     expect(store.getWidget('standings')!.monitor).toBe('RIGHT');
   });

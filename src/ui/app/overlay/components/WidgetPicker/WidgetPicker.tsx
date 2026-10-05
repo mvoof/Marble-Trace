@@ -5,6 +5,7 @@ import { Button } from 'antd';
 import { Plus, Search } from 'lucide-react';
 import { useClickOutside } from '@ui/hooks/useClickOutside';
 import { useLiveWidgetsStore } from '@store/root-store-context';
+import { useOverlayRoot } from '@store/overlay-root-context';
 import type { PickableWidget } from '@store/settings/widget-placement';
 import { getWidgetDescription } from '@ui/app/widget-i18n';
 import styles from './WidgetPicker.module.scss';
@@ -19,15 +20,17 @@ const PickerRow = observer(
     monitorName: string;
     onAdded: () => void;
   }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const { settingsClient } = useOverlayRoot();
     const { t } = useTranslation('main-app');
 
+    // Main picks the instance and its spot; the widget appears with the next
+    // snapshot, a few milliseconds later.
     const handleAdd = () => {
       if (!widget.available) {
         return;
       }
 
-      liveWidgets.setTypeEnabledOnMonitor(widget.type, monitorName, true);
+      settingsClient.enableTypeOnMonitor(widget.type, monitorName);
       onAdded();
     };
 

@@ -2,21 +2,15 @@ import { runInAction } from 'mobx';
 
 import {
   listenTo,
-  type MonitorWidgetsPayload,
-  type StreamChatFilters,
   type TrackRotationPayload,
   type UnlistenFn,
 } from '@platform/services/events.service';
-import type { AppLanguage, UnitSystem } from '@/types';
-import type { PitStrategy } from '@/types/pit-strategy';
-import type { SessionContext } from '@/types/widget-settings';
 import type { RendererCore } from '@store/renderer-core';
 import {
   standingsHotkeyTargets,
   streamChatHotkeyTargets,
 } from '@store/hotkeys/hotkey-targets';
 import type { OverlayRoot } from '@store/overlay-root';
-import type { BindingMap } from '@/types/input-bindings';
 import type { OverlayModes } from '@/types/bindings';
 import { getOverlayModes } from '@platform/services/hotkeys.service';
 import {
@@ -28,12 +22,12 @@ import {
 } from './sim-events';
 
 /**
- * Subscribes a window's stores to the events the other one sends. The transport
- * itself lives in `services/events.service.ts`; this is the wiring that knows
- * which store each payload belongs to.
+ * Subscribes a window's stores to the signals the other one sends. The
+ * settings themselves reach an overlay as a snapshot (`overlay-sync.ts`); what
+ * is left here is what a snapshot cannot carry — a scroll, a toast, a reset.
+ * The transport lives in `services/events.service.ts`; this is the wiring that
+ * knows which store each payload belongs to.
  */
-
-type SessionLayoutMap = Record<SessionContext, string | null>;
 
 export const setupMainListeners = async (
   root: RendererCore
@@ -84,86 +78,11 @@ export const setupOverlayListeners = async (
   unlistens.push(await listenOverlayModes(root));
   unlistens.push(await listenTrackRotation(root));
 
-  unlistens.push(
-    await listenTo<boolean>('hide-all-widgets-changed', (e) => {
-      runInAction(() => {
-        root.appSettings.appSettings.hideAllWidgets = e.payload;
-      });
-    })
-  );
-
-  unlistens.push(
-    await listenTo<boolean>('hide-widgets-when-game-closed-changed', (e) => {
-      runInAction(() => {
-        root.appSettings.appSettings.hideWidgetsWhenGameClosed = e.payload;
-      });
-    })
-  );
-
-  unlistens.push(
-    await listenTo<UnitSystem>('units-changed', (e) => {
-      runInAction(() => root.units.setSystem(e.payload));
-    })
-  );
-
-  unlistens.push(
-    await listenTo<number>('steering-lock-changed', (e) => {
-      runInAction(() => root.appSettings.setSteeringLock(e.payload));
-    })
-  );
-
-  unlistens.push(
-    await listenTo<PitStrategy>('pit-strategy-changed', (e) => {
-      runInAction(() => root.appSettings.setPitStrategy(e.payload));
-    })
-  );
-
-  unlistens.push(
-    await listenTo<AppLanguage>('language-changed', (e) => {
-      root.appSettings.setLanguage(e.payload);
-    })
-  );
-
-  // The overlay renders the chat, so it needs the source-level filters even
-  // though it never opens a connection itself.
-  unlistens.push(
-    await listenTo<StreamChatFilters>('stream-chat-filters-changed', (e) => {
-      runInAction(() => {
-        root.appSettings.setStreamChatHideCommands(e.payload.hideCommands);
-        root.appSettings.setStreamChatIgnoredBots(e.payload.ignoredBots);
-      });
-    })
-  );
-
   // The connectors live in main, so only main knows when the feed was shut
   // down; the overlay drops its own buffer on that signal.
   unlistens.push(
     await listenTo('stream-chat-cleared', () => {
       runInAction(() => root.chat.reset());
-    })
-  );
-
-  unlistens.push(
-    await listenTo<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
-      if (e.payload.monitorName !== root.liveWidgets.ownMonitorName) return;
-
-      if (e.payload.layoutId !== undefined) {
-        runInAction(() => {
-          root.liveWidgets.syncedLayoutId = e.payload.layoutId ?? null;
-        });
-      }
-
-      if (e.payload.monitors) {
-        root.liveWidgets.applyMonitorsSync(e.payload.monitors);
-      }
-
-      // Only a list that claims to be the whole layout may remove a widget;
-      // anything else is a patch of what its sender just edited.
-      if (e.payload.complete) {
-        root.liveWidgets.syncWidgetSet(e.payload.widgets);
-      } else {
-        root.liveWidgets.applySettingsSync(e.payload.widgets);
-      }
     })
   );
 
@@ -206,30 +125,8 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listenTo<SessionLayoutMap>('session-layouts-changed', (e) => {
-      runInAction(() => {
-        root.layouts.sessionLayouts = e.payload;
-      });
-    })
-  );
-
-  unlistens.push(
-    await listenTo<BindingMap>('bindings-changed', (e) => {
-      runInAction(() => root.bindings.applyBindings(e.payload));
-    })
-  );
-
-  unlistens.push(
     await listenTo<string>('layout-activated', (e) => {
       runInAction(() => root.liveWidgets.showLayoutActivatedToast(e.payload));
-    })
-  );
-
-  unlistens.push(
-    await listenTo<boolean>('auto-switch-layouts-changed', (e) => {
-      runInAction(() => {
-        root.appSettings.appSettings.autoSwitchLayouts = e.payload;
-      });
     })
   );
 
