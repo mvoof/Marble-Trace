@@ -5,6 +5,7 @@ import type { PitStrategy } from '@/types/pit-strategy';
 import type {
   LayoutMonitor,
   WidgetDefaultConfig,
+  WidgetUserSettings,
 } from '@/types/widget-settings';
 
 /**
@@ -49,6 +50,27 @@ export interface OverlaySnapshot {
   settingsLocked: boolean;
 }
 
+/**
+ * A drag, a resize or a snap. Sent every few frames while the gesture lasts,
+ * so a stream screen follows it, and once more on release with `final`.
+ */
+export interface SetGeometryCommand {
+  kind: 'setGeometry';
+  widgetId: string;
+  x: number;
+  y: number;
+  width?: number;
+  height?: number;
+  final: boolean;
+}
+
+/** The drag toolbar's switch. */
+export interface SetEnabledCommand {
+  kind: 'setEnabled';
+  widgetId: string;
+  enabled: boolean;
+}
+
 /** The F9 picker: put a widget on this monitor. Main picks the instance. */
 export interface EnableTypeOnMonitorCommand {
   kind: 'enableTypeOnMonitor';
@@ -56,7 +78,18 @@ export interface EnableTypeOnMonitorCommand {
   monitor: string;
 }
 
-export type ClientCommand = EnableTypeOnMonitorCommand;
+/** The settings popup: only the fields the user changed. */
+export interface PatchSettingsCommand {
+  kind: 'patchSettings';
+  widgetId: string;
+  partial: Partial<WidgetUserSettings>;
+}
+
+export type ClientCommand =
+  | SetGeometryCommand
+  | SetEnabledCommand
+  | EnableTypeOnMonitorCommand
+  | PatchSettingsCommand;
 
 export type HelloMessage = Extract<ClientEnvelope, { kind: 'hello' }>;
 

@@ -259,28 +259,6 @@ describe('LiveWidgetsStore overlay widget picker', () => {
       false
     );
   });
-
-  // The overlay window makes the instance; main has to keep it, or the next
-  // save writes the layout without it.
-  it('keeps an instance an overlay window made on its own monitor', () => {
-    const [widget] = rootStore.liveWidgets.allWidgets;
-    const made = {
-      ...widget,
-      id: `${widget.type}-9`,
-      monitor: 'DISPLAY2',
-      userSettings: { ...widget.userSettings, enabled: true },
-    };
-
-    rootStore.liveWidgets.applySettingsSyncForMonitor('DISPLAY2', [made]);
-    rootStore.liveWidgets.applySettingsSyncForMonitor('DISPLAY1', [
-      { ...made, id: `${widget.type}-10` },
-    ]);
-
-    expect(rootStore.liveWidgets.getWidget(made.id)?.monitor).toBe('DISPLAY2');
-    expect(
-      rootStore.liveWidgets.getWidget(`${widget.type}-10`)
-    ).toBeUndefined();
-  });
 });
 
 describe('derived design width', () => {
@@ -376,20 +354,11 @@ describe('derived design width', () => {
     const standings = store.getWidget('standings')!;
     const shippedWidth = standings.designWidth;
 
-    // What the overlay sends back: settings for a narrower name column, and its
-    // own stored width, which it had no reason to recompute.
-    store.applySettingsSyncForMonitor(monitorName, [
-      {
-        ...standings,
-        designWidth: shippedWidth,
-        userSettings: {
-          ...standings.userSettings,
-          x: 100,
-          y: 100,
-          nameColumnWidth: 100,
-        },
-      },
-    ]);
+    // An overlay's popup narrowing the name column, as a command: only the
+    // field it changed, the width is main's to recompute.
+    store.applyClientCommand(() =>
+      store.updateUserSettings('standings', { nameColumnWidth: 100 })
+    );
 
     const synced = store.getWidget('standings')!;
 
@@ -1038,13 +1007,6 @@ describe('every settings write leaves its mark', () => {
       name: 'applySettingsSync',
       setup: (store) => store.updateUserSettings('fuel', { x: 33 }),
       run: (store) => store.applySettingsSync(clonedWidgets(store)),
-      expected: { token: 'sync', touched: 'none' },
-    },
-    {
-      name: 'applySettingsSyncForMonitor',
-      setup: (store) => store.updateUserSettings('fuel', { x: 33 }),
-      run: (store) =>
-        store.applySettingsSyncForMonitor(DISPLAY.name, clonedWidgets(store)),
       expected: { token: 'sync', touched: 'none' },
     },
 

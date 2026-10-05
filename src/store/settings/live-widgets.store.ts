@@ -145,7 +145,7 @@ export class LiveWidgetsStore implements WidgetMap {
    * the blank starter set the window falls back to meanwhile.
    */
   private get widgetOwner(): SavedLayout | null {
-    const layout = this.layoutRecords.editingLayout;
+    const layout = this.editingLayout;
 
     return layout && layout.monitors.length > 0 ? layout : null;
   }
@@ -200,6 +200,13 @@ export class LiveWidgetsStore implements WidgetMap {
   layoutActivatedToast: string | null = null;
 
   private layoutToastTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /**
+   * Main side, while a client's command runs (`applyClientCommand`): every
+   * write lands in the live layout instead of the edited one, and leaves no
+   * undo step.
+   */
+  private applyingClientCommand = false;
 
   constructor(
     private readonly mutations: SettingsMutationLog,
@@ -379,7 +386,27 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   pushUndo() {
+    // The editor's history is the editor's: a drag on an overlay is not a step
+    // the editor's undo button walks back.
+    if (this.applyingClientCommand) return;
+
     this.history.push(this.snapshotWidgets());
+  }
+
+  /**
+   * Runs an overlay's command (ADR-0007) through the same methods the editor
+   * uses — clamping to the monitor, the layout resize of a column toggle, the
+   * fuel values the backend keeps — but against the layout on screen, which
+   * is the one the overlay draws, and without an undo step.
+   */
+  applyClientCommand<Result>(command: () => Result): Result {
+    this.applyingClientCommand = true;
+
+    try {
+      return command();
+    } finally {
+      this.applyingClientCommand = false;
+    }
   }
 
   undo() {
@@ -958,6 +985,21 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
+   * Where `updatePosition` would put a widget, without putting it there — an
+   * overlay draws a drag at once and lets main make it so.
+   */
+  clampedPosition(id: string, x: number, y: number): { x: number; y: number } {
+    const widget = this.getWidget(id);
+    const monitor = widget
+      ? monitorForWidget(widget, this.editingLayout?.monitors ?? [])
+      : undefined;
+
+    return widget && monitor
+      ? clampToBounds(monitor.bounds, { x, y }, clampSizeOf(widget))
+      : { x, y };
+  }
+
+  /**
    * Moves a widget, never off its own monitor: the position is clamped so the
    * whole widget stays inside it. Handing a widget to another monitor is
    * `moveWidgetToMonitor`, never a drag.
@@ -1124,19 +1166,16 @@ export class LiveWidgetsStore implements WidgetMap {
    * nothing on any other monitor is touched.
    *
    * Returns the instance switched on, so the editor can select it.
-   *
-   * An overlay's F9 picker reaches this as a command, with `recordUndo` off:
-   * the editor's undo history is the editor's, not a list of every widget
-   * added from the overlay.
    */
   setTypeEnabledOnMonitor(
     type: string,
     monitorName: string,
-    enabled: boolean,
-    { recordUndo = true }: { recordUndo?: boolean } = {}
+    enabled: boolean
   ): string | null {
     const layout = this.widgetOwner;
-    const monitor = this.layoutRecords.monitorByName(monitorName);
+    const monitor = layout?.monitors.find(
+      (entry) => entry.name === monitorName
+    );
 
     if (!layout || !monitor || !DEFAULT_WIDGET_BY_ID.has(type)) return null;
 
@@ -1151,9 +1190,7 @@ export class LiveWidgetsStore implements WidgetMap {
 
       if (switchedOn.length === 0) return null;
 
-      if (recordUndo) {
-        this.pushUndo();
-      }
+      this.pushUndo();
 
       for (const widget of switchedOn) {
         widget.userSettings.enabled = false;
@@ -1168,9 +1205,7 @@ export class LiveWidgetsStore implements WidgetMap {
 
     if (alreadyOn) return alreadyOn.id;
 
-    if (recordUndo) {
-      this.pushUndo();
-    }
+    this.pushUndo();
 
     const reused = instances[0];
 
@@ -1324,59 +1359,6 @@ export class LiveWidgetsStore implements WidgetMap {
     });
   }
 
-  // Applies widgets synced in from an overlay window. Only the widgets that
-  // window owns are taken: it knows nothing about the other monitors, and its
-  // copy of them would be stale.
-  applySettingsSyncForMonitor(
-    monitorName: string,
-    widgets: WidgetDefaultConfig[]
-  ) {
-    // The live layout, never the edited one: an overlay window draws what is on
-    // screen, so its F9 drag belongs to that layout even when the editor has
-    // another one open beside it.
-    const layout = this.layoutRecords.liveLayout;
-
-    if (!layout) return;
-
-    for (const widget of widgets) {
-      const live = layout.widgets.find((entry) => entry.id === widget.id);
-
-      // An instance the window made itself — the F9 picker switching a widget
-      // on there for the first time. Its own monitor is the one thing a window
-      // may add to.
-      if (
-        !live &&
-        widget.monitor === monitorName &&
-        DEFAULT_WIDGET_BY_ID.has(widget.type)
-      ) {
-        layout.widgets.push({
-          ...widget,
-          userSettings: { ...widget.userSettings },
-        });
-
-        continue;
-      }
-
-      // Ownership is read off this window's record, not the incoming copy: a
-      // widget main has just moved elsewhere is no longer that window's to
-      // report, however it still sees it.
-      if (!live || live.monitor !== monitorName) continue;
-
-      Object.assign(live.userSettings, widget.userSettings);
-
-      // Derived from the settings just applied, never from the incoming copy:
-      // the overlay knows only its own monitor, so its stored width can be
-      // stale even when the settings it sends are not.
-      live.designWidth = deriveWidgetDesignWidth(
-        live.type,
-        live.userSettings,
-        live.designWidth
-      );
-    }
-
-    this.mutations.recordSynced();
-  }
-
   /**
    * Hands a widget to another monitor of the layout, keeping its relative
    * place on screen and every setting it has. This is the only way a widget
@@ -1457,7 +1439,9 @@ export class LiveWidgetsStore implements WidgetMap {
    * working copy, not the record behind it.
    */
   private get editingLayout(): SavedLayout | undefined {
-    return this.layoutRecords.editingLayout;
+    return this.applyingClientCommand
+      ? this.layoutRecords.liveLayout
+      : this.layoutRecords.editingLayout;
   }
 
   // Selecting a layout loads its saved widgets into the live store. Repointing

@@ -38,8 +38,27 @@ pub enum ClientEnvelope {
     },
     /// Main's whole view of what one client draws. Replaces the client's state
     /// entirely — there are no patches.
+    ///
+    /// `last_handled_command_no` is the last of this client's commands main
+    /// has handled, applied or refused; until it reaches a command, the client
+    /// keeps showing that command's fields over the snapshot. `rejected` lists
+    /// the refusals since the previous snapshot, for the log — the snapshot
+    /// itself already carries main's value.
     #[serde(rename_all = "camelCase")]
-    Snapshot { client_id: String },
+    Snapshot {
+        client_id: String,
+        last_handled_command_no: u32,
+        rejected: Vec<RejectedCommand>,
+    },
+}
+
+/// A command main refused, and why.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
+pub struct RejectedCommand {
+    pub command_no: u32,
+    pub reason: String,
 }
 
 #[cfg(test)]
@@ -62,13 +81,14 @@ mod tests {
     /// message must not choke on a field it does not declare.
     #[test]
     fn a_snapshot_with_its_payload_still_reads_as_an_envelope() {
-        let message = r#"{"kind":"snapshot","clientId":"overlay-1","snapshot":{"widgets":[]}}"#;
+        let message = r#"{"kind":"snapshot","clientId":"overlay-1","lastHandledCommandNo":3,"rejected":[],"snapshot":{"widgets":[]}}"#;
 
         let envelope: ClientEnvelope = serde_json::from_str(message).unwrap();
 
         assert!(matches!(
             envelope,
-            ClientEnvelope::Snapshot { client_id } if client_id == "overlay-1"
+            ClientEnvelope::Snapshot { client_id, last_handled_command_no: 3, .. }
+                if client_id == "overlay-1"
         ));
     }
 }

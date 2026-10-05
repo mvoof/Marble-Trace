@@ -1,28 +1,33 @@
-import { comparer, reaction, runInAction } from 'mobx';
+import { comparer, runInAction } from 'mobx';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
-import {
-  emitToMain,
-  emitWidgetSettingsToMain,
-  listenToMain,
-} from '@platform/services/events.service';
+import { emitToMain, listenToMain } from '@platform/services/events.service';
 import { setupOverlayListeners } from './listeners';
 import { initPerfRun } from './perf-run';
 import type { OverlayRoot } from '@store/overlay-root';
-import type { OverlaySnapshot } from '@/types/client-protocol';
+import type { SnapshotMessage } from '@/types/client-protocol';
 
 /**
  * Installs main's snapshot of this overlay's monitor. It replaces what the
  * window held: the screen and its widgets, and every app-level value its
- * widgets read.
+ * widgets read — except the fields of this window's own commands main has not
+ * handled yet, which are drawn over it again in the same action.
  *
  * Assigned directly, never through a setter: a setter is main's — it bumps
  * `changeToken`, and some reach the backend, which main has already told.
  */
 export const applyOverlaySnapshot = (
   root: OverlayRoot,
-  snapshot: OverlaySnapshot
+  message: SnapshotMessage
 ) => {
+  const { snapshot } = message;
+
+  for (const refusal of message.rejected) {
+    console.warn(
+      `[overlay-sync] main refused command ${refusal.commandNo}: ${refusal.reason}`
+    );
+  }
+
   runInAction(() => {
     Object.assign(root.appSettings.appSettings, {
       hideAllWidgets: snapshot.hideAllWidgets,
@@ -49,6 +54,8 @@ export const applyOverlaySnapshot = (
       monitor: snapshot.monitor,
       widgets: snapshot.widgets,
     });
+
+    root.settingsClient.acknowledge(message.lastHandledCommandNo);
   });
 
   // Switching the language reloads every translated string; done only when
@@ -78,7 +85,7 @@ export const initOverlaySync = async (root: OverlayRoot) => {
     await listenToMain((message) => {
       if (message.clientId !== clientId) return;
 
-      applyOverlaySnapshot(root, message.snapshot);
+      applyOverlaySnapshot(root, message);
     })
   );
 
@@ -86,34 +93,8 @@ export const initOverlaySync = async (root: OverlayRoot) => {
 
   await emitToMain({ kind: 'hello', clientId });
 
-  const disposers = [
-    reaction(
-      () => root.settingsMutations.changeToken,
-      () => {
-        const monitorName = root.liveWidgets.ownMonitorName;
-
-        if (!monitorName) return;
-
-        // Only what was edited here travels back. A drag reports one widget
-        // instead of the whole layout, and a list this window never touched
-        // can no longer overwrite the record main holds for it.
-        const { widgets } = root.liveWidgets.drainTouchedWidgets();
-
-        if (widgets.length === 0) return;
-
-        void emitWidgetSettingsToMain({
-          monitorName,
-          widgets,
-          layoutId: root.liveWidgets.syncedLayoutId,
-        });
-      },
-      { delay: 100 }
-    ),
-  ];
-
   return () => {
     unlistens.forEach((u) => u());
-    disposers.forEach((d) => d());
     stopPerfRun();
   };
 };

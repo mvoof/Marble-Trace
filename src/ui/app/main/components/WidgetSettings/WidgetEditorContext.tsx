@@ -15,8 +15,9 @@ import {
 } from '@store/root-store-context';
 
 // A small editing target so the settings panels don't care WHAT they edit. The
-// Widgets catalog binds this to the global defaults; everywhere else (layout
-// editor, F9 overlay popup) falls back to the live active-layout store.
+// Widgets catalog binds this to the global defaults, the F9 overlay popup to
+// the commands it sends main (`WidgetEditorProvider`); the layout editor falls
+// back to the live active-layout store.
 export interface WidgetEditor {
   getWidget(id: string): WidgetDefaultConfig | undefined;
   getSettings<SpecificSettings extends WidgetSpecificSettings>(
@@ -61,6 +62,20 @@ export const useWidgetEditor = (): WidgetEditor => {
     [context, store, mutations]
   );
 };
+
+// Binds descendant settings panels to an editor given by the caller — the
+// overlay's popup, which writes through commands rather than the store.
+export const WidgetEditorProvider = ({
+  editor,
+  children,
+}: {
+  editor: WidgetEditor;
+  children: ReactNode;
+}) => (
+  <WidgetEditorContext.Provider value={editor}>
+    {children}
+  </WidgetEditorContext.Provider>
+);
 
 // Binds descendant settings panels / previews to the global widget defaults.
 export const DefaultsEditorProvider = ({

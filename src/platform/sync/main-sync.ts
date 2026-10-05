@@ -3,7 +3,6 @@ import { layoutGestureStores } from '@store/root-store-context';
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
-import { listenTo } from '@platform/services/events.service';
 import { logSettingsSnapshot } from './persistence';
 import {
   createSaveHandle,
@@ -13,7 +12,6 @@ import {
 import { setupDeviceBindings } from '@store/hotkeys/bindings-sync';
 import { listenSettingsActions, registerHotkeyReactions } from './hotkey-sync';
 import { setupMainListeners } from './listeners';
-import type { MonitorWidgetsPayload } from '@platform/services/events.service';
 import { registerChatReactions } from './chat-sync';
 import { pitStrategyOf } from '@store/settings/app-settings.store';
 import { registerPitServiceMainReactions } from './pit-service-sync';
@@ -337,34 +335,12 @@ export const initMainSync = async (root: MainRoot) => {
       });
 
       const [
-        overlaySettingsUnlisten,
         mainUnlistens,
         settingsActionUnlisten,
         deviceBindingUnlistens,
         trackRotationUnlisten,
         closeRequestedUnlisten,
       ] = await Promise.all([
-        listenTo<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
-          // An overlay speaks for the layout it is rendering, which is the live
-          // one — never the one the editor happens to have open. A list emitted
-          // just before a layout switch still carries the old id, and writing
-          // it in would copy one layout's widgets over another's.
-          const { layoutId } = e.payload;
-
-          if (layoutId != null && layoutId !== root.layouts.liveLayoutId) {
-            return;
-          }
-
-          // An overlay window only ever speaks for the widgets on its own
-          // screen; taking the rest of its list would overwrite the other
-          // monitors with a stale copy.
-          root.liveWidgets.applySettingsSyncForMonitor(
-            e.payload.monitorName,
-            e.payload.widgets
-          );
-
-          void onSave();
-        }),
         setupMainListeners(root),
         listenSettingsActions(root),
         setupDeviceBindings(root),
@@ -423,7 +399,6 @@ export const initMainSync = async (root: MainRoot) => {
         stopMonitorWatch();
         stopRemotePublishing();
         clientPublishing.dispose();
-        overlaySettingsUnlisten();
         settingsActionUnlisten();
         trackRotationUnlisten();
         closeRequestedUnlisten();

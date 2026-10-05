@@ -41,6 +41,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<cars::CarIdxFrame>()
         .register::<cars::CarPositionsFrame>()
         .register::<client_protocol::ClientEnvelope>()
+        .register::<client_protocol::RejectedCommand>()
         .register::<companions::CompanionApp>()
         .register::<companions::CompanionStatus>()
         .register::<companions::DetectedApp>()

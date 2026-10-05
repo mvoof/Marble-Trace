@@ -16,6 +16,7 @@ import {
   useWidgetAutoHideStore,
   useLiveWidgetsStore,
 } from '@store/root-store-context';
+import { useOverlayRoot } from '@store/overlay-root-context';
 
 interface WidgetContainerProps {
   widgetId: string;
@@ -26,6 +27,7 @@ export const WidgetContainer = observer(
   ({ widgetId, children }: WidgetContainerProps) => {
     const { dragMode, appSettings, hidesOffTrack } = useAppSettingsStore();
     const liveWidgets = useLiveWidgetsStore();
+    const { settingsClient } = useOverlayRoot();
 
     const simStore = useSimStore();
     const widgetAutoHide = useWidgetAutoHideStore();
@@ -102,7 +104,7 @@ export const WidgetContainer = observer(
           const dx = ev.clientX - dragStartRef.current.mouseX;
           const dy = ev.clientY - dragStartRef.current.mouseY;
 
-          liveWidgets.updatePosition(
+          settingsClient.moveWidget(
             widgetId,
             Math.round(dragStartRef.current.widgetX + dx),
             Math.round(dragStartRef.current.widgetY + dy)
@@ -111,6 +113,7 @@ export const WidgetContainer = observer(
 
         const onMouseUp = () => {
           isDraggingRef.current = false;
+          settingsClient.endGeometry(widgetId);
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
         };
@@ -118,7 +121,7 @@ export const WidgetContainer = observer(
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       },
-      [dragMode, widgetId, liveWidgets]
+      [dragMode, widgetId, liveWidgets, settingsClient]
     );
 
     const handleResizeMouseDown = useCallback(
@@ -206,15 +209,12 @@ export const WidgetContainer = observer(
             }
           }
 
-          liveWidgets.updateSize(widgetId, newW, newH);
-
-          if (newX !== startX || newY !== startY) {
-            liveWidgets.updatePosition(widgetId, newX, newY);
-          }
+          settingsClient.resizeWidget(widgetId, newX, newY, newW, newH);
         };
 
         const onMouseUp = () => {
           isResizingRef.current = false;
+          settingsClient.endGeometry(widgetId);
 
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
@@ -226,6 +226,7 @@ export const WidgetContainer = observer(
       [
         dragMode,
         liveWidgets,
+        settingsClient,
         widgetId,
         designWidth,
         designHeight,

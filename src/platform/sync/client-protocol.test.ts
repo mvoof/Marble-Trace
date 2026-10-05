@@ -1,25 +1,34 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 
 import { MainRoot } from '@store/main-root';
 import { OverlayRoot } from '@store/overlay-root';
 import type {
   ClientToMainMessage,
+  CommandMessage,
+  OverlaySnapshot,
   SnapshotMessage,
 } from '@/types/client-protocol';
 
-// Main and the overlay are wired straight to each other below: what main
-// emits is handed to the handler the overlay registered, and the other way.
+// Main and the overlays are wired straight to each other below: a command an
+// overlay sends reaches main's handler at once, and every snapshot main sends
+// is kept, to be delivered when a test says so — so one can be held back and
+// arrive late, as it would across the event loop.
 const wire = vi.hoisted(() => ({
   toMain: null as null | ((message: ClientToMainMessage) => void),
   sent: [] as SnapshotMessage[],
+  commands: [] as CommandMessage[],
 }));
 
 vi.mock('@platform/services/events.service', () => ({
   emitLayoutActivated: vi.fn(),
-  emitToMain: vi.fn(async (message: ClientToMainMessage) =>
-    wire.toMain?.(message)
-  ),
+  emitToMain: vi.fn(async (message: ClientToMainMessage) => {
+    if (message.kind === 'command') {
+      wire.commands.push(message);
+    }
+
+    wire.toMain?.(message);
+  }),
   listenToClients: vi.fn(
     async (handler: (message: ClientToMainMessage) => void) => {
       wire.toMain = handler;
@@ -29,8 +38,10 @@ vi.mock('@platform/services/events.service', () => ({
       };
     }
   ),
+  // Serialized as the event transport would: a held snapshot must not follow
+  // main's records as they change afterwards.
   emitSnapshotToClient: vi.fn(async (message: SnapshotMessage) => {
-    wire.sent.push(message);
+    wire.sent.push(JSON.parse(JSON.stringify(message)) as SnapshotMessage);
   }),
   listenTo: vi.fn(),
 }));
@@ -53,6 +64,10 @@ const { overlaySnapshotFor } = await import('./client-snapshot');
 const { registerClientPublishing } = await import('./client-publish');
 const { applyOverlaySnapshot } = await import('./overlay-sync');
 
+/** How long the overlay holds a drag before sending it, and a popup edit. */
+const GEOMETRY_SEND_MS = 75;
+const SETTINGS_MERGE_MS = 50;
+
 const LEFT = {
   name: 'LEFT',
   bounds: { x: 0, y: 0, width: 1920, height: 1080 },
@@ -72,29 +87,78 @@ const layout = (id: string) => ({
 
 const mainWithTwoMonitors = () => {
   const root = new MainRoot({ skipInit: true });
+  const { liveWidgets } = root;
 
-  root.liveWidgets.setLayouts(
+  liveWidgets.setLayouts(
     [layout('layout-race'), layout('layout-qualify')],
     'layout-race'
   );
 
-  // Set up without undo steps, so a test can tell whether a command left one.
-  root.liveWidgets.setTypeEnabledOnMonitor('fuel', 'LEFT', true, {
-    recordUndo: false,
-  });
-  root.liveWidgets.setTypeEnabledOnMonitor('standings', 'RIGHT', true, {
-    recordUndo: false,
+  // Set up as a client would, so the editor's history starts empty and a test
+  // can tell whether a command left a step in it.
+  liveWidgets.applyClientCommand(() => {
+    liveWidgets.setTypeEnabledOnMonitor('fuel', 'LEFT', true);
+    liveWidgets.setTypeEnabledOnMonitor('standings', 'RIGHT', true);
   });
 
   return root;
 };
 
+const asMessage = (snapshot: OverlaySnapshot): SnapshotMessage => ({
+  kind: 'snapshot',
+  clientId: 'overlay-LEFT',
+  lastHandledCommandNo: 0,
+  rejected: [],
+  snapshot,
+});
+
+const overlayOn = (monitorName: string) => {
+  const overlay = new OverlayRoot({ skipInit: true });
+
+  overlay.liveWidgets.setOwnMonitorName(monitorName);
+  overlay.settingsClient.connect(`overlay-${monitorName}`);
+
+  return overlay;
+};
+
 const lastSnapshotTo = (clientId: string) =>
   wire.sent.filter((message) => message.clientId === clientId).at(-1);
 
+const deliverLatest = (overlay: OverlayRoot) =>
+  applyOverlaySnapshot(overlay, lastSnapshotTo('overlay-LEFT')!);
+
+/** Main connected to one overlay on the left monitor, after its hello. */
+const connected = async () => {
+  const main = mainWithTwoMonitors();
+  const publishing = await registerClientPublishing(main);
+  const overlay = overlayOn('LEFT');
+
+  wire.toMain!({ kind: 'hello', clientId: 'overlay-LEFT' });
+  deliverLatest(overlay);
+
+  /** Main publishes now; the snapshot is returned, not yet delivered. */
+  const publishHeld = async () => {
+    await publishing.publishAll();
+
+    return lastSnapshotTo('overlay-LEFT')!;
+  };
+
+  return { main, overlay, publishing, publishHeld };
+};
+
+const xOf = (root: MainRoot | OverlayRoot, widgetId: string) =>
+  root.liveWidgets.getWidget(widgetId)!.userSettings.x;
+
 beforeEach(() => {
+  vi.useFakeTimers();
   wire.toMain = null;
   wire.sent = [];
+  wire.commands = [];
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 describe('the snapshot main builds for one overlay', () => {
@@ -142,14 +206,6 @@ describe('the snapshot main builds for one overlay', () => {
 });
 
 describe('an overlay installing its snapshot', () => {
-  const overlayOn = (monitorName: string) => {
-    const overlay = new OverlayRoot({ skipInit: true });
-
-    overlay.liveWidgets.setOwnMonitorName(monitorName);
-
-    return overlay;
-  };
-
   it('draws the widgets of its monitor and takes the app values', () => {
     const main = mainWithTwoMonitors();
     const overlay = overlayOn('LEFT');
@@ -159,7 +215,7 @@ describe('an overlay installing its snapshot', () => {
       main.units.setSystem('imperial');
     });
 
-    applyOverlaySnapshot(overlay, overlaySnapshotFor(main, 'LEFT')!);
+    applyOverlaySnapshot(overlay, asMessage(overlaySnapshotFor(main, 'LEFT')!));
 
     expect(
       overlay.liveWidgets.ownMonitorWidgets.map((widget) => widget.type)
@@ -173,34 +229,24 @@ describe('an overlay installing its snapshot', () => {
     const main = mainWithTwoMonitors();
     const overlay = overlayOn('LEFT');
 
-    applyOverlaySnapshot(overlay, overlaySnapshotFor(main, 'LEFT')!);
+    applyOverlaySnapshot(overlay, asMessage(overlaySnapshotFor(main, 'LEFT')!));
 
     const before = overlay.liveWidgets.getWidget('fuel');
 
     main.liveWidgets.updatePosition('fuel', 300, 200);
-    applyOverlaySnapshot(overlay, overlaySnapshotFor(main, 'LEFT')!);
+    applyOverlaySnapshot(overlay, asMessage(overlaySnapshotFor(main, 'LEFT')!));
 
     expect(overlay.liveWidgets.getWidget('fuel')).toBe(before);
-    expect(overlay.liveWidgets.getWidget('fuel')!.userSettings.x).toBe(300);
-  });
-
-  it('reports nothing back to main for what main sent', () => {
-    const main = mainWithTwoMonitors();
-    const overlay = overlayOn('LEFT');
-
-    applyOverlaySnapshot(overlay, overlaySnapshotFor(main, 'LEFT')!);
-
-    expect(overlay.liveWidgets.drainTouchedWidgets().widgets).toEqual([]);
-    expect(overlay.settingsMutations.changeToken).toBe(0);
+    expect(xOf(overlay, 'fuel')).toBe(300);
   });
 
   it('follows a layout switch', () => {
     const main = mainWithTwoMonitors();
     const overlay = overlayOn('LEFT');
 
-    applyOverlaySnapshot(overlay, overlaySnapshotFor(main, 'LEFT')!);
+    applyOverlaySnapshot(overlay, asMessage(overlaySnapshotFor(main, 'LEFT')!));
     main.liveWidgets.loadLayout('layout-qualify');
-    applyOverlaySnapshot(overlay, overlaySnapshotFor(main, 'LEFT')!);
+    applyOverlaySnapshot(overlay, asMessage(overlaySnapshotFor(main, 'LEFT')!));
 
     expect(overlay.layouts.liveLayoutId).toBe('layout-qualify');
     expect(overlay.liveWidgets.syncedLayoutId).toBe('layout-qualify');
@@ -222,32 +268,30 @@ describe('main answering its clients', () => {
     publishing.dispose();
   });
 
-  it('resyncs an overlay that reloads', async () => {
-    const main = mainWithTwoMonitors();
-    const publishing = await registerClientPublishing(main);
-    const overlay = new OverlayRoot({ skipInit: true });
+  it('resyncs an overlay that reloads, counting its commands from 1 again', async () => {
+    const { main, overlay, publishing } = await connected();
 
-    overlay.liveWidgets.setOwnMonitorName('LEFT');
+    overlay.settingsClient.setEnabled('fuel', false);
+
+    // The window reloads: a fresh root says hello.
+    const reloaded = overlayOn('LEFT');
+
     main.liveWidgets.updatePosition('fuel', 420, 240);
     wire.toMain!({ kind: 'hello', clientId: 'overlay-LEFT' });
-    applyOverlaySnapshot(overlay, lastSnapshotTo('overlay-LEFT')!.snapshot);
 
-    expect(overlay.liveWidgets.getWidget('fuel')!.userSettings.x).toBe(420);
+    expect(lastSnapshotTo('overlay-LEFT')!.lastHandledCommandNo).toBe(0);
+
+    deliverLatest(reloaded);
+
+    expect(xOf(reloaded, 'fuel')).toBe(420);
 
     publishing.dispose();
   });
 
   it('adds a widget from the F9 picker on the overlay’s monitor, without an undo step', async () => {
-    const main = mainWithTwoMonitors();
-    const publishing = await registerClientPublishing(main);
+    const { main, overlay, publishing } = await connected();
 
-    wire.toMain!({
-      kind: 'command',
-      clientId: 'overlay-LEFT',
-      commandNo: 1,
-      layoutId: 'layout-race',
-      command: { kind: 'enableTypeOnMonitor', type: 'delta', monitor: 'LEFT' },
-    });
+    overlay.settingsClient.enableTypeOnMonitor('delta', 'LEFT');
 
     const added = main.liveWidgets
       .widgetsOfType('delta')
@@ -259,50 +303,146 @@ describe('main answering its clients', () => {
     publishing.dispose();
   });
 
-  it('refuses a command for a layout that is no longer on screen', async () => {
-    const main = mainWithTwoMonitors();
-    const publishing = await registerClientPublishing(main);
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it('refuses a widget for a monitor that is not the sender’s, and says so', async () => {
+    const { main, overlay, publishing, publishHeld } = await connected();
 
-    wire.toMain!({
-      kind: 'command',
-      clientId: 'overlay-LEFT',
-      commandNo: 1,
-      layoutId: 'layout-qualify',
-      command: { kind: 'enableTypeOnMonitor', type: 'delta', monitor: 'LEFT' },
-    });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    overlay.settingsClient.enableTypeOnMonitor('delta', 'RIGHT');
 
     expect(
       main.liveWidgets
         .widgetsOfType('delta')
         .some((widget) => widget.userSettings.enabled)
     ).toBe(false);
-    expect(warn).toHaveBeenCalled();
+    expect(await publishHeld()).toMatchObject({
+      lastHandledCommandNo: 1,
+      rejected: [{ commandNo: 1 }],
+    });
 
-    warn.mockRestore();
     publishing.dispose();
   });
 
-  it('refuses a widget for a monitor that is not the sender’s', async () => {
-    const main = mainWithTwoMonitors();
-    const publishing = await registerClientPublishing(main);
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it('writes an overlay’s command into the live layout while the editor holds another', async () => {
+    const { main, overlay, publishing } = await connected();
 
-    wire.toMain!({
-      kind: 'command',
-      clientId: 'overlay-LEFT',
-      commandNo: 1,
-      layoutId: 'layout-race',
-      command: { kind: 'enableTypeOnMonitor', type: 'delta', monitor: 'RIGHT' },
+    runInAction(() => {
+      main.layouts.setPinnedLiveLayoutId('layout-race');
+      main.layouts.setEditingLayoutId('layout-qualify');
     });
 
-    expect(
-      main.liveWidgets
-        .widgetsOfType('delta')
-        .some((widget) => widget.userSettings.enabled)
-    ).toBe(false);
+    overlay.settingsClient.setEnabled('fuel', false);
 
-    warn.mockRestore();
+    const raceFuel = main.layouts
+      .byId('layout-race')!
+      .widgets.find((widget) => widget.id === 'fuel')!;
+
+    expect(raceFuel.userSettings.enabled).toBe(false);
+
+    publishing.dispose();
+  });
+});
+
+describe('an overlay’s commands', () => {
+  it('keeps the dragged position when a stale snapshot lands after the release', async () => {
+    const { main, overlay, publishing, publishHeld } = await connected();
+
+    overlay.settingsClient.moveWidget('fuel', 100, 100);
+    vi.advanceTimersByTime(GEOMETRY_SEND_MS);
+
+    // Main has handled the first step, and the snapshot saying so is still on
+    // its way when the drag goes on and ends.
+    const stale = await publishHeld();
+
+    overlay.settingsClient.moveWidget('fuel', 300, 100);
+    overlay.settingsClient.endGeometry('fuel');
+
+    applyOverlaySnapshot(overlay, stale);
+
+    expect(
+      stale.snapshot.widgets.find((widget) => widget.id === 'fuel')!
+        .userSettings.x
+    ).toBe(100);
+    expect(xOf(overlay, 'fuel')).toBe(300);
+
+    applyOverlaySnapshot(overlay, await publishHeld());
+
+    expect(xOf(main, 'fuel')).toBe(300);
+    expect(xOf(overlay, 'fuel')).toBe(300);
+
+    // Acknowledged: the override is gone, and main's next value shows.
+    main.liveWidgets.updatePosition('fuel', 50, 100);
+    applyOverlaySnapshot(overlay, await publishHeld());
+
+    expect(xOf(overlay, 'fuel')).toBe(50);
+
+    publishing.dispose();
+  });
+
+  it('sends a drag every few frames while it lasts and once more on release', async () => {
+    const { overlay, publishing } = await connected();
+
+    overlay.settingsClient.moveWidget('fuel', 100, 100);
+    overlay.settingsClient.moveWidget('fuel', 110, 100);
+    vi.advanceTimersByTime(GEOMETRY_SEND_MS);
+    overlay.settingsClient.moveWidget('fuel', 120, 100);
+    overlay.settingsClient.endGeometry('fuel');
+
+    expect(wire.commands.map((message) => message.command)).toMatchObject([
+      { kind: 'setGeometry', x: 110, final: false },
+      { kind: 'setGeometry', x: 120, final: true },
+    ]);
+
+    publishing.dispose();
+  });
+
+  it('restores main’s value when a command is refused', async () => {
+    const { main, overlay, publishing, publishHeld } = await connected();
+    const before = xOf(main, 'fuel');
+
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    // The layout flips away and back before the overlay hears of it: the snap
+    // names a layout that was not on screen when it arrived.
+    main.liveWidgets.loadLayout('layout-qualify');
+    overlay.settingsClient.snapWidget('fuel', 600, 100);
+    main.liveWidgets.loadLayout('layout-race');
+
+    expect(xOf(overlay, 'fuel')).toBe(600);
+
+    applyOverlaySnapshot(overlay, await publishHeld());
+
+    expect(xOf(main, 'fuel')).toBe(before);
+    expect(xOf(overlay, 'fuel')).toBe(before);
+
+    publishing.dispose();
+  });
+
+  it('merges popup edits into one patch of the fields that changed', async () => {
+    const { main, overlay, publishing } = await connected();
+
+    overlay.settingsClient.patchSettings('fuel', {
+      ...overlay.liveWidgets.getSettings('fuel'),
+      fontScale: 1.4,
+    });
+    overlay.settingsClient.patchSettings('fuel', {
+      ...overlay.liveWidgets.getSettings('fuel'),
+      opacity: 0.5,
+    });
+
+    expect(wire.commands).toHaveLength(0);
+
+    vi.advanceTimersByTime(SETTINGS_MERGE_MS);
+
+    expect(wire.commands.map((message) => message.command)).toEqual([
+      {
+        kind: 'patchSettings',
+        widgetId: 'fuel',
+        partial: { fontScale: 1.4, opacity: 0.5 },
+      },
+    ]);
+    expect(main.liveWidgets.getSettings('fuel').fontScale).toBe(1.4);
+    expect(main.liveWidgets.history.canUndo).toBe(false);
+
     publishing.dispose();
   });
 });

@@ -7,7 +7,6 @@ import {
 } from '@tauri-apps/api/event';
 
 import { listOverlayWindowLabels } from '@platform/sync/overlay-labels';
-import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import type { RemoteDevice } from '@/types/bindings';
 import type {
   ClientToMainMessage,
@@ -34,22 +33,6 @@ import { publishRemoteControl } from '@platform/services/remote.service';
  */
 
 const MAIN = 'main';
-
-/**
- * An overlay's edits, as a patch of the widgets it touched on its own monitor.
- * Main → overlay is the snapshot (`emitSnapshotToClient`); this is the way
- * back until every overlay write is a command.
- */
-export interface MonitorWidgetsPayload {
-  monitorName: string;
-  widgets: WidgetDefaultConfig[];
-  /**
-   * The layout the overlay was drawing, from its last snapshot, so a list
-   * emitted just before a layout switch cannot be written into the layout that
-   * switched in.
-   */
-  layoutId?: string | null;
-}
 
 export const listenTo = <PayloadType>(
   event: string,
@@ -123,9 +106,6 @@ export const emitTrackRotation = async (payload: TrackRotationPayload) => {
       console.error('[events] failed to reach the remote screens:', error)
   );
 };
-
-export const emitWidgetSettingsToMain = (payload: MonitorWidgetsPayload) =>
-  emitTo(MAIN, 'widget-settings-updated', payload);
 
 export const emitLayoutActivated = (layoutName: string) =>
   emit('layout-activated', layoutName);
