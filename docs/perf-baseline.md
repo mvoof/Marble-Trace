@@ -260,3 +260,65 @@ licence or incidents; the overlay joins them back from `SessionSnapshot.cars`
 - Caveat: tickets 08–10 landed between the "before" pair and this one without
   a measurement of their own. None of them changes what `DriverEntry` carries,
   but their share of the tick and alloc rows is not separated out here.
+
+## 2026-10-05 — transport gate (ticket 12)
+
+Code `refactor/architecture-rework` @ 78d49dcd (ticket 11), the same `--build`
+binary as ticket 11's rows. Tape, offset and command as before.
+
+**Layout.** The developer's race layout, the largest one in use: one overlay
+(`DISPLAY1`, 17 widgets — the list above) and one stream screen (`strim`,
+`purpose: stream`, 12 widgets) that is normally an OBS browser source. OBS was
+closed; the stream page was opened in Chrome (same Chromium engine) with
+`--enable-precise-memory-info` and driven over CDP by a probe that wraps the
+page's `socket.onmessage` — on that page the handler _is_ `JSON.parse` +
+`applyTelemetryBundle`, synchronously, so parse and store writes are timed
+together there, which the overlay cannot do. The probe's 60 s window is
+aligned to the app's by start time, not by marker (±1 s).
+
+### Overlay
+
+| metric                                      | run 1           | run 2           |
+| ------------------------------------------- | --------------- | --------------- |
+| alloc (MiB/s), widgets                      | 9.39            | 9.44            |
+| apply p50 / p99 / max (ms)                  | 0.3 / 0.7 / 1.2 | 0.2 / 0.7 / 1.0 |
+| apply 1 Hz full p50 / max (ms)              | 0.3 / 0.8       | 0.3 / 0.7       |
+| alloc (MiB/s), stores-only (`--heap`)       | 1.65            |                 |
+| apply p99 / 1 Hz full max (ms), stores-only | 0.1 / 0.1       |                 |
+
+| heap bucket (widgets, 60 s)             | MiB/s | share  |
+| --------------------------------------- | ----- | ------ |
+| apply bundle → stores (incl. reactions) | 4.65  | 49.1 % |
+| React render / commit                   | 2.40  | 25.4 % |
+| event payload literal (the "parse")     | 1.77  | 18.7 % |
+| other                                   | 0.64  | 6.8 %  |
+
+Stores-only: the parse is 1.62 of 1.69 MiB/s (95.7 %); store writes 0.03 MiB/s.
+Top allocating sources with widgets: payload literal 26.1 %,
+`utils/car-identity.ts` 21.6 %, `TrackMapSvg.tsx` 20.0 %, MobX 8.4 %,
+`store/data/driver-entry-join.ts` 5.1 %.
+
+### Stream screen (Chrome, 33 telemetry messages/s after the hub's thinning)
+
+| metric                                  | run 1           | run 2           | heap run        |
+| --------------------------------------- | --------------- | --------------- | --------------- |
+| parse + apply p50 / p99 / max (ms)      | 0.3 / 1.1 / 1.5 | 0.3 / 1.1 / 1.5 | 0.3 / 1.1 / 1.4 |
+| parse + apply, 1 Hz full p50 / p99 (ms) | 0.3 / 1.1       | 0.3 / 1.0       | 0.3 / 1.2       |
+| alloc (MiB/s)                           | 6.51            | 6.46            | 6.40            |
+
+Heap: apply incl. reactions 59.5 %, React 27.0 %, other 13.5 % — `JSON.parse`
+is in "other" here: V8 charges a builtin's allocations to its caller
+(`remote-socket.service.ts`), so it has no bucket of its own.
+
+### Against the criterion (fixed in ticket 12, not adjusted)
+
+1. Worst tick, parse + store writes p99 ≤ 0.8 ms — **fails on the stream
+   screen** (1.0–1.2 ms on 1 Hz full ticks, and the ordinary ticks are no
+   better). On the overlay the parse cannot be timed; store writes alone are
+   ≤ 0.1 ms (stores-only), with reactions 0.7–0.8 ms max on full ticks.
+2. Parse + store writes ≤ 5 % of allocation — **fails**: 1.65 of 9.4 MiB/s
+   (17.6 %) by the stores-only A/B, 18.7 % parse by the profile.
+
+What the numbers also say: the transport's whole cost on the overlay is
+1.65 MiB/s. Reactions and React, which a binary transport does not touch, are
+7.0 MiB/s; `carIdentityOf` alone (2.05 MiB/s) allocates more than the parse.
