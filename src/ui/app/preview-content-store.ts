@@ -92,7 +92,7 @@ export const usePreviewContentStore = (
     mirrorWidgetsIntoPreview(liveWidgets.allWidgets, previewStore);
 
     return reaction(
-      () => [settingsMutations.changeToken, settingsMutations.syncToken],
+      () => settingsMutations.changeToken,
       () => mirrorWidgetsIntoPreview(liveWidgets.allWidgets, previewStore)
     );
   }, [previewStore, liveWidgets, settingsMutations]);

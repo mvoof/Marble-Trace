@@ -249,7 +249,6 @@ describe('an overlay installing its snapshot', () => {
     applyOverlaySnapshot(overlay, asMessage(overlaySnapshotFor(main, 'LEFT')!));
 
     expect(overlay.layouts.liveLayoutId).toBe('layout-qualify');
-    expect(overlay.liveWidgets.syncedLayoutId).toBe('layout-qualify');
     expect(overlay.liveWidgets.ownMonitorWidgets).toEqual([]);
   });
 });

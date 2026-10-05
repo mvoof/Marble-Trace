@@ -28,7 +28,7 @@ Every environment variable (runtime, build time, tooling):
 
 ## Architecture overview
 
-**Two windows, one Tauri app.** `main` (800×600) — settings UI built with Ant Design. `overlay` (1920×1080, always-on-top, transparent) — renders all widgets via `OverlayCanvas`. Each window has its own JS context and independent MobX instances; state that affects both must be synced via Tauri events (see Cross-Window Sync below).
+**Two windows, one Tauri app.** `main` (800×600) — settings UI built with Ant Design. `overlay` (1920×1080, always-on-top, transparent) — renders all widgets via `OverlayCanvas`. Each window has its own JS context and independent MobX instances; main holds the settings and the overlays are its clients (see "Main owns the settings" below).
 
 **Rust backend layers** (`src-tauri/src/`), strict one-way imports:
 
@@ -439,7 +439,7 @@ Each window builds its own root; access via context hooks. **Never import stores
 | Root           | Built by                     | Holds                                                                                                                                                          |
 | -------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `RendererCore` | every renderer, and previews | data stores, sim, settings projection (`layouts`, `liveWidgets`, `widgetDefaults`, `appSettings`, `settingsMutations`), units, widget stores, `widgetAutoHide` |
-| `OverlayRoot`  | `overlay.tsx`                | core + `AppWindowStores` (`bindings`, `settingsPanelUi`)                                                                                                       |
+| `OverlayRoot`  | `overlay.tsx`                | core + `AppWindowStores` (`bindings`, `settingsPanelUi`) + `settingsClient`                                                                                    |
 | `MainRoot`     | `main.tsx`                   | core + `AppWindowStores` + editor, companion apps, twitch auth, device list, bindings UI, remote devices, fps diagnostics, export, inspector                   |
 | `RemoteRoot`   | `remote.tsx`                 | core, started without Tauri                                                                                                                                    |
 | `HudRoot`      | `hud.tsx`                    | `diagnosticsHud` only — no core                                                                                                                                |
@@ -481,65 +481,64 @@ components        — observer(); read stores directly
 - Widget layout changes (column toggles, orientation swaps) handled via `resolveLayoutChange` in the widget's `manifest.ts`, not as `if/else` in the store.
 - `widgetMutationId` incremented on every settings setter — reactions use it instead of `JSON.stringify`.
 
-### Cross-Window State Sync
+### Main owns the settings; every other window is a client
 
-Each Tauri window has its own JS context and independent MobX instances. Any value affecting overlay UI that's mutated in main **must** sync via a Tauri event:
+Each Tauri window has its own JS context and its own MobX stores. **Main is the
+only window that holds and writes the settings** (ADR-0007); an overlay and a
+remote screen are **clients** of one protocol. The why, the acknowledgement rules
+and the full payloads: `docs/adr/0007-main-owns-settings.md`.
 
-Emitters and listeners are named functions in `platform/services/events.service.ts`
-— the only module that touches `@tauri-apps/api/event`. The wiring lives in
-`platform/sync/`:
+| direction                | what                                                                                  | where                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| main → client            | **snapshot**: the client's own screen, its widgets, the app values they read          | `client-snapshot.ts`, `client-publish.ts`, `remote-publish.ts`           |
+| main → client            | **signal**: `{ type: RemoteControlKind, data }` — a hotkey's scroll, a toast, a reset | `client://control` / the socket; `broadcastControl`, `send_view_control` |
+| overlay → main           | **command**: `setGeometry`, `setEnabled`, `enableTypeOnMonitor`, `patchSettings`      | `settings-client.store.ts` → `client-publish.ts`                         |
+| client, either transport | installs snapshots, runs signals                                                      | `client-sync.ts` (overlay: `overlay-sync.ts`, browser: `remote-sync.ts`) |
 
-```ts
-// main — platform/sync/main-sync.ts
-reaction(
-  () => store.value,
-  (v) => emitSomething(v)
-);
-// overlay — platform/sync/overlay-sync.ts
-listenTo('event-name', (e) => runInAction(() => (store.value = e.payload)));
-```
-
-An overlay-synced value is assigned to the sub-store data **directly, never via a
-setter** — a setter bumps `changeToken` and echoes the settings back to main.
-
-Synced events: `hide-all-widgets-changed`, `hide-widgets-when-game-closed-changed`, `units-changed`, `pit-strategy-changed`, `widget-settings-updated` (debounced 16 ms), `track-rotation-changed`, `track-map:force-start-pending-changed`, `overlay-monitor-changed`, `session-layouts-changed`, `auto-switch-layouts-changed`. The drag and interact
-modes are not among them: the backend owns those and broadcasts
-`app://overlay-modes` to every window.
+- **State goes in the snapshot, events go in signals.** A value a client must
+  still show after a reload is a field of `ClientSnapshot`
+  (`src/types/client-protocol.ts`), added in `clientSnapshotFor` and in
+  `snapshotAppInputs`, which republishes on it. A one-off happening is a
+  `RemoteControlKind` variant in `src-tauri/src/model/events.rs`; its case in
+  `applyControl` is enforced by the compiler, and `client-sync.test.ts` gets
+  one case for both transports. `reaches_remote_screens()` keeps a kind on the
+  driver's screens; `Replayed::replayed()` replays one to a socket that
+  connects later.
+- **An overlay changes a setting only by command**, through `root.settingsClient`
+  (the popup's panels reach it through `WidgetEditorProvider`). It draws its own
+  edit at once as an override, until main has handled the command. Main runs a
+  command through the editor's own methods inside `applyClientCommand` — the
+  live layout, no undo step.
+- **A remote screen never sends a command**; the hub refuses one.
+- Main's own edits — the editor, the settings pages — write its stores
+  directly, and `changeToken` (`SettingsMutationLog`) is what saves and
+  republishes them.
+- The drag and interact modes are the backend's: it broadcasts
+  `app://overlay-modes` to every window.
 
 ### Remote screens
 
 A remote screen is a layout monitor rendered by a browser on the LAN. Same widget
-components, same coordinates, WebSocket instead of Tauri events. Full picture:
-`docs/architecture.md` → Remote screens.
+components, same coordinates, the client protocol above over a WebSocket. Full
+picture: `docs/architecture.md` → Cross-window synchronization.
 
 | Layer            | File                                                |
 | ---------------- | --------------------------------------------------- |
 | server / fan-out | `src-tauri/src/remote/{server,hub,mirror,pages}.rs` |
 | main-window half | `platform/sync/remote-publish.ts`                   |
-| browser half     | `platform/sync/remote-sync.ts`                      |
+| browser half     | `platform/sync/remote-sync.ts` → `client-sync.ts`   |
 | page entry       | `remote.html` → `src/remote.tsx` → `ui/app/remote/` |
 
-- **One-way.** A device reports only its viewport, applied once to fit a newly
-  created screen. Nothing a browser sends can write settings.
+- **Read-only.** A device reports only its viewport, applied once to fit a newly
+  created screen.
 - A screen's `purpose` says who opens its URL. `'device'` is a tablet and is the
   default. `'stream'` is an OBS browser source: the page paints no ground of its
   own and shows no status card, and the screen is created already
   `fittedToDevice` so the first source that connects cannot resize a layout the
   user has built. `?widget=<instance id>` narrows the page to one widget's own
   rectangle, for a streamer placing widgets in their scene one at a time.
-- `remote.html` is a separate Vite entry and must stay free of `@tauri-apps/*`.
-- A snapshot carries **one screen's** widgets plus the app-level values those
-  widgets read — never the other monitors or layouts.
-- A Tauri event never leaves the app. **Anything a hotkey does to a widget needs a
-  control message too**: a variant of `RemoteControlKind` in
-  `src-tauri/src/model/events.rs` (one whitelist now, generated into
-  `bindings.ts` — the hub resolves the same enum), its arm in
-  `send_view_control` (`src-tauri/src/hotkeys/runtime.rs`), which fans it out to
-  the overlays and the hub, and a `case` in `remote-sync.ts`.
-  A missing `case` fails silently.
-- Whether a kind is cached and replayed to a socket that connects later is
-  `Replayed::replayed()` on the kind itself, not a separate list — that replay is
-  what a device joining mid-session needs to paint anything.
+- `remote.html` is a separate Vite entry and stays free of `@tauri-apps/*` —
+  so does `client-sync.ts`, which it imports.
 
 ### Layout editor
 
@@ -845,9 +844,9 @@ other. Always read the widget as `widget.type`, never `widget.id`.
 - The editor lists **every widget per monitor**, each with its own switch
   (`monitorWidgetRows`); the switch and the overlay's F9 picker both go through
   `setTypeEnabledOnMonitor`, which switches back on an instance already on that
-  monitor — settings intact — or makes one from the widget's template. An
-  overlay may add an instance only to its own monitor
-  (`applySettingsSyncForMonitor`).
+  monitor — settings intact — or makes one from the widget's template. The F9
+  picker reaches it as the `enableTypeOnMonitor` command: main picks the id and
+  the spot, and only on the sender's own monitor.
 - Instances are numbered **per monitor** (`copyOrdinalOf`): the first one of a
   widget on a monitor is the widget on that screen, a further one there is a
   copy. Deleting is `removeWidgetCopy`, and it takes only copies — the first

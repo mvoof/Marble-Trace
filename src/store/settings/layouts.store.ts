@@ -145,7 +145,7 @@ export class LayoutsStore {
 
   setPinnedLiveLayoutId(id: string | null) {
     this.pinnedLiveLayoutId = id;
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /** What the overlay renders: the pinned layout while there is one, else the edited one. */
@@ -164,7 +164,7 @@ export class LayoutsStore {
       this.editingLayoutId = editingLayoutId;
     }
 
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /**
@@ -201,12 +201,12 @@ export class LayoutsStore {
 
   setEditingLayoutId(id: string | null) {
     this.editingLayoutId = id;
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   setSessionLayout(context: SessionContext, layoutId: string | null) {
     this.sessionLayouts[context] = layoutId;
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   setSessionLayouts(layouts: Partial<Record<SessionContext, string | null>>) {
@@ -218,7 +218,7 @@ export class LayoutsStore {
       ...layouts,
     };
 
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /** Creates an empty layout record and returns its id. */
@@ -237,7 +237,7 @@ export class LayoutsStore {
       },
     ];
 
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
 
     return id;
   }
@@ -275,7 +275,7 @@ export class LayoutsStore {
     if (!layout) return;
 
     layout.name = name.trim();
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /**
@@ -310,7 +310,7 @@ export class LayoutsStore {
   /** Drops the record. The caller decides what becomes active afterwards. */
   removeLayout(id: string) {
     this.layouts = this.layouts.filter((layout) => layout.id !== id);
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   setLayoutWidgets(id: string, widgets: WidgetDefaultConfig[]) {
@@ -319,7 +319,7 @@ export class LayoutsStore {
     if (!layout || layout.monitors.length === 0) return;
 
     layout.widgets = widgets;
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   async cloneLayout(id: string): Promise<string | undefined> {
@@ -360,7 +360,7 @@ export class LayoutsStore {
 
     runInAction(() => {
       this.layouts = [...this.layouts, cloned];
-      this.mutations.recordEveryWidget();
+      this.mutations.record();
     });
 
     return newId;
@@ -565,7 +565,7 @@ export class LayoutsStore {
     if (!layout) return;
 
     layout.monitors = monitors.map(cloneMonitor);
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /**
@@ -585,7 +585,7 @@ export class LayoutsStore {
     // on the layout's copy — but `kind` and `slug` have to survive it, or a
     // remote screen would come back as a display with no device behind it.
     layout.monitors = [...layout.monitors, cloneMonitor(monitor)];
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /**
@@ -615,7 +615,7 @@ export class LayoutsStore {
 
     delete layout.backgroundImages?.[monitorName];
 
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /**
@@ -679,7 +679,7 @@ export class LayoutsStore {
       });
     }
 
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   // ── Remote screens ──────────────────────────────────────────────────────
@@ -745,7 +745,7 @@ export class LayoutsStore {
     if (!monitor) return;
 
     monitor.background = background;
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /** Applied when a device reports a viewport that differs from the size the
@@ -790,7 +790,7 @@ export class LayoutsStore {
     monitor.bounds = landed;
     this.carryWidgets(carried, landed.x - grown.x, landed.y - grown.y);
 
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /**
@@ -891,7 +891,7 @@ export class LayoutsStore {
     monitor.bounds = target;
     this.carryWidgets(carried, dx, dy);
 
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /**
@@ -925,7 +925,7 @@ export class LayoutsStore {
       this.carryWidgets(carried.get(monitor.name) ?? [], dx, dy);
     }
 
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   // ── Background images ───────────────────────────────────────────────────
@@ -949,7 +949,7 @@ export class LayoutsStore {
     }
 
     layout.backgroundImages = images;
-    this.mutations.recordEveryWidget();
+    this.mutations.record();
   }
 
   /** Convenience that paints (or clears) every monitor of the active layout. */

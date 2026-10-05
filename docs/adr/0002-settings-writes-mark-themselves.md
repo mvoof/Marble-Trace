@@ -1,6 +1,10 @@
 # ADR 0002: A settings write marks itself, in a log both stores share
 
-**Status:** accepted, 2026-09-07
+**Status:** accepted, 2026-09-07; partly superseded by ADR-0007 (2026-10-05) —
+the log now holds `changeToken` alone. `syncToken`, the touched-widget set and
+`syncedLayoutId` went with the overlay's write-back: main is the only writer, so
+nothing arrives that must not echo. That both stores write into one shared log
+still stands.
 **Context:** the layout façade inside `LiveWidgetsStore`
 
 ## Decision

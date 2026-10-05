@@ -188,14 +188,6 @@ export class LiveWidgetsStore implements WidgetMap {
   // changes. Drives the editor canvas scale.
   overlayResolution: LayoutResolution = { ...DEFAULT_LAYOUT_RESOLUTION };
 
-  /**
-   * Overlay side: the layout id of the last widget list main pushed here. It
-   * travels back on every echo so main can tell whether the window is still
-   * speaking for the layout that is active now — an echo in flight across a
-   * layout switch otherwise lands in the wrong layout record.
-   */
-  syncedLayoutId: string | null = null;
-
   // Name shown in the overlay's "layout switched" toast; null once it expires.
   layoutActivatedToast: string | null = null;
 
@@ -432,7 +424,7 @@ export class LiveWidgetsStore implements WidgetMap {
     this.pushUndo();
 
     widget.userSettings.zIndex = topZIndex(this.allWidgets, id) + 1;
-    this.bumpMutation(id);
+    this.bumpMutation();
   }
 
   sendToBack(id: string) {
@@ -443,46 +435,11 @@ export class LiveWidgetsStore implements WidgetMap {
     this.pushUndo();
 
     widget.userSettings.zIndex = bottomZIndex(this.allWidgets, id) - 1;
-    this.bumpMutation(id);
+    this.bumpMutation();
   }
 
-  /**
-   * Widgets mutated locally since the last drain, and the flag that says the
-   * whole map was replaced instead. The overlay reports its edits to main as a
-   * patch of exactly these widgets — a full list is both wasteful and unsafe,
-   * since a window's copy of the other screens is stale by construction.
-   */
-  private bumpMutation(widgetId?: string) {
-    if (widgetId === undefined) {
-      this.mutations.recordEveryWidget();
-    } else {
-      this.mutations.recordWidget(widgetId);
-    }
-  }
-
-  /**
-   * Takes the widgets edited here since the last call and forgets them.
-   * `everyWidget` means the map was installed wholesale (a layout load, an
-   * undo) and only a full list describes it.
-   */
-  drainTouchedWidgets(): {
-    everyWidget: boolean;
-    widgets: WidgetDefaultConfig[];
-  } {
-    const { everyWidget, widgetIds } = this.mutations.drain();
-
-    if (everyWidget) {
-      return { everyWidget, widgets: this.allWidgets };
-    }
-
-    return {
-      everyWidget,
-      widgets: widgetIds
-        .map((id) => this.widgets.get(id))
-        .filter(
-          (widget): widget is WidgetDefaultConfig => widget !== undefined
-        ),
-    };
+  private bumpMutation() {
+    this.mutations.record();
   }
 
   /**
@@ -614,18 +571,17 @@ export class LiveWidgetsStore implements WidgetMap {
    * is installed beside it, one the list no longer names is dropped. What it
    * deliberately does *not* do is run the list through `setWidgets`: that fills
    * a widget the list left out with its shipped default, which is right for a
-   * layout being loaded and catastrophic for a list arriving over an event —
-   * the receiver would answer with a default-placed widget, and the window that
-   * sent it would take that answer for an edit.
+   * layout being loaded and wrong for a list that is already the answer — the
+   * window would draw records its sender never had.
    *
-   * A sync, like `applySettingsSync`, moves `syncToken` and not `changeToken`:
-   * a window that was told something has nothing to report back.
+   * Used where a list arrives already normalized: a client installing main's
+   * snapshot, a preview mirroring the main window's widgets.
    */
   syncWidgetSet(widgets: WidgetDefaultConfig[]) {
     const known = this.widgets;
 
     // The set is what this is for, and the set almost never changes: a drag
-    // syncs on every mouse move, and rebuilding the collection each time
+    // sends a snapshot every few frames, and rebuilding the collection each time
     // rerenders every widget's content — canvases and all — while the user is
     // only moving one of them. Same ids, same order: patch in place.
     const isUnchanged =
@@ -668,7 +624,7 @@ export class LiveWidgetsStore implements WidgetMap {
         );
       }
 
-      this.mutations.recordSynced();
+      this.mutations.record();
     });
   }
 
@@ -682,7 +638,7 @@ export class LiveWidgetsStore implements WidgetMap {
         this.patchFromSync(existing, incoming);
       }
 
-      this.mutations.recordSynced();
+      this.mutations.record();
     });
   }
 
@@ -716,7 +672,6 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   getWidget(id: string): WidgetDefaultConfig | undefined {
-    void this.mutations.syncToken;
     void this.mutations.changeToken;
     return this.widgets.get(id);
   }
@@ -730,7 +685,6 @@ export class LiveWidgetsStore implements WidgetMap {
    * screen" — a hotkey, the telemetry mask, the layout gate.
    */
   widgetsOfType(type: string): WidgetDefaultConfig[] {
-    void this.mutations.syncToken;
     void this.mutations.changeToken;
 
     return this.allWidgets.filter((widget) => widget.type === type);
@@ -780,7 +734,7 @@ export class LiveWidgetsStore implements WidgetMap {
       widget.hotkeys = false;
     }
 
-    this.bumpMutation(id);
+    this.bumpMutation();
   }
 
   /**
@@ -1024,7 +978,7 @@ export class LiveWidgetsStore implements WidgetMap {
       widget.userSettings.x = position.x;
       widget.userSettings.y = position.y;
 
-      this.bumpMutation(id);
+      this.bumpMutation();
     }
   }
 
@@ -1039,7 +993,7 @@ export class LiveWidgetsStore implements WidgetMap {
       widget.userSettings.currentWidth = width;
       widget.userSettings.currentHeight = height;
 
-      this.bumpMutation(id);
+      this.bumpMutation();
     }
   }
 
@@ -1068,7 +1022,7 @@ export class LiveWidgetsStore implements WidgetMap {
 
     applyLayoutResize(type, widget, prevSettings, widget.userSettings);
 
-    this.bumpMutation(id);
+    this.bumpMutation();
 
     if (type === 'fuel' && 'pitWarningLaps' in resolvedPartial) {
       setPitWarningLapsSilent(
@@ -1106,9 +1060,6 @@ export class LiveWidgetsStore implements WidgetMap {
    * layout's id and name, this window's monitor, and the widgets standing on
    * it. The widgets are adopted as `syncWidgetSet` adopts them: main sent them
    * already normalized, and a widget it no longer lists is gone.
-   *
-   * Moves `syncToken` only, so nothing here is reported back to main as an
-   * edit.
    */
   applyClientScreen(screen: {
     layoutId: string;
@@ -1122,7 +1073,6 @@ export class LiveWidgetsStore implements WidgetMap {
         screen.layoutName,
         screen.monitor
       );
-      this.syncedLayoutId = screen.layoutId;
       this.syncWidgetSet(screen.widgets);
     });
   }
@@ -1211,7 +1161,7 @@ export class LiveWidgetsStore implements WidgetMap {
 
     if (reused) {
       reused.userSettings.enabled = true;
-      this.bumpMutation(reused.id);
+      this.bumpMutation();
 
       return reused.id;
     }
@@ -1387,7 +1337,7 @@ export class LiveWidgetsStore implements WidgetMap {
     widget.userSettings.x = moved.x;
     widget.userSettings.y = moved.y;
     widget.userSettings.zIndex = topZIndex(this.allWidgets, widgetId) + 1;
-    this.bumpMutation(widgetId);
+    this.bumpMutation();
   }
 
   /**
@@ -1509,7 +1459,6 @@ export class LiveWidgetsStore implements WidgetMap {
   getSettings<SpecificSettings extends WidgetSpecificSettings>(
     widgetId: string
   ): BaseUserSettings & SpecificSettings {
-    void this.mutations.syncToken;
     void this.mutations.changeToken;
 
     const widget = this.getWidget(widgetId);

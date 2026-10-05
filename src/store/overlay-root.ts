@@ -25,6 +25,9 @@ export class OverlayRoot extends RendererCore implements AppWindowStores {
 
     this.bindings = appWindow.bindings;
     this.settingsPanelUi = appWindow.settingsPanelUi;
-    this.settingsClient = new SettingsClientStore(this.liveWidgets);
+    this.settingsClient = new SettingsClientStore(
+      this.liveWidgets,
+      () => this.layouts.liveLayoutId
+    );
   }
 }

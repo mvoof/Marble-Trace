@@ -52,14 +52,19 @@ export class SettingsClientStore {
 
   private settingsTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private readonly liveWidgets: LiveWidgetsStore) {
+  constructor(
+    private readonly liveWidgets: LiveWidgetsStore,
+    /** The live layout this window draws, from its last snapshot. */
+    private readonly layoutIdOf: () => string | null
+  ) {
     makeAutoObservable<
       SettingsClientStore,
-      'liveWidgets' | 'overrides' | 'geometry' | 'settingsBuffer'
+      'liveWidgets' | 'layoutIdOf' | 'overrides' | 'geometry' | 'settingsBuffer'
     >(
       this,
       {
         liveWidgets: false,
+        layoutIdOf: false,
         overrides: false,
         geometry: false,
         settingsBuffer: false,
@@ -287,7 +292,7 @@ export class SettingsClientStore {
   /** Sends a command and returns its number, or null when it could not go. */
   private send(command: ClientCommand): number | null {
     const clientId = this.clientId;
-    const layoutId = this.liveWidgets.syncedLayoutId;
+    const layoutId = this.layoutIdOf();
 
     // Before the first snapshot there is nothing on screen to act on.
     if (!clientId || !layoutId) return null;

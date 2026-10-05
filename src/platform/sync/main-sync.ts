@@ -194,16 +194,11 @@ const registerOverlayWindowReactions = (
     { delay: 500 }
   ),
   reaction(
-    // Save on local edits (changeToken) AND on edits synced in from the
-    // overlay's F9 drag mode (syncToken). Only this reaction watches syncToken
-    // — the emit reaction must not, or main↔overlay would loop.
-    //
-    // Nothing is committed into the active layout first: the edits were made on
-    // the layout's own widgets, so the debounce delays only the write to disk.
-    () => [
-      root.settingsMutations.changeToken,
-      root.settingsMutations.syncToken,
-    ],
+    // Every settings write, main's own and an overlay's command alike, moves
+    // the one token. Nothing is committed into the active layout first: the
+    // edits were made on the layout's own widgets, so the debounce delays only
+    // the write to disk.
+    () => root.settingsMutations.changeToken,
     () => {
       void onSave();
     },

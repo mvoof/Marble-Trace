@@ -822,9 +822,12 @@ The one part of `platform/` allowed to read stores.
 
 | File                                         | Role                                                                                          |
 | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `listeners.ts`                               | `setupMainListeners` / `setupOverlayListeners` — which store each incoming payload belongs to |
-| `main-sync.ts`                               | main-side `reaction`s that emit on store change                                               |
-| `overlay-sync.ts`                            | overlay-side reactions — drag mode, geometry write-back                                       |
+| `listeners.ts`                               | `setupMainListeners` / `setupOverlayListeners` — overlay modes, and the overlay's signals     |
+| `main-sync.ts`                               | main's startup and the reactions that save                                                    |
+| `client-snapshot.ts` · `client-publish.ts`   | main's half of the client protocol: snapshots out, commands in (ADR-0007)                     |
+| `client-sync.ts`                             | a client's half, transport-free: installs a snapshot, runs a signal                           |
+| `overlay-sync.ts` · `remote-sync.ts`         | the two transports into `client-sync.ts` — Tauri events, the remote socket                    |
+| `remote-publish.ts`                          | the remote server's lifetime and one snapshot per remote screen                               |
 | `persistence.ts` · `persistence-sync.ts`     | writing settings to disk                                                                      |
 | `chat-sync.ts`                               | Twitch chat stream wiring                                                                     |
 | `pit-service-sync.ts`                        | pit-service cross-window state                                                                |
@@ -1188,7 +1191,7 @@ size of everything else. `designWidth` tracks the visible column set through
 > `resolveLayoutChange` rescales `currentWidth` at the moment of the toggle, so
 > `--wfs` does not jump under the driver, and `deriveDesignWidth` recomputes the
 > width wherever a widget is installed — file load (`decodeWidget`), layout
-> switch, and the cross-window sync (`applySettingsSync`). One without the other
+> switch, and a client installing main's snapshot (`syncWidgetSet`). One without the other
 > is the bug: with only the resolver, a stored width left behind by an older
 > setting survives every reload, `--wfs` renders the widget at the wrong scale
 > and crops it, and the next toggle reads that same wrong ratio back as `scale`
@@ -1372,69 +1375,39 @@ Names come from `src-tauri/src/model/events.rs` through the generated
 `@utils/backend-events`, re-exported by `platform/sync/sim-events.ts`; handlers are wired in
 `platform/sync/listeners.ts`.
 
-| Event                                                                                     | Emitted by                  | Rate                          | Lands in                                            |
-| ----------------------------------------------------------------------------------------- | --------------------------- | ----------------------------- | --------------------------------------------------- |
-| `sim://telemetry/bundle`                                                                  | `telemetry/emitter.rs`      | every tick, tiered            | the `data/` stores                                  |
-| `sim://session`                                                                           | session polling             | on change                     | `session.store.ts`                                  |
-| `sim://weather`                                                                           | weather decoding            | async                         | `environment.store.ts`                              |
-| `sim://status`                                                                            | connection lifecycle        | on change                     | `sim.store.ts`                                      |
-| `sim://disconnected`                                                                      | connection lifecycle        | on loss                       | `sim.store.ts` — triggers `reset()`                 |
-| `sim://capabilities`                                                                      | `telemetry/capabilities.rs` | on connect                    | `sim.store.ts`                                      |
-| `sim://track-shape`                                                                       | `telemetry/emitter.rs`      | on discovery or pit-pct patch | the track map widget store                          |
-| `sim://reference-lap/updated`                                                             | `telemetry/emitter.rs`      | on capture                    | `reference-lap.store.ts`                            |
-| `sim://telemetry/slow`                                                                    | `telemetry/emitter.rs`      | 4 Hz                          | `player.store.ts` — **windows off the bundle only** |
-| `app://overlay-modes`                                                                     | `hotkeys/runtime.rs`        | on change                     | `app-settings.store.ts`, every window               |
-| `hotkey://settings-action`                                                                | `hotkeys/runtime.rs`        | on a settings key             | `settings-actions.ts`, main only                    |
-| `standings-class-step` · `standings-scroll` · `stream-chat-scroll` · `pit-service-toggle` | `hotkeys/runtime.rs`        | on a view key                 | the overlays' instance stores, plus the remote hub  |
-| `sim://perf`                                                                              | `telemetry/emitter.rs`      | 1 Hz                          | `sim-perf.store.ts`                                 |
-| `input://devices`                                                                         | `input/runtime.rs`          | on device change              | `device-input.store.ts`                             |
-| `input://button`                                                                          | `input/runtime.rs`          | on press/release              | `device-input.store.ts`, for binding capture        |
-| `chat://message` · `chat://presence` · `chat://deletion`                                  | `chat/`                     | async                         | `chat.store.ts`                                     |
+| Event                                                    | Emitted by                  | Rate                          | Lands in                                             |
+| -------------------------------------------------------- | --------------------------- | ----------------------------- | ---------------------------------------------------- |
+| `sim://telemetry/bundle`                                 | `telemetry/emitter.rs`      | every tick, tiered            | the `data/` stores                                   |
+| `sim://session`                                          | session polling             | on change                     | `session.store.ts`                                   |
+| `sim://weather`                                          | weather decoding            | async                         | `environment.store.ts`                               |
+| `sim://status`                                           | connection lifecycle        | on change                     | `sim.store.ts`                                       |
+| `sim://disconnected`                                     | connection lifecycle        | on loss                       | `sim.store.ts` — triggers `reset()`                  |
+| `sim://capabilities`                                     | `telemetry/capabilities.rs` | on connect                    | `sim.store.ts`                                       |
+| `sim://track-shape`                                      | `telemetry/emitter.rs`      | on discovery or pit-pct patch | the track map widget store                           |
+| `sim://reference-lap/updated`                            | `telemetry/emitter.rs`      | on capture                    | `reference-lap.store.ts`                             |
+| `sim://telemetry/slow`                                   | `telemetry/emitter.rs`      | 4 Hz                          | `player.store.ts` — **windows off the bundle only**  |
+| `app://overlay-modes`                                    | `hotkeys/runtime.rs`        | on change                     | `app-settings.store.ts`, every window                |
+| `hotkey://settings-action`                               | `hotkeys/runtime.rs`        | on a settings key             | `settings-actions.ts`, main only                     |
+| `client://control`                                       | `hotkeys/runtime.rs`, main  | on a view key or signal       | `applyControl` in every overlay, plus the remote hub |
+| `sim://perf`                                             | `telemetry/emitter.rs`      | 1 Hz                          | `sim-perf.store.ts`                                  |
+| `input://devices`                                        | `input/runtime.rs`          | on device change              | `device-input.store.ts`                              |
+| `input://button`                                         | `input/runtime.rs`          | on press/release              | `device-input.store.ts`, for binding capture         |
+| `chat://message` · `chat://presence` · `chat://deletion` | `chat/`                     | async                         | `chat.store.ts`                                      |
 
-### Channel ③ — main ↔ overlay
+### Channel ③ — main ↔ clients
 
-All emitters are named functions in `platform/services/events.service.ts`. The
-helper you call determines the direction:
+Main holds the settings; every overlay and every remote screen is a **client**
+of one protocol (ADR-0007, `docs/adr/0007-main-owns-settings.md`). The envelope
+is `ClientEnvelope` in `src-tauri/src/model/client_protocol.rs`; the payloads
+are `src/types/client-protocol.ts`.
 
-| Helper                | Reaches                                        |
-| --------------------- | ---------------------------------------------- |
-| `emitToOverlays(...)` | every open overlay window, by label            |
-| `emitTo('main', ...)` | the main window only                           |
-| `emit(...)`           | broadcast — **both windows and the Rust side** |
-
-#### main → overlay (settings)
-
-Emitted from `main-sync.ts` reactions, received in `setupOverlayListeners`.
-
-| Event                                   | Emitter function                | Payload             |
-| --------------------------------------- | ------------------------------- | ------------------- |
-| `hide-all-widgets-changed`              | `emitHideAllWidgets`            | `boolean`           |
-| `hide-widgets-when-game-closed-changed` | `emitHideWidgetsWhenGameClosed` | `boolean`           |
-| `units-changed`                         | `emitUnitsChanged`              | `UnitSystem`        |
-| `steering-lock-changed`                 | `emitSteeringLockChanged`       | `number`            |
-| `language-changed`                      | `emitLanguageChanged`           | `AppLanguage`       |
-| `session-layouts-changed`               | `emitSessionLayoutsChanged`     | `SessionLayoutMap`  |
-| `auto-switch-layouts-changed`           | `emitAutoSwitchLayoutsChanged`  | `boolean`           |
-| `stream-chat-filters-changed`           | `emitStreamChatFilters`         | `StreamChatFilters` |
-| `stream-chat-cleared`                   | `emitStreamChatCleared`         | `null`              |
-| `bindings-changed`                      | `emitBindingsChanged`           | `BindingMap`        |
-
-#### Hotkeys
-
-A key no longer goes through main on its way to an overlay: the dispatcher in
-`src-tauri/src/hotkeys/` emits the view events itself (channel ② above).
-
-#### overlay → main
-
-| Event                     | Emitter function           | Why                                                                                                                       |
-| ------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `widget-settings-updated` | `emitWidgetSettingsToMain` | drag and resize happen in the overlay; **main owns the file**, so geometry is sent back to be persisted (debounced 16 ms) |
-
-#### Both directions
-
-| Event              | Emitter function                  | Why both ways                     |
-| ------------------ | --------------------------------- | --------------------------------- |
-| `layout-activated` | `emitLayoutActivated` (broadcast) | either side may activate a layout |
+| Message    | Direction           | Event / transport                         | Payload                                              |
+| ---------- | ------------------- | ----------------------------------------- | ---------------------------------------------------- |
+| `hello`    | overlay → main      | `client://to-main`                        | `clientId` — the window label                        |
+| `command`  | overlay → main      | `client://to-main`                        | `commandNo`, `layoutId`, one `ClientCommand`         |
+| `snapshot` | main → overlay      | `client://from-main`, to that window only | `ClientSnapshot`, `lastHandledCommandNo`, `rejected` |
+| snapshot   | main → remote       | the socket, through the hub               | `ClientSnapshot`, bare                               |
+| signal     | main → every client | `client://control` / the socket           | `{ type: RemoteControlKind, data }`                  |
 
 #### Frontend → backend, over the event channel
 
@@ -1443,25 +1416,8 @@ the Rust recorder rather than a window:
 
 | Event                   | Emitter function         | Heard by                                                                           |
 | ----------------------- | ------------------------ | ---------------------------------------------------------------------------------- |
-| `track-map:clear`       | `emitTrackMapClear`      | both windows **and** the backend recorder — everyone drops their copy of the track |
+| `track-map:clear`       | `emitTrackMapClear`      | every window **and** the backend recorder — everyone drops their copy of the track |
 | `track-map:force-start` | `emitTrackMapForceStart` | the backend recorder only                                                          |
-
-### One event name, two directions
-
-`widget-settings-updated` travels **both ways under one name**:
-
-- `emitActiveLayoutToOverlays(monitors, widgets)` sends it main → overlay, once per
-  monitor, with a `MonitorWidgetsPayload`;
-- `emitWidgetSettingsToMain(payload)` sends it overlay → main after a drag.
-
-Two details of that payload are load-bearing:
-
-- **The monitor name always travels with the widget list.** Without it, an edit made
-  on one screen would overwrite the widgets of another.
-- **Every overlay receives the whole widget list, not its own slice.** A widget
-  moved to another monitor has to appear on that one, and each record names its
-  monitor in `monitor` — the receiving window draws the records that name its
-  own. The payload also carries the layout's `monitors`, for their bounds.
 
 ## Cross-window synchronization
 
@@ -1470,66 +1426,59 @@ Two details of that payload are load-bearing:
 ```mermaid
 flowchart TB
     subgraph MAIN["main window"]
-        MOWN["<b>owns</b><br/>settings.json writes<br/>the settings hotkeys<br/>Twitch connection<br/>overlay window management"]
+        MOWN["<b>owns</b><br/>the settings, and settings.json<br/>the settings hotkeys<br/>Twitch connection<br/>overlay window management"]
     end
     subgraph OVL["overlay windows"]
-        OOWN["<b>owns</b><br/>widget rendering<br/>drag / resize gestures<br/>in-widget interaction"]
+        OOWN["<b>draws</b><br/>its own monitor<br/>drag / resize gestures, as commands<br/>in-widget interaction"]
+    end
+    subgraph REM["remote screens"]
+        ROWN["<b>draws</b><br/>its own screen<br/>read-only"]
     end
     DISK["settings.json"]
 
-    MAIN ==>|"emitToOverlays — settings &amp; commands"| OVL
-    OVL ==>|"emitTo('main') — geometry write-back"| MAIN
+    MAIN ==>|"snapshot · signal"| OVL
+    OVL ==>|"hello · command"| MAIN
+    MAIN ==>|"snapshot · signal, through the hub"| REM
     MAIN --> DISK
 
     style DISK fill:#1e3a5f,color:#fff
 ```
 
-**Main is the owner of persistence.** The overlay never writes `settings.json`.
-Drag a widget in the overlay and the new geometry is emitted to main; main saves it.
+**Main is the only window that holds and writes the settings.** An overlay
+reads no settings file: it says `hello` and draws the snapshot main answers
+with — its own monitor and nothing else — and every later one. A remote screen
+gets the same snapshot over its socket and sends nothing back; the hub refuses a
+command from a browser.
 
-### The round-trip hazard
+### A command, end to end
 
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant MS as main — MobX store
-    participant R as reaction (main-sync.ts)
-    participant E as events.service.ts
-    participant L as listeners.ts (overlay)
-    participant OS as overlay — MobX store
+    participant U as User (overlay, F9)
+    participant C as settings-client.store.ts
+    participant P as client-publish.ts (main)
+    participant S as main — widget store
 
-    U->>MS: toggles a setting
-    MS->>R: observable changes
-    R->>E: emitSomething(value)
-    E-->>L: Tauri event
-    L->>OS: runInAction — assign directly
-    Note over OS: never via a setter —<br/>a setter bumps changeToken<br/>and echoes the settings back to main
+    U->>C: drags a widget
+    C->>C: draws the new position as an override
+    C->>P: command setGeometry (every 75 ms, then final)
+    P->>S: applyClientCommand — live layout, no undo
+    S-->>P: changeToken moves
+    P-->>C: snapshot, lastHandledCommandNo
+    Note over C: an override stays until main has handled<br/>its command — applied or refused —<br/>then the snapshot's value stands
 ```
 
-```ts
-// main — platform/sync/main-sync.ts
-reaction(
-  () => store.value,
-  (value) => emitSomething(value)
-);
-
-// overlay — platform/sync/listeners.ts
-listenTo('event-name', (event) =>
-  runInAction(() => (store.value = event.payload))
-);
-```
-
-> [!WARNING]
-> An overlay-synced value is assigned to the sub-store data **directly, never
-> through a setter.** A setter bumps `changeToken`, which echoes the settings back
-> to main and creates a feedback loop.
+A client installs a snapshot and runs a signal through `client-sync.ts`, the
+same two functions on a monitor and on a tablet. `applyControl` is an
+exhaustive switch over `RemoteControlKind`, so a kind added in Rust without a
+case there does not compile.
 
 ### Startup ordering
 
-During startup main can react before any overlay window exists, which makes Tauri
-log _"event emitted but no listeners found"_. This is harmless: overlays hydrate
-the same values from disk on their own boot, so an emit that lands before they are
-up is simply skipped.
+Main opens the overlays only after its own hydration, and registers its listener
+for `hello` before the first window opens. An overlay subscribes to its snapshot
+before it says `hello`. An overlay that outlived a reload of the main window
+never says hello again, so main publishes to every open overlay once it is up.
 
 ## Worked example: one number, end to end
 
@@ -1581,19 +1530,19 @@ flowchart TB
     L1 --> L2 --> L3 --> L4
 ```
 
-| Technique                                        | Where                                                | The failure it prevents                                                                                                                 |
-| ------------------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Rate tiers                                       | `telemetry/scheduler.rs`                             | sending standings 60 times a second when it changes 10 times                                                                            |
-| Demand gating (`telemetryEvents`)                | widget manifests → `telemetry/emitter.rs`            | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
-| Quantization + repeat suppression                | `telemetry/quantize.rs`, `telemetry/publications.rs` | resending a frame whose only change is in a decimal no widget prints                                                                    |
-| `observable.ref` on frame buffers                | `store/data/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
-| Split computeds                                  | `store/data/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
-| `observer()` on every component                  | all of `ui/`                                         | a parent re-render cascading into leaves that did not change                                                                            |
-| Reading the store in the leaf, not passing props | all of `ui/`                                         | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
-| Root widgets never read 60 Hz fields             | all widget roots                                     | a whole widget re-rendering at 60 Hz for one number                                                                                     |
-| Canvas + `useRef` + RAF                          | `ui/hooks/useReactiveCanvasLoop`, canvas widgets     | 60 Hz React renders for something that is just pixels                                                                                   |
-| `widgetMutationId`                               | `store/settings/`                                    | `JSON.stringify` of the settings tree on every keystroke                                                                                |
-| Debounced geometry write-back (16 ms)            | `overlay-sync.ts`                                    | a settings write per mouse-move during a drag                                                                                           |
+| Technique                                            | Where                                                | The failure it prevents                                                                                                                 |
+| ---------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Rate tiers                                           | `telemetry/scheduler.rs`                             | sending standings 60 times a second when it changes 10 times                                                                            |
+| Demand gating (`telemetryEvents`)                    | widget manifests → `telemetry/emitter.rs`            | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
+| Quantization + repeat suppression                    | `telemetry/quantize.rs`, `telemetry/publications.rs` | resending a frame whose only change is in a decimal no widget prints                                                                    |
+| `observable.ref` on frame buffers                    | `store/data/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
+| Split computeds                                      | `store/data/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
+| `observer()` on every component                      | all of `ui/`                                         | a parent re-render cascading into leaves that did not change                                                                            |
+| Reading the store in the leaf, not passing props     | all of `ui/`                                         | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
+| Root widgets never read 60 Hz fields                 | all widget roots                                     | a whole widget re-rendering at 60 Hz for one number                                                                                     |
+| Canvas + `useRef` + RAF                              | `ui/hooks/useReactiveCanvasLoop`, canvas widgets     | 60 Hz React renders for something that is just pixels                                                                                   |
+| `widgetMutationId`                                   | `store/settings/`                                    | `JSON.stringify` of the settings tree on every keystroke                                                                                |
+| Coalesced overlay commands (75 ms drag, 50 ms popup) | `settings-client.store.ts`                           | a command and a snapshot per mouse-move during a drag                                                                                   |
 
 > [!WARNING]
 > **Never integrate 60 Hz values using the telemetry `sessionTime`.** It stalls,

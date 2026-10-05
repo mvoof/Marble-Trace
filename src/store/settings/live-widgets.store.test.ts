@@ -510,68 +510,6 @@ describe('a layout with no monitors is not written to', () => {
   });
 });
 
-describe('the overlay reports only what it edited', () => {
-  const MONITOR = {
-    name: 'DISPLAY1',
-    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
-  };
-
-  let rootStore: MainRoot;
-
-  beforeEach(() => {
-    rootStore = new MainRoot({ skipInit: true });
-    rootStore.liveWidgets.setLayouts(
-      [
-        {
-          id: 'layout-race',
-          name: 'Race',
-          createdAt: Date.now(),
-          monitors: [MONITOR],
-          widgets: [],
-        },
-      ],
-      'layout-race'
-    );
-    rootStore.liveWidgets.drainTouchedWidgets();
-  });
-
-  it('drains a patch of the edited widgets, not the whole layout', () => {
-    const store = rootStore.liveWidgets;
-
-    store.updatePosition('fuel', 640, 480);
-    store.updateSize('fuel', 300, 200);
-    store.setWidgetEnabled('timer', false);
-
-    const drained = store.drainTouchedWidgets();
-
-    expect(drained.everyWidget).toBe(false);
-    expect(drained.widgets.map((widget) => widget.id).sort()).toEqual([
-      'fuel',
-      'timer',
-    ]);
-  });
-
-  it('drains nothing when nothing was edited', () => {
-    const store = rootStore.liveWidgets;
-
-    store.updatePosition('fuel', 10, 20);
-    store.drainTouchedWidgets();
-
-    expect(store.drainTouchedWidgets().widgets).toEqual([]);
-  });
-
-  it('reports the whole map when a layout is installed wholesale', () => {
-    const store = rootStore.liveWidgets;
-
-    store.loadLayout('layout-race');
-
-    const drained = store.drainTouchedWidgets();
-
-    expect(drained.everyWidget).toBe(true);
-    expect(drained.widgets.length).toBe(store.allWidgets.length);
-  });
-});
-
 describe('several copies of one widget in a layout', () => {
   let rootStore: MainRoot;
 
@@ -734,12 +672,11 @@ describe('several copies of one widget in a layout', () => {
   // The reset this cost once: a receiver that filled a widget the list left out
   // with its shipped default answered back with a default-placed widget, and
   // the window that had sent the list took that answer for an edit.
-  it('adopts a synced list without inventing defaults or reporting an edit', () => {
+  it('adopts a synced list without inventing defaults', () => {
     const store = rootStore.liveWidgets;
 
     store.updateUserSettings('standings', { x: 1500 });
 
-    const before = rootStore.settingsMutations.changeToken;
     const standings = {
       ...store.getWidget('standings')!,
       userSettings: { ...store.getWidget('standings')!.userSettings },
@@ -749,7 +686,6 @@ describe('several copies of one widget in a layout', () => {
 
     expect(store.allWidgets).toHaveLength(1);
     expect(store.getWidget('standings')!.userSettings.x).toBe(1500);
-    expect(rootStore.settingsMutations.changeToken).toBe(before);
   });
 
   // The crash a copy caused in the editor: a store handed an id it holds no
@@ -814,10 +750,8 @@ describe('every settings write leaves its mark', () => {
     }));
 
   type WriteMark = {
-    /** Which counter the write is expected to move. */
-    token: 'change' | 'sync' | 'none';
-    /** 'every' = the whole map is sent; a list = a patch of those widgets. */
-    touched: 'every' | 'none' | string[];
+    /** Whether the write moves `changeToken` — what saves it and publishes it. */
+    changes: boolean;
   };
 
   type WriteCase = {
@@ -846,64 +780,62 @@ describe('every settings write leaves its mark', () => {
     {
       name: 'updatePosition',
       run: (store) => store.updatePosition('fuel', 640, 480),
-      expected: { token: 'change', touched: ['fuel'] },
+      expected: { changes: true },
     },
     {
       name: 'updateSize',
       run: (store) => store.updateSize('fuel', 300, 200),
-      expected: { token: 'change', touched: ['fuel'] },
+      expected: { changes: true },
     },
     {
       name: 'updateUserSettings',
       run: (store) => store.updateUserSettings('fuel', { x: 12 }),
-      expected: { token: 'change', touched: ['fuel'] },
+      expected: { changes: true },
     },
     {
       name: 'setWidgetEnabled',
       run: (store) => store.setWidgetEnabled('timer', false),
-      expected: { token: 'change', touched: ['timer'] },
+      expected: { changes: true },
     },
     {
       name: 'bringToFront',
       run: (store) => store.bringToFront('fuel'),
-      expected: { token: 'change', touched: ['fuel'] },
+      expected: { changes: true },
     },
     {
       name: 'sendToBack',
       run: (store) => store.sendToBack('fuel'),
-      expected: { token: 'change', touched: ['fuel'] },
+      expected: { changes: true },
     },
     {
       name: 'setTypeEnabledOnMonitor, switching an instance back on',
-      run: (store) => {
-        store.setTypeEnabledOnMonitor('fuel', DISPLAY.name, false);
-        store.drainTouchedWidgets();
-        store.setTypeEnabledOnMonitor('fuel', DISPLAY.name, true);
-      },
-      expected: { token: 'change', touched: ['fuel'] },
+      setup: (store) =>
+        store.setTypeEnabledOnMonitor('fuel', DISPLAY.name, false),
+      run: (store) => store.setTypeEnabledOnMonitor('fuel', DISPLAY.name, true),
+      expected: { changes: true },
     },
     {
       name: 'resetSettings',
       run: (store) => store.resetSettings('fuel'),
-      expected: { token: 'change', touched: ['fuel'] },
+      expected: { changes: true },
     },
     {
       name: 'moveWidgetToMonitor',
       setup: (_store, layouts) => layouts.addRemoteScreen('Tablet', 1280, 800),
       run: (store) => store.moveWidgetToMonitor('fuel', 'Tablet'),
-      expected: { token: 'change', touched: ['fuel'] },
+      expected: { changes: true },
     },
 
     // Writes that install a map wholesale — only a full list describes them.
     {
       name: 'setWidgets',
       run: (store) => store.setWidgets(store.allWidgets),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'duplicateWidget',
       run: (store) => store.duplicateWidget('fuel'),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'removeWidgetCopy',
@@ -915,13 +847,13 @@ describe('every settings write leaves its mark', () => {
 
         store.removeWidgetCopy(copy.id);
       },
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'undo',
       setup: (store) => store.setWidgetEnabled('timer', false),
       run: (store) => store.undo(),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'redo',
@@ -930,20 +862,20 @@ describe('every settings write leaves its mark', () => {
         store.undo();
       },
       run: (store) => store.redo(),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
 
     // Layout records.
     {
       name: 'setSessionLayout',
       run: (_store, layouts) => layouts.setSessionLayout('Race', 'layout-race'),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'setSessionLayouts',
       run: (_store, layouts) =>
         layouts.setSessionLayouts({ Race: 'layout-race' }),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     // `createLayout` is deliberately absent: it marks synchronously and then
     // asks the OS for a monitor and marks a second time when the answer lands.
@@ -954,19 +886,19 @@ describe('every settings write leaves its mark', () => {
     {
       name: 'loadLayout',
       run: (store) => store.loadLayout('layout-race'),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'selectLayout',
       run: (store) => store.selectLayout('layout-race'),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'switchLayout',
       setup: (store, layouts) =>
         store.setLayouts([...layouts.layouts, SECOND_LAYOUT]),
       run: (_store, _layouts, editor) => editor.switchLayout(SECOND_LAYOUT.id),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'activateLayout',
@@ -975,17 +907,17 @@ describe('every settings write leaves its mark', () => {
         editor.switchLayout(SECOND_LAYOUT.id);
       },
       run: (_store, _layouts, editor) => editor.activateLayout(),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'updateLayout',
       run: (store) => store.updateLayout('layout-race'),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'renameLayout',
       run: (_store, layouts) => layouts.renameLayout('layout-race', 'Renamed'),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
     {
       name: 'deleteLayout',
@@ -993,7 +925,7 @@ describe('every settings write leaves its mark', () => {
         store.setLayouts([...layouts.layouts, SECOND_LAYOUT]),
       run: (store, layouts) =>
         deleteLayout({ records: layouts, widgetMap: store }, SECOND_LAYOUT.id),
-      expected: { token: 'change', touched: 'every' },
+      expected: { changes: true },
     },
 
     // Writes that arrived from the other window: saved, never echoed back.
@@ -1001,13 +933,13 @@ describe('every settings write leaves its mark', () => {
       name: 'syncWidgetSet',
       setup: (store) => store.updateUserSettings('fuel', { x: 33 }),
       run: (store) => store.syncWidgetSet(clonedWidgets(store)),
-      expected: { token: 'sync', touched: 'none' },
+      expected: { changes: true },
     },
     {
       name: 'applySettingsSync',
       setup: (store) => store.updateUserSettings('fuel', { x: 33 }),
       run: (store) => store.applySettingsSync(clonedWidgets(store)),
-      expected: { token: 'sync', touched: 'none' },
+      expected: { changes: true },
     },
 
     // An overlay installing main's snapshot: main's state arriving, so it is
@@ -1021,7 +953,7 @@ describe('every settings write leaves its mark', () => {
           monitor: DISPLAY,
           widgets: clonedWidgets(store),
         }),
-      expected: { token: 'sync', touched: 'none' },
+      expected: { changes: true },
     },
     {
       name: 'applyClientScreen (another layout)',
@@ -1032,24 +964,24 @@ describe('every settings write leaves its mark', () => {
           monitor: DISPLAY,
           widgets: clonedWidgets(store),
         }),
-      expected: { token: 'sync', touched: 'none' },
+      expected: { changes: true },
     },
 
     // Writes that mark nothing at all.
     {
       name: 'setOverlayResolution',
       run: (store) => store.setOverlayResolution({ width: 1280, height: 720 }),
-      expected: { token: 'none', touched: 'none' },
+      expected: { changes: false },
     },
     {
       name: 'setAttachedMonitors',
       run: (store) => store.setAttachedMonitors([DISPLAY]),
-      expected: { token: 'none', touched: 'none' },
+      expected: { changes: false },
     },
     {
       name: 'setOwnMonitorName',
       run: (store) => store.setOwnMonitorName(DISPLAY.name),
-      expected: { token: 'none', touched: 'none' },
+      expected: { changes: false },
     },
   ];
 
@@ -1072,40 +1004,12 @@ describe('every settings write leaves its mark', () => {
 
     setup?.(store, rootStore.layouts, rootStore.layoutEditor);
 
-    // Everything above is arrangement, not the write under test.
-    store.drainTouchedWidgets();
-
     const changeBefore = rootStore.settingsMutations.changeToken;
-    const syncBefore = rootStore.settingsMutations.syncToken;
 
     run(store, rootStore.layouts, rootStore.layoutEditor);
 
-    const drained = store.drainTouchedWidgets();
-
-    expect({
-      change: rootStore.settingsMutations.changeToken > changeBefore,
-      sync: rootStore.settingsMutations.syncToken > syncBefore,
-    }).toEqual({
-      change: expected.token === 'change',
-      sync: expected.token === 'sync',
-    });
-
-    if (expected.touched === 'every') {
-      expect(drained.everyWidget).toBe(true);
-
-      return;
-    }
-
-    expect(drained.everyWidget).toBe(false);
-
-    if (expected.touched === 'none') {
-      expect(drained.widgets).toEqual([]);
-
-      return;
-    }
-
-    expect(drained.widgets.map((widget) => widget.id).sort()).toEqual(
-      [...expected.touched].sort()
+    expect(rootStore.settingsMutations.changeToken > changeBefore).toBe(
+      expected.changes
     );
   });
 });

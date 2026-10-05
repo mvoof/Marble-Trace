@@ -36,7 +36,7 @@ const overlayEditor = (
   getSettings: (id) => liveWidgets.getSettings(id),
   updateUserSettings: (id, partial) =>
     settingsClient.patchSettings(id, partial),
-  getChangeToken: () => mutations.syncToken,
+  getChangeToken: () => mutations.changeToken,
 });
 
 interface WidgetSettingsPopupProps {

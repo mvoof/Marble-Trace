@@ -294,7 +294,7 @@ export const LayoutCanvas = observer(
       mirrorAllWidgets(liveWidgets.allWidgets, previewStore);
 
       return reaction(
-        () => [settingsMutations.changeToken, settingsMutations.syncToken],
+        () => settingsMutations.changeToken,
         () => mirrorAllWidgets(liveWidgets.allWidgets, previewStore)
       );
     }, [previewStore, liveWidgets, settingsMutations]);

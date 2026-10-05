@@ -37,7 +37,6 @@ const freshStore = () => {
   const store = new LayoutsStore(mutations);
 
   store.setLayouts([layoutNamed('layout-race', [DISPLAY])], 'layout-race');
-  mutations.drain();
 
   return { store, mutations };
 };
@@ -194,15 +193,12 @@ describe('every layout record write leaves its mark', () => {
     const { store, mutations } = freshStore();
 
     setup?.(store);
-    mutations.drain();
 
     const before = mutations.changeToken;
 
     run(store);
 
     expect(mutations.changeToken > before).toBe(marks);
-    expect(mutations.drain().everyWidget).toBe(marks);
-    expect(mutations.syncToken).toBe(0);
   });
 });
 
@@ -257,7 +253,6 @@ describe('deleting the layout that is on screen', () => {
     store.updatePosition('fuel', GARAGE_FUEL_X, GARAGE_FUEL_X);
     store.loadLayout('layout-race');
     store.updatePosition('fuel', RACE_FUEL_X, RACE_FUEL_X);
-    store.drainTouchedWidgets();
   });
 
   it("leaves the fallback layout's own widgets on screen", () => {
@@ -267,17 +262,6 @@ describe('deleting the layout that is on screen', () => {
 
     expect(rootStore.layouts.editingLayoutId).toBe('layout-garage');
     expect(store.getWidget('fuel')!.userSettings.x).toBe(GARAGE_FUEL_X);
-  });
-
-  it('marks the whole widget map rather than a patch', () => {
-    const store = rootStore.liveWidgets;
-
-    deleteLayout(layoutGestureStores(rootStore), 'layout-race');
-
-    const drained = store.drainTouchedWidgets();
-
-    expect(drained.everyWidget).toBe(true);
-    expect(drained.widgets.length).toBe(store.allWidgets.length);
   });
 
   it("persists the fallback's widgets, not the deleted layout's", () => {
