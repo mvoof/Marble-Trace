@@ -316,14 +316,26 @@ export class LiveWidgetsStore implements WidgetMap {
    * not switch off automatic pit orders for the layout the driver is racing.
    */
   isWidgetOnScreen(widgetType: string): boolean {
-    const live = new Set(this.liveEnabledWidgetIds);
+    return this.onScreenWidgetTypes.includes(widgetType);
+  }
 
-    // Addressed by type, not by copy: a binding belongs to the widget, so it
-    // fires while any copy of it is on screen. Which copies it then reaches is
-    // the action's own business.
-    return this.liveWidgets.some(
-      (widget) => live.has(widget.id) && widget.type === widgetType
-    );
+  /**
+   * The widget types `isWidgetOnScreen` answers yes for, sorted — what the
+   * hotkey dispatcher gates on. Addressed by type, not by copy: a binding
+   * belongs to the widget, so it fires while any copy of it is on screen.
+   * Which copies it then reaches is the action's own business.
+   */
+  get onScreenWidgetTypes(): string[] {
+    const live = new Set(this.liveEnabledWidgetIds);
+    const types = new Set<string>();
+
+    for (const widget of this.liveWidgets) {
+      if (live.has(widget.id)) {
+        types.add(widget.type);
+      }
+    }
+
+    return Array.from(types).sort();
   }
 
   cycleStandingsViewMode() {

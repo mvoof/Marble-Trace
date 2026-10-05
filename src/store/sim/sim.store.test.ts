@@ -295,7 +295,10 @@ describe('SimStore active-events mask', () => {
       it('stays registered in drag mode with the game closed', async () => {
         await withOneWidget();
 
-        root.appSettings.setDragMode(true);
+        root.appSettings.applyOverlayModes({
+          dragMode: true,
+          interactMode: false,
+        });
         root.appSettings.setHideWidgetsWhenGameClosed(true);
 
         expect(clearActiveEventsSilent).not.toHaveBeenCalled();

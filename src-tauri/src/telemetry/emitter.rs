@@ -20,7 +20,8 @@ use super::quantize;
 use super::scheduler::DueGroups;
 use super::state::TelemetryServiceState;
 use crate::capabilities::Capabilities;
-use crate::computations::pit_auto::{worst_tire_wear, PitAutoInput};
+use crate::computations::pit_actions::{self, PitActionInput};
+use crate::computations::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
 use crate::computations::{
     driver_entries, fuel, incidents, lap_delta, pit_stops, proximity, ComputeContext,
     ComputedOutput, TickRate,
@@ -34,7 +35,7 @@ use crate::model::player::{
     PitServiceFrame, PitTargetFrame,
 };
 use crate::model::relative::RelativeFrame;
-use crate::model::session::SessionFrame;
+use crate::model::session::{SessionFrame, SessionSnapshot};
 use crate::model::telemetry_events::{
     EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS, EVENT_DRIVER_ENTRIES,
     EVENT_INCIDENTS, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
@@ -116,27 +117,18 @@ pub struct TelemetryBundle {
     pub pit_auto: Option<PitAutoFrame>,
 }
 
-/// The 4 Hz slice a window that does not draw widgets still needs.
+/// The 4 Hz slice for a window that does not draw widgets.
 ///
 /// The main window is off the bundle (see `SimStore.subscribeBundle`), but it
-/// still owns the hotkey runner, which decides off these four frames: the fuel
-/// calculation, what the sim has on the order, where the car is on pit road,
-/// and the lap it is on. Sending them on
-/// their own event keeps main at 4 Hz instead of 60 while leaving it able to
-/// answer a key press.
+/// switches layouts by session context, and whether the car is on track is
+/// part of that context. The hotkeys no longer need anything from it — they
+/// are dispatched here, on the telemetry thread's own frames — so the slice is
+/// down to the one frame that answers that.
 #[derive(Debug, serde::Serialize, Clone)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct TelemetrySlowBundle {
     pub car_status: CarStatusFrame,
-    pub lap_timing: LapTimingFrame,
-    pub pit_service: PitServiceFrame,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub fuel: Option<fuel::FuelComputedFrame>,
-    /// Distinct car classes in the field. A count rather than the entries: the
-    /// standings class hotkeys only need to know where the cycle wraps, and the
-    /// per-car frame is exactly what main is off the bundle to avoid.
-    pub car_class_count: u32,
 }
 
 /// Returns the time spent measuring rather than delivering — the `dev`-only
@@ -282,12 +274,6 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
             {
                 scatter_output(&mut bundle, output);
             }
-
-            // Recorded before the demand gate below, so the count survives even
-            // when no widget asks for the entries themselves.
-            if let Some(entries) = &bundle.driver_entries {
-                state.car_class_count = count_car_classes(entries);
-            }
         }
 
         if due.hz4 {
@@ -300,6 +286,10 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         }
     }
 
+    // Every tick, not on a tier: a key pressed is answered within the tick
+    // that drains it, against the order the sim reports on that same frame.
+    run_pit_actions(frame, session_info, state, sends_pit_orders);
+
     if due.hz10 {
         bundle.chassis = Some(frame.chassis.clone());
         bundle.car_idx = Some(frame.car_idx.clone());
@@ -311,15 +301,8 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         bundle.pit_service = Some(frame.pit_service.clone());
         bundle.pit_auto = Some(run_pit_auto(frame, &bundle, state, sends_pit_orders));
 
-        // Built from the bundle's own frames, so a window off the bundle reads
-        // exactly what the overlay reads rather than a second calculation of
-        // it. Sent before the gating below, which only concerns the bundle.
         let slow = TelemetrySlowBundle {
             car_status: frame.car_status.clone(),
-            lap_timing: frame.lap_timing.clone(),
-            pit_service: frame.pit_service.clone(),
-            fuel: bundle.fuel.clone(),
-            car_class_count: state.car_class_count,
         };
 
         if let Err(e) = app.emit(EVENT_TELEMETRY_SLOW, &slow) {
@@ -377,6 +360,12 @@ fn run_pit_auto(
     state: &mut LoopState,
     sends_pit_orders: bool,
 ) -> PitAutoFrame {
+    state.planned_fuel_l = bundle
+        .fuel
+        .as_ref()
+        .and_then(|fuel| fuel.refuel_plan.as_ref())
+        .map(|plan| plan.fill_now);
+
     let input = PitAutoInput {
         on_pit_road: frame.car_status.on_pit_road.unwrap_or(false),
         in_pit_stall: frame.pit_service.in_pit_stall,
@@ -384,11 +373,7 @@ fn run_pit_auto(
         armed_flags: frame.pit_service.flags.unwrap_or(0),
         fast_repair_ordered: frame.pit_service.fast_repair,
         tire_wear: worst_tire_wear(&frame.chassis),
-        planned_fuel_l: bundle
-            .fuel
-            .as_ref()
-            .and_then(|fuel| fuel.refuel_plan.as_ref())
-            .map(|plan| plan.fill_now),
+        planned_fuel_l: state.planned_fuel_l,
     };
     let config = state.config.pit_auto;
 
@@ -404,6 +389,62 @@ fn run_pit_auto(
     }
 
     state.pit_auto.frame(&config)
+}
+
+/// The manual pit actions applied this tick: each resolved against this frame
+/// and sent, its claim handed to auto mode before the broadcast leaves so the
+/// next tick cannot decide that half over the driver's hand. Counted with auto
+/// mode's orders, which is how the widget learns one went out.
+fn run_pit_actions(
+    frame: &SourceFrame,
+    session: Option<&SessionSnapshot>,
+    state: &mut LoopState,
+    sends_pit_orders: bool,
+) {
+    if state.pending_pit_actions.is_empty() {
+        return;
+    }
+
+    let compounds: Vec<i32> = session
+        .map(|session| {
+            session
+                .driver_tires
+                .iter()
+                .map(|tire| tire.tire_index)
+                .collect()
+        })
+        .unwrap_or_default();
+    let input = PitActionInput {
+        service: &frame.pit_service,
+        fuel_in_tank_l: frame.car_status.fuel_level,
+        fuel_capacity_l: session.and_then(|session| session.fuel_capacity_ltr),
+        planned_fuel_l: state.planned_fuel_l,
+        compounds: &compounds,
+        fuel_step_l: state.config.pit_auto.fuel_step_liters,
+    };
+
+    for action in std::mem::take(&mut state.pending_pit_actions) {
+        let Some(order) = pit_actions::resolve(action, &input) else {
+            continue;
+        };
+
+        if let Some(claim) = order.claim {
+            state
+                .pit_auto
+                .command(PitAutoCommand::Claim(claim), &state.config.pit_auto);
+        }
+
+        if !sends_pit_orders {
+            info!(?action, "pit action not sent: replaying a tape");
+
+            continue;
+        }
+
+        let result = send_pit_order(&order.requests);
+
+        info!(?action, ok = result.is_ok(), "manual pit order");
+        state.pit_auto.record_send(result.is_ok());
+    }
 }
 
 /// The real transport: `emit_to` per window, `app.emit` for the broadcast and
@@ -594,18 +635,6 @@ fn quantize_bundle(bundle: &mut TelemetryBundle) {
     if let Some(frame) = bundle.pit_target.as_mut() {
         quantize::pit_target(frame);
     }
-}
-
-fn count_car_classes(frame: &driver_entries::DriverEntriesFrame) -> u32 {
-    let mut seen: Vec<i32> = Vec::new();
-
-    for entry in &frame.entries {
-        if !seen.contains(&entry.car_class_id) {
-            seen.push(entry.car_class_id);
-        }
-    }
-
-    seen.len() as u32
 }
 
 fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {

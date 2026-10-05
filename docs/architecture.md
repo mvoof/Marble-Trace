@@ -143,10 +143,12 @@ source of confusion for newcomers, and
 full.
 
 - **main** — the settings application: layout editor, widget settings panels, key
-  bindings, Twitch connection. Ant Design. Owns persistence, the hotkey runner and
-  overlay window management. Renders no widgets, so it is **off the telemetry
-  bundle** and takes [the slow slice](#the-slow-slice) instead — enough to decide
-  what a hotkey does, not enough to draw anything.
+  bindings, Twitch connection. Ant Design. Owns persistence and overlay window
+  management, and applies the hotkeys that write settings — the keys themselves
+  are caught and dispatched in Rust (`src-tauri/src/hotkeys/`). Renders no
+  widgets, so it is **off the telemetry bundle** and takes
+  [the slow slice](#the-slow-slice) instead — the car status, for the layout
+  auto-switch.
 - **overlay** — transparent, always on top, click-through except where a widget is
   interactive. Renders _every_ widget through a single `OverlayCanvas`; there is no
   window-per-widget. One overlay window per monitor, labelled by monitor name.
@@ -476,35 +478,21 @@ store write. Only windows that draw widgets subscribe — `SimStore.subscribeBun
 gates on the `overlay` hash — which leaves the main window off 60 bundles a second
 it would render nothing from.
 
-Not rendering is not the same as not deciding. The main window owns the hotkey
-runner, which decides off the sim rather than off settings: the fuel
-calculation, what the sim currently has on the order, whether the car is on pit
-road. Layout auto-switching reads `is_on_track` from the same place.
-`sim://telemetry/slow` carries exactly that and nothing else. The automatic pit
-order is not here at all: it decides on the telemetry thread
-(`computations/pit_auto.rs`), so it needs no webview awake.
+Not rendering is not quite the same as needing nothing: the layout auto-switch
+reads `is_on_track`. `sim://telemetry/slow` carries the player's `car_status`
+at 4 Hz for it, and nothing else.
 
-| Field         | Read by                                                          |
-| ------------- | ---------------------------------------------------------------- |
-| `car_status`  | layout auto-switching (`is_on_track`), the fuel level            |
-| `lap_timing`  | the lap an action is deciding on                                 |
-| `pit_service` | what the sim has on the order — pit road, the box, the armed set |
-| `fuel`        | the refuel calculation every pit action sends                    |
+It used to carry four frames, because the hotkey runner lived in main and decided
+off the sim — the fuel calculation, the order the sim holds, pit road. That is
+how the pit order once lost its fuel: a key read a frame main did not have, and
+the field went missing from the order without a sound. The keys are dispatched
+in Rust now and every pit order — automatic, a key, a click — is resolved on the
+telemetry thread against its own frame (`computations/pit_auto.rs`,
+`computations/pit_actions.rs`), so no window has to be fed the right slice for
+an order to be right.
 
-Four flat frames at 4 Hz, no per-car arrays: on the order of one percent of what
-the bundle costs, so the point of staying off the bundle survives. They are built
-from the bundle's own frames rather than recomputed, so main and the overlay can
-never disagree about what was ordered.
-
-> [!WARNING]
-> **An action in `ACTIONS` may read only what the slow slice carries.** There is
-> nothing in the type system to stop one reading a frame that main does not have,
-> and the failure is silent in the worst way: the key registers, the widget
-> reports the order as sent, and the field is quietly missing from it. That is
-> precisely how the pit order lost its fuel when the main window was first taken
-> off the bundle — every pit hotkey kept working, and none of them ordered any
-> fuel. A new frame goes into the slice, in `emitter.rs` and in
-> `SimStore.subscribeSlowBundle`; it does not go back to the bundle.
+A new consumer in main adds its frame to `TelemetrySlowBundle` in `emitter.rs`
+and to `SimStore.subscribeSlowBundle`; it does not go back to the bundle.
 
 ### Demand gating
 
@@ -898,7 +886,7 @@ root's hooks either (`.oxlintrc.json`).
 | `settings/`                                            | `app-settings`, `layouts`, `widget-defaults`, `widget-settings`, `units`, `twitch-auth`, plus layout helpers (`layout-resolution`, `layout-resize`, `layout-background`, `widget-history`, `widget-placement`) |
 | `widgets/`                                             | stores read by 2+ widgets — `flags`, `pace-car`, `radar`, `player-position` — plus app-level ones (`widget-auto-hide`, `settings-panel-ui`) and the per-instance registry (`widget-instances`)                 |
 | `sim/`                                                 | sim connection state, `track-condition`, `debug`                                                                                                                                                               |
-| `hotkeys/`                                             | `actions` registry, `action-registry`, `bindings.store`, `binding-runner`, `bindings-sync`, `bindings-ui`, `device-input`                                                                                      |
+| `hotkeys/`                                             | `actions` registry, `action-registry`, `bindings.store`, `settings-actions`, `bindings-sync`, `bindings-ui`, `device-input`                                                                                    |
 | `preview/`                                             | neutral sample data — scenarios, sample telemetry, sample track, the preview animator                                                                                                                          |
 | `renderer-core.ts` · `*-root.ts` · `*-root-context.ts` | composition per window and access                                                                                                                                                                              |
 | `widget-catalog.ts`                                    | collects the per-widget manifests                                                                                                                                                                              |
@@ -943,33 +931,50 @@ surface as a wrong number in a driver's session; see
 
 ### Input bindings
 
-Keyboard shortcuts and controller buttons are **app-level, not per layout**.
+Keyboard shortcuts and controller buttons are **app-level, not per layout**, and
+**dispatched in Rust**: a key acts on the car with every webview paused, and a
+paused main window costs only the actions that write settings.
 
-| Concern                                 | Location                              |
-| --------------------------------------- | ------------------------------------- |
-| wire types                              | `src/types/input-bindings.ts`         |
-| action registry                         | `src/store/hotkeys/actions.ts`        |
-| persisted map (`actionId -> Binding[]`) | `src/store/hotkeys/bindings.store.ts` |
-| dispatch + OS registration              | `src/store/hotkeys/binding-runner.ts` |
-| device polling                          | `src-tauri/src/input/`                |
+| Concern                                         | Location                                         |
+| ----------------------------------------------- | ------------------------------------------------ |
+| action list — id, owner, label, default, effect | `src-tauri/src/model/hotkeys.rs`                 |
+| dispatch, OS registration, drag/interact modes  | `src-tauri/src/hotkeys/`                         |
+| device polling                                  | `src-tauri/src/input/`                           |
+| wire types                                      | `bindings.ts`, via `src/types/input-bindings.ts` |
+| settings-UI registry, visibility actions        | `src/store/hotkeys/actions.ts`                   |
+| persisted map (`actionId -> Binding[]`)         | `src/store/hotkeys/bindings.store.ts`            |
+| settings actions                                | `src/store/hotkeys/settings-actions.ts`          |
+| main's half                                     | `src/platform/sync/hotkey-sync.ts`               |
 
 > [!TIP]
-> **Adding a bindable action is one entry in `ACTIONS` plus one key under
-> `bindings.actions` in `main-app.json`.** Nothing else — the runner, the settings
-> UI, persistence and the save reaction are all driven off the registry.
+> **Adding a bindable action is one entry in `HOTKEY_ACTIONS` plus one key under
+> `bindings.actions` in `main-app.json`.** The list is generated into
+> `@utils/hotkey-actions` for the settings UI; persistence and the save reaction
+> are driven off it.
 
-- `owner` is a widget id or `'app'`. Widget-owned actions fire only when that
-  widget is in the active layout, checked **at dispatch time**, so nothing is
-  broadcast to an overlay for a widget that isn't there. `ignoreLayoutGate: true`
-  opts out; only the generated `widget:<id>:toggle-in-layout` actions do.
-- `trigger: 'press'` fires on key down; `'hold'` fires on both edges with the
-  pressed state.
-- **The runner lives in the main window only.** Overlays are reached through
-  `emitToOverlays` inside an action's `run`.
-- **An action reads telemetry only from the slow slice.** The main window is off
-  the bundle, so `car_status`, `lap_timing`, `pit_service` and `fuel` are all it
-  has — see [The slow slice](#the-slow-slice). Anything else reads `null` there
-  and the action silently does half its job.
+An action's `HotkeyEffect` decides its kind:
+
+| Kind       | Effects                             | Runs                                                                       |
+| ---------- | ----------------------------------- | -------------------------------------------------------------------------- |
+| `sim`      | `Pit(PitAction)`, `PitAutoMode`     | a command to the telemetry thread, resolved against its frame              |
+| `view`     | `View(ViewControl)`, drag, interact | a control message to the overlays and the remote hub, or the overlay modes |
+| `settings` | `Settings`, the visibility actions  | `hotkey://settings-action` to main, applied by `settings-actions.ts`       |
+
+- `owner` is a widget type or `'app'`. Widget-owned actions fire only while that
+  widget is on screen in the live layout, checked **per press** against the set
+  main pushes with `set_hotkey_context`. Only the generated
+  `widget:<type>:toggle-visibility` actions skip the gate; the dispatcher knows
+  them by the shape of their id, since the widget catalog is the frontend's.
+- `press` fires on key down; `hold` (interact only) on both edges.
+- Main pushes the **effective** map — defaults folded in — with
+  `set_hotkey_bindings`. Nothing is registered before it arrives, so a key the
+  user cleared cannot fire on a stale default.
+- **Drag and interact mode are the dispatcher's.** It enforces that only one is
+  on, runs the interact auto-off watchdog, and broadcasts `app://overlay-modes`;
+  every window mirrors the pair (`appSettings.applyOverlayModes`) and asks for a
+  change with `set_drag_mode` / `set_interact_mode`.
+- A view action is sent as a step, never a value: each client applies it to the
+  instances it holds that are marked for hotkeys.
 - Conflicts (one key on two actions) are allowed and only warned about.
 
 ## `ui/` — everything that renders
@@ -1325,32 +1330,36 @@ flowchart TB
 Every `invoke` in the app goes through a service function. No component and no
 store calls `invoke` directly.
 
-| Service file           | Function                                         | Rust command                | Purpose                                              |
-| ---------------------- | ------------------------------------------------ | --------------------------- | ---------------------------------------------------- |
-| `telemetry.service.ts` | `startTelemetryStream`                           | `start_telemetry_stream`    | begin reading the sim                                |
-|                        | `stopTelemetryStream`                            | `stop_telemetry_stream`     | stop reading                                         |
-|                        | `getConnectionStatus`                            | `get_connection_status`     | is a sim connected                                   |
-|                        | `getLastSessionInfo`                             | `get_last_session_info`     | last known session, for a cold start                 |
-|                        | `setActiveEventsSilent`                          | `set_active_events`         | tell the backend which events anyone is listening to |
-| `track.service.ts`     | `getCachedTrackShape`                            | `get_cached_track_shape`    | load a recorded track outline                        |
-|                        | `deleteTrackShape`                               | `delete_track_shape`        | discard it                                           |
-|                        | `resetPitLanePct`                                | `reset_pit_lane_pct`        | re-detect pit lane bounds                            |
-|                        | `getReferenceLap`                                | `get_reference_lap`         | load the stored reference lap                        |
-|                        | `deleteReferenceLap`                             | `delete_reference_lap`      | discard it                                           |
-| `settings.service.ts`  | `settingsFileExists`                             | `settings_file_exists`      | first-run detection                                  |
-|                        | `backupSettingsFile`                             | `backup_settings_file`      | snapshot before a risky write                        |
-|                        | `deleteSettingsFile`                             | `delete_settings_file`      | factory reset                                        |
-|                        | `logSettingsSnapshot`                            | `log_settings_snapshot`     | diagnostics                                          |
-|                        | `setPitWarningLapsSilent`                        | `set_pit_warning_laps`      | push a computation setting                           |
-|                        | `setFuelAvgWindowSilent`                         | `set_fuel_avg_window`       | push a computation setting                           |
-|                        | `setCarLengthSilent`                             | `set_car_length`            | push a computation setting                           |
-| `twitch.service.ts`    | `twitchHasClientId` … `twitchSignOut`            | Twitch auth commands        | device-code OAuth flow                               |
-|                        | `startChatStreamSilent` / `stopChatStreamSilent` | chat stream commands        | connect and disconnect chat                          |
-| `input.service.ts`     | `resolveInputDevices`                            | `resolve_input_devices`     | enumerate controllers                                |
-|                        | `setInputPollingEnabled`                         | `set_input_polling_enabled` | start/stop DirectInput polling                       |
-| `pit.service.ts`       | `sendPitOrder`                                   | `send_pit_order`            | send a manual pit order, with the halves it claims   |
-|                        | `togglePitAuto`                                  | `toggle_pit_auto`           | the auto mode key                                    |
-|                        | `setPitStrategySilent`                           | `set_pit_strategy`          | push the auto pit rules and the layout gate          |
+| Service file           | Function                                         | Rust command                          | Purpose                                                    |
+| ---------------------- | ------------------------------------------------ | ------------------------------------- | ---------------------------------------------------------- |
+| `telemetry.service.ts` | `startTelemetryStream`                           | `start_telemetry_stream`              | begin reading the sim                                      |
+|                        | `stopTelemetryStream`                            | `stop_telemetry_stream`               | stop reading                                               |
+|                        | `getConnectionStatus`                            | `get_connection_status`               | is a sim connected                                         |
+|                        | `getLastSessionInfo`                             | `get_last_session_info`               | last known session, for a cold start                       |
+|                        | `setActiveEventsSilent`                          | `set_active_events`                   | tell the backend which events anyone is listening to       |
+| `track.service.ts`     | `getCachedTrackShape`                            | `get_cached_track_shape`              | load a recorded track outline                              |
+|                        | `deleteTrackShape`                               | `delete_track_shape`                  | discard it                                                 |
+|                        | `resetPitLanePct`                                | `reset_pit_lane_pct`                  | re-detect pit lane bounds                                  |
+|                        | `getReferenceLap`                                | `get_reference_lap`                   | load the stored reference lap                              |
+|                        | `deleteReferenceLap`                             | `delete_reference_lap`                | discard it                                                 |
+| `settings.service.ts`  | `settingsFileExists`                             | `settings_file_exists`                | first-run detection                                        |
+|                        | `backupSettingsFile`                             | `backup_settings_file`                | snapshot before a risky write                              |
+|                        | `deleteSettingsFile`                             | `delete_settings_file`                | factory reset                                              |
+|                        | `logSettingsSnapshot`                            | `log_settings_snapshot`               | diagnostics                                                |
+|                        | `setPitWarningLapsSilent`                        | `set_pit_warning_laps`                | push a computation setting                                 |
+|                        | `setFuelAvgWindowSilent`                         | `set_fuel_avg_window`                 | push a computation setting                                 |
+|                        | `setCarLengthSilent`                             | `set_car_length`                      | push a computation setting                                 |
+| `twitch.service.ts`    | `twitchHasClientId` … `twitchSignOut`            | Twitch auth commands                  | device-code OAuth flow                                     |
+|                        | `startChatStreamSilent` / `stopChatStreamSilent` | chat stream commands                  | connect and disconnect chat                                |
+| `input.service.ts`     | `resolveInputDevices`                            | `resolve_input_devices`               | enumerate controllers                                      |
+|                        | `setInputPollingEnabled`                         | `set_input_polling_enabled`           | start/stop DirectInput polling                             |
+| `pit.service.ts`       | `runPitAction`                                   | `run_pit_action`                      | a click on the pit order, resolved on the telemetry thread |
+|                        | `togglePitAuto`                                  | `toggle_pit_auto`                     | the auto mode plate                                        |
+|                        | `setPitStrategySilent`                           | `set_pit_strategy`                    | push the pit rules, the fuel step and the layout gate      |
+| `hotkeys.service.ts`   | `setHotkeyBindings`                              | `set_hotkey_bindings`                 | the effective binding map, to the dispatcher               |
+|                        | `setHotkeyContext`                               | `set_hotkey_context`                  | the layout gate and the interact key's settings            |
+|                        | `requestDragMode` / `requestInteractMode`        | `set_drag_mode` / `set_interact_mode` | ask the dispatcher to switch a mode                        |
+|                        | `getOverlayModes`                                | `get_overlay_modes`                   | the modes, for a window that just loaded                   |
 
 The `*Silent` naming marks a setter that pushes a value into the backend without
 expecting anything back — a fire-and-forget command, not an event.
@@ -1363,21 +1372,24 @@ Names come from `src-tauri/src/model/events.rs` through the generated
 `@utils/backend-events`, re-exported by `platform/sync/sim-events.ts`; handlers are wired in
 `platform/sync/listeners.ts`.
 
-| Event                                                    | Emitted by                  | Rate                          | Lands in                                             |
-| -------------------------------------------------------- | --------------------------- | ----------------------------- | ---------------------------------------------------- |
-| `sim://telemetry/bundle`                                 | `telemetry/emitter.rs`      | every tick, tiered            | the `data/` stores                                   |
-| `sim://session`                                          | session polling             | on change                     | `session.store.ts`                                   |
-| `sim://weather`                                          | weather decoding            | async                         | `environment.store.ts`                               |
-| `sim://status`                                           | connection lifecycle        | on change                     | `sim.store.ts`                                       |
-| `sim://disconnected`                                     | connection lifecycle        | on loss                       | `sim.store.ts` — triggers `reset()`                  |
-| `sim://capabilities`                                     | `telemetry/capabilities.rs` | on connect                    | `sim.store.ts`                                       |
-| `sim://track-shape`                                      | `telemetry/emitter.rs`      | on discovery or pit-pct patch | the track map widget store                           |
-| `sim://reference-lap/updated`                            | `telemetry/emitter.rs`      | on capture                    | `reference-lap.store.ts`                             |
-| `sim://telemetry/slow`                                   | `telemetry/emitter.rs`      | 4 Hz                          | the `data/` stores — **windows off the bundle only** |
-| `sim://perf`                                             | `telemetry/emitter.rs`      | 1 Hz                          | `sim-perf.store.ts`                                  |
-| `input://devices`                                        | `input/runtime.rs`          | on device change              | `device-input.store.ts`                              |
-| `input://button`                                         | `input/runtime.rs`          | on press/release              | `binding-runner.ts`                                  |
-| `chat://message` · `chat://presence` · `chat://deletion` | `chat/`                     | async                         | `chat.store.ts`                                      |
+| Event                                                                                     | Emitted by                  | Rate                          | Lands in                                            |
+| ----------------------------------------------------------------------------------------- | --------------------------- | ----------------------------- | --------------------------------------------------- |
+| `sim://telemetry/bundle`                                                                  | `telemetry/emitter.rs`      | every tick, tiered            | the `data/` stores                                  |
+| `sim://session`                                                                           | session polling             | on change                     | `session.store.ts`                                  |
+| `sim://weather`                                                                           | weather decoding            | async                         | `environment.store.ts`                              |
+| `sim://status`                                                                            | connection lifecycle        | on change                     | `sim.store.ts`                                      |
+| `sim://disconnected`                                                                      | connection lifecycle        | on loss                       | `sim.store.ts` — triggers `reset()`                 |
+| `sim://capabilities`                                                                      | `telemetry/capabilities.rs` | on connect                    | `sim.store.ts`                                      |
+| `sim://track-shape`                                                                       | `telemetry/emitter.rs`      | on discovery or pit-pct patch | the track map widget store                          |
+| `sim://reference-lap/updated`                                                             | `telemetry/emitter.rs`      | on capture                    | `reference-lap.store.ts`                            |
+| `sim://telemetry/slow`                                                                    | `telemetry/emitter.rs`      | 4 Hz                          | `player.store.ts` — **windows off the bundle only** |
+| `app://overlay-modes`                                                                     | `hotkeys/runtime.rs`        | on change                     | `app-settings.store.ts`, every window               |
+| `hotkey://settings-action`                                                                | `hotkeys/runtime.rs`        | on a settings key             | `settings-actions.ts`, main only                    |
+| `standings-class-step` · `standings-scroll` · `stream-chat-scroll` · `pit-service-toggle` | `hotkeys/runtime.rs`        | on a view key                 | the overlays' instance stores, plus the remote hub  |
+| `sim://perf`                                                                              | `telemetry/emitter.rs`      | 1 Hz                          | `sim-perf.store.ts`                                 |
+| `input://devices`                                                                         | `input/runtime.rs`          | on device change              | `device-input.store.ts`                             |
+| `input://button`                                                                          | `input/runtime.rs`          | on press/release              | `device-input.store.ts`, for binding capture        |
+| `chat://message` · `chat://presence` · `chat://deletion`                                  | `chat/`                     | async                         | `chat.store.ts`                                     |
 
 ### Channel ③ — main ↔ overlay
 
@@ -1401,25 +1413,16 @@ Emitted from `main-sync.ts` reactions, received in `setupOverlayListeners`.
 | `units-changed`                         | `emitUnitsChanged`              | `UnitSystem`        |
 | `steering-lock-changed`                 | `emitSteeringLockChanged`       | `number`            |
 | `language-changed`                      | `emitLanguageChanged`           | `AppLanguage`       |
-| `standings-class-step`                  | `emitStandingsClassStep`        | `1 \| -1`           |
 | `session-layouts-changed`               | `emitSessionLayoutsChanged`     | `SessionLayoutMap`  |
 | `auto-switch-layouts-changed`           | `emitAutoSwitchLayoutsChanged`  | `boolean`           |
 | `stream-chat-filters-changed`           | `emitStreamChatFilters`         | `StreamChatFilters` |
 | `stream-chat-cleared`                   | `emitStreamChatCleared`         | `null`              |
 | `bindings-changed`                      | `emitBindingsChanged`           | `BindingMap`        |
-| `interact-mode-changed`                 | `emitInteractMode`              | `boolean`           |
 
-#### main → overlay (commands)
+#### Hotkeys
 
-A hotkey fires in main — the runner lives there — and must act on a widget that
-lives in the overlay.
-
-| Event                | Emitter function       | Effect                            |
-| -------------------- | ---------------------- | --------------------------------- |
-| `pit-service-toggle` | `emitPitServiceToggle` | toggle the pit service panel      |
-| `pit-service-reveal` | `emitPitServiceReveal` | reveal it                         |
-| `standings-scroll`   | `emitStandingsScroll`  | scroll the standings by a delta   |
-| `stream-chat-scroll` | `emitStreamChatScroll` | scroll the stream chat by a delta |
+A key no longer goes through main on its way to an overlay: the dispatcher in
+`src-tauri/src/hotkeys/` emits the view events itself (channel ② above).
 
 #### overlay → main
 
@@ -1429,10 +1432,9 @@ lives in the overlay.
 
 #### Both directions
 
-| Event               | Emitter function                  | Why both ways                                               |
-| ------------------- | --------------------------------- | ----------------------------------------------------------- |
-| `drag-mode-changed` | `emitDragMode` (broadcast `emit`) | drag mode is toggled from either window and both must agree |
-| `layout-activated`  | `emitLayoutActivated` (broadcast) | either side may activate a layout                           |
+| Event              | Emitter function                  | Why both ways                     |
+| ------------------ | --------------------------------- | --------------------------------- |
+| `layout-activated` | `emitLayoutActivated` (broadcast) | either side may activate a layout |
 
 #### Frontend → backend, over the event channel
 
@@ -1468,7 +1470,7 @@ Two details of that payload are load-bearing:
 ```mermaid
 flowchart TB
     subgraph MAIN["main window"]
-        MOWN["<b>owns</b><br/>settings.json writes<br/>hotkey runner + OS registration<br/>Twitch connection<br/>overlay window management"]
+        MOWN["<b>owns</b><br/>settings.json writes<br/>the settings hotkeys<br/>Twitch connection<br/>overlay window management"]
     end
     subgraph OVL["overlay windows"]
         OOWN["<b>owns</b><br/>widget rendering<br/>drag / resize gestures<br/>in-widget interaction"]

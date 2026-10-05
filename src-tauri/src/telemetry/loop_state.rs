@@ -5,9 +5,11 @@
 /// published to `TelemetryServiceState` when it changes.
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::Duration;
 
 use crate::computations::pit_auto::PitAuto;
 use crate::computations::{driver_entries, ProcessorCommand, ProcessorRegistry};
+use crate::model::pit_action::PitAction;
 use crate::model::session::SessionSnapshot;
 use crate::telemetry::control::{TelemetryCommand, TelemetryConfig};
 use crate::telemetry::publications::PublicationRegistry;
@@ -18,6 +20,11 @@ pub type StartPositions = HashMap<i32, (i32, i32)>;
 
 /// `start_positions_session_num` before any grid was taken.
 const NO_SESSION_NUM: i32 = -1;
+
+/// A pit key pressed while the stream stalled — a loading screen, the sim
+/// paused — is dropped rather than sent once frames resume: an order the driver
+/// gave seconds ago is no longer the one they want.
+const MAX_PIT_ACTION_AGE: Duration = Duration::from_secs(1);
 
 pub struct LoopState {
     pub config: TelemetryConfig,
@@ -41,14 +48,14 @@ pub struct LoopState {
     /// says where this particular entry began, which is what the pit approach
     /// rail counts from.
     pub live_pit_in_pct: Option<f32>,
-    /// How many distinct car classes the last computed `driver_entries` held.
-    /// Recorded on every Hz10 tick, before the demand gate, so the slow slice
-    /// can carry it to the main window: the hotkey runner lives there and has
-    /// to know how far the standings class cycle wraps without taking the
-    /// per-car frame itself.
-    pub car_class_count: u32,
     /// Auto pit mode: the overrides, latches and edges it decides on.
     pub pit_auto: PitAuto,
+    /// Manual pit actions applied this tick, resolved by the emitter against
+    /// the frame it holds.
+    pub pending_pit_actions: Vec<PitAction>,
+    /// The fuel calculation's last `fill_now`. Computed on the 4 Hz tier, read
+    /// by a pit action on any tick.
+    pub planned_fuel_l: Option<f32>,
 }
 
 impl LoopState {
@@ -64,8 +71,9 @@ impl LoopState {
             pit_in_pct: None,
             pit_exit_pct: None,
             live_pit_in_pct: None,
-            car_class_count: 0,
             pit_auto: PitAuto::default(),
+            pending_pit_actions: Vec::new(),
+            planned_fuel_l: None,
         }
     }
 
@@ -97,6 +105,11 @@ impl LoopState {
             TelemetryCommand::PitAuto(command) => {
                 self.pit_auto.command(command, &self.config.pit_auto);
             }
+            TelemetryCommand::PitAction { action, issued_at } => {
+                if issued_at.elapsed() <= MAX_PIT_ACTION_AGE {
+                    self.pending_pit_actions.push(action);
+                }
+            }
         }
     }
 
@@ -113,8 +126,9 @@ impl LoopState {
         // The windows drop their frames on disconnect, so nothing held back may be
         // treated as still delivered — the next connection republishes in full.
         self.publications.reset();
-        self.car_class_count = 0;
         self.pit_auto.reset();
+        self.pending_pit_actions.clear();
+        self.planned_fuel_l = None;
     }
 
     /// Forgets the cached grid, so the next session snapshots its own.

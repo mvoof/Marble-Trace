@@ -41,6 +41,11 @@ pub const EVENTS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../src/utils/backend-events.ts"
 );
+/// The bindable actions, declared in `model/hotkeys.rs`.
+pub const HOTKEY_ACTIONS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../src/utils/hotkey-actions.ts"
+);
 /// The telemetry mask bits are the one value file that lands in `src/types/`:
 /// their export names are `TelemetryEventName`, a contract type that
 /// `src/types/` has to be able to name without importing from `src/utils/`.
@@ -71,6 +76,7 @@ pub fn export() {
     crate::model::defaults::export_constants(CONSTANTS_PATH).unwrap();
     crate::model::events::export_event_names(EVENTS_PATH).unwrap();
     crate::model::telemetry_events::export_telemetry_event_bits(TELEMETRY_EVENT_BITS_PATH).unwrap();
+    crate::model::hotkeys::export_hotkey_actions(HOTKEY_ACTIONS_PATH).unwrap();
 }
 
 #[cfg(test)]

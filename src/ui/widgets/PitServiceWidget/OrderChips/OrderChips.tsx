@@ -33,7 +33,7 @@ export const OrderChips = observer(() => {
         className={`${styles.chip} ${widget.order.isFastRepairOrdered ? styles.chipOrdered : ''}`}
         clickableClassName={styles.chipClickable}
         label="Toggle fast repair"
-        onToggle={() => void widget.order.toggleFastRepair()}
+        onToggle={() => widget.order.toggleFastRepair()}
       >
         <span className={styles.label}>FAST REP</span>
 
@@ -46,7 +46,7 @@ export const OrderChips = observer(() => {
         className={`${styles.chip} ${widget.order.isWindshieldOrdered ? styles.chipOrdered : ''}`}
         clickableClassName={styles.chipClickable}
         label="Toggle windshield clean"
-        onToggle={() => void widget.order.toggleWindshield()}
+        onToggle={() => widget.order.toggleWindshield()}
       >
         <span className={styles.label}>WINDSHIELD</span>
       </OrderToggle>
@@ -60,7 +60,7 @@ export const OrderChips = observer(() => {
           className={styles.chip}
           clickableClassName={styles.chipClickable}
           label="Tire compound on the pit order: click to step to the next one"
-          onToggle={() => void widget.order.cycleTireCompound()}
+          onToggle={() => widget.order.cycleTireCompound()}
         >
           <span className={styles.value}>
             {widget.order.orderedCompoundName ?? UNKNOWN_COMPOUND}

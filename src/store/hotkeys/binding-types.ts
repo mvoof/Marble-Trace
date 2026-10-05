@@ -1,7 +1,13 @@
-import type { MainRoot } from '@store/main-root';
 import type { RendererCore } from '@store/renderer-core';
+import type { HotkeyKind } from '@/types/bindings';
 import type { Binding, BindingTrigger } from '@/types/input-bindings';
 
+/**
+ * A bindable action as the settings window shows it. What it does is the
+ * backend's: the dispatcher in `src-tauri/src/hotkeys/` catches the key and
+ * runs it, and only a `settings` action comes back here to be applied
+ * (`settings-actions.ts`).
+ */
 export interface HotkeyAction {
   /** Stable, persisted key. Never renamed once shipped. */
   id: string;
@@ -9,18 +15,13 @@ export interface HotkeyAction {
   owner: string;
   /** i18n key under `bindings.actions` in main-app.json. */
   labelKey: string;
+  kind: HotkeyKind;
   trigger: BindingTrigger;
   /** Shipped default; absent means the action starts unbound. */
   defaultBinding?: Binding;
   /**
-   * `press` actions are called with `pressed === true` only.
-   * `hold` actions are called on both edges.
-   */
-  run: (root: MainRoot, pressed: boolean) => void;
-  /**
-   * Opt out of the "owner widget must be in the active layout" gate — used by
-   * the per-widget `toggle-in-layout` actions, whose whole job is to add a
-   * widget that is by definition not there yet.
+   * Fires with its widget off screen — only the generated per-widget
+   * visibility actions, whose whole job is to put the widget back.
    */
   ignoreLayoutGate?: boolean;
   /**

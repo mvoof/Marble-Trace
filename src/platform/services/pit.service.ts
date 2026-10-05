@@ -1,22 +1,16 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type {
-  PitAutoConfig,
-  PitClaim,
-  PitCommandRequest,
-} from '@/types/bindings';
+import type { PitAction, PitAutoConfig } from '@/types/bindings';
 
 /**
- * A manual order. `claim` names the halves of the stop it takes away from auto
- * mode, which decides on the telemetry thread.
+ * A manual change to the pit order. The telemetry thread works out the
+ * broadcasts against the order the sim reports and sends them; the result
+ * comes back on `pitAuto.ordersSent`.
  */
-export const sendPitOrder = async (
-  requests: PitCommandRequest[],
-  claim?: PitClaim
-): Promise<void> =>
-  invoke('send_pit_order', { requests, claim: claim ?? null });
+export const runPitAction = async (action: PitAction): Promise<void> =>
+  invoke('run_pit_action', { action });
 
-/** The auto mode key: hands the stop to the driver, or back to auto mode. */
+/** The auto mode plate: hands the stop to the driver, or back to auto mode. */
 export const togglePitAuto = async (): Promise<void> =>
   invoke('toggle_pit_auto');
 

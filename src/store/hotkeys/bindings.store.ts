@@ -187,21 +187,6 @@ export class BindingsStore {
     return keyboard?.kind === 'keyboard' ? keyboard.accelerator : null;
   }
 
-  /** Accelerators to register with the OS, deduplicated. */
-  get keyboardAccelerators(): string[] {
-    const accelerators = new Set<string>();
-
-    for (const bindings of Object.values(this.bindings)) {
-      for (const binding of bindings) {
-        if (binding.kind === 'keyboard') {
-          accelerators.add(binding.accelerator);
-        }
-      }
-    }
-
-    return Array.from(accelerators);
-  }
-
   /** Device ids referenced by at least one binding, connected or not. */
   get referencedDeviceIds(): string[] {
     const ids = new Set<string>();

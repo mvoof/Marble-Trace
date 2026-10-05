@@ -189,29 +189,47 @@ grep -o "CarID: [0-9]*\|CarClassID: [0-9]*\|CarScreenName: .*" session.yaml | pa
 
 ### Input bindings
 
-Keyboard shortcuts and controller buttons are **app-level**, not per layout.
+Keyboard shortcuts and controller buttons are **app-level**, not per layout,
+and **dispatched in Rust** — a key acts on the car with every webview paused.
 
-| Layer                                        | File                                  |
-| -------------------------------------------- | ------------------------------------- |
-| binding wire types (`Binding`, `BindingMap`) | `src/types/input-bindings.ts`         |
-| action registry                              | `src/store/hotkeys/actions.ts`        |
-| persisted map (`actionId -> Binding[]`)      | `src/store/hotkeys/bindings.store.ts` |
-| dispatch + OS registration                   | `src/store/hotkeys/binding-runner.ts` |
-| device polling (DirectInput8)                | `src-tauri/src/input/`                |
+| Layer                                           | File                                                        |
+| ----------------------------------------------- | ----------------------------------------------------------- |
+| action list (id, owner, label, default, effect) | `src-tauri/src/model/hotkeys.rs`                            |
+| dispatch, OS registration, drag/interact modes  | `src-tauri/src/hotkeys/`                                    |
+| device polling (DirectInput8)                   | `src-tauri/src/input/`                                      |
+| binding wire types (`Binding`, `BindingMap`)    | `bindings.ts`, re-exported by `src/types/input-bindings.ts` |
+| settings-UI registry (+ visibility actions)     | `src/store/hotkeys/actions.ts`                              |
+| persisted map (`actionId -> Binding[]`)         | `src/store/hotkeys/bindings.store.ts`                       |
+| settings actions, applied in main               | `src/store/hotkeys/settings-actions.ts`                     |
+| main's half: push map + context, apply          | `src/platform/sync/hotkey-sync.ts`                          |
 
-**Adding a bindable action = one entry in `ACTIONS` + one key under
-`bindings.actions` in `main-app.json`.** Nothing else — the runner, the settings
-UI, persistence and the save reaction are all driven off the registry.
+**Adding a bindable action = one entry in `HOTKEY_ACTIONS` + one key under
+`bindings.actions` in `main-app.json`.** The entry's `HotkeyEffect` says what
+it does, and decides the kind the frontend sees:
 
-- `owner` is the widget _type_, or `'app'`. Widget-owned actions only fire when that
-  widget is in the active layout (`isWidgetOnScreen`), checked at dispatch
-  time so nothing is broadcast to the overlays for a widget that isn't there.
-  `ignoreLayoutGate: true` opts out — only the generated
-  `widget:<id>:toggle-in-layout` actions do.
-- `trigger: 'press'` runs on key down; `'hold'` runs on both edges with the
-  pressed state.
-- The runner lives in the **main** window only; overlays are reached through
-  `emitToOverlays` inside the action's `run`.
+- **sim** (`Pit(PitAction)`, `PitAutoMode`) — a command to the telemetry
+  thread, resolved there against the frame it holds
+  (`computations/pit_actions.rs`). A new pit action is a `PitAction` variant.
+- **view** (`View(ViewControl)`, drag, interact) — a control message to the
+  overlays and remote screens, or the overlay modes the dispatcher owns. Each
+  client picks its instances under the hotkeys itself.
+- **settings** — the dispatcher sends the id to main
+  (`hotkey://settings-action`) and main applies it: the settings are main's.
+  Needs a handler in `settings-actions.ts` — a test fails without one. This is
+  the only kind that needs the main window alive.
+
+- `owner` is the widget _type_, or `'app'`. Widget-owned actions only fire when
+  that widget is on screen in the live layout — main pushes the set
+  (`onScreenWidgetTypes`) with `set_hotkey_context`, and it is checked per
+  press. The generated `widget:<type>:toggle-visibility` actions are the only
+  ones past the gate; the backend recognises them by their id.
+- `press` runs on key down; `hold` (only interact) runs on both edges.
+- Main pushes the **effective** map (defaults folded in) with
+  `set_hotkey_bindings`; until it does, nothing is registered.
+- **Drag and interact mode belong to the dispatcher**: it flips them, runs the
+  interact auto-off watchdog and broadcasts `app://overlay-modes`. Every window
+  mirrors them (`appSettings.applyOverlayModes`); `setDragMode` /
+  `setInteractMode` only ask (`set_drag_mode`, `set_interact_mode`).
 - Device ids are DirectInput `guidInstance`, so replug and port changes keep
   bindings. A driver reinstall that regenerates the GUID is re-matched by
   vendor/product (`src-tauri/src/input/identity.rs`) and the stored id rewritten
@@ -310,30 +328,23 @@ Only windows that **draw widgets** subscribe to `sim://telemetry/bundle`
 (`SimStore.subscribeBundle`); Tauri delivers an event solely to webviews holding
 a listener, so the main window pays nothing for 60 Hz it does not render.
 
-But it still **decides**: the hotkey runner lives there and reads the sim rather
-than settings. So it takes
-`sim://telemetry/slow` instead — `car_status`, `lap_timing`, `pit_service` and
-`fuel`, four flat frames at 4 Hz with no per-car arrays, on the order of one
-percent of the bundle. Emitted from the bundle's own frames
-(`TelemetrySlowBundle` in `telemetry/emitter.rs`), so main reads exactly what the
-overlay reads instead of a second calculation of it.
+Main takes `sim://telemetry/slow` instead — the player's `car_status` at 4 Hz,
+for the layout auto-switch, which reads `is_on_track`. That is all it decides
+on: the hotkeys and the pit orders run on the telemetry thread's own frames, so
+nothing in main reads the sim to act on it. A new consumer in main adds its
+frame to `TelemetrySlowBundle` in `emitter.rs` and to
+`SimStore.subscribeSlowBundle`, not a subscription to the bundle.
 
-**An action in `ACTIONS` may only read what the slow slice carries.** A hotkey
-that reads a frame outside it fails silently in the worst possible way: the key
-registers, the widget reports the order as sent, and the field is quietly missing
-from it — which is exactly how the pit order lost its fuel when the main window
-was first taken off the bundle. Needing another frame means adding it to the
-slice, in `emitter.rs` and in `SimStore.subscribeSlowBundle`, not reaching for
-the bundle.
-
-The **automatic pit order** is not in main: it decides on the telemetry thread
-(`computations/pit_auto.rs`, stepped at 4 Hz in `emitter.rs`) and sends through
-the same path a manual order takes, so it works with every webview paused. Main
-pushes the rules — `appSettings.pitAuto*` plus whether the widget is in the
-active layout — with `set_pit_strategy`; a manual order carries the halves it
-takes over (`send_pit_order`'s `claim`), and the auto mode key is
-`toggle_pit_auto`. The widget reads the result back from the `pitAuto` bundle
-field. Orders are not sent while a tape is replayed.
+**Every pit order goes out from the telemetry thread.** Auto mode decides there
+(`computations/pit_auto.rs`, stepped at 4 Hz in `emitter.rs`); a manual one —
+a key, or a click through `run_pit_action` — is a `PitAction` the thread
+resolves against the frame of the tick that drains it
+(`computations/pit_actions.rs`), claiming its half of the stop from auto mode
+before the broadcast leaves. Main pushes the rules — `appSettings.pitAuto*`,
+the fuel key step in liters, whether the widget is in the active layout — with
+`set_pit_strategy`; the auto mode plate is `toggle_pit_auto`. The widget learns
+every order, manual or automatic, from `pitAuto.ordersSent` on the bundle.
+Orders are not sent while a tape is replayed.
 
 ### Demand-gated bundle fields
 
@@ -491,7 +502,9 @@ listenTo('event-name', (e) => runInAction(() => (store.value = e.payload)));
 An overlay-synced value is assigned to the sub-store data **directly, never via a
 setter** — a setter bumps `changeToken` and echoes the settings back to main.
 
-Synced events: `drag-mode-changed`, `hide-all-widgets-changed`, `hide-widgets-when-game-closed-changed`, `units-changed`, `pit-strategy-changed`, `widget-settings-updated` (debounced 16 ms), `track-rotation-changed`, `track-map:force-start-pending-changed`, `overlay-monitor-changed`, `session-layouts-changed`, `auto-switch-layouts-changed`.
+Synced events: `hide-all-widgets-changed`, `hide-widgets-when-game-closed-changed`, `units-changed`, `pit-strategy-changed`, `widget-settings-updated` (debounced 16 ms), `track-rotation-changed`, `track-map:force-start-pending-changed`, `overlay-monitor-changed`, `session-layouts-changed`, `auto-switch-layouts-changed`. The drag and interact
+modes are not among them: the backend owns those and broadcasts
+`app://overlay-modes` to every window.
 
 ### Remote screens
 
@@ -520,8 +533,9 @@ components, same coordinates, WebSocket instead of Tauri events. Full picture:
 - A Tauri event never leaves the app. **Anything a hotkey does to a widget needs a
   control message too**: a variant of `RemoteControlKind` in
   `src-tauri/src/model/events.rs` (one whitelist now, generated into
-  `bindings.ts` — the hub resolves the same enum), the fan-out via
-  `emitToOverlaysAndRemote` in `events.service.ts`, and a `case` in `remote-sync.ts`.
+  `bindings.ts` — the hub resolves the same enum), its arm in
+  `send_view_control` (`src-tauri/src/hotkeys/runtime.rs`), which fans it out to
+  the overlays and the hub, and a `case` in `remote-sync.ts`.
   A missing `case` fails silently.
 - Whether a kind is cached and replayed to a socket that connects later is
   `Replayed::replayed()` on the kind itself, not a separate list — that replay is

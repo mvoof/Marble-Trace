@@ -660,19 +660,13 @@ export class SimStore {
   }
 
   /**
-   * Subscribes a window that is off the bundle to the 4 Hz slice instead.
+   * Subscribes a window that is off the bundle to the 4 Hz slice instead: the
+   * car status, whose `is_on_track` the layout auto-switch reads. Everything
+   * that decides on the sim — the hotkeys, the pit orders — runs on the
+   * telemetry thread and needs no frame here.
    *
-   * Not drawing widgets is not the same as needing no telemetry: the main
-   * window runs the hotkey runner, which decides off the sim rather than off
-   * settings — the fuel calculation, what the sim has on the order, where the
-   * car is on pit road — while layout auto-switching reads `is_on_track`. Without these it answers a key press
-   * with an order that silently leaves the fuel out.
-   *
-   * Four flat frames at 4 Hz, no per-car arrays: on the order of one percent of
-   * what the bundle costs, so the point of staying off the bundle survives.
-   *
-   * One owner, two transports — these call the same setters the bundle path
-   * calls, and only one of the two is ever subscribed, so nothing writes twice.
+   * One owner, two transports — the same setter the bundle path calls, and only
+   * one of the two is ever subscribed, so nothing writes twice.
    */
   private async subscribeSlowBundle(guardId: number) {
     if (drawsWidgets()) {
@@ -683,19 +677,9 @@ export class SimStore {
       await listenTo<TelemetrySlowBundle>(SIM_TELEMETRY_SLOW, (event) => {
         if (this.initId !== guardId) return;
 
-        const slow = event.payload;
-
-        runInAction(() => {
-          this.root.player.updateCarStatus(slow.carStatus);
-          this.root.player.updateLapTiming(slow.lapTiming);
-          this.root.player.updatePitService(slow.pitService);
-
-          this.root.backendComputed.updateSlowCarClassCount(slow.carClassCount);
-
-          if (slow.fuel) {
-            this.root.backendComputed.updateFuel(slow.fuel);
-          }
-        });
+        runInAction(() =>
+          this.root.player.updateCarStatus(event.payload.carStatus)
+        );
       })
     );
   }

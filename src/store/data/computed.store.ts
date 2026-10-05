@@ -58,13 +58,6 @@ export class BackendComputedStore {
   lapHistory: LapHistoryEntry[] = [];
   lastCompletedLap: LastCompletedLap | null = null;
 
-  /**
-   * Distinct car classes as counted by the backend and carried on the slow
-   * slice. Only windows off the bundle ever read it — one that has
-   * `driverEntries` counts them itself, below.
-   */
-  slowCarClassCount = 0;
-
   // Memo caches for the derivations below, not state: each hands back last
   // call's object for a car that did not change, so a frame allocates only
   // for the cars that moved.
@@ -156,17 +149,9 @@ export class BackendComputedStore {
     return this.proximity?.spotterRight ?? false;
   }
 
-  /**
-   * How far the standings class cycle wraps. The overlay counts the entries it
-   * already holds; the main window, which is off the bundle but owns the hotkey
-   * runner, falls back to the count the slow slice brings it.
-   */
+  /** How far the standings class cycle wraps: the classes in the field. */
   get carClassCount(): number {
-    if (this.driverEntries) {
-      return new Set(this.fieldEntries.map((entry) => entry.carClassId)).size;
-    }
-
-    return this.slowCarClassCount;
+    return new Set(this.fieldEntries.map((entry) => entry.carClassId)).size;
   }
 
   get roster(): Map<number, CarEntry> {
@@ -217,10 +202,6 @@ export class BackendComputedStore {
     this.incidents = frame;
   }
 
-  updateSlowCarClassCount(count: number) {
-    this.slowCarClassCount = count;
-  }
-
   updateFuel(frame: FuelComputedFrame) {
     this.fuel = frame;
   }
@@ -257,7 +238,6 @@ export class BackendComputedStore {
     this.lapDelta = null;
     this.lapHistory = [];
     this.lastCompletedLap = null;
-    this.slowCarClassCount = 0;
     this.fieldJoin.clear();
     this.relativeJoin.clear();
     this.fieldIdentityCache.clear();

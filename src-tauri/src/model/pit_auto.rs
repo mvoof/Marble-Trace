@@ -7,9 +7,10 @@
 
 use serde::{Deserialize, Serialize};
 
-/// The rules auto mode builds an order by: the pit strategy from the app
-/// settings, plus whether the pit service widget is in the active layout — auto
-/// mode never acts for a widget the driver removed.
+/// The pit strategy from the app settings — the rules auto mode builds an
+/// order by and the step of the manual fuel keys — plus whether the pit service
+/// widget is in the active layout: auto mode never acts for a widget the driver
+/// removed.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -18,6 +19,9 @@ pub struct PitAutoConfig {
     pub auto_tires: bool,
     /// Remaining tread, in percent, at or below which a corner is changed.
     pub tire_wear_threshold_pct: f32,
+    /// One press of the fuel step keys, in liters — main converts the step the
+    /// driver picked from the unit on display.
+    pub fuel_step_liters: f32,
     pub widget_on_screen: bool,
 }
 
@@ -51,8 +55,9 @@ pub enum PitAutoMode {
 #[serde(rename_all = "camelCase")]
 pub struct PitAutoFrame {
     pub mode: PitAutoMode,
-    /// Counts every order auto mode has put out this connection. The widget
-    /// reveals itself on a step of it, the way it does after a key press.
+    /// Counts every order the telemetry thread has put out this connection —
+    /// auto mode's and the manual ones, keys and clicks alike. The widget
+    /// reveals itself and reports the result on a step of it.
     pub orders_sent: u32,
     /// Whether the last of those reached the sim's broadcast channel; `None`
     /// before the first.

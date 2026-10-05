@@ -11,9 +11,11 @@ pub mod enums;
 pub mod environment;
 pub mod events;
 pub mod flags;
+pub mod hotkeys;
 pub mod input;
 pub mod install;
 pub mod lap_log;
+pub mod pit_action;
 pub mod pit_auto;
 pub mod pit_command;
 pub mod player;
@@ -49,12 +51,22 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<environment::EnvironmentFrame>()
         .register::<environment::WeatherForecastEntry>()
         .register::<flags::RaceFlags>()
+        .register::<hotkeys::Binding>()
+        .register::<hotkeys::HotkeyActionSpec>()
+        .register::<hotkeys::HotkeyContext>()
+        .register::<hotkeys::HotkeyKind>()
+        .register::<hotkeys::HotkeySettingsAction>()
+        .register::<hotkeys::HotkeyTrigger>()
+        .register::<hotkeys::InteractHotkeyMode>()
+        .register::<hotkeys::OverlayModes>()
         .register::<input::InputDevice>()
         .register::<input::InputButtonEvent>()
         .register::<input::InputDeviceRemap>()
         .register::<input::InputDeviceResolution>()
         .register::<install::InstallMismatch>()
         .register::<lap_log::LapLogFrame>()
+        .register::<pit_action::PitAction>()
+        .register::<pit_action::TireCorner>()
         .register::<pit_auto::PitAutoConfig>()
         .register::<pit_auto::PitAutoFrame>()
         .register::<pit_auto::PitAutoMode>()

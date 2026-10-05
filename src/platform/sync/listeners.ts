@@ -17,6 +17,15 @@ import {
 } from '@store/hotkeys/hotkey-targets';
 import type { OverlayRoot } from '@store/overlay-root';
 import type { BindingMap } from '@/types/input-bindings';
+import type { OverlayModes } from '@/types/bindings';
+import { getOverlayModes } from '@platform/services/hotkeys.service';
+import {
+  OVERLAY_MODES_EVENT,
+  PIT_SERVICE_TOGGLE_EVENT,
+  STANDINGS_CLASS_STEP_EVENT,
+  STANDINGS_SCROLL_EVENT,
+  STREAM_CHAT_SCROLL_EVENT,
+} from './sim-events';
 
 /**
  * Subscribes a window's stores to the events the other one sends. The transport
@@ -31,15 +40,27 @@ export const setupMainListeners = async (
 ): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 
-  unlistens.push(
-    await listenTo<boolean>('drag-mode-changed', (e) => {
-      runInAction(() => root.appSettings.setDragMode(e.payload));
-    })
-  );
-
+  unlistens.push(await listenOverlayModes(root));
   unlistens.push(await listenTrackRotation(root));
 
   return unlistens;
+};
+
+/**
+ * Drag and interact mode belong to the hotkey dispatcher in the backend; every
+ * window mirrors them. Subscribed before the current value is read, so a
+ * change in between is not lost.
+ */
+const listenOverlayModes = async (root: RendererCore) => {
+  const unlisten = await listenTo<OverlayModes>(OVERLAY_MODES_EVENT, (e) => {
+    runInAction(() => root.appSettings.applyOverlayModes(e.payload));
+  });
+
+  const modes = await getOverlayModes();
+
+  runInAction(() => root.appSettings.applyOverlayModes(modes));
+
+  return unlisten;
 };
 
 /**
@@ -61,12 +82,7 @@ export const setupOverlayListeners = async (
 ): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 
-  unlistens.push(
-    await listenTo<boolean>('drag-mode-changed', (e) => {
-      runInAction(() => root.appSettings.setDragMode(e.payload));
-    })
-  );
-
+  unlistens.push(await listenOverlayModes(root));
   unlistens.push(await listenTrackRotation(root));
 
   unlistens.push(
@@ -153,7 +169,7 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listenTo<number>('standings-class-step', (e) => {
+    await listenTo<number>(STANDINGS_CLASS_STEP_EVENT, (e) => {
       runInAction(() => {
         for (const table of standingsHotkeyTargets(root)) {
           table.stepClass(e.payload);
@@ -165,7 +181,7 @@ export const setupOverlayListeners = async (
   // Scroll travels as a delta rather than an offset: only the overlay knows how
   // many rows fit and how long the target list is, so only it can clamp.
   unlistens.push(
-    await listenTo<number>('standings-scroll', (e) => {
+    await listenTo<number>(STANDINGS_SCROLL_EVENT, (e) => {
       runInAction(() => {
         for (const table of standingsHotkeyTargets(root)) {
           table.scrollByRows(e.payload);
@@ -175,7 +191,7 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listenTo<number>('stream-chat-scroll', (e) => {
+    await listenTo<number>(STREAM_CHAT_SCROLL_EVENT, (e) => {
       runInAction(() => {
         for (const chat of streamChatHotkeyTargets(root)) {
           chat.scrollByRows(e.payload);
@@ -185,24 +201,8 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listenTo('pit-service-toggle', () => {
+    await listenTo(PIT_SERVICE_TOGGLE_EVENT, () => {
       runInAction(() => root.pitServiceWidget.panel.toggleManualShow());
-    })
-  );
-
-  // The key was pressed in main, where the runner lives; the panel it should
-  // pop up renders here.
-  unlistens.push(
-    await listenTo('pit-service-reveal', () => {
-      runInAction(() => root.pitServiceWidget.revealFromCommand());
-    })
-  );
-
-  unlistens.push(
-    await listenTo<boolean>('interact-mode-changed', (e) => {
-      runInAction(() => {
-        root.appSettings.interactMode = e.payload;
-      });
     })
   );
 

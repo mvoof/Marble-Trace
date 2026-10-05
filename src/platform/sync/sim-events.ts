@@ -22,6 +22,12 @@ export {
   INPUT_DEVICES_EVENT,
   INPUT_BUTTON_EVENT,
   REMOTE_DEVICE_EVENT,
+  OVERLAY_MODES_EVENT,
+  HOTKEY_SETTINGS_ACTION_EVENT,
+  STANDINGS_CLASS_STEP_EVENT,
+  STANDINGS_SCROLL_EVENT,
+  STREAM_CHAT_SCROLL_EVENT,
+  PIT_SERVICE_TOGGLE_EVENT,
 } from '@utils/backend-events';
 
 /** Frontend-only: the overlay asks the track map to drop its recording. */

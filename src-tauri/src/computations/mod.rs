@@ -5,6 +5,7 @@ pub mod incidents;
 pub mod lap_delta;
 pub mod lap_log;
 pub mod lap_time_settle;
+pub mod pit_actions;
 pub mod pit_auto;
 pub mod pit_stops;
 pub mod pit_target;

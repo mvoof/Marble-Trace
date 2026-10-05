@@ -59,7 +59,7 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
       className={`${styles.corner} ${ordered ? styles.cornerOrdered : styles.cornerKept}`}
       clickableClassName={styles.cornerClickable}
       label={`Toggle ${position.toUpperCase()} tire change`}
-      onToggle={() => void widget.order.toggleTire(position)}
+      onToggle={() => widget.order.toggleTire(position)}
     >
       <div className={styles.zoneRow}>
         {zones.map((zone, index) => (

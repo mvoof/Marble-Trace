@@ -1,41 +1,23 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import { sendPitOrder } from '@platform/services/pit.service';
-import type {
-  PitClaim,
-  PitCommandRequest,
-  TireCompoundEntry,
-} from '@/types/bindings';
+import { runPitAction } from '@platform/services/pit.service';
+import type { PitAction, TireCompoundEntry } from '@/types/bindings';
 import type { CornerPosition } from '@utils/pit-tires';
-import {
-  ALL_CORNERS,
-  isCornerOrdered,
-  orderedPressure,
-} from '@utils/pit-tires';
+import { ALL_CORNERS, isCornerOrdered } from '@utils/pit-tires';
 import type { PitServiceWidgetStore } from './pit-service.widget';
 
 // How long the widget confirms a sent order. The sim never acknowledges a
 // broadcast, so this only reports that the message left, not that it landed.
 const ORDER_FEEDBACK_MS = 2500;
 
-// Manual fuel steps follow the unit the driver reads: one liter, or one gallon
-// worth of liters — the sim itself only ever takes liters.
-const FUEL_STEP_L = 1;
-const LITERS_PER_GALLON = 3.785412;
-
-// Which halves of the stop a manual order takes away from auto mode.
-const FUEL_CLAIM: PitClaim = { fuel: true, tires: false };
-const TIRES_CLAIM: PitClaim = { fuel: false, tires: true };
-const WHOLE_STOP_CLAIM: PitClaim = { fuel: true, tires: true };
-
 /**
- * The pit order itself: what the sim currently has checked, what the driver
- * changes by hand, and the one path out to the SDK.
+ * The pit order as the widget shows it: what the sim currently has checked,
+ * and the clicks that change it.
  *
- * Every manual change claims its half of the order from auto mode, which
- * decides on the telemetry thread — the claim travels with the order. Fast
- * repair and the windshield are the exceptions and claim nothing: auto mode
- * never decides on them either way.
+ * A click sends an intent (`PitAction`), not broadcasts: the telemetry thread
+ * resolves it against the order the sim reports and sends it, the same path a
+ * key takes (`computations/pit_actions.rs`). The claim on auto mode's half of
+ * the stop is worked out there too.
  */
 export class PitOrder {
   /** Outcome of the last order, shown briefly under the fuel row. */
@@ -99,32 +81,6 @@ export class PitOrder {
    */
   get canClickOrders(): boolean {
     return this.store.root.appSettings.interactMode;
-  }
-
-  /**
-   * The order the apply hotkey would send. Rebuilt on every call rather than
-   * stored, so it always reflects the current fuel calculation.
-   *
-   * Fuel is rounded up: landing a liter short costs a whole extra stop, while a
-   * liter over costs nothing but weight. Tire pressures are left at whatever
-   * the driver set in the garage — the sim keeps them when passed 0.
-   */
-  get plannedOrder(): PitCommandRequest[] {
-    const order: PitCommandRequest[] = [{ kind: 'clear', value: 0 }];
-    // Clamped like every other path into the sim: the plan is computed against
-    // the stint, not against the room left in the tank right now.
-    const planned = this.plannedFillNowLiters;
-    const fill = planned === null ? 0 : Math.ceil(planned);
-
-    if (fill > 0) {
-      order.push({ kind: 'fuel', value: fill });
-    }
-
-    for (const corner of ALL_CORNERS) {
-      order.push({ kind: corner, value: 0 });
-    }
-
-    return order;
   }
 
   /**
@@ -263,15 +219,6 @@ export class PitOrder {
     return this.fuelDraftLiters ?? this.orderedFuelLiters;
   }
 
-  /** One press of the manual step, in liters, matching the displayed unit. */
-  get fuelStepLiters(): number {
-    const step = this.store.strategy.pitFuelAdjustStep;
-
-    return this.store.root.units.unitSystem === 'metric'
-      ? step * FUEL_STEP_L
-      : step * LITERS_PER_GALLON;
-  }
-
   // Private only in spirit: `plannedFillNowLiters` is the reading of it, and
   // every write goes through it too.
   private clampFuel(liters: number): number {
@@ -285,7 +232,7 @@ export class PitOrder {
     this.fuelDraftLiters = this.clampFuel(liters);
   }
 
-  async commitFuelDraft() {
+  commitFuelDraft() {
     const draft = this.fuelDraftLiters;
 
     this.fuelDraftLiters = null;
@@ -294,177 +241,50 @@ export class PitOrder {
       return;
     }
 
-    await this.setFuelLiters(draft);
-  }
-
-  /** Steps the order up or down from whatever the sim currently holds. */
-  async adjustFuel(deltaLiters: number) {
-    await this.setFuelLiters(this.fuelDisplayLiters + deltaLiters);
+    this.setFuelLiters(draft);
   }
 
   /**
-   * Sets the ordered fuel outright. Rounded up for the same reason the planned
-   * order is: a liter short costs a stop, a liter over costs nothing.
+   * Sets the ordered fuel outright; capped and rounded on the telemetry thread,
+   * as every path into the sim is.
    */
-  async setFuelLiters(liters: number) {
-    const target = Math.round(this.clampFuel(liters));
-
-    if (target <= 0) {
-      await this.send([{ kind: 'clearFuel', value: 0 }], FUEL_CLAIM);
-
-      return;
-    }
-
-    await this.send([{ kind: 'fuel', value: target }], FUEL_CLAIM);
+  setFuelLiters(liters: number) {
+    this.act({ kind: 'setFuel', liters });
   }
 
-  /**
-   * Toggles fuel. The SDK has no toggle, only set and clear, so the current
-   * state read back from the sim decides which of the two to send.
-   */
-  async toggleFuel() {
-    if (this.isFuelOrdered) {
-      await this.send([{ kind: 'clearFuel', value: 0 }], FUEL_CLAIM);
-
-      return;
-    }
-
-    const planned = this.plannedFillNowLiters;
-
-    if (planned === null) {
-      return;
-    }
-
-    const fill = Math.ceil(planned);
-
-    if (fill <= 0) {
-      return;
-    }
-
-    await this.send([{ kind: 'fuel', value: fill }], FUEL_CLAIM);
+  toggleFuel() {
+    this.act({ kind: 'toggleFuel' });
   }
 
-  /**
-   * Steps to the next compound in the session's list, wrapping at the end. The
-   * SDK takes an index rather than a delta, and there is no "next" command, so
-   * the wrap is worked out here.
-   *
-   * Part of the tire half: picking a compound is as much a tire decision as
-   * ticking a corner, and auto mode has no business overruling it afterwards.
-   */
-  async cycleTireCompound() {
-    const compounds = this.tireCompounds;
-
-    if (compounds.length < 2) {
-      return;
-    }
-
-    const current = compounds.findIndex(
-      (entry) => entry.tireIndex === this.orderedCompoundIndex
-    );
-    const next = compounds[(current + 1) % compounds.length];
-
-    await this.send(
-      [{ kind: 'tireCompound', value: next.tireIndex }],
-      TIRES_CLAIM
-    );
+  cycleTireCompound() {
+    this.act({ kind: 'cycleCompound' });
   }
 
-  /**
-   * Toggles one corner. Unchecking is the awkward direction: the SDK can only
-   * clear all four at once, so the other ordered corners are re-sent right
-   * after — at the pressure the sim reports for them, so an explicitly set
-   * pressure survives the round trip.
-   */
-  async toggleTire(corner: CornerPosition) {
-    if (!this.isCornerOrdered(corner)) {
-      await this.send([{ kind: corner, value: 0 }], TIRES_CLAIM);
-
-      return;
-    }
-
-    const survivors = ALL_CORNERS.filter(
-      (other) => other !== corner && this.isCornerOrdered(other)
-    );
-
-    await this.send(
-      [
-        { kind: 'clearTires', value: 0 },
-        ...survivors.map((other) => ({
-          kind: other,
-          value: Math.round(
-            orderedPressure(other, this.store.root.player.pitService) ?? 0
-          ),
-        })),
-      ],
-      TIRES_CLAIM
-    );
+  toggleTire(corner: CornerPosition) {
+    this.act({ kind: 'toggleTire', corner });
   }
 
-  async toggleAllTires() {
-    if (this.areAllTiresOrdered) {
-      await this.send([{ kind: 'clearTires', value: 0 }], TIRES_CLAIM);
-
-      return;
-    }
-
-    await this.send(
-      ALL_CORNERS.map((corner) => ({ kind: corner, value: 0 })),
-      TIRES_CLAIM
-    );
+  toggleFastRepair() {
+    this.act({ kind: 'toggleFastRepair' });
   }
 
-  // Fast repair and the windshield are outside auto mode entirely — it never
-  // orders them and never reads them — so using one says nothing about who is
-  // deciding the fuel or the tires, and claims neither half.
-  async toggleFastRepair() {
-    await this.send([
-      {
-        kind: this.isFastRepairOrdered ? 'clearFastRepair' : 'fastRepair',
-        value: 0,
-      },
-    ]);
+  toggleWindshield() {
+    this.act({ kind: 'toggleWindshield' });
   }
 
-  async toggleWindshield() {
-    await this.send([
-      {
-        kind: this.isWindshieldOrdered ? 'clearWindshield' : 'windshield',
-        value: 0,
-      },
-    ]);
-  }
-
-  /**
-   * Sends the planned order. Only ever reached from an explicit key press —
-   * nothing in this store calls it on a telemetry transition.
-   */
-  async sendPlannedOrder() {
-    await this.send(this.plannedOrder, WHOLE_STOP_CLAIM);
-  }
-
-  /** Unchecks the whole pit order in the sim. */
-  async sendClearOrder() {
-    await this.send([{ kind: 'clear', value: 0 }], WHOLE_STOP_CLAIM);
-  }
-
-  // Every manual path into the sim goes through this method, so the result
-  // reporting lives here rather than at each call site.
-  async send(requests: PitCommandRequest[], claim?: PitClaim) {
-    this.store.panel.revealAfterCommand();
-
-    try {
-      await sendPitOrder(requests, claim);
-      this.reportOrderResult('sent');
-    } catch (error) {
+  // Every click goes out through here. The result is reported when the thread
+  // publishes it — `pitAuto.ordersSent` steps for a manual order as for an
+  // automatic one — so a failure to reach the backend is all that is left.
+  private act(action: PitAction) {
+    runPitAction(action).catch((error: unknown) => {
       console.error('[pit-service] order failed', error);
       this.reportOrderResult('failed');
-    }
+    });
   }
 
   /**
-   * Shows how an order fared under the fuel row — a manual one from `send`,
-   * an automatic one from the frame the telemetry thread publishes.
+   * Shows how an order fared under the fuel row, read off the frame the
+   * telemetry thread publishes.
    */
   reportOrderResult(result: 'sent' | 'failed') {
     runInAction(() => {

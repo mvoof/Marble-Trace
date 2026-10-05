@@ -4,6 +4,10 @@ import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
 import { checkInstallIntegrity } from '@platform/services/install.service';
 import {
+  requestDragMode,
+  requestInteractMode,
+} from '@platform/services/hotkeys.service';
+import {
   deleteSettingsFile,
   setCarLengthSilent,
 } from '@platform/services/settings.service';
@@ -12,16 +16,17 @@ import { detectSystemLanguage } from '@store/settings/system-locale';
 import { createRemoteToken } from '@utils/remote-screen';
 import i18n from '@/i18n';
 import type { AppLanguage } from '@/types';
-import type { CompanionApp, InstallMismatch } from '@/types/bindings';
+import type {
+  CompanionApp,
+  InstallMismatch,
+  InteractHotkeyMode,
+  OverlayModes,
+} from '@/types/bindings';
 import type { FuelAdjustStep, PitStrategy } from '@/types/pit-strategy';
 import type { SettingsLockReason } from '@platform/settings-schema/types';
 
 export const resolveAppLanguage = (language: AppLanguage) =>
   language === 'system' ? detectSystemLanguage() : language;
-
-export type InteractHotkeyMode = 'toggle' | 'hold';
-
-const MS_PER_SECOND = 1000;
 
 const DEFAULT_APP_SETTINGS = {
   // Interact mode: mouse events reach the overlay without unlocking widget
@@ -139,6 +144,11 @@ export class AppSettingsStore {
    */
   installMismatch: InstallMismatch | null = null;
 
+  /**
+   * The overlay's mouse modes. Owned by the hotkey dispatcher in the backend —
+   * their keys fire there — and mirrored here from `app://overlay-modes`
+   * (`applyOverlayModes`). A setter asks the dispatcher; it never writes these.
+   */
   dragMode = false;
   interactMode = false;
   updateStatus: UpdateStatus = 'idle';
@@ -147,7 +157,6 @@ export class AppSettingsStore {
   currentVersion = '';
   updateError: string | null = null;
   private updateTimer: number | null = null;
-  private interactAutoOffTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -320,65 +329,41 @@ export class AppSettingsStore {
     this.appSettings.hideAllWidgets = !this.appSettings.hideAllWidgets;
   }
 
-  // Drag and interact both grab the mouse, but fight over it: drag consumes
-  // pointer events on the container while interact needs them to reach widget
-  // content. Only one may be active at a time.
+  /**
+   * Drag and interact both grab the mouse, but fight over it, so only one may
+   * be on — the dispatcher enforces that, and runs the watchdog that switches
+   * interact mode back off.
+   */
   setDragMode(value: boolean) {
-    this.dragMode = value;
-
-    if (value) {
-      this.setInteractMode(false);
-    }
+    requestDragMode(value).catch((error: unknown) =>
+      console.error('[app-settings] drag mode request failed', error)
+    );
   }
 
   toggleInteractMode() {
     this.setInteractMode(!this.interactMode);
   }
 
-  /**
-   * Interact mode lets the mouse reach the overlay, which means the game stops
-   * receiving it — so toggle mode arms a watchdog that switches it back off.
-   */
   setInteractMode(value: boolean) {
-    this.interactMode = value;
-
-    if (value) {
-      this.dragMode = false;
-    }
-
-    if (this.interactAutoOffTimer !== null) {
-      clearTimeout(this.interactAutoOffTimer);
-      this.interactAutoOffTimer = null;
-    }
-
-    const autoOffSeconds = this.appSettings.interactAutoOffSeconds;
-
-    if (!value || autoOffSeconds <= 0) {
-      return;
-    }
-
-    this.interactAutoOffTimer = setTimeout(() => {
-      runInAction(() => {
-        this.interactMode = false;
-        this.interactAutoOffTimer = null;
-      });
-    }, autoOffSeconds * MS_PER_SECOND);
+    requestInteractMode(value).catch((error: unknown) =>
+      console.error('[app-settings] interact mode request failed', error)
+    );
   }
 
+  /** The dispatcher's broadcast. Assigned directly: this is a mirror. */
+  applyOverlayModes(modes: OverlayModes) {
+    this.dragMode = modes.dragMode;
+    this.interactMode = modes.interactMode;
+  }
+
+  /** The dispatcher switches interact mode off when this changes. */
   setInteractHotkeyMode(mode: InteractHotkeyMode) {
     this.appSettings.interactHotkeyMode = mode;
-
-    this.setInteractMode(false);
   }
 
-  // The watchdog holds the duration it was armed with, so a change made while
-  // interact mode is already on has to re-arm it with the new one.
+  /** The dispatcher re-arms a running watchdog with the new duration. */
   setInteractAutoOffSeconds(seconds: number) {
     this.appSettings.interactAutoOffSeconds = seconds;
-
-    if (this.interactMode) {
-      this.setInteractMode(true);
-    }
   }
 
   setHideAllWidgets(value: boolean) {

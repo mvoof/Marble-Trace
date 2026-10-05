@@ -163,7 +163,8 @@ impl PitAuto {
         }
     }
 
-    /// Records how an order returned by `step` fared on its way out.
+    /// Records how an order fared on its way out — one `step` returned, or a
+    /// manual one the thread sent for a key or a click.
     pub fn record_send(&mut self, ok: bool) {
         self.orders_sent = self.orders_sent.wrapping_add(1);
         self.last_order_ok = Some(ok);
@@ -385,6 +386,7 @@ mod tests {
             auto_fuel: true,
             auto_tires: true,
             tire_wear_threshold_pct: 60.0,
+            fuel_step_liters: 1.0,
             widget_on_screen: true,
         }
     }

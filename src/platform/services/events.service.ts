@@ -21,7 +21,6 @@ import type { BindingMap } from '@/types/input-bindings';
 import type { RemoteDevice } from '@/types/bindings';
 import { TRACK_MAP_CLEAR } from '@platform/sync/sim-events';
 import { publishRemoteControl } from '@platform/services/remote.service';
-import type { RemoteControlKind } from '@/types/remote';
 
 /**
  * The whole frontend↔backend event channel: the only module that imports
@@ -91,8 +90,6 @@ const emitToOverlays = async (event: string, payload: unknown) => {
   }
 };
 
-export const emitDragMode = (val: boolean) => emit('drag-mode-changed', val);
-
 export const emitHideAllWidgets = (val: boolean) =>
   emitToOverlays('hide-all-widgets-changed', val);
 
@@ -122,47 +119,6 @@ export const emitStreamChatFilters = (filters: StreamChatFilters) =>
 export const emitStreamChatCleared = () =>
   emitToOverlays('stream-chat-cleared', null);
 
-/**
- * Fan-out to the overlay windows and to the remote screens at once.
- *
- * A Tauri event stops at the app: a browser showing the same widget has to be
- * told separately, or a hotkey moves the standings on the monitors and leaves
- * the tablet on the class it was already showing.
- */
-const emitToOverlaysAndRemote = async (
-  event: string,
-  remoteKind: RemoteControlKind,
-  payload: unknown
-) => {
-  await emitToOverlays(event, payload);
-
-  await publishRemoteControl(remoteKind, payload).catch((error: unknown) =>
-    console.error('[events] failed to reach the remote screens:', error)
-  );
-};
-
-// A step rather than an index: the class tab belongs to each standings
-// instance, and only the window it is mounted in holds it.
-export const emitStandingsClassStep = (direction: number) =>
-  emitToOverlaysAndRemote(
-    'standings-class-step',
-    'standings-class-step',
-    direction
-  );
-
-export const emitPitServiceToggle = () =>
-  emitToOverlays('pit-service-toggle', null);
-
-// Broadcast rather than targeted: either window can be the one that suspends.
-export const emitPitServiceReveal = () =>
-  emitToOverlays('pit-service-reveal', null);
-
-export const emitStandingsScroll = (delta: number) =>
-  emitToOverlaysAndRemote('standings-scroll', 'standings-scroll', delta);
-
-export const emitStreamChatScroll = (delta: number) =>
-  emitToOverlaysAndRemote('stream-chat-scroll', 'stream-chat-scroll', delta);
-
 export interface TrackRotationPayload {
   trackId: string;
   rotation: number;
@@ -181,9 +137,6 @@ export const emitTrackRotation = async (payload: TrackRotationPayload) => {
       console.error('[events] failed to reach the remote screens:', error)
   );
 };
-
-export const emitInteractMode = (active: boolean) =>
-  emitToOverlays('interact-mode-changed', active);
 
 /**
  * Pushes the active layout to every open overlay window.

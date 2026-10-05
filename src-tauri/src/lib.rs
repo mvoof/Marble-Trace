@@ -5,6 +5,7 @@ mod chat;
 mod commands;
 mod companions;
 mod computations;
+mod hotkeys;
 mod input;
 mod logging;
 mod model;
@@ -27,12 +28,16 @@ use commands::{
     delete_reference_lap, delete_settings_file, delete_track_shape, detect_companion_apps,
     get_cached_track_shape, get_connection_status, get_delivery_counters, get_inspector_frame,
     get_last_session_info, get_reference_lap, get_tick_summary, launch_companion_app,
-    log_settings_snapshot, reset_delivery_counters, reset_pit_lane_pct, send_pit_order,
+    log_settings_snapshot, reset_delivery_counters, reset_pit_lane_pct, run_pit_action,
     set_active_events, set_car_length, set_fuel_avg_window, set_fuel_count_yellow_laps,
     set_inspector_active, set_pit_strategy, set_pit_warning_laps, set_remote_active_events,
     settings_file_exists, start_telemetry_stream, stop_telemetry_stream, toggle_pit_auto,
 };
 use companions::CompanionsState;
+use hotkeys::commands::{
+    get_overlay_modes, set_drag_mode, set_hotkey_bindings, set_hotkey_context, set_interact_mode,
+};
+use hotkeys::{on_device_edge, HotkeyState};
 use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
 use input::InputRuntime;
 use remote::commands::{
@@ -146,7 +151,7 @@ pub fn run() {
             // main window's HWND for background cooperative level, and that
             // only exists once the windows have been created.
             app.manage(InputState {
-                runtime: Some(InputRuntime::start(app.handle().clone())),
+                runtime: Some(InputRuntime::start(app.handle().clone(), on_device_edge)),
             });
 
             Ok(())
@@ -190,7 +195,7 @@ pub fn run() {
             settings_file_exists,
             delete_settings_file,
             check_install_integrity,
-            send_pit_order,
+            run_pit_action,
             set_pit_strategy,
             toggle_pit_auto,
             start_chat_stream,
@@ -202,6 +207,11 @@ pub fn run() {
             twitch_sign_out,
             resolve_input_devices,
             set_input_polling_enabled,
+            set_hotkey_bindings,
+            set_hotkey_context,
+            set_drag_mode,
+            set_interact_mode,
+            get_overlay_modes,
             detect_companion_apps,
             companion_app_statuses,
             launch_companion_app,
@@ -214,6 +224,7 @@ pub fn run() {
             service: Arc::new(ChatServiceState::new()),
         })
         .manage(TelemetryState::default())
+        .manage(HotkeyState::default())
         .on_window_event(|window, event| match event {
             WindowEvent::Destroyed => {
                 tracing::info!(window = window.label(), "window destroyed");

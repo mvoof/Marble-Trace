@@ -30,11 +30,10 @@ ts_values! {
     /// listener, so the main window pays nothing for 60 Hz it does not render.
     pub const EVENT_TELEMETRY_BUNDLE: &str = "sim://telemetry/bundle" => SIM_TELEMETRY_BUNDLE;
 
-    /// A 4 Hz slice for windows that do not take the bundle. The main window
-    /// drives layout auto-switching off `is_on_track` and the automatic pit
-    /// order off the fuel calculation and the sim's own order — subscribing it
-    /// to 60 Hz telemetry to read four frames at four hertz is not the way to
-    /// get them.
+    /// A 4 Hz slice for windows that do not take the bundle: the player's car
+    /// status, which the main window's layout auto-switch reads `is_on_track`
+    /// off. Subscribing main to 60 Hz telemetry for one flag at four hertz is
+    /// not the way to get it.
     pub const EVENT_TELEMETRY_SLOW: &str = "sim://telemetry/slow" => SIM_TELEMETRY_SLOW;
 
     /// The parsed session snapshot, re-emitted whenever the sim's session
@@ -87,6 +86,26 @@ ts_values! {
 
     /// A controller button edge, for the global input bindings.
     pub const INPUT_BUTTON_EVENT: &str = "input://button" => INPUT_BUTTON_EVENT;
+
+    /// The overlay's drag and interact modes changed. The hotkey dispatcher
+    /// owns them; every window mirrors them.
+    pub const EVENT_OVERLAY_MODES: &str = "app://overlay-modes" => OVERLAY_MODES_EVENT;
+
+    /// A settings action's key fired. Sent to the main window only, which owns
+    /// the settings it writes.
+    pub const EVENT_HOTKEY_SETTINGS_ACTION: &str = "hotkey://settings-action" => HOTKEY_SETTINGS_ACTION_EVENT;
+
+    /// The standings class hotkeys, to the overlays: one class forward or back.
+    pub const EVENT_STANDINGS_CLASS_STEP: &str = "standings-class-step" => STANDINGS_CLASS_STEP_EVENT;
+
+    /// The standings scroll hotkeys, to the overlays: rows to move by.
+    pub const EVENT_STANDINGS_SCROLL: &str = "standings-scroll" => STANDINGS_SCROLL_EVENT;
+
+    /// The chat scroll hotkeys, to the overlays: rows to move by.
+    pub const EVENT_STREAM_CHAT_SCROLL: &str = "stream-chat-scroll" => STREAM_CHAT_SCROLL_EVENT;
+
+    /// The pit service key, to the overlays: pop the order box up or down.
+    pub const EVENT_PIT_SERVICE_TOGGLE: &str = "pit-service-toggle" => PIT_SERVICE_TOGGLE_EVENT;
 
     /// A perf run's measured span starts: the overlays begin collecting.
     /// Emitted only by a `dev` build running `MARBLE_TRACE_PERF`.

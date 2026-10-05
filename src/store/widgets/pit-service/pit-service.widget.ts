@@ -260,11 +260,6 @@ export class PitServiceWidgetStore {
     return this.towTimeS > 0;
   }
 
-  /** Entry point for the sync layer: the key was pressed in the other window. */
-  revealFromCommand() {
-    this.panel.revealAfterCommand();
-  }
-
   reset() {
     this.panel.reset();
     this.order.reset();

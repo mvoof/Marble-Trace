@@ -10,14 +10,9 @@ import {
   hydrateFromDisk,
   readSettingsFile,
 } from './persistence-sync';
-import {
-  applyKeyboardBindings,
-  cleanupKeyboardBindings,
-} from '@store/hotkeys/binding-runner';
 import { setupDeviceBindings } from '@store/hotkeys/bindings-sync';
+import { listenSettingsActions, registerHotkeyReactions } from './hotkey-sync';
 import {
-  emitDragMode,
-  emitInteractMode,
   emitHideAllWidgets,
   emitHideWidgetsWhenGameClosed,
   emitSteeringLockChanged,
@@ -61,18 +56,6 @@ const registerBroadcastReactions = (
   root: MainRoot,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
-  reaction(
-    () => root.appSettings.dragMode,
-    (v) => {
-      void emitDragMode(v);
-    }
-  ),
-  reaction(
-    () => root.appSettings.interactMode,
-    (v) => {
-      void emitInteractMode(v);
-    }
-  ),
   reaction(
     () => root.appSettings.appSettings.hideAllWidgets,
     (v) => {
@@ -280,12 +263,11 @@ const registerBindingReactions = (
   root: MainRoot,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
-  // One binding registry, one dependency. Adding a bindable action is an entry
-  // in ACTIONS and nothing else.
+  // One binding registry, one dependency. The backend dispatcher gets the map
+  // from `registerHotkeyReactions`.
   reaction(
     () => root.bindings.mutationId,
     () => {
-      void applyKeyboardBindings(root);
       // Overrides, not the effective map: the overlay layers the same registry
       // defaults underneath, so sending them would only make every default look
       // like a user choice on the other side.
@@ -407,7 +389,7 @@ export const initMainSync = async (root: MainRoot) => {
       const [
         overlaySettingsUnlisten,
         mainUnlistens,
-        ,
+        settingsActionUnlisten,
         deviceBindingUnlistens,
         closeRequestedUnlisten,
       ] = await Promise.all([
@@ -433,7 +415,7 @@ export const initMainSync = async (root: MainRoot) => {
           void onSave();
         }),
         setupMainListeners(root),
-        applyKeyboardBindings(root),
+        listenSettingsActions(root),
         setupDeviceBindings(root),
         getCurrentWindow().onCloseRequested(async (event) => {
           event.preventDefault();
@@ -476,6 +458,7 @@ export const initMainSync = async (root: MainRoot) => {
         ...registerAppSettingsSaveReactions(root, onSave),
         ...registerOverlayWindowReactions(root, onSave),
         ...registerBindingReactions(root, onSave),
+        ...registerHotkeyReactions(root),
         ...registerDisplayPreferenceReactions(root, onSave),
         ...registerChatReactions(root, onSave),
         ...registerPitServiceMainReactions(root),
@@ -488,13 +471,12 @@ export const initMainSync = async (root: MainRoot) => {
         stopMonitorWatch();
         stopRemotePublishing();
         overlaySettingsUnlisten();
+        settingsActionUnlisten();
         closeRequestedUnlisten();
 
         mainUnlistens.forEach((u) => u());
         deviceBindingUnlistens.forEach((u) => u());
         disposers.forEach((d) => d());
-
-        cleanupKeyboardBindings();
 
         mainSyncInitPromise = null;
       };

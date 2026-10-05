@@ -119,7 +119,7 @@ describe('BackendComputedStore carClassCount', () => {
     store = new BackendComputedStore(session);
   });
 
-  it('starts at zero with neither source present', () => {
+  it('starts at zero with no field', () => {
     expect(store.carClassCount).toBe(0);
   });
 
@@ -129,31 +129,12 @@ describe('BackendComputedStore carClassCount', () => {
     expect(store.carClassCount).toBe(3);
   });
 
-  it('falls back to the slow slice count without driverEntries', () => {
-    runInAction(() => store.updateSlowCarClassCount(4));
-
-    expect(store.carClassCount).toBe(4);
-  });
-
-  it('driverEntries take precedence over the slow slice count', () => {
-    runInAction(() => {
-      store.updateSlowCarClassCount(4);
-      seedField([1, 2]);
-    });
-
-    expect(store.carClassCount).toBe(2);
-  });
-
-  it('reset drops driverEntries and the slow count back to zero', () => {
-    runInAction(() => {
-      store.updateSlowCarClassCount(4);
-      seedField([1, 2]);
-    });
+  it('reset drops driverEntries and the count back to zero', () => {
+    runInAction(() => seedField([1, 2]));
 
     runInAction(() => store.reset());
 
     expect(store.driverEntries).toBeNull();
-    expect(store.slowCarClassCount).toBe(0);
     expect(store.carClassCount).toBe(0);
   });
 });

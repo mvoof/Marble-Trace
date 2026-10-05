@@ -1,13 +1,17 @@
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 
-import { emitPitServiceReveal } from '@platform/services/events.service';
 import { setPitStrategySilent } from '@platform/services/pit.service';
 import type { RendererCore } from '@store/renderer-core';
 
+// The fuel step keys move by the unit the driver reads: a liter, or a gallon's
+// worth of liters — the sim itself only ever takes liters.
+const LITERS_PER_STEP_METRIC = 1;
+const LITERS_PER_GALLON = 3.785412;
+
 /**
- * The main window's half of the pit service. Auto mode itself decides on the
- * telemetry thread (`computations/pit_auto.rs`); what is left here is telling
- * it the rules and confirming the hotkeys on the overlay.
+ * The main window's half of the pit service: telling the telemetry thread the
+ * rules. Auto mode decides there (`computations/pit_auto.rs`), and the pit keys
+ * are resolved there too (`computations/pit_actions.rs`).
  *
  * Registered after hydration, so the strategy pushed first is the user's rather
  * than the shipped defaults.
@@ -15,15 +19,6 @@ import type { RendererCore } from '@store/renderer-core';
 export const registerPitServiceMainReactions = (
   root: RendererCore
 ): IReactionDisposer[] => [
-  // One emit per command rather than per change of the flag: pressing a
-  // second key while the panel is already up has to restart the overlay's
-  // countdown too, and a boolean has no edge left to carry that.
-  reaction(
-    () => root.pitServiceWidget.panel.commandRevealNonce,
-    () => {
-      void emitPitServiceReveal();
-    }
-  ),
   // The backend keeps the strategy across stream restarts, so one push per
   // change is enough. Whether the widget is on screen goes with it: auto mode
   // never orders for a widget the driver removed from the layout.
@@ -33,6 +28,11 @@ export const registerPitServiceMainReactions = (
       autoTires: root.appSettings.appSettings.pitAutoTires,
       tireWearThresholdPct:
         root.appSettings.appSettings.pitAutoTireWearThreshold,
+      fuelStepLiters:
+        root.appSettings.appSettings.pitFuelAdjustStep *
+        (root.units.unitSystem === 'metric'
+          ? LITERS_PER_STEP_METRIC
+          : LITERS_PER_GALLON),
       widgetOnScreen: root.liveWidgets.isWidgetOnScreen('pit-service'),
     }),
     (strategy) => setPitStrategySilent(strategy),

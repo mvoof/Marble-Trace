@@ -5,12 +5,11 @@ import {
   INPUT_BUTTON_EVENT,
   INPUT_DEVICES_EVENT,
 } from '@platform/sync/sim-events';
-import { dispatchDeviceButton } from './binding-runner';
 
 /**
- * Main-window only, like the keyboard registrations: a second window would
- * dispatch every action twice. Overlays are reached through the existing
- * `emitToOverlays` helpers inside the actions themselves.
+ * The device list and the last button pressed, for the settings screen that
+ * captures a binding. The edges themselves are dispatched by the backend,
+ * which reads the wheel; this window only shows them.
  */
 export const setupDeviceBindings = async (
   root: MainRoot
@@ -28,13 +27,6 @@ export const setupDeviceBindings = async (
   unlistens.push(
     await listenTo<InputButtonEvent>(INPUT_BUTTON_EVENT, (event) => {
       root.deviceInput.setLastEvent(event.payload);
-
-      dispatchDeviceButton(
-        root,
-        event.payload.deviceId,
-        event.payload.button,
-        event.payload.pressed
-      );
     })
   );
 

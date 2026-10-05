@@ -6,11 +6,11 @@ import type { PitStrategy } from '@/types/pit-strategy';
 import type { PitAutoFrame } from '@/types/bindings';
 import { PIT_LIMITER_BIT } from '@utils/car-signals';
 
-const sendPitOrderMock = vi.hoisted(() => vi.fn());
+const runPitActionMock = vi.hoisted(() => vi.fn());
 const togglePitAutoMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@platform/services/pit.service', () => ({
-  sendPitOrder: sendPitOrderMock,
+  runPitAction: runPitActionMock,
   togglePitAuto: togglePitAutoMock,
   setPitStrategySilent: vi.fn(),
 }));
@@ -100,14 +100,36 @@ describe('PitServiceWidgetStore — pit orders', () => {
     });
   };
 
-  const pitOrderPayloads = () =>
-    sendPitOrderMock.mock.calls.map(([requests]) => ({ requests }));
+  // The arithmetic of an order — rounding, the cap, the corner dance, the
+  // claim — is the telemetry thread's (`computations/pit_actions.rs`). What the
+  // widget owns is which intent a click sends.
+  const sentActions = () =>
+    runPitActionMock.mock.calls.map(([action]) => action as unknown);
+
+  // An order the telemetry thread sent, manual or automatic, as the widget
+  // learns of it: the count on the published frame steps.
+  const setPitAuto = (frame: Partial<PitAutoFrame> | null) => {
+    runInAction(() => {
+      rootStore.backendComputed.pitAuto =
+        frame === null
+          ? null
+          : { mode: 'auto', ordersSent: 0, lastOrderOk: null, ...frame };
+    });
+  };
+
+  let ordersSent = 0;
+
+  const reportOrderSent = () => {
+    ordersSent++;
+    setPitAuto({ ordersSent, lastOrderOk: true });
+  };
 
   beforeEach(() => {
-    sendPitOrderMock.mockReset();
-    sendPitOrderMock.mockResolvedValue(undefined);
+    runPitActionMock.mockReset();
+    runPitActionMock.mockResolvedValue(undefined);
     togglePitAutoMock.mockReset();
     togglePitAutoMock.mockResolvedValue(undefined);
+    ordersSent = 0;
     rootStore = new RendererCore();
   });
 
@@ -117,56 +139,14 @@ describe('PitServiceWidgetStore — pit orders', () => {
     expect(rootStore.pitServiceWidget.order.plannedFuelLiters).toBe(106);
   });
 
-  it('rounds fuel up so the order never lands a liter short', () => {
-    setFuelPlan(25.2, 106);
+  it('reports an order that never reached the backend', async () => {
+    runPitActionMock.mockRejectedValue(new Error('no backend'));
 
-    expect(rootStore.pitServiceWidget.order.plannedOrder).toEqual([
-      { kind: 'clear', value: 0 },
-      { kind: 'fuel', value: 26 },
-      { kind: 'lf', value: 0 },
-      { kind: 'rf', value: 0 },
-      { kind: 'lr', value: 0 },
-      { kind: 'rr', value: 0 },
-    ]);
-  });
+    rootStore.pitServiceWidget.order.toggleFuel();
 
-  it('omits fuel entirely when none is needed', () => {
-    setFuelPlan(null, 106);
-
-    expect(rootStore.pitServiceWidget.order.plannedOrder).toEqual([
-      { kind: 'clear', value: 0 },
-      { kind: 'lf', value: 0 },
-      { kind: 'rf', value: 0 },
-      { kind: 'lr', value: 0 },
-      { kind: 'rr', value: 0 },
-    ]);
-  });
-
-  it('invokes the backend with the planned order', async () => {
-    setFuelPlan(30, 106);
-
-    await rootStore.pitServiceWidget.order.sendPlannedOrder();
-
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [
-        { kind: 'clear', value: 0 },
-        { kind: 'fuel', value: 30 },
-        { kind: 'lf', value: 0 },
-        { kind: 'rf', value: 0 },
-        { kind: 'lr', value: 0 },
-        { kind: 'rr', value: 0 },
-      ],
-    });
-    expect(rootStore.pitServiceWidget.order.lastOrderResult).toBe('sent');
-  });
-
-  it('reports a failed order instead of throwing', async () => {
-    setFuelPlan(30, 106);
-    sendPitOrderMock.mockRejectedValue(new Error('no broadcast message'));
-
-    await rootStore.pitServiceWidget.order.sendPlannedOrder();
-
-    expect(rootStore.pitServiceWidget.order.lastOrderResult).toBe('failed');
+    await vi.waitFor(() =>
+      expect(rootStore.pitServiceWidget.order.lastOrderResult).toBe('failed')
+    );
   });
 
   const setPitService = (partial: Record<string, unknown>) => {
@@ -184,54 +164,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
     });
   };
 
-  it('steps the ordered fuel up from what the sim currently holds', async () => {
-    setFuelPlan(30, 106);
-    setPitService({ addFuel: true, fuelAmount: 40 });
-
-    await rootStore.pitServiceWidget.order.adjustFuel(
-      rootStore.pitServiceWidget.order.fuelStepLiters
-    );
-
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'fuel', value: 41 }],
-    });
-  });
-
-  it('steps by the configured amount, in the unit on display', async () => {
-    setFuelPlan(30, 106);
-    setPitService({ addFuel: true, fuelAmount: 40 });
-    setStrategy({ pitFuelAdjustStep: 5 });
-
-    await rootStore.pitServiceWidget.order.adjustFuel(
-      rootStore.pitServiceWidget.order.fuelStepLiters
-    );
-
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'fuel', value: 45 }],
-    });
-  });
-
-  it('caps a manual fuel change at tank capacity', async () => {
-    setFuelPlan(30, 106);
-
-    await rootStore.pitServiceWidget.order.setFuelLiters(200);
-
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'fuel', value: 106 }],
-    });
-  });
-
-  it('clears fuel instead of ordering zero liters', async () => {
-    setFuelPlan(30, 106);
-
-    await rootStore.pitServiceWidget.order.setFuelLiters(0);
-
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'clearFuel', value: 0 }],
-    });
-  });
-
-  it('holds the drag in a draft and sends it once on release', async () => {
+  it('holds the drag in a draft and sends it once on release', () => {
     setFuelPlan(30, 106);
     setPitService({ addFuel: true, fuelAmount: 10 });
 
@@ -239,88 +172,53 @@ describe('PitServiceWidgetStore — pit orders', () => {
     rootStore.pitServiceWidget.order.setFuelDraft(64);
 
     expect(rootStore.pitServiceWidget.order.fuelDisplayLiters).toBe(64);
-    expect(sendPitOrderMock).not.toHaveBeenCalled();
+    expect(runPitActionMock).not.toHaveBeenCalled();
 
-    await rootStore.pitServiceWidget.order.commitFuelDraft();
+    rootStore.pitServiceWidget.order.commitFuelDraft();
 
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'fuel', value: 64 }],
-    });
+    expect(sentActions()).toEqual([{ kind: 'setFuel', liters: 64 }]);
     expect(rootStore.pitServiceWidget.order.fuelDraftLiters).toBeNull();
   });
 
-  it('checks a single corner without touching the rest of the order', async () => {
-    setPitService({ changeRf: true });
-
-    await rootStore.pitServiceWidget.order.toggleTire('lf');
-
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'lf', value: 0 }],
-    });
-  });
-
-  it('unchecks one corner by clearing all four and restoring the others', async () => {
-    setPitService({
-      changeLf: true,
-      changeRf: true,
-      changeLr: true,
-      rfPressure: 165,
-      lrPressure: null,
-    });
-
-    await rootStore.pitServiceWidget.order.toggleTire('lf');
-
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [
-        { kind: 'clearTires', value: 0 },
-        { kind: 'rf', value: 165 },
-        { kind: 'lr', value: 0 },
-      ],
-    });
-  });
-
-  it('clears the tires only when all four are already ordered', async () => {
-    setPitService({
-      changeLf: true,
-      changeRf: true,
-      changeLr: true,
-      changeRr: true,
-    });
-
-    await rootStore.pitServiceWidget.order.toggleAllTires();
-
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'clearTires', value: 0 }],
-    });
-  });
-
-  it('sends the clear variant when a box is already checked', async () => {
+  it('caps the draft at the room left in the tank', () => {
     setFuelPlan(30, 106);
-    setPitService({ addFuel: true, fastRepair: true, cleanWindshield: false });
 
-    await rootStore.pitServiceWidget.order.toggleFuel();
-    await rootStore.pitServiceWidget.order.toggleFastRepair();
-    await rootStore.pitServiceWidget.order.toggleWindshield();
+    rootStore.pitServiceWidget.order.setFuelDraft(200);
 
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'clearFuel', value: 0 }],
-    });
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'clearFastRepair', value: 0 }],
-    });
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'windshield', value: 0 }],
-    });
+    expect(rootStore.pitServiceWidget.order.fuelDraftLiters).toBe(106);
+  });
+
+  it('sends each click as the intent it stands for', () => {
+    const order = rootStore.pitServiceWidget.order;
+
+    order.toggleFuel();
+    order.toggleTire('rf');
+    order.cycleTireCompound();
+    order.toggleFastRepair();
+    order.toggleWindshield();
+
+    expect(sentActions()).toEqual([
+      { kind: 'toggleFuel' },
+      { kind: 'toggleTire', corner: 'rf' },
+      { kind: 'cycleCompound' },
+      { kind: 'toggleFastRepair' },
+      { kind: 'toggleWindshield' },
+    ]);
   });
 
   describe('reveal after a command', () => {
-    it('shows the panel for the configured seconds, then hides it again', async () => {
+    beforeEach(() => {
+      rootStore.pitServiceWidget.init();
+      setPitAuto({ ordersSent: 0 });
+    });
+
+    it('shows the panel for the configured seconds, then hides it again', () => {
       vi.useFakeTimers();
       setSettings({ commandRevealSeconds: 4 });
 
       expect(rootStore.pitServiceWidget.panel.isVisible).toBe(false);
 
-      await rootStore.pitServiceWidget.order.toggleAllTires();
+      reportOrderSent();
 
       expect(rootStore.pitServiceWidget.panel.isVisible).toBe(true);
 
@@ -334,22 +232,14 @@ describe('PitServiceWidgetStore — pit orders', () => {
       vi.useRealTimers();
     });
 
-    // The bug this replaced a boolean edge for: a second key inside an open
-    // window has to restart the countdown, and has to reach the overlay.
-    it('restarts the countdown on every press, and reports every one', async () => {
+    // A second key inside an open window has to restart the countdown.
+    it('restarts the countdown on every order', () => {
       vi.useFakeTimers();
       setSettings({ commandRevealSeconds: 4 });
 
-      await rootStore.pitServiceWidget.order.toggleAllTires();
-
-      const firstNonce = rootStore.pitServiceWidget.panel.commandRevealNonce;
-
+      reportOrderSent();
       vi.advanceTimersByTime(3000);
-      await rootStore.pitServiceWidget.order.toggleFastRepair();
-
-      expect(rootStore.pitServiceWidget.panel.commandRevealNonce).toBe(
-        firstNonce + 1
-      );
+      reportOrderSent();
 
       // Past the first press's deadline, still inside the second's.
       vi.advanceTimersByTime(2000);
@@ -362,25 +252,25 @@ describe('PitServiceWidgetStore — pit orders', () => {
       vi.useRealTimers();
     });
 
-    it('shows again right after it hid', async () => {
+    it('shows again right after it hid', () => {
       vi.useFakeTimers();
       setSettings({ commandRevealSeconds: 4 });
 
-      await rootStore.pitServiceWidget.order.toggleAllTires();
+      reportOrderSent();
       vi.advanceTimersByTime(4000);
 
       expect(rootStore.pitServiceWidget.panel.isVisible).toBe(false);
 
-      await rootStore.pitServiceWidget.order.toggleAllTires();
+      reportOrderSent();
 
       expect(rootStore.pitServiceWidget.panel.isVisible).toBe(true);
       vi.useRealTimers();
     });
 
-    it('stays out of the way when the setting is zero', async () => {
+    it('stays out of the way when the setting is zero', () => {
       setSettings({ commandRevealSeconds: 0 });
 
-      await rootStore.pitServiceWidget.order.toggleAllTires();
+      reportOrderSent();
 
       expect(rootStore.pitServiceWidget.panel.isVisible).toBe(false);
     });
@@ -425,75 +315,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
   describe('auto mode', () => {
     // The decisions are the telemetry thread's (`computations/pit_auto.rs`);
-    // the widget reports what it publishes and hands over what a manual order
-    // claims.
-    const setPitAuto = (frame: Partial<PitAutoFrame> | null) => {
-      runInAction(() => {
-        rootStore.backendComputed.pitAuto =
-          frame === null
-            ? null
-            : { mode: 'auto', ordersSent: 0, lastOrderOk: null, ...frame };
-      });
-    };
-
-    const claimOfLastOrder = () => sendPitOrderMock.mock.calls.at(-1)?.[1];
-
-    it('claims only the fuel half when the fuel is nudged by hand', async () => {
-      setFuelPlan(24.1, 106);
-      setPitService({ addFuel: true, fuelAmount: 40 });
-
-      await rootStore.pitServiceWidget.order.adjustFuel(
-        rootStore.pitServiceWidget.order.fuelStepLiters
-      );
-
-      expect(claimOfLastOrder()).toEqual({ fuel: true, tires: false });
-    });
-
-    it('claims the fuel half when the calculated amount is ordered by key', async () => {
-      setFuelPlan(24.1, 106);
-
-      await rootStore.pitServiceWidget.order.toggleFuel();
-
-      expect(pitOrderPayloads()).toContainEqual({
-        requests: [{ kind: 'fuel', value: 25 }],
-      });
-      expect(claimOfLastOrder()).toEqual({ fuel: true, tires: false });
-    });
-
-    it('claims only the tire half when a corner is toggled by hand', async () => {
-      await rootStore.pitServiceWidget.order.toggleTire('rf');
-
-      expect(claimOfLastOrder()).toEqual({ fuel: false, tires: true });
-
-      await rootStore.pitServiceWidget.order.toggleAllTires();
-
-      expect(claimOfLastOrder()).toEqual({ fuel: false, tires: true });
-    });
-
-    it('claims the whole stop with the planned or the clear order', async () => {
-      setFuelPlan(24.1, 106);
-
-      await rootStore.pitServiceWidget.order.sendPlannedOrder();
-
-      expect(claimOfLastOrder()).toEqual({ fuel: true, tires: true });
-
-      await rootStore.pitServiceWidget.order.sendClearOrder();
-
-      expect(claimOfLastOrder()).toEqual({ fuel: true, tires: true });
-    });
-
-    // Auto mode never orders a fast repair or a tear-off, so using one says
-    // nothing about who is deciding the fuel or the tires.
-    it('claims nothing with a fast repair or a tear-off', async () => {
-      await rootStore.pitServiceWidget.order.toggleFastRepair();
-
-      expect(claimOfLastOrder()).toBeUndefined();
-
-      await rootStore.pitServiceWidget.order.toggleWindshield();
-
-      expect(claimOfLastOrder()).toBeUndefined();
-    });
-
+    // the widget reports what it publishes.
     it('names the halves auto mode still owns', () => {
       setPitAuto({ mode: 'auto' });
 
@@ -583,15 +405,10 @@ describe('PitServiceWidgetStore — pit orders', () => {
       });
     };
 
-    it('offers no choice when the car has a single compound', async () => {
+    it('offers no choice when the car has a single compound', () => {
       setCompounds([{ tireIndex: 0, tireCompoundType: 'Dry' }], 0);
 
       expect(rootStore.pitServiceWidget.order.hasCompoundChoice).toBe(false);
-
-      sendPitOrderMock.mockClear();
-      await rootStore.pitServiceWidget.order.cycleTireCompound();
-
-      expect(pitOrderPayloads()).toHaveLength(0);
     });
 
     it('names the compound the sim has on the order', () => {
@@ -605,42 +422,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
       expect(rootStore.pitServiceWidget.order.hasCompoundChoice).toBe(true);
       expect(rootStore.pitServiceWidget.order.orderedCompoundName).toBe('Hard');
-    });
-
-    it('steps to the next compound and wraps at the end', async () => {
-      setCompounds(
-        [
-          { tireIndex: 0, tireCompoundType: 'Soft' },
-          { tireIndex: 1, tireCompoundType: 'Hard' },
-        ],
-        1
-      );
-
-      sendPitOrderMock.mockClear();
-      await rootStore.pitServiceWidget.order.cycleTireCompound();
-
-      expect(pitOrderPayloads()[0]).toEqual({
-        requests: [{ kind: 'tireCompound', value: 0 }],
-      });
-    });
-
-    // Picking a compound is a tire decision, so it takes the tire half over —
-    // and leaves the fuel half exactly where it was.
-    it('claims the tire half only', async () => {
-      setCompounds(
-        [
-          { tireIndex: 0, tireCompoundType: 'Soft' },
-          { tireIndex: 1, tireCompoundType: 'Hard' },
-        ],
-        0
-      );
-
-      await rootStore.pitServiceWidget.order.cycleTireCompound();
-
-      expect(sendPitOrderMock.mock.calls.at(-1)?.[1]).toEqual({
-        fuel: false,
-        tires: true,
-      });
     });
   });
 
@@ -702,14 +483,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
       expect(rootStore.pitServiceWidget.isApproachingPit).toBe(true);
       expect(rootStore.pitServiceWidget.isPitLimitReleased).toBe(false);
-    });
-  });
-
-  it('clears the whole order with a single command', async () => {
-    await rootStore.pitServiceWidget.order.sendClearOrder();
-
-    expect(pitOrderPayloads()).toContainEqual({
-      requests: [{ kind: 'clear', value: 0 }],
     });
   });
 });

@@ -40,15 +40,6 @@ export class PitPanelState {
   commandRevealing = false;
 
   /**
-   * Bumped once per command. The sync layer watches this rather than
-   * `commandRevealing`: a boolean only changes on the first press of a burst,
-   * so the second key inside an open window would never reach the overlay, and
-   * the overlay would hide on the deadline of the first press while main still
-   * held the flag — after which no rising edge was left to show it again.
-   */
-  commandRevealNonce = 0;
-
-  /**
    * The panel is holding itself up for a few seconds after pit exit. Public
    * because the lane bars ride the same tail — the GO they turn into is the end
    * of the very stop the box is still showing the result of.
@@ -130,7 +121,6 @@ export class PitPanelState {
     // Every press restarts the countdown, so a burst of keys keeps the panel up
     // rather than letting the first press decide when it goes away.
     this.commandRevealing = true;
-    this.commandRevealNonce++;
 
     this.revealTimer = setTimeout(() => {
       runInAction(() => {

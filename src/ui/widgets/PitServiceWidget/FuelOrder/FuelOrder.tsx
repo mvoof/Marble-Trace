@@ -125,12 +125,12 @@ export const FuelOrder = observer(() => {
 
     if (dragging.current) {
       dragging.current = false;
-      void order.commitFuelDraft();
+      order.commitFuelDraft();
 
       return;
     }
 
-    void order.toggleFuel();
+    order.toggleFuel();
   };
 
   const content = (

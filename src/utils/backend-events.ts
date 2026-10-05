@@ -11,11 +11,10 @@
 export const SIM_TELEMETRY_BUNDLE = 'sim://telemetry/bundle';
 
 /**
- * A 4 Hz slice for windows that do not take the bundle. The main window
- * drives layout auto-switching off `is_on_track` and the automatic pit
- * order off the fuel calculation and the sim's own order — subscribing it
- * to 60 Hz telemetry to read four frames at four hertz is not the way to
- * get them.
+ * A 4 Hz slice for windows that do not take the bundle: the player's car
+ * status, which the main window's layout auto-switch reads `is_on_track`
+ * off. Subscribing main to 60 Hz telemetry for one flag at four hertz is
+ * not the way to get it.
  */
 export const SIM_TELEMETRY_SLOW = 'sim://telemetry/slow';
 
@@ -95,6 +94,38 @@ export const INPUT_DEVICES_EVENT = 'input://devices';
  * A controller button edge, for the global input bindings.
  */
 export const INPUT_BUTTON_EVENT = 'input://button';
+
+/**
+ * The overlay's drag and interact modes changed. The hotkey dispatcher
+ * owns them; every window mirrors them.
+ */
+export const OVERLAY_MODES_EVENT = 'app://overlay-modes';
+
+/**
+ * A settings action's key fired. Sent to the main window only, which owns
+ * the settings it writes.
+ */
+export const HOTKEY_SETTINGS_ACTION_EVENT = 'hotkey://settings-action';
+
+/**
+ * The standings class hotkeys, to the overlays: one class forward or back.
+ */
+export const STANDINGS_CLASS_STEP_EVENT = 'standings-class-step';
+
+/**
+ * The standings scroll hotkeys, to the overlays: rows to move by.
+ */
+export const STANDINGS_SCROLL_EVENT = 'standings-scroll';
+
+/**
+ * The chat scroll hotkeys, to the overlays: rows to move by.
+ */
+export const STREAM_CHAT_SCROLL_EVENT = 'stream-chat-scroll';
+
+/**
+ * The pit service key, to the overlays: pop the order box up or down.
+ */
+export const PIT_SERVICE_TOGGLE_EVENT = 'pit-service-toggle';
 
 /**
  * A perf run's measured span starts: the overlays begin collecting.

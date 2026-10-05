@@ -1,10 +1,7 @@
 import { reaction } from 'mobx';
 
 import { hydrateFromDisk, readSettingsFile } from './persistence-sync';
-import {
-  emitDragMode,
-  emitWidgetSettingsToMain,
-} from '@platform/services/events.service';
+import { emitWidgetSettingsToMain } from '@platform/services/events.service';
 import { publishRemoteControl } from '@platform/services/remote.service';
 import { setupOverlayListeners } from './listeners';
 import { initPerfRun } from './perf-run';
@@ -41,12 +38,6 @@ export const initOverlaySync = async (root: OverlayRoot) => {
   const stopPerfRun = await initPerfRun(root);
 
   const disposers = [
-    reaction(
-      () => root.appSettings.dragMode,
-      (v) => {
-        void emitDragMode(v);
-      }
-    ),
     reaction(
       () => root.settingsMutations.changeToken,
       () => {

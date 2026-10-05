@@ -5,10 +5,12 @@
 /// changes something is a `TelemetryCommand` on a channel the thread drains at
 /// the top of each tick, so the tick never waits on a lock a command holds.
 use std::sync::mpsc::{channel, Receiver, Sender};
+use std::time::Instant;
 
 use crate::computations::fuel::FuelSettings;
 use crate::computations::pit_auto::PitAutoCommand;
 use crate::model::defaults::DEFAULT_CAR_LENGTH_M;
+use crate::model::pit_action::PitAction;
 use crate::model::pit_auto::PitAutoConfig;
 
 /// The values a command sets that must outlive a run: they are kept beside the
@@ -54,8 +56,15 @@ pub enum TelemetryCommand {
     ResetPitLane,
     /// The stored reference laps for the track and car were deleted.
     ResetReferenceLap,
-    /// A manual pit order claimed a half of the stop, or the auto mode key.
+    /// The auto mode key.
     PitAuto(PitAutoCommand),
+    /// A manual change to the pit order, from a key or a click. Resolved
+    /// against the frame of the tick that drains it; `issued_at` lets a press
+    /// that waited out a stall in the stream be dropped rather than sent late.
+    PitAction {
+        action: PitAction,
+        issued_at: Instant,
+    },
 }
 
 /// What a telemetry thread is started with.
