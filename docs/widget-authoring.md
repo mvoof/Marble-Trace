@@ -245,6 +245,17 @@ Add a setting **only if the widget uses it**. A widget with settings it does not
 read is worse than a widget with none: it is a promise to the driver that the
 switch does something.
 
+Ask of every setting: **could it hold two different values on the driver's
+monitor and on a stream screen at once?** Every instance has its own settings,
+so a widget setting is a per-screen setting. Colours, columns, thresholds a
+readout warns at — yes, they belong here. Anything that acts on the car or the
+sim — the pit-stop auto rules, the fuel key step, the car length — cannot
+differ between two screens for one car. It goes in `appSettings`
+(`store/settings/app-settings.store.ts`), on a page under Settings, and the
+widget only shows it; the pit strategy (`types/pit-strategy.ts`) is the worked
+example. A copy left in a widget panel is a switch the stream screen offers and
+then ignores.
+
 No migration is needed for any of this — a widget stores only what differs from
 its manifest, so a new key is read from the manifest in every template and every
 instance.

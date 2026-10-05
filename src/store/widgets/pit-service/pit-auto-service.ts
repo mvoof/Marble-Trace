@@ -90,11 +90,11 @@ export class PitAutoService {
   }
 
   get isAutoFuelEnabled(): boolean {
-    return this.store.settings.autoFuel;
+    return this.store.strategy.pitAutoFuel;
   }
 
   get isAutoTiresEnabled(): boolean {
-    return this.store.settings.autoTires;
+    return this.store.strategy.pitAutoTires;
   }
 
   /** Auto mode will build the next order itself. */
@@ -178,13 +178,13 @@ export class PitAutoService {
    * order.
    */
   get autoTireCorners(): CornerPosition[] {
-    if (!this.store.settings.autoTires) {
+    if (!this.isAutoTiresEnabled) {
       return [];
     }
 
     return cornersBelowWearThreshold(
       this.store.root.player.chassis,
-      this.store.settings.autoTireWearThreshold
+      this.store.strategy.pitAutoTireWearThreshold
     );
   }
 
@@ -201,7 +201,7 @@ export class PitAutoService {
    * mode does not own them.
    */
   get autoFuelOrder(): PitCommandRequest[] {
-    if (!this.store.settings.autoFuel) {
+    if (!this.isAutoFuelEnabled) {
       return [];
     }
 

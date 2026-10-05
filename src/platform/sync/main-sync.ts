@@ -21,6 +21,7 @@ import {
   emitHideAllWidgets,
   emitHideWidgetsWhenGameClosed,
   emitSteeringLockChanged,
+  emitPitStrategyChanged,
   emitUnitsChanged,
   emitLanguageChanged,
   emitActiveLayoutToOverlays,
@@ -31,6 +32,7 @@ import {
 import { setupMainListeners } from './listeners';
 import type { MonitorWidgetsPayload } from '@platform/services/events.service';
 import { registerChatReactions } from './chat-sync';
+import { pitStrategyOf } from '@store/settings/app-settings.store';
 import {
   registerPitServiceAutoReactions,
   registerPitServiceMirrorReactions,
@@ -312,7 +314,7 @@ const registerBindingReactions = (
   ),
 ];
 
-/** Units and steering lock — mirrored and persisted. */
+/** Units, steering lock and the pit strategy — mirrored and persisted. */
 const registerDisplayPreferenceReactions = (
   root: MainRoot,
   onSave: () => Promise<void>
@@ -330,6 +332,14 @@ const registerDisplayPreferenceReactions = (
       void emitSteeringLockChanged(v);
       void onSave();
     }
+  ),
+  reaction(
+    () => pitStrategyOf(root.appSettings.appSettings),
+    (strategy) => {
+      void emitPitStrategyChanged(strategy);
+      void onSave();
+    },
+    { equals: comparer.structural }
   ),
 ];
 

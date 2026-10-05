@@ -733,25 +733,8 @@ export interface PitServiceWidgetSettings {
   showRepairs: boolean;
   showFooter: boolean;
   alwaysVisible: boolean;
-  /**
-   * Auto mode checks the calculated fuel amount on pit entry. Auto mode as a
-   * whole is on whenever this or `autoTires` is — there is no separate master
-   * switch, an auto mode that orders nothing would just be off with extra steps.
-   */
-  autoFuel: boolean;
-  /** Auto mode checks the corners worn past `autoTireWearThreshold`. */
-  autoTires: boolean;
-  /**
-   * Remaining tread, in percent, at or below which auto mode orders a corner.
-   * Measured on the most worn of the three points across the tread.
-   */
-  autoTireWearThreshold: number;
-  /**
-   * How much one press of the fuel up / down keys moves the order, in the unit
-   * the driver reads — liters on metric, gallons on imperial. A step is a whole
-   * unit either way, so the number on the bar moves by what the setting says.
-   */
-  fuelAdjustStep: FuelAdjustStep;
+  // The auto-mode rules and the fuel key step are not here: they are the car's,
+  // not this screen's, and live in the app settings (`pitAuto*`).
   /**
    * Seconds the widget shows itself after a command — a tire picked, the fuel
    * stepped, auto mode handed over — so a key pressed on track can be read back
@@ -762,15 +745,6 @@ export interface PitServiceWidgetSettings {
    */
   commandRevealSeconds: number;
 }
-
-/**
- * Fixed rather than free: the keys are pressed with a wheel-mounted button on
- * the way into the pits, and the useful steps are "a splash", "a stint" and the
- * couple in between, not an arbitrary figure typed in the settings.
- */
-export const FUEL_ADJUST_STEPS = [1, 5, 10, 15, 20] as const;
-
-export type FuelAdjustStep = (typeof FUEL_ADJUST_STEPS)[number];
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';
 export type GMeterColorMode = 'mono' | 'simple' | 'advanced';

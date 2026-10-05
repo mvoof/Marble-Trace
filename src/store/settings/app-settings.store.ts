@@ -13,6 +13,7 @@ import { createRemoteToken } from '@utils/remote-screen';
 import i18n from '@/i18n';
 import type { AppLanguage } from '@/types';
 import type { CompanionApp, InstallMismatch } from '@/types/bindings';
+import type { FuelAdjustStep, PitStrategy } from '@/types/pit-strategy';
 import type { SettingsLockReason } from '@platform/settings-schema/types';
 
 export const resolveAppLanguage = (language: AppLanguage) =>
@@ -52,6 +53,12 @@ const DEFAULT_APP_SETTINGS = {
   // widget — the radars and Close Battle must not disagree about how far away
   // the same car is — and the backend keeps exactly one of it per process.
   carLength: 4.4,
+  // Pit stop strategy (`PitStrategy`). The car's, not a screen's — these used
+  // to be widget settings, and the copy on a stream screen was silently ignored.
+  pitAutoFuel: false,
+  pitAutoTires: false,
+  pitAutoTireWearThreshold: 60,
+  pitFuelAdjustStep: 1 as FuelAdjustStep,
   // Stream chat source. A channel is a property of the account, not of a
   // layout — the same reasoning as steeringLock above. Keeping it here also
   // means one connection serves every layout instead of reconnecting on each
@@ -87,6 +94,13 @@ const DEFAULT_APP_SETTINGS = {
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
+
+export const pitStrategyOf = (settings: AppSettings): PitStrategy => ({
+  pitAutoFuel: settings.pitAutoFuel,
+  pitAutoTires: settings.pitAutoTires,
+  pitAutoTireWearThreshold: settings.pitAutoTireWearThreshold,
+  pitFuelAdjustStep: settings.pitFuelAdjustStep,
+});
 
 export type UpdateStatus =
   | 'idle'
@@ -386,6 +400,27 @@ export class AppSettingsStore {
   setCarLength(value: number) {
     this.appSettings.carLength = value;
     setCarLengthSilent(value);
+  }
+
+  setPitAutoFuel(value: boolean) {
+    this.appSettings.pitAutoFuel = value;
+  }
+
+  setPitAutoTires(value: boolean) {
+    this.appSettings.pitAutoTires = value;
+  }
+
+  setPitAutoTireWearThreshold(value: number) {
+    this.appSettings.pitAutoTireWearThreshold = value;
+  }
+
+  setPitFuelAdjustStep(value: FuelAdjustStep) {
+    this.appSettings.pitFuelAdjustStep = value;
+  }
+
+  /** Applies a strategy mirrored from another window. */
+  setPitStrategy(strategy: PitStrategy) {
+    Object.assign(this.appSettings, strategy);
   }
 
   setStreamChatTwitchChannel(value: string) {

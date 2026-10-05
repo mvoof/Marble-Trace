@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
 import { RendererCore } from '@store/renderer-core';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
+import type { PitStrategy } from '@/types/pit-strategy';
 import { PIT_LIMITER_BIT } from '@utils/car-signals';
 
 const sendPitOrderMock = vi.hoisted(() => vi.fn());
@@ -39,7 +40,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
   let rootStore: RendererCore;
 
   // `enabled` comes from BaseUserSettings rather than the widget's own settings,
-  // but auto mode depends on it, so the helper takes both.
+  // but auto mode depends on it, so the helper takes both. The strategy is the
+  // app's, not the widget's — `setStrategy` below.
   const setSettings = (
     partial: Partial<PitServiceWidgetSettings> & { enabled?: boolean }
   ) => {
@@ -54,6 +56,12 @@ describe('PitServiceWidgetStore — pit orders', () => {
         ...partial,
       });
     });
+  };
+
+  const setStrategy = (partial: Partial<PitStrategy>) => {
+    runInAction(() =>
+      rootStore.appSettings.setPitStrategy(partial as PitStrategy)
+    );
   };
 
   // The split across stops is the backend's now, so the fixture seeds the
@@ -186,7 +194,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
   it('steps by the configured amount, in the unit on display', async () => {
     setFuelPlan(30, 106);
     setPitService({ addFuel: true, fuelAmount: 40 });
-    setSettings({ fuelAdjustStep: 5 });
+    setStrategy({ pitFuelAdjustStep: 5 });
 
     await rootStore.pitServiceWidget.order.adjustFuel(
       rootStore.pitServiceWidget.order.fuelStepLiters
@@ -373,7 +381,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
     // Handing the stop over sends nothing, so it asks for the reveal itself.
     it('shows the panel for the auto mode key too', () => {
-      setSettings({ enabled: true, autoFuel: true, commandRevealSeconds: 4 });
+      setSettings({ enabled: true, commandRevealSeconds: 4 });
+      setStrategy({ pitAutoFuel: true });
 
       rootStore.pitServiceWidget.auto.toggleAutoSuspended();
 
@@ -411,13 +420,14 @@ describe('PitServiceWidgetStore — pit orders', () => {
   describe('auto mode', () => {
     // `enabled` matters as much as the auto switches: auto mode is inert for a
     // widget that is not in the active layout.
-    const enableAuto = () =>
-      setSettings({
-        enabled: true,
-        autoFuel: true,
-        autoTires: true,
-        autoTireWearThreshold: 60,
+    const enableAuto = () => {
+      setSettings({ enabled: true });
+      setStrategy({
+        pitAutoFuel: true,
+        pitAutoTires: true,
+        pitAutoTireWearThreshold: 60,
       });
+    };
 
     // On pit exit the sim checks a service set of its own — always all four
     // corners, the rest varying. Auto mode wipes that once per stint, away from
@@ -501,7 +511,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
       });
 
       it('sends nothing when auto mode owns neither half', async () => {
-        setSettings({ enabled: true, autoFuel: false, autoTires: false });
+        setSettings({ enabled: true });
+        setStrategy({ pitAutoFuel: false, pitAutoTires: false });
 
         sendPitOrderMock.mockClear();
         await rootStore.pitServiceWidget.auto.clearSelfArmedOrder();
@@ -552,7 +563,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
       });
 
       it('sends nothing with auto mode off', async () => {
-        setSettings({ enabled: true, autoFuel: false, autoTires: false });
+        setSettings({ enabled: true });
+        setStrategy({ pitAutoFuel: false, pitAutoTires: false });
         setPitService({});
 
         sendPitOrderMock.mockClear();
@@ -703,7 +715,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
     it('leaves out a section the driver switched off', async () => {
       setFuelPlan(30, 106);
       enableAuto();
-      setSettings({ autoFuel: false });
+      setStrategy({ pitAutoFuel: false });
       setTireWear({ lf: 0.1 });
 
       await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
@@ -809,7 +821,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
     });
 
     it('has no plate at all while auto mode is switched off', () => {
-      setSettings({ enabled: true, autoFuel: false, autoTires: false });
+      setSettings({ enabled: true });
+      setStrategy({ pitAutoFuel: false, pitAutoTires: false });
 
       expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBeNull();
     });
@@ -958,7 +971,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
     it('is off entirely when neither fuel nor tires are automatic', async () => {
       enableAuto();
-      setSettings({ autoFuel: false, autoTires: false });
+      setStrategy({ pitAutoFuel: false, pitAutoTires: false });
       setTireWear({ lf: 0.1 });
 
       await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();

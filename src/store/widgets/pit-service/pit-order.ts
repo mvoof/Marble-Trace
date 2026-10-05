@@ -255,7 +255,7 @@ export class PitOrder {
 
   /** One press of the manual step, in liters, matching the displayed unit. */
   get fuelStepLiters(): number {
-    const step = this.store.settings.fuelAdjustStep;
+    const step = this.store.strategy.pitFuelAdjustStep;
 
     return this.store.root.units.unitSystem === 'metric'
       ? step * FUEL_STEP_L

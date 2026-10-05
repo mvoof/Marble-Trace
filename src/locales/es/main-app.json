@@ -296,6 +296,17 @@
       "rangeTitle": "Recorrido del volante",
       "rangeDesc": "Recorrido físico de tu volante: {{full}}° (±{{half}}°). Lo comparten todos los widgets que muestran la dirección."
     },
+    "pitStrategy": {
+      "title": "Estrategia de boxes",
+      "desc": "Se aplica al único coche del simulador, sea cual sea la pantalla que muestre la caja de boxes.",
+      "autoFuel": "Combustible automático",
+      "autoFuelDesc": "El modo automático pide la cantidad de combustible que calcula el widget de combustible, limitada a la capacidad del depósito.",
+      "autoTires": "Neumáticos automáticos",
+      "autoTiresDesc": "El modo automático pide las ruedas desgastadas por debajo del umbral de abajo, una a una.",
+      "autoTireWearThreshold": "Cambiar un neumático con un {{percent}}% de dibujo restante",
+      "fuelAdjustStep": "Paso de la tecla de combustible",
+      "fuelAdjustStepDesc": "Cuánto añade o quita una pulsación de las teclas de subir y bajar combustible, en la unidad que lees: litros en métrico, galones en imperial."
+    },
     "carLength": {
       "title": "Coche",
       "valueTitle": "Longitud del coche",

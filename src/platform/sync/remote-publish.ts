@@ -6,7 +6,10 @@ import {
   startRemoteServer,
   stopRemoteServer,
 } from '@platform/services/remote.service';
-import { resolveAppLanguage } from '@store/settings/app-settings.store';
+import {
+  pitStrategyOf,
+  resolveAppLanguage,
+} from '@store/settings/app-settings.store';
 import { widgetsOnMonitor } from '@store/settings/virtual-desktop';
 import type { MainRoot } from '@store/main-root';
 import type { RemoteScreenSnapshot } from '@/types/remote';
@@ -47,6 +50,7 @@ const snapshotFor = (
     units: root.units.unitSystem,
     language: root.appSettings.appSettings.language,
     steeringLock: root.appSettings.appSettings.steeringLock,
+    pitStrategy: pitStrategyOf(root.appSettings.appSettings),
     layoutName: layout.name,
     background: monitor.background,
   };
@@ -186,6 +190,7 @@ export const registerRemotePublishing = (root: MainRoot) => {
         root.layouts.liveLayoutId,
         root.units.unitSystem,
         root.appSettings.appSettings.steeringLock,
+        ...Object.values(pitStrategyOf(root.appSettings.appSettings)),
       ],
       () => {
         if (!root.appSettings.appSettings.remoteEnabled) return;

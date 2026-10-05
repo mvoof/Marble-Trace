@@ -1,4 +1,5 @@
 import type { AppLanguage, UnitSystem } from '@/types';
+import type { PitStrategy } from '@/types/pit-strategy';
 import type {
   MonitorBounds,
   WidgetDefaultConfig,
@@ -21,6 +22,8 @@ export interface RemoteScreenSnapshot {
   units: UnitSystem;
   language: AppLanguage;
   steeringLock: number;
+  /** The pit box on a stream shows the auto mode, so it needs the rules. */
+  pitStrategy: PitStrategy;
   /** Name of the layout these widgets came from, shown while connecting. */
   layoutName: string;
   /**

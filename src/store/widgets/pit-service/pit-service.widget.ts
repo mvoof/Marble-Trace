@@ -2,6 +2,7 @@ import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
 import type { RendererCore } from '@store/renderer-core';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
+import type { PitStrategy } from '@/types/pit-strategy';
 import { PitAutoService } from './pit-auto-service';
 import { PitOrder } from './pit-order';
 import { PitPanelState } from './pit-panel';
@@ -94,10 +95,18 @@ export class PitServiceWidgetStore {
   }
 
   /**
-   * The settings of the instance that speaks for the widget. One answer for
-   * the app, not one per instance: the order goes to the one car in the sim —
-   * the fuel to add, the tires to change, when to arm it — so two pit boxes
-   * holding different auto-fuel rules would send two orders for one stop.
+   * The rules the order is built by. App-level, not a widget setting: the order
+   * goes to the one car in the sim, so two pit boxes holding different
+   * auto-fuel rules would send two orders for one stop.
+   */
+  get strategy(): PitStrategy {
+    return this.root.appSettings.appSettings;
+  }
+
+  /**
+   * The display settings of the instance that speaks for the widget — the
+   * reveal distance the panel opens at, which this one app-wide store has to
+   * pick a single answer for.
    */
   get settings(): PitServiceWidgetSettings {
     return this.root.liveWidgets.settingsOfType<PitServiceWidgetSettings>(

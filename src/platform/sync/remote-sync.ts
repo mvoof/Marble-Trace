@@ -41,6 +41,7 @@ export const initRemoteSync = (
       screen.setSnapshot(snapshot);
       root.units.setSystem(snapshot.units);
       root.appSettings.setSteeringLock(snapshot.steeringLock);
+      root.appSettings.setPitStrategy(snapshot.pitStrategy);
       root.liveWidgets.syncWidgetSet(snapshot.widgets);
     });
 

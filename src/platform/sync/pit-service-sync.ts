@@ -41,8 +41,8 @@ export const registerPitServiceMirrorReactions = (
  * same telemetry, so an overlay copy of these would broadcast every order a
  * second time.
  *
- * Registered after hydration so the pit-service widget's settings (auto fuel /
- * auto tires) are the user's rather than the shipped defaults — one of these
+ * Registered after hydration so the pit strategy (auto fuel / auto tires) is
+ * the user's rather than the shipped defaults — one of these
  * reactions is `fireImmediately`.
  */
 export const registerPitServiceAutoReactions = (

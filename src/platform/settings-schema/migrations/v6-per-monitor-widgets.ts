@@ -1,5 +1,11 @@
 import type { Migration, SettingsBlob } from '../types';
-import { asArray, asObject, type BlobWidget } from '../blob';
+import {
+  asArray,
+  asObject,
+  dropStoredWidgetSettings,
+  type BlobWidget,
+  type StoredBlobWidget,
+} from '../blob';
 
 /**
  * v5 → v6. Widgets move under the monitor they stand on.
@@ -27,8 +33,14 @@ import { asArray, asObject, type BlobWidget } from '../blob';
  * `defaultWidgets[]` — the Widgets page's catalogue — becomes
  * `widgetTemplates`, keyed by widget type, with a size and no position.
  *
- * Every rule below is frozen: the centre-point ownership test is v5's, written
- * out here rather than imported.
+ * The pit stop strategy (auto fuel, auto tires, the wear threshold, the fuel
+ * key step) leaves the pit-service widget for `app`: the sim has one car, so
+ * a copy on a stream screen could only ever be ignored. The values are taken
+ * from the instance that decided the order until now — see `liftPitStrategy`.
+ *
+ * Every rule below is frozen: the centre-point ownership test is v5's and the
+ * pit-service pick is the one `primaryInstanceOf` made at the time, both
+ * written out here rather than imported.
  */
 
 const GEOMETRY_KEYS = [
@@ -248,9 +260,78 @@ const toTemplates = (defaultWidgets: unknown): Record<string, unknown> => {
   return templates;
 };
 
+const PIT_SERVICE_TYPE = 'pit-service';
+
+/** Widget setting → app setting. */
+const PIT_STRATEGY_KEYS: Record<string, string> = {
+  autoFuel: 'pitAutoFuel',
+  autoTires: 'pitAutoTires',
+  autoTireWearThreshold: 'pitAutoTireWearThreshold',
+  fuelAdjustStep: 'pitFuelAdjustStep',
+};
+
+/**
+ * The pit-service instance whose settings sent the order: in the active layout
+ * (else the first), a physical display ahead of a browser screen, a switched-on
+ * instance ahead of one that is off. Falls back to the template.
+ */
+const pitStrategySource = (
+  blob: SettingsBlob
+): Record<string, unknown> | undefined => {
+  const layouts = asArray<unknown>(blob['layouts'])
+    .map(asObject)
+    .filter((layout): layout is Record<string, unknown> => !!layout);
+  const layout =
+    layouts.find((entry) => entry['id'] === blob['activeLayoutId']) ??
+    layouts[0];
+  const monitors = asArray<unknown>(layout?.['monitors'])
+    .map(asObject)
+    .filter((monitor): monitor is Record<string, unknown> => !!monitor);
+  const instancesOn = (isRemote: boolean) =>
+    monitors
+      .filter((monitor) => (monitor['kind'] === 'remote') === isRemote)
+      .flatMap((monitor) => asArray<StoredBlobWidget>(monitor['widgets']))
+      .filter((widget) => asObject(widget)?.type === PIT_SERVICE_TYPE);
+  const instances = [...instancesOn(false), ...instancesOn(true)];
+  const picked =
+    instances.find((widget) => widget['enabled'] === true) ?? instances[0];
+
+  if (picked) {
+    return asObject(picked.settings);
+  }
+
+  const template = asObject(
+    asObject(blob['widgetTemplates'])?.[PIT_SERVICE_TYPE]
+  );
+
+  return asObject(template?.['settings']);
+};
+
+const liftPitStrategy = (blob: SettingsBlob): SettingsBlob => {
+  const source = pitStrategySource(blob) ?? {};
+  const app = { ...(asObject(blob['app']) ?? {}) };
+
+  for (const [widgetKey, appKey] of Object.entries(PIT_STRATEGY_KEYS)) {
+    if (widgetKey in source && !(appKey in app)) {
+      app[appKey] = source[widgetKey];
+    }
+  }
+
+  const lifted = dropStoredWidgetSettings(
+    blob,
+    PIT_SERVICE_TYPE,
+    Object.keys(PIT_STRATEGY_KEYS)
+  );
+
+  return Object.keys(app).length > 0 || 'app' in blob
+    ? { ...lifted, app }
+    : lifted;
+};
+
 export const v6PerMonitorWidgets: Migration = {
   to: 6,
-  describe: 'widgets stored under the monitor they belong to',
+  describe:
+    'widgets stored under the monitor they belong to; pit strategy moved to app',
   migrate: (blob: SettingsBlob): SettingsBlob => {
     const { defaultWidgets, ...migrated }: SettingsBlob = { ...blob };
 
@@ -266,6 +347,6 @@ export const v6PerMonitorWidgets: Migration = {
       migrated['widgetTemplates'] = toTemplates(defaultWidgets);
     }
 
-    return migrated;
+    return liftPitStrategy(migrated);
   },
 };

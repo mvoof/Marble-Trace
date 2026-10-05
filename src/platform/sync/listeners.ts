@@ -9,6 +9,7 @@ import {
   type UnlistenFn,
 } from '@platform/services/events.service';
 import type { AppLanguage, UnitSystem } from '@/types';
+import type { PitStrategy } from '@/types/pit-strategy';
 import type { SessionContext } from '@/types/widget-settings';
 import type { RendererCore } from '@store/renderer-core';
 import {
@@ -122,6 +123,12 @@ export const setupOverlayListeners = async (
   unlistens.push(
     await listenTo<number>('steering-lock-changed', (e) => {
       runInAction(() => root.appSettings.setSteeringLock(e.payload));
+    })
+  );
+
+  unlistens.push(
+    await listenTo<PitStrategy>('pit-strategy-changed', (e) => {
+      runInAction(() => root.appSettings.setPitStrategy(e.payload));
     })
   );
 

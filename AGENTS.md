@@ -482,7 +482,7 @@ listenTo('event-name', (e) => runInAction(() => (store.value = e.payload)));
 An overlay-synced value is assigned to the sub-store data **directly, never via a
 setter** — a setter bumps `changeToken` and echoes the settings back to main.
 
-Synced events: `drag-mode-changed`, `hide-all-widgets-changed`, `hide-widgets-when-game-closed-changed`, `units-changed`, `widget-settings-updated` (debounced 16 ms), `track-rotation-changed`, `track-map:force-start-pending-changed`, `overlay-monitor-changed`, `session-layouts-changed`, `auto-switch-layouts-changed`.
+Synced events: `drag-mode-changed`, `hide-all-widgets-changed`, `hide-widgets-when-game-closed-changed`, `units-changed`, `pit-strategy-changed`, `widget-settings-updated` (debounced 16 ms), `track-rotation-changed`, `track-map:force-start-pending-changed`, `overlay-monitor-changed`, `session-layouts-changed`, `auto-switch-layouts-changed`.
 
 ### Remote screens
 
@@ -759,6 +759,12 @@ screen with its own columns and its own scale.
 | `id`      | the instance. Unique within the layout; what every record, patch and selection is addressed by         |
 | `type`    | the widget it is an instance of — manifest, component, shipped defaults, layout resolver. Always set   |
 | `monitor` | the monitor it belongs to. Absent only on templates and on the detached map of a window with no layout |
+
+**A widget setting is a per-screen setting.** Only what may differ between
+two screens showing the same widget belongs in its `settings`. Anything that
+acts on the car or the sim — the pit strategy (`types/pit-strategy.ts`), the
+car length — lives in `appSettings`, edited under Settings, and is mirrored to
+the overlays and the remote snapshot.
 
 No instance is special. The record whose `id` equals its type is simply the
 first one a layout got; it may be moved, switched off or deleted like any

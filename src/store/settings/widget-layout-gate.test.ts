@@ -71,10 +71,8 @@ describe('isWidgetOnScreen', () => {
 
   it('takes pit-service auto mode down with the layout switch', () => {
     runInAction(() => {
-      root.liveWidgets.updateUserSettings('pit-service', {
-        autoFuel: true,
-        autoTires: false,
-      });
+      root.appSettings.setPitAutoFuel(true);
+      root.appSettings.setPitAutoTires(false);
     });
 
     expect(root.pitServiceWidget.auto.isAutoEnabled).toBe(true);

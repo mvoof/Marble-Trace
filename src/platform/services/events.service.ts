@@ -10,6 +10,7 @@ import {
   listOverlayWindowLabels,
   monitorLabel,
 } from '@platform/sync/overlay-labels';
+import type { PitStrategy } from '@/types/pit-strategy';
 import type { AppLanguage, UnitSystem } from '@/types';
 import type {
   LayoutMonitor,
@@ -103,6 +104,9 @@ export const emitUnitsChanged = (system: UnitSystem) =>
 
 export const emitSteeringLockChanged = (degrees: number) =>
   emitToOverlays('steering-lock-changed', degrees);
+
+export const emitPitStrategyChanged = (strategy: PitStrategy) =>
+  emitToOverlays('pit-strategy-changed', strategy);
 
 export const emitLanguageChanged = (language: AppLanguage) =>
   emitToOverlays('language-changed', language);

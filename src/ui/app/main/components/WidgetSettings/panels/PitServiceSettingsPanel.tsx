@@ -1,11 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Segmented, Slider, Switch } from 'antd';
-import type {
-  FuelAdjustStep,
-  PitServiceWidgetSettings,
-} from '@/types/widget-settings';
-import { FUEL_ADJUST_STEPS } from '@/types/widget-settings';
+import { Slider, Switch } from 'antd';
+import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
@@ -13,12 +9,6 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows, usePanelWidgetId } from './setting-rows';
 import { useUnitsStore } from '@store/root-store-context';
 import { distanceScale } from './distance-scale';
-
-// Remaining tread, in percent. Above 90 every fresh set would be ordered and
-// below 10 the tires are already gone, so neither end is worth offering.
-const WEAR_THRESHOLD_MIN_PCT = 10;
-const WEAR_THRESHOLD_MAX_PCT = 90;
-const WEAR_THRESHOLD_STEP_PCT = 5;
 
 // The pit entry countdown. Below 100 m the box arrives after the braking, and
 // past 1 km it is up for most of a lap on a short track. Zero switches it off.
@@ -40,7 +30,7 @@ const REVEAL_STEP_S = 1;
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['pit-service'];
 
-const { DependentBlock, SwitchRow } = panelRows<PitServiceWidgetSettings>();
+const { SwitchRow } = panelRows<PitServiceWidgetSettings>();
 
 export const PitServiceSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -178,64 +168,14 @@ export const PitServiceSettingsPanel = observer(() => {
         </div>
       </Card>
 
+      {/*
+        The auto-mode rules and the fuel key step are the car's, not this
+        screen's: they live under Settings, and this card only says so — a
+        panel on a stream screen used to offer them and ignore them.
+      */}
       <Card title={t('settingsPanels.pitService.commands')}>
-        {/*
-          Auto mode has no master switch: it is on exactly when it has something
-          to order, so these two toggles are the whole of it.
-        */}
-        <SwitchRow
-          settingKey="autoFuel"
-          title={t('settingsPanels.pitService.autoFuel')}
-          desc={t('settingsPanels.pitService.autoFuelDesc')}
-        />
-
-        <SwitchRow
-          settingKey="autoTires"
-          title={t('settingsPanels.pitService.autoTires')}
-          desc={t('settingsPanels.pitService.autoTiresDesc')}
-        />
-
-        <DependentBlock dependsOn="autoTires">
-          <div className={styles.fieldLabel}>
-            {t('settingsPanels.pitService.autoTireWearThreshold', {
-              percent: settings.autoTireWearThreshold,
-            })}
-          </div>
-
-          <Slider
-            min={WEAR_THRESHOLD_MIN_PCT}
-            max={WEAR_THRESHOLD_MAX_PCT}
-            step={WEAR_THRESHOLD_STEP_PCT}
-            value={settings.autoTireWearThreshold}
-            onChange={(value) => update({ autoTireWearThreshold: value })}
-          />
-        </DependentBlock>
-
-        {/*
-          Not gated on auto mode: the step belongs to the fuel up / down keys,
-          which are the driver's own hands and work whether auto mode is on or
-          not.
-        */}
-        <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.pitService.fuelAdjustStep')}
-          </span>
-
-          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-            {t('settingsPanels.pitService.fuelAdjustStepDesc')}
-          </div>
-
-          <Segmented
-            block
-            value={settings.fuelAdjustStep}
-            options={FUEL_ADJUST_STEPS.map((step) => ({
-              label: String(step),
-              value: step,
-            }))}
-            onChange={(value) =>
-              update({ fuelAdjustStep: value as FuelAdjustStep })
-            }
-          />
+        <div className={styles.fieldDesc}>
+          {t('settingsPanels.pitService.strategyMoved')}
         </div>
       </Card>
     </>
