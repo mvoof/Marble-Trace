@@ -78,6 +78,7 @@ One row per measurement. Later tickets add rows here.
 | 2026-10-04 | `refactor/architecture-rework` @ 9eae162e (ticket 06) + harness of 07 | widgets     | 2048 / 903    | 1060          | 12.01 / 12.08 | 7542      | 1.1            | 1.3 / 0.9           | before 07; first paint 1592 / 1812 ms, heap 15.17 / 15.25 MiB      |
 | 2026-10-04 | same + ticket 07                                                      | widgets     | 770 / 775     | 1059          | 12.50 / 12.33 | 7572      | 0.9            | 1.0 / 0.9           | after 07; first paint 1664 / 1600 ms, heap 13.16 / 13.23 MiB       |
 | 2026-10-05 | `refactor/architecture-rework` @ deb97eee + ticket 11                 | widgets     | 570 / 575     | 761           | 9.42 / 9.41   | 7405      | 0.7            | 1.0 / 0.7           | static driver fields off `DriverEntry`; first paint 1616 / 1624 ms |
+| 2026-10-05 | `refactor/architecture-rework` @ 34693683 + ticket 26                 | widgets     | 536 / 542     | 761           | 5.08 / 5.09   | 1009      | 0.8            | 1.2 / 1.0           | identity/join caches, track-map dots via SVG DOM                   |
 
 ## 2026-10-04 — baseline (ticket 01)
 
@@ -322,3 +323,43 @@ is in "other" here: V8 charges a builtin's allocations to its caller
 What the numbers also say: the transport's whole cost on the overlay is
 1.65 MiB/s. Reactions and React, which a binary transport does not touch, are
 7.0 MiB/s; `carIdentityOf` alone (2.05 MiB/s) allocates more than the parse.
+
+## 2026-10-05 — reaction and render allocations (ticket 26)
+
+Code `refactor/architecture-rework` @ 34693683 + ticket 26, a fresh `--build`.
+Tape, offset, layout and command as in ticket 12. Measured in three steps, each
+two runs plus a 30 s heap profile, so each change carries its own number:
+
+| step                                                    | alloc (MiB/s) | DOM mutations/s |
+| ------------------------------------------------------- | ------------- | --------------- |
+| before (ticket 12)                                      | 9.39 / 9.44   | 7400            |
+| identity without spread + `delete`, caches, `speed` out | 6.54 / 6.52   | 7400            |
+| track-map dots placed through `transform.baseVal`       | 5.41 / 5.48   | 1009            |
+| the dots' `SVGTransform` items held instead of re-read  | 5.08 / 5.09   | 1009            |
+
+| allocating source (self)          | before (12) | after |
+| --------------------------------- | ----------- | ----- |
+| `utils/car-identity.ts`           | 2.05        | 0.35  |
+| `TrackMapSvg.tsx`                 | 1.89        | 0.56  |
+| `store/data/driver-entry-join.ts` | 0.49        | 0.56  |
+| event payload literal             | 2.46        | 1.99  |
+
+- **`speed` was in the identity.** It moves every tick, so the standings and
+  relative identities compared unequal on every 10 Hz frame and the content
+  comparison bought nothing: every subscriber re-rendered anyway. It is a
+  moving field now; the one reader (wheel-to-wheel) reads full entries.
+- **The identity is copied, not spread and `delete`d**, and a car whose drawn
+  fields did not change keeps last frame's object (`CarIdentityCache`), so the
+  identity lists compare by reference (`comparer.shallow`).
+- **The join reuses a row** while neither the car's live entry nor its roster
+  entry changed. On this tape almost every car moves every frame, so the join
+  allocates what it did (0.49 → 0.56, within the profile's noise); the reuse
+  pays for parked and retired cars.
+- **Track-map dots** no longer build a `translate(x, y) rotate(r)` string per
+  car per frame (×2 instances at 60 Hz); positions go through a reused
+  `Float64Array` into each dot's own `SVGTransform` items, and the dot list is
+  a live `getElementsByClassName` collection instead of a fresh
+  `querySelectorAll`. The engine writes the attribute back lazily, which is
+  also why the overlay's DOM mutation records fell from 7400 to 1009 per
+  second — the dots are still moved every frame (checked live).
+- Apply p99 0.7 → 0.8 ms is one 0.1 ms timer step; tick p99 unchanged.

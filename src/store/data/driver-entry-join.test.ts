@@ -6,6 +6,7 @@ import type {
 } from '@/types/bindings';
 
 import {
+  DriverEntryJoin,
   joinDriverEntries,
   liveDriverEntryOf,
   rosterByCarIdx,
@@ -94,5 +95,45 @@ describe('splitting a row back into its halves', () => {
 
     expect(live).toEqual(makeLive(2));
     expect(joinDriverEntries([live], rosterByCarIdx([car]))).toEqual([row]);
+  });
+});
+
+describe('DriverEntryJoin', () => {
+  it('keeps the row of a car whose entries did not change', () => {
+    const join = new DriverEntryJoin();
+    const roster = rosterByCarIdx([makeCar(1), makeCar(2)]);
+    const [firstParked, firstMoving] = join.join(
+      [makeLive(1), makeLive(2)],
+      roster
+    );
+    const [parked, moving] = join.join(
+      [makeLive(1), { ...makeLive(2), lapDistPct: 0.6 }],
+      roster
+    );
+
+    expect(parked).toBe(firstParked);
+    expect(moving).not.toBe(firstMoving);
+    expect(moving.lapDistPct).toBe(0.6);
+  });
+
+  it('rebuilds a row when the roster entry is replaced', () => {
+    const join = new DriverEntryJoin();
+    const [before] = join.join([makeLive(1)], rosterByCarIdx([makeCar(1)]));
+    const [after] = join.join(
+      [makeLive(1)],
+      rosterByCarIdx([makeCar(1, { userName: 'Renamed' })])
+    );
+
+    expect(after).not.toBe(before);
+    expect(after.userName).toBe('Renamed');
+  });
+
+  it('joins the same rows as the stateless join', () => {
+    const roster = rosterByCarIdx([makeCar(1), makeCar(3)]);
+    const entries = [makeLive(1), makeLive(2), makeLive(3)];
+
+    expect(new DriverEntryJoin().join(entries, roster)).toEqual(
+      joinDriverEntries(entries, roster)
+    );
   });
 });

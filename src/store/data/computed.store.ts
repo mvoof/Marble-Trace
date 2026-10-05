@@ -1,4 +1,4 @@
-import { computed, makeAutoObservable, observable } from 'mobx';
+import { comparer, computed, makeAutoObservable, observable } from 'mobx';
 
 import type {
   CarEntry,
@@ -15,9 +15,9 @@ import type {
 } from '@/types/bindings';
 import type { CarIdentity } from '@/types/car-identity';
 import type { DriverEntry } from '@/types/driver-entry';
-import { carIdentityOf } from '@utils/car-identity';
+import { CarIdentityCache } from '@utils/car-identity';
 
-import { joinDriverEntries, rosterByCarIdx } from './driver-entry-join';
+import { DriverEntryJoin, rosterByCarIdx } from './driver-entry-join';
 import type { SessionStore } from './session.store';
 
 export class BackendComputedStore {
@@ -62,14 +62,33 @@ export class BackendComputedStore {
    */
   slowCarClassCount = 0;
 
+  // Memo caches for the derivations below, not state: each hands back last
+  // call's object for a car that did not change, so a frame allocates only
+  // for the cars that moved.
+  private readonly fieldJoin = new DriverEntryJoin();
+  private readonly relativeJoin = new DriverEntryJoin();
+  private readonly fieldIdentityCache = new CarIdentityCache();
+  private readonly relativeIdentityCache = new CarIdentityCache();
+
   // Every telemetry frame is replaced wholesale — nothing ever mutates one in
   // place — so `observable.ref` is all the reactivity these need. Deep
   // observability would rebuild a proxy for each frame, and for the per-car
   // arrays it would convert ~15 arrays of 64 entries on every tick, purely to
   // observe fields nobody writes.
   constructor(private readonly session: SessionStore) {
-    makeAutoObservable<this, 'session'>(this, {
+    makeAutoObservable<
+      this,
+      | 'session'
+      | 'fieldJoin'
+      | 'relativeJoin'
+      | 'fieldIdentityCache'
+      | 'relativeIdentityCache'
+    >(this, {
       session: false,
+      fieldJoin: false,
+      relativeJoin: false,
+      fieldIdentityCache: false,
+      relativeIdentityCache: false,
       proximity: observable.ref,
       fuel: observable.ref,
       relative: observable.ref,
@@ -87,11 +106,12 @@ export class BackendComputedStore {
       // Rebuilt when the session roster is, not when a frame arrives.
       roster: computed,
       // The per-car frames are replaced on every tick, but all a row or a dot
-      // draws apart from four numbers stays put for a whole lap. Compared by
-      // content, these wake a widget when a car actually changes rather than
-      // sixty times a second — see `docs/rendering.md`.
-      driverIdentities: computed.struct,
-      relativeIdentities: computed.struct,
+      // draws apart from a few numbers stays put for a whole lap. The cache
+      // hands back the same object for a car that did not change, so the list
+      // compares by reference, and wakes a widget when a car actually changes
+      // rather than on every tick — see `docs/rendering.md`.
+      driverIdentities: computed({ equals: comparer.shallow }),
+      relativeIdentities: computed({ equals: comparer.shallow }),
     });
   }
 
@@ -155,12 +175,12 @@ export class BackendComputedStore {
    * Heavy and replaced on every frame — read it where `driverEntries` may be.
    */
   get fieldEntries(): DriverEntry[] {
-    return joinDriverEntries(this.driverEntries?.entries ?? [], this.roster);
+    return this.fieldJoin.join(this.driverEntries?.entries ?? [], this.roster);
   }
 
   /** The standings field as it is drawn, without the numbers that move. */
   get driverIdentities(): CarIdentity[] {
-    return this.fieldEntries.map(carIdentityOf);
+    return this.fieldIdentityCache.identitiesOf(this.fieldEntries);
   }
 
   /**
@@ -173,12 +193,12 @@ export class BackendComputedStore {
 
   /** The relative field as it is drawn, without the numbers that move. */
   get relativeIdentities(): CarIdentity[] {
-    return this.relativeEntries.map(carIdentityOf);
+    return this.relativeIdentityCache.identitiesOf(this.relativeEntries);
   }
 
   /** The relative field, joined with the roster like `fieldEntries`. */
   get relativeEntries(): DriverEntry[] {
-    return joinDriverEntries(this.relative?.entries ?? [], this.roster);
+    return this.relativeJoin.join(this.relative?.entries ?? [], this.roster);
   }
 
   updateRelative(frame: RelativeFrame) {
@@ -229,5 +249,9 @@ export class BackendComputedStore {
     this.lapHistory = [];
     this.lastCompletedLap = null;
     this.slowCarClassCount = 0;
+    this.fieldJoin.clear();
+    this.relativeJoin.clear();
+    this.fieldIdentityCache.clear();
+    this.relativeIdentityCache.clear();
   }
 }

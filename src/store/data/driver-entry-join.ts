@@ -30,6 +30,23 @@ export const rosterByCarIdx = (cars: CarEntry[]): Map<number, CarEntry> => {
   return roster;
 };
 
+const joinedRowOf = (entry: LiveDriverEntry, car: CarEntry): DriverEntry => ({
+  ...entry,
+  userName: car.userName,
+  carNumber: car.carNumber,
+  carClassId: car.carClassId,
+  carClassShortName: car.carClassShortName,
+  carClassColor: car.carClassColor,
+  carScreenName: car.carScreenName,
+  carScreenNameShort: car.carScreenNameShort,
+  flairId: car.flairId,
+  isAi: car.isAi,
+  iRating: car.iRating,
+  licString: car.licString || DEFAULT_LIC_STRING,
+  licColor: car.licColor || DEFAULT_LIC_COLOR,
+  incidents: car.incidentCount,
+});
+
 /**
  * The live entries with each car's session fields put back on. An entry whose
  * car the roster does not hold yet — a frame that arrived a tick ahead of the
@@ -45,30 +62,83 @@ export const joinDriverEntries = (
   for (const entry of entries) {
     const car = roster.get(entry.carIdx);
 
-    if (!car) {
-      continue;
+    if (car) {
+      joined.push(joinedRowOf(entry, car));
     }
-
-    joined.push({
-      ...entry,
-      userName: car.userName,
-      carNumber: car.carNumber,
-      carClassId: car.carClassId,
-      carClassShortName: car.carClassShortName,
-      carClassColor: car.carClassColor,
-      carScreenName: car.carScreenName,
-      carScreenNameShort: car.carScreenNameShort,
-      flairId: car.flairId,
-      isAi: car.isAi,
-      iRating: car.iRating,
-      licString: car.licString || DEFAULT_LIC_STRING,
-      licColor: car.licColor || DEFAULT_LIC_COLOR,
-      incidents: car.incidentCount,
-    });
   }
 
   return joined;
 };
+
+interface JoinedRow {
+  live: LiveDriverEntry;
+  car: CarEntry;
+  row: DriverEntry;
+}
+
+const isSameLiveEntry = (
+  previous: LiveDriverEntry,
+  next: LiveDriverEntry
+): boolean => {
+  for (const field in next) {
+    if (
+      previous[field as keyof LiveDriverEntry] !==
+      next[field as keyof LiveDriverEntry]
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+/**
+ * `joinDriverEntries` that keeps each car's row from the last call while
+ * neither its live entry nor its roster entry changed. Repeat suppression
+ * keeps an unchanged frame off the wire, but a frame in which one car moved
+ * still carries all of them — a parked or retired car keeps its row here.
+ */
+export class DriverEntryJoin {
+  private readonly byCarIdx = new Map<number, JoinedRow>();
+
+  join(
+    entries: LiveDriverEntry[],
+    roster: ReadonlyMap<number, CarEntry>
+  ): DriverEntry[] {
+    const joined: DriverEntry[] = [];
+
+    for (const entry of entries) {
+      const car = roster.get(entry.carIdx);
+
+      if (!car) {
+        continue;
+      }
+
+      const previous = this.byCarIdx.get(entry.carIdx);
+
+      if (
+        previous &&
+        previous.car === car &&
+        isSameLiveEntry(previous.live, entry)
+      ) {
+        joined.push(previous.row);
+
+        continue;
+      }
+
+      const row = joinedRowOf(entry, car);
+
+      this.byCarIdx.set(entry.carIdx, { live: entry, car, row });
+      joined.push(row);
+    }
+
+    return joined;
+  }
+
+  clear() {
+    this.byCarIdx.clear();
+  }
+}
 
 /** The wire half of a row: what the backend sends for it every tick. */
 export const liveDriverEntryOf = (row: DriverEntry): LiveDriverEntry => {

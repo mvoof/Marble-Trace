@@ -65,6 +65,74 @@ const CIRCLE_OPACITY_PROPERTY = '--follow-circle-opacity';
 const DEFAULT_CIRCLE_COLOR = '#09090b';
 const DEFAULT_CIRCLE_OPACITY = 0.85;
 
+/** Two slots per car in the position buffer: x, then y. */
+const COORDS_PER_CAR = 2;
+/** A car with no position this frame — off the world, or no track yet. */
+const NO_POSITION = Number.NaN;
+
+interface DotTransforms {
+  translate: SVGTransform;
+  upright: SVGTransform;
+}
+
+/**
+ * Each dot's two list items, held once: the engine hands out a new wrapper on
+ * every `baseVal` and `getItem`, and one stays bound to its item for as long
+ * as the item is in the list.
+ */
+const dotTransforms = new WeakMap<SVGGElement, DotTransforms>();
+
+const transformsOf = (dot: SVGGElement): DotTransforms | null => {
+  const held = dotTransforms.get(dot);
+
+  if (held) {
+    return held;
+  }
+
+  const svg = dot.ownerSVGElement;
+
+  if (!svg) {
+    return null;
+  }
+
+  const list = dot.transform.baseVal;
+  const translate = svg.createSVGTransform();
+  const upright = svg.createSVGTransform();
+
+  list.clear();
+  // `appendItem` inserts the object it is given, so the two held here are
+  // the list's own items.
+  const transforms = {
+    translate: list.appendItem(translate),
+    upright: list.appendItem(upright),
+  };
+
+  dotTransforms.set(dot, transforms);
+
+  return transforms;
+};
+
+/**
+ * Places a dot through the SVG DOM rather than a `transform` string: at 60 Hz
+ * for every car the strings were most of what the overlay allocated. The list
+ * holds a translate and the counter-rotation that keeps the dot upright.
+ */
+const placeDot = (
+  dot: SVGGElement,
+  x: number,
+  y: number,
+  uprightDeg: number
+) => {
+  const transforms = transformsOf(dot);
+
+  if (!transforms) {
+    return;
+  }
+
+  transforms.translate.setTranslate(x, y);
+  transforms.upright.setRotate(uprightDeg, 0, 0);
+};
+
 export const TrackMapSvg = observer(
   ({
     svgPath,
@@ -94,6 +162,8 @@ export const TrackMapSvg = observer(
   }: TrackMapSvgProps) => {
     const carsStore = useCarsStore();
     const computed = useBackendComputedStore();
+    // Reused across frames: the draw reaction fills it, the write reads it.
+    const dotPositionsRef = useRef(new Float64Array(0));
 
     const playerCar = cars.find((c) => c.isPlayer);
     const playerClassId = playerCar?.carClassId ?? -1;
@@ -150,20 +220,30 @@ export const TrackMapSvg = observer(
           return SCREEN_UP_DEG - headingDeg;
         })();
 
-        const uprightTransform =
-          screenRotation === 0 ? '' : ` rotate(${-screenRotation})`;
+        const uprightDeg = -screenRotation;
+        const bufferLength = cars.length * COORDS_PER_CAR;
 
-        const carTransforms = cars.map((car) => {
-          const pct = lapDistPctOf(car.carIdx);
+        if (dotPositionsRef.current.length !== bufferLength) {
+          dotPositionsRef.current = new Float64Array(bufferLength);
+        }
+
+        const dotPositions = dotPositionsRef.current;
+
+        for (let carIndex = 0; carIndex < cars.length; carIndex++) {
+          const slot = carIndex * COORDS_PER_CAR;
+          const pct = lapDistPctOf(cars[carIndex].carIdx);
 
           if (points.length === 0 || pct < 0) {
-            return null;
+            dotPositions[slot] = NO_POSITION;
+
+            continue;
           }
 
           const { x, y } = getPointAtPct(points, pct);
 
-          return `translate(${x}, ${y})${uprightTransform}`;
-        });
+          dotPositions[slot] = x;
+          dotPositions[slot + 1] = y;
+        }
 
         scheduleWrite(() => {
           element.setAttribute('viewBox', nextViewBox);
@@ -172,7 +252,7 @@ export const TrackMapSvg = observer(
             `${screenRotation}deg`
           );
 
-          const content = element.querySelector(`.${styles.content}`);
+          const content = element.getElementsByClassName(styles.content)[0];
 
           if (content instanceof SVGGElement) {
             if (screenRotation === 0) {
@@ -185,19 +265,33 @@ export const TrackMapSvg = observer(
             }
           }
 
-          const dots = element.querySelectorAll(`.${styles.carDot}`);
+          // A live collection the engine keeps per class name, where
+          // `querySelectorAll` would build a new list every frame.
+          const dots = element.getElementsByClassName(styles.carDot);
+          const carCount = dotPositions.length / COORDS_PER_CAR;
 
-          for (const [dotIndex, transform] of carTransforms.entries()) {
+          for (let dotIndex = 0; dotIndex < carCount; dotIndex++) {
             const dot = dots[dotIndex];
 
             if (!(dot instanceof SVGGElement)) {
               continue;
             }
 
-            dot.style.display = transform === null ? 'none' : '';
+            const x = dotPositions[dotIndex * COORDS_PER_CAR];
+            const isPlaced = !Number.isNaN(x);
+            const display = isPlaced ? '' : 'none';
 
-            if (transform !== null) {
-              dot.setAttribute('transform', transform);
+            if (dot.style.display !== display) {
+              dot.style.display = display;
+            }
+
+            if (isPlaced) {
+              placeDot(
+                dot,
+                x,
+                dotPositions[dotIndex * COORDS_PER_CAR + 1],
+                uprightDeg
+              );
             }
           }
         });
