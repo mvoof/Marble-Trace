@@ -37,10 +37,12 @@ import {
 import {
   useAppSettingsStore,
   useLayoutsStore,
-  useLiveWidgetsStore,
-  useLayoutGestureStores,
 } from '@store/root-store-context';
-import { useLayoutEditorStore } from '@store/main-root-context';
+import {
+  useLayoutEditorStore,
+  useLayoutGestureStores,
+  useMainLiveWidgetsStore,
+} from '@store/main-root-context';
 import {
   SESSION_PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -93,7 +95,7 @@ export const LayoutEditor = observer(
     mode?: 'list' | 'editor';
     onModeChange?: (mode: 'list' | 'editor') => void;
   }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const layouts = useLayoutsStore();
     const { modal } = App.useApp();
     const gestureStores = useLayoutGestureStores();

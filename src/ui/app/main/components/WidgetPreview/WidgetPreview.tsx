@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { RendererCore } from '@store/renderer-core';
+import { PreviewCore } from '@store/renderer-core';
 import { RendererCoreContext, useUnitsStore } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
@@ -33,10 +33,7 @@ export const WidgetPreview = observer(
     const units = useUnitsStore();
     const { t } = useTranslation('main-app');
 
-    const previewStore = useMemo(
-      () => new RendererCore({ skipInit: true }),
-      []
-    );
+    const previewStore = useMemo(() => new PreviewCore(), []);
 
     useEffect(() => () => previewStore.dispose(), [previewStore]);
 

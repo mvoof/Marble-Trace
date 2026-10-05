@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
-import { RendererCore } from '@store/renderer-core';
+import { PreviewCore } from '@store/renderer-core';
 import { StreamChatWidgetStore } from './stream-chat.widget';
 import type { ChatMessage, ChatPlatform } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
@@ -23,7 +23,7 @@ const makeMessage = (
 });
 
 describe('StreamChatWidgetStore', () => {
-  let rootStore: RendererCore;
+  let rootStore: PreviewCore;
   let chatWidget: StreamChatWidgetStore;
 
   const setSettings = (partial: Partial<StreamChatWidgetSettings>) => {
@@ -47,7 +47,7 @@ describe('StreamChatWidgetStore', () => {
   };
 
   beforeEach(() => {
-    rootStore = new RendererCore({ skipInit: true });
+    rootStore = new PreviewCore();
     chatWidget = new StreamChatWidgetStore({
       core: rootStore,
       instanceId: 'stream-chat',
@@ -257,10 +257,10 @@ describe('StreamChatWidgetStore', () => {
 });
 
 describe('ChatStore', () => {
-  let rootStore: RendererCore;
+  let rootStore: PreviewCore;
 
   beforeEach(() => {
-    rootStore = new RendererCore({ skipInit: true });
+    rootStore = new PreviewCore();
   });
 
   it('merges presence so a status update keeps the last viewer count', () => {

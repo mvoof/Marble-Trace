@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
-import { RendererCore } from '@store/renderer-core';
+import { PreviewCore } from '@store/renderer-core';
 import type { WidgetStoreFactory } from '@store/widgets/widget-instances';
 import type { CarInputsFrame } from '@/types/bindings';
 import { InputTraceWidgetStore } from './input-trace.widget';
@@ -11,7 +11,7 @@ const createInputTrace: WidgetStoreFactory = (context) =>
   new InputTraceWidgetStore(context);
 
 describe('InputTraceWidgetStore — frameTick', () => {
-  let core: RendererCore;
+  let core: PreviewCore;
   let inputTrace: InputTraceWidgetStore;
 
   const pushFrame = (throttle: number) => {
@@ -21,7 +21,7 @@ describe('InputTraceWidgetStore — frameTick', () => {
   };
 
   beforeEach(() => {
-    core = new RendererCore({ skipInit: true });
+    core = new PreviewCore();
     inputTrace = core.widgetInstances.open(
       { core, instanceId: INPUT_TRACE, type: INPUT_TRACE },
       createInputTrace

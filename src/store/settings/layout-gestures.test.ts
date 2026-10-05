@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-import { RendererCore } from '@store/renderer-core';
-import { layoutGestureStores } from '@store/root-store-context';
+import { PreviewCore } from '@store/renderer-core';
+import { layoutGestureStores } from '@store/main-root-context';
 
 import { alignMonitorsToHardware, removeMonitor } from './layout-gestures';
 
@@ -41,10 +41,10 @@ const ON_RIGHT_X = 2400;
  * normalizes it.
  */
 describe('gestures that rebuild a widget list', () => {
-  let root: RendererCore;
+  let root: PreviewCore;
 
   beforeEach(() => {
-    root = new RendererCore({ skipInit: true });
+    root = new PreviewCore();
 
     root.liveWidgets.setLayouts(
       [

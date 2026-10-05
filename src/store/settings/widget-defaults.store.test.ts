@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
-import { RendererCore } from '../renderer-core';
+import { PreviewCore } from '../renderer-core';
 import { DEFAULT_WIDGETS } from '../widget-catalog';
 import type { CapabilitiesPayload } from '@/types/bindings';
 
@@ -18,10 +18,10 @@ const FULL_CAPABILITIES: CapabilitiesPayload = {
 };
 
 describe('WidgetDefaultsStore catalog', () => {
-  let rootStore: RendererCore;
+  let rootStore: PreviewCore;
 
   beforeEach(() => {
-    rootStore = new RendererCore({ skipInit: true });
+    rootStore = new PreviewCore();
     rootStore.liveWidgets.setLayouts(
       [
         {

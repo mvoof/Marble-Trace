@@ -60,7 +60,6 @@ import {
   SIM_TRACK_SHAPE,
   SIM_CAPABILITIES,
   SIM_REFERENCE_LAP_UPDATED,
-  TRACK_MAP_CLEAR,
 } from '@platform/sync/sim-events';
 
 /** The page every overlay window loads (`overlay-windows.ts`). */
@@ -591,16 +590,6 @@ export class SimStore {
 
         runInAction(() => {
           this.root.trackMapWidget.onTrackShapeReceived(event.payload);
-        });
-      })
-    );
-
-    this.unlistens.push(
-      await listenTo(TRACK_MAP_CLEAR, () => {
-        if (this.initId !== guardId) return;
-
-        runInAction(() => {
-          this.root.trackMapWidget.clearTrackShape();
         });
       })
     );

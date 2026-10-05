@@ -448,7 +448,10 @@ Hooks follow the roots. `root-store-context.ts` holds the core hooks
 (`RendererCoreContext`, typed `RendererCore`, so a main-only store is a type
 error there) and the two `AppWindowContext` hooks; `main-root-context.ts`,
 `overlay-root-context.ts` and `hud-root-context.ts` hold the rest. A preview
-overrides `RendererCoreContext` alone with a bare `RendererCore({ skipInit: true })`.
+overrides `RendererCoreContext` alone with a `PreviewCore`.
+The core holds the widget store as `LiveWidgetsView` — reads and snapshot
+installs, no settings write — so an overlay's write is a compile error; main
+writes through `useMainLiveWidgetsStore()`, a preview through its `PreviewCore`.
 `src/ui/{widgets,shared,hooks}` and the overlay, remote and diagnostics shells may
 not import `main-root`/`main-root-context` (`.oxlintrc.json`), and
 `store/overlay-root.test.ts` asserts an overlay constructs none of the main-only
@@ -552,13 +555,13 @@ main window.
   the editor hands the live layout back as the edited one. `editorPreviewMode`
   is derived from the two, not stored.
 - Geometry is read from and written to the **main** `LiveWidgetsStore`; widget
-  _content_ renders against an isolated `RendererCore({ skipInit: true })` seeded from
+  _content_ renders against an isolated `PreviewCore` seeded from
   `store/preview/scenarios.ts`, mirrored on `changeToken`.
 - The preview store must never persist anything — stores that own files take a flag
   from `skipInit` (`TrackMapWidgetStore({ persists })`).
 - The preview store is isolated, and `no-restricted-imports` over
   `src/store/preview/**` keeps it that way: a scenario or mock builder writes only
-  into the `RendererCore({ skipInit: true })` handed to it, so the context hooks in
+  into the `PreviewCore` handed to it, so the context hooks in
   `*-root-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are refused
   there (ADR-0004 rule 1).
 - The editor raises `dragMode` on the preview store, so in-place widget controls

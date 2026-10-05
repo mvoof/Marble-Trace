@@ -15,7 +15,7 @@ import {
   useSettingsMutationLog,
 } from '@store/root-store-context';
 import { useOverlayRoot } from '@store/overlay-root-context';
-import type { LiveWidgetsStore } from '@store/settings/live-widgets.store';
+import type { LiveWidgetsView } from '@store/settings/live-widgets.store';
 import type { SettingsMutationLog } from '@store/settings/mutation-log';
 import type { SettingsClientStore } from '@store/settings/settings-client.store';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
@@ -28,7 +28,7 @@ const MARGIN = 8;
 // The panels read the widget as drawn here — overrides included — and every
 // write goes to main as a command. Nothing in the popup writes the store.
 const overlayEditor = (
-  liveWidgets: LiveWidgetsStore,
+  liveWidgets: LiveWidgetsView,
   mutations: SettingsMutationLog,
   settingsClient: SettingsClientStore
 ): WidgetEditor => ({

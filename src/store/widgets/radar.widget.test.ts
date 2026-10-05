@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
 import { RendererCore } from '@store/renderer-core';
+import type { LiveWidgetsStore } from '@store/settings/live-widgets.store';
+
+// A running core whose widget settings the test writes, as main writes its own.
+type WritableCore = RendererCore & { liveWidgets: LiveWidgetsStore };
 import type { LateralSide, ProximityFrame } from '@/types/bindings';
 import type { ProximityRadarSettings } from '@/types/widget-settings';
 
@@ -35,7 +39,7 @@ const carAt = (longitudinalDist: number, lateralSide: LateralSide) => ({
 });
 
 describe('RadarWidgetStore activation', () => {
-  let rootStore: RendererCore;
+  let rootStore: WritableCore;
 
   const setProximity = (frame: Partial<ProximityFrame>) => {
     runInAction(() => {
@@ -71,7 +75,7 @@ describe('RadarWidgetStore activation', () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    rootStore = new RendererCore();
+    rootStore = new RendererCore() as WritableCore;
     rootStore.radar.init();
   });
 

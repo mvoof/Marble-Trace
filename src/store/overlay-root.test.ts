@@ -200,6 +200,19 @@ describe('window roots', () => {
     expect(overlay.telemetryInspector).toBeUndefined();
   });
 
+  // ADR-0007: an overlay changes a setting only by command, so a write reached
+  // from its root is a compile error rather than a silent fork of main.
+  it('reaches no settings write on the widget store, by type', () => {
+    const overlay = new OverlayRoot({ skipInit: true });
+
+    // @ts-expect-error — a drag is a command (`settingsClient.moveWidget`)
+    expect(typeof overlay.liveWidgets.updatePosition).toBe('function');
+    // @ts-expect-error — a popup edit is a command (`settingsClient.patchSettings`)
+    expect(typeof overlay.liveWidgets.updateUserSettings).toBe('function');
+    // @ts-expect-error — the F9 picker is a command too
+    expect(typeof overlay.liveWidgets.setTypeEnabledOnMonitor).toBe('function');
+  });
+
   it('a preview core constructs none of them either', () => {
     const preview = new RendererCore({ skipInit: true });
 

@@ -17,10 +17,8 @@ import type {
 } from '@/types/widget-settings';
 import type { MonitorWidgetRow } from '@store/settings/live-widgets.store';
 import { isRemoteMonitor } from '@utils/remote-screen';
-import {
-  useLayoutsStore,
-  useLiveWidgetsStore,
-} from '@store/root-store-context';
+import { useLayoutsStore } from '@store/root-store-context';
+import { useMainLiveWidgetsStore } from '@store/main-root-context';
 import styles from './LayoutWidgetPanel.module.scss';
 
 interface LayoutWidgetPanelProps {
@@ -38,7 +36,7 @@ interface SelectionProps {
  * it.
  */
 const HotkeyToggle = observer(({ widgetId }: { widgetId: string }) => {
-  const liveWidgets = useLiveWidgetsStore();
+  const liveWidgets = useMainLiveWidgetsStore();
   const { t } = useTranslation('main-app');
   const isOn = liveWidgets.hotkeysActOnWidget(widgetId);
   const label = isOn
@@ -91,7 +89,7 @@ const InstanceRow = observer(
     total: number;
     available: boolean;
   }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const { t } = useTranslation('main-app');
     const isSelected = selectedWidgetId === widget.id;
     const rowRef = useScrollIntoViewWhen(isSelected);
@@ -170,7 +168,7 @@ const WidgetTypeRow = observer(
     row: MonitorWidgetRow;
     monitorName: string;
   }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const { instances, available } = row;
     const [first] = instances;
     const isOn = instances.some((widget) => widget.userSettings.enabled);
@@ -245,7 +243,7 @@ const ScreenHeading = observer(
     isCollapsed: boolean;
     onToggle: () => void;
   }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const Icon = isRemoteMonitor(monitor) ? TabletSmartphone : Monitor;
     const Chevron = isCollapsed ? ChevronRight : ChevronDown;
     const switchedOn = liveWidgets.widgetsOnMonitorNamed(monitor.name).length;
@@ -276,7 +274,7 @@ const ScreenHeading = observer(
 
 const ScreenGroup = observer(
   ({ monitor, ...selection }: SelectionProps & { monitor: LayoutMonitor }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (

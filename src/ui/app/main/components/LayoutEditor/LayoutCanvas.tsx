@@ -18,16 +18,18 @@ import {
   Monitor,
   GripHorizontal,
 } from 'lucide-react';
-import { RendererCore } from '@store/renderer-core';
+import { PreviewCore } from '@store/renderer-core';
 import {
   RendererCoreContext,
   useSessionStore,
   useUnitsStore,
   useLayoutsStore,
-  useLiveWidgetsStore,
   useSettingsMutationLog,
 } from '@store/root-store-context';
-import { useTrackRotationStore } from '@store/main-root-context';
+import {
+  useMainLiveWidgetsStore,
+  useTrackRotationStore,
+} from '@store/main-root-context';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
@@ -61,7 +63,7 @@ import styles from './LayoutCanvas.module.scss';
  * much: a map turned in an overlay must already look turned when the editor
  * opens.
  */
-const useTrackRotationBridge = (previewStore: RendererCore) => {
+const useTrackRotationBridge = (previewStore: PreviewCore) => {
   const trackRotation = useTrackRotationStore();
   const sessionStore = useSessionStore();
 
@@ -112,7 +114,7 @@ interface LayoutCanvasProps {
 // canvas; only content-affecting settings need mirroring here.
 const mirrorAllWidgets = (
   source: WidgetDefaultConfig[],
-  previewStore: RendererCore
+  previewStore: PreviewCore
 ) => {
   const mirrored = source.map((widget) => ({
     ...widget,
@@ -240,7 +242,7 @@ export const LayoutCanvas = observer(
     isRatioLocked = false,
     focusedMonitorName = null,
   }: LayoutCanvasProps) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const settingsMutations = useSettingsMutationLog();
     const layouts = useLayoutsStore();
     const units = useUnitsStore();
@@ -249,10 +251,7 @@ export const LayoutCanvas = observer(
       ? monitors.find((monitor) => monitor.name === focusedMonitorName)
       : undefined;
     const { t } = useTranslation('main-app');
-    const previewStore = useMemo(
-      () => new RendererCore({ skipInit: true }),
-      []
-    );
+    const previewStore = useMemo(() => new PreviewCore(), []);
 
     const paneRef = useRef<HTMLDivElement | null>(null);
     const [paneSize, setPaneSize] = useState({ width: 0, height: 0 });

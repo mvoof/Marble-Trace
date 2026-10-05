@@ -1,4 +1,3 @@
-import type { LayoutGestureStores } from '@store/settings/layout-gestures';
 import { createContext, use } from 'react';
 import type { AppWindowStores } from './app-window-stores';
 import type { RendererCore } from './renderer-core';
@@ -11,8 +10,7 @@ import type { RendererCore } from './renderer-core';
  * `hud-root-context.ts`.
  *
  * A preview (layout canvas, widget preview, the overlay's drag-mode sample
- * session, Storybook) overrides this context alone, with a bare
- * `RendererCore({ skipInit: true })`.
+ * session, Storybook) overrides this context alone, with a `PreviewCore`.
  */
 export const RendererCoreContext = createContext<RendererCore | null>(null);
 
@@ -64,20 +62,6 @@ export const useLiveWidgetsStore = () => useStore().liveWidgets;
 export const useWidgetDefaultsStore = () => useStore().widgetDefaults;
 export const useLayoutsStore = () => useStore().layouts;
 
-/**
- * The two sides a layout gesture holds — see `layout-gestures.ts`. Handed out
- * together so a call site spells the coordination once rather than assembling
- * it from two hooks.
- */
-export const layoutGestureStores = (
-  root: RendererCore
-): LayoutGestureStores => ({
-  records: root.layouts,
-  widgetMap: root.liveWidgets,
-});
-
-export const useLayoutGestureStores = (): LayoutGestureStores =>
-  layoutGestureStores(useStore());
 export const useSettingsMutationLog = () => useStore().settingsMutations;
 export const useAppSettingsStore = () => useStore().appSettings;
 export const useUnitsStore = () => useStore().units;

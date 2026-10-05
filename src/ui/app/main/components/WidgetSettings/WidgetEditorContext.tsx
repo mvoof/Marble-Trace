@@ -8,11 +8,8 @@ import type {
 import type { LiveWidgetsStore } from '@store/settings/live-widgets.store';
 import type { WidgetDefaultsStore } from '@store/settings/widget-defaults.store';
 import type { SettingsMutationLog } from '@store/settings/mutation-log';
-import {
-  useWidgetDefaultsStore,
-  useLiveWidgetsStore,
-  useSettingsMutationLog,
-} from '@store/root-store-context';
+import { useWidgetDefaultsStore } from '@store/root-store-context';
+import { MainRootContext } from '@store/main-root-context';
 
 // A small editing target so the settings panels don't care WHAT they edit. The
 // Widgets catalog binds this to the global defaults, the F9 overlay popup to
@@ -54,13 +51,21 @@ const WidgetEditorContext = createContext<WidgetEditor | null>(null);
 
 export const useWidgetEditor = (): WidgetEditor => {
   const context = use(WidgetEditorContext);
-  const store = useLiveWidgetsStore();
-  const mutations = useSettingsMutationLog();
+  // Nullable on purpose: outside the main window (the overlay's popup) an
+  // editor is always provided, and the main root does not exist there.
+  const mainRoot = use(MainRootContext);
 
-  return useMemo(
-    () => context ?? liveEditor(store, mutations),
-    [context, store, mutations]
-  );
+  return useMemo(() => {
+    if (context) return context;
+
+    if (!mainRoot) {
+      throw new Error(
+        'A WidgetEditor must be provided outside the main window'
+      );
+    }
+
+    return liveEditor(mainRoot.liveWidgets, mainRoot.settingsMutations);
+  }, [context, mainRoot]);
 };
 
 // Binds descendant settings panels to an editor given by the caller — the

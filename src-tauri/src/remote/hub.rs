@@ -230,6 +230,12 @@ impl RemoteHub {
             return;
         }
 
+        // A screen connecting after the deletion must not be handed the
+        // deleted shape from the replay cache.
+        if kind == RemoteControlKind::TrackMapCleared {
+            lock_or_recover(&self.replay).remove(RemoteStreamKind::TrackShape.wire_name());
+        }
+
         self.send(kind.wire_name(), data, kind.replayed());
     }
 
@@ -376,7 +382,24 @@ struct SnapshotPayload {
 #[cfg(test)]
 mod tests {
     use super::tokens_match;
-    use super::{carries_slow_fields, SLOW_FIELD_KEYS};
+    use super::{carries_slow_fields, RemoteHub, SLOW_FIELD_KEYS};
+    use crate::model::events::{RemoteControlKind, RemoteStreamKind, WireName};
+
+    #[test]
+    fn a_cleared_track_is_not_replayed_to_a_screen_that_connects_later() {
+        let hub = RemoteHub::default();
+
+        hub.publish_raw_event(RemoteStreamKind::TrackShape, r#"{"trackId":1}"#);
+        hub.publish_control(
+            RemoteControlKind::TrackMapCleared.wire_name(),
+            serde_json::Value::Null,
+        );
+
+        assert!(hub
+            .replay_messages()
+            .iter()
+            .all(|message| !message.contains("\"track-shape\"")));
+    }
 
     /// The rate limit reads these keys out of an already-encoded bundle, so
     /// they have to be the names `serde` actually writes. A `rename_all` added

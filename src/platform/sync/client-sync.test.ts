@@ -134,6 +134,11 @@ const CASES: Record<
     expect: (core) =>
       expect(core.liveWidgets.layoutActivatedToast).toBe('Race'),
   },
+  'track-map-cleared': {
+    data: null,
+    prepare: (core) => core.trackMapWidget.applyTrackRotation('spa', 90),
+    expect: (core) => expect(core.trackMapWidget.trackRotation).toBe(0),
+  },
 };
 
 const KINDS = Object.keys(CASES) as RemoteControlKind[];

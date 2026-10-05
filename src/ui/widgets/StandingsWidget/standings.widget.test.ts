@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 
-import { RendererCore } from '@store/renderer-core';
+import { PreviewCore } from '@store/renderer-core';
 import { standingsHotkeyTargets } from '@store/hotkeys/hotkey-targets';
 import { seedScenario } from '@store/preview/scenarios';
 import { DEFAULT_PREVIEW_SCENARIO_ID } from '@store/preview/scenarios';
@@ -16,7 +16,7 @@ const createStandings: WidgetStoreFactory = (context) =>
 
 // A replayed frame with the top two cars swapped. The arrows compare one frame
 // with the one before, so it takes two of these to flash anything.
-const swapLeaders = (core: RendererCore) => {
+const swapLeaders = (core: PreviewCore) => {
   const frame = core.backendComputed.driverEntries;
 
   if (!frame) {
@@ -48,17 +48,17 @@ const swapLeaders = (core: RendererCore) => {
   });
 };
 
-const openTable = (core: RendererCore, instanceId: string) =>
+const openTable = (core: PreviewCore, instanceId: string) =>
   core.widgetInstances.open(
     { core, instanceId, type: STANDINGS },
     createStandings
   ) as StandingsWidgetStore;
 
 describe('StandingsWidgetStore — per instance', () => {
-  let core: RendererCore;
+  let core: PreviewCore;
 
   beforeEach(() => {
-    core = new RendererCore({ skipInit: true });
+    core = new PreviewCore();
     seedScenario(core, DEFAULT_PREVIEW_SCENARIO_ID);
 
     const original = core.liveWidgets.getWidget(STANDINGS);

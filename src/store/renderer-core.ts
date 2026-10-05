@@ -11,7 +11,10 @@ import {
   WidgetInstanceRegistry,
 } from './widgets/widget-instances';
 import { TrackMapWidgetStore } from './widgets/track-map.widget';
-import { LiveWidgetsStore } from './settings/live-widgets.store';
+import {
+  LiveWidgetsStore,
+  type LiveWidgetsView,
+} from './settings/live-widgets.store';
 import { WidgetDefaultsStore } from './settings/widget-defaults.store';
 import { LayoutsStore } from './settings/layouts.store';
 import { SettingsMutationLog } from './settings/mutation-log';
@@ -50,8 +53,8 @@ interface RendererCoreOptions {
  * the editor, the inspector or the chat sign-in, and a component that only
  * holds a `RendererCore` cannot reach them by type.
  *
- * A preview (layout editor canvas, widget preview, Storybook) is a bare
- * `RendererCore({ skipInit: true })`.
+ * A preview (layout editor canvas, widget preview, Storybook) is a
+ * `PreviewCore`, which may write its own settings.
  */
 export class RendererCore {
   player: PlayerStore;
@@ -83,7 +86,11 @@ export class RendererCore {
   readonly startsWidgetStores: boolean;
   pitServiceWidget: PitServiceWidgetStore;
   trackMapWidget: TrackMapWidgetStore;
-  liveWidgets: LiveWidgetsStore;
+  /**
+   * Read-only here: the core is what every window builds, and only main writes
+   * the settings. `MainRoot` and `PreviewCore` hold the full store.
+   */
+  liveWidgets: LiveWidgetsView;
   widgetDefaults: WidgetDefaultsStore;
   layouts: LayoutsStore;
 
@@ -156,5 +163,18 @@ export class RendererCore {
     this.sim.dispose();
     this.radar.dispose();
     this.paceCar.dispose();
+  }
+}
+
+/**
+ * A core a preview draws against — the layout editor's canvas, a widget
+ * preview, a story. It writes freely into its own stores, since nothing it
+ * holds is saved or sent anywhere: built with `skipInit`, it persists nothing.
+ */
+export class PreviewCore extends RendererCore {
+  declare liveWidgets: LiveWidgetsStore;
+
+  constructor() {
+    super({ skipInit: true });
   }
 }

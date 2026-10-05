@@ -5,7 +5,7 @@ import { buildSettings } from '@platform/sync/persistence';
 
 import { LayoutsStore } from './layouts.store';
 import { deleteLayout } from './layout-gestures';
-import { layoutGestureStores } from '../root-store-context';
+import { layoutGestureStores } from '../main-root-context';
 import { SettingsMutationLog } from './mutation-log';
 import type { LayoutMonitor, SavedLayout } from '@/types/widget-settings';
 

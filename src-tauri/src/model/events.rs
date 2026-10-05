@@ -160,6 +160,8 @@ pub enum RemoteControlKind {
     StreamChatCleared,
     /// The session switched the layout in; show its name for a moment.
     LayoutActivated,
+    /// The current track's recorded shape was deleted; drop the copy drawn.
+    TrackMapCleared,
 }
 
 /// Message kinds the server pushes on its own — the mirrored sim events, plus
@@ -203,7 +205,8 @@ impl Replayed for RemoteControlKind {
             | Self::StreamChatScroll
             | Self::PitServiceToggle
             | Self::StreamChatCleared
-            | Self::LayoutActivated => false,
+            | Self::LayoutActivated
+            | Self::TrackMapCleared => false,
         }
     }
 }
@@ -247,6 +250,7 @@ impl WireName for RemoteControlKind {
             Self::PitServiceToggle => "pit-service-toggle",
             Self::StreamChatCleared => "stream-chat-cleared",
             Self::LayoutActivated => "layout-activated",
+            Self::TrackMapCleared => "track-map-cleared",
         }
     }
 }
@@ -271,7 +275,7 @@ impl WireName for RemoteStreamKind {
 }
 
 impl RemoteControlKind {
-    pub const ALL: [Self; 7] = [
+    pub const ALL: [Self; 8] = [
         Self::StandingsClassStep,
         Self::StandingsScroll,
         Self::StreamChatScroll,
@@ -279,6 +283,7 @@ impl RemoteControlKind {
         Self::PitServiceToggle,
         Self::StreamChatCleared,
         Self::LayoutActivated,
+        Self::TrackMapCleared,
     ];
 
     /// Whether the kind goes to the remote screens at all. The pit order box

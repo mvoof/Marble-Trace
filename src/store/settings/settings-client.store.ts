@@ -1,7 +1,7 @@
 import { comparer, makeAutoObservable, runInAction } from 'mobx';
 
 import { emitToMain } from '@platform/services/events.service';
-import type { LiveWidgetsStore } from '@store/settings/live-widgets.store';
+import type { LiveWidgetsView } from '@store/settings/live-widgets.store';
 import type { ClientCommand } from '@/types/client-protocol';
 import type { WidgetUserSettings } from '@/types/widget-settings';
 
@@ -53,7 +53,7 @@ export class SettingsClientStore {
   private settingsTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
-    private readonly liveWidgets: LiveWidgetsStore,
+    private readonly liveWidgets: LiveWidgetsView,
     /** The live layout this window draws, from its last snapshot. */
     private readonly layoutIdOf: () => string | null
   ) {

@@ -1,7 +1,7 @@
-import type { RendererCore } from '@store/renderer-core';
+import type { MainRoot } from '@store/main-root';
 import type { LayoutMonitor } from '@/types/widget-settings';
 import { alignMonitorsToHardware } from '@store/settings/layout-gestures';
-import { layoutGestureStores } from '@store/root-store-context';
+import { layoutGestureStores } from '@store/main-root-context';
 import { listMonitorBounds } from './overlay-resolution';
 import { syncOverlayWindows } from './overlay-windows';
 
@@ -24,7 +24,7 @@ const signatureOf = (monitors: LayoutMonitor[]): string =>
     .join('|');
 
 export const watchMonitorArrangement = (
-  root: RendererCore,
+  root: MainRoot,
   onChange: () => void
 ): (() => void) => {
   let lastSignature: string | null = null;

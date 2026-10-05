@@ -127,8 +127,15 @@ export const emitLayoutActivated = (layoutName: string) =>
 export const listenRemoteDevice = (handler: (device: RemoteDevice) => void) =>
   listenTo<RemoteDevice>('remote://device', (event) => handler(event.payload));
 
-// Every window and the backend recorder drop their copy of the track.
-export const emitTrackMapClear = () => emit(TRACK_MAP_CLEAR);
+/**
+ * The track's recorded shape was deleted. The backend recorder hears its own
+ * event; every overlay and remote screen drops the shape it draws on the
+ * signal.
+ */
+export const emitTrackMapClear = async () => {
+  await emit(TRACK_MAP_CLEAR);
+  await broadcastControl('track-map-cleared', null);
+};
 
 // Heard by the backend recorder, not by a window.
 export const emitTrackMapForceStart = () => emit('track-map:force-start');

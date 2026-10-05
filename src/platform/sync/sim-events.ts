@@ -29,5 +29,5 @@ export {
   CLIENT_CONTROL_EVENT,
 } from '@utils/backend-events';
 
-/** Frontend-only: the overlay asks the track map to drop its recording. */
+/** Heard by the backend recorder: the track's recorded shape was deleted. */
 export const TRACK_MAP_CLEAR = 'track-map:clear';

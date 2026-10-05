@@ -17,12 +17,12 @@ import {
   SendToBack,
 } from 'lucide-react';
 
-import { useLiveWidgetsStore } from '@store/root-store-context';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
 import { Card, PanelWidgetProvider } from '../WidgetSettings/panels/Card';
 import { SettingRow } from '../WidgetSettings/panels/SettingRow';
 import type { SnapPosition } from './snap-position';
+import { useMainLiveWidgetsStore } from '@store/main-root-context';
 import styles from './WidgetInspector.module.scss';
 
 const ICON_SIZE = 14;
@@ -74,7 +74,7 @@ export const WidgetInspector = observer(
     onSelectWidget,
     onSnap,
   }: WidgetInspectorProps) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const { t } = useTranslation('main-app');
 
     const widget = selectedWidgetId

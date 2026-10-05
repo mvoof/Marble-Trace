@@ -10,9 +10,8 @@ import type {
 } from '@storybook/react-vite';
 
 import type { PreviewScenarioId } from '@/types/preview-scenarios';
-import type { RendererCore } from '@store/renderer-core';
-import { useStore } from '@store/root-store-context';
-import { withStore } from '../../.storybook/decorators';
+import type { PreviewCore } from '@store/renderer-core';
+import { usePreviewStore, withStore } from '../../.storybook/decorators';
 import { widgetDecorator } from './widgetDecorator';
 import { seedFromSnapshot, seedScenario } from './seed-from-snapshot';
 import {
@@ -75,7 +74,7 @@ interface DefineWidgetStoriesOptions<Args> {
    * leave the domain the scenario already stated alone.
    */
   seed?: (
-    store: RendererCore,
+    store: PreviewCore,
     args: Args,
     scenarioId?: PreviewScenarioId
   ) => void;
@@ -131,7 +130,7 @@ export const defineWidgetStories = <Args,>(
     hostArgs: Args;
     scenarioId?: PreviewScenarioId;
   }) => {
-    const store = useStore();
+    const store = usePreviewStore();
 
     const argsSignature = JSON.stringify(hostArgs);
 

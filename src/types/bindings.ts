@@ -1784,7 +1784,11 @@ export type RemoteControlKind =
   /**
    * The session switched the layout in; show its name for a moment.
    */
-  | 'layout-activated';
+  | 'layout-activated'
+  /**
+   * The current track's recorded shape was deleted; drop the copy drawn.
+   */
+  | 'track-map-cleared';
 
 /**
  * What a connected device says about itself.

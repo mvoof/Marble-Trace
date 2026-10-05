@@ -117,6 +117,45 @@ export interface MonitorWidgetRow {
   instances: WidgetDefaultConfig[];
 }
 
+/**
+ * The writes that change a widget's settings — what an editor does to a
+ * layout. Main makes them; a client asks main to (ADR-0007).
+ */
+type WidgetSettingsWrite =
+  | 'updatePosition'
+  | 'updateSize'
+  | 'updateUserSettings'
+  | 'setWidgetEnabled'
+  | 'setTypeEnabledOnMonitor'
+  | 'duplicateWidget'
+  | 'removeWidgetCopy'
+  | 'copySettingsFrom'
+  | 'resetSettings'
+  | 'bringToFront'
+  | 'sendToBack'
+  | 'setHotkeysActOn'
+  | 'toggleVisibilityByHotkey'
+  | 'cycleStandingsViewMode'
+  | 'cycleDeltaReference'
+  | 'moveWidgetToMonitor'
+  | 'loadLayout'
+  | 'selectLayout'
+  | 'updateLayout'
+  | 'setLayouts'
+  | 'setWidgets'
+  | 'pushUndo'
+  | 'undo'
+  | 'redo'
+  | 'applyClientCommand';
+
+/**
+ * The widget store as a client holds it — an overlay, a remote screen: every
+ * read, and the installs a snapshot arrives through, but none of the writes.
+ * An overlay that changes a setting sends a command (`SettingsClientStore`); a
+ * write reached from its root does not compile.
+ */
+export type LiveWidgetsView = Omit<LiveWidgetsStore, WidgetSettingsWrite>;
+
 export class LiveWidgetsStore implements WidgetMap {
   /**
    * Widgets of the active layout, keyed by id.

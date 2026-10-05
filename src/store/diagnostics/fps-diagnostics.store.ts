@@ -6,7 +6,7 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { RendererCore } from '@store/renderer-core';
+import type { MainRoot } from '@store/main-root';
 import type {
   DiagnosticsHudState,
   DiagnosticsPhase,
@@ -20,7 +20,7 @@ import { resolveAppLanguage } from '@store/settings/app-settings.store';
 import { summarize, type SampleStats } from './stats';
 
 type FpsDiagnosticsDeps = Pick<
-  RendererCore,
+  MainRoot,
   'liveWidgets' | 'appSettings' | 'simPerf'
 >;
 

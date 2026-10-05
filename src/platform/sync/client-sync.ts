@@ -131,6 +131,12 @@ export const applyControl = (core: RendererCore, message: ControlMessage) => {
         return;
       }
 
+      case 'track-map-cleared': {
+        core.trackMapWidget.clearTrackShape();
+
+        return;
+      }
+
       default: {
         unhandledControl(kind);
       }

@@ -1,4 +1,5 @@
 import { RendererCore } from './renderer-core';
+import type { LiveWidgetsStore } from './settings/live-widgets.store';
 import {
   buildAppWindowStores,
   type AppWindowStores,
@@ -23,6 +24,8 @@ import { TrackRotationStore } from './widgets/track-rotation.store';
  * need are built here and nowhere else.
  */
 export class MainRoot extends RendererCore implements AppWindowStores {
+  /** Main is the one window that writes the settings. */
+  declare liveWidgets: LiveWidgetsStore;
   bindings: BindingsStore;
   settingsPanelUi: SettingsPanelUiStore;
   layoutEditor: LayoutEditorStore;

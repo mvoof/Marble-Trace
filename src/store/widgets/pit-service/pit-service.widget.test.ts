@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
 import { RendererCore } from '@store/renderer-core';
+import type { LiveWidgetsStore } from '@store/settings/live-widgets.store';
+
+// A running core whose widget settings the test writes, as main writes its own.
+type WritableCore = RendererCore & { liveWidgets: LiveWidgetsStore };
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import type { PitStrategy } from '@/types/pit-strategy';
 import type { PitAutoFrame } from '@/types/bindings';
@@ -41,7 +45,7 @@ vi.mock('@platform/services/events.service', () => ({
 }));
 
 describe('PitServiceWidgetStore — pit orders', () => {
-  let rootStore: RendererCore;
+  let rootStore: WritableCore;
 
   // `enabled` comes from BaseUserSettings rather than the widget's own settings,
   // but auto mode depends on it, so the helper takes both. The strategy is the
@@ -130,7 +134,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
     togglePitAutoMock.mockReset();
     togglePitAutoMock.mockResolvedValue(undefined);
     ordersSent = 0;
-    rootStore = new RendererCore();
+    rootStore = new RendererCore() as WritableCore;
   });
 
   it('caps the planned fuel at tank capacity', () => {

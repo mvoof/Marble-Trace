@@ -1,5 +1,6 @@
 import { createContext, use } from 'react';
 import type { MainRoot } from './main-root';
+import type { LayoutGestureStores } from './settings/layout-gestures';
 
 /**
  * Hooks onto the stores only the main window builds: the layout editor, the
@@ -31,3 +32,21 @@ export const useBindingsUiStore = () => useMainRoot().bindingsUi;
 export const useDeviceInputStore = () => useMainRoot().deviceInput;
 export const useRemoteDevicesStore = () => useMainRoot().remoteDevices;
 export const useTrackRotationStore = () => useMainRoot().trackRotation;
+
+/**
+ * The two sides a layout gesture holds — see `layout-gestures.ts`. Handed out
+ * together so a call site spells the coordination once rather than assembling
+ * it from two hooks. Main's alone: a gesture writes the layout.
+ */
+export const layoutGestureStores = (
+  root: Pick<MainRoot, 'layouts' | 'liveWidgets'>
+): LayoutGestureStores => ({
+  records: root.layouts,
+  widgetMap: root.liveWidgets,
+});
+
+export const useLayoutGestureStores = (): LayoutGestureStores =>
+  layoutGestureStores(useMainRoot());
+
+/** The widget store with its writes — main is the one window that has them. */
+export const useMainLiveWidgetsStore = () => useMainRoot().liveWidgets;

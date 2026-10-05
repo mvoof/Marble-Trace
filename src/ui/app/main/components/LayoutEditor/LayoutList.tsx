@@ -14,12 +14,14 @@ import {
 } from 'lucide-react';
 import {
   useLayoutsStore,
-  useLiveWidgetsStore,
   useAppSettingsStore,
   useSimStore,
-  useLayoutGestureStores,
 } from '@store/root-store-context';
-import { useRemoteDevicesStore } from '@store/main-root-context';
+import {
+  useLayoutGestureStores,
+  useMainLiveWidgetsStore,
+  useRemoteDevicesStore,
+} from '@store/main-root-context';
 import { isRemoteMonitor } from '@utils/remote-screen';
 import {
   resolveBackgroundSrc,
@@ -164,7 +166,7 @@ const SESSION_LABEL_KEYS: Record<SessionContext, string> = {
 };
 
 export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
-  const liveWidgets = useLiveWidgetsStore();
+  const liveWidgets = useMainLiveWidgetsStore();
   const layouts = useLayoutsStore();
   const gestureStores = useLayoutGestureStores();
   const remoteDevices = useRemoteDevicesStore();

@@ -899,7 +899,7 @@ root's hooks either (`.oxlintrc.json`).
 > live in this neutral place, which both the app and Storybook may read.
 
 **The preview store is isolated, and the linter holds it there.** A scenario and
-every mock builder write only into the `RendererCore({ skipInit: true })` handed to
+every mock builder write only into the `PreviewCore` handed to
 them — never into the stores a running widget reads. So `src/store/preview/**`
 carries its own `no-restricted-imports` override: the context hooks in
 `*-root-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are all
@@ -1414,10 +1414,10 @@ are `src/types/client-protocol.ts`.
 Two events use the event channel instead of a command, because their listener is
 the Rust recorder rather than a window:
 
-| Event                   | Emitter function         | Heard by                                                                           |
-| ----------------------- | ------------------------ | ---------------------------------------------------------------------------------- |
-| `track-map:clear`       | `emitTrackMapClear`      | every window **and** the backend recorder — everyone drops their copy of the track |
-| `track-map:force-start` | `emitTrackMapForceStart` | the backend recorder only                                                          |
+| Event                   | Emitter function         | Heard by                                                                                         |
+| ----------------------- | ------------------------ | ------------------------------------------------------------------------------------------------ |
+| `track-map:clear`       | `emitTrackMapClear`      | the backend recorder; the clients drop their copy on the `track-map-cleared` signal sent with it |
+| `track-map:force-start` | `emitTrackMapForceStart` | the backend recorder only                                                                        |
 
 ## Cross-window synchronization
 
