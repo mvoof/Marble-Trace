@@ -7,7 +7,9 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 use crate::computations::fuel::FuelSettings;
+use crate::computations::pit_auto::PitAutoCommand;
 use crate::model::defaults::DEFAULT_CAR_LENGTH_M;
+use crate::model::pit_auto::PitAutoConfig;
 
 /// The values a command sets that must outlive a run: they are kept beside the
 /// channel and handed to the next thread, so a value set while the stream is
@@ -17,6 +19,9 @@ pub struct TelemetryConfig {
     /// The player's car length in meters.
     pub car_length_m: f32,
     pub fuel: FuelSettings,
+    /// The pit strategy auto mode orders by. Starts with auto mode off: until
+    /// main has pushed the user's strategy, nothing is ordered on their behalf.
+    pub pit_auto: PitAutoConfig,
     /// The telemetry inspector in the settings window is open. While this is
     /// false no frame is kept for it at all — the inspector costs the running
     /// app exactly nothing when nobody is looking at it, which is why it pulls
@@ -30,6 +35,7 @@ impl Default for TelemetryConfig {
         Self {
             car_length_m: DEFAULT_CAR_LENGTH_M,
             fuel: FuelSettings::default(),
+            pit_auto: PitAutoConfig::default(),
             inspector_active: false,
         }
     }
@@ -48,6 +54,8 @@ pub enum TelemetryCommand {
     ResetPitLane,
     /// The stored reference laps for the track and car were deleted.
     ResetReferenceLap,
+    /// A manual pit order claimed a half of the stop, or the auto mode key.
+    PitAuto(PitAutoCommand),
 }
 
 /// What a telemetry thread is started with.

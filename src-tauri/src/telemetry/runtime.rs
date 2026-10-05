@@ -155,6 +155,7 @@ fn run_telemetry_loop(
     let mut missed_waits: u32 = 0;
     let mut scheduler = EmitScheduler::new();
     let io = spawn_io_worker(app, source);
+    let sends_pit_orders = source.replay_name().is_none();
 
     loop {
         if !service.is_current(session.run) {
@@ -258,6 +259,7 @@ fn run_telemetry_loop(
             service,
             state,
             capabilities: session.capabilities,
+            sends_pit_orders,
         };
 
         let measuring = emit_domain_frames(ctx);

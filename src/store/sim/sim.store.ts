@@ -663,10 +663,9 @@ export class SimStore {
    * Subscribes a window that is off the bundle to the 4 Hz slice instead.
    *
    * Not drawing widgets is not the same as needing no telemetry: the main
-   * window runs the hotkey runner and the automatic pit order, and both decide
-   * off the sim rather than off settings — the fuel calculation, what the sim
-   * has on the order, where the car is on pit road — while layout
-   * auto-switching reads `is_on_track`. Without these it answers a key press
+   * window runs the hotkey runner, which decides off the sim rather than off
+   * settings — the fuel calculation, what the sim has on the order, where the
+   * car is on pit road — while layout auto-switching reads `is_on_track`. Without these it answers a key press
    * with an order that silently leaves the fuel out.
    *
    * Four flat frames at 4 Hz, no per-car arrays: on the order of one percent of

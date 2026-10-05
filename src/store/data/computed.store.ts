@@ -9,6 +9,7 @@ import type {
   LapHistoryEntry,
   LapLogFrame,
   LastCompletedLap,
+  PitAutoFrame,
   PitStopsFrame,
   ProximityFrame,
   RelativeFrame,
@@ -45,6 +46,8 @@ export class BackendComputedStore {
    */
   driverEntries: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
+  /** Auto pit mode as the telemetry thread decides it, on the 4 Hz tier. */
+  pitAuto: PitAutoFrame | null = null;
   /**
    * 60 Hz hot field — never read directly in a component render body. Read it
    * inside `useReactiveDomWrite`/`useReactiveCanvasLoop`; `oxlint` enforces
@@ -95,6 +98,7 @@ export class BackendComputedStore {
       incidents: observable.ref,
       driverEntries: observable.ref,
       pitStops: observable.ref,
+      pitAuto: observable.ref,
       lapDelta: observable.ref,
       lapHistory: observable.ref,
       lastCompletedLap: observable.ref,
@@ -229,6 +233,10 @@ export class BackendComputedStore {
     this.pitStops = frame;
   }
 
+  updatePitAuto(frame: PitAutoFrame) {
+    this.pitAuto = frame;
+  }
+
   updateLapDelta(frame: LapDeltaFrame) {
     this.lapDelta = frame;
   }
@@ -245,6 +253,7 @@ export class BackendComputedStore {
     this.incidents = null;
     this.driverEntries = null;
     this.pitStops = null;
+    this.pitAuto = null;
     this.lapDelta = null;
     this.lapHistory = [];
     this.lastCompletedLap = null;

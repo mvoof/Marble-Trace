@@ -33,10 +33,7 @@ import { setupMainListeners } from './listeners';
 import type { MonitorWidgetsPayload } from '@platform/services/events.service';
 import { registerChatReactions } from './chat-sync';
 import { pitStrategyOf } from '@store/settings/app-settings.store';
-import {
-  registerPitServiceAutoReactions,
-  registerPitServiceMirrorReactions,
-} from './pit-service-sync';
+import { registerPitServiceMainReactions } from './pit-service-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { registerRemotePublishing } from './remote-publish';
 import { listMonitorBounds, resolveMonitorByName } from './overlay-resolution';
@@ -481,8 +478,7 @@ export const initMainSync = async (root: MainRoot) => {
         ...registerBindingReactions(root, onSave),
         ...registerDisplayPreferenceReactions(root, onSave),
         ...registerChatReactions(root, onSave),
-        ...registerPitServiceMirrorReactions(root),
-        ...registerPitServiceAutoReactions(root),
+        ...registerPitServiceMainReactions(root),
       ];
 
       // Owns the remote server's lifetime, so it is torn down with the rest.

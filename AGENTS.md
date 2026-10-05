@@ -310,8 +310,8 @@ Only windows that **draw widgets** subscribe to `sim://telemetry/bundle`
 (`SimStore.subscribeBundle`); Tauri delivers an event solely to webviews holding
 a listener, so the main window pays nothing for 60 Hz it does not render.
 
-But it still **decides**: the hotkey runner and the automatic pit order both live
-there, and both read the sim rather than settings. So it takes
+But it still **decides**: the hotkey runner lives there and reads the sim rather
+than settings. So it takes
 `sim://telemetry/slow` instead — `car_status`, `lap_timing`, `pit_service` and
 `fuel`, four flat frames at 4 Hz with no per-car arrays, on the order of one
 percent of the bundle. Emitted from the bundle's own frames
@@ -325,6 +325,15 @@ from it — which is exactly how the pit order lost its fuel when the main windo
 was first taken off the bundle. Needing another frame means adding it to the
 slice, in `emitter.rs` and in `SimStore.subscribeSlowBundle`, not reaching for
 the bundle.
+
+The **automatic pit order** is not in main: it decides on the telemetry thread
+(`computations/pit_auto.rs`, stepped at 4 Hz in `emitter.rs`) and sends through
+the same path a manual order takes, so it works with every webview paused. Main
+pushes the rules — `appSettings.pitAuto*` plus whether the widget is in the
+active layout — with `set_pit_strategy`; a manual order carries the halves it
+takes over (`send_pit_order`'s `claim`), and the auto mode key is
+`toggle_pit_auto`. The widget reads the result back from the `pitAuto` bundle
+field. Orders are not sent while a tape is replayed.
 
 ### Demand-gated bundle fields
 

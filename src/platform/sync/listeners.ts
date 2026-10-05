@@ -2,7 +2,6 @@ import { runInAction } from 'mobx';
 
 import {
   listenTo,
-  type HalvesTakenOver,
   type MonitorWidgetsPayload,
   type StreamChatFilters,
   type TrackRotationPayload,
@@ -38,8 +37,6 @@ export const setupMainListeners = async (
     })
   );
 
-  unlistens.push(await listenPitServiceAutoSuspended(root));
-  unlistens.push(await listenPitServiceHalvesTakenOver(root));
   unlistens.push(await listenTrackRotation(root));
 
   return unlistens;
@@ -55,32 +52,6 @@ const listenTrackRotation = (root: RendererCore) =>
       root.trackMapWidget.applyTrackRotation(
         e.payload.trackId,
         e.payload.rotation
-      )
-    );
-  });
-
-/**
- * Auto mode stands down for the rest of a stop as soon as the driver touches
- * the order — and that touch can land in either window: the checkboxes are
- * clicked in the overlay, the hotkeys are registered in main. Both windows
- * mirror the flag so the AUTO / MANUAL badge and the pit entry trigger agree.
- */
-const listenPitServiceAutoSuspended = (root: RendererCore) =>
-  listenTo<boolean>('pit-service-auto-suspended', (e) => {
-    runInAction(() => root.pitServiceWidget.auto.setAutoSuspended(e.payload));
-  });
-
-/**
- * Which halves of the order are already settled, for the same reason: a fuel
- * nudge from a hotkey in main and a tire checkbox clicked in the overlay each
- * claim one half, and both windows draw the badges off the result.
- */
-const listenPitServiceHalvesTakenOver = (root: RendererCore) =>
-  listenTo<HalvesTakenOver>('pit-service-halves-taken-over', (e) => {
-    runInAction(() =>
-      root.pitServiceWidget.auto.setHalvesTakenOver(
-        e.payload.fuel,
-        e.payload.tires
       )
     );
   });
@@ -234,9 +205,6 @@ export const setupOverlayListeners = async (
       });
     })
   );
-
-  unlistens.push(await listenPitServiceAutoSuspended(root));
-  unlistens.push(await listenPitServiceHalvesTakenOver(root));
 
   unlistens.push(
     await listenTo<SessionLayoutMap>('session-layouts-changed', (e) => {

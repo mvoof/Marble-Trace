@@ -157,17 +157,6 @@ export const emitPitServiceToggle = () =>
 export const emitPitServiceReveal = () =>
   emitToOverlays('pit-service-reveal', null);
 
-export const emitPitServiceAutoSuspended = (suspended: boolean) =>
-  emit('pit-service-auto-suspended', suspended);
-
-export interface HalvesTakenOver {
-  fuel: boolean;
-  tires: boolean;
-}
-
-export const emitPitServiceHalvesTakenOver = (halves: HalvesTakenOver) =>
-  emit('pit-service-halves-taken-over', halves);
-
 export const emitStandingsScroll = (delta: number) =>
   emitToOverlaysAndRemote('standings-scroll', 'standings-scroll', delta);
 

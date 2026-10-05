@@ -19,7 +19,7 @@ pub use companions::{
     detect_companion_apps, launch_companion_app,
 };
 pub use install::check_install_integrity;
-pub use pit::send_pit_order;
+pub use pit::{send_pit_order, set_pit_strategy, toggle_pit_auto};
 pub use settings::{
     backup_settings_file, delete_settings_file, log_settings_snapshot, settings_file_exists,
 };

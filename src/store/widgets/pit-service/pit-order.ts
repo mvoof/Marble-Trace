@@ -1,7 +1,11 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import { sendPitOrder } from '@platform/services/pit.service';
-import type { PitCommandRequest, TireCompoundEntry } from '@/types/bindings';
+import type {
+  PitClaim,
+  PitCommandRequest,
+  TireCompoundEntry,
+} from '@/types/bindings';
 import type { CornerPosition } from '@utils/pit-tires';
 import {
   ALL_CORNERS,
@@ -19,13 +23,19 @@ const ORDER_FEEDBACK_MS = 2500;
 const FUEL_STEP_L = 1;
 const LITERS_PER_GALLON = 3.785412;
 
+// Which halves of the stop a manual order takes away from auto mode.
+const FUEL_CLAIM: PitClaim = { fuel: true, tires: false };
+const TIRES_CLAIM: PitClaim = { fuel: false, tires: true };
+const WHOLE_STOP_CLAIM: PitClaim = { fuel: true, tires: true };
+
 /**
  * The pit order itself: what the sim currently has checked, what the driver
  * changes by hand, and the one path out to the SDK.
  *
- * Every manual change claims its half of the order from auto mode — see
- * `PitAutoService`. Fast repair and the windshield are the exceptions and claim
- * nothing: auto mode never touches them either way.
+ * Every manual change claims its half of the order from auto mode, which
+ * decides on the telemetry thread — the claim travels with the order. Fast
+ * repair and the windshield are the exceptions and claim nothing: auto mode
+ * never decides on them either way.
  */
 export class PitOrder {
   /** Outcome of the last order, shown briefly under the fuel row. */
@@ -297,17 +307,15 @@ export class PitOrder {
    * order is: a liter short costs a stop, a liter over costs nothing.
    */
   async setFuelLiters(liters: number) {
-    this.store.auto.claimFuelHalf();
-
     const target = Math.round(this.clampFuel(liters));
 
     if (target <= 0) {
-      await this.send([{ kind: 'clearFuel', value: 0 }]);
+      await this.send([{ kind: 'clearFuel', value: 0 }], FUEL_CLAIM);
 
       return;
     }
 
-    await this.send([{ kind: 'fuel', value: target }]);
+    await this.send([{ kind: 'fuel', value: target }], FUEL_CLAIM);
   }
 
   /**
@@ -315,10 +323,8 @@ export class PitOrder {
    * state read back from the sim decides which of the two to send.
    */
   async toggleFuel() {
-    this.store.auto.claimFuelHalf();
-
     if (this.isFuelOrdered) {
-      await this.send([{ kind: 'clearFuel', value: 0 }]);
+      await this.send([{ kind: 'clearFuel', value: 0 }], FUEL_CLAIM);
 
       return;
     }
@@ -335,7 +341,7 @@ export class PitOrder {
       return;
     }
 
-    await this.send([{ kind: 'fuel', value: fill }]);
+    await this.send([{ kind: 'fuel', value: fill }], FUEL_CLAIM);
   }
 
   /**
@@ -353,14 +359,15 @@ export class PitOrder {
       return;
     }
 
-    this.store.auto.claimTireHalf();
-
     const current = compounds.findIndex(
       (entry) => entry.tireIndex === this.orderedCompoundIndex
     );
     const next = compounds[(current + 1) % compounds.length];
 
-    await this.send([{ kind: 'tireCompound', value: next.tireIndex }]);
+    await this.send(
+      [{ kind: 'tireCompound', value: next.tireIndex }],
+      TIRES_CLAIM
+    );
   }
 
   /**
@@ -370,10 +377,8 @@ export class PitOrder {
    * pressure survives the round trip.
    */
   async toggleTire(corner: CornerPosition) {
-    this.store.auto.claimTireHalf();
-
     if (!this.isCornerOrdered(corner)) {
-      await this.send([{ kind: corner, value: 0 }]);
+      await this.send([{ kind: corner, value: 0 }], TIRES_CLAIM);
 
       return;
     }
@@ -382,27 +387,31 @@ export class PitOrder {
       (other) => other !== corner && this.isCornerOrdered(other)
     );
 
-    await this.send([
-      { kind: 'clearTires', value: 0 },
-      ...survivors.map((other) => ({
-        kind: other,
-        value: Math.round(
-          orderedPressure(other, this.store.root.player.pitService) ?? 0
-        ),
-      })),
-    ]);
+    await this.send(
+      [
+        { kind: 'clearTires', value: 0 },
+        ...survivors.map((other) => ({
+          kind: other,
+          value: Math.round(
+            orderedPressure(other, this.store.root.player.pitService) ?? 0
+          ),
+        })),
+      ],
+      TIRES_CLAIM
+    );
   }
 
   async toggleAllTires() {
-    this.store.auto.claimTireHalf();
-
     if (this.areAllTiresOrdered) {
-      await this.send([{ kind: 'clearTires', value: 0 }]);
+      await this.send([{ kind: 'clearTires', value: 0 }], TIRES_CLAIM);
 
       return;
     }
 
-    await this.send(ALL_CORNERS.map((corner) => ({ kind: corner, value: 0 })));
+    await this.send(
+      ALL_CORNERS.map((corner) => ({ kind: corner, value: 0 })),
+      TIRES_CLAIM
+    );
   }
 
   // Fast repair and the windshield are outside auto mode entirely — it never
@@ -431,35 +440,33 @@ export class PitOrder {
    * nothing in this store calls it on a telemetry transition.
    */
   async sendPlannedOrder() {
-    this.store.auto.claimFuelHalf();
-    this.store.auto.claimTireHalf();
-
-    await this.send(this.plannedOrder);
+    await this.send(this.plannedOrder, WHOLE_STOP_CLAIM);
   }
 
   /** Unchecks the whole pit order in the sim. */
   async sendClearOrder() {
-    this.store.auto.claimFuelHalf();
-    this.store.auto.claimTireHalf();
-
-    await this.send([{ kind: 'clear', value: 0 }]);
+    await this.send([{ kind: 'clear', value: 0 }], WHOLE_STOP_CLAIM);
   }
 
-  // Every path into the sim goes through this method, so the result reporting
-  // lives here rather than at each call site.
-  async send(requests: PitCommandRequest[]) {
+  // Every manual path into the sim goes through this method, so the result
+  // reporting lives here rather than at each call site.
+  async send(requests: PitCommandRequest[], claim?: PitClaim) {
     this.store.panel.revealAfterCommand();
 
     try {
-      await sendPitOrder(requests);
-      this.setOrderResult('sent');
+      await sendPitOrder(requests, claim);
+      this.reportOrderResult('sent');
     } catch (error) {
       console.error('[pit-service] order failed', error);
-      this.setOrderResult('failed');
+      this.reportOrderResult('failed');
     }
   }
 
-  private setOrderResult(result: 'sent' | 'failed') {
+  /**
+   * Shows how an order fared under the fuel row — a manual one from `send`,
+   * an automatic one from the frame the telemetry thread publishes.
+   */
+  reportOrderResult(result: 'sent' | 'failed') {
     runInAction(() => {
       this.lastOrderResult = result;
     });

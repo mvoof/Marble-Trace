@@ -1283,6 +1283,50 @@ export type PerfRunConfig = {
 };
 
 /**
+ * The rules auto mode builds an order by: the pit strategy from the app
+ * settings, plus whether the pit service widget is in the active layout — auto
+ * mode never acts for a widget the driver removed.
+ */
+export type PitAutoConfig = {
+  autoFuel: boolean;
+  autoTires: boolean;
+  /**
+   * Remaining tread, in percent, at or below which a corner is changed.
+   */
+  tireWearThresholdPct: number;
+  widgetOnScreen: boolean;
+};
+
+/**
+ * Auto mode's state as the widget shows it, on the 4 Hz tier.
+ */
+export type PitAutoFrame = {
+  mode: PitAutoMode;
+  /**
+   * Counts every order auto mode has put out this connection. The widget
+   * reveals itself on a step of it, the way it does after a key press.
+   */
+  ordersSent: number;
+  /**
+   * Whether the last of those reached the sim's broadcast channel; `None`
+   * before the first.
+   */
+  lastOrderOk: boolean | null;
+};
+
+/**
+ * What the header plate says: which parts of the stop auto mode will still
+ * decide. `Off` while auto mode is switched off in the settings or the widget
+ * is not on screen.
+ */
+export type PitAutoMode = 'off' | 'auto' | 'fuelAuto' | 'tireAuto' | 'manual';
+
+/**
+ * Which halves of the stop a manual order takes away from auto mode.
+ */
+export type PitClaim = { fuel: boolean; tires: boolean };
+
+/**
  * A single pit checkbox the sim should toggle.
  */
 export type PitCommandKind =
@@ -1949,15 +1993,16 @@ export type TelemetryBundle = {
   environment?: EnvironmentFrame | null;
   trackRecording?: TrackRecordingFrame | null;
   pitTarget?: PitTargetFrame | null;
+  pitAuto?: PitAutoFrame | null;
 };
 
 /**
  * The 4 Hz slice a window that does not draw widgets still needs.
  *
  * The main window is off the bundle (see `SimStore.subscribeBundle`), but it
- * still owns the hotkey runner and the automatic pit order, and both of those
- * decide off these four frames: the fuel calculation, what the sim has on the
- * order, where the car is on pit road, and the lap it is on. Sending them on
+ * still owns the hotkey runner, which decides off these four frames: the fuel
+ * calculation, what the sim has on the order, where the car is on pit road,
+ * and the lap it is on. Sending them on
  * their own event keeps main at 4 Hz instead of 60 while leaving it able to
  * answer a key press.
  */

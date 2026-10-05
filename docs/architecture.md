@@ -477,10 +477,12 @@ gates on the `overlay` hash — which leaves the main window off 60 bundles a se
 it would render nothing from.
 
 Not rendering is not the same as not deciding. The main window owns the hotkey
-runner and the automatic pit order, and both decide off the sim rather than off
-settings: the fuel calculation, what the sim currently has on the order, whether
-the car is on pit road. Layout auto-switching reads `is_on_track` from the same
-place. `sim://telemetry/slow` carries exactly that and nothing else.
+runner, which decides off the sim rather than off settings: the fuel
+calculation, what the sim currently has on the order, whether the car is on pit
+road. Layout auto-switching reads `is_on_track` from the same place.
+`sim://telemetry/slow` carries exactly that and nothing else. The automatic pit
+order is not here at all: it decides on the telemetry thread
+(`computations/pit_auto.rs`), so it needs no webview awake.
 
 | Field         | Read by                                                          |
 | ------------- | ---------------------------------------------------------------- |
@@ -1346,7 +1348,9 @@ store calls `invoke` directly.
 |                        | `startChatStreamSilent` / `stopChatStreamSilent` | chat stream commands        | connect and disconnect chat                          |
 | `input.service.ts`     | `resolveInputDevices`                            | `resolve_input_devices`     | enumerate controllers                                |
 |                        | `setInputPollingEnabled`                         | `set_input_polling_enabled` | start/stop DirectInput polling                       |
-| `pit.service.ts`       | `sendPitOrder`                                   | `send_pit_order`            | send a pit service order to the sim                  |
+| `pit.service.ts`       | `sendPitOrder`                                   | `send_pit_order`            | send a manual pit order, with the halves it claims   |
+|                        | `togglePitAuto`                                  | `toggle_pit_auto`           | the auto mode key                                    |
+|                        | `setPitStrategySilent`                           | `set_pit_strategy`          | push the auto pit rules and the layout gate          |
 
 The `*Silent` naming marks a setter that pushes a value into the backend without
 expecting anything back — a fire-and-forget command, not an event.
@@ -1425,12 +1429,10 @@ lives in the overlay.
 
 #### Both directions
 
-| Event                           | Emitter function                            | Why both ways                                                                                                                                                            |
-| ------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `drag-mode-changed`             | `emitDragMode` (broadcast `emit`)           | drag mode is toggled from either window and both must agree                                                                                                              |
-| `pit-service-auto-suspended`    | `emitPitServiceAutoSuspended` (broadcast)   | the driver can touch the pit order from either side — checkboxes in the overlay, hotkeys in main — so both windows mirror the flag and draw the same AUTO / MANUAL badge |
-| `pit-service-halves-taken-over` | `emitPitServiceHalvesTakenOver` (broadcast) | same reason: a fuel nudge from a hotkey in main and a tire checkbox in the overlay each claim one half                                                                   |
-| `layout-activated`              | `emitLayoutActivated` (broadcast)           | either side may activate a layout                                                                                                                                        |
+| Event               | Emitter function                  | Why both ways                                               |
+| ------------------- | --------------------------------- | ----------------------------------------------------------- |
+| `drag-mode-changed` | `emitDragMode` (broadcast `emit`) | drag mode is toggled from either window and both must agree |
+| `layout-activated`  | `emitLayoutActivated` (broadcast) | either side may activate a layout                           |
 
 #### Frontend → backend, over the event channel
 

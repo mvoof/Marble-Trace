@@ -29,8 +29,8 @@ use commands::{
     get_last_session_info, get_reference_lap, get_tick_summary, launch_companion_app,
     log_settings_snapshot, reset_delivery_counters, reset_pit_lane_pct, send_pit_order,
     set_active_events, set_car_length, set_fuel_avg_window, set_fuel_count_yellow_laps,
-    set_inspector_active, set_pit_warning_laps, set_remote_active_events, settings_file_exists,
-    start_telemetry_stream, stop_telemetry_stream,
+    set_inspector_active, set_pit_strategy, set_pit_warning_laps, set_remote_active_events,
+    settings_file_exists, start_telemetry_stream, stop_telemetry_stream, toggle_pit_auto,
 };
 use companions::CompanionsState;
 use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
@@ -191,6 +191,8 @@ pub fn run() {
             delete_settings_file,
             check_install_integrity,
             send_pit_order,
+            set_pit_strategy,
+            toggle_pit_auto,
             start_chat_stream,
             stop_chat_stream,
             twitch_request_device_code,

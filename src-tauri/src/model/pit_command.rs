@@ -32,7 +32,7 @@ pub enum PitCommandKind {
 /// One entry of a pit order. `value` is ignored by commands that take no
 /// parameter.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct PitCommandRequest {
     pub kind: PitCommandKind,

@@ -9,7 +9,7 @@ use std::time::Duration;
 use std::time::Instant;
 
 use tauri::{AppHandle, Emitter};
-use tracing::warn;
+use tracing::{info, warn};
 
 use super::delivery::DeliveryCounters;
 use super::dispatch::{mirrors, plan, BundleSink, DeliveryGroup, Recipient};
@@ -20,6 +20,7 @@ use super::quantize;
 use super::scheduler::DueGroups;
 use super::state::TelemetryServiceState;
 use crate::capabilities::Capabilities;
+use crate::computations::pit_auto::{worst_tire_wear, PitAutoInput};
 use crate::computations::{
     driver_entries, fuel, incidents, lap_delta, pit_stops, proximity, ComputeContext,
     ComputedOutput, TickRate,
@@ -27,6 +28,7 @@ use crate::computations::{
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::environment::EnvironmentFrame;
 use crate::model::lap_log::LapLogFrame;
+use crate::model::pit_auto::PitAutoFrame;
 use crate::model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
     PitServiceFrame, PitTargetFrame,
@@ -38,6 +40,7 @@ use crate::model::telemetry_events::{
     EVENT_INCIDENTS, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
 };
 use crate::model::track_shape::TrackRecordingFrame;
+use crate::sources::iracing::pit_command::send_pit_order;
 use crate::sources::source::SourceFrame;
 use crate::utils::lock_or_recover;
 
@@ -60,6 +63,9 @@ pub struct EmitContext<'a> {
     /// What the loop owns: the session, the processors, the pit lane markers.
     pub state: &'a mut LoopState,
     pub capabilities: Capabilities,
+    /// Whether auto mode's orders reach the sim. False on a replayed tape: a
+    /// recording with a pit stop in it must not order one in a live sim.
+    pub sends_pit_orders: bool,
 }
 
 #[derive(Debug, serde::Serialize, Clone, Default)]
@@ -106,14 +112,16 @@ pub struct TelemetryBundle {
     pub track_recording: Option<TrackRecordingFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pit_target: Option<PitTargetFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pit_auto: Option<PitAutoFrame>,
 }
 
 /// The 4 Hz slice a window that does not draw widgets still needs.
 ///
 /// The main window is off the bundle (see `SimStore.subscribeBundle`), but it
-/// still owns the hotkey runner and the automatic pit order, and both of those
-/// decide off these four frames: the fuel calculation, what the sim has on the
-/// order, where the car is on pit road, and the lap it is on. Sending them on
+/// still owns the hotkey runner, which decides off these four frames: the fuel
+/// calculation, what the sim has on the order, where the car is on pit road,
+/// and the lap it is on. Sending them on
 /// their own event keeps main at 4 Hz instead of 60 while leaving it able to
 /// answer a key press.
 #[derive(Debug, serde::Serialize, Clone)]
@@ -142,6 +150,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         service,
         state,
         capabilities,
+        sends_pit_orders,
     } = ctx;
 
     let active_mask = service.masks.effective_mask();
@@ -300,6 +309,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     if due.hz4 {
         bundle.car_status = Some(frame.car_status.clone());
         bundle.pit_service = Some(frame.pit_service.clone());
+        bundle.pit_auto = Some(run_pit_auto(frame, &bundle, state, sends_pit_orders));
 
         // Built from the bundle's own frames, so a window off the bundle reads
         // exactly what the overlay reads rather than a second calculation of
@@ -356,6 +366,44 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         groups,
         &mut TauriSink { app },
     )
+}
+
+/// Auto pit mode's tick: decides on this frame, sends what it decided, and
+/// returns the state the widget shows. On the 4 Hz tier, after the processors,
+/// because the fuel half orders the fuel calculation's `fill_now`.
+fn run_pit_auto(
+    frame: &SourceFrame,
+    bundle: &TelemetryBundle,
+    state: &mut LoopState,
+    sends_pit_orders: bool,
+) -> PitAutoFrame {
+    let input = PitAutoInput {
+        on_pit_road: frame.car_status.on_pit_road.unwrap_or(false),
+        in_pit_stall: frame.pit_service.in_pit_stall,
+        service_active: frame.pit_service.service_active,
+        armed_flags: frame.pit_service.flags.unwrap_or(0),
+        fast_repair_ordered: frame.pit_service.fast_repair,
+        tire_wear: worst_tire_wear(&frame.chassis),
+        planned_fuel_l: bundle
+            .fuel
+            .as_ref()
+            .and_then(|fuel| fuel.refuel_plan.as_ref())
+            .map(|plan| plan.fill_now),
+    };
+    let config = state.config.pit_auto;
+
+    for order in state.pit_auto.step(&input, &config) {
+        if !sends_pit_orders {
+            continue;
+        }
+
+        let result = send_pit_order(&order);
+
+        info!(?order, ok = result.is_ok(), "auto pit order");
+        state.pit_auto.record_send(result.is_ok());
+    }
+
+    state.pit_auto.frame(&config)
 }
 
 /// The real transport: `emit_to` per window, `app.emit` for the broadcast and

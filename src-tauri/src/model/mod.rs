@@ -14,6 +14,7 @@ pub mod flags;
 pub mod input;
 pub mod install;
 pub mod lap_log;
+pub mod pit_auto;
 pub mod pit_command;
 pub mod player;
 pub mod reference_lap;
@@ -54,6 +55,10 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<input::InputDeviceResolution>()
         .register::<install::InstallMismatch>()
         .register::<lap_log::LapLogFrame>()
+        .register::<pit_auto::PitAutoConfig>()
+        .register::<pit_auto::PitAutoFrame>()
+        .register::<pit_auto::PitAutoMode>()
+        .register::<pit_auto::PitClaim>()
         .register::<pit_command::PitCommandKind>()
         .register::<pit_command::PitCommandRequest>()
         .register::<player::CarDynamicsFrame>()

@@ -24,7 +24,7 @@ type PitServiceDeps = Pick<
  * The widget's entry point, and the three things it is made of:
  *
  * - `order` — what the sim has checked and every manual change to it,
- * - `auto` — what the widget decides on the driver's behalf,
+ * - `auto` — what auto mode, deciding on the telemetry thread, reports back,
  * - `panel` — when the box is on screen and how long the stop has run.
  *
  * They are separate objects rather than one class because they share almost no
@@ -36,9 +36,8 @@ type PitServiceDeps = Pick<
  * settings, the raw pit telemetry, and the lifecycle.
  *
  * App-wide, not per instance: the main window sends the order from hotkeys
- * and from the auto service with no widget mounted there, the pit-line widget
- * and the auto-hide ride the same panel, and the race dash measures against
- * the same lane. The auto service moves to the backend in its own ticket.
+ * with no widget mounted there, the pit-line widget and the auto-hide ride the
+ * same panel, and the race dash measures against the same lane.
  */
 export class PitServiceWidgetStore {
   readonly panel: PitPanelState;
@@ -60,7 +59,7 @@ export class PitServiceWidgetStore {
   }
 
   /**
-   * Watches the two telemetry transitions this widget owns timers for.
+   * Watches the telemetry transitions this widget owns timers for.
    *
    * Both handlers are edge-guarded, and `fireImmediately` reproduces what the
    * bundle handler used to do: a window opened while the car is already on pit
@@ -82,6 +81,26 @@ export class PitServiceWidgetStore {
           this.order.handleServiceActiveChange(serviceActive);
         },
         { fireImmediately: true }
+      ),
+      // An order auto mode sent is confirmed the way a key press is. Only a
+      // step counts: the first frame a window receives carries the count so
+      // far, which is history rather than an order going out now.
+      reaction(
+        () => this.root.backendComputed.pitAuto,
+        (frame, previous) => {
+          if (
+            frame === null ||
+            previous === null ||
+            frame.ordersSent <= previous.ordersSent
+          ) {
+            return;
+          }
+
+          this.panel.revealAfterCommand();
+          this.order.reportOrderResult(
+            frame.lastOrderOk === false ? 'failed' : 'sent'
+          );
+        }
       )
     );
   }
@@ -248,7 +267,6 @@ export class PitServiceWidgetStore {
 
   reset() {
     this.panel.reset();
-    this.auto.reset();
     this.order.reset();
   }
 }

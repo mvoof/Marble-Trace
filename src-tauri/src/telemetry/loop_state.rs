@@ -6,6 +6,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use crate::computations::pit_auto::PitAuto;
 use crate::computations::{driver_entries, ProcessorCommand, ProcessorRegistry};
 use crate::model::session::SessionSnapshot;
 use crate::telemetry::control::{TelemetryCommand, TelemetryConfig};
@@ -46,6 +47,8 @@ pub struct LoopState {
     /// to know how far the standings class cycle wraps without taking the
     /// per-car frame itself.
     pub car_class_count: u32,
+    /// Auto pit mode: the overrides, latches and edges it decides on.
+    pub pit_auto: PitAuto,
 }
 
 impl LoopState {
@@ -62,6 +65,7 @@ impl LoopState {
             pit_exit_pct: None,
             live_pit_in_pct: None,
             car_class_count: 0,
+            pit_auto: PitAuto::default(),
         }
     }
 
@@ -90,6 +94,9 @@ impl LoopState {
             TelemetryCommand::ResetReferenceLap => {
                 self.registry.command(ProcessorCommand::ResetReferenceLap);
             }
+            TelemetryCommand::PitAuto(command) => {
+                self.pit_auto.command(command, &self.config.pit_auto);
+            }
         }
     }
 
@@ -107,6 +114,7 @@ impl LoopState {
         // treated as still delivered — the next connection republishes in full.
         self.publications.reset();
         self.car_class_count = 0;
+        self.pit_auto.reset();
     }
 
     /// Forgets the cached grid, so the next session snapshots its own.

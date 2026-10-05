@@ -3,12 +3,16 @@ import { runInAction } from 'mobx';
 import { RendererCore } from '@store/renderer-core';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import type { PitStrategy } from '@/types/pit-strategy';
+import type { PitAutoFrame } from '@/types/bindings';
 import { PIT_LIMITER_BIT } from '@utils/car-signals';
 
 const sendPitOrderMock = vi.hoisted(() => vi.fn());
+const togglePitAutoMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@platform/services/pit.service', () => ({
   sendPitOrder: sendPitOrderMock,
+  togglePitAuto: togglePitAutoMock,
+  setPitStrategySilent: vi.fn(),
 }));
 
 // RendererCore construction reaches the backend through the other services; they
@@ -102,6 +106,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
   beforeEach(() => {
     sendPitOrderMock.mockReset();
     sendPitOrderMock.mockResolvedValue(undefined);
+    togglePitAutoMock.mockReset();
+    togglePitAutoMock.mockResolvedValue(undefined);
     rootStore = new RendererCore();
   });
 
@@ -418,320 +424,109 @@ describe('PitServiceWidgetStore — pit orders', () => {
   };
 
   describe('auto mode', () => {
-    // `enabled` matters as much as the auto switches: auto mode is inert for a
-    // widget that is not in the active layout.
-    const enableAuto = () => {
-      setSettings({ enabled: true });
-      setStrategy({
-        pitAutoFuel: true,
-        pitAutoTires: true,
-        pitAutoTireWearThreshold: 60,
+    // The decisions are the telemetry thread's (`computations/pit_auto.rs`);
+    // the widget reports what it publishes and hands over what a manual order
+    // claims.
+    const setPitAuto = (frame: Partial<PitAutoFrame> | null) => {
+      runInAction(() => {
+        rootStore.backendComputed.pitAuto =
+          frame === null
+            ? null
+            : { mode: 'auto', ordersSent: 0, lastOrderOk: null, ...frame };
       });
     };
 
-    // On pit exit the sim checks a service set of its own — always all four
-    // corners, the rest varying. Auto mode wipes that once per stint, away from
-    // the box, so arrival has nothing to undo.
-    describe('the order the sim arms by itself', () => {
-      // With both halves auto mode's the whole order goes, and the SDK has no
-      // batch form — one `clear` beats four broadcasts.
-      it('wipes both halves auto mode owns with a single clear', async () => {
-        enableAuto();
+    const claimOfLastOrder = () => sendPitOrderMock.mock.calls.at(-1)?.[1];
 
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.clearSelfArmedOrder();
-
-        expect(pitOrderPayloads()[0]).toEqual({
-          requests: [{ kind: 'clear', value: 0 }],
-        });
-      });
-
-      // Auto mode never orders these two, but the sim ticks the windshield on
-      // every exit, and a tear-off nobody chose is still a tear-off.
-      it('wipes the windshield and fast repair the sim armed', async () => {
-        enableAuto();
-        rootStore.pitServiceWidget.auto.setHalvesTakenOver(true, true);
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.clearSelfArmedOrder();
-
-        // Both halves are the driver's, so there is nothing to wipe and the
-        // imposed boxes are left with the rest of their order.
-        expect(pitOrderPayloads()).toHaveLength(0);
-      });
-
-      it('wipes it once per stint', async () => {
-        enableAuto();
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.clearSelfArmedOrder();
-        await rootStore.pitServiceWidget.auto.clearSelfArmedOrder();
-
-        expect(pitOrderPayloads()).toHaveLength(1);
-      });
-
-      it('wipes again on the stint after the next stop', async () => {
-        enableAuto();
-
-        await rootStore.pitServiceWidget.auto.clearSelfArmedOrder();
-        rootStore.pitServiceWidget.panel.handlePitRoadChange(true);
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.clearSelfArmedOrder();
-
-        expect(pitOrderPayloads()).toHaveLength(1);
-      });
-
-      // With auto mode off the armed order is something the driver may be
-      // counting on, and taking it away unasked is the whole surprise to avoid.
-      it('leaves it alone when auto mode is off', async () => {
-        enableAuto();
-        rootStore.pitServiceWidget.auto.setAutoSuspended(true);
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.clearSelfArmedOrder();
-
-        expect(pitOrderPayloads()).toHaveLength(0);
-      });
-
-      it('leaves a half the driver has taken over alone', async () => {
-        enableAuto();
-        rootStore.pitServiceWidget.auto.setHalvesTakenOver(true, false);
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.clearSelfArmedOrder();
-
-        expect(pitOrderPayloads()[0]).toEqual({
-          requests: [
-            { kind: 'clearTires', value: 0 },
-            { kind: 'clearWindshield', value: 0 },
-            { kind: 'clearFastRepair', value: 0 },
-          ],
-        });
-      });
-
-      it('sends nothing when auto mode owns neither half', async () => {
-        setSettings({ enabled: true });
-        setStrategy({ pitAutoFuel: false, pitAutoTires: false });
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.clearSelfArmedOrder();
-
-        expect(pitOrderPayloads()).toHaveLength(0);
-      });
-    });
-
-    describe('the fast repair', () => {
-      it('orders it as soon as auto mode is on', async () => {
-        enableAuto();
-        setPitService({});
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
-
-        expect(pitOrderPayloads()).toContainEqual({
-          requests: [{ kind: 'fastRepair', value: 0 }],
-        });
-      });
-
-      // Every one of these reads "nothing to do here" on a stop that wants the
-      // repair: the sim leaves the timers at zero until it has assessed the
-      // damage, and reports no fast repairs in sessions that still take the
-      // command. The sim decides what to grant — the widget only asks.
-      it('waits for neither damage nor a reported count', async () => {
-        enableAuto();
-        setPitService({
-          fastRepairsAvailable: 0,
-          repairLeftS: 0,
-          optRepairLeftS: 0,
-        });
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
-
-        expect(pitOrderPayloads()).toHaveLength(1);
-      });
-
-      it('leaves an order the sim already has alone', async () => {
-        enableAuto();
-        setPitService({ fastRepair: true });
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
-
-        expect(pitOrderPayloads()).toHaveLength(0);
-      });
-
-      it('sends nothing with auto mode off', async () => {
-        setSettings({ enabled: true });
-        setStrategy({ pitAutoFuel: false, pitAutoTires: false });
-        setPitService({});
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
-
-        expect(pitOrderPayloads()).toHaveLength(0);
-      });
-
-      it('sends once per stop', async () => {
-        enableAuto();
-        setPitService({});
-
-        sendPitOrderMock.mockClear();
-        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
-        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
-
-        expect(pitOrderPayloads()).toHaveLength(1);
-      });
-    });
-
-    it('orders only the corners worn past the threshold', async () => {
+    it('claims only the fuel half when the fuel is nudged by hand', async () => {
       setFuelPlan(24.1, 106);
-      enableAuto();
-      setTireWear({ lf: 0.55, rf: 0.62, lr: 0.9, rr: 0.6 });
+      setPitService({ addFuel: true, fuelAmount: 40 });
 
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
+      await rootStore.pitServiceWidget.order.adjustFuel(
+        rootStore.pitServiceWidget.order.fuelStepLiters
+      );
 
-      expect(pitOrderPayloads()).toContainEqual({
-        requests: [
-          { kind: 'clearFuel', value: 0 },
-          { kind: 'fuel', value: 25 },
-        ],
-      });
-      expect(pitOrderPayloads()).toContainEqual({
-        requests: [
-          { kind: 'clearTires', value: 0 },
-          { kind: 'lf', value: 0 },
-          { kind: 'rr', value: 0 },
-        ],
-      });
+      expect(claimOfLastOrder()).toEqual({ fuel: true, tires: false });
     });
 
-    // The whole point of the split: on pit road the sim still reports the
-    // previous stop's tread, and only the reading taken in the box may decide
-    // the order.
-    it('orders tires from the wear read in the box, not on pit entry', async () => {
+    it('claims the fuel half when the calculated amount is ordered by key', async () => {
       setFuelPlan(24.1, 106);
-      enableAuto();
-      setTireWear({ lf: 1, rf: 1, lr: 1, rr: 1 });
 
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-
-      expect(pitOrderPayloads()).not.toContainEqual({
-        requests: [
-          { kind: 'clearTires', value: 0 },
-          { kind: 'lf', value: 0 },
-        ],
-      });
-
-      setTireWear({ lf: 0.3, rf: 1, lr: 1, rr: 1 });
-
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
+      await rootStore.pitServiceWidget.order.toggleFuel();
 
       expect(pitOrderPayloads()).toContainEqual({
-        requests: [
-          { kind: 'clearTires', value: 0 },
-          { kind: 'lf', value: 0 },
-        ],
+        requests: [{ kind: 'fuel', value: 25 }],
       });
+      expect(claimOfLastOrder()).toEqual({ fuel: true, tires: false });
     });
 
-    // "Change nothing" is a decision auto mode has to enforce: the sim arms the
-    // box with the previous stop's order by itself, so staying silent would
-    // leave four tires ordered that the threshold said to keep.
-    it('clears the tires when no corner is worn enough to change', async () => {
-      enableAuto();
-      setTireWear({ lf: 1, rf: 1, lr: 1, rr: 1 });
+    it('claims only the tire half when a corner is toggled by hand', async () => {
+      await rootStore.pitServiceWidget.order.toggleTire('rf');
 
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
+      expect(claimOfLastOrder()).toEqual({ fuel: false, tires: true });
 
-      sendPitOrderMock.mockClear();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
+      await rootStore.pitServiceWidget.order.toggleAllTires();
 
-      expect(pitOrderPayloads()).toContainEqual({
-        requests: [{ kind: 'clearTires', value: 0 }],
-      });
+      expect(claimOfLastOrder()).toEqual({ fuel: false, tires: true });
     });
 
-    // The fuel half runs before any tire wear is readable, so it must not touch
-    // the tire side of the order the sim has armed.
-    it('leaves the tires alone on pit entry', async () => {
+    it('claims the whole stop with the planned or the clear order', async () => {
       setFuelPlan(24.1, 106);
-      enableAuto();
 
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
+      await rootStore.pitServiceWidget.order.sendPlannedOrder();
 
-      expect(pitOrderPayloads()).toHaveLength(1);
-      expect(pitOrderPayloads()).toContainEqual({
-        requests: [
-          { kind: 'clearFuel', value: 0 },
-          { kind: 'fuel', value: 25 },
-        ],
-      });
+      expect(claimOfLastOrder()).toEqual({ fuel: true, tires: true });
+
+      await rootStore.pitServiceWidget.order.sendClearOrder();
+
+      expect(claimOfLastOrder()).toEqual({ fuel: true, tires: true });
     });
 
-    it('sends each half once per stop', async () => {
-      setFuelPlan(24.1, 106);
-      enableAuto();
-      setTireWear({ lf: 0.3 });
+    // Auto mode never orders a fast repair or a tear-off, so using one says
+    // nothing about who is deciding the fuel or the tires.
+    it('claims nothing with a fast repair or a tear-off', async () => {
+      await rootStore.pitServiceWidget.order.toggleFastRepair();
 
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
+      expect(claimOfLastOrder()).toBeUndefined();
 
-      sendPitOrderMock.mockClear();
+      await rootStore.pitServiceWidget.order.toggleWindshield();
 
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
-
-      expect(sendPitOrderMock).not.toHaveBeenCalled();
-
-      rootStore.pitServiceWidget.panel.handlePitRoadChange(true);
-      rootStore.pitServiceWidget.panel.handlePitRoadChange(false);
-
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-
-      expect(pitOrderPayloads()).toContainEqual({
-        requests: [
-          { kind: 'clearFuel', value: 0 },
-          { kind: 'fuel', value: 25 },
-        ],
-      });
+      expect(claimOfLastOrder()).toBeUndefined();
     });
 
-    it('takes the worst of the three points across the tread', () => {
-      enableAuto();
-      runInAction(() => {
-        rootStore.player.chassis = {
-          lf_wear_l: 0.4,
-          lf_wear_m: 0.95,
-          lf_wear_r: 0.95,
-        } as never;
-      });
+    it('names the halves auto mode still owns', () => {
+      setPitAuto({ mode: 'auto' });
 
-      expect(rootStore.pitServiceWidget.auto.autoTireCorners).toEqual(['lf']);
+      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('AUTO');
+
+      setPitAuto({ mode: 'tireAuto' });
+
+      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('TIRE AUTO');
+
+      setPitAuto({ mode: 'fuelAuto' });
+
+      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('FUEL AUTO');
+
+      setPitAuto({ mode: 'manual' });
+
+      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('MANUAL');
     });
 
-    it('leaves out a section the driver switched off', async () => {
-      setFuelPlan(30, 106);
-      enableAuto();
-      setStrategy({ pitAutoFuel: false });
-      setTireWear({ lf: 0.1 });
+    it('has no plate at all while auto mode is switched off', () => {
+      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBeNull();
 
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
+      setPitAuto({ mode: 'off' });
 
-      expect(pitOrderPayloads()).toHaveLength(1);
-      expect(pitOrderPayloads()).toContainEqual({
-        requests: [
-          { kind: 'clearTires', value: 0 },
-          { kind: 'lf', value: 0 },
-        ],
-      });
+      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBeNull();
+    });
+
+    it('sends the auto mode key to the backend', () => {
+      rootStore.pitServiceWidget.auto.toggleAutoSuspended();
+
+      expect(togglePitAutoMock).toHaveBeenCalledTimes(1);
     });
 
     it('marks the wear as stale everywhere but in the box', () => {
-      enableAuto();
       setTireWear({ lf: 0.3 });
 
       expect(rootStore.pitServiceWidget.auto.isTireWearStale).toBe(true);
@@ -741,244 +536,35 @@ describe('PitServiceWidgetStore — pit orders', () => {
       expect(rootStore.pitServiceWidget.auto.isTireWearStale).toBe(false);
     });
 
-    // Auto mode never orders a fast repair or a tear-off, so using one says
-    // nothing about who is deciding the fuel or the tires.
-    it('keeps both halves after a fast repair or a tear-off', async () => {
-      setFuelPlan(24.1, 106);
-      enableAuto();
-      setTireWear({ lf: 0.1 });
-
-      await rootStore.pitServiceWidget.order.toggleFastRepair();
-      await rootStore.pitServiceWidget.order.toggleWindshield();
-
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('AUTO');
-
-      sendPitOrderMock.mockClear();
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
-
-      expect(pitOrderPayloads()).toHaveLength(2);
-    });
-
-    it('stands both halves down when the driver takes the stop over', async () => {
-      setFuelPlan(30, 106);
-      enableAuto();
-      setTireWear({ lf: 0.1 });
-
-      rootStore.pitServiceWidget.auto.setAutoSuspended(true);
-
-      expect(rootStore.pitServiceWidget.auto.isAutoActive).toBe(false);
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('MANUAL');
-
-      sendPitOrderMock.mockClear();
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
-
-      expect(sendPitOrderMock).not.toHaveBeenCalled();
-    });
-
-    // Auto mode doing its job is not the driver taking over: the two used to
-    // share a flag, and the plate flipped to MANUAL the moment auto succeeded.
-    it('still reads AUTO after auto mode has sent both halves', async () => {
-      setFuelPlan(24.1, 106);
-      enableAuto();
-      setTireWear({ lf: 0.3 });
-
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
-
-      expect(pitOrderPayloads()).toHaveLength(2);
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('AUTO');
-    });
-
-    it('names the halves auto mode still owns', async () => {
-      setFuelPlan(24.1, 106);
-      enableAuto();
-      setPitService({ addFuel: true, fuelAmount: 40 });
-      setTireWear({ lf: 0.3 });
-
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('AUTO');
-
-      await rootStore.pitServiceWidget.order.adjustFuel(
-        rootStore.pitServiceWidget.order.fuelStepLiters
-      );
-
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('TIRE AUTO');
-
-      await rootStore.pitServiceWidget.order.toggleTire('rf');
-
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('MANUAL');
-    });
-
-    it('says FUEL AUTO once the tires are picked by hand', async () => {
-      setFuelPlan(24.1, 106);
-      enableAuto();
-      setTireWear({ lf: 0.3 });
-
-      await rootStore.pitServiceWidget.order.toggleAllTires();
-
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('FUEL AUTO');
-    });
-
-    it('has no plate at all while auto mode is switched off', () => {
-      setSettings({ enabled: true });
-      setStrategy({ pitAutoFuel: false, pitAutoTires: false });
-
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBeNull();
-    });
-
-    // Correcting the fuel is the most ordinary thing a driver does on the way
-    // in, and it says nothing at all about the tires.
-    it('claims only the fuel half when the fuel is nudged by hand', async () => {
-      setFuelPlan(24.1, 106);
-      enableAuto();
-      setPitService({ addFuel: true, fuelAmount: 40 });
-      setTireWear({ lf: 0.3, rf: 1, lr: 1, rr: 1 });
-
-      await rootStore.pitServiceWidget.order.adjustFuel(
-        rootStore.pitServiceWidget.order.fuelStepLiters
-      );
-
-      expect(rootStore.pitServiceWidget.auto.isAutoFuelPending).toBe(false);
-      expect(rootStore.pitServiceWidget.auto.isAutoTiresPending).toBe(true);
-
-      sendPitOrderMock.mockClear();
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
-
-      expect(pitOrderPayloads()).toHaveLength(1);
-      expect(pitOrderPayloads()).toContainEqual({
-        requests: [
-          { kind: 'clearTires', value: 0 },
-          { kind: 'lf', value: 0 },
-        ],
+    describe('an order auto mode sent', () => {
+      beforeEach(() => {
+        rootStore.pitServiceWidget.init();
+        setSettings({ commandRevealSeconds: 4 });
       });
-    });
 
-    it('claims only the tire half when a corner is toggled by hand', async () => {
-      setFuelPlan(24.1, 106);
-      enableAuto();
-      setTireWear({ lf: 0.3 });
+      it('reveals the panel and reports the order, as a key press does', () => {
+        setPitAuto({ ordersSent: 3 });
+        setPitAuto({ ordersSent: 4, lastOrderOk: true });
 
-      await rootStore.pitServiceWidget.order.toggleTire('rf');
-
-      expect(rootStore.pitServiceWidget.auto.isAutoTiresPending).toBe(false);
-      expect(rootStore.pitServiceWidget.auto.isAutoFuelPending).toBe(true);
-
-      sendPitOrderMock.mockClear();
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
-
-      expect(pitOrderPayloads()).toHaveLength(1);
-      expect(pitOrderPayloads()).toContainEqual({
-        requests: [
-          { kind: 'clearFuel', value: 0 },
-          { kind: 'fuel', value: 25 },
-        ],
+        expect(rootStore.pitServiceWidget.panel.isVisible).toBe(true);
+        expect(rootStore.pitServiceWidget.order.lastOrderResult).toBe('sent');
       });
-    });
 
-    // Ordering the calculated amount by hand is a manual fuel decision like any
-    // other: auto mode rewriting it on pit entry would undo a deliberate press.
-    it('claims the fuel half when the calculated amount is ordered by key', async () => {
-      setFuelPlan(24.1, 106);
-      enableAuto();
-      setTireWear({ lf: 0.3 });
+      it('reports one that failed to leave', () => {
+        setPitAuto({ ordersSent: 0 });
+        setPitAuto({ ordersSent: 1, lastOrderOk: false });
 
-      await rootStore.pitServiceWidget.order.toggleFuel();
-
-      expect(pitOrderPayloads()).toContainEqual({
-        requests: [{ kind: 'fuel', value: 25 }],
+        expect(rootStore.pitServiceWidget.order.lastOrderResult).toBe('failed');
       });
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('TIRE AUTO');
 
-      sendPitOrderMock.mockClear();
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
+      // A window opened mid-session receives the count so far — history, not
+      // an order going out now.
+      it('ignores the count on the first frame a window receives', () => {
+        setPitAuto({ ordersSent: 7, lastOrderOk: true });
 
-      expect(pitOrderPayloads()).toHaveLength(0);
-    });
-
-    // The way back into auto mode inside a stop. Without it a driver who has
-    // corrected the fuel is stuck at FUEL AUTO until the next pit exit.
-    it('restores both halves when the auto key is pressed from a half-manual stop', async () => {
-      setFuelPlan(24.1, 106);
-      enableAuto();
-      setPitService({ addFuel: true, fuelAmount: 40 });
-
-      await rootStore.pitServiceWidget.order.adjustFuel(
-        rootStore.pitServiceWidget.order.fuelStepLiters
-      );
-
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('TIRE AUTO');
-
-      rootStore.pitServiceWidget.auto.toggleAutoSuspended();
-
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('AUTO');
-    });
-
-    it('hands the stop to the driver when the auto key is pressed from AUTO', () => {
-      enableAuto();
-
-      rootStore.pitServiceWidget.auto.toggleAutoSuspended();
-
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('MANUAL');
-
-      rootStore.pitServiceWidget.auto.toggleAutoSuspended();
-
-      expect(rootStore.pitServiceWidget.auto.autoModeLabel).toBe('AUTO');
-    });
-
-    // The off switch outlives the stop. Pit exit clearing it turned "I switched
-    // auto off" into "auto is back on next lap", which is exactly the surprise
-    // the switch exists to prevent.
-    it('stays switched off across a pit stop', async () => {
-      enableAuto();
-      rootStore.pitServiceWidget.auto.setAutoSuspended(true);
-
-      rootStore.pitServiceWidget.panel.handlePitRoadChange(true);
-      rootStore.pitServiceWidget.panel.handlePitRoadChange(false);
-
-      expect(rootStore.pitServiceWidget.auto.isAutoActive).toBe(false);
-    });
-
-    it('hands a half taken over by hand back on the next pit entry', async () => {
-      enableAuto();
-      await rootStore.pitServiceWidget.order.toggleFuel();
-
-      expect(rootStore.pitServiceWidget.auto.fuelTakenOver).toBe(true);
-
-      rootStore.pitServiceWidget.panel.handlePitRoadChange(true);
-      rootStore.pitServiceWidget.panel.handlePitRoadChange(false);
-
-      expect(rootStore.pitServiceWidget.auto.fuelTakenOver).toBe(false);
-      expect(rootStore.pitServiceWidget.auto.isAutoActive).toBe(true);
-    });
-
-    it('sends nothing when the widget is not in the active layout', async () => {
-      setFuelPlan(24.1, 106);
-      enableAuto();
-      setTireWear({ lf: 0.1 });
-      setSettings({ enabled: false });
-
-      sendPitOrderMock.mockClear();
-
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
-
-      expect(rootStore.pitServiceWidget.auto.isAutoEnabled).toBe(false);
-      expect(sendPitOrderMock).not.toHaveBeenCalled();
-    });
-
-    it('is off entirely when neither fuel nor tires are automatic', async () => {
-      enableAuto();
-      setStrategy({ pitAutoFuel: false, pitAutoTires: false });
-      setTireWear({ lf: 0.1 });
-
-      await rootStore.pitServiceWidget.auto.applyAutoFuelOrder();
-      await rootStore.pitServiceWidget.auto.applyAutoTireOrder();
-
-      expect(rootStore.pitServiceWidget.auto.isAutoEnabled).toBe(false);
-      expect(sendPitOrderMock).not.toHaveBeenCalled();
+        expect(rootStore.pitServiceWidget.panel.isVisible).toBe(false);
+        expect(rootStore.pitServiceWidget.order.lastOrderResult).toBeNull();
+      });
     });
   });
 
@@ -1051,8 +637,10 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
       await rootStore.pitServiceWidget.order.cycleTireCompound();
 
-      expect(rootStore.pitServiceWidget.auto.tiresTakenOver).toBe(true);
-      expect(rootStore.pitServiceWidget.auto.fuelTakenOver).toBe(false);
+      expect(sendPitOrderMock.mock.calls.at(-1)?.[1]).toEqual({
+        fuel: false,
+        tires: true,
+      });
     });
   });
 

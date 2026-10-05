@@ -8,7 +8,6 @@ import {
 import { publishRemoteControl } from '@platform/services/remote.service';
 import { setupOverlayListeners } from './listeners';
 import { initPerfRun } from './perf-run';
-import { registerPitServiceMirrorReactions } from './pit-service-sync';
 import type { OverlayRoot } from '@store/overlay-root';
 
 /**
@@ -91,9 +90,6 @@ export const initOverlaySync = async (root: OverlayRoot) => {
       },
       { fireImmediately: true }
     ),
-    // Clicks on the checkboxes land here, so this window can be the one that
-    // takes the order, or one half of it, off auto.
-    ...registerPitServiceMirrorReactions(root),
   ];
 
   return () => {

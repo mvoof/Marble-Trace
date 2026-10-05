@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInAction } from 'mobx';
 import { MainRoot } from '@store/main-root';
+import { registerPitServiceMainReactions } from '@platform/sync/pit-service-sync';
 import type { SavedLayout } from '@/types/widget-settings';
 
 // setWidgets pushes a few settings to the backend through the service layer,
@@ -11,8 +12,16 @@ vi.mock('@platform/services/settings.service', () => ({
   setFuelCountYellowLapsSilent: vi.fn(),
   setCarLengthSilent: vi.fn(),
 }));
+const setPitStrategySilentMock = vi.hoisted(() => vi.fn());
+
+vi.mock('@platform/services/pit.service', () => ({
+  sendPitOrder: vi.fn().mockResolvedValue(undefined),
+  togglePitAuto: vi.fn().mockResolvedValue(undefined),
+  setPitStrategySilent: setPitStrategySilentMock,
+}));
 vi.mock('@platform/services/events.service', () => ({
   listenTo: vi.fn().mockResolvedValue(() => {}),
+  emitPitServiceReveal: vi.fn().mockResolvedValue(undefined),
   emitToApp: vi.fn().mockResolvedValue(undefined),
   emitToWindow: vi.fn().mockResolvedValue(undefined),
   emitToOverlays: vi.fn().mockResolvedValue(undefined),
@@ -69,17 +78,27 @@ describe('isWidgetOnScreen', () => {
     expect(root.liveWidgets.isWidgetOnScreen('standings')).toBe(true);
   });
 
+  // Auto mode decides on the telemetry thread, which learns the gate from
+  // what main pushes with the strategy.
   it('takes pit-service auto mode down with the layout switch', () => {
     runInAction(() => {
       root.appSettings.setPitAutoFuel(true);
       root.appSettings.setPitAutoTires(false);
     });
 
-    expect(root.pitServiceWidget.auto.isAutoEnabled).toBe(true);
+    const disposers = registerPitServiceMainReactions(root);
+
+    expect(setPitStrategySilentMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ autoFuel: true, widgetOnScreen: true })
+    );
 
     runInAction(() => root.liveWidgets.loadLayout('quali'));
 
-    expect(root.pitServiceWidget.auto.isAutoEnabled).toBe(false);
+    expect(setPitStrategySilentMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ autoFuel: true, widgetOnScreen: false })
+    );
+
+    disposers.forEach((dispose) => dispose());
   });
 
   // Previewing a layout in the editor leaves the overlay on the previous one,

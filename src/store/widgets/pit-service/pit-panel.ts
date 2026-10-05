@@ -194,13 +194,11 @@ export class PitPanelState {
 
     if (onPitRoad) {
       this.lingering = false;
-      this.store.auto.armSelfArmedClear();
 
       return;
     }
 
     this.lingering = true;
-    this.store.auto.clearStopOverrides();
 
     this.hideTimer = setTimeout(() => {
       runInAction(() => {
