@@ -46,7 +46,11 @@ const makeStore = () => {
         includeLapped: false,
       }),
     },
-    session: { currentSessionType: 'Race', sessionInfo: null },
+    session: {
+      currentSessionType: 'Race',
+      sessionInfo: null,
+      paceCarIdxs: new Set<number>(),
+    },
     units: { unitSystem: 'metric' },
   };
   const store = new WheelToWheelWidgetStore({

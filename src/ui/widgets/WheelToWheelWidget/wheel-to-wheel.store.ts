@@ -298,7 +298,7 @@ export class WheelToWheelWidgetStore implements SelfHidingWidgetStore {
       thresholdSeconds: settings.gapThreshold,
       heldAheadIdx: this.heldAheadIdx,
       heldBehindIdx: this.heldBehindIdx,
-      excludedCarIdxs: this.paceCarIdxs,
+      excludedCarIdxs: this.root.session.paceCarIdxs,
       countsLaps: isRace && !settings.includeLapped,
     });
   }
@@ -382,21 +382,13 @@ export class WheelToWheelWidgetStore implements SelfHidingWidgetStore {
         .filter(
           (entry) =>
             !entry.isPlayer &&
-            !this.paceCarIdxs.has(entry.carIdx) &&
+            !this.root.session.paceCarIdxs.has(entry.carIdx) &&
             entry.carClassId === player.carClassId
         )
         .sort(
           (first, second) =>
             Math.abs(first.relativeLapDist) - Math.abs(second.relativeLapDist)
         )[0] ?? null
-    );
-  }
-
-  private get paceCarIdxs(): ReadonlySet<number> {
-    const cars = this.root.session.sessionInfo?.cars ?? [];
-
-    return new Set(
-      cars.filter((car) => car.isPaceCar).map((car) => car.carIdx)
     );
   }
 

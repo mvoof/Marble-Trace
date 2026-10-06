@@ -8,6 +8,7 @@ import {
   MOCK_PIT_ROWS,
   PACE_CAR_IDX,
   mockPaceCarEntry,
+  mockPaceCarFrame,
 } from '@/preview/mocks/field';
 import { respaceField } from '@/preview/field-seed';
 import { RelativeWidget } from './RelativeWidget';
@@ -84,6 +85,10 @@ const seedPaceCars = (store: RendererCore, multiclass: boolean) => {
     car_idx_lap_dist_pct: lapDist,
     car_idx_est_time: estTime,
   });
+
+  store.backendComputed.updatePaceCar(
+    mockPaceCarFrame(paceCars.map((car) => car.carIdx))
+  );
 };
 
 interface StoryArgs {

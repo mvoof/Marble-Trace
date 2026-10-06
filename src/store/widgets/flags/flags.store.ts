@@ -10,7 +10,10 @@ import type { RaceFlags } from '@/types/bindings';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
 import type { RendererCore } from '@store/roots/renderer-core';
 
-type FlagsDeps = Pick<RendererCore, 'liveWidgets' | 'player' | 'paceCar'>;
+type FlagsDeps = Pick<
+  RendererCore,
+  'liveWidgets' | 'player' | 'backendComputed'
+>;
 
 const NO_FLAG: FlagType = 'none';
 const NO_FLAGS: FlagType[] = [];
@@ -171,7 +174,7 @@ export class FlagsStore {
     const flags = this.root.player.carStatus?.flags;
     const list = flags ? flagsToList(flags) : [];
 
-    if (this.root.paceCar.isPaceCarOnTrack && !list.includes('sc')) {
+    if (this.root.backendComputed.isPaceCarOnTrack && !list.includes('sc')) {
       list.push('sc');
     }
 
@@ -182,7 +185,7 @@ export class FlagsStore {
     const flags = this.root.player.carStatus?.flags;
     const priority = flags ? flagToPriority(flags) : 'none';
 
-    if (priority === 'none' && this.root.paceCar.isPaceCarOnTrack) {
+    if (priority === 'none' && this.root.backendComputed.isPaceCarOnTrack) {
       return 'sc';
     }
 

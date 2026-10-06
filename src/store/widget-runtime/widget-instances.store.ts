@@ -127,7 +127,7 @@ export class WidgetInstanceRegistry {
 }
 
 /** The stores several widget types read, started only while one is mounted. */
-export type SharedWidgetStoreName = 'flags' | 'paceCar' | 'radar';
+export type SharedWidgetStoreName = 'flags' | 'radar';
 
 interface StartableStore {
   init(): void;

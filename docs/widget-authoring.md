@@ -135,7 +135,7 @@ derived logic.** Simple widgets read the data stores directly, and stay simple.
   (`store: (context) => new XWidgetStore(context)`), read settings with
   `getSettings(context.instanceId)`, and give components a hook over
   `useWidgetInstanceStore`. It exists only while the instance is mounted. A
-  shared store it reads (`flags`, `paceCar`, `radar`) goes in `sharedStores`.
+  shared store it reads (`flags`, `radar`) goes in `sharedStores`.
   A reaction or timer that would overwrite what a preview seeds by hand starts
   only when `context.core.startsWidgetStores`. `StandingsWidget` and `InputTraceWidget`
   are the worked examples; `WheelToWheelWidget` for a store that also decides

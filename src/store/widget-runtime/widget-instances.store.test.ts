@@ -10,7 +10,6 @@ const fakeStartable = () => ({ init: vi.fn(), dispose: vi.fn() });
 
 const fakeStores = () => ({
   flags: fakeStartable(),
-  paceCar: fakeStartable(),
   radar: fakeStartable(),
 });
 
@@ -53,9 +52,9 @@ describe('SharedWidgetStores', () => {
     const stores = fakeStores();
     const shared = new SharedWidgetStores(stores, true);
 
-    shared.release('paceCar');
+    shared.release('flags');
 
-    expect(stores.paceCar.dispose).not.toHaveBeenCalled();
+    expect(stores.flags.dispose).not.toHaveBeenCalled();
   });
 
   it('starts nothing in a core that does not start stores', () => {

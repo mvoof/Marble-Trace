@@ -22,6 +22,7 @@ import { respaceField } from './field-seed';
 import {
   mockIncidents,
   mockPaceCarEntry,
+  mockPaceCarFrame,
   PACE_CAR_IDX,
   TRACK_SURFACE_ON_TRACK,
 } from './mocks/field';
@@ -269,6 +270,7 @@ const applyPaceCar = (store: RendererCore) => {
     car_idx_lap_dist_pct: lapDistPct,
     car_idx_track_surface: trackSurface,
   });
+  store.backendComputed.updatePaceCar(mockPaceCarFrame([PACE_CAR_IDX]));
 };
 
 // A delta scenario states one number: the same gap against every reference the

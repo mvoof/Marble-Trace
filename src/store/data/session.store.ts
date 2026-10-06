@@ -67,6 +67,15 @@ export class SessionStore {
    * carries the pace car and spectators, so counting it raw reports one place
    * too many — the per-class counts come from `driverEntries`, which drops them.
    */
+  /** The pace cars' indices — they are in the roster, never in the field. */
+  get paceCarIdxs(): ReadonlySet<number> {
+    return new Set(
+      (this.sessionInfo?.cars ?? [])
+        .filter((car) => car.isPaceCar)
+        .map((car) => car.carIdx)
+    );
+  }
+
   get competingCarCount(): number {
     return (this.sessionInfo?.cars ?? []).filter(
       (car) => !car.isPaceCar && !car.isSpectator

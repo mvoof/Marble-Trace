@@ -9,6 +9,8 @@ import type {
   LapHistoryEntry,
   LapLogFrame,
   LastCompletedLap,
+  PaceCarFrame,
+  PaceCarPitPhase,
   PitAutoFrame,
   PitStopsFrame,
   ProximityFrame,
@@ -46,6 +48,8 @@ export class BackendComputedStore {
    */
   driverEntries: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
+  /** Each pace car's pit phase, as the telemetry thread tracks it (10 Hz). */
+  paceCar: PaceCarFrame | null = null;
   /** Auto pit mode as the telemetry thread decides it, on the 4 Hz tier. */
   pitAuto: PitAutoFrame | null = null;
   /**
@@ -91,6 +95,7 @@ export class BackendComputedStore {
       incidents: observable.ref,
       driverEntries: observable.ref,
       pitStops: observable.ref,
+      paceCar: observable.ref,
       pitAuto: observable.ref,
       lapDelta: observable.ref,
       lapHistory: observable.ref,
@@ -214,6 +219,26 @@ export class BackendComputedStore {
     this.pitStops = frame;
   }
 
+  updatePaceCar(frame: PaceCarFrame) {
+    this.paceCar = frame;
+  }
+
+  /** carIdx → pit phase, for every pace car the session has. */
+  get paceCarPhases(): Map<number, PaceCarPitPhase> {
+    return new Map(
+      (this.paceCar?.cars ?? []).map((car) => [car.carIdx, car.phase])
+    );
+  }
+
+  paceCarPhaseOf(carIdx: number): PaceCarPitPhase {
+    return this.paceCarPhases.get(carIdx) ?? 'unknown';
+  }
+
+  /** Any pace car out on the racing surface — what turns the flags to a safety car. */
+  get isPaceCarOnTrack(): boolean {
+    return (this.paceCar?.cars ?? []).some((car) => car.phase === 'onTrack');
+  }
+
   updatePitAuto(frame: PitAutoFrame) {
     this.pitAuto = frame;
   }
@@ -234,6 +259,7 @@ export class BackendComputedStore {
     this.incidents = null;
     this.driverEntries = null;
     this.pitStops = null;
+    this.paceCar = null;
     this.pitAuto = null;
     this.lapDelta = null;
     this.lapHistory = [];

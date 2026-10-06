@@ -3,6 +3,8 @@ import type {
   CarPositionsFrame,
   IncidentPoint,
   IncidentsFrame,
+  PaceCarFrame,
+  PaceCarPitPhase,
 } from '@/types/bindings';
 import type { DriverEntry } from '@/types/driver-entry';
 import { TrackSurface } from '@/types';
@@ -285,6 +287,18 @@ export const mockPaceCarEntry = (
   carNumber: '0',
   isPaceCar: true,
   ...overrides,
+});
+
+/**
+ * The pace cars' pit phases, as the telemetry thread reports them. A preview
+ * runs no telemetry thread, so a fixture that adds a pace car states its phase
+ * here too, or every widget reads it as not on track and draws nothing.
+ */
+export const mockPaceCarFrame = (
+  carIdxs: number[],
+  phase: PaceCarPitPhase = 'onTrack'
+): PaceCarFrame => ({
+  cars: carIdxs.map((carIdx) => ({ carIdx, phase })),
 });
 
 /**

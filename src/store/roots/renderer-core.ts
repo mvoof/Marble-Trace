@@ -2,7 +2,6 @@ import { BackendComputedStore } from '../data/computed.store';
 import { SimStore } from '../sim/sim.store';
 import { FlagsStore } from '../widgets/flags/flags.store';
 import { IncidentsWidgetStore } from '../widgets/incidents/incidents.store';
-import { PaceCarStore } from '../widgets/pace-car/pace-car.store';
 import { RadarWidgetStore } from '../widgets/radar/radar.store';
 import { PitServiceWidgetStore } from '../widgets/pit-service/pit-service.store';
 import { PlayerPositionStore } from '../data/player-position.store';
@@ -67,7 +66,6 @@ export class RendererCore {
   backendComputed: BackendComputedStore;
   sim: SimStore;
   flags: FlagsStore;
-  paceCar: PaceCarStore;
   incidentsWidget: IncidentsWidgetStore;
   radar: RadarWidgetStore;
   playerPosition: PlayerPositionStore;
@@ -124,13 +122,12 @@ export class RendererCore {
     this.appSettings = new AppSettingsStore();
     this.units = new UnitsStore();
     this.flags = new FlagsStore(this);
-    this.paceCar = new PaceCarStore(this);
     this.incidentsWidget = new IncidentsWidgetStore(this);
     this.radar = new RadarWidgetStore(this);
     this.playerPosition = new PlayerPositionStore(this);
     this.startsWidgetStores = options?.startsWidgetStores ?? !options?.skipInit;
     this.sharedWidgetStores = new SharedWidgetStores(
-      { flags: this.flags, paceCar: this.paceCar, radar: this.radar },
+      { flags: this.flags, radar: this.radar },
       this.startsWidgetStores
     );
     this.widgetInstances = new WidgetInstanceRegistry((instanceId) =>
@@ -162,7 +159,6 @@ export class RendererCore {
     this.flags.dispose();
     this.sim.dispose();
     this.radar.dispose();
-    this.paceCar.dispose();
   }
 }
 

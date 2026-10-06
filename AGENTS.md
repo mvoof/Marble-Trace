@@ -108,13 +108,13 @@ Each window builds its own root over one renderer core (see MobX Stores → Wind
 
 Four layers with strict one-way imports:
 
-| Layer           | Rule                                                                                                             |
-| --------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `model/`        | serde + specta types only. No `kerb` or `tauri`.                                                                 |
-| `sources/`      | **Only** layer allowed to `use kerb`. Maps `IracingFrame` → `SourceFrame`.                                       |
-| `computations/` | Pure logic. No kerb, no tauri. Five processors: `fuel`, `lap_delta`, `pit_stops`, `proximity`, `driver_entries`. |
-| `commands/`     | The Tauri command surface, split by what it touches: `settings`, `telemetry`, `track`, `pit`.                    |
-| `telemetry/`    | Runtime: assembles `TelemetryBundle`, emits `sim://telemetry/bundle`.                                            |
+| Layer           | Rule                                                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `model/`        | serde + specta types only. No `kerb` or `tauri`.                                                                                                  |
+| `sources/`      | **Only** layer allowed to `use kerb`. Maps `IracingFrame` → `SourceFrame`.                                                                        |
+| `computations/` | Pure logic. No kerb, no tauri. One processor per computed frame (`fuel`, `lap_delta`, `pace_car`, `pit_stops`, `proximity`, `driver_entries`, …). |
+| `commands/`     | The Tauri command surface, split by what it touches: `settings`, `telemetry`, `track`, `pit`.                                                     |
+| `telemetry/`    | Runtime: assembles `TelemetryBundle`, emits `sim://telemetry/bundle`.                                                                             |
 
 - `specta` auto-generates `src/types/bindings.ts` on `npm run tauri dev` — **never edit manually**. It is written one type per line; the checked-in copy is `oxfmt`-formatted, so **run `npm run format` after every regeneration** or the next commit carries a reformat of the whole file instead of your one-line change.
 - The whole export lives in `src-tauri/src/bindings.rs`, and each module registers
@@ -312,7 +312,7 @@ Most changes need no migration at all. Full guide: `docs/settings-schema.md`.
 | Hz    | Fields                                                                                       |
 | ----- | -------------------------------------------------------------------------------------------- |
 | 60    | `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `pitTarget`                          |
-| 10    | `carIdx`, `chassis`, `lapTiming`, `proximity`, `driverEntries`                               |
+| 10    | `carIdx`, `chassis`, `lapTiming`, `proximity`, `driverEntries`, `paceCar`                    |
 | 4     | `carStatus`, `fuel`, `pitStops`                                                              |
 | 1     | `session`, `environment`                                                                     |
 | async | `sim://session`, `sim://weather`, `sim://status`, `sim://disconnected`, `sim://capabilities` |
@@ -713,17 +713,17 @@ sit in different branches of the tree.** Never to a shared folder "in case",
 and never because of what kind of file it is: a helper that one feature reads
 belongs to that feature even when a store and a widget both read it.
 
-| what                                                                     | where                                                                                                                                                                                        |
-| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| everything one widget alone uses                                         | `src/ui/widgets/<Widget>/`: components, `manifest.ts`, `mount.ts`, its store, `*-utils.ts`, hooks, its `*SettingsPanel.tsx`, stories, tests                                                  |
-| a store several widgets of one feature share, and that feature's helpers | `src/store/widgets/<feature>/` — every feature its own folder (`flags/`, `pace-car/`, `pit-service/`, `radar/`, `incidents/`, `track-map/`); widgets import from it, `ui` may import `store` |
-| derived data read across the app (the player's place in the field)       | beside the data stores, `src/store/data/`                                                                                                                                                    |
-| components used by 2+ widgets                                            | `src/ui/shared/`                                                                                                                                                                             |
-| DOM/browser hooks used by 2+ widgets                                     | `src/ui/hooks/`                                                                                                                                                                              |
-| pure helpers used by 2+ features                                         | `src/utils/`                                                                                                                                                                                 |
-| a helper with one non-widget owner                                       | beside that owner (`store/layout/layout-*.ts`, `store/sim/debug.ts`, `ui/app/main/sim-name.ts`)                                                                                              |
-| preview scenarios and mock builders                                      | `src/preview/` — above the stores: `ui` and Storybook read it, a store never does                                                                                                            |
-| tests and stories                                                        | next to the file they cover (`x.test.ts`, `X.stories.tsx`)                                                                                                                                   |
+| what                                                                     | where                                                                                                                                                                           |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| everything one widget alone uses                                         | `src/ui/widgets/<Widget>/`: components, `manifest.ts`, `mount.ts`, its store, `*-utils.ts`, hooks, its `*SettingsPanel.tsx`, stories, tests                                     |
+| a store several widgets of one feature share, and that feature's helpers | `src/store/widgets/<feature>/` — every feature its own folder (`flags/`, `pit-service/`, `radar/`, `incidents/`, `track-map/`); widgets import from it, `ui` may import `store` |
+| derived data read across the app (the player's place in the field)       | beside the data stores, `src/store/data/`                                                                                                                                       |
+| components used by 2+ widgets                                            | `src/ui/shared/`                                                                                                                                                                |
+| DOM/browser hooks used by 2+ widgets                                     | `src/ui/hooks/`                                                                                                                                                                 |
+| pure helpers used by 2+ features                                         | `src/utils/`                                                                                                                                                                    |
+| a helper with one non-widget owner                                       | beside that owner (`store/layout/layout-*.ts`, `store/sim/debug.ts`, `ui/app/main/sim-name.ts`)                                                                                 |
+| preview scenarios and mock builders                                      | `src/preview/` — above the stores: `ui` and Storybook read it, a store never does                                                                                               |
+| tests and stories                                                        | next to the file they cover (`x.test.ts`, `X.stories.tsx`)                                                                                                                      |
 
 - **A widget never imports from another widget's folder.** A second consumer
   moves the file up — to `ui/shared/`, `utils/`, or beside the feature's store.
@@ -830,7 +830,7 @@ other. Always read the widget as `widget.type`, never `widget.id`.
   interface in `store/hotkeys/hotkey-targets.ts` (the sync layer may not import
   the store from `@ui/**`). Main sends a **step**, never a value: only the window
   an instance is mounted in holds its state.
-- The stores several widget types share (`flags`, `paceCar`, `radar`) are
+- The stores several widget types share (`flags`, `radar`) are
   reference-counted: a mount lists them in `sharedStores`, the first instance
   starts the store and the last stops it (`SharedWidgetStores`). Previews count
   but start nothing; a remote screen starts them (`startsWidgetStores`).

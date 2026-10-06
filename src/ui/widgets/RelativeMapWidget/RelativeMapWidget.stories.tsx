@@ -2,7 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
 import type { RendererCore } from '@store/roots/renderer-core';
-import { PACE_CAR_IDX, mockPaceCarEntry } from '@/preview/mocks/field';
+import {
+  PACE_CAR_IDX,
+  mockPaceCarEntry,
+  mockPaceCarFrame,
+} from '@/preview/mocks/field';
 import { respaceField } from '@/preview/field-seed';
 import { RelativeMapWidget } from './RelativeMapWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
@@ -63,6 +67,8 @@ const seedPaceCar = (store: RendererCore) => {
     car_idx_lap_dist_pct: lapDist,
     car_idx_track_surface: surface,
   });
+
+  store.backendComputed.updatePaceCar(mockPaceCarFrame([PACE_CAR_IDX]));
 };
 
 interface StoryArgs {

@@ -5,6 +5,7 @@ pub mod incidents;
 pub mod lap_delta;
 pub mod lap_log;
 pub mod lap_time_settle;
+pub mod pace_car;
 pub mod pit_actions;
 pub mod pit_auto;
 pub mod pit_stops;
@@ -34,6 +35,7 @@ use fuel::{FuelComputedFrame, FuelProcessor};
 use incidents::{IncidentsFrame, IncidentsProcessor};
 use lap_delta::{LapDeltaFrame, LapDeltaProcessor};
 use lap_log::LapLogProcessor;
+use pace_car::{PaceCarFrame, PaceCarProcessor};
 use pit_stops::{PitStopsFrame, PitStopsProcessor};
 use proximity::{ProximityFrame, ProximityProcessor};
 use reference_lap::ReferenceLapProcessor;
@@ -47,6 +49,7 @@ pub enum ProcessorId {
     Fuel,
     LapDelta,
     LapLog,
+    PaceCar,
     PitStops,
     Proximity,
     Incidents,
@@ -99,6 +102,7 @@ pub enum ComputedOutput {
     Fuel(FuelComputedFrame),
     LapDelta(LapDeltaFrame),
     LapLog(LapLogFrame),
+    PaceCar(PaceCarFrame),
     PitStops(PitStopsFrame),
     Proximity(ProximityFrame),
     Incidents(IncidentsFrame),
@@ -154,6 +158,7 @@ impl Default for ProcessorRegistry {
                 Box::new(FuelProcessor::default()),
                 Box::new(LapDeltaProcessor::default()),
                 Box::new(LapLogProcessor::default()),
+                Box::new(PaceCarProcessor::default()),
                 Box::new(PitStopsProcessor::default()),
                 Box::new(ProximityProcessor),
                 Box::new(IncidentsProcessor::default()),
@@ -229,6 +234,9 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<incidents::IncidentPoint>()
         .register::<incidents::IncidentsFrame>()
         .register::<lap_delta::LapDeltaFrame>()
+        .register::<pace_car::PaceCarFrame>()
+        .register::<pace_car::PaceCarPitPhase>()
+        .register::<pace_car::PaceCarState>()
         .register::<pit_stops::PitStopsFrame>()
         .register::<proximity::LateralSide>()
         .register::<proximity::NearbyCar>()

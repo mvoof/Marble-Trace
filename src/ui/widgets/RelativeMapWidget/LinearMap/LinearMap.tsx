@@ -15,7 +15,6 @@ import type { LinearMapWidgetSettings } from '@/types/widget-settings';
 import {
   useBackendComputedStore,
   useCarsStore,
-  usePaceCarStore,
   useSessionStore,
 } from '@store/roots/root-store-context';
 
@@ -36,7 +35,6 @@ export const LinearMap = observer(() => {
   const carsStore = useCarsStore();
   const sessionStore = useSessionStore();
   const { sessionInfo } = sessionStore;
-  const paceCarStore = usePaceCarStore();
 
   const settings = useWidgetSettings<LinearMapWidgetSettings>('relative-map');
   const isHorizontal = settings.orientation === 'horizontal';
@@ -85,7 +83,7 @@ export const LinearMap = observer(() => {
       return false;
     }
 
-    const pitPhase = paceCarStore.getPitPhase(car.carIdx);
+    const pitPhase = computed.paceCarPhaseOf(car.carIdx);
 
     return paceCarShowInPits || pitPhase === 'onTrack' || pitPhase === 'pitOut';
   });

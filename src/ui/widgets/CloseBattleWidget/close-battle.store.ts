@@ -206,7 +206,7 @@ export class CloseBattleWidgetStore {
     return buildOpponents(
       proximity.nearbyCars,
       this.root.backendComputed.relativeEntries,
-      this.paceCarIdxs
+      this.root.session.paceCarIdxs
     )
       .filter((opponent) => matchesSides(opponent, settings.sides))
       .filter(
@@ -224,14 +224,6 @@ export class CloseBattleWidgetStore {
 
   get nearestAhead(): BattleOpponent | null {
     return this.opponents.find((opponent) => opponent.isAhead) ?? null;
-  }
-
-  private get paceCarIdxs(): ReadonlySet<number> {
-    const cars = this.root.session.sessionInfo?.cars ?? [];
-
-    return new Set(
-      cars.filter((car) => car.isPaceCar).map((car) => car.carIdx)
-    );
   }
 
   private get isOnPitRoad(): boolean {

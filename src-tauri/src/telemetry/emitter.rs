@@ -23,7 +23,7 @@ use crate::capabilities::Capabilities;
 use crate::computations::pit_actions::{self, PitActionInput};
 use crate::computations::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
 use crate::computations::{
-    driver_entries, fuel, incidents, lap_delta, pit_stops, proximity, ComputeContext,
+    driver_entries, fuel, incidents, lap_delta, pace_car, pit_stops, proximity, ComputeContext,
     ComputedOutput, TickRate,
 };
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
@@ -91,6 +91,8 @@ pub struct TelemetryBundle {
     pub proximity: Option<proximity::ProximityFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub incidents: Option<incidents::IncidentsFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pace_car: Option<pace_car::PaceCarFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relative: Option<RelativeFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -645,6 +647,7 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::PitStops(frame) => bundle.pit_stops = Some(frame),
         ComputedOutput::Proximity(frame) => bundle.proximity = Some(frame),
         ComputedOutput::Incidents(frame) => bundle.incidents = Some(frame),
+        ComputedOutput::PaceCar(frame) => bundle.pace_car = Some(frame),
         ComputedOutput::Relative(frame) => bundle.relative = Some(frame),
         ComputedOutput::DriverEntries(frame) => bundle.driver_entries = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),

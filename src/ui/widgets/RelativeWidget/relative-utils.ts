@@ -3,7 +3,7 @@ import type { CarEntry, CarIdxFrame } from '@/types/bindings';
 import type { DriverEntry } from '@/types/driver-entry';
 import type { CarIdentity } from '@/types/car-identity';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import type { PaceCarPitPhase } from '@store/widgets/pace-car/pace-car.store';
+import type { PaceCarPitPhase } from '@/types/bindings';
 import { licColumnWidthPx } from '@ui/shared/RatingBadge/LicBadge.utils';
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;

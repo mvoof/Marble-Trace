@@ -7,5 +7,4 @@ export const mount: WidgetMount = {
   id: RELATIVE_MANIFEST.id,
   component: RelativeWidget,
   store: (context) => new RelativeWidgetStore(context),
-  sharedStores: ['paceCar'],
 };

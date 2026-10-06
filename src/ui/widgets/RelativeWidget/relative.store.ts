@@ -13,12 +13,7 @@ import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-i
 
 type RelativeDeps = Pick<
   RendererCore,
-  | 'liveWidgets'
-  | 'cars'
-  | 'session'
-  | 'backendComputed'
-  | 'paceCar'
-  | 'appSettings'
+  'liveWidgets' | 'cars' | 'session' | 'backendComputed' | 'appSettings'
 >;
 
 /** What one row of the strip is: a car, and whether it is a pace car. */
@@ -91,7 +86,7 @@ export class RelativeWidgetStore {
       this.root.cars.carIdx,
       this.root.session.sessionInfo?.cars,
       this.root.backendComputed.relativeEntries,
-      (carIdx) => this.root.paceCar.getPitPhase(carIdx),
+      (carIdx) => this.root.backendComputed.paceCarPhaseOf(carIdx),
       this.settings.paceCarShowInPits ?? false
     );
   }

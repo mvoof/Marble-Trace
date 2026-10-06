@@ -1,4 +1,4 @@
-import type { PaceCarPitPhase } from '@store/widgets/pace-car/pace-car.store';
+import type { PaceCarPitPhase } from '@/types/bindings';
 
 /**
  * A car as the map draws it. Deliberately without a position: where the dot goes

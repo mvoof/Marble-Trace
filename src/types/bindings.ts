@@ -1361,6 +1361,20 @@ export type OverlayPerfReport = {
 };
 
 /**
+ * Every pace car in the session roster, with its phase. Empty when the session
+ * has none, so a window never keeps one from the previous session.
+ */
+export type PaceCarFrame = { cars: PaceCarState[] };
+
+export type PaceCarPitPhase =
+  /**
+   * Not in the world, or no reading yet — "not on track" everywhere it gates drawing.
+   */
+  'unknown' | 'onTrack' | 'stall' | 'pitIn' | 'pitOut' | 'parked';
+
+export type PaceCarState = { carIdx: number; phase: PaceCarPitPhase };
+
+/**
  * What an overlay needs to know about the run, read once when it loads.
  */
 export type PerfRunConfig = {
@@ -2142,6 +2156,7 @@ export type TelemetryBundle = {
   lapTiming?: LapTimingFrame | null;
   proximity?: ProximityFrame | null;
   incidents?: IncidentsFrame | null;
+  paceCar?: PaceCarFrame | null;
   relative?: RelativeFrame | null;
   driverEntries?: DriverEntriesFrame | null;
   carStatus?: CarStatusFrame | null;

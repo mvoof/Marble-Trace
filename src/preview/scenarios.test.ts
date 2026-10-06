@@ -828,6 +828,7 @@ describe('track scenarios', () => {
     expect(
       store.cars.carPositions?.car_idx_lap_dist_pct[PACE_CAR_IDX] ?? 0
     ).toBeGreaterThan(0);
+    expect(store.backendComputed.paceCarPhaseOf(PACE_CAR_IDX)).toBe('onTrack');
   });
 
   // The recorded roster carries the sim's own pace car, parked off the world
