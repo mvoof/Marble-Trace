@@ -77,9 +77,15 @@ export class PitServiceWidgetStore {
       reaction(
         () => this.isServiceActive,
         (serviceActive) => {
-          this.panel.handleServiceActiveChange(serviceActive);
           this.order.handleServiceActiveChange(serviceActive);
         },
+        { fireImmediately: true }
+      ),
+      // The stop clock is the telemetry thread's; the panel only runs it
+      // between frames.
+      reaction(
+        () => this.root.backendComputed.pitStops?.serviceElapsedS ?? null,
+        (serviceElapsedS) => this.panel.followServiceClock(serviceElapsedS),
         { fireImmediately: true }
       ),
       // An order auto mode sent is confirmed the way a key press is. Only a

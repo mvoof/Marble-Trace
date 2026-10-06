@@ -779,6 +779,7 @@ mod tests {
             car_idx: args.car_idx,
             lap_timing: args.lap_timing,
             car_status: args.car_status,
+            pit_service: Box::leak(Box::default()),
             chassis: args.chassis,
             environment: args.environment,
             session: args.session,

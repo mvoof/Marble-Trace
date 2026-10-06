@@ -489,4 +489,71 @@ describe('PitServiceWidgetStore — pit orders', () => {
       expect(rootStore.pitServiceWidget.isPitLimitReleased).toBe(false);
     });
   });
+
+  // The stop is timed on the telemetry thread; the panel runs the clock
+  // between its frames and takes the last stop from it, so a window opened
+  // mid-session knows both.
+  describe('the stop clock', () => {
+    const setPitStops = (
+      serviceElapsedS: number | null,
+      lastServiceS: number | null = null
+    ) => {
+      runInAction(() =>
+        rootStore.backendComputed.updatePitStops({
+          playerStops: 1,
+          serviceElapsedS,
+          lastServiceS,
+        })
+      );
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      rootStore.pitServiceWidget.init();
+    });
+
+    it('runs between frames from where the backend says the stop is', () => {
+      setPitStops(4);
+
+      expect(rootStore.pitServiceWidget.panel.stopElapsedS).toBe(4);
+
+      vi.advanceTimersByTime(1000);
+
+      expect(rootStore.pitServiceWidget.panel.stopElapsedS).toBeCloseTo(5, 1);
+      vi.useRealTimers();
+    });
+
+    it('is pulled back only when it has drifted from the backend', () => {
+      setPitStops(4);
+      vi.advanceTimersByTime(200);
+      setPitStops(4.1);
+
+      expect(rootStore.pitServiceWidget.panel.stopElapsedS).toBeCloseTo(4.2, 1);
+
+      setPitStops(9);
+
+      expect(rootStore.pitServiceWidget.panel.stopElapsedS).toBe(9);
+      vi.useRealTimers();
+    });
+
+    it('stops with the service and keeps its figure', () => {
+      setPitStops(4);
+      vi.advanceTimersByTime(500);
+      setPitStops(null, 4.5);
+
+      const shown = rootStore.pitServiceWidget.panel.stopElapsedS;
+
+      vi.advanceTimersByTime(2000);
+
+      expect(rootStore.pitServiceWidget.panel.stopElapsedS).toBe(shown);
+      vi.useRealTimers();
+    });
+
+    it('takes the last stop from the backend, not from its own history', () => {
+      setPitStops(null, 23.5);
+
+      expect(rootStore.pitServiceWidget.panel.lastStopDurationS).toBe(23.5);
+      vi.useRealTimers();
+    });
+  });
 });

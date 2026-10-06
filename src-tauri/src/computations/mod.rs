@@ -22,7 +22,7 @@ use crate::model::cars::CarIdxFrame;
 use crate::model::enums::SessionState;
 use crate::model::environment::EnvironmentFrame;
 use crate::model::player::{
-    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
+    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
 use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
@@ -77,6 +77,7 @@ pub struct ComputeContext<'a> {
     pub car_idx: &'a CarIdxFrame,
     pub lap_timing: &'a LapTimingFrame,
     pub car_status: &'a CarStatusFrame,
+    pub pit_service: &'a PitServiceFrame,
     pub chassis: &'a ChassisFrame,
     pub environment: &'a EnvironmentFrame,
     pub session: &'a SessionSnapshot,

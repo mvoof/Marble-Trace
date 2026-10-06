@@ -6,10 +6,15 @@ import type { PitServiceWidgetStore } from './pit-service.store';
 // readable while the car is already accelerating away.
 const HIDE_DELAY_MS = 3000;
 
-// The stop clock ticks on its own rather than on telemetry: the pit service
-// tier runs at 4 Hz, which is too coarse to read as a running timer.
+// The stop clock ticks on its own between frames: the pit tier runs at 4 Hz,
+// which is too coarse to read as a running timer.
 const STOP_TICK_MS = 100;
 const MS_IN_SECOND = 1000;
+
+// How far the local clock may drift from the telemetry thread's before it is
+// pulled back. Re-anchoring on every frame would make the readout step
+// backwards by a few hundredths whenever the two clocks disagree.
+const CLOCK_RESYNC_S = 0.5;
 
 /**
  * When the panel is on screen and how long the stop has been running.
@@ -22,15 +27,11 @@ export class PitPanelState {
   /** Manual override toggled by hotkey; independent of pit road state. */
   manualShow = false;
 
-  /** Seconds spent in the pit stall on the current stop. */
-  stopElapsedS = 0;
-
   /**
-   * How long the previous stop took this session. The sim reports no service
-   * duration at all, so the only honest source for "how long will this take"
-   * is what the last stop actually took.
+   * Seconds the crew has worked on the current stop, run locally between the
+   * telemetry thread's frames. It keeps the last stop's figure once service ends.
    */
-  lastStopDurationS: number | null = null;
+  stopElapsedS = 0;
 
   /**
    * The panel is showing itself because a command just went out. Public so the
@@ -48,13 +49,23 @@ export class PitPanelState {
 
   private revealTimer: ReturnType<typeof setTimeout> | null = null;
   private lastOnPitRoad = false;
-  private lastServiceActive = false;
-  private stallEnteredAt: number | null = null;
+  /** Where the local stop clock was last set from a frame: seconds, and when. */
+  private clockAnchor: { elapsedS: number; at: number } | null = null;
   private hideTimer: ReturnType<typeof setTimeout> | null = null;
   private stopTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(private readonly store: PitServiceWidgetStore) {
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  /**
+   * How long the previous stop took this session. The sim reports no service
+   * duration at all, so the only honest source for "how long will this take"
+   * is what the last stop actually took — timed on the telemetry thread, so a
+   * reloaded window still knows it.
+   */
+  get lastStopDurationS(): number | null {
+    return this.store.root.backendComputed.pitStops?.lastServiceS ?? null;
   }
 
   /** Towing is shown anywhere on track — the sim has no other countdown for it. */
@@ -131,39 +142,39 @@ export class PitPanelState {
   }
 
   /**
-   * Runs the stop clock off `serviceActive`, not off standing in the box: the
-   * sim reports no service duration, and the crew starts and finishes on its
-   * own schedule — the car sits in the stall both before and after that.
+   * Follows the telemetry thread's stop clock (`serviceElapsedS`, null while
+   * the crew is not working) and runs it locally between frames.
    */
-  handleServiceActiveChange(serviceActive: boolean) {
-    if (serviceActive === this.lastServiceActive) {
+  followServiceClock(serviceElapsedS: number | null) {
+    if (serviceElapsedS === null) {
+      this.clearStopTimer();
+      this.clockAnchor = null;
+
       return;
     }
 
-    this.lastServiceActive = serviceActive;
+    const drift = Math.abs(this.localElapsedS() - serviceElapsedS);
 
-    if (serviceActive) {
-      this.stallEnteredAt = performance.now();
-      this.stopElapsedS = 0;
+    if (this.clockAnchor === null || drift > CLOCK_RESYNC_S) {
+      this.clockAnchor = { elapsedS: serviceElapsedS, at: performance.now() };
+      this.setStopElapsed(serviceElapsedS);
+    }
 
+    if (this.stopTimer === null) {
       this.stopTimer = setInterval(() => {
-        if (this.stallEnteredAt === null) return;
-
-        this.setStopElapsed(
-          (performance.now() - this.stallEnteredAt) / MS_IN_SECOND
-        );
+        this.setStopElapsed(this.localElapsedS());
       }, STOP_TICK_MS);
+    }
+  }
 
-      return;
+  private localElapsedS(): number {
+    const anchor = this.clockAnchor;
+
+    if (anchor === null) {
+      return 0;
     }
 
-    this.clearStopTimer();
-
-    if (this.stopElapsedS > 0) {
-      this.lastStopDurationS = this.stopElapsedS;
-    }
-
-    this.stallEnteredAt = null;
+    return anchor.elapsedS + (performance.now() - anchor.at) / MS_IN_SECOND;
   }
 
   /**
@@ -226,9 +237,7 @@ export class PitPanelState {
     this.manualShow = false;
     this.lingering = false;
     this.lastOnPitRoad = false;
-    this.lastServiceActive = false;
-    this.stallEnteredAt = null;
+    this.clockAnchor = null;
     this.stopElapsedS = 0;
-    this.lastStopDurationS = null;
   }
 }

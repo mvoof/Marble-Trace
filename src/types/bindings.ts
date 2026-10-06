@@ -1578,7 +1578,19 @@ export type PitServiceFrame = {
 
 export type PitState = 'none' | 'in' | 'stall' | 'exit';
 
-export type PitStopsFrame = { playerStops: number };
+export type PitStopsFrame = {
+  playerStops: number;
+  /**
+   * Seconds the crew has been working on the car this stop; `None` while it
+   * is not. The window runs its own clock between frames from this anchor —
+   * 4 Hz is too coarse to read as a running timer.
+   */
+  serviceElapsedS: number | null;
+  /**
+   * How long the crew worked on the previous stop this session.
+   */
+  lastServiceS: number | null;
+};
 
 /**
  * Where the car is along the pit lane, and how far the current target still is.

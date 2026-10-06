@@ -180,6 +180,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
             car_idx: &frame.car_idx,
             lap_timing: &frame.lap_timing,
             car_status: &frame.car_status,
+            pit_service: &frame.pit_service,
             chassis: &frame.chassis,
             environment: &frame.environment,
             session,
