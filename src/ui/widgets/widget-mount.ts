@@ -2,7 +2,7 @@ import type { ComponentType } from 'react';
 import type {
   SharedWidgetStoreName,
   WidgetStoreFactory,
-} from '@store/widget-runtime/widget-instances';
+} from '@store/widget-runtime/widget-instances.store';
 
 /**
  * How a widget is mounted: the id from its manifest, and the React component

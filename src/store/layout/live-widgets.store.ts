@@ -14,7 +14,7 @@ import {
   setPitWarningLapsSilent,
 } from '@platform/services/settings.service';
 import type { LayoutsStore } from '@store/layout/layouts.store';
-import type { SettingsMutationLog } from '@store/layout/mutation-log';
+import type { SettingsMutationLog } from '@store/layout/mutation-log.store';
 import { availableWidgetIdsOf } from '@store/layout/widget-availability';
 import {
   applyDerivedDesignWidth,
@@ -46,7 +46,7 @@ import {
   widgetsOnMonitor,
 } from '@store/layout/virtual-desktop';
 import { isDisplayMonitor } from '@utils/remote-screen';
-import { WidgetHistory } from '@store/layout/widget-history';
+import { WidgetHistory } from '@store/layout/widget-history.store';
 import {
   bottomZIndex,
   buildStarterWidgets,

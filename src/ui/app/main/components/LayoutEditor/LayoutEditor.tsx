@@ -46,7 +46,7 @@ import {
 import {
   SESSION_PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,
-} from '@store/preview/scenarios';
+} from '@/preview/scenarios';
 import { LayoutCanvas } from './LayoutCanvas';
 import { LayoutWidgetPanel } from './LayoutWidgetPanel';
 import { LayoutList } from './LayoutList';

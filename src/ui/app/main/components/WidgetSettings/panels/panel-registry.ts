@@ -9,8 +9,9 @@ import type { ComponentType } from 'react';
  * chain of `widgetId === '…' && <Panel/>` this replaces was a shared file every
  * widget branch had to edit, and therefore conflict on.
  *
- * A panel is always passed `widgetId`; the two that serve a pair of widgets
- * (radar, flags) read it, the rest ignore it.
+ * A widget's own panel sits in its widget folder; the two that serve a pair of
+ * widgets (radar, flags) sit here. A panel is always passed `widgetId`; the
+ * pair panels read it, the rest ignore it.
  *
  * Kept out of `mount.ts` on purpose: the remote screen renders widgets through
  * the widget registry and must stay a plain browser page, so a mount that
@@ -24,9 +25,12 @@ interface PanelModule {
 
 export type SettingsPanel = ComponentType<{ widgetId: string }>;
 
-const panelModules = import.meta.glob<PanelModule>('./*SettingsPanel.tsx', {
-  eager: true,
-});
+const panelModules = import.meta.glob<PanelModule>(
+  ['./*SettingsPanel.tsx', '../../../../widgets/*/*SettingsPanel.tsx'],
+  {
+    eager: true,
+  }
+);
 
 const panelOf = (module: PanelModule): SettingsPanel | undefined =>
   Object.entries(module).find(

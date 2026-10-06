@@ -5,7 +5,7 @@ import { ClassGroupHeader } from '@ui/widgets/StandingsWidget/ClassGroupHeader/C
 import { DriverRow } from '@ui/widgets/StandingsWidget/DriverRow/DriverRow';
 import { ScrollIndicator } from '@ui/shared/ScrollIndicator/ScrollIndicator';
 import { useAppSettingsStore } from '@store/roots/root-store-context';
-import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.widget';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 import styles from './ClassGroup.module.scss';
 

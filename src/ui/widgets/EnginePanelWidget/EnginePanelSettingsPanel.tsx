@@ -1,0 +1,254 @@
+import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
+import { Switch, Segmented } from 'antd';
+import { EnginePanelWidgetSettings } from '@/types/widget-settings';
+import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
+import { SettingRow } from '@ui/app/main/components/WidgetSettings/panels/SettingRow';
+import { useWidgetEditor } from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';
+import {
+  panelRows,
+  usePanelWidgetId,
+} from '@ui/app/main/components/WidgetSettings/panels/setting-rows';
+
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['engine-panel'];
+
+const { SwitchRow } = panelRows<EnginePanelWidgetSettings>();
+
+export const EnginePanelSettingsPanel = observer(() => {
+  const liveWidgets = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('engine-panel');
+  const { t } = useTranslation('widgets');
+
+  const settings =
+    liveWidgets.getSettings<EnginePanelWidgetSettings>(panelWidgetId);
+
+  const update = (partial: Partial<EnginePanelWidgetSettings>) => {
+    liveWidgets.updateUserSettings(panelWidgetId, {
+      ...settings,
+      ...partial,
+    });
+  };
+
+  const toggles: {
+    titleKey: string;
+    descKey: string;
+    value: boolean;
+    key: keyof EnginePanelWidgetSettings;
+  }[] = [
+    {
+      titleKey: 'settingsPanels.enginePanel.oilTemperature',
+      descKey: 'settingsPanels.enginePanel.oilTemperatureDesc',
+      value: settings.showOilTemp,
+      key: 'showOilTemp',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.waterTemperature',
+      descKey: 'settingsPanels.enginePanel.waterTemperatureDesc',
+      value: settings.showWaterTemp,
+      key: 'showWaterTemp',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.oilPressure',
+      descKey: 'settingsPanels.enginePanel.oilPressureDesc',
+      value: settings.showOilPress,
+      key: 'showOilPress',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.systemVoltage',
+      descKey: 'settingsPanels.enginePanel.systemVoltageDesc',
+      value: settings.showVoltage,
+      key: 'showVoltage',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.absLevel',
+      descKey: 'settingsPanels.enginePanel.absLevelDesc',
+      value: settings.showAbs,
+      key: 'showAbs',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.tractionControl',
+      descKey: 'settingsPanels.enginePanel.tractionControlDesc',
+      value: settings.showTc,
+      key: 'showTc',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.brakeBias',
+      descKey: 'settingsPanels.enginePanel.brakeBiasDesc',
+      value: settings.showBrakeBias,
+      key: 'showBrakeBias',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.engineMap',
+      descKey: 'settingsPanels.enginePanel.engineMapDesc',
+      value: settings.showEngineMap,
+      key: 'showEngineMap',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.tractionControl2',
+      descKey: 'settingsPanels.enginePanel.tractionControl2Desc',
+      value: settings.showTc2,
+      key: 'showTc2',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.engineBraking',
+      descKey: 'settingsPanels.enginePanel.engineBrakingDesc',
+      value: settings.showEngineBraking,
+      key: 'showEngineBraking',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.brakeBiasFine',
+      descKey: 'settingsPanels.enginePanel.brakeBiasFineDesc',
+      value: settings.showBrakeBiasFine,
+      key: 'showBrakeBiasFine',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.peakBrakeBias',
+      descKey: 'settingsPanels.enginePanel.peakBrakeBiasDesc',
+      value: settings.showPeakBrakeBias,
+      key: 'showPeakBrakeBias',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.diffEntry',
+      descKey: 'settingsPanels.enginePanel.diffEntryDesc',
+      value: settings.showDiffEntry,
+      key: 'showDiffEntry',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.diffMiddle',
+      descKey: 'settingsPanels.enginePanel.diffMiddleDesc',
+      value: settings.showDiffMiddle,
+      key: 'showDiffMiddle',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.antiRollFront',
+      descKey: 'settingsPanels.enginePanel.antiRollFrontDesc',
+      value: settings.showAntiRollFront,
+      key: 'showAntiRollFront',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.antiRollRear',
+      descKey: 'settingsPanels.enginePanel.antiRollRearDesc',
+      value: settings.showAntiRollRear,
+      key: 'showAntiRollRear',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.brakeMisc',
+      descKey: 'settingsPanels.enginePanel.brakeMiscDesc',
+      value: settings.showBrakeMisc,
+      key: 'showBrakeMisc',
+    },
+    {
+      titleKey: 'settingsPanels.enginePanel.diffExit',
+      descKey: 'settingsPanels.enginePanel.diffExitDesc',
+      value: settings.showDiffExit,
+      key: 'showDiffExit',
+    },
+  ];
+
+  return (
+    <Card title={t('settingsPanels.enginePanel.moduleParameters')}>
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="highlightChanges"
+          title={t('settingsPanels.enginePanel.highlightChanges')}
+          desc={t('settingsPanels.enginePanel.highlightChangesDesc')}
+        />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <SwitchRow
+          settingKey="horizontal"
+          title={t('settingsPanels.enginePanel.horizontalLayout')}
+          desc={t('settingsPanels.enginePanel.horizontalLayoutDesc')}
+        />
+      </div>
+
+      {settings.horizontal ? (
+        <div className={styles.fieldGroup}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              width: '100%',
+            }}
+          >
+            <div>
+              <div className={styles.fieldTitle}>
+                {t('settingsPanels.enginePanel.horizontalColumns')}
+              </div>
+              <div className={styles.fieldDesc}>
+                {t('settingsPanels.enginePanel.horizontalColumnsDesc')}
+              </div>
+            </div>
+            <Segmented
+              block
+              value={settings.horizontalColumns ?? 8}
+              options={[
+                {
+                  label: t('settingsPanels.enginePanel.cols3'),
+                  value: 3,
+                },
+                {
+                  label: t('settingsPanels.enginePanel.cols4'),
+                  value: 4,
+                },
+                {
+                  label: t('settingsPanels.enginePanel.maxRow'),
+                  value: 8,
+                },
+              ]}
+              onChange={(value) =>
+                update({ horizontalColumns: value as number })
+              }
+            />
+          </div>
+        </div>
+      ) : (
+        <div className={styles.fieldGroup}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              width: '100%',
+            }}
+          >
+            <div>
+              <div className={styles.fieldTitle}>
+                {t('settingsPanels.enginePanel.verticalColumns')}
+              </div>
+              <div className={styles.fieldDesc}>
+                {t('settingsPanels.enginePanel.verticalColumnsDesc')}
+              </div>
+            </div>
+            <Segmented
+              block
+              value={settings.verticalColumns ?? 2}
+              options={[
+                { label: t('settingsPanels.enginePanel.cols1'), value: 1 },
+                { label: t('settingsPanels.enginePanel.cols2'), value: 2 },
+                { label: t('settingsPanels.enginePanel.cols3'), value: 3 },
+                { label: t('settingsPanels.enginePanel.cols4'), value: 4 },
+              ]}
+              onChange={(value) => update({ verticalColumns: value as number })}
+            />
+          </div>
+        </div>
+      )}
+
+      {toggles.map((item) => (
+        <div key={item.key} className={styles.fieldGroup}>
+          <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
+            <Switch
+              checked={item.value}
+              onChange={(v) => update({ [item.key]: v })}
+            />
+          </SettingRow>
+        </div>
+      ))}
+    </Card>
+  );
+});

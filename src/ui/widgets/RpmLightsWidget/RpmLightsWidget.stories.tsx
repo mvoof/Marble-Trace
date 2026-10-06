@@ -4,8 +4,8 @@ import { runInAction } from 'mobx';
 
 import type { RendererCore } from '@store/roots/renderer-core';
 import { useStore } from '@store/roots/root-store-context';
-import { MPS_PER_KMH, mockCarDynamics } from '@store/preview/mocks/dynamics';
-import { mockPitCarStatus } from '@store/preview/mocks/pit';
+import { MPS_PER_KMH, mockCarDynamics } from '@/preview/mocks/dynamics';
+import { mockPitCarStatus } from '@/preview/mocks/pit';
 import { RpmLightsWidget } from './RpmLightsWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';

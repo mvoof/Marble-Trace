@@ -1,8 +1,8 @@
-import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
-import type { CoachPreviewTarget } from '@store/preview/coach-advisory-seed';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
+import type { CoachPreviewTarget } from '@/preview/coach-advisory-seed';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
-import { CoachWidgetStore } from './coach.widget';
-import { DrivingCoachWidgetStore } from './driving-coach.widget';
+import { CoachWidgetStore } from './coach.store';
+import { DrivingCoachWidgetStore } from './driving-coach.store';
 
 /**
  * One coach instance's stores: the call (`advisory`) and the speed trace

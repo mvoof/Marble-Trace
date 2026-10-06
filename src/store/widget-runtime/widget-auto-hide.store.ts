@@ -7,7 +7,7 @@ import type {
   PitServiceWidgetSettings,
 } from '@/types/widget-settings';
 import type { RendererCore } from '@store/roots/renderer-core';
-import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances';
+import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances.store';
 import { widgetTypeFromId } from './widget-instance';
 
 type WidgetAutoHideDeps = Pick<

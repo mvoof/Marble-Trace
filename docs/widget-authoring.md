@@ -315,11 +315,10 @@ quietest step on the route, which is why it has one of its own.
 
 ## Step 8 — The settings panel and the story
 
-**`<Name>SettingsPanel.tsx`** goes in
-`src/ui/app/main/components/WidgetSettings/panels/` — _not_ beside the widget,
-because the remote screen renders widgets through the mount registry in a plain
-browser, and a mount carrying its Ant Design panel would ship the settings UI to
-every phone on the LAN.
+**`<Name>SettingsPanel.tsx`** goes in the widget's own folder, and is **not**
+imported by `mount.ts`: the remote screen renders widgets through the mount
+registry in a plain browser, and a mount carrying its Ant Design panel would ship
+the settings UI to every phone on the LAN. Main's panel registry finds it by glob.
 
 **Copy `GMeterSettingsPanel.tsx`** rather than assembling one from the rules —
 it is short and it shows `useWidgetEditor()`, `usePanelWidgetId(fallbackId)`,
@@ -350,7 +349,7 @@ with its background and does the `runInAction` seeding for you. The widget's
 settings appear on the Controls tab by themselves, read from the manifest; the
 story declares only the telemetry knobs. Named `const` PascalCase exports, no
 default export. Nothing that exists only for a story may be added to
-`store/preview/`. Everything else — the seed, scenarios, which states to cover,
+`preview/`. Everything else — the seed, scenarios, which states to cover,
 history widgets — is in [widget-stories.md](widget-stories.md).
 
 > _Enforced by:_ a missing `PANEL_WIDGET_IDS`, or a second export beside it, is

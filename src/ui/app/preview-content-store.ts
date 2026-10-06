@@ -2,8 +2,8 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 import { reaction, runInAction } from 'mobx';
 
 import { PreviewCore } from '@store/roots/renderer-core';
-import { seedScenario } from '@store/preview/scenarios';
-import { seedInputHistory } from '@store/preview/preview-animator';
+import { seedScenario } from '@/preview/scenarios';
+import { seedInputHistory } from '@/preview/preview-animator';
 import {
   useUnitsStore,
   useLiveWidgetsStore,

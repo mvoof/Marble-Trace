@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import {
   useWheelToWheelWidgetStore,
   type BattleSlot,
-} from '../wheel-to-wheel.widget';
+} from '../wheel-to-wheel.store';
 import { SPEED_SEGMENT_COUNT } from '../wheel-to-wheel-utils';
 
 import styles from './SpeedBar.module.scss';

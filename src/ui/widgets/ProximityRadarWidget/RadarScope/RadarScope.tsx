@@ -16,7 +16,7 @@ import {
   DESIGN_SIZE_PX,
   SIDE_LATERAL_OFFSET_M,
   resolveScopeScale,
-} from '@utils/radar-constants';
+} from '@store/widgets/radar/radar-constants';
 import {
   SCOPE_INK,
   carBearingSpan,

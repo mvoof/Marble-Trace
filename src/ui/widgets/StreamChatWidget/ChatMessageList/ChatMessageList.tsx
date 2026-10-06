@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 import { useAppSettingsStore } from '@store/roots/root-store-context';
-import { useStreamChatWidgetStore } from '@ui/widgets/StreamChatWidget/stream-chat.widget';
+import { useStreamChatWidgetStore } from '@ui/widgets/StreamChatWidget/stream-chat.store';
 import { ScrollIndicator } from '@ui/shared/ScrollIndicator/ScrollIndicator';
 import { ChatMessageRow } from '../ChatMessageRow/ChatMessageRow';
 import { useFittingRowCount } from './useFittingRowCount';

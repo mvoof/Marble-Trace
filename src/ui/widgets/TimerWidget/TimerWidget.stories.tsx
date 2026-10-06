@@ -6,7 +6,7 @@ import type {
   SessionState as BindingSessionState,
   SessionType,
 } from '@/types/bindings';
-import { mockSession, mockSessionEntry } from '@store/preview/mocks/timing';
+import { mockSession, mockSessionEntry } from '@/preview/mocks/timing';
 import { whenSet } from '@/storybook/story-overrides';
 import { TimerWidget } from './TimerWidget';
 import {

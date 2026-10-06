@@ -1,13 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { StandingsWidgetStore } from './standings.widget';
+import type { StandingsWidgetStore } from './standings.store';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import type { MockFieldRows } from '@store/preview/mocks/field';
-import {
-  MOCK_DRIVER_FLAG_ROWS,
-  MOCK_PIT_ROWS,
-} from '@store/preview/mocks/field';
-import { respaceField } from '@store/preview/field-seed';
+import type { MockFieldRows } from '@/preview/mocks/field';
+import { MOCK_DRIVER_FLAG_ROWS, MOCK_PIT_ROWS } from '@/preview/mocks/field';
+import { respaceField } from '@/preview/field-seed';
 import { StandingsWidget } from './StandingsWidget';
 import {
   defineWidgetStories,

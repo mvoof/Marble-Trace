@@ -2,7 +2,7 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { useUnitsStore } from '@store/roots/root-store-context';
-import { useCloseBattleWidgetStore } from '@ui/widgets/CloseBattleWidget/close-battle.widget';
+import { useCloseBattleWidgetStore } from '@ui/widgets/CloseBattleWidget/close-battle.store';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import {
   axisTicks,

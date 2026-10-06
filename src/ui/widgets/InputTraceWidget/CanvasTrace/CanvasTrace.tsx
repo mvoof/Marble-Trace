@@ -10,7 +10,7 @@ import {
   usePlayerStore,
   useLiveWidgetsStore,
 } from '@store/roots/root-store-context';
-import { useInputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.widget';
+import { useInputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.store';
 import {
   createTraceBufferState,
   drawInputTrace,

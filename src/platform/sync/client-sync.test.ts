@@ -4,7 +4,7 @@ import { RemoteRoot } from '@store/roots/remote-root';
 import { OverlayRoot } from '@store/roots/overlay-root';
 import { RemoteScreenStore } from '@store/remote/remote-screen.store';
 import type { RendererCore } from '@store/roots/renderer-core';
-import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { RemoteControlKind } from '@/types/bindings';
 import type { ControlMessage } from '@/types/client-protocol';
 import type { RemoteMessage } from '@/types/remote';

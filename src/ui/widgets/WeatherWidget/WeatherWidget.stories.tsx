@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { EnvironmentFrame } from '@/types/bindings';
 import type { UnitSystem } from '@/types';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
-import { mockEnvironment, mockForecast } from '@store/preview/mocks/weather';
+import { mockEnvironment, mockForecast } from '@/preview/mocks/weather';
 import { whenSet } from '@/storybook/story-overrides';
 import { WeatherWidget } from './WeatherWidget';
 import {

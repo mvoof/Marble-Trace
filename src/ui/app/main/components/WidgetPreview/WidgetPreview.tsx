@@ -12,11 +12,8 @@ import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInsta
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameStyle } from '@ui/app/widget-frame';
-import {
-  seedScenario,
-  DEFAULT_PREVIEW_SCENARIO_ID,
-} from '@store/preview/scenarios';
-import { seedInputHistory } from '@store/preview/preview-animator';
+import { seedScenario, DEFAULT_PREVIEW_SCENARIO_ID } from '@/preview/scenarios';
+import { seedInputHistory } from '@/preview/preview-animator';
 import styles from './WidgetPreview.module.scss';
 
 interface WidgetPreviewProps {

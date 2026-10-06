@@ -515,7 +515,7 @@ the 10 Hz tier, which are by far the largest payloads the app moves (a
 > (`types/driver-entry.ts`) through `fieldEntries`, `relativeEntries`,
 > `driverIdentities` or `driverEntryOf` — never the bindings type, which is the
 > wire half. A fixture that states whole rows seeds them with
-> `store/preview/field-seed.ts`, which splits them back the same way.
+> `preview/field-seed.ts`, which splits them back the same way.
 
 | Gated field                                                | Tier  |
 | ---------------------------------------------------------- | ----- |
@@ -900,7 +900,7 @@ root's hooks either (`.oxlintrc.json`).
 
 **The preview store is isolated, and the linter holds it there.** A scenario and
 every mock builder write only into the `PreviewCore` handed to
-them — never into the stores a running widget reads. So `src/store/preview/**`
+them — never into the stores a running widget reads. So `src/preview/**`
 carries its own `no-restricted-imports` override: the context hooks in
 `*-root-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are all
 refused there, the way every other layer boundary in this project is enforced. A
@@ -1080,50 +1080,47 @@ Settings panels are collected the same way — each exports `PANEL_WIDGET_IDS`
 — but into their own registry rather than into `mount.ts`: the remote screen
 renders widgets through the widget registry and is a plain browser page, so a
 mount carrying its Ant Design panel would ship the whole settings UI to every
-phone on the LAN.
+phone on the LAN. The panel itself sits in its widget's folder — only main's
+panel registry globs `*SettingsPanel.tsx`, so the import graph, not the folder,
+keeps it off the remote screen.
 
 `WidgetContainer` applies scale, opacity and the radial-gradient background from
 user settings, so a widget never hardcodes its own background.
 
-### Where a widget's files live
+### Where a file lives
 
-**One consumer → the widget folder. Two or more → the shared folder.**
+**A file sits next to its lowest consumer, and moves up only when its consumers
+sit in different branches of the tree.** The full table is in `AGENTS.md` →
+Where a file lives.
 
 ```mermaid
 flowchart TB
-    Q1{"How many consumers?"}
-    Q2{"Is one of them<br/>a store?"}
-    W["the widget's own folder<br/><i>components · manifest · store ·<br/>helpers · hooks · tests</i>"]
+    Q1{"Who reads it?"}
+    W["the widget's own folder<br/><i>components · manifest · store ·<br/>helpers · hooks · panel · tests</i>"]
+    F["beside the feature's store<br/><i>store/widgets/&lt;feature&gt;/</i>"]
     KIND{"What kind of thing?"}
     SH["ui/shared/"]
     HK["ui/hooks/"]
     UT["utils/"]
-    SW["store/widgets/"]
 
-    Q1 -->|one| Q2
-    Q2 -->|no| W
-    Q2 -->|yes| UT
-    Q1 -->|"two or more"| KIND
+    Q1 -->|one widget| W
+    Q1 -->|"one feature: its store<br/>and its widgets"| F
+    Q1 -->|"two or more features"| KIND
     KIND -->|a component| SH
     KIND -->|a DOM hook| HK
     KIND -->|a pure helper| UT
-    KIND -->|a store| SW
 ```
 
-The store branch is not an exception but a consequence: **a store importing from
-`@ui/` is a lint error**, so a helper shared by a widget and a store has nowhere to
-live but `utils/`, even with only two consumers.
+The feature branch works because the layers point one way: a widget may import
+a store, so a helper read by a feature's store and its widgets sits beside the
+store and both reach it. `utils/` is for what crosses features.
 
-A helper with a single **non-widget** owner does not go to `utils/` at all; it sits
-with its owner — `store/layout/layout-*.ts`, `store/sim/debug.ts`,
-`ui/app/main/sim-name.ts`, `ui/app/widget-frame.ts`.
+A helper with a single **non-widget** owner sits with its owner —
+`store/layout/layout-*.ts`, `store/sim/debug.ts`, `ui/app/main/sim-name.ts`,
+`ui/app/widget-frame.ts`. A widget never imports from another widget's folder:
+a second consumer moves the file up, and one that loses it moves back down.
 
-A helper that gains a second consumer moves up; one that loses it moves back down.
-
-Settings panels stay together in
-`src/ui/app/main/components/WidgetSettings/panels/` — they share `Card`,
-`SettingRow` and `WidgetEditorContext`, and belong to the main window, not the
-overlay.
+Every MobX class lives in a `*.store.ts` file, and nothing else does.
 
 ### Decomposition rules
 
@@ -1277,8 +1274,7 @@ not hand-roll either.
 4. Every component `observer()`.
 5. Add `*.stories.tsx` — seed stores via `runInAction` in decorators, include a
    background decorator.
-6. Add `*SettingsPanel.tsx` in
-   `src/ui/app/main/components/WidgetSettings/panels/` and export
+6. Add `*SettingsPanel.tsx` in the widget folder and export
    `PANEL_WIDGET_IDS` from it — the registry picks it up, nothing to wire.
 7. Add `interface *WidgetSettings` to `src/types/widget-settings.ts` and add it to
    the `WidgetSpecificSettings` union.

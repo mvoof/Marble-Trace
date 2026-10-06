@@ -8,7 +8,7 @@ import { ClassGroupHeader } from '@ui/widgets/StandingsWidget/ClassGroupHeader/C
 
 import styles from './ClassSwitcher.module.scss';
 import { useAppSettingsStore } from '@store/roots/root-store-context';
-import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.widget';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 const FLASH_DURATION_MS = 300;
 

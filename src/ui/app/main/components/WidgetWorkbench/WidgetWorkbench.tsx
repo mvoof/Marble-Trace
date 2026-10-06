@@ -8,7 +8,7 @@ import { DefaultsEditorProvider } from '../WidgetSettings/WidgetEditorContext';
 import {
   PREVIEW_SCENARIO_BY_ID,
   DEFAULT_PREVIEW_SCENARIO_ID,
-} from '@store/preview/scenarios';
+} from '@/preview/scenarios';
 import { WIDGET_BY_ID } from '@store/layout/widget-catalog';
 import styles from './WidgetWorkbench.module.scss';
 

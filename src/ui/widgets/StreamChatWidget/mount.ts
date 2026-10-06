@@ -1,7 +1,7 @@
 import type { WidgetMount } from '@ui/widgets/widget-mount';
 import { STREAM_CHAT_MANIFEST } from './manifest';
 import { StreamChatWidget } from './StreamChatWidget';
-import { StreamChatWidgetStore } from './stream-chat.widget';
+import { StreamChatWidgetStore } from './stream-chat.store';
 
 export const mount: WidgetMount = {
   id: STREAM_CHAT_MANIFEST.id,

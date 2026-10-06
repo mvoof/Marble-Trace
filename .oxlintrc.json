@@ -20,7 +20,7 @@
           },
           {
             "group": ["@tauri-apps/plugin-store"],
-            "message": "Settings-file persistence lives in src/platform/sync and track-map.widget.ts."
+            "message": "Settings-file persistence lives in src/platform/sync and track-map.store.ts."
           }
         ]
       }
@@ -109,11 +109,15 @@
               },
               {
                 "group": ["@tauri-apps/plugin-store"],
-                "message": "Settings-file persistence lives in src/platform/sync and track-map.widget.ts."
+                "message": "Settings-file persistence lives in src/platform/sync and track-map.store.ts."
               },
               {
                 "group": ["@ui/**"],
                 "message": "Layer direction is ui -> store -> platform. A store must not reach into the UI."
+              },
+              {
+                "group": ["@/preview/**"],
+                "message": "Preview fixtures sit above the stores (ui -> preview -> store): they seed a PreviewCore, a store never reads them."
               }
             ]
           }
@@ -137,7 +141,7 @@
               },
               {
                 "group": ["@tauri-apps/plugin-store"],
-                "message": "Settings-file persistence lives in src/platform/sync and track-map.widget.ts."
+                "message": "Settings-file persistence lives in src/platform/sync and track-map.store.ts."
               },
               {
                 "group": ["@store/**", "@ui/**"],
@@ -194,7 +198,7 @@
     {
       "files": [
         "src/platform/sync/persistence-sync.ts",
-        "src/store/widgets/track-map.widget.ts"
+        "src/store/widgets/track-map/track-map.store.ts"
       ],
       "rules": {
         "no-restricted-imports": [
@@ -219,7 +223,7 @@
       }
     },
     {
-      "files": ["src/store/preview/**"],
+      "files": ["src/preview/**"],
       "rules": {
         "no-restricted-imports": [
           "error",

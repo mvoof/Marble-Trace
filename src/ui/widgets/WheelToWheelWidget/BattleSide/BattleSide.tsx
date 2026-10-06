@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import {
   useWheelToWheelWidgetStore,
   type BattleSlot,
-} from '../wheel-to-wheel.widget';
+} from '../wheel-to-wheel.store';
 import { SideSpeed } from '../SideSpeed/SideSpeed';
 import { SpeedBar } from '../SpeedBar/SpeedBar';
 import { CarNumberBox } from '../CarNumberBox/CarNumberBox';

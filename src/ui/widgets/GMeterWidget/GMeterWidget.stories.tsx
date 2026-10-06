@@ -4,7 +4,7 @@ import type {
   GMeterColorMode,
   GMeterDisplayMode,
 } from '@/types/widget-settings';
-import { G_ACCEL_MPS2, mockCarDynamics } from '@store/preview/mocks/dynamics';
+import { G_ACCEL_MPS2, mockCarDynamics } from '@/preview/mocks/dynamics';
 import type { RendererCore } from '@store/roots/renderer-core';
 import { GMeterWidget } from './GMeterWidget';
 import {

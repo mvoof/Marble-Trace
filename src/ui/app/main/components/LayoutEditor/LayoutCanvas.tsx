@@ -34,13 +34,10 @@ import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
-import {
-  seedScenario,
-  DEFAULT_PREVIEW_SCENARIO_ID,
-} from '@store/preview/scenarios';
+import { seedScenario, DEFAULT_PREVIEW_SCENARIO_ID } from '@/preview/scenarios';
 import { resolveBackgroundSrc } from '@store/layout/layout-background';
 import { monitorsBounds } from '@store/layout/virtual-desktop';
-import { seedInputHistory } from '@store/preview/preview-animator';
+import { seedInputHistory } from '@/preview/preview-animator';
 import type {
   LayoutMonitor,
   MonitorBounds,

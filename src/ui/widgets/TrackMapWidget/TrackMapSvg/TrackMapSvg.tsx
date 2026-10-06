@@ -14,7 +14,7 @@ import {
   useCarsStore,
 } from '@store/roots/root-store-context';
 import { shapeForClassOrder } from '@utils/canvas';
-import { PaceCarMarker } from './PaceCarMarker/PaceCarMarker';
+import { PaceCarMarker } from '@ui/shared/PaceCarMarker/PaceCarMarker';
 import { FlagZones } from './FlagZones/FlagZones';
 
 import { getSectorColor } from '@utils/colors';

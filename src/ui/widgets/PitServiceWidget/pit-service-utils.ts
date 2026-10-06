@@ -1,8 +1,8 @@
 import type { ChassisFrame, PitServiceFrame } from '@/types/bindings';
 import type { DriverEntry } from '@/types/driver-entry';
 import type { UnitSystem } from '@/types';
-import type { CornerPosition } from '@utils/pit-tires';
-import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
+import type { CornerPosition } from '@store/widgets/pit-service/pit-tires';
+import { computeRelativeGap } from '@utils/driver';
 
 export interface TireCornerData {
   wearL: number | null;

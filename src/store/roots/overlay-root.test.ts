@@ -157,9 +157,11 @@ vi.mock('../diagnostics/diagnostics-hud.store', async (importOriginal) => {
   };
 });
 
-vi.mock('../widgets/track-rotation.store', async (importOriginal) => {
+vi.mock('../widgets/track-map/track-rotation.store', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('../widgets/track-rotation.store')>();
+    await importOriginal<
+      typeof import('../widgets/track-map/track-rotation.store')
+    >();
 
   return {
     ...actual,

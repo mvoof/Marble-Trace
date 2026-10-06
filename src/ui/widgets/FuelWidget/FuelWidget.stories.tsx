@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { FuelComputedFrame, FuelLapRecord } from '@/types/bindings';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
-import { mockLapTiming } from '@store/preview/mocks/delta';
-import { mockCarStatus } from '@store/preview/mocks/engine';
-import { mockFuel } from '@store/preview/mocks/fuel';
+import { mockLapTiming } from '@/preview/mocks/delta';
+import { mockCarStatus } from '@/preview/mocks/engine';
+import { mockFuel } from '@/preview/mocks/fuel';
 import { whenSet } from '@/storybook/story-overrides';
 import { FuelWidget } from './FuelWidget';
 import {

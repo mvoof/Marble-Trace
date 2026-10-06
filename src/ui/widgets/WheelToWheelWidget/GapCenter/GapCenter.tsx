@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   useWheelToWheelWidgetStore,
   type RivalSlot,
-} from '../wheel-to-wheel.widget';
+} from '../wheel-to-wheel.store';
 import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 
 import styles from './GapCenter.module.scss';

@@ -1,4 +1,4 @@
-import type { BattleSlot } from './wheel-to-wheel.widget';
+import type { BattleSlot } from './wheel-to-wheel.store';
 
 // Overlay text is English in every locale, like every other widget's.
 export const SLOT_ROLE: Record<BattleSlot, string> = {

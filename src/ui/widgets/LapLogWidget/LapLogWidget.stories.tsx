@@ -1,11 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { LapHistoryEntry } from '@/types/bindings';
-import {
-  mockLapDelta,
-  mockLapLog,
-  mockLapTiming,
-} from '@store/preview/mocks/delta';
+import { mockLapDelta, mockLapLog, mockLapTiming } from '@/preview/mocks/delta';
 import { whenSet } from '@/storybook/story-overrides';
 import { LapLogWidget } from './LapLogWidget';
 import {

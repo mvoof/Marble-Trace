@@ -1,0 +1,246 @@
+import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
+import type {
+  ChassisFrame,
+  FuelComputedFrame,
+  PitServiceFrame,
+  ProximityFrame,
+} from '@/types/bindings';
+import { action } from 'mobx';
+import { TrackSurface } from '@/types';
+import type { RendererCore } from '@store/roots/renderer-core';
+import { computeDriverEntries } from './mocks/driver-entries';
+import { mockCarPositions } from './mocks/field';
+import { seedField } from './field-seed';
+import { mockLapDelta, mockLapLog, mockLapTiming } from './mocks/delta';
+import { mockPitService } from './mocks/pit';
+import { sampleTrack, SAMPLE_TRACK_ID } from './sample-track';
+import { seedCoachAdvisory } from './coach-advisory-seed';
+
+// Mirror the active race flags into the FlagsStore's display state. The hold /
+// blink reactions that normally do this only run via FlagsStore.init(), which is
+// skipped in the isolated preview store — so without this the flag widgets stay
+// blank no matter what flag is active.
+export const syncFlagDisplay = action((store: RendererCore) => {
+  store.flags.displayFlags = store.flags.parsedFlags;
+  store.flags.ledDisplayFlag = store.flags.parsedFlag;
+});
+
+// Neutral sample-telemetry fixture shared by any consumer that needs to render
+// widgets against representative data (in-app widget preview, Storybook, …).
+// It depends on neither the app UI nor Storybook — consumers depend on it.
+const snapshotModules = import.meta.glob(
+  '../../test-data/telemetry-snapshot-*.json',
+  {
+    eager: true,
+    import: 'default',
+  }
+);
+
+const firstSnapshot = Object.values(snapshotModules)[0];
+
+if (!firstSnapshot) {
+  throw new Error('No telemetry-snapshot-*.json found in test-data/');
+}
+
+export const sampleSnapshot = firstSnapshot as unknown as TelemetrySnapshot;
+
+// The recorded snapshot has no chassis / fuel / sector frames (they ride on the
+// 4 Hz tier and aren't captured), so widgets reading them show dashes. Build
+// representative synthetic frames for the preview.
+const TIRE_CORNERS = ['lf', 'rf', 'lr', 'rr'] as const;
+
+const buildSampleChassis = (): ChassisFrame => {
+  const frame: Record<string, number> = {};
+
+  for (const corner of TIRE_CORNERS) {
+    frame[`${corner}_ride_height`] = 0.05;
+    frame[`${corner}_shock_defl`] = 0.03;
+    frame[`${corner}_temp_cl`] = 82;
+    frame[`${corner}_temp_cm`] = 88;
+    frame[`${corner}_temp_cr`] = 85;
+    frame[`${corner}_pressure`] = 165;
+    frame[`${corner}_wear_l`] = 0.97;
+    frame[`${corner}_wear_m`] = 0.95;
+    frame[`${corner}_wear_r`] = 0.96;
+    frame[`${corner}_brake_temp`] = 340;
+  }
+
+  return frame as unknown as ChassisFrame;
+};
+
+// The pit service order the preview shows: two tires and a fuel fill, so the
+// widget renders both an ordered and a kept corner without a live session. The
+// shape is the pit builder's own, so the baseline and every pit scenario state
+// the same stop.
+export const samplePitService: PitServiceFrame = mockPitService();
+
+export const sampleFuel: FuelComputedFrame = {
+  historyStats: { last: 2.7, avg: 2.6, min: 2.4, max: 2.9 },
+  refuelPlan: { stops: 1, fillNow: 14 },
+  avgPerLap: 2.6,
+  lapsRemaining: 9,
+  lapsToFinish: 14,
+  shortage: -5.2,
+  fuelToAdd: 12,
+  fuelToAddWithBuffer: 14,
+  fuelSavePerLap: 0.15,
+  pitWarning: true,
+  pitWindowStart: 12,
+  pitWindowEnd: 16,
+  isTimedRace: false,
+  lapFuelHistory: [
+    { lap: 1, used: 3.4, rejected: 'out-lap' },
+    { lap: 2, used: 2.7, rejected: null },
+    { lap: 3, used: 2.5, rejected: null },
+    { lap: 4, used: 1.4, rejected: 'caution' },
+    { lap: 5, used: 2.6, rejected: null },
+    { lap: 6, used: 2.6, rejected: null },
+    { lap: 7, used: 2.55, rejected: null },
+    { lap: 8, used: 2.62, rejected: null },
+  ],
+};
+
+// Wrapped in `action` so the whole batch of setters runs as a single MobX
+// transaction — callers (preview, layout editor, Storybook) invoke it directly
+// without needing their own `runInAction`.
+export const seedSampleTelemetry = action((store: RendererCore) => {
+  // Mark connected so widgets that gate rendering on a live session show their
+  // sample data instead of a "no data" placeholder.
+  store.sim.isConnected = true;
+  store.sim.status = 'connected';
+
+  if (sampleSnapshot.carDynamics)
+    store.player.updateCarDynamics(sampleSnapshot.carDynamics);
+  if (sampleSnapshot.carIdx) store.cars.updateCarIdx(sampleSnapshot.carIdx);
+  if (sampleSnapshot.carInputs)
+    store.player.updateCarInputs(sampleSnapshot.carInputs);
+  if (sampleSnapshot.carStatus)
+    // Baseline shows a green flag so the flag widgets are populated in the
+    // preview regardless of their visibility settings (which should only affect
+    // the live overlay). Flag scenarios override this.
+    store.player.updateCarStatus({
+      ...sampleSnapshot.carStatus,
+      flags: { ...sampleSnapshot.carStatus.flags, green: true },
+    });
+  if (sampleSnapshot.environment)
+    store.environment.updateEnvironment(sampleSnapshot.environment);
+  // The recorded lap timing carries no lap times and no established reference
+  // (`_ok` false everywhere), which is the sim's "no delta yet" state — every
+  // timing widget draws dashes against it. The builder supplies a mid-lap
+  // picture with a personal best behind it instead.
+  store.player.updateLapTiming(mockLapTiming());
+  if (sampleSnapshot.session)
+    store.session.updateSession(sampleSnapshot.session);
+  if (sampleSnapshot.sessionInfo)
+    // Pin the session's track to the synthetic sample track so the track-map
+    // widget keeps the seeded shape instead of clearing it and showing the
+    // "recording" placeholder.
+    store.session.updateSessionInfo({
+      ...sampleSnapshot.sessionInfo,
+      trackId: SAMPLE_TRACK_ID,
+    });
+
+  // No incident markers in the baseline: they are laid down by a scenario, and
+  // re-seeding the same store has to take them back off the map again.
+  store.backendComputed.updateIncidents({ incidents: [] });
+
+  const entries = computeDriverEntries(
+    sampleSnapshot.carIdx ?? null,
+    sampleSnapshot.sessionInfo ?? null
+  );
+
+  if (entries.length > 0) {
+    const playerCarIdx = sampleSnapshot.sessionInfo?.playerCarIdx ?? 0;
+
+    // The recorded snapshot captured the player off-track / not-in-world, which
+    // renders the player's standings row grey. Force the player on-track so the
+    // preview shows the normal highlighted row.
+    const playerEntry = entries.find((entry) => entry.isPlayer);
+
+    if (playerEntry) {
+      playerEntry.trackSurface = TrackSurface.OnTrack;
+    }
+
+    seedField(store, { entries, relativeEntries: entries, playerCarIdx });
+
+    // The map and the pace-car store read the positions frame rather than the
+    // driver list, so the same field is handed to them in the shape they read.
+    store.cars.updateCarPositions(mockCarPositions(entries));
+  }
+
+  // Seed a light proximity frame and force the radar visible so radar widgets
+  // render in the preview/editor. The auto-hide reaction that normally gates
+  // visibility never runs in the isolated preview store (skipInit), so without
+  // this the radar would always be blank. Richer traffic is layered by the
+  // radar-traffic scenario.
+  const baselineProximity: ProximityFrame = {
+    nearbyCars: [
+      {
+        carIdx: 7,
+        longitudinalDist: 3.2,
+        lateralSide: 'center',
+        clearance: 3.2,
+        bumperDist: 0,
+      },
+      {
+        carIdx: 12,
+        longitudinalDist: -4.1,
+        lateralSide: 'center',
+        clearance: 4.1,
+        bumperDist: 0,
+      },
+      {
+        carIdx: 3,
+        longitudinalDist: 1.4,
+        lateralSide: 'left',
+        clearance: 1.4,
+        bumperDist: 0,
+      },
+      {
+        carIdx: 19,
+        longitudinalDist: 1.9,
+        lateralSide: 'right',
+        clearance: 1.9,
+        bumperDist: 0,
+      },
+    ],
+    // Side distances + spotter contact so the Radar Bar (side indicators) and
+    // the proximity radar's side cones both render in the preview.
+    radarDistances: {
+      frontDist: 3.2,
+      rearDist: 4.1,
+      leftDist: 1.4,
+      rightDist: 1.9,
+    },
+    spotterLeft: true,
+    spotterRight: true,
+  };
+
+  store.backendComputed.updateProximity(baselineProximity);
+  store.radar.visible = { 'proximity-radar': true, 'radar-bar': true };
+
+  store.player.updateChassis(buildSampleChassis());
+  store.player.updatePitService(samplePitService);
+
+  // The pit service widget hides itself off pit road; the settings preview has
+  // no session, so it opts in through the same manual toggle the hotkey uses.
+  store.pitServiceWidget.panel.manualShow = true;
+  store.backendComputed.updateFuel(sampleFuel);
+  store.backendComputed.updateLapDelta(mockLapDelta());
+  store.backendComputed.updateLapLog(mockLapLog());
+
+  // Seed the synthetic track outline so the track-map widget renders a map
+  // instead of the "recording track" placeholder.
+  store.trackMapWidget.onTrackShapeReceived(sampleTrack);
+
+  // The seed is re-run every time the driver picks a scenario, on the same
+  // store — so it has to put back everything a scenario may have forced, not
+  // only what it sets itself. These three have no baseline frame of their own:
+  // without clearing them, a pit lane, a coach advisory or a reference lap
+  // picked once would still be on screen after switching back to the baseline.
+  store.player.updatePitTarget(null);
+  store.referenceLap.reset();
+  seedCoachAdvisory(store);
+
+  syncFlagDisplay(store);
+});

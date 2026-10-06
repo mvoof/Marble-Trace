@@ -15,17 +15,30 @@ Read this at step 4 of [the route](widget-authoring.md), before writing a helper
 
 ## Where a new helper belongs
 
-The rule is [`AGENTS.md` → Where a widget's files live](../AGENTS.md), in one
-sentence: **one consumer → the widget folder, two or more → the shared folder.**
+The rule is [`AGENTS.md` → Where a file lives](../AGENTS.md), in one sentence:
+**a file sits next to its lowest consumer, and moves up only when its consumers
+sit in different branches of the tree.**
 
-| Consumers                        | Goes in                                                                         |
-| -------------------------------- | ------------------------------------------------------------------------------- |
-| One widget                       | `src/ui/widgets/<Widget>/` — `*-utils.ts`, its own hook, its own sub-components |
-| Two or more widgets, pure        | `src/utils/`                                                                    |
-| Two or more widgets, renders     | `src/ui/shared/`                                                                |
-| Two or more widgets, touches DOM | `src/ui/hooks/`                                                                 |
-| One widget **and** a store       | `src/utils/`, even at two files — a store importing `@ui/**` is a lint error    |
-| One non-widget owner             | beside that owner (`store/layout/…`, `ui/app/main/…`), never `src/utils/`       |
+| Consumers                                     | Goes in                                                                                     |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| One widget                                    | `src/ui/widgets/<Widget>/` — `*-utils.ts`, its own hook, sub-components, its settings panel |
+| One feature: its shared store and its widgets | beside that store, `src/store/widgets/<feature>/` — a widget may import a store             |
+| Two or more features, pure                    | `src/utils/`                                                                                |
+| Two or more widgets, renders                  | `src/ui/shared/`                                                                            |
+| Two or more widgets, touches DOM              | `src/ui/hooks/`                                                                             |
+| One non-widget owner                          | beside that owner (`store/layout/…`, `ui/app/main/…`), never `src/utils/`                   |
+
+A widget never imports from another widget's folder: a second consumer moves
+the file up. `src/utils/` is grouped by **domain, not by kind** — one file per
+subject, never a `constants/` or `formatters/` bucket.
+
+-------------------------------- | ------------------------------------------------------------------------------- |
+| One widget | `src/ui/widgets/<Widget>/` — `*-utils.ts`, its own hook, its own sub-components |
+| Two or more widgets, pure | `src/utils/` |
+| Two or more widgets, renders | `src/ui/shared/` |
+| Two or more widgets, touches DOM | `src/ui/hooks/` |
+| One widget **and** a store | `src/utils/`, even at two files — a store importing `@ui/**` is a lint error |
+| One non-widget owner | beside that owner (`store/layout/…`, `ui/app/main/…`), never `src/utils/` |
 
 `src/utils/` is grouped by **domain, not by kind** — one file per subject, never
 a `constants/` or `formatters/` bucket. A new helper joins the file whose
@@ -49,19 +62,27 @@ No React, no stores, no Tauri. Importable from any layer.
 | `car-signals.ts`           | Anything RPM, steering or engine warning: shift thresholds, RPM zone state and its colors, steering angle in degrees, normalized steering, the pit limiter bit.                                            |
 | `colors.ts`                | Turning data into a color: class color parsing, contrast text color, sector colors, air and track temp colors, the player-row style.                                                                       |
 | `delta-utils.ts`           | Formatting or classifying a lap delta: `formatDelta`, gauge ranges, ahead/behind state, sector times and sector deltas, the sim's own delta fields and their `_ok` flags.                                  |
-| `driver.ts`                | Anything about a driver or their car identity: name abbreviation and splitting, car number, iRating, brand, incident limits, flag bits, class SoF.                                                         |
+| `driver.ts`                | Anything about a driver or their car identity: name abbreviation and splitting, car number, iRating, brand, incident limits, flag bits, class SoF, the relative gap to the player (`computeRelativeGap`).  |
 | `driving-coach-utils.ts`   | Reference-lap maths: interpolating a reference sample, target-speed profiles, corner targets, tire wear, condition mismatch, the brake/gas/grip advisory.                                                  |
-| `flag-zones.ts`            | Incident and flag zones on a track line: computing them, measuring them, splitting one across start/finish, projecting one into a window.                                                                  |
-| `fuel-constants.ts`        | Fuel colors, chart configuration and the low-fuel thresholds — shared by the fuel widget and anything that shows a fuel figure.                                                                            |
 | `hotkey-actions.ts`        | You need the bindable action list, its ids, labels or default keys. **Generated from Rust — never edit**; the backend dispatches the keys, `store/hotkeys/` builds the settings UI's registry from it.     |
-| `pit-approach.ts`          | The pit lane as a measured leg: metres to the pit entry line, and the view the approach rail is drawn from — fill, braking cue, urgency.                                                                   |
-| `pit-tires.ts`             | The four corners of a tire order: which ones the sim has checked, the pressure ordered for each, and which are worn past a threshold.                                                                      |
 | `qualifying-visibility.ts` | Honouring a widget's "show in qualifying" setting (`never` / `auto`) — the shared rule behind that switch.                                                                                                 |
-| `radar-constants.ts`       | Radar geometry (car width, corner radius, lateral offset) and the gap-to-color ramps used by every proximity view.                                                                                         |
 | `remote-screen.ts`         | Anything about remote screens as monitors: telling a remote monitor from a display, presets, bounds placement, slugs.                                                                                      |
 | `telemetry-format.ts`      | Rendering a raw SI number for the driver in their unit system: speed, temperature, fuel, distance — and converting back.                                                                                   |
 | `timer-utils.ts`           | Clocks and session state: wall clock, sim date and time, session ended / race started, lap-limited vs timed, the session clock, `splitTime`.                                                               |
 | `weather-utils.ts`         | Weather rendering: wind color and bearing, track wetness, and the 0..1 fractions the gauges are drawn from.                                                                                                |
+
+---
+
+## Beside the shared widget stores — helpers of one feature
+
+Read by one feature's store and its widgets, nowhere else.
+
+| Module                                      | Reach for it when                                                                                                                         |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `store/widgets/radar/radar-constants.ts`    | Radar geometry (car width, corner radius, lateral offset) and the gap-to-color ramps used by every proximity view.                        |
+| `store/widgets/incidents/flag-zones.ts`     | Incident and flag zones on a track line: computing them, measuring them, splitting one across start/finish, projecting one into a window. |
+| `store/widgets/pit-service/pit-approach.ts` | The pit lane as a measured leg: metres to the pit entry line, and the view the approach rail is drawn from — fill, braking cue, urgency.  |
+| `store/widgets/pit-service/pit-tires.ts`    | The four corners of a tire order: which ones the sim has checked, the pressure ordered for each, and which are worn past a threshold.     |
 
 ---
 
@@ -76,6 +97,7 @@ No React, no stores, no Tauri. Importable from any layer.
 | `ErrorBoundary.tsx` | Wrapping a subtree that may throw, so one widget cannot take the overlay down with it.                                                                                                                                                                     |
 | `FixedDigits`       | A number that changes while the driver reads it — every digit in a cell of the same width, so nothing beside it shifts. Rajdhani has no tabular figures, so `tabular-nums` does nothing here.                                                              |
 | `NoDataPlaceholder` | The widget has nothing to show yet — the standard "NO DATA" plate instead of an empty box.                                                                                                                                                                 |
+| `PaceCarMarker`     | Drawing the pace car on a track line or map.                                                                                                                                                                                                               |
 | `RatingBadge`       | Showing a licence class and safety rating (`LicBadge`).                                                                                                                                                                                                    |
 | `ReservedSlot`      | Holding the height a block will occupy while it is absent, so placing the widget in the editor shows its real size.                                                                                                                                        |
 | `ScrollIndicator`   | A list is taller than its window — the thumb, driven by `scrollThumbFor` in `canvas.ts`.                                                                                                                                                                   |
@@ -144,4 +166,4 @@ How to use them: [widget-stories.md](widget-stories.md).
 | `SETTING_OPTIONS` — string-union selects | `setting-options.ts` — add a new union setting's members here |
 | `whenSet`                                | `story-overrides.ts` — a knob that overrides only when set    |
 | `withReplay`                             | `with-replay.tsx` — a burst of frames for history widgets     |
-| mock builders                            | `src/store/preview/mocks/*.ts`                                |
+| mock builders                            | `src/preview/mocks/*.ts`                                      |

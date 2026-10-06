@@ -6,7 +6,7 @@ import {
   type PrimaryMonitorResolver,
 } from './first-run';
 import { LayoutsStore } from './layouts.store';
-import { SettingsMutationLog } from './mutation-log';
+import { SettingsMutationLog } from './mutation-log.store';
 import type {
   LayoutMonitor,
   WidgetDefaultConfig,

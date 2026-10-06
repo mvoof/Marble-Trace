@@ -23,7 +23,7 @@ import {
   useCarsStore,
   useSessionStore,
 } from '@store/roots/root-store-context';
-import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.widget';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 // Matches the icon size the footer's stat pills use.
 const STAT_ICON_SIZE_PX = 11;

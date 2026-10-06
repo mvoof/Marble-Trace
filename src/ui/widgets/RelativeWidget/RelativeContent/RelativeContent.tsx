@@ -10,7 +10,7 @@ import {
   useBackendComputedStore,
   useSimStore,
 } from '@store/roots/root-store-context';
-import { useRelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.widget';
+import { useRelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.store';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './RelativeContent.module.scss';

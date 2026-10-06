@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
-import { useWheelToWheelWidgetStore } from './wheel-to-wheel.widget';
+import { useWheelToWheelWidgetStore } from './wheel-to-wheel.store';
 import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
 import { BattleSide } from './BattleSide/BattleSide';
 import { GapCenter } from './GapCenter/GapCenter';

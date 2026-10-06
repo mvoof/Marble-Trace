@@ -1,9 +1,9 @@
 ﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { InputTraceSettings } from '@/types/widget-settings';
-import { mockCarDynamics } from '@store/preview/mocks/dynamics';
-import { mockCarInputs } from '@store/preview/mocks/inputs';
-import { seedInputHistory } from '@store/preview/preview-animator';
+import { mockCarDynamics } from '@/preview/mocks/dynamics';
+import { mockCarInputs } from '@/preview/mocks/inputs';
+import { seedInputHistory } from '@/preview/preview-animator';
 import { InputTraceWidget } from './InputTraceWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 import { withReplay } from '@/storybook/with-replay';

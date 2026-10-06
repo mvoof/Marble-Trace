@@ -35,7 +35,7 @@ import {
   useBackendComputedStore,
   useSessionStore,
 } from '@store/roots/root-store-context';
-import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.widget';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 interface DriverRowProps {
   carIdx: number;

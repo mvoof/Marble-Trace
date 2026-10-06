@@ -556,11 +556,11 @@ main window.
   is derived from the two, not stored.
 - Geometry is read from and written to the **main** `LiveWidgetsStore`; widget
   _content_ renders against an isolated `PreviewCore` seeded from
-  `store/preview/scenarios.ts`, mirrored on `changeToken`.
+  `preview/scenarios.ts`, mirrored on `changeToken`.
 - The preview store must never persist anything — stores that own files take a flag
   from `skipInit` (`TrackMapWidgetStore({ persists })`).
 - The preview store is isolated, and `no-restricted-imports` over
-  `src/store/preview/**` keeps it that way: a scenario or mock builder writes only
+  `src/preview/**` keeps it that way: a scenario or mock builder writes only
   into the `PreviewCore` handed to it, so the context hooks in
   `*-root-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are refused
   there (ADR-0004 rule 1).
@@ -691,10 +691,14 @@ one that changes nothing.
 Settings panels are collected the same way: each `*SettingsPanel.tsx` exports
 `PANEL_WIDGET_IDS` (usually one id, two for the radar and flag pairs), and
 `panels/panel-registry.ts` globs them into `SETTINGS_PANELS`. `WidgetSettings.tsx`
-looks the panel up instead of carrying a chain of `widgetId === '…'`. The panels
-are deliberately **not** in `mount.ts`: the remote screen renders widgets
-through that registry and is a plain browser page, so a mount carrying its Ant
-Design panel would ship the whole settings UI to every phone on the LAN.
+looks the panel up instead of carrying a chain of `widgetId === '…'`. A panel
+for one widget sits in that widget's folder; one serving two widgets (the radar
+and flag pairs) sits in `panels/` beside the kit it is built from (`Card`,
+`SettingRow`, `setting-rows`). The panels are deliberately **not** in
+`mount.ts`: the remote screen renders widgets through that registry and is a
+plain browser page, so a mount carrying its Ant Design panel would ship the
+whole settings UI to every phone on the LAN. What keeps them out is the import
+graph, not the folder — only main's panel registry globs `*SettingsPanel.tsx`.
 
 Values shared by several manifests (`COMMON_WIDGET_DEFAULTS`, the appearance
 defaults, `makeColumnLayoutResolver`) live in `src/ui/widgets/widget-manifest.ts`.
@@ -702,42 +706,38 @@ defaults, `makeColumnLayoutResolver`) live in `src/ui/widgets/widget-manifest.ts
 `bindings.ts` is auto-generated — never hand-write types that duplicate
 backend event shapes.
 
-### Where a widget's files live
+### Where a file lives
 
-**One consumer → the widget folder. Two or more → the shared folder.** Everything
-belonging to a single widget sits in `src/ui/widgets/<Widget>/`: components,
-`manifest.ts`, `mount.ts`, its store (`*.widget.ts`), its pure helpers
-(`*-utils.ts`), its hooks, its tests.
+**A file sits next to its lowest consumer, and moves up only when its consumers
+sit in different branches of the tree.** Never to a shared folder "in case",
+and never because of what kind of file it is: a helper that one feature reads
+belongs to that feature even when a store and a widget both read it.
 
-Shared code keeps flat global folders — no category sub-folders:
+| what                                                                     | where                                                                                                                                                                                        |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| everything one widget alone uses                                         | `src/ui/widgets/<Widget>/`: components, `manifest.ts`, `mount.ts`, its store, `*-utils.ts`, hooks, its `*SettingsPanel.tsx`, stories, tests                                                  |
+| a store several widgets of one feature share, and that feature's helpers | `src/store/widgets/<feature>/` — every feature its own folder (`flags/`, `pace-car/`, `pit-service/`, `radar/`, `incidents/`, `track-map/`); widgets import from it, `ui` may import `store` |
+| derived data read across the app (the player's place in the field)       | beside the data stores, `src/store/data/`                                                                                                                                                    |
+| components used by 2+ widgets                                            | `src/ui/shared/`                                                                                                                                                                             |
+| DOM/browser hooks used by 2+ widgets                                     | `src/ui/hooks/`                                                                                                                                                                              |
+| pure helpers used by 2+ features                                         | `src/utils/`                                                                                                                                                                                 |
+| a helper with one non-widget owner                                       | beside that owner (`store/layout/layout-*.ts`, `store/sim/debug.ts`, `ui/app/main/sim-name.ts`)                                                                                              |
+| preview scenarios and mock builders                                      | `src/preview/` — above the stores: `ui` and Storybook read it, a store never does                                                                                                            |
+| tests and stories                                                        | next to the file they cover (`x.test.ts`, `X.stories.tsx`)                                                                                                                                   |
 
-| folder               | holds                                                                                                   |
-| -------------------- | ------------------------------------------------------------------------------------------------------- |
-| `src/ui/shared/`     | UI reused by 2+ widgets (`WidgetPanel`, `StatPill`, badges)                                             |
-| `src/ui/hooks/`      | DOM/browser hooks used by 2+ widgets                                                                    |
-| `src/utils/`         | pure helpers used by 2+ widgets                                                                         |
-| `src/store/widgets/` | stores read by 2+ widgets (`flags`, `pace-car`, `radar`, `player-position`) and app-level widget stores |
-
-`src/utils/` is grouped by **domain, not by kind** — one file per subject, never a
-`constants/` or `formatters/` bucket (those cut across every domain and tell you
-nothing): `animation`, `canvas`, `colors`, `car-signals`, `driver`, `delta-utils`,
-`timer-utils`, `weather-utils`, `telemetry-format`, `driving-coach-utils`,
-`fuel-constants`, `qualifying-visibility`, `radar-constants`. A new helper joins the
-file whose subject it shares; a new file needs a subject none of these covers.
-
-A helper shared by a widget **and a store** always lives in `src/utils/`, even when
-only two files use it — a store reaching into `@ui/**` is a lint error, so the
-widget folder is not an option (`computeClassSof`, `isHiddenInQualifying`,
-`MOVE_DURATION_MS` all moved out for exactly this reason).
-
-Helpers with a single non-widget owner do **not** live in `src/utils/` at all —
-they sit with that owner (`store/layout/layout-*.ts`, `store/sim/debug.ts`,
-`ui/app/main/sim-name.ts`, `ui/app/widget-frame.ts` for the two window shells).
-
-A helper that gains a second consumer moves up to `src/utils/`; one that loses its
-second consumer moves back down into the widget. Settings panels stay together in
-`src/ui/app/main/components/WidgetSettings/panels/` — they share `Card`, `SettingRow`
-and `WidgetEditorContext`, and belong to the main window, not the overlay.
+- **A widget never imports from another widget's folder.** A second consumer
+  moves the file up — to `ui/shared/`, `utils/`, or beside the feature's store.
+  One that loses its second consumer moves back down.
+- **Every MobX class lives in a `*.store.ts` file, and nothing else does.** A
+  file in `store/` without the suffix is a helper or a test; a widget's own store
+  is `<widget>.store.ts` in its folder, reached through its `mount.ts`.
+- `src/utils/` is grouped by **domain, not by kind** — one file per subject,
+  never a `constants/` or `formatters/` bucket (those cut across every domain and
+  tell you nothing). A new helper joins the file whose subject it shares; a new
+  file needs a subject none of the existing ones covers.
+- The settings-panel kit (`Card`, `SettingRow`, `setting-rows`,
+  `WidgetEditorContext`) stays in `ui/app/main/components/WidgetSettings/`; a
+  widget's panel imports it from there.
 
 ### Decomposition rules
 
@@ -881,7 +881,7 @@ checklist below is what a reviewer applies to code that already exists.
 3. Decompose from the start
 4. Every component `observer()`
 5. Add `*.stories.tsx` through `defineWidgetStories` — see `docs/widget-stories.md`
-6. Add `*SettingsPanel.tsx` in `src/ui/app/main/components/WidgetSettings/panels/` and export `PANEL_WIDGET_IDS` from it — the panel registry picks it up, nothing else to wire
+6. Add `*SettingsPanel.tsx` in the widget folder and export `PANEL_WIDGET_IDS` from it — the panel registry picks it up, nothing else to wire
 7. Add `interface *WidgetSettings` to `src/types/widget-settings.ts`, add it to the `WidgetSpecificSettings` union
 8. Create `manifest.ts` and `mount.ts` next to the widget — both are collected by glob, so no shared file is edited
    8a. Declare `telemetryEvents` in the manifest for every gated field the widget
@@ -901,7 +901,7 @@ Full guide: [`docs/widget-stories.md`](docs/widget-stories.md) — read it befor
 
 - Every widget story goes through `defineWidgetStories` (`src/storybook/define-widget-stories.tsx`): it provides the store, the frame, the scenario base and the `runInAction` seeding. No hand-rolled `render`, decorator or `runInAction` in a story file.
 - **The widget's settings are Controls automatically** — read from its `manifest.ts`, written back with `updateUserSettings`. A story never redeclares them; a new string-union setting needs its members in `SETTING_OPTIONS` (`src/storybook/setting-options.ts`), or it shows as a text field.
-- Seed with the mock builders in `store/preview/mocks/` and data-store setters; scenario knobs are optional and folded with `whenSet` so they do not overwrite a named scenario.
+- Seed with the mock builders in `preview/mocks/` and data-store setters; scenario knobs are optional and folded with `whenSet` so they do not overwrite a named scenario.
 - Named `const` PascalCase exports; the only default export is `meta`. No anonymous functions.
 
 ---

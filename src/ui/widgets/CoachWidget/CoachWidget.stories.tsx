@@ -2,14 +2,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import type { DrivingAdvisory } from '@utils/driving-coach-utils';
-import { mockLapTiming } from '@store/preview/mocks/delta';
-import { seedCoachAdvisory } from '@store/preview/coach-advisory-seed';
+import { mockLapTiming } from '@/preview/mocks/delta';
+import { seedCoachAdvisory } from '@/preview/coach-advisory-seed';
 import {
   mockReferenceLap,
   PREVIEW_BRAKE_START_PCT,
   PREVIEW_CORNER_CENTER_PCT,
   referenceSpeedKmhAt,
-} from '@store/preview/mocks/coach';
+} from '@/preview/mocks/coach';
 import { CoachWidget } from './CoachWidget';
 import type { CoachWidgetStores } from './coach-stores';
 import {

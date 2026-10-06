@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { useWheelToWheelWidgetStore } from '../wheel-to-wheel.widget';
+import { useWheelToWheelWidgetStore } from '../wheel-to-wheel.store';
 import { BattleSide } from '../BattleSide/BattleSide';
 import { RivalRow } from '../RivalRow/RivalRow';
 

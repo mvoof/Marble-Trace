@@ -2,7 +2,7 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
-import { projectFlagZoneToWindow } from '@utils/flag-zones';
+import { projectFlagZoneToWindow } from '@store/widgets/incidents/flag-zones';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import {
   useBackendComputedStore,

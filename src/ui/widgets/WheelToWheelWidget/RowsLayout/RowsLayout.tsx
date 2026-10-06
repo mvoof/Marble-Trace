@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { useWheelToWheelWidgetStore } from '../wheel-to-wheel.widget';
+import { useWheelToWheelWidgetStore } from '../wheel-to-wheel.store';
 import { DriverRow } from '../DriverRow/DriverRow';
 
 import styles from './RowsLayout.module.scss';

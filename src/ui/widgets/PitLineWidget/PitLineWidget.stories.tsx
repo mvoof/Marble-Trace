@@ -1,12 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { PitLineWidgetSettings } from '@/types/widget-settings';
-import { mockCarStatus } from '@store/preview/mocks/engine';
-import { mockPitTarget } from '@store/preview/mocks/pit';
-import {
-  SAMPLE_PIT_EXIT_PCT,
-  SAMPLE_PIT_IN_PCT,
-} from '@store/preview/sample-track';
+import { mockCarStatus } from '@/preview/mocks/engine';
+import { mockPitTarget } from '@/preview/mocks/pit';
+import { SAMPLE_PIT_EXIT_PCT, SAMPLE_PIT_IN_PCT } from '@/preview/sample-track';
 import { PitLineWidget } from './PitLineWidget';
 import {
   defineWidgetStories,

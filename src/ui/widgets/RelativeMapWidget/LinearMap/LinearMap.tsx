@@ -5,7 +5,7 @@ import { TRACK_SURFACE_ON_TRACK } from '@utils/driver';
 import { parseClassColor } from '@utils/colors';
 import { CarDot } from '@ui/shared/CarDot/CarDot';
 import { shapeForClassOrder } from '@utils/canvas';
-import { PaceCarMarker } from '@ui/widgets/TrackMapWidget/TrackMapSvg/PaceCarMarker/PaceCarMarker';
+import { PaceCarMarker } from '@ui/shared/PaceCarMarker/PaceCarMarker';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 
 import { FlagBands } from '../FlagBands/FlagBands';

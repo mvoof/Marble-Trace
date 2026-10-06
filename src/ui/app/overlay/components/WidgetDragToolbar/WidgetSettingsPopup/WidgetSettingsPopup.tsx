@@ -16,7 +16,7 @@ import {
 } from '@store/roots/root-store-context';
 import { useOverlayRoot } from '@store/roots/overlay-root-context';
 import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
-import type { SettingsMutationLog } from '@store/layout/mutation-log';
+import type { SettingsMutationLog } from '@store/layout/mutation-log.store';
 import type { SettingsClientStore } from '@store/layout/settings-client.store';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import styles from './WidgetSettingsPopup.module.scss';

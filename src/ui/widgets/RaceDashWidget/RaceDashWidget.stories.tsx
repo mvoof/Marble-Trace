@@ -11,10 +11,10 @@ import {
   PREVIEW_CORNER_CENTER_PCT,
   mockReferenceLap,
   referenceSpeedKmhAt,
-} from '@store/preview/mocks/coach';
-import { MPS_PER_KMH, mockCarDynamics } from '@store/preview/mocks/dynamics';
-import { mockLapTiming } from '@store/preview/mocks/delta';
-import { mockPitCarStatus, mockPitTarget } from '@store/preview/mocks/pit';
+} from '@/preview/mocks/coach';
+import { MPS_PER_KMH, mockCarDynamics } from '@/preview/mocks/dynamics';
+import { mockLapTiming } from '@/preview/mocks/delta';
+import { mockPitCarStatus, mockPitTarget } from '@/preview/mocks/pit';
 import { RaceDashWidget } from './RaceDashWidget';
 import {
   defineWidgetStories,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { RendererCore } from '@store/roots/renderer-core';
-import { seedScenario } from '@store/preview/scenarios';
+import { seedScenario } from '@/preview/scenarios';
 import { CoachWidgetStores } from './coach-stores';
 
 const COACH = 'coach';

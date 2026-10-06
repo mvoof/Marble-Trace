@@ -15,7 +15,7 @@ import { RemoteDevicesStore } from '../remote/remote-devices.store';
 import { FpsDiagnosticsStore } from '../diagnostics/fps-diagnostics.store';
 import { DiagnosticsExportStore } from '../diagnostics/diagnostics-export.store';
 import { TelemetryInspectorStore } from '../diagnostics/telemetry-inspector.store';
-import { TrackRotationStore } from '../widgets/track-rotation.store';
+import { TrackRotationStore } from '../widgets/track-map/track-rotation.store';
 
 /**
  * The main window: the renderer core, the app-window stores, and everything

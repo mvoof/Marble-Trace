@@ -17,7 +17,7 @@ import {
   slugFromName,
   uniqueSlug,
 } from '@utils/remote-screen';
-import type { SettingsMutationLog } from '@store/layout/mutation-log';
+import type { SettingsMutationLog } from '@store/layout/mutation-log.store';
 import type {
   LayoutMonitor,
   SavedLayout,

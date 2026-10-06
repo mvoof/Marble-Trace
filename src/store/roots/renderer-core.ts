@@ -1,23 +1,23 @@
 import { BackendComputedStore } from '../data/computed.store';
 import { SimStore } from '../sim/sim.store';
-import { FlagsStore } from '../widgets/flags.widget';
-import { IncidentsWidgetStore } from '../widgets/incidents.widget';
-import { PaceCarStore } from '../widgets/pace-car.widget';
-import { RadarWidgetStore } from '../widgets/radar.widget';
-import { PitServiceWidgetStore } from '../widgets/pit-service/pit-service.widget';
-import { PlayerPositionStore } from '../widgets/player-position';
+import { FlagsStore } from '../widgets/flags/flags.store';
+import { IncidentsWidgetStore } from '../widgets/incidents/incidents.store';
+import { PaceCarStore } from '../widgets/pace-car/pace-car.store';
+import { RadarWidgetStore } from '../widgets/radar/radar.store';
+import { PitServiceWidgetStore } from '../widgets/pit-service/pit-service.store';
+import { PlayerPositionStore } from '../data/player-position.store';
 import {
   SharedWidgetStores,
   WidgetInstanceRegistry,
-} from '../widget-runtime/widget-instances';
-import { TrackMapWidgetStore } from '../widgets/track-map.widget';
+} from '../widget-runtime/widget-instances.store';
+import { TrackMapWidgetStore } from '../widgets/track-map/track-map.store';
 import {
   LiveWidgetsStore,
   type LiveWidgetsView,
 } from '../layout/live-widgets.store';
 import { WidgetDefaultsStore } from '../layout/widget-defaults.store';
 import { LayoutsStore } from '../layout/layouts.store';
-import { SettingsMutationLog } from '../layout/mutation-log';
+import { SettingsMutationLog } from '../layout/mutation-log.store';
 import { AppSettingsStore } from '../settings/app-settings.store';
 import { UnitsStore } from '../settings/units.store';
 import { WidgetAutoHideStore } from '../widget-runtime/widget-auto-hide.store';

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import {
   useWheelToWheelWidgetStore,
   type RivalSlot,
-} from '../wheel-to-wheel.widget';
+} from '../wheel-to-wheel.store';
 import { splitDriverName } from '@utils/driver';
 import { CarNumberBox } from '../CarNumberBox/CarNumberBox';
 import { SideSpeed } from '../SideSpeed/SideSpeed';
