@@ -17,8 +17,8 @@ import { getRemoteServerInfo } from '@platform/services/remote.service';
 import {
   useAppSettingsStore,
   useLayoutsStore,
-} from '@store/root-store-context';
-import { useRemoteDevicesStore } from '@store/main-root-context';
+} from '@store/roots/root-store-context';
+import { useRemoteDevicesStore } from '@store/roots/main-root-context';
 import type { RemoteServerInfo } from '@/types/bindings';
 import { RemoteScreenRow } from './RemoteScreenRow';
 import { SettingsCard } from '../SettingsCard';

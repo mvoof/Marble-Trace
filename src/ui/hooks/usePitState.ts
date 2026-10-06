@@ -4,7 +4,7 @@ import {
   useSessionStore,
   useTrackMapWidgetStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import {

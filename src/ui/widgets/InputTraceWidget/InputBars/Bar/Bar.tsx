@@ -9,7 +9,7 @@ import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { useValueCoverPoint } from './useValueCoverPoint';
 
 import styles from './Bar.module.scss';
-import { usePlayerStore } from '@store/root-store-context';
+import { usePlayerStore } from '@store/roots/root-store-context';
 import { useInputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.widget';
 import type { InputChannel } from '@ui/widgets/InputTraceWidget/input-trace.widget';
 

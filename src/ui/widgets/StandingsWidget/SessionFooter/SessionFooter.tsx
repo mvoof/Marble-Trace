@@ -20,7 +20,7 @@ import {
   useEnvironmentStore,
   useSessionStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 // Boxed chips would make the strip taller than the rows it sits under, which is
 // the one thing the footer must not be.

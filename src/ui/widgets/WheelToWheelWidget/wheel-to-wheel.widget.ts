@@ -11,9 +11,9 @@ import {
 import type { UnitSystem } from '@/types';
 import type { DriverEntry } from '@/types/driver-entry';
 import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
-import type { SelfHidingWidgetStore } from '@store/widgets/widget-auto-hide.store';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
+import type { SelfHidingWidgetStore } from '@store/widget-runtime/widget-auto-hide.store';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import { formatSpeed } from '@utils/telemetry-format';
 import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';

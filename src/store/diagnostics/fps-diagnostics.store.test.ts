@@ -2,7 +2,7 @@ import { observable, runInAction } from 'mobx';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SimPerfFrame } from '@/types/bindings';
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 import { FpsDiagnosticsStore } from './fps-diagnostics.store';
 
 // The banner is a real Tauri window; the state machine under test is the point.

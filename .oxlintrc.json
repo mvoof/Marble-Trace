@@ -175,7 +175,7 @@
     {
       "files": [
         "src/platform/services/**",
-        "src/store/settings/layout-background.ts"
+        "src/store/layout/layout-background.ts"
       ],
       "rules": {
         "no-restricted-imports": [
@@ -227,7 +227,7 @@
             "patterns": [
               {
                 "group": [
-                  "@store/root-store-context",
+                  "@store/roots/root-store-context",
                   "**/root-store-context",
                   "**/main-root-context",
                   "**/overlay-root-context",
@@ -282,8 +282,8 @@
             "patterns": [
               {
                 "group": [
-                  "@store/main-root",
-                  "@store/main-root-context",
+                  "@store/roots/main-root",
+                  "@store/roots/main-root-context",
                   "**/main-root",
                   "**/main-root-context"
                 ],

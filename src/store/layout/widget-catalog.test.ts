@@ -4,7 +4,7 @@ import {
   compareManifests,
   DEFAULT_WIDGETS,
   WIDGETS,
-} from '@store/widget-catalog';
+} from '@store/layout/widget-catalog';
 import { TELEMETRY_EVENT_BITS } from '@/types/telemetry-events';
 import type { WidgetManifest } from '@/types/widget-settings';
 

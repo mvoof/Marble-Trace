@@ -1,5 +1,5 @@
 import { listenTo, type UnlistenFn } from '@platform/services/events.service';
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 import type { InputButtonEvent, InputDevice } from '@/types/bindings';
 import {
   INPUT_BUTTON_EVENT,

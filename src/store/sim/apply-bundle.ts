@@ -1,7 +1,7 @@
 import { runInAction } from 'mobx';
 
 import type { TelemetryBundle } from '@/types/bindings';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 /**
  * Scatters one bundle across the data stores.

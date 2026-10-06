@@ -1,14 +1,14 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import { DEFAULT_WIDGETS } from '@store/widget-catalog';
-import { mergeWithDefaults } from '@store/deep-merge';
+import { DEFAULT_WIDGETS } from '@store/layout/widget-catalog';
+import { mergeWithDefaults } from '@store/settings/deep-merge';
 import {
   applyLayoutResize,
   deriveWidgetDesignWidth,
-} from '@store/settings/layout-resize';
-import { availableWidgetIdsOf } from '@store/settings/widget-availability';
-import type { WidgetMap } from '@store/settings/widget-map';
-import type { RendererCore } from '@store/renderer-core';
+} from '@store/layout/layout-resize';
+import { availableWidgetIdsOf } from '@store/layout/widget-availability';
+import type { WidgetMap } from '@store/layout/widget-map';
+import type { RendererCore } from '@store/roots/renderer-core';
 import type {
   BaseUserSettings,
   WidgetDefaultConfig,

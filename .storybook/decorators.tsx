@@ -1,8 +1,11 @@
 import React from 'react';
 import { runInAction } from 'mobx';
 import type { Decorator } from '@storybook/react';
-import { PreviewCore } from '../src/store/renderer-core';
-import { RendererCoreContext, useStore } from '../src/store/root-store-context';
+import { PreviewCore } from '../src/store/roots/renderer-core';
+import {
+  RendererCoreContext,
+  useStore,
+} from '../src/store/roots/root-store-context';
 
 export const withStore =
   (seedFn?: (store: PreviewCore) => void): Decorator =>

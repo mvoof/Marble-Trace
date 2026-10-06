@@ -1,7 +1,7 @@
 import { computed, makeAutoObservable } from 'mobx';
 
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import {

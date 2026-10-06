@@ -20,7 +20,7 @@ import type {
  * where its name puts it.
  */
 const manifestModules = import.meta.glob<Record<string, WidgetManifest>>(
-  '../ui/widgets/*/manifest.ts',
+  '../../ui/widgets/*/manifest.ts',
   { eager: true }
 );
 

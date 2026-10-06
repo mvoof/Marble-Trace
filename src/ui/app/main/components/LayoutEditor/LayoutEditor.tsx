@@ -37,12 +37,12 @@ import {
 import {
   useAppSettingsStore,
   useLayoutsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import {
   useLayoutEditorStore,
   useLayoutGestureStores,
   useMainLiveWidgetsStore,
-} from '@store/main-root-context';
+} from '@store/roots/main-root-context';
 import {
   SESSION_PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -53,10 +53,10 @@ import { LayoutList } from './LayoutList';
 import {
   saveBackgroundImage,
   deleteBackgroundImage,
-} from '@store/settings/layout-background';
+} from '@store/layout/layout-background';
 import { isRemoteMonitor } from '@utils/remote-screen';
 import { AddRemoteScreenButton } from './AddRemoteScreenButton';
-import { monitorForWidget } from '@store/settings/virtual-desktop';
+import { monitorForWidget } from '@store/layout/virtual-desktop';
 import { useToolbarBottom } from './use-toolbar-bottom';
 import { WidgetInspector } from './WidgetInspector';
 import type { SnapPosition } from './snap-position';
@@ -64,7 +64,7 @@ import {
   createLayout,
   deleteLayout,
   removeMonitor,
-} from '@store/settings/layout-gestures';
+} from '@store/layout/layout-gestures';
 import styles from './LayoutEditor.module.scss';
 
 const SNAP_MARGIN = 8;

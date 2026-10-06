@@ -3,7 +3,10 @@ import { observer } from 'mobx-react-lite';
 
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import { usePlayerStore, useSessionStore } from '@store/root-store-context';
+import {
+  usePlayerStore,
+  useSessionStore,
+} from '@store/roots/root-store-context';
 import { computeShiftThresholds } from '@utils/car-signals';
 import { computeRpmZoneState, rpmFillColor } from '../race-dash-utils';
 import {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
-import { PreviewCore } from '../renderer-core';
-import { DEFAULT_WIDGETS } from '../widget-catalog';
+import { PreviewCore } from '../roots/renderer-core';
+import { DEFAULT_WIDGETS } from './widget-catalog';
 import type { CapabilitiesPayload } from '@/types/bindings';
 
 const FULL_CAPABILITIES: CapabilitiesPayload = {

@@ -9,7 +9,7 @@ import {
   useAppSettingsStore,
   usePlayerStore,
   useLiveWidgetsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { useInputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.widget';
 import {
   createTraceBufferState,

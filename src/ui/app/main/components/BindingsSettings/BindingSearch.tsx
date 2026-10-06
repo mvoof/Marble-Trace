@@ -7,7 +7,7 @@ import { Keyboard } from 'lucide-react';
 import {
   useBindingsUiStore,
   useDeviceInputStore,
-} from '@store/main-root-context';
+} from '@store/roots/main-root-context';
 import { bindingLabel } from './binding-labels';
 import { toAccelerator } from './accelerator';
 import styles from './BindingsSettings.module.scss';

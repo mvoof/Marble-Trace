@@ -5,7 +5,7 @@ import { OrderToggle } from '@ui/widgets/PitServiceWidget/OrderToggle/OrderToggl
 import {
   usePitServiceWidgetStore,
   usePlayerStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 const UNKNOWN_COMPOUND = '—';
 

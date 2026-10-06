@@ -10,7 +10,7 @@ import type {
 } from '@storybook/react-vite';
 
 import type { PreviewScenarioId } from '@/types/preview-scenarios';
-import type { PreviewCore } from '@store/renderer-core';
+import type { PreviewCore } from '@store/roots/renderer-core';
 import { usePreviewStore, withStore } from '../../.storybook/decorators';
 import { widgetDecorator } from './widgetDecorator';
 import { seedFromSnapshot, seedScenario } from './seed-from-snapshot';

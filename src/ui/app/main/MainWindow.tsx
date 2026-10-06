@@ -13,8 +13,8 @@ import { UpdateBanner } from './components/UpdateBanner/UpdateBanner';
 import { InstallMismatchBanner } from './components/InstallMismatchBanner/InstallMismatchBanner';
 import { SettingsLockBanner } from './components/SettingsLockBanner/SettingsLockBanner';
 import styles from './MainWindow.module.scss';
-import { useSimStore } from '@store/root-store-context';
-import { useMainRoot } from '@store/main-root-context';
+import { useSimStore } from '@store/roots/root-store-context';
+import { useMainRoot } from '@store/roots/main-root-context';
 
 const { Content } = Layout;
 

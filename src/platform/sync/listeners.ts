@@ -1,8 +1,8 @@
 import { runInAction } from 'mobx';
 
 import { listenTo, type UnlistenFn } from '@platform/services/events.service';
-import type { RendererCore } from '@store/renderer-core';
-import type { OverlayRoot } from '@store/overlay-root';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { OverlayRoot } from '@store/roots/overlay-root';
 import type { OverlayModes } from '@/types/bindings';
 import type { ControlMessage } from '@/types/client-protocol';
 import { getOverlayModes } from '@platform/services/hotkeys.service';

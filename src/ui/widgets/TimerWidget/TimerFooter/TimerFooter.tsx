@@ -11,7 +11,7 @@ import {
   useCarsStore,
   useSessionStore,
   usePlayerPositionStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 
 import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';

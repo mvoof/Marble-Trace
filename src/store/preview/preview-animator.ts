@@ -1,4 +1,4 @@
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 // Time-series widgets (input trace) build a rolling history from successive
 // carInputs frames, which a single seeded frame can't provide. Instead of

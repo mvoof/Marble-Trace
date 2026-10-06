@@ -1,6 +1,9 @@
-import { isPlainObject, mergeWithDefaults } from '@store/deep-merge';
-import { DEFAULT_WIDGET_BY_ID, WIDGET_BY_ID } from '@store/widget-catalog';
-import { defaultMonitorOf } from '@store/settings/virtual-desktop';
+import { isPlainObject, mergeWithDefaults } from '@store/settings/deep-merge';
+import {
+  DEFAULT_WIDGET_BY_ID,
+  WIDGET_BY_ID,
+} from '@store/layout/widget-catalog';
+import { defaultMonitorOf } from '@store/layout/virtual-desktop';
 import { cloneMonitor } from '@utils/remote-screen';
 import type {
   LayoutMonitor,

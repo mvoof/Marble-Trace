@@ -8,7 +8,7 @@ import {
 import type { FlagType } from '@/types';
 import type { RaceFlags } from '@/types/bindings';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 type FlagsDeps = Pick<RendererCore, 'liveWidgets' | 'player' | 'paceCar'>;
 

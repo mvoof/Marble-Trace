@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 
 import type { CarIdentity } from '@/types/car-identity';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 type PlayerPositionDeps = Pick<
   RendererCore,

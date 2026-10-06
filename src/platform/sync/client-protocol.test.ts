@@ -1,8 +1,8 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 
-import { MainRoot } from '@store/main-root';
-import { OverlayRoot } from '@store/overlay-root';
+import { MainRoot } from '@store/roots/main-root';
+import { OverlayRoot } from '@store/roots/overlay-root';
 import type {
   ClientToMainMessage,
   CommandMessage,

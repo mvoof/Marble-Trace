@@ -8,7 +8,7 @@ import {
   getPerfRun,
   submitOverlayPerf,
 } from '@platform/services/perf.service';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import { coldStartSample } from './perf-cold-start';
 
 /**

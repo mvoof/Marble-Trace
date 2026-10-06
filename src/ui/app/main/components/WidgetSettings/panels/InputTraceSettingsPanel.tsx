@@ -12,7 +12,7 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows, usePanelWidgetId } from './setting-rows';
-import { useAppSettingsStore } from '@store/root-store-context';
+import { useAppSettingsStore } from '@store/roots/root-store-context';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['input-trace'];

@@ -1,7 +1,7 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
 
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
 import type { ReferenceLapSample } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import {

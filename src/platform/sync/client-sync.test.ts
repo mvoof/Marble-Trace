@@ -1,10 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-import { RemoteRoot } from '@store/remote-root';
-import { OverlayRoot } from '@store/overlay-root';
+import { RemoteRoot } from '@store/roots/remote-root';
+import { OverlayRoot } from '@store/roots/overlay-root';
 import { RemoteScreenStore } from '@store/remote/remote-screen.store';
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
 import type { RemoteControlKind } from '@/types/bindings';
 import type { ControlMessage } from '@/types/client-protocol';
 import type { RemoteMessage } from '@/types/remote';

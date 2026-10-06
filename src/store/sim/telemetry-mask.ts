@@ -2,7 +2,7 @@ import {
   telemetryEventsToMask,
   type TelemetryEventName,
 } from '@/types/telemetry-events';
-import { WIDGET_BY_ID } from '@store/widget-catalog';
+import { WIDGET_BY_ID } from '@store/layout/widget-catalog';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 
 /**

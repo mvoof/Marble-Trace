@@ -1,7 +1,7 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { availableMonitors } from '@tauri-apps/api/window';
 import { PhysicalPosition, PhysicalSize } from '@tauri-apps/api/dpi';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import type { LayoutResolution } from '@/types/widget-settings';
 import { monitorLabel, listOverlayWindowLabels } from './overlay-labels';
 

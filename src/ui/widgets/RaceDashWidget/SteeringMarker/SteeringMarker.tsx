@@ -1,7 +1,7 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { usePlayerStore } from '@store/root-store-context';
+import { usePlayerStore } from '@store/roots/root-store-context';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import { steeringAngleDeg, wrapToHalfTurn } from '@utils/car-signals';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';

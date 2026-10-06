@@ -9,7 +9,7 @@ still stands.
 
 ## Decision
 
-`SettingsMutationLog` (`store/settings/mutation-log.ts`) holds `changeToken`,
+`SettingsMutationLog` (`store/layout/mutation-log.ts`) holds `changeToken`,
 `syncToken` and the set of widgets touched. `LayoutsStore` and
 `LiveWidgetsStore` are both constructed with it and both write into it, so a
 layout record marks its own writes instead of being wrapped in a façade method

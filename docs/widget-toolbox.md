@@ -25,7 +25,7 @@ sentence: **one consumer → the widget folder, two or more → the shared folde
 | Two or more widgets, renders     | `src/ui/shared/`                                                                |
 | Two or more widgets, touches DOM | `src/ui/hooks/`                                                                 |
 | One widget **and** a store       | `src/utils/`, even at two files — a store importing `@ui/**` is a lint error    |
-| One non-widget owner             | beside that owner (`store/settings/…`, `ui/app/main/…`), never `src/utils/`     |
+| One non-widget owner             | beside that owner (`store/layout/…`, `ui/app/main/…`), never `src/utils/`       |
 
 `src/utils/` is grouped by **domain, not by kind** — one file per subject, never
 a `constants/` or `formatters/` bucket. A new helper joins the file whose

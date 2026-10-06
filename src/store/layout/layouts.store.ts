@@ -1,11 +1,11 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import { cloneBackgroundImage } from '@store/settings/layout-background';
+import { cloneBackgroundImage } from '@store/layout/layout-background';
 import {
   monitorsBounds,
   placeWidgetOnMonitor,
   widgetsOnMonitor,
-} from '@store/settings/virtual-desktop';
+} from '@store/layout/virtual-desktop';
 import {
   boundsOverlap,
   clearOfMonitors,
@@ -17,7 +17,7 @@ import {
   slugFromName,
   uniqueSlug,
 } from '@utils/remote-screen';
-import type { SettingsMutationLog } from '@store/settings/mutation-log';
+import type { SettingsMutationLog } from '@store/layout/mutation-log';
 import type {
   LayoutMonitor,
   SavedLayout,

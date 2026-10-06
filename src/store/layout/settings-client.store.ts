@@ -1,7 +1,7 @@
 import { comparer, makeAutoObservable, runInAction } from 'mobx';
 
 import { emitToMain } from '@platform/services/events.service';
-import type { LiveWidgetsView } from '@store/settings/live-widgets.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
 import type { ClientCommand } from '@/types/client-protocol';
 import type { WidgetUserSettings } from '@/types/widget-settings';
 

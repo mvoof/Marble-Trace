@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Popconfirm, Switch, Tag, Tooltip } from 'antd';
 import { AppWindow, Play, Square, Trash2 } from 'lucide-react';
 
-import { useCompanionAppsStore } from '@store/main-root-context';
+import { useCompanionAppsStore } from '@store/roots/main-root-context';
 import type { CompanionApp } from '@/types/bindings';
 import styles from './CompanionAppRow.module.scss';
 

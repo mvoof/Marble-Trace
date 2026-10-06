@@ -3,9 +3,9 @@ import {
   buildAppWindowStores,
   type AppWindowStores,
 } from './app-window-stores';
-import type { BindingsStore } from './hotkeys/bindings.store';
-import { SettingsClientStore } from './settings/settings-client.store';
-import type { SettingsPanelUiStore } from './widgets/settings-panel-ui.store';
+import type { BindingsStore } from '../hotkeys/bindings.store';
+import { SettingsClientStore } from '../layout/settings-client.store';
+import type { SettingsPanelUiStore } from '../widget-runtime/settings-panel-ui.store';
 
 /**
  * An overlay window: the renderer core plus the two stores every app window

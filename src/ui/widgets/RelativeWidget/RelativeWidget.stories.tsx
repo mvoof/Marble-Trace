@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import type { MockFieldRows } from '@store/preview/mocks/field';
 import {
   MOCK_DRIVER_FLAG_ROWS,

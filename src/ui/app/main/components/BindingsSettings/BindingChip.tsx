@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Tooltip } from 'antd';
 import { X } from 'lucide-react';
 import type { Binding } from '@/types/input-bindings';
-import { useBindingsStore } from '@store/root-store-context';
-import { useDeviceInputStore } from '@store/main-root-context';
+import { useBindingsStore } from '@store/roots/root-store-context';
+import { useDeviceInputStore } from '@store/roots/main-root-context';
 import { actionLabel, bindingLabel } from './binding-labels';
 import styles from './BindingsSettings.module.scss';
 

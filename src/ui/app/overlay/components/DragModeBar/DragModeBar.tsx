@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { X } from 'lucide-react';
 import { WidgetPicker } from '@ui/app/overlay/components/WidgetPicker/WidgetPicker';
-import { useAppSettingsStore } from '@store/root-store-context';
+import { useAppSettingsStore } from '@store/roots/root-store-context';
 
 /**
  * The controls drag mode puts at the top of the overlay. Loaded lazily by

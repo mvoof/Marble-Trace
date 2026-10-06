@@ -18,18 +18,18 @@ import {
   Monitor,
   GripHorizontal,
 } from 'lucide-react';
-import { PreviewCore } from '@store/renderer-core';
+import { PreviewCore } from '@store/roots/renderer-core';
 import {
   RendererCoreContext,
   useSessionStore,
   useUnitsStore,
   useLayoutsStore,
   useSettingsMutationLog,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import {
   useMainLiveWidgetsStore,
   useTrackRotationStore,
-} from '@store/main-root-context';
+} from '@store/roots/main-root-context';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
@@ -38,8 +38,8 @@ import {
   seedScenario,
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@store/preview/scenarios';
-import { resolveBackgroundSrc } from '@store/settings/layout-background';
-import { monitorsBounds } from '@store/settings/virtual-desktop';
+import { resolveBackgroundSrc } from '@store/layout/layout-background';
+import { monitorsBounds } from '@store/layout/virtual-desktop';
 import { seedInputHistory } from '@store/preview/preview-animator';
 import type {
   LayoutMonitor,

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { PIT_LIMITER_BIT } from '@utils/car-signals';
-import { usePlayerStore } from '@store/root-store-context';
+import { usePlayerStore } from '@store/roots/root-store-context';
 
 import { PitBar } from './PitBar/PitBar';
 import { RpmBar } from './RpmBar/RpmBar';

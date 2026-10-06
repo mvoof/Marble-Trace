@@ -1,5 +1,5 @@
-import { HudRoot } from './store/hud-root';
-import { HudRootContext } from './store/hud-root-context';
+import { HudRoot } from './store/roots/hud-root';
+import { HudRootContext } from './store/roots/hud-root-context';
 import { DiagnosticsHudWindow } from './ui/app/diagnostics/DiagnosticsHudWindow';
 import { renderWindow } from './render-window';
 

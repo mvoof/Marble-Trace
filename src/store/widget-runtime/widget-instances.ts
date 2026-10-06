@@ -1,6 +1,6 @@
 import { action, observable, runInAction, type ObservableMap } from 'mobx';
 
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 /** What a widget instance's store is built from when that instance mounts. */
 export interface WidgetInstanceContext {

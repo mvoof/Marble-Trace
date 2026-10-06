@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
 import type { InputTraceSettings } from '@/types/widget-settings';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 

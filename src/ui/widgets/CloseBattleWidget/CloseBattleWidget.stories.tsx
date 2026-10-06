@@ -4,7 +4,7 @@ import type {
   BattleNameMode,
   CloseBattleWidgetSettings,
 } from '@/types/widget-settings';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import { mockProximity } from '@store/preview/mocks/traffic';
 import { CloseBattleWidget } from './CloseBattleWidget';
 import type { CloseBattleWidgetStore } from './close-battle.widget';

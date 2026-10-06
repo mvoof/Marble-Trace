@@ -22,7 +22,7 @@ import {
   useBackendComputedStore,
   usePaceCarStore,
   useSessionStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 export interface TrackData {
   svgPath: string;

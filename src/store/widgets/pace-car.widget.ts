@@ -1,6 +1,6 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 type PaceCarDeps = Pick<RendererCore, 'cars' | 'session'>;
 

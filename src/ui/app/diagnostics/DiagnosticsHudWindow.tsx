@@ -2,7 +2,10 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { initDiagnosticsHudSync } from '@platform/sync/diagnostics-hud-sync';
-import { useDiagnosticsHudStore, useHudRoot } from '@store/hud-root-context';
+import {
+  useDiagnosticsHudStore,
+  useHudRoot,
+} from '@store/roots/hud-root-context';
 import { DiagnosticsBanner } from './DiagnosticsBanner';
 
 /**

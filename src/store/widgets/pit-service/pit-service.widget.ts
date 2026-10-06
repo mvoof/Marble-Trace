@@ -1,6 +1,6 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import type { PitStrategy } from '@/types/pit-strategy';
 import { PitAutoService } from './pit-auto-service';

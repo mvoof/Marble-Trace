@@ -6,7 +6,7 @@ import {
   resetDeliveryCounters,
   setInspectorActive,
 } from '@platform/services/telemetry.service';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import type { DeliverySet, SourceFrame } from '@/types/bindings';
 import type {
   DeliveryFieldRow,

@@ -15,10 +15,10 @@ import type {
   LayoutMonitor,
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
-import type { MonitorWidgetRow } from '@store/settings/live-widgets.store';
+import type { MonitorWidgetRow } from '@store/layout/live-widgets.store';
 import { isRemoteMonitor } from '@utils/remote-screen';
-import { useLayoutsStore } from '@store/root-store-context';
-import { useMainLiveWidgetsStore } from '@store/main-root-context';
+import { useLayoutsStore } from '@store/roots/root-store-context';
+import { useMainLiveWidgetsStore } from '@store/roots/main-root-context';
 import styles from './LayoutWidgetPanel.module.scss';
 
 interface LayoutWidgetPanelProps {

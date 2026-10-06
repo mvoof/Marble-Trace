@@ -6,7 +6,7 @@ import {
 } from '@platform/services/events.service';
 import { listOverlayWindowLabels, monitorLabel } from './overlay-labels';
 import { overlaySnapshotFor, snapshotAppInputs } from './client-snapshot';
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 import type { RejectedCommand } from '@/types/bindings';
 import type { ClientCommand, CommandMessage } from '@/types/client-protocol';
 

@@ -7,8 +7,8 @@ import {
   useSessionStore,
   useStore,
   useTrackMapWidgetStore,
-} from '@store/root-store-context';
-import { useTrackRotationStore } from '@store/main-root-context';
+} from '@store/roots/root-store-context';
+import { useTrackRotationStore } from '@store/roots/main-root-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 

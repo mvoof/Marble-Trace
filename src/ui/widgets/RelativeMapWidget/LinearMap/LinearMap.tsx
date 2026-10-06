@@ -17,7 +17,7 @@ import {
   useCarsStore,
   usePaceCarStore,
   useSessionStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 const DEFAULT_DOT_RADIUS_PX = 9;
 const DEFAULT_PACE_CAR_COLOR = '#facc15';

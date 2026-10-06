@@ -48,7 +48,7 @@ import {
   trackConditionForWetness,
 } from '@store/sim/track-condition';
 import type { TelemetryStatus } from '@/types';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import {
   SIM_TELEMETRY_BUNDLE,
   SIM_SESSION,

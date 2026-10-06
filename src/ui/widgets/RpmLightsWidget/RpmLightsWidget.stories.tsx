@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type { RendererCore } from '@store/renderer-core';
-import { useStore } from '@store/root-store-context';
+import type { RendererCore } from '@store/roots/renderer-core';
+import { useStore } from '@store/roots/root-store-context';
 import { MPS_PER_KMH, mockCarDynamics } from '@store/preview/mocks/dynamics';
 import { mockPitCarStatus } from '@store/preview/mocks/pit';
 import { RpmLightsWidget } from './RpmLightsWidget';

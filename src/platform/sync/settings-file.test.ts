@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_WIDGET_BY_ID } from '@store/widget-catalog';
+import { DEFAULT_WIDGET_BY_ID } from '@store/layout/widget-catalog';
 import type {
   LayoutMonitor,
   SavedLayout,

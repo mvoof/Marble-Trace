@@ -8,7 +8,7 @@ import {
 } from '@platform/services/remote.service';
 import { resolveAppLanguage } from '@store/settings/app-settings.store';
 import { clientSnapshotFor, snapshotAppInputs } from './client-snapshot';
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 import type { ClientSnapshot } from '@/types/client-protocol';
 import type { RemoteDevice } from '@/types/bindings';
 

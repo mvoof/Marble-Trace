@@ -5,7 +5,7 @@ import {
   stopChatStreamSilent,
 } from '@platform/services/twitch.service';
 import { emitStreamChatCleared } from '@platform/services/events.service';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 const STREAM_CHAT_WIDGET_ID = 'stream-chat';
 

@@ -1,5 +1,5 @@
 import { createContext, use } from 'react';
-import type { WidgetInstanceStore } from '@store/widgets/widget-instances';
+import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances';
 
 export const WidgetInstanceStoreContext =
   createContext<WidgetInstanceStore | null>(null);

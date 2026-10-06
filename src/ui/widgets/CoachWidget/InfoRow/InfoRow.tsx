@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import { formatLapTime, formatSpeed, speedUnit } from '@utils/telemetry-format';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import { useUnitsStore } from '@store/root-store-context';
+import { useUnitsStore } from '@store/roots/root-store-context';
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,

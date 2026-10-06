@@ -34,7 +34,7 @@ remember to edit" is unfounded.
 
 | You might think you must        | You do not, because                                                                                                                                                                                                                                    |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Register the widget somewhere   | `manifest.ts` is collected by glob into `WIDGETS` / `WIDGET_BY_ID` / `DEFAULT_WIDGETS` (`store/widget-catalog.ts`)                                                                                                                                     |
+| Register the widget somewhere   | `manifest.ts` is collected by glob into `WIDGETS` / `WIDGET_BY_ID` / `DEFAULT_WIDGETS` (`store/layout/widget-catalog.ts`)                                                                                                                              |
 | Register the component          | `mount.ts` is collected by glob into `WIDGET_COMPONENTS` (`ui/widgets/registry.ts`)                                                                                                                                                                    |
 | Register the settings panel     | The panel's own `PANEL_WIDGET_IDS` export is collected by glob (`WidgetSettings/panels/panel-registry.ts`)                                                                                                                                             |
 | Write a settings migration      | A widget stores only the settings that differ from its manifest, so a new key is read from the manifest everywhere — **a new setting with a default needs no migration** ([settings-schema.md → When you do NOT need a migration](settings-schema.md)) |
@@ -107,7 +107,7 @@ the traffic. See [architecture.md → Demand gating](architecture.md).
 **Does the sim have to support it?** Separately from the mask,
 `requiredCapabilities` in the manifest hides the widget from the catalog when the
 connected sim cannot feed it (`availableWidgetIds` in
-`store/settings/live-widgets.store.ts`). It names keys of
+`store/layout/live-widgets.store.ts`). It names keys of
 `CapabilitiesPayload`, not telemetry fields: a widget reading `carDynamics` or
 `carInputs` for the player's own car declares `['playerDynamics']`; the others in
 use are `chassis`, `fuel`, `inputs`, `radar`, `relative`, `sectors`,

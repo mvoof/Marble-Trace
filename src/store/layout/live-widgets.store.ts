@@ -1,20 +1,23 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { mergeWithDefaults } from '@store/deep-merge';
-import { DEFAULT_WIDGETS, DEFAULT_WIDGET_BY_ID } from '@store/widget-catalog';
+import { mergeWithDefaults } from '@store/settings/deep-merge';
+import {
+  DEFAULT_WIDGETS,
+  DEFAULT_WIDGET_BY_ID,
+} from '@store/layout/widget-catalog';
 import { nextInstanceId, widgetTypeFromId } from '@utils/widget-instance';
 import {
   setFuelAvgWindowSilent,
   setFuelCountYellowLapsSilent,
   setPitWarningLapsSilent,
 } from '@platform/services/settings.service';
-import type { LayoutsStore } from '@store/settings/layouts.store';
-import type { SettingsMutationLog } from '@store/settings/mutation-log';
-import { availableWidgetIdsOf } from '@store/settings/widget-availability';
+import type { LayoutsStore } from '@store/layout/layouts.store';
+import type { SettingsMutationLog } from '@store/layout/mutation-log';
+import { availableWidgetIdsOf } from '@store/layout/widget-availability';
 import {
   applyDerivedDesignWidth,
   applyLayoutResize,
   deriveWidgetDesignWidth,
-} from '@store/settings/layout-resize';
+} from '@store/layout/layout-resize';
 
 import type {
   WidgetDefaultConfig,
@@ -30,7 +33,7 @@ import type {
   WidgetSpecificSettings,
   WidgetUserSettings,
 } from '@/types/widget-settings';
-import { DEFAULT_LAYOUT_RESOLUTION } from '@store/settings/layout-resolution';
+import { DEFAULT_LAYOUT_RESOLUTION } from '@store/layout/layout-resolution';
 import {
   clampToBounds,
   defaultMonitorOf,
@@ -38,18 +41,18 @@ import {
   monitorForWidget,
   placeWidgetOnMonitor,
   widgetsOnMonitor,
-} from '@store/settings/virtual-desktop';
+} from '@store/layout/virtual-desktop';
 import { isDisplayMonitor } from '@utils/remote-screen';
-import { WidgetHistory } from '@store/settings/widget-history';
+import { WidgetHistory } from '@store/layout/widget-history';
 import {
   bottomZIndex,
   buildStarterWidgets,
   spotForAddedWidget,
   topZIndex,
   type PickableWidget,
-} from '@store/settings/widget-placement';
-import type { WidgetMap } from '@store/settings/widget-map';
-import type { WidgetDefaultsStore } from '@store/settings/widget-defaults.store';
+} from '@store/layout/widget-placement';
+import type { WidgetMap } from '@store/layout/widget-map';
+import type { WidgetDefaultsStore } from '@store/layout/widget-defaults.store';
 import type { CapabilitiesPayload } from '@/types/bindings';
 
 const LAYOUT_TOAST_DURATION_MS = 3000;

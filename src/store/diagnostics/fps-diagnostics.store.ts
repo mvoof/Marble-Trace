@@ -6,7 +6,7 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 import type {
   DiagnosticsHudState,
   DiagnosticsPhase,

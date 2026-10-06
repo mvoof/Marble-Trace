@@ -1,9 +1,9 @@
 import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceStore } from '@store/widgets/widget-instances';
-import { useStore } from '@store/root-store-context';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances';
+import { useStore } from '@store/roots/root-store-context';
 import { mountForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceStoreContext } from './widget-instance-context';
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
-import { MainRoot } from '../main-root';
+import { MainRoot } from '../roots/main-root';
 import type { CapabilitiesPayload } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { deleteLayout } from './layout-gestures';

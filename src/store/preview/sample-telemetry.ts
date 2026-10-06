@@ -7,7 +7,7 @@ import type {
 } from '@/types/bindings';
 import { action } from 'mobx';
 import { TrackSurface } from '@/types';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import { computeDriverEntries } from './mocks/driver-entries';
 import { mockCarPositions } from './mocks/field';
 import { seedField } from './field-seed';

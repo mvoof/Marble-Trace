@@ -1,4 +1,4 @@
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
 import type { CoachPreviewTarget } from '@store/preview/coach-advisory-seed';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 import { CoachWidgetStore } from './coach.widget';

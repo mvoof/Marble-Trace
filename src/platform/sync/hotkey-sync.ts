@@ -6,7 +6,7 @@ import {
   setHotkeyContext,
 } from '@platform/services/hotkeys.service';
 import { applySettingsAction } from '@store/hotkeys/settings-actions';
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 import type { HotkeySettingsAction } from '@/types/bindings';
 import { HOTKEY_SETTINGS_ACTION_EVENT } from './sim-events';
 

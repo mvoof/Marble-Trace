@@ -1,4 +1,4 @@
-import { WIDGET_BY_ID } from '@store/widget-catalog';
+import { WIDGET_BY_ID } from '@store/layout/widget-catalog';
 import type { CapabilitiesPayload } from '@/types/bindings';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 

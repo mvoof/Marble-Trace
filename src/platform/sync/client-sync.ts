@@ -5,7 +5,7 @@ import {
   standingsHotkeyTargets,
   streamChatHotkeyTargets,
 } from '@store/hotkeys/hotkey-targets';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import type { ClientSnapshot, ControlMessage } from '@/types/client-protocol';
 
 /**

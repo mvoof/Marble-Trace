@@ -7,7 +7,7 @@ import {
   type UnlistenFn,
 } from '@platform/services/events.service';
 import { publishRemoteControl } from '@platform/services/remote.service';
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 
 /**
  * Main's half of the track-map angle: it takes the overlays' rotate steps,

@@ -5,7 +5,7 @@ import type { InteractHotkeyMode } from '@/types/bindings';
 import {
   useAppSettingsStore,
   useBindingsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 

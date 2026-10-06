@@ -739,7 +739,7 @@ Summarized as a direction: `utils/ ← ui/ → store/ → platform/`.
 
 No file is exempt. A widget's own store lives next to the widget and is built
 per instance from its `mount.ts`, so the store layer never imports it.
-`store/widget-catalog.ts` reads the per-widget manifests, which also live next
+`store/layout/widget-catalog.ts` reads the per-widget manifests, which also live next
 to their widgets, but collects them with `import.meta.glob` — a path, not an
 import — so it needs no exemption.
 
@@ -864,7 +864,7 @@ flowchart TB
 ```
 
 Every window builds one root over a shared `RendererCore`
-(`src/store/renderer-core.ts`): the data stores, the sim, the settings projection
+(`src/store/roots/renderer-core.ts`): the data stores, the sim, the settings projection
 widgets read, units, the app-wide widget stores (shared ones, the pit service,
 the recorded track) and the registry of per-instance widget stores. `MainRoot` adds what only the settings
 UI uses (editor, inspector, diagnostics, companion apps, chat sign-in, device
@@ -1026,7 +1026,7 @@ flowchart TB
     MT1["FuelWidget/mount.ts"]
     MT2["StandingsWidget/mount.ts"]
     P["*SettingsPanel.tsx<br/><i>PANEL_WIDGET_IDS</i>"]
-    CAT["<b>store/widget-catalog.ts</b><br/>glob → WIDGETS · WIDGET_BY_ID · DEFAULT_WIDGETS"]
+    CAT["<b>store/layout/widget-catalog.ts</b><br/>glob → WIDGETS · WIDGET_BY_ID · DEFAULT_WIDGETS"]
     REG["<b>ui/widgets/registry.ts</b><br/>glob → id → React component"]
     PREG["<b>panels/panel-registry.ts</b><br/>glob → id → settings panel"]
     MOUNT["the places<br/>that mount widgets"]
@@ -1057,7 +1057,7 @@ flowchart TB
 
 **Widget lists are alphabetical by label.** The Widgets page, each monitor's
 list in the layout editor and the F9 picker all show the catalog in that order
-(`compareManifests` in `src/store/widget-catalog.ts`: label, case-insensitive,
+(`compareManifests` in `src/store/layout/widget-catalog.ts`: label, case-insensitive,
 then id), so a manifest declares no position of its own — a new widget lands
 where its name puts it, and two widgets built in parallel cannot collide on a
 number. Any new list of widgets shown to the user keeps that order: build it from
@@ -1115,7 +1115,7 @@ The store branch is not an exception but a consequence: **a store importing from
 live but `utils/`, even with only two consumers.
 
 A helper with a single **non-widget** owner does not go to `utils/` at all; it sits
-with its owner — `store/settings/layout-*.ts`, `store/sim/debug.ts`,
+with its owner — `store/layout/layout-*.ts`, `store/sim/debug.ts`,
 `ui/app/main/sim-name.ts`, `ui/app/widget-frame.ts`.
 
 A helper that gains a second consumer moves up; one that loses it moves back down.
@@ -1541,7 +1541,7 @@ flowchart TB
 | Reading the store in the leaf, not passing props     | all of `ui/`                                         | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
 | Root widgets never read 60 Hz fields                 | all widget roots                                     | a whole widget re-rendering at 60 Hz for one number                                                                                     |
 | Canvas + `useRef` + RAF                              | `ui/hooks/useReactiveCanvasLoop`, canvas widgets     | 60 Hz React renders for something that is just pixels                                                                                   |
-| `widgetMutationId`                                   | `store/settings/`                                    | `JSON.stringify` of the settings tree on every keystroke                                                                                |
+| `widgetMutationId`                                   | `store/layout/`                                      | `JSON.stringify` of the settings tree on every keystroke                                                                                |
 | Coalesced overlay commands (75 ms drag, 50 ms popup) | `settings-client.store.ts`                           | a command and a snapshot per mouse-move during a drag                                                                                   |
 
 > [!WARNING]

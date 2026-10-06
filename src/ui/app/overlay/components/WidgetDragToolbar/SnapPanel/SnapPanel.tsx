@@ -13,8 +13,8 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import styles from './SnapPanel.module.scss';
-import { useLiveWidgetsStore } from '@store/root-store-context';
-import { useOverlayRoot } from '@store/overlay-root-context';
+import { useLiveWidgetsStore } from '@store/roots/root-store-context';
+import { useOverlayRoot } from '@store/roots/overlay-root-context';
 
 const SNAP_MARGIN = 8;
 const PANEL_WIDTH = 102;

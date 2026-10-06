@@ -1,4 +1,4 @@
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 import { visibilityActionWidget } from './actions';
 
 /**

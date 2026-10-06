@@ -17,8 +17,8 @@ import {
   type ScrollThumb,
 } from '@utils/canvas';
 import { MOVE_DURATION_MS } from '@utils/animation';
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
 import type { StandingsHotkeyTarget } from '@store/hotkeys/hotkey-targets';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 

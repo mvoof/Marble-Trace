@@ -14,7 +14,7 @@ import {
   useAppSettingsStore,
   useBackendComputedStore,
   useSimStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.widget';
 import { buildVisibleRows } from '@ui/widgets/StandingsWidget/standings-utils';
 import { computeClassSof } from '@utils/driver';

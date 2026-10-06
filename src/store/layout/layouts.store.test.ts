@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { MainRoot } from '../main-root';
+import { MainRoot } from '../roots/main-root';
 import { buildSettings } from '@platform/sync/persistence';
 
 import { LayoutsStore } from './layouts.store';
 import { deleteLayout } from './layout-gestures';
-import { layoutGestureStores } from '../main-root-context';
+import { layoutGestureStores } from '../roots/main-root-context';
 import { SettingsMutationLog } from './mutation-log';
 import type { LayoutMonitor, SavedLayout } from '@/types/widget-settings';
 

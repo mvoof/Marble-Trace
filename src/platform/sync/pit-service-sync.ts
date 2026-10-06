@@ -1,7 +1,7 @@
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 
 import { setPitStrategySilent } from '@platform/services/pit.service';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 // The fuel step keys move by the unit the driver reads: a liter, or a gallon's
 // worth of liters — the sim itself only ever takes liters.

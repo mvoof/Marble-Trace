@@ -7,8 +7,8 @@ import {
 
 import type { ChatMessage, ChatPresence } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
 import type { StreamChatHotkeyTarget } from '@store/hotkeys/hotkey-targets';
 import { scrollThumbFor, type ScrollThumb } from '@utils/canvas';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';

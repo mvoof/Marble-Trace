@@ -6,7 +6,7 @@ import type { TrackRotateDirection } from '@store/widgets/track-map.widget';
 import {
   useSessionStore,
   useTrackMapWidgetStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 export const TrackMapContent = observer(() => {
   const sessionData = useSessionStore();

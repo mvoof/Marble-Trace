@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import {
   usePlayerStore,
   useBackendComputedStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { formatLapTime } from '@utils/telemetry-format';
 import { getGameDelta } from '@utils/delta-utils';
 import { getSectorColor } from '@utils/colors';

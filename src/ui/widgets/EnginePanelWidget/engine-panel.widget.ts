@@ -6,8 +6,8 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
 import type { CarStatusFrame } from '@/types/bindings';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 import { ADJUSTMENT_FIELDS } from './engine-panel-utils';

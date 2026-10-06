@@ -11,7 +11,7 @@ import {
   scopeDistanceOf,
 } from '@utils/radar-constants';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 type RadarDeps = Pick<
   RendererCore,

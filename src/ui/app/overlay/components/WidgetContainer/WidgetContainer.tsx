@@ -15,8 +15,8 @@ import {
   useSimStore,
   useWidgetAutoHideStore,
   useLiveWidgetsStore,
-} from '@store/root-store-context';
-import { useOverlayRoot } from '@store/overlay-root-context';
+} from '@store/roots/root-store-context';
+import { useOverlayRoot } from '@store/roots/overlay-root-context';
 
 interface WidgetContainerProps {
   widgetId: string;

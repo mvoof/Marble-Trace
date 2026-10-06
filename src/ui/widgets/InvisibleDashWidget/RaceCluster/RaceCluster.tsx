@@ -8,7 +8,7 @@ import {
   usePlayerStore,
   useSessionStore,
   usePlayerPositionStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 import type { BackdropStyle, CurvatureStyle } from '../invisible-dash-utils';
 

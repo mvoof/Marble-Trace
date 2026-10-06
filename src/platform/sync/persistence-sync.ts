@@ -10,7 +10,7 @@ import {
 } from './persistence';
 import { runMigrations } from '@platform/settings-schema/index';
 import type { MigrationResult } from '@platform/settings-schema/types';
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 
 /**
  * Settings-file bootstrap. Main's alone: it is the only window that reads the

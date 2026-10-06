@@ -1,5 +1,5 @@
-import { alignMonitorsToHardware } from '@store/settings/layout-gestures';
-import { layoutGestureStores } from '@store/main-root-context';
+import { alignMonitorsToHardware } from '@store/layout/layout-gestures';
+import { layoutGestureStores } from '@store/roots/main-root-context';
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
@@ -20,10 +20,10 @@ import { registerRemotePublishing } from './remote-publish';
 import { registerClientPublishing } from './client-publish';
 import { registerTrackRotationOwnership } from './track-rotation-sync';
 import { listMonitorBounds, resolveMonitorByName } from './overlay-resolution';
-import { setUpFirstRun } from '@store/settings/first-run';
+import { setUpFirstRun } from '@store/layout/first-run';
 import { watchMonitorArrangement } from './monitor-watch';
 import type { SessionContext } from '@/types/widget-settings';
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;

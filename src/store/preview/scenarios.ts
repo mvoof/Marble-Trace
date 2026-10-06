@@ -8,7 +8,7 @@ import type {
 } from '@/types/bindings';
 import type { PreviewScenarioId } from '@/types/preview-scenarios';
 import { action } from 'mobx';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';
 import { mockFlags } from './mocks/flags';
 import {

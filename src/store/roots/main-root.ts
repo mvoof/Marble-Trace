@@ -1,21 +1,21 @@
 import { RendererCore } from './renderer-core';
-import type { LiveWidgetsStore } from './settings/live-widgets.store';
+import type { LiveWidgetsStore } from '../layout/live-widgets.store';
 import {
   buildAppWindowStores,
   type AppWindowStores,
 } from './app-window-stores';
-import type { BindingsStore } from './hotkeys/bindings.store';
-import type { SettingsPanelUiStore } from './widgets/settings-panel-ui.store';
-import { LayoutEditorStore } from './settings/layout-editor.store';
-import { CompanionAppsStore } from './settings/companion-apps.store';
-import { TwitchAuthStore } from './settings/twitch-auth.store';
-import { DeviceInputStore } from './hotkeys/device-input.store';
-import { BindingsUiStore } from './hotkeys/bindings-ui.store';
-import { RemoteDevicesStore } from './remote/remote-devices.store';
-import { FpsDiagnosticsStore } from './diagnostics/fps-diagnostics.store';
-import { DiagnosticsExportStore } from './diagnostics/diagnostics-export.store';
-import { TelemetryInspectorStore } from './diagnostics/telemetry-inspector.store';
-import { TrackRotationStore } from './widgets/track-rotation.store';
+import type { BindingsStore } from '../hotkeys/bindings.store';
+import type { SettingsPanelUiStore } from '../widget-runtime/settings-panel-ui.store';
+import { LayoutEditorStore } from '../layout/layout-editor.store';
+import { CompanionAppsStore } from '../integrations/companion-apps.store';
+import { TwitchAuthStore } from '../integrations/twitch-auth.store';
+import { DeviceInputStore } from '../hotkeys/device-input.store';
+import { BindingsUiStore } from '../hotkeys/bindings-ui.store';
+import { RemoteDevicesStore } from '../remote/remote-devices.store';
+import { FpsDiagnosticsStore } from '../diagnostics/fps-diagnostics.store';
+import { DiagnosticsExportStore } from '../diagnostics/diagnostics-export.store';
+import { TelemetryInspectorStore } from '../diagnostics/telemetry-inspector.store';
+import { TrackRotationStore } from '../widgets/track-rotation.store';
 
 /**
  * The main window: the renderer core, the app-window stores, and everything

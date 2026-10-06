@@ -1,6 +1,6 @@
 import { runInAction } from 'mobx';
 
-import { fullScreenMonitor } from '@store/settings/virtual-desktop';
+import { fullScreenMonitor } from '@store/layout/virtual-desktop';
 import { resolveMonitorByName } from '@platform/sync/overlay-resolution';
 
 import type { LayoutMonitor, LayoutResolution } from '@/types/widget-settings';

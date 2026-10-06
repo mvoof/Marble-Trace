@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 
 import { emitLayoutActivated } from '@platform/services/events.service';
 
-import type { LayoutsStore } from '@store/settings/layouts.store';
+import type { LayoutsStore } from '@store/layout/layouts.store';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 
 /**

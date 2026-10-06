@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { App, Button, ColorPicker, Flex, QRCode, Tag, Tooltip } from 'antd';
 import { Copy, Maximize2, EyeOff } from 'lucide-react';
 
-import { useLayoutsStore } from '@store/root-store-context';
-import type { GroupedRemoteScreen } from '@store/settings/layouts.store';
+import { useLayoutsStore } from '@store/roots/root-store-context';
+import type { GroupedRemoteScreen } from '@store/layout/layouts.store';
 import { DEFAULT_REMOTE_BACKGROUND } from '@utils/remote-screen';
 import type { RemoteDevice } from '@/types/bindings';
 import styles from '../SettingsPage.module.scss';

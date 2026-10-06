@@ -16,29 +16,29 @@ import {
   useLayoutsStore,
   useAppSettingsStore,
   useSimStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import {
   useLayoutGestureStores,
   useMainLiveWidgetsStore,
   useRemoteDevicesStore,
-} from '@store/main-root-context';
+} from '@store/roots/main-root-context';
 import { isRemoteMonitor } from '@utils/remote-screen';
 import {
   resolveBackgroundSrc,
   deleteBackgroundImage,
-} from '@store/settings/layout-background';
+} from '@store/layout/layout-background';
 import { listOverlayMonitors } from '@platform/sync/overlay-resolution';
 import {
   monitorsBounds,
   widgetsOnMonitor,
-} from '@store/settings/virtual-desktop';
+} from '@store/layout/virtual-desktop';
 import type { SavedLayout, SessionContext } from '@/types/widget-settings';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import {
   createLayout,
   deleteLayout,
   removeMonitor,
-} from '@store/settings/layout-gestures';
+} from '@store/layout/layout-gestures';
 import styles from './LayoutList.module.scss';
 
 interface LayoutPreviewProps {

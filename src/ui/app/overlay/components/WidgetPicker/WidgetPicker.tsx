@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { Plus, Search } from 'lucide-react';
 import { useClickOutside } from '@ui/hooks/useClickOutside';
-import { useLiveWidgetsStore } from '@store/root-store-context';
-import { useOverlayRoot } from '@store/overlay-root-context';
-import type { PickableWidget } from '@store/settings/widget-placement';
+import { useLiveWidgetsStore } from '@store/roots/root-store-context';
+import { useOverlayRoot } from '@store/roots/overlay-root-context';
+import type { PickableWidget } from '@store/layout/widget-placement';
 import { getWidgetDescription } from '@ui/app/widget-i18n';
 import styles from './WidgetPicker.module.scss';
 

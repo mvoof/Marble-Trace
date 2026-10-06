@@ -1,5 +1,5 @@
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceStore } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances';
 import type { DrivingAdvisory } from '@utils/driving-coach-utils';
 
 /** The call a coach shows, as its store publishes it to the rows. */

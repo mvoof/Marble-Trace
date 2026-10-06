@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 
-import { PreviewCore } from '@store/renderer-core';
+import { PreviewCore } from '@store/roots/renderer-core';
 import { standingsHotkeyTargets } from '@store/hotkeys/hotkey-targets';
 import { seedScenario } from '@store/preview/scenarios';
 import { DEFAULT_PREVIEW_SCENARIO_ID } from '@store/preview/scenarios';
-import type { WidgetStoreFactory } from '@store/widgets/widget-instances';
+import type { WidgetStoreFactory } from '@store/widget-runtime/widget-instances';
 import { StandingsWidgetStore } from './standings.widget';
 
 const STANDINGS = 'standings';

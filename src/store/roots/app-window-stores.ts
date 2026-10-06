@@ -1,7 +1,7 @@
 import { ActionRegistry } from '@store/hotkeys/action-registry';
 import { BindingsStore } from '@store/hotkeys/bindings.store';
-import { SettingsPanelUiStore } from '@store/widgets/settings-panel-ui.store';
-import { DEFAULT_WIDGETS } from '@store/widget-catalog';
+import { SettingsPanelUiStore } from '@store/widget-runtime/settings-panel-ui.store';
+import { DEFAULT_WIDGETS } from '@store/layout/widget-catalog';
 
 /**
  * What both app windows hold beyond the renderer core, and a remote screen

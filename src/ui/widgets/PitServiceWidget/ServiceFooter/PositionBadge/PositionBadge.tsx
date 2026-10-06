@@ -4,7 +4,7 @@ import { projectPositionsLost } from '@ui/widgets/PitServiceWidget/pit-service-u
 import {
   useBackendComputedStore,
   usePlayerPositionStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 import styles from './PositionBadge.module.scss';
 

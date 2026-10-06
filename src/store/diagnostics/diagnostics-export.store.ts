@@ -4,7 +4,7 @@ import {
   fileStamp,
   saveTextFileAndReveal,
 } from '@platform/services/file-export.service';
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
 import { resultsToCsv } from './report';
 

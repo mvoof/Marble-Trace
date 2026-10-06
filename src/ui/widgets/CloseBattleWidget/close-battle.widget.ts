@@ -7,8 +7,8 @@ import {
 
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 import {
   buildOpponents,

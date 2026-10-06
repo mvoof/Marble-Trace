@@ -9,7 +9,7 @@ import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholde
 import {
   useBackendComputedStore,
   useSimStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { useRelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.widget';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 

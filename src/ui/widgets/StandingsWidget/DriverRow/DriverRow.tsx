@@ -34,7 +34,7 @@ import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import {
   useBackendComputedStore,
   useSessionStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.widget';
 
 interface DriverRowProps {

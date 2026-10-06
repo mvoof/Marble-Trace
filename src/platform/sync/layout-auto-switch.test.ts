@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { runInAction, type IReactionDisposer } from 'mobx';
 
-import { MainRoot } from '@store/main-root';
+import { MainRoot } from '@store/roots/main-root';
 
 // The reaction only reads the sim and writes the active layout; everything it
 // would emit crosses the Tauri boundary, which is not what is under test.

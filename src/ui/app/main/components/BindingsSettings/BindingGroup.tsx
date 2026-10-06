@@ -7,7 +7,7 @@ import { widgetVisibilityActionId } from '@store/hotkeys/actions';
 import {
   useBindingsStore,
   useLiveWidgetsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { BindingRow } from './BindingRow';
 import { ownerLabel } from './binding-labels';
 import styles from './BindingsSettings.module.scss';

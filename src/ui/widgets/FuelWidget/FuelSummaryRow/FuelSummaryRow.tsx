@@ -8,7 +8,7 @@ import type { FuelWidgetSettings } from '@/types/widget-settings';
 import {
   useBackendComputedStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import {
   NO_FUEL_DATA_PLACEHOLDER,
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,

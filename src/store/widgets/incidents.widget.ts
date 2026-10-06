@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 
 import type { IncidentPoint } from '@/types/bindings';
 import { computeIncidentZones, type FlagZone } from '@utils/flag-zones';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 type IncidentsDeps = Pick<RendererCore, 'backendComputed' | 'session'>;
 

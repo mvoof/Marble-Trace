@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { EyeOff, LayoutGrid, Settings2 } from 'lucide-react';
 import styles from './WidgetDragToolbar.module.scss';
 import { SnapPanel } from './SnapPanel/SnapPanel';
-import { useOverlayRoot } from '@store/overlay-root-context';
+import { useOverlayRoot } from '@store/roots/overlay-root-context';
 
 // Embeds the main window's whole settings panel, antd with it — loaded the
 // first time a popup opens, never with the overlay itself.

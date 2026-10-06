@@ -15,7 +15,7 @@ import {
   useSimStore,
   useLayoutsStore,
   useLiveWidgetsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 // antd and the widget picker stay out of the overlay's initial bundle.
 const DragModeBar = lazy(() =>

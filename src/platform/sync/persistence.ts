@@ -7,7 +7,7 @@ import {
 import type { UnitSystem } from '@/types';
 import type { SessionContext } from '@/types/widget-settings';
 import type { AppSettings } from '@store/settings/app-settings.store';
-import type { MainRoot } from '@store/main-root';
+import type { MainRoot } from '@store/roots/main-root';
 import type { BindingMap } from '@/types/input-bindings';
 import { CURRENT_SCHEMA_VERSION } from '@platform/settings-schema/index';
 import type { InputDevice } from '@/types/bindings';

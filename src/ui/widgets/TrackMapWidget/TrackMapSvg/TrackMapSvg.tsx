@@ -12,7 +12,7 @@ import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import {
   useBackendComputedStore,
   useCarsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { shapeForClassOrder } from '@utils/canvas';
 import { PaceCarMarker } from './PaceCarMarker/PaceCarMarker';
 import { FlagZones } from './FlagZones/FlagZones';

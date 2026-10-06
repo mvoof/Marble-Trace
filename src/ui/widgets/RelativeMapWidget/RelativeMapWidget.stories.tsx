@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import { PACE_CAR_IDX, mockPaceCarEntry } from '@store/preview/mocks/field';
 import { respaceField } from '@store/preview/field-seed';
 import { RelativeMapWidget } from './RelativeMapWidget';

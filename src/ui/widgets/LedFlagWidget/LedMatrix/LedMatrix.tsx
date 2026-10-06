@@ -11,7 +11,7 @@ import { useLedBlinkClock } from '../useLedBlinkClock';
 
 import styles from './LedMatrix.module.scss';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
-import { useFlagsStore } from '@store/root-store-context';
+import { useFlagsStore } from '@store/roots/root-store-context';
 
 interface LedMatrixProps {
   diodesPerBlock: number;

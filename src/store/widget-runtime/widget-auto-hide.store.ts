@@ -6,8 +6,8 @@ import type {
   PitLineWidgetSettings,
   PitServiceWidgetSettings,
 } from '@/types/widget-settings';
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceStore } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances';
 import { widgetTypeFromId } from '@utils/widget-instance';
 
 type WidgetAutoHideDeps = Pick<

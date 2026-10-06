@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Button, Input, Switch, Tag } from 'antd';
 import { openUrl } from '@tauri-apps/plugin-opener';
 
-import { useAppSettingsStore } from '@store/root-store-context';
-import { useTwitchAuthStore } from '@store/main-root-context';
+import { useAppSettingsStore } from '@store/roots/root-store-context';
+import { useTwitchAuthStore } from '@store/roots/main-root-context';
 
 import styles from './StreamChatSourceCard.module.scss';
 

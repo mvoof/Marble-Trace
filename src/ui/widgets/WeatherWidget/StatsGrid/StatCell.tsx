@@ -26,7 +26,7 @@ import {
   useEnvironmentStore,
   useSessionStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 export type StatCellType =
   | 'airTemp'

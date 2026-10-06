@@ -29,9 +29,9 @@ const { constructed, tracked } = vi.hoisted(() => {
   return { constructed: constructedNames, tracked: trackConstruction };
 });
 
-vi.mock('./settings/layout-editor.store', async (importOriginal) => {
+vi.mock('../layout/layout-editor.store', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('./settings/layout-editor.store')>();
+    await importOriginal<typeof import('../layout/layout-editor.store')>();
 
   return {
     ...actual,
@@ -39,9 +39,11 @@ vi.mock('./settings/layout-editor.store', async (importOriginal) => {
   };
 });
 
-vi.mock('./settings/companion-apps.store', async (importOriginal) => {
+vi.mock('../integrations/companion-apps.store', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('./settings/companion-apps.store')>();
+    await importOriginal<
+      typeof import('../integrations/companion-apps.store')
+    >();
 
   return {
     ...actual,
@@ -52,9 +54,9 @@ vi.mock('./settings/companion-apps.store', async (importOriginal) => {
   };
 });
 
-vi.mock('./settings/twitch-auth.store', async (importOriginal) => {
+vi.mock('../integrations/twitch-auth.store', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('./settings/twitch-auth.store')>();
+    await importOriginal<typeof import('../integrations/twitch-auth.store')>();
 
   return {
     ...actual,
@@ -62,9 +64,9 @@ vi.mock('./settings/twitch-auth.store', async (importOriginal) => {
   };
 });
 
-vi.mock('./hotkeys/device-input.store', async (importOriginal) => {
+vi.mock('../hotkeys/device-input.store', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('./hotkeys/device-input.store')>();
+    await importOriginal<typeof import('../hotkeys/device-input.store')>();
 
   return {
     ...actual,
@@ -72,9 +74,9 @@ vi.mock('./hotkeys/device-input.store', async (importOriginal) => {
   };
 });
 
-vi.mock('./hotkeys/bindings-ui.store', async (importOriginal) => {
+vi.mock('../hotkeys/bindings-ui.store', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('./hotkeys/bindings-ui.store')>();
+    await importOriginal<typeof import('../hotkeys/bindings-ui.store')>();
 
   return {
     ...actual,
@@ -82,9 +84,9 @@ vi.mock('./hotkeys/bindings-ui.store', async (importOriginal) => {
   };
 });
 
-vi.mock('./remote/remote-devices.store', async (importOriginal) => {
+vi.mock('../remote/remote-devices.store', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('./remote/remote-devices.store')>();
+    await importOriginal<typeof import('../remote/remote-devices.store')>();
 
   return {
     ...actual,
@@ -95,10 +97,10 @@ vi.mock('./remote/remote-devices.store', async (importOriginal) => {
   };
 });
 
-vi.mock('./diagnostics/fps-diagnostics.store', async (importOriginal) => {
+vi.mock('../diagnostics/fps-diagnostics.store', async (importOriginal) => {
   const actual =
     await importOriginal<
-      typeof import('./diagnostics/fps-diagnostics.store')
+      typeof import('../diagnostics/fps-diagnostics.store')
     >();
 
   return {
@@ -110,10 +112,10 @@ vi.mock('./diagnostics/fps-diagnostics.store', async (importOriginal) => {
   };
 });
 
-vi.mock('./diagnostics/diagnostics-export.store', async (importOriginal) => {
+vi.mock('../diagnostics/diagnostics-export.store', async (importOriginal) => {
   const actual =
     await importOriginal<
-      typeof import('./diagnostics/diagnostics-export.store')
+      typeof import('../diagnostics/diagnostics-export.store')
     >();
 
   return {
@@ -125,10 +127,10 @@ vi.mock('./diagnostics/diagnostics-export.store', async (importOriginal) => {
   };
 });
 
-vi.mock('./diagnostics/telemetry-inspector.store', async (importOriginal) => {
+vi.mock('../diagnostics/telemetry-inspector.store', async (importOriginal) => {
   const actual =
     await importOriginal<
-      typeof import('./diagnostics/telemetry-inspector.store')
+      typeof import('../diagnostics/telemetry-inspector.store')
     >();
 
   return {
@@ -140,10 +142,10 @@ vi.mock('./diagnostics/telemetry-inspector.store', async (importOriginal) => {
   };
 });
 
-vi.mock('./diagnostics/diagnostics-hud.store', async (importOriginal) => {
+vi.mock('../diagnostics/diagnostics-hud.store', async (importOriginal) => {
   const actual =
     await importOriginal<
-      typeof import('./diagnostics/diagnostics-hud.store')
+      typeof import('../diagnostics/diagnostics-hud.store')
     >();
 
   return {
@@ -155,9 +157,9 @@ vi.mock('./diagnostics/diagnostics-hud.store', async (importOriginal) => {
   };
 });
 
-vi.mock('./widgets/track-rotation.store', async (importOriginal) => {
+vi.mock('../widgets/track-rotation.store', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('./widgets/track-rotation.store')>();
+    await importOriginal<typeof import('../widgets/track-rotation.store')>();
 
   return {
     ...actual,

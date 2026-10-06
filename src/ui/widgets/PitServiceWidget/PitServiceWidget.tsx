@@ -12,7 +12,7 @@ import { ServiceFooter } from './ServiceFooter/ServiceFooter';
 
 import styles from './PitServiceWidget.module.scss';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
-import { usePitServiceWidgetStore } from '@store/root-store-context';
+import { usePitServiceWidgetStore } from '@store/roots/root-store-context';
 
 export const PitServiceWidget = observer(() => {
   const pitService = usePitServiceWidgetStore();

@@ -1,8 +1,8 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
 import { REFERENCE_LAP_BUCKET_COUNT } from '@utils/backend-constants';
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceContext } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances';
 import type { ReferenceLapSample, TrackCondition } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import {

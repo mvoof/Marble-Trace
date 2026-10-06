@@ -5,7 +5,7 @@ import type {
   GMeterDisplayMode,
 } from '@/types/widget-settings';
 import { G_ACCEL_MPS2, mockCarDynamics } from '@store/preview/mocks/dynamics';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 import { GMeterWidget } from './GMeterWidget';
 import {
   defineWidgetStories,

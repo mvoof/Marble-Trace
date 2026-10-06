@@ -6,7 +6,7 @@ import type {
   RaceDashWidgetSettings,
   RpmIndicatorMode,
 } from '@/types/widget-settings';
-import { useStore } from '@store/root-store-context';
+import { useStore } from '@store/roots/root-store-context';
 import {
   PREVIEW_CORNER_CENTER_PCT,
   mockReferenceLap,

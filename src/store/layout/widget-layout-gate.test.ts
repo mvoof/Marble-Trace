@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInAction } from 'mobx';
-import { MainRoot } from '@store/main-root';
+import { MainRoot } from '@store/roots/main-root';
 import { registerPitServiceMainReactions } from '@platform/sync/pit-service-sync';
 import type { SavedLayout } from '@/types/widget-settings';
 

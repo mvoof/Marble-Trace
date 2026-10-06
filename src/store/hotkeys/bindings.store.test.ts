@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { widgetVisibilityActionId } from './actions';
-import { DEFAULT_WIDGETS } from '@store/widget-catalog';
+import { DEFAULT_WIDGETS } from '@store/layout/widget-catalog';
 import { ActionRegistry } from '@store/hotkeys/action-registry';
 import { BindingsStore } from './bindings.store';
 import { bindingKey } from '@/types/input-bindings';

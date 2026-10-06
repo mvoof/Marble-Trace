@@ -1,6 +1,6 @@
 import { createContext, use } from 'react';
 import type { MainRoot } from './main-root';
-import type { LayoutGestureStores } from './settings/layout-gestures';
+import type { LayoutGestureStores } from '../layout/layout-gestures';
 
 /**
  * Hooks onto the stores only the main window builds: the layout editor, the

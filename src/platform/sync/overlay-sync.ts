@@ -5,7 +5,7 @@ import { emitToMain, listenToMain } from '@platform/services/events.service';
 import { setupOverlayListeners } from './listeners';
 import { applyClientSnapshot } from './client-sync';
 import { initPerfRun } from './perf-run';
-import type { OverlayRoot } from '@store/overlay-root';
+import type { OverlayRoot } from '@store/roots/overlay-root';
 import type { SnapshotMessage } from '@/types/client-protocol';
 
 /**

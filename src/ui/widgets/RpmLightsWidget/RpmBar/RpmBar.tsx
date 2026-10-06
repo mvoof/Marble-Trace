@@ -5,7 +5,10 @@ import { computeShiftThresholds, rpmZoneColorByPct } from '@utils/car-signals';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
-import { usePlayerStore, useSessionStore } from '@store/root-store-context';
+import {
+  usePlayerStore,
+  useSessionStore,
+} from '@store/roots/root-store-context';
 
 import {
   LED_COLOR_PROPERTY,

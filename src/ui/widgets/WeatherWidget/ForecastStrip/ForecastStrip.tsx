@@ -8,7 +8,7 @@ import {
   useEnvironmentStore,
   useSessionStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 import { weatherIconFor } from '../weather-icons';
 import styles from './ForecastStrip.module.scss';

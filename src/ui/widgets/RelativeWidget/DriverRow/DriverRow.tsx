@@ -23,7 +23,7 @@ import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 
 import styles from './DriverRow.module.scss';
-import { useBackendComputedStore } from '@store/root-store-context';
+import { useBackendComputedStore } from '@store/roots/root-store-context';
 
 interface DriverRowProps {
   carIdx: number;

@@ -4,7 +4,7 @@ import { Slider } from 'antd';
 
 import type { PitLineWidgetSettings } from '@/types/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { useUnitsStore } from '@store/root-store-context';
+import { useUnitsStore } from '@store/roots/root-store-context';
 
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';

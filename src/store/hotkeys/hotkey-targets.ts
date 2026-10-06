@@ -1,5 +1,5 @@
-import type { RendererCore } from '@store/renderer-core';
-import type { WidgetInstanceStore } from '@store/widgets/widget-instances';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances';
 
 /**
  * What a standings instance store answers to when a hotkey reaches the window.

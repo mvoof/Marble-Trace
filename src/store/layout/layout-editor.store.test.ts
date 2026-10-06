@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-import { MainRoot } from '@store/main-root';
+import { MainRoot } from '@store/roots/main-root';
 import { emitLayoutActivated } from '@platform/services/events.service';
 
 // Nothing here crosses the Tauri boundary; the editing session is main-window

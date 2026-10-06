@@ -3,7 +3,7 @@ import type { RadarWidgetType } from '@store/widgets/radar.widget';
 import {
   useBackendComputedStore,
   useRadarWidgetStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 
 export const useProximityRadarData = (

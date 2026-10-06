@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Empty, Input, Segmented, Switch, Tag } from 'antd';
 import { Search } from 'lucide-react';
 
-import { useTelemetryInspectorStore } from '@store/main-root-context';
+import { useTelemetryInspectorStore } from '@store/roots/main-root-context';
 import type { InspectorSource } from '@/types/inspector';
 import { SettingsCard } from '../../SettingsCard';
 import { DeliveryCountersCard } from './DeliveryCountersCard';

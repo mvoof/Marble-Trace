@@ -7,7 +7,7 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows, usePanelWidgetId } from './setting-rows';
-import { useUnitsStore } from '@store/root-store-context';
+import { useUnitsStore } from '@store/roots/root-store-context';
 import { distanceScale } from './distance-scale';
 
 // The pit entry countdown. Below 100 m the box arrives after the braking, and

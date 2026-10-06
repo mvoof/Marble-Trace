@@ -8,7 +8,7 @@ import {
   twitchSignOut,
 } from '@platform/services/twitch.service';
 import type { TwitchDeviceCode } from '@/types/bindings';
-import type { RendererCore } from '@store/renderer-core';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 type TwitchAuthDeps = Pick<RendererCore, 'appSettings'>;
 

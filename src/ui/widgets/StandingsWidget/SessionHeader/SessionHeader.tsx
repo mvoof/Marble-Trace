@@ -22,7 +22,7 @@ import {
   useBackendComputedStore,
   useCarsStore,
   useSessionStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.widget';
 
 // Matches the icon size the footer's stat pills use.
