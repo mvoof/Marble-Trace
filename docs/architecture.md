@@ -994,17 +994,17 @@ flowchart TB
     WIDGETS --> HOOKS
 ```
 
-| Folder                       | Holds                                                                                                                                                                       |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/main/`                  | `MainWindow.tsx`, the settings UI, `sim-name.ts`, `capture-snapshot.ts`                                                                                                     |
-| `app/overlay/`               | `OverlayWindow.tsx`, `OverlayCanvas`                                                                                                                                        |
-| `app/widget-frame.ts`        | frame geometry shared by the two window shells                                                                                                                              |
-| `widgets/<Name>/`            | one folder per widget — components, manifest, mount, store, helpers, tests                                                                                                  |
-| `widgets/registry.ts`        | id → React component, collected from every `mount.ts`                                                                                                                       |
-| `widgets/widget-mount.ts`    | the `WidgetMount` shape a widget's `mount.ts` exports                                                                                                                       |
-| `widgets/widget-manifest.ts` | values shared across manifests — `COMMON_WIDGET_DEFAULTS`, appearance defaults, `makeColumnLayoutResolver`                                                                  |
-| `shared/`                    | `WidgetPanel`, `StatPill`, `WidgetValue`, `WidgetLabel`, badges, `CarDot`, `ScrollIndicator`, `NoDataPlaceholder`, `ErrorBoundary`                                          |
-| `hooks/`                     | `useCanvasAutoResize`, `useReactiveCanvasLoop`, `useVisibleRowCount`, `useRowMoveAnimation`, `useClickOutside`, `usePitState`, `useProximityRadarData`, `useWidgetAutoHide` |
+| Folder                       | Holds                                                                                                                                              |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/main/`                  | `MainWindow.tsx`, the settings UI, `sim-name.ts`, `capture-snapshot.ts`                                                                            |
+| `app/overlay/`               | `OverlayWindow.tsx`, `OverlayCanvas`                                                                                                               |
+| `app/widget-frame.ts`        | frame geometry shared by the two window shells                                                                                                     |
+| `widgets/<Name>/`            | one folder per widget — components, manifest, mount, store, helpers, tests                                                                         |
+| `widgets/registry.ts`        | id → React component, collected from every `mount.ts`                                                                                              |
+| `widgets/widget-mount.ts`    | the `WidgetMount` shape a widget's `mount.ts` exports                                                                                              |
+| `widgets/widget-manifest.ts` | values shared across manifests — `COMMON_WIDGET_DEFAULTS`, appearance defaults, `makeColumnLayoutResolver`                                         |
+| `shared/`                    | `WidgetPanel`, `StatPill`, `WidgetValue`, `WidgetLabel`, badges, `CarDot`, `ScrollIndicator`, `NoDataPlaceholder`, `ErrorBoundary`                 |
+| `hooks/`                     | `useCanvasAutoResize`, `useReactiveCanvasLoop`, `useVisibleRowCount`, `useRowMoveAnimation`, `useClickOutside`, `usePitState`, `useWidgetAutoHide` |
 
 Components talk to MobX stores and to nothing else. They never import from
 `@tauri-apps/*` or `@platform/*` — the one exception being window and webview APIs

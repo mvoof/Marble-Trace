@@ -4,7 +4,10 @@ import {
   DEFAULT_WIDGETS,
   DEFAULT_WIDGET_BY_ID,
 } from '@store/layout/widget-catalog';
-import { nextInstanceId, widgetTypeFromId } from '@utils/widget-instance';
+import {
+  nextInstanceId,
+  widgetTypeFromId,
+} from '@store/widget-runtime/widget-instance';
 import {
   setFuelAvgWindowSilent,
   setFuelCountYellowLapsSilent,

@@ -8,7 +8,7 @@ import type {
 } from '@/types/widget-settings';
 import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances';
-import { widgetTypeFromId } from '@utils/widget-instance';
+import { widgetTypeFromId } from './widget-instance';
 
 type WidgetAutoHideDeps = Pick<
   RendererCore,

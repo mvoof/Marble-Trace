@@ -48,9 +48,9 @@ export const RadarScope = observer(() => {
 
   const computed = useBackendComputedStore();
 
-  // Deliberately not `useProximityRadarData`: that hook reads the proximity
-  // frame to build its car list, and reading it here is exactly what woke this
-  // component sixty times a second.
+  // Visibility comes from the radar store, not from the proximity frame:
+  // reading the frame here is exactly what woke this component sixty times a
+  // second.
   const visible = useRadarWidgetStore().isVisibleForWidget('proximity-radar');
 
   // The cars are read inside the draw loop instead of here. The loop repaints on

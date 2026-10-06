@@ -16,7 +16,7 @@ import type {
 } from '@/types/bindings';
 import type { CarIdentity } from '@/types/car-identity';
 import type { DriverEntry } from '@/types/driver-entry';
-import { CarIdentityCache } from '@utils/car-identity';
+import { CarIdentityCache } from './car-identity';
 
 import { DriverEntryJoin, rosterByCarIdx } from './driver-entry-join';
 import type { SessionStore } from './session.store';
