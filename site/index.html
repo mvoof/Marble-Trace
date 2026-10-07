@@ -4,24 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!--
-      The language picked in the switcher is remembered, and the English root
-      sends a returning visitor straight to it. Only the root redirects: a
-      /ru/ or /es/ link someone shared opens in the language it names.
-      Inline and in <head> so the English page never paints first.
+      The English root never redirects: it is the page search engines index
+      and the one a visitor asks for. Opening /ru/, /es/ or /zh/ - by the
+      switcher or by a shared link - remembers that language, and the English
+      page only offers it (language-banner.js). Inline and in <head> so the
+      language is stored before any other script reads it.
     -->
     <script>
       (() => {
         const STORAGE_KEY = 'mt-language';
-        const LOCALES = ['en', 'ru', 'es', 'zh'];
         const LOCALE_SEGMENT = /\/(ru|es|zh)\/(index\.html)?$/;
-
-        const readStored = () => {
-          try {
-            return window.localStorage.getItem(STORAGE_KEY);
-          } catch {
-            return null;
-          }
-        };
 
         const store = (code) => {
           try {
@@ -29,19 +21,10 @@
           } catch {}
         };
 
-        const path = window.location.pathname;
-        const stored = readStored();
+        const match = LOCALE_SEGMENT.exec(window.location.pathname);
 
-        if (
-          !LOCALE_SEGMENT.test(path) &&
-          stored &&
-          stored !== 'en' &&
-          LOCALES.includes(stored)
-        ) {
-          const base = path.replace(/index\.html$/, '').replace(/\/?$/, '/');
-          window.location.replace(
-            base + stored + '/' + window.location.search + window.location.hash
-          );
+        if (match) {
+          store(match[1]);
         }
 
         document.addEventListener('click', (event) => {
@@ -3215,5 +3198,6 @@
     <script type="module" src="src/components/page-modes.js"></script>
     <script type="module" src="src/components/release.js"></script>
     <script type="module" src="src/components/copyright-year.js"></script>
+    <script type="module" src="src/components/language-banner.js"></script>
   </body>
 </html>

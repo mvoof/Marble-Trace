@@ -157,7 +157,12 @@ const responsiveImages = () => {
 
 // Relative base so the built site works from any location: domain root,
 // a sub-path (e.g. GitHub Pages /Marble-Trace/), or opened straight from disk.
+// Nothing is inlined: a data: URI in a srcset is one more thing the translated
+// pages' URL rebasing has to step around, and every picture is a file anyway.
 export default defineConfig({
   base: './',
+  build: {
+    assetsInlineLimit: 0,
+  },
   plugins: [responsiveImages(), localizedPages()],
 });

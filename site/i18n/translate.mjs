@@ -242,29 +242,42 @@ export const extractStrings = (html) => {
  * Prefixes every relative URL with `../` for a page one folder down, so the
  * translated copy in /ru/ reaches the same assets as the English one.
  */
-const RELATIVE_URL =
-  /\b(src|href|srcset)="(?!https?:|mailto:|data:|#|\/|\.\.\/)([^"]+)"/g;
+const SINGLE_URL_ATTRIBUTE =
+  /\b(src|href)="(?!https?:|mailto:|data:|#|\/|\.\.\/)([^"]+)"/g;
+const SRCSET_ATTRIBUTE = /\bsrcset="([^"]+)"/g;
+const ABSOLUTE_OR_REBASED = /^(https?:|mailto:|data:|#|\/|\.\.\/)/;
 
 const rebaseUrl = (url) =>
   url.startsWith('./') ? `../${url.slice(2)}` : `../${url}`;
 
-// A srcset is a list - "a.webp 480w, b.webp 960w" - and every URL in it moves.
+// A srcset is a list - "a.webp 480w, b.webp 960w" - and every URL in it is
+// judged on its own: one absolute or data: candidate must not keep the rest
+// from moving.
 const rebaseSrcset = (list) =>
   list
     .split(',')
     .map((candidate) => {
-      const [url, ...descriptor] = candidate.trim().split(/\s+/);
+      const trimmed = candidate.trim();
+      const [url, ...descriptor] = trimmed.split(/\s+/);
+
+      if (!url || ABSOLUTE_OR_REBASED.test(url)) {
+        return trimmed;
+      }
 
       return [rebaseUrl(url), ...descriptor].join(' ');
     })
     .join(', ');
 
 const rebase = (html) =>
-  html.replace(RELATIVE_URL, (match, attribute, url) => {
-    const rebased = attribute === 'srcset' ? rebaseSrcset(url) : rebaseUrl(url);
-
-    return `${attribute}="${rebased}"`;
-  });
+  html
+    .replace(
+      SINGLE_URL_ATTRIBUTE,
+      (match, attribute, url) => `${attribute}="${rebaseUrl(url)}"`
+    )
+    .replace(
+      SRCSET_ATTRIBUTE,
+      (match, list) => `srcset="${rebaseSrcset(list)}"`
+    );
 
 const setMeta = (root, property, value) => {
   const meta = root.querySelector(`meta[property="${property}"]`);
