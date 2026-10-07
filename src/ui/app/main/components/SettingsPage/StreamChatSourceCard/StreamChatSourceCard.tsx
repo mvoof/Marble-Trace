@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Input, Switch, Tag } from 'antd';
-import { openUrl } from '@tauri-apps/plugin-opener';
 
 import { useAppSettingsStore } from '@store/roots/root-store-context';
 import { useTwitchAuthStore } from '@store/roots/main-root-context';
@@ -20,11 +19,7 @@ export const StreamChatSourceCard = observer(() => {
 
   const settings = appSettings.appSettings;
 
-  const handleOpenActivate = () => {
-    if (twitchAuth.deviceCode) {
-      void openUrl(twitchAuth.deviceCode.verificationUri);
-    }
-  };
+  const handleOpenActivate = () => twitchAuth.openActivationPage();
 
   return (
     <div className={styles.card}>

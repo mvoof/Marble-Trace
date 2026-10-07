@@ -8,6 +8,7 @@ import {
   twitchSignOut,
 } from '@platform/services/twitch.service';
 import type { TwitchDeviceCode } from '@/types/bindings';
+import { openExternalLink } from './external-link';
 import type { RendererCore } from '@store/roots/renderer-core';
 
 type TwitchAuthDeps = Pick<RendererCore, 'appSettings'>;
@@ -49,6 +50,13 @@ export class TwitchAuthStore {
       { pollTimer: false, expiryTimer: false, root: false },
       { autoBind: true }
     );
+  }
+
+  /** Opens the page where the user enters the device code. */
+  openActivationPage() {
+    if (this.deviceCode) {
+      openExternalLink(this.deviceCode.verificationUri);
+    }
   }
 
   async init() {

@@ -271,6 +271,26 @@
       }
     },
     {
+      "files": ["src/ui/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@platform/**"],
+                "message": "The UI talks to stores only (ui -> store -> platform): an OS or backend action belongs in a store method."
+              },
+              {
+                "group": ["@tauri-apps/**"],
+                "message": "The UI talks to stores only; Tauri sits behind src/platform/services/. Only the window shells may reach their own window, in the override below."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": [
         "src/ui/widgets/**",
         "src/ui/shared/**",
@@ -292,6 +312,84 @@
                   "**/main-root-context"
                 ],
                 "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps and the device list exist in the main window only. Read the renderer core (root-store-context) instead."
+              },
+              {
+                "group": ["@platform/**"],
+                "message": "The UI talks to stores only (ui -> store -> platform): an OS or backend action belongs in a store method."
+              },
+              {
+                "group": ["@tauri-apps/**"],
+                "message": "The UI talks to stores only; Tauri sits behind src/platform/services/. Only the window shells may reach their own window, in the override below."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/ui/app/main/MainWindow.tsx",
+        "src/ui/app/main/components/AppHeader/WindowControls.tsx"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@platform/services/**",
+                  "@platform/settings-schema/**"
+                ],
+                "message": "A window shell may start its window's sync and reach its own window — nothing else of the platform."
+              },
+              {
+                "group": [
+                  "@tauri-apps/api/core",
+                  "@tauri-apps/api/event",
+                  "@tauri-apps/plugin-*"
+                ],
+                "message": "A window shell may reach its own window (@tauri-apps/api/window, webviewWindow) — nothing else of Tauri."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/ui/app/overlay/OverlayWindow.tsx",
+        "src/ui/app/overlay/OverlayCanvas/OverlayCanvas.tsx",
+        "src/ui/app/diagnostics/DiagnosticsHudWindow.tsx"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@store/roots/main-root",
+                  "@store/roots/main-root-context",
+                  "**/main-root",
+                  "**/main-root-context"
+                ],
+                "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps and the device list exist in the main window only. Read the renderer core (root-store-context) instead."
+              },
+              {
+                "group": [
+                  "@platform/services/**",
+                  "@platform/settings-schema/**"
+                ],
+                "message": "A window shell may start its window's sync and reach its own window — nothing else of the platform."
+              },
+              {
+                "group": [
+                  "@tauri-apps/api/core",
+                  "@tauri-apps/api/event",
+                  "@tauri-apps/plugin-*"
+                ],
+                "message": "A window shell may reach its own window (@tauri-apps/api/window, webviewWindow) — nothing else of Tauri."
               }
             ]
           }

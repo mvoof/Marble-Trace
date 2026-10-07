@@ -18,6 +18,7 @@ import {
   useSimStore,
 } from '@store/roots/root-store-context';
 import {
+  useLayoutEditorStore,
   useLayoutGestureStores,
   useMainLiveWidgetsStore,
   useRemoteDevicesStore,
@@ -27,7 +28,6 @@ import {
   resolveBackgroundSrc,
   deleteBackgroundImage,
 } from '@store/layout/layout-background';
-import { listOverlayMonitors } from '@platform/sync/overlay-resolution';
 import {
   monitorsBounds,
   widgetsOnMonitor,
@@ -170,6 +170,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const layouts = useLayoutsStore();
   const gestureStores = useLayoutGestureStores();
   const remoteDevices = useRemoteDevicesStore();
+  const layoutEditor = useLayoutEditorStore();
   const appSettings = useAppSettingsStore();
   const simStore = useSimStore();
   const { t, i18n } = useTranslation('main-app');
@@ -180,30 +181,11 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
     layouts.editingLayoutId
   );
 
-  // Monitors physically attached right now. A layout can hold configs for
-  // screens that are currently unplugged — those keep their widgets but get no
-  // overlay window, and are shown greyed out.
-  const [onlineMonitorNames, setOnlineMonitorNames] = useState<Set<string>>(
-    new Set()
-  );
-
   useEffect(() => {
-    let active = true;
+    void layoutEditor.refreshOnlineMonitors();
+  }, [layoutEditor]);
 
-    listOverlayMonitors()
-      .then((monitors) => {
-        if (active) {
-          setOnlineMonitorNames(
-            new Set(monitors.map((monitor) => monitor.name))
-          );
-        }
-      })
-      .catch(console.error);
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { onlineMonitorNames } = layoutEditor;
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newLayoutName, setNewLayoutName] = useState('');

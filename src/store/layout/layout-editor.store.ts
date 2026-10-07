@@ -1,6 +1,7 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 
 import { emitLayoutActivated } from '@platform/services/events.service';
+import { listOverlayMonitors } from '@platform/sync/overlay-resolution';
 
 import type { LayoutsStore } from '@store/layout/layouts.store';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
@@ -37,6 +38,13 @@ export class LayoutEditorStore {
    */
   open = false;
 
+  /**
+   * Monitors physically attached right now. A layout can hold screens that are
+   * unplugged — those keep their widgets but get no overlay window, and the
+   * list greys them out.
+   */
+  onlineMonitorNames: ReadonlySet<string> = new Set();
+
   constructor(
     private readonly layoutRecords: LayoutsStore,
     private readonly liveWidgets: EditorWidgetMap
@@ -46,6 +54,21 @@ export class LayoutEditorStore {
       { layoutRecords: false, liveWidgets: false },
       { autoBind: true }
     );
+  }
+
+  /** Asks the OS which monitors are attached — when the layout list opens. */
+  async refreshOnlineMonitors() {
+    try {
+      const monitors = await listOverlayMonitors();
+
+      runInAction(() => {
+        this.onlineMonitorNames = new Set(
+          monitors.map((monitor) => monitor.name)
+        );
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   /** The editor is showing a layout that is not the one on the overlay. */

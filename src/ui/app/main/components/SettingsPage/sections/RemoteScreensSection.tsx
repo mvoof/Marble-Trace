@@ -13,19 +13,16 @@ import {
 } from 'antd';
 import { Copy, Eye, EyeOff, RefreshCw } from 'lucide-react';
 
-import { getRemoteServerInfo } from '@platform/services/remote.service';
 import {
   useAppSettingsStore,
   useLayoutsStore,
 } from '@store/roots/root-store-context';
 import { useRemoteDevicesStore } from '@store/roots/main-root-context';
-import type { RemoteServerInfo } from '@/types/bindings';
 import { RemoteScreenRow } from './RemoteScreenRow';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
 /** The server reports client counts, which only change on the network. */
-const STATUS_POLL_MS = 3000;
 
 const MIN_PORT = 1024;
 const MAX_PORT = 65535;
@@ -107,40 +104,24 @@ export const RemoteScreensSection = observer(() => {
   // asked for, and never remembered — every visit starts covered.
   const [revealed, setRevealed] = useState(false);
 
-  const [info, setInfo] = useState<RemoteServerInfo | null>(null);
-
   const settings = appSettings.appSettings;
   const { remoteEnabled } = settings;
   const { serverError } = remoteDevices;
 
+  const info = remoteDevices.serverInfo;
+
+  // Restarted on every setting that restarts the server, so the status shown
+  // is the new server's.
   useEffect(() => {
     if (!remoteEnabled) {
-      setInfo(null);
+      remoteDevices.stopWatchingServerInfo();
 
       return;
     }
 
-    let cancelled = false;
-
-    const poll = () => {
-      void getRemoteServerInfo()
-        .then((next) => {
-          if (!cancelled) setInfo(next);
-        })
-        .catch(() => {
-          if (!cancelled) setInfo(null);
-        });
-    };
-
-    poll();
-
-    const timer = setInterval(poll, STATUS_POLL_MS);
-
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
+    return remoteDevices.watchServerInfo();
   }, [
+    remoteDevices,
     remoteEnabled,
     settings.remotePort,
     settings.remoteLan,

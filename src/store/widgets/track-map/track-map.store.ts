@@ -6,6 +6,7 @@ import {
   resetPitLanePct,
 } from '@platform/services/track.service';
 import { readTrackRotations } from '@platform/services/track-settings.service';
+import { emitTrackMapForceStart } from '@platform/services/events.service';
 import {
   emitTrackMapClear,
   emitTrackRotationRequest,
@@ -67,6 +68,11 @@ export class TrackMapWidgetStore {
     this.persists = persists;
 
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  /** Starts recording the track from where the car is, not from the line. */
+  forceStartRecording() {
+    void emitTrackMapForceStart();
   }
 
   updateRecordingStatus(

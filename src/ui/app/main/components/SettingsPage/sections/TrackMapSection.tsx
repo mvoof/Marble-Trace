@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Flex, Popconfirm } from 'antd';
-import { emitTrackMapForceStart } from '@platform/services/events.service';
 import {
   useSessionStore,
   useStore,
@@ -86,7 +85,7 @@ export const TrackMapSection = observer(() => {
             size="small"
             disabled={sessionTrackId === null}
             onClick={() => {
-              void emitTrackMapForceStart();
+              trackMap.forceStartRecording();
               message.info(t('settingsPage.trackMap.manualStartActive'));
             }}
           >
