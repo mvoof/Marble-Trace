@@ -533,7 +533,7 @@ export const G_METER_MANIFEST: WidgetManifest = {
 };
 ```
 
-`SimStore.updateActiveEvents` unions the declarations of the enabled widgets in
+`SimStore` (`updateOwnActiveEvents`) unions the declarations of the enabled widgets in
 the active layout and sends the result to `set_active_events` as a bitmask;
 `emitter.rs` reads it and leaves an unrequested field out of the bundle. The
 names and their bit values are declared once in `model/telemetry_events.rs` and
@@ -924,12 +924,12 @@ surface as a wrong number in a driver's session; see
 
 ### Reactivity rules
 
-| Rule                                                                    | Why                                                                                    |
-| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Derived values are `computed` getters in a store, never `useMemo`       | `useMemo` is per-component; a computed is shared and cached once                       |
-| `updateUserSettings` mutates in place with `Object.assign`              | replacing the `userSettings` reference detaches every existing observer                |
-| Widget layout changes go through `resolveLayoutChange` in the manifest  | keeps per-widget branching out of the shared store                                     |
-| Reactions depend on `widgetMutationId`, bumped by every settings setter | comparing `JSON.stringify` of the settings tree on every change is both slow and wrong |
+| Rule                                                                     | Why                                                                                    |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| Derived values are `computed` getters in a store, never `useMemo`        | `useMemo` is per-component; a computed is shared and cached once                       |
+| `updateUserSettings` mutates in place with `Object.assign`               | replacing the `userSettings` reference detaches every existing observer                |
+| Widget layout changes go through `resolveLayoutChange` in the manifest   | keeps per-widget branching out of the shared store                                     |
+| Reactions to a settings edit watch `changeToken` (`SettingsMutationLog`) | comparing `JSON.stringify` of the settings tree on every change is both slow and wrong |
 
 ### Input bindings
 
@@ -995,7 +995,7 @@ flowchart TB
 
 | Folder                       | Holds                                                                                                                                              |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/main/`                  | `MainWindow.tsx`, the settings UI, `sim-name.ts`, `capture-snapshot.ts`                                                                            |
+| `app/main/`                  | `MainWindow.tsx`, the settings UI, `sim-name.ts`                                                                                                   |
 | `app/overlay/`               | `OverlayWindow.tsx`, `OverlayCanvas`                                                                                                               |
 | `app/widget-frame.ts`        | frame geometry shared by the two window shells                                                                                                     |
 | `widgets/<Name>/`            | one folder per widget — components, manifest, mount, store, helpers, tests                                                                         |
@@ -1536,7 +1536,7 @@ flowchart TB
 | Reading the store in the leaf, not passing props     | all of `ui/`                                         | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
 | Root widgets never read 60 Hz fields                 | all widget roots                                     | a whole widget re-rendering at 60 Hz for one number                                                                                     |
 | Canvas + `useRef` + RAF                              | `ui/hooks/useReactiveCanvasLoop`, canvas widgets     | 60 Hz React renders for something that is just pixels                                                                                   |
-| `widgetMutationId`                                   | `store/layout/`                                      | `JSON.stringify` of the settings tree on every keystroke                                                                                |
+| `changeToken`                                        | `store/layout/`                                      | `JSON.stringify` of the settings tree on every keystroke                                                                                |
 | Coalesced overlay commands (75 ms drag, 50 ms popup) | `settings-client.store.ts`                           | a command and a snapshot per mouse-move during a drag                                                                                   |
 
 > [!WARNING]

@@ -715,12 +715,9 @@ describe('several copies of one widget in a layout', () => {
 /**
  * Every write, and the mark it leaves.
  *
- * Two things happen on a settings write besides the write itself: a token moves
- * (`changeToken` for a local edit, `syncToken` for one that arrived from the
- * other window and must not be echoed back), and the widgets that changed are
- * recorded so the overlay can be sent a patch instead of the whole layout.
- * Both are why a write reaches disk at all, and both are spelled out by hand at
- * every call site — so a write that forgets them fails in the worst way: the
+ * A settings write moves `changeToken` besides the write itself, and that is
+ * why it reaches disk and the other windows at all. It is spelled out by hand
+ * at every call site — so a write that forgets it fails in the worst way: the
  * edit is on screen and is never saved.
  *
  * This table pins what each write marks today, so the rule can be moved without
