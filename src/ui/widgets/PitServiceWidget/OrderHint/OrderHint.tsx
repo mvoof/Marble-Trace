@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import styles from './OrderHint.module.scss';
-import { usePitServiceWidgetStore } from '@store/roots/root-store-context';
+import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
 
 const RESULT_LABEL = {
   sent: 'ORDER SENT',

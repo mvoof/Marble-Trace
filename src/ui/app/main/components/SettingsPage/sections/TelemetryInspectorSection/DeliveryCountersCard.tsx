@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Empty, Table, Tag } from 'antd';
 import { RotateCcw } from 'lucide-react';
 
-import { useTelemetryInspectorStore } from '@store/roots/main-root-context';
+import { useTelemetryInspectorStore } from '@store/diagnostics/telemetry-inspector-context';
 import type { DeliveryFieldRow, DeliveryRow } from '@/types/inspector';
 import { SettingsCard } from '../../SettingsCard';
 import styles from './TelemetryInspectorSection.module.scss';

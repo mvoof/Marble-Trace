@@ -15,7 +15,7 @@ import {
   panelRows,
   usePanelWidgetId,
 } from '@ui/app/main/components/WidgetSettings/panels/setting-rows';
-import { useAppSettingsStore } from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['input-trace'];

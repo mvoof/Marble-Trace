@@ -2,10 +2,8 @@ import { observer } from 'mobx-react-lite';
 
 import { getCellDividers } from '@utils/canvas';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import {
-  usePlayerStore,
-  useBackendComputedStore,
-} from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
 
 import { sectorChipStateOf, type SectorChipState } from './sector-chip';
 import styles from './SectorGrid.module.scss';

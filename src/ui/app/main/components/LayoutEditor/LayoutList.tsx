@@ -12,17 +12,15 @@ import {
   LayoutTemplate,
   Copy,
 } from 'lucide-react';
-import {
-  useLayoutsStore,
-  useAppSettingsStore,
-  useSimStore,
-} from '@store/roots/root-store-context';
+import { useLayoutsStore } from '@store/layout/layouts-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useSimStore } from '@store/sim/sim-context';
 import {
   useLayoutEditorStore,
   useLayoutGestureStores,
-  useMainLiveWidgetsStore,
-  useRemoteDevicesStore,
-} from '@store/roots/main-root-context';
+} from '@store/layout/layout-editor-context';
+import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
+import { useRemoteDevicesStore } from '@store/remote/remote-devices-context';
 import { isRemoteMonitor } from '@utils/remote-screen';
 import {
   resolveBackgroundSrc,

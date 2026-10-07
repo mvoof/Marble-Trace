@@ -15,12 +15,10 @@ import {
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { StatPill, type StatPillVariant } from '@ui/shared/StatPill/StatPill';
 import styles from './SessionFooter.module.scss';
-import {
-  useBackendComputedStore,
-  useEnvironmentStore,
-  useSessionStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useEnvironmentStore } from '@store/data/environment-context';
+import { useSessionStore } from '@store/data/session-context';
+import { useUnitsStore } from '@store/settings/units-context';
 
 // Boxed chips would make the strip taller than the rows it sits under, which is
 // the one thing the footer must not be.

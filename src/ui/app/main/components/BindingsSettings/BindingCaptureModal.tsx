@@ -4,11 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Modal } from 'antd';
 import { reaction } from 'mobx';
 import type { Binding } from '@/types/input-bindings';
-import { useBindingsStore } from '@store/roots/root-store-context';
-import {
-  useBindingsUiStore,
-  useDeviceInputStore,
-} from '@store/roots/main-root-context';
+import { useBindingsStore } from '@store/hotkeys/bindings-context';
+import { useBindingsUiStore } from '@store/hotkeys/bindings-ui-context';
+import { useDeviceInputStore } from '@store/hotkeys/device-input-context';
 import { actionLabel } from './binding-labels';
 import { toAccelerator } from './accelerator';
 import styles from './BindingsSettings.module.scss';

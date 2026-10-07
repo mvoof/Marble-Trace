@@ -2,10 +2,8 @@ import React from 'react';
 import { runInAction } from 'mobx';
 import type { Decorator } from '@storybook/react';
 import { PreviewCore } from '../src/store/roots/renderer-core';
-import {
-  RendererCoreContext,
-  useStore,
-} from '../src/store/roots/root-store-context';
+import { useStore } from '../src/store/roots/root-store-context';
+import { CoreProvider } from '../src/ui/app/store-providers';
 
 export const withStore =
   (seedFn?: (store: PreviewCore) => void): Decorator =>
@@ -19,9 +17,9 @@ export const withStore =
     }, [store]);
 
     return (
-      <RendererCoreContext.Provider value={store}>
+      <CoreProvider core={store}>
         <Story />
-      </RendererCoreContext.Provider>
+      </CoreProvider>
     );
   };
 

@@ -10,11 +10,9 @@ import { observer } from 'mobx-react-lite';
 import type { DriverGroup } from '@/types';
 import type { CarIdentity } from '@/types/car-identity';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import {
-  useAppSettingsStore,
-  useBackendComputedStore,
-  useSimStore,
-} from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useSimStore } from '@store/sim/sim-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 import { buildVisibleRows } from '@ui/widgets/StandingsWidget/standings-utils';
 import { computeClassSof } from '@utils/driver';

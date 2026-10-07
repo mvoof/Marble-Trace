@@ -9,13 +9,11 @@ import {
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
 import { WidgetDragToolbar } from '@ui/app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
-import {
-  useAppSettingsStore,
-  usePlayerStore,
-  useSimStore,
-  useWidgetAutoHideStore,
-  useLiveWidgetsStore,
-} from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useSimStore } from '@store/sim/sim-context';
+import { useWidgetAutoHideStore } from '@store/widget-runtime/widget-auto-hide-context';
+import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
 import { useOverlayRoot } from '@store/roots/overlay-root-context';
 
 interface WidgetContainerProps {

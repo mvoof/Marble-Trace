@@ -5,7 +5,7 @@ import { initRemoteSync } from '@platform/sync/remote-sync';
 import { RemoteScreenStore } from '@store/remote/remote-screen.store';
 import { RemoteScreenContext } from '@store/remote/remote-screen-context';
 import { RemoteRoot } from '@store/roots/remote-root';
-import { RendererCoreContext } from '@store/roots/root-store-context';
+import { CoreProvider } from '@ui/app/store-providers';
 import { RemoteWindow } from '@ui/app/remote/RemoteWindow';
 import './i18n';
 import './styles/index.scss';
@@ -39,10 +39,10 @@ initRemoteSync(rootStore, screenStore, token);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RendererCoreContext.Provider value={rootStore}>
+    <CoreProvider core={rootStore}>
       <RemoteScreenContext.Provider value={screenStore}>
         <RemoteWindow />
       </RemoteScreenContext.Provider>
-    </RendererCoreContext.Provider>
+    </CoreProvider>
   </React.StrictMode>
 );

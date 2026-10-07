@@ -34,15 +34,13 @@ import {
   Rows3,
   Trash2,
 } from 'lucide-react';
-import {
-  useAppSettingsStore,
-  useLayoutsStore,
-} from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useLayoutsStore } from '@store/layout/layouts-context';
 import {
   useLayoutEditorStore,
   useLayoutGestureStores,
-  useMainLiveWidgetsStore,
-} from '@store/roots/main-root-context';
+} from '@store/layout/layout-editor-context';
+import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
 import {
   SESSION_PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,

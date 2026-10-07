@@ -4,10 +4,8 @@ import { observer } from 'mobx-react-lite';
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
 import { projectFlagZoneToWindow } from '@store/widgets/incidents/flag-zones';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import {
-  useBackendComputedStore,
-  useIncidentsWidgetStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useIncidentsWidgetStore } from '@store/widgets/incidents/incidents-context';
 
 import styles from './FlagBands.module.scss';
 

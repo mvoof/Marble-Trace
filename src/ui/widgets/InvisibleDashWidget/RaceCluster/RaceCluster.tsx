@@ -3,12 +3,10 @@ import { observer } from 'mobx-react-lite';
 
 import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
 import { resolveSessionLaps } from '@utils/telemetry-format';
-import {
-  useCarsStore,
-  usePlayerStore,
-  useSessionStore,
-  usePlayerPositionStore,
-} from '@store/roots/root-store-context';
+import { useCarsStore } from '@store/data/cars-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useSessionStore } from '@store/data/session-context';
+import { usePlayerPositionStore } from '@store/data/player-position-context';
 
 import type { BackdropStyle, CurvatureStyle } from '../invisible-dash-utils';
 

@@ -18,18 +18,16 @@ import {
   Monitor,
   GripHorizontal,
 } from 'lucide-react';
-import { PreviewCore } from '@store/roots/renderer-core';
 import {
-  RendererCoreContext,
-  useSessionStore,
-  useUnitsStore,
-  useLayoutsStore,
-  useSettingsMutationLog,
-} from '@store/roots/root-store-context';
-import {
-  useMainLiveWidgetsStore,
-  useTrackRotationStore,
-} from '@store/roots/main-root-context';
+  usePreviewWorldFactory,
+  type PreviewCoreHandle,
+} from '@/preview/preview-host-context';
+import { useSessionStore } from '@store/data/session-context';
+import { useUnitsStore } from '@store/settings/units-context';
+import { useLayoutsStore } from '@store/layout/layouts-context';
+import { useSettingsMutationLog } from '@store/layout/mutation-log-context';
+import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
+import { useTrackRotationStore } from '@store/widgets/track-map/track-rotation-context';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
@@ -60,7 +58,7 @@ import styles from './LayoutCanvas.module.scss';
  * much: a map turned in an overlay must already look turned when the editor
  * opens.
  */
-const useTrackRotationBridge = (previewStore: PreviewCore) => {
+const useTrackRotationBridge = (previewStore: PreviewCoreHandle) => {
   const trackRotation = useTrackRotationStore();
   const sessionStore = useSessionStore();
 
@@ -111,7 +109,7 @@ interface LayoutCanvasProps {
 // canvas; only content-affecting settings need mirroring here.
 const mirrorAllWidgets = (
   source: WidgetDefaultConfig[],
-  previewStore: PreviewCore
+  previewStore: PreviewCoreHandle
 ) => {
   const mirrored = source.map((widget) => ({
     ...widget,
@@ -248,7 +246,13 @@ export const LayoutCanvas = observer(
       ? monitors.find((monitor) => monitor.name === focusedMonitorName)
       : undefined;
     const { t } = useTranslation('main-app');
-    const previewStore = useMemo(() => new PreviewCore(), []);
+    const createPreviewWorld = usePreviewWorldFactory();
+    const previewWorld = useMemo(
+      () => createPreviewWorld(),
+      [createPreviewWorld]
+    );
+    const previewStore = previewWorld.core;
+    const PreviewProvide = previewWorld.Provide;
 
     const paneRef = useRef<HTMLDivElement | null>(null);
     const [paneSize, setPaneSize] = useState({ width: 0, height: 0 });
@@ -595,7 +599,7 @@ export const LayoutCanvas = observer(
     }, [rawBackground]);
 
     return (
-      <RendererCoreContext.Provider value={previewStore}>
+      <PreviewProvide>
         <div
           className={`${styles.pane} ${
             fullscreen ? styles.paneFullscreen : ''
@@ -747,7 +751,7 @@ export const LayoutCanvas = observer(
             </div>
           )}
         </div>
-      </RendererCoreContext.Provider>
+      </PreviewProvide>
     );
   }
 );

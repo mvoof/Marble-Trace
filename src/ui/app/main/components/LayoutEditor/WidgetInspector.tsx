@@ -22,7 +22,7 @@ import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
 import { Card, PanelWidgetProvider } from '../WidgetSettings/panels/Card';
 import { SettingRow } from '../WidgetSettings/panels/SettingRow';
 import type { SnapPosition } from './snap-position';
-import { useMainLiveWidgetsStore } from '@store/roots/main-root-context';
+import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
 import styles from './WidgetInspector.module.scss';
 
 const ICON_SIZE = 14;

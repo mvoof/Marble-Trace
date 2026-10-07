@@ -1,10 +1,8 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  useAppSettingsStore,
-  useBackendComputedStore,
-} from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
 import { getDeltaToPreviousBest } from '@utils/delta-utils';
 import type { DeltaWidgetSettings } from '@/types/widget-settings';
 import { DeltaLive } from './DeltaLive/DeltaLive';

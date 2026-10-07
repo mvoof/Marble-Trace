@@ -21,10 +21,8 @@ import type { EnvelopePoint, TrailPoint } from '@ui/widgets/GMeterWidget/types';
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 
 import styles from './GMeterTrace.module.scss';
-import {
-  usePlayerStore,
-  useLiveWidgetsStore,
-} from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
 import { useWidgetInstanceId } from '@ui/hooks/useWidgetSettings';
 
 const BADGE_BASE_WIDTH_PX = 240;

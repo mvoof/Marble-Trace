@@ -5,7 +5,7 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { hasRaceStarted } from '@utils/timer-utils';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
-import { useSessionStore } from '@store/roots/root-store-context';
+import { useSessionStore } from '@store/data/session-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 interface PosChangeProps {

@@ -2,10 +2,8 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Switch } from 'antd';
 import { Activity, Save, Square } from 'lucide-react';
-import {
-  useDiagnosticsExportStore,
-  useFpsDiagnosticsStore,
-} from '@store/roots/main-root-context';
+import { useDiagnosticsExportStore } from '@store/diagnostics/diagnostics-export-context';
+import { useFpsDiagnosticsStore } from '@store/diagnostics/fps-diagnostics-context';
 import { SettingsCard } from '../../SettingsCard';
 import { DiagnosticsProgress } from './DiagnosticsProgress';
 import { DiagnosticsResultsTable } from './DiagnosticsResultsTable';

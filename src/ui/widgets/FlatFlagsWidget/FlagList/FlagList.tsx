@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { FlagItem } from '@ui/widgets/FlatFlagsWidget/FlagItem/FlagItem';
 
 import styles from './FlagList.module.scss';
-import { useFlagsStore } from '@store/roots/root-store-context';
+import { useFlagsStore } from '@store/widgets/flags/flags-context';
 
 export const FlagList = observer(() => {
   const { displayFlags } = useFlagsStore();

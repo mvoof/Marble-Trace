@@ -2,7 +2,8 @@ import { observer } from 'mobx-react-lite';
 
 import { formatSpeed, speedUnit } from '@utils/telemetry-format';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import { usePlayerStore, useUnitsStore } from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useUnitsStore } from '@store/settings/units-context';
 
 import styles from './SpeedReadout.module.scss';
 

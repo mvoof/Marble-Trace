@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
-import { usePlayerStore } from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
 import type { DrsState } from '@/types/bindings';
 import type { DrsWidgetSettings } from '@/types/widget-settings';
 // The wing itself — three slats stepping down and to the left, each cut on the

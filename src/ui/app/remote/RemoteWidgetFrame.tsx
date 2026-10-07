@@ -5,10 +5,8 @@ import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameStyle } from '@ui/app/widget-frame';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import styles from './RemoteWidgetFrame.module.scss';
-import {
-  useLiveWidgetsStore,
-  useWidgetAutoHideStore,
-} from '@store/roots/root-store-context';
+import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
+import { useWidgetAutoHideStore } from '@store/widget-runtime/widget-auto-hide-context';
 
 interface RemoteWidgetFrameProps {
   widgetId: string;

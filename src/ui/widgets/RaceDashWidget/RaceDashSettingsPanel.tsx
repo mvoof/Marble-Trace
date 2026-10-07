@@ -10,7 +10,7 @@ import type {
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { useUnitsStore } from '@store/roots/root-store-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import { useWidgetEditor } from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';
 import {
   panelRows,

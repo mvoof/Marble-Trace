@@ -4,11 +4,9 @@ import { reaction, runInAction } from 'mobx';
 import { PreviewCore } from '@store/roots/renderer-core';
 import { seedScenario } from '@/preview/scenarios';
 import { seedInputHistory } from '@/preview/preview-animator';
-import {
-  useUnitsStore,
-  useLiveWidgetsStore,
-  useSettingsMutationLog,
-} from '@store/roots/root-store-context';
+import { useUnitsStore } from '@store/settings/units-context';
+import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
+import { useSettingsMutationLog } from '@store/layout/mutation-log-context';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 
 /**

@@ -53,6 +53,15 @@ export interface LayoutGestureStores {
   widgetMap: GestureWidgetMap;
 }
 
+/** The two sides a gesture holds, from a root that has both — main's alone. */
+export const layoutGestureStores = (root: {
+  layouts: GestureLayoutRecords;
+  liveWidgets: GestureWidgetMap;
+}): LayoutGestureStores => ({
+  records: root.layouts,
+  widgetMap: root.liveWidgets,
+});
+
 /**
  * A new layout, made the one being edited, seeded with starter widgets and
  * anchored to the primary monitor once the hardware answers.

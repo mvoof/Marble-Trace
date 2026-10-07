@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import type { CSSProperties } from 'react';
 
 import styles from './ReservedSlot.module.scss';
-import { useAppSettingsStore } from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
 
 interface ReservedSlotProps {
   /**

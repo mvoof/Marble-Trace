@@ -7,7 +7,7 @@ import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './PaceCarRow.module.scss';
-import { useBackendComputedStore } from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
 import { useRelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.store';
 
 interface PaceCarRowProps {

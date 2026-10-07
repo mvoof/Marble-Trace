@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { PreviewCore } from '@store/roots/renderer-core';
-import { layoutGestureStores } from '@store/roots/main-root-context';
+import { layoutGestureStores } from '@store/layout/layout-gestures';
 
 import { alignMonitorsToHardware, removeMonitor } from './layout-gestures';
 

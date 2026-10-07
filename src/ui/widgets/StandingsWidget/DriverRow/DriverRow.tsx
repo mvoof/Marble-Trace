@@ -31,10 +31,8 @@ import { IrChangeCell } from './IrChangeCell';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import {
-  useBackendComputedStore,
-  useSessionStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useSessionStore } from '@store/data/session-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 interface DriverRowProps {

@@ -9,10 +9,8 @@ import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
 import type { CarOnTrack } from '@ui/widgets/TrackMapWidget/types';
 import { CarDot } from '@ui/shared/CarDot/CarDot';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import {
-  useBackendComputedStore,
-  useCarsStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useCarsStore } from '@store/data/cars-context';
 import { shapeForClassOrder } from '@utils/canvas';
 import { PaceCarMarker } from '@ui/shared/PaceCarMarker/PaceCarMarker';
 import { FlagZones } from './FlagZones/FlagZones';

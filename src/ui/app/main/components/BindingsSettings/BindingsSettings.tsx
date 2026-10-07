@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Popconfirm } from 'antd';
-import { useBindingsStore } from '@store/roots/root-store-context';
-import {
-  useBindingsUiStore,
-  useDeviceInputStore,
-} from '@store/roots/main-root-context';
+import { useBindingsStore } from '@store/hotkeys/bindings-context';
+import { useBindingsUiStore } from '@store/hotkeys/bindings-ui-context';
+import { useDeviceInputStore } from '@store/hotkeys/device-input-context';
 import { BindingGroup } from './BindingGroup';
 import { BindingSearch } from './BindingSearch';
 import { BindingCaptureModal } from './BindingCaptureModal';

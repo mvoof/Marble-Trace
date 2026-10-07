@@ -1,7 +1,7 @@
 import type { MainRoot } from '@store/roots/main-root';
 import type { LayoutMonitor } from '@/types/widget-settings';
 import { alignMonitorsToHardware } from '@store/layout/layout-gestures';
-import { layoutGestureStores } from '@store/roots/main-root-context';
+import { layoutGestureStores } from '@store/layout/layout-gestures';
 import { listMonitorBounds } from './overlay-resolution';
 import { syncOverlayWindows } from './overlay-windows';
 

@@ -17,11 +17,9 @@ import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 
 import styles from './TrackMapView.module.scss';
 import type { TrackMapWidgetSettings } from '@/types/widget-settings';
-import {
-  useAppSettingsStore,
-  useBackendComputedStore,
-  useSessionStore,
-} from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useSessionStore } from '@store/data/session-context';
 
 export interface TrackData {
   svgPath: string;

@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { usePitState } from '@ui/hooks/usePitState';
 import type { PitState } from '@ui/hooks/usePitState';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import { usePlayerPositionStore } from '@store/roots/root-store-context';
+import { usePlayerPositionStore } from '@store/data/player-position-context';
 
 import { pitLimitEmphasis } from '../race-dash-utils';
 import { PitLaneBar } from './PitLaneBar';

@@ -10,7 +10,7 @@ import type {
   BattleSides,
   BattleTrigger,
 } from '@/types/widget-settings';
-import { useUnitsStore } from '@store/roots/root-store-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import {
   NAME_COLUMN_MAX_PX,
   NAME_COLUMN_MIN_PX,

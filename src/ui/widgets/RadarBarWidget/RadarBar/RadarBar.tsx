@@ -6,12 +6,10 @@ import { distanceUnit, formatDistance } from '@utils/telemetry-format';
 import { getBarPillColor } from '@store/widgets/radar/radar-constants';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
-import {
-  useAppSettingsStore,
-  useBackendComputedStore,
-  useRadarWidgetStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useRadarWidgetStore } from '@store/widgets/radar/radar-context';
+import { useUnitsStore } from '@store/settings/units-context';
 
 import styles from './RadarBar.module.scss';
 

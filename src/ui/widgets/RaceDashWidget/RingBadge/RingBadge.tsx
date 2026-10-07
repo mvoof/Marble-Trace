@@ -11,10 +11,8 @@ import {
   rpmFillColor,
   rpmNumberColor,
 } from '../race-dash-utils';
-import {
-  usePlayerStore,
-  useSessionStore,
-} from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useSessionStore } from '@store/data/session-context';
 import { RpmComb } from '../RpmComb/RpmComb';
 import { SteeringMarker } from '../SteeringMarker/SteeringMarker';
 import { ARC_SWEEP_DEG, RING_SIZE, ringArcPath } from './ring-geometry';

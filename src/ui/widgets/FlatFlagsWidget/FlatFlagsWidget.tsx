@@ -6,7 +6,7 @@ import { FlagList } from './FlagList/FlagList';
 
 import styles from './FlatFlagsWidget.module.scss';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
-import { useFlagsStore } from '@store/roots/root-store-context';
+import { useFlagsStore } from '@store/widgets/flags/flags-context';
 
 export const FlatFlagsWidget = observer(() => {
   const flags = useFlagsStore();

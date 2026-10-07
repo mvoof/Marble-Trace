@@ -5,7 +5,7 @@ import { getSingleLedColorClass, type ColorStyles } from '../led-matrix-utils';
 
 import styles from './SingleLed.module.scss';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
-import { useFlagsStore } from '@store/roots/root-store-context';
+import { useFlagsStore } from '@store/widgets/flags/flags-context';
 
 export const SingleLed = observer(() => {
   const flags = useFlagsStore();

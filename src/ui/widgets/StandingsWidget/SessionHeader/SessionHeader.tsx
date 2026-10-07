@@ -18,11 +18,9 @@ import {
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { SessionClock } from '@ui/widgets/StandingsWidget/SessionClock/SessionClock';
 import styles from './SessionHeader.module.scss';
-import {
-  useBackendComputedStore,
-  useCarsStore,
-  useSessionStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useCarsStore } from '@store/data/cars-context';
+import { useSessionStore } from '@store/data/session-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 // Matches the icon size the footer's stat pills use.

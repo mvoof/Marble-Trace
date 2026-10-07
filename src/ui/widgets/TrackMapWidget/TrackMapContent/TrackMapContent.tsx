@@ -3,10 +3,8 @@ import { observer } from 'mobx-react-lite';
 
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
 import type { TrackRotateDirection } from '@store/widgets/track-map/track-map.store';
-import {
-  useSessionStore,
-  useTrackMapWidgetStore,
-} from '@store/roots/root-store-context';
+import { useSessionStore } from '@store/data/session-context';
+import { useTrackMapWidgetStore } from '@store/widgets/track-map/track-map-context';
 
 export const TrackMapContent = observer(() => {
   const sessionData = useSessionStore();

@@ -6,10 +6,8 @@ import { NO_TIME_DATA_PLACEHOLDER } from '@utils/telemetry-format';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import { computeNextStopForecast, formatCountdown } from '../fuel-utils';
 import styles from './FuelNextStop.module.scss';
-import {
-  useBackendComputedStore,
-  usePlayerStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { usePlayerStore } from '@store/data/player-context';
 
 const NO_LAP_PLACEHOLDER = '--';
 

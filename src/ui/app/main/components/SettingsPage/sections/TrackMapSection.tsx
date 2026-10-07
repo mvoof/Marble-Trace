@@ -2,17 +2,15 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Flex, Popconfirm } from 'antd';
-import {
-  useSessionStore,
-  useStore,
-  useTrackMapWidgetStore,
-} from '@store/roots/root-store-context';
-import { useTrackRotationStore } from '@store/roots/main-root-context';
+import { useSimStore } from '@store/sim/sim-context';
+import { useSessionStore } from '@store/data/session-context';
+import { useTrackMapWidgetStore } from '@store/widgets/track-map/track-map-context';
+import { useTrackRotationStore } from '@store/widgets/track-map/track-rotation-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
 export const TrackMapSection = observer(() => {
-  const store = useStore();
+  const sim = useSimStore();
   const trackMap = useTrackMapWidgetStore();
   const trackRotation = useTrackRotationStore();
   const session = useSessionStore();
@@ -48,7 +46,7 @@ export const TrackMapSection = observer(() => {
   const handleDeleteReferenceLap = async () => {
     if (sessionTrackId === null || !playerCar) return;
 
-    await store.sim.deleteReferenceLap(sessionTrackId, playerCar.carScreenName);
+    await sim.deleteReferenceLap(sessionTrackId, playerCar.carScreenName);
 
     message.success(t('settingsPage.trackMap.referenceLapDeleteSuccess'));
   };

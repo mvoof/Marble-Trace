@@ -2,9 +2,9 @@ import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances.store';
-import { useStore } from '@store/roots/root-store-context';
 import { mountForWidget } from '@ui/widgets/registry';
 import type { WidgetHost } from '@ui/widgets/widget-mount';
+import { useWidgetHost } from '@ui/widgets/widget-host-context';
 import { WidgetInstanceStoreContext } from './widget-instance-context';
 
 interface WidgetInstanceScopeProps {
@@ -37,7 +37,7 @@ interface OpenedStore {
  */
 export const WidgetInstanceScope = observer(
   ({ type, instanceId, core, children }: WidgetInstanceScopeProps) => {
-    const contextCore = useStore();
+    const contextCore = useWidgetHost();
     const owner: WidgetHost = core ?? contextCore;
     const id = instanceId ?? type;
     const mount = mountForWidget(type);

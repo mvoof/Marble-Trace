@@ -10,10 +10,8 @@ import {
   WidgetEditorProvider,
   type WidgetEditor,
 } from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';
-import {
-  useLiveWidgetsStore,
-  useSettingsMutationLog,
-} from '@store/roots/root-store-context';
+import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
+import { useSettingsMutationLog } from '@store/layout/mutation-log-context';
 import { useOverlayRoot } from '@store/roots/overlay-root-context';
 import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
 import type { SettingsMutationLog } from '@store/layout/mutation-log.store';

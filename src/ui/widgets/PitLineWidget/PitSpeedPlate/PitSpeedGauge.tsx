@@ -6,11 +6,9 @@ import {
 } from '@ui/widgets/PitLineWidget/pit-line-utils';
 import { parsePitSpeedLimitMs, speedUnit } from '@utils/telemetry-format';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import {
-  usePlayerStore,
-  useSessionStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useSessionStore } from '@store/data/session-context';
+import { useUnitsStore } from '@store/settings/units-context';
 
 import styles from './PitSpeedPlate.module.scss';
 

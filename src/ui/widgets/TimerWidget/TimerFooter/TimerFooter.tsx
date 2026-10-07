@@ -7,11 +7,9 @@ import {
   formatPosition,
   isSessionEnded,
 } from '@utils/timer-utils';
-import {
-  useCarsStore,
-  useSessionStore,
-  usePlayerPositionStore,
-} from '@store/roots/root-store-context';
+import { useCarsStore } from '@store/data/cars-context';
+import { useSessionStore } from '@store/data/session-context';
+import { usePlayerPositionStore } from '@store/data/player-position-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 
 import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';

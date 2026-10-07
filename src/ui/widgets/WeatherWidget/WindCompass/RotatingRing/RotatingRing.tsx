@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import { usePlayerStore } from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
 
 import styles from './RotatingRing.module.scss';
 

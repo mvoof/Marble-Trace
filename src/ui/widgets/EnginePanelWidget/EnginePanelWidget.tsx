@@ -18,7 +18,8 @@ import {
   type CellRenderWeight,
   type CellSlot,
 } from './engine-panel-utils';
-import { usePlayerStore, useUnitsStore } from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import type { CarStatusFrame } from '@/types/bindings';
 import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
 import type { UnitSystem } from '@/types';

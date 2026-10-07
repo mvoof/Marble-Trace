@@ -5,11 +5,9 @@ import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
 import { computeRpmZoneState } from '@utils/car-signals';
 import { formatSpeed, speedUnit } from '@utils/telemetry-format';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import {
-  usePlayerStore,
-  useSessionStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useSessionStore } from '@store/data/session-context';
+import { useUnitsStore } from '@store/settings/units-context';
 
 import { zoneDigitColor } from '../invisible-dash-utils';
 import { ShiftBar } from '../ShiftBar/ShiftBar';

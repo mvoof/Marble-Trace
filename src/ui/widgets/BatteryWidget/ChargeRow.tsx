@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { usePlayerStore } from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
 import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import { ChargeBar } from './ChargeBar';
 import { chargeLevel, formatChargePct } from './battery-utils';

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import styles from './AppStatus.module.scss';
-import { useSimStore } from '@store/roots/root-store-context';
+import { useSimStore } from '@store/sim/sim-context';
 import { getSimDisplayName } from '@ui/app/main/sim-name';
 
 export const AppStatus = observer(() => {

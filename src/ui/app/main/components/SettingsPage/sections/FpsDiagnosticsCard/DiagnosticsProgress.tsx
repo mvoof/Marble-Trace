@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Progress } from 'antd';
-import { useFpsDiagnosticsStore } from '@store/roots/main-root-context';
+import { useFpsDiagnosticsStore } from '@store/diagnostics/fps-diagnostics-context';
 import styles from './FpsDiagnosticsCard.module.scss';
 
 export const DiagnosticsProgress = observer(() => {

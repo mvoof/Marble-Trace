@@ -4,10 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { reaction } from 'mobx';
 import { Button, Input, Tooltip } from 'antd';
 import { Keyboard } from 'lucide-react';
-import {
-  useBindingsUiStore,
-  useDeviceInputStore,
-} from '@store/roots/main-root-context';
+import { useBindingsUiStore } from '@store/hotkeys/bindings-ui-context';
+import { useDeviceInputStore } from '@store/hotkeys/device-input-context';
 import { bindingLabel } from './binding-labels';
 import { toAccelerator } from './accelerator';
 import styles from './BindingsSettings.module.scss';

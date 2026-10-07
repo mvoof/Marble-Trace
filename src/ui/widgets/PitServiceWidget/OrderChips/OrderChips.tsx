@@ -2,10 +2,8 @@ import { observer } from 'mobx-react-lite';
 
 import styles from './OrderChips.module.scss';
 import { OrderToggle } from '@ui/widgets/PitServiceWidget/OrderToggle/OrderToggle';
-import {
-  usePitServiceWidgetStore,
-  usePlayerStore,
-} from '@store/roots/root-store-context';
+import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { usePlayerStore } from '@store/data/player-context';
 
 const UNKNOWN_COMPOUND = '—';
 

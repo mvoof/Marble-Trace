@@ -8,14 +8,12 @@ import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInsta
 import { WidgetContainer } from '@ui/app/overlay/components/WidgetContainer/WidgetContainer';
 import { usePreviewContentStore } from '@ui/app/preview-content-store';
 import styles from './OverlayCanvas.module.scss';
-import {
-  RendererCoreContext,
-  useAppSettingsStore,
-  useBindingsStore,
-  useSimStore,
-  useLayoutsStore,
-  useLiveWidgetsStore,
-} from '@store/roots/root-store-context';
+import { CoreProvider } from '@ui/app/store-providers';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useBindingsStore } from '@store/hotkeys/bindings-context';
+import { useSimStore } from '@store/sim/sim-context';
+import { useLayoutsStore } from '@store/layout/layouts-context';
+import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
 
 // antd and the widget picker stay out of the overlay's initial bundle.
 const DragModeBar = lazy(() =>
@@ -116,9 +114,9 @@ export const OverlayCanvas = observer(() => {
             >
               <WidgetContainer widgetId={widget.id}>
                 {previewStore ? (
-                  <RendererCoreContext.Provider value={previewStore}>
+                  <CoreProvider core={previewStore}>
                     <WidgetComponent />
-                  </RendererCoreContext.Provider>
+                  </CoreProvider>
                 ) : (
                   <WidgetComponent />
                 )}

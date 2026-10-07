@@ -6,12 +6,10 @@ import { resolveSessionLaps } from '@utils/telemetry-format';
 import { RpmValue } from '../RpmValue/RpmValue';
 import { SpeedReadout } from '../SpeedReadout/SpeedReadout';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import {
-  useCarsStore,
-  usePlayerStore,
-  useSessionStore,
-  usePlayerPositionStore,
-} from '@store/roots/root-store-context';
+import { useCarsStore } from '@store/data/cars-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useSessionStore } from '@store/data/session-context';
+import { usePlayerPositionStore } from '@store/data/player-position-context';
 
 import styles from './StatsStrip.module.scss';
 

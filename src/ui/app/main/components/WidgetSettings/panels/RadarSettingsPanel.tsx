@@ -19,7 +19,7 @@ import {
   resolveScopeScale,
 } from '@store/widgets/radar/radar-constants';
 import { distanceUnit, formatDistance } from '@utils/telemetry-format';
-import { useUnitsStore } from '@store/roots/root-store-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';

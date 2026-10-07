@@ -13,11 +13,9 @@ import {
 } from 'antd';
 import { Copy, Eye, EyeOff, RefreshCw } from 'lucide-react';
 
-import {
-  useAppSettingsStore,
-  useLayoutsStore,
-} from '@store/roots/root-store-context';
-import { useRemoteDevicesStore } from '@store/roots/main-root-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useLayoutsStore } from '@store/layout/layouts-context';
+import { useRemoteDevicesStore } from '@store/remote/remote-devices-context';
 import { RemoteScreenRow } from './RemoteScreenRow';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';

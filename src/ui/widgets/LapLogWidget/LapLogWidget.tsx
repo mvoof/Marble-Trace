@@ -1,11 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
-import {
-  useBackendComputedStore,
-  usePlayerStore,
-  useSimStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useSimStore } from '@store/sim/sim-context';
 import { formatLapTime } from '@utils/telemetry-format';
 import { formatDelta, getDeltaState } from '@utils/delta-utils';
 import { LapRow } from './LapRow/LapRow';

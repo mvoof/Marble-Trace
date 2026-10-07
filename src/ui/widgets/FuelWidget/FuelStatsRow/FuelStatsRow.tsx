@@ -2,11 +2,9 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { formatFuel } from '@utils/telemetry-format';
-import {
-  useBackendComputedStore,
-  usePlayerStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import {
   NO_FUEL_DATA_PLACEHOLDER,
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,

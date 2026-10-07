@@ -6,7 +6,7 @@ import {
   type SessionColorKey,
 } from '@utils/timer-utils';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
-import { useSessionStore } from '@store/roots/root-store-context';
+import { useSessionStore } from '@store/data/session-context';
 import styles from './TimerHeader.module.scss';
 
 const SESSION_LABEL_CLASS: Record<SessionColorKey, string> = {

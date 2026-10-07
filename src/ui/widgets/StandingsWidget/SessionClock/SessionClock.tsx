@@ -11,7 +11,7 @@ import {
   type ClockUrgency,
 } from '@utils/timer-utils';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { useSessionStore } from '@store/roots/root-store-context';
+import { useSessionStore } from '@store/data/session-context';
 
 import styles from './SessionClock.module.scss';
 

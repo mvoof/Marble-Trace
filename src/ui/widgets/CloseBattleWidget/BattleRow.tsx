@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { formatBrand, formatCarNumber } from '@utils/driver';
-import { useUnitsStore } from '@store/roots/root-store-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import { getContrastTextColor } from '@utils/colors';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import {

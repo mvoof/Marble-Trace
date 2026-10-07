@@ -16,7 +16,7 @@ import {
 import { TabletSmartphone } from 'lucide-react';
 
 import { REMOTE_SCREEN_PRESET_GROUPS } from '@utils/remote-screen';
-import { useLayoutsStore } from '@store/roots/root-store-context';
+import { useLayoutsStore } from '@store/layout/layouts-context';
 
 const ICON_SIZE = 12;
 const MIN_SIDE = 240;

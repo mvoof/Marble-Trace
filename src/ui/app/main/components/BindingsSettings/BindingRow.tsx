@@ -2,8 +2,9 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { Plus } from 'lucide-react';
-import { useBindingsStore, useStore } from '@store/roots/root-store-context';
-import { useBindingsUiStore } from '@store/roots/main-root-context';
+import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { useBindingsStore } from '@store/hotkeys/bindings-context';
+import { useBindingsUiStore } from '@store/hotkeys/bindings-ui-context';
 import { bindingKey } from '@/types/input-bindings';
 import { BindingChip } from './BindingChip';
 import { actionLabel } from './binding-labels';
@@ -16,7 +17,7 @@ interface BindingRowProps {
 export const BindingRow = observer(({ actionId }: BindingRowProps) => {
   const bindings = useBindingsStore();
   const bindingsUi = useBindingsUiStore();
-  const store = useStore();
+  const pitServiceWidget = usePitServiceWidgetStore();
   const { t } = useTranslation('main-app');
 
   const action = bindings.registry.byId.get(actionId);
@@ -29,7 +30,7 @@ export const BindingRow = observer(({ actionId }: BindingRowProps) => {
 
   // A key whose setting is switched off would run and change nothing, so the
   // row says what to turn on instead of leaving the press unexplained.
-  const isInert = action.isInert?.(store) === true;
+  const isInert = action.isInert?.({ pitServiceWidget }) === true;
 
   return (
     <div className={styles.row}>

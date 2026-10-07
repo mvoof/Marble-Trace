@@ -1,9 +1,7 @@
 ﻿import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import {
-  usePlayerStore,
-  useBackendComputedStore,
-} from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
 import { formatLapTime } from '@utils/telemetry-format';
 import { getGameDelta } from '@utils/delta-utils';
 import { getSectorColor } from '@utils/colors';

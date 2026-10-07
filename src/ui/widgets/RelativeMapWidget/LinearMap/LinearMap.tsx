@@ -12,11 +12,9 @@ import { FlagBands } from '../FlagBands/FlagBands';
 
 import styles from './LinearMap.module.scss';
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
-import {
-  useBackendComputedStore,
-  useCarsStore,
-  useSessionStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useCarsStore } from '@store/data/cars-context';
+import { useSessionStore } from '@store/data/session-context';
 
 const DEFAULT_DOT_RADIUS_PX = 9;
 const DEFAULT_PACE_CAR_COLOR = '#facc15';

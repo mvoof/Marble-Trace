@@ -1,11 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { PreviewCore } from '@store/roots/renderer-core';
-import {
-  RendererCoreContext,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { usePreviewWorldFactory } from '@/preview/preview-host-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
@@ -33,7 +30,13 @@ export const WidgetPreview = observer(
     const units = useUnitsStore();
     const { t } = useTranslation('main-app');
 
-    const previewStore = useMemo(() => new PreviewCore(), []);
+    const createPreviewWorld = usePreviewWorldFactory();
+    const previewWorld = useMemo(
+      () => createPreviewWorld(),
+      [createPreviewWorld]
+    );
+    const previewStore = previewWorld.core;
+    const PreviewProvide = previewWorld.Provide;
 
     useEffect(() => () => previewStore.dispose(), [previewStore]);
 
@@ -100,7 +103,7 @@ export const WidgetPreview = observer(
     });
 
     return (
-      <RendererCoreContext.Provider value={previewStore}>
+      <PreviewProvide>
         <div className={styles.stage}>
           <div
             className={`${styles.widgetInner} ${
@@ -121,7 +124,7 @@ export const WidgetPreview = observer(
             </ErrorBoundary>
           </div>
         </div>
-      </RendererCoreContext.Provider>
+      </PreviewProvide>
     );
   }
 );

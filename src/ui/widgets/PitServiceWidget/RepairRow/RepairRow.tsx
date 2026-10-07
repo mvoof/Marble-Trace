@@ -6,10 +6,8 @@ import {
   countdownUnit,
   formatCountdown,
 } from '@ui/widgets/PitServiceWidget/pit-service-utils';
-import {
-  usePitServiceWidgetStore,
-  usePlayerStore,
-} from '@store/roots/root-store-context';
+import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { usePlayerStore } from '@store/data/player-context';
 
 const ICON_SIZE = 13;
 

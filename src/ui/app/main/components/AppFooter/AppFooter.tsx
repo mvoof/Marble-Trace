@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { useAppSettingsStore } from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
 import { openExternalLink } from '@store/integrations/external-link';
 import styles from './AppFooter.module.scss';
 

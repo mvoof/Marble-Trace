@@ -1,11 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { ChevronUp } from 'lucide-react';
 
-import {
-  usePitServiceWidgetStore,
-  usePlayerStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import { buildPitApproachView } from '@store/widgets/pit-service/pit-approach';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { METERS_TO_FEET } from '@utils/telemetry-format';

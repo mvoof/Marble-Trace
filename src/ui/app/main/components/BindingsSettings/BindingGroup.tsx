@@ -4,10 +4,8 @@ import { Tag, Tooltip } from 'antd';
 import { ChevronDown } from 'lucide-react';
 import { APP_OWNER } from '@/types/input-bindings';
 import { widgetVisibilityActionId } from '@store/hotkeys/actions';
-import {
-  useBindingsStore,
-  useLiveWidgetsStore,
-} from '@store/roots/root-store-context';
+import { useBindingsStore } from '@store/hotkeys/bindings-context';
+import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
 import { BindingRow } from './BindingRow';
 import { ownerLabel } from './binding-labels';
 import styles from './BindingsSettings.module.scss';

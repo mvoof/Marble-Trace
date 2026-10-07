@@ -7,11 +7,9 @@ import {
   radsToBearing,
 } from '@utils/weather-utils';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import {
-  useEnvironmentStore,
-  usePlayerStore,
-  useSessionStore,
-} from '@store/roots/root-store-context';
+import { useEnvironmentStore } from '@store/data/environment-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useSessionStore } from '@store/data/session-context';
 
 import styles from './WindArrow.module.scss';
 

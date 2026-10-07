@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { Plus, Search } from 'lucide-react';
 import { useClickOutside } from '@ui/hooks/useClickOutside';
-import { useLiveWidgetsStore } from '@store/roots/root-store-context';
+import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
 import { useOverlayRoot } from '@store/roots/overlay-root-context';
 import type { PickableWidget } from '@store/layout/widget-placement';
 import { getWidgetDescription } from '@ui/app/widget-i18n';

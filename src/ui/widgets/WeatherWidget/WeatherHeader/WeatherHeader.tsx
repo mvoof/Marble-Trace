@@ -9,11 +9,9 @@ import {
   getSkiesLabel,
 } from '@utils/weather-utils';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
-import {
-  useEnvironmentStore,
-  useSessionStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { useEnvironmentStore } from '@store/data/environment-context';
+import { useSessionStore } from '@store/data/session-context';
+import { useUnitsStore } from '@store/settings/units-context';
 
 import styles from './WeatherHeader.module.scss';
 

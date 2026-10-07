@@ -22,11 +22,9 @@ import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
 import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
 import styles from './StatCell.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
-import {
-  useEnvironmentStore,
-  useSessionStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { useEnvironmentStore } from '@store/data/environment-context';
+import { useSessionStore } from '@store/data/session-context';
+import { useUnitsStore } from '@store/settings/units-context';
 
 export type StatCellType =
   | 'airTemp'

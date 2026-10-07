@@ -6,10 +6,8 @@ import { useVisibleRowCount } from '@ui/hooks/useVisibleRowCount';
 import { DriverRow } from '@ui/widgets/RelativeWidget/DriverRow/DriverRow';
 import { PaceCarRow } from '@ui/widgets/RelativeWidget/PaceCarRow/PaceCarRow';
 import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
-import {
-  useBackendComputedStore,
-  useSimStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useSimStore } from '@store/sim/sim-context';
 import { useRelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.store';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 

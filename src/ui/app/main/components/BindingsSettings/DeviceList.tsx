@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Tag } from 'antd';
-import { useDeviceInputStore } from '@store/roots/main-root-context';
+import { useDeviceInputStore } from '@store/hotkeys/device-input-context';
 import styles from './BindingsSettings.module.scss';
 
 export const DeviceList = observer(() => {

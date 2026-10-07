@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Select, Switch } from 'antd';
 import { AlertCircle, ArrowUpCircle, Clock, RefreshCw } from 'lucide-react';
 import { ReleaseNotesButton } from '@ui/app/main/components/ReleaseNotesButton/ReleaseNotesButton';
-import { useAppSettingsStore } from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 

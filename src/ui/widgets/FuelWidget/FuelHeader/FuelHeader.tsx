@@ -6,7 +6,8 @@ import { formatFuel } from '@utils/telemetry-format';
 import type { UnitSystem } from '@/types';
 
 import styles from './FuelHeader.module.scss';
-import { usePlayerStore, useUnitsStore } from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/telemetry-format';
 
 const fuelUnitWord = (unitSystem: UnitSystem): string =>

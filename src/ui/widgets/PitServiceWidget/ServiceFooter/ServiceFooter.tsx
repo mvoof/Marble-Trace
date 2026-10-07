@@ -4,11 +4,9 @@ import { observer } from 'mobx-react-lite';
 import styles from './ServiceFooter.module.scss';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { resolveServiceState } from '@ui/widgets/PitServiceWidget/pit-service-utils';
-import {
-  useBackendComputedStore,
-  usePitServiceWidgetStore,
-  usePlayerStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { usePlayerStore } from '@store/data/player-context';
 
 import { PositionBadge } from './PositionBadge/PositionBadge';
 

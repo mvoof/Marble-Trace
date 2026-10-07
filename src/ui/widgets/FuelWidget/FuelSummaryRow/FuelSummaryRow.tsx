@@ -5,10 +5,8 @@ import { formatFuel } from '@utils/telemetry-format';
 import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
-import {
-  useBackendComputedStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import {
   NO_FUEL_DATA_PLACEHOLDER,
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,

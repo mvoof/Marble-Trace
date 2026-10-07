@@ -6,11 +6,9 @@ import { getSkiesLabel } from '@utils/weather-utils';
 
 import styles from './ForecastBlock.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
-import {
-  useEnvironmentStore,
-  useSessionStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { useEnvironmentStore } from '@store/data/environment-context';
+import { useSessionStore } from '@store/data/session-context';
+import { useUnitsStore } from '@store/settings/units-context';
 
 const formatForecastTime = (timeSec: number): string => {
   const hours = Math.floor(timeSec / 3600);

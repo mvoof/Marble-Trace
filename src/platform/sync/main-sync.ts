@@ -1,5 +1,5 @@
 import { alignMonitorsToHardware } from '@store/layout/layout-gestures';
-import { layoutGestureStores } from '@store/roots/main-root-context';
+import { layoutGestureStores } from '@store/layout/layout-gestures';
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 

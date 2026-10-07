@@ -10,7 +10,7 @@ import {
   panelRows,
   usePanelWidgetId,
 } from '@ui/app/main/components/WidgetSettings/panels/setting-rows';
-import { useUnitsStore } from '@store/roots/root-store-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import { distanceScale } from '@ui/app/main/components/WidgetSettings/panels/distance-scale';
 
 // The pit entry countdown. Below 100 m the box arrives after the braking, and

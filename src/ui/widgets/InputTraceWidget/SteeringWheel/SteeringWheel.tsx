@@ -1,7 +1,8 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
-import { usePlayerStore, useUnitsStore } from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import type { InputTraceSettings } from '@/types/widget-settings';
 import { steeringAngleDeg } from '@utils/car-signals';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';

@@ -4,10 +4,8 @@ import { formatFuel } from '@utils/telemetry-format';
 import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
 import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/telemetry-format';
-import {
-  useBackendComputedStore,
-  useUnitsStore,
-} from '@store/roots/root-store-context';
+import { useBackendComputedStore } from '@store/data/computed-context';
+import { useUnitsStore } from '@store/settings/units-context';
 import styles from './PitWarningFill.module.scss';
 
 export const PitWarningFill = observer(() => {

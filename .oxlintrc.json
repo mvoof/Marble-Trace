@@ -236,6 +236,7 @@
                   "**/main-root-context",
                   "**/overlay-root-context",
                   "**/hud-root-context",
+                  "@store/**/*-context",
                   "@ui/**",
                   "@platform/**",
                   "@tauri-apps/**"
@@ -309,9 +310,21 @@
                   "@store/roots/main-root",
                   "@store/roots/main-root-context",
                   "**/main-root",
-                  "**/main-root-context"
+                  "**/main-root-context",
+                  "**/main-live-widgets-context",
+                  "**/layout-editor-context",
+                  "**/companion-apps-context",
+                  "**/twitch-auth-context",
+                  "**/device-input-context",
+                  "**/bindings-ui-context",
+                  "**/remote-devices-context",
+                  "**/fps-diagnostics-context",
+                  "**/diagnostics-export-context",
+                  "**/telemetry-inspector-context",
+                  "**/track-rotation-context",
+                  "**/preview-host-context"
                 ],
-                "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps and the device list exist in the main window only. Read the renderer core (root-store-context) instead."
+                "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps, the device list and the preview worlds exist in the main window only, and their hooks throw anywhere else. Read the stores every window has (their own *-context files) instead."
               },
               {
                 "group": ["@platform/**"],
@@ -372,9 +385,21 @@
                   "@store/roots/main-root",
                   "@store/roots/main-root-context",
                   "**/main-root",
-                  "**/main-root-context"
+                  "**/main-root-context",
+                  "**/main-live-widgets-context",
+                  "**/layout-editor-context",
+                  "**/companion-apps-context",
+                  "**/twitch-auth-context",
+                  "**/device-input-context",
+                  "**/bindings-ui-context",
+                  "**/remote-devices-context",
+                  "**/fps-diagnostics-context",
+                  "**/diagnostics-export-context",
+                  "**/telemetry-inspector-context",
+                  "**/track-rotation-context",
+                  "**/preview-host-context"
                 ],
-                "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps and the device list exist in the main window only. Read the renderer core (root-store-context) instead."
+                "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps, the device list and the preview worlds exist in the main window only, and their hooks throw anywhere else. Read the stores every window has (their own *-context files) instead."
               },
               {
                 "group": [

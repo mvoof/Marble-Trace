@@ -51,7 +51,8 @@ down into the widget.
 
 ## `src/utils/` — pure helpers
 
-No React, no stores, no Tauri. Importable from any layer.
+No stores, no Tauri, and no React beyond `store-context.ts`'s one
+`createContext`. Importable from any layer.
 
 | Module                     | Reach for it when                                                                                                                                                                                          |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -66,6 +67,7 @@ No React, no stores, no Tauri. Importable from any layer.
 | `hotkey-actions.ts`        | You need the bindable action list, its ids, labels or default keys. **Generated from Rust — never edit**; the backend dispatches the keys, `store/hotkeys/` builds the settings UI's registry from it.     |
 | `qualifying-visibility.ts` | Honouring a widget's "show in qualifying" setting (`never` / `auto`) — the shared rule behind that switch.                                                                                                 |
 | `remote-screen.ts`         | Anything about remote screens as monitors: telling a remote monitor from a display, presets, bounds placement, slugs.                                                                                      |
+| `store-context.ts`         | Giving a store its own React context and hook (`createStoreContext`), beside the store; the window's provider in `ui/app/store-providers.tsx` fills it.                                                    |
 | `telemetry-format.ts`      | Rendering a raw SI number for the driver in their unit system: speed, temperature, fuel, distance — and converting back.                                                                                   |
 | `timer-utils.ts`           | Clocks and session state: wall clock, sim date and time, session ended / race started, lap-limited vs timed, the session clock, `splitTime`.                                                               |
 | `weather-utils.ts`         | Weather rendering: wind color and bearing, track wetness, and the 0..1 fractions the gauges are drawn from.                                                                                                |

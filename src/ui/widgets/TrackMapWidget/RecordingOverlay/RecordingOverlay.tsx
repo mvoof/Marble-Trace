@@ -1,7 +1,7 @@
 ﻿import { observer } from 'mobx-react-lite';
 
 import styles from './RecordingOverlay.module.scss';
-import { useSessionStore } from '@store/roots/root-store-context';
+import { useSessionStore } from '@store/data/session-context';
 
 const COMPLETE_PROGRESS = 1;
 

@@ -5,11 +5,9 @@ import type { InputTraceSettings } from '@/types/widget-settings';
 import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
 import { useCanvasAutoResize } from '@ui/hooks/useCanvasAutoResize';
 import styles from './CanvasTrace.module.scss';
-import {
-  useAppSettingsStore,
-  usePlayerStore,
-  useLiveWidgetsStore,
-} from '@store/roots/root-store-context';
+import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
 import { useInputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.store';
 import {
   createTraceBufferState,

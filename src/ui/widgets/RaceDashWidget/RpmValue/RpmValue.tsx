@@ -4,10 +4,8 @@ import { observer } from 'mobx-react-lite';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import { computeRpmZoneState, rpmNumberColor } from '../race-dash-utils';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import {
-  usePlayerStore,
-  useSessionStore,
-} from '@store/roots/root-store-context';
+import { usePlayerStore } from '@store/data/player-context';
+import { useSessionStore } from '@store/data/session-context';
 
 import styles from './RpmValue.module.scss';
 

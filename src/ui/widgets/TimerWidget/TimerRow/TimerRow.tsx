@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { useWallClock } from '../useWallClock';
 import { formatSimDate, formatSimTime } from '@utils/timer-utils';
-import { useSessionStore } from '@store/roots/root-store-context';
+import { useSessionStore } from '@store/data/session-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 
 import { TimerItem } from '../TimerItem/TimerItem';
