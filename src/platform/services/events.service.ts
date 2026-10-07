@@ -6,21 +6,20 @@ import {
   type UnlistenFn,
 } from '@tauri-apps/api/event';
 
-import {
-  listOverlayWindowLabels,
-  monitorLabel,
-} from '@platform/sync/overlay-labels';
-import type { AppLanguage, UnitSystem } from '@/types';
+import { listOverlayWindowLabels } from '@platform/sync/overlay-labels';
+import type { RemoteControlKind, RemoteDevice } from '@/types/bindings';
 import type {
-  LayoutMonitor,
-  SessionContext,
-  WidgetDefaultConfig,
-} from '@/types/widget-settings';
-import type { BindingMap } from '@/types/input-bindings';
-import type { RemoteDevice } from '@/types/bindings';
-import { TRACK_MAP_CLEAR } from '@platform/sync/sim-events';
+  ClientToMainMessage,
+  ControlMessage,
+  SnapshotMessage,
+} from '@/types/client-protocol';
+import {
+  CLIENT_CONTROL_EVENT,
+  CLIENT_FROM_MAIN_EVENT,
+  CLIENT_TO_MAIN_EVENT,
+  TRACK_MAP_CLEAR,
+} from '@platform/sync/sim-events';
 import { publishRemoteControl } from '@platform/services/remote.service';
-import type { RemoteControlKind } from '@/types/remote';
 
 /**
  * The whole frontend↔backend event channel: the only module that imports
@@ -37,42 +36,6 @@ import type { RemoteControlKind } from '@/types/remote';
 
 const MAIN = 'main';
 
-type SessionLayoutMap = Record<SessionContext, string | null>;
-
-// Widget lists always travel with the monitor they belong to. Without it an
-// edit made on one screen would overwrite the widgets of another.
-//
-// Main pushes the whole active layout; an overlay answers with a patch of the
-// widgets it actually edited, so the two directions carry the same shape but
-// very different amounts of it.
-export interface MonitorWidgetsPayload {
-  monitorName: string;
-  widgets: WidgetDefaultConfig[];
-  /**
-   * The layout these widgets belong to. Main stamps it on every push and the
-   * overlay echoes back the one it last received, so a list emitted just before
-   * a layout switch cannot be written into the layout that switched in.
-   */
-  layoutId?: string | null;
-  /**
-   * The layout's monitors, for their bounds: a drag is clamped to the
-   * widget's own monitor in the overlay as much as in the editor.
-   */
-  monitors?: LayoutMonitor[];
-  /**
-   * Whether `widgets` is the whole layout or only the widgets the sender just
-   * touched.
-   *
-   * Main pushes the layout entire; an overlay reports a drag, which is one
-   * widget. The two travel under the same event name and a window hears its
-   * own message as well as the other side's, so a receiver that took a patch
-   * for a set deleted every widget it was not being told about — which is
-   * exactly what a drag looked like: everything vanished but the widget under
-   * the cursor, and came back the moment main pushed the layout again.
-   */
-  complete?: boolean;
-}
-
 export const listenTo = <PayloadType>(
   event: string,
   handler: EventCallback<PayloadType>
@@ -80,8 +43,7 @@ export const listenTo = <PayloadType>(
 
 // Fan-out to every open overlay window. During startup the main window can
 // react before any overlay exists, which makes Tauri log "event emitted but no
-// listeners found"; overlays hydrate the same values from disk on their own
-// boot, so skipping an emit before they are up is harmless.
+// listeners found"; a signal nobody was there to hear is one nobody missed.
 const emitToOverlays = async (event: string, payload: unknown) => {
   const labels = await listOverlayWindowLabels();
 
@@ -90,161 +52,90 @@ const emitToOverlays = async (event: string, payload: unknown) => {
   }
 };
 
-export const emitDragMode = (val: boolean) => emit('drag-mode-changed', val);
+/** A client of the settings (an overlay) to main: `hello`, or a command. */
+export const emitToMain = (message: ClientToMainMessage) =>
+  emitTo(MAIN, CLIENT_TO_MAIN_EVENT, message);
 
-export const emitHideAllWidgets = (val: boolean) =>
-  emitToOverlays('hide-all-widgets-changed', val);
+export const listenToClients = (
+  handler: (message: ClientToMainMessage) => void
+) =>
+  listenTo<ClientToMainMessage>(CLIENT_TO_MAIN_EVENT, (event) =>
+    handler(event.payload)
+  );
 
-export const emitHideWidgetsWhenGameClosed = (val: boolean) =>
-  emitToOverlays('hide-widgets-when-game-closed-changed', val);
+/** Main to one client: the snapshot of what it draws, sent to it alone. */
+export const emitSnapshotToClient = (message: SnapshotMessage) =>
+  emitTo(message.clientId, CLIENT_FROM_MAIN_EVENT, message);
 
-export const emitUnitsChanged = (system: UnitSystem) =>
-  emitToOverlays('units-changed', system);
-
-export const emitSteeringLockChanged = (degrees: number) =>
-  emitToOverlays('steering-lock-changed', degrees);
-
-export const emitLanguageChanged = (language: AppLanguage) =>
-  emitToOverlays('language-changed', language);
-
-export interface StreamChatFilters {
-  hideCommands: boolean;
-  ignoredBots: string;
-}
-
-export const emitStreamChatFilters = (filters: StreamChatFilters) =>
-  emitToOverlays('stream-chat-filters-changed', filters);
-
-export const emitStreamChatCleared = () =>
-  emitToOverlays('stream-chat-cleared', null);
+export const listenToMain = (handler: (message: SnapshotMessage) => void) =>
+  listenTo<SnapshotMessage>(CLIENT_FROM_MAIN_EVENT, (event) =>
+    handler(event.payload)
+  );
 
 /**
- * Fan-out to the overlay windows and to the remote screens at once.
- *
- * A Tauri event stops at the app: a browser showing the same widget has to be
- * told separately, or a hotkey moves the standings on the monitors and leaves
- * the tablet on the class it was already showing.
+ * A signal to the widgets of every client: each overlay over a Tauri event,
+ * each remote screen over its socket — the same `{ type, data }` both ways, so
+ * both run it through one switch (`client-sync.ts`). The hub keeps the kinds
+ * that are the driver's alone off the remote screens.
  */
-const emitToOverlaysAndRemote = async (
-  event: string,
-  remoteKind: RemoteControlKind,
-  payload: unknown
-) => {
-  await emitToOverlays(event, payload);
+const broadcastControl = async (kind: RemoteControlKind, data: unknown) => {
+  await emitToOverlays(CLIENT_CONTROL_EVENT, {
+    type: kind,
+    data,
+  } satisfies ControlMessage);
 
-  await publishRemoteControl(remoteKind, payload).catch((error: unknown) =>
+  await publishRemoteControl(kind, data).catch((error: unknown) =>
     console.error('[events] failed to reach the remote screens:', error)
   );
 };
 
-export const emitStandingsClassIndex = (index: number) =>
-  emitToOverlaysAndRemote(
-    'standings-class-index-changed',
-    'standings-class-index',
-    index
-  );
-
-export const emitPitServiceToggle = () =>
-  emitToOverlays('pit-service-toggle', null);
-
-// Broadcast rather than targeted: either window can be the one that suspends.
-export const emitPitServiceReveal = () =>
-  emitToOverlays('pit-service-reveal', null);
-
-export const emitPitServiceAutoSuspended = (suspended: boolean) =>
-  emit('pit-service-auto-suspended', suspended);
-
-export interface HalvesTakenOver {
-  fuel: boolean;
-  tires: boolean;
-}
-
-export const emitPitServiceHalvesTakenOver = (halves: HalvesTakenOver) =>
-  emit('pit-service-halves-taken-over', halves);
-
-export const emitStandingsScroll = (delta: number) =>
-  emitToOverlaysAndRemote('standings-scroll', 'standings-scroll', delta);
-
-export const emitStreamChatScroll = (delta: number) =>
-  emitToOverlaysAndRemote('stream-chat-scroll', 'stream-chat-scroll', delta);
+export const emitStreamChatCleared = () =>
+  broadcastControl('stream-chat-cleared', null);
 
 export interface TrackRotationPayload {
   trackId: string;
   rotation: number;
 }
 
-/**
- * Broadcast rather than targeted: the map is turned from whichever window shows
- * it — an overlay in drag mode, or the layout editor in main — and every window
- * plus every remote screen has to end up on the same angle.
- */
-export const emitTrackRotation = async (payload: TrackRotationPayload) => {
-  await emit('track-rotation-changed', payload);
+export type TrackRotateDirection = 'cw' | 'ccw';
 
-  await publishRemoteControl('track-rotation', payload).catch(
-    (error: unknown) =>
-      console.error('[events] failed to reach the remote screens:', error)
-  );
-};
-
-export const emitInteractMode = (active: boolean) =>
-  emitToOverlays('interact-mode-changed', active);
+export interface TrackRotationRequest {
+  trackId: string;
+  direction: TrackRotateDirection;
+}
 
 /**
- * Pushes the active layout to every open overlay window.
- *
- * Every window receives the whole widget list, not a per-monitor slice: a
- * widget moved to another monitor has to appear there, and each record names
- * its monitor, so the receiving window draws the ones naming its own. The live
- * widgets are sent rather than the layout's stored copy —
- * the layout is only written back on the debounced commit, which would lag a
- * drag by half a second.
+ * An overlay's rotate button. It asks main for a step rather than sending the
+ * angle it computed: two screens turned in quick succession both start from
+ * the angle they last heard of, and only main, applying the steps in order,
+ * ends up with both turns.
  */
-export const emitActiveLayoutToOverlays = async (
-  monitors: LayoutMonitor[],
-  widgets: WidgetDefaultConfig[],
-  layoutId: string | null
-) => {
-  const labels = await listOverlayWindowLabels();
+export const emitTrackRotationRequest = (request: TrackRotationRequest) =>
+  emitTo(MAIN, 'track-rotation-requested', request);
 
-  for (const monitor of monitors) {
-    const label = monitorLabel(monitor.name);
-
-    if (!labels.includes(label)) continue;
-
-    await emitTo(label, 'widget-settings-updated', {
-      monitorName: monitor.name,
-      widgets,
-      monitors,
-      layoutId,
-      complete: true,
-    } satisfies MonitorWidgetsPayload);
-  }
-};
-
-export const emitWidgetSettingsToMain = (payload: MonitorWidgetsPayload) =>
-  emitTo(MAIN, 'widget-settings-updated', payload);
-
-export const emitSessionLayoutsChanged = (sessionLayouts: SessionLayoutMap) =>
-  emitToOverlays('session-layouts-changed', sessionLayouts);
-
-export const emitAutoSwitchLayoutsChanged = (val: boolean) =>
-  emitToOverlays('auto-switch-layouts-changed', val);
-
-// The overlay never dispatches an action, but it does print the key that leaves
-// interact mode, so a rebind made in main has to reach it.
-export const emitBindingsChanged = (bindings: BindingMap) =>
-  emitToOverlays('bindings-changed', bindings);
+/**
+ * Main's answer to every rotation, broadcast: every overlay plus every remote
+ * screen has to end up on the angle main stored.
+ */
+export const emitTrackRotation = (payload: TrackRotationPayload) =>
+  broadcastControl('track-rotation', payload);
 
 export const emitLayoutActivated = (layoutName: string) =>
-  emit('layout-activated', layoutName);
+  broadcastControl('layout-activated', layoutName);
 
-// Both windows and the backend recorder drop their copy of the track.
 /** A device showing a remote screen connected, resized or went away. */
 export const listenRemoteDevice = (handler: (device: RemoteDevice) => void) =>
   listenTo<RemoteDevice>('remote://device', (event) => handler(event.payload));
 
-export const emitTrackMapClear = () => emit(TRACK_MAP_CLEAR);
+/**
+ * The track's recorded shape was deleted. The backend recorder hears its own
+ * event; every overlay and remote screen drops the shape it draws on the
+ * signal.
+ */
+export const emitTrackMapClear = async () => {
+  await emit(TRACK_MAP_CLEAR);
+  await broadcastControl('track-map-cleared', null);
+};
 
 // Heard by the backend recorder, not by a window.
 export const emitTrackMapForceStart = () => emit('track-map:force-start');

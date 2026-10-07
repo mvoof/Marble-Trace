@@ -8,7 +8,7 @@ import styles from './RemoteWidgetFrame.module.scss';
 import {
   useLiveWidgetsStore,
   useWidgetAutoHideStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 interface RemoteWidgetFrameProps {
   widgetId: string;

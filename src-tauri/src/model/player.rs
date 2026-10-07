@@ -12,7 +12,7 @@ use crate::model::enums::DrsState;
 use crate::model::flags::RaceFlags;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct CarDynamicsFrame {
     /// Vehicle speed in meters/sec
     /// @see https://sajax.github.io/irsdkdocs/telemetry/speed/
@@ -81,7 +81,7 @@ pub struct CarDynamicsFrame {
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct CarInputsFrame {
     /// Throttle pedal position: 0.0 (released) to 1.0 (fully pressed)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/throttle/
@@ -108,7 +108,7 @@ pub struct CarInputsFrame {
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct CarStatusFrame {
     /// Fuel level in liters
     /// @see https://sajax.github.io/irsdkdocs/telemetry/fuellevel/
@@ -366,7 +366,7 @@ pub struct ChassisFrame {
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 pub struct LapTimingFrame {
     /// Current lap number

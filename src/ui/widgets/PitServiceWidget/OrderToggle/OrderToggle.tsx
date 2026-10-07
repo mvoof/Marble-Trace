@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import type { ReactNode } from 'react';
 
 import styles from './OrderToggle.module.scss';
-import { usePitServiceWidgetStore } from '@store/root-store-context';
+import { usePitServiceWidgetStore } from '@store/roots/root-store-context';
 
 interface OrderToggleProps {
   className: string;

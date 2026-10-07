@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import type { Decorator } from '@storybook/react-vite';
 
-import type { RootStore } from '@store/root-store';
-import { useStore } from '@store/root-store-context';
+import type { PreviewCore } from '@store/roots/renderer-core';
+import { usePreviewStore } from '../../.storybook/decorators';
 
 /**
  * Plays a burst of frames into the story's store once the widget is mounted.
@@ -13,9 +13,9 @@ import { useStore } from '@store/root-store-context';
  * and the story shows what a few seconds of driving would have left behind.
  * The same thing the in-app preview does with `seedInputHistory`.
  */
-export const withReplay = (replay: (store: RootStore) => void): Decorator => {
+export const withReplay = (replay: (store: PreviewCore) => void): Decorator => {
   const ReplayDecorator: Decorator = (Story) => {
-    const store = useStore();
+    const store = usePreviewStore();
 
     useEffect(() => {
       replay(store);

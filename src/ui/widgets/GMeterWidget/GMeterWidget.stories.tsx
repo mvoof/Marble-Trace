@@ -4,8 +4,8 @@ import type {
   GMeterColorMode,
   GMeterDisplayMode,
 } from '@/types/widget-settings';
-import { G_ACCEL_MPS2, mockCarDynamics } from '@store/preview/mocks/dynamics';
-import type { RootStore } from '@store/root-store';
+import { G_ACCEL_MPS2, mockCarDynamics } from '@/preview/mocks/dynamics';
+import type { RendererCore } from '@store/roots/renderer-core';
 import { GMeterWidget } from './GMeterWidget';
 import {
   defineWidgetStories,
@@ -76,7 +76,7 @@ const BRAKE_SPAN = 0.62;
 const EXIT_START = 0.55;
 const EXIT_SPAN = 0.45;
 
-const replayCorner = (store: RootStore): void => {
+const replayCorner = (store: RendererCore): void => {
   for (let index = 0; index < CORNER_SAMPLES; index++) {
     const phase = index / SAMPLES_PER_SECOND / CORNER_SECONDS;
     const braking = Math.max(0, Math.cos((phase / BRAKE_SPAN) * (Math.PI / 2)));

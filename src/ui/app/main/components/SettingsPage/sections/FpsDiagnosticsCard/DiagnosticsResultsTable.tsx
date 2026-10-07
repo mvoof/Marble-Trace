@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { WIDGET_BY_ID } from '@store/widget-catalog';
-import { useFpsDiagnosticsStore } from '@store/root-store-context';
+import { WIDGET_BY_ID } from '@store/layout/widget-catalog';
+import { useFpsDiagnosticsStore } from '@store/roots/main-root-context';
 import type { DiagnosticsResult } from '@store/diagnostics/fps-diagnostics.store';
 import type { SampleStats } from '@store/diagnostics/stats';
 import styles from './FpsDiagnosticsCard.module.scss';

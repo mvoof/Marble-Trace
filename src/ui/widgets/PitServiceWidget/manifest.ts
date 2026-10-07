@@ -52,10 +52,6 @@ export const PIT_SERVICE_MANIFEST: WidgetManifest = {
     showRepairs: true,
     showFooter: false,
     alwaysVisible: false,
-    autoFuel: false,
-    autoTires: false,
-    autoTireWearThreshold: 60,
-    fuelAdjustStep: 1,
     commandRevealSeconds: 5,
   },
 };

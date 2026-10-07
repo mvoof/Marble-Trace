@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/roots/renderer-core';
 import {
   PACE_CAR_IDX,
-  mockField,
   mockPaceCarEntry,
-} from '@store/preview/mocks/field';
+  mockPaceCarFrame,
+} from '@/preview/mocks/field';
+import { respaceField } from '@/preview/field-seed';
 import { RelativeMapWidget } from './RelativeMapWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
@@ -19,25 +20,19 @@ const TRACK_SURFACE_ON_TRACK = 3;
 // The map draws one dot per car off its own lap distance, so the field is
 // spread over the whole lap rather than packed into the seconds around the
 // player: a gap of a lap divided by the field is one car every equal step.
-const spreadOverLap = (store: RootStore) => {
-  const base = store.backendComputed.driverEntries;
+const spreadOverLap = (store: RendererCore) => {
+  const carCount = store.backendComputed.fieldEntries.length;
 
-  if (!base || base.entries.length === 0) {
+  if (carCount === 0) {
     return;
   }
 
-  const { driverEntries, relative } = mockField(base.entries, {
-    gapS: LAP_TIME_S / base.entries.length,
-    lapTimeS: LAP_TIME_S,
-  });
-
-  store.backendComputed.updateDriverEntries(driverEntries);
-  store.backendComputed.updateRelative(relative);
+  respaceField(store, { gapS: LAP_TIME_S / carCount, lapTimeS: LAP_TIME_S });
 };
 
 // A safety car reaches the map through the session roster and the per-car
 // arrays rather than as a driver entry, the way the sim reports it.
-const seedPaceCar = (store: RootStore) => {
+const seedPaceCar = (store: RendererCore) => {
   const sessionInfo = store.session.sessionInfo;
   const positions = store.cars.carPositions;
   const player = store.backendComputed.relativeEntries.find(
@@ -72,6 +67,8 @@ const seedPaceCar = (store: RootStore) => {
     car_idx_lap_dist_pct: lapDist,
     car_idx_track_surface: surface,
   });
+
+  store.backendComputed.updatePaceCar(mockPaceCarFrame([PACE_CAR_IDX]));
 };
 
 interface StoryArgs {

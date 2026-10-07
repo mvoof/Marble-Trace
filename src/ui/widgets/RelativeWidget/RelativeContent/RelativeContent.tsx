@@ -8,9 +8,9 @@ import { PaceCarRow } from '@ui/widgets/RelativeWidget/PaceCarRow/PaceCarRow';
 import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
 import {
   useBackendComputedStore,
-  useRelativeWidgetStore,
   useSimStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
+import { useRelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.store';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './RelativeContent.module.scss';

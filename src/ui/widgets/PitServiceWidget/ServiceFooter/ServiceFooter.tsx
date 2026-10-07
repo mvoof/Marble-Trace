@@ -8,7 +8,7 @@ import {
   useBackendComputedStore,
   usePitServiceWidgetStore,
   usePlayerStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 import { PositionBadge } from './PositionBadge/PositionBadge';
 

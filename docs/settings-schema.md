@@ -64,7 +64,7 @@ hydrateStores(root, blob)    ← platform/sync/persistence
       ▼
 decodeLayout / decodeTemplates ← platform/sync/settings-file
       ▼
-mergeWithDefaults(...)       ← store/deep-merge, per widget and for app settings
+mergeWithDefaults(...)       ← store/settings/deep-merge, per widget and for app settings
 ```
 
 Four things about this order matter:

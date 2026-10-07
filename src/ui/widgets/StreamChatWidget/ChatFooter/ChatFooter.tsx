@@ -5,7 +5,7 @@ import { Activity } from 'lucide-react';
 
 import type { ChatPresence } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
-import { useStreamChatWidgetStore } from '@store/root-store-context';
+import { useStreamChatWidgetStore } from '@ui/widgets/StreamChatWidget/stream-chat.store';
 import { PlatformGlyph } from '../PlatformGlyph/PlatformGlyph';
 
 import styles from './ChatFooter.module.scss';

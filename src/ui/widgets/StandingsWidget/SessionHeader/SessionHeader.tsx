@@ -22,8 +22,8 @@ import {
   useBackendComputedStore,
   useCarsStore,
   useSessionStore,
-  useStandingsWidgetStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 // Matches the icon size the footer's stat pills use.
 const STAT_ICON_SIZE_PX = 11;

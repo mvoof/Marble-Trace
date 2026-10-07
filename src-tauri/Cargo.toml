@@ -44,6 +44,8 @@ specta = { version = "2.0.0-rc.22", features = ["derive"], optional = true }
 specta-typescript = { version = "0.0.9", optional = true }
 specta-serde = { version = "0.0.9", optional = true }
 serde_yaml_ng = "0.10"
+# Recorded telemetry tapes (dev feature): gzipped JSON lines.
+flate2 = { version = "1", optional = true }
 bitflags = "2"
 # Companion-app icons: the executable's icon is read through GDI and handed to
 # the UI as a PNG data URL, which needs an encoder and base64 and nothing else.
@@ -93,4 +95,5 @@ dev = [
     "dep:specta",
     "dep:specta-typescript",
     "dep:specta-serde",
+    "dep:flate2",
 ]

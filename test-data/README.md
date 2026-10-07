@@ -10,13 +10,13 @@ Storybook.
 | `telemetry-snapshot-2026-09-07_02-13.json` | iRacing telemetry snapshot — realistic multi-car session (drivers, classes, timing) |
 
 The snapshot is loaded by the neutral preview fixture
-`src/store/preview/sample-telemetry.ts` (globbed as `telemetry-snapshot-*.json`,
+`src/preview/sample-telemetry.ts` (globbed as `telemetry-snapshot-*.json`,
 first match wins) and shared by both the in-app widget preview and Storybook.
 
 > [!NOTE]
 > Specific states (flags, radar traffic, rain, table badges) and the track map
-> are **synthetic** — see `src/store/preview/scenarios.ts` and
-> `src/store/preview/sample-track.ts`. A recorded session can't guarantee those
+> are **synthetic** — see `src/preview/scenarios.ts` and
+> `src/preview/sample-track.ts`. A recorded session can't guarantee those
 > states occur, let alone from the first frame, so they are generated
 > deterministically rather than recorded.
 

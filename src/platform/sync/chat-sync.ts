@@ -4,11 +4,8 @@ import {
   startChatStreamSilent,
   stopChatStreamSilent,
 } from '@platform/services/twitch.service';
-import {
-  emitStreamChatCleared,
-  emitStreamChatFilters,
-} from '@platform/services/events.service';
-import type { RootStore } from '@store/root-store';
+import { emitStreamChatCleared } from '@platform/services/events.service';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 const STREAM_CHAT_WIDGET_ID = 'stream-chat';
 
@@ -21,7 +18,7 @@ const STREAM_CHAT_WIDGET_ID = 'stream-chat';
  * defaults rather than the user's channel.
  */
 export const registerChatReactions = (
-  root: RootStore,
+  root: RendererCore,
   onSave: () => Promise<void>
 ): IReactionDisposer[] => [
   // Restarting on any source change keeps a single code path for "connect" and
@@ -73,8 +70,8 @@ export const registerChatReactions = (
       hideCommands: root.appSettings.appSettings.streamChatHideCommands,
       ignoredBots: root.appSettings.appSettings.streamChatIgnoredBots,
     }),
-    (filters) => {
-      void emitStreamChatFilters(filters);
+    // The overlays read the filters from their snapshot.
+    () => {
       void onSave();
     },
     { equals: comparer.structural }

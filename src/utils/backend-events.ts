@@ -11,11 +11,10 @@
 export const SIM_TELEMETRY_BUNDLE = 'sim://telemetry/bundle';
 
 /**
- * A 4 Hz slice for windows that do not take the bundle. The main window
- * drives layout auto-switching off `is_on_track` and the automatic pit
- * order off the fuel calculation and the sim's own order — subscribing it
- * to 60 Hz telemetry to read four frames at four hertz is not the way to
- * get them.
+ * A 4 Hz slice for windows that do not take the bundle: the player's car
+ * status, which the main window's layout auto-switch reads `is_on_track`
+ * off. Subscribing main to 60 Hz telemetry for one flag at four hertz is
+ * not the way to get it.
  */
 export const SIM_TELEMETRY_SLOW = 'sim://telemetry/slow';
 
@@ -95,6 +94,48 @@ export const INPUT_DEVICES_EVENT = 'input://devices';
  * A controller button edge, for the global input bindings.
  */
 export const INPUT_BUTTON_EVENT = 'input://button';
+
+/**
+ * The overlay's drag and interact modes changed. The hotkey dispatcher
+ * owns them; every window mirrors them.
+ */
+export const OVERLAY_MODES_EVENT = 'app://overlay-modes';
+
+/**
+ * A settings action's key fired. Sent to the main window only, which owns
+ * the settings it writes.
+ */
+export const HOTKEY_SETTINGS_ACTION_EVENT = 'hotkey://settings-action';
+
+/**
+ * A signal to the widgets of every overlay — a hotkey's scroll or class
+ * step, the track map turned, the chat cleared, a layout switched in. The
+ * payload is `{ type: RemoteControlKind, data }`, the very message a
+ * remote screen receives over its socket, so both clients run one handler.
+ */
+export const CLIENT_CONTROL_EVENT = 'client://control';
+
+/**
+ * A perf run's measured span starts: the overlays begin collecting.
+ * Emitted only by a `dev` build running `MARBLE_TRACE_PERF`.
+ */
+export const PERF_BEGIN = 'perf://begin';
+
+/**
+ * A perf run's measured span is over: each overlay sends its report.
+ */
+export const PERF_END = 'perf://end';
+
+/**
+ * A client of the settings (ADR-0007) to main: an overlay's `hello`.
+ * Sent by one webview to another — the backend only carries it.
+ */
+export const CLIENT_TO_MAIN_EVENT = 'client://to-main';
+
+/**
+ * Main to one client of the settings: the snapshot of what it draws.
+ */
+export const CLIENT_FROM_MAIN_EVENT = 'client://from-main';
 
 /**
  * A connected remote device came, went, or reported a new viewport.

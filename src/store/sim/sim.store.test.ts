@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 
-import { RootStore } from '@store/root-store';
+import { MainRoot } from '@store/roots/main-root';
 import type { SavedLayout } from '@/types/widget-settings';
 import { TELEMETRY_EVENT_BITS } from '@/types/telemetry-events';
 
@@ -41,7 +41,7 @@ vi.mock('@platform/services/telemetry.service', () => ({
 vi.mock('@platform/services/track.service', () => ({
   deleteReferenceLap: vi.fn(),
   getCachedTrackShape: vi.fn(),
-  getReferenceLap: vi.fn(),
+  getActiveReferenceLap: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock('@platform/services/settings.service', () => ({
@@ -115,25 +115,25 @@ const lastMaskOf = (spy: typeof setActiveEventsSilent): number => {
 };
 
 /**
- * An overlay window is told apart from main by its hash — see `drawsWidgets`.
+ * An overlay window is told apart from main by its page — see `drawsWidgets`.
  * These run in the node environment, so the window itself is the stub.
  */
-const setWindowHash = (hash: string | null) => {
-  if (hash === null) {
+const setWindowPath = (pathname: string | null) => {
+  if (pathname === null) {
     delete (globalThis as { window?: unknown }).window;
 
     return;
   }
 
-  (globalThis as { window?: unknown }).window = { location: { hash } };
+  (globalThis as { window?: unknown }).window = { location: { pathname } };
 };
 
-const asOverlayWindow = () => setWindowHash('#/overlay');
+const asOverlayWindow = () => setWindowPath('/overlay.html');
 
-const asMainWindow = () => setWindowHash(null);
+const asMainWindow = () => setWindowPath(null);
 
 describe('SimStore active-events mask', () => {
-  let root: RootStore;
+  let root: MainRoot;
 
   beforeEach(() => {
     setActiveEventsSilent.mockClear();
@@ -152,7 +152,7 @@ describe('SimStore active-events mask', () => {
   describe('in an overlay window', () => {
     beforeEach(() => {
       asOverlayWindow();
-      root = new RootStore({ skipInit: true });
+      root = new MainRoot({ skipInit: true });
     });
 
     it('registers only the widgets on its own monitor', () => {
@@ -295,7 +295,10 @@ describe('SimStore active-events mask', () => {
       it('stays registered in drag mode with the game closed', async () => {
         await withOneWidget();
 
-        root.appSettings.setDragMode(true);
+        root.appSettings.applyOverlayModes({
+          dragMode: true,
+          interactMode: false,
+        });
         root.appSettings.setHideWidgetsWhenGameClosed(true);
 
         expect(clearActiveEventsSilent).not.toHaveBeenCalled();
@@ -329,7 +332,7 @@ describe('SimStore active-events mask', () => {
   describe('in the main window', () => {
     beforeEach(() => {
       asMainWindow();
-      root = new RootStore({ skipInit: true });
+      root = new MainRoot({ skipInit: true });
     });
 
     it('computes no mask of its own — the editor contributes nothing', () => {

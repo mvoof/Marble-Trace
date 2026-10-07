@@ -1,9 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import {
-  mockCarStatus,
-  mockHybridCarStatus,
-} from '@store/preview/mocks/engine';
+import { mockCarStatus, mockHybridCarStatus } from '@/preview/mocks/engine';
 import type { DrsState } from '@/types/bindings';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 import { DrsWidget } from './DrsWidget';

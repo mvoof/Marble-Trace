@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Segmented, Select, Switch } from 'antd';
 import type { UnitSystem } from '@/types';
 import type { AppLanguage } from '@/types';
-import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
+import {
+  useAppSettingsStore,
+  useUnitsStore,
+} from '@store/roots/root-store-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 

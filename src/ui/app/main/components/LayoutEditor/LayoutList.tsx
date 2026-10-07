@@ -14,29 +14,31 @@ import {
 } from 'lucide-react';
 import {
   useLayoutsStore,
-  useLiveWidgetsStore,
   useAppSettingsStore,
-  useRemoteDevicesStore,
   useSimStore,
+} from '@store/roots/root-store-context';
+import {
+  useLayoutEditorStore,
   useLayoutGestureStores,
-} from '@store/root-store-context';
+  useMainLiveWidgetsStore,
+  useRemoteDevicesStore,
+} from '@store/roots/main-root-context';
 import { isRemoteMonitor } from '@utils/remote-screen';
 import {
   resolveBackgroundSrc,
   deleteBackgroundImage,
-} from '@store/settings/layout-background';
-import { listOverlayMonitors } from '@platform/sync/overlay-resolution';
+} from '@store/layout/layout-background';
 import {
   monitorsBounds,
   widgetsOnMonitor,
-} from '@store/settings/virtual-desktop';
+} from '@store/layout/virtual-desktop';
 import type { SavedLayout, SessionContext } from '@/types/widget-settings';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import {
   createLayout,
   deleteLayout,
   removeMonitor,
-} from '@store/settings/layout-gestures';
+} from '@store/layout/layout-gestures';
 import styles from './LayoutList.module.scss';
 
 interface LayoutPreviewProps {
@@ -164,10 +166,11 @@ const SESSION_LABEL_KEYS: Record<SessionContext, string> = {
 };
 
 export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
-  const liveWidgets = useLiveWidgetsStore();
+  const liveWidgets = useMainLiveWidgetsStore();
   const layouts = useLayoutsStore();
   const gestureStores = useLayoutGestureStores();
   const remoteDevices = useRemoteDevicesStore();
+  const layoutEditor = useLayoutEditorStore();
   const appSettings = useAppSettingsStore();
   const simStore = useSimStore();
   const { t, i18n } = useTranslation('main-app');
@@ -178,30 +181,11 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
     layouts.editingLayoutId
   );
 
-  // Monitors physically attached right now. A layout can hold configs for
-  // screens that are currently unplugged — those keep their widgets but get no
-  // overlay window, and are shown greyed out.
-  const [onlineMonitorNames, setOnlineMonitorNames] = useState<Set<string>>(
-    new Set()
-  );
-
   useEffect(() => {
-    let active = true;
+    void layoutEditor.refreshOnlineMonitors();
+  }, [layoutEditor]);
 
-    listOverlayMonitors()
-      .then((monitors) => {
-        if (active) {
-          setOnlineMonitorNames(
-            new Set(monitors.map((monitor) => monitor.name))
-          );
-        }
-      })
-      .catch(console.error);
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { onlineMonitorNames } = layoutEditor;
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newLayoutName, setNewLayoutName] = useState('');

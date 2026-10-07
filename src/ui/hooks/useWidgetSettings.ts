@@ -1,6 +1,6 @@
 import { use } from 'react';
 
-import { useLiveWidgetsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/roots/root-store-context';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import type {
   BaseUserSettings,

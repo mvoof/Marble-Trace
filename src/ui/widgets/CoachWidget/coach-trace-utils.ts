@@ -288,3 +288,56 @@ export const traceValueRange = (
 
   return Number.isFinite(min) && Number.isFinite(max) ? { min, max } : null;
 };
+
+/**
+ * Linearly interpolated reference sample at `lapDistPct`, wrapping across the
+ * lap boundary — for the readouts beside the call; the call itself is the
+ * telemetry thread's (`computations/coach.rs`, which interpolates the same way). Buckets store the value for the *interval* `[i/N, (i+1)/N)`,
+ * so each bucket's value is treated as located at the interval center
+ * `(i + 0.5)/N`; the continuous position between two centers is
+ *
+ *   x = lapDistPct * N - 0.5,   t = frac(x)
+ *   value = sample[floor(x)] * (1 - t) + sample[floor(x) + 1] * t
+ *
+ * At ~5 m per bucket a car at 80 m/s crosses more than a bucket per 60 Hz
+ * frame — nearest-bucket lookup steps by up to a full bucket, interpolation
+ * removes that quantization from speed/throttle comparisons.
+ */
+export const interpolateReferenceSample = (
+  samples: ReferenceLapSample[],
+  lapDistPct: number
+): ReferenceLapSample | null => {
+  const bucketCount = samples.length;
+
+  if (bucketCount === 0) return null;
+
+  const position = lapDistPct * bucketCount - 0.5;
+  const lowerBucket =
+    ((Math.floor(position) % bucketCount) + bucketCount) % bucketCount;
+  const upperBucket = (lowerBucket + 1) % bucketCount;
+  const t = position - Math.floor(position);
+
+  const lower = samples[lowerBucket];
+  const upper = samples[upperBucket];
+
+  if (!lower || !upper) return lower ?? upper ?? null;
+
+  const lerp = (a: number, b: number) => a * (1 - t) + b * t;
+  // `longAccel` is optional in bindings (serde(default) on the Rust side) — normalize undefined to null.
+  const lerpNullable = (
+    a: number | null | undefined,
+    b: number | null | undefined
+  ) => (a != null && b != null ? lerp(a, b) : (a ?? b ?? null));
+
+  return {
+    speed: lerp(lower.speed, upper.speed),
+    throttle: lerp(lower.throttle, upper.throttle),
+    brake: lerp(lower.brake, upper.brake),
+    latAccel: lerpNullable(lower.latAccel, upper.latAccel),
+    longAccel: lerpNullable(lower.longAccel, upper.longAccel),
+    steeringWheelAngle: lerp(
+      lower.steeringWheelAngle,
+      upper.steeringWheelAngle
+    ),
+  };
+};

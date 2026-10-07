@@ -3,9 +3,9 @@
 /// Runs on a dedicated OS thread — kerb's `IRsdkConnection` is `!Send`
 /// (RefCell + raw shared-memory pointers). All kerb usage is encapsulated
 /// inside `IracingSource`.
-use std::collections::HashMap;
-use std::sync::atomic::{AtomicI32, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::atomic::Ordering;
+use std::sync::mpsc::Receiver;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use tauri::{AppHandle, Emitter, Manager};
@@ -13,21 +13,21 @@ use tauri::{AppHandle, Emitter, Manager};
 use crate::utils::lock_or_recover;
 use tracing::{debug, info, warn};
 
-use crate::model::reference_lap::{StoredReferenceTimes, TrackCondition};
-
+use super::control::{TelemetryCommand, TelemetryRun};
 use super::emitter::{
-    emit_domain_frames, reference_lap_key, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED,
-    EVENT_SESSION_INFO, EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
+    emit_domain_frames, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_SESSION_INFO,
+    EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
 };
+use super::io_worker::{IoWorker, SessionUpdate};
+use super::loop_state::LoopState;
 use super::scheduler::EmitScheduler;
 use super::state::TelemetryServiceState;
-use crate::computations::{driver_entries, ProcessorRegistry};
+use crate::computations::ProcessorCommand;
 use crate::model::capabilities::CapabilitiesPayload;
 use crate::model::enums::{SimStatus, SimType};
-use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::TrackShapePayload;
 use crate::sources::create_source;
-use crate::sources::source::{ParsedSession, SourceReadResult, TelemetrySource};
+use crate::sources::source::{SourceReadResult, TelemetrySource};
 
 const CONNECT_RETRY_DELAY: Duration = Duration::from_secs(1);
 /// How long a single `wait_for_data` call blocks before we re-check state.
@@ -40,16 +40,22 @@ const SESSION_POLL_TICKS: u64 = 30;
 pub fn spawn_telemetry_thread(
     app: AppHandle,
     service: Arc<TelemetryServiceState>,
-    registry: Arc<Mutex<ProcessorRegistry>>,
-    fuel_tuning: Arc<crate::telemetry::state::FuelTuning>,
+    run: TelemetryRun,
 ) -> Result<(), String> {
     let spawn_result = std::thread::Builder::new()
         .name("telemetry-runtime".into())
         .spawn(move || {
             info!("Telemetry thread started");
 
+            let TelemetryRun {
+                id: run,
+                commands,
+                config,
+            } = run;
+            let mut state = LoopState::new(config);
+
             loop {
-                if !service.running.load(Ordering::SeqCst) {
+                if !service.is_current(run) {
                     info!("Telemetry thread stopping (service not running)");
                     break;
                 }
@@ -59,12 +65,13 @@ pub fn spawn_telemetry_thread(
                     &SimStatus {
                         status: "waiting".into(),
                         sim: None,
+                        replay: None,
                     },
                 )
                 .ok();
                 info!("Waiting for telemetry connection...");
 
-                let Some(mut source) = wait_for_connection(&service) else {
+                let Some(mut source) = wait_for_connection(&service, run) else {
                     return;
                 };
 
@@ -77,19 +84,23 @@ pub fn spawn_telemetry_thread(
                     warn!("Failed to emit capabilities: {e}");
                 }
 
-                run_telemetry_loop(
-                    &app,
-                    source.as_mut(),
-                    &service,
-                    &registry,
-                    &fuel_tuning,
+                let session = LoopSession {
+                    run,
+                    commands: &commands,
                     capabilities,
-                );
+                };
+
+                run_telemetry_loop(&app, source.as_mut(), &service, &mut state, session);
+
+                if service.is_superseded(run) {
+                    info!("Telemetry thread stopping (a newer run took over)");
+                    break;
+                }
 
                 info!("Telemetry loop ended, will retry connection...");
-                reset_telemetry_state(&app, &service, &registry);
+                reset_telemetry_state(&app, &service, &mut state);
 
-                if !service.running.load(Ordering::SeqCst) {
+                if !service.is_current(run) {
                     break;
                 }
 
@@ -108,9 +119,12 @@ pub fn spawn_telemetry_thread(
         .map_err(|e| format!("Failed to spawn telemetry thread: {e}"))
 }
 
-fn wait_for_connection(service: &TelemetryServiceState) -> Option<Box<dyn TelemetrySource>> {
+fn wait_for_connection(
+    service: &TelemetryServiceState,
+    run: u64,
+) -> Option<Box<dyn TelemetrySource>> {
     loop {
-        if !service.running.load(Ordering::SeqCst) {
+        if !service.is_current(run) {
             return None;
         }
 
@@ -122,21 +136,29 @@ fn wait_for_connection(service: &TelemetryServiceState) -> Option<Box<dyn Teleme
     }
 }
 
+/// What one connection's loop runs with besides the state it carries over.
+struct LoopSession<'a> {
+    run: u64,
+    commands: &'a Receiver<TelemetryCommand>,
+    capabilities: crate::capabilities::Capabilities,
+}
+
 fn run_telemetry_loop(
     app: &AppHandle,
     source: &mut dyn TelemetrySource,
-    service: &Arc<TelemetryServiceState>,
-    registry: &Arc<Mutex<ProcessorRegistry>>,
-    fuel_tuning: &Arc<crate::telemetry::state::FuelTuning>,
-    capabilities: crate::capabilities::Capabilities,
+    service: &TelemetryServiceState,
+    state: &mut LoopState,
+    session: LoopSession<'_>,
 ) {
     let mut tick: u64 = 0;
     let mut is_waiting = false;
     let mut missed_waits: u32 = 0;
     let mut scheduler = EmitScheduler::new();
+    let io = spawn_io_worker(app, source);
+    let sends_pit_orders = source.replay_name().is_none();
 
     loop {
-        if !service.running.load(Ordering::SeqCst) {
+        if !service.is_current(session.run) {
             debug!("Stream stopped by user");
 
             return;
@@ -155,6 +177,7 @@ fn run_telemetry_loop(
                         &SimStatus {
                             status: "waiting".into(),
                             sim: Some(source.sim_type()),
+                            replay: source.replay_name(),
                         },
                     )
                     .ok();
@@ -180,14 +203,29 @@ fn run_telemetry_loop(
                 &SimStatus {
                     status: "connected".into(),
                     sim: Some(source.sim_type()),
+                    replay: source.replay_name(),
                 },
             )
             .ok();
         }
 
+        // Timed from here rather than around the emit alone: applying a
+        // session is tick work too, and the reason it moved off this thread.
+        let started = Instant::now();
+
+        for command in session.commands.try_iter() {
+            state.apply(command, service);
+        }
+
+        // Applied before the processors run, so a session that is parsed by
+        // now is the one this tick computes on.
+        for update in io.parsed_sessions() {
+            apply_session_update(app, update, service, state);
+        }
+
         if (tick == 1 || tick.is_multiple_of(SESSION_POLL_TICKS)) && source.session_changed() {
-            if let Some(parsed) = source.poll_session() {
-                apply_session_update(app, parsed, service);
+            if let Some(yaml) = source.poll_session() {
+                io.parse_session(yaml);
             }
         }
 
@@ -205,36 +243,67 @@ fn run_telemetry_loop(
                 &SimStatus {
                     status: "connected".into(),
                     sim: Some(source.sim_type()),
+                    replay: source.replay_name(),
                 },
             )
             .ok();
         }
 
         let due = scheduler.due(Instant::now());
-        let fuel_settings = fuel_tuning.snapshot();
 
         let ctx = EmitContext {
             app,
+            io: &io,
             frame: &frame,
             due,
             service,
-            registry,
-            fuel_settings,
-            capabilities,
+            state,
+            capabilities: session.capabilities,
+            sends_pit_orders,
         };
 
-        emit_domain_frames(ctx);
+        let measuring = emit_domain_frames(ctx);
+        let elapsed = started.elapsed().saturating_sub(measuring);
+
+        lock_or_recover(&service.tick_timings).record(elapsed);
     }
 }
 
-fn apply_session_update(app: &AppHandle, parsed: ParsedSession, service: &TelemetryServiceState) {
+/// The worker answering this connection's sessions and writing its files.
+fn spawn_io_worker(app: &AppHandle, source: &dyn TelemetrySource) -> IoWorker {
+    let data_dir = app
+        .path()
+        .app_data_dir()
+        .inspect_err(|e| warn!("No app data dir, tracks and laps are not stored: {e}"))
+        .ok();
+    let emitting_app = app.clone();
+
+    IoWorker::spawn(
+        data_dir,
+        source.session_parser(),
+        Box::new(move |payload: &TrackShapePayload| {
+            if let Err(e) = emitting_app.emit(EVENT_TRACK_SHAPE, payload) {
+                warn!("Failed to re-emit track shape after pit pct patch: {}", e);
+            }
+        }),
+    )
+}
+
+fn apply_session_update(
+    app: &AppHandle,
+    update: SessionUpdate,
+    service: &TelemetryServiceState,
+    state: &mut LoopState,
+) {
+    let SessionUpdate {
+        parsed,
+        cached_track,
+        stored_references,
+    } = update;
     let snapshot = parsed.snapshot;
     let new_track_id = snapshot.track_id;
 
-    let prev_track_id = {
-        let prev = lock_or_recover(&service.last_session_info);
-        prev.as_deref().map(|s| s.track_id)
-    };
+    let prev_track_id = state.session.as_deref().map(|s| s.track_id);
 
     info!(
         track = %snapshot.track_display_name,
@@ -245,32 +314,46 @@ fn apply_session_update(app: &AppHandle, parsed: ParsedSession, service: &Teleme
     // session number — which repeats across events. Drop the old one first or the
     // stale grid wins.
     if prev_track_id.is_some_and(|track_id| track_id != new_track_id) {
-        clear_start_positions(service);
+        state.clear_start_positions();
     }
 
-    update_start_positions(
-        &snapshot,
-        &service.start_positions,
-        &service.start_positions_session_num,
-    );
-
-    if let Ok(mut lock) = service.track_length_m.lock() {
-        *lock = Some(snapshot.track_length_m);
-    }
+    state.update_start_positions(&snapshot);
+    state.track_length_m = Some(snapshot.track_length_m);
 
     if let Err(e) = app.emit(EVENT_SESSION_INFO, &snapshot) {
         warn!("Failed to emit session info: {}", e);
     }
 
-    if let Ok(mut lock) = service.last_session_info.lock() {
-        *lock = Some(Arc::new(snapshot));
+    let snapshot = Arc::new(snapshot);
+
+    state.session = Some(Arc::clone(&snapshot));
+    service.publish_session(Some(Arc::clone(&snapshot)));
+
+    // The worker reads the shape only on a track change, judged against the
+    // session it parsed before — the same one applied here before this.
+    if let Some(payload) = cached_track {
+        apply_cached_track(app, payload, state);
     }
 
-    if prev_track_id != Some(new_track_id) {
-        try_load_and_emit_track(app, new_track_id, service);
-    }
+    let player_car = snapshot
+        .cars
+        .iter()
+        .find(|car| car.car_idx == snapshot.player_car_idx)
+        .map(|car| car.car_screen_name.as_str())
+        .unwrap_or_default();
+    let change = state.references.load(
+        snapshot.track_id,
+        player_car,
+        stored_references,
+        state.track_wetness,
+    );
 
-    refresh_stored_reference_lap_time(app, service);
+    state.note_reference(change);
+    state
+        .registry
+        .command(ProcessorCommand::StoredReferenceTimes(
+            state.references.stored_times(),
+        ));
 
     if !parsed.weather_forecast.is_empty() {
         debug!(
@@ -284,210 +367,34 @@ fn apply_session_update(app: &AppHandle, parsed: ParsedSession, service: &Teleme
     }
 }
 
-fn reset_telemetry_state(
-    app: &AppHandle,
-    service: &Arc<TelemetryServiceState>,
-    registry: &Arc<Mutex<ProcessorRegistry>>,
-) {
+fn reset_telemetry_state(app: &AppHandle, service: &TelemetryServiceState, state: &mut LoopState) {
     service.is_connected.store(false, Ordering::Relaxed);
-
-    if let Ok(mut lock) = service.last_session_info.lock() {
-        *lock = None;
-    }
-
-    if let Ok(mut lock) = service.track_length_m.lock() {
-        *lock = None;
-    }
-
-    // Without qualifying data the grid is snapshotted once per session number, and those
-    // repeat from event to event — a stale grid would survive the reconnect and silently
-    // become the baseline for the next race's gain/loss column.
-    clear_start_positions(service);
-
-    if let Ok(mut reg) = registry.lock() {
-        reg.reset_all();
-    }
-
-    // The windows drop their frames on disconnect, so nothing held back may be
-    // treated as still delivered — the next connection republishes in full.
-    lock_or_recover(&service.publications).reset();
-
-    service
-        .car_class_count
-        .store(0, std::sync::atomic::Ordering::Relaxed);
+    service.publish_session(None);
+    service.publish_active_reference(None);
+    state.reset_connection();
 
     app.emit(
         EVENT_STATUS,
         &SimStatus {
             status: "disconnected".into(),
             sim: None,
+            replay: None,
         },
     )
     .ok();
     app.emit(EVENT_DISCONNECTED, &()).ok();
 }
 
-/// Reads a previously recorded track shape from disk. Returns `None` when no
-/// cached file exists for this track or it was written by an older version.
-///
-/// Shared with the `get_cached_track_shape` command, which re-hydrates windows
-/// that subscribed after the one-shot `sim://track-shape` emit.
-pub fn load_cached_track_shape(app: &AppHandle, track_id: i32) -> Option<TrackShapePayload> {
-    use std::fs;
-
-    #[derive(serde::Deserialize)]
-    struct StoredTrack {
-        version: u32,
-        #[serde(flatten)]
-        payload: TrackShapePayload,
-    }
-
-    let data_dir = app.path().app_data_dir().ok()?;
-    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
-    let json = fs::read_to_string(&path).ok()?;
-    let stored = serde_json::from_str::<StoredTrack>(&json).ok()?;
-
-    if stored.version < 1 {
-        return None;
-    }
-
-    Some(stored.payload)
-}
-
-fn try_load_and_emit_track(app: &AppHandle, track_id: i32, service: &TelemetryServiceState) {
-    let Some(payload) = load_cached_track_shape(app, track_id) else {
-        return;
-    };
-
-    if let Ok(mut lock) = service.pit_in_pct.lock() {
-        *lock = payload.pit_in_pct;
-    }
-    if let Ok(mut lock) = service.pit_exit_pct.lock() {
-        *lock = payload.pit_exit_pct;
-    }
+fn apply_cached_track(app: &AppHandle, payload: TrackShapePayload, state: &mut LoopState) {
+    state.pit_in_pct = payload.pit_in_pct;
+    state.pit_exit_pct = payload.pit_exit_pct;
 
     if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &payload) {
         warn!("Failed to emit cached track shape: {}", e);
     }
 
-    // Signal TrackShapeProcessor to skip re-recording since the track already exists.
-    service.track_cached.store(track_id, Ordering::Relaxed);
-}
-
-/// Reads the lap time of the persisted reference lap for the current track+car
-/// and publishes it for ReferenceLapProcessor, so a slower session best never
-/// overwrites a faster stored reference.
-fn refresh_stored_reference_lap_time(app: &AppHandle, service: &TelemetryServiceState) {
-    use std::fs;
-
-    #[derive(serde::Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct StoredLapTime {
-        lap_time: f32,
-    }
-
-    let identity = {
-        let lock = lock_or_recover(&service.last_session_info);
-        lock.as_deref().map(|session| {
-            let car_screen_name = session
-                .cars
-                .iter()
-                .find(|car| car.car_idx == session.player_car_idx)
-                .map(|car| car.car_screen_name.clone())
-                .unwrap_or_default();
-            (session.track_id, car_screen_name)
-        })
-    };
-
-    let Some((track_id, car_screen_name)) = identity else {
-        return;
-    };
-
-    let Ok(data_dir) = app.path().app_data_dir() else {
-        return;
-    };
-
-    let read_time = |condition: TrackCondition| {
-        let key = reference_lap_key(track_id, &car_screen_name, condition);
-
-        fs::read_to_string(data_dir.join("reference_laps").join(format!("{key}.json")))
-            .ok()
-            .and_then(|json| serde_json::from_str::<StoredLapTime>(&json).ok())
-            .map(|stored| stored.lap_time)
-            .filter(|lap_time| *lap_time > 0.0)
-    };
-
-    // Both conditions are read up front: the weather can turn at any point in
-    // the session, and the processor must already know what a wet lap has to
-    // beat by the time one is driven.
-    let stored = StoredReferenceTimes {
-        dry: read_time(TrackCondition::Dry),
-        wet: read_time(TrackCondition::Wet),
-    };
-
-    if let Ok(mut lock) = service.stored_reference_lap_time.lock() {
-        *lock = stored;
-    }
-}
-
-/// Forgets the cached grid, so the next session snapshots its own.
-/// `-1` is the "never populated" marker, matching the initial state in `lib.rs`.
-fn clear_start_positions(service: &TelemetryServiceState) {
-    if let Ok(mut lock) = service.start_positions.lock() {
-        lock.clear();
-    }
-
-    service
-        .start_positions_session_num
-        .store(-1, Ordering::Relaxed);
-}
-
-/// Updates start_positions from QualifyResultsInfo (the pre-race grid order).
-/// Falls back to ResultsPositions only when qualify data is absent AND start_positions has
-/// not yet been populated for this session — preventing live race order from overwriting
-/// the initial grid on repeated session-info updates.
-fn update_start_positions(
-    session: &SessionSnapshot,
-    start_positions: &Mutex<HashMap<i32, (i32, i32)>>,
-    last_session_num: &AtomicI32,
-) {
-    let session_num = session.current_session_num;
-
-    // Qualify results are immutable — always safe to refresh from them.
-    if !session.qualify_results.is_empty() {
-        let new_positions =
-            driver_entries::parse_start_positions_from_qualify(&session.qualify_results);
-        if let Ok(mut lock) = start_positions.lock() {
-            *lock = new_positions;
-        }
-        last_session_num.store(session_num, Ordering::Relaxed);
-        return;
-    }
-
-    // No qualify data: use ResultsPositions, but only once per session.
-    // ResultsPositions reflects live race order after the race starts, so re-applying it
-    // on subsequent session-info updates would overwrite the starting grid with current pos.
-    let session_changed = last_session_num.swap(session_num, Ordering::Relaxed) != session_num;
-
-    if !session_changed {
-        if let Ok(lock) = start_positions.lock() {
-            if !lock.is_empty() {
-                return;
-            }
-        }
-    }
-
-    let current_num = session_num as usize;
-    let results = session
-        .sessions
-        .get(current_num)
-        .map(|s| s.results_positions.as_slice())
-        .unwrap_or(&[]);
-
-    let new_positions = driver_entries::parse_start_positions(results);
-    if !new_positions.is_empty() {
-        if let Ok(mut lock) = start_positions.lock() {
-            *lock = new_positions;
-        }
-    }
+    // Tells TrackShapeProcessor to skip re-recording since the track already exists.
+    state
+        .registry
+        .command(ProcessorCommand::TrackCached(payload.track_id));
 }

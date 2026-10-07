@@ -5,6 +5,7 @@ mod chat;
 mod commands;
 mod companions;
 mod computations;
+mod hotkeys;
 mod input;
 mod logging;
 mod model;
@@ -19,30 +20,37 @@ use chat::commands::{
     twitch_poll_device_token, twitch_request_device_code, twitch_sign_out,
 };
 use chat::state::{ChatServiceState, ChatState};
+#[cfg(feature = "dev")]
+use commands::perf::{get_perf_run, submit_overlay_perf};
 use commands::{
     backup_settings_file, check_install_integrity, clear_active_events, clear_remote_active_events,
     close_companion_app, close_companion_apps, companion_app_icon, companion_app_statuses,
     delete_reference_lap, delete_settings_file, delete_track_shape, detect_companion_apps,
-    get_cached_track_shape, get_connection_status, get_delivery_counters, get_inspector_frame,
-    get_last_session_info, get_reference_lap, launch_companion_app, log_settings_snapshot,
-    reset_delivery_counters, reset_pit_lane_pct, send_pit_order, set_active_events, set_car_length,
-    set_fuel_avg_window, set_fuel_count_yellow_laps, set_inspector_active, set_pit_warning_laps,
-    set_remote_active_events, settings_file_exists, start_telemetry_stream, stop_telemetry_stream,
+    get_active_reference_lap, get_cached_track_shape, get_connection_status, get_delivery_counters,
+    get_inspector_frame, get_last_session_info, get_tick_summary, launch_companion_app,
+    log_settings_snapshot, reset_delivery_counters, reset_pit_lane_pct, run_pit_action,
+    set_active_events, set_car_length, set_fuel_avg_window, set_fuel_count_yellow_laps,
+    set_inspector_active, set_pit_strategy, set_pit_warning_laps, set_remote_active_events,
+    settings_file_exists, start_telemetry_stream, stop_telemetry_stream, toggle_pit_auto,
 };
 use companions::CompanionsState;
-use computations::ProcessorRegistry;
+use hotkeys::commands::{
+    get_overlay_modes, set_drag_mode, set_hotkey_bindings, set_hotkey_context, set_interact_mode,
+};
+use hotkeys::{on_device_edge, HotkeyState};
 use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
 use input::InputRuntime;
 use remote::commands::{
     get_remote_devices, get_remote_server_info, publish_remote_control, publish_remote_snapshot,
     remote_screen_url, start_remote_server, stop_remote_server, RemoteState,
 };
-use telemetry::delivery::DeliveryCounters;
+use telemetry::control::TelemetryCommand;
+#[cfg(feature = "dev")]
+use telemetry::perf_run::{spawn_if_requested, PerfRunConfig, PerfRunState};
 use telemetry::state::TelemetryState;
 use utils::lock_or_recover;
 
-use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tauri::{generate_context, generate_handler, Builder, Listener, Manager, WindowEvent};
 use tauri_plugin_aptabase::EventTracker;
 use tauri_plugin_store::StoreExt;
@@ -53,27 +61,6 @@ pub fn run() {
     bindings::export();
 
     let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
-    let force_track_start = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let reset_pit_pcts = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let track_cached = std::sync::Arc::new(std::sync::atomic::AtomicI32::new(-1));
-    let reset_track_shape = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-
-    let force_track_start_listener = std::sync::Arc::clone(&force_track_start);
-    let force_track_start_registry = std::sync::Arc::clone(&force_track_start);
-    let reset_pit_pcts_registry = std::sync::Arc::clone(&reset_pit_pcts);
-    let reset_pit_pcts_state = std::sync::Arc::clone(&reset_pit_pcts);
-    let track_cached_registry = std::sync::Arc::clone(&track_cached);
-    let track_cached_service = std::sync::Arc::clone(&track_cached);
-    let reset_track_shape_listener = std::sync::Arc::clone(&reset_track_shape);
-    let reset_track_shape_registry = reset_track_shape;
-    let reset_reference_lap = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let reset_reference_lap_registry = std::sync::Arc::clone(&reset_reference_lap);
-    let reset_reference_lap_state = reset_reference_lap;
-    let stored_reference_lap_time = std::sync::Arc::new(Mutex::new(
-        crate::model::reference_lap::StoredReferenceTimes::default(),
-    ));
-    let stored_reference_lap_time_registry = std::sync::Arc::clone(&stored_reference_lap_time);
-    let stored_reference_lap_time_service = stored_reference_lap_time;
 
     let builder = Builder::default()
         .plugin(
@@ -112,16 +99,27 @@ pub fn run() {
             remote::mirror::attach(app.handle(), std::sync::Arc::clone(&remote_state.hub));
             app.manage(remote_state);
 
+            #[cfg(feature = "dev")]
             {
-                let flag = force_track_start_listener;
+                app.manage(PerfRunState {
+                    config: PerfRunConfig::from_env(),
+                    ..Default::default()
+                });
+                spawn_if_requested(app.handle());
+            }
+
+            {
+                let handle = app.handle().clone();
                 app.listen("track-map:force-start", move |_| {
-                    flag.store(true, std::sync::atomic::Ordering::Relaxed);
+                    let telemetry = handle.state::<TelemetryState>();
+                    telemetry.service.send(TelemetryCommand::ForceTrackStart);
                 });
             }
             {
-                let flag = reset_track_shape_listener;
+                let handle = app.handle().clone();
                 app.listen("track-map:clear", move |_| {
-                    flag.store(true, std::sync::atomic::Ordering::Relaxed);
+                    let telemetry = handle.state::<TelemetryState>();
+                    telemetry.service.send(TelemetryCommand::ClearTrackShape);
                 });
             }
 
@@ -153,7 +151,7 @@ pub fn run() {
             // main window's HWND for background cooperative level, and that
             // only exists once the windows have been created.
             app.manage(InputState {
-                runtime: Some(InputRuntime::start(app.handle().clone())),
+                runtime: Some(InputRuntime::start(app.handle().clone(), on_device_edge)),
             });
 
             Ok(())
@@ -180,19 +178,26 @@ pub fn run() {
             get_inspector_frame,
             get_delivery_counters,
             reset_delivery_counters,
+            get_tick_summary,
+            #[cfg(feature = "dev")]
+            get_perf_run,
+            #[cfg(feature = "dev")]
+            submit_overlay_perf,
             set_car_length,
             get_connection_status,
             delete_track_shape,
             get_cached_track_shape,
             reset_pit_lane_pct,
-            get_reference_lap,
+            get_active_reference_lap,
             delete_reference_lap,
             log_settings_snapshot,
             backup_settings_file,
             settings_file_exists,
             delete_settings_file,
             check_install_integrity,
-            send_pit_order,
+            run_pit_action,
+            set_pit_strategy,
+            toggle_pit_auto,
             start_chat_stream,
             stop_chat_stream,
             twitch_request_device_code,
@@ -202,6 +207,11 @@ pub fn run() {
             twitch_sign_out,
             resolve_input_devices,
             set_input_polling_enabled,
+            set_hotkey_bindings,
+            set_hotkey_context,
+            set_drag_mode,
+            set_interact_mode,
+            get_overlay_modes,
             detect_companion_apps,
             companion_app_statuses,
             launch_companion_app,
@@ -213,39 +223,8 @@ pub fn run() {
         .manage(ChatState {
             service: Arc::new(ChatServiceState::new()),
         })
-        .manage(TelemetryState {
-            service: Arc::new(telemetry::state::TelemetryServiceState {
-                running: AtomicBool::new(false),
-                is_connected: AtomicBool::new(false),
-                last_session_info: Mutex::new(None),
-                start_positions: Mutex::new(std::collections::HashMap::new()),
-                start_positions_session_num: AtomicI32::new(-1),
-                track_length_m: Mutex::new(None),
-                pit_in_pct: Mutex::new(None),
-                pit_exit_pct: Mutex::new(None),
-                live_pit_in_pct: Mutex::new(None),
-                masks: telemetry::masks::MaskRegistry::bootstrapped(),
-                publications: Default::default(),
-                inspector_active: AtomicBool::new(false),
-                car_class_count: AtomicU32::new(0),
-                delivery: Mutex::new(DeliveryCounters::with_broadcast()),
-                inspector_frame: Mutex::new(None),
-                car_length_m: Mutex::new(model::defaults::DEFAULT_CAR_LENGTH_M),
-                track_cached: track_cached_service,
-                stored_reference_lap_time: stored_reference_lap_time_service,
-            }),
-            registry: Arc::new(Mutex::new(ProcessorRegistry::new(
-                force_track_start_registry,
-                reset_pit_pcts_registry,
-                track_cached_registry,
-                reset_track_shape_registry,
-                reset_reference_lap_registry,
-                stored_reference_lap_time_registry,
-            ))),
-            fuel_tuning: Arc::new(crate::telemetry::state::FuelTuning::default()),
-            reset_pit_pcts: reset_pit_pcts_state,
-            reset_reference_lap: reset_reference_lap_state,
-        })
+        .manage(TelemetryState::default())
+        .manage(HotkeyState::default())
         .on_window_event(|window, event| match event {
             WindowEvent::Destroyed => {
                 tracing::info!(window = window.label(), "window destroyed");

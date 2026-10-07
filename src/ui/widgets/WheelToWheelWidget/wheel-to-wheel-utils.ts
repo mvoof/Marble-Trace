@@ -1,6 +1,6 @@
-import type { DriverEntry } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import { TrackSurface } from '@/types';
-import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
+import { computeRelativeGap } from '@utils/driver';
 
 /** Segments in each speed bar. */
 export const SPEED_SEGMENT_COUNT = 7;

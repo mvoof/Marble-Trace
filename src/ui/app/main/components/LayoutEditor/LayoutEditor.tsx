@@ -37,24 +37,26 @@ import {
 import {
   useAppSettingsStore,
   useLayoutsStore,
+} from '@store/roots/root-store-context';
+import {
   useLayoutEditorStore,
-  useLiveWidgetsStore,
   useLayoutGestureStores,
-} from '@store/root-store-context';
+  useMainLiveWidgetsStore,
+} from '@store/roots/main-root-context';
 import {
   SESSION_PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,
-} from '@store/preview/scenarios';
+} from '@/preview/scenarios';
 import { LayoutCanvas } from './LayoutCanvas';
 import { LayoutWidgetPanel } from './LayoutWidgetPanel';
 import { LayoutList } from './LayoutList';
 import {
   saveBackgroundImage,
   deleteBackgroundImage,
-} from '@store/settings/layout-background';
+} from '@store/layout/layout-background';
 import { isRemoteMonitor } from '@utils/remote-screen';
 import { AddRemoteScreenButton } from './AddRemoteScreenButton';
-import { monitorForWidget } from '@store/settings/virtual-desktop';
+import { monitorForWidget } from '@store/layout/virtual-desktop';
 import { useToolbarBottom } from './use-toolbar-bottom';
 import { WidgetInspector } from './WidgetInspector';
 import type { SnapPosition } from './snap-position';
@@ -62,7 +64,7 @@ import {
   createLayout,
   deleteLayout,
   removeMonitor,
-} from '@store/settings/layout-gestures';
+} from '@store/layout/layout-gestures';
 import styles from './LayoutEditor.module.scss';
 
 const SNAP_MARGIN = 8;
@@ -93,7 +95,7 @@ export const LayoutEditor = observer(
     mode?: 'list' | 'editor';
     onModeChange?: (mode: 'list' | 'editor') => void;
   }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const layouts = useLayoutsStore();
     const { modal } = App.useApp();
     const gestureStores = useLayoutGestureStores();

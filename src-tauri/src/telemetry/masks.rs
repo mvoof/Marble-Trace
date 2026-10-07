@@ -122,7 +122,7 @@ impl MaskRegistry {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::telemetry::state::{EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_PROXIMITY};
+    use crate::model::telemetry_events::{EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_PROXIMITY};
 
     /// Nothing is stripped from a bundle assembled before the first window has
     /// registered, which is what the atomic this replaced did with 0xFFFFFFFF.

@@ -252,3 +252,127 @@ describe('v6 — widgets stored under their monitor', () => {
     expect(migrated['layouts']).toEqual([null, 'x']);
   });
 });
+
+describe('v6 — pit strategy moves to app', () => {
+  const STRATEGY = {
+    autoFuel: true,
+    autoTires: true,
+    autoTireWearThreshold: 40,
+    fuelAdjustStep: 5,
+  };
+
+  const pitOn = (x: number, settings: Record<string, unknown>) =>
+    widget('pit-service', { x, y: 100, ...settings });
+
+  const pitSettingsOf = (blob: Record<string, unknown>) =>
+    monitorsOf(blob)
+      .flatMap((monitor) => monitor.widgets)
+      .filter((stored) => stored['type'] === 'pit-service')
+      .map((stored) => stored['settings']);
+
+  it('takes the rules from the pit box on the driver’s monitor, not the stream', () => {
+    const tablet = {
+      name: 'Stream',
+      kind: 'remote',
+      slug: 'stream',
+      bounds: { x: 0, y: 1080, width: 1280, height: 800 },
+    };
+
+    const migrated = v6PerMonitorWidgets.migrate({
+      app: { language: 'en' },
+      activeLayoutId: 'race',
+      layouts: [
+        {
+          id: 'race',
+          monitors: [{ name: 'LEFT', bounds: LEFT }, tablet],
+          widgets: [
+            // Listed first, and still not the one that decides.
+            {
+              ...widget('pit-service-2', {
+                x: 100,
+                y: 1180,
+                autoFuel: false,
+                autoTireWearThreshold: 80,
+              }),
+              type: 'pit-service',
+            },
+            pitOn(100, STRATEGY),
+          ],
+        },
+      ],
+    });
+
+    expect(migrated['app']).toEqual({
+      language: 'en',
+      pitAutoFuel: true,
+      pitAutoTires: true,
+      pitAutoTireWearThreshold: 40,
+      pitFuelAdjustStep: 5,
+    });
+  });
+
+  it('prefers a switched-on instance and the active layout', () => {
+    const migrated = v6PerMonitorWidgets.migrate({
+      activeLayoutId: 'race',
+      layouts: [
+        twoMonitorLayout([pitOn(100, { autoFuel: true })]),
+        {
+          ...twoMonitorLayout([
+            pitOn(100, { enabled: false, autoFuel: false }),
+            {
+              ...pitOn(2000, { autoFuel: true, fuelAdjustStep: 10 }),
+              id: 'pit-service-2',
+              type: 'pit-service',
+            },
+          ]),
+          id: 'race',
+        },
+      ].reverse(),
+    });
+
+    expect(migrated['app']).toEqual({
+      pitAutoFuel: true,
+      pitFuelAdjustStep: 10,
+    });
+  });
+
+  it('falls back to the template when no layout holds the widget', () => {
+    const migrated = v6PerMonitorWidgets.migrate({
+      defaultWidgets: [widget('pit-service', { autoTires: true })],
+    });
+
+    expect(migrated['app']).toEqual({ pitAutoTires: true });
+  });
+
+  it('drops the rules from every instance and the template', () => {
+    const migrated = v6PerMonitorWidgets.migrate({
+      defaultWidgets: [widget('pit-service', { ...STRATEGY, showFuel: false })],
+      layouts: [
+        twoMonitorLayout([pitOn(100, STRATEGY), pitOn(2000, STRATEGY)]),
+      ],
+    });
+
+    for (const settings of pitSettingsOf(migrated)) {
+      expect(Object.keys(settings as object)).not.toContain('autoFuel');
+      expect(Object.keys(settings as object)).not.toContain('fuelAdjustStep');
+    }
+
+    const templates = migrated['widgetTemplates'] as Record<
+      string,
+      { settings: Record<string, unknown> }
+    >;
+
+    expect(templates['pit-service'].settings).toEqual({ showFuel: false });
+  });
+
+  it('keeps an app value that is already there', () => {
+    const migrated = v6PerMonitorWidgets.migrate({
+      app: { pitAutoFuel: false },
+      layouts: [twoMonitorLayout([pitOn(100, STRATEGY)])],
+    });
+
+    expect((migrated['app'] as Record<string, unknown>)['pitAutoFuel']).toBe(
+      false
+    );
+  });
+});

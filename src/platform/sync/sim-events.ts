@@ -22,7 +22,12 @@ export {
   INPUT_DEVICES_EVENT,
   INPUT_BUTTON_EVENT,
   REMOTE_DEVICE_EVENT,
+  OVERLAY_MODES_EVENT,
+  HOTKEY_SETTINGS_ACTION_EVENT,
+  CLIENT_TO_MAIN_EVENT,
+  CLIENT_FROM_MAIN_EVENT,
+  CLIENT_CONTROL_EVENT,
 } from '@utils/backend-events';
 
-/** Frontend-only: the overlay asks the track map to drop its recording. */
+/** Heard by the backend recorder: the track's recorded shape was deleted. */
 export const TRACK_MAP_CLEAR = 'track-map:clear';

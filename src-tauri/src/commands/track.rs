@@ -5,12 +5,14 @@
 use tauri::{AppHandle, Emitter, Manager, State};
 use tracing::{info, warn};
 
-use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes, TrackCondition};
+use crate::model::reference_lap::{ReferenceLapData, TrackCondition};
 use crate::model::track_shape::TrackShapePayload;
-use crate::telemetry::emitter::reference_lap_key;
-use crate::telemetry::runtime::load_cached_track_shape;
+use crate::telemetry::control::TelemetryCommand;
+use crate::telemetry::emitter::EVENT_TRACK_SHAPE;
 use crate::telemetry::state::TelemetryState;
-use crate::utils::lock_or_recover;
+use crate::telemetry::storage::{
+    load_cached_track_shape, reference_lap_key, reference_lap_path, track_shape_path,
+};
 
 #[tauri::command]
 pub async fn reset_pit_lane_pct(
@@ -18,9 +20,6 @@ pub async fn reset_pit_lane_pct(
     state: State<'_, TelemetryState>,
     track_id: i32,
 ) -> Result<(), String> {
-    use crate::telemetry::emitter::EVENT_TRACK_SHAPE;
-    use std::fs;
-
     info!("reset_pit_lane_pct command received for track {}", track_id);
 
     let Ok(data_dir) = app.path().app_data_dir() else {
@@ -28,9 +27,9 @@ pub async fn reset_pit_lane_pct(
         return Err("Cannot resolve app data dir".to_string());
     };
 
-    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
+    let path = track_shape_path(&data_dir, track_id);
 
-    let Ok(bytes) = fs::read(&path) else {
+    let Ok(bytes) = tokio::fs::read(&path).await else {
         warn!("No track file found at {:?}, nothing to reset", path);
         return Ok(());
     };
@@ -50,7 +49,7 @@ pub async fn reset_pit_lane_pct(
         return Ok(());
     };
 
-    if fs::write(&path, &json).is_ok() {
+    if tokio::fs::write(&path, &json).await.is_ok() {
         info!("Successfully removed pit pcts from {:?} on disk", path);
         if let Ok(payload) = serde_json::from_str::<TrackShapePayload>(&json) {
             let _ = app.emit(EVENT_TRACK_SHAPE, &payload);
@@ -59,46 +58,22 @@ pub async fn reset_pit_lane_pct(
         warn!("Failed to write updated track JSON to {:?}", path);
     }
 
-    if let Ok(mut lock) = state.service.pit_in_pct.lock() {
-        *lock = None;
-    }
-    if let Ok(mut lock) = state.service.pit_exit_pct.lock() {
-        *lock = None;
-    }
-
-    state
-        .reset_pit_pcts
-        .store(true, std::sync::atomic::Ordering::Relaxed);
+    state.service.send(TelemetryCommand::ResetPitLane);
 
     info!("Pit lane pcts successfully reset in memory and scheduled for processor");
     Ok(())
 }
 
+/// The reference lap the telemetry thread has made active — what a window that
+/// opened after `sim://reference-lap/updated` last went out draws against.
 #[tauri::command]
-pub async fn get_reference_lap(
-    app: AppHandle,
-    track_id: i32,
-    car_screen_name: String,
-    condition: TrackCondition,
+pub async fn get_active_reference_lap(
+    state: State<'_, TelemetryState>,
 ) -> Result<Option<ReferenceLapData>, String> {
-    let Ok(data_dir) = app.path().app_data_dir() else {
-        return Err("Cannot resolve app data dir".to_string());
-    };
-
-    let key = reference_lap_key(track_id, &car_screen_name, condition);
-    let path = data_dir.join("reference_laps").join(format!("{key}.json"));
-
-    let Ok(bytes) = tokio::fs::read(&path).await else {
-        return Ok(None);
-    };
-
-    match serde_json::from_slice::<ReferenceLapData>(&bytes) {
-        Ok(data) => Ok(Some(data)),
-        Err(e) => {
-            warn!("Failed to parse reference lap file at {:?}: {}", path, e);
-            Ok(None)
-        }
-    }
+    Ok(state
+        .service
+        .active_reference()
+        .map(|reference| (*reference).clone()))
 }
 
 #[tauri::command]
@@ -117,7 +92,7 @@ pub async fn delete_reference_lap(
     // a reference the driver just deleted the next time it rained.
     for condition in [TrackCondition::Dry, TrackCondition::Wet] {
         let key = reference_lap_key(track_id, &car_screen_name, condition);
-        let path = data_dir.join("reference_laps").join(format!("{key}.json"));
+        let path = reference_lap_path(&data_dir, &key);
 
         match tokio::fs::remove_file(&path).await {
             Ok(_) => {}
@@ -129,13 +104,7 @@ pub async fn delete_reference_lap(
     // The processor keeps the session's best time in memory and would refuse
     // to commit a slower lap as the new reference — reset it so recording
     // starts fresh from the next completed lap.
-    state
-        .reset_reference_lap
-        .store(true, std::sync::atomic::Ordering::Relaxed);
-
-    if let Ok(mut stored) = state.service.stored_reference_lap_time.lock() {
-        *stored = StoredReferenceTimes::default();
-    }
+    state.service.send(TelemetryCommand::ResetReferenceLap);
 
     info!("Reference lap deleted for track {track_id} / {car_screen_name}");
     Ok(())
@@ -150,16 +119,19 @@ pub async fn get_cached_track_shape(
     app: AppHandle,
     state: State<'_, TelemetryState>,
 ) -> Result<Option<TrackShapePayload>, String> {
-    let track_id = {
-        let lock = lock_or_recover(&state.service.last_session_info);
-        lock.as_deref().map(|session| session.track_id)
-    };
+    let track_id = state.service.session().map(|session| session.track_id);
 
     let Some(track_id) = track_id else {
         return Ok(None);
     };
 
-    Ok(load_cached_track_shape(&app, track_id))
+    let Ok(data_dir) = app.path().app_data_dir() else {
+        return Err("Cannot resolve app data dir".to_string());
+    };
+
+    tokio::task::spawn_blocking(move || load_cached_track_shape(&data_dir, track_id))
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -168,9 +140,9 @@ pub async fn delete_track_shape(app: AppHandle, track_id: i32) -> Result<(), Str
         return Err("Cannot resolve app data dir".to_string());
     };
 
-    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
+    let path = track_shape_path(&data_dir, track_id);
 
-    match std::fs::remove_file(&path) {
+    match tokio::fs::remove_file(&path).await {
         Ok(_) => {}
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
         Err(e) => return Err(e.to_string()),

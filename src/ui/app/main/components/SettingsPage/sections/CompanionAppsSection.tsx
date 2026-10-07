@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Empty, Flex, Tooltip } from 'antd';
 import { AppWindow, Plus, Search } from 'lucide-react';
 
-import { useCompanionAppsStore } from '@store/root-store-context';
+import { useCompanionAppsStore } from '@store/roots/main-root-context';
 import { CompanionAppRow } from './CompanionAppRow';
 import { SettingsCard } from '../SettingsCard';
 import rowStyles from './CompanionAppRow.module.scss';

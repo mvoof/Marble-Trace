@@ -59,12 +59,17 @@ pub struct DeliverySet {
     /// guessed at from an assumed tick.
     pub elapsed_ms: u32,
     pub bundles: u32,
+    /// Serialized JSON bytes of those bundles. `None` in a build that does not
+    /// size them — sizing is a second serialization, so only `dev` pays it.
+    /// Saturates rather than wraps; a measurement run resets it first.
+    pub bytes: Option<u32>,
     pub fields: Vec<FieldDelivery>,
 }
 
 struct LabelCounters {
     started: Instant,
     bundles: u32,
+    bytes: Option<u64>,
     fields: [u32; GATED_FIELDS.len()],
 }
 
@@ -73,6 +78,7 @@ impl LabelCounters {
         Self {
             started: Instant::now(),
             bundles: 0,
+            bytes: None,
             fields: [0; GATED_FIELDS.len()],
         }
     }
@@ -115,13 +121,19 @@ impl DeliveryCounters {
 
     /// Records one bundle against a label. Unknown labels are ignored — a
     /// recipient that never registered is not something to start counting
-    /// halfway through.
-    pub fn record(&mut self, label: &str, bundle: &TelemetryBundle) {
+    /// halfway through. `size` is the bundle's serialized length, when the
+    /// build measures it.
+    pub fn record(&mut self, label: &str, bundle: &TelemetryBundle, size: Option<usize>) {
         let Some(counters) = self.labels.get_mut(label) else {
             return;
         };
 
         counters.bundles += 1;
+
+        if let Some(size) = size {
+            let total = counters.bytes.get_or_insert(0);
+            *total = total.saturating_add(size as u64);
+        }
 
         for (total, present) in counters.fields.iter_mut().zip(carried(bundle)) {
             *total += u32::from(present);
@@ -144,6 +156,9 @@ impl DeliveryCounters {
                 label: label.clone(),
                 elapsed_ms: counters.started.elapsed().as_millis() as u32,
                 bundles: counters.bundles,
+                bytes: counters
+                    .bytes
+                    .map(|bytes| u32::try_from(bytes).unwrap_or(u32::MAX)),
                 fields: GATED_FIELDS
                     .iter()
                     .zip(counters.fields)
@@ -166,8 +181,8 @@ mod tests {
     use super::*;
     use crate::computations::driver_entries::DriverEntriesFrame;
     use crate::model::cars::CarPositionsFrame;
+    use crate::model::telemetry_events::EVENT_CAR_POSITIONS;
     use crate::telemetry::emitter::{apply_event_mask, TelemetryBundle};
-    use crate::telemetry::state::EVENT_CAR_POSITIONS;
 
     fn positions() -> CarPositionsFrame {
         CarPositionsFrame {
@@ -200,8 +215,8 @@ mod tests {
             car_positions: Some(positions()),
             ..Default::default()
         };
-        counters.record("overlay", &bundle);
-        counters.record("overlay", &TelemetryBundle::default());
+        counters.record("overlay", &bundle, None);
+        counters.record("overlay", &TelemetryBundle::default(), None);
 
         let snapshot = counters.snapshot();
 
@@ -213,10 +228,26 @@ mod tests {
     }
 
     #[test]
+    fn sizes_add_up_and_an_unsized_build_reports_none() {
+        let mut counters = DeliveryCounters::default();
+        counters.register("sized");
+        counters.register("unsized");
+
+        counters.record("sized", &TelemetryBundle::default(), Some(100));
+        counters.record("sized", &TelemetryBundle::default(), Some(50));
+        counters.record("unsized", &TelemetryBundle::default(), None);
+
+        let snapshot = counters.snapshot();
+
+        assert_eq!(snapshot[0].bytes, Some(150));
+        assert_eq!(snapshot[1].bytes, None);
+    }
+
+    #[test]
     fn dropping_a_label_takes_its_counters_with_it() {
         let mut counters = DeliveryCounters::default();
         counters.register("overlay");
-        counters.record("overlay", &TelemetryBundle::default());
+        counters.record("overlay", &TelemetryBundle::default(), None);
 
         counters.drop_label("overlay");
 
@@ -229,7 +260,7 @@ mod tests {
     fn registering_again_starts_from_zero() {
         let mut counters = DeliveryCounters::default();
         counters.register("overlay");
-        counters.record("overlay", &TelemetryBundle::default());
+        counters.record("overlay", &TelemetryBundle::default(), None);
 
         counters.register("overlay");
 
@@ -250,7 +281,7 @@ mod tests {
             ..Default::default()
         };
         apply_event_mask(&mut bundle, EVENT_CAR_POSITIONS);
-        counters.record("overlay", &bundle);
+        counters.record("overlay", &bundle, None);
 
         let snapshot = counters.snapshot();
 
@@ -269,7 +300,7 @@ mod tests {
         let mut counters = DeliveryCounters::default();
         counters.register("overlay");
         counters.register("main");
-        counters.record("overlay", &TelemetryBundle::default());
+        counters.record("overlay", &TelemetryBundle::default(), None);
 
         counters.reset();
 
@@ -286,7 +317,7 @@ mod tests {
     fn ensuring_an_existing_label_keeps_its_counters() {
         let mut counters = DeliveryCounters::default();
         counters.register("overlay");
-        counters.record("overlay", &TelemetryBundle::default());
+        counters.record("overlay", &TelemetryBundle::default(), None);
 
         counters.ensure("overlay");
 

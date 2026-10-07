@@ -51,6 +51,7 @@ no single layer: performance, settings, testing.
 
 - [Performance](#performance)
 - [Settings and persistence](#settings-and-persistence)
+- [Content Security Policy](#content-security-policy)
 - [Testing](#testing)
 - [Where does my code go?](#where-does-my-code-go)
 - [Commands](#commands)
@@ -123,17 +124,18 @@ flowchart TB
         direction LR
         subgraph m["main — label 'main', exactly one"]
             M1["Ant Design settings UI"]
-            M2["its own MobX RootStore"]
+            M2["its own MobX MainRoot"]
         end
         subgraph o["overlay — one per monitor"]
             O1["OverlayCanvas → all widgets"]
-            O2["its own MobX RootStore"]
+            O2["its own MobX OverlayRoot"]
         end
     end
     m <-->|"Tauri events — see Part III"| o
 ```
 
-**The windows share no memory.** They each boot their own `RootStore`, their own
+**The windows share no memory.** They each boot their own root (`MainRoot`,
+`OverlayRoot`, `HudRoot`; `RemoteRoot` in a browser), their own
 MobX observables, their own React tree. A value you mutate in main does not exist
 in the overlay until an event carries it there. This is the single most common
 source of confusion for newcomers, and
@@ -141,10 +143,12 @@ source of confusion for newcomers, and
 full.
 
 - **main** — the settings application: layout editor, widget settings panels, key
-  bindings, Twitch connection. Ant Design. Owns persistence, the hotkey runner and
-  overlay window management. Renders no widgets, so it is **off the telemetry
-  bundle** and takes [the slow slice](#the-slow-slice) instead — enough to decide
-  what a hotkey does, not enough to draw anything.
+  bindings, Twitch connection. Ant Design. Owns persistence and overlay window
+  management, and applies the hotkeys that write settings — the keys themselves
+  are caught and dispatched in Rust (`src-tauri/src/hotkeys/`). Renders no
+  widgets, so it is **off the telemetry bundle** and takes
+  [the slow slice](#the-slow-slice) instead — the car status, for the layout
+  auto-switch.
 - **overlay** — transparent, always on top, click-through except where a widget is
   interactive. Renders _every_ widget through a single `OverlayCanvas`; there is no
   window-per-widget. One overlay window per monitor, labelled by monitor name.
@@ -205,17 +209,22 @@ specta: `types/` holds types. Both generated files are checked in and pinned by
 a test, so a constant changed in Rust without regenerating fails `cargo test`
 rather than silently leaving the two halves on different numbers.
 
-### Everything on the wire is camelCase
+### Envelope and computed frames are camelCase; raw frames carry kerb's names
 
 `TelemetryBundle`, `TelemetrySlowBundle` and `SourceFrame` all carry
 `#[serde(rename_all = "camelCase")]`, so every field _they_ name is camelCase.
 The outer bundles used to be the exception, which produced reads like
 `bundle.track_recording.isRecording` — two conventions in one expression.
 
-The nested frames each carry the rename or not on their own, and several of the
-raw sim frames still do not: `CarStatusFrame.fuel_level` and the
-`LapTimingFrame.lap_delta_to_*` fields keep the sim's own snake_case. Check
-`bindings.ts` for the frame you are reading rather than assuming.
+Every frame the project _produces_ is camelCase too — the `computations/`
+output, the parsed session snapshot — and says "no value" with `Option` (`null`
+on the wire), never with a `-1` or `0` marker.
+
+The raw sim frames are not, on purpose: `carDynamics`, `carInputs`,
+`carStatus`, `chassis`, `lapTiming`, `carIdx` and `carPositions` keep kerb's
+snake_case names (`CarStatusFrame.fuel_level`, `car_idx_lap_dist_pct`) and the
+sim's own markers, so a field reads the same here as in kerb and in the SDK
+docs. Check `bindings.ts` for the frame you are reading rather than assuming.
 
 > [!WARNING]
 > If you add or change a rename, check `SLOW_FIELD_KEYS` in `remote/hub.rs`. It
@@ -296,9 +305,15 @@ pub trait TelemetrySource {
     fn capabilities(&self) -> Capabilities;
     fn read_frame(&mut self, timeout_ms: u32) -> SourceReadResult<SourceFrame>;
     fn session_changed(&mut self) -> bool;
-    fn poll_session(&mut self) -> Option<ParsedSession>;
+    fn poll_session(&mut self) -> Option<String>;
+    fn session_parser(&self) -> SessionParser;
 }
 ```
+
+`poll_session` only copies the raw session text out — the connection may not
+leave the telemetry thread. The text is parsed on the telemetry I/O worker
+(`telemetry/io_worker.rs`) with the function `session_parser` names, and the
+parsed session comes back to the loop with the files read for it.
 
 > [!IMPORTANT]
 > **This is the only place `use kerb` is allowed.** Adding a second sim means
@@ -400,10 +415,22 @@ unit-test — and why sim quirks must be resolved upstream before they reach it.
 | File              | Role                                                                   |
 | ----------------- | ---------------------------------------------------------------------- |
 | `runtime.rs`      | owns the telemetry thread and the connection lifecycle                 |
-| `state.rs`        | what persists between ticks                                            |
+| `state.rs`        | only what crosses threads: command sender, snapshots, masks, counters  |
+| `loop_state.rs`   | what the loop alone writes — session, grid, pit markers, processors    |
+| `control.rs`      | `TelemetryCommand`s and the config a run starts with                   |
 | `scheduler.rs`    | decides which rate tiers are due this tick                             |
 | `emitter.rs`      | runs the processor registry, assembles one `TelemetryBundle`, emits it |
+| `io_worker.rs`    | session-YAML parsing and every file read or write, off the loop        |
+| `storage.rs`      | the track-shape and reference-lap files, shared with the commands      |
 | `capabilities.rs` | reports what the connected sim can actually provide                    |
+
+The thread owns its state. A command never writes it: it sends a
+`TelemetryCommand`, drained at the top of the next tick, and a value that must
+survive a stop (car length, fuel tuning, inspector open) is also kept in the
+config the next run starts with. What commands read back — the session, the
+inspector frame, whether a frame has arrived — is published by the loop when it
+changes. A tick takes three locks: the masks, the delivery counters and the
+tick timings.
 
 ### Rate tiers
 
@@ -451,33 +478,21 @@ store write. Only windows that draw widgets subscribe — `SimStore.subscribeBun
 gates on the `overlay` hash — which leaves the main window off 60 bundles a second
 it would render nothing from.
 
-Not rendering is not the same as not deciding. The main window owns the hotkey
-runner and the automatic pit order, and both decide off the sim rather than off
-settings: the fuel calculation, what the sim currently has on the order, whether
-the car is on pit road. Layout auto-switching reads `is_on_track` from the same
-place. `sim://telemetry/slow` carries exactly that and nothing else.
+Not rendering is not quite the same as needing nothing: the layout auto-switch
+reads `is_on_track`. `sim://telemetry/slow` carries the player's `car_status`
+at 4 Hz for it, and nothing else.
 
-| Field         | Read by                                                          |
-| ------------- | ---------------------------------------------------------------- |
-| `car_status`  | layout auto-switching (`is_on_track`), the fuel level            |
-| `lap_timing`  | the lap an action is deciding on                                 |
-| `pit_service` | what the sim has on the order — pit road, the box, the armed set |
-| `fuel`        | the refuel calculation every pit action sends                    |
+It used to carry four frames, because the hotkey runner lived in main and decided
+off the sim — the fuel calculation, the order the sim holds, pit road. That is
+how the pit order once lost its fuel: a key read a frame main did not have, and
+the field went missing from the order without a sound. The keys are dispatched
+in Rust now and every pit order — automatic, a key, a click — is resolved on the
+telemetry thread against its own frame (`computations/pit_auto.rs`,
+`computations/pit_actions.rs`), so no window has to be fed the right slice for
+an order to be right.
 
-Four flat frames at 4 Hz, no per-car arrays: on the order of one percent of what
-the bundle costs, so the point of staying off the bundle survives. They are built
-from the bundle's own frames rather than recomputed, so main and the overlay can
-never disagree about what was ordered.
-
-> [!WARNING]
-> **An action in `ACTIONS` may read only what the slow slice carries.** There is
-> nothing in the type system to stop one reading a frame that main does not have,
-> and the failure is silent in the worst way: the key registers, the widget
-> reports the order as sent, and the field is quietly missing from it. That is
-> precisely how the pit order lost its fuel when the main window was first taken
-> off the bundle — every pit hotkey kept working, and none of them ordered any
-> fuel. A new frame goes into the slice, in `emitter.rs` and in
-> `SimStore.subscribeSlowBundle`; it does not go back to the bundle.
+A new consumer in main adds its frame to `TelemetrySlowBundle` in `emitter.rs`
+and to `SimStore.subscribeSlowBundle`; it does not go back to the bundle.
 
 ### Demand gating
 
@@ -485,13 +500,22 @@ Being due is necessary but not sufficient: a gated field is filled only while
 some widget actually wants it. Two groups are gated — the four raw 60 Hz frames,
 where the whole cost is downstream of the sim, and the three per-car frames on
 the 10 Hz tier, which are by far the largest payloads the app moves (a
-`DriverEntry` is ~35 fields including nine strings, times the whole field).
+`DriverEntry` is ~25 fields, times the whole field).
 
 > [!NOTE]
 > `driver_entries` is the table of the whole field — positions, laps, times, pit
-> state, licence, class — not "the Standings widget's data". Six widgets read it;
-> the Standings widget is only the one that draws all of it. The processor that
-> builds it is `computations/driver_entries.rs`.
+> state — not "the Standings widget's data". Six widgets read it; the Standings
+> widget is only the one that draws all of it. The processor that builds it is
+> `computations/driver_entries.rs`.
+>
+> Who a car is — driver, number, class, car, licence, rating, incidents — is not
+> on it: that holds for the session and arrives once, in `SessionSnapshot.cars`
+> on `sim://session`. `BackendComputedStore` joins the two by `carIdx`
+> (`store/data/driver-entry-join.ts`) and every widget reads the joined row
+> (`types/driver-entry.ts`) through `fieldEntries`, `relativeEntries`,
+> `driverIdentities` or `driverEntryOf` — never the bindings type, which is the
+> wire half. A fixture that states whole rows seeds them with
+> `preview/field-seed.ts`, which splits them back the same way.
 
 | Gated field                                                | Tier  |
 | ---------------------------------------------------------- | ----- |
@@ -509,11 +533,12 @@ export const G_METER_MANIFEST: WidgetManifest = {
 };
 ```
 
-`SimStore.updateActiveEvents` unions the declarations of the enabled widgets in
+`SimStore` (`updateOwnActiveEvents`) unions the declarations of the enabled widgets in
 the active layout and sends the result to `set_active_events` as a bitmask;
 `emitter.rs` reads it and leaves an unrequested field out of the bundle. The
-names and their bit values live in `src/types/telemetry-events.ts` and mirror
-`telemetry/state.rs`.
+names and their bit values are declared once in `model/telemetry_events.rs` and
+generated into `src/types/telemetry-event-bits.ts`, which
+`src/types/telemetry-events.ts` derives `TelemetryEventName` from.
 
 ```mermaid
 flowchart LR
@@ -712,10 +737,11 @@ Summarized as a direction: `utils/ ← ui/ → store/ → platform/`.
 > **The direction is enforced by lint, not by convention.** `no-restricted-imports`
 > overrides in `.oxlintrc.json` fail `npm run lint` on any violation.
 
-One file is exempt and says why in a comment: `store/root-store.ts` (composes
-widget stores that live next to their widgets). `store/widget-catalog.ts` reads
-the per-widget manifests, which also live next to their widgets, but collects
-them with `import.meta.glob` — a path, not an import — so it needs no exemption.
+No file is exempt. A widget's own store lives next to the widget and is built
+per instance from its `mount.ts`, so the store layer never imports it.
+`store/layout/widget-catalog.ts` reads the per-widget manifests, which also live next
+to their widgets, but collects them with `import.meta.glob` — a path, not an
+import — so it needs no exemption.
 
 Path aliases match the layers one-to-one: `@platform/*`, `@store/*`, `@ui/*`,
 `@utils/*`, and `@/*` for `types`, `styles`, `locales` and `storybook`.
@@ -745,7 +771,6 @@ Grouped by **domain, not by kind** — one file per subject, never a `constants/
 | `car-signals.ts`           | deriving signals from raw car state           |
 | `delta-utils.ts`           | delta formatting and latching                 |
 | `driver.ts`                | driver names, ratings, identity               |
-| `driving-coach-utils.ts`   | coach advisory logic                          |
 | `fuel-constants.ts`        | fuel math constants                           |
 | `qualifying-visibility.ts` | what is hidden during qualifying              |
 | `radar-constants.ts`       | radar geometry constants                      |
@@ -782,7 +807,7 @@ flowchart TB
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `events.service.ts`    | **the only `@tauri-apps/api/event` import in the codebase** — every emitter and `listenTo`                                        |
 | `telemetry.service.ts` | `startTelemetryStream`, `stopTelemetryStream`, `getConnectionStatus`, `getLastSessionInfo`, `setActiveEventsSilent`               |
-| `track.service.ts`     | `getCachedTrackShape`, `deleteTrackShape`, `resetPitLanePct`, `getReferenceLap`, `deleteReferenceLap`                             |
+| `track.service.ts`     | `getCachedTrackShape`, `deleteTrackShape`, `resetPitLanePct`, `getActiveReferenceLap`, `deleteReferenceLap`                       |
 | `settings.service.ts`  | `settingsFileExists`, `backupSettingsFile`, `logSettingsSnapshot`, `deleteSettingsFile`, and the `*Silent` setters                |
 | `twitch.service.ts`    | `twitchHasClientId`, `twitchAccount`, `twitchRequestDeviceCode`, `twitchPollDeviceToken`, `twitchSignOut`, chat stream start/stop |
 | `input.service.ts`     | `resolveInputDevices`, `setInputPollingEnabled`                                                                                   |
@@ -796,9 +821,12 @@ The one part of `platform/` allowed to read stores.
 
 | File                                         | Role                                                                                          |
 | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `listeners.ts`                               | `setupMainListeners` / `setupOverlayListeners` — which store each incoming payload belongs to |
-| `main-sync.ts`                               | main-side `reaction`s that emit on store change                                               |
-| `overlay-sync.ts`                            | overlay-side reactions — drag mode, geometry write-back                                       |
+| `listeners.ts`                               | `setupMainListeners` / `setupOverlayListeners` — overlay modes, and the overlay's signals     |
+| `main-sync.ts`                               | main's startup and the reactions that save                                                    |
+| `client-snapshot.ts` · `client-publish.ts`   | main's half of the client protocol: snapshots out, commands in (ADR-0007)                     |
+| `client-sync.ts`                             | a client's half, transport-free: installs a snapshot, runs a signal                           |
+| `overlay-sync.ts` · `remote-sync.ts`         | the two transports into `client-sync.ts` — Tauri events, the remote socket                    |
+| `remote-publish.ts`                          | the remote server's lifetime and one snapshot per remote screen                               |
 | `persistence.ts` · `persistence-sync.ts`     | writing settings to disk                                                                      |
 | `chat-sync.ts`                               | Twitch chat stream wiring                                                                     |
 | `pit-service-sync.ts`                        | pit-service cross-window state                                                                |
@@ -834,35 +862,46 @@ flowchart TB
     SET -.-> COMP
 ```
 
-Every store hangs off one `RootStore` (`src/store/root-store.ts`), reached through
-the context hooks in `src/store/root-store-context.ts`.
+Every window builds one root over a shared `RendererCore`
+(`src/store/roots/renderer-core.ts`): the data stores, the sim, the settings projection
+widgets read, units, the app-wide widget stores (shared ones, the pit service,
+the recorded track) and the registry of per-instance widget stores. `MainRoot` adds what only the settings
+UI uses (editor, inspector, diagnostics, companion apps, chat sign-in, device
+list), `OverlayRoot` adds only the bindings and the settings-panel state its
+drag-mode popup needs, `RemoteRoot` starts the core without Tauri, and `HudRoot`
+holds the banner's one store and no core at all. Components reach them through
+context hooks per root: `root-store-context.ts` (core, typed `RendererCore`, plus
+the two app-window stores), `main-root-context.ts`, `overlay-root-context.ts`,
+`hud-root-context.ts`. A main-only store is not on the core's type, so a widget
+cannot reach it; the widget, shared and overlay folders may not import the main
+root's hooks either (`.oxlintrc.json`).
 
 > [!WARNING]
 > **Never import a store as a singleton.** Each window constructs its own
-> `RootStore`; a module-level instance would silently be the wrong one.
+> root; a module-level instance would silently be the wrong one.
 
 ### Module map
 
-| Folder                                    | Holds                                                                                                                                                                                                          |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data/`                                   | `player`, `cars`, `session`, `environment`, `chat`, `reference-lap` frame buffers, plus `computed.store.ts` for derived values shared by 2+ widgets                                                            |
-| `settings/`                               | `app-settings`, `layouts`, `widget-defaults`, `widget-settings`, `units`, `twitch-auth`, plus layout helpers (`layout-resolution`, `layout-resize`, `layout-background`, `widget-history`, `widget-placement`) |
-| `widgets/`                                | stores read by 2+ widgets — `flags`, `pace-car`, `radar`, `standings` — plus app-level ones (`widget-auto-hide`, `settings-panel-ui`)                                                                          |
-| `sim/`                                    | sim connection state, `track-condition`, `debug`                                                                                                                                                               |
-| `hotkeys/`                                | `actions` registry, `action-registry`, `bindings.store`, `binding-runner`, `bindings-sync`, `bindings-ui`, `device-input`                                                                                      |
-| `preview/`                                | neutral sample data — scenarios, sample telemetry, sample track, the preview animator                                                                                                                          |
-| `root-store.ts` · `root-store-context.ts` | composition and access                                                                                                                                                                                         |
-| `widget-catalog.ts`                       | collects the per-widget manifests                                                                                                                                                                              |
+| Folder                                                 | Holds                                                                                                                                                                                                          |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data/`                                                | `player`, `cars`, `session`, `environment`, `chat`, `reference-lap` frame buffers, plus `computed.store.ts` for derived values shared by 2+ widgets                                                            |
+| `settings/`                                            | `app-settings`, `layouts`, `widget-defaults`, `widget-settings`, `units`, `twitch-auth`, plus layout helpers (`layout-resolution`, `layout-resize`, `layout-background`, `widget-history`, `widget-placement`) |
+| `widgets/`                                             | one folder per feature read by 2+ widgets — `flags`, `incidents`, `pit-service`, `radar`, `track-map`                                                                                                          |
+| `sim/`                                                 | sim connection state, `debug`                                                                                                                                                                                  |
+| `hotkeys/`                                             | `actions` registry, `action-registry`, `bindings.store`, `settings-actions`, `bindings-sync`, `bindings-ui`, `device-input`                                                                                    |
+| `preview/`                                             | neutral sample data — scenarios, sample telemetry, sample track, the preview animator                                                                                                                          |
+| `renderer-core.ts` · `*-root.ts` · `*-root-context.ts` | composition per window and access                                                                                                                                                                              |
+| `widget-catalog.ts`                                    | collects the per-widget manifests                                                                                                                                                                              |
 
 > [!NOTE]
 > `preview/` exists so the app never imports from `src/storybook`. Shared fixtures
 > live in this neutral place, which both the app and Storybook may read.
 
 **The preview store is isolated, and the linter holds it there.** A scenario and
-every mock builder write only into the `RootStore({ skipInit: true })` handed to
-them — never into the stores a running widget reads. So `src/store/preview/**`
+every mock builder write only into the `PreviewCore` handed to
+them — never into the stores a running widget reads. So `src/preview/**`
 carries its own `no-restricted-imports` override: the context hooks in
-`root-store-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are all
+`*-root-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are all
 refused there, the way every other layer boundary in this project is enforced. A
 fixture that reached a live store would go unnoticed in the layout editor and
 surface as a wrong number in a driver's session; see
@@ -885,42 +924,59 @@ surface as a wrong number in a driver's session; see
 
 ### Reactivity rules
 
-| Rule                                                                    | Why                                                                                    |
-| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Derived values are `computed` getters in a store, never `useMemo`       | `useMemo` is per-component; a computed is shared and cached once                       |
-| `updateUserSettings` mutates in place with `Object.assign`              | replacing the `userSettings` reference detaches every existing observer                |
-| Widget layout changes go through `resolveLayoutChange` in the manifest  | keeps per-widget branching out of the shared store                                     |
-| Reactions depend on `widgetMutationId`, bumped by every settings setter | comparing `JSON.stringify` of the settings tree on every change is both slow and wrong |
+| Rule                                                                     | Why                                                                                    |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| Derived values are `computed` getters in a store, never `useMemo`        | `useMemo` is per-component; a computed is shared and cached once                       |
+| `updateUserSettings` mutates in place with `Object.assign`               | replacing the `userSettings` reference detaches every existing observer                |
+| Widget layout changes go through `resolveLayoutChange` in the manifest   | keeps per-widget branching out of the shared store                                     |
+| Reactions to a settings edit watch `changeToken` (`SettingsMutationLog`) | comparing `JSON.stringify` of the settings tree on every change is both slow and wrong |
 
 ### Input bindings
 
-Keyboard shortcuts and controller buttons are **app-level, not per layout**.
+Keyboard shortcuts and controller buttons are **app-level, not per layout**, and
+**dispatched in Rust**: a key acts on the car with every webview paused, and a
+paused main window costs only the actions that write settings.
 
-| Concern                                 | Location                              |
-| --------------------------------------- | ------------------------------------- |
-| wire types                              | `src/types/input-bindings.ts`         |
-| action registry                         | `src/store/hotkeys/actions.ts`        |
-| persisted map (`actionId -> Binding[]`) | `src/store/hotkeys/bindings.store.ts` |
-| dispatch + OS registration              | `src/store/hotkeys/binding-runner.ts` |
-| device polling                          | `src-tauri/src/input/`                |
+| Concern                                         | Location                                         |
+| ----------------------------------------------- | ------------------------------------------------ |
+| action list — id, owner, label, default, effect | `src-tauri/src/model/hotkeys.rs`                 |
+| dispatch, OS registration, drag/interact modes  | `src-tauri/src/hotkeys/`                         |
+| device polling                                  | `src-tauri/src/input/`                           |
+| wire types                                      | `bindings.ts`, via `src/types/input-bindings.ts` |
+| settings-UI registry, visibility actions        | `src/store/hotkeys/actions.ts`                   |
+| persisted map (`actionId -> Binding[]`)         | `src/store/hotkeys/bindings.store.ts`            |
+| settings actions                                | `src/store/hotkeys/settings-actions.ts`          |
+| main's half                                     | `src/platform/sync/hotkey-sync.ts`               |
 
 > [!TIP]
-> **Adding a bindable action is one entry in `ACTIONS` plus one key under
-> `bindings.actions` in `main-app.json`.** Nothing else — the runner, the settings
-> UI, persistence and the save reaction are all driven off the registry.
+> **Adding a bindable action is one entry in `HOTKEY_ACTIONS` plus one key under
+> `bindings.actions` in `main-app.json`.** The list is generated into
+> `@utils/hotkey-actions` for the settings UI; persistence and the save reaction
+> are driven off it.
 
-- `owner` is a widget id or `'app'`. Widget-owned actions fire only when that
-  widget is in the active layout, checked **at dispatch time**, so nothing is
-  broadcast to an overlay for a widget that isn't there. `ignoreLayoutGate: true`
-  opts out; only the generated `widget:<id>:toggle-in-layout` actions do.
-- `trigger: 'press'` fires on key down; `'hold'` fires on both edges with the
-  pressed state.
-- **The runner lives in the main window only.** Overlays are reached through
-  `emitToOverlays` inside an action's `run`.
-- **An action reads telemetry only from the slow slice.** The main window is off
-  the bundle, so `car_status`, `lap_timing`, `pit_service` and `fuel` are all it
-  has — see [The slow slice](#the-slow-slice). Anything else reads `null` there
-  and the action silently does half its job.
+An action's `HotkeyEffect` decides its kind:
+
+| Kind       | Effects                             | Runs                                                                       |
+| ---------- | ----------------------------------- | -------------------------------------------------------------------------- |
+| `sim`      | `Pit(PitAction)`, `PitAutoMode`     | a command to the telemetry thread, resolved against its frame              |
+| `view`     | `View(ViewControl)`, drag, interact | a control message to the overlays and the remote hub, or the overlay modes |
+| `settings` | `Settings`, the visibility actions  | `hotkey://settings-action` to main, applied by `settings-actions.ts`       |
+
+- `owner` is a widget type or `'app'`. Widget-owned actions fire only while that
+  widget is on screen in the live layout, checked **per press** against the set
+  main pushes with `set_hotkey_context`. Only the generated
+  `widget:<type>:toggle-visibility` actions skip the gate; the dispatcher knows
+  them by the shape of their id, since the widget catalog is the frontend's.
+- `press` fires on key down; `hold` (interact only) on both edges.
+- Main pushes the **effective** map — defaults folded in — with
+  `set_hotkey_bindings`. Nothing is registered before it arrives, so a key the
+  user cleared cannot fire on a stale default.
+- **Drag and interact mode are the dispatcher's.** It enforces that only one is
+  on, runs the interact auto-off watchdog, and broadcasts `app://overlay-modes`;
+  every window mirrors the pair (`appSettings.applyOverlayModes`) and asks for a
+  change with `set_drag_mode` / `set_interact_mode`.
+- A view action is sent as a step, never a value: each client applies it to the
+  instances it holds that are marked for hotkeys.
 - Conflicts (one key on two actions) are allowed and only warned about.
 
 ## `ui/` — everything that renders
@@ -937,17 +993,17 @@ flowchart TB
     WIDGETS --> HOOKS
 ```
 
-| Folder                       | Holds                                                                                                                                                                       |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/main/`                  | `MainWindow.tsx`, the settings UI, `sim-name.ts`, `capture-snapshot.ts`                                                                                                     |
-| `app/overlay/`               | `OverlayWindow.tsx`, `OverlayCanvas`                                                                                                                                        |
-| `app/widget-frame.ts`        | frame geometry shared by the two window shells                                                                                                                              |
-| `widgets/<Name>/`            | one folder per widget — components, manifest, mount, store, helpers, tests                                                                                                  |
-| `widgets/registry.ts`        | id → React component, collected from every `mount.ts`                                                                                                                       |
-| `widgets/widget-mount.ts`    | the `WidgetMount` shape a widget's `mount.ts` exports                                                                                                                       |
-| `widgets/widget-manifest.ts` | values shared across manifests — `COMMON_WIDGET_DEFAULTS`, appearance defaults, `makeColumnLayoutResolver`                                                                  |
-| `shared/`                    | `WidgetPanel`, `StatPill`, `WidgetValue`, `WidgetLabel`, badges, `CarDot`, `ScrollIndicator`, `NoDataPlaceholder`, `ErrorBoundary`                                          |
-| `hooks/`                     | `useCanvasAutoResize`, `useReactiveCanvasLoop`, `useVisibleRowCount`, `useRowMoveAnimation`, `useClickOutside`, `usePitState`, `useProximityRadarData`, `useWidgetAutoHide` |
+| Folder                       | Holds                                                                                                                                              |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/main/`                  | `MainWindow.tsx`, the settings UI, `sim-name.ts`                                                                                                   |
+| `app/overlay/`               | `OverlayWindow.tsx`, `OverlayCanvas`                                                                                                               |
+| `app/widget-frame.ts`        | frame geometry shared by the two window shells                                                                                                     |
+| `widgets/<Name>/`            | one folder per widget — components, manifest, mount, store, helpers, tests                                                                         |
+| `widgets/registry.ts`        | id → React component, collected from every `mount.ts`                                                                                              |
+| `widgets/widget-mount.ts`    | the `WidgetMount` shape a widget's `mount.ts` exports                                                                                              |
+| `widgets/widget-manifest.ts` | values shared across manifests — `COMMON_WIDGET_DEFAULTS`, appearance defaults, `makeColumnLayoutResolver`                                         |
+| `shared/`                    | `WidgetPanel`, `StatPill`, `WidgetValue`, `WidgetLabel`, badges, `CarDot`, `ScrollIndicator`, `NoDataPlaceholder`, `ErrorBoundary`                 |
+| `hooks/`                     | `useCanvasAutoResize`, `useReactiveCanvasLoop`, `useVisibleRowCount`, `useRowMoveAnimation`, `useClickOutside`, `usePitState`, `useWidgetAutoHide` |
 
 Components talk to MobX stores and to nothing else. They never import from
 `@tauri-apps/*` or `@platform/*` — the one exception being window and webview APIs
@@ -969,7 +1025,7 @@ flowchart TB
     MT1["FuelWidget/mount.ts"]
     MT2["StandingsWidget/mount.ts"]
     P["*SettingsPanel.tsx<br/><i>PANEL_WIDGET_IDS</i>"]
-    CAT["<b>store/widget-catalog.ts</b><br/>glob → WIDGETS · WIDGET_BY_ID · DEFAULT_WIDGETS"]
+    CAT["<b>store/layout/widget-catalog.ts</b><br/>glob → WIDGETS · WIDGET_BY_ID · DEFAULT_WIDGETS"]
     REG["<b>ui/widgets/registry.ts</b><br/>glob → id → React component"]
     PREG["<b>panels/panel-registry.ts</b><br/>glob → id → settings panel"]
     MOUNT["the places<br/>that mount widgets"]
@@ -1000,7 +1056,7 @@ flowchart TB
 
 **Widget lists are alphabetical by label.** The Widgets page, each monitor's
 list in the layout editor and the F9 picker all show the catalog in that order
-(`compareManifests` in `src/store/widget-catalog.ts`: label, case-insensitive,
+(`compareManifests` in `src/store/layout/widget-catalog.ts`: label, case-insensitive,
 then id), so a manifest declares no position of its own — a new widget lands
 where its name puts it, and two widgets built in parallel cannot collide on a
 number. Any new list of widgets shown to the user keeps that order: build it from
@@ -1023,50 +1079,47 @@ Settings panels are collected the same way — each exports `PANEL_WIDGET_IDS`
 — but into their own registry rather than into `mount.ts`: the remote screen
 renders widgets through the widget registry and is a plain browser page, so a
 mount carrying its Ant Design panel would ship the whole settings UI to every
-phone on the LAN.
+phone on the LAN. The panel itself sits in its widget's folder — only main's
+panel registry globs `*SettingsPanel.tsx`, so the import graph, not the folder,
+keeps it off the remote screen.
 
 `WidgetContainer` applies scale, opacity and the radial-gradient background from
 user settings, so a widget never hardcodes its own background.
 
-### Where a widget's files live
+### Where a file lives
 
-**One consumer → the widget folder. Two or more → the shared folder.**
+**A file sits next to its lowest consumer, and moves up only when its consumers
+sit in different branches of the tree.** The full table is in `AGENTS.md` →
+Where a file lives.
 
 ```mermaid
 flowchart TB
-    Q1{"How many consumers?"}
-    Q2{"Is one of them<br/>a store?"}
-    W["the widget's own folder<br/><i>components · manifest · store ·<br/>helpers · hooks · tests</i>"]
+    Q1{"Who reads it?"}
+    W["the widget's own folder<br/><i>components · manifest · store ·<br/>helpers · hooks · panel · tests</i>"]
+    F["beside the feature's store<br/><i>store/widgets/&lt;feature&gt;/</i>"]
     KIND{"What kind of thing?"}
     SH["ui/shared/"]
     HK["ui/hooks/"]
     UT["utils/"]
-    SW["store/widgets/"]
 
-    Q1 -->|one| Q2
-    Q2 -->|no| W
-    Q2 -->|yes| UT
-    Q1 -->|"two or more"| KIND
+    Q1 -->|one widget| W
+    Q1 -->|"one feature: its store<br/>and its widgets"| F
+    Q1 -->|"two or more features"| KIND
     KIND -->|a component| SH
     KIND -->|a DOM hook| HK
     KIND -->|a pure helper| UT
-    KIND -->|a store| SW
 ```
 
-The store branch is not an exception but a consequence: **a store importing from
-`@ui/` is a lint error**, so a helper shared by a widget and a store has nowhere to
-live but `utils/`, even with only two consumers.
+The feature branch works because the layers point one way: a widget may import
+a store, so a helper read by a feature's store and its widgets sits beside the
+store and both reach it. `utils/` is for what crosses features.
 
-A helper with a single **non-widget** owner does not go to `utils/` at all; it sits
-with its owner — `store/settings/layout-*.ts`, `store/sim/debug.ts`,
-`ui/app/main/sim-name.ts`, `ui/app/widget-frame.ts`.
+A helper with a single **non-widget** owner sits with its owner —
+`store/layout/layout-*.ts`, `store/sim/debug.ts`, `ui/app/main/sim-name.ts`,
+`ui/app/widget-frame.ts`. A widget never imports from another widget's folder:
+a second consumer moves the file up, and one that loses it moves back down.
 
-A helper that gains a second consumer moves up; one that loses it moves back down.
-
-Settings panels stay together in
-`src/ui/app/main/components/WidgetSettings/panels/` — they share `Card`,
-`SettingRow` and `WidgetEditorContext`, and belong to the main window, not the
-overlay.
+Every MobX class lives in a `*.store.ts` file, and nothing else does.
 
 ### Decomposition rules
 
@@ -1134,7 +1187,7 @@ size of everything else. `designWidth` tracks the visible column set through
 > `resolveLayoutChange` rescales `currentWidth` at the moment of the toggle, so
 > `--wfs` does not jump under the driver, and `deriveDesignWidth` recomputes the
 > width wherever a widget is installed — file load (`decodeWidget`), layout
-> switch, and the cross-window sync (`applySettingsSync`). One without the other
+> switch, and a client installing main's snapshot (`syncWidgetSet`). One without the other
 > is the bug: with only the resolver, a stored width left behind by an older
 > setting survives every reload, `--wfs` renders the widget at the wrong scale
 > and crops it, and the next toggle reads that same wrong ratio back as `scale`
@@ -1220,8 +1273,7 @@ not hand-roll either.
 4. Every component `observer()`.
 5. Add `*.stories.tsx` — seed stores via `runInAction` in decorators, include a
    background decorator.
-6. Add `*SettingsPanel.tsx` in
-   `src/ui/app/main/components/WidgetSettings/panels/` and export
+6. Add `*SettingsPanel.tsx` in the widget folder and export
    `PANEL_WIDGET_IDS` from it — the registry picks it up, nothing to wire.
 7. Add `interface *WidgetSettings` to `src/types/widget-settings.ts` and add it to
    the `WidgetSpecificSettings` union.
@@ -1276,30 +1328,36 @@ flowchart TB
 Every `invoke` in the app goes through a service function. No component and no
 store calls `invoke` directly.
 
-| Service file           | Function                                         | Rust command                | Purpose                                              |
-| ---------------------- | ------------------------------------------------ | --------------------------- | ---------------------------------------------------- |
-| `telemetry.service.ts` | `startTelemetryStream`                           | `start_telemetry_stream`    | begin reading the sim                                |
-|                        | `stopTelemetryStream`                            | `stop_telemetry_stream`     | stop reading                                         |
-|                        | `getConnectionStatus`                            | `get_connection_status`     | is a sim connected                                   |
-|                        | `getLastSessionInfo`                             | `get_last_session_info`     | last known session, for a cold start                 |
-|                        | `setActiveEventsSilent`                          | `set_active_events`         | tell the backend which events anyone is listening to |
-| `track.service.ts`     | `getCachedTrackShape`                            | `get_cached_track_shape`    | load a recorded track outline                        |
-|                        | `deleteTrackShape`                               | `delete_track_shape`        | discard it                                           |
-|                        | `resetPitLanePct`                                | `reset_pit_lane_pct`        | re-detect pit lane bounds                            |
-|                        | `getReferenceLap`                                | `get_reference_lap`         | load the stored reference lap                        |
-|                        | `deleteReferenceLap`                             | `delete_reference_lap`      | discard it                                           |
-| `settings.service.ts`  | `settingsFileExists`                             | `settings_file_exists`      | first-run detection                                  |
-|                        | `backupSettingsFile`                             | `backup_settings_file`      | snapshot before a risky write                        |
-|                        | `deleteSettingsFile`                             | `delete_settings_file`      | factory reset                                        |
-|                        | `logSettingsSnapshot`                            | `log_settings_snapshot`     | diagnostics                                          |
-|                        | `setPitWarningLapsSilent`                        | `set_pit_warning_laps`      | push a computation setting                           |
-|                        | `setFuelAvgWindowSilent`                         | `set_fuel_avg_window`       | push a computation setting                           |
-|                        | `setCarLengthSilent`                             | `set_car_length`            | push a computation setting                           |
-| `twitch.service.ts`    | `twitchHasClientId` … `twitchSignOut`            | Twitch auth commands        | device-code OAuth flow                               |
-|                        | `startChatStreamSilent` / `stopChatStreamSilent` | chat stream commands        | connect and disconnect chat                          |
-| `input.service.ts`     | `resolveInputDevices`                            | `resolve_input_devices`     | enumerate controllers                                |
-|                        | `setInputPollingEnabled`                         | `set_input_polling_enabled` | start/stop DirectInput polling                       |
-| `pit.service.ts`       | `sendPitOrder`                                   | `send_pit_order`            | send a pit service order to the sim                  |
+| Service file           | Function                                         | Rust command                          | Purpose                                                    |
+| ---------------------- | ------------------------------------------------ | ------------------------------------- | ---------------------------------------------------------- |
+| `telemetry.service.ts` | `startTelemetryStream`                           | `start_telemetry_stream`              | begin reading the sim                                      |
+|                        | `stopTelemetryStream`                            | `stop_telemetry_stream`               | stop reading                                               |
+|                        | `getConnectionStatus`                            | `get_connection_status`               | is a sim connected                                         |
+|                        | `getLastSessionInfo`                             | `get_last_session_info`               | last known session, for a cold start                       |
+|                        | `setActiveEventsSilent`                          | `set_active_events`                   | tell the backend which events anyone is listening to       |
+| `track.service.ts`     | `getCachedTrackShape`                            | `get_cached_track_shape`              | load a recorded track outline                              |
+|                        | `deleteTrackShape`                               | `delete_track_shape`                  | discard it                                                 |
+|                        | `resetPitLanePct`                                | `reset_pit_lane_pct`                  | re-detect pit lane bounds                                  |
+|                        | `getActiveReferenceLap`                          | `get_active_reference_lap`            | the reference lap the telemetry thread made active         |
+|                        | `deleteReferenceLap`                             | `delete_reference_lap`                | discard it                                                 |
+| `settings.service.ts`  | `settingsFileExists`                             | `settings_file_exists`                | first-run detection                                        |
+|                        | `backupSettingsFile`                             | `backup_settings_file`                | snapshot before a risky write                              |
+|                        | `deleteSettingsFile`                             | `delete_settings_file`                | factory reset                                              |
+|                        | `logSettingsSnapshot`                            | `log_settings_snapshot`               | diagnostics                                                |
+|                        | `setPitWarningLapsSilent`                        | `set_pit_warning_laps`                | push a computation setting                                 |
+|                        | `setFuelAvgWindowSilent`                         | `set_fuel_avg_window`                 | push a computation setting                                 |
+|                        | `setCarLengthSilent`                             | `set_car_length`                      | push a computation setting                                 |
+| `twitch.service.ts`    | `twitchHasClientId` … `twitchSignOut`            | Twitch auth commands                  | device-code OAuth flow                                     |
+|                        | `startChatStreamSilent` / `stopChatStreamSilent` | chat stream commands                  | connect and disconnect chat                                |
+| `input.service.ts`     | `resolveInputDevices`                            | `resolve_input_devices`               | enumerate controllers                                      |
+|                        | `setInputPollingEnabled`                         | `set_input_polling_enabled`           | start/stop DirectInput polling                             |
+| `pit.service.ts`       | `runPitAction`                                   | `run_pit_action`                      | a click on the pit order, resolved on the telemetry thread |
+|                        | `togglePitAuto`                                  | `toggle_pit_auto`                     | the auto mode plate                                        |
+|                        | `setPitStrategySilent`                           | `set_pit_strategy`                    | push the pit rules, the fuel step and the layout gate      |
+| `hotkeys.service.ts`   | `setHotkeyBindings`                              | `set_hotkey_bindings`                 | the effective binding map, to the dispatcher               |
+|                        | `setHotkeyContext`                               | `set_hotkey_context`                  | the layout gate and the interact key's settings            |
+|                        | `requestDragMode` / `requestInteractMode`        | `set_drag_mode` / `set_interact_mode` | ask the dispatcher to switch a mode                        |
+|                        | `getOverlayModes`                                | `get_overlay_modes`                   | the modes, for a window that just loaded                   |
 
 The `*Silent` naming marks a setter that pushes a value into the backend without
 expecting anything back — a fire-and-forget command, not an event.
@@ -1321,96 +1379,40 @@ Names come from `src-tauri/src/model/events.rs` through the generated
 | `sim://disconnected`                                     | connection lifecycle        | on loss                       | `sim.store.ts` — triggers `reset()`                  |
 | `sim://capabilities`                                     | `telemetry/capabilities.rs` | on connect                    | `sim.store.ts`                                       |
 | `sim://track-shape`                                      | `telemetry/emitter.rs`      | on discovery or pit-pct patch | the track map widget store                           |
-| `sim://reference-lap/updated`                            | `telemetry/emitter.rs`      | on capture                    | `reference-lap.store.ts`                             |
-| `sim://telemetry/slow`                                   | `telemetry/emitter.rs`      | 4 Hz                          | the `data/` stores — **windows off the bundle only** |
+| `sim://reference-lap/updated`                            | `telemetry/emitter.rs`      | active reference changes      | `reference-lap.store.ts`                             |
+| `sim://telemetry/slow`                                   | `telemetry/emitter.rs`      | 4 Hz                          | `player.store.ts` — **windows off the bundle only**  |
+| `app://overlay-modes`                                    | `hotkeys/runtime.rs`        | on change                     | `app-settings.store.ts`, every window                |
+| `hotkey://settings-action`                               | `hotkeys/runtime.rs`        | on a settings key             | `settings-actions.ts`, main only                     |
+| `client://control`                                       | `hotkeys/runtime.rs`, main  | on a view key or signal       | `applyControl` in every overlay, plus the remote hub |
 | `sim://perf`                                             | `telemetry/emitter.rs`      | 1 Hz                          | `sim-perf.store.ts`                                  |
 | `input://devices`                                        | `input/runtime.rs`          | on device change              | `device-input.store.ts`                              |
-| `input://button`                                         | `input/runtime.rs`          | on press/release              | `binding-runner.ts`                                  |
+| `input://button`                                         | `input/runtime.rs`          | on press/release              | `device-input.store.ts`, for binding capture         |
 | `chat://message` · `chat://presence` · `chat://deletion` | `chat/`                     | async                         | `chat.store.ts`                                      |
 
-### Channel ③ — main ↔ overlay
+### Channel ③ — main ↔ clients
 
-All emitters are named functions in `platform/services/events.service.ts`. The
-helper you call determines the direction:
+Main holds the settings; every overlay and every remote screen is a **client**
+of one protocol (ADR-0007, `docs/adr/0007-main-owns-settings.md`). The envelope
+is `ClientEnvelope` in `src-tauri/src/model/client_protocol.rs`; the payloads
+are `src/types/client-protocol.ts`.
 
-| Helper                | Reaches                                        |
-| --------------------- | ---------------------------------------------- |
-| `emitToOverlays(...)` | every open overlay window, by label            |
-| `emitTo('main', ...)` | the main window only                           |
-| `emit(...)`           | broadcast — **both windows and the Rust side** |
-
-#### main → overlay (settings)
-
-Emitted from `main-sync.ts` reactions, received in `setupOverlayListeners`.
-
-| Event                                   | Emitter function                | Payload             |
-| --------------------------------------- | ------------------------------- | ------------------- |
-| `hide-all-widgets-changed`              | `emitHideAllWidgets`            | `boolean`           |
-| `hide-widgets-when-game-closed-changed` | `emitHideWidgetsWhenGameClosed` | `boolean`           |
-| `units-changed`                         | `emitUnitsChanged`              | `UnitSystem`        |
-| `steering-lock-changed`                 | `emitSteeringLockChanged`       | `number`            |
-| `language-changed`                      | `emitLanguageChanged`           | `AppLanguage`       |
-| `standings-class-index-changed`         | `emitStandingsClassIndex`       | `number`            |
-| `session-layouts-changed`               | `emitSessionLayoutsChanged`     | `SessionLayoutMap`  |
-| `auto-switch-layouts-changed`           | `emitAutoSwitchLayoutsChanged`  | `boolean`           |
-| `stream-chat-filters-changed`           | `emitStreamChatFilters`         | `StreamChatFilters` |
-| `stream-chat-cleared`                   | `emitStreamChatCleared`         | `null`              |
-| `bindings-changed`                      | `emitBindingsChanged`           | `BindingMap`        |
-| `interact-mode-changed`                 | `emitInteractMode`              | `boolean`           |
-
-#### main → overlay (commands)
-
-A hotkey fires in main — the runner lives there — and must act on a widget that
-lives in the overlay.
-
-| Event                | Emitter function       | Effect                            |
-| -------------------- | ---------------------- | --------------------------------- |
-| `pit-service-toggle` | `emitPitServiceToggle` | toggle the pit service panel      |
-| `pit-service-reveal` | `emitPitServiceReveal` | reveal it                         |
-| `standings-scroll`   | `emitStandingsScroll`  | scroll the standings by a delta   |
-| `stream-chat-scroll` | `emitStreamChatScroll` | scroll the stream chat by a delta |
-
-#### overlay → main
-
-| Event                     | Emitter function           | Why                                                                                                                       |
-| ------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `widget-settings-updated` | `emitWidgetSettingsToMain` | drag and resize happen in the overlay; **main owns the file**, so geometry is sent back to be persisted (debounced 16 ms) |
-
-#### Both directions
-
-| Event                           | Emitter function                            | Why both ways                                                                                                                                                            |
-| ------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `drag-mode-changed`             | `emitDragMode` (broadcast `emit`)           | drag mode is toggled from either window and both must agree                                                                                                              |
-| `pit-service-auto-suspended`    | `emitPitServiceAutoSuspended` (broadcast)   | the driver can touch the pit order from either side — checkboxes in the overlay, hotkeys in main — so both windows mirror the flag and draw the same AUTO / MANUAL badge |
-| `pit-service-halves-taken-over` | `emitPitServiceHalvesTakenOver` (broadcast) | same reason: a fuel nudge from a hotkey in main and a tire checkbox in the overlay each claim one half                                                                   |
-| `layout-activated`              | `emitLayoutActivated` (broadcast)           | either side may activate a layout                                                                                                                                        |
+| Message    | Direction           | Event / transport                         | Payload                                              |
+| ---------- | ------------------- | ----------------------------------------- | ---------------------------------------------------- |
+| `hello`    | overlay → main      | `client://to-main`                        | `clientId` — the window label                        |
+| `command`  | overlay → main      | `client://to-main`                        | `commandNo`, `layoutId`, one `ClientCommand`         |
+| `snapshot` | main → overlay      | `client://from-main`, to that window only | `ClientSnapshot`, `lastHandledCommandNo`, `rejected` |
+| snapshot   | main → remote       | the socket, through the hub               | `ClientSnapshot`, bare                               |
+| signal     | main → every client | `client://control` / the socket           | `{ type: RemoteControlKind, data }`                  |
 
 #### Frontend → backend, over the event channel
 
 Two events use the event channel instead of a command, because their listener is
 the Rust recorder rather than a window:
 
-| Event                   | Emitter function         | Heard by                                                                           |
-| ----------------------- | ------------------------ | ---------------------------------------------------------------------------------- |
-| `track-map:clear`       | `emitTrackMapClear`      | both windows **and** the backend recorder — everyone drops their copy of the track |
-| `track-map:force-start` | `emitTrackMapForceStart` | the backend recorder only                                                          |
-
-### One event name, two directions
-
-`widget-settings-updated` travels **both ways under one name**:
-
-- `emitActiveLayoutToOverlays(monitors, widgets)` sends it main → overlay, once per
-  monitor, with a `MonitorWidgetsPayload`;
-- `emitWidgetSettingsToMain(payload)` sends it overlay → main after a drag.
-
-Two details of that payload are load-bearing:
-
-- **The monitor name always travels with the widget list.** Without it, an edit made
-  on one screen would overwrite the widgets of another.
-- **Every overlay receives the whole widget list, not its own slice.** A widget
-  moved to another monitor has to appear on that one, and each record names its
-  monitor in `monitor` — the receiving window draws the records that name its
-  own. The payload also carries the layout's `monitors`, for their bounds.
+| Event                   | Emitter function         | Heard by                                                                                         |
+| ----------------------- | ------------------------ | ------------------------------------------------------------------------------------------------ |
+| `track-map:clear`       | `emitTrackMapClear`      | the backend recorder; the clients drop their copy on the `track-map-cleared` signal sent with it |
+| `track-map:force-start` | `emitTrackMapForceStart` | the backend recorder only                                                                        |
 
 ## Cross-window synchronization
 
@@ -1419,66 +1421,59 @@ Two details of that payload are load-bearing:
 ```mermaid
 flowchart TB
     subgraph MAIN["main window"]
-        MOWN["<b>owns</b><br/>settings.json writes<br/>hotkey runner + OS registration<br/>Twitch connection<br/>overlay window management"]
+        MOWN["<b>owns</b><br/>the settings, and settings.json<br/>the settings hotkeys<br/>Twitch connection<br/>overlay window management"]
     end
     subgraph OVL["overlay windows"]
-        OOWN["<b>owns</b><br/>widget rendering<br/>drag / resize gestures<br/>in-widget interaction"]
+        OOWN["<b>draws</b><br/>its own monitor<br/>drag / resize gestures, as commands<br/>in-widget interaction"]
+    end
+    subgraph REM["remote screens"]
+        ROWN["<b>draws</b><br/>its own screen<br/>read-only"]
     end
     DISK["settings.json"]
 
-    MAIN ==>|"emitToOverlays — settings &amp; commands"| OVL
-    OVL ==>|"emitTo('main') — geometry write-back"| MAIN
+    MAIN ==>|"snapshot · signal"| OVL
+    OVL ==>|"hello · command"| MAIN
+    MAIN ==>|"snapshot · signal, through the hub"| REM
     MAIN --> DISK
 
     style DISK fill:#1e3a5f,color:#fff
 ```
 
-**Main is the owner of persistence.** The overlay never writes `settings.json`.
-Drag a widget in the overlay and the new geometry is emitted to main; main saves it.
+**Main is the only window that holds and writes the settings.** An overlay
+reads no settings file: it says `hello` and draws the snapshot main answers
+with — its own monitor and nothing else — and every later one. A remote screen
+gets the same snapshot over its socket and sends nothing back; the hub refuses a
+command from a browser.
 
-### The round-trip hazard
+### A command, end to end
 
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant MS as main — MobX store
-    participant R as reaction (main-sync.ts)
-    participant E as events.service.ts
-    participant L as listeners.ts (overlay)
-    participant OS as overlay — MobX store
+    participant U as User (overlay, F9)
+    participant C as settings-client.store.ts
+    participant P as client-publish.ts (main)
+    participant S as main — widget store
 
-    U->>MS: toggles a setting
-    MS->>R: observable changes
-    R->>E: emitSomething(value)
-    E-->>L: Tauri event
-    L->>OS: runInAction — assign directly
-    Note over OS: never via a setter —<br/>a setter bumps changeToken<br/>and echoes the settings back to main
+    U->>C: drags a widget
+    C->>C: draws the new position as an override
+    C->>P: command setGeometry (every 75 ms, then final)
+    P->>S: applyClientCommand — live layout, no undo
+    S-->>P: changeToken moves
+    P-->>C: snapshot, lastHandledCommandNo
+    Note over C: an override stays until main has handled<br/>its command — applied or refused —<br/>then the snapshot's value stands
 ```
 
-```ts
-// main — platform/sync/main-sync.ts
-reaction(
-  () => store.value,
-  (value) => emitSomething(value)
-);
-
-// overlay — platform/sync/listeners.ts
-listenTo('event-name', (event) =>
-  runInAction(() => (store.value = event.payload))
-);
-```
-
-> [!WARNING]
-> An overlay-synced value is assigned to the sub-store data **directly, never
-> through a setter.** A setter bumps `changeToken`, which echoes the settings back
-> to main and creates a feedback loop.
+A client installs a snapshot and runs a signal through `client-sync.ts`, the
+same two functions on a monitor and on a tablet. `applyControl` is an
+exhaustive switch over `RemoteControlKind`, so a kind added in Rust without a
+case there does not compile.
 
 ### Startup ordering
 
-During startup main can react before any overlay window exists, which makes Tauri
-log _"event emitted but no listeners found"_. This is harmless: overlays hydrate
-the same values from disk on their own boot, so an emit that lands before they are
-up is simply skipped.
+Main opens the overlays only after its own hydration, and registers its listener
+for `hello` before the first window opens. An overlay subscribes to its snapshot
+before it says `hello`. An overlay that outlived a reload of the main window
+never says hello again, so main publishes to every open overlay once it is up.
 
 ## Worked example: one number, end to end
 
@@ -1530,19 +1525,19 @@ flowchart TB
     L1 --> L2 --> L3 --> L4
 ```
 
-| Technique                                        | Where                                                | The failure it prevents                                                                                                                 |
-| ------------------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Rate tiers                                       | `telemetry/scheduler.rs`                             | sending standings 60 times a second when it changes 10 times                                                                            |
-| Demand gating (`telemetryEvents`)                | widget manifests → `telemetry/emitter.rs`            | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
-| Quantization + repeat suppression                | `telemetry/quantize.rs`, `telemetry/publications.rs` | resending a frame whose only change is in a decimal no widget prints                                                                    |
-| `observable.ref` on frame buffers                | `store/data/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
-| Split computeds                                  | `store/data/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
-| `observer()` on every component                  | all of `ui/`                                         | a parent re-render cascading into leaves that did not change                                                                            |
-| Reading the store in the leaf, not passing props | all of `ui/`                                         | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
-| Root widgets never read 60 Hz fields             | all widget roots                                     | a whole widget re-rendering at 60 Hz for one number                                                                                     |
-| Canvas + `useRef` + RAF                          | `ui/hooks/useReactiveCanvasLoop`, canvas widgets     | 60 Hz React renders for something that is just pixels                                                                                   |
-| `widgetMutationId`                               | `store/settings/`                                    | `JSON.stringify` of the settings tree on every keystroke                                                                                |
-| Debounced geometry write-back (16 ms)            | `overlay-sync.ts`                                    | a settings write per mouse-move during a drag                                                                                           |
+| Technique                                            | Where                                                | The failure it prevents                                                                                                                 |
+| ---------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Rate tiers                                           | `telemetry/scheduler.rs`                             | sending standings 60 times a second when it changes 10 times                                                                            |
+| Demand gating (`telemetryEvents`)                    | widget manifests → `telemetry/emitter.rs`            | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
+| Quantization + repeat suppression                    | `telemetry/quantize.rs`, `telemetry/publications.rs` | resending a frame whose only change is in a decimal no widget prints                                                                    |
+| `observable.ref` on frame buffers                    | `store/data/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
+| Split computeds                                      | `store/data/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
+| `observer()` on every component                      | all of `ui/`                                         | a parent re-render cascading into leaves that did not change                                                                            |
+| Reading the store in the leaf, not passing props     | all of `ui/`                                         | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
+| Root widgets never read 60 Hz fields                 | all widget roots                                     | a whole widget re-rendering at 60 Hz for one number                                                                                     |
+| Canvas + `useRef` + RAF                              | `ui/hooks/useReactiveCanvasLoop`, canvas widgets     | 60 Hz React renders for something that is just pixels                                                                                   |
+| `changeToken`                                        | `store/layout/`                                      | `JSON.stringify` of the settings tree on every keystroke                                                                                |
+| Coalesced overlay commands (75 ms drag, 50 ms popup) | `settings-client.store.ts`                           | a command and a snapshot per mouse-move during a drag                                                                                   |
 
 > [!WARNING]
 > **Never integrate 60 Hz values using the telemetry `sessionTime`.** It stalls,
@@ -1605,6 +1600,52 @@ layout's starter set are built from, not what is on screen.
 
 Most changes need no migration at all. Full guide:
 [`docs/settings-schema.md`](./settings-schema.md).
+
+## Content Security Policy
+
+Every page the app shows runs under a policy that allows only what it uses.
+Two kinds of page, three places a policy is set:
+
+| page                                  | policy from                             | reaches the page as                 |
+| ------------------------------------- | --------------------------------------- | ----------------------------------- |
+| app windows (`main/overlay/hud.html`) | `app.security.csp` in `tauri.conf.json` | header, from Tauri's asset protocol |
+| the same, in `tauri:dev`              | `app.security.devCsp`                   | `<meta>`, injected by `vite.csp.ts` |
+| remote page, server's own pages       | `src-tauri/src/remote/csp.rs`           | header, from the remote server      |
+
+On desktop Tauri injects its policy only into pages it serves itself, and a
+dev window loads straight from Vite — without `vite.csp.ts` a violation would
+first appear in a release build.
+
+What is allowed beyond `'self'`, and why:
+
+- **`style-src 'unsafe-inline'`** in the app windows — Ant Design's CSS-in-JS
+  (`@ant-design/cssinjs`) writes `<style>` tags at runtime.
+  `dangerousDisableAssetCspModification: ["style-src"]` keeps Tauri from adding
+  a nonce there, which would make browsers ignore `'unsafe-inline'`. The
+  remote page carries no Ant Design and allows no inline style.
+- **`script-src 'unsafe-inline'`** in development only — React Refresh's
+  preamble from `@vitejs/plugin-react` is an inline script — and in the
+  `tauri:build:dev` build, whose `tauri.dev.conf.json` patches the policy for
+  `tauri-plugin-mcp-bridge`: the bridge injects inline `<script>` tags, and
+  without them every `webview_*` tool fails ("Resolve-ref helper was not
+  available"). That file also turns Tauri's nonce injection off entirely,
+  because a nonce in `script-src` makes browsers ignore `'unsafe-inline'`. No
+  build has `unsafe-eval`, and a test in `remote/csp.rs` fails if the release
+  policy gains either.
+- **`img-src`**: `data:` (Vite inlines small images, flag sprites among them;
+  companion app icons arrive as data URLs), `http://asset.localhost` (layout
+  backgrounds), and the chat image hosts. Those are `CHAT_IMAGE_SOURCES` in
+  `chat/mod.rs`; the remote policy is built from that list and a test pins both
+  `tauri.conf.json` policies to it. **A new chat source with images on another
+  host is one line there plus the two lists in the config** — miss it and its
+  emotes render as broken images, nothing else complains.
+- **`connect-src`**: `http://ipc.localhost` (Tauri IPC); on the remote page
+  `ws://<host>` back to the server it came from; in development the Vite HMR
+  socket.
+
+The remote server adds its policy to any HTML response that does not carry one
+(`csp::apply`, a middleware), so a new route serving HTML is covered without
+remembering to.
 
 ## Testing
 
@@ -1682,4 +1723,8 @@ npm run storybook          # isolated widget stories on :6006
 
 cd src-tauri && cargo fmt
 RUST_LOG=marble_trace_lib=debug npm run tauri:dev   # verbose backend logs
+MARBLE_TRACE_RECORD=<dir> npm run tauri:dev         # record live sessions as tapes (dev feature)
+MARBLE_TRACE_REPLAY=<tape> npm run tauri:dev        # play a tape instead of the sim (dev feature)
 ```
+
+Every environment variable is listed in `CONTRIBUTING.md` → Environment variables.

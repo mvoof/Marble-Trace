@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { useDiagnosticsHudStore } from '@store/root-store-context';
+import { useDiagnosticsHudStore } from '@store/roots/hud-root-context';
 import styles from './DiagnosticsHudWindow.module.scss';
 
 const PERCENT = 100;

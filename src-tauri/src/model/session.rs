@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::model::enums::SessionState;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 pub struct SessionFrame {
     /// Seconds since the session started

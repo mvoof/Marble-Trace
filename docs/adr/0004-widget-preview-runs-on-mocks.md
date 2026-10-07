@@ -1,7 +1,7 @@
 # ADR 0004: The widget preview runs on mock builders, not on recorded sessions
 
 **Status:** accepted, 2026-09-14
-**Context:** `store/preview/`, the widget preview, the layout editor, Storybook
+**Context:** `preview/`, the widget preview, the layout editor, Storybook
 
 ## Decision
 
@@ -24,7 +24,7 @@ is:
    stores the running widgets use, no singletons, no persistence. The one
    channel between the two worlds is the existing one-way mirror of widget
    settings into the preview. Enforced by `no-restricted-imports` over
-   `src/store/preview/**`, the way every other layer boundary in this project is
+   `src/preview/**`, the way every other layer boundary in this project is
    enforced.
 2. **A scenario belongs to the domain of the widget that needs it.** The flag
    widget declares flag scenarios, the fuel widget declares fuel ones. Neither

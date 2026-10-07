@@ -7,6 +7,7 @@
 //! `computations/`. Widget layout stays a frontend concern — the main window
 //! publishes an opaque snapshot the server only caches and forwards.
 pub mod commands;
+pub mod csp;
 pub mod hub;
 pub mod mirror;
 pub mod pages;

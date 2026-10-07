@@ -6,7 +6,7 @@ import {
   resetDeliveryCounters,
   setInspectorActive,
 } from '@platform/services/telemetry.service';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/roots/renderer-core';
 import type { DeliverySet, SourceFrame } from '@/types/bindings';
 import type {
   DeliveryFieldRow,
@@ -16,7 +16,7 @@ import type {
 } from '@/types/inspector';
 import { ARRAY_PAGE, buildRows, countAbsent } from './inspector-tree';
 
-type TelemetryInspectorDeps = Pick<RootStore, 'session'>;
+type TelemetryInspectorDeps = Pick<RendererCore, 'session'>;
 
 /**
  * The telemetry inspector's data feed and view state.

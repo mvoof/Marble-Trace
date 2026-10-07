@@ -4,12 +4,14 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { createLayerAliases, SCSS_ADDITIONAL_DATA } from './vite.aliases';
+import { devContentSecurityPolicy } from './vite.csp';
 
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(() => ({
   plugins: [
+    devContentSecurityPolicy(),
     react(),
     svgr({
       svgrOptions: {
@@ -22,10 +24,16 @@ export default defineConfig(() => ({
   base: './',
 
   build: {
+    // Hidden maps for `npm run perf -- --build`, which resolves a heap
+    // profile's minified frames back to source files. Never in a release.
+    sourcemap: process.env.MARBLE_TRACE_SOURCEMAPS === '1' ? 'hidden' : false,
     rollupOptions: {
       input: {
-        // The windows Tauri opens.
-        main: resolve(__dirname, 'index.html'),
+        // The windows Tauri opens, one page each, so a window bundles only
+        // its own shell: the overlay never loads antd or the settings UI.
+        main: resolve(__dirname, 'main.html'),
+        overlay: resolve(__dirname, 'overlay.html'),
+        hud: resolve(__dirname, 'hud.html'),
         // A layout rendered in a browser on another device. A separate entry
         // because it must not pull in the Tauri API.
         remote: resolve(__dirname, 'remote.html'),

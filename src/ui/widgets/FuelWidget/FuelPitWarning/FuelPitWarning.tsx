@@ -7,7 +7,7 @@ import { PitWarningFill } from './PitWarningFill/PitWarningFill';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import { ReservedSlot } from '@ui/shared/ReservedSlot/ReservedSlot';
 import styles from './FuelPitWarning.module.scss';
-import { useBackendComputedStore } from '@store/root-store-context';
+import { useBackendComputedStore } from '@store/roots/root-store-context';
 
 /**
  * The header row, the separator, the fill's amount cell and its footer, plus

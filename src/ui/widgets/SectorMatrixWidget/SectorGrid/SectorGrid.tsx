@@ -5,7 +5,7 @@ import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import {
   usePlayerStore,
   useBackendComputedStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 import { sectorChipStateOf, type SectorChipState } from './sector-chip';
 import styles from './SectorGrid.module.scss';

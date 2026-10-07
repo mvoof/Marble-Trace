@@ -1,19 +1,14 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import {
-  computeRelativeGap,
-  buildRelativeGridTemplate,
-} from '@ui/widgets/RelativeWidget/relative-utils';
-import { formatCarNumber } from '@utils/driver';
+import { buildRelativeGridTemplate } from '@ui/widgets/RelativeWidget/relative-utils';
+import { computeRelativeGap, formatCarNumber } from '@utils/driver';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './PaceCarRow.module.scss';
-import {
-  useBackendComputedStore,
-  useRelativeWidgetStore,
-} from '@store/root-store-context';
+import { useBackendComputedStore } from '@store/roots/root-store-context';
+import { useRelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.store';
 
 interface PaceCarRowProps {
   carIdx: number;

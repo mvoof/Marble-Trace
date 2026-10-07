@@ -44,19 +44,13 @@ screens to the hardware. Gestures are functions in `layout-gestures.ts` holding
 both sides, never members of either store — that is what keeps the dependency
 between records and map pointing one way.
 
-**Mutation log** — `SettingsMutationLog`: what changed in the settings since
-anyone last looked. Every settings write marks itself in it, and both marks are
-why an edit reaches disk at all:
-
-- a **token** moves — `changeToken` for a local edit, `syncToken` for one that
-  arrived from the other window and must not be echoed back;
-- the **widgets touched** are collected, so the overlay can be sent a patch of
-  what moved instead of the whole layout. A write that installs a map wholesale
-  says so instead, with `recordEveryWidget`.
-
-The log holds ids, never widgets: only the store owning the live map can turn an
-id into a record, and keeping that out is what lets a layout record mark itself
-without knowing anything about widgets. See
+**Mutation log** — `SettingsMutationLog`: whether the settings changed since
+anyone last looked — one counter, `changeToken`, moved by every settings write.
+In main it is what the save and the client publishing watch; in a client and a
+preview it moves when a snapshot or a mirror is installed. Main is the only
+window that writes the settings (ADR-0007), so there is no second token for
+edits arriving from elsewhere and no list of widgets touched — both existed only
+to keep two writers from echoing each other. See
 [ADR-0002](docs/adr/0002-settings-writes-mark-themselves.md) and
 [ADR-0003](docs/adr/0003-widget-state-lives-in-three-stores.md).
 

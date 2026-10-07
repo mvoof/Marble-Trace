@@ -18,26 +18,26 @@ import {
   Monitor,
   GripHorizontal,
 } from 'lucide-react';
-import { RootStore } from '@store/root-store';
+import { PreviewCore } from '@store/roots/renderer-core';
 import {
-  RootStoreContext,
+  RendererCoreContext,
   useSessionStore,
-  useTrackMapWidgetStore,
   useUnitsStore,
   useLayoutsStore,
-  useLiveWidgetsStore,
   useSettingsMutationLog,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
+import {
+  useMainLiveWidgetsStore,
+  useTrackRotationStore,
+} from '@store/roots/main-root-context';
 import { componentForWidget } from '@ui/widgets/registry';
+import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
-import {
-  seedScenario,
-  DEFAULT_PREVIEW_SCENARIO_ID,
-} from '@store/preview/scenarios';
-import { resolveBackgroundSrc } from '@store/settings/layout-background';
-import { monitorsBounds } from '@store/settings/virtual-desktop';
-import { seedInputHistory } from '@store/preview/preview-animator';
+import { seedScenario, DEFAULT_PREVIEW_SCENARIO_ID } from '@/preview/scenarios';
+import { resolveBackgroundSrc } from '@store/layout/layout-background';
+import { monitorsBounds } from '@store/layout/virtual-desktop';
+import { seedInputHistory } from '@/preview/preview-animator';
 import type {
   LayoutMonitor,
   MonitorBounds,
@@ -56,47 +56,39 @@ import styles from './LayoutCanvas.module.scss';
  *
  * The editor draws a synthetic track, so rotating it there has to be filed
  * under the track the user is actually on — the preview store owns no track of
- * its own and never writes to disk. The reverse direction matters just as much:
- * a map turned in an overlay must already look turned when the editor opens.
+ * its own and never reaches the file. The reverse direction matters just as
+ * much: a map turned in an overlay must already look turned when the editor
+ * opens.
  */
-const useTrackRotationBridge = (previewStore: RootStore) => {
-  const trackMapWidget = useTrackMapWidgetStore();
+const useTrackRotationBridge = (previewStore: PreviewCore) => {
+  const trackRotation = useTrackRotationStore();
   const sessionStore = useSessionStore();
 
   useLayoutEffect(() => {
     const previewMap = previewStore.trackMapWidget;
+    const storedRotation = () =>
+      trackRotation.rotationOf(sessionStore.trackKey);
 
-    runInAction(() =>
-      previewMap.setTrackRotation(trackMapWidget.trackRotation)
-    );
+    runInAction(() => previewMap.setTrackRotation(storedRotation()));
 
     const disposers = [
       reaction(
         () => previewMap.trackRotation,
         (rotation) => {
-          if (rotation === trackMapWidget.trackRotation) {
+          if (rotation === storedRotation()) {
             return;
           }
 
-          const { sessionInfo } = sessionStore;
-          const trackId =
-            sessionInfo && sessionInfo.trackId >= 0
-              ? String(sessionInfo.trackId)
-              : '';
-
-          trackMapWidget.rotateTo(trackId, rotation);
+          void trackRotation.setRotation(sessionStore.trackKey, rotation);
         }
       ),
-      reaction(
-        () => trackMapWidget.trackRotation,
-        (rotation) => {
-          runInAction(() => previewMap.setTrackRotation(rotation));
-        }
-      ),
+      reaction(storedRotation, (rotation) => {
+        runInAction(() => previewMap.setTrackRotation(rotation));
+      }),
     ];
 
     return () => disposers.forEach((dispose) => dispose());
-  }, [previewStore, sessionStore, trackMapWidget]);
+  }, [previewStore, sessionStore, trackRotation]);
 };
 
 interface LayoutCanvasProps {
@@ -119,7 +111,7 @@ interface LayoutCanvasProps {
 // canvas; only content-affecting settings need mirroring here.
 const mirrorAllWidgets = (
   source: WidgetDefaultConfig[],
-  previewStore: RootStore
+  previewStore: PreviewCore
 ) => {
   const mirrored = source.map((widget) => ({
     ...widget,
@@ -247,7 +239,7 @@ export const LayoutCanvas = observer(
     isRatioLocked = false,
     focusedMonitorName = null,
   }: LayoutCanvasProps) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const settingsMutations = useSettingsMutationLog();
     const layouts = useLayoutsStore();
     const units = useUnitsStore();
@@ -256,7 +248,7 @@ export const LayoutCanvas = observer(
       ? monitors.find((monitor) => monitor.name === focusedMonitorName)
       : undefined;
     const { t } = useTranslation('main-app');
-    const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
+    const previewStore = useMemo(() => new PreviewCore(), []);
 
     const paneRef = useRef<HTMLDivElement | null>(null);
     const [paneSize, setPaneSize] = useState({ width: 0, height: 0 });
@@ -298,7 +290,7 @@ export const LayoutCanvas = observer(
       mirrorAllWidgets(liveWidgets.allWidgets, previewStore);
 
       return reaction(
-        () => [settingsMutations.changeToken, settingsMutations.syncToken],
+        () => settingsMutations.changeToken,
         () => mirrorAllWidgets(liveWidgets.allWidgets, previewStore)
       );
     }, [previewStore, liveWidgets, settingsMutations]);
@@ -603,7 +595,7 @@ export const LayoutCanvas = observer(
     }, [rawBackground]);
 
     return (
-      <RootStoreContext.Provider value={previewStore}>
+      <RendererCoreContext.Provider value={previewStore}>
         <div
           className={`${styles.pane} ${
             fullscreen ? styles.paneFullscreen : ''
@@ -691,7 +683,7 @@ export const LayoutCanvas = observer(
                     ? componentForWidget(widget.type)
                     : undefined;
 
-                  if (!Widget) {
+                  if (!widget || !Widget) {
                     return null;
                   }
 
@@ -710,7 +702,12 @@ export const LayoutCanvas = observer(
                     >
                       <ErrorBoundary>
                         <WidgetIdContext.Provider value={id}>
-                          <Widget />
+                          <WidgetInstanceScope
+                            type={widget.type}
+                            instanceId={id}
+                          >
+                            <Widget />
+                          </WidgetInstanceScope>
                         </WidgetIdContext.Provider>
                       </ErrorBoundary>
                     </LayoutCanvasWidget>
@@ -750,7 +747,7 @@ export const LayoutCanvas = observer(
             </div>
           )}
         </div>
-      </RootStoreContext.Provider>
+      </RendererCoreContext.Provider>
     );
   }
 );

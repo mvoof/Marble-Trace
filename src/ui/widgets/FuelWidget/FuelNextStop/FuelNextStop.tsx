@@ -9,7 +9,7 @@ import styles from './FuelNextStop.module.scss';
 import {
   useBackendComputedStore,
   usePlayerStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 const NO_LAP_PLACEHOLDER = '--';
 

@@ -1,14 +1,14 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { reaction, runInAction } from 'mobx';
 
-import { RootStore } from '@store/root-store';
-import { seedScenario } from '@store/preview/scenarios';
-import { seedInputHistory } from '@store/preview/preview-animator';
+import { PreviewCore } from '@store/roots/renderer-core';
+import { seedScenario } from '@/preview/scenarios';
+import { seedInputHistory } from '@/preview/preview-animator';
 import {
   useUnitsStore,
   useLiveWidgetsStore,
   useSettingsMutationLog,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 
 /**
@@ -19,7 +19,7 @@ import type { WidgetDefaultConfig } from '@/types/widget-settings';
  */
 export const mirrorWidgetsIntoPreview = (
   source: WidgetDefaultConfig[],
-  previewStore: RootStore
+  previewStore: PreviewCore
 ) => {
   // The whole set rather than a patch: the preview world starts as the shipped
   // catalog, so a layout holding a copy has records it has never heard of, and
@@ -47,20 +47,20 @@ export const mirrorWidgetsIntoPreview = (
  * the truth, and seeding over them would show the driver a race they are not in.
  *
  * The store is built on first use and kept afterwards — leaving and re-entering
- * edit mode is a keystroke, and rebuilding a whole `RootStore` on it would
+ * edit mode is a keystroke, and rebuilding a whole `RendererCore` on it would
  * restart every widget's animation.
  */
-export const usePreviewContentStore = (active: boolean): RootStore | null => {
+export const usePreviewContentStore = (active: boolean): PreviewCore | null => {
   const liveWidgets = useLiveWidgetsStore();
   const settingsMutations = useSettingsMutationLog();
   const units = useUnitsStore();
 
-  const [previewStore, setPreviewStore] = useState<RootStore | null>(null);
+  const [previewStore, setPreviewStore] = useState<PreviewCore | null>(null);
 
   useEffect(() => {
     if (!active || previewStore) return;
 
-    setPreviewStore(new RootStore({ skipInit: true }));
+    setPreviewStore(new PreviewCore());
   }, [active, previewStore]);
 
   useEffect(() => () => previewStore?.dispose(), [previewStore]);
@@ -90,7 +90,7 @@ export const usePreviewContentStore = (active: boolean): RootStore | null => {
     mirrorWidgetsIntoPreview(liveWidgets.allWidgets, previewStore);
 
     return reaction(
-      () => [settingsMutations.changeToken, settingsMutations.syncToken],
+      () => settingsMutations.changeToken,
       () => mirrorWidgetsIntoPreview(liveWidgets.allWidgets, previewStore)
     );
   }, [previewStore, liveWidgets, settingsMutations]);

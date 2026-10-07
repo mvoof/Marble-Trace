@@ -23,9 +23,9 @@ and not throwaway.
 | `src/storybook/story-overrides.ts`        | `whenSet` — a story argument that only overrides the frame when the story set it                                |
 | `src/storybook/with-replay.tsx`           | `withReplay` — plays a burst of frames after mount, for widgets that draw a history                             |
 | `src/storybook/widgetDecorator.tsx`       | the frame standing in for `WidgetContainer` — size, ground, border, `--wfs`                                     |
-| `.storybook/decorators.tsx`               | `withStore` — a fresh `RootStore({ skipInit: true })` per story, provided through the context                   |
-| `src/store/preview/scenarios.ts`          | the named scenarios (`PreviewScenarioId`) shared with the in-app layout-editor preview                          |
-| `src/store/preview/mocks/*.ts`            | mock builders — `mockFuel`, `mockProximity`, `mockField`… — that derive a frame the way the backend does        |
+| `.storybook/decorators.tsx`               | `withStore` — a fresh `PreviewCore` per story, provided through the context                                     |
+| `src/preview/scenarios.ts`                | the named scenarios (`PreviewScenarioId`) shared with the in-app layout-editor preview                          |
+| `src/preview/mocks/*.ts`                  | mock builders — `mockFuel`, `mockProximity`, `mockField`… — that derive a frame the way the backend does        |
 
 The widget is **not** rewritten for Storybook. It reads its stores exactly as in
 the app; a story only decides what is in those stores.
@@ -36,7 +36,7 @@ the app; a story only decides what is in those stores.
 
 For every story, on mount and again on every change of a control:
 
-1. Provides a fresh `RootStore` (`withStore`) and marks the sim connected, so
+1. Provides a fresh `RendererCore` (`withStore`) and marks the sim connected, so
    the widget does not show its "no data" placeholder.
 2. Lays down the base: the story's **scenario** if it names one
    (`parameters: previewScenario(id)`), otherwise the shared telemetry snapshot
@@ -95,8 +95,8 @@ name the widget explicitly.
 ```ts
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { mockProximity } from '@store/preview/mocks/traffic';
-import type { MockTrafficCar } from '@store/preview/mocks/traffic';
+import { mockProximity } from '@preview/mocks/traffic';
+import type { MockTrafficCar } from '@preview/mocks/traffic';
 import { ProximityRadarWidget } from './ProximityRadarWidget';
 import {
   defineWidgetStories,
@@ -158,7 +158,7 @@ seed: (store, args) => {
 ```
 
 - **Write through the data stores' own setters** (`updateProximity`,
-  `updateFuel`…) with frames from `src/store/preview/mocks/`. Never hand-build a
+  `updateFuel`…) with frames from `src/preview/mocks/`. Never hand-build a
   frame object: the builders derive dependent fields the way the backend does,
   and a hand-built one drifts the day the frame changes.
 - **Respect the scenario under you.** The seed runs after the scenario, so an
@@ -233,18 +233,18 @@ export const Showcase: Story = {
 };
 ```
 
-`seedInputHistory` lives in `src/store/preview/preview-animator.ts`, shared with
+`seedInputHistory` lives in `src/preview/preview-animator.ts`, shared with
 the in-app preview. See `InputTraceWidget`, `GMeterWidget`, `LapLogWidget` for
 working ones.
 
 ### 5. Scenarios — when to add one
 
-A scenario (`src/store/preview/scenarios.ts`, id in
+A scenario (`src/preview/scenarios.ts`, id in
 `src/types/preview-scenarios.ts`) is shared with the layout editor's preview
 picker. Add one when the **app** should be able to show that state too — a flag,
 a pit stop, three-wide traffic. A state only one story needs stays in that
 story's args. **Nothing that exists only for a story may be added to
-`store/preview/`**, and nothing in `store/preview/` may import from
+`preview/`**, and nothing in `preview/` may import from
 `src/storybook/` (the app must never depend on Storybook).
 
 ---

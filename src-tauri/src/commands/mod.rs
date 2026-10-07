@@ -7,6 +7,8 @@
 
 pub mod companions;
 pub mod install;
+#[cfg(feature = "dev")]
+pub mod perf;
 pub mod pit;
 pub mod settings;
 pub mod telemetry;
@@ -17,17 +19,18 @@ pub use companions::{
     detect_companion_apps, launch_companion_app,
 };
 pub use install::check_install_integrity;
-pub use pit::send_pit_order;
+pub use pit::{run_pit_action, set_pit_strategy, toggle_pit_auto};
 pub use settings::{
     backup_settings_file, delete_settings_file, log_settings_snapshot, settings_file_exists,
 };
 pub use telemetry::{
     clear_active_events, clear_remote_active_events, get_connection_status, get_delivery_counters,
-    get_inspector_frame, get_last_session_info, reset_delivery_counters, set_active_events,
-    set_car_length, set_fuel_avg_window, set_fuel_count_yellow_laps, set_inspector_active,
-    set_pit_warning_laps, set_remote_active_events, start_telemetry_stream, stop_telemetry_stream,
+    get_inspector_frame, get_last_session_info, get_tick_summary, reset_delivery_counters,
+    set_active_events, set_car_length, set_fuel_avg_window, set_fuel_count_yellow_laps,
+    set_inspector_active, set_pit_warning_laps, set_remote_active_events, start_telemetry_stream,
+    stop_telemetry_stream,
 };
 pub use track::{
-    delete_reference_lap, delete_track_shape, get_cached_track_shape, get_reference_lap,
+    delete_reference_lap, delete_track_shape, get_active_reference_lap, get_cached_track_shape,
     reset_pit_lane_pct,
 };

@@ -1,5 +1,5 @@
 import type { CarIdentity } from '@/types/car-identity';
-import type { DriverEntry } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { licColumnWidthPx } from '@ui/shared/RatingBadge/LicBadge.utils';
 
@@ -246,11 +246,11 @@ export interface BestLapDisplay {
  * stands in there, marked so it is never read as a lap set in this session.
  */
 export const resolveBestLapDisplay = (driver: CarIdentity): BestLapDisplay => {
-  if (driver.bestLapTime > 0) {
+  if (driver.bestLapTime !== null) {
     return { time: driver.bestLapTime, isQualifying: false };
   }
 
-  if (driver.qualifyTime > 0) {
+  if (driver.qualifyTime !== null) {
     return { time: driver.qualifyTime, isQualifying: true };
   }
 
@@ -275,7 +275,11 @@ export const getStandingsGap = (
   }
 
   if (!isRace) {
-    if (driver.bestLapTime > 0 && leader && leader.bestLapTime > 0) {
+    if (
+      driver.bestLapTime !== null &&
+      leader !== null &&
+      leader.bestLapTime !== null
+    ) {
       const timeDiff = driver.bestLapTime - leader.bestLapTime;
 
       if (timeDiff > 0) {

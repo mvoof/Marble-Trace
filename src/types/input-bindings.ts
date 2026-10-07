@@ -1,33 +1,21 @@
 /**
- * The wire shape of an input binding.
- *
- * Lives with the other contracts rather than in `store/hotkeys/` because a
- * binding map travels between windows as an event payload, so the transport
- * layer has to name it without importing a store. The action registry itself
- * (`HotkeyAction`, which closes over `RootStore`) stays in the store.
+ * The wire shape of an input binding — declared in Rust (`model/hotkeys.rs`),
+ * which dispatches them, and generated into `bindings.ts`. Re-exported here
+ * with the helpers every layer compares bindings by.
  */
+import type { Binding, HotkeyTrigger } from './bindings';
+
+export type { Binding };
 
 /**
  * `press` — the action runs once, on key down.
- * `hold` — the action runs on both edges and receives whether the key is down,
- * so it can mirror the physical state (interact mode's hold variant).
+ * `hold` — the action runs on both edges (interact mode's hold variant).
  */
-export type BindingTrigger = 'press' | 'hold';
+export type BindingTrigger = HotkeyTrigger;
 
-export interface KeyboardBinding {
-  kind: 'keyboard';
-  /** Tauri accelerator, e.g. "Control+Shift+P". */
-  accelerator: string;
-}
+export type KeyboardBinding = Extract<Binding, { kind: 'keyboard' }>;
 
-export interface DeviceBinding {
-  kind: 'device';
-  /** Stable device identity, not an enumeration index. See input/identity.rs. */
-  deviceId: string;
-  button: number;
-}
-
-export type Binding = KeyboardBinding | DeviceBinding;
+export type DeviceBinding = Extract<Binding, { kind: 'device' }>;
 
 /** actionId -> the bindings that fire it. Both kinds may be mixed freely. */
 export type BindingMap = Record<string, Binding[]>;

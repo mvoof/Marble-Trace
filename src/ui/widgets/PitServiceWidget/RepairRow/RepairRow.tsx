@@ -9,7 +9,7 @@ import {
 import {
   usePitServiceWidgetStore,
   usePlayerStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 const ICON_SIZE = 13;
 

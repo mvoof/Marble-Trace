@@ -1,15 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
-import type { MockFieldRows } from '@store/preview/mocks/field';
+import type { RendererCore } from '@store/roots/renderer-core';
+import type { MockFieldRows } from '@/preview/mocks/field';
 import {
   MOCK_DRIVER_FLAG_ROWS,
   MOCK_PIT_ROWS,
   PACE_CAR_IDX,
-  mockField,
   mockPaceCarEntry,
-} from '@store/preview/mocks/field';
+  mockPaceCarFrame,
+} from '@/preview/mocks/field';
+import { respaceField } from '@/preview/field-seed';
 import { RelativeWidget } from './RelativeWidget';
 import {
   defineWidgetStories,
@@ -29,7 +30,7 @@ const SECOND_PACE_CAR_LEAD_S = -3;
 // A safety car is not a driver entry: it reaches the widget through the session
 // roster and the per-car arrays, the way the sim reports it. Both halves are
 // stated here so the row cannot appear in one and be missing from the other.
-const seedPaceCars = (store: RootStore, multiclass: boolean) => {
+const seedPaceCars = (store: RendererCore, multiclass: boolean) => {
   const sessionInfo = store.session.sessionInfo;
   const carIdx = store.cars.carIdx;
   const player = store.backendComputed.relativeEntries.find(
@@ -84,6 +85,10 @@ const seedPaceCars = (store: RootStore, multiclass: boolean) => {
     car_idx_lap_dist_pct: lapDist,
     car_idx_est_time: estTime,
   });
+
+  store.backendComputed.updatePaceCar(
+    mockPaceCarFrame(paceCars.map((car) => car.carIdx))
+  );
 };
 
 interface StoryArgs {
@@ -109,8 +114,6 @@ const meta: Meta<StoryArgs> = {
     size: { width: 406, height: 400 },
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
-      const base = store.backendComputed.driverEntries;
-
       // A scenario has already spaced the field the way it means to show it, so
       // only a story that states a spacing of its own re-spaces it.
       const respaces =
@@ -118,14 +121,11 @@ const meta: Meta<StoryArgs> = {
         args.gapS !== undefined ||
         args.rows !== undefined;
 
-      if (base && respaces) {
-        const { driverEntries, relative } = mockField(base.entries, {
+      if (respaces) {
+        respaceField(store, {
           gapS: args.gapS ?? DEFAULT_GAP_S,
           rows: args.rows,
         });
-
-        store.backendComputed.updateDriverEntries(driverEntries);
-        store.backendComputed.updateRelative(relative);
       }
 
       if (args.settings) {

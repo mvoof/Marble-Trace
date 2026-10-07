@@ -2,7 +2,10 @@ import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { initDiagnosticsHudSync } from '@platform/sync/diagnostics-hud-sync';
-import { useDiagnosticsHudStore, useStore } from '@store/root-store-context';
+import {
+  useDiagnosticsHudStore,
+  useHudRoot,
+} from '@store/roots/hud-root-context';
 import { DiagnosticsBanner } from './DiagnosticsBanner';
 
 /**
@@ -10,7 +13,7 @@ import { DiagnosticsBanner } from './DiagnosticsBanner';
  * it carries its own store instance and receives the run state over an event.
  */
 export const DiagnosticsHudWindow = observer(() => {
-  const root = useStore();
+  const root = useHudRoot();
   const hud = useDiagnosticsHudStore();
   const { i18n } = useTranslation();
   const language = hud.state?.language;

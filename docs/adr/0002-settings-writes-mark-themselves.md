@@ -1,11 +1,15 @@
 # ADR 0002: A settings write marks itself, in a log both stores share
 
-**Status:** accepted, 2026-09-07
+**Status:** accepted, 2026-09-07; partly superseded by ADR-0007 (2026-10-05) —
+the log now holds `changeToken` alone. `syncToken`, the touched-widget set and
+`syncedLayoutId` went with the overlay's write-back: main is the only writer, so
+nothing arrives that must not echo. That both stores write into one shared log
+still stands.
 **Context:** the layout façade inside `LiveWidgetsStore`
 
 ## Decision
 
-`SettingsMutationLog` (`store/settings/mutation-log.ts`) holds `changeToken`,
+`SettingsMutationLog` (`store/layout/mutation-log.store.ts`) holds `changeToken`,
 `syncToken` and the set of widgets touched. `LayoutsStore` and
 `LiveWidgetsStore` are both constructed with it and both write into it, so a
 layout record marks its own writes instead of being wrapped in a façade method

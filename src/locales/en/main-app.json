@@ -11,6 +11,7 @@
   },
   "appStatus": {
     "connectedTo": "CONNECTED TO {{sim}}",
+    "replaying": "REPLAY: {{tape}}",
     "waitingForTelemetry": "WAITING FOR TELEMETRY",
     "systemError": "SYSTEM ERROR",
     "waitingForGame": "WAITING FOR GAME TO START"
@@ -137,7 +138,7 @@
     "resetSettingsOk": "Reset",
     "reset": "Reset",
     "hotkeysActOn": "Hotkeys act on this widget",
-    "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen only shows."
+    "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen follows them too, so a stream shows what you switched to."
   },
   "layoutList": {
     "moduleLabel": "Layouts",
@@ -294,6 +295,17 @@
       "title": "Steering Wheel",
       "rangeTitle": "Steering Lock",
       "rangeDesc": "Physical range of your wheel: {{full}}° (±{{half}}°). Shared by every widget that shows steering."
+    },
+    "pitStrategy": {
+      "title": "Pit stop strategy",
+      "desc": "Applies to the one car in the sim, whichever screen shows the pit box.",
+      "autoFuel": "Auto fuel",
+      "autoFuelDesc": "Auto mode checks the fuel amount the Fuel widget calculates, capped at tank capacity.",
+      "autoTires": "Auto tires",
+      "autoTiresDesc": "Auto mode checks the corners worn past the threshold below, one corner at a time.",
+      "autoTireWearThreshold": "Change a tire at {{percent}}% tread left",
+      "fuelAdjustStep": "Fuel key step",
+      "fuelAdjustStepDesc": "How much one press of the fuel up / down keys adds or removes, in the unit you read — litres on metric, gallons on imperial."
     },
     "carLength": {
       "title": "Car",

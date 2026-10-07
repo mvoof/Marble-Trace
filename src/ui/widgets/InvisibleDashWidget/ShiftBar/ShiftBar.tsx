@@ -4,7 +4,10 @@ import { observer } from 'mobx-react-lite';
 import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
 import { computeRpmZoneState } from '@utils/car-signals';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import { usePlayerStore, useSessionStore } from '@store/root-store-context';
+import {
+  usePlayerStore,
+  useSessionStore,
+} from '@store/roots/root-store-context';
 
 import { shiftBarColor } from '../invisible-dash-utils';
 

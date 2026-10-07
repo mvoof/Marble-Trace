@@ -12,6 +12,10 @@
 //! come out of the one list below into `src/utils/backend-events.ts` — see
 //! [`ts_values`](super::ts_values).
 
+// The perf run's two names are emitted only by `dev` code; a release build
+// would otherwise flag them unused. A `dev` build still lints this file whole.
+#![cfg_attr(not(feature = "dev"), allow(dead_code))]
+
 use serde::{Deserialize, Serialize};
 
 use crate::model::ts_values::ts_values;
@@ -26,11 +30,10 @@ ts_values! {
     /// listener, so the main window pays nothing for 60 Hz it does not render.
     pub const EVENT_TELEMETRY_BUNDLE: &str = "sim://telemetry/bundle" => SIM_TELEMETRY_BUNDLE;
 
-    /// A 4 Hz slice for windows that do not take the bundle. The main window
-    /// drives layout auto-switching off `is_on_track` and the automatic pit
-    /// order off the fuel calculation and the sim's own order — subscribing it
-    /// to 60 Hz telemetry to read four frames at four hertz is not the way to
-    /// get them.
+    /// A 4 Hz slice for windows that do not take the bundle: the player's car
+    /// status, which the main window's layout auto-switch reads `is_on_track`
+    /// off. Subscribing main to 60 Hz telemetry for one flag at four hertz is
+    /// not the way to get it.
     pub const EVENT_TELEMETRY_SLOW: &str = "sim://telemetry/slow" => SIM_TELEMETRY_SLOW;
 
     /// The parsed session snapshot, re-emitted whenever the sim's session
@@ -84,6 +87,34 @@ ts_values! {
     /// A controller button edge, for the global input bindings.
     pub const INPUT_BUTTON_EVENT: &str = "input://button" => INPUT_BUTTON_EVENT;
 
+    /// The overlay's drag and interact modes changed. The hotkey dispatcher
+    /// owns them; every window mirrors them.
+    pub const EVENT_OVERLAY_MODES: &str = "app://overlay-modes" => OVERLAY_MODES_EVENT;
+
+    /// A settings action's key fired. Sent to the main window only, which owns
+    /// the settings it writes.
+    pub const EVENT_HOTKEY_SETTINGS_ACTION: &str = "hotkey://settings-action" => HOTKEY_SETTINGS_ACTION_EVENT;
+
+    /// A signal to the widgets of every overlay — a hotkey's scroll or class
+    /// step, the track map turned, the chat cleared, a layout switched in. The
+    /// payload is `{ type: RemoteControlKind, data }`, the very message a
+    /// remote screen receives over its socket, so both clients run one handler.
+    pub const EVENT_CLIENT_CONTROL: &str = "client://control" => CLIENT_CONTROL_EVENT;
+
+    /// A perf run's measured span starts: the overlays begin collecting.
+    /// Emitted only by a `dev` build running `MARBLE_TRACE_PERF`.
+    pub const EVENT_PERF_BEGIN: &str = "perf://begin" => PERF_BEGIN;
+
+    /// A perf run's measured span is over: each overlay sends its report.
+    pub const EVENT_PERF_END: &str = "perf://end" => PERF_END;
+
+    /// A client of the settings (ADR-0007) to main: an overlay's `hello`.
+    /// Sent by one webview to another — the backend only carries it.
+    pub const EVENT_CLIENT_TO_MAIN: &str = "client://to-main" => CLIENT_TO_MAIN_EVENT;
+
+    /// Main to one client of the settings: the snapshot of what it draws.
+    pub const EVENT_CLIENT_FROM_MAIN: &str = "client://from-main" => CLIENT_FROM_MAIN_EVENT;
+
     /// A connected remote device came, went, or reported a new viewport.
     pub const EVENT_REMOTE_DEVICE: &str = "remote://device" => REMOTE_DEVICE_EVENT;
 }
@@ -103,23 +134,34 @@ pub const EVENT_TELEMETRY_BUNDLE_MIRROR: &str = "sim://telemetry/bundle/mirror";
 
 // --- Remote socket message kinds ----------------------------------------
 
-/// Control messages the main window may push to the remote screens.
+/// Signals to the widgets of every client — the overlays, over
+/// `EVENT_CLIENT_CONTROL`, and the remote screens, over their socket. The one
+/// vocabulary for both (ADR-0007): each client handles it in one exhaustive
+/// switch, so a kind added here without a handler does not compile.
 ///
 /// A whitelist rather than a free-form kind: the value reaching the socket is
 /// one of these or nothing, so a typo in the main window cannot invent a
 /// message the browser will never understand.
 ///
-/// **A Tauri event never leaves the app.** Anything a hotkey does to a widget
-/// needs a variant here too, or the monitors move and the tablet stays where it
-/// was.
+/// State never travels here — a value a client must still show after a reload
+/// belongs in its snapshot.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "kebab-case")]
 pub enum RemoteControlKind {
-    StandingsClassIndex,
+    StandingsClassStep,
     StandingsScroll,
     StreamChatScroll,
     TrackRotation,
+    /// The order box popped up or down. The driver's alone — see
+    /// `reaches_remote_screens`.
+    PitServiceToggle,
+    /// The chat connectors were shut down; drop the buffered messages.
+    StreamChatCleared,
+    /// The session switched the layout in; show its name for a moment.
+    LayoutActivated,
+    /// The current track's recorded shape was deleted; drop the copy drawn.
+    TrackMapCleared,
 }
 
 /// Message kinds the server pushes on its own — the mirrored sim events, plus
@@ -158,7 +200,13 @@ impl Replayed for RemoteControlKind {
             // cannot read for itself, so it is replayed like the shape it
             // applies to.
             Self::TrackRotation => true,
-            Self::StandingsClassIndex | Self::StandingsScroll | Self::StreamChatScroll => false,
+            Self::StandingsClassStep
+            | Self::StandingsScroll
+            | Self::StreamChatScroll
+            | Self::PitServiceToggle
+            | Self::StreamChatCleared
+            | Self::LayoutActivated
+            | Self::TrackMapCleared => false,
         }
     }
 }
@@ -195,10 +243,14 @@ pub trait WireName {
 impl WireName for RemoteControlKind {
     fn wire_name(self) -> &'static str {
         match self {
-            Self::StandingsClassIndex => "standings-class-index",
+            Self::StandingsClassStep => "standings-class-step",
             Self::StandingsScroll => "standings-scroll",
             Self::StreamChatScroll => "stream-chat-scroll",
             Self::TrackRotation => "track-rotation",
+            Self::PitServiceToggle => "pit-service-toggle",
+            Self::StreamChatCleared => "stream-chat-cleared",
+            Self::LayoutActivated => "layout-activated",
+            Self::TrackMapCleared => "track-map-cleared",
         }
     }
 }
@@ -223,12 +275,23 @@ impl WireName for RemoteStreamKind {
 }
 
 impl RemoteControlKind {
-    pub const ALL: [Self; 4] = [
-        Self::StandingsClassIndex,
+    pub const ALL: [Self; 8] = [
+        Self::StandingsClassStep,
         Self::StandingsScroll,
         Self::StreamChatScroll,
         Self::TrackRotation,
+        Self::PitServiceToggle,
+        Self::StreamChatCleared,
+        Self::LayoutActivated,
+        Self::TrackMapCleared,
     ];
+
+    /// Whether the kind goes to the remote screens at all. The pit order box
+    /// is the driver's: a stream copy of the pit service shows the order, but
+    /// a key popping it up on the driver's screen must not pop it up on air.
+    pub fn reaches_remote_screens(self) -> bool {
+        !matches!(self, Self::PitServiceToggle)
+    }
 
     /// Resolves a kind arriving from the frontend. `None` means an unknown
     /// string, which the hub drops with a warning rather than forwarding.
@@ -326,5 +389,12 @@ mod tests {
                 "{kind:?} is mirrored but names no source event"
             );
         }
+    }
+
+    #[test]
+    fn a_late_screen_gets_the_session_the_driver_list_joins_on() {
+        // `DriverEntry` carries no name, number or class — a browser that
+        // connects mid-session draws a field of blanks without the snapshot.
+        assert!(RemoteStreamKind::Session.replayed());
     }
 }

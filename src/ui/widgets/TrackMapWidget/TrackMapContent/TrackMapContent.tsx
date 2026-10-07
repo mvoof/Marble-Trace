@@ -2,20 +2,17 @@ import { useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
-import type { TrackRotateDirection } from '../types';
+import type { TrackRotateDirection } from '@store/widgets/track-map/track-map.store';
 import {
   useSessionStore,
   useTrackMapWidgetStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 export const TrackMapContent = observer(() => {
   const sessionData = useSessionStore();
   const trackMapWidget = useTrackMapWidgetStore();
 
-  const { sessionInfo } = sessionData;
-
-  const trackId =
-    sessionInfo && sessionInfo.trackId >= 0 ? String(sessionInfo.trackId) : '';
+  const trackId = sessionData.trackKey;
 
   useEffect(() => {
     if (!trackId) return;

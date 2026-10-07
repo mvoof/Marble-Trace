@@ -20,9 +20,8 @@ import type { TrackMapWidgetSettings } from '@/types/widget-settings';
 import {
   useAppSettingsStore,
   useBackendComputedStore,
-  usePaceCarStore,
   useSessionStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 export interface TrackData {
   svgPath: string;
@@ -50,7 +49,6 @@ export const TrackMapView = observer(
     const sessionStore = useSessionStore();
     const { sessionInfo } = sessionStore;
     const computed = useBackendComputedStore();
-    const paceCarStore = usePaceCarStore();
     const { dragMode } = useAppSettingsStore();
 
     const rawSettings = useWidgetSettings<TrackMapWidgetSettings>('track-map');
@@ -126,7 +124,7 @@ export const TrackMapView = observer(
     const paceCars: CarOnTrack[] = (sessionInfo?.cars ?? []).flatMap((car) => {
       if (!car.isPaceCar) return [];
 
-      const pitPhase = paceCarStore.getPitPhase(car.carIdx);
+      const pitPhase = computed.paceCarPhaseOf(car.carIdx);
 
       if (
         !paceCarShowInPits &&

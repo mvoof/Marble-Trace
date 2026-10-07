@@ -32,9 +32,9 @@ Give those five more attention than the ones a command checks.
 Then confirm each field exists, in this order:
 
 1. Offline: grep `src/types/bindings.ts`. It is the generated contract and the
-   only honest list. It is **snake_case** (`velocity_x`) even though the wire is
-   camelCase — serde renames the payload, specta exports the Rust names. Search
-   in snake_case.
+   only honest list. Raw sim frames are **snake_case** (`velocity_x`) — they keep
+   kerb's names; the envelope and computed frames are camelCase. Search a raw
+   field in snake_case.
 2. Against a live sim: the Telemetry Inspector (Settings → Maintenance) shows the
    raw `SourceFrame`, a superset of the bundle.
 
@@ -44,8 +44,8 @@ If a field does not exist, **stop and say so.** Adding it is the backend route
 Record for each field its **rate tier** — the table is in
 [architecture.md](../../../docs/architecture.md) → Rate tiers.
 
-**The gated fields are the `TelemetryEventName` union in
-`src/types/telemetry-events.ts`. Open that file — it is the list, and it grows.**
+**The gated fields are the exports of `src/types/telemetry-event-bits.ts`
+(generated from Rust). Open that file — it is the list, and it grows.**
 The four on the 60 Hz tier (`carDynamics`, `carInputs`, `carPositions`,
 `lapDelta`) are **hot**; note which you use, steps 3 and 9 depend on it.
 
@@ -178,11 +178,10 @@ and no command complains.
 
 ## Step 8 — Panel and story
 
-`<Name>SettingsPanel.tsx` goes in
-`src/ui/app/main/components/WidgetSettings/panels/`, **not** beside the widget —
-the remote screen renders widgets through the mount registry in a plain browser,
-and a mount carrying Ant Design would ship the settings UI to every phone on the
-LAN.
+`<Name>SettingsPanel.tsx` goes in the widget's own folder, and `mount.ts`
+never imports it — the remote screen renders widgets through the mount registry
+in a plain browser, and a mount carrying Ant Design would ship the settings UI to
+every phone on the LAN. Main's panel registry finds it by glob.
 
 **Copy `GMeterSettingsPanel.tsx`.** It shows `useWidgetEditor()`,
 `usePanelWidgetId(fallbackId)`, `Card`, `SettingRow` and
@@ -207,7 +206,7 @@ first** and follow it. In short: spread `defineWidgetStories({ widget, size,
 seed, seedSnapshot, args, argTypes })` from `@/storybook/define-widget-stories`
 — it mounts the widget with its frame and does the seeding. The widget's
 settings become Controls by themselves; `StoryArgs` holds only telemetry knobs,
-seeded through `store/preview/mocks/` builders and `whenSet`. Any new
+seeded through `preview/mocks/` builders and `whenSet`. Any new
 string-union setting gets its members in `src/storybook/setting-options.ts`.
 One story per state worth seeing, starting with the race look the site picture
 is taken from. Named `const` PascalCase exports, only `meta` as default.

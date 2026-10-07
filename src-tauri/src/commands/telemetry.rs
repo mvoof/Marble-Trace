@@ -3,10 +3,8 @@
 //! processors behind it.
 
 use std::sync::atomic::Ordering;
-use std::time::Duration;
 
 use tauri::{AppHandle, State, Window};
-use tokio::time::sleep;
 use tracing::{debug, info};
 
 use crate::model::defaults::MAX_FUEL_AVG_WINDOW;
@@ -16,6 +14,7 @@ use crate::telemetry::delivery::DeliverySet;
 use crate::telemetry::masks::REMOTE_LABEL;
 use crate::telemetry::runtime::spawn_telemetry_thread;
 use crate::telemetry::state::TelemetryState;
+use crate::telemetry::tick_timings::TickSummary;
 use crate::utils::lock_or_recover;
 
 #[tauri::command]
@@ -27,9 +26,7 @@ pub async fn get_connection_status(state: State<'_, TelemetryState>) -> Result<b
 pub async fn get_last_session_info(
     state: State<'_, TelemetryState>,
 ) -> Result<Option<SessionSnapshot>, String> {
-    let lock = lock_or_recover(&state.service.last_session_info);
-
-    Ok(lock.as_deref().cloned())
+    Ok(state.service.session().as_deref().cloned())
 }
 
 #[tauri::command]
@@ -39,23 +36,16 @@ pub async fn start_telemetry_stream(
 ) -> Result<(), String> {
     info!("start_telemetry_stream command received");
 
-    state.service.running.store(false, Ordering::SeqCst);
+    // A thread of the previous run sees it is no longer current and leaves on
+    // its own, without announcing a disconnect over this one.
+    let run = state.service.begin_run();
 
-    sleep(Duration::from_millis(50)).await;
-
-    state.service.running.store(true, Ordering::SeqCst);
-
-    spawn_telemetry_thread(
-        app,
-        state.service.clone(),
-        state.registry.clone(),
-        state.fuel_tuning.clone(),
-    )
+    spawn_telemetry_thread(app, state.service.clone(), run)
 }
 
 #[tauri::command]
 pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(), String> {
-    state.service.running.store(false, Ordering::SeqCst);
+    state.service.stop();
 
     debug!("Telemetry stream stopped");
 
@@ -147,9 +137,8 @@ pub async fn set_pit_warning_laps(
     }
 
     state
-        .fuel_tuning
-        .pit_warning_laps
-        .store(laps.to_bits(), Ordering::Relaxed);
+        .service
+        .configure(|config| config.fuel.pit_warning_laps = laps);
 
     Ok(())
 }
@@ -167,9 +156,8 @@ pub async fn set_fuel_avg_window(
     }
 
     state
-        .fuel_tuning
-        .avg_window
-        .store(window as usize, Ordering::Relaxed);
+        .service
+        .configure(|config| config.fuel.avg_window = window as usize);
 
     debug!("Fuel average window updated to: {window}");
 
@@ -183,9 +171,8 @@ pub async fn set_fuel_count_yellow_laps(
     count: bool,
 ) -> Result<(), String> {
     state
-        .fuel_tuning
-        .count_local_yellow_laps
-        .store(count, Ordering::Relaxed);
+        .service
+        .configure(|config| config.fuel.count_local_yellow_laps = count);
 
     debug!("Fuel count local yellow laps updated to: {count}");
 
@@ -198,9 +185,10 @@ pub async fn set_car_length(state: State<'_, TelemetryState>, length: f32) -> Re
         return Err("Car length must be a finite value between 0.5 and 15.0 meters".to_string());
     }
 
-    let mut lock = lock_or_recover(&state.service.car_length_m);
+    state
+        .service
+        .configure(|config| config.car_length_m = length);
 
-    *lock = length;
     debug!("Car length updated in backend to: {}m", length);
 
     Ok(())
@@ -218,11 +206,10 @@ pub async fn set_inspector_active(
 ) -> Result<(), String> {
     state
         .service
-        .inspector_active
-        .store(active, Ordering::Relaxed);
+        .configure(|config| config.inspector_active = active);
 
     if !active {
-        *lock_or_recover(&state.service.inspector_frame) = None;
+        state.service.clear_inspector_frame();
     }
 
     debug!("Telemetry inspector active: {active}");
@@ -254,11 +241,20 @@ pub async fn get_delivery_counters(
     Ok(lock_or_recover(&state.service.delivery).snapshot())
 }
 
-/// Restarts every recipient's counters, giving a measurement run a defined
-/// start. The recipients themselves are left registered.
+/// Tick duration percentiles since the last reset — how long the backend takes
+/// to turn one frame into delivered bundles.
+#[tauri::command]
+pub async fn get_tick_summary(state: State<'_, TelemetryState>) -> Result<TickSummary, String> {
+    Ok(lock_or_recover(&state.service.tick_timings).summary())
+}
+
+/// Restarts every recipient's counters and the tick timings, giving a
+/// measurement run a defined start. The recipients themselves are left
+/// registered.
 #[tauri::command]
 pub async fn reset_delivery_counters(state: State<'_, TelemetryState>) -> Result<(), String> {
     lock_or_recover(&state.service.delivery).reset();
+    lock_or_recover(&state.service.tick_timings).reset();
 
     Ok(())
 }

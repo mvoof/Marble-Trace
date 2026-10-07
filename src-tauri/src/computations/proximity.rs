@@ -43,8 +43,10 @@ pub struct NearbyCar {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RadarDistances {
-    pub front_dist: f32,
-    pub rear_dist: f32,
+    /// Bumper gap to the nearest car ahead, in meters. `None` when there is none.
+    pub front_dist: Option<f32>,
+    /// Bumper gap to the nearest car behind, in meters. `None` when there is none.
+    pub rear_dist: Option<f32>,
     pub left_dist: Option<f32>,
     pub right_dist: Option<f32>,
 }
@@ -140,8 +142,8 @@ pub fn compute(
         return ProximityFrame {
             nearby_cars: vec![],
             radar_distances: RadarDistances {
-                front_dist: 999.0,
-                rear_dist: 999.0,
+                front_dist: None,
+                rear_dist: None,
                 left_dist: None,
                 right_dist: None,
             },
@@ -160,8 +162,8 @@ pub fn compute(
             return ProximityFrame {
                 nearby_cars: vec![],
                 radar_distances: RadarDistances {
-                    front_dist: 999.0,
-                    rear_dist: 999.0,
+                    front_dist: None,
+                    rear_dist: None,
                     left_dist: None,
                     right_dist: None,
                 },
@@ -292,8 +294,8 @@ fn compute_radar_distances(
         }
     }
 
-    let mut front_dist: f32 = 999.0;
-    let mut rear_dist: f32 = 999.0;
+    let mut front_dist: Option<f32> = None;
+    let mut rear_dist: Option<f32> = None;
 
     for car in cars {
         if car.car_idx == left_idx || car.car_idx == right_idx {
@@ -303,11 +305,11 @@ fn compute_radar_distances(
         if car.longitudinal_dist > BUMPER_THRESHOLD_M {
             let gap = (car.longitudinal_dist - car_length_m).max(0.0);
 
-            front_dist = front_dist.min(gap);
+            front_dist = Some(front_dist.map_or(gap, |nearest| nearest.min(gap)));
         } else if car.longitudinal_dist < -BUMPER_THRESHOLD_M {
             let gap = (car.longitudinal_dist.abs() - car_length_m).max(0.0);
 
-            rear_dist = rear_dist.min(gap);
+            rear_dist = Some(rear_dist.map_or(gap, |nearest| nearest.min(gap)));
         }
     }
 

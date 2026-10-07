@@ -4,10 +4,8 @@ import type { DriverGroup } from '@/types';
 import { ClassGroupHeader } from '@ui/widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
 import { DriverRow } from '@ui/widgets/StandingsWidget/DriverRow/DriverRow';
 import { ScrollIndicator } from '@ui/shared/ScrollIndicator/ScrollIndicator';
-import {
-  useAppSettingsStore,
-  useStandingsWidgetStore,
-} from '@store/root-store-context';
+import { useAppSettingsStore } from '@store/roots/root-store-context';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 import styles from './ClassGroup.module.scss';
 

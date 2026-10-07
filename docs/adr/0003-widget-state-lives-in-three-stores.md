@@ -1,7 +1,7 @@
 # ADR 0003: Widget-related state lives in three stores, split on one seam
 
 **Status:** accepted, 2026-09-10
-**Context:** the layout and widget settings stores (`store/settings/`)
+**Context:** the layout and widget settings stores (`store/layout/`)
 
 ## Decision
 

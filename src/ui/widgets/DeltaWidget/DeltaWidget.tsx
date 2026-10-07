@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import {
   useAppSettingsStore,
   useBackendComputedStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { getDeltaToPreviousBest } from '@utils/delta-utils';
 import type { DeltaWidgetSettings } from '@/types/widget-settings';
 import { DeltaLive } from './DeltaLive/DeltaLive';

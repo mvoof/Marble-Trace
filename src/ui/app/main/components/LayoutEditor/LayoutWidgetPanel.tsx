@@ -15,12 +15,10 @@ import type {
   LayoutMonitor,
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
-import type { MonitorWidgetRow } from '@store/settings/live-widgets.store';
+import type { MonitorWidgetRow } from '@store/layout/live-widgets.store';
 import { isRemoteMonitor } from '@utils/remote-screen';
-import {
-  useLayoutsStore,
-  useLiveWidgetsStore,
-} from '@store/root-store-context';
+import { useLayoutsStore } from '@store/roots/root-store-context';
+import { useMainLiveWidgetsStore } from '@store/roots/main-root-context';
 import styles from './LayoutWidgetPanel.module.scss';
 
 interface LayoutWidgetPanelProps {
@@ -35,10 +33,10 @@ interface SelectionProps {
 
 /**
  * Whether the widget's hotkeys act on this instance, and a click to change
- * it. Not offered on a browser screen, which only shows.
+ * it.
  */
 const HotkeyToggle = observer(({ widgetId }: { widgetId: string }) => {
-  const liveWidgets = useLiveWidgetsStore();
+  const liveWidgets = useMainLiveWidgetsStore();
   const { t } = useTranslation('main-app');
   const isOn = liveWidgets.hotkeysActOnWidget(widgetId);
   const label = isOn
@@ -83,7 +81,6 @@ const InstanceRow = observer(
     ordinal,
     total,
     available,
-    isBrowserScreen,
     selectedWidgetId,
     onSelectWidget,
   }: SelectionProps & {
@@ -91,9 +88,8 @@ const InstanceRow = observer(
     ordinal: number;
     total: number;
     available: boolean;
-    isBrowserScreen: boolean;
   }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const { t } = useTranslation('main-app');
     const isSelected = selectedWidgetId === widget.id;
     const rowRef = useScrollIntoViewWhen(isSelected);
@@ -128,7 +124,7 @@ const InstanceRow = observer(
           </Tooltip>
         </button>
 
-        {!isBrowserScreen && <HotkeyToggle widgetId={widget.id} />}
+        <HotkeyToggle widgetId={widget.id} />
 
         <Popconfirm
           title={t('layoutWidgetPanel.deleteCopyConfirm')}
@@ -166,15 +162,13 @@ const WidgetTypeRow = observer(
   ({
     row,
     monitorName,
-    isBrowserScreen,
     selectedWidgetId,
     onSelectWidget,
   }: SelectionProps & {
     row: MonitorWidgetRow;
     monitorName: string;
-    isBrowserScreen: boolean;
   }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const { instances, available } = row;
     const [first] = instances;
     const isOn = instances.some((widget) => widget.userSettings.enabled);
@@ -217,9 +211,7 @@ const WidgetTypeRow = observer(
             {row.label}
           </button>
 
-          {first !== undefined && !isBrowserScreen && (
-            <HotkeyToggle widgetId={first.id} />
-          )}
+          {first !== undefined && <HotkeyToggle widgetId={first.id} />}
         </div>
 
         {instances.length > 1 &&
@@ -232,7 +224,6 @@ const WidgetTypeRow = observer(
                 ordinal={index + 2}
                 total={instances.length}
                 available={available}
-                isBrowserScreen={isBrowserScreen}
                 selectedWidgetId={selectedWidgetId}
                 onSelectWidget={onSelectWidget}
               />
@@ -252,7 +243,7 @@ const ScreenHeading = observer(
     isCollapsed: boolean;
     onToggle: () => void;
   }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const Icon = isRemoteMonitor(monitor) ? TabletSmartphone : Monitor;
     const Chevron = isCollapsed ? ChevronRight : ChevronDown;
     const switchedOn = liveWidgets.widgetsOnMonitorNamed(monitor.name).length;
@@ -283,7 +274,7 @@ const ScreenHeading = observer(
 
 const ScreenGroup = observer(
   ({ monitor, ...selection }: SelectionProps & { monitor: LayoutMonitor }) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
@@ -302,7 +293,6 @@ const ScreenGroup = observer(
                 key={row.type}
                 row={row}
                 monitorName={monitor.name}
-                isBrowserScreen={isRemoteMonitor(monitor)}
                 {...selection}
               />
             ))}

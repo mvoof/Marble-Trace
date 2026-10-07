@@ -1,8 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber } from 'antd';
-import { useAppSettingsStore } from '@store/root-store-context';
+import { useAppSettingsStore } from '@store/roots/root-store-context';
 import { SettingsCard } from '../SettingsCard';
+import { PitStrategyCard } from './PitStrategyCard';
 import styles from '../SettingsPage.module.scss';
 
 /**
@@ -22,32 +23,36 @@ export const SharedValuesSection = observer(() => {
   const { t } = useTranslation('main-app');
 
   return (
-    <SettingsCard title={t('settingsPage.carLength.title')}>
-      <div className={styles.fieldGroup}>
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>
-              {t('settingsPage.carLength.valueTitle')}
+    <>
+      <SettingsCard title={t('settingsPage.carLength.title')}>
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>
+                {t('settingsPage.carLength.valueTitle')}
+              </div>
+
+              <div className={styles.fieldDesc}>
+                {t('settingsPage.carLength.valueDesc')}
+              </div>
             </div>
 
-            <div className={styles.fieldDesc}>
-              {t('settingsPage.carLength.valueDesc')}
-            </div>
+            <InputNumber
+              min={CAR_LENGTH_MIN_M}
+              max={CAR_LENGTH_MAX_M}
+              step={CAR_LENGTH_STEP_M}
+              value={appSettings.appSettings.carLength}
+              onChange={(value) => {
+                if (value !== null) {
+                  appSettings.setCarLength(value);
+                }
+              }}
+            />
           </div>
-
-          <InputNumber
-            min={CAR_LENGTH_MIN_M}
-            max={CAR_LENGTH_MAX_M}
-            step={CAR_LENGTH_STEP_M}
-            value={appSettings.appSettings.carLength}
-            onChange={(value) => {
-              if (value !== null) {
-                appSettings.setCarLength(value);
-              }
-            }}
-          />
         </div>
-      </div>
-    </SettingsCard>
+      </SettingsCard>
+
+      <PitStrategyCard />
+    </>
   );
 });

@@ -1,7 +1,9 @@
 import { observer } from 'mobx-react-lite';
 
-import { useWheelToWheelWidgetStore } from '@store/root-store-context';
-import type { BattleSlot } from '../wheel-to-wheel.widget';
+import {
+  useWheelToWheelWidgetStore,
+  type BattleSlot,
+} from '../wheel-to-wheel.store';
 import { SideSpeed } from '../SideSpeed/SideSpeed';
 import { SpeedBar } from '../SpeedBar/SpeedBar';
 import { CarNumberBox } from '../CarNumberBox/CarNumberBox';

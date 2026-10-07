@@ -17,12 +17,12 @@ import {
   SendToBack,
 } from 'lucide-react';
 
-import { useLiveWidgetsStore } from '@store/root-store-context';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
 import { Card, PanelWidgetProvider } from '../WidgetSettings/panels/Card';
 import { SettingRow } from '../WidgetSettings/panels/SettingRow';
 import type { SnapPosition } from './snap-position';
+import { useMainLiveWidgetsStore } from '@store/roots/main-root-context';
 import styles from './WidgetInspector.module.scss';
 
 const ICON_SIZE = 14;
@@ -74,7 +74,7 @@ export const WidgetInspector = observer(
     onSelectWidget,
     onSnap,
   }: WidgetInspectorProps) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const liveWidgets = useMainLiveWidgetsStore();
     const { t } = useTranslation('main-app');
 
     const widget = selectedWidgetId
@@ -142,21 +142,19 @@ export const WidgetInspector = observer(
                 />
               </SettingRow>
 
-              {liveWidgets.canTakeHotkeys(widget.id) && (
-                <SettingRow
-                  stacked
-                  title={t('layoutEditor.hotkeysActOn')}
-                  desc={t('layoutEditor.hotkeysActOnDesc')}
-                >
-                  <Switch
-                    size="small"
-                    checked={liveWidgets.hotkeysActOnWidget(widget.id)}
-                    onChange={(checked) =>
-                      liveWidgets.setHotkeysActOn(widget.id, checked)
-                    }
-                  />
-                </SettingRow>
-              )}
+              <SettingRow
+                stacked
+                title={t('layoutEditor.hotkeysActOn')}
+                desc={t('layoutEditor.hotkeysActOnDesc')}
+              >
+                <Switch
+                  size="small"
+                  checked={liveWidgets.hotkeysActOnWidget(widget.id)}
+                  onChange={(checked) =>
+                    liveWidgets.setHotkeysActOn(widget.id, checked)
+                  }
+                />
+              </SettingRow>
 
               {moveTargets.length > 0 && (
                 <SettingRow stacked title={t('layoutEditor.moveToMonitor')}>

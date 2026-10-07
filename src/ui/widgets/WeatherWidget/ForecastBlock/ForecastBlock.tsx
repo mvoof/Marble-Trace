@@ -10,7 +10,7 @@ import {
   useEnvironmentStore,
   useSessionStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 const formatForecastTime = (timeSec: number): string => {
   const hours = Math.floor(timeSec / 3600);

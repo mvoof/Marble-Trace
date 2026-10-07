@@ -10,10 +10,11 @@ import {
 } from './persistence';
 import { runMigrations } from '@platform/settings-schema/index';
 import type { MigrationResult } from '@platform/settings-schema/types';
-import type { RootStore } from '@store/root-store';
+import type { MainRoot } from '@store/roots/main-root';
 
 /**
- * Settings-file bootstrap shared by both windows.
+ * Settings-file bootstrap. Main's alone: it is the only window that reads the
+ * file — every other one is sent a snapshot (ADR-0007).
  *
  * Ordering contract: everything here runs *before* any reaction is registered.
  * `readSettingsFile` → `hydrateFromDisk` → (caller checks `settingsLocked`) →
@@ -43,14 +44,10 @@ export const readSettingsFile = async (): Promise<{
  * or is not a settings object — the settings are locked rather than repaired.
  * A file we do not understand is worth more to the user intact than replaced
  * with defaults, and it can be sent to us as-is.
- *
- * `backup` belongs to the main window only: both windows run the chain, but
- * only one of them may touch the file.
  */
 export const hydrateFromDisk = async (
-  root: RootStore,
-  loaded: Settings | null | undefined,
-  { backup }: { backup: boolean }
+  root: MainRoot,
+  loaded: Settings | null | undefined
 ) => {
   // The plugin hands back nothing both for a fresh install and for a file it
   // could not parse — a stray BOM, a half-written save. Only the filesystem
@@ -91,7 +88,7 @@ export const hydrateFromDisk = async (
     return;
   }
 
-  if (result.status === 'migrated' && backup) {
+  if (result.status === 'migrated') {
     await backupSettingsFile(result.from);
   }
 
@@ -108,7 +105,7 @@ export const hydrateFromDisk = async (
  * build could not migrate must survive the session untouched.
  */
 export const createSaveHandle =
-  (root: RootStore, store: SettingsFileHandle) => (): Promise<void> =>
+  (root: MainRoot, store: SettingsFileHandle) => (): Promise<void> =>
     root.appSettings.settingsLocked
       ? Promise.resolve()
       : saveSettings(store, root);

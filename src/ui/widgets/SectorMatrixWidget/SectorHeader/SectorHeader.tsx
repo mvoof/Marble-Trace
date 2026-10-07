@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import {
   usePlayerStore,
   useBackendComputedStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { formatLapTime } from '@utils/telemetry-format';
 import { getGameDelta } from '@utils/delta-utils';
 import { getSectorColor } from '@utils/colors';
@@ -70,7 +70,7 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
           className={styles.progressFill}
           style={{
             width: `${lapDistPct * 100}%`,
-            background: getSectorColor(currentSectorIdx),
+            background: getSectorColor(currentSectorIdx ?? 0),
           }}
         />
       </div>
@@ -79,7 +79,8 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
         <span>{Math.round(lapDistPct * 100)}% LAP</span>
 
         <span>
-          S{currentSectorIdx + 1}/{sectorCount}
+          S{currentSectorIdx === null ? '-' : currentSectorIdx + 1}/
+          {sectorCount}
         </span>
       </div>
     </div>

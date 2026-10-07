@@ -34,7 +34,7 @@ remember to edit" is unfounded.
 
 | You might think you must        | You do not, because                                                                                                                                                                                                                                    |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Register the widget somewhere   | `manifest.ts` is collected by glob into `WIDGETS` / `WIDGET_BY_ID` / `DEFAULT_WIDGETS` (`store/widget-catalog.ts`)                                                                                                                                     |
+| Register the widget somewhere   | `manifest.ts` is collected by glob into `WIDGETS` / `WIDGET_BY_ID` / `DEFAULT_WIDGETS` (`store/layout/widget-catalog.ts`)                                                                                                                              |
 | Register the component          | `mount.ts` is collected by glob into `WIDGET_COMPONENTS` (`ui/widgets/registry.ts`)                                                                                                                                                                    |
 | Register the settings panel     | The panel's own `PANEL_WIDGET_IDS` export is collected by glob (`WidgetSettings/panels/panel-registry.ts`)                                                                                                                                             |
 | Write a settings migration      | A widget stores only the settings that differ from its manifest, so a new key is read from the manifest everywhere — **a new setting with a default needs no migration** ([settings-schema.md → When you do NOT need a migration](settings-schema.md)) |
@@ -66,11 +66,10 @@ expensive.
 Three questions, in order.
 
 **Does the field exist?** Offline, the answer is `src/types/bindings.ts` — the
-generated contract, and the only honest list. It is written in **snake_case**
-(`velocity_x`, `steering_wheel_angle`) even though `AGENTS.md` says everything on
-the wire is camelCase. Both are true and neither is a bug: serde renames the
-payload, specta exports the Rust field names, and the store reads the generated
-type. Search it in snake*case. Against a live sim, the answer is the
+generated contract, and the only honest list. The raw sim frames in it are
+**snake_case** (`velocity_x`, `steering_wheel_angle`) — they keep kerb's names —
+while the bundle envelope and every computed frame are camelCase (`AGENTS.md`
+→ Rust Backend). Search for a raw field in snake*case. Against a live sim, the answer is the
 **Telemetry Inspector** (Settings → Maintenance): it browses the raw
 `SourceFrame`, which is a \_superset* of the bundle — every field the adapter
 produced, including ones no widget receives — and the parsed session snapshot
@@ -85,17 +84,18 @@ lands.
 
 **At what rate does it arrive?** [architecture.md → Rate tiers](architecture.md)
 carries the table. In short: 60 Hz is `carDynamics`, `carInputs`, `carPositions`,
-`lapDelta`, `pitTarget`; 10 Hz is `carIdx`, `chassis`, `lapTiming`, `proximity`,
-`driverEntries`; 4 Hz is `carStatus`, `fuel`, `pitStops`; 1 Hz is `session` and
+`lapDelta`, `pitTarget`, `coach`; 10 Hz is `carIdx`, `chassis`, `lapTiming`,
+`proximity`, `driverEntries`, `paceCar`; 4 Hz is `carStatus`, `fuel`, `pitStops`; 1 Hz is `session` and
 `environment`. The rate decides how you decompose (step 3) and whether you owe a
 budget test (step 9).
 
 **Never** integrate 60 Hz against telemetry `sessionTime` — use
 `performance.now()`.
 
-**Is it demand-gated?** The gated fields are the members of the
-`TelemetryEventName` union in `src/types/telemetry-events.ts` — **read that file,
-it is the list**, and it grows. At the time of writing it holds eight:
+**Is it demand-gated?** The gated fields are the
+exports of `src/types/telemetry-event-bits.ts` (generated from
+`src-tauri/src/model/telemetry_events.rs`) — **read that file, it is the list**,
+and it grows. At the time of writing it holds eight:
 `carDynamics`, `carInputs`, `carPositions`, `lapDelta` (the 60 Hz four, the
 **hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`.
 
@@ -107,7 +107,7 @@ the traffic. See [architecture.md → Demand gating](architecture.md).
 **Does the sim have to support it?** Separately from the mask,
 `requiredCapabilities` in the manifest hides the widget from the catalog when the
 connected sim cannot feed it (`availableWidgetIds` in
-`store/settings/live-widgets.store.ts`). It names keys of
+`store/layout/live-widgets.store.ts`). It names keys of
 `CapabilitiesPayload`, not telemetry fields: a widget reading `carDynamics` or
 `carInputs` for the player's own car declares `['playerDynamics']`; the others in
 use are `chassis`, `fuel`, `inputs`, `radar`, `relative`, `sectors`,
@@ -131,9 +131,15 @@ derived logic.** Simple widgets read the data stores directly, and stay simple.
 - Derived values are `computed` getters in a store — never `useMemo` in a
   component.
 - Hooks are for the DOM and the browser only. Everything else is a store.
-- Widget stores read `settingsOfType(type)` — the switched-on instance under
-  the widget's hotkeys — never `getSettings(type)`: one store per app cannot be
-  per instance, and what a store holds is computation, not presentation.
+- A new widget store is **per instance**: declare it in `mount.ts`
+  (`store: (context) => new XWidgetStore(context)`), read settings with
+  `getSettings(context.instanceId)`, and give components a hook over
+  `useWidgetInstanceStore`. It exists only while the instance is mounted. A
+  shared store it reads (`flags`, `radar`) goes in `sharedStores`.
+  A reaction or timer that would overwrite what a preview seeds by hand starts
+  only when `context.core.startsWidgetStores`. `StandingsWidget` and `InputTraceWidget`
+  are the worked examples; `WheelToWheelWidget` for a store that also decides
+  the auto-hide.
 
 The full six rules are [architecture.md → The six store rules](architecture.md).
 
@@ -239,6 +245,17 @@ Add a setting **only if the widget uses it**. A widget with settings it does not
 read is worse than a widget with none: it is a promise to the driver that the
 switch does something.
 
+Ask of every setting: **could it hold two different values on the driver's
+monitor and on a stream screen at once?** Every instance has its own settings,
+so a widget setting is a per-screen setting. Colours, columns, thresholds a
+readout warns at — yes, they belong here. Anything that acts on the car or the
+sim — the pit-stop auto rules, the fuel key step, the car length — cannot
+differ between two screens for one car. It goes in `appSettings`
+(`store/settings/app-settings.store.ts`), on a page under Settings, and the
+widget only shows it; the pit strategy (`types/pit-strategy.ts`) is the worked
+example. A copy left in a widget panel is a switch the stream screen offers and
+then ignores.
+
 No migration is needed for any of this — a widget stores only what differs from
 its manifest, so a new key is read from the manifest in every template and every
 instance.
@@ -298,11 +315,10 @@ quietest step on the route, which is why it has one of its own.
 
 ## Step 8 — The settings panel and the story
 
-**`<Name>SettingsPanel.tsx`** goes in
-`src/ui/app/main/components/WidgetSettings/panels/` — _not_ beside the widget,
-because the remote screen renders widgets through the mount registry in a plain
-browser, and a mount carrying its Ant Design panel would ship the settings UI to
-every phone on the LAN.
+**`<Name>SettingsPanel.tsx`** goes in the widget's own folder, and is **not**
+imported by `mount.ts`: the remote screen renders widgets through the mount
+registry in a plain browser, and a mount carrying its Ant Design panel would ship
+the settings UI to every phone on the LAN. Main's panel registry finds it by glob.
 
 **Copy `GMeterSettingsPanel.tsx`** rather than assembling one from the rules —
 it is short and it shows `useWidgetEditor()`, `usePanelWidgetId(fallbackId)`,
@@ -333,7 +349,7 @@ with its background and does the `runInAction` seeding for you. The widget's
 settings appear on the Controls tab by themselves, read from the manifest; the
 story declares only the telemetry knobs. Named `const` PascalCase exports, no
 default export. Nothing that exists only for a story may be added to
-`store/preview/`. Everything else — the seed, scenarios, which states to cover,
+`preview/`. Everything else — the seed, scenarios, which states to cover,
 history widgets — is in [widget-stories.md](widget-stories.md).
 
 > _Enforced by:_ a missing `PANEL_WIDGET_IDS`, or a second export beside it, is

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { Bot } from 'lucide-react';
 
-import { countryCodeForFlairId } from '@utils/driver-flair';
+import { countryCodeForFlairId } from './driver-flair';
 
 import styles from './CountryFlag.module.scss';
 

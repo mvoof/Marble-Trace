@@ -27,6 +27,7 @@
 //! nothing to save — and they feed the smoothing in the coach and the input
 //! trace.
 
+use crate::computations::coach::{CoachCall, CoachFrame};
 use crate::computations::driver_entries::{DriverEntriesFrame, DriverEntry};
 use crate::computations::proximity::ProximityFrame;
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
@@ -60,6 +61,17 @@ fn round(value: f32, decimals: u32) -> f32 {
     scaled.round() / factor
 }
 
+/// The coach's urgency and exit pedal deficit, 0..1 — the step the call row draws.
+const COACH_FRACTION_STEP: f32 = 0.05;
+/// Metres late on the throttle — read in car lengths, never finer than a metre.
+const COACH_LATE_STEP_M: f32 = 1.0;
+/// Countdowns to the next brake point and apex, glanced at on the approach.
+const COACH_COUNTDOWN_STEP_M: f32 = 5.0;
+
+fn round_to_step(value: f32, step: f32) -> f32 {
+    (value / step).round() * step
+}
+
 fn round_all(values: &mut [f32], decimals: u32) {
     for value in values.iter_mut() {
         *value = round(*value, decimals);
@@ -88,6 +100,29 @@ pub fn pit_target(frame: &mut PitTargetFrame) {
     frame.lane_progress_pct = round(frame.lane_progress_pct, POSITION_DP);
 }
 
+/// The coach is the one frame rounded to the step it is *drawn* at rather than a
+/// decimal finer: its figures are the call itself, which a coach used to round
+/// the same way before showing it, and a 60 Hz frame whose numbers wiggle below
+/// what the row shows would never compare equal to the last one published.
+pub fn coach(frame: &mut CoachFrame) {
+    let round_call = |call: &mut CoachCall| {
+        call.brake_urgency = round_to_step(call.brake_urgency, COACH_FRACTION_STEP);
+        call.exit_throttle_deficit = round_to_step(call.exit_throttle_deficit, COACH_FRACTION_STEP);
+        call.exit_late_m = call
+            .exit_late_m
+            .map(|late| round_to_step(late, COACH_LATE_STEP_M));
+    };
+
+    round_call(&mut frame.with_exit_calls);
+    round_call(&mut frame.without_exit_calls);
+    frame.apex_distance_m = frame
+        .apex_distance_m
+        .map(|metres| round_to_step(metres, COACH_COUNTDOWN_STEP_M));
+    frame.brake_point_distance_m = frame
+        .brake_point_distance_m
+        .map(|metres| round_to_step(metres, COACH_COUNTDOWN_STEP_M));
+}
+
 pub fn car_positions(frame: &mut CarPositionsFrame) {
     round_all(&mut frame.car_idx_lap_dist_pct, POSITION_DP);
 }
@@ -105,12 +140,12 @@ fn driver_entry(entry: &mut DriverEntry) {
     entry.relative_lap_dist = round(entry.relative_lap_dist, POSITION_DP);
     entry.est_time = round(entry.est_time, GAP_DP);
     entry.f2_time = round(entry.f2_time, GAP_DP);
-    entry.last_lap_time = round(entry.last_lap_time, LAP_TIME_DP);
-    entry.best_lap_time = round(entry.best_lap_time, LAP_TIME_DP);
-    entry.qualify_time = round(entry.qualify_time, LAP_TIME_DP);
+    round_opt(&mut entry.last_lap_time, LAP_TIME_DP);
+    round_opt(&mut entry.best_lap_time, LAP_TIME_DP);
+    round_opt(&mut entry.qualify_time, LAP_TIME_DP);
     entry.class_est_lap_time = round(entry.class_est_lap_time, LAP_TIME_DP);
     round_opt(&mut entry.results_position_time, LAP_TIME_DP);
-    entry.speed = round(entry.speed, SPEED_DP);
+    round_opt(&mut entry.speed, SPEED_DP);
 }
 
 pub fn driver_entries(frame: &mut DriverEntriesFrame) {
@@ -132,8 +167,8 @@ pub fn proximity(frame: &mut ProximityFrame) {
         car.bumper_dist = round(car.bumper_dist, DISTANCE_DP);
     }
 
-    frame.radar_distances.front_dist = round(frame.radar_distances.front_dist, DISTANCE_DP);
-    frame.radar_distances.rear_dist = round(frame.radar_distances.rear_dist, DISTANCE_DP);
+    round_opt(&mut frame.radar_distances.front_dist, DISTANCE_DP);
+    round_opt(&mut frame.radar_distances.rear_dist, DISTANCE_DP);
     round_opt(&mut frame.radar_distances.left_dist, DISTANCE_DP);
     round_opt(&mut frame.radar_distances.right_dist, DISTANCE_DP);
 }

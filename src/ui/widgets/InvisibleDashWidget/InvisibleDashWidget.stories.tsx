@@ -5,7 +5,7 @@ import type {
   InvisibleDashRenderMode,
   InvisibleDashWidgetSettings,
 } from '@/types/widget-settings';
-import { MPS_PER_KMH, mockCarDynamics } from '@store/preview/mocks/dynamics';
+import { MPS_PER_KMH, mockCarDynamics } from '@/preview/mocks/dynamics';
 import { InvisibleDashWidget } from './InvisibleDashWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 

@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, type RefObject } from 'react';
 import { runInAction } from 'mobx';
 
-import type { StreamChatWidgetStore } from '../stream-chat.widget';
+import type { StreamChatWidgetStore } from '../stream-chat.store';
 
 /**
  * Counts the rows the list can actually show and hands the number to the store.

@@ -1,5 +1,8 @@
 import type { CarStatusFrame, SessionSnapshot } from '@/types/bindings';
 
+/** The pit limiter's bit in the sim's `engine_warnings` bitmask. */
+export const PIT_LIMITER_BIT = 0x10;
+
 export interface RpmZoneColors {
   low: string;
   mid: string;

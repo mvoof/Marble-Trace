@@ -5,7 +5,7 @@ import {
   useBackendComputedStore,
   usePlayerStore,
   useSimStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { formatLapTime } from '@utils/telemetry-format';
 import { formatDelta, getDeltaState } from '@utils/delta-utils';
 import { LapRow } from './LapRow/LapRow';

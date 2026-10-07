@@ -1,10 +1,17 @@
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { EyeOff, LayoutGrid, Settings2 } from 'lucide-react';
 import styles from './WidgetDragToolbar.module.scss';
 import { SnapPanel } from './SnapPanel/SnapPanel';
-import { WidgetSettingsPopup } from './WidgetSettingsPopup/WidgetSettingsPopup';
-import { useLiveWidgetsStore } from '@store/root-store-context';
+import { useOverlayRoot } from '@store/roots/overlay-root-context';
+
+// Embeds the main window's whole settings panel, antd with it — loaded the
+// first time a popup opens, never with the overlay itself.
+const WidgetSettingsPopup = lazy(() =>
+  import('./WidgetSettingsPopup/WidgetSettingsPopup').then((module) => ({
+    default: module.WidgetSettingsPopup,
+  }))
+);
 
 interface WidgetDragToolbarProps {
   widgetId: string;
@@ -12,7 +19,7 @@ interface WidgetDragToolbarProps {
 
 export const WidgetDragToolbar = observer(
   ({ widgetId }: WidgetDragToolbarProps) => {
-    const liveWidgets = useLiveWidgetsStore();
+    const { settingsClient } = useOverlayRoot();
     const [snapOpen, setSnapOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -47,7 +54,7 @@ export const WidgetDragToolbar = observer(
 
     const hideWidget = (e: React.MouseEvent) => {
       e.stopPropagation();
-      liveWidgets.setWidgetEnabled(widgetId, false);
+      settingsClient.setEnabled(widgetId, false);
     };
 
     return (
@@ -96,10 +103,12 @@ export const WidgetDragToolbar = observer(
         )}
 
         {settingsOpen && (
-          <WidgetSettingsPopup
-            widgetId={widgetId}
-            onClose={() => setSettingsOpen(false)}
-          />
+          <Suspense fallback={null}>
+            <WidgetSettingsPopup
+              widgetId={widgetId}
+              onClose={() => setSettingsOpen(false)}
+            />
+          </Suspense>
         )}
       </div>
     );

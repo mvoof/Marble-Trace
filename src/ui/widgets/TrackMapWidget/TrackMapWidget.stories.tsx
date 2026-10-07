@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { RootStore } from '@store/root-store';
-import { mockField } from '@store/preview/mocks/field';
-import { mockSectors } from '@store/preview/mocks/timing';
-import { sampleTrack } from '@store/preview/sample-track';
+import type { RendererCore } from '@store/roots/renderer-core';
+import { respaceField } from '@/preview/field-seed';
+import { mockSectors } from '@/preview/mocks/timing';
+import { sampleTrack } from '@/preview/sample-track';
 import {
   defineWidgetStories,
   previewScenario,
@@ -40,25 +40,16 @@ interface StoryArgs {
 // The map draws one dot per car off its own lap distance, so the field is
 // spread over the whole lap rather than packed into the seconds around the
 // player: a gap of a lap divided by the field is one car every equal step.
-const seedField = (store: RootStore) => {
-  const base = store.backendComputed.driverEntries;
-
-  if (!base || base.entries.length === 0) {
-    return;
-  }
-
-  const { driverEntries, relative } = mockField(base.entries, {
+const seedField = (store: RendererCore) => {
+  respaceField(store, {
     gapS: LAP_TIME_S / MAPPED_CAR_COUNT,
     lapTimeS: LAP_TIME_S,
   });
-
-  store.backendComputed.updateDriverEntries(driverEntries);
-  store.backendComputed.updateRelative(relative);
 };
 
 // The lap's splits are on the session rather than on a frame, and the recorded
 // one carries none — so the sector story states them where the map reads them.
-const seedSectors = (store: RootStore) => {
+const seedSectors = (store: RendererCore) => {
   const sessionInfo = store.session.sessionInfo;
 
   if (!sessionInfo) {

@@ -9,11 +9,9 @@ import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { useValueCoverPoint } from './useValueCoverPoint';
 
 import styles from './Bar.module.scss';
-import {
-  useInputTraceWidgetStore,
-  usePlayerStore,
-} from '@store/root-store-context';
-import type { InputChannel } from '@ui/widgets/InputTraceWidget/input-trace.widget';
+import { usePlayerStore } from '@store/roots/root-store-context';
+import { useInputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.store';
+import type { InputChannel } from '@ui/widgets/InputTraceWidget/input-trace.store';
 
 type BarChannel = InputChannel;
 type BarWidth = 'sm' | 'md' | 'lg';

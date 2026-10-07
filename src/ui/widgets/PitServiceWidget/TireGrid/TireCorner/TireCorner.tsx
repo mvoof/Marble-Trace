@@ -3,19 +3,21 @@ import { Check } from 'lucide-react';
 
 import styles from './TireCorner.module.scss';
 import { OrderToggle } from '@ui/widgets/PitServiceWidget/OrderToggle/OrderToggle';
-import type { CornerPosition } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import {
   buildTireCorner,
   convertPressure,
-  isCornerOrdered,
-  orderedPressure,
   wearLevel,
 } from '@ui/widgets/PitServiceWidget/pit-service-utils';
+import {
+  isCornerOrdered,
+  orderedPressure,
+  type CornerPosition,
+} from '@store/widgets/pit-service/pit-tires';
 import {
   usePitServiceWidgetStore,
   usePlayerStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 const WEAR_TO_PCT = 100;
 const MIN_FILL_PCT = 5;
@@ -57,7 +59,7 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
       className={`${styles.corner} ${ordered ? styles.cornerOrdered : styles.cornerKept}`}
       clickableClassName={styles.cornerClickable}
       label={`Toggle ${position.toUpperCase()} tire change`}
-      onToggle={() => void widget.order.toggleTire(position)}
+      onToggle={() => widget.order.toggleTire(position)}
     >
       <div className={styles.zoneRow}>
         {zones.map((zone, index) => (

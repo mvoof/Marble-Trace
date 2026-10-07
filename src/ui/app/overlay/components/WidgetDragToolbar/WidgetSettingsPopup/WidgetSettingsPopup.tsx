@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
@@ -5,13 +6,38 @@ import { useClickOutside } from '@ui/hooks/useClickOutside';
 import { ConfigProvider, theme } from 'antd';
 import { X } from 'lucide-react';
 import { WidgetSettings } from '@ui/app/main/components/WidgetSettings/WidgetSettings';
-import { useLiveWidgetsStore } from '@store/root-store-context';
+import {
+  WidgetEditorProvider,
+  type WidgetEditor,
+} from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';
+import {
+  useLiveWidgetsStore,
+  useSettingsMutationLog,
+} from '@store/roots/root-store-context';
+import { useOverlayRoot } from '@store/roots/overlay-root-context';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { SettingsMutationLog } from '@store/layout/mutation-log.store';
+import type { SettingsClientStore } from '@store/layout/settings-client.store';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import styles from './WidgetSettingsPopup.module.scss';
 
 const POPUP_WIDTH = 500;
 const POPUP_MAX_HEIGHT = 650;
 const MARGIN = 8;
+
+// The panels read the widget as drawn here — overrides included — and every
+// write goes to main as a command. Nothing in the popup writes the store.
+const overlayEditor = (
+  liveWidgets: LiveWidgetsView,
+  mutations: SettingsMutationLog,
+  settingsClient: SettingsClientStore
+): WidgetEditor => ({
+  getWidget: (id) => liveWidgets.getWidget(id),
+  getSettings: (id) => liveWidgets.getSettings(id),
+  updateUserSettings: (id, partial) =>
+    settingsClient.patchSettings(id, partial),
+  getChangeToken: () => mutations.changeToken,
+});
 
 interface WidgetSettingsPopupProps {
   widgetId: string;
@@ -21,6 +47,12 @@ interface WidgetSettingsPopupProps {
 export const WidgetSettingsPopup = observer(
   ({ widgetId, onClose }: WidgetSettingsPopupProps) => {
     const liveWidgets = useLiveWidgetsStore();
+    const mutations = useSettingsMutationLog();
+    const { settingsClient } = useOverlayRoot();
+    const editor = useMemo(
+      () => overlayEditor(liveWidgets, mutations, settingsClient),
+      [liveWidgets, mutations, settingsClient]
+    );
     const popupRef = useClickOutside<HTMLDialogElement>(onClose);
     const { t } = useTranslation('main-app');
 
@@ -83,7 +115,9 @@ export const WidgetSettingsPopup = observer(
 
           <div className={styles.content}>
             <div className={styles.popupInner}>
-              <WidgetSettings widgetId={widgetId} />
+              <WidgetEditorProvider editor={editor}>
+                <WidgetSettings widgetId={widgetId} />
+              </WidgetEditorProvider>
             </div>
           </div>
         </dialog>

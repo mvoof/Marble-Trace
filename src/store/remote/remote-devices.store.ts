@@ -1,6 +1,10 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 
-import type { RemoteDevice } from '@/types/bindings';
+import { getRemoteServerInfo } from '@platform/services/remote.service';
+import type { RemoteDevice, RemoteServerInfo } from '@/types/bindings';
+
+/** How often the remote-screens page asks the server how it is. */
+const SERVER_INFO_POLL_MS = 3000;
 
 /**
  * What the devices showing remote screens report about themselves, keyed by
@@ -26,8 +30,53 @@ export class RemoteDevicesStore {
   /** Bumped by the retry button; the publisher restarts the server on it. */
   restartToken = 0;
 
+  /** The server's address and status, while the remote-screens page watches it. */
+  serverInfo: RemoteServerInfo | null = null;
+
+  private serverInfoTimer: ReturnType<typeof setInterval> | null = null;
+
+  /** Bumped on every stop, so a reply that arrives after it is dropped. */
+  private serverInfoGeneration = 0;
+
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  /** Polls the server's status until the returned function is called. */
+  watchServerInfo(): () => void {
+    this.stopWatchingServerInfo();
+
+    const generation = this.serverInfoGeneration;
+    const poll = () => {
+      getRemoteServerInfo()
+        .then((info) => this.acceptServerInfo(generation, info))
+        .catch(() => this.acceptServerInfo(generation, null));
+    };
+
+    poll();
+    this.serverInfoTimer = setInterval(poll, SERVER_INFO_POLL_MS);
+
+    return () => this.stopWatchingServerInfo();
+  }
+
+  stopWatchingServerInfo() {
+    if (this.serverInfoTimer !== null) {
+      clearInterval(this.serverInfoTimer);
+      this.serverInfoTimer = null;
+    }
+
+    this.serverInfoGeneration++;
+    this.serverInfo = null;
+  }
+
+  private acceptServerInfo(generation: number, info: RemoteServerInfo | null) {
+    if (generation !== this.serverInfoGeneration) {
+      return;
+    }
+
+    runInAction(() => {
+      this.serverInfo = info;
+    });
   }
 
   upsert(device: RemoteDevice) {

@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { projectPositionsLost } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import {
   useBackendComputedStore,
-  useStandingsWidgetStore,
-} from '@store/root-store-context';
+  usePlayerPositionStore,
+} from '@store/roots/root-store-context';
 
 import styles from './PositionBadge.module.scss';
 
@@ -32,18 +32,17 @@ export const PositionBadge = observer(
     // escape hatch: `PositionBadge` is deliberately the smallest component
     // that re-renders on `relative`, split out of `ServiceFooter` for exactly
     // that reason. See "The hot/cold split" in docs/rendering.md.
-    // oxlint-disable-next-line no-restricted-properties
-    const { relative } = useBackendComputedStore();
-    const standingsWidget = useStandingsWidgetStore();
+    const { relativeEntries } = useBackendComputedStore();
+    const playerPosition = usePlayerPositionStore();
 
-    const { position, total } = standingsWidget.playerPositionInfo(
+    const { position, total } = playerPosition.playerPositionInfo(
       useLivePositions,
       classPositionInMulticlass
     );
 
     const lost = showProjectedPosition
       ? projectPositionsLost(
-          relative?.entries ?? [],
+          relativeEntries,
           secondsLost,
           classPositionInMulticlass,
           useLivePositions

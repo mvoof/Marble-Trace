@@ -2,12 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { PitServiceFrame } from '@/types/bindings';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
-import { mockFuel } from '@store/preview/mocks/fuel';
+import { mockFuel } from '@/preview/mocks/fuel';
 import {
   mockChassis,
   mockPitService,
   mockPitTarget,
-} from '@store/preview/mocks/pit';
+} from '@/preview/mocks/pit';
 import { whenSet } from '@/storybook/story-overrides';
 import { PitServiceWidget } from './PitServiceWidget';
 import {

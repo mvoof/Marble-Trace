@@ -1,4 +1,5 @@
-//! Owns the DirectInput poll thread and turns its edges into Tauri events.
+//! Owns the DirectInput poll thread: its edges go to the hotkey dispatcher
+//! and, as Tauri events, to the settings screen that captures a binding.
 //!
 //! The COM objects are apartment-affine, so the session is created on the poll
 //! thread and never leaves it. Everything the rest of the app needs — the
@@ -16,7 +17,7 @@ use crate::model::input::{InputButtonEvent, InputDevice};
 
 use super::dinput::{DirectInputSession, POLL_INTERVAL};
 use super::identity::DeviceIdentity;
-use super::{INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT};
+use super::{EdgeHandler, INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT};
 
 pub struct InputRuntime {
     /// Off while nothing is listening — the overlay is hidden and no capture
@@ -27,7 +28,7 @@ pub struct InputRuntime {
 }
 
 impl InputRuntime {
-    pub fn start(app: AppHandle) -> Self {
+    pub fn start(app: AppHandle, on_edge: EdgeHandler) -> Self {
         let enabled = Arc::new(AtomicBool::new(true));
         let running = Arc::new(AtomicBool::new(true));
         let devices = Arc::new(Mutex::new(Vec::new()));
@@ -40,7 +41,7 @@ impl InputRuntime {
 
         thread::Builder::new()
             .name("input-poll".to_string())
-            .spawn(move || poll_loop(app, enabled, running, devices))
+            .spawn(move || poll_loop(app, on_edge, enabled, running, devices))
             .map_err(|error| tracing::error!("failed to start input poll thread: {error}"))
             .ok();
 
@@ -84,6 +85,7 @@ fn main_window_handle(app: &AppHandle) -> Option<HWND> {
 
 fn poll_loop(
     app: AppHandle,
+    on_edge: EdgeHandler,
     enabled: Arc<AtomicBool>,
     running: Arc<AtomicBool>,
     devices: Arc<Mutex<Vec<DeviceIdentity>>>,
@@ -133,14 +135,15 @@ fn poll_loop(
         // Reading button state is what the on/off switch actually gates.
         if enabled.load(Ordering::Relaxed) {
             for edge in session.poll() {
-                let _ = app.emit(
-                    INPUT_BUTTON_EVENT,
-                    InputButtonEvent {
-                        device_id: edge.device_id,
-                        button: edge.button,
-                        pressed: edge.pressed,
-                    },
-                );
+                let event = InputButtonEvent {
+                    device_id: edge.device_id,
+                    button: edge.button,
+                    pressed: edge.pressed,
+                };
+
+                on_edge(&app, &event);
+
+                let _ = app.emit(INPUT_BUTTON_EVENT, event);
             }
         }
 

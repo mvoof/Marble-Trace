@@ -14,9 +14,9 @@ import {
   usePlayerStore,
   useSimStore,
   useWidgetAutoHideStore,
-  useLayoutsStore,
   useLiveWidgetsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
+import { useOverlayRoot } from '@store/roots/overlay-root-context';
 
 interface WidgetContainerProps {
   widgetId: string;
@@ -25,9 +25,9 @@ interface WidgetContainerProps {
 
 export const WidgetContainer = observer(
   ({ widgetId, children }: WidgetContainerProps) => {
-    const { dragMode, appSettings } = useAppSettingsStore();
+    const { dragMode, appSettings, hidesOffTrack } = useAppSettingsStore();
     const liveWidgets = useLiveWidgetsStore();
-    const layouts = useLayoutsStore();
+    const { settingsClient } = useOverlayRoot();
 
     const simStore = useSimStore();
     const widgetAutoHide = useWidgetAutoHideStore();
@@ -57,14 +57,9 @@ export const WidgetContainer = observer(
     const isConnected = simStore.status === 'connected';
     const isOnTrack = player.isOnTrack;
 
-    const hasGarageLayout = !!layouts.sessionLayouts?.Garage;
-
-    const shouldHideInGarage =
-      appSettings.autoSwitchLayouts && !hasGarageLayout;
-
     const shouldHide =
       (appSettings.hideWidgetsWhenGameClosed && !isConnected && !dragMode) ||
-      (!isOnTrack && isConnected && !dragMode && shouldHideInGarage) ||
+      (!isOnTrack && isConnected && !dragMode && hidesOffTrack) ||
       (!widgetAutoHide.isVisible(widgetId) && !dragMode);
 
     const x = widget?.userSettings.x ?? 100;
@@ -109,7 +104,7 @@ export const WidgetContainer = observer(
           const dx = ev.clientX - dragStartRef.current.mouseX;
           const dy = ev.clientY - dragStartRef.current.mouseY;
 
-          liveWidgets.updatePosition(
+          settingsClient.moveWidget(
             widgetId,
             Math.round(dragStartRef.current.widgetX + dx),
             Math.round(dragStartRef.current.widgetY + dy)
@@ -118,6 +113,7 @@ export const WidgetContainer = observer(
 
         const onMouseUp = () => {
           isDraggingRef.current = false;
+          settingsClient.endGeometry(widgetId);
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
         };
@@ -125,7 +121,7 @@ export const WidgetContainer = observer(
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       },
-      [dragMode, widgetId, liveWidgets]
+      [dragMode, widgetId, liveWidgets, settingsClient]
     );
 
     const handleResizeMouseDown = useCallback(
@@ -213,15 +209,12 @@ export const WidgetContainer = observer(
             }
           }
 
-          liveWidgets.updateSize(widgetId, newW, newH);
-
-          if (newX !== startX || newY !== startY) {
-            liveWidgets.updatePosition(widgetId, newX, newY);
-          }
+          settingsClient.resizeWidget(widgetId, newX, newY, newW, newH);
         };
 
         const onMouseUp = () => {
           isResizingRef.current = false;
+          settingsClient.endGeometry(widgetId);
 
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
@@ -233,6 +226,7 @@ export const WidgetContainer = observer(
       [
         dragMode,
         liveWidgets,
+        settingsClient,
         widgetId,
         designWidth,
         designHeight,

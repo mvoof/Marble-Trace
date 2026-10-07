@@ -13,7 +13,7 @@ export const COACH_MANIFEST: WidgetManifest = {
     'driving-coach-grip',
     'driving-coach-inactive',
   ],
-  telemetryEvents: ['carDynamics', 'carInputs'],
+  telemetryEvents: ['carDynamics', 'carInputs', 'coach'],
   label: 'Coach',
   description:
     'Brake/gas call and a speed trace against your stored best lap, colored by time gained or lost.',

@@ -1,12 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import type { StandingsWidgetStore } from './standings.store';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import type { MockFieldRows } from '@store/preview/mocks/field';
-import {
-  MOCK_DRIVER_FLAG_ROWS,
-  MOCK_PIT_ROWS,
-  mockField,
-} from '@store/preview/mocks/field';
+import type { MockFieldRows } from '@/preview/mocks/field';
+import { MOCK_DRIVER_FLAG_ROWS, MOCK_PIT_ROWS } from '@/preview/mocks/field';
+import { respaceField } from '@/preview/field-seed';
 import { StandingsWidget } from './StandingsWidget';
 import {
   defineWidgetStories,
@@ -38,8 +36,6 @@ const meta: Meta<StoryArgs> = {
     size: { width: 796, height: 500 },
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
-      const base = store.backendComputed.driverEntries;
-
       // A scenario has already spaced the field the way it means to show it, so
       // only a story that states a spacing of its own re-spaces it.
       const respaces =
@@ -47,14 +43,11 @@ const meta: Meta<StoryArgs> = {
         args.gapS !== undefined ||
         args.rows !== undefined;
 
-      if (base && respaces) {
-        const { driverEntries, relative } = mockField(base.entries, {
+      if (respaces) {
+        respaceField(store, {
           gapS: args.gapS ?? DEFAULT_GAP_S,
           rows: args.rows,
         });
-
-        store.backendComputed.updateDriverEntries(driverEntries);
-        store.backendComputed.updateRelative(relative);
       }
 
       if (args.settings) {
@@ -62,7 +55,13 @@ const meta: Meta<StoryArgs> = {
       }
 
       if (args.activeClassIndex !== undefined) {
-        store.standingsWidget.activeClassIndex = args.activeClassIndex;
+        const classIndex = args.activeClassIndex;
+
+        for (const table of store.widgetInstances.storesOf<StandingsWidgetStore>(
+          'standings'
+        )) {
+          table.activeClassIndex = classIndex;
+        }
       }
     },
     argTypes: {

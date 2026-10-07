@@ -29,6 +29,20 @@ export class SessionStore {
     return this.sessionInfo.sessions[num]?.sessionType ?? null;
   }
 
+  /**
+   * The track as the stored track settings key it, or `''` while no session
+   * names one (the sim sends `-1`).
+   */
+  get trackKey(): string {
+    const info = this.sessionInfo;
+
+    if (!info || info.trackId < 0) {
+      return '';
+    }
+
+    return String(info.trackId);
+  }
+
   private get currentSessionLabel(): string | null {
     const info = this.sessionInfo;
 
@@ -53,6 +67,15 @@ export class SessionStore {
    * carries the pace car and spectators, so counting it raw reports one place
    * too many — the per-class counts come from `driverEntries`, which drops them.
    */
+  /** The pace cars' indices — they are in the roster, never in the field. */
+  get paceCarIdxs(): ReadonlySet<number> {
+    return new Set(
+      (this.sessionInfo?.cars ?? [])
+        .filter((car) => car.isPaceCar)
+        .map((car) => car.carIdx)
+    );
+  }
+
   get competingCarCount(): number {
     return (this.sessionInfo?.cars ?? []).filter(
       (car) => !car.isPaceCar && !car.isSpectator

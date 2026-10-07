@@ -1,4 +1,5 @@
 import type { CarIdentity } from '@/types/car-identity';
+import type { DriverEntry } from '@/types/driver-entry';
 import { TrackSurface as TrackSurfaceType } from '@/types/bindings';
 import { TrackSurface, type FlagType } from '@/types';
 
@@ -180,6 +181,47 @@ export const computeClassSof = (drivers: CarIdentity[]): number => {
  * the qualifying time standing in for it before the first flying lap.
  */
 export const hasSetALap = (driver: {
-  bestLapTime: number;
-  qualifyTime: number;
-}): boolean => driver.bestLapTime > 0 || driver.qualifyTime > 0;
+  bestLapTime: number | null;
+  qualifyTime: number | null;
+}): boolean => driver.bestLapTime !== null || driver.qualifyTime !== null;
+
+/**
+ * Seconds between a car and the player on the relative strip, scaled by class
+ * pace so a faster class is not shown closer than it is. Positive: ahead.
+ */
+export const computeRelativeGap = (
+  driver: DriverEntry,
+  player: DriverEntry
+): number => {
+  if (driver.isPlayer) return 0;
+
+  const isAhead = driver.relativeLapDist > 0;
+  const aheadClassLapTime = isAhead
+    ? driver.classEstLapTime || driver.bestLapTime
+    : player.classEstLapTime || player.bestLapTime;
+  const behindClassLapTime = isAhead
+    ? player.classEstLapTime || player.bestLapTime
+    : driver.classEstLapTime || driver.bestLapTime;
+
+  if (!aheadClassLapTime || !behindClassLapTime) {
+    return driver.estTime - player.estTime;
+  }
+
+  const scalingRatio = behindClassLapTime / aheadClassLapTime;
+  const aheadEstTime = isAhead ? driver.estTime : player.estTime;
+  const behindEstTime = isAhead ? player.estTime : driver.estTime;
+  const aheadTimeScaled = aheadEstTime * scalingRatio;
+  const referenceLapTime = behindClassLapTime;
+
+  let delta = isAhead
+    ? behindEstTime - aheadTimeScaled
+    : aheadTimeScaled - behindEstTime;
+
+  if (isAhead) {
+    if (delta > referenceLapTime / 2) delta -= referenceLapTime;
+  } else {
+    if (delta < -referenceLapTime / 2) delta += referenceLapTime;
+  }
+
+  return delta;
+};

@@ -2,10 +2,8 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Popconfirm } from 'antd';
 import { RotateCcw } from 'lucide-react';
-import {
-  useAppSettingsStore,
-  useDiagnosticsExportStore,
-} from '@store/root-store-context';
+import { useAppSettingsStore } from '@store/roots/root-store-context';
+import { useDiagnosticsExportStore } from '@store/roots/main-root-context';
 import { SettingsCard } from '../SettingsCard';
 import { FpsDiagnosticsCard } from './FpsDiagnosticsCard/FpsDiagnosticsCard';
 import styles from '../SettingsPage.module.scss';

@@ -20,7 +20,7 @@
           },
           {
             "group": ["@tauri-apps/plugin-store"],
-            "message": "Settings-file persistence lives in src/platform/sync and track-map.widget.ts."
+            "message": "Settings-file persistence lives in src/platform/sync and track-map.store.ts."
           }
         ]
       }
@@ -109,11 +109,15 @@
               },
               {
                 "group": ["@tauri-apps/plugin-store"],
-                "message": "Settings-file persistence lives in src/platform/sync and track-map.widget.ts."
+                "message": "Settings-file persistence lives in src/platform/sync and track-map.store.ts."
               },
               {
                 "group": ["@ui/**"],
                 "message": "Layer direction is ui -> store -> platform. A store must not reach into the UI."
+              },
+              {
+                "group": ["@/preview/**"],
+                "message": "Preview fixtures sit above the stores (ui -> preview -> store): they seed a PreviewCore, a store never reads them."
               }
             ]
           }
@@ -137,7 +141,7 @@
               },
               {
                 "group": ["@tauri-apps/plugin-store"],
-                "message": "Settings-file persistence lives in src/platform/sync and track-map.widget.ts."
+                "message": "Settings-file persistence lives in src/platform/sync and track-map.store.ts."
               },
               {
                 "group": ["@store/**", "@ui/**"],
@@ -175,7 +179,7 @@
     {
       "files": [
         "src/platform/services/**",
-        "src/store/settings/layout-background.ts"
+        "src/store/layout/layout-background.ts"
       ],
       "rules": {
         "no-restricted-imports": [
@@ -194,7 +198,7 @@
     {
       "files": [
         "src/platform/sync/persistence-sync.ts",
-        "src/ui/widgets/TrackMapWidget/track-map.widget.ts"
+        "src/store/widgets/track-map/track-map.store.ts"
       ],
       "rules": {
         "no-restricted-imports": [
@@ -208,6 +212,10 @@
               {
                 "group": ["@tauri-apps/api/event"],
                 "message": "Tauri events are wrapped by src/platform/services/events.service.ts — use listenTo/emitToApp/emitToOverlays."
+              },
+              {
+                "group": ["@ui/**"],
+                "message": "Layer direction is ui -> store -> platform. A store must not reach into the UI."
               }
             ]
           }
@@ -215,7 +223,7 @@
       }
     },
     {
-      "files": ["src/store/root-store.ts"],
+      "files": ["src/preview/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -223,33 +231,16 @@
             "patterns": [
               {
                 "group": [
-                  "@tauri-apps/api/core",
-                  "@tauri-apps/api/event",
-                  "@tauri-apps/plugin-store"
-                ],
-                "message": "Tauri access lives in src/platform/."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": ["src/store/preview/**"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": [
-                  "@store/root-store-context",
+                  "@store/roots/root-store-context",
                   "**/root-store-context",
+                  "**/main-root-context",
+                  "**/overlay-root-context",
+                  "**/hud-root-context",
                   "@ui/**",
                   "@platform/**",
                   "@tauri-apps/**"
                 ],
-                "message": "The preview store is isolated (ADR-0004 rule 1): a scenario or builder writes only into the RootStore({ skipInit: true }) handed to it. No context hooks onto the running stores, no UI, no persistence."
+                "message": "The preview store is isolated (ADR-0004 rule 1): a scenario or builder writes only into the RendererCore({ skipInit: true }) handed to it. No context hooks onto the running stores, no UI, no persistence."
               }
             ]
           }
@@ -273,6 +264,132 @@
                   "@tauri-apps/**"
                 ],
                 "message": "A migration must keep meaning what it meant the day it was written, and live types, defaults and registries move under it. Freeze what you need as a literal, and walk the blob with the structural helpers in ../blob."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/ui/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@platform/**"],
+                "message": "The UI talks to stores only (ui -> store -> platform): an OS or backend action belongs in a store method."
+              },
+              {
+                "group": ["@tauri-apps/**"],
+                "message": "The UI talks to stores only; Tauri sits behind src/platform/services/. Only the window shells may reach their own window, in the override below."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/ui/widgets/**",
+        "src/ui/shared/**",
+        "src/ui/hooks/**",
+        "src/ui/app/overlay/**",
+        "src/ui/app/remote/**",
+        "src/ui/app/diagnostics/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@store/roots/main-root",
+                  "@store/roots/main-root-context",
+                  "**/main-root",
+                  "**/main-root-context"
+                ],
+                "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps and the device list exist in the main window only. Read the renderer core (root-store-context) instead."
+              },
+              {
+                "group": ["@platform/**"],
+                "message": "The UI talks to stores only (ui -> store -> platform): an OS or backend action belongs in a store method."
+              },
+              {
+                "group": ["@tauri-apps/**"],
+                "message": "The UI talks to stores only; Tauri sits behind src/platform/services/. Only the window shells may reach their own window, in the override below."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/ui/app/main/MainWindow.tsx",
+        "src/ui/app/main/components/AppHeader/WindowControls.tsx"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@platform/services/**",
+                  "@platform/settings-schema/**"
+                ],
+                "message": "A window shell may start its window's sync and reach its own window — nothing else of the platform."
+              },
+              {
+                "group": [
+                  "@tauri-apps/api/core",
+                  "@tauri-apps/api/event",
+                  "@tauri-apps/plugin-*"
+                ],
+                "message": "A window shell may reach its own window (@tauri-apps/api/window, webviewWindow) — nothing else of Tauri."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/ui/app/overlay/OverlayWindow.tsx",
+        "src/ui/app/overlay/OverlayCanvas/OverlayCanvas.tsx",
+        "src/ui/app/diagnostics/DiagnosticsHudWindow.tsx"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@store/roots/main-root",
+                  "@store/roots/main-root-context",
+                  "**/main-root",
+                  "**/main-root-context"
+                ],
+                "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps and the device list exist in the main window only. Read the renderer core (root-store-context) instead."
+              },
+              {
+                "group": [
+                  "@platform/services/**",
+                  "@platform/settings-schema/**"
+                ],
+                "message": "A window shell may start its window's sync and reach its own window — nothing else of the platform."
+              },
+              {
+                "group": [
+                  "@tauri-apps/api/core",
+                  "@tauri-apps/api/event",
+                  "@tauri-apps/plugin-*"
+                ],
+                "message": "A window shell may reach its own window (@tauri-apps/api/window, webviewWindow) — nothing else of Tauri."
               }
             ]
           }
@@ -311,6 +428,10 @@
           {
             "property": "driverEntries",
             "message": "Heavy per-car frame (10 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+          },
+          {
+            "property": "fieldEntries",
+            "message": "Heavy per-car frame (10 Hz), joined with the session roster — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
           }
         ]
       }

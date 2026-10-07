@@ -5,10 +5,8 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { hasRaceStarted } from '@utils/timer-utils';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
-import {
-  useSessionStore,
-  useStandingsWidgetStore,
-} from '@store/root-store-context';
+import { useSessionStore } from '@store/roots/root-store-context';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 interface PosChangeProps {
   carIdx: number;
@@ -47,7 +45,7 @@ export const PosChange = observer(({ carIdx }: PosChangeProps) => {
   const startPos = useClassPos ? driver.startPosClass : driver.startPosOverall;
 
   // No grid slot, or a car the sim has not placed at all: nothing to subtract.
-  if (startPos <= 0 || position <= 0) {
+  if (startPos === null || position <= 0) {
     return <span className={styles.posChangeNeutral}>-</span>;
   }
 

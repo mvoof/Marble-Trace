@@ -5,7 +5,7 @@ import {
   BLINK_FLAGS,
   FLAG_LABEL,
 } from '@ui/widgets/FlatFlagsWidget/flat-flags-utils';
-import { useFlagsStore } from '@store/root-store-context';
+import { useFlagsStore } from '@store/roots/root-store-context';
 
 import styles from './FlagItem.module.scss';
 

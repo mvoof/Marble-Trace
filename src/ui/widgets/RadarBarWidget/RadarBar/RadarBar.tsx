@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import type { RadarSettings } from '@/types/widget-settings';
 import { distanceUnit, formatDistance } from '@utils/telemetry-format';
-import { getBarPillColor } from '@utils/radar-constants';
+import { getBarPillColor } from '@store/widgets/radar/radar-constants';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import {
@@ -11,7 +11,7 @@ import {
   useBackendComputedStore,
   useRadarWidgetStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 import styles from './RadarBar.module.scss';
 

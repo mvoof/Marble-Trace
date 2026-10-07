@@ -26,6 +26,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "capture:widgets": "node scripts/capture-widgets.mjs",
+    "perf": "node scripts/perf-run.mjs",
     "cargo:format": "cd src-tauri && cargo fmt",
     "test": "vitest run",
     "prepare": "lefthook install"
@@ -34,7 +35,6 @@
     "@tauri-apps/api": "~2.10",
     "@tauri-apps/plugin-dialog": "^2.7.2",
     "@tauri-apps/plugin-fs": "^2.5.1",
-    "@tauri-apps/plugin-global-shortcut": "^2.3.1",
     "@tauri-apps/plugin-opener": "^2.5.4",
     "@tauri-apps/plugin-process": "^2.3.1",
     "@tauri-apps/plugin-store": "^2.4.2",
@@ -48,7 +48,6 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-i18next": "^16.1.1",
-    "react-router-dom": "^7.11.0",
     "sass": "^1.98.0",
     "vite-plugin-svgr": "^4.5.0"
   },

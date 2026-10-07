@@ -2,7 +2,7 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
-import { useSessionStore, useSimStore } from '@store/root-store-context';
+import { useSessionStore, useSimStore } from '@store/roots/root-store-context';
 import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import { SectorHeader } from './SectorHeader/SectorHeader';
 import { SectorGrid } from './SectorGrid/SectorGrid';

@@ -1,4 +1,4 @@
-import type { PaceCarPitPhase } from '@store/widgets/pace-car.widget';
+import type { PaceCarPitPhase } from '@/types/bindings';
 
 /**
  * A car as the map draws it. Deliberately without a position: where the dot goes
@@ -16,15 +16,3 @@ export interface CarOnTrack {
   isPaceCar?: boolean;
   pitPhase?: PaceCarPitPhase;
 }
-
-export type TrackRotateDirection = 'cw' | 'ccw';
-
-interface StoredTrackData {
-  rotation?: number;
-}
-
-export interface StoredTracks {
-  [trackId: string]: StoredTrackData;
-}
-
-export const TRACKS_STORE_KEY = 'recorded-tracks';

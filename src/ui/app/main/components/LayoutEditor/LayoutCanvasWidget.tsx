@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import type { LiveWidgetsStore } from '@store/settings/live-widgets.store';
+import type { LiveWidgetsStore } from '@store/layout/live-widgets.store';
 import type { MonitorBounds } from '@/types/widget-settings';
 import {
   resizeDirectionsFor,

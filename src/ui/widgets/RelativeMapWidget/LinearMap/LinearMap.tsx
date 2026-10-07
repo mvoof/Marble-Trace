@@ -5,7 +5,7 @@ import { TRACK_SURFACE_ON_TRACK } from '@utils/driver';
 import { parseClassColor } from '@utils/colors';
 import { CarDot } from '@ui/shared/CarDot/CarDot';
 import { shapeForClassOrder } from '@utils/canvas';
-import { PaceCarMarker } from '@ui/widgets/TrackMapWidget/TrackMapSvg/PaceCarMarker/PaceCarMarker';
+import { PaceCarMarker } from '@ui/shared/PaceCarMarker/PaceCarMarker';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 
 import { FlagBands } from '../FlagBands/FlagBands';
@@ -15,9 +15,8 @@ import type { LinearMapWidgetSettings } from '@/types/widget-settings';
 import {
   useBackendComputedStore,
   useCarsStore,
-  usePaceCarStore,
   useSessionStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 const DEFAULT_DOT_RADIUS_PX = 9;
 const DEFAULT_PACE_CAR_COLOR = '#facc15';
@@ -36,7 +35,6 @@ export const LinearMap = observer(() => {
   const carsStore = useCarsStore();
   const sessionStore = useSessionStore();
   const { sessionInfo } = sessionStore;
-  const paceCarStore = usePaceCarStore();
 
   const settings = useWidgetSettings<LinearMapWidgetSettings>('relative-map');
   const isHorizontal = settings.orientation === 'horizontal';
@@ -85,7 +83,7 @@ export const LinearMap = observer(() => {
       return false;
     }
 
-    const pitPhase = paceCarStore.getPitPhase(car.carIdx);
+    const pitPhase = computed.paceCarPhaseOf(car.carIdx);
 
     return paceCarShowInPits || pitPhase === 'onTrack' || pitPhase === 'pitOut';
   });

@@ -1,19 +1,18 @@
 import { listenTo, type UnlistenFn } from '@platform/services/events.service';
-import type { RootStore } from '@store/root-store';
+import type { MainRoot } from '@store/roots/main-root';
 import type { InputButtonEvent, InputDevice } from '@/types/bindings';
 import {
   INPUT_BUTTON_EVENT,
   INPUT_DEVICES_EVENT,
 } from '@platform/sync/sim-events';
-import { dispatchDeviceButton } from './binding-runner';
 
 /**
- * Main-window only, like the keyboard registrations: a second window would
- * dispatch every action twice. Overlays are reached through the existing
- * `emitToOverlays` helpers inside the actions themselves.
+ * The device list and the last button pressed, for the settings screen that
+ * captures a binding. The edges themselves are dispatched by the backend,
+ * which reads the wheel; this window only shows them.
  */
 export const setupDeviceBindings = async (
-  root: RootStore
+  root: MainRoot
 ): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 
@@ -28,13 +27,6 @@ export const setupDeviceBindings = async (
   unlistens.push(
     await listenTo<InputButtonEvent>(INPUT_BUTTON_EVENT, (event) => {
       root.deviceInput.setLastEvent(event.payload);
-
-      dispatchDeviceButton(
-        root,
-        event.payload.deviceId,
-        event.payload.button,
-        event.payload.pressed
-      );
     })
   );
 
@@ -48,7 +40,7 @@ export const setupDeviceBindings = async (
  * the backend matches it by vendor/product and the stored id is rewritten here,
  * so the fallback is used at most once.
  */
-const reconcileDevices = async (root: RootStore) => {
+const reconcileDevices = async (root: MainRoot) => {
   const remaps = await root.deviceInput.resolveDevices(
     root.bindings.referencedDeviceIds
   );

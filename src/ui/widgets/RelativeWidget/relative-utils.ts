@@ -1,8 +1,9 @@
 import { parseClassColor } from '@utils/colors';
-import type { CarEntry, CarIdxFrame, DriverEntry } from '@/types/bindings';
+import type { CarEntry, CarIdxFrame } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import type { CarIdentity } from '@/types/car-identity';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import type { PaceCarPitPhase } from '@store/widgets/pace-car.widget';
+import type { PaceCarPitPhase } from '@/types/bindings';
 import { licColumnWidthPx } from '@ui/shared/RatingBadge/LicBadge.utils';
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
@@ -72,43 +73,6 @@ export const computeRelativeDesignWidth = (
   const gaps = Math.max(0, visible.length - 1) * COL_GAP_PX;
 
   return Math.round(columnsWidth + gaps + ROW_PAD_X_PX * 2);
-};
-
-export const computeRelativeGap = (
-  driver: DriverEntry,
-  player: DriverEntry
-): number => {
-  if (driver.isPlayer) return 0;
-
-  const isAhead = driver.relativeLapDist > 0;
-  const aheadClassLapTime = isAhead
-    ? driver.classEstLapTime || driver.bestLapTime
-    : player.classEstLapTime || player.bestLapTime;
-  const behindClassLapTime = isAhead
-    ? player.classEstLapTime || player.bestLapTime
-    : driver.classEstLapTime || driver.bestLapTime;
-
-  if (!aheadClassLapTime || !behindClassLapTime) {
-    return driver.estTime - player.estTime;
-  }
-
-  const scalingRatio = behindClassLapTime / aheadClassLapTime;
-  const aheadEstTime = isAhead ? driver.estTime : player.estTime;
-  const behindEstTime = isAhead ? player.estTime : driver.estTime;
-  const aheadTimeScaled = aheadEstTime * scalingRatio;
-  const referenceLapTime = behindClassLapTime;
-
-  let delta = isAhead
-    ? behindEstTime - aheadTimeScaled
-    : aheadTimeScaled - behindEstTime;
-
-  if (isAhead) {
-    if (delta > referenceLapTime / 2) delta -= referenceLapTime;
-  } else {
-    if (delta < -referenceLapTime / 2) delta += referenceLapTime;
-  }
-
-  return delta;
 };
 
 export type PaceCarRowEntry = DriverEntry & {
@@ -184,13 +148,13 @@ export const buildPaceCarRowEntries = (
         classPosition: 0,
         livePosition: 0,
         liveClassPosition: 0,
-        startPosOverall: 0,
-        startPosClass: 0,
+        startPosOverall: null,
+        startPosClass: null,
         lap: player.lap,
         lapDistPct: paceLapDist,
-        lastLapTime: 0,
-        bestLapTime: 0,
-        qualifyTime: -1,
+        lastLapTime: null,
+        bestLapTime: null,
+        qualifyTime: null,
         f2Time: 0,
         estTime: carIdx.car_idx_est_time[idx] ?? 0,
         trackSurface: 'OnTrack',
@@ -211,7 +175,7 @@ export const buildPaceCarRowEntries = (
         isFinished: false,
         isTowed: false,
         pitState: 'none',
-        speed: 0,
+        speed: null,
         isPaceCar: true,
         pitPhase,
       },

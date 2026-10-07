@@ -15,6 +15,10 @@ pub use crate::model::defaults::REFERENCE_LAP_BUCKET_COUNT;
 /// the fast line is what makes two references necessary in the first place.
 const WET_THRESHOLD: i32 = 3;
 
+/// Wetness steps the reading has to fall back below the wet boundary before the
+/// track counts as dry again.
+const WET_HYSTERESIS: i32 = 1;
+
 /// Which track state a reference lap was driven in.
 ///
 /// A dry lap is useless as a target in the rain and vice versa, so each is
@@ -35,6 +39,24 @@ impl TrackCondition {
         match track_wetness {
             Some(wetness) if wetness >= WET_THRESHOLD => Self::Wet,
             _ => Self::Dry,
+        }
+    }
+
+    /// Same classification, but sticky: a reading hovering on the boundary (2↔3
+    /// as the track dries) would otherwise flip the condition on every update,
+    /// and each flip swaps the coach's reference and blanks its trace. Going wet
+    /// happens on the first reading at the threshold; going back to dry needs a
+    /// clearly drier track.
+    pub fn next(current: Option<Self>, track_wetness: Option<i32>) -> Self {
+        match (current, track_wetness) {
+            (Some(Self::Wet), Some(wetness)) => {
+                if wetness < WET_THRESHOLD - WET_HYSTERESIS {
+                    Self::Dry
+                } else {
+                    Self::Wet
+                }
+            }
+            _ => Self::from_wetness(track_wetness),
         }
     }
 

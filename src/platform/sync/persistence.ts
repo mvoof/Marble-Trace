@@ -7,7 +7,7 @@ import {
 import type { UnitSystem } from '@/types';
 import type { SessionContext } from '@/types/widget-settings';
 import type { AppSettings } from '@store/settings/app-settings.store';
-import type { RootStore } from '@store/root-store';
+import type { MainRoot } from '@store/roots/main-root';
 import type { BindingMap } from '@/types/input-bindings';
 import { CURRENT_SCHEMA_VERSION } from '@platform/settings-schema/index';
 import type { InputDevice } from '@/types/bindings';
@@ -60,7 +60,7 @@ export interface Settings {
  * testable against a real old file.
  */
 export const hydrateStores = (
-  root: RootStore,
+  root: MainRoot,
   loadedSettings: Partial<Settings>
 ) => {
   runInAction(() => {
@@ -100,7 +100,7 @@ interface Store {
   save(): Promise<void>;
 }
 
-export const buildSettings = (root: RootStore): Settings => ({
+export const buildSettings = (root: MainRoot): Settings => ({
   schemaVersion: CURRENT_SCHEMA_VERSION,
   app: { ...root.appSettings.appSettings },
   units: {
@@ -114,7 +114,7 @@ export const buildSettings = (root: RootStore): Settings => ({
   inputDevices: root.deviceInput.knownDevices,
 });
 
-export const saveSettings = async (store: Store, root: RootStore) => {
+export const saveSettings = async (store: Store, root: MainRoot) => {
   const settings = buildSettings(root);
 
   await store.set('settings', settings);
@@ -153,6 +153,6 @@ export const backupSettingsFile = async (fromVersion: number) => {
   }
 };
 
-export const logSettingsSnapshot = async (root: RootStore) => {
+export const logSettingsSnapshot = async (root: MainRoot) => {
   await logSettingsSnapshotCommand(buildSettings(root));
 };

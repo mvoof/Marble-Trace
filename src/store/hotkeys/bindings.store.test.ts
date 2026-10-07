@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { widgetVisibilityActionId } from './actions';
-import { DEFAULT_WIDGETS } from '@store/widget-catalog';
+import { DEFAULT_WIDGETS } from '@store/layout/widget-catalog';
 import { ActionRegistry } from '@store/hotkeys/action-registry';
 import { BindingsStore } from './bindings.store';
 import { bindingKey } from '@/types/input-bindings';
@@ -252,23 +252,5 @@ describe('BindingsStore', () => {
     expect(store.bindingsFor('pit-service:fuel')).toEqual([
       { kind: 'device', deviceId: 'other', button: 1 },
     ]);
-  });
-
-  // The effective map always carries every default, so the assertion is about
-  // the deduplication itself rather than an exact list.
-  it('deduplicates the accelerators it registers with the OS', () => {
-    const store = new BindingsStore(registry);
-
-    store.applyBindings({
-      'app:toggle-drag-mode': [keyboard('F9')],
-      'app:toggle-hide-all-widgets': [keyboard('F9')],
-      'pit-service:fuel': [keyboard('F4')],
-    });
-
-    const accelerators = store.keyboardAccelerators;
-
-    expect(new Set(accelerators).size).toBe(accelerators.length);
-    expect(accelerators).toContain('F9');
-    expect(accelerators).toContain('F4');
   });
 });

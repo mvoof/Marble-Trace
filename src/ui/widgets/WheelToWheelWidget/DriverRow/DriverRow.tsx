@@ -1,9 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 
-import { useWheelToWheelWidgetStore } from '@store/root-store-context';
+import {
+  useWheelToWheelWidgetStore,
+  type BattleSlot,
+  type RivalSlot,
+} from '../wheel-to-wheel.store';
 import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
-import type { BattleSlot, RivalSlot } from '../wheel-to-wheel.widget';
 import { CarNumberBox } from '../CarNumberBox/CarNumberBox';
 import { SideSpeed } from '../SideSpeed/SideSpeed';
 import { SpeedBar } from '../SpeedBar/SpeedBar';

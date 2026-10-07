@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { usePlayerStore } from '@store/root-store-context';
+import { usePlayerStore } from '@store/roots/root-store-context';
 import { DEPLOY_MODES, deployModeIndex } from './battery-utils';
 import styles from './BatteryWidget.module.scss';
 

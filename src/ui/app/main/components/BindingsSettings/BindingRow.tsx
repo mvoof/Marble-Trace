@@ -2,11 +2,8 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { Plus } from 'lucide-react';
-import {
-  useBindingsStore,
-  useBindingsUiStore,
-  useStore,
-} from '@store/root-store-context';
+import { useBindingsStore, useStore } from '@store/roots/root-store-context';
+import { useBindingsUiStore } from '@store/roots/main-root-context';
 import { bindingKey } from '@/types/input-bindings';
 import { BindingChip } from './BindingChip';
 import { actionLabel } from './binding-labels';

@@ -1,13 +1,16 @@
 import React from 'react';
 import { runInAction } from 'mobx';
 import type { Decorator } from '@storybook/react';
-import { RootStore } from '../src/store/root-store';
-import { RootStoreContext } from '../src/store/root-store-context';
+import { PreviewCore } from '../src/store/roots/renderer-core';
+import {
+  RendererCoreContext,
+  useStore,
+} from '../src/store/roots/root-store-context';
 
 export const withStore =
-  (seedFn?: (store: RootStore) => void): Decorator =>
+  (seedFn?: (store: PreviewCore) => void): Decorator =>
   (Story) => {
-    const store = React.useMemo(() => new RootStore({ skipInit: true }), []);
+    const store = React.useMemo(() => new PreviewCore(), []);
 
     React.useLayoutEffect(() => {
       if (seedFn) {
@@ -16,8 +19,14 @@ export const withStore =
     }, [store]);
 
     return (
-      <RootStoreContext.Provider value={store}>
+      <RendererCoreContext.Provider value={store}>
         <Story />
-      </RootStoreContext.Provider>
+      </RendererCoreContext.Provider>
     );
   };
+
+/**
+ * The story's store, as `withStore` built it. The context is typed for any
+ * core; under a story it always holds a `PreviewCore`, which may write.
+ */
+export const usePreviewStore = (): PreviewCore => useStore() as PreviewCore;

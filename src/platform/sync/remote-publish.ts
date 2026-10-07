@@ -1,4 +1,4 @@
-import { reaction, runInAction } from 'mobx';
+import { comparer, reaction, runInAction } from 'mobx';
 
 import { listenRemoteDevice } from '@platform/services/events.service';
 import {
@@ -7,9 +7,9 @@ import {
   stopRemoteServer,
 } from '@platform/services/remote.service';
 import { resolveAppLanguage } from '@store/settings/app-settings.store';
-import { widgetsOnMonitor } from '@store/settings/virtual-desktop';
-import type { RootStore } from '@store/root-store';
-import type { RemoteScreenSnapshot } from '@/types/remote';
+import { clientSnapshotFor, snapshotAppInputs } from './client-snapshot';
+import type { MainRoot } from '@store/roots/main-root';
+import type { ClientSnapshot } from '@/types/client-protocol';
 import type { RemoteDevice } from '@/types/bindings';
 
 /**
@@ -23,36 +23,17 @@ import type { RemoteDevice } from '@/types/bindings';
 /** Enough to coalesce a drag in the layout editor into one publish. */
 const PUBLISH_DEBOUNCE_MS = 150;
 
-const snapshotFor = (
-  root: RootStore,
-  slug: string
-): RemoteScreenSnapshot | null => {
+/**
+ * A remote screen's snapshot: the client snapshot (ADR-0007) of its screen, in
+ * the layout that holds it — which need not be the live one.
+ */
+const snapshotFor = (root: MainRoot, slug: string): ClientSnapshot | null => {
   const target = root.layouts.remoteScreenBySlug(slug);
 
-  if (!target) return null;
-
-  const { layout, screen: monitor } = target;
-  const isLive = layout.id === root.layouts.liveLayoutId;
-  const widgets = isLive
-    ? widgetsOnMonitor(root.liveWidgets.liveWidgets, monitor.name)
-    : widgetsOnMonitor(layout.widgets, monitor.name);
-
-  return {
-    slug,
-    name: monitor.name,
-    bounds: { ...monitor.bounds },
-    // The widgets of this screen only: a tablet never receives the layout of
-    // the monitors it is not showing.
-    widgets,
-    units: root.units.unitSystem,
-    language: root.appSettings.appSettings.language,
-    steeringLock: root.appSettings.appSettings.steeringLock,
-    layoutName: layout.name,
-    background: monitor.background,
-  };
+  return target ? clientSnapshotFor(root, target.layout, target.screen) : null;
 };
 
-const publishAll = (root: RootStore) => {
+const publishAll = (root: MainRoot) => {
   for (const group of root.layouts.groupedRemoteScreens) {
     const snapshot = snapshotFor(root, group.slug);
 
@@ -74,7 +55,7 @@ const publishAll = (root: RootStore) => {
  * been built. Resizing the browser window needs no help either — the page
  * scales the whole layout to whatever viewport it has.
  */
-const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
+const fitScreenOnFirstConnect = (root: MainRoot, device: RemoteDevice) => {
   // A backgrounded tab can report a real width with a zero height; fitting to
   // that would flatten the screen, and the one-shot flag means nothing repairs
   // it later.
@@ -107,7 +88,7 @@ const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
   );
 };
 
-export const registerRemotePublishing = (root: RootStore) => {
+export const registerRemotePublishing = (root: MainRoot) => {
   const applyServerState = async () => {
     const settings = root.appSettings.appSettings;
 
@@ -181,18 +162,13 @@ export const registerRemotePublishing = (root: RootStore) => {
     // layout id on every switch — a remote screen follows the session the same
     // way a monitor does.
     reaction(
-      () => [
-        root.settingsMutations.changeToken,
-        root.layouts.liveLayoutId,
-        root.units.unitSystem,
-        root.appSettings.appSettings.steeringLock,
-      ],
+      () => [root.settingsMutations.changeToken, ...snapshotAppInputs(root)],
       () => {
         if (!root.appSettings.appSettings.remoteEnabled) return;
 
         publishAll(root);
       },
-      { delay: PUBLISH_DEBOUNCE_MS }
+      { delay: PUBLISH_DEBOUNCE_MS, equals: comparer.structural }
     ),
   ];
 

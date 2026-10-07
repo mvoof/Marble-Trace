@@ -12,28 +12,24 @@ use crate::model::enums::{PitState, SessionState, TrackSurface};
 use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot, SessionType};
 use crate::utils::lock_or_recover;
 
-const NO_CLASS_LABEL: &str = "No Class";
 const FALLBACK_SORT_POSITION: i32 = 999;
-const NO_TIME: f32 = -1.0;
 const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
 const IR_CHANGE_OFFSET: f64 = 100.0;
 
+/// One car's standing at this tick. Only what moves during a session travels
+/// here: who the car is — driver, number, class, car, licence, rating — is the
+/// same for the whole session and reaches the frontend once, in
+/// `SessionSnapshot.cars`, which joins it back on by `car_idx`.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DriverEntry {
     pub car_idx: i32,
-    pub user_name: String,
-    pub car_number: String,
+    /// Copied from the session for the processors that rank and score by class;
+    /// never sent.
+    #[serde(skip)]
     pub car_class_id: i32,
-    pub car_class_short_name: String,
-    pub car_class_color: String,
-    pub car_screen_name: String,
-    pub car_screen_name_short: String,
-    /// iRacing's `FlairID` — the country flag on the driver's profile, `0` when unset.
-    pub flair_id: i32,
-    /// The sim drives this car. AI entries never carry a flair.
-    pub is_ai: bool,
+    /// Live, not static: the compound the car is on now, which a pit stop changes.
     pub tire_compound: String,
     pub position: i32,
     pub class_position: i32,
@@ -45,24 +41,27 @@ pub struct DriverEntry {
     pub live_position: i32,
     /// Same as `live_position`, but ranked within the car's class.
     pub live_class_position: i32,
-    pub start_pos_overall: i32,
-    pub start_pos_class: i32,
+    /// Starting grid slot, overall and within the class. `None` when the car
+    /// holds none — no qualifying and no results to read one from.
+    pub start_pos_overall: Option<i32>,
+    pub start_pos_class: Option<i32>,
     pub lap: i32,
     pub lap_dist_pct: f32,
-    pub last_lap_time: f32,
-    pub best_lap_time: f32,
+    /// `None` until the car completes a timed lap.
+    pub last_lap_time: Option<f32>,
+    /// `None` until the car sets a lap time.
+    pub best_lap_time: Option<f32>,
     /// Lap time that earned the car its grid slot, from `QualifyResultsInfo`.
-    /// `-1.0` when the car set no qualifying time — the same "no time" marker
-    /// `best_lap_time` uses. Survives into the race, where it is the only lap
-    /// time the field has until the first one is completed.
-    pub qualify_time: f32,
+    /// `None` when the car set no qualifying time. Survives into the race,
+    /// where it is the only lap time the field has until the first one is
+    /// completed.
+    pub qualify_time: Option<f32>,
     pub f2_time: f32,
     pub est_time: f32,
     pub track_surface: TrackSurface,
+    /// Copied from the session for the iRating estimate; never sent.
+    #[serde(skip)]
     pub i_rating: i32,
-    pub lic_string: String,
-    pub lic_color: String,
-    pub incidents: i32,
     pub is_player: bool,
     pub on_pit_road: bool,
     pub estimated_ir_delta_live: Option<i32>,
@@ -82,10 +81,10 @@ pub struct DriverEntry {
     /// without ever entering the pit lane. Cleared once it is back in the world.
     pub is_towed: bool,
     pub pit_state: PitState,
-    /// Speed along the track in m/s, `0` until two samples of the car exist.
+    /// Speed along the track in m/s, `None` until two samples of the car exist.
     /// The sim reports it only for the player; every other car's is derived
     /// from its lap distance — see `CarSpeedTracker`.
-    pub speed: f32,
+    pub speed: Option<f32>,
 }
 
 #[derive(Default)]
@@ -253,32 +252,15 @@ pub fn compute(
                 String::new()
             };
 
-            let (start_overall, start_class) = start_positions
-                .get(&driver.car_idx)
-                .copied()
-                .unwrap_or((0, 0));
-
-            let car_screen_name_short = driver.car_screen_name_short.clone();
-
-            let sim_class_short_name = driver.car_class_short_name.trim();
-
-            let car_class_short_name = if sim_class_short_name.is_empty() {
-                NO_CLASS_LABEL.to_string()
-            } else {
-                sim_class_short_name.to_string()
-            };
+            let start_slot = start_positions.get(&driver.car_idx).copied();
+            let start_overall = start_slot
+                .map(|(overall, _)| overall)
+                .filter(|&pos| pos > 0);
+            let start_class = start_slot.map(|(_, class)| class).filter(|&pos| pos > 0);
 
             DriverEntry {
                 car_idx: driver.car_idx,
-                user_name: driver.user_name.clone(),
-                car_number: driver.car_number.clone(),
                 car_class_id: driver.car_class_id,
-                car_class_short_name,
-                car_class_color: driver.car_class_color.clone(),
-                car_screen_name: driver.car_screen_name.clone(),
-                car_screen_name_short,
-                flair_id: driver.flair_id,
-                is_ai: driver.is_ai,
                 tire_compound,
                 position: car_idx
                     .car_idx_position
@@ -290,14 +272,16 @@ pub fn compute(
                             .map(|position| position.position)
                             .filter(|&pos| pos > 0)
                     })
-                    .unwrap_or(start_overall),
+                    .or(start_overall)
+                    .unwrap_or(0),
                 class_position: car_idx
                     .car_idx_class_position
                     .get(idx)
                     .copied()
                     .filter(|&pos| pos > 0)
                     .or_else(|| result.and_then(|position| position.class_position))
-                    .unwrap_or(start_class),
+                    .or(start_class)
+                    .unwrap_or(0),
                 live_position: 0,
                 live_class_position: 0,
                 start_pos_overall: start_overall,
@@ -322,19 +306,14 @@ pub fn compute(
                     .get(idx)
                     .copied()
                     .filter(|time| *time > 0.0)
-                    .or_else(|| result.and_then(|position| position.last_time))
-                    .unwrap_or(-1.0),
+                    .or_else(|| result.and_then(|position| position.last_time)),
                 best_lap_time: car_idx
                     .car_idx_best_lap_time
                     .get(idx)
                     .copied()
                     .filter(|time| *time > 0.0)
-                    .or_else(|| result.and_then(|position| position.fastest_time))
-                    .unwrap_or(NO_TIME),
-                qualify_time: qualify_times
-                    .get(&driver.car_idx)
-                    .copied()
-                    .unwrap_or(NO_TIME),
+                    .or_else(|| result.and_then(|position| position.fastest_time)),
+                qualify_time: qualify_times.get(&driver.car_idx).copied(),
                 f2_time: car_idx.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
                 est_time: car_idx.car_idx_est_time.get(idx).copied().unwrap_or(0.0),
                 track_surface: car_idx
@@ -343,17 +322,6 @@ pub fn compute(
                     .copied()
                     .unwrap_or(TrackSurface::NotInWorld),
                 i_rating: driver.i_rating,
-                lic_string: if driver.lic_string.is_empty() {
-                    "R 0.00".to_string()
-                } else {
-                    driver.lic_string.clone()
-                },
-                lic_color: if driver.lic_color.is_empty() {
-                    "000000".to_string()
-                } else {
-                    driver.lic_color.clone()
-                },
-                incidents: driver.incident_count,
                 is_player: driver.car_idx == player_car_idx,
                 on_pit_road: car_idx
                     .car_idx_on_pit_road
@@ -373,20 +341,12 @@ pub fn compute(
                 is_finished: false,
                 is_towed: false,
                 pit_state: PitState::None,
-                speed: 0.0,
+                speed: None,
             }
         })
         .collect();
 
-    entries.sort_by_key(|e| {
-        if e.position > 0 {
-            e.position
-        } else if e.start_pos_overall > 0 {
-            e.start_pos_overall
-        } else {
-            FALLBACK_SORT_POSITION
-        }
-    });
+    entries.sort_by_key(official_sort_key);
 
     // Laps completed, resolved once and kept beside the entries rather than on
     // them: only the finish latch needs it, and the wire does not.
@@ -625,21 +585,17 @@ fn resolve_ranking_mode(is_race: bool, session_state: Option<SessionState>) -> R
 /// the official position so a race run without qualifying — where there is no grid
 /// to read — still ranks by something the sim provided.
 fn grid_sort_key(entry: &DriverEntry) -> i32 {
-    if entry.start_pos_overall > 0 {
-        entry.start_pos_overall
-    } else {
-        FALLBACK_SORT_POSITION + official_sort_key(entry)
-    }
+    entry
+        .start_pos_overall
+        .unwrap_or_else(|| FALLBACK_SORT_POSITION + official_sort_key(entry))
 }
 
 /// Official race position, with cars the sim has not placed yet pushed to the back.
 fn official_sort_key(entry: &DriverEntry) -> i32 {
     if entry.position > 0 {
         entry.position
-    } else if entry.start_pos_overall > 0 {
-        entry.start_pos_overall
     } else {
-        FALLBACK_SORT_POSITION
+        entry.start_pos_overall.unwrap_or(FALLBACK_SORT_POSITION)
     }
 }
 
@@ -1110,7 +1066,6 @@ pub(crate) mod tests {
             current_session_num: 0,
             cars: vec![CarEntry {
                 car_idx: 0,
-                user_name: "Driver".to_string(),
                 ..Default::default()
             }],
             sessions: vec![SessionEntry {
@@ -1127,7 +1082,6 @@ pub(crate) mod tests {
             current_session_num: 0,
             cars: vec![CarEntry {
                 car_idx: 0,
-                user_name: "Driver".to_string(),
                 ..Default::default()
             }],
             sessions: vec![SessionEntry {
@@ -1143,7 +1097,6 @@ pub(crate) mod tests {
 
         session.cars.push(CarEntry {
             car_idx: 1,
-            user_name: "Rival".to_string(),
             ..Default::default()
         });
 
@@ -1858,8 +1811,8 @@ pub(crate) mod tests {
         assert_eq!(entry.position, 4);
         assert_eq!(entry.class_position, 2);
         assert_eq!(entry.lap, 17);
-        assert_eq!(entry.best_lap_time, 91.2);
-        assert_eq!(entry.last_lap_time, 92.4);
+        assert_eq!(entry.best_lap_time, Some(91.2));
+        assert_eq!(entry.last_lap_time, Some(92.4));
         assert!(!entry.is_retired);
     }
 
@@ -1895,8 +1848,8 @@ pub(crate) mod tests {
         assert_eq!(entry.position, 2);
         assert_eq!(entry.class_position, 1);
         assert_eq!(entry.lap, 19);
-        assert_eq!(entry.best_lap_time, 90.0);
-        assert_eq!(entry.last_lap_time, 90.5);
+        assert_eq!(entry.best_lap_time, Some(90.0));
+        assert_eq!(entry.last_lap_time, Some(90.5));
     }
 
     #[test]
@@ -2073,34 +2026,23 @@ pub(crate) mod tests {
     ) -> DriverEntry {
         DriverEntry {
             car_idx,
-            user_name: String::new(),
-            car_number: String::new(),
             car_class_id: 0,
-            car_class_short_name: String::new(),
-            car_class_color: String::new(),
-            car_screen_name: String::new(),
-            car_screen_name_short: String::new(),
-            flair_id: 0,
-            is_ai: false,
             tire_compound: String::new(),
             position,
             class_position: position,
             live_position: 0,
             live_class_position: 0,
-            start_pos_overall: position,
-            start_pos_class: position,
+            start_pos_overall: Some(position),
+            start_pos_class: Some(position),
             lap,
             lap_dist_pct,
-            last_lap_time: -1.0,
-            best_lap_time: -1.0,
-            qualify_time: -1.0,
+            last_lap_time: None,
+            best_lap_time: None,
+            qualify_time: None,
             f2_time: 0.0,
             est_time: 0.0,
             track_surface,
             i_rating: 0,
-            lic_string: String::new(),
-            lic_color: String::new(),
-            incidents: 0,
             is_player: false,
             on_pit_road: false,
             estimated_ir_delta_live: None,
@@ -2114,7 +2056,7 @@ pub(crate) mod tests {
             is_finished: false,
             is_towed: false,
             pit_state: PitState::None,
-            speed: 0.0,
+            speed: None,
         }
     }
 
@@ -2131,6 +2073,21 @@ pub(crate) mod tests {
         entry.i_rating = i_rating;
 
         entry
+    }
+
+    #[test]
+    fn test_static_car_fields_stay_off_the_wire() {
+        // The frontend joins these on from `SessionSnapshot.cars`; sending them
+        // again would put them back on every 10 Hz tick.
+        let mut entry = make_live_entry(3, 1, 0, 0.5, TrackSurface::OnTrack);
+        entry.car_class_id = 4029;
+        entry.i_rating = 2500;
+
+        let json = serde_json::to_value(&entry).unwrap();
+
+        assert!(json.get("carIdx").is_some());
+        assert!(json.get("carClassId").is_none());
+        assert!(json.get("iRating").is_none());
     }
 
     #[test]
@@ -2213,9 +2170,9 @@ pub(crate) mod tests {
             make_live_entry(5, 2, 0, 0.995, TrackSurface::OnTrack),
         ];
 
-        entries[0].start_pos_overall = 3;
-        entries[1].start_pos_overall = 1;
-        entries[2].start_pos_overall = 2;
+        entries[0].start_pos_overall = Some(3);
+        entries[1].start_pos_overall = Some(1);
+        entries[2].start_pos_overall = Some(2);
 
         assign_static_positions(&mut entries, grid_sort_key);
 
@@ -2234,8 +2191,8 @@ pub(crate) mod tests {
             make_live_entry(1, 2, 0, 0.5, TrackSurface::OnTrack),
         ];
 
-        entries[0].start_pos_overall = 0;
-        entries[1].start_pos_overall = 20;
+        entries[0].start_pos_overall = None;
+        entries[1].start_pos_overall = Some(20);
 
         assign_static_positions(&mut entries, grid_sort_key);
 
@@ -2281,7 +2238,7 @@ pub(crate) mod tests {
             &state,
         );
 
-        assert_eq!(frame.entries[0].qualify_time, 88.5);
+        assert_eq!(frame.entries[0].qualify_time, Some(88.5));
     }
 
     #[test]
@@ -2298,7 +2255,7 @@ pub(crate) mod tests {
             &state,
         );
 
-        assert_eq!(frame.entries[0].qualify_time, NO_TIME);
+        assert_eq!(frame.entries[0].qualify_time, None);
     }
 
     #[test]

@@ -1,101 +1,72 @@
-import { reaction } from 'mobx';
+import { comparer, runInAction } from 'mobx';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
-import { hydrateFromDisk, readSettingsFile } from './persistence-sync';
-import {
-  emitDragMode,
-  emitWidgetSettingsToMain,
-} from '@platform/services/events.service';
-import { publishRemoteControl } from '@platform/services/remote.service';
+import { emitToMain, listenToMain } from '@platform/services/events.service';
 import { setupOverlayListeners } from './listeners';
-import { registerPitServiceMirrorReactions } from './pit-service-sync';
-import type { RootStore } from '@store/root-store';
+import { applyClientSnapshot } from './client-sync';
+import { initPerfRun } from './perf-run';
+import type { OverlayRoot } from '@store/roots/overlay-root';
+import type { SnapshotMessage } from '@/types/client-protocol';
 
 /**
- * Everything an overlay window owns. It never writes the settings file — the
- * main window is the only writer — and it never opens chat connections.
- *
- * Order is load-bearing: the listeners are subscribed before this returns, so
- * the window is ready for the first `widget-settings-updated` main emits.
+ * An overlay's snapshot: the client's (`applyClientSnapshot`), plus what only an
+ * app window holds — the bindings it names in its banners, and the fields of
+ * its own commands main has not handled yet, drawn over the snapshot again in
+ * the same action so they never flicker back.
  */
-export const initOverlaySync = async (root: RootStore) => {
-  const { loaded } = await readSettingsFile();
-
-  // The main window owns the backup — both windows run the chain, but only one
-  // of them may touch the file.
-  await hydrateFromDisk(root, loaded, { backup: false });
-
-  // Locked: the widget map still holds the shipped defaults, so loading the
-  // active layout here would paint a default overlay across the user's screen —
-  // indistinguishable from having lost their config. OverlayCanvas draws
-  // nothing while the lock holds.
-  if (root.appSettings.settingsLocked) {
-    return () => {};
+export const applyOverlaySnapshot = (
+  root: OverlayRoot,
+  message: SnapshotMessage
+) => {
+  for (const refusal of message.rejected) {
+    console.warn(
+      `[overlay-sync] main refused command ${refusal.commandNo}: ${refusal.reason}`
+    );
   }
 
-  // hydrateStores fills the live widget map from the persisted snapshot, which
-  // can lag behind the active layout. The window renders the layout, so it is
-  // the layout that has to win.
-  root.liveWidgets.loadEditingLayoutWidgets();
+  runInAction(() => {
+    applyClientSnapshot(root, message.snapshot);
+
+    if (
+      !comparer.structural(root.bindings.overrides, message.snapshot.bindings)
+    ) {
+      root.bindings.applyBindings(message.snapshot.bindings);
+    }
+
+    root.settingsClient.acknowledge(message.lastHandledCommandNo);
+  });
+};
+
+/**
+ * The overlay's transport for the client of ADR-0007 (`client-sync.ts`): Tauri
+ * events to and from main. It reads no settings file and writes none — main
+ * holds the settings and sends this window a snapshot of its own monitor, on
+ * `hello` and on every change. It never opens chat connections either.
+ *
+ * Order is load-bearing: the snapshot listener is subscribed before `hello`
+ * goes out, so the answer cannot arrive unheard.
+ */
+export const initOverlaySync = async (root: OverlayRoot) => {
+  const clientId = getCurrentWebviewWindow().label;
+
+  root.settingsClient.connect(clientId);
 
   const unlistens = await setupOverlayListeners(root);
 
-  const disposers = [
-    reaction(
-      () => root.appSettings.dragMode,
-      (v) => {
-        void emitDragMode(v);
-      }
-    ),
-    reaction(
-      () => root.settingsMutations.changeToken,
-      () => {
-        const monitorName = root.liveWidgets.ownMonitorName;
+  unlistens.push(
+    await listenToMain((message) => {
+      if (message.clientId !== clientId) return;
 
-        if (!monitorName) return;
+      applyOverlaySnapshot(root, message);
+    })
+  );
 
-        // Only what was edited here travels back. A drag reports one widget
-        // instead of the whole layout, and a list this window never touched
-        // can no longer overwrite the record main holds for it.
-        const { widgets } = root.liveWidgets.drainTouchedWidgets();
+  const stopPerfRun = await initPerfRun(root);
 
-        if (widgets.length === 0) return;
-
-        void emitWidgetSettingsToMain({
-          monitorName,
-          widgets,
-          layoutId:
-            root.liveWidgets.syncedLayoutId ?? root.layouts.editingLayoutId,
-        });
-      },
-      { delay: 100 }
-    ),
-    // A rotation restored from disk is never emitted — nobody turned anything,
-    // the window simply loaded the angle it had. The remote screens have no
-    // settings file of their own, so an overlay is what tells them.
-    reaction(
-      () => ({
-        trackId: root.trackMapWidget.currentTrackId,
-        rotation: root.trackMapWidget.trackRotation,
-      }),
-      ({ trackId, rotation }) => {
-        if (!trackId) return;
-
-        void publishRemoteControl('track-rotation', {
-          trackId,
-          rotation,
-        }).catch((error: unknown) =>
-          console.error('[overlay-sync] failed to publish rotation:', error)
-        );
-      },
-      { fireImmediately: true }
-    ),
-    // Clicks on the checkboxes land here, so this window can be the one that
-    // takes the order, or one half of it, off auto.
-    ...registerPitServiceMirrorReactions(root),
-  ];
+  await emitToMain({ kind: 'hello', clientId });
 
   return () => {
     unlistens.forEach((u) => u());
-    disposers.forEach((d) => d());
+    stopPerfRun();
   };
 };

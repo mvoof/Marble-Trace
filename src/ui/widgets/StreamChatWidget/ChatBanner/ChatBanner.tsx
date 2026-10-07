@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 
-import { useStreamChatWidgetStore } from '@store/root-store-context';
+import { useStreamChatWidgetStore } from '@ui/widgets/StreamChatWidget/stream-chat.store';
 
 import styles from './ChatBanner.module.scss';
 

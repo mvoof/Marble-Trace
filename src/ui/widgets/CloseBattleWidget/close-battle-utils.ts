@@ -1,6 +1,7 @@
-import type { DriverEntry, NearbyCar } from '@/types/bindings';
+import type { NearbyCar } from '@/types/bindings';
+import type { DriverEntry } from '@/types/driver-entry';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
-import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
+import { computeRelativeGap } from '@utils/driver';
 import { splitDriverName } from '@utils/driver';
 
 /**

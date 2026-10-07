@@ -12,7 +12,7 @@ import { resizeCanvasToDpr } from '@utils/canvas';
 
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GMeterRings.module.scss';
-import { useLiveWidgetsStore } from '@store/root-store-context';
+import { useLiveWidgetsStore } from '@store/roots/root-store-context';
 import { useWidgetInstanceId } from '@ui/hooks/useWidgetSettings';
 
 const RING_COLOR = 'rgba(42,43,48,0.8)';

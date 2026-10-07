@@ -215,16 +215,26 @@ impl RemoteHub {
         );
     }
 
-    /// A command from the main window aimed at the widgets themselves — which
-    /// class the standings show, how far they are scrolled, how the track map
-    /// is turned. The overlay windows get these as Tauri events, which never
-    /// leave the app; a remote screen gets them here.
+    /// A signal aimed at the widgets themselves — which class the standings
+    /// show, how far they are scrolled, how the track map is turned. The
+    /// overlay windows get the same message as a Tauri event, which never
+    /// leaves the app; a remote screen gets it here.
     pub fn publish_control(&self, kind: &str, data: serde_json::Value) {
         let Some(kind) = RemoteControlKind::from_wire(kind) else {
             warn!("remote: ignoring unknown control message '{}'", kind);
 
             return;
         };
+
+        if !kind.reaches_remote_screens() {
+            return;
+        }
+
+        // A screen connecting after the deletion must not be handed the
+        // deleted shape from the replay cache.
+        if kind == RemoteControlKind::TrackMapCleared {
+            lock_or_recover(&self.replay).remove(RemoteStreamKind::TrackShape.wire_name());
+        }
 
         self.send(kind.wire_name(), data, kind.replayed());
     }
@@ -240,8 +250,10 @@ impl RemoteHub {
         let mut screens: Vec<(String, String)> = lock_or_recover(&self.snapshots)
             .iter()
             .map(|(slug, snapshot)| {
+                // The client snapshot (ADR-0007) names its screen on the
+                // monitor it describes.
                 let name = snapshot
-                    .get("name")
+                    .pointer("/monitor/name")
                     .and_then(|value| value.as_str())
                     .unwrap_or(slug.as_str());
 
@@ -306,8 +318,9 @@ impl RemoteHub {
 /// make every bundle look 60 Hz-only and start throwing away the session clock
 /// along with the motion data, which is why the test below pins them to the
 /// real serialization.
-const SLOW_FIELD_KEYS: [&str; 14] = [
+const SLOW_FIELD_KEYS: [&str; 16] = [
     "\"carIdx\"",
+    "\"paceCar\"",
     "\"chassis\"",
     "\"lapTiming\"",
     "\"proximity\"",
@@ -317,6 +330,7 @@ const SLOW_FIELD_KEYS: [&str; 14] = [
     "\"fuel\"",
     "\"pitStops\"",
     "\"pitService\"",
+    "\"pitAuto\"",
     "\"session\"",
     "\"environment\"",
     "\"lapLog\"",
@@ -369,7 +383,24 @@ struct SnapshotPayload {
 #[cfg(test)]
 mod tests {
     use super::tokens_match;
-    use super::{carries_slow_fields, SLOW_FIELD_KEYS};
+    use super::{carries_slow_fields, RemoteHub, SLOW_FIELD_KEYS};
+    use crate::model::events::{RemoteControlKind, RemoteStreamKind, WireName};
+
+    #[test]
+    fn a_cleared_track_is_not_replayed_to_a_screen_that_connects_later() {
+        let hub = RemoteHub::default();
+
+        hub.publish_raw_event(RemoteStreamKind::TrackShape, r#"{"trackId":1}"#);
+        hub.publish_control(
+            RemoteControlKind::TrackMapCleared.wire_name(),
+            serde_json::Value::Null,
+        );
+
+        assert!(hub
+            .replay_messages()
+            .iter()
+            .all(|message| !message.contains("\"track-shape\"")));
+    }
 
     /// The rate limit reads these keys out of an already-encoded bundle, so
     /// they have to be the names `serde` actually writes. A `rename_all` added

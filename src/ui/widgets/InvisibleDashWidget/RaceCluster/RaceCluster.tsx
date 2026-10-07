@@ -7,8 +7,8 @@ import {
   useCarsStore,
   usePlayerStore,
   useSessionStore,
-  useStandingsWidgetStore,
-} from '@store/root-store-context';
+  usePlayerPositionStore,
+} from '@store/roots/root-store-context';
 
 import type { BackdropStyle, CurvatureStyle } from '../invisible-dash-utils';
 
@@ -27,7 +27,7 @@ export const RaceCluster = observer(({ backdrop, curve }: RaceClusterProps) => {
   const player = usePlayerStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
-  const standingsWidget = useStandingsWidgetStore();
+  const playerPosition = usePlayerPositionStore();
 
   const settings =
     useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
@@ -36,7 +36,7 @@ export const RaceCluster = observer(({ backdrop, curve }: RaceClusterProps) => {
     return null;
   }
 
-  const { position, total } = standingsWidget.playerPositionInfo(
+  const { position, total } = playerPosition.playerPositionInfo(
     settings.useLivePositions,
     settings.classPositionInMulticlass
   );

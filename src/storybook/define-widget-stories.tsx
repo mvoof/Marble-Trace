@@ -1,4 +1,5 @@
 import { useLayoutEffect } from 'react';
+import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import type { ComponentType } from 'react';
 import { runInAction } from 'mobx';
 import type {
@@ -9,9 +10,8 @@ import type {
 } from '@storybook/react-vite';
 
 import type { PreviewScenarioId } from '@/types/preview-scenarios';
-import type { RootStore } from '@store/root-store';
-import { useStore } from '@store/root-store-context';
-import { withStore } from '../../.storybook/decorators';
+import type { PreviewCore } from '@store/roots/renderer-core';
+import { usePreviewStore, withStore } from '../../.storybook/decorators';
 import { widgetDecorator } from './widgetDecorator';
 import { seedFromSnapshot, seedScenario } from './seed-from-snapshot';
 import {
@@ -73,7 +73,11 @@ interface DefineWidgetStoriesOptions<Args> {
    * the story's scenario base, and is handed that scenario's id so a seed can
    * leave the domain the scenario already stated alone.
    */
-  seed?: (store: RootStore, args: Args, scenarioId?: PreviewScenarioId) => void;
+  seed?: (
+    store: PreviewCore,
+    args: Args,
+    scenarioId?: PreviewScenarioId
+  ) => void;
   /** Default control values shared by every story. */
   args?: Partial<Args>;
   /** Storybook control config per arg. */
@@ -126,7 +130,7 @@ export const defineWidgetStories = <Args,>(
     hostArgs: Args;
     scenarioId?: PreviewScenarioId;
   }) => {
-    const store = useStore();
+    const store = usePreviewStore();
 
     const argsSignature = JSON.stringify(hostArgs);
 
@@ -169,7 +173,15 @@ export const defineWidgetStories = <Args,>(
       settingsDefaults
     );
 
-    return <Widget {...widgetProps} />;
+    // The scope builds the widget's own store, as the overlay would. The seed
+    // above still finds it: a child's layout effect runs before its parent's.
+    return widgetId ? (
+      <WidgetInstanceScope type={widgetId}>
+        <Widget {...widgetProps} />
+      </WidgetInstanceScope>
+    ) : (
+      <Widget {...widgetProps} />
+    );
   };
 
   const frameDecorator: Decorator = (Story, context) => {

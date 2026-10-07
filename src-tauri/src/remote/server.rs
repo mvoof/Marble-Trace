@@ -12,6 +12,7 @@ use std::sync::Arc;
 use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{ConnectInfo, Path, Query, State};
 use axum::http::{header, HeaderMap, StatusCode};
+use axum::middleware;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::Router;
@@ -22,12 +23,14 @@ use tokio::net::TcpListener;
 use tokio::sync::broadcast::error::RecvError;
 use tracing::{info, warn};
 
+use super::csp;
 use super::hub::RemoteHub;
 use super::pages::{index_page, unauthorized_page};
+use crate::model::client_protocol::ClientEnvelope;
 use crate::model::remote::RemoteDevice;
 use crate::utils::lock_or_recover;
 
-/// The page every remote screen loads. A separate entry from `index.html`: it
+/// The page every remote screen loads. A separate entry from the app windows': it
 /// pulls no Tauri API, so it also runs in a plain browser.
 const REMOTE_ENTRY: &str = "remote.html";
 
@@ -141,6 +144,7 @@ pub async fn serve(
         .route("/r/{slug}", get(remote_page))
         .route("/r/{slug}/", get(remote_page))
         .fallback(get(asset))
+        .layer(middleware::from_fn(csp::apply))
         .with_state(state);
 
     info!("remote: listening on {} (lan={})", addr, lan);
@@ -230,9 +234,10 @@ async fn serve_asset(state: &ServerState, path: &str) -> Response {
     serve_asset_with_query(state, path, None).await
 }
 
-/// In development the bundle is served by Vite, so screen-relative prefixes
-/// (`/r/<slug>/...` or `/r/...`) need to be stripped to match the Vite root.
-fn strip_dev_path(path: &str) -> &str {
+/// A page under `/r/<slug>` asks for its assets relative to that path, so the
+/// screen prefix (`/r/<slug>/...` or `/r/...`) is stripped to match the bundle
+/// root — Vite's in development, the embedded one in a build.
+fn strip_screen_path(path: &str) -> &str {
     let path = path.trim_start_matches('/');
     let Some(rest) = path.strip_prefix("r/") else {
         return path;
@@ -258,28 +263,18 @@ fn is_asset_root(segment: &str) -> bool {
 
 async fn serve_asset_with_query(state: &ServerState, path: &str, query: Option<&str>) -> Response {
     if state.dev {
-        return proxy_dev_asset(strip_dev_path(path), query).await;
+        return proxy_dev_asset(strip_screen_path(path), query).await;
     }
 
     // The embedded bundle is keyed by path relative to frontendDist (`assets/...`,
-    // `fonts/...`, `remote.html`). Requests originating from `/r/<slug>` resolve
-    // relative paths to `/r/<path>` (or `/r/<slug>/<path>` with trailing slash).
-    // Try the direct path first, then strip `/r/`, and lastly strip `/r/<slug>/`.
+    // `fonts/...`, `remote.html`). The screen prefix has to come off before the
+    // lookup, not after a miss: a prefixed path names no asset, and the
+    // resolver's own fallback (`index.html`, which no entry is called any
+    // more) would never find the file behind it.
     let asset = state
         .app
         .asset_resolver()
-        .get(path.to_string())
-        .or_else(|| {
-            let rest = path.strip_prefix("r/")?;
-            state
-                .app
-                .asset_resolver()
-                .get(rest.to_string())
-                .or_else(|| {
-                    let (_, tail) = rest.split_once('/')?;
-                    state.app.asset_resolver().get(tail.to_string())
-                })
-        });
+        .get(strip_screen_path(path).to_string());
 
     let Some(asset) = asset else {
         return (StatusCode::NOT_FOUND, "asset not found").into_response();
@@ -440,10 +435,51 @@ async fn client_loop(socket: WebSocket, app: AppHandle, hub: Arc<RemoteHub>, scr
     info!("remote: client for screen '{}' disconnected", screen);
 }
 
+/// What one frame from a browser turns out to be.
+#[derive(Debug, PartialEq)]
+enum ClientFrame {
+    /// A report of the device's own display — the one thing a client may send.
+    Device,
+    /// A settings command of the client protocol (ADR-0007). Overlays send
+    /// these to main; a remote screen never may, so it is refused here, before
+    /// anything else could read it.
+    Command,
+    /// Anything else, malformed frames included.
+    Ignored,
+}
+
+fn classify_client_frame(text: &str) -> ClientFrame {
+    if matches!(
+        serde_json::from_str::<ClientEnvelope>(text),
+        Ok(ClientEnvelope::Command { .. })
+    ) {
+        return ClientFrame::Command;
+    }
+
+    match serde_json::from_str::<ClientMessage>(text) {
+        Ok(ClientMessage::Hello { .. }) => ClientFrame::Device,
+        Err(_) => ClientFrame::Ignored,
+    }
+}
+
 /// Parses the one message a client is allowed to send. Anything else is
-/// dropped without a word: a malformed frame from a device on the network must
-/// not be able to disturb the server.
+/// dropped: a malformed frame from a device on the network must not be able
+/// to disturb the server, and a settings command from one is refused — remote
+/// screens are read-only by protocol.
 fn record_client_message(app: &AppHandle, hub: &RemoteHub, screen: &str, text: &str) {
+    match classify_client_frame(text) {
+        ClientFrame::Device => {}
+        ClientFrame::Command => {
+            warn!(
+                "remote: refused a settings command from screen '{}'",
+                screen
+            );
+
+            return;
+        }
+        ClientFrame::Ignored => return,
+    }
+
     let Ok(ClientMessage::Hello {
         viewport_width,
         viewport_height,
@@ -511,44 +547,67 @@ fn language_of(hub: &RemoteHub) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::strip_dev_path;
+    use super::{classify_client_frame, strip_screen_path, ClientFrame};
+
+    #[test]
+    fn refuses_a_settings_command_from_a_browser() {
+        let command = r#"{"kind":"command","clientId":"overlay-1","commandNo":1,"layoutId":"layout","command":{"kind":"setEnabled","widgetId":"fuel","enabled":false}}"#;
+
+        assert_eq!(classify_client_frame(command), ClientFrame::Command);
+    }
+
+    #[test]
+    fn still_takes_the_device_report() {
+        let report = r#"{"type":"hello","viewportWidth":1280,"viewportHeight":800}"#;
+
+        assert_eq!(classify_client_frame(report), ClientFrame::Device);
+    }
+
+    #[test]
+    fn ignores_anything_else() {
+        assert_eq!(classify_client_frame("not json"), ClientFrame::Ignored);
+        assert_eq!(
+            classify_client_frame(r#"{"kind":"hello","clientId":"overlay-1"}"#),
+            ClientFrame::Ignored
+        );
+    }
 
     #[test]
     fn leaves_direct_assets_untouched() {
-        assert_eq!(strip_dev_path("assets/remote.js"), "assets/remote.js");
-        assert_eq!(strip_dev_path("/assets/remote.js"), "assets/remote.js");
-        assert_eq!(strip_dev_path("src/remote.tsx"), "src/remote.tsx");
-        assert_eq!(strip_dev_path("/@vite/client"), "@vite/client");
+        assert_eq!(strip_screen_path("assets/remote.js"), "assets/remote.js");
+        assert_eq!(strip_screen_path("/assets/remote.js"), "assets/remote.js");
+        assert_eq!(strip_screen_path("src/remote.tsx"), "src/remote.tsx");
+        assert_eq!(strip_screen_path("/@vite/client"), "@vite/client");
     }
 
     #[test]
     fn strips_leading_r_prefix_when_followed_by_asset_root() {
-        assert_eq!(strip_dev_path("r/assets/remote.js"), "assets/remote.js");
-        assert_eq!(strip_dev_path("/r/assets/remote.js"), "assets/remote.js");
+        assert_eq!(strip_screen_path("r/assets/remote.js"), "assets/remote.js");
+        assert_eq!(strip_screen_path("/r/assets/remote.js"), "assets/remote.js");
         assert_eq!(
-            strip_dev_path("r/fonts/Rajdhani.woff2"),
+            strip_screen_path("r/fonts/Rajdhani.woff2"),
             "fonts/Rajdhani.woff2"
         );
-        assert_eq!(strip_dev_path("r/src/remote.tsx"), "src/remote.tsx");
-        assert_eq!(strip_dev_path("r/@vite/client"), "@vite/client");
+        assert_eq!(strip_screen_path("r/src/remote.tsx"), "src/remote.tsx");
+        assert_eq!(strip_screen_path("r/@vite/client"), "@vite/client");
     }
 
     #[test]
     fn strips_both_r_and_slug_when_slug_is_present() {
         assert_eq!(
-            strip_dev_path("r/main-screen/assets/remote.js"),
+            strip_screen_path("r/main-screen/assets/remote.js"),
             "assets/remote.js"
         );
         assert_eq!(
-            strip_dev_path("/r/main-screen/assets/remote.js"),
+            strip_screen_path("/r/main-screen/assets/remote.js"),
             "assets/remote.js"
         );
         assert_eq!(
-            strip_dev_path("r/tablet/fonts/Rajdhani.woff2"),
+            strip_screen_path("r/tablet/fonts/Rajdhani.woff2"),
             "fonts/Rajdhani.woff2"
         );
         assert_eq!(
-            strip_dev_path("r/obs-overlay/src/remote.tsx"),
+            strip_screen_path("r/obs-overlay/src/remote.tsx"),
             "src/remote.tsx"
         );
     }

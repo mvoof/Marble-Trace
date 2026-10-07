@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { ArrowBigUp, ArrowBigDown } from 'lucide-react';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { useStandingsWidgetStore } from '@store/root-store-context';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 import styles from './DriverRow.module.scss';
 

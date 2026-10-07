@@ -1,15 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { CoachWidgetSettings } from '@/types/widget-settings';
-import type { DrivingAdvisory } from '@utils/driving-coach-utils';
-import { mockLapTiming } from '@store/preview/mocks/delta';
+import type { DrivingAdvisory } from '@/types/bindings';
+import { mockLapTiming } from '@/preview/mocks/delta';
+import { seedCoachAdvisory } from '@/preview/coach-advisory-seed';
 import {
   mockReferenceLap,
   PREVIEW_BRAKE_START_PCT,
   PREVIEW_CORNER_CENTER_PCT,
   referenceSpeedKmhAt,
-} from '@store/preview/mocks/coach';
+} from '@/preview/mocks/coach';
 import { CoachWidget } from './CoachWidget';
+import type { CoachWidgetStores } from './coach-stores';
 import {
   defineWidgetStories,
   previewScenario,
@@ -114,11 +116,14 @@ const meta: Meta<StoryArgs> = {
           store.referenceLap.reset();
         }
 
-        store.drivingCoachWidget.displayedAdvisory = args.advisory;
-        store.drivingCoachWidget.displayedBrakeUrgency = args.brakeUrgency;
-        store.drivingCoachWidget.displayedExitLateM = args.exitLateM;
-        store.drivingCoachWidget.displayedExitThrottleDeficit =
-          args.exitThrottleDeficit;
+        // Without a reference the telemetry thread makes no call and says why.
+        seedCoachAdvisory(store, {
+          advisory: args.advisory,
+          brakeUrgency: args.brakeUrgency,
+          exitLateM: args.exitLateM,
+          exitThrottleDeficit: args.exitThrottleDeficit,
+          inactiveReason: args.hasReferenceLap ? null : 'no-reference',
+        });
       }
 
       const lapTiming = store.player.lapTiming;
@@ -133,23 +138,27 @@ const meta: Meta<StoryArgs> = {
 
       // Replay this lap up to the car's position, so the trace behind it has
       // something recorded to compare against the reference.
-      store.coachWidget.reset();
-
       const currentBucket = Math.floor(distPct * BUCKET_COUNT);
 
-      for (let bucket = 0; bucket <= currentBucket; bucket++) {
-        const pct = bucket / BUCKET_COUNT;
+      for (const { trace } of store.widgetInstances.storesOf<CoachWidgetStores>(
+        'coach'
+      )) {
+        trace.reset();
 
-        store.coachWidget.seedBucket(
-          bucket,
-          ownSpeedAt(pct, args.ownApexDeltaKmh),
-          ownBrakeAt(pct, args.ownBrakeLatePct)
-        );
+        for (let bucket = 0; bucket <= currentBucket; bucket++) {
+          const pct = bucket / BUCKET_COUNT;
+
+          trace.seedBucket(
+            bucket,
+            ownSpeedAt(pct, args.ownApexDeltaKmh),
+            ownBrakeAt(pct, args.ownBrakeLatePct)
+          );
+        }
+
+        // The store fills the window on the telemetry frame, which a seeded
+        // preview never receives.
+        trace.refreshFromSeed();
       }
-
-      // The store fills the window on the telemetry frame, which a seeded
-      // preview never receives.
-      store.coachWidget.refreshFromSeed();
     },
     args: {
       advisory: 'neutral',

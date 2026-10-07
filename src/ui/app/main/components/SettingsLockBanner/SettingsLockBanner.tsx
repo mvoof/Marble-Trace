@@ -1,7 +1,7 @@
 import { Alert, Button, Popconfirm } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { useAppSettingsStore } from '@store/root-store-context';
+import { useAppSettingsStore } from '@store/roots/root-store-context';
 
 /**
  * Shown when `settings.json` could not be brought to the current schema. The

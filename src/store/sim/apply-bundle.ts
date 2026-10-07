@@ -1,7 +1,7 @@
 import { runInAction } from 'mobx';
 
 import type { TelemetryBundle } from '@/types/bindings';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/roots/renderer-core';
 
 /**
  * Scatters one bundle across the data stores.
@@ -11,7 +11,7 @@ import type { RootStore } from '@store/root-store';
  * mapping must not. Every field a widget reads is filled here and nowhere else.
  */
 export const applyTelemetryBundle = (
-  root: RootStore,
+  root: RendererCore,
   bundle: TelemetryBundle,
   onFrame?: () => void
 ) => {
@@ -52,6 +52,9 @@ export const applyTelemetryBundle = (
     if (bundle.driverEntries)
       root.backendComputed.updateDriverEntries(bundle.driverEntries);
     if (bundle.pitStops) root.backendComputed.updatePitStops(bundle.pitStops);
+    if (bundle.paceCar) root.backendComputed.updatePaceCar(bundle.paceCar);
+    if (bundle.coach) root.backendComputed.updateCoach(bundle.coach);
+    if (bundle.pitAuto) root.backendComputed.updatePitAuto(bundle.pitAuto);
     if (bundle.lapDelta) root.backendComputed.updateLapDelta(bundle.lapDelta);
     if (bundle.lapLog) root.backendComputed.updateLapLog(bundle.lapLog);
 

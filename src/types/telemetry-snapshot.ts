@@ -13,7 +13,7 @@ import type {
  * A frozen copy of one telemetry tick: a fixture for previews and Storybook, and
  * an attachment when a user reports something the numbers should explain.
  *
- * The shape is flat and stays that way — `store/preview/sample-telemetry.ts`
+ * The shape is flat and stays that way — `preview/sample-telemetry.ts`
  * reads a committed file in exactly this form, and a capture that no longer
  * loads into it is a fixture that cannot be used for the thing it exists for.
  */

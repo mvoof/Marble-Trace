@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 import styles from './DriverRow.module.scss';
-import { useStandingsWidgetStore } from '@store/root-store-context';
+import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 interface IrChangeCellProps {
   carIdx: number;

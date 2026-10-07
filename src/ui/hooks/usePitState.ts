@@ -4,7 +4,7 @@ import {
   useSessionStore,
   useTrackMapWidgetStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import {
@@ -14,6 +14,7 @@ import {
   speedUnit,
 } from '@utils/telemetry-format';
 import { parsePitSpeedLimitMs } from '@utils/telemetry-format';
+import { PIT_LIMITER_BIT } from '@utils/car-signals';
 
 export type PitState =
   | 'normal'
@@ -22,8 +23,6 @@ export type PitState =
   | 'limiter-near-exit'
   | 'limiter-exit'
   | 'over-limit';
-
-export const PIT_LIMITER_BIT = 0x10;
 
 export interface PitStateResult {
   pitState: PitState;

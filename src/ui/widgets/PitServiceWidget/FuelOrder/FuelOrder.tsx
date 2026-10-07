@@ -9,7 +9,7 @@ import type { UnitSystem } from '@/types';
 import {
   usePitServiceWidgetStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 // The sim always reports fuel in liters; only the readout follows the setting.
 const fuelUnit = (unitSystem: UnitSystem): string =>
@@ -125,12 +125,12 @@ export const FuelOrder = observer(() => {
 
     if (dragging.current) {
       dragging.current = false;
-      void order.commitFuelDraft();
+      order.commitFuelDraft();
 
       return;
     }
 
-    void order.toggleFuel();
+    order.toggleFuel();
   };
 
   const content = (

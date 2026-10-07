@@ -5,8 +5,8 @@ import {
   usePitServiceWidgetStore,
   usePlayerStore,
   useUnitsStore,
-} from '@store/root-store-context';
-import { buildPitApproachView } from '@utils/pit-approach';
+} from '@store/roots/root-store-context';
+import { buildPitApproachView } from '@store/widgets/pit-service/pit-approach';
 import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
 import { METERS_TO_FEET } from '@utils/telemetry-format';
 import { ReservedSlot } from '@ui/shared/ReservedSlot/ReservedSlot';

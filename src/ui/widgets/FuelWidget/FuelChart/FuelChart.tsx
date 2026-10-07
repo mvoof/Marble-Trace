@@ -8,7 +8,7 @@ import { resizeCanvasToDpr } from '@utils/canvas';
 
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelChart.module.scss';
-import { useBackendComputedStore } from '@store/root-store-context';
+import { useBackendComputedStore } from '@store/roots/root-store-context';
 
 export const FuelChart = observer(() => {
   const { fuel } = useBackendComputedStore();

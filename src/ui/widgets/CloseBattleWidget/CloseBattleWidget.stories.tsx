@@ -4,9 +4,10 @@ import type {
   BattleNameMode,
   CloseBattleWidgetSettings,
 } from '@/types/widget-settings';
-import type { RootStore } from '@store/root-store';
-import { mockProximity } from '@store/preview/mocks/traffic';
+import type { RendererCore } from '@store/roots/renderer-core';
+import { mockProximity } from '@/preview/mocks/traffic';
 import { CloseBattleWidget } from './CloseBattleWidget';
+import type { CloseBattleWidgetStore } from './close-battle.store';
 import {
   defineWidgetStories,
   previewScenario,
@@ -30,7 +31,7 @@ const DISTANCE_THRESHOLD_M = 200;
 // The snapshot's own opponents, so names, numbers and class colors are real —
 // the widget looks every car up by its index. The frame itself is the traffic
 // builder's, so the radar distances and the spotter flags agree with the cars.
-const seedTraffic = (store: RootStore, distances: number[]) => {
+const seedTraffic = (store: RendererCore, distances: number[]) => {
   const opponents = store.backendComputed.relativeEntries.filter(
     (entry) => !entry.isPlayer
   );
@@ -76,7 +77,12 @@ const meta: Meta<StoryArgs> = {
       };
 
       store.liveWidgets.updateUserSettings('close-battle', settings);
-      store.closeBattleWidget.visible = true;
+
+      for (const plate of store.widgetInstances.storesOf<CloseBattleWidgetStore>(
+        'close-battle'
+      )) {
+        plate.visible = true;
+      }
 
       if (args.distances !== undefined) {
         seedTraffic(store, args.distances);

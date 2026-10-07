@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
-import { useTelemetryInspectorStore } from '@store/root-store-context';
+import { useTelemetryInspectorStore } from '@store/roots/main-root-context';
 import type { InspectorRow } from '@/types/inspector';
 import { formatInspectorValue } from './format-value';
 import styles from './TelemetryInspectorSection.module.scss';

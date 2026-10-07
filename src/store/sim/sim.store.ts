@@ -25,7 +25,7 @@ import {
 import {
   deleteReferenceLap,
   getCachedTrackShape,
-  getReferenceLap,
+  getActiveReferenceLap,
 } from '@platform/services/track.service';
 
 import type {
@@ -37,18 +37,13 @@ import type {
   SimStatus,
   CapabilitiesPayload,
   ReferenceLapData,
-  TrackCondition,
   SimPerfFrame,
   TelemetrySlowBundle,
 } from '@/types/bindings';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import { debug } from '@store/sim/debug';
-import {
-  nextTrackCondition,
-  trackConditionForWetness,
-} from '@store/sim/track-condition';
 import type { TelemetryStatus } from '@/types';
-import type { RootStore } from '@store/root-store';
+import type { RendererCore } from '@store/roots/renderer-core';
 import {
   SIM_TELEMETRY_BUNDLE,
   SIM_SESSION,
@@ -60,26 +55,46 @@ import {
   SIM_TRACK_SHAPE,
   SIM_CAPABILITIES,
   SIM_REFERENCE_LAP_UPDATED,
-  TRACK_MAP_CLEAR,
 } from '@platform/sync/sim-events';
+
+/** The page every overlay window loads (`overlay-windows.ts`). */
+const OVERLAY_PAGE = '/overlay.html';
 
 /**
  * True in the overlay windows, which are the only ones that render widgets and
  * therefore the only ones that need 60 Hz telemetry.
  */
 const drawsWidgets = () =>
-  typeof window !== 'undefined' && window.location.hash.includes('overlay');
+  typeof window !== 'undefined' &&
+  window.location.pathname.endsWith(OVERLAY_PAGE);
+
+/**
+ * Told how long one bundle took to apply, and whether it was a 1 Hz full
+ * bundle. Installed only for a perf run.
+ */
+export type BundleApplyProbe = (durationMs: number, isFull: boolean) => void;
 
 export class SimStore {
   isConnected = false;
   status: TelemetryStatus = 'waiting';
   currentSim: SimType | null = null;
+  /**
+   * The tape a `dev` build plays instead of the sim, by file name. The status
+   * still reads `connected` so the app behaves as live; this is what lets the
+   * main window say it is not.
+   */
+  replayTape: string | null = null;
   capabilities: CapabilitiesPayload | null = null;
   error: string | null = null;
   frameCount = 0;
+  /**
+   * A perf run in stores-only mode: telemetry is received and applied as
+   * usual, but the overlay mounts no widget, so the transport's share of the
+   * cost reads off an A/B against a run with widgets.
+   */
+  widgetsSuppressed = false;
+  bundleApplyProbe: BundleApplyProbe | null = null;
 
-  /** Condition the currently loaded reference lap was asked for. */
-  private referenceCondition: TrackCondition | null = null;
   /**
    * True while this window is minimized — one of the three states that take it
    * out of the mask registry entirely. Watched only in the overlay windows.
@@ -91,8 +106,16 @@ export class SimStore {
   private unlistens: UnlistenFn[] = [];
   private readonly disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: RootStore) {
-    makeAutoObservable(this, {}, { autoBind: true });
+  constructor(private readonly root: RendererCore) {
+    makeAutoObservable(this, { bundleApplyProbe: false }, { autoBind: true });
+  }
+
+  suppressWidgets() {
+    this.widgetsSuppressed = true;
+  }
+
+  setBundleApplyProbe(probe: BundleApplyProbe | null) {
+    this.bundleApplyProbe = probe;
   }
 
   init() {
@@ -146,63 +169,9 @@ export class SimStore {
         )
       );
     }
-
-    this.disposers.push(
-      reaction(
-        () => {
-          const info = this.root.session.sessionInfo;
-          const car = info?.cars.find(
-            (entry) => entry.carIdx === info.playerCarIdx
-          );
-
-          return info && car
-            ? {
-                trackId: info.trackId,
-                carScreenName: car.carScreenName,
-                // The condition is part of the reference's identity: when the
-                // track turns wet mid-session the dry reference stops being the
-                // right target and the wet one has to be loaded in its place.
-                trackWetness:
-                  this.root.environment.environment?.trackWetness ?? null,
-              }
-            : null;
-        },
-        (identity, previousIdentity) => {
-          if (!identity) {
-            this.referenceCondition = null;
-            this.root.referenceLap.reset();
-
-            return;
-          }
-
-          const sameCar =
-            previousIdentity !== undefined &&
-            previousIdentity !== null &&
-            previousIdentity.trackId === identity.trackId &&
-            previousIdentity.carScreenName === identity.carScreenName;
-
-          const condition = sameCar
-            ? nextTrackCondition(this.referenceCondition, identity.trackWetness)
-            : trackConditionForWetness(identity.trackWetness);
-
-          if (sameCar && condition === this.referenceCondition) {
-            return;
-          }
-
-          this.referenceCondition = condition;
-
-          void this.loadReferenceLap(
-            identity.trackId,
-            identity.carScreenName,
-            condition
-          );
-        },
-        { fireImmediately: true, equals: comparer.shallow }
-      )
-    );
   }
 
-  // Every RootStore instance creates its own reactions; without this they
+  // Every RendererCore instance creates its own reactions; without this they
   // outlive the store that owns them.
   dispose() {
     for (const disposer of this.disposers) {
@@ -216,21 +185,25 @@ export class SimStore {
     this.disposeListeners();
   }
 
-  private async loadReferenceLap(
-    trackId: number,
-    carScreenName: string,
-    condition: TrackCondition
-  ) {
-    this.root.referenceLap.reset();
-
+  /** The reference the telemetry thread made active before this window listened. */
+  private async hydrateReferenceLap(guardId: number) {
     try {
-      const data = await getReferenceLap(trackId, carScreenName, condition);
+      const data = await getActiveReferenceLap();
 
-      if (data) {
-        runInAction(() => this.root.referenceLap.updateReferenceLap(data));
-      }
+      if (this.initId !== guardId) return;
+
+      runInAction(() => this.applyActiveReference(data));
     } catch (err) {
-      debug.telemetry('Failed to load reference lap: %o', err);
+      debug.telemetry('Failed to load the active reference lap: %o', err);
+    }
+  }
+
+  /** The telemetry thread picks the reference; a window only shows it. */
+  private applyActiveReference(data: ReferenceLapData | null) {
+    if (data) {
+      this.root.referenceLap.updateReferenceLap(data);
+    } else {
+      this.root.referenceLap.reset();
     }
   }
 
@@ -348,6 +321,7 @@ export class SimStore {
       }
 
       await this.hydrateTrackShape(currentId);
+      await this.hydrateReferenceLap(currentId);
 
       await startTelemetryStream();
 
@@ -431,8 +405,7 @@ export class SimStore {
     this.root.environment.reset();
     this.root.simPerf.reset();
     this.root.backendComputed.reset();
-    this.root.drivingCoachWidget.reset();
-    this.root.paceCar.reset();
+    this.root.referenceLap.reset();
     // Owns timers keyed off telemetry transitions — without a reset the stop
     // clock keeps ticking after the last frame that could have stopped it.
     this.root.pitServiceWidget.reset();
@@ -449,10 +422,13 @@ export class SimStore {
   }
 
   applyRemoteStatus(payload: SimStatus) {
-    runInAction(() => {
-      this.currentSim = payload.sim;
-      this.setStatus(payload.status as TelemetryStatus);
-    });
+    runInAction(() => this.applyStatus(payload));
+  }
+
+  private applyStatus(payload: SimStatus) {
+    this.currentSim = payload.sim;
+    this.replayTape = payload.replay;
+    this.setStatus(payload.status as TelemetryStatus);
   }
 
   applyRemoteDisconnected() {
@@ -471,6 +447,7 @@ export class SimStore {
     } else if (status === 'disconnected') {
       this.isConnected = false;
       this.currentSim = null;
+      this.replayTape = null;
       this.capabilities = null;
       this.resetDataStores();
     }
@@ -481,6 +458,7 @@ export class SimStore {
     this.isConnected = false;
     this.status = 'error';
     this.currentSim = null;
+    this.replayTape = null;
     this.capabilities = null;
   }
 
@@ -488,6 +466,7 @@ export class SimStore {
     this.isConnected = false;
     this.status = 'disconnected';
     this.currentSim = null;
+    this.replayTape = null;
     this.capabilities = null;
     this.resetDataStores();
   }
@@ -527,10 +506,7 @@ export class SimStore {
 
         const payload = event.payload;
         debug.telemetry('status: %o', payload);
-        runInAction(() => {
-          this.currentSim = payload.sim;
-          this.setStatus(payload.status as TelemetryStatus);
-        });
+        runInAction(() => this.applyStatus(payload));
       })
     );
 
@@ -563,23 +539,14 @@ export class SimStore {
     );
 
     this.unlistens.push(
-      await listenTo(TRACK_MAP_CLEAR, () => {
-        if (this.initId !== guardId) return;
+      await listenTo<ReferenceLapData | null>(
+        SIM_REFERENCE_LAP_UPDATED,
+        (event) => {
+          if (this.initId !== guardId) return;
 
-        runInAction(() => {
-          this.root.trackMapWidget.clearTrackShape();
-        });
-      })
-    );
-
-    this.unlistens.push(
-      await listenTo<ReferenceLapData>(SIM_REFERENCE_LAP_UPDATED, (event) => {
-        if (this.initId !== guardId) return;
-
-        runInAction(() => {
-          this.root.referenceLap.updateReferenceLap(event.payload);
-        });
-      })
+          runInAction(() => this.applyActiveReference(event.payload));
+        }
+      )
     );
 
     this.unlistens.push(
@@ -612,28 +579,28 @@ export class SimStore {
       await listenTo<TelemetryBundle>(SIM_TELEMETRY_BUNDLE, (event) => {
         if (this.initId !== guardId) return;
 
+        const probe = this.bundleApplyProbe;
+        const started = probe ? performance.now() : 0;
+
         applyTelemetryBundle(this.root, event.payload, () =>
           this.onFrameReceived()
         );
+
+        if (probe) {
+          probe(performance.now() - started, Boolean(event.payload.session));
+        }
       })
     );
   }
 
   /**
-   * Subscribes a window that is off the bundle to the 4 Hz slice instead.
+   * Subscribes a window that is off the bundle to the 4 Hz slice instead: the
+   * car status, whose `is_on_track` the layout auto-switch reads. Everything
+   * that decides on the sim — the hotkeys, the pit orders — runs on the
+   * telemetry thread and needs no frame here.
    *
-   * Not drawing widgets is not the same as needing no telemetry: the main
-   * window runs the hotkey runner and the automatic pit order, and both decide
-   * off the sim rather than off settings — the fuel calculation, what the sim
-   * has on the order, where the car is on pit road — while layout
-   * auto-switching reads `is_on_track`. Without these it answers a key press
-   * with an order that silently leaves the fuel out.
-   *
-   * Four flat frames at 4 Hz, no per-car arrays: on the order of one percent of
-   * what the bundle costs, so the point of staying off the bundle survives.
-   *
-   * One owner, two transports — these call the same setters the bundle path
-   * calls, and only one of the two is ever subscribed, so nothing writes twice.
+   * One owner, two transports — the same setter the bundle path calls, and only
+   * one of the two is ever subscribed, so nothing writes twice.
    */
   private async subscribeSlowBundle(guardId: number) {
     if (drawsWidgets()) {
@@ -644,19 +611,9 @@ export class SimStore {
       await listenTo<TelemetrySlowBundle>(SIM_TELEMETRY_SLOW, (event) => {
         if (this.initId !== guardId) return;
 
-        const slow = event.payload;
-
-        runInAction(() => {
-          this.root.player.updateCarStatus(slow.carStatus);
-          this.root.player.updateLapTiming(slow.lapTiming);
-          this.root.player.updatePitService(slow.pitService);
-
-          this.root.backendComputed.updateSlowCarClassCount(slow.carClassCount);
-
-          if (slow.fuel) {
-            this.root.backendComputed.updateFuel(slow.fuel);
-          }
-        });
+        runInAction(() =>
+          this.root.player.updateCarStatus(event.payload.carStatus)
+        );
       })
     );
   }

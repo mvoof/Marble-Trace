@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
-import { openUrl } from '@tauri-apps/plugin-opener';
 import { useTranslation } from 'react-i18next';
-import { useAppSettingsStore } from '@store/root-store-context';
+import { useAppSettingsStore } from '@store/roots/root-store-context';
+import { openExternalLink } from '@store/integrations/external-link';
 import styles from './AppFooter.module.scss';
 
 const SITE_URL = 'https://marbletrace.com/';
@@ -10,9 +10,7 @@ const GITHUB_URL = 'https://github.com/mvoof/Marble-Trace';
 const DISCORD_URL_RU = 'https://discord.gg/GVaRsHbjxV';
 const DISCORD_URL_INTL = 'https://discord.gg/VXC32kNhRQ';
 
-const handleOpen = (url: string) => {
-  openUrl(url).catch((error) => console.error('Failed to open URL:', error));
-};
+const handleOpen = (url: string) => openExternalLink(url);
 
 // Slim footer: external links, and the app version on the right.
 export const AppFooter = observer(() => {

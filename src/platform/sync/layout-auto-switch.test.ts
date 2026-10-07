@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { runInAction, type IReactionDisposer } from 'mobx';
 
-import { RootStore } from '@store/root-store';
+import { MainRoot } from '@store/roots/main-root';
 
 // The reaction only reads the sim and writes the active layout; everything it
 // would emit crosses the Tauri boundary, which is not what is under test.
@@ -36,7 +36,7 @@ const layout = (id: string) => ({
 });
 
 describe('session layout auto-switch', () => {
-  let root: RootStore;
+  let root: MainRoot;
   let dispose: IReactionDisposer;
 
   const goOnTrackInPractice = () => {
@@ -54,7 +54,7 @@ describe('session layout auto-switch', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    root = new RootStore({ skipInit: true });
+    root = new MainRoot({ skipInit: true });
 
     root.liveWidgets.setLayouts(
       [layout('layout-garage'), layout('layout-practice')],

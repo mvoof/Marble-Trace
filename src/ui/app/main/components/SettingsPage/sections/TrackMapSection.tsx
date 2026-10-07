@@ -2,18 +2,19 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Flex, Popconfirm } from 'antd';
-import { emitTrackMapForceStart } from '@platform/services/events.service';
 import {
   useSessionStore,
   useStore,
   useTrackMapWidgetStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
+import { useTrackRotationStore } from '@store/roots/main-root-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
 export const TrackMapSection = observer(() => {
   const store = useStore();
   const trackMap = useTrackMapWidgetStore();
+  const trackRotation = useTrackRotationStore();
   const session = useSessionStore();
   const { message } = App.useApp();
   const { t } = useTranslation('main-app');
@@ -73,6 +74,7 @@ export const TrackMapSection = observer(() => {
               if (sessionTrackId === null) return;
 
               void trackMap.deleteTrackData(String(sessionTrackId));
+              void trackRotation.forget(String(sessionTrackId));
             }}
           >
             {t('settingsPage.trackMap.resetCurrentTrackData')}
@@ -83,7 +85,7 @@ export const TrackMapSection = observer(() => {
             size="small"
             disabled={sessionTrackId === null}
             onClick={() => {
-              void emitTrackMapForceStart();
+              trackMap.forceStartRecording();
               message.info(t('settingsPage.trackMap.manualStartActive'));
             }}
           >

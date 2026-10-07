@@ -11,7 +11,7 @@ import {
   useEnvironmentStore,
   usePlayerStore,
   useSessionStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 import styles from './WindArrow.module.scss';
 

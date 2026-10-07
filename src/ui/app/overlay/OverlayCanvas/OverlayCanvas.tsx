@@ -1,22 +1,28 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Button } from 'antd';
-import { X, Layers, MousePointer2 } from 'lucide-react';
+import { Layers, MousePointer2 } from 'lucide-react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { componentForWidget } from '@ui/widgets/registry';
+import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetContainer } from '@ui/app/overlay/components/WidgetContainer/WidgetContainer';
-import { WidgetPicker } from '@ui/app/overlay/components/WidgetPicker/WidgetPicker';
 import { usePreviewContentStore } from '@ui/app/preview-content-store';
 import styles from './OverlayCanvas.module.scss';
 import {
-  RootStoreContext,
+  RendererCoreContext,
   useAppSettingsStore,
   useBindingsStore,
   useSimStore,
   useLayoutsStore,
   useLiveWidgetsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
+
+// antd and the widget picker stay out of the overlay's initial bundle.
+const DragModeBar = lazy(() =>
+  import('@ui/app/overlay/components/DragModeBar/DragModeBar').then(
+    (module) => ({ default: module.DragModeBar })
+  )
+);
 
 export const OverlayCanvas = observer(() => {
   const appSettings = useAppSettingsStore();
@@ -59,10 +65,6 @@ export const OverlayCanvas = observer(() => {
       ? t('overlayCanvas.interactModeHold', { key: interactKey })
       : t('overlayCanvas.interactModeToggle', { key: interactKey });
 
-  const handleExitDragMode = () => {
-    appSettings.setDragMode(false);
-  };
-
   const ownBounds = liveWidgets.ownMonitorName
     ? layouts.monitorByName(liveWidgets.ownMonitorName)?.bounds
     : undefined;
@@ -71,7 +73,7 @@ export const OverlayCanvas = observer(() => {
     transform: `translate(${-(ownBounds?.x ?? 0)}px, ${-(ownBounds?.y ?? 0)}px)`,
   };
 
-  if (hideAllWidgets) {
+  if (hideAllWidgets || simStore.widgetsSuppressed) {
     return null;
   }
 
@@ -89,17 +91,9 @@ export const OverlayCanvas = observer(() => {
     >
       {dragMode && (
         <div className={styles.exitButtonContainer}>
-          <WidgetPicker />
-
-          <Button
-            type="primary"
-            danger
-            icon={<X size={16} />}
-            onClick={handleExitDragMode}
-            size="large"
-          >
-            {t('overlayCanvas.exitEditMode')}
-          </Button>
+          <Suspense fallback={null}>
+            <DragModeBar />
+          </Suspense>
         </div>
       )}
 
@@ -114,15 +108,22 @@ export const OverlayCanvas = observer(() => {
           if (!WidgetComponent) return null;
 
           return (
-            <WidgetContainer key={widget.id} widgetId={widget.id}>
-              {previewStore ? (
-                <RootStoreContext.Provider value={previewStore}>
+            <WidgetInstanceScope
+              key={widget.id}
+              type={widget.type}
+              instanceId={widget.id}
+              core={previewStore ?? undefined}
+            >
+              <WidgetContainer widgetId={widget.id}>
+                {previewStore ? (
+                  <RendererCoreContext.Provider value={previewStore}>
+                    <WidgetComponent />
+                  </RendererCoreContext.Provider>
+                ) : (
                   <WidgetComponent />
-                </RootStoreContext.Provider>
-              ) : (
-                <WidgetComponent />
-              )}
-            </WidgetContainer>
+                )}
+              </WidgetContainer>
+            </WidgetInstanceScope>
           );
         })}
       </div>

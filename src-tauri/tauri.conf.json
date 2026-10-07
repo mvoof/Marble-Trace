@@ -14,6 +14,7 @@
     "windows": [
       {
         "label": "main",
+        "url": "main.html",
         "title": "Marble Trace",
         "width": 800,
         "height": 600,
@@ -27,7 +28,51 @@
       }
     ],
     "security": {
-      "csp": null,
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": [
+          "'self'",
+          "data:",
+          "http://asset.localhost",
+          "https://static-cdn.jtvnw.net",
+          "https://*.ggpht.com",
+          "https://*.googleusercontent.com",
+          "https://fonts.gstatic.com",
+          "https://www.youtube.com"
+        ],
+        "font-src": "'self'",
+        "connect-src": ["'self'", "http://ipc.localhost"],
+        "object-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'none'"
+      },
+      "devCsp": {
+        "default-src": "'self'",
+        "script-src": ["'self'", "'unsafe-inline'"],
+        "style-src": ["'self'", "'unsafe-inline'"],
+        "img-src": [
+          "'self'",
+          "data:",
+          "http://asset.localhost",
+          "https://static-cdn.jtvnw.net",
+          "https://*.ggpht.com",
+          "https://*.googleusercontent.com",
+          "https://fonts.gstatic.com",
+          "https://www.youtube.com"
+        ],
+        "font-src": "'self'",
+        "connect-src": [
+          "'self'",
+          "http://ipc.localhost",
+          "ws://localhost:1421"
+        ],
+        "object-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'none'"
+      },
+      "dangerousDisableAssetCspModification": ["style-src"],
       "assetProtocol": {
         "enable": true,
         "scope": ["$APPDATA/backgrounds/*", "$APPDATA/backgrounds/**"]

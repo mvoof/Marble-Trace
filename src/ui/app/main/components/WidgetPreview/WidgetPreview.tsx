@@ -1,18 +1,19 @@
 import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { RootStore } from '@store/root-store';
-import { RootStoreContext, useUnitsStore } from '@store/root-store-context';
+import { PreviewCore } from '@store/roots/renderer-core';
+import {
+  RendererCoreContext,
+  useUnitsStore,
+} from '@store/roots/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
+import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameStyle } from '@ui/app/widget-frame';
-import {
-  seedScenario,
-  DEFAULT_PREVIEW_SCENARIO_ID,
-} from '@store/preview/scenarios';
-import { seedInputHistory } from '@store/preview/preview-animator';
+import { seedScenario, DEFAULT_PREVIEW_SCENARIO_ID } from '@/preview/scenarios';
+import { seedInputHistory } from '@/preview/preview-animator';
 import styles from './WidgetPreview.module.scss';
 
 interface WidgetPreviewProps {
@@ -32,7 +33,7 @@ export const WidgetPreview = observer(
     const units = useUnitsStore();
     const { t } = useTranslation('main-app');
 
-    const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
+    const previewStore = useMemo(() => new PreviewCore(), []);
 
     useEffect(() => () => previewStore.dispose(), [previewStore]);
 
@@ -99,7 +100,7 @@ export const WidgetPreview = observer(
     });
 
     return (
-      <RootStoreContext.Provider value={previewStore}>
+      <RendererCoreContext.Provider value={previewStore}>
         <div className={styles.stage}>
           <div
             className={`${styles.widgetInner} ${
@@ -113,12 +114,14 @@ export const WidgetPreview = observer(
           >
             <ErrorBoundary>
               <WidgetIdContext.Provider value={previewId}>
-                <Widget />
+                <WidgetInstanceScope type={widget.type} instanceId={previewId}>
+                  <Widget />
+                </WidgetInstanceScope>
               </WidgetIdContext.Provider>
             </ErrorBoundary>
           </div>
         </div>
-      </RootStoreContext.Provider>
+      </RendererCoreContext.Provider>
     );
   }
 );

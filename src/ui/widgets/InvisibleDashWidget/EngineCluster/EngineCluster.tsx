@@ -9,7 +9,7 @@ import {
   usePlayerStore,
   useSessionStore,
   useUnitsStore,
-} from '@store/root-store-context';
+} from '@store/roots/root-store-context';
 
 import { zoneDigitColor } from '../invisible-dash-utils';
 import { ShiftBar } from '../ShiftBar/ShiftBar';

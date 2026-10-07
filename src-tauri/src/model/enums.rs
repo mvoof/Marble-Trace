@@ -14,6 +14,10 @@ pub enum SimType {
 pub struct SimStatus {
     pub status: String,
     pub sim: Option<SimType>,
+    /// File name of the tape being played instead of the sim. The status
+    /// stays `connected` so every gate behaves as it does live; this is what
+    /// tells the main window it is not. Only ever set by a `dev` build.
+    pub replay: Option<String>,
 }
 
 /// What the drag reduction system is doing.

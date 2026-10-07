@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 
+import { useUnitsStore } from '@store/roots/root-store-context';
 import {
-  useUnitsStore,
   useWheelToWheelWidgetStore,
-} from '@store/root-store-context';
+  type BattleSlot,
+} from '../wheel-to-wheel.store';
 import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
 import { speedUnit } from '@utils/telemetry-format';
-import type { BattleSlot } from '../wheel-to-wheel.widget';
 
 import styles from './SideSpeed.module.scss';
 

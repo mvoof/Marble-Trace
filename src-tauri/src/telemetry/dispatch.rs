@@ -150,7 +150,7 @@ pub trait BundleSink {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::telemetry::state::{EVENT_CAR_DYNAMICS, EVENT_PROXIMITY};
+    use crate::model::telemetry_events::{EVENT_CAR_DYNAMICS, EVENT_PROXIMITY};
 
     fn window(label: &str) -> Recipient {
         Recipient::Window(label.to_owned())
