@@ -1,11 +1,15 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { InputTraceSettings } from '@/types/widget-settings';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
+import type { PlayerStore } from '@store/data/player.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
 
-type InputTraceDeps = Pick<RendererCore, 'player' | 'liveWidgets'>;
+interface InputTraceDeps {
+  player: PlayerStore;
+  liveWidgets: LiveWidgetsView;
+}
 
 export type InputChannel = 'throttle' | 'brake' | 'clutch';
 
@@ -34,7 +38,7 @@ export class InputTraceWidgetStore {
   // Built per instance when it mounts (`mount.ts`), so the filter runs only
   // while a trace is on screen, at that trace's own smoothing. Wired in the
   // constructor: it must advance once per telemetry frame, never per render.
-  constructor({ core, instanceId }: WidgetInstanceContext) {
+  constructor({ core, instanceId }: WidgetInstanceContext<InputTraceDeps>) {
     this.root = core;
     this.instanceId = instanceId;
 

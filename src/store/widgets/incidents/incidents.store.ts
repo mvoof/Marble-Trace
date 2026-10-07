@@ -5,9 +5,13 @@ import {
   computeIncidentZones,
   type FlagZone,
 } from '@store/widgets/incidents/flag-zones';
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { SessionStore } from '@store/data/session.store';
 
-type IncidentsDeps = Pick<RendererCore, 'backendComputed' | 'session'>;
+interface IncidentsDeps {
+  backendComputed: BackendComputedStore;
+  session: SessionStore;
+}
 
 /**
  * Where the trouble is, as both maps draw it.

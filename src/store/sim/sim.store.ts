@@ -43,7 +43,6 @@ import type {
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import { debug } from '@store/sim/debug';
 import type { TelemetryStatus } from '@/types';
-import type { RendererCore } from '@store/roots/renderer-core';
 import {
   SIM_TELEMETRY_BUNDLE,
   SIM_SESSION,
@@ -56,6 +55,31 @@ import {
   SIM_CAPABILITIES,
   SIM_REFERENCE_LAP_UPDATED,
 } from '@platform/sync/sim-events';
+import type { AppSettingsStore } from '@store/settings/app-settings.store';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { CarsStore } from '@store/data/cars.store';
+import type { EnvironmentStore } from '@store/data/environment.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { PitServiceWidgetStore } from '@store/widgets/pit-service/pit-service.store';
+import type { PlayerStore } from '@store/data/player.store';
+import type { ReferenceLapStore } from '@store/data/reference-lap.store';
+import type { SessionStore } from '@store/data/session.store';
+import type { SimPerfStore } from '@store/data/sim-perf.store';
+import type { TrackMapWidgetStore } from '@store/widgets/track-map/track-map.store';
+
+interface SimDeps {
+  appSettings: AppSettingsStore;
+  backendComputed: BackendComputedStore;
+  cars: CarsStore;
+  environment: EnvironmentStore;
+  liveWidgets: LiveWidgetsView;
+  pitServiceWidget: PitServiceWidgetStore;
+  player: PlayerStore;
+  referenceLap: ReferenceLapStore;
+  session: SessionStore;
+  simPerf: SimPerfStore;
+  trackMapWidget: TrackMapWidgetStore;
+}
 
 /** The page every overlay window loads (`overlay-windows.ts`). */
 const OVERLAY_PAGE = '/overlay.html';
@@ -106,7 +130,7 @@ export class SimStore {
   private unlistens: UnlistenFn[] = [];
   private readonly disposers: IReactionDisposer[] = [];
 
-  constructor(private readonly root: RendererCore) {
+  constructor(private readonly root: SimDeps) {
     makeAutoObservable(this, { bundleApplyProbe: false }, { autoBind: true });
   }
 

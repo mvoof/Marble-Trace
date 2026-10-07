@@ -1,6 +1,6 @@
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { HotkeyKind } from '@/types/bindings';
 import type { Binding, BindingTrigger } from '@/types/input-bindings';
+import type { PitServiceWidgetStore } from '@store/widgets/pit-service/pit-service.store';
 
 /**
  * A bindable action as the settings window shows it. What it does is the
@@ -31,7 +31,7 @@ export interface HotkeyAction {
    * nothing to act on", which is otherwise a silent no-op. Read by the
    * settings UI to draw the hint, so it may look at the core alone.
    */
-  isInert?: (root: RendererCore) => boolean;
+  isInert?: (root: { pitServiceWidget: PitServiceWidgetStore }) => boolean;
   /** i18n key under `bindings.inert` explaining how to make the action work. */
   inertHintKey?: string;
 }

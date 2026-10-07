@@ -9,9 +9,11 @@ import {
 } from '@platform/services/twitch.service';
 import type { TwitchDeviceCode } from '@/types/bindings';
 import { openExternalLink } from './external-link';
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { AppSettingsStore } from '@store/settings/app-settings.store';
 
-type TwitchAuthDeps = Pick<RendererCore, 'appSettings'>;
+interface TwitchAuthDeps {
+  appSettings: AppSettingsStore;
+}
 
 const MS_PER_SECOND = 1000;
 

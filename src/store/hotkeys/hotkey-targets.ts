@@ -1,5 +1,7 @@
-import type { RendererCore } from '@store/roots/renderer-core';
-import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances.store';
+import type {
+  WidgetInstanceStore,
+  WidgetInstanceRegistry,
+} from '@store/widget-runtime/widget-instances.store';
 
 /**
  * What a standings instance store answers to when a hotkey reaches the window.
@@ -19,9 +21,9 @@ export interface StandingsHotkeyTarget extends WidgetInstanceStore {
  * instances marked for hotkeys. A table switched off for them keeps its own
  * class and scroll, so two tables on one screen can show different classes.
  */
-export const standingsHotkeyTargets = (
-  core: Pick<RendererCore, 'widgetInstances'>
-): StandingsHotkeyTarget[] =>
+export const standingsHotkeyTargets = (core: {
+  widgetInstances: WidgetInstanceRegistry;
+}): StandingsHotkeyTarget[] =>
   core.widgetInstances.hotkeyStoresOf<StandingsHotkeyTarget>('standings');
 
 /** What a chat instance store answers to when the scroll hotkey reaches the window. */
@@ -31,7 +33,7 @@ export interface StreamChatHotkeyTarget extends WidgetInstanceStore {
 }
 
 /** The chat windows in this window the scroll hotkey acts on. */
-export const streamChatHotkeyTargets = (
-  core: Pick<RendererCore, 'widgetInstances'>
-): StreamChatHotkeyTarget[] =>
+export const streamChatHotkeyTargets = (core: {
+  widgetInstances: WidgetInstanceRegistry;
+}): StreamChatHotkeyTarget[] =>
   core.widgetInstances.hotkeyStoresOf<StreamChatHotkeyTarget>('stream-chat');

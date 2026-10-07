@@ -8,12 +8,15 @@ import {
 import type { FlagType } from '@/types';
 import type { RaceFlags } from '@/types/bindings';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { PlayerStore } from '@store/data/player.store';
+import type { BackendComputedStore } from '@store/data/computed.store';
 
-type FlagsDeps = Pick<
-  RendererCore,
-  'liveWidgets' | 'player' | 'backendComputed'
->;
+interface FlagsDeps {
+  liveWidgets: LiveWidgetsView;
+  player: PlayerStore;
+  backendComputed: BackendComputedStore;
+}
 
 const NO_FLAG: FlagType = 'none';
 const NO_FLAGS: FlagType[] = [];

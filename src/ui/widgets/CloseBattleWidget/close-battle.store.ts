@@ -7,7 +7,6 @@ import {
 
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 import {
@@ -20,17 +19,22 @@ import {
   type BattleOpponent,
   type BattlePlateGroup,
 } from './close-battle-utils';
+import type { UnitsStore } from '@store/settings/units.store';
+import type { AppSettingsStore } from '@store/settings/app-settings.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { SessionStore } from '@store/data/session.store';
+import type { PlayerStore } from '@store/data/player.store';
 
-type CloseBattleDeps = Pick<
-  RendererCore,
-  | 'units'
-  | 'appSettings'
-  | 'liveWidgets'
-  | 'backendComputed'
-  | 'session'
-  | 'player'
-  | 'startsWidgetStores'
->;
+interface CloseBattleDeps {
+  units: UnitsStore;
+  appSettings: AppSettingsStore;
+  liveWidgets: LiveWidgetsView;
+  backendComputed: BackendComputedStore;
+  session: SessionStore;
+  player: PlayerStore;
+  readonly startsWidgetStores: boolean;
+}
 
 const setsMatch = (first: Set<number>, second: Set<number>): boolean =>
   first.size === second.size && [...first].every((idx) => second.has(idx));
@@ -61,7 +65,7 @@ export class CloseBattleWidgetStore {
 
   private readonly instanceId: string;
 
-  constructor({ core, instanceId }: WidgetInstanceContext) {
+  constructor({ core, instanceId }: WidgetInstanceContext<CloseBattleDeps>) {
     this.root = core;
     this.instanceId = instanceId;
 

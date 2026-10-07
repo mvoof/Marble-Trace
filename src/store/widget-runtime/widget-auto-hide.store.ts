@@ -6,19 +6,25 @@ import type {
   PitLineWidgetSettings,
   PitServiceWidgetSettings,
 } from '@/types/widget-settings';
-import type { RendererCore } from '@store/roots/renderer-core';
-import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances.store';
+import type {
+  WidgetInstanceStore,
+  WidgetInstanceRegistry,
+} from '@store/widget-runtime/widget-instances.store';
 import { widgetTypeFromId } from './widget-instance';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { RadarWidgetStore } from '@store/widgets/radar/radar.store';
+import type { FlagsStore } from '@store/widgets/flags/flags.store';
+import type { PitServiceWidgetStore } from '@store/widgets/pit-service/pit-service.store';
+import type { PlayerStore } from '@store/data/player.store';
 
-type WidgetAutoHideDeps = Pick<
-  RendererCore,
-  | 'liveWidgets'
-  | 'radar'
-  | 'flags'
-  | 'pitServiceWidget'
-  | 'player'
-  | 'widgetInstances'
->;
+interface WidgetAutoHideDeps {
+  liveWidgets: LiveWidgetsView;
+  radar: RadarWidgetStore;
+  flags: FlagsStore;
+  pitServiceWidget: PitServiceWidgetStore;
+  player: PlayerStore;
+  widgetInstances: WidgetInstanceRegistry;
+}
 
 const NO_LED_FLAG = 'none';
 

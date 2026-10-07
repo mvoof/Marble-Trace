@@ -8,15 +8,17 @@ import {
 } from '@store/layout/layout-resize';
 import { availableWidgetIdsOf } from '@store/layout/widget-availability';
 import type { WidgetMap } from '@store/layout/widget-map';
-import type { RendererCore } from '@store/roots/renderer-core';
 import type {
   BaseUserSettings,
   WidgetDefaultConfig,
   WidgetSpecificSettings,
   WidgetUserSettings,
 } from '@/types/widget-settings';
+import type { SimStore } from '@store/sim/sim.store';
 
-type WidgetDefaultsDeps = Pick<RendererCore, 'sim'>;
+interface WidgetDefaultsDeps {
+  sim: SimStore;
+}
 
 const FUEL_BAR_WIDTH_MIN = 5;
 const FUEL_BAR_WIDTH_MAX = 20;

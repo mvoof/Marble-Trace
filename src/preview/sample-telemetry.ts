@@ -7,7 +7,7 @@ import type {
 } from '@/types/bindings';
 import { action } from 'mobx';
 import { TrackSurface } from '@/types';
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { PreviewTarget } from './preview-target';
 import { computeDriverEntries } from './mocks/driver-entries';
 import { mockCarPositions } from './mocks/field';
 import { seedField } from './field-seed';
@@ -20,7 +20,7 @@ import { seedCoachAdvisory } from './coach-advisory-seed';
 // blink reactions that normally do this only run via FlagsStore.init(), which is
 // skipped in the isolated preview store — so without this the flag widgets stay
 // blank no matter what flag is active.
-export const syncFlagDisplay = action((store: RendererCore) => {
+export const syncFlagDisplay = action((store: PreviewTarget) => {
   store.flags.displayFlags = store.flags.parsedFlags;
   store.flags.ledDisplayFlag = store.flags.parsedFlag;
 });
@@ -103,7 +103,7 @@ export const sampleFuel: FuelComputedFrame = {
 // Wrapped in `action` so the whole batch of setters runs as a single MobX
 // transaction — callers (preview, layout editor, Storybook) invoke it directly
 // without needing their own `runInAction`.
-export const seedSampleTelemetry = action((store: RendererCore) => {
+export const seedSampleTelemetry = action((store: PreviewTarget) => {
   // Mark connected so widgets that gate rendering on a live session show their
   // sample data instead of a "no data" placeholder.
   store.sim.isConnected = true;

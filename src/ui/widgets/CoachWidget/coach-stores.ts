@@ -1,4 +1,5 @@
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
+import type { WidgetCore } from '@ui/widgets/widget-mount';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 import { CoachWidgetStore } from './coach.store';
 import { DrivingCoachWidgetStore } from './driving-coach.store';
@@ -12,7 +13,7 @@ export class CoachWidgetStores {
   readonly advisory: DrivingCoachWidgetStore;
   readonly trace: CoachWidgetStore;
 
-  constructor(context: WidgetInstanceContext) {
+  constructor(context: WidgetInstanceContext<WidgetCore>) {
     this.advisory = new DrivingCoachWidgetStore(context);
     this.trace = new CoachWidgetStore(context);
   }

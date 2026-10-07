@@ -6,12 +6,13 @@ import { standingsHotkeyTargets } from '@store/hotkeys/hotkey-targets';
 import { seedScenario } from '@/preview/scenarios';
 import { DEFAULT_PREVIEW_SCENARIO_ID } from '@/preview/scenarios';
 import type { WidgetStoreFactory } from '@store/widget-runtime/widget-instances.store';
+import type { WidgetCore } from '@ui/widgets/widget-mount';
 import { StandingsWidgetStore } from './standings.store';
 
 const STANDINGS = 'standings';
 const COPY_ID = 'standings-copy';
 
-const createStandings: WidgetStoreFactory = (context) =>
+const createStandings: WidgetStoreFactory<WidgetCore> = (context) =>
   new StandingsWidgetStore(context);
 
 // A replayed frame with the top two cars swapped. The arrows compare one frame

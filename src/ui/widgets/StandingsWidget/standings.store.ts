@@ -17,15 +17,20 @@ import {
   type ScrollThumb,
 } from '@utils/canvas';
 import { MOVE_DURATION_MS } from '@utils/animation';
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { StandingsHotkeyTarget } from '@store/hotkeys/hotkey-targets';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { SessionStore } from '@store/data/session.store';
+import type { PlayerPositionStore } from '@store/data/player-position.store';
 
-type StandingsDeps = Pick<
-  RendererCore,
-  'backendComputed' | 'liveWidgets' | 'session' | 'playerPosition'
->;
+interface StandingsDeps {
+  backendComputed: BackendComputedStore;
+  liveWidgets: LiveWidgetsView;
+  session: SessionStore;
+  playerPosition: PlayerPositionStore;
+}
 
 export type PositionChangeDirection = 'up' | 'down';
 
@@ -120,7 +125,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
   // Wired in the constructor rather than an init() step: the arrows compare
   // consecutive telemetry frames, so the very first frame must already be seen.
-  constructor({ core, instanceId }: WidgetInstanceContext) {
+  constructor({ core, instanceId }: WidgetInstanceContext<StandingsDeps>) {
     this.root = core;
     this.instanceId = instanceId;
 

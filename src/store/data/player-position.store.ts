@@ -1,12 +1,15 @@
 import { makeAutoObservable } from 'mobx';
 
 import type { CarIdentity } from '@/types/car-identity';
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { SessionStore } from '@store/data/session.store';
+import type { PlayerStore } from '@store/data/player.store';
 
-type PlayerPositionDeps = Pick<
-  RendererCore,
-  'backendComputed' | 'session' | 'player'
->;
+interface PlayerPositionDeps {
+  backendComputed: BackendComputedStore;
+  session: SessionStore;
+  player: PlayerStore;
+}
 
 /**
  * The player's place in the field, for the readouts outside the standings

@@ -1,6 +1,5 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
 
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type {
   CoachCall,
@@ -10,15 +9,18 @@ import type {
 } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import { interpolateReferenceSample } from './coach-trace-utils';
+import type { PlayerStore } from '@store/data/player.store';
+import type { ReferenceLapStore } from '@store/data/reference-lap.store';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
 
-type DrivingCoachDeps = Pick<
-  RendererCore,
-  | 'player'
-  | 'referenceLap'
-  | 'backendComputed'
-  | 'liveWidgets'
-  | 'startsWidgetStores'
->;
+interface DrivingCoachDeps {
+  player: PlayerStore;
+  referenceLap: ReferenceLapStore;
+  backendComputed: BackendComputedStore;
+  liveWidgets: LiveWidgetsView;
+  readonly startsWidgetStores: boolean;
+}
 
 /**
  * How long a new call must hold before it is shown. The telemetry thread
@@ -55,7 +57,7 @@ export class DrivingCoachWidgetStore {
   constructor({
     core,
     instanceId,
-  }: Pick<WidgetInstanceContext, 'core' | 'instanceId'>) {
+  }: Pick<WidgetInstanceContext<DrivingCoachDeps>, 'core' | 'instanceId'>) {
     this.root = core;
     this.instanceId = instanceId;
 

@@ -2,12 +2,13 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { PreviewCore } from '@store/roots/renderer-core';
 import type { WidgetStoreFactory } from '@store/widget-runtime/widget-instances.store';
+import type { WidgetCore } from '@ui/widgets/widget-mount';
 import type { CarInputsFrame } from '@/types/bindings';
 import { InputTraceWidgetStore } from './input-trace.store';
 
 const INPUT_TRACE = 'input-trace';
 
-const createInputTrace: WidgetStoreFactory = (context) =>
+const createInputTrace: WidgetStoreFactory<WidgetCore> = (context) =>
   new InputTraceWidgetStore(context);
 
 describe('InputTraceWidgetStore — frameTick', () => {

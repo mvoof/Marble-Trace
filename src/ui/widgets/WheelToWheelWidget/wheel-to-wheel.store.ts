@@ -11,7 +11,6 @@ import {
 import type { UnitSystem } from '@/types';
 import type { DriverEntry } from '@/types/driver-entry';
 import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { SelfHidingWidgetStore } from '@store/widget-runtime/widget-auto-hide.store';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
@@ -24,16 +23,20 @@ import {
   type WheelToWheelRivals,
 } from './wheel-to-wheel-utils';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
+import type { UnitsStore } from '@store/settings/units.store';
+import type { AppSettingsStore } from '@store/settings/app-settings.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { SessionStore } from '@store/data/session.store';
 
-type WheelToWheelDeps = Pick<
-  RendererCore,
-  | 'units'
-  | 'appSettings'
-  | 'liveWidgets'
-  | 'backendComputed'
-  | 'session'
-  | 'startsWidgetStores'
->;
+interface WheelToWheelDeps {
+  units: UnitsStore;
+  appSettings: AppSettingsStore;
+  liveWidgets: LiveWidgetsView;
+  backendComputed: BackendComputedStore;
+  session: SessionStore;
+  readonly startsWidgetStores: boolean;
+}
 
 /** A place on the plate: you, and a rival on either side of you. */
 export type BattleSlot = 'player' | 'ahead' | 'behind';
@@ -135,7 +138,7 @@ export class WheelToWheelWidgetStore implements SelfHidingWidgetStore {
 
   private readonly instanceId: string;
 
-  constructor({ core, instanceId }: WidgetInstanceContext) {
+  constructor({ core, instanceId }: WidgetInstanceContext<WheelToWheelDeps>) {
     this.root = core;
     this.instanceId = instanceId;
 

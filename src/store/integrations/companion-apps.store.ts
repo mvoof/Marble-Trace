@@ -14,9 +14,11 @@ import type {
   CompanionStatus,
   DetectedApp,
 } from '@/types/bindings';
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { AppSettingsStore } from '@store/settings/app-settings.store';
 
-type CompanionAppsDeps = Pick<RendererCore, 'appSettings'>;
+interface CompanionAppsDeps {
+  appSettings: AppSettingsStore;
+}
 
 /** How often the list refreshes while the settings section is on screen. */
 const STATUS_POLL_MS = 4000;

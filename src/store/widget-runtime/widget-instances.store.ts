@@ -1,11 +1,12 @@
 import { action, observable, runInAction, type ObservableMap } from 'mobx';
 
-import type { RendererCore } from '@store/roots/renderer-core';
-
-/** What a widget instance's store is built from when that instance mounts. */
-export interface WidgetInstanceContext {
-  /** The core the instance renders against — a preview's own in a preview. */
-  core: RendererCore;
+/**
+ * What a widget instance's store is built from when that instance mounts.
+ * `Core` is what the store reads off the core it renders against — a
+ * preview's own in a preview; each store names only the stores it uses.
+ */
+export interface WidgetInstanceContext<Core = object> {
+  core: Core;
   /** The instance, as its settings are addressed (`liveWidgets.getSettings`). */
   instanceId: string;
   type: string;
@@ -17,8 +18,8 @@ export interface WidgetInstanceStore {
   dispose(): void;
 }
 
-export type WidgetStoreFactory = (
-  context: WidgetInstanceContext
+export type WidgetStoreFactory<Core = object> = (
+  context: WidgetInstanceContext<Core>
 ) => WidgetInstanceStore;
 
 type StoreSeed = (store: WidgetInstanceStore) => void;
@@ -50,7 +51,10 @@ export class WidgetInstanceRegistry {
   constructor(private readonly hotkeysActOn: (instanceId: string) => boolean) {}
 
   open = action(
-    (context: WidgetInstanceContext, factory: WidgetStoreFactory) => {
+    <Core>(
+      context: WidgetInstanceContext<Core>,
+      factory: WidgetStoreFactory<Core>
+    ) => {
       const store = factory(context);
 
       this.seeds.get(context.type)?.(store);

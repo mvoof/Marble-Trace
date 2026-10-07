@@ -1,6 +1,5 @@
 import { computed, makeAutoObservable } from 'mobx';
 
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
@@ -10,11 +9,19 @@ import {
   type PaceCarRowEntry,
 } from './relative-utils';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { CarsStore } from '@store/data/cars.store';
+import type { SessionStore } from '@store/data/session.store';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { AppSettingsStore } from '@store/settings/app-settings.store';
 
-type RelativeDeps = Pick<
-  RendererCore,
-  'liveWidgets' | 'cars' | 'session' | 'backendComputed' | 'appSettings'
->;
+interface RelativeDeps {
+  liveWidgets: LiveWidgetsView;
+  cars: CarsStore;
+  session: SessionStore;
+  backendComputed: BackendComputedStore;
+  appSettings: AppSettingsStore;
+}
 
 /** What one row of the strip is: a car, and whether it is a pace car. */
 export interface RelativeRow {
@@ -41,7 +48,7 @@ export class RelativeWidgetStore {
 
   private readonly instanceId: string;
 
-  constructor({ core, instanceId }: WidgetInstanceContext) {
+  constructor({ core, instanceId }: WidgetInstanceContext<RelativeDeps>) {
     this.root = core;
     this.instanceId = instanceId;
 

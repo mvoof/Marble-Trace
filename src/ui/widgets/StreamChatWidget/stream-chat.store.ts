@@ -7,16 +7,20 @@ import {
 
 import type { ChatMessage, ChatPresence } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { StreamChatHotkeyTarget } from '@store/hotkeys/hotkey-targets';
 import { scrollThumbFor, type ScrollThumb } from '@utils/canvas';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
+import type { AppSettingsStore } from '@store/settings/app-settings.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { ChatStore } from '@store/data/chat.store';
 
-type StreamChatDeps = Pick<
-  RendererCore,
-  'appSettings' | 'liveWidgets' | 'chat' | 'startsWidgetStores'
->;
+interface StreamChatDeps {
+  appSettings: AppSettingsStore;
+  liveWidgets: LiveWidgetsView;
+  chat: ChatStore;
+  readonly startsWidgetStores: boolean;
+}
 
 // Sliding window for the messages-per-minute readout.
 const RATE_WINDOW_MS = 60_000;
@@ -64,7 +68,7 @@ export class StreamChatWidgetStore implements StreamChatHotkeyTarget {
 
   private readonly instanceId: string;
 
-  constructor({ core, instanceId }: WidgetInstanceContext) {
+  constructor({ core, instanceId }: WidgetInstanceContext<StreamChatDeps>) {
     this.root = core;
     this.instanceId = instanceId;
 

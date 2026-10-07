@@ -1,7 +1,6 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
 import { REFERENCE_LAP_BUCKET_COUNT } from '@utils/backend-constants';
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { ReferenceLapSample, TrackCondition } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
@@ -13,11 +12,18 @@ import {
   type TraceWindowBuffers,
   type TraceWindowStats,
 } from './coach-trace-utils';
+import type { PlayerStore } from '@store/data/player.store';
+import type { ReferenceLapStore } from '@store/data/reference-lap.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { SessionStore } from '@store/data/session.store';
 
-type CoachDeps = Pick<
-  RendererCore,
-  'player' | 'referenceLap' | 'liveWidgets' | 'session' | 'startsWidgetStores'
->;
+interface CoachDeps {
+  player: PlayerStore;
+  referenceLap: ReferenceLapStore;
+  liveWidgets: LiveWidgetsView;
+  session: SessionStore;
+  readonly startsWidgetStores: boolean;
+}
 
 /**
  * A backwards jump larger than this (in lap fraction) is a teleport — a pit
@@ -94,7 +100,7 @@ export class CoachWidgetStore {
   constructor({
     core,
     instanceId,
-  }: Pick<WidgetInstanceContext, 'core' | 'instanceId'>) {
+  }: Pick<WidgetInstanceContext<CoachDeps>, 'core' | 'instanceId'>) {
     this.root = core;
     this.instanceId = instanceId;
 

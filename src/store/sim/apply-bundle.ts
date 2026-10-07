@@ -1,7 +1,12 @@
 import { runInAction } from 'mobx';
 
 import type { TelemetryBundle } from '@/types/bindings';
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { CarsStore } from '@store/data/cars.store';
+import type { EnvironmentStore } from '@store/data/environment.store';
+import type { PlayerStore } from '@store/data/player.store';
+import type { SessionStore } from '@store/data/session.store';
+import type { TrackMapWidgetStore } from '@store/widgets/track-map/track-map.store';
 
 /**
  * Scatters one bundle across the data stores.
@@ -11,7 +16,14 @@ import type { RendererCore } from '@store/roots/renderer-core';
  * mapping must not. Every field a widget reads is filled here and nowhere else.
  */
 export const applyTelemetryBundle = (
-  root: RendererCore,
+  root: {
+    backendComputed: BackendComputedStore;
+    cars: CarsStore;
+    environment: EnvironmentStore;
+    player: PlayerStore;
+    session: SessionStore;
+    trackMapWidget: TrackMapWidgetStore;
+  },
   bundle: TelemetryBundle,
   onFrame?: () => void
 ) => {

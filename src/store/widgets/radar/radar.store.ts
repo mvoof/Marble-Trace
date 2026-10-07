@@ -11,12 +11,17 @@ import {
   scopeDistanceOf,
 } from '@store/widgets/radar/radar-constants';
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { SessionStore } from '@store/data/session.store';
+import type { AppSettingsStore } from '@store/settings/app-settings.store';
 
-type RadarDeps = Pick<
-  RendererCore,
-  'backendComputed' | 'liveWidgets' | 'session' | 'appSettings'
->;
+interface RadarDeps {
+  backendComputed: BackendComputedStore;
+  liveWidgets: LiveWidgetsView;
+  session: SessionStore;
+  appSettings: AppSettingsStore;
+}
 
 export const RADAR_WIDGET_TYPES = ['proximity-radar', 'radar-bar'] as const;
 

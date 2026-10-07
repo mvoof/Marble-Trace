@@ -1,5 +1,5 @@
-import type { RendererCore } from '@store/roots/renderer-core';
 import { mockCoachFrame, type MockCoachCall } from './mocks/coach';
+import type { BackendComputedStore } from '@store/data/computed.store';
 
 /**
  * Forces the call every coach on this preview core shows. Each call replaces
@@ -8,7 +8,9 @@ import { mockCoachFrame, type MockCoachCall } from './mocks/coach';
  * away: the coach then says only whether there is a reference at all.
  */
 export const seedCoachAdvisory = (
-  store: Pick<RendererCore, 'backendComputed'>,
+  store: {
+    backendComputed: BackendComputedStore;
+  },
   call: MockCoachCall | null = {}
 ) =>
   store.backendComputed.updateCoach(

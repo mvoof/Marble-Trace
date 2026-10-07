@@ -1,8 +1,46 @@
 import type { ComponentType } from 'react';
 import type {
   SharedWidgetStoreName,
+  SharedWidgetStores,
+  WidgetInstanceRegistry,
   WidgetStoreFactory,
 } from '@store/widget-runtime/widget-instances.store';
+import type { AppSettingsStore } from '@store/settings/app-settings.store';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { CarsStore } from '@store/data/cars.store';
+import type { ChatStore } from '@store/data/chat.store';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { PlayerPositionStore } from '@store/data/player-position.store';
+import type { PlayerStore } from '@store/data/player.store';
+import type { ReferenceLapStore } from '@store/data/reference-lap.store';
+import type { SessionStore } from '@store/data/session.store';
+import type { UnitsStore } from '@store/settings/units.store';
+
+/**
+ * Everything a widget's own store may be handed: the stores of the core it
+ * renders against. Each store declares the part it reads; the core every
+ * window builds satisfies this whole, so a store asking for something the
+ * core does not hold is a type error at its `mount.ts`.
+ */
+export interface WidgetCore {
+  appSettings: AppSettingsStore;
+  backendComputed: BackendComputedStore;
+  cars: CarsStore;
+  chat: ChatStore;
+  liveWidgets: LiveWidgetsView;
+  player: PlayerStore;
+  playerPosition: PlayerPositionStore;
+  referenceLap: ReferenceLapStore;
+  session: SessionStore;
+  units: UnitsStore;
+  readonly startsWidgetStores: boolean;
+}
+
+/** A core a widget instance mounts against: its stores, and the registries that hold its lifetime. */
+export interface WidgetHost extends WidgetCore {
+  sharedWidgetStores: SharedWidgetStores;
+  widgetInstances: WidgetInstanceRegistry;
+}
 
 /**
  * How a widget is mounted: the id from its manifest, and the React component
@@ -23,7 +61,7 @@ export interface WidgetMount {
    * leaves (`WidgetInstanceScope`). Components read it with
    * `useWidgetInstanceStore`.
    */
-  store?: WidgetStoreFactory;
+  store?: WidgetStoreFactory<WidgetCore>;
   /**
    * The stores several widget types share that this one reads. Each is started
    * by the first instance of any of them to mount and stopped by the last.

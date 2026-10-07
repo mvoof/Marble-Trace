@@ -1,4 +1,4 @@
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { PreviewTarget } from './preview-target';
 import {
   liveDriverEntryOf,
   sessionCarFieldsOf,
@@ -17,7 +17,7 @@ import {
  * was handed — and a fixture that states a name or a flag on a row states it
  * where the live app keeps it.
  */
-export const seedField = (store: RendererCore, field: MockField) => {
+export const seedField = (store: PreviewTarget, field: MockField) => {
   const sessionInfo = store.session.sessionInfo;
 
   if (sessionInfo) {
@@ -50,7 +50,7 @@ export const seedField = (store: RendererCore, field: MockField) => {
  * sizing one and then the other must be looking at the same grid.
  */
 export const respaceField = (
-  store: RendererCore,
+  store: PreviewTarget,
   options: MockFieldOptions
 ) => {
   const base = store.backendComputed.fieldEntries;

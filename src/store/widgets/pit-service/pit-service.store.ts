@@ -1,6 +1,5 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import type { PitStrategy } from '@/types/pit-strategy';
 import { PitAutoService } from './pit-auto-service.store';
@@ -8,17 +7,23 @@ import { PitOrder } from './pit-order.store';
 import { PitPanelState } from './pit-panel.store';
 import { distanceToPitEntryM } from '@store/widgets/pit-service/pit-approach';
 import { PIT_LIMITER_BIT } from '@utils/car-signals';
+import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { PlayerStore } from '@store/data/player.store';
+import type { TrackMapWidgetStore } from '@store/widgets/track-map/track-map.store';
+import type { SessionStore } from '@store/data/session.store';
+import type { BackendComputedStore } from '@store/data/computed.store';
+import type { AppSettingsStore } from '@store/settings/app-settings.store';
+import type { UnitsStore } from '@store/settings/units.store';
 
-type PitServiceDeps = Pick<
-  RendererCore,
-  | 'liveWidgets'
-  | 'player'
-  | 'trackMapWidget'
-  | 'session'
-  | 'backendComputed'
-  | 'appSettings'
-  | 'units'
->;
+interface PitServiceDeps {
+  liveWidgets: LiveWidgetsView;
+  player: PlayerStore;
+  trackMapWidget: TrackMapWidgetStore;
+  session: SessionStore;
+  backendComputed: BackendComputedStore;
+  appSettings: AppSettingsStore;
+  units: UnitsStore;
+}
 
 /**
  * The widget's entry point, and the three things it is made of:

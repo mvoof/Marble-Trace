@@ -6,13 +6,15 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { CarStatusFrame } from '@/types/bindings';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 import { ADJUSTMENT_FIELDS } from './engine-panel-utils';
+import type { PlayerStore } from '@store/data/player.store';
 
-type EnginePanelDeps = Pick<RendererCore, 'player'>;
+interface EnginePanelDeps {
+  player: PlayerStore;
+}
 
 /** The ABS cell is not in the spec list — it has its own component. */
 const ABS_FIELD: keyof CarStatusFrame = 'dc_abs';
@@ -53,7 +55,7 @@ export class EnginePanelWidgetStore {
   // Built per instance when it mounts (`mount.ts`), and wired in the
   // constructor rather than an init() step: the highlight must follow the
   // telemetry frame, and it costs nothing when no adjustment moves.
-  constructor({ core }: Pick<WidgetInstanceContext, 'core'>) {
+  constructor({ core }: Pick<WidgetInstanceContext<EnginePanelDeps>, 'core'>) {
     this.root = core;
 
     makeAutoObservable<EnginePanelWidgetStore, 'root'>(

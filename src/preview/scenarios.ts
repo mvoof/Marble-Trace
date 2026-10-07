@@ -8,7 +8,7 @@ import type {
 } from '@/types/bindings';
 import type { PreviewScenarioId } from '@/types/preview-scenarios';
 import { action } from 'mobx';
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { PreviewTarget } from './preview-target';
 import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';
 import { mockFlags } from './mocks/flags';
 import {
@@ -62,7 +62,7 @@ import {
 // preview and Storybook can show a specific state on demand. Depends on neither
 // the app UI nor Storybook.
 
-const applyFlags = (store: RendererCore, overrides: Partial<RaceFlags>) => {
+const applyFlags = (store: PreviewTarget, overrides: Partial<RaceFlags>) => {
   const carStatus = store.player.carStatus;
 
   if (!carStatus) {
@@ -83,7 +83,7 @@ const PIT_LANE_GEAR = 2;
 // A traffic scenario states where the cars are and nothing else: the clearance,
 // the bumper gaps, the order and the four radar distances are all derived by
 // the builder the way the backend derives them from a real tick.
-const applyTraffic = (store: RendererCore, cars: MockTrafficCar[]) => {
+const applyTraffic = (store: PreviewTarget, cars: MockTrafficCar[]) => {
   store.backendComputed.updateProximity(mockProximity(cars));
 };
 
@@ -92,12 +92,12 @@ const applyTraffic = (store: RendererCore, cars: MockTrafficCar[]) => {
 // so two scenarios differ only in how wet the track is. The frame is replaced
 // rather than patched — a wetness laid over the snapshot's dry numbers is a
 // picture no session ever shows.
-const applyWeather = (store: RendererCore, condition: MockTrackCondition) => {
+const applyWeather = (store: PreviewTarget, condition: MockTrackCondition) => {
   store.environment.updateEnvironment(mockEnvironment(condition));
 };
 
 const applyDynamics = (
-  store: RendererCore,
+  store: PreviewTarget,
   overrides: Partial<CarDynamicsFrame>
 ) => {
   const carDynamics = store.player.carDynamics;
@@ -113,7 +113,7 @@ const applyDynamics = (
 // how fast it is going and whether the limiter is armed; everything else about
 // being in the pits is the same, so it is stated once.
 const applyPitLane = (
-  store: RendererCore,
+  store: PreviewTarget,
   {
     limiterOn,
     speedKmh,
@@ -148,7 +148,7 @@ const applyPitLane = (
 // it. Stated as one helper because nothing about it varies — what a driver
 // sizes the box against is the full order being serviced at once, and the
 // countdowns that ride beside it belong to the tow scenario instead.
-const applyPitBox = (store: RendererCore) => {
+const applyPitBox = (store: PreviewTarget) => {
   store.player.updateCarStatus(mockPitCarStatus({ limiterOn: true }));
   store.player.updatePitTarget(
     mockPitTarget({ target: 'pitbox', distM: 0, laneProgressPct: 0.42 })
@@ -178,7 +178,7 @@ const BRAKE_SOON_COUNTDOWN_M = 85;
 // `atPct` is where on the lap the player sits; `deltaKmh` offsets their live
 // speed from the reference's at that point (negative = slower than reference).
 const applyCoachReference = (
-  store: RendererCore,
+  store: PreviewTarget,
   { atPct, deltaKmh }: { atPct: number; deltaKmh: number }
 ) => {
   store.referenceLap.updateReferenceLap(mockReferenceLap());
@@ -198,7 +198,7 @@ const applyCoachReference = (
 // roster entry and on the session that caps it and hands out penalties — the
 // halves of what the badges print, and of whether they are alarmed.
 const applyIncidents = (
-  store: RendererCore,
+  store: PreviewTarget,
   {
     incidents,
     incidentLimit,
@@ -235,7 +235,7 @@ const PACE_CAR_LAP_PCT = 0.35;
 // arrays rather than as a driver entry, the way the sim reports it — so a
 // scenario states one in both places at once. The recorded session has none:
 // nobody records a caution on request.
-const applyPaceCar = (store: RendererCore) => {
+const applyPaceCar = (store: PreviewTarget) => {
   const sessionInfo = store.session.sessionInfo;
   const positions = store.cars.carPositions;
   const player = store.backendComputed.fieldEntries.find(
@@ -282,7 +282,7 @@ const applyPaceCar = (store: RendererCore) => {
 // not the value. The timing frame is replaced rather than patched — the
 // recorded one has no reference established, and a delta layered onto that
 // would still read as no delta.
-const applyDelta = (store: RendererCore, delta: number) => {
+const applyDelta = (store: PreviewTarget, delta: number) => {
   store.player.updateLapTiming(mockLapTimingAtDelta(delta));
 };
 
@@ -291,7 +291,7 @@ const applyDelta = (store: RendererCore, delta: number) => {
 // in-car adjustment still at zero, so a temperature layered onto it would sit
 // beside a dead panel.
 const applyEngine = (
-  store: RendererCore,
+  store: PreviewTarget,
   overrides: Partial<CarStatusFrame>
 ) => {
   store.player.updateCarStatus(mockCarStatus(overrides));
@@ -302,7 +302,7 @@ const applyEngine = (
 // stating one without the other reads as the session it is not. The recorded
 // entry's results are carried over: the qualifying order hangs off them.
 const applySessionClock = (
-  store: RendererCore,
+  store: PreviewTarget,
   session: Partial<SessionFrame>,
   entry: Partial<SessionEntry>
 ) => {
@@ -345,7 +345,7 @@ export interface PreviewScenario {
   id: PreviewScenarioId;
   label: string;
   scope?: PreviewScenarioScope;
-  apply: (store: RendererCore) => void;
+  apply: (store: PreviewTarget) => void;
 }
 
 export const DEFAULT_PREVIEW_SCENARIO_ID: PreviewScenarioId = 'baseline';
@@ -1194,7 +1194,7 @@ export const PREVIEW_SCENARIO_BY_ID = new Map<string, PreviewScenario>(
 // Wrapped in `action` so the seed + override setters run as a single MobX
 // transaction; callers invoke it directly without their own `runInAction`.
 export const seedScenario = action(
-  (store: RendererCore, scenarioId: string = DEFAULT_PREVIEW_SCENARIO_ID) => {
+  (store: PreviewTarget, scenarioId: string = DEFAULT_PREVIEW_SCENARIO_ID) => {
     const scenario =
       PREVIEW_SCENARIO_BY_ID.get(scenarioId) ??
       PREVIEW_SCENARIO_BY_ID.get(DEFAULT_PREVIEW_SCENARIO_ID);
