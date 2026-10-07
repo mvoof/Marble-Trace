@@ -2,9 +2,9 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import type { TrackPoint } from '@/types';
-import { parseClassColor } from '@utils/colors';
+import { parseClassColor } from '@shared/lib/colors';
 import { RecordingOverlay } from '@ui/widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { TrackMapSvg } from '@ui/widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
 import type { CarOnTrack } from '@ui/widgets/TrackMapWidget/types';
@@ -13,7 +13,7 @@ import {
   rotatePoints,
   buildSvgPathAndViewBox,
 } from '@ui/widgets/TrackMapWidget/track-map-utils';
-import { isHiddenInQualifying } from '@utils/qualifying-visibility';
+import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 
 import styles from './TrackMapView.module.scss';
 import type { TrackMapWidgetSettings } from '@/types/widget-settings';

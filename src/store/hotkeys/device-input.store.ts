@@ -2,12 +2,12 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import {
   resolveInputDevices,
   setInputPollingEnabled,
-} from '@platform/services/input.service';
+} from '@shared/api/input.service';
 import type {
   InputButtonEvent,
   InputDevice,
   InputDeviceResolution,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 
 /**
  * Data store: what the backend reports about game controllers. No derived

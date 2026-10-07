@@ -8,7 +8,7 @@ import {
   RING_LABEL_ANGLE,
   RING_LABEL_GAP_PX,
 } from '@ui/widgets/GMeterWidget/g-meter-utils';
-import { resizeCanvasToDpr } from '@utils/canvas';
+import { resizeCanvasToDpr } from '@shared/lib/canvas';
 
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GMeterRings.module.scss';

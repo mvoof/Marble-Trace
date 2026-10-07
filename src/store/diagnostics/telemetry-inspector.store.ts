@@ -5,8 +5,8 @@ import {
   getInspectorFrame,
   resetDeliveryCounters,
   setInspectorActive,
-} from '@platform/services/telemetry.service';
-import type { DeliverySet, SourceFrame } from '@/types/bindings';
+} from '@shared/api/telemetry.service';
+import type { DeliverySet, SourceFrame } from '@shared/contracts/bindings';
 import type {
   DeliveryFieldRow,
   DeliveryRow,

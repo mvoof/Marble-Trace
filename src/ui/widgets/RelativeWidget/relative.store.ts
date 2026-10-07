@@ -2,7 +2,7 @@ import { computed, makeAutoObservable } from 'mobx';
 
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import { isHiddenInQualifying } from '@utils/qualifying-visibility';
+import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 import {
   buildPaceCarRowEntries,
   mergePaceCarRows,

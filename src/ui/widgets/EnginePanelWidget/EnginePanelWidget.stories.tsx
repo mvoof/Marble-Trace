@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { CarStatusFrame } from '@/types/bindings';
+import type { CarStatusFrame } from '@shared/contracts/bindings';
 import type { UnitSystem } from '@/types';
 import { mockCarStatus, mockHybridCarStatus } from '@/preview/mocks/engine';
 import { mockCarInputs } from '@/preview/mocks/inputs';

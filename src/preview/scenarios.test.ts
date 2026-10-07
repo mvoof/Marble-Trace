@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
 import type { FlagType } from '@/types';
-import { formatDelta, getGameDelta } from '@utils/delta-utils';
+import { formatDelta, getGameDelta } from '@shared/lib/delta-utils';
 import {
   getIncidentPenaltyStatus,
   isNearIncidentLimit,
   isNearIncidentPenalty,
-} from '@utils/driver';
-import { resolveSessionLaps } from '@utils/telemetry-format';
+} from '@shared/lib/driver';
+import { resolveSessionLaps } from '@shared/lib/telemetry-format';
 import {
   isLapLimitedSession,
   isSessionEnded,
   resolveSessionClock,
-} from '@utils/timer-utils';
+} from '@shared/lib/timer-utils';
 import { RendererCore } from '@store/roots/renderer-core';
 import { WIDGETS } from '@store/layout/widget-catalog';
 import { PACE_CAR_IDX } from './mocks/field';

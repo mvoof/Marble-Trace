@@ -3,7 +3,7 @@ import type {
   ChassisFrame,
   PitServiceFrame,
   PitTargetFrame,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import { mockCarStatus } from './engine';
 
 // Mock builders for the pit domain. Pure: each takes a partial override and

@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel } from '@utils/telemetry-format';
+import { formatFuel } from '@shared/lib/telemetry-format';
 
 import styles from './FuelProgress.module.scss';
 import { usePlayerStore } from '@store/data/player-context';

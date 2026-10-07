@@ -1,7 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import { getRemoteServerInfo } from '@platform/services/remote.service';
-import type { RemoteDevice, RemoteServerInfo } from '@/types/bindings';
+import { getRemoteServerInfo } from '@shared/api/remote.service';
+import type {
+  RemoteDevice,
+  RemoteServerInfo,
+} from '@shared/contracts/bindings';
 
 /** How often the remote-screens page asks the server how it is. */
 const SERVER_INFO_POLL_MS = 3000;

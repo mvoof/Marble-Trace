@@ -12,7 +12,7 @@ import {
   setFuelAvgWindowSilent,
   setFuelCountYellowLapsSilent,
   setPitWarningLapsSilent,
-} from '@platform/services/settings.service';
+} from '@shared/api/settings.service';
 import type { LayoutsStore } from '@store/layout/layouts.store';
 import type { SettingsMutationLog } from '@store/layout/mutation-log.store';
 import { availableWidgetIdsOf } from '@store/layout/widget-availability';
@@ -45,7 +45,7 @@ import {
   placeWidgetOnMonitor,
   widgetsOnMonitor,
 } from '@store/layout/virtual-desktop';
-import { isDisplayMonitor } from '@utils/remote-screen';
+import { isDisplayMonitor } from '@shared/lib/remote-screen';
 import { WidgetHistory } from '@store/layout/widget-history.store';
 import {
   bottomZIndex,
@@ -56,7 +56,7 @@ import {
 } from '@store/layout/widget-placement';
 import type { WidgetMap } from '@store/layout/widget-map';
 import type { WidgetDefaultsStore } from '@store/layout/widget-defaults.store';
-import type { CapabilitiesPayload } from '@/types/bindings';
+import type { CapabilitiesPayload } from '@shared/contracts/bindings';
 
 const LAYOUT_TOAST_DURATION_MS = 3000;
 

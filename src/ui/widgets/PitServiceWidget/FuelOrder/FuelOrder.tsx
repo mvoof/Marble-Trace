@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 
 import styles from './FuelOrder.module.scss';
-import { litersToDisplayFuel } from '@utils/telemetry-format';
+import { litersToDisplayFuel } from '@shared/lib/telemetry-format';
 import type { UnitSystem } from '@/types';
 import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
 import { useUnitsStore } from '@store/settings/units-context';

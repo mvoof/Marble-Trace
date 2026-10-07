@@ -1,9 +1,9 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
-import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
-import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
+import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { EngineCell } from './EngineCell';
 import { AbsCell } from './AbsCell';
 import { AdjustmentCell } from './AdjustmentCell';
@@ -20,7 +20,7 @@ import {
 } from './engine-panel-utils';
 import { usePlayerStore } from '@store/data/player-context';
 import { useUnitsStore } from '@store/settings/units-context';
-import type { CarStatusFrame } from '@/types/bindings';
+import type { CarStatusFrame } from '@shared/contracts/bindings';
 import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
 import type { UnitSystem } from '@/types';
 

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
 

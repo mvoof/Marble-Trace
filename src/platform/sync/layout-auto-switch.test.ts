@@ -5,7 +5,7 @@ import { MainRoot } from '@store/roots/main-root';
 
 // The reaction only reads the sim and writes the active layout; everything it
 // would emit crosses the Tauri boundary, which is not what is under test.
-vi.mock('@platform/services/events.service', () => ({
+vi.mock('@shared/api/events.service', () => ({
   emitLayoutActivated: vi.fn(),
   emitSessionLayoutsChanged: vi.fn(),
   emitToOverlays: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('@platform/services/events.service', () => ({
   listenTo: vi.fn(),
 }));
 
-vi.mock('@platform/services/settings.service', () => ({
+vi.mock('@shared/api/settings.service', () => ({
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
   setPitWarningLapsSilent: vi.fn(),
@@ -109,8 +109,7 @@ describe('session layout auto-switch', () => {
   });
 
   it('tells the overlay which layout it switched to', async () => {
-    const { emitLayoutActivated } =
-      await import('@platform/services/events.service');
+    const { emitLayoutActivated } = await import('@shared/api/events.service');
 
     goOnTrackInPractice();
 
@@ -118,8 +117,7 @@ describe('session layout auto-switch', () => {
   });
 
   it('tells the overlay even while the editor holds another layout', async () => {
-    const { emitLayoutActivated } =
-      await import('@platform/services/events.service');
+    const { emitLayoutActivated } = await import('@shared/api/events.service');
 
     root.layoutEditor.setOpen(true);
     goOnTrackInPractice();

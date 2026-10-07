@@ -5,8 +5,8 @@ import {
   getWindColor,
   parseWeekendFloat,
   radsToBearing,
-} from '@utils/weather-utils';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+} from '@shared/lib/weather-utils';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useEnvironmentStore } from '@store/data/environment-context';
 import { usePlayerStore } from '@store/data/player-context';
 import { useSessionStore } from '@store/data/session-context';

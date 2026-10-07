@@ -2,8 +2,8 @@
 
 The answer to "does this already exist?", read rather than grepped.
 
-Every module under `src/utils/`, every component under `src/ui/shared/` and
-every hook under `src/ui/hooks/` is listed here with one line saying when to
+Every module under `src/shared/lib/`, every component under `src/shared/ui/` and
+every hook under `src/shared/hooks/` is listed here with one line saying when to
 reach for it. The list is checked by `src/docs/widget-toolbox.test.ts`: a module in
 the tree and not on this page fails `npm test`, so the page cannot quietly go
 stale. What the line beside an entry _says_ is written by hand and is the whole
@@ -23,24 +23,24 @@ sit in different branches of the tree.**
 | --------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | One widget                                    | `src/ui/widgets/<Widget>/` — `*-utils.ts`, its own hook, sub-components, its settings panel |
 | One feature: its shared store and its widgets | beside that store, `src/store/widgets/<feature>/` — a widget may import a store             |
-| Two or more features, pure                    | `src/utils/`                                                                                |
-| Two or more widgets, renders                  | `src/ui/shared/`                                                                            |
-| Two or more widgets, touches DOM              | `src/ui/hooks/`                                                                             |
-| One non-widget owner                          | beside that owner (`store/layout/…`, `ui/app/main/…`), never `src/utils/`                   |
+| Two or more features, pure                    | `src/shared/lib/`                                                                           |
+| Two or more widgets, renders                  | `src/shared/ui/`                                                                            |
+| Two or more widgets, touches DOM              | `src/shared/hooks/`                                                                         |
+| One non-widget owner                          | beside that owner (`store/layout/…`, `ui/app/main/…`), never `src/shared/lib/`              |
 
 A widget never imports from another widget's folder: a second consumer moves
-the file up. `src/utils/` is grouped by **domain, not by kind** — one file per
+the file up. `src/shared/lib/` is grouped by **domain, not by kind** — one file per
 subject, never a `constants/` or `formatters/` bucket.
 
 -------------------------------- | ------------------------------------------------------------------------------- |
 | One widget | `src/ui/widgets/<Widget>/` — `*-utils.ts`, its own hook, its own sub-components |
-| Two or more widgets, pure | `src/utils/` |
-| Two or more widgets, renders | `src/ui/shared/` |
-| Two or more widgets, touches DOM | `src/ui/hooks/` |
-| One widget **and** a store | `src/utils/`, even at two files — a store importing `@ui/**` is a lint error |
-| One non-widget owner | beside that owner (`store/layout/…`, `ui/app/main/…`), never `src/utils/` |
+| Two or more widgets, pure | `src/shared/lib/` |
+| Two or more widgets, renders | `src/shared/ui/` |
+| Two or more widgets, touches DOM | `src/shared/hooks/` |
+| One widget **and** a store | `src/shared/lib/`, even at two files — a store importing `@ui/**` is a lint error |
+| One non-widget owner | beside that owner (`store/layout/…`, `ui/app/main/…`), never `src/shared/lib/` |
 
-`src/utils/` is grouped by **domain, not by kind** — one file per subject, never
+`src/shared/lib/` is grouped by **domain, not by kind** — one file per subject, never
 a `constants/` or `formatters/` bucket. A new helper joins the file whose
 subject it shares; a new file needs a subject none of the existing ones covers.
 
@@ -49,7 +49,7 @@ down into the widget.
 
 ---
 
-## `src/utils/` — pure helpers
+## `src/shared/lib/` — pure helpers
 
 No stores, no Tauri, and no React beyond `store-context.ts`'s one
 `createContext`. Importable from any layer.
@@ -57,20 +57,30 @@ No stores, no Tauri, and no React beyond `store-context.ts`'s one
 | Module                     | Reach for it when                                                                                                                                                                                          |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `animation.ts`             | You need the FLIP row-move duration (`MOVE_DURATION_MS`) on both sides of an animation — the hook that plays it and the store that has to know when it ends.                                               |
-| `backend-constants.ts`     | You need a backend default as a compile-time literal (pit warning laps, fuel window bounds, default car length, default class color). **Generated from Rust — never edit.**                                |
-| `backend-events.ts`        | You need a `sim://…` or `chat://…` event name. **Generated from Rust — never edit**; `platform/sync/sim-events.ts` re-exports these and adds the frontend-only ones.                                       |
 | `canvas.ts`                | Drawing on a canvas or an SVG: car-dot geometry and shape-per-class, `resizeCanvasToDpr`, `fillFixedDigits`/`measureFixedDigits` for a readout that must not shuffle, cell dividers, scroll-thumb metrics. |
 | `car-signals.ts`           | Anything RPM, steering or engine warning: shift thresholds, RPM zone state and its colors, steering angle in degrees, normalized steering, the pit limiter bit.                                            |
 | `colors.ts`                | Turning data into a color: class color parsing, contrast text color, sector colors, air and track temp colors, the player-row style.                                                                       |
 | `delta-utils.ts`           | Formatting or classifying a lap delta: `formatDelta`, gauge ranges, ahead/behind state, sector times and sector deltas, the sim's own delta fields and their `_ok` flags.                                  |
 | `driver.ts`                | Anything about a driver or their car identity: name abbreviation and splitting, car number, iRating, brand, incident limits, flag bits, class SoF, the relative gap to the player (`computeRelativeGap`).  |
-| `hotkey-actions.ts`        | You need the bindable action list, its ids, labels or default keys. **Generated from Rust — never edit**; the backend dispatches the keys, `store/hotkeys/` builds the settings UI's registry from it.     |
 | `qualifying-visibility.ts` | Honouring a widget's "show in qualifying" setting (`never` / `auto`) — the shared rule behind that switch.                                                                                                 |
 | `remote-screen.ts`         | Anything about remote screens as monitors: telling a remote monitor from a display, presets, bounds placement, slugs.                                                                                      |
 | `store-context.ts`         | Giving a store its own React context and hook (`createStoreContext`), beside the store; the window's provider in `ui/app/store-providers.tsx` fills it.                                                    |
 | `telemetry-format.ts`      | Rendering a raw SI number for the driver in their unit system: speed, temperature, fuel, distance — and converting back.                                                                                   |
 | `timer-utils.ts`           | Clocks and session state: wall clock, sim date and time, session ended / race started, lap-limited vs timed, the session clock, `splitTime`.                                                               |
 | `weather-utils.ts`         | Weather rendering: wind color and bearing, track wetness, and the 0..1 fractions the gauges are drawn from.                                                                                                |
+
+---
+
+## `src/shared/contracts/` — generated from Rust
+
+**Never edit these** — change the Rust declaration and regenerate
+(`AGENTS.md` → Rust Backend). Importable from any layer.
+
+| Module                 | Reach for it when                                                                                                                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `backend-constants.ts` | You need a backend default as a compile-time literal (pit warning laps, fuel window bounds, default car length, default class color). **Generated from Rust — never edit.**                            |
+| `backend-events.ts`    | You need a `sim://…` or `chat://…` event name. **Generated from Rust — never edit**; `platform/sync/sim-events.ts` re-exports these and adds the frontend-only ones.                                   |
+| `hotkey-actions.ts`    | You need the bindable action list, its ids, labels or default keys. **Generated from Rust — never edit**; the backend dispatches the keys, `store/hotkeys/` builds the settings UI's registry from it. |
 
 ---
 
@@ -87,7 +97,7 @@ Read by one feature's store and its widgets, nowhere else.
 
 ---
 
-## `src/ui/shared/` — components used by two or more widgets
+## `src/shared/ui/` — components used by two or more widgets
 
 | Component           | Reach for it when                                                                                                                                                                                                                                          |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -100,7 +110,7 @@ Read by one feature's store and its widgets, nowhere else.
 | `NoDataPlaceholder` | The widget has nothing to show yet — the standard "NO DATA" plate instead of an empty box.                                                                                                                                                                 |
 | `PaceCarMarker`     | Drawing the pace car on a track line or map.                                                                                                                                                                                                               |
 | `RatingBadge`       | Showing a licence class and safety rating (`LicBadge`).                                                                                                                                                                                                    |
-| `ReservedSlot`      | Holding the height a block will occupy while it is absent, so placing the widget in the editor shows its real size.                                                                                                                                        |
+| `ReservedSlot`      | (still `src/ui/shared/`: it reads the app settings store, so it moves with its slice.) Holding the height a block will occupy while it is absent, so placing the widget in the editor shows its real size.                                                 |
 | `ScrollIndicator`   | A list is taller than its window — the thumb, driven by `scrollThumbFor` in `canvas.ts`.                                                                                                                                                                   |
 | `StatPill`          | A labelled figure with an icon, boxed (`chip`) or bare (`inline`), toned muted / accent / warning / danger.                                                                                                                                                |
 | `TireBadge`         | Showing a tire compound.                                                                                                                                                                                                                                   |
@@ -110,21 +120,21 @@ Read by one feature's store and its widgets, nowhere else.
 
 ---
 
-## `src/ui/hooks/` — DOM and browser hooks used by two or more widgets
+## `src/shared/hooks/` — DOM and browser hooks used by two or more widgets
 
 Hooks are for the DOM and the browser only. Everything else belongs in a store
 ([`AGENTS.md` → MobX Stores](../AGENTS.md)).
 
-| Hook                    | Reach for it when                                                                                                                                                                   |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useCanvasAutoResize`   | A canvas has to follow its container and stay sharp — `ResizeObserver` plus the DPR transform.                                                                                      |
-| `useClickOutside`       | An in-place control has to close when the pointer lands elsewhere.                                                                                                                  |
-| `usePitState`           | You need the pit and limiter state a widget draws, derived once rather than per widget.                                                                                             |
-| `useReactiveCanvasLoop` | A canvas widget draws from observables: the reactive draw loop that schedules a frame when what it reads changes.                                                                   |
-| `useReactiveDomWrite`   | **The 60 Hz escape hatch** — write a hot value straight to a DOM node or CSS variable without waking React. Read [rendering.md](rendering.md) first.                                |
-| `useRowMoveAnimation`   | Rows change order and should slide rather than jump (FLIP; pairs with `MOVE_DURATION_MS`).                                                                                          |
-| `useVisibleRowCount`    | A list has to fit however tall the driver stretched the widget.                                                                                                                     |
-| `useWidgetSettings`     | **Every widget reads its own settings with this** — it takes the copy from `WidgetIdContext`. `useWidgetInstanceId` is the canvas-side variant, for draw loops a hook cannot enter. |
+| Hook                    | Reach for it when                                                                                                                                                                                                                        |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useCanvasAutoResize`   | A canvas has to follow its container and stay sharp — `ResizeObserver` plus the DPR transform.                                                                                                                                           |
+| `useClickOutside`       | An in-place control has to close when the pointer lands elsewhere.                                                                                                                                                                       |
+| `usePitState`           | (still `src/ui/hooks/`, moves to `features/pit-service`.) You need the pit and limiter state a widget draws, derived once rather than per widget.                                                                                        |
+| `useReactiveCanvasLoop` | A canvas widget draws from observables: the reactive draw loop that schedules a frame when what it reads changes.                                                                                                                        |
+| `useReactiveDomWrite`   | **The 60 Hz escape hatch** — write a hot value straight to a DOM node or CSS variable without waking React. Read [rendering.md](rendering.md) first.                                                                                     |
+| `useRowMoveAnimation`   | Rows change order and should slide rather than jump (FLIP; pairs with `MOVE_DURATION_MS`).                                                                                                                                               |
+| `useVisibleRowCount`    | A list has to fit however tall the driver stretched the widget.                                                                                                                                                                          |
+| `useWidgetSettings`     | (still `src/ui/hooks/`, moves to `entities/widget`.) **Every widget reads its own settings with this** — it takes the copy from `WidgetIdContext`. `useWidgetInstanceId` is the canvas-side variant, for draw loops a hook cannot enter. |
 
 ---
 

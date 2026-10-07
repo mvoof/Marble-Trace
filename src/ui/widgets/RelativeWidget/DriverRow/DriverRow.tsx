@@ -6,20 +6,20 @@ import {
   formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
-} from '@utils/driver';
-import { computeRelativeGap, parseDriverFlags } from '@utils/driver';
-import { DriverStatusBadges } from '@ui/shared/DriverStatusBadge/DriverStatusBadges';
-import { getContrastTextColor, playerRowStyle } from '@utils/colors';
-import { CountryFlag } from '@ui/shared/CountryFlag/CountryFlag';
-import { DriverFlagBadge } from '@ui/shared/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge } from '@ui/shared/RatingBadge/LicBadge';
-import { formatIr } from '@ui/shared/RatingBadge/LicBadge.utils';
+} from '@shared/lib/driver';
+import { computeRelativeGap, parseDriverFlags } from '@shared/lib/driver';
+import { DriverStatusBadges } from '@shared/ui/DriverStatusBadge/DriverStatusBadges';
+import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
+import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
+import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
+import { LicBadge } from '@shared/ui/RatingBadge/LicBadge';
+import { formatIr } from '@shared/ui/RatingBadge/LicBadge.utils';
 import {
   buildRelativeGridTemplate,
   resolveRowPosition,
 } from '@ui/widgets/RelativeWidget/relative-utils';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 
 import styles from './DriverRow.module.scss';
 import { useBackendComputedStore } from '@store/data/computed-context';

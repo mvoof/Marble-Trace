@@ -5,7 +5,7 @@ import {
   runInAction,
   type IReactionDisposer,
 } from 'mobx';
-import { listenTo, type UnlistenFn } from '@platform/services/events.service';
+import { listenTo, type UnlistenFn } from '@shared/api/events.service';
 import { maskOfWidgets } from '@store/sim/telemetry-mask';
 
 import {
@@ -17,16 +17,16 @@ import {
   setRemoteActiveEventsSilent,
   startTelemetryStream,
   stopTelemetryStream,
-} from '@platform/services/telemetry.service';
+} from '@shared/api/telemetry.service';
 import {
   watchMinimized,
   type StopWatching,
-} from '@platform/services/window-visibility.service';
+} from '@shared/api/window-visibility.service';
 import {
   deleteReferenceLap,
   getCachedTrackShape,
   getActiveReferenceLap,
-} from '@platform/services/track.service';
+} from '@shared/api/track.service';
 
 import type {
   SessionSnapshot,
@@ -39,7 +39,7 @@ import type {
   ReferenceLapData,
   SimPerfFrame,
   TelemetrySlowBundle,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import { debug } from '@store/sim/debug';
 import type { TelemetryStatus } from '@/types';

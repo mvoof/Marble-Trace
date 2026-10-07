@@ -1,6 +1,6 @@
 import { runInAction } from 'mobx';
 
-import type { TelemetryBundle } from '@/types/bindings';
+import type { TelemetryBundle } from '@shared/contracts/bindings';
 import type { BackendComputedStore } from '@store/data/computed.store';
 import type { CarsStore } from '@store/data/cars.store';
 import type { EnvironmentStore } from '@store/data/environment.store';

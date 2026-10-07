@@ -31,7 +31,7 @@ import { useTrackRotationStore } from '@store/widgets/track-map/track-rotation-c
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
-import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
+import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
 import { seedScenario, DEFAULT_PREVIEW_SCENARIO_ID } from '@/preview/scenarios';
 import { resolveBackgroundSrc } from '@store/layout/layout-background';
 import { monitorsBounds } from '@store/layout/virtual-desktop';
@@ -45,7 +45,7 @@ import {
   boundsOverlap,
   clearOfMonitors,
   isRemoteMonitor,
-} from '@utils/remote-screen';
+} from '@shared/lib/remote-screen';
 import { LayoutCanvasWidget } from './LayoutCanvasWidget';
 import styles from './LayoutCanvas.module.scss';
 

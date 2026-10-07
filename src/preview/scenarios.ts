@@ -5,7 +5,7 @@ import type {
   RaceFlags,
   SessionEntry,
   SessionFrame,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import type { PreviewScenarioId } from '@/types/preview-scenarios';
 import { action } from 'mobx';
 import type { PreviewTarget } from './preview-target';

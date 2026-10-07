@@ -1,13 +1,16 @@
 import { spy } from 'mobx';
 
-import type { OverlayPerfReport, TimingSummary } from '@/types/bindings';
-import { PERF_BEGIN, PERF_END } from '@utils/backend-events';
-import { listenTo } from '@platform/services/events.service';
+import type {
+  OverlayPerfReport,
+  TimingSummary,
+} from '@shared/contracts/bindings';
+import { PERF_BEGIN, PERF_END } from '@shared/contracts/backend-events';
+import { listenTo } from '@shared/api/events.service';
 import {
   currentWindowLabel,
   getPerfRun,
   submitOverlayPerf,
-} from '@platform/services/perf.service';
+} from '@shared/api/perf.service';
 import type { RendererCore } from '@store/roots/renderer-core';
 import { coldStartSample } from './perf-cold-start';
 

@@ -52,7 +52,7 @@ import {
   saveBackgroundImage,
   deleteBackgroundImage,
 } from '@store/layout/layout-background';
-import { isRemoteMonitor } from '@utils/remote-screen';
+import { isRemoteMonitor } from '@shared/lib/remote-screen';
 import { AddRemoteScreenButton } from './AddRemoteScreenButton';
 import { monitorForWidget } from '@store/layout/virtual-desktop';
 import { useToolbarBottom } from './use-toolbar-bottom';

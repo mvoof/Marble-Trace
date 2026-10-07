@@ -15,16 +15,16 @@ import { useBackendComputedStore } from '@store/data/computed-context';
 import { useSimStore } from '@store/sim/sim-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 import { buildVisibleRows } from '@ui/widgets/StandingsWidget/standings-utils';
-import { computeClassSof } from '@utils/driver';
+import { computeClassSof } from '@shared/lib/driver';
 import { SINGLE_LIST_SCROLL_KEY } from '@ui/widgets/StandingsWidget/standings.store';
-import type { ScrollMetrics } from '@utils/canvas';
-import { ScrollIndicator } from '@ui/shared/ScrollIndicator/ScrollIndicator';
-import { useVisibleRowCount } from '@ui/hooks/useVisibleRowCount';
+import type { ScrollMetrics } from '@shared/lib/canvas';
+import { ScrollIndicator } from '@shared/ui/ScrollIndicator/ScrollIndicator';
+import { useVisibleRowCount } from '@shared/hooks/useVisibleRowCount';
 import {
   useRowMoveAnimation,
   ROW_KEY_ATTRIBUTE,
-} from '@ui/hooks/useRowMoveAnimation';
-import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
+} from '@shared/hooks/useRowMoveAnimation';
+import { NoDataPlaceholder } from '@shared/ui/NoDataPlaceholder/NoDataPlaceholder';
 import { SessionHeader } from '@ui/widgets/StandingsWidget/SessionHeader/SessionHeader';
 import { ClassGroup } from '@ui/widgets/StandingsWidget/ClassGroup/ClassGroup';
 import { CLASS_HEADER_ATTRIBUTE } from '@ui/widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';

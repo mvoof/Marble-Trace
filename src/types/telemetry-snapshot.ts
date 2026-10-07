@@ -7,7 +7,7 @@ import type {
   LapTimingFrame,
   SessionFrame,
   SessionSnapshot,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 
 /**
  * A frozen copy of one telemetry tick: a fixture for previews and Storybook, and

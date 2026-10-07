@@ -9,7 +9,7 @@
 //!
 //! So Rust owns them. The two remote kinds are types, so specta carries them
 //! into `bindings.ts` with the rest of the contract; the names are values and
-//! come out of the one list below into `src/utils/backend-events.ts` — see
+//! come out of the one list below into `src/shared/contracts/backend-events.ts` — see
 //! [`ts_values`](super::ts_values).
 
 // The perf run's two names are emitted only by `dev` code; a release build

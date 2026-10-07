@@ -3,14 +3,14 @@ import {
   backupSettingsFile as backupSettingsFileCommand,
   logSettingsSnapshot as logSettingsSnapshotCommand,
   settingsFileExists as settingsFileExistsCommand,
-} from '@platform/services/settings.service';
+} from '@shared/api/settings.service';
 import type { UnitSystem } from '@/types';
 import type { SessionContext } from '@/types/widget-settings';
 import type { AppSettings } from '@store/settings/app-settings.store';
 import type { MainRoot } from '@store/roots/main-root';
 import type { BindingMap } from '@/types/input-bindings';
-import { CURRENT_SCHEMA_VERSION } from '@platform/settings-schema/index';
-import type { InputDevice } from '@/types/bindings';
+import { CURRENT_SCHEMA_VERSION } from '@shared/settings-schema/index';
+import type { InputDevice } from '@shared/contracts/bindings';
 import {
   decodeLayout,
   decodeTemplates,

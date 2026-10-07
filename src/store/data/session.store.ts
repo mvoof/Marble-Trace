@@ -4,7 +4,7 @@ import type {
   SessionFrame,
   SessionSnapshot,
   SessionType,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 
 export class SessionStore {
   session: SessionFrame | null = null;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { RemoteScreenStore } from './remote-screen.store';
-import type { ClientSnapshot } from '@/types/client-protocol';
+import type { ClientSnapshot } from '@shared/contracts/client-protocol';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 
 const widget = (

@@ -3,12 +3,15 @@ import { comparer, observable, reaction, runInAction } from 'mobx';
 import {
   emitSnapshotToClient,
   listenToClients,
-} from '@platform/services/events.service';
+} from '@shared/api/events.service';
 import { listOverlayWindowLabels, monitorLabel } from './overlay-labels';
 import { overlaySnapshotFor, snapshotAppInputs } from './client-snapshot';
 import type { MainRoot } from '@store/roots/main-root';
-import type { RejectedCommand } from '@/types/bindings';
-import type { ClientCommand, CommandMessage } from '@/types/client-protocol';
+import type { RejectedCommand } from '@shared/contracts/bindings';
+import type {
+  ClientCommand,
+  CommandMessage,
+} from '@shared/contracts/client-protocol';
 
 /**
  * Main's half of the client protocol (ADR-0007): main holds the settings, each

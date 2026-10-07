@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { RpmLightsWidgetSettings } from '@/types/widget-settings';
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { usePitState, type PitState } from '@ui/hooks/usePitState';
 

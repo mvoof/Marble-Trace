@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { ColorPicker, InputNumber, Segmented } from 'antd';
 
-import { speedUnit } from '@utils/telemetry-format';
+import { speedUnit } from '@shared/lib/telemetry-format';
 import type {
   RaceDashWidgetSettings,
   RpmIndicatorMode,

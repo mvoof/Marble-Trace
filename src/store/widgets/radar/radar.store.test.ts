@@ -5,25 +5,25 @@ import type { LiveWidgetsStore } from '@store/layout/live-widgets.store';
 
 // A running core whose widget settings the test writes, as main writes its own.
 type WritableCore = RendererCore & { liveWidgets: LiveWidgetsStore };
-import type { LateralSide, ProximityFrame } from '@/types/bindings';
+import type { LateralSide, ProximityFrame } from '@shared/contracts/bindings';
 import type { ProximityRadarSettings } from '@/types/widget-settings';
 
 // RendererCore construction reaches the backend through these services; there is
 // no Tauri runtime under vitest.
-vi.mock('@platform/services/telemetry.service', () => ({
+vi.mock('@shared/api/telemetry.service', () => ({
   startTelemetryStream: vi.fn().mockResolvedValue(undefined),
   stopTelemetryStream: vi.fn().mockResolvedValue(undefined),
   getConnectionStatus: vi.fn().mockResolvedValue(false),
   getLastSessionInfo: vi.fn().mockResolvedValue(null),
   setActiveEventsSilent: vi.fn(),
 }));
-vi.mock('@platform/services/settings.service', () => ({
+vi.mock('@shared/api/settings.service', () => ({
   setPitWarningLapsSilent: vi.fn(),
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
   setCarLengthSilent: vi.fn(),
 }));
-vi.mock('@platform/services/events.service', () => ({
+vi.mock('@shared/api/events.service', () => ({
   listenTo: vi.fn().mockResolvedValue(() => {}),
   emitToApp: vi.fn().mockResolvedValue(undefined),
   emitToWindow: vi.fn().mockResolvedValue(undefined),

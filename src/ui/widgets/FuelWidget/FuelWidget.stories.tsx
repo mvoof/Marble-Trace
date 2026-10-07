@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { FuelComputedFrame, FuelLapRecord } from '@/types/bindings';
+import type {
+  FuelComputedFrame,
+  FuelLapRecord,
+} from '@shared/contracts/bindings';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import { mockLapTiming } from '@/preview/mocks/delta';
 import { mockCarStatus } from '@/preview/mocks/engine';

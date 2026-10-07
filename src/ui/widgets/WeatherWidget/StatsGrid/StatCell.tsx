@@ -7,7 +7,7 @@ import {
   formatSpeed as _formatSpeed,
   speedUnit as _speedUnit,
   tempUnit,
-} from '@utils/telemetry-format';
+} from '@shared/lib/telemetry-format';
 import {
   HUMIDITY_COLOR,
   bearingToCardinal,
@@ -15,11 +15,11 @@ import {
   getWindColor,
   parseWeekendFloat,
   radsToBearing,
-} from '@utils/weather-utils';
-import { getAirTempColor, getTrackTempColor } from '@utils/colors';
+} from '@shared/lib/weather-utils';
+import { getAirTempColor, getTrackTempColor } from '@shared/lib/colors';
 
-import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
-import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
+import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
 import styles from './StatCell.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import { useEnvironmentStore } from '@store/data/environment-context';

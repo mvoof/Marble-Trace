@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { TimerRow } from './TimerRow/TimerRow';
 import { TimerDisplay } from './TimerDisplay/TimerDisplay';
 import { TimerFooter } from './TimerFooter/TimerFooter';

@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import { emitLayoutActivated } from '@platform/services/events.service';
+import { emitLayoutActivated } from '@shared/api/events.service';
 import { listOverlayMonitors } from '@platform/sync/overlay-resolution';
 
 import type { LayoutsStore } from '@store/layout/layouts.store';

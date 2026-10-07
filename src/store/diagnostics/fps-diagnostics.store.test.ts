@@ -1,12 +1,12 @@
 import { observable, runInAction } from 'mobx';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { SimPerfFrame } from '@/types/bindings';
+import type { SimPerfFrame } from '@shared/contracts/bindings';
 import type { MainRoot } from '@store/roots/main-root';
 import { FpsDiagnosticsStore } from './fps-diagnostics.store';
 
 // The banner is a real Tauri window; the state machine under test is the point.
-vi.mock('@platform/services/diagnostics-hud.service', () => ({
+vi.mock('@shared/api/diagnostics-hud.service', () => ({
   DIAGNOSTICS_HUD_STATE_EVENT: 'diagnostics-hud-state',
   openDiagnosticsHud: vi.fn().mockResolvedValue(undefined),
   closeDiagnosticsHud: vi.fn().mockResolvedValue(undefined),

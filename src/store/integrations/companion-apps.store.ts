@@ -8,12 +8,12 @@ import {
   detectCompanionApps,
   launchCompanionApp,
   pickExecutable,
-} from '@platform/services/companions.service';
+} from '@shared/api/companions.service';
 import type {
   CompanionApp,
   CompanionStatus,
   DetectedApp,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import type { AppSettingsStore } from '@store/settings/app-settings.store';
 
 interface CompanionAppsDeps {

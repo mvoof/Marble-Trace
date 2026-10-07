@@ -10,9 +10,9 @@ import {
   MPS_TO_KMH,
   MPS_TO_MPH,
   speedUnit,
-} from '@utils/telemetry-format';
-import { parsePitSpeedLimitMs } from '@utils/telemetry-format';
-import { PIT_LIMITER_BIT } from '@utils/car-signals';
+} from '@shared/lib/telemetry-format';
+import { parsePitSpeedLimitMs } from '@shared/lib/telemetry-format';
+import { PIT_LIMITER_BIT } from '@shared/lib/car-signals';
 
 export type PitState =
   | 'normal'

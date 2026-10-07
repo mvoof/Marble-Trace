@@ -1,16 +1,16 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel } from '@utils/telemetry-format';
-import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
-import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
+import { formatFuel } from '@shared/lib/telemetry-format';
+import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import { useBackendComputedStore } from '@store/data/computed-context';
 import { useUnitsStore } from '@store/settings/units-context';
 import {
   NO_FUEL_DATA_PLACEHOLDER,
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,
-} from '@utils/telemetry-format';
+} from '@shared/lib/telemetry-format';
 import {
   type FuelLapsStatus,
   getSummaryAvgLabel,

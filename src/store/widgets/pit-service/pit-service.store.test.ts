@@ -7,13 +7,13 @@ import type { LiveWidgetsStore } from '@store/layout/live-widgets.store';
 type WritableCore = RendererCore & { liveWidgets: LiveWidgetsStore };
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import type { PitStrategy } from '@/types/pit-strategy';
-import type { PitAutoFrame } from '@/types/bindings';
-import { PIT_LIMITER_BIT } from '@utils/car-signals';
+import type { PitAutoFrame } from '@shared/contracts/bindings';
+import { PIT_LIMITER_BIT } from '@shared/lib/car-signals';
 
 const runPitActionMock = vi.hoisted(() => vi.fn());
 const togglePitAutoMock = vi.hoisted(() => vi.fn());
 
-vi.mock('@platform/services/pit.service', () => ({
+vi.mock('@shared/api/pit.service', () => ({
   runPitAction: runPitActionMock,
   togglePitAuto: togglePitAutoMock,
   setPitStrategySilent: vi.fn(),
@@ -21,14 +21,14 @@ vi.mock('@platform/services/pit.service', () => ({
 
 // RendererCore construction reaches the backend through the other services; they
 // have no Tauri runtime to talk to under vitest.
-vi.mock('@platform/services/telemetry.service', () => ({
+vi.mock('@shared/api/telemetry.service', () => ({
   startTelemetryStream: vi.fn().mockResolvedValue(undefined),
   stopTelemetryStream: vi.fn().mockResolvedValue(undefined),
   getConnectionStatus: vi.fn().mockResolvedValue(false),
   getLastSessionInfo: vi.fn().mockResolvedValue(null),
   setActiveEventsSilent: vi.fn(),
 }));
-vi.mock('@platform/services/settings.service', () => ({
+vi.mock('@shared/api/settings.service', () => ({
   setPitWarningLapsSilent: vi.fn(),
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
@@ -37,7 +37,7 @@ vi.mock('@platform/services/settings.service', () => ({
 
 // RendererCore subscribes to sim events on construction; the node test
 // environment has no window for the Tauri event bridge to attach to.
-vi.mock('@platform/services/events.service', () => ({
+vi.mock('@shared/api/events.service', () => ({
   listenTo: vi.fn().mockResolvedValue(() => {}),
   emitToApp: vi.fn().mockResolvedValue(undefined),
   emitToWindow: vi.fn().mockResolvedValue(undefined),

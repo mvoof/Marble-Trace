@@ -1,4 +1,4 @@
-import { createStoreContext } from '@utils/store-context';
+import { createStoreContext } from '@shared/lib/store-context';
 import type { PlayerPositionStore } from './player-position.store';
 
 export const [PlayerPositionContext, usePlayerPositionStore] =

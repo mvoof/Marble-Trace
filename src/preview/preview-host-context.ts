@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from 'react';
 
-import { createStoreContext } from '@utils/store-context';
+import { createStoreContext } from '@shared/lib/store-context';
 import type { LiveWidgetsStore } from '@store/layout/live-widgets.store';
 import type { AppSettingsStore } from '@store/settings/app-settings.store';
 import type { UnitsStore } from '@store/settings/units.store';

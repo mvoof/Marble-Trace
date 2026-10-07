@@ -9,7 +9,7 @@ import {
   resolveSessionClock,
   splitTime,
   type ClockUrgency,
-} from '@utils/timer-utils';
+} from '@shared/lib/timer-utils';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { useSessionStore } from '@store/data/session-context';
 

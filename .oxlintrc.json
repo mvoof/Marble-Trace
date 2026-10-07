@@ -12,11 +12,11 @@
         "patterns": [
           {
             "group": ["@tauri-apps/api/core"],
-            "message": "Tauri invoke is wrapped by src/platform/services/ — call a service instead."
+            "message": "Tauri invoke is wrapped by src/shared/api/ — call a service instead."
           },
           {
             "group": ["@tauri-apps/api/event"],
-            "message": "Tauri events are wrapped by src/platform/services/events.service.ts — use listenTo/emitToApp/emitToOverlays."
+            "message": "Tauri events are wrapped by src/shared/api/events.service.ts — use listenTo/emitToApp/emitToOverlays."
           },
           {
             "group": ["@tauri-apps/plugin-store"],
@@ -35,7 +35,7 @@
     "node_modules/**",
     "src-tauri/target/**",
     "src-tauri/gen/schemas/**",
-    "src/types/bindings.ts",
+    "src/shared/contracts/bindings.ts",
     "src/storybook/__mocks__/**",
     ".storybook/**"
   ],
@@ -47,7 +47,7 @@
       }
     },
     {
-      "files": ["src/types/**"],
+      "files": ["src/types/**", "src/shared/contracts/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -69,7 +69,12 @@
       }
     },
     {
-      "files": ["src/utils/**"],
+      "files": [
+        "src/shared/lib/**",
+        "src/shared/ui/**",
+        "src/shared/hooks/**",
+        "src/shared/settings-schema/**"
+      ],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -81,11 +86,16 @@
                   "@tauri-apps/api/event",
                   "@tauri-apps/plugin-store"
                 ],
-                "message": "Tauri access lives in src/platform/."
+                "message": "Tauri access lives in src/shared/api/."
               },
               {
-                "group": ["@store/**", "@ui/**", "@platform/**"],
-                "message": "src/utils/ is the bottom layer: pure helpers, no store, no UI, no transport."
+                "group": [
+                  "@store/**",
+                  "@ui/**",
+                  "@platform/**",
+                  "@shared/api/**"
+                ],
+                "message": "src/shared/ is the bottom layer: no store, no app UI, no transport."
               }
             ]
           }
@@ -101,11 +111,11 @@
             "patterns": [
               {
                 "group": ["@tauri-apps/api/core"],
-                "message": "Tauri invoke is wrapped by src/platform/services/ — call a service instead."
+                "message": "Tauri invoke is wrapped by src/shared/api/ — call a service instead."
               },
               {
                 "group": ["@tauri-apps/api/event"],
-                "message": "Tauri events are wrapped by src/platform/services/events.service.ts — use listenTo/emitToApp/emitToOverlays."
+                "message": "Tauri events are wrapped by src/shared/api/events.service.ts — use listenTo/emitToApp/emitToOverlays."
               },
               {
                 "group": ["@tauri-apps/plugin-store"],
@@ -133,11 +143,11 @@
             "patterns": [
               {
                 "group": ["@tauri-apps/api/core"],
-                "message": "Tauri invoke is wrapped by src/platform/services/ — call a service instead."
+                "message": "Tauri invoke is wrapped by src/shared/api/ — call a service instead."
               },
               {
                 "group": ["@tauri-apps/api/event"],
-                "message": "Tauri events are wrapped by src/platform/services/events.service.ts — use listenTo/emitToApp/emitToOverlays."
+                "message": "Tauri events are wrapped by src/shared/api/events.service.ts — use listenTo/emitToApp/emitToOverlays."
               },
               {
                 "group": ["@tauri-apps/plugin-store"],
@@ -161,11 +171,11 @@
             "patterns": [
               {
                 "group": ["@tauri-apps/api/core"],
-                "message": "Tauri invoke is wrapped by src/platform/services/ — call a service instead."
+                "message": "Tauri invoke is wrapped by src/shared/api/ — call a service instead."
               },
               {
                 "group": ["@tauri-apps/api/event"],
-                "message": "Tauri events are wrapped by src/platform/services/events.service.ts — use listenTo/emitToApp/emitToOverlays."
+                "message": "Tauri events are wrapped by src/shared/api/events.service.ts — use listenTo/emitToApp/emitToOverlays."
               },
               {
                 "group": ["@ui/**"],
@@ -177,10 +187,7 @@
       }
     },
     {
-      "files": [
-        "src/platform/services/**",
-        "src/store/layout/layout-background.ts"
-      ],
+      "files": ["src/shared/api/**", "src/store/layout/layout-background.ts"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -188,7 +195,7 @@
             "patterns": [
               {
                 "group": ["@store/**", "@ui/**"],
-                "message": "A service talks to the backend and knows nothing about app state. Payload types belong in src/types/."
+                "message": "A service talks to the backend and knows nothing about app state. Payload types belong in src/shared/contracts/ or src/types/."
               }
             ]
           }
@@ -207,11 +214,11 @@
             "patterns": [
               {
                 "group": ["@tauri-apps/api/core"],
-                "message": "Tauri invoke is wrapped by src/platform/services/ — call a service instead."
+                "message": "Tauri invoke is wrapped by src/shared/api/ — call a service instead."
               },
               {
                 "group": ["@tauri-apps/api/event"],
-                "message": "Tauri events are wrapped by src/platform/services/events.service.ts — use listenTo/emitToApp/emitToOverlays."
+                "message": "Tauri events are wrapped by src/shared/api/events.service.ts — use listenTo/emitToApp/emitToOverlays."
               },
               {
                 "group": ["@ui/**"],
@@ -239,6 +246,8 @@
                   "@store/**/*-context",
                   "@ui/**",
                   "@platform/**",
+                  "@shared/api/**",
+                  "@shared/settings-schema/**",
                   "@tauri-apps/**"
                 ],
                 "message": "The preview store is isolated (ADR-0004 rule 1): a scenario or builder writes only into the RendererCore({ skipInit: true }) handed to it. No context hooks onto the running stores, no UI, no persistence."
@@ -249,7 +258,7 @@
       }
     },
     {
-      "files": ["src/platform/settings-schema/migrations/**"],
+      "files": ["src/shared/settings-schema/migrations/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -261,6 +270,8 @@
                   "@ui/**",
                   "@platform/**",
                   "@utils/**",
+                  "@shared/**",
+                  "@entities/**",
                   "@/**",
                   "@tauri-apps/**"
                 ],
@@ -279,12 +290,16 @@
           {
             "patterns": [
               {
-                "group": ["@platform/**"],
+                "group": [
+                  "@platform/**",
+                  "@shared/api/**",
+                  "@shared/settings-schema/**"
+                ],
                 "message": "The UI talks to stores only (ui -> store -> platform): an OS or backend action belongs in a store method."
               },
               {
                 "group": ["@tauri-apps/**"],
-                "message": "The UI talks to stores only; Tauri sits behind src/platform/services/. Only the window shells may reach their own window, in the override below."
+                "message": "The UI talks to stores only; Tauri sits behind src/shared/api/. Only the window shells may reach their own window, in the override below."
               }
             ]
           }
@@ -296,6 +311,8 @@
         "src/ui/widgets/**",
         "src/ui/shared/**",
         "src/ui/hooks/**",
+        "src/shared/ui/**",
+        "src/shared/hooks/**",
         "src/ui/app/overlay/**",
         "src/ui/app/remote/**",
         "src/ui/app/diagnostics/**"
@@ -327,12 +344,16 @@
                 "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps, the device list and the preview worlds exist in the main window only, and their hooks throw anywhere else. Read the stores every window has (their own *-context files) instead."
               },
               {
-                "group": ["@platform/**"],
+                "group": [
+                  "@platform/**",
+                  "@shared/api/**",
+                  "@shared/settings-schema/**"
+                ],
                 "message": "The UI talks to stores only (ui -> store -> platform): an OS or backend action belongs in a store method."
               },
               {
                 "group": ["@tauri-apps/**"],
-                "message": "The UI talks to stores only; Tauri sits behind src/platform/services/. Only the window shells may reach their own window, in the override below."
+                "message": "The UI talks to stores only; Tauri sits behind src/shared/api/. Only the window shells may reach their own window, in the override below."
               }
             ]
           }
@@ -350,10 +371,7 @@
           {
             "patterns": [
               {
-                "group": [
-                  "@platform/services/**",
-                  "@platform/settings-schema/**"
-                ],
+                "group": ["@shared/api/**", "@shared/settings-schema/**"],
                 "message": "A window shell may start its window's sync and reach its own window — nothing else of the platform."
               },
               {
@@ -402,10 +420,7 @@
                 "message": "These windows never build a MainRoot: the editor, the inspector, diagnostics, companion apps, the device list and the preview worlds exist in the main window only, and their hooks throw anywhere else. Read the stores every window has (their own *-context files) instead."
               },
               {
-                "group": [
-                  "@platform/services/**",
-                  "@platform/settings-schema/**"
-                ],
+                "group": ["@shared/api/**", "@shared/settings-schema/**"],
                 "message": "A window shell may start its window's sync and reach its own window — nothing else of the platform."
               },
               {
@@ -422,7 +437,7 @@
       }
     },
     {
-      "files": ["src/ui/**/*.tsx"],
+      "files": ["src/ui/**/*.tsx", "src/shared/ui/**/*.tsx"],
       "rules": {
         "no-restricted-properties": [
           "error",

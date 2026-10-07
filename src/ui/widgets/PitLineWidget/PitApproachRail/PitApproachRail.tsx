@@ -5,8 +5,8 @@ import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service
 import { usePlayerStore } from '@store/data/player-context';
 import { useUnitsStore } from '@store/settings/units-context';
 import { buildPitApproachView } from '@store/widgets/pit-service/pit-approach';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
-import { METERS_TO_FEET } from '@utils/telemetry-format';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { METERS_TO_FEET } from '@shared/lib/telemetry-format';
 import { ReservedSlot } from '@ui/shared/ReservedSlot/ReservedSlot';
 
 import styles from './PitApproachRail.module.scss';

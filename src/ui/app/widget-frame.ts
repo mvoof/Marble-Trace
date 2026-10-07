@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { WidgetUserSettings } from '@/types/widget-settings';
-import { getContrastTextColor } from '@utils/colors';
+import { getContrastTextColor } from '@shared/lib/colors';
 
 // Widgets whose plate is not a plain rounded rectangle need the frame that
 // hosts them (overlay container, widget preview, layout editor) to clip with

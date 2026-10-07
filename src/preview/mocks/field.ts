@@ -5,7 +5,7 @@ import type {
   IncidentsFrame,
   PaceCarFrame,
   PaceCarPitPhase,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import type { DriverEntry } from '@/types/driver-entry';
 import { TrackSurface } from '@/types';
 

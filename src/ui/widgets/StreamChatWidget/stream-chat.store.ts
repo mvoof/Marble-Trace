@@ -5,11 +5,11 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { ChatMessage, ChatPresence } from '@/types/bindings';
+import type { ChatMessage, ChatPresence } from '@shared/contracts/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { StreamChatHotkeyTarget } from '@store/hotkeys/hotkey-targets';
-import { scrollThumbFor, type ScrollThumb } from '@utils/canvas';
+import { scrollThumbFor, type ScrollThumb } from '@shared/lib/canvas';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 import type { AppSettingsStore } from '@store/settings/app-settings.store';
 import type { LiveWidgetsView } from '@store/layout/live-widgets.store';

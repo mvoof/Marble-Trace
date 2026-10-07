@@ -1,12 +1,15 @@
 import { runInAction } from 'mobx';
 
-import type { TrackRotationPayload } from '@platform/services/events.service';
+import type { TrackRotationPayload } from '@shared/api/events.service';
 import {
   standingsHotkeyTargets,
   streamChatHotkeyTargets,
 } from '@store/hotkeys/hotkey-targets';
 import type { RendererCore } from '@store/roots/renderer-core';
-import type { ClientSnapshot, ControlMessage } from '@/types/client-protocol';
+import type {
+  ClientSnapshot,
+  ControlMessage,
+} from '@shared/contracts/client-protocol';
 
 /**
  * The client of ADR-0007, whatever carries it: an overlay hears main over

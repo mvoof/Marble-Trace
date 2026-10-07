@@ -1,7 +1,7 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { FlagList } from './FlagList/FlagList';
 
 import styles from './FlatFlagsWidget.module.scss';

@@ -2,10 +2,10 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { useVisibleRowCount } from '@ui/hooks/useVisibleRowCount';
+import { useVisibleRowCount } from '@shared/hooks/useVisibleRowCount';
 import { DriverRow } from '@ui/widgets/RelativeWidget/DriverRow/DriverRow';
 import { PaceCarRow } from '@ui/widgets/RelativeWidget/PaceCarRow/PaceCarRow';
-import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
+import { NoDataPlaceholder } from '@shared/ui/NoDataPlaceholder/NoDataPlaceholder';
 import { useBackendComputedStore } from '@store/data/computed-context';
 import { useSimStore } from '@store/sim/sim-context';
 import { useRelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.store';

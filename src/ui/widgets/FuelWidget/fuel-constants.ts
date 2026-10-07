@@ -1,4 +1,4 @@
-import { PIT_WINDOW_END_BUFFER_LAPS } from '@utils/backend-constants';
+import { PIT_WINDOW_END_BUFFER_LAPS } from '@shared/contracts/backend-constants';
 
 /**
  * Shared constants and thresholds for the FuelWidget.
@@ -50,7 +50,7 @@ export const FUEL_CHART_CONFIG = {
 export {
   FUEL_AVG_WINDOW_ALL_LAPS,
   FUEL_AVG_WINDOW_MAX,
-} from '@utils/backend-constants';
+} from '@shared/contracts/backend-constants';
 
 export const FUEL_THRESHOLDS = {
   /** Additional laps of fuel beyond pitWarningLaps to consider "Safe" */

@@ -1,16 +1,16 @@
 import { comparer, reaction, runInAction } from 'mobx';
 
-import { listenRemoteDevice } from '@platform/services/events.service';
+import { listenRemoteDevice } from '@shared/api/events.service';
 import {
   publishRemoteSnapshot,
   startRemoteServer,
   stopRemoteServer,
-} from '@platform/services/remote.service';
+} from '@shared/api/remote.service';
 import { resolveAppLanguage } from '@store/settings/app-settings.store';
 import { clientSnapshotFor, snapshotAppInputs } from './client-snapshot';
 import type { MainRoot } from '@store/roots/main-root';
-import type { ClientSnapshot } from '@/types/client-protocol';
-import type { RemoteDevice } from '@/types/bindings';
+import type { ClientSnapshot } from '@shared/contracts/client-protocol';
+import type { RemoteDevice } from '@shared/contracts/bindings';
 
 /**
  * Main-window half of the remote screens: it owns the server's lifetime and

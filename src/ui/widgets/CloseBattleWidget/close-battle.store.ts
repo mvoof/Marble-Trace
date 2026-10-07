@@ -5,7 +5,7 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import { isHiddenInQualifying } from '@utils/qualifying-visibility';
+import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';

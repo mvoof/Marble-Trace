@@ -1,7 +1,7 @@
 import {
   displayDistanceToMeters,
   metersToDisplayDistance,
-} from '@utils/telemetry-format';
+} from '@shared/lib/telemetry-format';
 
 // Meters are stored to the centimeter — enough for a foot slider to land back
 // on its own notch, short of writing a float nobody can read into the file.

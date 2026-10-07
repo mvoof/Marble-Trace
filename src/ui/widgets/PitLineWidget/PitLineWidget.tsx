@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { PitLineWidgetSettings } from '@/types/widget-settings';
 

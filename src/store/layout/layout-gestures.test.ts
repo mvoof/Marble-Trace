@@ -5,7 +5,7 @@ import { layoutGestureStores } from '@store/layout/layout-gestures';
 
 import { alignMonitorsToHardware, removeMonitor } from './layout-gestures';
 
-vi.mock('@platform/services/events.service', () => ({
+vi.mock('@shared/api/events.service', () => ({
   emitLayoutActivated: vi.fn(),
   emitSessionLayoutsChanged: vi.fn(),
   emitToOverlays: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('@platform/services/events.service', () => ({
   listenTo: vi.fn(),
 }));
 
-vi.mock('@platform/services/settings.service', () => ({
+vi.mock('@shared/api/settings.service', () => ({
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
   setPitWarningLapsSilent: vi.fn(),

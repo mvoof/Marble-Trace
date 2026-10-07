@@ -13,9 +13,9 @@ import type { DriverEntry } from '@/types/driver-entry';
 import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { SelfHidingWidgetStore } from '@store/widget-runtime/widget-auto-hide.store';
-import { isHiddenInQualifying } from '@utils/qualifying-visibility';
-import { formatSpeed } from '@utils/telemetry-format';
-import { computeRelativeGap } from '@utils/driver';
+import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
+import { formatSpeed } from '@shared/lib/telemetry-format';
+import { computeRelativeGap } from '@shared/lib/driver';
 import {
   formatBattleGap,
   litSpeedSegments,

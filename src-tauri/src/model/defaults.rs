@@ -5,7 +5,7 @@
 //! silent: the widget ships one number, the backend validates against another,
 //! and nothing fails until a user notices the wrong answer.
 //!
-//! So Rust owns them and `src/utils/backend-constants.ts` is generated from
+//! So Rust owns them and `src/shared/contracts/backend-constants.ts` is generated from
 //! this one list — see [`ts_values`](super::ts_values) for why this is not
 //! specta's job and how the declaration and the export stay a single edit.
 

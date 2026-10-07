@@ -6,7 +6,7 @@ import type { SavedLayout } from '@/types/widget-settings';
 
 // setWidgets pushes a few settings to the backend through the service layer,
 // which has no Tauri runtime to talk to under vitest.
-vi.mock('@platform/services/settings.service', () => ({
+vi.mock('@shared/api/settings.service', () => ({
   setPitWarningLapsSilent: vi.fn(),
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
@@ -14,12 +14,12 @@ vi.mock('@platform/services/settings.service', () => ({
 }));
 const setPitStrategySilentMock = vi.hoisted(() => vi.fn());
 
-vi.mock('@platform/services/pit.service', () => ({
+vi.mock('@shared/api/pit.service', () => ({
   sendPitOrder: vi.fn().mockResolvedValue(undefined),
   togglePitAuto: vi.fn().mockResolvedValue(undefined),
   setPitStrategySilent: setPitStrategySilentMock,
 }));
-vi.mock('@platform/services/events.service', () => ({
+vi.mock('@shared/api/events.service', () => ({
   listenTo: vi.fn().mockResolvedValue(() => {}),
   emitPitServiceReveal: vi.fn().mockResolvedValue(undefined),
   emitToApp: vi.fn().mockResolvedValue(undefined),

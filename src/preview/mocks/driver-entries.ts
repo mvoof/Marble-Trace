@@ -1,7 +1,7 @@
 import { TrackSurface } from '@/types';
-import type { CarIdxFrame, SessionSnapshot } from '@/types/bindings';
+import type { CarIdxFrame, SessionSnapshot } from '@shared/contracts/bindings';
 import type { DriverEntry } from '@/types/driver-entry';
-import { parseClassColor } from '@utils/colors';
+import { parseClassColor } from '@shared/lib/colors';
 
 // Mock builder for the driver list — the one the snapshot's own roster is
 // turned into, rather than one invented from nothing. It lives in the factory

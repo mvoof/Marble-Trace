@@ -10,7 +10,7 @@ import {
   resolveScopeScale,
   scopeDistanceOf,
 } from '@store/widgets/radar/radar-constants';
-import { isHiddenInQualifying } from '@utils/qualifying-visibility';
+import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 import type { BackendComputedStore } from '@store/data/computed.store';
 import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
 import type { SessionStore } from '@store/data/session.store';

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { TrackRotations } from '@platform/services/track-settings.service';
+import type { TrackRotations } from '@shared/api/track-settings.service';
 import { TrackRotationStore } from './track-rotation.store';
 
 const { file, writes } = vi.hoisted(() => ({
@@ -10,7 +10,7 @@ const { file, writes } = vi.hoisted(() => ({
 
 // A write that yields before it lands, as the plugin's IPC does: the race the
 // store exists for is two saves in flight at once.
-vi.mock('@platform/services/track-settings.service', () => ({
+vi.mock('@shared/api/track-settings.service', () => ({
   readTrackRotations: async (): Promise<TrackRotations> => ({
     ...file.contents,
   }),

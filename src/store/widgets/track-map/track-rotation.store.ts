@@ -4,11 +4,11 @@ import {
   readTrackRotations,
   writeTrackRotations,
   type TrackRotations,
-} from '@platform/services/track-settings.service';
+} from '@shared/api/track-settings.service';
 import type {
   TrackRotateDirection,
   TrackRotationPayload,
-} from '@platform/services/events.service';
+} from '@shared/api/events.service';
 import { nextTrackRotation } from './track-map.store';
 
 /**

@@ -1,4 +1,4 @@
-import type { IncidentPoint } from '@/types/bindings';
+import type { IncidentPoint } from '@shared/contracts/bindings';
 
 /**
  * A stretch of the lap worth warning about.

@@ -1,4 +1,4 @@
-import type { HotkeyKind } from '@/types/bindings';
+import type { HotkeyKind } from '@shared/contracts/bindings';
 import type { Binding, BindingTrigger } from '@/types/input-bindings';
 import type { PitServiceWidgetStore } from '@store/widgets/pit-service/pit-service.store';
 

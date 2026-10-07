@@ -2,10 +2,10 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { NearbyCar } from '@/types/bindings';
+import type { NearbyCar } from '@shared/contracts/bindings';
 import type { UnitSystem } from '@/types';
 import type { ProximityRadarSettings } from '@/types/widget-settings';
-import { formatDistance } from '@utils/telemetry-format';
+import { formatDistance } from '@shared/lib/telemetry-format';
 import { useAppSettingsStore } from '@store/settings/app-settings-context';
 import { useBackendComputedStore } from '@store/data/computed-context';
 import { useRadarWidgetStore } from '@store/widgets/radar/radar-context';

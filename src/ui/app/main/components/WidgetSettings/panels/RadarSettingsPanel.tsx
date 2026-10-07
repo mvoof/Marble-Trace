@@ -18,7 +18,7 @@ import {
   DESIGN_SIZE_PX,
   resolveScopeScale,
 } from '@store/widgets/radar/radar-constants';
-import { distanceUnit, formatDistance } from '@utils/telemetry-format';
+import { distanceUnit, formatDistance } from '@shared/lib/telemetry-format';
 import { useUnitsStore } from '@store/settings/units-context';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';

@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { Droplet } from 'lucide-react';
 
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
-import { convertTemp } from '@utils/telemetry-format';
+import { convertTemp } from '@shared/lib/telemetry-format';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import { useEnvironmentStore } from '@store/data/environment-context';
 import { useSessionStore } from '@store/data/session-context';

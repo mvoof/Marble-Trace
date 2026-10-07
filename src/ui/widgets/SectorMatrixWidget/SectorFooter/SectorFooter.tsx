@@ -1,6 +1,6 @@
 ﻿import { observer } from 'mobx-react-lite';
 import { usePlayerStore } from '@store/data/player-context';
-import { formatLapTime } from '@utils/telemetry-format';
+import { formatLapTime } from '@shared/lib/telemetry-format';
 import styles from './SectorFooter.module.scss';
 
 export const SectorFooter = observer(() => {

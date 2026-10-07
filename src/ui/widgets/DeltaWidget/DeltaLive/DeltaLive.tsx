@@ -11,7 +11,7 @@ import {
   getGameDelta,
   INITIAL_DELTA_LATCH_STATE,
   isGameDeltaOk,
-} from '@utils/delta-utils';
+} from '@shared/lib/delta-utils';
 import type { DeltaWidgetSettings } from '@/types/widget-settings';
 import { DeltaGauge } from '../DeltaGauge/DeltaGauge';
 import { DeltaPlate } from '../DeltaPlate/DeltaPlate';

@@ -16,7 +16,7 @@ import type {
   PitStopsFrame,
   ProximityFrame,
   RelativeFrame,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import type { CarIdentity } from '@/types/car-identity';
 import type { DriverEntry } from '@/types/driver-entry';
 import { CarIdentityCache } from './car-identity';

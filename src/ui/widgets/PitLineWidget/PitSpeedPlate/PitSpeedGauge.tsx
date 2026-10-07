@@ -4,8 +4,8 @@ import {
   buildSpeedRow,
   SPEED_GREEN_SHARE,
 } from '@ui/widgets/PitLineWidget/pit-line-utils';
-import { parsePitSpeedLimitMs, speedUnit } from '@utils/telemetry-format';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { parsePitSpeedLimitMs, speedUnit } from '@shared/lib/telemetry-format';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@store/data/player-context';
 import { useSessionStore } from '@store/data/session-context';
 import { useUnitsStore } from '@store/settings/units-context';

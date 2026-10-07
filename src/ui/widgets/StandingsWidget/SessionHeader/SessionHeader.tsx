@@ -2,9 +2,9 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Flag, Trophy, Users } from 'lucide-react';
 
-import { formatIRating } from '@utils/driver';
-import { resolveSessionLaps } from '@utils/telemetry-format';
-import { computeClassSof } from '@utils/driver';
+import { formatIRating } from '@shared/lib/driver';
+import { resolveSessionLaps } from '@shared/lib/telemetry-format';
+import { computeClassSof } from '@shared/lib/driver';
 import {
   buildLapProgress,
   drawsClassHeaders,
@@ -13,7 +13,7 @@ import {
   isLapLimitedSession,
   resolveSessionColorKey,
   type SessionColorKey,
-} from '@utils/timer-utils';
+} from '@shared/lib/timer-utils';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { SessionClock } from '@ui/widgets/StandingsWidget/SessionClock/SessionClock';

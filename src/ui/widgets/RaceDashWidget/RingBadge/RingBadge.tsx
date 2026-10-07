@@ -3,9 +3,9 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import { formatGear } from '@utils/telemetry-format';
-import { computeShiftThresholds } from '@utils/car-signals';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { formatGear } from '@shared/lib/telemetry-format';
+import { computeShiftThresholds } from '@shared/lib/car-signals';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import {
   computeRpmZoneState,
   rpmFillColor,

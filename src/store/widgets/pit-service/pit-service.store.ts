@@ -6,7 +6,7 @@ import { PitAutoService } from './pit-auto-service.store';
 import { PitOrder } from './pit-order.store';
 import { PitPanelState } from './pit-panel.store';
 import { distanceToPitEntryM } from '@store/widgets/pit-service/pit-approach';
-import { PIT_LIMITER_BIT } from '@utils/car-signals';
+import { PIT_LIMITER_BIT } from '@shared/lib/car-signals';
 import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
 import type { PlayerStore } from '@store/data/player.store';
 import type { TrackMapWidgetStore } from '@store/widgets/track-map/track-map.store';

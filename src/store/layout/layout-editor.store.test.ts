@@ -1,11 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { MainRoot } from '@store/roots/main-root';
-import { emitLayoutActivated } from '@platform/services/events.service';
+import { emitLayoutActivated } from '@shared/api/events.service';
 
 // Nothing here crosses the Tauri boundary; the editing session is main-window
 // state and the emits it would provoke are not what is under test.
-vi.mock('@platform/services/events.service', () => ({
+vi.mock('@shared/api/events.service', () => ({
   emitLayoutActivated: vi.fn(),
   emitSessionLayoutsChanged: vi.fn(),
   emitToOverlays: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('@platform/services/events.service', () => ({
   listenTo: vi.fn(),
 }));
 
-vi.mock('@platform/services/settings.service', () => ({
+vi.mock('@shared/api/settings.service', () => ({
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
   setPitWarningLapsSilent: vi.fn(),

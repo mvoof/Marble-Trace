@@ -9,14 +9,14 @@ import {
 import type { CarIdentity } from '@/types/car-identity';
 import type { DriverGroup } from '@/types';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { computeClassSof, hasSetALap } from '@utils/driver';
-import { hasRaceStarted } from '@utils/timer-utils';
+import { computeClassSof, hasSetALap } from '@shared/lib/driver';
+import { hasRaceStarted } from '@shared/lib/timer-utils';
 import {
   scrollThumbFor,
   type ScrollMetrics,
   type ScrollThumb,
-} from '@utils/canvas';
-import { MOVE_DURATION_MS } from '@utils/animation';
+} from '@shared/lib/canvas';
+import { MOVE_DURATION_MS } from '@shared/lib/animation';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
 import type { StandingsHotkeyTarget } from '@store/hotkeys/hotkey-targets';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';

@@ -16,7 +16,7 @@ import {
   remoteScreenGrid,
   slugFromName,
   uniqueSlug,
-} from '@utils/remote-screen';
+} from '@shared/lib/remote-screen';
 import type { SettingsMutationLog } from '@store/layout/mutation-log.store';
 import type {
   LayoutMonitor,

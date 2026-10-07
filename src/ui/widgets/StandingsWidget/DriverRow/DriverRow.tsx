@@ -1,23 +1,23 @@
 ﻿import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
-import { formatLapTime } from '@utils/telemetry-format';
+import { formatLapTime } from '@shared/lib/telemetry-format';
 import {
   abbreviateName,
   formatBrand,
   formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
-} from '@utils/driver';
-import { parseDriverFlags } from '@utils/driver';
-import { isSessionEnded } from '@utils/timer-utils';
-import { DriverStatusBadges } from '@ui/shared/DriverStatusBadge/DriverStatusBadges';
-import { getContrastTextColor, playerRowStyle } from '@utils/colors';
-import { CountryFlag } from '@ui/shared/CountryFlag/CountryFlag';
-import { DriverFlagBadge } from '@ui/shared/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge } from '@ui/shared/RatingBadge/LicBadge';
-import { formatIr } from '@ui/shared/RatingBadge/LicBadge.utils';
-import { TireBadge } from '@ui/shared/TireBadge/TireBadge';
+} from '@shared/lib/driver';
+import { parseDriverFlags } from '@shared/lib/driver';
+import { isSessionEnded } from '@shared/lib/timer-utils';
+import { DriverStatusBadges } from '@shared/ui/DriverStatusBadge/DriverStatusBadges';
+import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
+import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
+import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
+import { LicBadge } from '@shared/ui/RatingBadge/LicBadge';
+import { formatIr } from '@shared/ui/RatingBadge/LicBadge.utils';
+import { TireBadge } from '@shared/ui/TireBadge/TireBadge';
 import {
   buildGridTemplate,
   calculateLapsBehind,
@@ -30,7 +30,7 @@ import { IrChangeCell } from './IrChangeCell';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBackendComputedStore } from '@store/data/computed-context';
 import { useSessionStore } from '@store/data/session-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';

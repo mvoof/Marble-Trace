@@ -1,9 +1,12 @@
 import { observer } from 'mobx-react-lite';
 
 import type { RpmLightsWidgetSettings } from '@/types/widget-settings';
-import { computeShiftThresholds, rpmZoneColorByPct } from '@utils/car-signals';
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import {
+  computeShiftThresholds,
+  rpmZoneColorByPct,
+} from '@shared/lib/car-signals';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { usePlayerStore } from '@store/data/player-context';
 import { useSessionStore } from '@store/data/session-context';

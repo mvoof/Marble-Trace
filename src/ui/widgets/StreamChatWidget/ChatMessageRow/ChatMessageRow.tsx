@@ -2,7 +2,7 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 
-import type { ChatMessage } from '@/types/bindings';
+import type { ChatMessage } from '@shared/contracts/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 import { PlatformGlyph } from '../PlatformGlyph/PlatformGlyph';
 

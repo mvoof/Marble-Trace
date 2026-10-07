@@ -1,4 +1,4 @@
-import type { PitTargetType } from '@/types/bindings';
+import type { PitTargetType } from '@shared/contracts/bindings';
 
 /**
  * The approach rail: how far the box still is, where it sits along the pit

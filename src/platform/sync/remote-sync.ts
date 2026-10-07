@@ -1,11 +1,11 @@
 import { runInAction } from 'mobx';
 
-import { openRemoteSocket } from '@platform/services/remote-socket.service';
+import { openRemoteSocket } from '@shared/api/remote-socket.service';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import type { RemoteScreenStore } from '@store/remote/remote-screen.store';
 import type { RendererCore } from '@store/roots/renderer-core';
-import type { RemoteMessage } from '@/types/remote';
-import type { ClientSnapshot } from '@/types/client-protocol';
+import type { RemoteMessage } from '@shared/contracts/remote';
+import type { ClientSnapshot } from '@shared/contracts/client-protocol';
 import { applyClientSnapshot, applyControl } from './client-sync';
 import type {
   CapabilitiesPayload,
@@ -18,7 +18,7 @@ import type {
   TelemetryBundle,
   TrackShapePayload,
   WeatherForecastEntry,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 
 /**
  * The remote screen's transport for the client of ADR-0007

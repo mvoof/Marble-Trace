@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import { computeRpmZoneState, rpmNumberColor } from '../race-dash-utils';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@store/data/player-context';
 import { useSessionStore } from '@store/data/session-context';
 

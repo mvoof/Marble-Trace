@@ -5,7 +5,7 @@ const getInspectorFrame = vi.fn(async () => null as unknown);
 const getDeliveryCounters = vi.fn(async () => [] as unknown);
 const resetDeliveryCounters = vi.fn(async () => undefined);
 
-vi.mock('@platform/services/telemetry.service', () => ({
+vi.mock('@shared/api/telemetry.service', () => ({
   setInspectorActive: (active: boolean) => setInspectorActive(active),
   getInspectorFrame: () => getInspectorFrame(),
   getDeliveryCounters: () => getDeliveryCounters(),

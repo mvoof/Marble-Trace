@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { PreviewCore } from '@store/roots/renderer-core';
 import { StreamChatWidgetStore } from './stream-chat.store';
-import type { ChatMessage, ChatPlatform } from '@/types/bindings';
+import type { ChatMessage, ChatPlatform } from '@shared/contracts/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 
 const makeMessage = (

@@ -4,7 +4,7 @@ import {
   DELTA_GAUGE_RANGES,
   getDeltaState,
   resolveGaugeRange,
-} from '@utils/delta-utils';
+} from '@shared/lib/delta-utils';
 import styles from './DeltaGauge.module.scss';
 
 interface Props {

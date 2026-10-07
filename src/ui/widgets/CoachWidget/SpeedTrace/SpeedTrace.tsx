@@ -2,8 +2,8 @@ import { useWidgetInstanceId } from '@ui/hooks/useWidgetSettings';
 import { useCallback, useRef } from 'react';
 
 import type { CoachWidgetSettings } from '@/types/widget-settings';
-import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
-import { useCanvasAutoResize } from '@ui/hooks/useCanvasAutoResize';
+import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
+import { useCanvasAutoResize } from '@shared/hooks/useCanvasAutoResize';
 import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
 import { useCoachWidgetStore } from '@ui/widgets/CoachWidget/coach-stores';
 import { drawSpeedTrace, type SpeedTraceColors } from './speed-trace-render';

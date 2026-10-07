@@ -1,18 +1,18 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { resolveSessionLaps } from '@utils/telemetry-format';
+import { resolveSessionLaps } from '@shared/lib/telemetry-format';
 import {
   formatLapCount,
   formatPosition,
   isSessionEnded,
-} from '@utils/timer-utils';
+} from '@shared/lib/timer-utils';
 import { useCarsStore } from '@store/data/cars-context';
 import { useSessionStore } from '@store/data/session-context';
 import { usePlayerPositionStore } from '@store/data/player-position-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 
-import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import styles from './TimerFooter.module.scss';
 
 export const TimerFooter = observer(() => {

@@ -2,7 +2,7 @@
  * Event names the backend emits, re-exported from the generated contract.
  *
  * The names themselves are declared in `src-tauri/src/model/events.rs` and
- * written out to `@utils/backend-events` — this module is the frontend's door
+ * written out to `@shared/contracts/backend-events` — this module is the frontend's door
  * onto them, plus the handful of names that never cross the boundary.
  */
 export {
@@ -27,7 +27,7 @@ export {
   CLIENT_TO_MAIN_EVENT,
   CLIENT_FROM_MAIN_EVENT,
   CLIENT_CONTROL_EVENT,
-} from '@utils/backend-events';
+} from '@shared/contracts/backend-events';
 
 /** Heard by the backend recorder: the track's recorded shape was deleted. */
 export const TRACK_MAP_CLEAR = 'track-map:clear';

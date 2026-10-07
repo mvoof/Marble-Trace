@@ -1,8 +1,8 @@
 import { pitStrategyOf } from '@store/settings/app-settings.store';
 import { widgetsOnMonitor } from '@store/layout/virtual-desktop';
-import { cloneMonitor } from '@utils/remote-screen';
+import { cloneMonitor } from '@shared/lib/remote-screen';
 import type { MainRoot } from '@store/roots/main-root';
-import type { ClientSnapshot } from '@/types/client-protocol';
+import type { ClientSnapshot } from '@shared/contracts/client-protocol';
 import type { LayoutMonitor, SavedLayout } from '@/types/widget-settings';
 
 /**

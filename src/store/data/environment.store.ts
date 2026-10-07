@@ -1,6 +1,9 @@
 import { makeAutoObservable, observable } from 'mobx';
 
-import type { EnvironmentFrame, WeatherForecastEntry } from '@/types/bindings';
+import type {
+  EnvironmentFrame,
+  WeatherForecastEntry,
+} from '@shared/contracts/bindings';
 
 export class EnvironmentStore {
   environment: EnvironmentFrame | null = null;

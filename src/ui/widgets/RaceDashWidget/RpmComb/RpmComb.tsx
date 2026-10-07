@@ -2,10 +2,10 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@store/data/player-context';
 import { useSessionStore } from '@store/data/session-context';
-import { computeShiftThresholds } from '@utils/car-signals';
+import { computeShiftThresholds } from '@shared/lib/car-signals';
 import { computeRpmZoneState, rpmFillColor } from '../race-dash-utils';
 import {
   ARC_SWEEP_DEG,

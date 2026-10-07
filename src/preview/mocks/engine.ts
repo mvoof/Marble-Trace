@@ -1,4 +1,4 @@
-import type { CarStatusFrame } from '@/types/bindings';
+import type { CarStatusFrame } from '@shared/contracts/bindings';
 import { mockFlags } from './flags';
 
 // Mock builders for the engine domain — the liquid temperatures, the pressures

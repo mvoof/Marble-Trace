@@ -5,8 +5,8 @@ import { Copy, Maximize2, EyeOff } from 'lucide-react';
 
 import { useLayoutsStore } from '@store/layout/layouts-context';
 import type { GroupedRemoteScreen } from '@store/layout/layouts.store';
-import { DEFAULT_REMOTE_BACKGROUND } from '@utils/remote-screen';
-import type { RemoteDevice } from '@/types/bindings';
+import { DEFAULT_REMOTE_BACKGROUND } from '@shared/lib/remote-screen';
+import type { RemoteDevice } from '@shared/contracts/bindings';
 import styles from '../SettingsPage.module.scss';
 import rowStyles from './RemoteScreenRow.module.scss';
 

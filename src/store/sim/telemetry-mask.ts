@@ -1,7 +1,7 @@
 import {
   telemetryEventsToMask,
   type TelemetryEventName,
-} from '@/types/telemetry-events';
+} from '@shared/contracts/telemetry-events';
 import { WIDGET_BY_ID } from '@store/layout/widget-catalog';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 

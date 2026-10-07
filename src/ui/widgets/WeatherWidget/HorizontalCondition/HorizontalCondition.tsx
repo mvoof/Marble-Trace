@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
-import { convertTemp, tempUnit } from '@utils/telemetry-format';
-import { parseWeekendFloat, getSkiesLabel } from '@utils/weather-utils';
+import { convertTemp, tempUnit } from '@shared/lib/telemetry-format';
+import { parseWeekendFloat, getSkiesLabel } from '@shared/lib/weather-utils';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import { useEnvironmentStore } from '@store/data/environment-context';
 import { useSessionStore } from '@store/data/session-context';

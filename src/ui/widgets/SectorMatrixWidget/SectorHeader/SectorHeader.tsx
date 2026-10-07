@@ -2,9 +2,9 @@
 import { observer } from 'mobx-react-lite';
 import { usePlayerStore } from '@store/data/player-context';
 import { useBackendComputedStore } from '@store/data/computed-context';
-import { formatLapTime } from '@utils/telemetry-format';
-import { getGameDelta } from '@utils/delta-utils';
-import { getSectorColor } from '@utils/colors';
+import { formatLapTime } from '@shared/lib/telemetry-format';
+import { getGameDelta } from '@shared/lib/delta-utils';
+import { getSectorColor } from '@shared/lib/colors';
 import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorHeader.module.scss';
 

@@ -1,12 +1,12 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { listenTo, type UnlistenFn } from '@platform/services/events.service';
+import { listenTo, type UnlistenFn } from '@shared/api/events.service';
 
 import type {
   ChatDeletion,
   ChatMessage,
   ChatPlatform,
   ChatPresence,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import {
   CHAT_DELETION,
   CHAT_MESSAGE,

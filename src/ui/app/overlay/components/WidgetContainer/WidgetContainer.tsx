@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
+import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
 import {
   resizeDirectionsFor,
   widgetFrameStyle,

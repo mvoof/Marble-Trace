@@ -5,8 +5,8 @@ import {
   listenTo,
   type TrackRotationRequest,
   type UnlistenFn,
-} from '@platform/services/events.service';
-import { publishRemoteControl } from '@platform/services/remote.service';
+} from '@shared/api/events.service';
+import { publishRemoteControl } from '@shared/api/remote.service';
 import type { MainRoot } from '@store/roots/main-root';
 
 /**

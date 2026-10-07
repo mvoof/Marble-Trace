@@ -1,4 +1,4 @@
-import { openExternalUrl } from '@platform/services/opener.service';
+import { openExternalUrl } from '@shared/api/opener.service';
 
 /**
  * Opens a link in the user's browser — the footer's links, the Twitch

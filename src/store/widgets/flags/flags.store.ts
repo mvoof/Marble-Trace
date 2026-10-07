@@ -6,7 +6,7 @@ import {
 } from 'mobx';
 
 import type { FlagType } from '@/types';
-import type { RaceFlags } from '@/types/bindings';
+import type { RaceFlags } from '@shared/contracts/bindings';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
 import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
 import type { PlayerStore } from '@store/data/player.store';

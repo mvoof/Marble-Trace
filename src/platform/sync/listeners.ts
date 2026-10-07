@@ -1,11 +1,11 @@
 import { runInAction } from 'mobx';
 
-import { listenTo, type UnlistenFn } from '@platform/services/events.service';
+import { listenTo, type UnlistenFn } from '@shared/api/events.service';
 import type { RendererCore } from '@store/roots/renderer-core';
 import type { OverlayRoot } from '@store/roots/overlay-root';
-import type { OverlayModes } from '@/types/bindings';
-import type { ControlMessage } from '@/types/client-protocol';
-import { getOverlayModes } from '@platform/services/hotkeys.service';
+import type { OverlayModes } from '@shared/contracts/bindings';
+import type { ControlMessage } from '@shared/contracts/client-protocol';
+import { getOverlayModes } from '@shared/api/hotkeys.service';
 import { applyControl } from './client-sync';
 import { CLIENT_CONTROL_EVENT, OVERLAY_MODES_EVENT } from './sim-events';
 

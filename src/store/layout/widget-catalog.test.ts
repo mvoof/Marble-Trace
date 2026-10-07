@@ -5,7 +5,7 @@ import {
   DEFAULT_WIDGETS,
   WIDGETS,
 } from '@store/layout/widget-catalog';
-import { TELEMETRY_EVENT_BITS } from '@/types/telemetry-events';
+import { TELEMETRY_EVENT_BITS } from '@shared/contracts/telemetry-events';
 import type { WidgetManifest } from '@/types/widget-settings';
 
 // The catalog collects its manifests from disk, so nothing can be missing from

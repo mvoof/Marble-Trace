@@ -3,8 +3,8 @@ import { comparer, reaction, type IReactionDisposer } from 'mobx';
 import {
   startChatStreamSilent,
   stopChatStreamSilent,
-} from '@platform/services/twitch.service';
-import { emitStreamChatCleared } from '@platform/services/events.service';
+} from '@shared/api/twitch.service';
+import { emitStreamChatCleared } from '@shared/api/events.service';
 import type { RendererCore } from '@store/roots/renderer-core';
 
 const STREAM_CHAT_WIDGET_ID = 'stream-chat';

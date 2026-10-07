@@ -3,7 +3,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import {
   fileStamp,
   saveTextFileAndReveal,
-} from '@platform/services/file-export.service';
+} from '@shared/api/file-export.service';
 import type { MainRoot } from '@store/roots/main-root';
 import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
 import { resultsToCsv } from './report';

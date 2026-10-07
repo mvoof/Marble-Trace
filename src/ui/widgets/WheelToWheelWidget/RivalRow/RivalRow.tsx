@@ -4,7 +4,7 @@ import {
   useWheelToWheelWidgetStore,
   type RivalSlot,
 } from '../wheel-to-wheel.store';
-import { splitDriverName } from '@utils/driver';
+import { splitDriverName } from '@shared/lib/driver';
 import { CarNumberBox } from '../CarNumberBox/CarNumberBox';
 import { SideSpeed } from '../SideSpeed/SideSpeed';
 import { SpeedBar } from '../SpeedBar/SpeedBar';

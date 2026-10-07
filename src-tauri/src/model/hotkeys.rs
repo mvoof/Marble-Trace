@@ -404,7 +404,7 @@ pub fn export_hotkey_actions(path: &str) -> std::io::Result<()> {
 
     let out = format!(
         "{GENERATED_HEADER}\n\n\
-         import type {{ HotkeyActionSpec }} from '@/types/bindings';\n\n\
+         import type {{ HotkeyActionSpec }} from '@shared/contracts/bindings';\n\n\
          /** Every bindable action but the generated per-widget visibility ones. */\n\
          export const HOTKEY_ACTIONS: readonly HotkeyActionSpec[] = {list};\n\n\
          /** `widget:<type>:toggle-visibility` — see `model/hotkeys.rs`. */\n\

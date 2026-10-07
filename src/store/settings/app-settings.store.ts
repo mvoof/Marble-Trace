@@ -2,18 +2,18 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
-import { checkInstallIntegrity } from '@platform/services/install.service';
+import { checkInstallIntegrity } from '@shared/api/install.service';
 import {
   requestDragMode,
   requestInteractMode,
-} from '@platform/services/hotkeys.service';
+} from '@shared/api/hotkeys.service';
 import {
   deleteSettingsFile,
   setCarLengthSilent,
-} from '@platform/services/settings.service';
+} from '@shared/api/settings.service';
 import { mergeWithDefaults } from '@store/settings/deep-merge';
 import { detectSystemLanguage } from '@store/settings/system-locale';
-import { createRemoteToken } from '@utils/remote-screen';
+import { createRemoteToken } from '@shared/lib/remote-screen';
 import i18n from '@/i18n';
 import type { AppLanguage } from '@/types';
 import type {
@@ -21,9 +21,9 @@ import type {
   InstallMismatch,
   InteractHotkeyMode,
   OverlayModes,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import type { FuelAdjustStep, PitStrategy } from '@/types/pit-strategy';
-import type { SettingsLockReason } from '@platform/settings-schema/types';
+import type { SettingsLockReason } from '@shared/settings-schema/types';
 
 export const resolveAppLanguage = (language: AppLanguage) =>
   language === 'system' ? detectSystemLanguage() : language;

@@ -3,7 +3,7 @@ import type {
   NearbyCar,
   ProximityFrame,
   RadarDistances,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 
 // Mock builders for the traffic domain — the cars around the player that the
 // two radars and Close Battle draw. Pure: a scenario states only where the

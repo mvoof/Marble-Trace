@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { HOTKEY_ACTIONS } from '@utils/hotkey-actions';
+import { HOTKEY_ACTIONS } from '@shared/contracts/hotkey-actions';
 import { hasSettingsHandler } from './settings-actions';
 
 describe('settings actions', () => {

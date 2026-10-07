@@ -1,8 +1,8 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
-import { NO_TIME_DATA_PLACEHOLDER } from '@utils/telemetry-format';
+import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
+import { NO_TIME_DATA_PLACEHOLDER } from '@shared/lib/telemetry-format';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import { computeNextStopForecast, formatCountdown } from '../fuel-utils';
 import styles from './FuelNextStop.module.scss';

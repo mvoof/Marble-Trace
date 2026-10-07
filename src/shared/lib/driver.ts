@@ -1,0 +1,227 @@
+import type { CarIdentity } from '@/types/car-identity';
+import type { DriverEntry } from '@/types/driver-entry';
+import { TrackSurface as TrackSurfaceType } from '@shared/contracts/bindings';
+import { TrackSurface, type FlagType } from '@/types';
+
+// ─── Track surface constants ───────────────────────────────────────────────
+
+export const TRACK_SURFACE_OFF_TRACK: TrackSurfaceType = TrackSurface.OffTrack;
+export const TRACK_SURFACE_IN_PIT_STALL: TrackSurfaceType =
+  TrackSurface.InPitStall;
+export const TRACK_SURFACE_ON_TRACK: TrackSurfaceType = TrackSurface.OnTrack;
+export const NEAR_DQ_INCIDENT_THRESHOLD = 15;
+
+/** Incidents left before disqualification at which the counter starts warning. */
+const NEAR_DQ_INCIDENT_MARGIN = 2;
+
+/**
+ * Whether the incident counter should warn. With a limit reported by the sim the
+ * warning tracks it; without one it falls back to the threshold of a default
+ * 17x session, which is what most official series run.
+ */
+export const isNearIncidentLimit = (
+  incidents: number,
+  incidentLimit: number | null
+): boolean => {
+  if (incidentLimit === null) {
+    return incidents >= NEAR_DQ_INCIDENT_THRESHOLD;
+  }
+
+  return incidents >= incidentLimit - NEAR_DQ_INCIDENT_MARGIN;
+};
+
+/** Incidents left before the next penalty at which the counter starts warning. */
+const NEAR_PENALTY_INCIDENT_MARGIN = 2;
+
+export interface IncidentPenaltyRules {
+  initial: number | null;
+  subsequent: number | null;
+  limit: number | null;
+}
+
+export interface IncidentPenaltyStatus {
+  /** Penalties the driver has already been given. */
+  served: number;
+  /** Incident count of the next penalty; `null` when none is left before the DQ. */
+  nextAt: number | null;
+}
+
+/**
+ * Where the driver stands against the session's incident penalties: the first
+ * one at `initial`, then one every `subsequent`. `null` when the session gives
+ * none, or gives its first only at or past the disqualification limit.
+ */
+export const getIncidentPenaltyStatus = (
+  incidents: number,
+  { initial, subsequent, limit }: IncidentPenaltyRules
+): IncidentPenaltyStatus | null => {
+  if (initial === null) {
+    return null;
+  }
+
+  if (limit !== null && initial >= limit) {
+    return null;
+  }
+
+  if (incidents < initial) {
+    return { served: 0, nextAt: initial };
+  }
+
+  if (subsequent === null) {
+    return { served: 1, nextAt: null };
+  }
+
+  // A penalty that would land on or past the DQ is never given, whatever the
+  // count reads once the driver is out.
+  const countedIncidents =
+    limit === null ? incidents : Math.min(incidents, limit - 1);
+  const served = 1 + Math.floor((countedIncidents - initial) / subsequent);
+  const nextAt = initial + served * subsequent;
+  const isPastLimit = limit !== null && nextAt >= limit;
+
+  return { served, nextAt: isPastLimit ? null : nextAt };
+};
+
+export const isNearIncidentPenalty = (
+  incidents: number,
+  status: IncidentPenaltyStatus | null
+): boolean => {
+  if (status === null || status.nextAt === null) {
+    return false;
+  }
+
+  return incidents >= status.nextAt - NEAR_PENALTY_INCIDENT_MARGIN;
+};
+
+// ─── Formatters ───────────────────────────────────────────────────────────
+
+export const formatIRating = (ir: number, abbreviate = true): string => {
+  if (ir <= 0) return '—';
+  if (abbreviate && ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
+  return ir.toString();
+};
+
+export const formatBrand = (screenName: string): string => {
+  if (!screenName) return '';
+  const firstWord = screenName.split(' ')[0] ?? screenName;
+  return firstWord.slice(0, 3).toUpperCase();
+};
+
+export const abbreviateName = (fullName: string): string => {
+  const parts = fullName.trim().split(/\s+/);
+
+  if (parts.length < 2) return fullName;
+
+  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
+};
+
+/**
+ * Splits a driver name into the part the eye skips and the part it reads.
+ *
+ * At speed only the surname registers, so widgets set it apart — light given
+ * name, heavy surname. Everything before the last word counts as the given
+ * name; a single-word name is all surname.
+ */
+export const splitDriverName = (
+  fullName: string
+): { givenName: string; surname: string } => {
+  const parts = fullName.trim().split(/\s+/);
+
+  if (parts.length < 2) {
+    return { givenName: '', surname: fullName.trim() };
+  }
+
+  return {
+    givenName: parts.slice(0, -1).join(' '),
+    surname: parts[parts.length - 1],
+  };
+};
+
+export const formatCarNumber = (carNumber: string): string => {
+  return carNumber.length === 1 && /^\d$/.test(carNumber)
+    ? `0${carNumber}`
+    : carNumber;
+};
+
+const SESSION_FLAGS = {
+  checkered: 0x00000001,
+  blue: 0x00000020,
+  black: 0x00010000,
+  disqualify: 0x00020000,
+  repair: 0x00100000,
+  furled: 0x00080000,
+} as const;
+
+export const parseDriverFlags = (rawFlags: number): FlagType => {
+  if (rawFlags & SESSION_FLAGS.disqualify) return 'dq';
+  if (rawFlags & SESSION_FLAGS.repair) return 'meatball';
+  if (rawFlags & SESSION_FLAGS.black) return 'penalty';
+  if (rawFlags & SESSION_FLAGS.furled) return 'black';
+  if (rawFlags & SESSION_FLAGS.blue) return 'blue';
+  if (rawFlags & SESSION_FLAGS.checkered) return 'checkered';
+
+  return 'none';
+};
+
+/**
+ * Strength of Field of a class: the plain average iRating of its drivers.
+ * Lives here rather than with the Standings widget because the standings store
+ * needs it too, and a store must not reach into the UI layer.
+ */
+export const computeClassSof = (drivers: CarIdentity[]): number => {
+  if (drivers.length === 0) return 0;
+
+  const total = drivers.reduce((sum, driver) => sum + driver.iRating, 0);
+
+  return Math.round(total / drivers.length);
+};
+
+/**
+ * Whether the car has a lap time to be ranked by — its own in this session, or
+ * the qualifying time standing in for it before the first flying lap.
+ */
+export const hasSetALap = (driver: {
+  bestLapTime: number | null;
+  qualifyTime: number | null;
+}): boolean => driver.bestLapTime !== null || driver.qualifyTime !== null;
+
+/**
+ * Seconds between a car and the player on the relative strip, scaled by class
+ * pace so a faster class is not shown closer than it is. Positive: ahead.
+ */
+export const computeRelativeGap = (
+  driver: DriverEntry,
+  player: DriverEntry
+): number => {
+  if (driver.isPlayer) return 0;
+
+  const isAhead = driver.relativeLapDist > 0;
+  const aheadClassLapTime = isAhead
+    ? driver.classEstLapTime || driver.bestLapTime
+    : player.classEstLapTime || player.bestLapTime;
+  const behindClassLapTime = isAhead
+    ? player.classEstLapTime || player.bestLapTime
+    : driver.classEstLapTime || driver.bestLapTime;
+
+  if (!aheadClassLapTime || !behindClassLapTime) {
+    return driver.estTime - player.estTime;
+  }
+
+  const scalingRatio = behindClassLapTime / aheadClassLapTime;
+  const aheadEstTime = isAhead ? driver.estTime : player.estTime;
+  const behindEstTime = isAhead ? player.estTime : driver.estTime;
+  const aheadTimeScaled = aheadEstTime * scalingRatio;
+  const referenceLapTime = behindClassLapTime;
+
+  let delta = isAhead
+    ? behindEstTime - aheadTimeScaled
+    : aheadTimeScaled - behindEstTime;
+
+  if (isAhead) {
+    if (delta > referenceLapTime / 2) delta -= referenceLapTime;
+  } else {
+    if (delta < -referenceLapTime / 2) delta += referenceLapTime;
+  }
+
+  return delta;
+};

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import type { ReactNode } from 'react';
 
-import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
+import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
 import { widgetFrameStyle } from '@ui/app/widget-frame';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import styles from './RemoteWidgetFrame.module.scss';

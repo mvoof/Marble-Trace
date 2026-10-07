@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { formatSpeed, speedUnit } from '@utils/telemetry-format';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { formatSpeed, speedUnit } from '@shared/lib/telemetry-format';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@store/data/player-context';
 import { useUnitsStore } from '@store/settings/units-context';
 

@@ -5,9 +5,9 @@ import { OverlayRoot } from '@store/roots/overlay-root';
 import { RemoteScreenStore } from '@store/remote/remote-screen.store';
 import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
-import type { RemoteControlKind } from '@/types/bindings';
-import type { ControlMessage } from '@/types/client-protocol';
-import type { RemoteMessage } from '@/types/remote';
+import type { RemoteControlKind } from '@shared/contracts/bindings';
+import type { ControlMessage } from '@shared/contracts/client-protocol';
+import type { RemoteMessage } from '@shared/contracts/remote';
 
 // Each transport's inbound handler, captured as it subscribes: the overlay's
 // Tauri listener for the control event, and the remote page's socket.
@@ -16,7 +16,7 @@ const inbound = vi.hoisted(() => ({
   remote: null as null | ((message: RemoteMessage) => void),
 }));
 
-vi.mock('@platform/services/events.service', () => ({
+vi.mock('@shared/api/events.service', () => ({
   listenTo: vi.fn(
     async (
       event: string,
@@ -31,14 +31,14 @@ vi.mock('@platform/services/events.service', () => ({
   ),
 }));
 
-vi.mock('@platform/services/hotkeys.service', () => ({
+vi.mock('@shared/api/hotkeys.service', () => ({
   getOverlayModes: vi.fn(async () => ({
     dragMode: false,
     interactMode: false,
   })),
 }));
 
-vi.mock('@platform/services/remote-socket.service', () => ({
+vi.mock('@shared/api/remote-socket.service', () => ({
   openRemoteSocket: vi.fn(
     (options: { onMessage: (message: RemoteMessage) => void }) => {
       inbound.remote = options.onMessage;
@@ -48,7 +48,7 @@ vi.mock('@platform/services/remote-socket.service', () => ({
   ),
 }));
 
-vi.mock('@platform/services/settings.service', () => ({
+vi.mock('@shared/api/settings.service', () => ({
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
   setPitWarningLapsSilent: vi.fn(),

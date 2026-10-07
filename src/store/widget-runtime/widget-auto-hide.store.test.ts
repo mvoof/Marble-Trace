@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { observable } from 'mobx';
 
 import { WidgetAutoHideStore } from './widget-auto-hide.store';
-import type { DrsState } from '@/types/bindings';
+import type { DrsState } from '@shared/contracts/bindings';
 import type { DrsWidgetSettings } from '@/types/widget-settings';
 
 type Deps = ConstructorParameters<typeof WidgetAutoHideStore>[0];

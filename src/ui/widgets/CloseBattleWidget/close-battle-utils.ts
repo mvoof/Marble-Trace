@@ -1,8 +1,8 @@
-import type { NearbyCar } from '@/types/bindings';
+import type { NearbyCar } from '@shared/contracts/bindings';
 import type { DriverEntry } from '@/types/driver-entry';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
-import { computeRelativeGap } from '@utils/driver';
-import { splitDriverName } from '@utils/driver';
+import { computeRelativeGap } from '@shared/lib/driver';
+import { splitDriverName } from '@shared/lib/driver';
 
 /**
  * The axis ends short of the widget edge: the outermost tick label and the

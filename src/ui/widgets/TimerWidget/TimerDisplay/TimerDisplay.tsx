@@ -5,10 +5,10 @@ import {
   isSessionEnded,
   resolveSessionClock,
   splitTime,
-} from '@utils/timer-utils';
+} from '@shared/lib/timer-utils';
 
 import { useSessionStore } from '@store/data/session-context';
-import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import styles from './TimerDisplay.module.scss';
 
 export const TimerDisplay = observer(() => {

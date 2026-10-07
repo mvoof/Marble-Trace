@@ -6,8 +6,8 @@ import {
   twitchPollDeviceToken,
   twitchRequestDeviceCode,
   twitchSignOut,
-} from '@platform/services/twitch.service';
-import type { TwitchDeviceCode } from '@/types/bindings';
+} from '@shared/api/twitch.service';
+import type { TwitchDeviceCode } from '@shared/contracts/bindings';
 import { openExternalLink } from './external-link';
 import type { AppSettingsStore } from '@store/settings/app-settings.store';
 

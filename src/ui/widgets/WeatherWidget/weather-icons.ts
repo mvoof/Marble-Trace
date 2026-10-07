@@ -1,6 +1,6 @@
 import { Sun, CloudSun, Cloud, CloudRain } from 'lucide-react';
 
-import { getWeatherIcon } from '@utils/weather-utils';
+import { getWeatherIcon } from '@shared/lib/weather-utils';
 
 const ICON_BY_NAME = {
   sun: Sun,

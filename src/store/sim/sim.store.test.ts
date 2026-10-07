@@ -3,9 +3,9 @@ import { runInAction } from 'mobx';
 
 import { MainRoot } from '@store/roots/main-root';
 import type { SavedLayout } from '@/types/widget-settings';
-import { TELEMETRY_EVENT_BITS } from '@/types/telemetry-events';
+import { TELEMETRY_EVENT_BITS } from '@shared/contracts/telemetry-events';
 
-vi.mock('@platform/services/events.service', () => ({
+vi.mock('@shared/api/events.service', () => ({
   listenTo: vi.fn(() => Promise.resolve(() => {})),
 }));
 
@@ -18,7 +18,7 @@ const clearRemoteActiveEventsSilent = vi.fn();
 let reportMinimized: ((minimized: boolean) => void) | null = null;
 const stopWatchingMinimized = vi.fn();
 
-vi.mock('@platform/services/window-visibility.service', () => ({
+vi.mock('@shared/api/window-visibility.service', () => ({
   watchMinimized: (onChange: (minimized: boolean) => void) => {
     reportMinimized = onChange;
 
@@ -26,7 +26,7 @@ vi.mock('@platform/services/window-visibility.service', () => ({
   },
 }));
 
-vi.mock('@platform/services/telemetry.service', () => ({
+vi.mock('@shared/api/telemetry.service', () => ({
   getConnectionStatus: vi.fn(),
   getLastSessionInfo: vi.fn(),
   setActiveEventsSilent: (mask: number) => setActiveEventsSilent(mask),
@@ -38,13 +38,13 @@ vi.mock('@platform/services/telemetry.service', () => ({
   stopTelemetryStream: vi.fn(),
 }));
 
-vi.mock('@platform/services/track.service', () => ({
+vi.mock('@shared/api/track.service', () => ({
   deleteReferenceLap: vi.fn(),
   getCachedTrackShape: vi.fn(),
   getActiveReferenceLap: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock('@platform/services/settings.service', () => ({
+vi.mock('@shared/api/settings.service', () => ({
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
   setPitWarningLapsSilent: vi.fn(),

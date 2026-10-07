@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel } from '@utils/telemetry-format';
-import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
-import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
-import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/telemetry-format';
+import { formatFuel } from '@shared/lib/telemetry-format';
+import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
+import { NO_FUEL_DATA_PLACEHOLDER } from '@shared/lib/telemetry-format';
 import { useBackendComputedStore } from '@store/data/computed-context';
 import { useUnitsStore } from '@store/settings/units-context';
 import styles from './PitWarningFill.module.scss';

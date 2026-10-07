@@ -2,7 +2,7 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
-import { resolveSessionLaps } from '@utils/telemetry-format';
+import { resolveSessionLaps } from '@shared/lib/telemetry-format';
 import { useCarsStore } from '@store/data/cars-context';
 import { usePlayerStore } from '@store/data/player-context';
 import { useSessionStore } from '@store/data/session-context';

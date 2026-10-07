@@ -4,9 +4,9 @@ import type {
   MonitorBounds,
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
-import type { RemoteConnectionState } from '@/types/remote';
-import type { ClientSnapshot } from '@/types/client-protocol';
-import { DEFAULT_REMOTE_BACKGROUND, fitScale } from '@utils/remote-screen';
+import type { RemoteConnectionState } from '@shared/contracts/remote';
+import type { ClientSnapshot } from '@shared/contracts/client-protocol';
+import { DEFAULT_REMOTE_BACKGROUND, fitScale } from '@shared/lib/remote-screen';
 
 /**
  * State of the browser tab a remote screen runs in: which screen it is, whether

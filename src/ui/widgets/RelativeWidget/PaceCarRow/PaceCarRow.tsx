@@ -2,8 +2,8 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { buildRelativeGridTemplate } from '@ui/widgets/RelativeWidget/relative-utils';
-import { computeRelativeGap, formatCarNumber } from '@utils/driver';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { computeRelativeGap, formatCarNumber } from '@shared/lib/driver';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './PaceCarRow.module.scss';

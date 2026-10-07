@@ -15,7 +15,7 @@ import {
   closeDiagnosticsHud,
   emitDiagnosticsHudState,
   openDiagnosticsHud,
-} from '@platform/services/diagnostics-hud.service';
+} from '@shared/api/diagnostics-hud.service';
 import { resolveAppLanguage } from '@store/settings/app-settings.store';
 import { summarize, type SampleStats } from './stats';
 

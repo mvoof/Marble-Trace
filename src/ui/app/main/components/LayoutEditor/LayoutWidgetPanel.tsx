@@ -16,7 +16,7 @@ import type {
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
 import type { MonitorWidgetRow } from '@store/layout/live-widgets.store';
-import { isRemoteMonitor } from '@utils/remote-screen';
+import { isRemoteMonitor } from '@shared/lib/remote-screen';
 import { useLayoutsStore } from '@store/layout/layouts-context';
 import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
 import styles from './LayoutWidgetPanel.module.scss';

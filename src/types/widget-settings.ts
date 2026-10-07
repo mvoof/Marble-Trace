@@ -1,6 +1,6 @@
 import type React from 'react';
-import type { CapabilitiesPayload } from '@/types/bindings';
-import type { TelemetryEventName } from '@/types/telemetry-events';
+import type { CapabilitiesPayload } from '@shared/contracts/bindings';
+import type { TelemetryEventName } from '@shared/contracts/telemetry-events';
 import type { PreviewScenarioId } from '@/types/preview-scenarios';
 
 type RpmColorTheme = 'custom' | 'gradient' | 'classic';

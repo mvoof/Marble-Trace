@@ -3,7 +3,7 @@ import { runInAction } from 'mobx';
 import { PreviewCore } from '@store/roots/renderer-core';
 import type { WidgetStoreFactory } from '@store/widget-runtime/widget-instances.store';
 import type { WidgetCore } from '@ui/widgets/widget-mount';
-import type { CarInputsFrame } from '@/types/bindings';
+import type { CarInputsFrame } from '@shared/contracts/bindings';
 import { InputTraceWidgetStore } from './input-trace.store';
 
 const INPUT_TRACE = 'input-trace';

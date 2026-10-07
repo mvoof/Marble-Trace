@@ -1,4 +1,4 @@
-import type { ChassisFrame, PitServiceFrame } from '@/types/bindings';
+import type { ChassisFrame, PitServiceFrame } from '@shared/contracts/bindings';
 
 export type CornerPosition = 'lf' | 'rf' | 'lr' | 'rr';
 

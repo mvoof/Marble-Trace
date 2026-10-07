@@ -1,4 +1,4 @@
-import type { PaceCarPitPhase } from '@/types/bindings';
+import type { PaceCarPitPhase } from '@shared/contracts/bindings';
 
 /**
  * A car as the map draws it. Deliberately without a position: where the dot goes

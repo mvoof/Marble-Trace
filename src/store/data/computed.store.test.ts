@@ -8,7 +8,7 @@ import type {
   DriverEntry,
   LapLogFrame,
   SessionSnapshot,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 
 const makeFrame = (
   history: LapLogFrame['history'],

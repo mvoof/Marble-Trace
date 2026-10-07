@@ -1,13 +1,13 @@
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 
-import { listenTo, type UnlistenFn } from '@platform/services/events.service';
+import { listenTo, type UnlistenFn } from '@shared/api/events.service';
 import {
   setHotkeyBindings,
   setHotkeyContext,
-} from '@platform/services/hotkeys.service';
+} from '@shared/api/hotkeys.service';
 import { applySettingsAction } from '@store/hotkeys/settings-actions';
 import type { MainRoot } from '@store/roots/main-root';
-import type { HotkeySettingsAction } from '@/types/bindings';
+import type { HotkeySettingsAction } from '@shared/contracts/bindings';
 import { HOTKEY_SETTINGS_ACTION_EVENT } from './sim-events';
 
 const reportFailure = (what: string) => (error: unknown) =>

@@ -1,9 +1,9 @@
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import type { RpmZone } from '@utils/car-signals';
-import { rpmZoneDigitColor } from '@utils/car-signals';
+import type { RpmZone } from '@shared/lib/car-signals';
+import { rpmZoneDigitColor } from '@shared/lib/car-signals';
 
-export type { RpmZone, RpmZoneState } from '@utils/car-signals';
-export { computeRpmZoneState } from '@utils/car-signals';
+export type { RpmZone, RpmZoneState } from '@shared/lib/car-signals';
+export { computeRpmZoneState } from '@shared/lib/car-signals';
 
 // Ramp endpoints for the pit limit digit: amber while there is room left,
 // red once the limit is reached. Same hexes as $race-amber / $race-red.

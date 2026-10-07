@@ -4,7 +4,7 @@ import type {
   FuelComputedFrame,
   PitServiceFrame,
   ProximityFrame,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import { action } from 'mobx';
 import { TrackSurface } from '@/types';
 import type { PreviewTarget } from './preview-target';

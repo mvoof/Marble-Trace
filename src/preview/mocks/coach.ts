@@ -4,7 +4,7 @@ import type {
   DrivingAdvisory,
   ReferenceLapData,
   ReferenceLapSample,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 
 // Mock builders for the coach domain — the stored best lap every advisory is
 // measured against. Pure: the lap is returned as a *complete* frame typed from

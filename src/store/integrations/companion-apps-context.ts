@@ -1,4 +1,4 @@
-import { createStoreContext } from '@utils/store-context';
+import { createStoreContext } from '@shared/lib/store-context';
 import type { CompanionAppsStore } from './companion-apps.store';
 
 export const [CompanionAppsContext, useCompanionAppsStore] =

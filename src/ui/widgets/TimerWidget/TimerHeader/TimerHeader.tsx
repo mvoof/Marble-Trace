@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import {
   resolveSessionColorKey,
   type SessionColorKey,
-} from '@utils/timer-utils';
+} from '@shared/lib/timer-utils';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 import { useSessionStore } from '@store/data/session-context';
 import styles from './TimerHeader.module.scss';

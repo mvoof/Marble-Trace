@@ -1,6 +1,6 @@
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 
-import { setPitStrategySilent } from '@platform/services/pit.service';
+import { setPitStrategySilent } from '@shared/api/pit.service';
 import type { RendererCore } from '@store/roots/renderer-core';
 
 // The fuel step keys move by the unit the driver reads: a liter, or a gallon's

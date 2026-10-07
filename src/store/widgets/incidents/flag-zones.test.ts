@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { IncidentPoint } from '@/types/bindings';
+import type { IncidentPoint } from '@shared/contracts/bindings';
 import {
   computeIncidentZones,
   flagZoneLengthPct,

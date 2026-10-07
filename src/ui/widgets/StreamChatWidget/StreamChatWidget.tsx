@@ -2,7 +2,7 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { ChatBanner } from './ChatBanner/ChatBanner';
 import { ChatFooter } from './ChatFooter/ChatFooter';
 import { ChatMessageList } from './ChatMessageList/ChatMessageList';

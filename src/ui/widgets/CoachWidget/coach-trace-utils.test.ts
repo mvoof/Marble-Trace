@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { ReferenceLapSample } from '@/types/bindings';
+import type { ReferenceLapSample } from '@shared/contracts/bindings';
 import {
   createTraceWindowBuffers,
   fillTraceWindow,
@@ -10,7 +10,7 @@ import {
   type TraceWindowBuffers,
 } from './coach-trace-utils';
 
-import { REFERENCE_LAP_BUCKET_COUNT as BUCKET_COUNT } from '@utils/backend-constants';
+import { REFERENCE_LAP_BUCKET_COUNT as BUCKET_COUNT } from '@shared/contracts/backend-constants';
 const TRACK_LENGTH_M = 4000;
 const WINDOW_M = 150;
 const NOW_INDEX = (TRACE_POINT_COUNT - 1) / 2;

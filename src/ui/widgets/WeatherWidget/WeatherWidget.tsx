@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 
 import { WindCompass } from './WindCompass/WindCompass';

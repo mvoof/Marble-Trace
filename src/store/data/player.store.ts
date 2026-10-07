@@ -8,7 +8,7 @@ import type {
   LapTimingFrame,
   PitServiceFrame,
   PitTargetFrame,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 
 export class PlayerStore {
   /**

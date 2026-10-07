@@ -5,7 +5,7 @@ import {
   useWheelToWheelWidgetStore,
   type RivalSlot,
 } from '../wheel-to-wheel.store';
-import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 
 import styles from './GapCenter.module.scss';
 

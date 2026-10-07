@@ -3,9 +3,9 @@ import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { InputTraceSettings } from '@/types/widget-settings';
 
-import { getContrastTextColor } from '@utils/colors';
+import { getContrastTextColor } from '@shared/lib/colors';
 
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useValueCoverPoint } from './useValueCoverPoint';
 
 import styles from './Bar.module.scss';

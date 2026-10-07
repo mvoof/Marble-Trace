@@ -6,7 +6,7 @@ import type {
   CoachInactiveReason,
   DrivingAdvisory,
   ReferenceLapSample,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import { interpolateReferenceSample } from './coach-trace-utils';
 import type { PlayerStore } from '@store/data/player.store';

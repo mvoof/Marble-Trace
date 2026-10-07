@@ -1,4 +1,7 @@
-import type { FuelHistoryStats, FuelLapRecord } from '@/types/bindings';
+import type {
+  FuelHistoryStats,
+  FuelLapRecord,
+} from '@shared/contracts/bindings';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import { FUEL_AVG_WINDOW_ALL_LAPS, FUEL_THRESHOLDS } from './fuel-constants';
 

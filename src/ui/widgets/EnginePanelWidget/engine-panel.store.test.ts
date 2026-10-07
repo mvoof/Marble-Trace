@@ -2,7 +2,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { observable, runInAction } from 'mobx';
 
 import { mockCarStatus, mockHybridCarStatus } from '@/preview/mocks/engine';
-import type { CarStatusFrame } from '@/types/bindings';
+import type { CarStatusFrame } from '@shared/contracts/bindings';
 import {
   CHANGE_HIGHLIGHT_MS,
   EnginePanelWidgetStore,

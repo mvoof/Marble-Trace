@@ -1,7 +1,7 @@
 import type {
   CarEntry,
   DriverEntry as LiveDriverEntry,
-} from '@/types/bindings';
+} from '@shared/contracts/bindings';
 import { SESSION_CAR_FIELDS, type DriverEntry } from '@/types/driver-entry';
 
 /** What a car with no licence on record shows — AI and some hosted entries. */

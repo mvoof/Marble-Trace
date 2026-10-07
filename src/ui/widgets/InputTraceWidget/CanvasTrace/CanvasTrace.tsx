@@ -2,8 +2,8 @@ import { useWidgetInstanceId } from '@ui/hooks/useWidgetSettings';
 import { useRef, useCallback } from 'react';
 
 import type { InputTraceSettings } from '@/types/widget-settings';
-import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
-import { useCanvasAutoResize } from '@ui/hooks/useCanvasAutoResize';
+import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
+import { useCanvasAutoResize } from '@shared/hooks/useCanvasAutoResize';
 import styles from './CanvasTrace.module.scss';
 import { useAppSettingsStore } from '@store/settings/app-settings-context';
 import { usePlayerStore } from '@store/data/player-context';

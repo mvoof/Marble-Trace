@@ -4,18 +4,18 @@ import { observer } from 'mobx-react-lite';
 
 import type { TrackPoint } from '@/types';
 import { getPointAtPct } from '@ui/widgets/TrackMapWidget/track-map-utils';
-import type { SectorEntry } from '@/types/bindings';
+import type { SectorEntry } from '@shared/contracts/bindings';
 import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
 import type { CarOnTrack } from '@ui/widgets/TrackMapWidget/types';
-import { CarDot } from '@ui/shared/CarDot/CarDot';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { CarDot } from '@shared/ui/CarDot/CarDot';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBackendComputedStore } from '@store/data/computed-context';
 import { useCarsStore } from '@store/data/cars-context';
-import { shapeForClassOrder } from '@utils/canvas';
-import { PaceCarMarker } from '@ui/shared/PaceCarMarker/PaceCarMarker';
+import { shapeForClassOrder } from '@shared/lib/canvas';
+import { PaceCarMarker } from '@shared/ui/PaceCarMarker/PaceCarMarker';
 import { FlagZones } from './FlagZones/FlagZones';
 
-import { getSectorColor } from '@utils/colors';
+import { getSectorColor } from '@shared/lib/colors';
 import { StartFinishMarker } from './StartFinishMarker/StartFinishMarker';
 
 import styles from './TrackMapSvg.module.scss';

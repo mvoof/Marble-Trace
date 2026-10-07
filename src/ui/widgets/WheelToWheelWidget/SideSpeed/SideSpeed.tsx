@@ -5,8 +5,8 @@ import {
   useWheelToWheelWidgetStore,
   type BattleSlot,
 } from '../wheel-to-wheel.store';
-import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
-import { speedUnit } from '@utils/telemetry-format';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
+import { speedUnit } from '@shared/lib/telemetry-format';
 
 import styles from './SideSpeed.module.scss';
 

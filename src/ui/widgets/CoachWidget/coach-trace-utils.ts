@@ -1,4 +1,4 @@
-import type { ReferenceLapSample } from '@/types/bindings';
+import type { ReferenceLapSample } from '@shared/contracts/bindings';
 
 /**
  * Number of points sampled across the whole window. Odd so one point lands

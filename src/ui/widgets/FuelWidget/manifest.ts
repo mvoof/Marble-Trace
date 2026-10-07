@@ -3,7 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@ui/widgets/widget-manifest';
-import { DEFAULT_PIT_WARNING_LAPS } from '@utils/backend-constants';
+import { DEFAULT_PIT_WARNING_LAPS } from '@shared/contracts/backend-constants';
 import { FUEL_AVG_WINDOW_ALL_LAPS } from './fuel-constants';
 
 export const FUEL_MANIFEST: WidgetManifest = {

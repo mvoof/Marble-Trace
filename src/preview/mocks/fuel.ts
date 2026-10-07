@@ -1,4 +1,4 @@
-import type { FuelComputedFrame } from '@/types/bindings';
+import type { FuelComputedFrame } from '@shared/contracts/bindings';
 
 // Mock builders for the fuel domain. Pure: each takes a partial override and
 // returns a *complete* frame typed from the generated bindings, so a field

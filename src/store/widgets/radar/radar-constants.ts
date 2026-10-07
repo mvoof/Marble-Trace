@@ -9,7 +9,7 @@
  * `utils/`.
  */
 
-import type { LateralSide } from '@/types/bindings';
+import type { LateralSide } from '@shared/contracts/bindings';
 import type { RadarScaleMode } from '@/types/widget-settings';
 
 /** Proximity center distance considered dangerous for RadarBar */

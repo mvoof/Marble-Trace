@@ -21,7 +21,7 @@ import {
 } from '@store/layout/layout-editor-context';
 import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
 import { useRemoteDevicesStore } from '@store/remote/remote-devices-context';
-import { isRemoteMonitor } from '@utils/remote-screen';
+import { isRemoteMonitor } from '@shared/lib/remote-screen';
 import {
   resolveBackgroundSrc,
   deleteBackgroundImage,

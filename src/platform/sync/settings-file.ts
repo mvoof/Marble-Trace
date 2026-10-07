@@ -4,7 +4,7 @@ import {
   WIDGET_BY_ID,
 } from '@store/layout/widget-catalog';
 import { defaultMonitorOf } from '@store/layout/virtual-desktop';
-import { cloneMonitor } from '@utils/remote-screen';
+import { cloneMonitor } from '@shared/lib/remote-screen';
 import type {
   LayoutMonitor,
   MonitorBounds,

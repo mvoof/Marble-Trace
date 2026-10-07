@@ -1,17 +1,14 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import type { TrackShapePayload } from '@/types/bindings';
-import {
-  deleteTrackShape,
-  resetPitLanePct,
-} from '@platform/services/track.service';
-import { readTrackRotations } from '@platform/services/track-settings.service';
-import { emitTrackMapForceStart } from '@platform/services/events.service';
+import type { TrackShapePayload } from '@shared/contracts/bindings';
+import { deleteTrackShape, resetPitLanePct } from '@shared/api/track.service';
+import { readTrackRotations } from '@shared/api/track-settings.service';
+import { emitTrackMapForceStart } from '@shared/api/events.service';
 import {
   emitTrackMapClear,
   emitTrackRotationRequest,
   type TrackRotateDirection,
-} from '@platform/services/events.service';
+} from '@shared/api/events.service';
 
 export type { TrackRotateDirection };
 

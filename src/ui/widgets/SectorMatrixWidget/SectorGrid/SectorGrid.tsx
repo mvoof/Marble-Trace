@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { getCellDividers } from '@utils/canvas';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { getCellDividers } from '@shared/lib/canvas';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@store/data/player-context';
 import { useBackendComputedStore } from '@store/data/computed-context';
 

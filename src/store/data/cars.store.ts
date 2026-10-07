@@ -1,6 +1,9 @@
 import { makeAutoObservable, observable } from 'mobx';
 
-import type { CarIdxFrame, CarPositionsFrame } from '@/types/bindings';
+import type {
+  CarIdxFrame,
+  CarPositionsFrame,
+} from '@shared/contracts/bindings';
 
 export class CarsStore {
   carIdx: CarIdxFrame | null = null;

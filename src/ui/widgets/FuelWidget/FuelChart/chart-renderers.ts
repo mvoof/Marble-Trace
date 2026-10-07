@@ -1,4 +1,4 @@
-import type { FuelLapRecord } from '@/types/bindings';
+import type { FuelLapRecord } from '@shared/contracts/bindings';
 import { FUEL_COLORS, FUEL_CHART_CONFIG } from '../fuel-constants';
 
 const barColor = (record: FuelLapRecord, avg: number | null): string => {

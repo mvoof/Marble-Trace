@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { useClickOutside } from '@ui/hooks/useClickOutside';
+import { useClickOutside } from '@shared/hooks/useClickOutside';
 import { ConfigProvider, theme } from 'antd';
 import { X } from 'lucide-react';
 import { WidgetSettings } from '@ui/app/main/components/WidgetSettings/WidgetSettings';

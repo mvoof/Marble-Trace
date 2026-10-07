@@ -2,7 +2,7 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { positionBandColor } from '../race-dash-utils';
-import { resolveSessionLaps } from '@utils/telemetry-format';
+import { resolveSessionLaps } from '@shared/lib/telemetry-format';
 import { RpmValue } from '../RpmValue/RpmValue';
 import { SpeedReadout } from '../SpeedReadout/SpeedReadout';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';

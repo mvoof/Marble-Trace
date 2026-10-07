@@ -2,8 +2,8 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
-import { computeRpmZoneState } from '@utils/car-signals';
-import { useReactiveDomWrite } from '@ui/hooks/useReactiveDomWrite';
+import { computeRpmZoneState } from '@shared/lib/car-signals';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@store/data/player-context';
 import { useSessionStore } from '@store/data/session-context';
 

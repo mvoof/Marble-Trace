@@ -8,7 +8,7 @@ import type {
   CommandMessage,
   ClientSnapshot,
   SnapshotMessage,
-} from '@/types/client-protocol';
+} from '@shared/contracts/client-protocol';
 
 // Main and the overlays are wired straight to each other below: a command an
 // overlay sends reaches main's handler at once, and every snapshot main sends
@@ -20,7 +20,7 @@ const wire = vi.hoisted(() => ({
   commands: [] as CommandMessage[],
 }));
 
-vi.mock('@platform/services/events.service', () => ({
+vi.mock('@shared/api/events.service', () => ({
   emitLayoutActivated: vi.fn(),
   emitToMain: vi.fn(async (message: ClientToMainMessage) => {
     if (message.kind === 'command') {
@@ -46,7 +46,7 @@ vi.mock('@platform/services/events.service', () => ({
   listenTo: vi.fn(),
 }));
 
-vi.mock('@platform/services/settings.service', () => ({
+vi.mock('@shared/api/settings.service', () => ({
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
   setPitWarningLapsSilent: vi.fn(),

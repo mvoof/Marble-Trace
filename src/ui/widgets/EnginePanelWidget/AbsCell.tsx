@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
-import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
-import { FixedDigits } from '@ui/shared/FixedDigits/FixedDigits';
+import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { EngineCell } from './EngineCell';
 import { usePlayerStore } from '@store/data/player-context';
 import { useEnginePanelWidgetStore } from '@ui/widgets/EnginePanelWidget/engine-panel.store';

@@ -2,10 +2,10 @@ import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Trophy, Users } from 'lucide-react';
 
-import { formatIRating } from '@utils/driver';
+import { formatIRating } from '@shared/lib/driver';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { StatPill } from '@ui/shared/StatPill/StatPill';
+import { StatPill } from '@shared/ui/StatPill/StatPill';
 import styles from './ClassGroupHeader.module.scss';
 
 /** Marks the class header rows, which scroll the classes rather than the drivers. */

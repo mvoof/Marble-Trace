@@ -1,7 +1,7 @@
 import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
-import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
+import { NoDataPlaceholder } from '@shared/ui/NoDataPlaceholder/NoDataPlaceholder';
 import { useSessionStore } from '@store/data/session-context';
 import { useSimStore } from '@store/sim/sim-context';
 import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';

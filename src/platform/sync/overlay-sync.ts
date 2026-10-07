@@ -1,12 +1,12 @@
 import { comparer, runInAction } from 'mobx';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
-import { emitToMain, listenToMain } from '@platform/services/events.service';
+import { emitToMain, listenToMain } from '@shared/api/events.service';
 import { setupOverlayListeners } from './listeners';
 import { applyClientSnapshot } from './client-sync';
 import { initPerfRun } from './perf-run';
 import type { OverlayRoot } from '@store/roots/overlay-root';
-import type { SnapshotMessage } from '@/types/client-protocol';
+import type { SnapshotMessage } from '@shared/contracts/client-protocol';
 
 /**
  * An overlay's snapshot: the client's (`applyClientSnapshot`), plus what only an

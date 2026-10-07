@@ -1,10 +1,10 @@
-import { parseClassColor } from '@utils/colors';
-import type { CarEntry, CarIdxFrame } from '@/types/bindings';
+import { parseClassColor } from '@shared/lib/colors';
+import type { CarEntry, CarIdxFrame } from '@shared/contracts/bindings';
 import type { DriverEntry } from '@/types/driver-entry';
 import type { CarIdentity } from '@/types/car-identity';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import type { PaceCarPitPhase } from '@/types/bindings';
-import { licColumnWidthPx } from '@ui/shared/RatingBadge/LicBadge.utils';
+import type { PaceCarPitPhase } from '@shared/contracts/bindings';
+import { licColumnWidthPx } from '@shared/ui/RatingBadge/LicBadge.utils';
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 

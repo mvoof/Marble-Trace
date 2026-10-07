@@ -2,7 +2,7 @@ import {
   formatSectorDelta,
   formatSectorTime,
   getDeltaState,
-} from '@utils/delta-utils';
+} from '@shared/lib/delta-utils';
 
 const AHEAD_COLOR = 'var(--sector-ahead)';
 const BEHIND_COLOR = 'var(--sector-behind)';

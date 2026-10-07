@@ -1,11 +1,11 @@
 import { useRef, useCallback, useLayoutEffect } from 'react';
 
-import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
+import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
 import {
   fillFixedDigits,
   measureFixedDigits,
   resizeCanvasToDpr,
-} from '@utils/canvas';
+} from '@shared/lib/canvas';
 import {
   COLOR_TURN,
   ENVELOPE_SPREAD,

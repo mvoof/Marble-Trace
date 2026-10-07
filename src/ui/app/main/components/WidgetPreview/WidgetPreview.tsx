@@ -7,7 +7,7 @@ import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
-import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
+import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
 import { widgetFrameStyle } from '@ui/app/widget-frame';
 import { seedScenario, DEFAULT_PREVIEW_SCENARIO_ID } from '@/preview/scenarios';
 import { seedInputHistory } from '@/preview/preview-animator';
