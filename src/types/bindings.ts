@@ -665,6 +665,45 @@ export type ClientEnvelope =
     };
 
 /**
+ * What one coach shows: the call and the corner-exit figures beside it.
+ */
+export type CoachCall = {
+  advisory: DrivingAdvisory;
+  brakeUrgency: number;
+  exitLateM: number | null;
+  exitThrottleDeficit: number;
+};
+
+/**
+ * The coach, for every coach on every screen. Each reads the variant its own
+ * corner-exit setting asks for.
+ */
+export type CoachFrame = {
+  inactiveReason: CoachInactiveReason | null;
+  withExitCalls: CoachCall;
+  withoutExitCalls: CoachCall;
+  /**
+   * Metres to the next apex, when one is close enough to count down to.
+   */
+  apexDistanceM: number | null;
+  /**
+   * Metres to where the reference braked for the next corner — `None` once
+   * inside that braking zone, where a countdown to a point behind would lie.
+   */
+  brakePointDistanceM: number | null;
+};
+
+/**
+ * Why the coach is not producing a call. A neutral call alone would read as
+ * "you are on the pace" while the coach is in fact switched off.
+ */
+export type CoachInactiveReason =
+  | 'no-reference'
+  | 'no-track-data'
+  | 'no-corners'
+  | 'no-telemetry';
+
+/**
  * One configured program, as the settings file stores it.
  */
 export type CompanionApp = {
@@ -846,6 +885,12 @@ export type DriverEntry = {
    */
   speed: number | null;
 };
+
+/**
+ * `Grip` is not an instruction but a refusal to give one: the car is being
+ * caught and corrected, and a Gas call would be wrong advice.
+ */
+export type DrivingAdvisory = 'brake' | 'gas' | 'grip' | 'neutral';
 
 /**
  * What the drag reduction system is doing.
@@ -2163,6 +2208,7 @@ export type TelemetryBundle = {
   carInputs?: CarInputsFrame | null;
   carPositions?: CarPositionsFrame | null;
   lapDelta?: LapDeltaFrame | null;
+  coach?: CoachFrame | null;
   carIdx?: CarIdxFrame | null;
   chassis?: ChassisFrame | null;
   lapTiming?: LapTimingFrame | null;

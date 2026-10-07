@@ -64,31 +64,16 @@ pub async fn reset_pit_lane_pct(
     Ok(())
 }
 
+/// The reference lap the telemetry thread has made active — what a window that
+/// opened after `sim://reference-lap/updated` last went out draws against.
 #[tauri::command]
-pub async fn get_reference_lap(
-    app: AppHandle,
-    track_id: i32,
-    car_screen_name: String,
-    condition: TrackCondition,
+pub async fn get_active_reference_lap(
+    state: State<'_, TelemetryState>,
 ) -> Result<Option<ReferenceLapData>, String> {
-    let Ok(data_dir) = app.path().app_data_dir() else {
-        return Err("Cannot resolve app data dir".to_string());
-    };
-
-    let key = reference_lap_key(track_id, &car_screen_name, condition);
-    let path = reference_lap_path(&data_dir, &key);
-
-    let Ok(bytes) = tokio::fs::read(&path).await else {
-        return Ok(None);
-    };
-
-    match serde_json::from_slice::<ReferenceLapData>(&bytes) {
-        Ok(data) => Ok(Some(data)),
-        Err(e) => {
-            warn!("Failed to parse reference lap file at {:?}: {}", path, e);
-            Ok(None)
-        }
-    }
+    Ok(state
+        .service
+        .active_reference()
+        .map(|reference| (*reference).clone()))
 }
 
 #[tauri::command]

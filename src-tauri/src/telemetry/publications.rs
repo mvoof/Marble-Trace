@@ -25,6 +25,7 @@
 
 use std::collections::HashMap;
 
+use crate::computations::coach::CoachFrame;
 use crate::computations::driver_entries::DriverEntriesFrame;
 use crate::computations::pace_car::PaceCarFrame;
 use crate::computations::proximity::ProximityFrame;
@@ -41,6 +42,7 @@ pub struct Publications {
     relative: Option<RelativeFrame>,
     proximity: Option<ProximityFrame>,
     pace_car: Option<PaceCarFrame>,
+    coach: Option<CoachFrame>,
 }
 
 /// Clears `field` when it is equal to what was published last, and records it
@@ -73,6 +75,7 @@ impl Publications {
         take_if_changed(&mut bundle.relative, &mut self.relative, force);
         take_if_changed(&mut bundle.proximity, &mut self.proximity, force);
         take_if_changed(&mut bundle.pace_car, &mut self.pace_car, force);
+        take_if_changed(&mut bundle.coach, &mut self.coach, force);
     }
 }
 

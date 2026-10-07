@@ -2,6 +2,7 @@ import { comparer, computed, makeAutoObservable, observable } from 'mobx';
 
 import type {
   CarEntry,
+  CoachFrame,
   DriverEntriesFrame,
   FuelComputedFrame,
   IncidentsFrame,
@@ -48,6 +49,8 @@ export class BackendComputedStore {
    */
   driverEntries: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
+  /** The driving coach's call, as the telemetry thread makes it (60 Hz, on demand). */
+  coach: CoachFrame | null = null;
   /** Each pace car's pit phase, as the telemetry thread tracks it (10 Hz). */
   paceCar: PaceCarFrame | null = null;
   /** Auto pit mode as the telemetry thread decides it, on the 4 Hz tier. */
@@ -96,6 +99,7 @@ export class BackendComputedStore {
       driverEntries: observable.ref,
       pitStops: observable.ref,
       paceCar: observable.ref,
+      coach: observable.ref,
       pitAuto: observable.ref,
       lapDelta: observable.ref,
       lapHistory: observable.ref,
@@ -223,6 +227,10 @@ export class BackendComputedStore {
     this.paceCar = frame;
   }
 
+  updateCoach(frame: CoachFrame | null) {
+    this.coach = frame;
+  }
+
   /** carIdx → pit phase, for every pace car the session has. */
   get paceCarPhases(): Map<number, PaceCarPitPhase> {
     return new Map(
@@ -260,6 +268,7 @@ export class BackendComputedStore {
     this.driverEntries = null;
     this.pitStops = null;
     this.paceCar = null;
+    this.coach = null;
     this.pitAuto = null;
     this.lapDelta = null;
     this.lapHistory = [];

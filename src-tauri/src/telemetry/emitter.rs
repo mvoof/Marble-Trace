@@ -23,8 +23,8 @@ use crate::capabilities::Capabilities;
 use crate::computations::pit_actions::{self, PitActionInput};
 use crate::computations::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
 use crate::computations::{
-    driver_entries, fuel, incidents, lap_delta, pace_car, pit_stops, proximity, ComputeContext,
-    ComputedOutput, TickRate,
+    coach, driver_entries, fuel, incidents, lap_delta, pace_car, pit_stops, proximity,
+    ComputeContext, ComputedOutput, ProcessorCommand, TickRate,
 };
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::environment::EnvironmentFrame;
@@ -37,7 +37,7 @@ use crate::model::player::{
 use crate::model::relative::RelativeFrame;
 use crate::model::session::{SessionFrame, SessionSnapshot};
 use crate::model::telemetry_events::{
-    EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS, EVENT_DRIVER_ENTRIES,
+    EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS, EVENT_COACH, EVENT_DRIVER_ENTRIES,
     EVENT_INCIDENTS, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
 };
 use crate::model::track_shape::TrackRecordingFrame;
@@ -81,6 +81,8 @@ pub struct TelemetryBundle {
     pub car_positions: Option<CarPositionsFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lap_delta: Option<lap_delta::LapDeltaFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub coach: Option<coach::CoachFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub car_idx: Option<CarIdxFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -148,6 +150,15 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     } = ctx;
 
     let active_mask = service.masks.effective_mask();
+
+    // The track turning wet or drying swaps the reference; any change queued
+    // since the last tick — a session, a new best, a deletion — reaches the
+    // coach before it computes on this one, and the windows with it.
+    state.track_wetness = frame.environment.track_wetness;
+    let change = state.references.observe_wetness(state.track_wetness);
+    state.note_reference(change);
+    publish_reference(app, service, state);
+
     // Every field is an `Option` the tiers below fill in, so the empty bundle
     // is the derived default rather than twenty-two `None`s written out.
     let mut bundle = TelemetryBundle::default();
@@ -209,8 +220,12 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
                     io.save_track_shape(payload);
                 }
                 ComputedOutput::ReferenceLap(data) => {
-                    if let Err(e) = app.emit(EVENT_REFERENCE_LAP_UPDATED, &data) {
-                        warn!("Failed to emit reference lap update: {}", e);
+                    // Fields rather than `note_reference`: the context above still
+                    // borrows the grid out of `state`.
+                    let change = state.references.record(data.clone());
+
+                    if change.is_some() {
+                        state.pending_reference = change;
                     }
 
                     io.save_reference_lap(data);
@@ -352,6 +367,23 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         groups,
         &mut TauriSink { app },
     )
+}
+
+/// Hands a changed active reference to the coach, to commands asking for it,
+/// and to every window. A lap recorded this tick is announced on the next.
+fn publish_reference(app: &AppHandle, service: &TelemetryServiceState, state: &mut LoopState) {
+    let Some(reference) = state.pending_reference.take() else {
+        return;
+    };
+
+    state
+        .registry
+        .command(ProcessorCommand::ActiveReference(reference.clone()));
+    service.publish_active_reference(reference.clone());
+
+    if let Err(e) = app.emit(EVENT_REFERENCE_LAP_UPDATED, reference.as_deref()) {
+        warn!("Failed to emit the active reference lap: {}", e);
+    }
 }
 
 /// Auto pit mode's tick: decides on this frame, sends what it decided, and
@@ -612,6 +644,10 @@ pub fn apply_event_mask(bundle: &mut TelemetryBundle, active_mask: u32) {
     if (active_mask & EVENT_INCIDENTS) == 0 {
         bundle.incidents = None;
     }
+
+    if (active_mask & EVENT_COACH) == 0 {
+        bundle.coach = None;
+    }
 }
 
 fn quantize_bundle(bundle: &mut TelemetryBundle) {
@@ -638,12 +674,17 @@ fn quantize_bundle(bundle: &mut TelemetryBundle) {
     if let Some(frame) = bundle.pit_target.as_mut() {
         quantize::pit_target(frame);
     }
+
+    if let Some(frame) = bundle.coach.as_mut() {
+        quantize::coach(frame);
+    }
 }
 
 fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
     match output {
         ComputedOutput::Fuel(frame) => bundle.fuel = Some(frame),
         ComputedOutput::LapDelta(frame) => bundle.lap_delta = Some(frame),
+        ComputedOutput::Coach(frame) => bundle.coach = Some(frame),
         ComputedOutput::LapLog(frame) => bundle.lap_log = Some(frame),
         ComputedOutput::PitStops(frame) => bundle.pit_stops = Some(frame),
         ComputedOutput::Proximity(frame) => bundle.proximity = Some(frame),

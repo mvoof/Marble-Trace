@@ -15,7 +15,8 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use tracing::{error, warn};
 
 use super::storage;
-use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes};
+use crate::computations::reference_selection::StoredReferences;
+use crate::model::reference_lap::ReferenceLapData;
 use crate::model::track_shape::TrackShapePayload;
 use crate::sources::source::{ParsedSession, SessionParser};
 
@@ -32,7 +33,7 @@ pub struct SessionUpdate {
     /// the track differs from the previous session's, as a new track is the
     /// only time the processor needs to hear of it.
     pub cached_track: Option<TrackShapePayload>,
-    pub stored_reference_times: StoredReferenceTimes,
+    pub stored_references: StoredReferences,
 }
 
 enum IoJob {
@@ -185,7 +186,7 @@ impl Worker {
             return Some(SessionUpdate {
                 parsed,
                 cached_track: None,
-                stored_reference_times: StoredReferenceTimes::default(),
+                stored_references: StoredReferences::default(),
             });
         };
 
@@ -195,13 +196,12 @@ impl Worker {
             None
         };
 
-        let stored_reference_times =
-            storage::read_stored_reference_times(data_dir, &parsed.snapshot);
+        let stored_references = storage::read_stored_references(data_dir, &parsed.snapshot);
 
         Some(SessionUpdate {
             parsed,
             cached_track,
-            stored_reference_times,
+            stored_references,
         })
     }
 }

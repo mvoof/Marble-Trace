@@ -84,8 +84,8 @@ lands.
 
 **At what rate does it arrive?** [architecture.md → Rate tiers](architecture.md)
 carries the table. In short: 60 Hz is `carDynamics`, `carInputs`, `carPositions`,
-`lapDelta`, `pitTarget`; 10 Hz is `carIdx`, `chassis`, `lapTiming`, `proximity`,
-`driverEntries`; 4 Hz is `carStatus`, `fuel`, `pitStops`; 1 Hz is `session` and
+`lapDelta`, `pitTarget`, `coach`; 10 Hz is `carIdx`, `chassis`, `lapTiming`,
+`proximity`, `driverEntries`, `paceCar`; 4 Hz is `carStatus`, `fuel`, `pitStops`; 1 Hz is `session` and
 `environment`. The rate decides how you decompose (step 3) and whether you owe a
 budget test (step 9).
 

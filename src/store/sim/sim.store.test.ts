@@ -41,7 +41,7 @@ vi.mock('@platform/services/telemetry.service', () => ({
 vi.mock('@platform/services/track.service', () => ({
   deleteReferenceLap: vi.fn(),
   getCachedTrackShape: vi.fn(),
-  getReferenceLap: vi.fn(),
+  getActiveReferenceLap: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock('@platform/services/settings.service', () => ({

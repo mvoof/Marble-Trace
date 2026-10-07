@@ -31,6 +31,6 @@ pub use telemetry::{
     stop_telemetry_stream,
 };
 pub use track::{
-    delete_reference_lap, delete_track_shape, get_cached_track_shape, get_reference_lap,
+    delete_reference_lap, delete_track_shape, get_active_reference_lap, get_cached_track_shape,
     reset_pit_lane_pct,
 };

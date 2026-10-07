@@ -311,7 +311,7 @@ Most changes need no migration at all. Full guide: `docs/settings-schema.md`.
 
 | Hz    | Fields                                                                                       |
 | ----- | -------------------------------------------------------------------------------------------- |
-| 60    | `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `pitTarget`                          |
+| 60    | `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `pitTarget`, `coach`                 |
 | 10    | `carIdx`, `chassis`, `lapTiming`, `proximity`, `driverEntries`, `paceCar`                    |
 | 4     | `carStatus`, `fuel`, `pitStops`                                                              |
 | 1     | `session`, `environment`                                                                     |
@@ -348,10 +348,11 @@ Orders are not sent while a tape is replayed.
 
 ### Demand-gated bundle fields
 
-Eight bundle fields are filled **only while a widget asks for them**: the four
+Nine bundle fields are filled **only while a widget asks for them**: the four
 60 Hz frames (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`), the
 three heavy per-car frames on the 10 Hz tier (`driverEntries`, `relative`,
-`proximity`) and `incidents`. Everything else is always sent. Every
+`proximity`), `incidents` and the coach's call (`coach`, 60 Hz). Everything
+else is always sent. Every
 widget declares its appetite in its own `manifest.ts`:
 
 ```ts
@@ -886,7 +887,7 @@ checklist below is what a reviewer applies to code that already exists.
 8. Create `manifest.ts` and `mount.ts` next to the widget — both are collected by glob, so no shared file is edited
    8a. Declare `telemetryEvents` in the manifest for every gated field the widget
    reads (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `driverEntries`,
-   `relative`, `proximity`) — without it the backend never sends them (see
+   `relative`, `proximity`, `incidents`, `coach`) — without it the backend never sends them (see
    Demand-gated bundle fields)
    8b. If any of those is a hot field, keep the component that reads it down to
    one or two elements and pass the static part in as `children` — splitting into

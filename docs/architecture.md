@@ -771,7 +771,6 @@ Grouped by **domain, not by kind** — one file per subject, never a `constants/
 | `car-signals.ts`           | deriving signals from raw car state           |
 | `delta-utils.ts`           | delta formatting and latching                 |
 | `driver.ts`                | driver names, ratings, identity               |
-| `driving-coach-utils.ts`   | coach advisory logic                          |
 | `fuel-constants.ts`        | fuel math constants                           |
 | `qualifying-visibility.ts` | what is hidden during qualifying              |
 | `radar-constants.ts`       | radar geometry constants                      |
@@ -808,7 +807,7 @@ flowchart TB
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `events.service.ts`    | **the only `@tauri-apps/api/event` import in the codebase** — every emitter and `listenTo`                                        |
 | `telemetry.service.ts` | `startTelemetryStream`, `stopTelemetryStream`, `getConnectionStatus`, `getLastSessionInfo`, `setActiveEventsSilent`               |
-| `track.service.ts`     | `getCachedTrackShape`, `deleteTrackShape`, `resetPitLanePct`, `getReferenceLap`, `deleteReferenceLap`                             |
+| `track.service.ts`     | `getCachedTrackShape`, `deleteTrackShape`, `resetPitLanePct`, `getActiveReferenceLap`, `deleteReferenceLap`                       |
 | `settings.service.ts`  | `settingsFileExists`, `backupSettingsFile`, `logSettingsSnapshot`, `deleteSettingsFile`, and the `*Silent` setters                |
 | `twitch.service.ts`    | `twitchHasClientId`, `twitchAccount`, `twitchRequestDeviceCode`, `twitchPollDeviceToken`, `twitchSignOut`, chat stream start/stop |
 | `input.service.ts`     | `resolveInputDevices`, `setInputPollingEnabled`                                                                                   |
@@ -888,7 +887,7 @@ root's hooks either (`.oxlintrc.json`).
 | `data/`                                                | `player`, `cars`, `session`, `environment`, `chat`, `reference-lap` frame buffers, plus `computed.store.ts` for derived values shared by 2+ widgets                                                            |
 | `settings/`                                            | `app-settings`, `layouts`, `widget-defaults`, `widget-settings`, `units`, `twitch-auth`, plus layout helpers (`layout-resolution`, `layout-resize`, `layout-background`, `widget-history`, `widget-placement`) |
 | `widgets/`                                             | one folder per feature read by 2+ widgets — `flags`, `incidents`, `pit-service`, `radar`, `track-map`                                                                                                          |
-| `sim/`                                                 | sim connection state, `track-condition`, `debug`                                                                                                                                                               |
+| `sim/`                                                 | sim connection state, `debug`                                                                                                                                                                                  |
 | `hotkeys/`                                             | `actions` registry, `action-registry`, `bindings.store`, `settings-actions`, `bindings-sync`, `bindings-ui`, `device-input`                                                                                    |
 | `preview/`                                             | neutral sample data — scenarios, sample telemetry, sample track, the preview animator                                                                                                                          |
 | `renderer-core.ts` · `*-root.ts` · `*-root-context.ts` | composition per window and access                                                                                                                                                                              |
@@ -1339,7 +1338,7 @@ store calls `invoke` directly.
 | `track.service.ts`     | `getCachedTrackShape`                            | `get_cached_track_shape`              | load a recorded track outline                              |
 |                        | `deleteTrackShape`                               | `delete_track_shape`                  | discard it                                                 |
 |                        | `resetPitLanePct`                                | `reset_pit_lane_pct`                  | re-detect pit lane bounds                                  |
-|                        | `getReferenceLap`                                | `get_reference_lap`                   | load the stored reference lap                              |
+|                        | `getActiveReferenceLap`                          | `get_active_reference_lap`            | the reference lap the telemetry thread made active         |
 |                        | `deleteReferenceLap`                             | `delete_reference_lap`                | discard it                                                 |
 | `settings.service.ts`  | `settingsFileExists`                             | `settings_file_exists`                | first-run detection                                        |
 |                        | `backupSettingsFile`                             | `backup_settings_file`                | snapshot before a risky write                              |
@@ -1380,7 +1379,7 @@ Names come from `src-tauri/src/model/events.rs` through the generated
 | `sim://disconnected`                                     | connection lifecycle        | on loss                       | `sim.store.ts` — triggers `reset()`                  |
 | `sim://capabilities`                                     | `telemetry/capabilities.rs` | on connect                    | `sim.store.ts`                                       |
 | `sim://track-shape`                                      | `telemetry/emitter.rs`      | on discovery or pit-pct patch | the track map widget store                           |
-| `sim://reference-lap/updated`                            | `telemetry/emitter.rs`      | on capture                    | `reference-lap.store.ts`                             |
+| `sim://reference-lap/updated`                            | `telemetry/emitter.rs`      | active reference changes      | `reference-lap.store.ts`                             |
 | `sim://telemetry/slow`                                   | `telemetry/emitter.rs`      | 4 Hz                          | `player.store.ts` — **windows off the bundle only**  |
 | `app://overlay-modes`                                    | `hotkeys/runtime.rs`        | on change                     | `app-settings.store.ts`, every window                |
 | `hotkey://settings-action`                               | `hotkeys/runtime.rs`        | on a settings key             | `settings-actions.ts`, main only                     |

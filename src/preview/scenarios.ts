@@ -169,6 +169,10 @@ const applyPitBox = (store: RendererCore) => {
   applyDynamics(store, mockPitStallDynamics());
 };
 
+// Metres to the braking point the brake-soon scenario counts down — a figure
+// the row prints in place of the delta once the call is pre-armed.
+const BRAKE_SOON_COUNTDOWN_M = 85;
+
 // Puts the stored best lap in place and the player somewhere on it, so the
 // coach has a reference, a corner and a position to evaluate against.
 // `atPct` is where on the lap the player sits; `deltaKmh` offsets their live
@@ -559,14 +563,10 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
     label: 'Driving Coach — Brake',
     apply: (store) => {
       seedSampleTelemetry(store);
-      // The advisory itself is forced rather than computed (see
-      // `seedCoachAdvisory`). The reference lap still has to be a real one,
-      // corner and all: without a braking zone in it the coach reports
-      // `no-corners` and draws that over every call a scenario asks for.
-      seedCoachAdvisory(store, {
-        displayedAdvisory: 'brake',
-        displayedBrakeUrgency: 1,
-      });
+      // The call is the telemetry thread's, so it is stated rather than
+      // computed (see `seedCoachAdvisory`); the reference lap is still a real
+      // one, for the trace and the readouts drawn beside the call.
+      seedCoachAdvisory(store, { advisory: 'brake', brakeUrgency: 1 });
       // Into the braking zone and carrying too much speed for it.
       applyCoachReference(store, { atPct: 0.475, deltaKmh: 12 });
     },
@@ -580,7 +580,10 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       // but pre-armed, which is the one state that swaps the delta for a
       // countdown to the braking point.
       applyCoachReference(store, { atPct: 0.44, deltaKmh: 0 });
-      seedCoachAdvisory(store, { displayedBrakeUrgency: 0.85 });
+      seedCoachAdvisory(store, {
+        brakeUrgency: 0.85,
+        brakePointDistanceM: BRAKE_SOON_COUNTDOWN_M,
+      });
     },
   },
   {
@@ -590,9 +593,9 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       seedSampleTelemetry(store);
       // Out of the corner, short of the reference's speed and its pedal.
       seedCoachAdvisory(store, {
-        displayedAdvisory: 'gas',
-        displayedExitLateM: 14,
-        displayedExitThrottleDeficit: 0.22,
+        advisory: 'gas',
+        exitLateM: 14,
+        exitThrottleDeficit: 0.22,
       });
       applyCoachReference(store, { atPct: 0.52, deltaKmh: -8 });
     },
@@ -604,7 +607,7 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       seedSampleTelemetry(store);
       // Not an instruction but a refusal to give one — the car is being caught
       // and corrected, and the call takes neither of the two configured colors.
-      seedCoachAdvisory(store, { displayedAdvisory: 'grip' });
+      seedCoachAdvisory(store, { advisory: 'grip' });
       applyCoachReference(store, { atPct: 0.52, deltaKmh: -6 });
     },
   },
@@ -615,11 +618,12 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       seedSampleTelemetry(store);
       // The widest the row ever gets: the longest call the coach can make and
       // the longest hint under it, which is what the plate has to be sized
-      // against — not BRAKE. A reference with no braking zone in it is exactly
-      // the state that produces it, so it is stated by seeding one rather than
-      // by writing the words anywhere.
+      // against — not BRAKE. A reference with no braking zone in it is the
+      // state that produces it, and the frame says so as the telemetry thread
+      // would.
       applyCoachReference(store, { atPct: 0.5, deltaKmh: 0 });
       store.referenceLap.updateReferenceLap(mockReferenceLapWithoutCorners());
+      seedCoachAdvisory(store, { inactiveReason: 'no-corners' });
     },
   },
   {

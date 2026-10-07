@@ -8,6 +8,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use crate::computations::pit_auto::PitAuto;
+use crate::computations::reference_selection::{ReferenceChange, ReferenceSelection};
 use crate::computations::{driver_entries, ProcessorCommand, ProcessorRegistry};
 use crate::model::pit_action::PitAction;
 use crate::model::session::SessionSnapshot;
@@ -56,6 +57,13 @@ pub struct LoopState {
     /// The fuel calculation's last `fill_now`. Computed on the 4 Hz tier, read
     /// by a pit action on any tick.
     pub planned_fuel_l: Option<f32>,
+    /// The stored reference laps and which one is active.
+    pub references: ReferenceSelection,
+    /// A change to the active reference not yet announced — published at the
+    /// top of the next tick, before the coach computes on it.
+    pub pending_reference: ReferenceChange,
+    /// The track wetness of the last frame, for a session that arrives between two.
+    pub track_wetness: Option<i32>,
 }
 
 impl LoopState {
@@ -74,6 +82,9 @@ impl LoopState {
             pit_auto: PitAuto::default(),
             pending_pit_actions: Vec::new(),
             planned_fuel_l: None,
+            references: ReferenceSelection::default(),
+            pending_reference: None,
+            track_wetness: None,
         }
     }
 
@@ -101,6 +112,8 @@ impl LoopState {
             }
             TelemetryCommand::ResetReferenceLap => {
                 self.registry.command(ProcessorCommand::ResetReferenceLap);
+                let change = self.references.clear();
+                self.note_reference(change);
             }
             TelemetryCommand::PitAuto(command) => {
                 self.pit_auto.command(command, &self.config.pit_auto);
@@ -129,6 +142,18 @@ impl LoopState {
         self.pit_auto.reset();
         self.pending_pit_actions.clear();
         self.planned_fuel_l = None;
+        self.references = ReferenceSelection::default();
+        self.pending_reference = None;
+        self.track_wetness = None;
+    }
+
+    /// Queues a change of the active reference for the next tick to announce.
+    /// A later change in the same tick replaces an earlier one: only where the
+    /// reference ends up matters.
+    pub fn note_reference(&mut self, change: ReferenceChange) {
+        if change.is_some() {
+            self.pending_reference = change;
+        }
     }
 
     /// Forgets the cached grid, so the next session snapshots its own.

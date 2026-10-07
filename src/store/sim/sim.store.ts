@@ -25,7 +25,7 @@ import {
 import {
   deleteReferenceLap,
   getCachedTrackShape,
-  getReferenceLap,
+  getActiveReferenceLap,
 } from '@platform/services/track.service';
 
 import type {
@@ -37,16 +37,11 @@ import type {
   SimStatus,
   CapabilitiesPayload,
   ReferenceLapData,
-  TrackCondition,
   SimPerfFrame,
   TelemetrySlowBundle,
 } from '@/types/bindings';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import { debug } from '@store/sim/debug';
-import {
-  nextTrackCondition,
-  trackConditionForWetness,
-} from '@store/sim/track-condition';
 import type { TelemetryStatus } from '@/types';
 import type { RendererCore } from '@store/roots/renderer-core';
 import {
@@ -100,8 +95,6 @@ export class SimStore {
   widgetsSuppressed = false;
   bundleApplyProbe: BundleApplyProbe | null = null;
 
-  /** Condition the currently loaded reference lap was asked for. */
-  private referenceCondition: TrackCondition | null = null;
   /**
    * True while this window is minimized — one of the three states that take it
    * out of the mask registry entirely. Watched only in the overlay windows.
@@ -176,60 +169,6 @@ export class SimStore {
         )
       );
     }
-
-    this.disposers.push(
-      reaction(
-        () => {
-          const info = this.root.session.sessionInfo;
-          const car = info?.cars.find(
-            (entry) => entry.carIdx === info.playerCarIdx
-          );
-
-          return info && car
-            ? {
-                trackId: info.trackId,
-                carScreenName: car.carScreenName,
-                // The condition is part of the reference's identity: when the
-                // track turns wet mid-session the dry reference stops being the
-                // right target and the wet one has to be loaded in its place.
-                trackWetness:
-                  this.root.environment.environment?.trackWetness ?? null,
-              }
-            : null;
-        },
-        (identity, previousIdentity) => {
-          if (!identity) {
-            this.referenceCondition = null;
-            this.root.referenceLap.reset();
-
-            return;
-          }
-
-          const sameCar =
-            previousIdentity !== undefined &&
-            previousIdentity !== null &&
-            previousIdentity.trackId === identity.trackId &&
-            previousIdentity.carScreenName === identity.carScreenName;
-
-          const condition = sameCar
-            ? nextTrackCondition(this.referenceCondition, identity.trackWetness)
-            : trackConditionForWetness(identity.trackWetness);
-
-          if (sameCar && condition === this.referenceCondition) {
-            return;
-          }
-
-          this.referenceCondition = condition;
-
-          void this.loadReferenceLap(
-            identity.trackId,
-            identity.carScreenName,
-            condition
-          );
-        },
-        { fireImmediately: true, equals: comparer.shallow }
-      )
-    );
   }
 
   // Every RendererCore instance creates its own reactions; without this they
@@ -246,21 +185,25 @@ export class SimStore {
     this.disposeListeners();
   }
 
-  private async loadReferenceLap(
-    trackId: number,
-    carScreenName: string,
-    condition: TrackCondition
-  ) {
-    this.root.referenceLap.reset();
-
+  /** The reference the telemetry thread made active before this window listened. */
+  private async hydrateReferenceLap(guardId: number) {
     try {
-      const data = await getReferenceLap(trackId, carScreenName, condition);
+      const data = await getActiveReferenceLap();
 
-      if (data) {
-        runInAction(() => this.root.referenceLap.updateReferenceLap(data));
-      }
+      if (this.initId !== guardId) return;
+
+      runInAction(() => this.applyActiveReference(data));
     } catch (err) {
-      debug.telemetry('Failed to load reference lap: %o', err);
+      debug.telemetry('Failed to load the active reference lap: %o', err);
+    }
+  }
+
+  /** The telemetry thread picks the reference; a window only shows it. */
+  private applyActiveReference(data: ReferenceLapData | null) {
+    if (data) {
+      this.root.referenceLap.updateReferenceLap(data);
+    } else {
+      this.root.referenceLap.reset();
     }
   }
 
@@ -378,6 +321,7 @@ export class SimStore {
       }
 
       await this.hydrateTrackShape(currentId);
+      await this.hydrateReferenceLap(currentId);
 
       await startTelemetryStream();
 
@@ -461,6 +405,7 @@ export class SimStore {
     this.root.environment.reset();
     this.root.simPerf.reset();
     this.root.backendComputed.reset();
+    this.root.referenceLap.reset();
     // Owns timers keyed off telemetry transitions — without a reset the stop
     // clock keeps ticking after the last frame that could have stopped it.
     this.root.pitServiceWidget.reset();
@@ -594,13 +539,14 @@ export class SimStore {
     );
 
     this.unlistens.push(
-      await listenTo<ReferenceLapData>(SIM_REFERENCE_LAP_UPDATED, (event) => {
-        if (this.initId !== guardId) return;
+      await listenTo<ReferenceLapData | null>(
+        SIM_REFERENCE_LAP_UPDATED,
+        (event) => {
+          if (this.initId !== guardId) return;
 
-        runInAction(() => {
-          this.root.referenceLap.updateReferenceLap(event.payload);
-        });
-      })
+          runInAction(() => this.applyActiveReference(event.payload));
+        }
+      )
     );
 
     this.unlistens.push(

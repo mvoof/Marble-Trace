@@ -6,10 +6,12 @@
 //! called from the telemetry loop itself — that goes through `io_worker`.
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use tracing::{info, warn};
 
-use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes, TrackCondition};
+use crate::computations::reference_selection::StoredReferences;
+use crate::model::reference_lap::{ReferenceLapData, TrackCondition};
 use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::TrackShapePayload;
 
@@ -28,7 +30,7 @@ pub fn reference_lap_path(data_dir: &Path, key: &str) -> PathBuf {
 }
 
 /// Filesystem-safe key for a track+car reference lap file, shared with the
-/// `get_reference_lap`/`delete_reference_lap` commands.
+/// `delete_reference_lap` command.
 pub fn reference_lap_key(
     track_id: i32,
     car_screen_name: &str,
@@ -159,19 +161,10 @@ pub fn save_reference_lap(data_dir: &Path, data: &ReferenceLapData) {
     }
 }
 
-/// Lap times of the reference laps stored for the session's track and the
-/// player's car, so a slower session best never overwrites a faster stored
-/// reference.
-pub fn read_stored_reference_times(
-    data_dir: &Path,
-    session: &SessionSnapshot,
-) -> StoredReferenceTimes {
-    #[derive(serde::Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct StoredLapTime {
-        lap_time: f32,
-    }
-
+/// The reference laps stored for the session's track and the player's car —
+/// the recorder needs their times so a slower session best never overwrites a
+/// faster stored lap, and the coach needs the one matching the weather.
+pub fn read_stored_references(data_dir: &Path, session: &SessionSnapshot) -> StoredReferences {
     let car_screen_name = session
         .cars
         .iter()
@@ -179,21 +172,21 @@ pub fn read_stored_reference_times(
         .map(|car| car.car_screen_name.as_str())
         .unwrap_or_default();
 
-    let read_time = |condition: TrackCondition| {
+    let read_lap = |condition: TrackCondition| {
         let key = reference_lap_key(session.track_id, car_screen_name, condition);
 
         fs::read_to_string(reference_lap_path(data_dir, &key))
             .ok()
-            .and_then(|json| serde_json::from_str::<StoredLapTime>(&json).ok())
-            .map(|stored| stored.lap_time)
-            .filter(|lap_time| *lap_time > 0.0)
+            .and_then(|json| serde_json::from_str::<ReferenceLapData>(&json).ok())
+            .filter(|lap| lap.lap_time > 0.0)
+            .map(Arc::new)
     };
 
     // Both conditions are read up front: the weather can turn at any point in
     // the session, and the processor must already know what a wet lap has to
     // beat by the time one is driven.
-    StoredReferenceTimes {
-        dry: read_time(TrackCondition::Dry),
-        wet: read_time(TrackCondition::Wet),
+    StoredReferences {
+        dry: read_lap(TrackCondition::Dry),
+        wet: read_lap(TrackCondition::Wet),
     }
 }

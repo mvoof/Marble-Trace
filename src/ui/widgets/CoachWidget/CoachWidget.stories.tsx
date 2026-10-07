@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { CoachWidgetSettings } from '@/types/widget-settings';
-import type { DrivingAdvisory } from '@utils/driving-coach-utils';
+import type { DrivingAdvisory } from '@/types/bindings';
 import { mockLapTiming } from '@/preview/mocks/delta';
 import { seedCoachAdvisory } from '@/preview/coach-advisory-seed';
 import {
@@ -116,11 +116,13 @@ const meta: Meta<StoryArgs> = {
           store.referenceLap.reset();
         }
 
+        // Without a reference the telemetry thread makes no call and says why.
         seedCoachAdvisory(store, {
-          displayedAdvisory: args.advisory,
-          displayedBrakeUrgency: args.brakeUrgency,
-          displayedExitLateM: args.exitLateM,
-          displayedExitThrottleDeficit: args.exitThrottleDeficit,
+          advisory: args.advisory,
+          brakeUrgency: args.brakeUrgency,
+          exitLateM: args.exitLateM,
+          exitThrottleDeficit: args.exitThrottleDeficit,
+          inactiveReason: args.hasReferenceLap ? null : 'no-reference',
         });
       }
 

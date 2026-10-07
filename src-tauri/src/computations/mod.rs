@@ -1,4 +1,5 @@
 pub mod car_speed;
+pub mod coach;
 pub mod driver_entries;
 pub mod fuel;
 pub mod incidents;
@@ -12,10 +13,12 @@ pub mod pit_stops;
 pub mod pit_target;
 pub mod proximity;
 pub mod reference_lap;
+pub mod reference_selection;
 pub mod relative;
 pub mod track_shape;
 
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::capabilities::Capabilities;
 use crate::model::cars::CarIdxFrame;
@@ -30,6 +33,7 @@ use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
 use crate::model::lap_log::LapLogFrame;
 use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes};
 use crate::model::relative::RelativeFrame;
+use coach::{CoachFrame, CoachProcessor};
 use driver_entries::{DriverEntriesFrame, DriverEntriesProcessor};
 use fuel::{FuelComputedFrame, FuelProcessor};
 use incidents::{IncidentsFrame, IncidentsProcessor};
@@ -46,6 +50,7 @@ use track_shape::TrackShapeProcessor;
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProcessorId {
+    Coach,
     Fuel,
     LapDelta,
     LapLog,
@@ -100,6 +105,7 @@ pub struct ComputeContext<'a> {
 
 #[derive(Debug, Clone)]
 pub enum ComputedOutput {
+    Coach(CoachFrame),
     Fuel(FuelComputedFrame),
     LapDelta(LapDeltaFrame),
     LapLog(LapLogFrame),
@@ -122,7 +128,7 @@ pub enum ComputedOutput {
 /// Something outside the tick tells a processor: a user action, or what the
 /// runtime learned from disk alongside a session. Handed to every processor
 /// before the tick it applies to; each one ignores what is not about it.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum ProcessorCommand {
     /// Start recording the track shape from where the car is, not from the line.
     ForceTrackStart,
@@ -136,6 +142,8 @@ pub enum ProcessorCommand {
     StoredReferenceTimes(StoredReferenceTimes),
     /// The stored reference was deleted; record a new one from the next lap.
     ResetReferenceLap,
+    /// The reference lap the coach compares against changed, or there is none.
+    ActiveReference(Option<Arc<ReferenceLapData>>),
 }
 
 pub trait Processor: Send {
@@ -156,6 +164,7 @@ impl Default for ProcessorRegistry {
     fn default() -> Self {
         Self {
             processors: vec![
+                Box::new(CoachProcessor::default()),
                 Box::new(FuelProcessor::default()),
                 Box::new(LapDeltaProcessor::default()),
                 Box::new(LapLogProcessor::default()),
@@ -228,6 +237,10 @@ where
 #[cfg(feature = "dev")]
 pub fn register_types(types: &mut specta::TypeCollection) {
     types
+        .register::<coach::CoachCall>()
+        .register::<coach::CoachFrame>()
+        .register::<coach::CoachInactiveReason>()
+        .register::<coach::DrivingAdvisory>()
         .register::<driver_entries::DriverEntriesFrame>()
         .register::<driver_entries::DriverEntry>()
         .register::<fuel::FuelComputedFrame>()

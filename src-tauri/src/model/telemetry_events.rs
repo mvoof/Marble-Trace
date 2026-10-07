@@ -46,6 +46,10 @@ ts_values! {
     /// Where on the lap cars are stopped or off track — the warning zones the
     /// track map draws.
     pub const EVENT_INCIDENTS: u32 = 1 << 7 => incidents;
+
+    /// The driving coach's call against the reference lap. Computed on every
+    /// tick so the latch survives the coach being switched off and on again.
+    pub const EVENT_COACH: u32 = 1 << 8 => coach;
 }
 
 #[cfg(all(test, feature = "dev"))]

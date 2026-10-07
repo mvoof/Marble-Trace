@@ -46,3 +46,9 @@ export const proximity = 64;
  * track map draws.
  */
 export const incidents = 128;
+
+/**
+ * The driving coach's call against the reference lap. Computed on every
+ * tick so the latch survives the coach being switched off and on again.
+ */
+export const coach = 256;

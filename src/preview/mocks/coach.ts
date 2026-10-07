@@ -1,4 +1,10 @@
-import type { ReferenceLapData, ReferenceLapSample } from '@/types/bindings';
+import type {
+  CoachFrame,
+  CoachInactiveReason,
+  DrivingAdvisory,
+  ReferenceLapData,
+  ReferenceLapSample,
+} from '@/types/bindings';
 
 // Mock builders for the coach domain — the stored best lap every advisory is
 // measured against. Pure: the lap is returned as a *complete* frame typed from
@@ -105,3 +111,36 @@ export const mockReferenceLapWithoutCorners = (): ReferenceLapData =>
       brake: 0,
     })),
   });
+
+/** The call a scenario states — what the telemetry thread would have published. */
+export interface MockCoachCall {
+  advisory?: DrivingAdvisory;
+  brakeUrgency?: number;
+  exitLateM?: number | null;
+  exitThrottleDeficit?: number;
+  apexDistanceM?: number | null;
+  brakePointDistanceM?: number | null;
+  inactiveReason?: CoachInactiveReason | null;
+}
+
+/**
+ * The coach frame as the telemetry thread publishes it. A preview runs no
+ * telemetry thread, so the call is stated; both corner-exit variants carry the
+ * same one, so the scenario reads the same whatever a coach is set to.
+ */
+export const mockCoachFrame = (call: MockCoachCall = {}): CoachFrame => {
+  const shown = {
+    advisory: call.advisory ?? 'neutral',
+    brakeUrgency: call.brakeUrgency ?? 0,
+    exitLateM: call.exitLateM ?? null,
+    exitThrottleDeficit: call.exitThrottleDeficit ?? 0,
+  };
+
+  return {
+    inactiveReason: call.inactiveReason ?? null,
+    withExitCalls: shown,
+    withoutExitCalls: shown,
+    apexDistanceM: call.apexDistanceM ?? null,
+    brakePointDistanceM: call.brakePointDistanceM ?? null,
+  };
+};

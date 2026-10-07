@@ -240,7 +240,7 @@ export const seedSampleTelemetry = action((store: RendererCore) => {
   // picked once would still be on screen after switching back to the baseline.
   store.player.updatePitTarget(null);
   store.referenceLap.reset();
-  seedCoachAdvisory(store);
+  seedCoachAdvisory(store, null);
 
   syncFlagDisplay(store);
 });

@@ -1,5 +1,4 @@
 import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
-import type { CoachPreviewTarget } from '@/preview/coach-advisory-seed';
 import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
 import { CoachWidgetStore } from './coach.store';
 import { DrivingCoachWidgetStore } from './driving-coach.store';
@@ -9,7 +8,7 @@ import { DrivingCoachWidgetStore } from './driving-coach.store';
  * (`trace`). Two classes because they share no state — the trace never decides
  * the call — but one lifetime, so the mount builds and disposes them together.
  */
-export class CoachWidgetStores implements CoachPreviewTarget {
+export class CoachWidgetStores {
   readonly advisory: DrivingCoachWidgetStore;
   readonly trace: CoachWidgetStore;
 

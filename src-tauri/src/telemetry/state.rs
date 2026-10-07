@@ -7,6 +7,7 @@
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
+use crate::model::reference_lap::ReferenceLapData;
 use crate::model::session::SessionSnapshot;
 use crate::sources::source::SourceFrame;
 use crate::telemetry::control::{Control, TelemetryCommand, TelemetryConfig, TelemetryRun};
@@ -29,6 +30,9 @@ pub struct TelemetryServiceState {
     /// open. 4 Hz because that is already faster than a person can read a table
     /// of a hundred numbers.
     pub inspector_frame: Mutex<Option<SourceFrame>>,
+    /// The reference lap the loop has made active, for a window that opens
+    /// after the event announcing it went out.
+    active_reference: Mutex<Option<Arc<ReferenceLapData>>>,
     /// What each recipient is asking for, keyed by its window label, and the
     /// union of it that the emitter fills the bundle from.
     pub masks: MaskRegistry,
@@ -49,6 +53,7 @@ impl Default for TelemetryServiceState {
             control: Mutex::new(Control::default()),
             session: Mutex::new(None),
             inspector_frame: Mutex::new(None),
+            active_reference: Mutex::new(None),
             masks: MaskRegistry::bootstrapped(),
             delivery: Mutex::new(DeliveryCounters::with_broadcast()),
             tick_timings: Mutex::new(TickTimings::default()),
@@ -102,6 +107,14 @@ impl TelemetryServiceState {
 
     pub fn publish_session(&self, session: Option<Arc<SessionSnapshot>>) {
         *lock_or_recover(&self.session) = session;
+    }
+
+    pub fn active_reference(&self) -> Option<Arc<ReferenceLapData>> {
+        lock_or_recover(&self.active_reference).clone()
+    }
+
+    pub fn publish_active_reference(&self, reference: Option<Arc<ReferenceLapData>>) {
+        *lock_or_recover(&self.active_reference) = reference;
     }
 
     pub fn clear_inspector_frame(&self) {

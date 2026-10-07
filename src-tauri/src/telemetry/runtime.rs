@@ -298,7 +298,7 @@ fn apply_session_update(
     let SessionUpdate {
         parsed,
         cached_track,
-        stored_reference_times,
+        stored_references,
     } = update;
     let snapshot = parsed.snapshot;
     let new_track_id = snapshot.track_id;
@@ -327,7 +327,7 @@ fn apply_session_update(
     let snapshot = Arc::new(snapshot);
 
     state.session = Some(Arc::clone(&snapshot));
-    service.publish_session(Some(snapshot));
+    service.publish_session(Some(Arc::clone(&snapshot)));
 
     // The worker reads the shape only on a track change, judged against the
     // session it parsed before — the same one applied here before this.
@@ -335,10 +335,24 @@ fn apply_session_update(
         apply_cached_track(app, payload, state);
     }
 
+    let player_car = snapshot
+        .cars
+        .iter()
+        .find(|car| car.car_idx == snapshot.player_car_idx)
+        .map(|car| car.car_screen_name.as_str())
+        .unwrap_or_default();
+    let change = state.references.load(
+        snapshot.track_id,
+        player_car,
+        stored_references,
+        state.track_wetness,
+    );
+
+    state.note_reference(change);
     state
         .registry
         .command(ProcessorCommand::StoredReferenceTimes(
-            stored_reference_times,
+            state.references.stored_times(),
         ));
 
     if !parsed.weather_forecast.is_empty() {
@@ -356,6 +370,7 @@ fn apply_session_update(
 fn reset_telemetry_state(app: &AppHandle, service: &TelemetryServiceState, state: &mut LoopState) {
     service.is_connected.store(false, Ordering::Relaxed);
     service.publish_session(None);
+    service.publish_active_reference(None);
     state.reset_connection();
 
     app.emit(

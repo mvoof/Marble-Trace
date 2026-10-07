@@ -120,9 +120,13 @@ export const initRemoteSync = (
 
       case 'reference-lap': {
         runInAction(() => {
-          root.referenceLap.updateReferenceLap(
-            message.data as ReferenceLapData
-          );
+          const reference = message.data as ReferenceLapData | null;
+
+          if (reference) {
+            root.referenceLap.updateReferenceLap(reference);
+          } else {
+            root.referenceLap.reset();
+          }
         });
 
         return;
