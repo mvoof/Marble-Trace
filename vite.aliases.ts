@@ -17,6 +17,12 @@ const fromRoot = (relativePath: string) => path.resolve(rootDir, relativePath);
  * .storybook/main.ts so the two can never drift apart.
  */
 export const createLayerAliases = (): AliasEntry[] => [
+  { find: '@app', replacement: fromRoot('./src/app') },
+  { find: '@pages', replacement: fromRoot('./src/pages') },
+  { find: '@widgets', replacement: fromRoot('./src/widgets') },
+  { find: '@features', replacement: fromRoot('./src/features') },
+  { find: '@entities', replacement: fromRoot('./src/entities') },
+  { find: '@shared', replacement: fromRoot('./src/shared') },
   {
     find: '@platform/services',
     replacement: fromRoot('./src/platform/services'),
