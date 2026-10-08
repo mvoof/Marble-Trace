@@ -49,6 +49,34 @@ const swapLeaders = (core: PreviewCore) => {
   });
 };
 
+// Replaces the field with one car per row, in the order given — the backend's
+// order — each holding that official position and live position.
+const setField = (
+  core: PreviewCore,
+  places: { position: number; livePosition: number }[]
+) => {
+  const frame = core.backendComputed.driverEntries;
+
+  if (!frame || frame.entries.length < places.length) {
+    throw new Error('the scenario seeds too small a standings frame');
+  }
+
+  runInAction(() => {
+    core.backendComputed.updateDriverEntries({
+      ...frame,
+      entries: places.map((place, index) => ({
+        ...frame.entries[index],
+        ...place,
+      })),
+    });
+  });
+
+  return frame.entries.slice(0, places.length).map((entry) => entry.carIdx);
+};
+
+const officialOrderOf = (table: StandingsWidgetStore) =>
+  table.orderedEntries.map((entry) => table.rankOf(entry));
+
 const openTable = (core: PreviewCore, instanceId: string) =>
   core.widgetInstances.open(
     { core, instanceId, type: STANDINGS },
@@ -125,5 +153,85 @@ describe('StandingsWidgetStore — per instance', () => {
     swapLeaders(core);
 
     expect(table.positionChanges.size).toBe(2);
+  });
+
+  describe('cars without a place', () => {
+    const useOfficialOrder = () =>
+      runInAction(() =>
+        core.liveWidgets.updateUserSettings(STANDINGS, {
+          useLivePositions: false,
+        })
+      );
+
+    it('sort after every placed car in the official order', () => {
+      const table = openTable(core, STANDINGS);
+
+      useOfficialOrder();
+      setField(core, [
+        { position: 1, livePosition: 1 },
+        { position: 0, livePosition: 3 },
+        { position: 2, livePosition: 2 },
+      ]);
+
+      expect(officialOrderOf(table)).toEqual([1, 2, 0]);
+    });
+
+    it('keep the backend order among themselves', () => {
+      const table = openTable(core, STANDINGS);
+
+      useOfficialOrder();
+      const carIdxs = setField(core, [
+        { position: 0, livePosition: 3 },
+        { position: 1, livePosition: 1 },
+        { position: 0, livePosition: 2 },
+      ]);
+
+      expect(table.orderedEntries.map((entry) => entry.carIdx)).toEqual([
+        carIdxs[1],
+        carIdxs[0],
+        carIdxs[2],
+      ]);
+    });
+
+    it('take their first place on the next frame, without the settle delay', () => {
+      const table = openTable(core, STANDINGS);
+
+      useOfficialOrder();
+      setField(core, [
+        { position: 0, livePosition: 6 },
+        { position: 1, livePosition: 1 },
+        { position: 2, livePosition: 2 },
+        { position: 3, livePosition: 3 },
+        { position: 4, livePosition: 4 },
+        { position: 6, livePosition: 5 },
+      ]);
+      setField(core, [
+        { position: 5, livePosition: 5 },
+        { position: 1, livePosition: 1 },
+        { position: 2, livePosition: 2 },
+        { position: 3, livePosition: 3 },
+        { position: 4, livePosition: 4 },
+        { position: 6, livePosition: 6 },
+      ]);
+
+      expect(officialOrderOf(table)).toEqual([1, 2, 3, 4, 5, 6]);
+      expect(table.positionChanges.size).toBe(0);
+    });
+
+    it('leave the track order alone', () => {
+      const table = openTable(core, STANDINGS);
+
+      const carIdxs = setField(core, [
+        { position: 0, livePosition: 2 },
+        { position: 1, livePosition: 3 },
+        { position: 2, livePosition: 1 },
+      ]);
+
+      expect(table.orderedEntries.map((entry) => entry.carIdx)).toEqual([
+        carIdxs[2],
+        carIdxs[0],
+        carIdxs[1],
+      ]);
+    });
   });
 });
