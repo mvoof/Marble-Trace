@@ -54,6 +54,26 @@ export const SINGLE_LIST_SCROLL_KEY = -1;
 
 type PendingPosition = { position: number; since: number };
 
+// A rank of zero or below is a car the sim has not placed yet (no lap in
+// qualifying). It sorts after every placed car instead of above the leader.
+const isPlaced = (rank: number): boolean => rank > 0;
+
+const compareRanks = (first: number, second: number): number => {
+  if (isPlaced(first) && isPlaced(second)) {
+    return first - second;
+  }
+
+  if (isPlaced(first)) {
+    return -1;
+  }
+
+  if (isPlaced(second)) {
+    return 1;
+  }
+
+  return 0;
+};
+
 /**
  * One standings table: its class tab, scroll, settle debounce and position
  * flashes. Built per instance by `mount.ts`, so two tables keep their own
@@ -279,6 +299,15 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
         continue;
       }
 
+      // A first place is not an overtake: holding it back is what made the row
+      // jump to the top and then drop to where it belongs.
+      if (!isPlaced(settled)) {
+        next.set(entry.carIdx, this.rankOf(entry));
+        this.pendingPositions.delete(entry.carIdx);
+        changed = true;
+        continue;
+      }
+
       const pending = this.pendingPositions.get(entry.carIdx);
 
       if (!pending || pending.position !== this.rankOf(entry)) {
@@ -320,7 +349,12 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
       this.previousPositions.set(entry.carIdx, current);
 
-      if (previous === undefined || previous === current) {
+      if (
+        previous === undefined ||
+        previous === current ||
+        !isPlaced(previous) ||
+        !isPlaced(current)
+      ) {
         continue;
       }
 
@@ -372,10 +406,13 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
     const positions = this.settledPositions;
 
-    return [...entries].sort(
-      (a, b) =>
-        (positions.get(a.carIdx) ?? this.rankOf(a)) -
-        (positions.get(b.carIdx) ?? this.rankOf(b))
+    const sortRankOf = (entry: CarIdentity): number =>
+      positions.get(entry.carIdx) ?? this.rankOf(entry);
+
+    // The sort is stable and `visibleEntries` keeps the backend's order, so
+    // unplaced cars stay in that order among themselves.
+    return [...entries].sort((first, second) =>
+      compareRanks(sortRankOf(first), sortRankOf(second))
     );
   }
 

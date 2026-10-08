@@ -9,7 +9,9 @@ use crate::computations::car_speed::CarSpeedTracker;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::cars::CarIdxFrame;
 use crate::model::enums::{PitState, SessionState, TrackSurface};
-use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot, SessionType};
+use crate::model::session::{
+    CarEntry, QualifyResultEntry, ResultPosition, SessionSnapshot, SessionType,
+};
 use crate::utils::lock_or_recover;
 
 const FALLBACK_SORT_POSITION: i32 = 999;
@@ -202,6 +204,9 @@ pub fn compute(
         results_positions_map.insert(result_position.car_idx, result_position);
     }
 
+    let live_positions =
+        live_positions_published(car_idx, &deduped_drivers, player_car_idx, results);
+
     let mut entries: Vec<DriverEntry> = deduped_drivers
         .iter()
         .filter(|d| {
@@ -266,7 +271,7 @@ pub fn compute(
                     .car_idx_position
                     .get(idx)
                     .copied()
-                    .filter(|&pos| pos > 0)
+                    .filter(|&pos| live_positions && pos > 0)
                     .or_else(|| {
                         result
                             .map(|position| position.position)
@@ -278,7 +283,7 @@ pub fn compute(
                     .car_idx_class_position
                     .get(idx)
                     .copied()
-                    .filter(|&pos| pos > 0)
+                    .filter(|&pos| live_positions && pos > 0)
                     .or_else(|| result.and_then(|position| position.class_position))
                     .or(start_class)
                     .unwrap_or(0),
@@ -535,6 +540,51 @@ pub fn compute(
         entries,
         player_car_idx,
     }
+}
+
+/// Whether this frame's `CarIdxPosition` / `CarIdxClassPosition` can be trusted.
+///
+/// Seen once in a live race, with the player sitting in the pit stall: the sim zeroed
+/// the live position of every car on track and left a junk `1` on the player's own,
+/// while `ResultsPositions` stayed correct. Taken at face value the player tied for
+/// the lead. So the arrays are judged unpublished when cars other than the player are
+/// in the world, none of them holds a live position, and the session already has
+/// results to rank by. Before the green the arrays can be all zero for a legitimate
+/// reason, but the results are empty then, so the grid ranking is left alone.
+fn live_positions_published(
+    car_idx: &CarIdxFrame,
+    drivers: &[&CarEntry],
+    player_car_idx: i32,
+    results: &[ResultPosition],
+) -> bool {
+    if results.is_empty() {
+        return true;
+    }
+
+    let mut others_in_world = drivers
+        .iter()
+        .filter(|driver| {
+            driver.car_idx != player_car_idx && !driver.is_pace_car && !driver.is_spectator
+        })
+        .map(|driver| driver.car_idx as usize)
+        .filter(|&idx| {
+            car_idx
+                .car_idx_lap_dist_pct
+                .get(idx)
+                .is_some_and(|&pct| pct >= 0.0)
+        })
+        .peekable();
+
+    if others_in_world.peek().is_none() {
+        return true;
+    }
+
+    others_in_world.any(|idx| {
+        car_idx
+            .car_idx_position
+            .get(idx)
+            .is_some_and(|&pos| pos > 0)
+    })
 }
 
 /// Distance covered so far, used to rank cars between start/finish crossings.
@@ -2394,6 +2444,199 @@ pub(crate) mod tests {
         assert_eq!(entries[0].car_idx, 3);
         assert_eq!(entries[1].car_idx, 2);
         assert_eq!(entries[2].car_idx, 1);
+    }
+
+    fn result_at(car_idx: i32, position: i32) -> ResultPosition {
+        ResultPosition {
+            car_idx,
+            position,
+            class_position: Some(position),
+            lap: Some(0),
+            time: Some(0.0),
+            fastest_time: None,
+            last_time: None,
+            laps_complete: Some(0),
+            reason_out_id: Some(0),
+        }
+    }
+
+    /// Shaped like the capture: the player (car 0) sits in the pit stall carrying a
+    /// junk live position of 1, cars 1 and 2 are on track with live positions zeroed,
+    /// and `ResultsPositions` ranks the player last.
+    fn unpublished_positions_session(session_type: SessionType) -> SessionSnapshot {
+        SessionSnapshot {
+            player_car_idx: 0,
+            current_session_num: 0,
+            cars: (0..3)
+                .map(|car_idx| CarEntry {
+                    car_idx,
+                    i_rating: 2000,
+                    ..Default::default()
+                })
+                .collect(),
+            sessions: vec![SessionEntry {
+                session_type,
+                results_positions: vec![result_at(1, 1), result_at(2, 2), result_at(0, 3)],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    fn unpublished_positions_frame() -> CarIdxFrame {
+        CarIdxFrame {
+            car_idx_lap_dist_pct: vec![0.02, 0.60, 0.40],
+            car_idx_on_pit_road: vec![true, false, false],
+            car_idx_position: vec![1, 0, 0],
+            car_idx_class_position: vec![1, 0, 0],
+            car_idx_lap: vec![1, 15, 15],
+            car_idx_laps_completed: vec![0, 14, 14],
+            car_idx_last_lap_time: vec![-1.0, -1.0, -1.0],
+            car_idx_best_lap_time: vec![-1.0, -1.0, -1.0],
+            car_idx_f2_time: vec![0.0, 0.0, 0.0],
+            car_idx_est_time: vec![0.0, 0.0, 0.0],
+            car_idx_track_surface: vec![
+                TrackSurface::InPitStall,
+                TrackSurface::OnTrack,
+                TrackSurface::OnTrack,
+            ],
+            car_idx_tire_compound: vec![-1, -1, -1],
+            car_idx_session_flags: vec![0, 0, 0],
+            spotter: None,
+        }
+    }
+
+    fn compute_unpublished(
+        car_idx: &CarIdxFrame,
+        session: &SessionSnapshot,
+        session_state: SessionState,
+    ) -> DriverEntriesFrame {
+        let state = Mutex::new(DriverEntriesState::default());
+
+        compute(
+            car_idx,
+            session,
+            &HashMap::new(),
+            true,
+            Some(session_state),
+            &state,
+        )
+    }
+
+    fn player_entry(frame: &DriverEntriesFrame) -> &DriverEntry {
+        frame
+            .entries
+            .iter()
+            .find(|entry| entry.is_player)
+            .expect("player entry")
+    }
+
+    #[test]
+    fn test_unpublished_live_positions_rank_the_player_by_results() {
+        let session = unpublished_positions_session(SessionType::Race);
+        let frame = compute_unpublished(
+            &unpublished_positions_frame(),
+            &session,
+            SessionState::Racing,
+        );
+
+        let player = player_entry(&frame);
+
+        assert_eq!(player.position, 3);
+        assert_eq!(player.class_position, 3);
+
+        let mut official: Vec<&DriverEntry> = frame.entries.iter().collect();
+        official.sort_by_key(|entry| official_sort_key(entry));
+
+        assert_eq!(official.last().map(|entry| entry.car_idx), Some(0));
+    }
+
+    #[test]
+    fn test_unpublished_live_positions_place_the_player_after_racing_cars() {
+        let session = unpublished_positions_session(SessionType::Race);
+        let frame = compute_unpublished(
+            &unpublished_positions_frame(),
+            &session,
+            SessionState::Racing,
+        );
+
+        let order: Vec<i32> = frame.entries.iter().map(|entry| entry.car_idx).collect();
+
+        assert_eq!(order, vec![1, 2, 0]);
+        assert_eq!(player_entry(&frame).live_position, 3);
+    }
+
+    #[test]
+    fn test_unpublished_live_positions_do_not_project_the_player_as_winner() {
+        let session = unpublished_positions_session(SessionType::Race);
+        let frame = compute_unpublished(
+            &unpublished_positions_frame(),
+            &session,
+            SessionState::Racing,
+        );
+
+        let player_delta = player_entry(&frame).estimated_ir_delta_official;
+        let leader_delta = frame
+            .entries
+            .iter()
+            .find(|entry| entry.car_idx == 1)
+            .and_then(|entry| entry.estimated_ir_delta_official);
+
+        assert!(player_delta.is_some_and(|delta| delta < 0));
+        assert!(leader_delta.is_some_and(|delta| delta > 0));
+    }
+
+    #[test]
+    fn test_published_live_positions_still_win_over_results() {
+        let session = unpublished_positions_session(SessionType::Race);
+        let mut car_idx = unpublished_positions_frame();
+        car_idx.car_idx_position = vec![1, 3, 2];
+        car_idx.car_idx_class_position = vec![1, 3, 2];
+
+        let frame = compute_unpublished(&car_idx, &session, SessionState::Racing);
+
+        assert_eq!(player_entry(&frame).position, 1);
+        assert_eq!(player_entry(&frame).class_position, 1);
+    }
+
+    #[test]
+    fn test_zeroed_positions_before_the_green_keep_the_grid_order() {
+        let mut session = unpublished_positions_session(SessionType::Race);
+        session.sessions[0].results_positions.clear();
+
+        let mut car_idx = unpublished_positions_frame();
+        car_idx.car_idx_position = vec![0, 0, 0];
+        car_idx.car_idx_class_position = vec![0, 0, 0];
+
+        let start_positions: HashMap<i32, (i32, i32)> = [(0, (2, 2)), (1, (3, 3)), (2, (1, 1))]
+            .into_iter()
+            .collect();
+        let state = Mutex::new(DriverEntriesState::default());
+        let frame = compute(
+            &car_idx,
+            &session,
+            &start_positions,
+            false,
+            Some(SessionState::ParadeLaps),
+            &state,
+        );
+
+        let order: Vec<i32> = frame.entries.iter().map(|entry| entry.car_idx).collect();
+
+        assert_eq!(order, vec![2, 0, 1]);
+    }
+
+    #[test]
+    fn test_player_in_the_garage_in_qualifying_keeps_the_place_set_by_time() {
+        let session = unpublished_positions_session(SessionType::Qualify);
+        let frame = compute_unpublished(
+            &unpublished_positions_frame(),
+            &session,
+            SessionState::Racing,
+        );
+
+        assert_eq!(player_entry(&frame).position, 3);
+        assert_eq!(player_entry(&frame).live_position, 3);
     }
 
     #[test]
