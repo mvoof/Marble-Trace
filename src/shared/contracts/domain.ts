@@ -11,7 +11,6 @@ export type FlagType =
   | 'black'
   | 'meatball'
   | 'debris'
-  | 'penalty'
   | 'sc'
   | 'dq'
   | 'furled';

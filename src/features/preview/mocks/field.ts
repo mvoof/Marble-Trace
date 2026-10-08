@@ -165,7 +165,7 @@ const withClassPositions = (field: DriverEntry[]): DriverEntry[] => {
 // what the widget makes of it is the widget's business.
 const BLUE_FLAG_BIT = 0x00000020;
 const MEATBALL_FLAG_BIT = 0x00100000;
-const PENALTY_FLAG_BIT = 0x00010000;
+const BLACK_FLAG_BIT = 0x00010000;
 
 /**
  * Three cars around the player at the three stages of a stop: one on the way
@@ -178,11 +178,11 @@ export const MOCK_PIT_ROWS: MockFieldRows = {
   [2]: { onPitRoad: true, pitState: 'exit' },
 };
 
-/** A blue, a meatball and a penalty on three rows — the flags a driver row draws. */
+/** A blue, a meatball and a black flag on three rows — the flags a driver row draws. */
 export const MOCK_DRIVER_FLAG_ROWS: MockFieldRows = {
   [-3]: { rawFlags: BLUE_FLAG_BIT },
   [-1]: { rawFlags: MEATBALL_FLAG_BIT },
-  [1]: { rawFlags: PENALTY_FLAG_BIT },
+  [1]: { rawFlags: BLACK_FLAG_BIT },
 };
 
 const applyRows = (

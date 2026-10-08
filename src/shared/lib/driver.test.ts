@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { getIncidentPenaltyStatus, isNearIncidentPenalty } from './driver';
+import {
+  getIncidentPenaltyStatus,
+  isNearIncidentPenalty,
+  parseDriverFlags,
+} from './driver';
 
 const INITIAL = 8;
 const SUBSEQUENT = 4;
@@ -82,5 +86,22 @@ describe('isNearIncidentPenalty', () => {
   it('stays quiet with no penalty ahead', () => {
     expect(isNearIncidentPenalty(15, { served: 2, nextAt: null })).toBe(false);
     expect(isNearIncidentPenalty(15, null)).toBe(false);
+  });
+});
+
+// The sim's own bits, as `CarIdxSessionFlags` carries them.
+const BLACK_BIT = 0x00010000;
+const DISQUALIFY_BIT = 0x00020000;
+const FURLED_BIT = 0x00080000;
+
+describe('parseDriverFlags', () => {
+  it('names each black-flag bit the way the flag widgets do', () => {
+    expect(parseDriverFlags(BLACK_BIT)).toBe('black');
+    expect(parseDriverFlags(FURLED_BIT)).toBe('furled');
+    expect(parseDriverFlags(DISQUALIFY_BIT)).toBe('dq');
+  });
+
+  it('shows the penalty to serve over the slowdown', () => {
+    expect(parseDriverFlags(BLACK_BIT | FURLED_BIT)).toBe('black');
   });
 });
