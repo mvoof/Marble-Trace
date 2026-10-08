@@ -4,16 +4,29 @@ import {
   fileStamp,
   saveTextFileAndReveal,
 } from '@shared/api/file-export.service';
-import type { SourceFrame } from '@shared/contracts/bindings';
+import type {
+  RawSession,
+  RawValue,
+  RawVarMeta,
+  SourceFrame,
+} from '@shared/contracts/bindings';
 import type { SessionStore } from '@entities/session/session.store';
 import type { TelemetrySnapshot } from '@shared/contracts/telemetry-snapshot';
 import type { FpsDiagnosticsStore } from './fps-diagnostics.store';
 import { resultsToCsv } from './report';
 
+/** What the inspector hands the export; the inspector is a sibling feature. */
+interface SnapshotCapture {
+  frame: SourceFrame | null;
+  rawValues: Partial<Record<string, RawValue>> | null;
+  rawVarMeta: RawVarMeta[];
+  rawSession: RawSession | null;
+}
+
 interface DiagnosticsExportDeps {
   fpsDiagnostics: FpsDiagnosticsStore;
   /** The inspector's one-frame capture; the inspector is a sibling feature. */
-  telemetryInspector: { captureOnce: () => Promise<SourceFrame | null> };
+  telemetryInspector: { captureOnce: () => Promise<SnapshotCapture> };
   session: SessionStore;
 }
 
@@ -52,9 +65,13 @@ export class DiagnosticsExportStore {
    *
    * `sessionInfo` still comes from the store: it arrives on `sim://session`,
    * which this window does receive.
+   *
+   * `raw` is the sim's own data at the same moment, so a report carries both
+   * what the sim sent and what the app made of it.
    */
   async saveTelemetrySnapshot(): Promise<string> {
-    const frame = await this.root.telemetryInspector.captureOnce();
+    const { frame, rawValues, rawVarMeta, rawSession } =
+      await this.root.telemetryInspector.captureOnce();
 
     const snapshot: TelemetrySnapshot = {
       capturedAt: new Date().toISOString(),
@@ -66,6 +83,11 @@ export class DiagnosticsExportStore {
       lapTiming: frame?.lapTiming ?? null,
       session: frame?.session ?? null,
       sessionInfo: this.root.session.sessionInfo,
+      raw: {
+        variables: rawVarMeta,
+        values: rawValues,
+        sessionYaml: rawSession?.yaml ?? null,
+      },
     };
 
     return this.save(

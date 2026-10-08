@@ -13,7 +13,8 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tracing::{info, warn};
 
 use crate::model::enums::SimType;
-use crate::sources::iracing::session_parse::parse_session;
+use crate::sources::iracing::session_parse::{parse_session, session_tree};
+use crate::sources::raw::{RawValues, RawVarMeta, SessionTreeParser};
 use crate::sources::source::{SessionParser, SourceFrame, SourceReadResult, TelemetrySource};
 use crate::sources::tape::{TapeHeader, TapeReader, TapeRecord, TapeWriter};
 use crate::telemetry::capabilities::Capabilities;
@@ -147,6 +148,10 @@ impl TelemetrySource for ReplaySource {
     fn session_parser(&self) -> SessionParser {
         parse_session
     }
+
+    fn session_tree_parser(&self) -> SessionTreeParser {
+        session_tree
+    }
 }
 
 pub struct RecordingSource {
@@ -204,6 +209,18 @@ impl TelemetrySource for RecordingSource {
 
     fn session_parser(&self) -> SessionParser {
         self.inner.session_parser()
+    }
+
+    fn session_tree_parser(&self) -> SessionTreeParser {
+        self.inner.session_tree_parser()
+    }
+
+    fn raw_var_meta(&self) -> Vec<RawVarMeta> {
+        self.inner.raw_var_meta()
+    }
+
+    fn raw_values(&self) -> Option<RawValues> {
+        self.inner.raw_values()
     }
 }
 
@@ -321,6 +338,10 @@ mod tests {
 
         fn session_parser(&self) -> SessionParser {
             parse_session
+        }
+
+        fn session_tree_parser(&self) -> SessionTreeParser {
+            session_tree
         }
     }
 

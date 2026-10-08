@@ -4,10 +4,16 @@ const setInspectorActive = vi.fn(async (_active: boolean) => undefined);
 const getInspectorFrame = vi.fn(async () => null as unknown);
 const getDeliveryCounters = vi.fn(async () => [] as unknown);
 const resetDeliveryCounters = vi.fn(async () => undefined);
+const getInspectorRawValues = vi.fn(async () => null as unknown);
+const getRawVarMeta = vi.fn(async () => [] as unknown);
+const getRawSession = vi.fn(async () => null as unknown);
 
 vi.mock('@shared/api/telemetry.service', () => ({
   setInspectorActive: (active: boolean) => setInspectorActive(active),
   getInspectorFrame: () => getInspectorFrame(),
+  getInspectorRawValues: () => getInspectorRawValues(),
+  getRawVarMeta: () => getRawVarMeta(),
+  getRawSession: () => getRawSession(),
   getDeliveryCounters: () => getDeliveryCounters(),
   resetDeliveryCounters: () => resetDeliveryCounters(),
 }));
@@ -20,6 +26,40 @@ const makeRoot = (sessionInfo: unknown = null) =>
 
 const makeStore = (sessionInfo: unknown = null) =>
   new TelemetryInspectorStore(makeRoot(sessionInfo));
+
+/** A store showing the adapted frame, which the older cases are about. */
+const makeAdaptedStore = () => {
+  const store = makeStore();
+  store.source = 'telemetry';
+
+  return store;
+};
+
+const rawValues = { Speed: 42.123456, CarIdxLap: [3, 4], dcABS: 2 };
+
+const rawVarMeta = [
+  {
+    name: 'Speed',
+    typeName: 'float',
+    unit: 'm/s',
+    desc: 'GPS vehicle speed',
+    count: 1,
+  },
+  {
+    name: 'CarIdxLap',
+    typeName: 'int',
+    unit: '',
+    desc: 'Laps started by car index',
+    count: 64,
+  },
+  {
+    name: 'dcABS',
+    typeName: 'float',
+    unit: '',
+    desc: 'In car abs adjustment',
+    count: 1,
+  },
+];
 
 const frame = {
   car_dynamics: { speed: 42.123456, gear: 3 },
@@ -34,6 +74,12 @@ describe('TelemetryInspectorStore', () => {
     getDeliveryCounters.mockClear();
     resetDeliveryCounters.mockClear();
     getDeliveryCounters.mockResolvedValue([]);
+    getInspectorRawValues.mockReset();
+    getInspectorRawValues.mockResolvedValue(null);
+    getRawVarMeta.mockReset();
+    getRawVarMeta.mockResolvedValue([]);
+    getRawSession.mockReset();
+    getRawSession.mockResolvedValue(null);
   });
 
   // The whole reason this store pulls instead of subscribing: the settings
@@ -73,7 +119,7 @@ describe('TelemetryInspectorStore', () => {
   });
 
   it('builds its rows from the pulled frame', () => {
-    const store = makeStore();
+    const store = makeAdaptedStore();
     store.frame = frame as never;
 
     expect(store.rows.map((row) => row.path)).toEqual([
@@ -83,14 +129,14 @@ describe('TelemetryInspectorStore', () => {
   });
 
   it('counts what the sim does not report', () => {
-    const store = makeStore();
+    const store = makeAdaptedStore();
     store.frame = frame as never;
 
     expect(store.absentCount).toBe(1);
   });
 
   it('opens and closes a branch', () => {
-    const store = makeStore();
+    const store = makeAdaptedStore();
     store.frame = frame as never;
 
     store.toggleExpanded('car_dynamics');
@@ -133,6 +179,7 @@ describe('TelemetryInspectorStore', () => {
 
   it('forgets what was open when the source changes', async () => {
     const store = makeStore({ trackId: 18 });
+    store.source = 'telemetry';
     store.frame = frame as never;
     store.toggleExpanded('car_dynamics');
 
@@ -153,7 +200,9 @@ describe('TelemetryInspectorStore', () => {
     store.frame = frame as never;
     setInspectorActive.mockClear();
 
-    await expect(store.captureOnce()).resolves.toBe(store.frame);
+    const captured = await store.captureOnce();
+
+    expect(captured.frame).toBe(store.frame);
     expect(setInspectorActive).not.toHaveBeenCalled();
 
     await store.stop();
@@ -165,7 +214,7 @@ describe('TelemetryInspectorStore', () => {
     const store = makeStore();
     const captured = await store.captureOnce();
 
-    expect(captured).toEqual(frame);
+    expect(captured.frame).toEqual(frame);
     expect(setInspectorActive).toHaveBeenNthCalledWith(1, true);
     expect(setInspectorActive).toHaveBeenLastCalledWith(false);
     expect(store.running).toBe(false);
@@ -179,10 +228,84 @@ describe('TelemetryInspectorStore', () => {
     const store = makeStore({ trackId: 18 });
     await store.setSource('session');
 
-    await expect(store.captureOnce()).resolves.toEqual(frame);
+    const captured = await store.captureOnce();
 
+    expect(captured.frame).toEqual(frame);
     expect(store.source).toBe('session');
     expect(store.running).toBe(false);
+  });
+
+  // A report must carry what the sim sent, not only what the app made of it.
+  it('captures the raw variables and the session text with the frame', async () => {
+    getInspectorFrame.mockResolvedValue(frame);
+    getInspectorRawValues.mockResolvedValue(rawValues);
+    getRawVarMeta.mockResolvedValue(rawVarMeta);
+    getRawSession.mockResolvedValue({ yaml: 'WeekendInfo:\n', tree: {} });
+
+    const captured = await makeStore().captureOnce();
+
+    expect(captured.rawValues).toEqual(rawValues);
+    expect(captured.rawVarMeta).toEqual(rawVarMeta);
+    expect(captured.rawSession?.yaml).toBe('WeekendInfo:\n');
+  });
+
+  it('shows the raw variables by default, under the sim names', () => {
+    const store = makeStore();
+    store.rawValues = rawValues;
+
+    expect(store.source).toBe('rawTelemetry');
+    expect(store.rows.map((row) => row.path)).toEqual([
+      'Speed',
+      'CarIdxLap',
+      'dcABS',
+    ]);
+  });
+
+  // A variable is as often found by what it means as by its name, and the
+  // sim's description is the only place the meaning of a dc slot is written.
+  it('attaches the sim description and finds a variable by it', () => {
+    const store = makeStore();
+    store.rawValues = rawValues;
+    store.rawVarMeta = rawVarMeta;
+
+    store.setFilter('abs adjustment');
+
+    const [row] = store.rows;
+
+    expect(store.rows).toHaveLength(1);
+    expect(row.name).toBe('dcABS');
+    expect(row.annotation?.desc).toBe('In car abs adjustment');
+  });
+
+  it('reads the raw session when it is switched to, and stops the feed', async () => {
+    getRawSession.mockResolvedValue({
+      yaml: 'WeekendInfo:\n TrackID: 18\n',
+      tree: { WeekendInfo: { TrackID: 18 } },
+    });
+
+    const store = makeStore();
+    await store.start();
+
+    await store.setSource('rawSession');
+
+    expect(store.running).toBe(false);
+    expect(store.rows.map((row) => row.path)).toEqual(['WeekendInfo']);
+  });
+
+  // The filter narrows the text to matching lines without renumbering them, so
+  // a match can still be found again in the full document.
+  it('keeps the document line numbers when filtering the raw text', () => {
+    const store = makeStore();
+    store.rawSession = {
+      yaml: 'WeekendInfo:\n TrackID: 18\n TrackName: spa\n',
+      tree: null,
+    };
+
+    store.setFilter('trackname');
+
+    expect(store.rawSessionLines).toEqual([
+      { number: 3, text: ' TrackName: spa' },
+    ]);
   });
 
   // The counters are read as a rate, not as a total: "this window took

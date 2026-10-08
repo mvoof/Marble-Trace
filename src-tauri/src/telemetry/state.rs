@@ -9,6 +9,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::model::reference_lap::ReferenceLapData;
 use crate::model::session::SessionSnapshot;
+use crate::sources::raw::{RawSession, RawValues, RawVarMeta, SessionTreeParser};
 use crate::sources::source::SourceFrame;
 use crate::telemetry::control::{Control, TelemetryCommand, TelemetryConfig, TelemetryRun};
 use crate::telemetry::delivery::DeliveryCounters;
@@ -31,6 +32,15 @@ pub struct TelemetryServiceState {
     /// open. 4 Hz because that is already faster than a person can read a table
     /// of a hundred numbers.
     pub inspector_frame: Mutex<Option<SourceFrame>>,
+    /// Every variable's value under the sim's own names, on the same tier and
+    /// under the same switch as `inspector_frame`.
+    pub inspector_raw_values: Mutex<Option<RawValues>>,
+    /// The sim's variable list for this connection. Set once when it opens.
+    raw_var_meta: Mutex<Vec<RawVarMeta>>,
+    /// The session text as the sim last wrote it, with the parser that turns it
+    /// into a tree. Kept whether the inspector is open or not: it changes a few
+    /// times a session, and the clone is one string per change.
+    raw_session: Mutex<Option<(String, SessionTreeParser)>>,
     /// The reference lap the loop has made active, for a window that opens
     /// after the event announcing it went out.
     active_reference: Mutex<Option<Arc<ReferenceLapData>>>,
@@ -56,6 +66,9 @@ impl Default for TelemetryServiceState {
             control: Mutex::new(Control::default()),
             session: Mutex::new(None),
             inspector_frame: Mutex::new(None),
+            inspector_raw_values: Mutex::new(None),
+            raw_var_meta: Mutex::new(Vec::new()),
+            raw_session: Mutex::new(None),
             active_reference: Mutex::new(None),
             masks: MaskRegistry::bootstrapped(),
             delivery: Mutex::new(DeliveryCounters::with_broadcast()),
@@ -123,6 +136,32 @@ impl TelemetryServiceState {
 
     pub fn clear_inspector_frame(&self) {
         *lock_or_recover(&self.inspector_frame) = None;
+        *lock_or_recover(&self.inspector_raw_values) = None;
+    }
+
+    pub fn publish_inspector_raw_values(&self, values: Option<RawValues>) {
+        *lock_or_recover(&self.inspector_raw_values) = values;
+    }
+
+    pub fn raw_var_meta(&self) -> Vec<RawVarMeta> {
+        lock_or_recover(&self.raw_var_meta).clone()
+    }
+
+    pub fn publish_raw_var_meta(&self, meta: Vec<RawVarMeta>) {
+        *lock_or_recover(&self.raw_var_meta) = meta;
+    }
+
+    pub fn publish_raw_session(&self, session: Option<(String, SessionTreeParser)>) {
+        *lock_or_recover(&self.raw_session) = session;
+    }
+
+    /// The session text and its tree. The tree is parsed here, on the command
+    /// asking for it, so the telemetry thread only ever copies a string.
+    pub fn raw_session(&self) -> Option<RawSession> {
+        let (yaml, parse_tree) = lock_or_recover(&self.raw_session).clone()?;
+        let tree = parse_tree(&yaml);
+
+        Some(RawSession { yaml, tree })
     }
 }
 

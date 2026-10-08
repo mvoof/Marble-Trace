@@ -1,17 +1,31 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
+import type { IReactionDisposer } from 'mobx';
 
 import {
   getDeliveryCounters,
   getInspectorFrame,
+  getInspectorRawValues,
+  getRawSession,
+  getRawVarMeta,
   resetDeliveryCounters,
   setInspectorActive,
 } from '@shared/api/telemetry.service';
-import type { DeliverySet, SourceFrame } from '@shared/contracts/bindings';
+import type {
+  DeliverySet,
+  RawSession,
+  RawValue,
+  RawVarMeta,
+  SourceFrame,
+} from '@shared/contracts/bindings';
 import type {
   DeliveryFieldRow,
   DeliveryRow,
+  InspectorCapture,
   InspectorRow,
   InspectorSource,
+  RawSessionLine,
+  RawSessionView,
+  RowAnnotation,
 } from '@features/telemetry-inspector/inspector';
 import { ARRAY_PAGE, buildRows, countAbsent } from './inspector-tree';
 import type { SessionStore } from '@entities/session/session.store';
@@ -55,11 +69,24 @@ const ratePerSecond = (count: number, elapsedMs: number): number => {
   return (count * MS_PER_SECOND) / elapsedMs;
 };
 
+/** The two sources the backend fills on its 4 Hz tick; the others are pulled once. */
+const isFeedSource = (source: InspectorSource): boolean =>
+  source === 'rawTelemetry' || source === 'telemetry';
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 export class TelemetryInspectorStore {
   frame: SourceFrame | null = null;
+  /** Every variable under the sim's names, pulled with `frame`. */
+  rawValues: Partial<Record<string, RawValue>> | null = null;
+  /** The sim's variable list; read once per connection. */
+  rawVarMeta: RawVarMeta[] = [];
+  rawSession: RawSession | null = null;
+  rawSessionView: RawSessionView = 'tree';
   /** The feed is open — the backend is filling frames for us. */
   running = false;
-  source: InspectorSource = 'telemetry';
+  source: InspectorSource = 'rawTelemetry';
   /** Substring match over the field name, case-insensitive. */
   filter = '';
   /** Hide fields the sim is not reporting in this session. */
@@ -73,6 +100,7 @@ export class TelemetryInspectorStore {
   /** Per-array entry cap, raised by "show all" on that row. */
   private arrayLimits = new Map<string, number>();
   private timer: ReturnType<typeof setInterval> | null = null;
+  private sessionWatch: IReactionDisposer | null = null;
 
   constructor(private readonly root: TelemetryInspectorDeps) {
     makeAutoObservable<this, 'root'>(this, { root: false }, { autoBind: true });
@@ -86,11 +114,42 @@ export class TelemetryInspectorStore {
     this.hideAbsent = value;
   }
 
+  setRawSessionView(value: RawSessionView) {
+    this.rawSessionView = value;
+  }
+
   /**
-   * Switching to the session stops the telemetry feed outright: the session
-   * snapshot arrives on `sim://session`, which this window already receives, so
-   * keeping the backend filling frames nobody is reading would be exactly the
-   * waste this design exists to avoid.
+   * The panel came on screen. The raw session is re-read whenever the parsed
+   * one changes: both come from the same text, and `sim://session` — which this
+   * window already receives — is the only signal that the text moved.
+   */
+  async open() {
+    this.sessionWatch?.();
+    this.sessionWatch = reaction(
+      () => this.root.session.sessionInfo,
+      () => {
+        if (this.source === 'rawSession') {
+          void this.loadRawSession();
+        }
+      }
+    );
+
+    await this.activate();
+  }
+
+  /** The panel left the screen: nothing is polled or kept for it any more. */
+  async close() {
+    this.sessionWatch?.();
+    this.sessionWatch = null;
+
+    await this.stop();
+  }
+
+  /**
+   * Switching to either session stops the telemetry feed outright: a session
+   * changes a few times a race and is read once per change, so keeping the
+   * backend filling frames nobody is reading would be exactly the waste this
+   * design exists to avoid.
    */
   async setSource(value: InspectorSource) {
     if (value === this.source) {
@@ -103,13 +162,22 @@ export class TelemetryInspectorStore {
       this.arrayLimits.clear();
     });
 
-    if (value === 'session') {
-      await this.stop();
+    await this.activate();
+  }
 
-      return;
+  async loadRawSession() {
+    try {
+      const session = await getRawSession();
+
+      runInAction(() => {
+        this.rawSession = session;
+        this.lastError = null;
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.lastError = String(error);
+      });
     }
-
-    await this.start();
   }
 
   toggleExpanded(path: string) {
@@ -172,25 +240,83 @@ export class TelemetryInspectorStore {
     await this.refreshDeliveryCounters();
   }
 
-  /** What the rows are built from — the pulled frame, or the session snapshot. */
+  /** What the rows are built from, for the source on screen. */
   get sourceObject(): Record<string, unknown> | null {
-    if (this.source === 'session') {
-      return (this.root.session.sessionInfo ?? null) as Record<
-        string,
-        unknown
-      > | null;
-    }
+    switch (this.source) {
+      case 'rawTelemetry':
+        return this.rawValues as Record<string, unknown> | null;
+      case 'rawSession': {
+        const tree = this.rawSession?.tree;
 
-    return this.frame as Record<string, unknown> | null;
+        return isPlainObject(tree) ? tree : null;
+      }
+      case 'session':
+        return (this.root.session.sessionInfo ?? null) as Record<
+          string,
+          unknown
+        > | null;
+      case 'telemetry':
+        return this.frame as Record<string, unknown> | null;
+    }
+  }
+
+  /** The sim's description of each variable, keyed by its name. */
+  get annotations(): ReadonlyMap<string, RowAnnotation> {
+    return new Map(
+      this.rawVarMeta.map((meta) => [
+        meta.name,
+        { typeName: meta.typeName, unit: meta.unit, desc: meta.desc },
+      ])
+    );
   }
 
   get rows(): InspectorRow[] {
     return buildRows(this.sourceObject, {
       expanded: this.expanded,
-      filter: this.filter.trim().toLowerCase(),
-      hideAbsent: this.hideAbsent,
+      filter: this.normalizedFilter,
+      hideAbsent: this.hideAbsent && this.showsAbsent,
       arrayLimits: this.arrayLimits,
+      annotations:
+        this.source === 'rawTelemetry' ? this.annotations : undefined,
     });
+  }
+
+  /**
+   * The raw session text, line by line. A filter keeps the matching lines with
+   * their numbers rather than reflowing the document, so a match can still be
+   * found again in the full text.
+   */
+  get rawSessionLines(): RawSessionLine[] {
+    const yaml = this.rawSession?.yaml;
+
+    if (!yaml) {
+      return [];
+    }
+
+    const lines = yaml
+      .split('\n')
+      .map((text, index) => ({ number: index + 1, text }));
+
+    if (this.normalizedFilter === '') {
+      return lines;
+    }
+
+    return lines.filter((line) =>
+      line.text.toLowerCase().includes(this.normalizedFilter)
+    );
+  }
+
+  /** The adapted views mark what the sim does not report; the raw ones cannot. */
+  get showsAbsent(): boolean {
+    return this.source === 'telemetry' || this.source === 'session';
+  }
+
+  get showsRawText(): boolean {
+    return this.source === 'rawSession' && this.rawSessionView === 'text';
+  }
+
+  private get normalizedFilter(): string {
+    return this.filter.trim().toLowerCase();
   }
 
   /** How many fields the sim is not reporting at all. */
@@ -199,14 +325,37 @@ export class TelemetryInspectorStore {
   }
 
   get isEmpty(): boolean {
+    if (this.source === 'rawSession') {
+      return this.rawSession === null;
+    }
+
     return this.sourceObject === null;
   }
 
+  /** Opens the feed. Only the two per-tick sources have one. */
   async start() {
-    if (this.running || this.source === 'session') {
+    if (this.running || !isFeedSource(this.source)) {
       return;
     }
 
+    await this.openFeed();
+  }
+
+  private async activate() {
+    if (isFeedSource(this.source)) {
+      await this.start();
+
+      return;
+    }
+
+    await this.stop();
+
+    if (this.source === 'rawSession') {
+      await this.loadRawSession();
+    }
+  }
+
+  private async openFeed() {
     runInAction(() => {
       this.running = true;
       this.lastError = null;
@@ -243,6 +392,7 @@ export class TelemetryInspectorStore {
     runInAction(() => {
       this.running = false;
       this.frame = null;
+      this.rawValues = null;
     });
 
     await setInspectorActive(false).catch((error: unknown) =>
@@ -251,68 +401,86 @@ export class TelemetryInspectorStore {
   }
 
   /**
-   * One frame for the snapshot export, without leaving the feed open.
+   * Everything the snapshot export needs, without leaving the feed open: the
+   * adapted frame, the sim's variables and their list, and the session text.
    *
-   * When the panel is already showing telemetry, the frame it has is used as it
-   * is. Otherwise the feed is opened just long enough for the backend's next
-   * 4 Hz tick to fill one, and closed again — so the export costs nothing beyond
-   * the moment the user pressed the button.
+   * When the feed is already open, what it has is used as it is. Otherwise it
+   * is opened just long enough for the backend's next 4 Hz tick to fill one,
+   * and closed again — so the export costs nothing beyond the moment the user
+   * pressed the button. The source on screen is left alone.
    */
-  async captureOnce(): Promise<SourceFrame | null> {
-    if (this.running) {
-      return this.frame;
-    }
+  async captureOnce(): Promise<InspectorCapture> {
+    const wasRunning = this.running;
 
-    const wasSession = this.source === 'session';
-
-    if (wasSession) {
-      runInAction(() => {
-        this.source = 'telemetry';
-      });
-    }
-
-    await this.start();
-
-    if (!this.running) {
-      return null;
+    if (!wasRunning) {
+      await this.openFeed();
     }
 
     try {
-      return await this.awaitFrame();
-    } finally {
-      await this.stop();
+      if (this.running && !wasRunning) {
+        await this.awaitFrame();
+      }
 
-      if (wasSession) {
-        runInAction(() => {
-          this.source = 'session';
-        });
+      const [rawVarMeta, rawSession] = await Promise.all([
+        getRawVarMeta(),
+        getRawSession(),
+      ]);
+
+      return {
+        frame: this.frame,
+        rawValues: this.rawValues,
+        rawVarMeta,
+        rawSession,
+      };
+    } finally {
+      if (!wasRunning) {
+        await this.stop();
       }
     }
   }
 
   /** Polls until a frame arrives or the sim is clearly not there. */
-  private async awaitFrame(): Promise<SourceFrame | null> {
+  private async awaitFrame() {
     for (let attempt = 0; attempt < CAPTURE_ATTEMPTS; attempt += 1) {
-      const frame = await getInspectorFrame();
+      await this.pullFrames();
 
-      if (frame) {
-        return frame;
+      if (this.frame) {
+        return;
       }
 
       await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
     }
+  }
 
-    return null;
+  /**
+   * The adapted frame and the raw values come from the same tick and are read
+   * together. The variable list is read once per connection — it is empty
+   * until the sim connects, so it is asked for again until it is not.
+   */
+  private async pullFrames() {
+    const [frame, rawValues, rawVarMeta] = await Promise.all([
+      getInspectorFrame(),
+      getInspectorRawValues(),
+      this.rawVarMeta.length === 0 ? getRawVarMeta() : null,
+    ]);
+
+    runInAction(() => {
+      this.frame = frame;
+      this.rawValues = rawValues;
+
+      if (rawVarMeta) {
+        this.rawVarMeta = rawVarMeta;
+      }
+    });
   }
 
   private async poll() {
     void this.refreshDeliveryCounters();
 
     try {
-      const frame = await getInspectorFrame();
+      await this.pullFrames();
 
       runInAction(() => {
-        this.frame = frame;
         this.lastError = null;
       });
     } catch (error) {

@@ -1,3 +1,5 @@
+import { hasDevTools } from './dev-tools';
+
 /**
  * The settings navigation tree. One flat page of eleven cards made everything
  * equally hard to find, so the cards are split into sections and the sections
@@ -34,7 +36,13 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
   { id: 'data', sections: ['trackMap', 'sharedValues'] },
   { id: 'chat', sections: ['streamChat'] },
   { id: 'remote', sections: ['remoteScreens'] },
-  { id: 'maintenance', sections: ['maintenance', 'telemetryInspector'] },
+  // The inspector is a developer tool and is left out of a release build.
+  {
+    id: 'maintenance',
+    sections: hasDevTools
+      ? ['maintenance', 'telemetryInspector']
+      : ['maintenance'],
+  },
 ];
 
 export const DEFAULT_SECTION: SettingsSectionId = 'general';

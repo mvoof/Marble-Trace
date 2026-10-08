@@ -608,18 +608,23 @@ the next real change to see anything.
 
 ### The telemetry inspector pulls, it does not subscribe
 
-Its own section under Settings → Maintenance. It browses the two raw streams the
-app receives, as a lazily expanded tree:
+Its own section under Settings → Maintenance, in dev builds only (`tauri:dev`,
+`tauri:build:dev` — see `pages/settings/dev-tools.ts`). It shows what the sim sends and
+what the app made of it, as a lazily expanded tree:
 
-| Source      | Where it comes from                                                      |
-| ----------- | ------------------------------------------------------------------------ |
-| `telemetry` | the live `SourceFrame`, pulled from the backend at 4 Hz                  |
-| `session`   | the parsed session snapshot, already in this window from `sim://session` |
+| Source         | Where it comes from                                                                                |
+| -------------- | -------------------------------------------------------------------------------------------------- |
+| `rawTelemetry` | every variable under iRacing's names (kerb's `telemetry_snapshot`), pulled at 4 Hz — the default   |
+| `rawSession`   | the session YAML as written, as text and as a tree (`get_raw_session`), re-read on `sim://session` |
+| `telemetry`    | the live `SourceFrame` — our adapter's output — pulled with the raw values                         |
+| `session`      | the parsed session snapshot, already in this window from `sim://session`                           |
 
-The telemetry side shows every field the adapter produced, including the ones no
-widget is sent — which makes it the one place that sees what the bundle
-deliberately hides. Selecting the session side **stops** the feed outright:
-nothing would be reading the frames.
+The raw sources are the sim's data, copied one to one out of kerb's types
+(`sources/raw.rs`); the panel marks the two processed ones as ours and names the
+files that process them. The adapted frame still shows every field the adapter
+produced, including the ones no widget is sent. Selecting either session
+**stops** the feed outright: nothing would be reading the frames. A replayed tape
+holds adapted frames only, so `rawTelemetry` stays empty under one.
 
 It is built the opposite way round from a widget:
 

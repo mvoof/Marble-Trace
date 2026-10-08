@@ -16,8 +16,14 @@ const formatNumber = (value: number): string =>
  * underneath it once it is opened, and printing them here as well is what made
  * per-car arrays unreadable — sixty-three numbers elided behind an ellipsis
  * answer nothing.
+ *
+ * `exact` prints a number as it arrived, for the sim's own data: rounding it
+ * for display would be processing too.
  */
-export const formatInspectorValue = (row: InspectorRow): string => {
+export const formatInspectorValue = (
+  row: InspectorRow,
+  exact: boolean
+): string => {
   if (row.kind === 'array') {
     return `[${row.length ?? 0}]`;
   }
@@ -27,7 +33,7 @@ export const formatInspectorValue = (row: InspectorRow): string => {
   }
 
   if (row.kind === 'number') {
-    return formatNumber(row.value as number);
+    return exact ? String(row.value) : formatNumber(row.value as number);
   }
 
   return String(row.value);

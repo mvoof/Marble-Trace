@@ -115,6 +115,18 @@ fn sanitize_session_yaml(yaml: &str) -> String {
     sanitized
 }
 
+/// The session YAML as a generic tree, in the document's own key order, for
+/// the inspector. Only the quoting `sanitize_session_yaml` adds to let it parse
+/// at all; nothing is read into the project model. `Null` when it still does
+/// not parse.
+pub fn session_tree(yaml: &str) -> serde_yaml_ng::Value {
+    serde_yaml_ng::from_str(&sanitize_session_yaml(yaml)).unwrap_or_else(|e| {
+        tracing::warn!("Session YAML does not parse as a tree: {e}");
+
+        serde_yaml_ng::Value::Null
+    })
+}
+
 /// Parse the raw iRacing session YAML into the project model.
 /// Returns `None` only if the YAML does not parse at all.
 pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
@@ -702,6 +714,25 @@ QualifyResultsInfo:
         let yaml = "Drivers:\n - UserName: \"Already Quoted\"\n";
 
         assert_eq!(sanitize_session_yaml(yaml), yaml);
+    }
+
+    // The inspector shows the document as the sim wrote it: its key order, and a
+    // driver name that would break a plain parse.
+    #[test]
+    fn session_tree_keeps_document_order_and_parses_free_text() {
+        let yaml = "WeekendInfo:\n TrackName: spa\n TrackID: 163\nDriverInfo:\n Drivers:\n - UserName: Max: The Fast\n";
+        let tree = session_tree(yaml);
+        let json = serde_json::to_string(&tree).expect("tree serializes");
+
+        assert_eq!(
+            json,
+            r#"{"WeekendInfo":{"TrackName":"spa","TrackID":163},"DriverInfo":{"Drivers":[{"UserName":"Max: The Fast"}]}}"#
+        );
+    }
+
+    #[test]
+    fn session_tree_is_null_for_text_that_does_not_parse() {
+        assert_eq!(session_tree("a: [unclosed\n"), serde_yaml_ng::Value::Null);
     }
 
     #[test]

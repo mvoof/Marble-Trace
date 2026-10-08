@@ -2,6 +2,9 @@ import { invoke } from '@tauri-apps/api/core';
 
 import type {
   DeliverySet,
+  RawSession,
+  RawValue,
+  RawVarMeta,
   SessionSnapshot,
   SourceFrame,
 } from '@shared/contracts/bindings';
@@ -84,6 +87,23 @@ export const setInspectorActive = async (active: boolean): Promise<void> =>
  */
 export const getInspectorFrame = async (): Promise<SourceFrame | null> =>
   invoke('get_inspector_frame');
+
+/**
+ * Every telemetry variable's value under the sim's own names, refreshed with
+ * the adapted frame while the feed is open. `null` while the sim is not
+ * connected, or when a tape is replayed — a tape holds adapted frames only.
+ */
+export const getInspectorRawValues = async (): Promise<Partial<
+  Record<string, RawValue>
+> | null> => invoke('get_inspector_raw_values');
+
+/** The sim's variable list for this connection; empty while disconnected. */
+export const getRawVarMeta = async (): Promise<RawVarMeta[]> =>
+  invoke('get_raw_var_meta');
+
+/** The session YAML exactly as the sim wrote it, with the same text as a tree. */
+export const getRawSession = async (): Promise<RawSession | null> =>
+  invoke('get_raw_session');
 
 /**
  * Per recipient, how many bundles went out and how many of them carried each

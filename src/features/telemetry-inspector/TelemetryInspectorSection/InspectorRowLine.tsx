@@ -69,15 +69,32 @@ export const InspectorRowLine = observer(({ row }: InspectorRowLineProps) => {
           <span className={styles.caretSpacer} />
         )}
 
-        <span className={styles.name} title={row.path}>
+        <span
+          className={styles.name}
+          title={
+            row.annotation
+              ? `${row.path} · ${row.annotation.typeName}`
+              : row.path
+          }
+        >
           {row.name}
         </span>
+
+        {row.annotation && (
+          <span className={styles.desc} title={row.annotation.desc}>
+            {row.annotation.desc}
+          </span>
+        )}
 
         <span className={styles.value}>
           {isAbsent
             ? t('settingsPage.telemetryInspector.absent')
-            : formatInspectorValue(row)}
+            : formatInspectorValue(row, !inspector.showsAbsent)}
         </span>
+
+        {row.annotation?.unit && (
+          <span className={styles.unit}>{row.annotation.unit}</span>
+        )}
       </div>
 
       {hiddenEntries > 0 && (

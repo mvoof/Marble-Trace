@@ -1,3 +1,10 @@
+import type {
+  RawSession,
+  RawValue,
+  RawVarMeta,
+  SourceFrame,
+} from '@shared/contracts/bindings';
+
 /** What an inspector row holds, which decides how it is drawn and formatted. */
 export type InspectorValueKind =
   | 'number'
@@ -25,16 +32,47 @@ export interface InspectorRow {
   length?: number;
   expandable: boolean;
   expanded: boolean;
+  /** What the sim says about a top-level variable, on the raw telemetry only. */
+  annotation?: RowAnnotation;
+}
+
+/** The sim's own description of a variable, drawn beside its value. */
+export interface RowAnnotation {
+  typeName: string;
+  unit: string;
+  desc: string;
 }
 
 /**
- * Which of the two streams the inspector is showing.
+ * Which stream the inspector is showing.
  *
- * They are genuinely different data, not two views of one: `telemetry` is the
- * per-tick variable block pulled from the backend, `session` is the parsed
- * session YAML that arrives on its own event and changes a few times a session.
+ * Two are the sim's own data, untouched: `rawTelemetry` — every variable under
+ * iRacing's names, read straight from kerb — and `rawSession`, the session YAML
+ * as written. The other two are what the app made of them: `telemetry` is the
+ * adapted frame, `session` the parsed session snapshot.
  */
-export type InspectorSource = 'telemetry' | 'session';
+export type InspectorSource =
+  | 'rawTelemetry'
+  | 'rawSession'
+  | 'telemetry'
+  | 'session';
+
+/** How the raw session is drawn: the parsed tree, or the text line by line. */
+export type RawSessionView = 'tree' | 'text';
+
+/** One line of the raw session text, numbered as in the document. */
+export interface RawSessionLine {
+  number: number;
+  text: string;
+}
+
+/** Everything the snapshot export takes from the inspector in one go. */
+export interface InspectorCapture {
+  frame: SourceFrame | null;
+  rawValues: Partial<Record<string, RawValue>> | null;
+  rawVarMeta: RawVarMeta[];
+  rawSession: RawSession | null;
+}
 
 /** One gated field's delivery, as a total and as the rate it implies. */
 export interface DeliveryFieldRow {

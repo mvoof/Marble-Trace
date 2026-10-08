@@ -10,6 +10,7 @@ use crate::model::player::{
 };
 use crate::model::session::{SessionFrame, SessionSnapshot};
 use crate::model::sim_perf::SimPerfFrame;
+use crate::sources::raw::{RawValues, RawVarMeta, SessionTreeParser};
 use crate::telemetry::capabilities::Capabilities;
 
 /// One adapted telemetry tick: the domain model frames consumed by the
@@ -82,6 +83,23 @@ pub trait TelemetrySource {
 
     /// How this source's session text is parsed.
     fn session_parser(&self) -> SessionParser;
+
+    /// How this source's session text is turned into a tree for the inspector,
+    /// without the project's model.
+    fn session_tree_parser(&self) -> SessionTreeParser;
+
+    /// Every telemetry variable the sim declares, as it declares it. Empty for
+    /// a source that has no variable list of its own — a tape records adapted
+    /// frames, not the sim's variables.
+    fn raw_var_meta(&self) -> Vec<RawVarMeta> {
+        Vec::new()
+    }
+
+    /// Every telemetry variable's value at the latest tick, under the sim's
+    /// names. `None` where `raw_var_meta` is empty.
+    fn raw_values(&self) -> Option<RawValues> {
+        None
+    }
 
     /// The tape this source plays, when it is a replay rather than a sim.
     fn replay_name(&self) -> Option<String> {
