@@ -432,6 +432,7 @@
       "viewText": "Текст",
       "copyYaml": "Копировать YAML",
       "copied": "Скопировано",
+      "copyFailed": "Не удалось скопировать: {{error}}",
       "rowCount": "Строк: {{count}}",
       "waitingSession": "Ожидание данных сессии…",
       "showAll": "Показать остальные ({{count}})",

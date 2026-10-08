@@ -426,6 +426,7 @@
       "viewText": "文本",
       "copyYaml": "复制 YAML",
       "copied": "已复制",
+      "copyFailed": "复制失败：{{error}}",
       "rowCount": "{{count}} 行",
       "waitingSession": "等待会话数据…",
       "showAll": "显示其余 {{count}} 项",

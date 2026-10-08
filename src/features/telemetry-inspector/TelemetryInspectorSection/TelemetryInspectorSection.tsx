@@ -58,7 +58,18 @@ export const TelemetryInspectorSection = observer(() => {
   }, [inspector]);
 
   const copyYaml = async () => {
-    await navigator.clipboard.writeText(inspector.rawSession?.yaml ?? '');
+    try {
+      await navigator.clipboard.writeText(inspector.rawSession?.yaml ?? '');
+    } catch (error) {
+      void message.error(
+        t('settingsPage.telemetryInspector.copyFailed', {
+          error: String(error),
+        })
+      );
+
+      return;
+    }
+
     void message.success(t('settingsPage.telemetryInspector.copied'));
   };
 

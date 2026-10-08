@@ -428,6 +428,7 @@
       "viewText": "Text",
       "copyYaml": "Copy YAML",
       "copied": "Copied",
+      "copyFailed": "Could not copy: {{error}}",
       "rowCount": "{{count}} rows",
       "waitingSession": "Waiting for session data…",
       "showAll": "Show the remaining {{count}}",
