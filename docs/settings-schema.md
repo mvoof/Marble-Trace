@@ -7,7 +7,7 @@ to write one.
 
 User settings are persisted to `settings.json` in the app config directory
 (`%APPDATA%/com.voof.marble-trace` on Windows) through `tauri-plugin-store`. The
-shape is `Settings` in `src/platform/sync/persistence.ts`.
+shape is `Settings` in `src/app/sync/persistence.ts`.
 
 The file carries a `schemaVersion` at its top level. It is an **integer** and is
 deliberately unrelated to the app's semver:
@@ -39,7 +39,7 @@ written at all.
 
 In memory the shape is different: a layout keeps one flat `widgets[]` in
 desktop-wide coordinates, each record carrying every setting resolved and naming
-its monitor in `monitor`. `platform/sync/settings-file.ts` converts between the
+its monitor in `monitor`. `app/sync/settings-file.ts` converts between the
 two, and is the only module that knows the file's shape. The active layout
 **owns** its records outright: the store's live widget map is a projection of
 that layout's own objects, so an edit in the overlay or the editor lands in the
@@ -58,16 +58,18 @@ widget belonged to whichever monitor contained its centre; the catalogue was
 ```
 store.get('settings')
       ▼
-runMigrations(blob)          ← platform/settings-schema, pure, works on raw JSON
+runMigrations(blob)          ← shared/settings-schema, pure, works on raw JSON
       ▼
-hydrateStores(root, blob)    ← platform/sync/persistence
+hydrateStores(root, blob)    ← app/sync/persistence
       ▼
-decodeLayout / decodeTemplates ← platform/sync/settings-file
+decodeLayout / decodeTemplates ← app/sync/settings-file
       ▼
-mergeWithDefaults(...)       ← store/settings/deep-merge, per widget and for app settings
+checkedSettings(type, …)     ← entities/widget/widget-catalog, each widget's overrides against its schema
+      ▼
+mergeWithDefaults(...)       ← shared/lib/deep-merge, per widget and for app settings
 ```
 
-Four things about this order matter:
+Five things about this order matter:
 
 1. **Migrations see the raw blob**, before anything prunes it. `mergeWithDefaults`
    drops keys that are not in the defaults, so a migration running later would
@@ -90,7 +92,14 @@ Four things about this order matter:
    something else — merging keeps the value it finds. A migration that rewrites
    values still has to walk every instance itself, with the `blob.ts` helpers.
 
-4. **Both windows run the chain**, each on its own parse of the file, but only
+4. **Each widget's overrides pass its own schema** before they are merged
+   (`checkedSettings`, from the slice's `settings-schema.ts`, ADR-0008): a value
+   of the wrong type or outside a choice falls back to the shipped one, a number
+   out of range is clamped. The same check runs on every write
+   (`updateUserSettings`). Like `mergeWithDefaults`, it runs after migrations —
+   a migration writing a value the schema refuses has its work undone.
+
+5. **Both windows run the chain**, each on its own parse of the file, but only
    the main window writes. That is why a migration must be pure — a side effect
    would happen twice.
 
@@ -155,7 +164,7 @@ Before the first save at a new version, the old file is copied to
 
 ## Adding a migration, step by step
 
-1. **Bump `CURRENT_SCHEMA_VERSION`** in `src/platform/settings-schema/index.ts`
+1. **Bump `CURRENT_SCHEMA_VERSION`** in `src/shared/settings-schema/index.ts`
    — but only if the current version has already shipped. See
    [One version per release](#one-version-per-release).
 2. **Add `migrations/v{n}-{slug}.ts`** exporting a `Migration` with `to: n` and a

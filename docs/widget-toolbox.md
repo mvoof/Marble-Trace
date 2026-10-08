@@ -16,36 +16,26 @@ Read this at step 4 of [the route](widget-authoring.md), before writing a helper
 ## Where a new helper belongs
 
 The rule is [`AGENTS.md` → Where a file lives](../AGENTS.md), in one sentence:
-**a file sits next to its lowest consumer, and moves up only when its consumers
-sit in different branches of the tree.**
+**a file sits next to its lowest consumer, and moves down a layer only when its
+consumers sit in different slices.**
 
-| Consumers                                     | Goes in                                                                                     |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| One widget                                    | `src/ui/widgets/<Widget>/` — `*-utils.ts`, its own hook, sub-components, its settings panel |
-| One feature: its shared store and its widgets | beside that store, `src/store/widgets/<feature>/` — a widget may import a store             |
-| Two or more features, pure                    | `src/shared/lib/`                                                                           |
-| Two or more widgets, renders                  | `src/shared/ui/`                                                                            |
-| Two or more widgets, touches DOM              | `src/shared/hooks/`                                                                         |
-| One non-widget owner                          | beside that owner (`store/layout/…`, `ui/app/main/…`), never `src/shared/lib/`              |
+| Consumers                               | Goes in                                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| One widget                              | its slice, `src/widgets/<name>/` — `*-utils.ts`, its own hook, sub-components, its settings panel |
+| Several widgets around one shared store | that store's folder — `src/features/<name>/` if it has actions, else `src/entities/<name>/`       |
+| Two or more slices, pure                | `src/shared/lib/`                                                                                 |
+| Two or more slices, renders             | `src/shared/ui/`                                                                                  |
+| Two or more slices, touches DOM         | `src/shared/hooks/`                                                                               |
+| One non-widget owner                    | beside that owner (`entities/layout/…`, `app/windows/main/…`), never `src/shared/lib/`            |
 
-A widget never imports from another widget's folder: a second consumer moves
-the file up. `src/shared/lib/` is grouped by **domain, not by kind** — one file per
-subject, never a `constants/` or `formatters/` bucket.
+A widget never imports from another widget's slice — the lint refuses it — so a
+second consumer moves the file down. `src/shared/lib/` is grouped by **domain,
+not by kind** — one file per subject, never a `constants/` or `formatters/`
+bucket. A new helper joins the file whose subject it shares; a new file needs a
+subject none of the existing ones covers.
 
--------------------------------- | ------------------------------------------------------------------------------- |
-| One widget | `src/ui/widgets/<Widget>/` — `*-utils.ts`, its own hook, its own sub-components |
-| Two or more widgets, pure | `src/shared/lib/` |
-| Two or more widgets, renders | `src/shared/ui/` |
-| Two or more widgets, touches DOM | `src/shared/hooks/` |
-| One widget **and** a store | `src/shared/lib/`, even at two files — a store importing `@ui/**` is a lint error |
-| One non-widget owner | beside that owner (`store/layout/…`, `ui/app/main/…`), never `src/shared/lib/` |
-
-`src/shared/lib/` is grouped by **domain, not by kind** — one file per subject, never
-a `constants/` or `formatters/` bucket. A new helper joins the file whose
-subject it shares; a new file needs a subject none of the existing ones covers.
-
-A helper that gains a second consumer moves up; one that loses it moves back
-down into the widget.
+A helper that gains a second consumer moves down; one that loses it moves back
+into the widget's slice.
 
 ---
 
@@ -65,7 +55,7 @@ No stores, no Tauri, and no React beyond `store-context.ts`'s one
 | `driver.ts`                | Anything about a driver or their car identity: name abbreviation and splitting, car number, iRating, brand, incident limits, flag bits, class SoF, the relative gap to the player (`computeRelativeGap`).                  |
 | `qualifying-visibility.ts` | Honouring a widget's "show in qualifying" setting (`never` / `auto`) — the shared rule behind that switch.                                                                                                                 |
 | `remote-screen.ts`         | Anything about remote screens as monitors: telling a remote monitor from a display, presets, bounds placement, slugs.                                                                                                      |
-| `store-context.ts`         | Giving a store its own React context and hook (`createStoreContext`), beside the store; the window's provider in `ui/app/store-providers.tsx` fills it.                                                                    |
+| `store-context.ts`         | Giving a store its own React context and hook (`createStoreContext`), beside the store; the window's provider in `app/store-providers.tsx` fills it.                                                                       |
 | `telemetry-format.ts`      | Rendering a raw SI number for the driver in their unit system: speed, temperature, fuel, distance — and converting back.                                                                                                   |
 | `timer-utils.ts`           | Clocks and session state: wall clock, sim date and time, session ended / race started, lap-limited vs timed, the session clock, `splitTime`.                                                                               |
 | `weather-utils.ts`         | Weather rendering: wind color and bearing, track wetness, and the 0..1 fractions the gauges are drawn from.                                                                                                                |
@@ -133,7 +123,7 @@ Hooks are for the DOM and the browser only. Everything else belongs in a store
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `useCanvasAutoResize`   | A canvas has to follow its container and stay sharp — `ResizeObserver` plus the DPR transform.                                                                                                                                              |
 | `useClickOutside`       | An in-place control has to close when the pointer lands elsewhere.                                                                                                                                                                          |
-| `usePitState`           | (still `src/ui/hooks/`, moves to `features/pit-service`.) You need the pit and limiter state a widget draws, derived once rather than per widget.                                                                                           |
+| `usePitState`           | (in `src/features/pit-service/`: it reads the pit-service store.) You need the pit and limiter state a widget draws, derived once rather than per widget.                                                                                   |
 | `useReactiveCanvasLoop` | A canvas widget draws from observables: the reactive draw loop that schedules a frame when what it reads changes.                                                                                                                           |
 | `useReactiveDomWrite`   | **The 60 Hz escape hatch** — write a hot value straight to a DOM node or CSS variable without waking React. Read [rendering.md](rendering.md) first.                                                                                        |
 | `useRowMoveAnimation`   | Rows change order and should slide rather than jump (FLIP; pairs with `MOVE_DURATION_MS`).                                                                                                                                                  |
@@ -164,8 +154,8 @@ Colors come from `_widget-tokens.scss` as semantic names — `$widget-text-prima
 `$widget-text-secondary` and the `$race-*` palette (Tailwind 500/600). A CSS
 variable's name must say what it is for, never what color it is. Canvas colors,
 which cannot read SCSS, repeat the same palette hexes in JS: the widget
-manifests, `GMeterWidget/g-meter-utils.ts`, `utils/weather-utils.ts` and
-`utils/colors.ts`.
+manifests, `widgets/g-meter/g-meter-utils.ts`, `shared/lib/weather-utils.ts` and
+`shared/lib/colors.ts`.
 
 Fonts: `$font-widget` (`Rajdhani`) for everything, `$font-mono` (`Consolas`) for
 figures that must not jitter between frames.

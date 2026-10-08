@@ -62,7 +62,7 @@ the ticks never change, only the transform on the group around them does.
 
 When the changing value is a single number per frame — an angle, an offset, a
 level — React does not need to be involved at all. The value goes to the DOM
-through **`useReactiveDomWrite`** (`ui/hooks/useReactiveDomWrite.ts`): a MobX
+through **`useReactiveDomWrite`** (`shared/hooks/useReactiveDomWrite.ts`): a MobX
 `autorun` reads the observables synchronously and the write is coalesced into
 the next animation frame. It mirrors `useReactiveCanvasLoop`, its sibling, which
 already does exactly this for canvas widgets. What to write — a style property,
@@ -133,8 +133,8 @@ budget passed. The signal-to-noise on the aggregate tests did not justify
 keeping a Playwright stage in every pull request.
 
 **What is checked statically is narrower: the fact of a direct read, not the
-correctness of the contour.** `no-restricted-properties` (an `src/ui/**/*.tsx`
-override in `.oxlintrc.json`) fails the build on any read of a hot field's name
+correctness of the contour.** `no-restricted-properties` (an override over the `.tsx`
+files of `src/{app,pages,widgets,features}/` and `src/shared/ui/` in `.oxlintrc.json`) fails the build on any read of a hot field's name
 — `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `relative`,
 `proximity`, `driverEntries` — property access and destructuring alike. The
 rule matches the property name alone, with no notion of "inside a component
@@ -147,7 +147,7 @@ comment is deliberate, not a workaround: it is the same "what `grep` finds"
 signal "The escape hatch" section above asks for, now enforced rather than
 merely requested. Each field also carries a plain JSDoc block at its
 declaration (`PlayerStore`, `CarsStore`, `BackendComputedStore` in
-`src/store/data/`) naming the rule and pointing at this section, so it surfaces
+`src/entities/player/` and `src/entities/cars/`) naming the rule and pointing at this section, so it surfaces
 on hover wherever the field is referenced — a human-facing echo of the same
 rule, not a second mechanism. It deliberately carries no `@deprecated`: that
 tag strikes through every reference indiscriminately, including the legitimate

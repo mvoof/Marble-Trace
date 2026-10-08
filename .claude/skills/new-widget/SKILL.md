@@ -64,9 +64,9 @@ frame declares.
 
 **Ask** only if it is genuinely unclear. The rule decides most cases: a widget
 store exists when the widget has UI state, timers, or non-trivial derived logic.
-Otherwise components read the data stores directly and there is no store file.
+Otherwise components read the entity stores directly and there is no store file.
 
-Shared derived logic used by two or more widgets is a `computed` on the data
+Shared derived logic used by two or more widgets is a `computed` on the entity
 store, not a second widget store. See
 [architecture.md](../../../docs/architecture.md) → The six store rules.
 
@@ -86,7 +86,7 @@ Decide, and write down before any file:
 - **The layout knobs**, which are easy to miss because they are all optional:
   `autoHeight`, `lockAspectRatio`, `scaleFromHeight`, `overflowVisible`,
   `transparentContainer`. Read the doc comments on `WidgetMeta` in
-  `src/entities/widget/widget-settings.ts`. A non-rectangular plate also needs a case in
+  `src/shared/contracts/widget-settings.ts`. A non-rectangular plate also needs a case in
   `widgetFrameBorderRadius` (`src/entities/widget/widget-frame.ts`).
 - The component split. `<Name>Widget.tsx` is a thin orchestrator. A component
   that **reads a store** is `observer()` and reads it directly rather than taking
@@ -117,14 +117,37 @@ belongs.
 
 ## Step 5 — Settings
 
-**Ask** which settings the widget actually needs. Then write:
+**Ask** which settings the widget actually needs. Then write
+`src/widgets/<kebab-name>/settings-schema.ts` — one description per setting,
+nothing else declares them:
 
-1. `interface <Name>WidgetSettings` in `src/entities/widget/widget-settings.ts`, and its
-   entry in the `WidgetSpecificSettings` union.
-2. The `userSettings` block of the manifest (step 6).
+```ts
+import {
+  bool,
+  choice,
+  defineSettings,
+  num,
+  type SettingsOf,
+} from '@shared/lib/widget-settings-dsl';
 
-No settings migration is needed — `mergeWithDefaults` fills a new key with its
-default on the next load. Say so rather than writing one.
+export const <NAME>_SETTINGS = defineSettings('<localeBlock>', {
+  /** What the switch does, for the next reader. */
+  showThing: bool(true),
+  barWidth: num(8, { min: 4, max: 20, step: 1 }),
+  displayMode: choice(['compact', 'full'], 'full'),
+});
+
+export type <Name>WidgetSettings = SettingsOf<typeof <NAME>_SETTINGS.shape>;
+```
+
+Builders: `bool`, `num` (bounds required; out of range is clamped on load),
+`choice` (string or number members), `color`, `numRecord`, `nullable(field)`.
+A choice several widgets share comes from `shared/contracts/widget-choices.ts`.
+Every setting has a default — none is optional. `<localeBlock>` is the
+camelCase block under `settingsPanels` in step 7.
+
+No settings migration is needed — a widget stores only overrides, and a new key
+reads its default from the schema. Say so rather than writing one.
 
 ## Step 6 — Generate `manifest.ts` and `mount.ts`
 
@@ -154,8 +177,9 @@ export const <NAME>_MANIFEST: WidgetManifest = {
     currentHeight: <designHeight>,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS, // or TRANSPARENT_APPEARANCE_DEFAULTS
-    /* the settings from step 5 */
+    ...<NAME>_SETTINGS.defaults,
   },
+  settingsSchema: <NAME>_SETTINGS,
 };
 ```
 
@@ -170,22 +194,25 @@ eyes: the catalog description and every panel label are i18n keys in
 
 ```
 catalog.<widget-id>.description
-settingsPanels.<camelCaseId>.<key>
+settingsPanels.<localeBlock>.<setting>           # row title
+settingsPanels.<localeBlock>.<setting>Desc       # description, optional
+settingsPanels.<localeBlock>.<setting>_<member>  # a choice's members
 ```
 
-All four locales. Skip this and the driver reads raw keys where labels belong,
-and no command complains.
+The keys are the setting keys. All four locales with the same keys —
+`widget-locales.test.ts` fails on a key one language lacks, but a widget missing
+from all four passes every command while the driver reads raw keys.
 
 ## Step 8 — Panel and story
 
-`<Name>SettingsPanel.tsx` goes in the widget's own folder, and `mount.ts`
+`<Name>SettingsPanel.tsx` goes in the widget's own slice, and `mount.ts`
 never imports it — the remote screen renders widgets through the mount registry
 in a plain browser, and a mount carrying Ant Design would ship the settings UI to
 every phone on the LAN. Main's panel registry finds it by glob.
 
-**Copy `GMeterSettingsPanel.tsx`.** It shows `useWidgetEditor()`,
-`usePanelWidgetId(fallbackId)`, `Card`, `SettingRow` and
-`useTranslation('widgets')` in place, which the rules alone do not.
+**Copy `src/widgets/g-meter/GMeterSettingsPanel.tsx`.** It shows both kinds of
+row in place: `<Row>` from `schemaRows`, and a control written out by hand with
+`useWidgetEditor()`, `usePanelWidgetId(fallbackId)` and `useLabels`.
 
 Two constraints not visible in the file you copy:
 
@@ -194,11 +221,14 @@ Two constraints not visible in the file you copy:
   is not `PANEL_WIDGET_IDS`, so a second exported component registers the wrong
   one, silently.
 
-Rows bind themselves: `panelRows<YourSettings>()` once per panel, then
-`SwitchRow` / `ColorRow` with a `settingKey`. Blocks inside a `Card` are
+Rows read the schema: `const { Row } = schemaRows(<NAME>_SETTINGS)` once per
+panel, then `<Row setting="…" />` — the control follows the field's kind
+(`stacked`, `input` adjust it), the labels follow the key. Write a control out
+by hand only when it has logic of its own. Blocks inside a `Card` are
 separated automatically by `.cardContent > * + *` — **do not add dividers by
 hand**, there is no `Divider` in this tree. A row that only qualifies another
-takes `dependsOn="parentKey"` (or goes in a `DependentBlock`) and sits directly
+takes `dependsOn="parentKey"` (or goes in a `DependentBlock` from
+`panelRows<Settings>()`) and sits directly
 after its parent — never `{settings.x && …}` in the panel.
 
 `<Name>Widget.stories.tsx`: **read [widget-stories.md](../../../docs/widget-stories.md)
@@ -206,8 +236,8 @@ first** and follow it. In short: spread `defineWidgetStories({ widget, size,
 seed, seedSnapshot, args, argTypes })` from `@/storybook/define-widget-stories`
 — it mounts the widget with its frame and does the seeding. The widget's
 settings become Controls by themselves; `StoryArgs` holds only telemetry knobs,
-seeded through `features/preview/mocks/` builders and `whenSet`. Any new
-string-union setting gets its members in `src/storybook/setting-options.ts`.
+seeded through `features/preview/mocks/` builders and `whenSet`. A `choice`
+in the schema shows as a select by itself.
 One story per state worth seeing, starting with the race look the site picture
 is taken from. Named `const` PascalCase exports, only `meta` as default.
 
