@@ -1,7 +1,7 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { InputTraceSettings } from '@/types/widget-settings';
+import type { InputTraceSettings } from '@entities/widget/widget-settings';
 
 import { getContrastTextColor } from '@shared/lib/colors';
 
@@ -9,7 +9,7 @@ import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useValueCoverPoint } from './useValueCoverPoint';
 
 import styles from './Bar.module.scss';
-import { usePlayerStore } from '@store/data/player-context';
+import { usePlayerStore } from '@entities/player/player-context';
 import { useInputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.store';
 import type { InputChannel } from '@ui/widgets/InputTraceWidget/input-trace.store';
 

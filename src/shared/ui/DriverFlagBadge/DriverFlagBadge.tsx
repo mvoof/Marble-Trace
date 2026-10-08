@@ -1,4 +1,4 @@
-import type { FlagType } from '@/types';
+import type { FlagType } from '@shared/contracts/domain';
 import styles from './DriverFlagBadge.module.scss';
 
 interface DriverFlagBadgeProps {

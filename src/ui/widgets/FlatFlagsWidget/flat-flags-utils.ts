@@ -1,4 +1,4 @@
-import type { FlagType } from '@/types';
+import type { FlagType } from '@shared/contracts/domain';
 
 export const FLAG_LABEL: Record<FlagType, string> = {
   none: '',

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import type { FlagType } from '@/types';
+import type { FlagType } from '@shared/contracts/domain';
 import { DriverFlagBadge } from './DriverFlagBadge';
 
 const meta: Meta<typeof DriverFlagBadge> = {

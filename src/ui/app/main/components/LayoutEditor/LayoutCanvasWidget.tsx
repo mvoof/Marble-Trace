@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import type { LiveWidgetsStore } from '@store/layout/live-widgets.store';
-import type { MonitorBounds } from '@/types/widget-settings';
+import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
+import type { MonitorBounds } from '@entities/widget/widget-settings';
 import {
   resizeDirectionsFor,
   widgetFrameStyle,
   type ResizeDirection,
-} from '@ui/app/widget-frame';
+} from '@entities/widget/widget-frame';
 import { useRendersNothing } from './use-renders-nothing';
 import styles from './LayoutCanvas.module.scss';
 

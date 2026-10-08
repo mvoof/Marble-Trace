@@ -1,6 +1,6 @@
 ﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { InputTraceSettings } from '@/types/widget-settings';
+import type { InputTraceSettings } from '@entities/widget/widget-settings';
 import { mockCarDynamics } from '@/preview/mocks/dynamics';
 import { mockCarInputs } from '@/preview/mocks/inputs';
 import { seedInputHistory } from '@/preview/preview-animator';

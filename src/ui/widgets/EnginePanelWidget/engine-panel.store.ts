@@ -6,11 +6,11 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
+import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type { CarStatusFrame } from '@shared/contracts/bindings';
-import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
+import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
 import { ADJUSTMENT_FIELDS } from './engine-panel-utils';
-import type { PlayerStore } from '@store/data/player.store';
+import type { PlayerStore } from '@entities/player/player.store';
 
 interface EnginePanelDeps {
   player: PlayerStore;

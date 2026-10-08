@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import type { ArgTypes } from '@storybook/react-vite';
 
-import { WIDGET_BY_ID } from '@store/layout/widget-catalog';
+import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
 import { WIDGET_COMPONENTS } from '@ui/widgets/registry';
 import { SETTING_OPTIONS } from './setting-options';
 

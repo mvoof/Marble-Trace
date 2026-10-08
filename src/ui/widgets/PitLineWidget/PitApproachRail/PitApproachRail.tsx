@@ -2,12 +2,12 @@ import { observer } from 'mobx-react-lite';
 import { ChevronUp } from 'lucide-react';
 
 import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
-import { usePlayerStore } from '@store/data/player-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import { buildPitApproachView } from '@store/widgets/pit-service/pit-approach';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { METERS_TO_FEET } from '@shared/lib/telemetry-format';
-import { ReservedSlot } from '@ui/shared/ReservedSlot/ReservedSlot';
+import { ReservedSlot } from '@entities/app-settings/ReservedSlot/ReservedSlot';
 
 import styles from './PitApproachRail.module.scss';
 

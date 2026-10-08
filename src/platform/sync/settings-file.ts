@@ -1,9 +1,12 @@
-import { isPlainObject, mergeWithDefaults } from '@store/settings/deep-merge';
+import {
+  isPlainObject,
+  mergeWithDefaults,
+} from '@entities/app-settings/deep-merge';
 import {
   DEFAULT_WIDGET_BY_ID,
   WIDGET_BY_ID,
-} from '@store/layout/widget-catalog';
-import { defaultMonitorOf } from '@store/layout/virtual-desktop';
+} from '@entities/widget/widget-catalog';
+import { defaultMonitorOf } from '@entities/layout/virtual-desktop';
 import { cloneMonitor } from '@shared/lib/remote-screen';
 import type {
   LayoutMonitor,
@@ -11,7 +14,7 @@ import type {
   SavedLayout,
   WidgetDefaultConfig,
   WidgetUserSettings,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 
 /**
  * How widgets and layouts are written to `settings.json`, and read back.

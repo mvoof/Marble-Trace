@@ -24,7 +24,7 @@ import type {
   TrackMapLeaderLabelMode,
   TrackMapWidgetSettings,
   WheelToWheelLayout,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 
 /**
  * Lists every member of a string union, and fails to compile when one is

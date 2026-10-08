@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Flag, Trophy, Users } from 'lucide-react';
 
@@ -15,12 +15,12 @@ import {
   type SessionColorKey,
 } from '@shared/lib/timer-utils';
 
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
 import { SessionClock } from '@ui/widgets/StandingsWidget/SessionClock/SessionClock';
 import styles from './SessionHeader.module.scss';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { useCarsStore } from '@store/data/cars-context';
-import { useSessionStore } from '@store/data/session-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useCarsStore } from '@entities/cars/cars-context';
+import { useSessionStore } from '@entities/session/session-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 // Matches the icon size the footer's stat pills use.

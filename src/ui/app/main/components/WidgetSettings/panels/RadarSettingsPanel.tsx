@@ -8,7 +8,7 @@ import type {
   RadarScaleMode,
   RadarSettings,
   ProximityRadarSettings,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import {
   LADDER_STEP_M,
   rangeRingRadii,
@@ -17,9 +17,9 @@ import {
   DESIGN_SCOPE_RANGE_M,
   DESIGN_SIZE_PX,
   resolveScopeScale,
-} from '@store/widgets/radar/radar-constants';
+} from '@entities/radar/radar-constants';
 import { distanceUnit, formatDistance } from '@shared/lib/telemetry-format';
-import { useUnitsStore } from '@store/settings/units-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';

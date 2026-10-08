@@ -1,11 +1,11 @@
 import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { WidgetInstanceStore } from '@store/widget-runtime/widget-instances.store';
+import type { WidgetInstanceStore } from '@entities/widget/widget-instances.store';
 import { mountForWidget } from '@ui/widgets/registry';
 import type { WidgetHost } from '@ui/widgets/widget-mount';
 import { useWidgetHost } from '@ui/widgets/widget-host-context';
-import { WidgetInstanceStoreContext } from './widget-instance-context';
+import { WidgetInstanceStoreContext } from '@entities/widget/widget-instance-context';
 
 interface WidgetInstanceScopeProps {
   type: string;

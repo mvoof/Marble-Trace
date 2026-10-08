@@ -4,7 +4,7 @@ import type {
   FuelComputedFrame,
   FuelLapRecord,
 } from '@shared/contracts/bindings';
-import type { FuelWidgetSettings } from '@/types/widget-settings';
+import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
 import { mockLapTiming } from '@/preview/mocks/delta';
 import { mockCarStatus } from '@/preview/mocks/engine';
 import { mockFuel } from '@/preview/mocks/fuel';

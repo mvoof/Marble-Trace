@@ -1,7 +1,7 @@
 import { Alert } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 
 /**
  * Shown when the running executable sits outside the installation Windows has

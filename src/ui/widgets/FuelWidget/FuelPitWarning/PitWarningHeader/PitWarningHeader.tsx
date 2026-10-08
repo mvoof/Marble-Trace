@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import styles from './PitWarningHeader.module.scss';
-import { useBackendComputedStore } from '@store/data/computed-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { isPitNow } from '../../fuel-utils';
 
 export const PitWarningHeader = observer(() => {

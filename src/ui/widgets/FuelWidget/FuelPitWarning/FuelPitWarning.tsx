@@ -1,13 +1,13 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { PitWarningHeader } from './PitWarningHeader/PitWarningHeader';
 import { PitWarningFill } from './PitWarningFill/PitWarningFill';
 
-import type { FuelWidgetSettings } from '@/types/widget-settings';
-import { ReservedSlot } from '@ui/shared/ReservedSlot/ReservedSlot';
+import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
+import { ReservedSlot } from '@entities/app-settings/ReservedSlot/ReservedSlot';
 import styles from './FuelPitWarning.module.scss';
-import { useBackendComputedStore } from '@store/data/computed-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
 
 /**
  * The header row, the separator, the fill's amount cell and its footer, plus

@@ -5,7 +5,7 @@ import { InputNumber, Segmented } from 'antd';
 import type {
   CoachTraceChannel,
   CoachWidgetSettings,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';

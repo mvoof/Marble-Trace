@@ -1,11 +1,11 @@
-﻿import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+﻿import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import { usePlayerStore } from '@store/data/player-context';
-import { useBackendComputedStore } from '@store/data/computed-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { formatLapTime } from '@shared/lib/telemetry-format';
 import { getGameDelta } from '@shared/lib/delta-utils';
 import { getSectorColor } from '@shared/lib/colors';
-import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
+import type { SectorMatrixWidgetSettings } from '@entities/widget/widget-settings';
 import styles from './SectorHeader.module.scss';
 
 interface Props {

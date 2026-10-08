@@ -2,9 +2,9 @@ import { useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
-import type { TrackRotateDirection } from '@store/widgets/track-map/track-map.store';
-import { useSessionStore } from '@store/data/session-context';
-import { useTrackMapWidgetStore } from '@store/widgets/track-map/track-map-context';
+import type { TrackRotateDirection } from '@entities/track/track-map.store';
+import { useSessionStore } from '@entities/session/session-context';
+import { useTrackMapWidgetStore } from '@entities/track/track-map-context';
 
 export const TrackMapContent = observer(() => {
   const sessionData = useSessionStore();

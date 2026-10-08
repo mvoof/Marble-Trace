@@ -1,10 +1,10 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { StatCell } from './StatCell';
 
 import styles from './StatsGrid.module.scss';
-import type { WeatherWidgetSettings } from '@/types/widget-settings';
+import type { WeatherWidgetSettings } from '@entities/widget/widget-settings';
 
 // Beside the conditions the plate is a narrow column, so two cells read better
 // stacked than squeezed into two columns of half its width.

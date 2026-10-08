@@ -1,5 +1,5 @@
 import type { MainRoot } from '@store/roots/main-root';
-import type { LayoutMonitor } from '@/types/widget-settings';
+import type { LayoutMonitor } from '@entities/widget/widget-settings';
 import { alignMonitorsToHardware } from '@store/layout/layout-gestures';
 import { layoutGestureStores } from '@store/layout/layout-gestures';
 import { listMonitorBounds } from './overlay-resolution';

@@ -1,12 +1,12 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
 import { REFERENCE_LAP_BUCKET_COUNT } from '@shared/contracts/backend-constants';
-import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
+import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type {
   ReferenceLapSample,
   TrackCondition,
 } from '@shared/contracts/bindings';
-import type { CoachWidgetSettings } from '@/types/widget-settings';
+import type { CoachWidgetSettings } from '@entities/widget/widget-settings';
 import {
   createTraceWindowBuffers,
   EMPTY_TRACE_STATS,
@@ -15,10 +15,10 @@ import {
   type TraceWindowBuffers,
   type TraceWindowStats,
 } from './coach-trace-utils';
-import type { PlayerStore } from '@store/data/player.store';
-import type { ReferenceLapStore } from '@store/data/reference-lap.store';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
-import type { SessionStore } from '@store/data/session.store';
+import type { PlayerStore } from '@entities/player/player.store';
+import type { ReferenceLapStore } from '@entities/player/reference-lap.store';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { SessionStore } from '@entities/session/session.store';
 
 interface CoachDeps {
   player: PlayerStore;

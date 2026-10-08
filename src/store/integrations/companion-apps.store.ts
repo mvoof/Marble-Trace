@@ -14,7 +14,7 @@ import type {
   CompanionStatus,
   DetectedApp,
 } from '@shared/contracts/bindings';
-import type { AppSettingsStore } from '@store/settings/app-settings.store';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 
 interface CompanionAppsDeps {
   appSettings: AppSettingsStore;

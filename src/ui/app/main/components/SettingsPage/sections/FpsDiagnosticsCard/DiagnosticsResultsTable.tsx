@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { WIDGET_BY_ID } from '@store/layout/widget-catalog';
+import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
 import { useFpsDiagnosticsStore } from '@store/diagnostics/fps-diagnostics-context';
 import type { DiagnosticsResult } from '@store/diagnostics/fps-diagnostics.store';
 import type { SampleStats } from '@store/diagnostics/stats';

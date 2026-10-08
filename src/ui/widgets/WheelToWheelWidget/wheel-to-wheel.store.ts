@@ -8,11 +8,11 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { UnitSystem } from '@/types';
-import type { DriverEntry } from '@/types/driver-entry';
-import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
-import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
-import type { SelfHidingWidgetStore } from '@store/widget-runtime/widget-auto-hide.store';
+import type { UnitSystem } from '@shared/contracts/domain';
+import type { DriverEntry } from '@entities/cars/driver-entry';
+import type { WheelToWheelWidgetSettings } from '@entities/widget/widget-settings';
+import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
+import type { SelfHidingWidgetStore } from '@entities/widget/widget-auto-hide.store';
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 import { formatSpeed } from '@shared/lib/telemetry-format';
 import { computeRelativeGap } from '@shared/lib/driver';
@@ -22,12 +22,12 @@ import {
   pickRivals,
   type WheelToWheelRivals,
 } from './wheel-to-wheel-utils';
-import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
-import type { UnitsStore } from '@store/settings/units.store';
-import type { AppSettingsStore } from '@store/settings/app-settings.store';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
-import type { BackendComputedStore } from '@store/data/computed.store';
-import type { SessionStore } from '@store/data/session.store';
+import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
+import type { UnitsStore } from '@entities/app-settings/units.store';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { BackendComputedStore } from '@entities/cars/computed.store';
+import type { SessionStore } from '@entities/session/session.store';
 
 interface WheelToWheelDeps {
   units: UnitsStore;

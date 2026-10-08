@@ -103,7 +103,7 @@
       }
     },
     {
-      "files": ["src/store/**"],
+      "files": ["src/store/**", "src/entities/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -187,7 +187,10 @@
       }
     },
     {
-      "files": ["src/shared/api/**", "src/store/layout/layout-background.ts"],
+      "files": [
+        "src/shared/api/**",
+        "src/entities/layout/layout-background.ts"
+      ],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -205,7 +208,7 @@
     {
       "files": [
         "src/platform/sync/persistence-sync.ts",
-        "src/store/widgets/track-map/track-map.store.ts"
+        "src/entities/track/track-map.store.ts"
       ],
       "rules": {
         "no-restricted-imports": [

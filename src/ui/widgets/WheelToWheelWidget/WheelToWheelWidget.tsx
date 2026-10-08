@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { useWheelToWheelWidgetStore } from './wheel-to-wheel.store';
-import type { WheelToWheelWidgetSettings } from '@/types/widget-settings';
+import type { WheelToWheelWidgetSettings } from '@entities/widget/widget-settings';
 import { BattleSide } from './BattleSide/BattleSide';
 import { GapCenter } from './GapCenter/GapCenter';
 import { RivalHalf } from './RivalHalf/RivalHalf';

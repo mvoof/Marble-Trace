@@ -1,19 +1,19 @@
 import { computed, makeAutoObservable } from 'mobx';
 
-import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
-import type { RelativeWidgetSettings } from '@/types/widget-settings';
+import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
+import type { RelativeWidgetSettings } from '@entities/widget/widget-settings';
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 import {
   buildPaceCarRowEntries,
   mergePaceCarRows,
   type PaceCarRowEntry,
 } from './relative-utils';
-import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
-import type { CarsStore } from '@store/data/cars.store';
-import type { SessionStore } from '@store/data/session.store';
-import type { BackendComputedStore } from '@store/data/computed.store';
-import type { AppSettingsStore } from '@store/settings/app-settings.store';
+import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { CarsStore } from '@entities/cars/cars.store';
+import type { SessionStore } from '@entities/session/session.store';
+import type { BackendComputedStore } from '@entities/cars/computed.store';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 
 interface RelativeDeps {
   liveWidgets: LiveWidgetsView;

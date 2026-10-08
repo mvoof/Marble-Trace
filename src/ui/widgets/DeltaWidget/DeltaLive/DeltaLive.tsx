@@ -1,7 +1,7 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { usePlayerStore } from '@store/data/player-context';
+import { usePlayerStore } from '@entities/player/player-context';
 import {
   advanceDeltaLatch,
   DELTA_REFERENCE_BADGE,
@@ -12,7 +12,7 @@ import {
   INITIAL_DELTA_LATCH_STATE,
   isGameDeltaOk,
 } from '@shared/lib/delta-utils';
-import type { DeltaWidgetSettings } from '@/types/widget-settings';
+import type { DeltaWidgetSettings } from '@entities/widget/widget-settings';
 import { DeltaGauge } from '../DeltaGauge/DeltaGauge';
 import { DeltaPlate } from '../DeltaPlate/DeltaPlate';
 import styles from './DeltaLive.module.scss';

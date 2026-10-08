@@ -1,12 +1,12 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import styles from './ServiceFooter.module.scss';
-import type { PitServiceWidgetSettings } from '@/types/widget-settings';
+import type { PitServiceWidgetSettings } from '@entities/widget/widget-settings';
 import { resolveServiceState } from '@ui/widgets/PitServiceWidget/pit-service-utils';
-import { useBackendComputedStore } from '@store/data/computed-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
-import { usePlayerStore } from '@store/data/player-context';
+import { usePlayerStore } from '@entities/player/player-context';
 
 import { PositionBadge } from './PositionBadge/PositionBadge';
 

@@ -1,4 +1,4 @@
-import type { TrackPoint } from '@/types';
+import type { TrackPoint } from '@shared/contracts/domain';
 
 const FULL_LAP_PCT = 1.0;
 

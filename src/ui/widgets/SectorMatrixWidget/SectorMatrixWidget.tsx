@@ -1,10 +1,10 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { NoDataPlaceholder } from '@shared/ui/NoDataPlaceholder/NoDataPlaceholder';
-import { useSessionStore } from '@store/data/session-context';
-import { useSimStore } from '@store/sim/sim-context';
-import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
+import { useSessionStore } from '@entities/session/session-context';
+import { useSimStore } from '@entities/sim/sim-context';
+import type { SectorMatrixWidgetSettings } from '@entities/widget/widget-settings';
 import { SectorHeader } from './SectorHeader/SectorHeader';
 import { SectorGrid } from './SectorGrid/SectorGrid';
 import { SectorFooter } from './SectorFooter/SectorFooter';

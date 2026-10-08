@@ -1,5 +1,5 @@
-import type { WidgetManifest } from '@/types/widget-settings';
-import type { RelativeWidgetSettings } from '@/types/widget-settings';
+import type { WidgetManifest } from '@entities/widget/widget-settings';
+import type { RelativeWidgetSettings } from '@entities/widget/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   DEFAULT_PLAYER_ACCENT_COLOR,

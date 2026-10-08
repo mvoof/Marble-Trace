@@ -4,7 +4,7 @@ import { Segmented, Slider, Switch } from 'antd';
 import type {
   LapDeltaReference,
   DeltaWidgetSettings,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 import { getDeltaReferenceDesc } from '@ui/app/main/components/WidgetSettings/panels/shared';

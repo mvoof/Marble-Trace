@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { RpmLightsWidgetSettings } from '@/types/widget-settings';
+import type { RpmLightsWidgetSettings } from '@entities/widget/widget-settings';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { usePitState, type PitState } from '@ui/hooks/usePitState';
 
 import {

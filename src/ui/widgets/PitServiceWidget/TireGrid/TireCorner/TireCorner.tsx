@@ -14,8 +14,8 @@ import {
   type CornerPosition,
 } from '@store/widgets/pit-service/pit-tires';
 import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
-import { usePlayerStore } from '@store/data/player-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 
 const WEAR_TO_PCT = 100;
 const MIN_FILL_PCT = 5;

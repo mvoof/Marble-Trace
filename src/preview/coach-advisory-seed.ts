@@ -1,5 +1,5 @@
 import { mockCoachFrame, type MockCoachCall } from './mocks/coach';
-import type { BackendComputedStore } from '@store/data/computed.store';
+import type { BackendComputedStore } from '@entities/cars/computed.store';
 
 /**
  * Forces the call every coach on this preview core shows. Each call replaces

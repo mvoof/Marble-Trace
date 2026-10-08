@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Segmented, Slider } from 'antd';
-import { FuelWidgetSettings } from '@/types/widget-settings';
+import { FuelWidgetSettings } from '@entities/widget/widget-settings';
 import {
   FUEL_AVG_WINDOW_ALL_LAPS,
   FUEL_AVG_WINDOW_MAX,

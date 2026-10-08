@@ -1,10 +1,10 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { useBackendComputedStore } from '@store/data/computed-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { getDeltaToPreviousBest } from '@shared/lib/delta-utils';
-import type { DeltaWidgetSettings } from '@/types/widget-settings';
+import type { DeltaWidgetSettings } from '@entities/widget/widget-settings';
 import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';
 import styles from './DeltaWidget.module.scss';

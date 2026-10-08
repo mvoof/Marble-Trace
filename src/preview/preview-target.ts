@@ -1,14 +1,14 @@
-import type { BackendComputedStore } from '@store/data/computed.store';
-import type { CarsStore } from '@store/data/cars.store';
-import type { EnvironmentStore } from '@store/data/environment.store';
-import type { FlagsStore } from '@store/widgets/flags/flags.store';
+import type { BackendComputedStore } from '@entities/cars/computed.store';
+import type { CarsStore } from '@entities/cars/cars.store';
+import type { EnvironmentStore } from '@entities/environment/environment.store';
+import type { FlagsStore } from '@entities/flags/flags.store';
 import type { PitServiceWidgetStore } from '@store/widgets/pit-service/pit-service.store';
-import type { PlayerStore } from '@store/data/player.store';
-import type { RadarWidgetStore } from '@store/widgets/radar/radar.store';
-import type { ReferenceLapStore } from '@store/data/reference-lap.store';
-import type { SessionStore } from '@store/data/session.store';
-import type { SimStore } from '@store/sim/sim.store';
-import type { TrackMapWidgetStore } from '@store/widgets/track-map/track-map.store';
+import type { PlayerStore } from '@entities/player/player.store';
+import type { RadarWidgetStore } from '@entities/radar/radar.store';
+import type { ReferenceLapStore } from '@entities/player/reference-lap.store';
+import type { SessionStore } from '@entities/session/session.store';
+import type { SimStore } from '@entities/sim/sim.store';
+import type { TrackMapWidgetStore } from '@entities/track/track-map.store';
 
 /**
  * The stores a preview scenario writes into. A preview core holds them all;

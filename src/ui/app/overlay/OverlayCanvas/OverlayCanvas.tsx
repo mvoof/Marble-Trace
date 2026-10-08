@@ -9,11 +9,11 @@ import { WidgetContainer } from '@ui/app/overlay/components/WidgetContainer/Widg
 import { usePreviewContentStore } from '@ui/app/preview-content-store';
 import styles from './OverlayCanvas.module.scss';
 import { CoreProvider } from '@ui/app/store-providers';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBindingsStore } from '@store/hotkeys/bindings-context';
-import { useSimStore } from '@store/sim/sim-context';
-import { useLayoutsStore } from '@store/layout/layouts-context';
-import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
+import { useSimStore } from '@entities/sim/sim-context';
+import { useLayoutsStore } from '@entities/layout/layouts-context';
+import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 
 // antd and the widget picker stay out of the overlay's initial bundle.
 const DragModeBar = lazy(() =>

@@ -1,6 +1,6 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import type { InputTraceSettings } from '@/types/widget-settings';
+import type { InputTraceSettings } from '@entities/widget/widget-settings';
 
 import { Bar } from './Bar/Bar';
 

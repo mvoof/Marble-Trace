@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Segmented, Select, Switch } from 'antd';
-import type { UnitSystem } from '@/types';
-import type { AppLanguage } from '@/types';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import type { UnitSystem } from '@shared/contracts/domain';
+import type { AppLanguage } from '@shared/contracts/domain';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 

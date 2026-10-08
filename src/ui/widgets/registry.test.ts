@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { WIDGETS } from '@store/layout/widget-catalog';
+import { WIDGETS } from '@entities/widget/widget-catalog';
 import { WIDGET_COMPONENTS } from '@ui/widgets/registry';
 
 // A manifest without a component is a widget the user can enable, place and

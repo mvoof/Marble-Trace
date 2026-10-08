@@ -1,9 +1,9 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useCloseBattleWidgetStore } from '@ui/widgets/CloseBattleWidget/close-battle.store';
-import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
+import type { CloseBattleWidgetSettings } from '@entities/widget/widget-settings';
 import { BattleAxis } from './BattleAxis';
 import { BattleRow } from './BattleRow';
 

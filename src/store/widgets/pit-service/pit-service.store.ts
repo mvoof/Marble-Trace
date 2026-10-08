@@ -1,19 +1,19 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import type { PitServiceWidgetSettings } from '@/types/widget-settings';
+import type { PitServiceWidgetSettings } from '@entities/widget/widget-settings';
 import type { PitStrategy } from '@/types/pit-strategy';
 import { PitAutoService } from './pit-auto-service.store';
 import { PitOrder } from './pit-order.store';
 import { PitPanelState } from './pit-panel.store';
 import { distanceToPitEntryM } from '@store/widgets/pit-service/pit-approach';
 import { PIT_LIMITER_BIT } from '@shared/lib/car-signals';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
-import type { PlayerStore } from '@store/data/player.store';
-import type { TrackMapWidgetStore } from '@store/widgets/track-map/track-map.store';
-import type { SessionStore } from '@store/data/session.store';
-import type { BackendComputedStore } from '@store/data/computed.store';
-import type { AppSettingsStore } from '@store/settings/app-settings.store';
-import type { UnitsStore } from '@store/settings/units.store';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { PlayerStore } from '@entities/player/player.store';
+import type { TrackMapWidgetStore } from '@entities/track/track-map.store';
+import type { SessionStore } from '@entities/session/session.store';
+import type { BackendComputedStore } from '@entities/cars/computed.store';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
+import type { UnitsStore } from '@entities/app-settings/units.store';
 
 interface PitServiceDeps {
   liveWidgets: LiveWidgetsView;

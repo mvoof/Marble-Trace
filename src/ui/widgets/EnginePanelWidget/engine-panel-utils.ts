@@ -1,5 +1,5 @@
 import type { CarStatusFrame } from '@shared/contracts/bindings';
-import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
+import type { EnginePanelWidgetSettings } from '@entities/widget/widget-settings';
 
 /** How a value is turned into the string the cell draws. */
 type CellFormat =

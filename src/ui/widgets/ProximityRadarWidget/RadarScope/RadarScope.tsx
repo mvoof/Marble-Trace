@@ -1,20 +1,20 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { NearbyCar } from '@shared/contracts/bindings';
-import type { UnitSystem } from '@/types';
-import type { ProximityRadarSettings } from '@/types/widget-settings';
+import type { UnitSystem } from '@shared/contracts/domain';
+import type { ProximityRadarSettings } from '@entities/widget/widget-settings';
 import { formatDistance } from '@shared/lib/telemetry-format';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { useRadarWidgetStore } from '@store/widgets/radar/radar-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useRadarWidgetStore } from '@entities/radar/radar-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
   DESIGN_SIZE_PX,
   SIDE_LATERAL_OFFSET_M,
   resolveScopeScale,
-} from '@store/widgets/radar/radar-constants';
+} from '@entities/radar/radar-constants';
 import {
   SCOPE_INK,
   carBearingSpan,

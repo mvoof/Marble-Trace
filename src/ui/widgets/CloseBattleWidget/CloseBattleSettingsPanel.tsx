@@ -9,8 +9,8 @@ import type {
   BattleOtherClass,
   BattleSides,
   BattleTrigger,
-} from '@/types/widget-settings';
-import { useUnitsStore } from '@store/settings/units-context';
+} from '@entities/widget/widget-settings';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
   NAME_COLUMN_MAX_PX,
   NAME_COLUMN_MIN_PX,

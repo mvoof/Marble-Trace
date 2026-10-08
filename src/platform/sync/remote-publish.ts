@@ -6,7 +6,7 @@ import {
   startRemoteServer,
   stopRemoteServer,
 } from '@shared/api/remote.service';
-import { resolveAppLanguage } from '@store/settings/app-settings.store';
+import { resolveAppLanguage } from '@entities/app-settings/app-settings.store';
 import { clientSnapshotFor, snapshotAppInputs } from './client-snapshot';
 import type { MainRoot } from '@store/roots/main-root';
 import type { ClientSnapshot } from '@shared/contracts/client-protocol';

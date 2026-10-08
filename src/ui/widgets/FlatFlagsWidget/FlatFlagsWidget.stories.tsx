@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { FlagType } from '@/types';
+import type { FlagType } from '@shared/contracts/domain';
 import { FlatFlagsWidget } from './FlatFlagsWidget';
 import {
   defineWidgetStories,

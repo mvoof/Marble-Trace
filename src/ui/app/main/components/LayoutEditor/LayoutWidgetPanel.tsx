@@ -14,11 +14,11 @@ import {
 import type {
   LayoutMonitor,
   WidgetDefaultConfig,
-} from '@/types/widget-settings';
-import type { MonitorWidgetRow } from '@store/layout/live-widgets.store';
+} from '@entities/widget/widget-settings';
+import type { MonitorWidgetRow } from '@entities/layout/live-widgets.store';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
-import { useLayoutsStore } from '@store/layout/layouts-context';
-import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
+import { useLayoutsStore } from '@entities/layout/layouts-context';
+import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import styles from './LayoutWidgetPanel.module.scss';
 
 interface LayoutWidgetPanelProps {

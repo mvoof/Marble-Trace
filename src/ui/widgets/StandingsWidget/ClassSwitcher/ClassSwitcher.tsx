@@ -1,13 +1,13 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
 import { ClassGroupHeader } from '@ui/widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
 
 import styles from './ClassSwitcher.module.scss';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 const FLASH_DURATION_MS = 300;

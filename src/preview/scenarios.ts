@@ -6,7 +6,7 @@ import type {
   SessionEntry,
   SessionFrame,
 } from '@shared/contracts/bindings';
-import type { PreviewScenarioId } from '@/types/preview-scenarios';
+import type { PreviewScenarioId } from '@entities/widget/preview-scenarios';
 import { action } from 'mobx';
 import type { PreviewTarget } from './preview-target';
 import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';

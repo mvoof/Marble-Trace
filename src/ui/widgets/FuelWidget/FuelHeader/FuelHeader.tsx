@@ -3,11 +3,11 @@ import { observer } from 'mobx-react-lite';
 import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
 import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
 import { formatFuel } from '@shared/lib/telemetry-format';
-import type { UnitSystem } from '@/types';
+import type { UnitSystem } from '@shared/contracts/domain';
 
 import styles from './FuelHeader.module.scss';
-import { usePlayerStore } from '@store/data/player-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import { NO_FUEL_DATA_PLACEHOLDER } from '@shared/lib/telemetry-format';
 
 const fuelUnitWord = (unitSystem: UnitSystem): string =>

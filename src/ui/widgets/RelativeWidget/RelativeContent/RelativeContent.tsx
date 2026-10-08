@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -6,10 +6,10 @@ import { useVisibleRowCount } from '@shared/hooks/useVisibleRowCount';
 import { DriverRow } from '@ui/widgets/RelativeWidget/DriverRow/DriverRow';
 import { PaceCarRow } from '@ui/widgets/RelativeWidget/PaceCarRow/PaceCarRow';
 import { NoDataPlaceholder } from '@shared/ui/NoDataPlaceholder/NoDataPlaceholder';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { useSimStore } from '@store/sim/sim-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useSimStore } from '@entities/sim/sim-context';
 import { useRelativeWidgetStore } from '@ui/widgets/RelativeWidget/relative.store';
-import type { RelativeWidgetSettings } from '@/types/widget-settings';
+import type { RelativeWidgetSettings } from '@entities/widget/widget-settings';
 
 import styles from './RelativeContent.module.scss';
 

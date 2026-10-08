@@ -1,9 +1,9 @@
 import { comparer, makeAutoObservable, runInAction } from 'mobx';
 
 import { emitToMain } from '@shared/api/events.service';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { ClientCommand } from '@shared/contracts/client-protocol';
-import type { WidgetUserSettings } from '@/types/widget-settings';
+import type { WidgetUserSettings } from '@entities/widget/widget-settings';
 
 /**
  * How often a drag or a resize reaches main while it lasts — often enough for

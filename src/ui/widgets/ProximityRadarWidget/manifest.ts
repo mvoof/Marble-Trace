@@ -1,4 +1,4 @@
-import type { WidgetManifest } from '@/types/widget-settings';
+import type { WidgetManifest } from '@entities/widget/widget-settings';
 import { COMMON_WIDGET_DEFAULTS } from '@ui/widgets/widget-manifest';
 
 /**

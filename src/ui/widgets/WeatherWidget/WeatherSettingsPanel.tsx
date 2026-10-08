@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { WeatherWidgetSettings } from '@/types/widget-settings';
+import { WeatherWidgetSettings } from '@entities/widget/widget-settings';
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 import { panelRows } from '@ui/app/main/components/WidgetSettings/panels/setting-rows';
 

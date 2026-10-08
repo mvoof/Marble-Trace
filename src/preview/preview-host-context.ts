@@ -1,9 +1,9 @@
 import type { ComponentType, ReactNode } from 'react';
 
 import { createStoreContext } from '@shared/lib/store-context';
-import type { LiveWidgetsStore } from '@store/layout/live-widgets.store';
-import type { AppSettingsStore } from '@store/settings/app-settings.store';
-import type { UnitsStore } from '@store/settings/units.store';
+import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
+import type { UnitsStore } from '@entities/app-settings/units.store';
 import type { PreviewTarget } from './preview-target';
 
 /** A preview core, as the page that draws one holds it. */

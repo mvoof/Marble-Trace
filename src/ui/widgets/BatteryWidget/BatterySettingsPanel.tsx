@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { BatteryWidgetSettings } from '@/types/widget-settings';
+import { BatteryWidgetSettings } from '@entities/widget/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 import { panelRows } from '@ui/app/main/components/WidgetSettings/panels/setting-rows';

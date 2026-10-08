@@ -1,6 +1,6 @@
 import type { FunctionComponent, SVGProps } from 'react';
 
-import type { SteeringWheelStyle } from '@/types/widget-settings';
+import type { SteeringWheelStyle } from '@entities/widget/widget-settings';
 import FormulaCompact from '@assets/wheels/formula-compact.svg?react';
 import FormulaConspit from '@assets/wheels/formula-conspit.svg?react';
 import FormulaConspitPro from '@assets/wheels/formula-conspit-pro.svg?react';

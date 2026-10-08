@@ -1,8 +1,8 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { TrackMapWidgetSettings } from '@/types/widget-settings';
-import { useIncidentsWidgetStore } from '@store/widgets/incidents/incidents-context';
+import type { TrackMapWidgetSettings } from '@entities/widget/widget-settings';
+import { useIncidentsWidgetStore } from '@entities/incidents/incidents-context';
 
 import { FlagZoneStripes } from './FlagZoneStripes';
 

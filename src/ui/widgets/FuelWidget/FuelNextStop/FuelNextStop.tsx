@@ -1,13 +1,13 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
 import { NO_TIME_DATA_PLACEHOLDER } from '@shared/lib/telemetry-format';
-import type { FuelWidgetSettings } from '@/types/widget-settings';
+import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
 import { computeNextStopForecast, formatCountdown } from '../fuel-utils';
 import styles from './FuelNextStop.module.scss';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { usePlayerStore } from '@store/data/player-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { usePlayerStore } from '@entities/player/player-context';
 
 const NO_LAP_PLACEHOLDER = '--';
 

@@ -1,8 +1,8 @@
-import type { WidgetManifest } from '@/types/widget-settings';
+import type { WidgetManifest } from '@entities/widget/widget-settings';
 import type {
   FlagDisplaySettings,
   ResolveLayoutChange,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   TRANSPARENT_APPEARANCE_DEFAULTS,

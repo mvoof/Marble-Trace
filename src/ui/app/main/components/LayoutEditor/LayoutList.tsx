@@ -12,26 +12,29 @@ import {
   LayoutTemplate,
   Copy,
 } from 'lucide-react';
-import { useLayoutsStore } from '@store/layout/layouts-context';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { useSimStore } from '@store/sim/sim-context';
+import { useLayoutsStore } from '@entities/layout/layouts-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useSimStore } from '@entities/sim/sim-context';
 import {
   useLayoutEditorStore,
   useLayoutGestureStores,
 } from '@store/layout/layout-editor-context';
-import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
+import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import { useRemoteDevicesStore } from '@store/remote/remote-devices-context';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
 import {
   resolveBackgroundSrc,
   deleteBackgroundImage,
-} from '@store/layout/layout-background';
+} from '@entities/layout/layout-background';
 import {
   monitorsBounds,
   widgetsOnMonitor,
-} from '@store/layout/virtual-desktop';
-import type { SavedLayout, SessionContext } from '@/types/widget-settings';
-import { getWidgetLabel } from '@ui/app/widget-i18n';
+} from '@entities/layout/virtual-desktop';
+import type {
+  SavedLayout,
+  SessionContext,
+} from '@entities/widget/widget-settings';
+import { getWidgetLabel } from '@entities/widget/widget-i18n';
 import {
   createLayout,
   deleteLayout,

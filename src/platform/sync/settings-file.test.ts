@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_WIDGET_BY_ID } from '@store/layout/widget-catalog';
+import { DEFAULT_WIDGET_BY_ID } from '@entities/widget/widget-catalog';
 import type {
   LayoutMonitor,
   SavedLayout,
   WidgetDefaultConfig,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import {
   decodeLayout,
   decodeTemplates,

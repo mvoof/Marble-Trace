@@ -1,7 +1,7 @@
 import type {
   WheelToWheelWidgetSettings,
   WidgetManifest,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,

@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react-lite';
 
-import type { DriverGroup } from '@/types';
+import type { DriverGroup } from '@shared/contracts/domain';
 import { ClassGroupHeader } from '@ui/widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
 import { DriverRow } from '@ui/widgets/StandingsWidget/DriverRow/DriverRow';
 import { ScrollIndicator } from '@shared/ui/ScrollIndicator/ScrollIndicator';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 import styles from './ClassGroup.module.scss';

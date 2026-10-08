@@ -9,7 +9,7 @@ import {
   PREVIEW_SCENARIO_BY_ID,
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@/preview/scenarios';
-import { WIDGET_BY_ID } from '@store/layout/widget-catalog';
+import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
 import styles from './WidgetWorkbench.module.scss';
 
 const scenarioOption = (scenarioId: string) => {

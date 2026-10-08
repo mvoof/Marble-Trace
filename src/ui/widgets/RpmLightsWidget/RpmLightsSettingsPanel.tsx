@@ -1,7 +1,10 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { ColorPicker, Segmented } from 'antd';
-import { RpmLightsWidgetSettings, LedShape } from '@/types/widget-settings';
+import {
+  RpmLightsWidgetSettings,
+  LedShape,
+} from '@entities/widget/widget-settings';
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';

@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { useUnitsStore } from '@store/settings/units-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
   useWheelToWheelWidgetStore,
   type BattleSlot,

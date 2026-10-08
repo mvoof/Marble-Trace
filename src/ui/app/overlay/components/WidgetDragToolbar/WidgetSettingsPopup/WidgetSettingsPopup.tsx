@@ -10,13 +10,13 @@ import {
   WidgetEditorProvider,
   type WidgetEditor,
 } from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';
-import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
-import { useSettingsMutationLog } from '@store/layout/mutation-log-context';
+import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
+import { useSettingsMutationLog } from '@entities/layout/mutation-log-context';
 import { useOverlayRoot } from '@store/roots/overlay-root-context';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
-import type { SettingsMutationLog } from '@store/layout/mutation-log.store';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { SettingsMutationLog } from '@entities/layout/mutation-log.store';
 import type { SettingsClientStore } from '@store/layout/settings-client.store';
-import { getWidgetLabel } from '@ui/app/widget-i18n';
+import { getWidgetLabel } from '@entities/widget/widget-i18n';
 import styles from './WidgetSettingsPopup.module.scss';
 
 const POPUP_WIDTH = 500;

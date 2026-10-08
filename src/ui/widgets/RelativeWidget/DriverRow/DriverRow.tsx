@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
@@ -18,11 +18,11 @@ import {
   buildRelativeGridTemplate,
   resolveRowPosition,
 } from '@ui/widgets/RelativeWidget/relative-utils';
-import type { RelativeWidgetSettings } from '@/types/widget-settings';
+import type { RelativeWidgetSettings } from '@entities/widget/widget-settings';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 
 import styles from './DriverRow.module.scss';
-import { useBackendComputedStore } from '@store/data/computed-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
 
 interface DriverRowProps {
   carIdx: number;

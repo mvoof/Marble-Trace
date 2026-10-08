@@ -3,7 +3,7 @@ import { primaryMonitor } from '@tauri-apps/api/window';
 import { PhysicalPosition } from '@tauri-apps/api/dpi';
 import { emit } from '@tauri-apps/api/event';
 
-import type { DiagnosticsHudState } from '@/types/diagnostics';
+import type { DiagnosticsHudState } from '@shared/contracts/diagnostics';
 
 export const DIAGNOSTICS_HUD_LABEL = 'diagnostics-hud';
 export const DIAGNOSTICS_HUD_STATE_EVENT = 'diagnostics-hud-state';

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Slider } from 'antd';
-import { FlagDisplaySettings } from '@/types/widget-settings';
+import { FlagDisplaySettings } from '@entities/widget/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';

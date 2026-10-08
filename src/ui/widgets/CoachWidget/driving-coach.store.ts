@@ -1,18 +1,18 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
 
-import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
+import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type {
   CoachCall,
   CoachInactiveReason,
   DrivingAdvisory,
   ReferenceLapSample,
 } from '@shared/contracts/bindings';
-import type { CoachWidgetSettings } from '@/types/widget-settings';
+import type { CoachWidgetSettings } from '@entities/widget/widget-settings';
 import { interpolateReferenceSample } from './coach-trace-utils';
-import type { PlayerStore } from '@store/data/player.store';
-import type { ReferenceLapStore } from '@store/data/reference-lap.store';
-import type { BackendComputedStore } from '@store/data/computed.store';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
+import type { PlayerStore } from '@entities/player/player.store';
+import type { ReferenceLapStore } from '@entities/player/reference-lap.store';
+import type { BackendComputedStore } from '@entities/cars/computed.store';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 
 interface DrivingCoachDeps {
   player: PlayerStore;

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Slider, Switch } from 'antd';
-import type { PitServiceWidgetSettings } from '@/types/widget-settings';
+import type { PitServiceWidgetSettings } from '@entities/widget/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 import { SettingRow } from '@ui/app/main/components/WidgetSettings/panels/SettingRow';
@@ -10,7 +10,7 @@ import {
   panelRows,
   usePanelWidgetId,
 } from '@ui/app/main/components/WidgetSettings/panels/setting-rows';
-import { useUnitsStore } from '@store/settings/units-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import { distanceScale } from '@ui/app/main/components/WidgetSettings/panels/distance-scale';
 
 // The pit entry countdown. Below 100 m the box arrives after the braking, and

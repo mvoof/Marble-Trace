@@ -6,14 +6,14 @@ import {
 } from 'mobx';
 
 import type { ChatMessage, ChatPresence } from '@shared/contracts/bindings';
-import type { StreamChatWidgetSettings } from '@/types/widget-settings';
-import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
+import type { StreamChatWidgetSettings } from '@entities/widget/widget-settings';
+import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type { StreamChatHotkeyTarget } from '@store/hotkeys/hotkey-targets';
 import { scrollThumbFor, type ScrollThumb } from '@shared/lib/canvas';
-import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
-import type { AppSettingsStore } from '@store/settings/app-settings.store';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
-import type { ChatStore } from '@store/data/chat.store';
+import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { ChatStore } from '@entities/chat/chat.store';
 
 interface StreamChatDeps {
   appSettings: AppSettingsStore;

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { UnitSystem } from '@/types';
+import type { UnitSystem } from '@shared/contracts/domain';
 import type {
   WheelToWheelLayout,
   WheelToWheelWidgetSettings,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import { WheelToWheelWidget } from './WheelToWheelWidget';
 import {
   defineWidgetStories,

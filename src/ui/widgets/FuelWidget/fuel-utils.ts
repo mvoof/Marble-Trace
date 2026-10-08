@@ -2,7 +2,7 @@ import type {
   FuelHistoryStats,
   FuelLapRecord,
 } from '@shared/contracts/bindings';
-import type { FuelWidgetSettings } from '@/types/widget-settings';
+import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
 import { FUEL_AVG_WINDOW_ALL_LAPS, FUEL_THRESHOLDS } from './fuel-constants';
 
 /** Laps that count towards the average; the rest are drawn but never measured. */

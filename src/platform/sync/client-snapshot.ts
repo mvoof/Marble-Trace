@@ -1,9 +1,12 @@
-import { pitStrategyOf } from '@store/settings/app-settings.store';
-import { widgetsOnMonitor } from '@store/layout/virtual-desktop';
+import { pitStrategyOf } from '@entities/app-settings/app-settings.store';
+import { widgetsOnMonitor } from '@entities/layout/virtual-desktop';
 import { cloneMonitor } from '@shared/lib/remote-screen';
 import type { MainRoot } from '@store/roots/main-root';
 import type { ClientSnapshot } from '@shared/contracts/client-protocol';
-import type { LayoutMonitor, SavedLayout } from '@/types/widget-settings';
+import type {
+  LayoutMonitor,
+  SavedLayout,
+} from '@entities/widget/widget-settings';
 
 /**
  * What one client draws, as main holds it: one screen of one layout, the

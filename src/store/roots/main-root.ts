@@ -1,11 +1,11 @@
 import { RendererCore } from './renderer-core';
-import type { LiveWidgetsStore } from '../layout/live-widgets.store';
+import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
 import {
   buildAppWindowStores,
   type AppWindowStores,
 } from './app-window-stores';
 import type { BindingsStore } from '../hotkeys/bindings.store';
-import type { SettingsPanelUiStore } from '../widget-runtime/settings-panel-ui.store';
+import type { SettingsPanelUiStore } from '@entities/widget/settings-panel-ui.store';
 import { LayoutEditorStore } from '../layout/layout-editor.store';
 import { CompanionAppsStore } from '../integrations/companion-apps.store';
 import { TwitchAuthStore } from '../integrations/twitch-auth.store';
@@ -15,7 +15,7 @@ import { RemoteDevicesStore } from '../remote/remote-devices.store';
 import { FpsDiagnosticsStore } from '../diagnostics/fps-diagnostics.store';
 import { DiagnosticsExportStore } from '../diagnostics/diagnostics-export.store';
 import { TelemetryInspectorStore } from '../diagnostics/telemetry-inspector.store';
-import { TrackRotationStore } from '../widgets/track-map/track-rotation.store';
+import { TrackRotationStore } from '@entities/track/track-rotation.store';
 
 /**
  * The main window: the renderer core, the app-window stores, and everything

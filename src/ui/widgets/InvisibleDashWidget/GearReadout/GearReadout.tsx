@@ -1,11 +1,11 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
+import type { InvisibleDashWidgetSettings } from '@entities/widget/widget-settings';
 import { computeRpmZoneState } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { usePlayerStore } from '@store/data/player-context';
-import { useSessionStore } from '@store/data/session-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useSessionStore } from '@entities/session/session-context';
 
 import { formatGear, zoneDigitColor } from '../invisible-dash-utils';
 

@@ -1,8 +1,8 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { ArrowBigUp, ArrowBigDown } from 'lucide-react';
 
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 import styles from './DriverRow.module.scss';

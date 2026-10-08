@@ -2,7 +2,7 @@ import type {
   LapHistoryEntry,
   LapTimingFrame,
 } from '@shared/contracts/bindings';
-import type { LapDeltaReference } from '@/types/widget-settings';
+import type { LapDeltaReference } from '@entities/widget/widget-settings';
 
 export type DeltaState = 'ahead' | 'behind' | 'neutral';
 export type LapDeltaLayout = 'vertical' | 'horizontal';

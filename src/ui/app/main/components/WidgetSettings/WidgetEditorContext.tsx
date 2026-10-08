@@ -4,13 +4,13 @@ import type {
   WidgetDefaultConfig,
   WidgetSpecificSettings,
   WidgetUserSettings,
-} from '@/types/widget-settings';
-import type { LiveWidgetsStore } from '@store/layout/live-widgets.store';
-import type { WidgetDefaultsStore } from '@store/layout/widget-defaults.store';
-import type { SettingsMutationLog } from '@store/layout/mutation-log.store';
-import { useWidgetDefaultsStore } from '@store/layout/widget-defaults-context';
-import { MainLiveWidgetsContext } from '@store/layout/main-live-widgets-context';
-import { useSettingsMutationLog } from '@store/layout/mutation-log-context';
+} from '@entities/widget/widget-settings';
+import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
+import type { WidgetDefaultsStore } from '@entities/widget/widget-defaults.store';
+import type { SettingsMutationLog } from '@entities/layout/mutation-log.store';
+import { useWidgetDefaultsStore } from '@entities/widget/widget-defaults-context';
+import { MainLiveWidgetsContext } from '@entities/layout/main-live-widgets-context';
+import { useSettingsMutationLog } from '@entities/layout/mutation-log-context';
 
 // A small editing target so the settings panels don't care WHAT they edit. The
 // Widgets catalog binds this to the global defaults, the F9 overlay popup to

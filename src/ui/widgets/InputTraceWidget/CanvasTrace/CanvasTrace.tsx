@@ -1,13 +1,13 @@
-import { useWidgetInstanceId } from '@ui/hooks/useWidgetSettings';
+import { useWidgetInstanceId } from '@entities/widget/useWidgetSettings';
 import { useRef, useCallback } from 'react';
 
-import type { InputTraceSettings } from '@/types/widget-settings';
+import type { InputTraceSettings } from '@entities/widget/widget-settings';
 import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
 import { useCanvasAutoResize } from '@shared/hooks/useCanvasAutoResize';
 import styles from './CanvasTrace.module.scss';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { usePlayerStore } from '@store/data/player-context';
-import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useInputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.store';
 import {
   createTraceBufferState,

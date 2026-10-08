@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
 import { projectPositionsLost } from '@ui/widgets/PitServiceWidget/pit-service-utils';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { usePlayerPositionStore } from '@store/data/player-position-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { usePlayerPositionStore } from '@entities/player/player-position-context';
 
 import styles from './PositionBadge.module.scss';
 

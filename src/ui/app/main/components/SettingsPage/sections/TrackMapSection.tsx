@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Flex, Popconfirm } from 'antd';
-import { useSimStore } from '@store/sim/sim-context';
-import { useSessionStore } from '@store/data/session-context';
-import { useTrackMapWidgetStore } from '@store/widgets/track-map/track-map-context';
-import { useTrackRotationStore } from '@store/widgets/track-map/track-rotation-context';
+import { useSimStore } from '@entities/sim/sim-context';
+import { useSessionStore } from '@entities/session/session-context';
+import { useTrackMapWidgetStore } from '@entities/track/track-map-context';
+import { useTrackRotationStore } from '@entities/track/track-rotation-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 

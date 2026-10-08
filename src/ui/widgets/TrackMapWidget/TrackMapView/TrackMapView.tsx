@@ -1,9 +1,9 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
-import type { TrackPoint } from '@/types';
+import type { TrackPoint } from '@shared/contracts/domain';
 import { parseClassColor } from '@shared/lib/colors';
 import { RecordingOverlay } from '@ui/widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { TrackMapSvg } from '@ui/widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
@@ -16,10 +16,10 @@ import {
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 
 import styles from './TrackMapView.module.scss';
-import type { TrackMapWidgetSettings } from '@/types/widget-settings';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { useSessionStore } from '@store/data/session-context';
+import type { TrackMapWidgetSettings } from '@entities/widget/widget-settings';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useSessionStore } from '@entities/session/session-context';
 
 export interface TrackData {
   svgPath: string;

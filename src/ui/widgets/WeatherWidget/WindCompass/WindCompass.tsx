@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import CarIcon from '@assets/car-icon.svg?react';
@@ -7,7 +7,7 @@ import { RotatingRing } from './RotatingRing/RotatingRing';
 import { WindArrow } from './WindArrow/WindArrow';
 
 import styles from './WindCompass.module.scss';
-import type { WeatherWidgetSettings } from '@/types/widget-settings';
+import type { WeatherWidgetSettings } from '@entities/widget/widget-settings';
 
 // The box used to be drawn wide enough for the arrow to swing in — its tip
 // reaches 105 units out, while the ring only reaches 82 — which left a rim of

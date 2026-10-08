@@ -1,11 +1,11 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { LinearMapWidgetSettings } from '@/types/widget-settings';
-import { projectFlagZoneToWindow } from '@store/widgets/incidents/flag-zones';
+import type { LinearMapWidgetSettings } from '@entities/widget/widget-settings';
+import { projectFlagZoneToWindow } from '@entities/incidents/flag-zones';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { useIncidentsWidgetStore } from '@store/widgets/incidents/incidents-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useIncidentsWidgetStore } from '@entities/incidents/incidents-context';
 
 import styles from './FlagBands.module.scss';
 

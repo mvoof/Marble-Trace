@@ -6,7 +6,7 @@ import type {
   RowPadding,
   StandingsViewMode,
   StandingsWidgetSettings,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 import { SettingRow } from '@ui/app/main/components/WidgetSettings/panels/SettingRow';

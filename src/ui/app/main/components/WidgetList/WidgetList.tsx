@@ -1,8 +1,11 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import type { WidgetDefaultConfig } from '@/types/widget-settings';
-import { useWidgetDefaultsStore } from '@store/layout/widget-defaults-context';
-import { getWidgetLabel, getWidgetDescription } from '@ui/app/widget-i18n';
+import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';
+import { useWidgetDefaultsStore } from '@entities/widget/widget-defaults-context';
+import {
+  getWidgetLabel,
+  getWidgetDescription,
+} from '@entities/widget/widget-i18n';
 import styles from './WidgetList.module.scss';
 
 const WidgetListItem = observer(

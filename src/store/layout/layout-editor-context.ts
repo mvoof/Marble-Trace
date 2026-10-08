@@ -4,8 +4,8 @@ import {
   layoutGestureStores,
   type LayoutGestureStores,
 } from './layout-gestures';
-import { useLayoutsStore } from './layouts-context';
-import { useMainLiveWidgetsStore } from './main-live-widgets-context';
+import { useLayoutsStore } from '@entities/layout/layouts-context';
+import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 
 export const [LayoutEditorContext, useLayoutEditorStore] =
   createStoreContext<LayoutEditorStore>('LayoutEditorStore');

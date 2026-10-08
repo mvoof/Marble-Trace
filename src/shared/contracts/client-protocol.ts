@@ -1,4 +1,4 @@
-import type { AppLanguage, UnitSystem } from '@/types';
+import type { AppLanguage, UnitSystem } from '@shared/contracts/domain';
 import type {
   ClientEnvelope,
   InteractHotkeyMode,
@@ -10,7 +10,7 @@ import type {
   LayoutMonitor,
   WidgetDefaultConfig,
   WidgetUserSettings,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 
 /**
  * The payloads of the client protocol (ADR-0007). The envelope around them is

@@ -1,14 +1,14 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { CoachWidgetSettings } from '@/types/widget-settings';
+import type { CoachWidgetSettings } from '@entities/widget/widget-settings';
 import {
   formatLapTime,
   formatSpeed,
   speedUnit,
 } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { useUnitsStore } from '@store/settings/units-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,

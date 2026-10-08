@@ -1,6 +1,6 @@
 import type { ChassisFrame, PitServiceFrame } from '@shared/contracts/bindings';
-import type { DriverEntry } from '@/types/driver-entry';
-import type { UnitSystem } from '@/types';
+import type { DriverEntry } from '@entities/cars/driver-entry';
+import type { UnitSystem } from '@shared/contracts/domain';
 import type { CornerPosition } from '@store/widgets/pit-service/pit-tires';
 import { computeRelativeGap } from '@shared/lib/driver';
 

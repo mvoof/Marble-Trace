@@ -1,11 +1,11 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { formatBrand, formatCarNumber } from '@shared/lib/driver';
-import { useUnitsStore } from '@store/settings/units-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import { getContrastTextColor } from '@shared/lib/colors';
-import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
+import type { CloseBattleWidgetSettings } from '@entities/widget/widget-settings';
 import {
   battleDistanceParts,
   battleDriverName,

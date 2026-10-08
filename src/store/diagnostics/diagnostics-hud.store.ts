@@ -1,6 +1,6 @@
 import { makeAutoObservable, observable } from 'mobx';
 
-import type { DiagnosticsHudState } from '@/types/diagnostics';
+import type { DiagnosticsHudState } from '@shared/contracts/diagnostics';
 
 /**
  * The banner window's copy of the run state.

@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Popconfirm } from 'antd';
 import { RotateCcw } from 'lucide-react';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useDiagnosticsExportStore } from '@store/diagnostics/diagnostics-export-context';
 import { SettingsCard } from '../SettingsCard';
 import { FpsDiagnosticsCard } from './FpsDiagnosticsCard/FpsDiagnosticsCard';

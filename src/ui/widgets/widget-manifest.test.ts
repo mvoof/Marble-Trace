@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { makeColumnLayoutResolver } from './widget-manifest';
-import type { WidgetUserSettings } from '@/types/widget-settings';
+import type { WidgetUserSettings } from '@entities/widget/widget-settings';
 
 interface RailSettings {
   showRail: boolean;

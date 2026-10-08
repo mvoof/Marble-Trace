@@ -5,15 +5,15 @@ import {
   resizeDirectionsFor,
   widgetFrameStyle,
   type ResizeDirection,
-} from '@ui/app/widget-frame';
+} from '@entities/widget/widget-frame';
 import styles from './WidgetContainer.module.scss';
-import { WidgetIdContext } from './WidgetIdContext';
+import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import { WidgetDragToolbar } from '@ui/app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { usePlayerStore } from '@store/data/player-context';
-import { useSimStore } from '@store/sim/sim-context';
-import { useWidgetAutoHideStore } from '@store/widget-runtime/widget-auto-hide-context';
-import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useSimStore } from '@entities/sim/sim-context';
+import { useWidgetAutoHideStore } from '@entities/widget/widget-auto-hide-context';
+import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useOverlayRoot } from '@store/roots/overlay-root-context';
 
 interface WidgetContainerProps {

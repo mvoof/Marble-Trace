@@ -7,7 +7,7 @@ import {
   splitTime,
 } from '@shared/lib/timer-utils';
 
-import { useSessionStore } from '@store/data/session-context';
+import { useSessionStore } from '@entities/session/session-context';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import styles from './TimerDisplay.module.scss';
 

@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -10,10 +10,10 @@ import {
 } from '@ui/widgets/GMeterWidget/g-meter-utils';
 import { resizeCanvasToDpr } from '@shared/lib/canvas';
 
-import type { GMeterWidgetSettings } from '@/types/widget-settings';
+import type { GMeterWidgetSettings } from '@entities/widget/widget-settings';
 import styles from './GMeterRings.module.scss';
-import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
-import { useWidgetInstanceId } from '@ui/hooks/useWidgetSettings';
+import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
+import { useWidgetInstanceId } from '@entities/widget/useWidgetSettings';
 
 const RING_COLOR = 'rgba(42,43,48,0.8)';
 const OUTER_RING_COLOR = 'rgba(72,74,82,1)';

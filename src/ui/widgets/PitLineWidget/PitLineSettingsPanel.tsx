@@ -2,9 +2,9 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Slider } from 'antd';
 
-import type { PitLineWidgetSettings } from '@/types/widget-settings';
+import type { PitLineWidgetSettings } from '@entities/widget/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { useUnitsStore } from '@store/settings/units-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 import { useWidgetEditor } from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';

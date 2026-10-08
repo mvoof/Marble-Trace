@@ -1,32 +1,32 @@
-import { BackendComputedStore } from '../data/computed.store';
-import { SimStore } from '../sim/sim.store';
-import { FlagsStore } from '../widgets/flags/flags.store';
-import { IncidentsWidgetStore } from '../widgets/incidents/incidents.store';
-import { RadarWidgetStore } from '../widgets/radar/radar.store';
+import { BackendComputedStore } from '@entities/cars/computed.store';
+import { SimStore } from '@entities/sim/sim.store';
+import { FlagsStore } from '@entities/flags/flags.store';
+import { IncidentsWidgetStore } from '@entities/incidents/incidents.store';
+import { RadarWidgetStore } from '@entities/radar/radar.store';
 import { PitServiceWidgetStore } from '../widgets/pit-service/pit-service.store';
-import { PlayerPositionStore } from '../data/player-position.store';
+import { PlayerPositionStore } from '@entities/player/player-position.store';
 import {
   SharedWidgetStores,
   WidgetInstanceRegistry,
-} from '../widget-runtime/widget-instances.store';
-import { TrackMapWidgetStore } from '../widgets/track-map/track-map.store';
+} from '@entities/widget/widget-instances.store';
+import { TrackMapWidgetStore } from '@entities/track/track-map.store';
 import {
   LiveWidgetsStore,
   type LiveWidgetsView,
-} from '../layout/live-widgets.store';
-import { WidgetDefaultsStore } from '../layout/widget-defaults.store';
-import { LayoutsStore } from '../layout/layouts.store';
-import { SettingsMutationLog } from '../layout/mutation-log.store';
-import { AppSettingsStore } from '../settings/app-settings.store';
-import { UnitsStore } from '../settings/units.store';
-import { WidgetAutoHideStore } from '../widget-runtime/widget-auto-hide.store';
-import { PlayerStore } from '../data/player.store';
-import { CarsStore } from '../data/cars.store';
-import { SessionStore } from '../data/session.store';
-import { EnvironmentStore } from '../data/environment.store';
-import { SimPerfStore } from '../data/sim-perf.store';
-import { ReferenceLapStore } from '../data/reference-lap.store';
-import { ChatStore } from '../data/chat.store';
+} from '@entities/layout/live-widgets.store';
+import { WidgetDefaultsStore } from '@entities/widget/widget-defaults.store';
+import { LayoutsStore } from '@entities/layout/layouts.store';
+import { SettingsMutationLog } from '@entities/layout/mutation-log.store';
+import { AppSettingsStore } from '@entities/app-settings/app-settings.store';
+import { UnitsStore } from '@entities/app-settings/units.store';
+import { WidgetAutoHideStore } from '@entities/widget/widget-auto-hide.store';
+import { PlayerStore } from '@entities/player/player.store';
+import { CarsStore } from '@entities/cars/cars.store';
+import { SessionStore } from '@entities/session/session.store';
+import { EnvironmentStore } from '@entities/environment/environment.store';
+import { SimPerfStore } from '@entities/sim-perf/sim-perf.store';
+import { ReferenceLapStore } from '@entities/player/reference-lap.store';
+import { ChatStore } from '@entities/chat/chat.store';
 
 interface RendererCoreOptions {
   /** A preview: no Tauri channels, nothing persisted, no store started. */

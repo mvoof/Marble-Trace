@@ -1,4 +1,4 @@
-import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
+import type { TelemetrySnapshot } from '@shared/contracts/telemetry-snapshot';
 import type {
   ChassisFrame,
   FuelComputedFrame,
@@ -6,7 +6,7 @@ import type {
   ProximityFrame,
 } from '@shared/contracts/bindings';
 import { action } from 'mobx';
-import { TrackSurface } from '@/types';
+import { TrackSurface } from '@shared/contracts/domain';
 import type { PreviewTarget } from './preview-target';
 import { computeDriverEntries } from './mocks/driver-entries';
 import { mockCarPositions } from './mocks/field';

@@ -1,4 +1,4 @@
-import type { FlagType } from '@/types';
+import type { FlagType } from '@shared/contracts/domain';
 import { BLOCKS } from '@ui/widgets/LedFlagWidget/led-flag-utils';
 
 export interface ColorStyles {

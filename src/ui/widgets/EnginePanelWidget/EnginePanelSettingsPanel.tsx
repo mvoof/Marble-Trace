@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Switch, Segmented } from 'antd';
-import { EnginePanelWidgetSettings } from '@/types/widget-settings';
+import { EnginePanelWidgetSettings } from '@entities/widget/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 import { SettingRow } from '@ui/app/main/components/WidgetSettings/panels/SettingRow';

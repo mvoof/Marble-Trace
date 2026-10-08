@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { WIDGETS } from '@store/layout/widget-catalog';
+import { WIDGETS } from '@entities/widget/widget-catalog';
 import { SETTINGS_PANELS } from './panel-registry';
 
 describe('settings panel registry', () => {

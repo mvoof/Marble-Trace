@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { Plus, Search } from 'lucide-react';
 import { useClickOutside } from '@shared/hooks/useClickOutside';
-import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
+import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useOverlayRoot } from '@store/roots/overlay-root-context';
-import type { PickableWidget } from '@store/layout/widget-placement';
-import { getWidgetDescription } from '@ui/app/widget-i18n';
+import type { PickableWidget } from '@entities/widget/widget-placement';
+import { getWidgetDescription } from '@entities/widget/widget-i18n';
 import styles from './WidgetPicker.module.scss';
 
 const PickerRow = observer(

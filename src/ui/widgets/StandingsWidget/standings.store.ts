@@ -6,9 +6,9 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { CarIdentity } from '@/types/car-identity';
-import type { DriverGroup } from '@/types';
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import type { CarIdentity } from '@entities/cars/car-identity-type';
+import type { DriverGroup } from '@shared/contracts/domain';
+import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
 import { computeClassSof, hasSetALap } from '@shared/lib/driver';
 import { hasRaceStarted } from '@shared/lib/timer-utils';
 import {
@@ -17,13 +17,13 @@ import {
   type ScrollThumb,
 } from '@shared/lib/canvas';
 import { MOVE_DURATION_MS } from '@shared/lib/animation';
-import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
+import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type { StandingsHotkeyTarget } from '@store/hotkeys/hotkey-targets';
-import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
-import type { BackendComputedStore } from '@store/data/computed.store';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
-import type { SessionStore } from '@store/data/session.store';
-import type { PlayerPositionStore } from '@store/data/player-position.store';
+import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
+import type { BackendComputedStore } from '@entities/cars/computed.store';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { SessionStore } from '@entities/session/session.store';
+import type { PlayerPositionStore } from '@entities/player/player-position.store';
 
 interface StandingsDeps {
   backendComputed: BackendComputedStore;

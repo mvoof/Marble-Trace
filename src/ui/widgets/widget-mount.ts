@@ -4,17 +4,17 @@ import type {
   SharedWidgetStores,
   WidgetInstanceRegistry,
   WidgetStoreFactory,
-} from '@store/widget-runtime/widget-instances.store';
-import type { AppSettingsStore } from '@store/settings/app-settings.store';
-import type { BackendComputedStore } from '@store/data/computed.store';
-import type { CarsStore } from '@store/data/cars.store';
-import type { ChatStore } from '@store/data/chat.store';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
-import type { PlayerPositionStore } from '@store/data/player-position.store';
-import type { PlayerStore } from '@store/data/player.store';
-import type { ReferenceLapStore } from '@store/data/reference-lap.store';
-import type { SessionStore } from '@store/data/session.store';
-import type { UnitsStore } from '@store/settings/units.store';
+} from '@entities/widget/widget-instances.store';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
+import type { BackendComputedStore } from '@entities/cars/computed.store';
+import type { CarsStore } from '@entities/cars/cars.store';
+import type { ChatStore } from '@entities/chat/chat.store';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { PlayerPositionStore } from '@entities/player/player-position.store';
+import type { PlayerStore } from '@entities/player/player.store';
+import type { ReferenceLapStore } from '@entities/player/reference-lap.store';
+import type { SessionStore } from '@entities/session/session.store';
+import type { UnitsStore } from '@entities/app-settings/units.store';
 
 /**
  * Everything a widget's own store may be handed: the stores of the core it

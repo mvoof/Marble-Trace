@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { usePlayerStore } from '@store/data/player-context';
+import { usePlayerStore } from '@entities/player/player-context';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import {
   formatLapDeployMj,

@@ -1,7 +1,7 @@
-import type { CarIdentity } from '@/types/car-identity';
-import type { DriverEntry } from '@/types/driver-entry';
+import type { CarIdentity } from '@entities/cars/car-identity-type';
+import type { DriverEntry } from '@entities/cars/driver-entry';
 import { TrackSurface as TrackSurfaceType } from '@shared/contracts/bindings';
-import { TrackSurface, type FlagType } from '@/types';
+import { TrackSurface, type FlagType } from '@shared/contracts/domain';
 
 // ─── Track surface constants ───────────────────────────────────────────────
 

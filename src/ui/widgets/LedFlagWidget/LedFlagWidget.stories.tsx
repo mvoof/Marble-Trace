@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { FlagDisplaySettings } from '@/types/widget-settings';
-import type { PreviewScenarioId } from '@/types/preview-scenarios';
+import type { FlagDisplaySettings } from '@entities/widget/widget-settings';
+import type { PreviewScenarioId } from '@entities/widget/preview-scenarios';
 import { LedFlagWidget } from './LedFlagWidget';
 import {
   defineWidgetStories,

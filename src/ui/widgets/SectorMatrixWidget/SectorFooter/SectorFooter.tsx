@@ -1,5 +1,5 @@
 ﻿import { observer } from 'mobx-react-lite';
-import { usePlayerStore } from '@store/data/player-context';
+import { usePlayerStore } from '@entities/player/player-context';
 import { formatLapTime } from '@shared/lib/telemetry-format';
 import styles from './SectorFooter.module.scss';
 

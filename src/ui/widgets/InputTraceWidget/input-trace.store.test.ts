@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { PreviewCore } from '@store/roots/renderer-core';
-import type { WidgetStoreFactory } from '@store/widget-runtime/widget-instances.store';
+import type { WidgetStoreFactory } from '@entities/widget/widget-instances.store';
 import type { WidgetCore } from '@ui/widgets/widget-mount';
 import type { CarInputsFrame } from '@shared/contracts/bindings';
 import { InputTraceWidgetStore } from './input-trace.store';

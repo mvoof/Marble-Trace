@@ -1,5 +1,8 @@
 import { availableMonitors, primaryMonitor } from '@tauri-apps/api/window';
-import type { LayoutMonitor, LayoutResolution } from '@/types/widget-settings';
+import type {
+  LayoutMonitor,
+  LayoutResolution,
+} from '@entities/widget/widget-settings';
 
 const WIN32_DISPLAY_PREFIX = '\\\\.\\';
 

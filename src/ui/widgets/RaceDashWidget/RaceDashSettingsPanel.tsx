@@ -6,11 +6,11 @@ import { speedUnit } from '@shared/lib/telemetry-format';
 import type {
   RaceDashWidgetSettings,
   RpmIndicatorMode,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
 
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { useUnitsStore } from '@store/settings/units-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import { useWidgetEditor } from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';
 import {
   panelRows,

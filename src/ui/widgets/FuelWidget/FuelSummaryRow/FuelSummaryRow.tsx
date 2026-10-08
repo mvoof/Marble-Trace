@@ -1,12 +1,12 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { formatFuel } from '@shared/lib/telemetry-format';
 import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
-import type { FuelWidgetSettings } from '@/types/widget-settings';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
   NO_FUEL_DATA_PLACEHOLDER,
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,

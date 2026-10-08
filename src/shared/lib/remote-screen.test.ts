@@ -17,7 +17,7 @@ import {
   TOKEN_ALPHABET,
   uniqueSlug,
 } from '@shared/lib/remote-screen';
-import type { LayoutMonitor } from '@/types/widget-settings';
+import type { LayoutMonitor } from '@entities/widget/widget-settings';
 
 const display = (
   name: string,

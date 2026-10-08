@@ -10,13 +10,13 @@ import type { MainRoot } from '@store/roots/main-root';
 import type {
   DiagnosticsHudState,
   DiagnosticsPhase,
-} from '@/types/diagnostics';
+} from '@shared/contracts/diagnostics';
 import {
   closeDiagnosticsHud,
   emitDiagnosticsHudState,
   openDiagnosticsHud,
 } from '@shared/api/diagnostics-hud.service';
-import { resolveAppLanguage } from '@store/settings/app-settings.store';
+import { resolveAppLanguage } from '@entities/app-settings/app-settings.store';
 import { summarize, type SampleStats } from './stats';
 
 type FpsDiagnosticsDeps = Pick<

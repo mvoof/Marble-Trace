@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import {
   useCallback,
   useEffect,
@@ -7,12 +7,12 @@ import {
 } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { DriverGroup } from '@/types';
-import type { CarIdentity } from '@/types/car-identity';
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { useSimStore } from '@store/sim/sim-context';
+import type { DriverGroup } from '@shared/contracts/domain';
+import type { CarIdentity } from '@entities/cars/car-identity-type';
+import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useSimStore } from '@entities/sim/sim-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 import { buildVisibleRows } from '@ui/widgets/StandingsWidget/standings-utils';
 import { computeClassSof } from '@shared/lib/driver';

@@ -6,9 +6,9 @@ import {
 } from 'mobx';
 
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
-import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
-import type { WidgetInstanceContext } from '@store/widget-runtime/widget-instances.store';
-import { useWidgetInstanceStore } from '@ui/widgets/WidgetInstanceScope/widget-instance-context';
+import type { CloseBattleWidgetSettings } from '@entities/widget/widget-settings';
+import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
+import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
 import {
   buildOpponents,
   buildPlateGroups,
@@ -19,12 +19,12 @@ import {
   type BattleOpponent,
   type BattlePlateGroup,
 } from './close-battle-utils';
-import type { UnitsStore } from '@store/settings/units.store';
-import type { AppSettingsStore } from '@store/settings/app-settings.store';
-import type { LiveWidgetsView } from '@store/layout/live-widgets.store';
-import type { BackendComputedStore } from '@store/data/computed.store';
-import type { SessionStore } from '@store/data/session.store';
-import type { PlayerStore } from '@store/data/player.store';
+import type { UnitsStore } from '@entities/app-settings/units.store';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
+import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { BackendComputedStore } from '@entities/cars/computed.store';
+import type { SessionStore } from '@entities/session/session.store';
+import type { PlayerStore } from '@entities/player/player.store';
 
 interface CloseBattleDeps {
   units: UnitsStore;

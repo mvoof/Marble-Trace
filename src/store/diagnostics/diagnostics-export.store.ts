@@ -5,7 +5,7 @@ import {
   saveTextFileAndReveal,
 } from '@shared/api/file-export.service';
 import type { MainRoot } from '@store/roots/main-root';
-import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
+import type { TelemetrySnapshot } from '@shared/contracts/telemetry-snapshot';
 import { resultsToCsv } from './report';
 
 type DiagnosticsExportDeps = Pick<

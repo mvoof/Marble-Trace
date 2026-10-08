@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { TRACK_SURFACE_ON_TRACK } from '@shared/lib/driver';
@@ -11,10 +11,10 @@ import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { FlagBands } from '../FlagBands/FlagBands';
 
 import styles from './LinearMap.module.scss';
-import type { LinearMapWidgetSettings } from '@/types/widget-settings';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { useCarsStore } from '@store/data/cars-context';
-import { useSessionStore } from '@store/data/session-context';
+import type { LinearMapWidgetSettings } from '@entities/widget/widget-settings';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useCarsStore } from '@entities/cars/cars-context';
+import { useSessionStore } from '@entities/session/session-context';
 
 const DEFAULT_DOT_RADIUS_PX = 9;
 const DEFAULT_PACE_CAR_COLOR = '#facc15';

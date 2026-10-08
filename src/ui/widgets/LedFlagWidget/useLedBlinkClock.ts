@@ -1,5 +1,5 @@
 import { useLayoutEffect, type RefObject } from 'react';
-import type { FlagType } from '@/types';
+import type { FlagType } from '@shared/contracts/domain';
 
 /** Flags whose active state blinks at all — the rest render statically. */
 const BLINKING_FLAGS: ReadonlySet<FlagType> = new Set([

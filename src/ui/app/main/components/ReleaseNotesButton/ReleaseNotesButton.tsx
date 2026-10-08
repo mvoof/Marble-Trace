@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button, Modal } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import styles from './ReleaseNotesButton.module.scss';
 
 export const ReleaseNotesButton = observer(() => {

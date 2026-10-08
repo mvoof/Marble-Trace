@@ -2,7 +2,7 @@ import type { PreviewTarget } from './preview-target';
 import {
   liveDriverEntryOf,
   sessionCarFieldsOf,
-} from '@store/data/driver-entry-join';
+} from '@entities/cars/driver-entry-join';
 
 import {
   mockField,

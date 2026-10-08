@@ -22,25 +22,25 @@ import {
   usePreviewWorldFactory,
   type PreviewCoreHandle,
 } from '@/preview/preview-host-context';
-import { useSessionStore } from '@store/data/session-context';
-import { useUnitsStore } from '@store/settings/units-context';
-import { useLayoutsStore } from '@store/layout/layouts-context';
-import { useSettingsMutationLog } from '@store/layout/mutation-log-context';
-import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
-import { useTrackRotationStore } from '@store/widgets/track-map/track-rotation-context';
+import { useSessionStore } from '@entities/session/session-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
+import { useLayoutsStore } from '@entities/layout/layouts-context';
+import { useSettingsMutationLog } from '@entities/layout/mutation-log-context';
+import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
+import { useTrackRotationStore } from '@entities/track/track-rotation-context';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
-import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
+import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
 import { seedScenario, DEFAULT_PREVIEW_SCENARIO_ID } from '@/preview/scenarios';
-import { resolveBackgroundSrc } from '@store/layout/layout-background';
-import { monitorsBounds } from '@store/layout/virtual-desktop';
+import { resolveBackgroundSrc } from '@entities/layout/layout-background';
+import { monitorsBounds } from '@entities/layout/virtual-desktop';
 import { seedInputHistory } from '@/preview/preview-animator';
 import type {
   LayoutMonitor,
   MonitorBounds,
   WidgetDefaultConfig,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import {
   boundsOverlap,
   clearOfMonitors,

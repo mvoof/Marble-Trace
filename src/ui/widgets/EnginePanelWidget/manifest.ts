@@ -1,8 +1,8 @@
-import type { WidgetManifest } from '@/types/widget-settings';
+import type { WidgetManifest } from '@entities/widget/widget-settings';
 import type {
   EnginePanelWidgetSettings,
   ResolveLayoutChange,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,

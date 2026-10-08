@@ -9,7 +9,7 @@ import {
 } from '@shared/api/twitch.service';
 import type { TwitchDeviceCode } from '@shared/contracts/bindings';
 import { openExternalLink } from './external-link';
-import type { AppSettingsStore } from '@store/settings/app-settings.store';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 
 interface TwitchAuthDeps {
   appSettings: AppSettingsStore;

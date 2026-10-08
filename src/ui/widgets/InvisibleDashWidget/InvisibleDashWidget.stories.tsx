@@ -4,7 +4,7 @@ import type {
   InvisibleDashBackdropScope,
   InvisibleDashRenderMode,
   InvisibleDashWidgetSettings,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 import { MPS_PER_KMH, mockCarDynamics } from '@/preview/mocks/dynamics';
 import { InvisibleDashWidget } from './InvisibleDashWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';

@@ -1,4 +1,4 @@
-import type { UnitSystem } from '@/types';
+import type { UnitSystem } from '@shared/contracts/domain';
 import { isUnlimitedSessionTime } from '@shared/lib/timer-utils';
 
 export const MPS_TO_KMH = 3.6;

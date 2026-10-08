@@ -90,8 +90,8 @@ Read by one feature's store and its widgets, nowhere else.
 
 | Module                                      | Reach for it when                                                                                                                         |
 | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `store/widgets/radar/radar-constants.ts`    | Radar geometry (car width, corner radius, lateral offset) and the gap-to-color ramps used by every proximity view.                        |
-| `store/widgets/incidents/flag-zones.ts`     | Incident and flag zones on a track line: computing them, measuring them, splitting one across start/finish, projecting one into a window. |
+| `entities/radar/radar-constants.ts`         | Radar geometry (car width, corner radius, lateral offset) and the gap-to-color ramps used by every proximity view.                        |
+| `entities/incidents/flag-zones.ts`          | Incident and flag zones on a track line: computing them, measuring them, splitting one across start/finish, projecting one into a window. |
 | `store/widgets/pit-service/pit-approach.ts` | The pit lane as a measured leg: metres to the pit entry line, and the view the approach rail is drawn from — fill, braking cue, urgency.  |
 | `store/widgets/pit-service/pit-tires.ts`    | The four corners of a tire order: which ones the sim has checked, the pressure ordered for each, and which are worn past a threshold.     |
 
@@ -110,7 +110,7 @@ Read by one feature's store and its widgets, nowhere else.
 | `NoDataPlaceholder` | The widget has nothing to show yet — the standard "NO DATA" plate instead of an empty box.                                                                                                                                                                 |
 | `PaceCarMarker`     | Drawing the pace car on a track line or map.                                                                                                                                                                                                               |
 | `RatingBadge`       | Showing a licence class and safety rating (`LicBadge`).                                                                                                                                                                                                    |
-| `ReservedSlot`      | (still `src/ui/shared/`: it reads the app settings store, so it moves with its slice.) Holding the height a block will occupy while it is absent, so placing the widget in the editor shows its real size.                                                 |
+| `ReservedSlot`      | (in `src/entities/app-settings/`: it reads the app settings store.) Holding the height a block will occupy while it is absent, so placing the widget in the editor shows its real size.                                                                    |
 | `ScrollIndicator`   | A list is taller than its window — the thumb, driven by `scrollThumbFor` in `canvas.ts`.                                                                                                                                                                   |
 | `StatPill`          | A labelled figure with an icon, boxed (`chip`) or bare (`inline`), toned muted / accent / warning / danger.                                                                                                                                                |
 | `TireBadge`         | Showing a tire compound.                                                                                                                                                                                                                                   |
@@ -125,16 +125,16 @@ Read by one feature's store and its widgets, nowhere else.
 Hooks are for the DOM and the browser only. Everything else belongs in a store
 ([`AGENTS.md` → MobX Stores](../AGENTS.md)).
 
-| Hook                    | Reach for it when                                                                                                                                                                                                                        |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useCanvasAutoResize`   | A canvas has to follow its container and stay sharp — `ResizeObserver` plus the DPR transform.                                                                                                                                           |
-| `useClickOutside`       | An in-place control has to close when the pointer lands elsewhere.                                                                                                                                                                       |
-| `usePitState`           | (still `src/ui/hooks/`, moves to `features/pit-service`.) You need the pit and limiter state a widget draws, derived once rather than per widget.                                                                                        |
-| `useReactiveCanvasLoop` | A canvas widget draws from observables: the reactive draw loop that schedules a frame when what it reads changes.                                                                                                                        |
-| `useReactiveDomWrite`   | **The 60 Hz escape hatch** — write a hot value straight to a DOM node or CSS variable without waking React. Read [rendering.md](rendering.md) first.                                                                                     |
-| `useRowMoveAnimation`   | Rows change order and should slide rather than jump (FLIP; pairs with `MOVE_DURATION_MS`).                                                                                                                                               |
-| `useVisibleRowCount`    | A list has to fit however tall the driver stretched the widget.                                                                                                                                                                          |
-| `useWidgetSettings`     | (still `src/ui/hooks/`, moves to `entities/widget`.) **Every widget reads its own settings with this** — it takes the copy from `WidgetIdContext`. `useWidgetInstanceId` is the canvas-side variant, for draw loops a hook cannot enter. |
+| Hook                    | Reach for it when                                                                                                                                                                                                |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useCanvasAutoResize`   | A canvas has to follow its container and stay sharp — `ResizeObserver` plus the DPR transform.                                                                                                                   |
+| `useClickOutside`       | An in-place control has to close when the pointer lands elsewhere.                                                                                                                                               |
+| `usePitState`           | (still `src/ui/hooks/`, moves to `features/pit-service`.) You need the pit and limiter state a widget draws, derived once rather than per widget.                                                                |
+| `useReactiveCanvasLoop` | A canvas widget draws from observables: the reactive draw loop that schedules a frame when what it reads changes.                                                                                                |
+| `useReactiveDomWrite`   | **The 60 Hz escape hatch** — write a hot value straight to a DOM node or CSS variable without waking React. Read [rendering.md](rendering.md) first.                                                             |
+| `useRowMoveAnimation`   | Rows change order and should slide rather than jump (FLIP; pairs with `MOVE_DURATION_MS`).                                                                                                                       |
+| `useVisibleRowCount`    | A list has to fit however tall the driver stretched the widget.                                                                                                                                                  |
+| `useWidgetSettings`     | (in `src/entities/widget/`.) **Every widget reads its own settings with this** — it takes the copy from `WidgetIdContext`. `useWidgetInstanceId` is the canvas-side variant, for draw loops a hook cannot enter. |
 
 ---
 

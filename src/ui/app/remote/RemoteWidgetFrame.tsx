@@ -2,11 +2,11 @@ import { observer } from 'mobx-react-lite';
 import type { ReactNode } from 'react';
 
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
-import { widgetFrameStyle } from '@ui/app/widget-frame';
-import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
+import { widgetFrameStyle } from '@entities/widget/widget-frame';
+import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import styles from './RemoteWidgetFrame.module.scss';
-import { useLiveWidgetsStore } from '@store/layout/live-widgets-context';
-import { useWidgetAutoHideStore } from '@store/widget-runtime/widget-auto-hide-context';
+import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
+import { useWidgetAutoHideStore } from '@entities/widget/widget-auto-hide-context';
 
 interface RemoteWidgetFrameProps {
   widgetId: string;

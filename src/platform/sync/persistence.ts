@@ -4,9 +4,9 @@ import {
   logSettingsSnapshot as logSettingsSnapshotCommand,
   settingsFileExists as settingsFileExistsCommand,
 } from '@shared/api/settings.service';
-import type { UnitSystem } from '@/types';
-import type { SessionContext } from '@/types/widget-settings';
-import type { AppSettings } from '@store/settings/app-settings.store';
+import type { UnitSystem } from '@shared/contracts/domain';
+import type { SessionContext } from '@entities/widget/widget-settings';
+import type { AppSettings } from '@entities/app-settings/app-settings.store';
 import type { MainRoot } from '@store/roots/main-root';
 import type { BindingMap } from '@/types/input-bindings';
 import { CURRENT_SCHEMA_VERSION } from '@shared/settings-schema/index';

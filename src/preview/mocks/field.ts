@@ -6,8 +6,8 @@ import type {
   PaceCarFrame,
   PaceCarPitPhase,
 } from '@shared/contracts/bindings';
-import type { DriverEntry } from '@/types/driver-entry';
-import { TrackSurface } from '@/types';
+import type { DriverEntry } from '@entities/cars/driver-entry';
+import { TrackSurface } from '@shared/contracts/domain';
 
 // Mock builders for the field domain — the driver list the standings and the
 // relative draw. Pure: the field is varied on top of the snapshot's own drivers

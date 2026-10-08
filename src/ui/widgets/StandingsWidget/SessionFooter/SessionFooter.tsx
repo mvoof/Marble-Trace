@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Wrench, Thermometer, Waves, TriangleAlert, Gavel } from 'lucide-react';
 
@@ -12,13 +12,13 @@ import {
   isNearIncidentPenalty,
 } from '@shared/lib/driver';
 
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
 import { StatPill, type StatPillVariant } from '@shared/ui/StatPill/StatPill';
 import styles from './SessionFooter.module.scss';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { useEnvironmentStore } from '@store/data/environment-context';
-import { useSessionStore } from '@store/data/session-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useEnvironmentStore } from '@entities/environment/environment-context';
+import { useSessionStore } from '@entities/session/session-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 
 // Boxed chips would make the strip taller than the rows it sits under, which is
 // the one thing the footer must not be.

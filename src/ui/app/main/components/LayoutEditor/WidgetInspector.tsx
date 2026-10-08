@@ -17,12 +17,12 @@ import {
   SendToBack,
 } from 'lucide-react';
 
-import { getWidgetLabel } from '@ui/app/widget-i18n';
+import { getWidgetLabel } from '@entities/widget/widget-i18n';
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
 import { Card, PanelWidgetProvider } from '../WidgetSettings/panels/Card';
 import { SettingRow } from '../WidgetSettings/panels/SettingRow';
 import type { SnapPosition } from './snap-position';
-import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
+import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import styles from './WidgetInspector.module.scss';
 
 const ICON_SIZE = 14;

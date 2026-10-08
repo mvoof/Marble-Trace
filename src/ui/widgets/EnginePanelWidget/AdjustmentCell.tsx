@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react-lite';
 import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
-import { usePlayerStore } from '@store/data/player-context';
+import { usePlayerStore } from '@entities/player/player-context';
 import { useEnginePanelWidgetStore } from '@ui/widgets/EnginePanelWidget/engine-panel.store';
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
-import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import type { EnginePanelWidgetSettings } from '@entities/widget/widget-settings';
 import { EngineCell } from './EngineCell';
 import {
   ADJUSTMENT_SPECS,

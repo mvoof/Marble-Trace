@@ -1,11 +1,11 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 import { hasRaceStarted } from '@shared/lib/timer-utils';
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
 import styles from './DriverRow.module.scss';
-import { useSessionStore } from '@store/data/session-context';
+import { useSessionStore } from '@entities/session/session-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 interface PosChangeProps {

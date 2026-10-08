@@ -1,4 +1,4 @@
-import type { LicBadgeStyle } from '@/types/widget-settings';
+import type { LicBadgeStyle } from '@entities/widget/widget-settings';
 
 import styles from './LicBadge.module.scss';
 

@@ -4,9 +4,9 @@ import { observer } from 'mobx-react-lite';
 import { formatFuel } from '@shared/lib/telemetry-format';
 
 import styles from './FuelProgress.module.scss';
-import { usePlayerStore } from '@store/data/player-context';
-import { useSessionStore } from '@store/data/session-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useSessionStore } from '@entities/session/session-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 
 export const FuelProgress = observer(() => {
   const { carStatus } = usePlayerStore();

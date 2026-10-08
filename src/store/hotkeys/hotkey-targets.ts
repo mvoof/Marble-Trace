@@ -1,7 +1,7 @@
 import type {
   WidgetInstanceStore,
   WidgetInstanceRegistry,
-} from '@store/widget-runtime/widget-instances.store';
+} from '@entities/widget/widget-instances.store';
 
 /**
  * What a standings instance store answers to when a hotkey reaches the window.

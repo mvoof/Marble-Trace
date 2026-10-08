@@ -1,8 +1,8 @@
-import { WIDGET_BY_ID } from '@store/layout/widget-catalog';
+import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
 import type {
   WidgetDefaultConfig,
   WidgetUserSettings,
-} from '@/types/widget-settings';
+} from '@entities/widget/widget-settings';
 
 /**
  * Runs a widget's own `resolveLayoutChange` (declared in its `manifest.ts`) and

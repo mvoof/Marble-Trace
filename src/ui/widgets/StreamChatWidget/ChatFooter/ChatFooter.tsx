@@ -1,10 +1,10 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Activity } from 'lucide-react';
 
 import type { ChatPresence } from '@shared/contracts/bindings';
-import type { StreamChatWidgetSettings } from '@/types/widget-settings';
+import type { StreamChatWidgetSettings } from '@entities/widget/widget-settings';
 import { useStreamChatWidgetStore } from '@ui/widgets/StreamChatWidget/stream-chat.store';
 import { PlatformGlyph } from '../PlatformGlyph/PlatformGlyph';
 

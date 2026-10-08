@@ -1,5 +1,5 @@
-import type { WidgetManifest } from '@/types/widget-settings';
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import type { WidgetManifest } from '@entities/widget/widget-settings';
+import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   DEFAULT_PLAYER_ACCENT_COLOR,

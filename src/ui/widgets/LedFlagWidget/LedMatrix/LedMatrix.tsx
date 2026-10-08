@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -10,8 +10,8 @@ import { getColorClass, type ColorStyles } from '../led-matrix-utils';
 import { useLedBlinkClock } from '../useLedBlinkClock';
 
 import styles from './LedMatrix.module.scss';
-import type { FlagDisplaySettings } from '@/types/widget-settings';
-import { useFlagsStore } from '@store/widgets/flags/flags-context';
+import type { FlagDisplaySettings } from '@entities/widget/widget-settings';
+import { useFlagsStore } from '@entities/flags/flags-context';
 
 interface LedMatrixProps {
   diodesPerBlock: number;

@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
@@ -18,11 +18,11 @@ import {
   type CellRenderWeight,
   type CellSlot,
 } from './engine-panel-utils';
-import { usePlayerStore } from '@store/data/player-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import type { CarStatusFrame } from '@shared/contracts/bindings';
-import type { EnginePanelWidgetSettings } from '@/types/widget-settings';
-import type { UnitSystem } from '@/types';
+import type { EnginePanelWidgetSettings } from '@entities/widget/widget-settings';
+import type { UnitSystem } from '@shared/contracts/domain';
 
 import styles from './EnginePanelWidget.module.scss';
 

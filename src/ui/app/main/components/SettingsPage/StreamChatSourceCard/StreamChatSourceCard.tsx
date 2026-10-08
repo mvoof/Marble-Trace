@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Input, Switch, Tag } from 'antd';
 
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useTwitchAuthStore } from '@store/integrations/twitch-auth-context';
 
 import styles from './StreamChatSourceCard.module.scss';

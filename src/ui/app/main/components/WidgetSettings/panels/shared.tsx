@@ -2,7 +2,10 @@ import type { TFunction } from 'i18next';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Segmented } from 'antd';
-import type { LapDeltaReference, LicBadgeStyle } from '@/types/widget-settings';
+import type {
+  LapDeltaReference,
+  LicBadgeStyle,
+} from '@entities/widget/widget-settings';
 import { SettingRow } from './SettingRow';
 
 interface LicBadgeStyleRowProps {

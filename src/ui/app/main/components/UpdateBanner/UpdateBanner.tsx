@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { ReleaseNotesButton } from '@ui/app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import styles from './UpdateBanner.module.scss';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { UpdateStatus } from '@store/settings/app-settings.store';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { UpdateStatus } from '@entities/app-settings/app-settings.store';
 
 const BANNER_STATUSES: UpdateStatus[] = ['available', 'downloading', 'ready'];
 

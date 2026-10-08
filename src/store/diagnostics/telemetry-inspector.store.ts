@@ -14,7 +14,7 @@ import type {
   InspectorSource,
 } from '@/types/inspector';
 import { ARRAY_PAGE, buildRows, countAbsent } from './inspector-tree';
-import type { SessionStore } from '@store/data/session.store';
+import type { SessionStore } from '@entities/session/session.store';
 
 interface TelemetryInspectorDeps {
   session: SessionStore;

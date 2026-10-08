@@ -1,5 +1,5 @@
-import type { DriverEntry } from '@/types/driver-entry';
-import { TrackSurface } from '@/types';
+import type { DriverEntry } from '@entities/cars/driver-entry';
+import { TrackSurface } from '@shared/contracts/domain';
 import { computeRelativeGap } from '@shared/lib/driver';
 
 /** Segments in each speed bar. */

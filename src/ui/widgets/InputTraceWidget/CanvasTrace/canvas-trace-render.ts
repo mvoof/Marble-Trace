@@ -1,4 +1,4 @@
-import type { InputTraceSettings } from '@/types/widget-settings';
+import type { InputTraceSettings } from '@entities/widget/widget-settings';
 import { normalizedSteering } from '@shared/lib/car-signals';
 
 // Circular sample buffers shared by the ingest and paint passes. Channel

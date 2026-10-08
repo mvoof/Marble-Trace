@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { Droplet } from 'lucide-react';
 
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { convertTemp } from '@shared/lib/telemetry-format';
-import type { WeatherWidgetSettings } from '@/types/widget-settings';
-import { useEnvironmentStore } from '@store/data/environment-context';
-import { useSessionStore } from '@store/data/session-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import type { WeatherWidgetSettings } from '@entities/widget/widget-settings';
+import { useEnvironmentStore } from '@entities/environment/environment-context';
+import { useSessionStore } from '@entities/session/session-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 
 import { weatherIconFor } from '../weather-icons';
 import styles from './ForecastStrip.module.scss';

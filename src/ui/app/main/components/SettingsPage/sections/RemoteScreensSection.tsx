@@ -13,8 +13,8 @@ import {
 } from 'antd';
 import { Copy, Eye, EyeOff, RefreshCw } from 'lucide-react';
 
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { useLayoutsStore } from '@store/layout/layouts-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useRemoteDevicesStore } from '@store/remote/remote-devices-context';
 import { RemoteScreenRow } from './RemoteScreenRow';
 import { SettingsCard } from '../SettingsCard';

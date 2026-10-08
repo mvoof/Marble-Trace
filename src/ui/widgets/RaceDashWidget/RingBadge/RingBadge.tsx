@@ -1,8 +1,8 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 
-import type { RaceDashWidgetSettings } from '@/types/widget-settings';
+import type { RaceDashWidgetSettings } from '@entities/widget/widget-settings';
 import { formatGear } from '@shared/lib/telemetry-format';
 import { computeShiftThresholds } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
@@ -11,8 +11,8 @@ import {
   rpmFillColor,
   rpmNumberColor,
 } from '../race-dash-utils';
-import { usePlayerStore } from '@store/data/player-context';
-import { useSessionStore } from '@store/data/session-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useSessionStore } from '@entities/session/session-context';
 import { RpmComb } from '../RpmComb/RpmComb';
 import { SteeringMarker } from '../SteeringMarker/SteeringMarker';
 import { ARC_SWEEP_DEG, RING_SIZE, ringArcPath } from './ring-geometry';

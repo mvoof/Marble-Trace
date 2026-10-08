@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Droplets, Thermometer, Waves, Wind } from 'lucide-react';
 
@@ -21,10 +21,10 @@ import { getAirTempColor, getTrackTempColor } from '@shared/lib/colors';
 import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
 import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
 import styles from './StatCell.module.scss';
-import type { WeatherWidgetSettings } from '@/types/widget-settings';
-import { useEnvironmentStore } from '@store/data/environment-context';
-import { useSessionStore } from '@store/data/session-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import type { WeatherWidgetSettings } from '@entities/widget/widget-settings';
+import { useEnvironmentStore } from '@entities/environment/environment-context';
+import { useSessionStore } from '@entities/session/session-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 
 export type StatCellType =
   | 'airTemp'

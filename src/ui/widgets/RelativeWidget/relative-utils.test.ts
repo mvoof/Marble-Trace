@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { RelativeWidgetSettings } from '@/types/widget-settings';
+import type { RelativeWidgetSettings } from '@entities/widget/widget-settings';
 import {
   NAME_COLUMN_DEFAULT_PX,
   NAME_COLUMN_MAX_PX,

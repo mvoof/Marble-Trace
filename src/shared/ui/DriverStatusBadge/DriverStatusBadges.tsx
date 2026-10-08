@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { DriverStatusBadge } from './DriverStatusBadge';
-import type { FlagType } from '@/types';
+import type { FlagType } from '@shared/contracts/domain';
 import type { PitState } from '@shared/contracts/bindings';
 
 export interface DriverStatusBadgesProps {

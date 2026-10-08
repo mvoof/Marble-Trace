@@ -1,7 +1,7 @@
 import { createContext, use, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronDown } from 'lucide-react';
-import { useSettingsPanelUiStore } from '@store/widget-runtime/settings-panel-ui-context';
+import { useSettingsPanelUiStore } from '@entities/widget/settings-panel-ui-context';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 
 /**

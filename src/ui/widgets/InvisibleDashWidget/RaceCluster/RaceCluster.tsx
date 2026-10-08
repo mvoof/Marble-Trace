@@ -1,12 +1,12 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { InvisibleDashWidgetSettings } from '@/types/widget-settings';
+import type { InvisibleDashWidgetSettings } from '@entities/widget/widget-settings';
 import { resolveSessionLaps } from '@shared/lib/telemetry-format';
-import { useCarsStore } from '@store/data/cars-context';
-import { usePlayerStore } from '@store/data/player-context';
-import { useSessionStore } from '@store/data/session-context';
-import { usePlayerPositionStore } from '@store/data/player-position-context';
+import { useCarsStore } from '@entities/cars/cars-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useSessionStore } from '@entities/session/session-context';
+import { usePlayerPositionStore } from '@entities/player/player-position-context';
 
 import type { BackdropStyle, CurvatureStyle } from '../invisible-dash-utils';
 

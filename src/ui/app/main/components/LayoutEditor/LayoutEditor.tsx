@@ -34,13 +34,13 @@ import {
   Rows3,
   Trash2,
 } from 'lucide-react';
-import { useAppSettingsStore } from '@store/settings/app-settings-context';
-import { useLayoutsStore } from '@store/layout/layouts-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useLayoutsStore } from '@entities/layout/layouts-context';
 import {
   useLayoutEditorStore,
   useLayoutGestureStores,
 } from '@store/layout/layout-editor-context';
-import { useMainLiveWidgetsStore } from '@store/layout/main-live-widgets-context';
+import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import {
   SESSION_PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -51,10 +51,10 @@ import { LayoutList } from './LayoutList';
 import {
   saveBackgroundImage,
   deleteBackgroundImage,
-} from '@store/layout/layout-background';
+} from '@entities/layout/layout-background';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
 import { AddRemoteScreenButton } from './AddRemoteScreenButton';
-import { monitorForWidget } from '@store/layout/virtual-desktop';
+import { monitorForWidget } from '@entities/layout/virtual-desktop';
 import { useToolbarBottom } from './use-toolbar-bottom';
 import { WidgetInspector } from './WidgetInspector';
 import type { SnapPosition } from './snap-position';

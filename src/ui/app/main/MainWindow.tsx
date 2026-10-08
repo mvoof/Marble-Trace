@@ -13,7 +13,7 @@ import { UpdateBanner } from './components/UpdateBanner/UpdateBanner';
 import { InstallMismatchBanner } from './components/InstallMismatchBanner/InstallMismatchBanner';
 import { SettingsLockBanner } from './components/SettingsLockBanner/SettingsLockBanner';
 import styles from './MainWindow.module.scss';
-import { useSimStore } from '@store/sim/sim-context';
+import { useSimStore } from '@entities/sim/sim-context';
 import { useMainRoot } from '@store/roots/main-root-context';
 
 const { Content } = Layout;

@@ -1,12 +1,12 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import {
   resolveSessionColorKey,
   type SessionColorKey,
 } from '@shared/lib/timer-utils';
-import type { TimerWidgetSettings } from '@/types/widget-settings';
-import { useSessionStore } from '@store/data/session-context';
+import type { TimerWidgetSettings } from '@entities/widget/widget-settings';
+import { useSessionStore } from '@entities/session/session-context';
 import styles from './TimerHeader.module.scss';
 
 const SESSION_LABEL_CLASS: Record<SessionColorKey, string> = {

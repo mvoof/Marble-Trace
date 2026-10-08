@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -9,10 +9,10 @@ import {
 import { getSkiesLabel } from '@shared/lib/weather-utils';
 
 import styles from './ForecastBlock.module.scss';
-import type { WeatherWidgetSettings } from '@/types/widget-settings';
-import { useEnvironmentStore } from '@store/data/environment-context';
-import { useSessionStore } from '@store/data/session-context';
-import { useUnitsStore } from '@store/settings/units-context';
+import type { WeatherWidgetSettings } from '@entities/widget/widget-settings';
+import { useEnvironmentStore } from '@entities/environment/environment-context';
+import { useSessionStore } from '@entities/session/session-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 
 const formatForecastTime = (timeSec: number): string => {
   const hours = Math.floor(timeSec / 3600);

@@ -1,4 +1,4 @@
-﻿import { useWidgetSettings } from '@ui/hooks/useWidgetSettings';
+﻿import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import { formatLapTime } from '@shared/lib/telemetry-format';
@@ -28,11 +28,11 @@ import { PosChange } from './PosChange';
 import { PositionCell } from './PositionCell';
 import { IrChangeCell } from './IrChangeCell';
 
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
 import styles from './DriverRow.module.scss';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { useBackendComputedStore } from '@store/data/computed-context';
-import { useSessionStore } from '@store/data/session-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useSessionStore } from '@entities/session/session-context';
 import { useStandingsWidgetStore } from '@ui/widgets/StandingsWidget/standings.store';
 
 interface DriverRowProps {
