@@ -1,0 +1,22 @@
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { observer } from 'mobx-react-lite';
+
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
+import { ChatBanner } from './ChatBanner/ChatBanner';
+import { ChatFooter } from './ChatFooter/ChatFooter';
+import { ChatMessageList } from './ChatMessageList/ChatMessageList';
+
+import styles from './StreamChatWidget.module.scss';
+import type { StreamChatWidgetSettings } from './settings-schema';
+
+export const StreamChatWidget = observer(() => {
+  const settings = useWidgetSettings<StreamChatWidgetSettings>('stream-chat');
+
+  return (
+    <WidgetPanel className={styles.chat} gap={0}>
+      {settings.showBanner && <ChatBanner />}
+      <ChatMessageList />
+      {settings.showFooter && <ChatFooter />}
+    </WidgetPanel>
+  );
+});

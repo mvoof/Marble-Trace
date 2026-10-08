@@ -1,7 +1,7 @@
 # ADR 0005: Each monitor owns its widgets
 
 **Status:** accepted, 2026-10-03
-**Context:** `settings.json` schema v6, `platform/sync/settings-file.ts`,
+**Context:** `settings.json` schema v6, `app/sync/settings-file.ts`,
 `LiveWidgetsStore`, `LayoutsStore`, the layout editor
 
 ## Decision
@@ -37,7 +37,7 @@ own coordinates, holding only what is the user's:
 - nothing else the manifest says: no label, description or flags.
 
 In memory a layout keeps one flat `widgets[]` in desktop-wide coordinates, every
-setting resolved. `platform/sync/settings-file.ts` is the codec between the two,
+setting resolved. `app/sync/settings-file.ts` is the codec between the two,
 and the only module that knows the file's shape.
 
 ## Why

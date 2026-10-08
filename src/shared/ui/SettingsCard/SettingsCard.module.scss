@@ -1,0 +1,21 @@
+.card {
+  margin-bottom: rem(24);
+}
+
+.cardTitle {
+  color: $sys-text-secondary;
+  font-weight: 500;
+  margin-bottom: rem(12);
+  font-size: rem(11);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.cardContent {
+  background: $sys-bg-card;
+  backdrop-filter: blur(20px);
+  border: 1px solid $sys-border-main;
+  border-radius: 6px;
+  padding: rem(20);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}

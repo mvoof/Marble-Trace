@@ -1,0 +1,80 @@
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { getDeltaToPreviousBest } from '@shared/lib/delta-utils';
+import { DeltaLive } from './DeltaLive/DeltaLive';
+import { LapFlash } from './LapFlash/LapFlash';
+import styles from './DeltaWidget.module.scss';
+import type { DeltaWidgetSettings } from './settings-schema';
+
+export const DeltaWidget = observer(() => {
+  const lapStore = useBackendComputedStore();
+  const { dragMode } = useAppSettingsStore();
+
+  const { showLapFlash, flashDuration } =
+    useWidgetSettings<DeltaWidgetSettings>('delta');
+
+  const lap = lapStore.lastCompletedLap;
+  const lapNum = lap?.lapNum ?? null;
+
+  const [currentFlashLapNum, setCurrentFlashLapNum] = useState<number | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (lapNum !== null) {
+      setCurrentFlashLapNum(lapNum);
+
+      const timer = setTimeout(() => {
+        setCurrentFlashLapNum(null);
+      }, flashDuration * 1000);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [lapNum, flashDuration]);
+
+  const showFlash =
+    !dragMode &&
+    showLapFlash &&
+    lap !== null &&
+    currentFlashLapNum === lap.lapNum;
+
+  const historyEntry = lap
+    ? lapStore.lapHistory.find((entry) => entry.lapNum === lap.lapNum)
+    : null;
+  const flashLapTime =
+    historyEntry?.lapTime && historyEntry.lapTime > 0
+      ? historyEntry.lapTime
+      : 0;
+  const flashIsBest = historyEntry?.isBest ?? false;
+  const flashPersonalDelta =
+    lap && flashLapTime > 0
+      ? getDeltaToPreviousBest(lapStore.lapHistory, lap.lapNum, flashLapTime)
+      : null;
+
+  return (
+    <div className={styles.container}>
+      {!showFlash && (
+        <div className={styles.deltaWrapper}>
+          <DeltaLive />
+        </div>
+      )}
+
+      {showFlash && (
+        <div className={styles.deltaWrapper}>
+          <LapFlash
+            key={String(lap.lapNum)}
+            lapTime={flashLapTime}
+            isBest={flashIsBest}
+            personalDelta={flashPersonalDelta}
+            duration={flashDuration}
+          />
+        </div>
+      )}
+    </div>
+  );
+});

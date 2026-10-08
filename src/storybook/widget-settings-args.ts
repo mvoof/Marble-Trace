@@ -1,9 +1,8 @@
 import type { ComponentType } from 'react';
 import type { ArgTypes } from '@storybook/react-vite';
 
-import { WIDGET_BY_ID } from '@store/layout/widget-catalog';
-import { WIDGET_COMPONENTS } from '@ui/widgets/registry';
-import { SETTING_OPTIONS } from './setting-options';
+import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
+import { WIDGET_COMPONENTS } from '@widgets/registry';
 
 /**
  * Settings a story has nothing to show for: placement and the container's own
@@ -52,13 +51,15 @@ export const settingsDefaultsOf = (
   return Object.fromEntries(entries);
 };
 
-const controlFor = (key: string, value: unknown) => {
-  const options = SETTING_OPTIONS[key];
+const controlFor = (
+  key: string,
+  value: unknown,
+  selectOptions: Readonly<Record<string, readonly (string | number)[]>>
+) => {
+  const ownOptions = selectOptions[key];
 
-  // Matched on the value too: a key two widgets use for different unions only
-  // gets the list that holds its own default.
-  if (typeof value === 'string' && options?.includes(value)) {
-    return { control: { type: 'select' }, options } as const;
+  if (ownOptions) {
+    return { control: { type: 'select' }, options: ownOptions } as const;
   }
 
   if (typeof value === 'string' && COLOR_PATTERN.test(value)) {
@@ -70,17 +71,24 @@ const controlFor = (key: string, value: unknown) => {
 
 /**
  * Groups the settings under their own heading in Controls and picks a color
- * picker for color values and a select for the string unions listed in
- * `SETTING_OPTIONS`. Booleans, numbers and objects are left to Storybook's
+ * picker for color values and a select for every choice the widget's settings
+ * schema declares. Booleans, numbers and objects are left to Storybook's
  * inference.
  */
 export const settingsArgTypesOf = (
+  widgetId: string,
   defaults: Record<string, unknown>
 ): ArgTypes => {
+  const selectOptions =
+    WIDGET_BY_ID.get(widgetId)?.settingsSchema?.selectOptions ?? {};
+
   const entries = Object.entries(defaults).map(([key, value]) => {
     return [
       key,
-      { table: { category: SETTINGS_CATEGORY }, ...controlFor(key, value) },
+      {
+        table: { category: SETTINGS_CATEGORY },
+        ...controlFor(key, value, selectOptions),
+      },
     ];
   });
 

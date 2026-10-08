@@ -1,0 +1,77 @@
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { observer } from 'mobx-react-lite';
+
+import { resolveSessionLaps } from '@shared/lib/telemetry-format';
+import { useCarsStore } from '@entities/cars/cars-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useSessionStore } from '@entities/session/session-context';
+import { usePlayerPositionStore } from '@entities/player/player-position-context';
+
+import type { BackdropStyle, CurvatureStyle } from '../invisible-dash-utils';
+
+import styles from './RaceCluster.module.scss';
+import type { InvisibleDashWidgetSettings } from '../settings-schema';
+
+const EMPTY_VALUE = '—';
+
+interface RaceClusterProps {
+  /** Absent when the wash is painted on the whole strip instead. */
+  backdrop?: BackdropStyle;
+  /** How this side sits on the curved glass. Absent on a flat readout. */
+  curve?: CurvatureStyle;
+}
+
+export const RaceCluster = observer(({ backdrop, curve }: RaceClusterProps) => {
+  const player = usePlayerStore();
+  const { sessionInfo, session } = useSessionStore();
+  const { leaderBestLapTime } = useCarsStore();
+  const playerPosition = usePlayerPositionStore();
+
+  const settings =
+    useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
+
+  if (!settings.showPosition && !settings.showLap) {
+    return null;
+  }
+
+  const { position, total } = playerPosition.playerPositionInfo(
+    settings.useLivePositions,
+    settings.classPositionInMulticlass
+  );
+
+  const currentLap = player.lapTiming?.lap;
+  const currentSession =
+    sessionInfo?.sessions?.[sessionInfo?.currentSessionNum ?? 0];
+  const totalLapsStr = currentSession?.sessionLaps
+    ? resolveSessionLaps(
+        currentSession.sessionLaps,
+        session?.session_time_remain ?? null,
+        currentLap ?? null,
+        leaderBestLapTime
+      )
+    : null;
+  const isUnlimited =
+    !totalLapsStr || totalLapsStr.toLowerCase() === 'unlimited';
+
+  return (
+    <div className={styles.root} style={{ ...backdrop, ...curve }}>
+      {settings.showPosition && (
+        <div className={styles.row}>
+          <span className={styles.caption}>Pos</span>
+          <span className={styles.value}>
+            {position != null ? position : EMPTY_VALUE}
+          </span>
+          {total != null && <span className={styles.den}>/{total}</span>}
+        </div>
+      )}
+
+      {settings.showLap && (
+        <div className={styles.row}>
+          <span className={styles.caption}>Lap</span>
+          <span className={styles.value}>{currentLap ?? EMPTY_VALUE}</span>
+          {!isUnlimited && <span className={styles.den}>/{totalLapsStr}</span>}
+        </div>
+      )}
+    </div>
+  );
+});

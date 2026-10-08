@@ -1,0 +1,109 @@
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { observer } from 'mobx-react-lite';
+
+import { useUnitsStore } from '@entities/app-settings/units-context';
+import { useCloseBattleWidgetStore } from '@widgets/close-battle/close-battle.store';
+import {
+  axisTicks,
+  buildAxisSegments,
+  distanceToTopPct,
+  glowIntensity,
+} from './close-battle-utils';
+
+import styles from './BattleAxis.module.scss';
+import type { CloseBattleWidgetSettings } from './settings-schema';
+
+/**
+ * The axis, the player and the glow.
+ *
+ * The glow is two halves cut exactly at the player line — never a full radial
+ * centred on it: a car behind must light the road behind, and a full circle
+ * would claim both sides at once.
+ */
+export const BattleAxis = observer(() => {
+  const closeBattle = useCloseBattleWidgetStore();
+  const units = useUnitsStore();
+
+  const settings = useWidgetSettings<CloseBattleWidgetSettings>('close-battle');
+
+  const axisRange = closeBattle.axisRange;
+
+  const showAxis = settings.showAxis !== false;
+
+  const ticks =
+    showAxis && settings.showTicks ? axisTicks(axisRange, units.isMetric) : [];
+
+  // The line is only cut where a number sits on it. With the numbers off the
+  // marks are narrow enough to hang either side of an unbroken axis.
+  const showTickLabels =
+    showAxis && settings.showTicks && settings.showTickLabels;
+  const segments = buildAxisSegments(showTickLabels ? ticks : []);
+
+  const behind = closeBattle.nearestBehind;
+  const ahead = closeBattle.nearestAhead;
+
+  const behindGlow = behind
+    ? glowIntensity(behind.clearance, settings.glowRange)
+    : 0;
+
+  const aheadGlow = ahead
+    ? glowIntensity(ahead.clearance, settings.glowRange)
+    : 0;
+
+  return (
+    <div className={styles.axis}>
+      {showAxis &&
+        segments.map((segment) => (
+          <div
+            key={segment.topPct}
+            className={styles.line}
+            style={{
+              top: `${segment.topPct}%`,
+              height: `${segment.heightPct}%`,
+            }}
+          />
+        ))}
+
+      {ticks.map((tick) => (
+        <div
+          key={`${tick.topPct}-${tick.label}`}
+          className={
+            showTickLabels ? styles.tick : `${styles.tick} ${styles.tickBare}`
+          }
+          style={{ top: `${tick.topPct}%` }}
+        >
+          {showTickLabels && (
+            <span className={styles.tickLabel}>{tick.label}</span>
+          )}
+        </div>
+      ))}
+
+      {aheadGlow > 0 && (
+        <div className={styles.glowAhead} style={{ opacity: aheadGlow }} />
+      )}
+
+      {behindGlow > 0 && (
+        <div className={styles.glowBehind} style={{ opacity: behindGlow }} />
+      )}
+
+      {settings.compactMode &&
+        closeBattle.opponents.map((opponent) => (
+          <div
+            key={opponent.carIdx}
+            className={styles.blip}
+            style={{
+              top: `${distanceToTopPct(opponent.longitudinalDist, axisRange)}%`,
+              background: opponent.entry.carClassColor,
+            }}
+          />
+        ))}
+
+      {settings.showPlayerLine !== false && (
+        <div
+          className={styles.player}
+          style={{ background: settings.playerLineColor }}
+        />
+      )}
+    </div>
+  );
+});

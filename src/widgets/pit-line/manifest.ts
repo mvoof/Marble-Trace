@@ -1,0 +1,49 @@
+import type { WidgetManifest } from '@shared/contracts/widget-settings';
+import {
+  COMMON_WIDGET_DEFAULTS,
+  PANEL_APPEARANCE_DEFAULTS,
+} from '@widgets/widget-manifest';
+import { PIT_LINE_SETTINGS } from './settings-schema';
+
+// The width is the shape and the height is the driver's: the columns are only
+// as wide as the number at their foot — wide enough for three digits at the size
+// they are read at — and they fill whatever height the widget is dragged to.
+const DESIGN_WIDTH = 120;
+const DESIGN_HEIGHT = 150;
+
+// What the widget ships at: a tall, narrow strip down the side of the screen,
+// which is the shape the bars are actually read in. The design width stays the
+// coordinate system the styles are written in — the default is narrower than
+// it, so `--wfs` scales the columns down rather than letting them overflow.
+const DEFAULT_WIDTH = 80;
+const DEFAULT_HEIGHT = 380;
+
+export const PIT_LINE_MANIFEST: WidgetManifest = {
+  id: 'pit-line',
+  previewScenarios: ['pit-lane', 'pit-limiter', 'pit-over-limit'],
+  telemetryEvents: ['carDynamics'],
+  label: 'Pit Line',
+  description: 'Pit lane speed against the limit, and the roll to your stall.',
+  designWidth: DESIGN_WIDTH,
+  designHeight: DESIGN_HEIGHT,
+  // Deliberately not `autoHeight`: the height *is* the bar — it is what the
+  // driver drags to make the gauge taller, and content that sized itself would
+  // take that handle away.
+  //
+  // The width is not a preference either: it is the two columns and their air,
+  // so a stored one from an earlier shape is dead space rather than a size
+  // anyone chose. `restoreWidgets` rescales `currentWidth` by the same factor,
+  // which keeps the scale the driver set.
+  deriveDesignWidth: () => DESIGN_WIDTH,
+  userSettings: {
+    enabled: false,
+    x: 100,
+    y: 100,
+    currentWidth: DEFAULT_WIDTH,
+    currentHeight: DEFAULT_HEIGHT,
+    ...COMMON_WIDGET_DEFAULTS,
+    ...PANEL_APPEARANCE_DEFAULTS,
+    ...PIT_LINE_SETTINGS.defaults,
+  },
+  settingsSchema: PIT_LINE_SETTINGS,
+};

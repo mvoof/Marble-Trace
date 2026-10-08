@@ -33,11 +33,13 @@ no single layer: performance, settings, testing.
 **Part II — Frontend**
 
 - [Frontend layers](#frontend-layers)
-- [`types/` — the contract layer](#types--the-contract-layer)
-- [`utils/` — pure helpers](#utils--pure-helpers)
-- [`platform/` — the outside world](#platform--the-outside-world)
-- [`store/` — state and business logic](#store--state-and-business-logic)
-- [`ui/` — everything that renders](#ui--everything-that-renders)
+- [`shared/` — no domain](#shared--no-domain)
+- [`entities/` — sim data and the app's model](#entities--sim-data-and-the-apps-model)
+- [`features/` — what the user does](#features--what-the-user-does)
+- [`widgets/` — the overlay widgets](#widgets--the-overlay-widgets)
+- [`pages/` — the main window's tabs](#pages--the-main-windows-tabs)
+- [`app/` — windows, roots, sync](#app--windows-roots-sync)
+- [Building a widget](#building-a-widget)
 
 **Part III — How the two halves talk**
 
@@ -158,7 +160,7 @@ full.
 The boundary between the halves is generated, not hand-written. Rust types in
 `src-tauri/src/model/` are annotated with
 [specta](https://github.com/specta-rs/specta), and `npm run tauri:dev` regenerates
-`src/types/bindings.ts` from them.
+`src/shared/contracts/bindings.ts` from them.
 
 The export itself lives in `src-tauri/src/bindings.rs`, and every module
 registers its own types in a `register_types` next to where they are declared —
@@ -177,13 +179,13 @@ npm run format   # the checked-in copy is oxfmt-formatted
 ```mermaid
 flowchart LR
     A["<b>src-tauri/src/model/*.rs</b><br/>#[derive(specta::Type)]<br/>struct FuelFrame"]
-    B["<b>src/types/bindings.ts</b><br/>export type FuelFrame = { … }"]
+    B["<b>src/shared/contracts/bindings.ts</b><br/>export type FuelFrame = { … }"]
     C["every frontend layer<br/>reads these types"]
     A -->|"specta, on npm run tauri:dev"| B --> C
 ```
 
 > [!IMPORTANT]
-> **Never edit `src/types/bindings.ts` by hand, and never hand-write a TypeScript
+> **Never edit `src/shared/contracts/bindings.ts` by hand, and never hand-write a TypeScript
 > interface that duplicates a backend payload.** If a shape is wrong, fix the Rust
 > struct and regenerate. A hand-written duplicate will drift, and nothing will
 > tell you.
@@ -199,13 +201,13 @@ So they are declared once in Rust, through the `ts_values!` macro in
 `src-tauri/src/model/ts_values.rs`, which emits both the Rust `const` and the
 TypeScript from a single list:
 
-| Rust                | Generated TypeScript             |
-| ------------------- | -------------------------------- |
-| `model/defaults.rs` | `src/utils/backend-constants.ts` |
-| `model/events.rs`   | `src/utils/backend-events.ts`    |
+| Rust                | Generated TypeScript                        |
+| ------------------- | ------------------------------------------- |
+| `model/defaults.rs` | `src/shared/contracts/backend-constants.ts` |
+| `model/events.rs`   | `src/shared/contracts/backend-events.ts`    |
 
-They land in `src/utils/` rather than `src/types/` for the same reason they skip
-specta: `types/` holds types. Both generated files are checked in and pinned by
+They land in `src/shared/contracts/` beside `bindings.ts`, as plain `const`
+exports rather than types — which is why they skip specta. Both generated files are checked in and pinned by
 a test, so a constant changed in Rust without regenerating fails `cargo test`
 rather than silently leaving the two halves on different numbers.
 
@@ -511,11 +513,11 @@ the 10 Hz tier, which are by far the largest payloads the app moves (a
 > Who a car is — driver, number, class, car, licence, rating, incidents — is not
 > on it: that holds for the session and arrives once, in `SessionSnapshot.cars`
 > on `sim://session`. `BackendComputedStore` joins the two by `carIdx`
-> (`store/data/driver-entry-join.ts`) and every widget reads the joined row
-> (`types/driver-entry.ts`) through `fieldEntries`, `relativeEntries`,
+> (`entities/cars/driver-entry-join.ts`) and every widget reads the joined row
+> (`shared/contracts/driver-entry.ts`) through `fieldEntries`, `relativeEntries`,
 > `driverIdentities` or `driverEntryOf` — never the bindings type, which is the
 > wire half. A fixture that states whole rows seeds them with
-> `preview/field-seed.ts`, which splits them back the same way.
+> `features/preview/field-seed.ts`, which splits them back the same way.
 
 | Gated field                                                | Tier  |
 | ---------------------------------------------------------- | ----- |
@@ -537,8 +539,8 @@ export const G_METER_MANIFEST: WidgetManifest = {
 the active layout and sends the result to `set_active_events` as a bitmask;
 `emitter.rs` reads it and leaves an unrequested field out of the bundle. The
 names and their bit values are declared once in `model/telemetry_events.rs` and
-generated into `src/types/telemetry-event-bits.ts`, which
-`src/types/telemetry-events.ts` derives `TelemetryEventName` from.
+generated into `src/shared/contracts/telemetry-event-bits.ts`, which
+`src/shared/contracts/telemetry-events.ts` derives `TelemetryEventName` from.
 
 ```mermaid
 flowchart LR
@@ -699,141 +701,116 @@ auto-matched** — there is no way to tell them apart.
 
 ## Frontend layers
 
-`src/` mirrors the backend: four layers plus a contract layer, one-way imports.
+`src/` is laid out by Feature-Sliced Design
+([ADR-0008](adr/0008-frontend-by-feature-sliced-design.md)): six layers, each
+importing only the layers below it.
 
 ```mermaid
 flowchart TB
-    TYPES["<b>types/</b> — the contract<br/>bindings.ts + domain types<br/><i>imports nothing</i>"]
-    UTILS["<b>utils/</b><br/>pure helpers"]
-    PLATFORM["<b>platform/</b><br/>services · sync · settings-schema"]
-    STORE["<b>store/</b><br/>MobX only"]
-    UI["<b>ui/</b><br/>everything that renders"]
+    APP["<b>app/</b><br/>roots · sync · window shells"]
+    PAGES["<b>pages/</b><br/>main-window tabs that render widgets"]
+    WIDGETS["<b>widgets/</b><br/>overlay widgets, one slice each"]
+    FEATURES["<b>features/</b><br/>what the user does"]
+    ENTITIES["<b>entities/</b><br/>sim data · the app's model"]
+    SHARED["<b>shared/</b><br/>api · contracts · settings-schema · ui · hooks · lib"]
 
-    TYPES --> UTILS
-    TYPES --> PLATFORM
-    TYPES --> STORE
-    TYPES --> UI
-    UTILS --> PLATFORM
-    UTILS --> STORE
-    UTILS --> UI
-    PLATFORM --> STORE
-    STORE --> UI
+    APP --> PAGES --> WIDGETS --> FEATURES --> ENTITIES --> SHARED
 
-    style TYPES fill:#1e3a5f,color:#fff
-    style UI fill:#3f2b56,color:#fff
+    style SHARED fill:#1e3a5f,color:#fff
+    style APP fill:#3f2b56,color:#fff
 ```
 
-Summarized as a direction: `utils/ ← ui/ → store/ → platform/`.
+| Layer       | Holds                                                                                        | May import            |
+| ----------- | -------------------------------------------------------------------------------------------- | --------------------- |
+| `app/`      | window roots, sync, window shells, the store providers                                       | everything below      |
+| `pages/`    | main-window tabs that render widgets: widgets, layouts, settings                             | the four layers below |
+| `widgets/`  | overlay widgets only, one slice each, plus the layer's registry and shared manifest values   | the three below       |
+| `features/` | something the user does: pit service, bindings, layout editor model, settings panel kit, …   | `entities`, `shared`  |
+| `entities/` | sim data and the app's model: sim, session, cars, player, track, widget, layout, settings, … | `shared`              |
+| `shared/`   | no domain: `api/`, `contracts/`, `settings-schema/`, `ui/`, `hooks/`, `lib/`                 | nothing above         |
 
-| Layer       | Holds                                                    | May import                                                  |
-| ----------- | -------------------------------------------------------- | ----------------------------------------------------------- |
-| `platform/` | everything that talks to the OS, the disk or the backend | `utils/`, `types/` — and `sync/` alone may also read stores |
-| `store/`    | MobX only                                                | `platform/`, `utils/`, `types/`                             |
-| `ui/`       | everything that renders                                  | `store/`, `utils/`, `types/`                                |
-| `utils/`    | pure helpers                                             | `types/`                                                    |
-| `types/`    | `bindings.ts` plus hand-written domain types             | nothing                                                     |
+Inside `entities/`, `features/`, `widgets/` and `pages/` every folder is a
+**slice**, and **a slice does not import a sibling slice of its own layer**.
+The edges between entities that must exist are named one by one in
+`allowedSiblings` (`.oxlintrc.json`) and kept acyclic; `shared/contracts/`
+imports nothing but itself. A file directly in a layer folder
+(`widgets/registry.ts`) belongs to no slice.
 
 > [!IMPORTANT]
-> **The direction is enforced by lint, not by convention.** `no-restricted-imports`
-> overrides in `.oxlintrc.json` fail `npm run lint` on any violation.
+> **The direction is enforced by lint, not by convention.** `layers/boundaries`
+> (`scripts/lint/layers-plugin.mjs`, an oxlint JS plugin) fails `npm run lint`
+> on an upward import, a sibling-slice import or a contract reaching out;
+> `no-restricted-imports` overrides hold the rest (Tauri behind `shared/api`,
+> components off it, the window shells, preview isolation, migrations).
 
-No file is exempt. A widget's own store lives next to the widget and is built
-per instance from its `mount.ts`, so the store layer never imports it.
-`store/layout/widget-catalog.ts` reads the per-widget manifests, which also live next
-to their widgets, but collects them with `import.meta.glob` — a path, not an
-import — so it needs no exemption.
+Two places read a layer above them, and both do it with `import.meta.glob` — a
+path, not an import — so neither needs an exemption: the catalogue
+(`entities/widget/widget-catalog.ts`) collects `widgets/*/manifest.ts`, and the
+panel registry (`features/widget-settings/panel-registry.ts`) collects
+`widgets/*/*SettingsPanel.tsx`. There is no `index.ts` anywhere: a caller names
+the file it imports.
 
-Path aliases match the layers one-to-one: `@platform/*`, `@store/*`, `@ui/*`,
-`@utils/*`, and `@/*` for `types`, `styles`, `locales` and `storybook`.
+Path aliases match the layers one-to-one: `@app/*`, `@pages/*`, `@widgets/*`,
+`@features/*`, `@entities/*`, `@shared/*`, and `@/*` for `styles`, `locales`
+and `storybook`.
 
-## `types/` — the contract layer
+## `shared/` — no domain
 
-| File                    | Holds                                                                 |
-| ----------------------- | --------------------------------------------------------------------- |
-| `bindings.ts`           | **generated by specta** — every backend payload shape                 |
-| `widget-settings.ts`    | per-widget settings interfaces and the `WidgetSpecificSettings` union |
-| `input-bindings.ts`     | `Binding`, `BindingMap` — the key-binding wire types                  |
-| `telemetry-snapshot.ts` | hand-written domain types over the generated ones                     |
-| `index.ts`              | shared app-level types (units, language)                              |
+### `contracts/` — the types every layer reads
 
-Imports nothing. Every other layer imports it.
+| File                                                                     | Holds                                                                      |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `bindings.ts`                                                            | **generated by specta** — every backend payload shape                      |
+| `backend-constants.ts` · `backend-events.ts` · `telemetry-event-bits.ts` | **generated by `ts_values!`** — defaults, event names, the demand mask     |
+| `telemetry-events.ts`                                                    | `TelemetryEventName`, derived from the generated bits                      |
+| `client-protocol.ts` · `remote.ts`                                       | the client protocol: `ClientSnapshot`, commands, remote screens (ADR-0007) |
+| `widget-settings.ts`                                                     | widget records, `WidgetManifest`, `BaseUserSettings`, `WidgetUserSettings` |
+| `widget-choices.ts`                                                      | the setting choices several widgets share (`QUALIFYING_VISIBILITY`, …)     |
+| `input-bindings.ts` · `hotkey-actions.ts`                                | `Binding`, `BindingMap`; the generated action list for the settings UI     |
+| `pit-strategy.ts` · `diagnostics.ts` · `telemetry-snapshot.ts` · `…`     | hand-written types that the API or the snapshot carries                    |
+| `domain.ts`                                                              | small app-level types (units, language, flag type, track surface)          |
 
-## `utils/` — pure helpers
+Imports nothing outside itself. A type only one slice reads stays in that slice.
+
+### `lib/` — pure helpers
 
 Grouped by **domain, not by kind** — one file per subject, never a `constants/` or
 `formatters/` bucket, since those cut across every domain and tell you nothing.
+The full list, one line each, is `docs/widget-toolbox.md` (a test keeps it
+complete); the ones that carry structure:
 
-| File                       | Subject                                       |
-| -------------------------- | --------------------------------------------- |
-| `animation.ts`             | easing and animation timing                   |
-| `canvas.ts`                | DPR sizing and canvas geometry                |
-| `colors.ts`                | the JS-side palette, matching the SCSS tokens |
-| `car-signals.ts`           | deriving signals from raw car state           |
-| `delta-utils.ts`           | delta formatting and latching                 |
-| `driver.ts`                | driver names, ratings, identity               |
-| `fuel-constants.ts`        | fuel math constants                           |
-| `qualifying-visibility.ts` | what is hidden during qualifying              |
-| `radar-constants.ts`       | radar geometry constants                      |
-| `telemetry-format.ts`      | number and time formatting for display        |
-| `timer-utils.ts`           | timing helpers                                |
-| `weather-utils.ts`         | weather icons, labels and colors              |
+| File                     | Subject                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| `widget-settings-dsl.ts` | the settings schema DSL every widget slice describes its settings with        |
+| `store-context.ts`       | `createStoreContext` — the one `createContext` helper every store's hook uses |
+| `canvas.ts`              | DPR sizing, canvas geometry, fixed-digit drawing                              |
+| `colors.ts`              | the JS-side palette, matching the SCSS tokens                                 |
+| `telemetry-format.ts`    | number and time formatting for display                                        |
 
 A new helper joins the file whose subject it shares; a new file needs a subject
 none of these covers.
 
-## `platform/` — the outside world
+### `api/` — the seam
 
 If a line of code calls `invoke`, listens to an event, reads a file or asks about a
-monitor, it lives here. **Nothing above this layer imports from `@tauri-apps/*`.**
+monitor, it lives here (or, for the wiring, in `app/sync/`). **Nothing else
+imports from `@tauri-apps/*`** except the window shells reaching their own
+window.
 
-```mermaid
-flowchart TB
-    TAURI["@tauri-apps/*"]
-    subgraph P["platform/"]
-        direction TB
-        SVC["<b>services/</b><br/>one module per subject"]
-        SYNC["<b>sync/</b><br/>wiring transport → stores"]
-        SCHEMA["<b>settings-schema/</b><br/>raw-blob migrations"]
-    end
-    STORES["store/*"]
-
-    TAURI <--> SVC --> SYNC --> STORES
-    SCHEMA --> STORES
-```
-
-### `services/` — the seam
-
-| File                   | Wraps                                                                                                                             |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `events.service.ts`    | **the only `@tauri-apps/api/event` import in the codebase** — every emitter and `listenTo`                                        |
-| `telemetry.service.ts` | `startTelemetryStream`, `stopTelemetryStream`, `getConnectionStatus`, `getLastSessionInfo`, `setActiveEventsSilent`               |
-| `track.service.ts`     | `getCachedTrackShape`, `deleteTrackShape`, `resetPitLanePct`, `getActiveReferenceLap`, `deleteReferenceLap`                       |
-| `settings.service.ts`  | `settingsFileExists`, `backupSettingsFile`, `logSettingsSnapshot`, `deleteSettingsFile`, and the `*Silent` setters                |
-| `twitch.service.ts`    | `twitchHasClientId`, `twitchAccount`, `twitchRequestDeviceCode`, `twitchPollDeviceToken`, `twitchSignOut`, chat stream start/stop |
-| `input.service.ts`     | `resolveInputDevices`, `setInputPollingEnabled`                                                                                   |
-| `pit.service.ts`       | `sendPitOrder`                                                                                                                    |
+| File                                          | Wraps                                                                                                                             |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `events.service.ts`                           | **the only `@tauri-apps/api/event` import in the codebase** — every emitter and `listenTo`                                        |
+| `telemetry.service.ts`                        | `startTelemetryStream`, `stopTelemetryStream`, `getConnectionStatus`, `getLastSessionInfo`, `setActiveEventsSilent`               |
+| `track.service.ts`                            | `getCachedTrackShape`, `deleteTrackShape`, `resetPitLanePct`, `getActiveReferenceLap`, `deleteReferenceLap`                       |
+| `settings.service.ts`                         | `settingsFileExists`, `backupSettingsFile`, `logSettingsSnapshot`, `deleteSettingsFile`, and the `*Silent` setters                |
+| `twitch.service.ts`                           | `twitchHasClientId`, `twitchAccount`, `twitchRequestDeviceCode`, `twitchPollDeviceToken`, `twitchSignOut`, chat stream start/stop |
+| `input.service.ts`                            | `resolveInputDevices`, `setInputPollingEnabled`                                                                                   |
+| `pit.service.ts`                              | `sendPitOrder`                                                                                                                    |
+| `remote-socket.service.ts`                    | the remote page's WebSocket — the browser half of the client transport                                                            |
+| `sim-events.ts`                               | **every backend event name constant**, re-exported from the generated `@shared/contracts/backend-events`                          |
+| `overlay-labels.ts` · `overlay-resolution.ts` | the monitor-name → window-label mapping; monitor geometry                                                                         |
 
 Because services are the seam, **tests mock services, not Tauri.**
-
-### `sync/` — the wiring
-
-The one part of `platform/` allowed to read stores.
-
-| File                                         | Role                                                                                          |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `listeners.ts`                               | `setupMainListeners` / `setupOverlayListeners` — overlay modes, and the overlay's signals     |
-| `main-sync.ts`                               | main's startup and the reactions that save                                                    |
-| `client-snapshot.ts` · `client-publish.ts`   | main's half of the client protocol: snapshots out, commands in (ADR-0007)                     |
-| `client-sync.ts`                             | a client's half, transport-free: installs a snapshot, runs a signal                           |
-| `overlay-sync.ts` · `remote-sync.ts`         | the two transports into `client-sync.ts` — Tauri events, the remote socket                    |
-| `remote-publish.ts`                          | the remote server's lifetime and one snapshot per remote screen                               |
-| `persistence.ts` · `persistence-sync.ts`     | writing settings to disk                                                                      |
-| `chat-sync.ts`                               | Twitch chat stream wiring                                                                     |
-| `pit-service-sync.ts`                        | pit-service cross-window state                                                                |
-| `overlay-windows.ts`                         | creating, labelling and tearing down overlay windows                                          |
-| `overlay-labels.ts`                          | the monitor-name → window-label mapping                                                       |
-| `overlay-resolution.ts` · `monitor-watch.ts` | monitor geometry and hot-plug                                                                 |
-| `sim-events.ts`                              | **every backend event name constant**, re-exported from the generated `@utils/backend-events` |
 
 > [!IMPORTANT]
 > Import event names from `sim-events.ts`. Never type an event name as a string
@@ -843,83 +820,70 @@ The one part of `platform/` allowed to read stores.
 ### `settings-schema/`
 
 Raw-blob migrations — see [Settings and persistence](#settings-and-persistence).
+It imports nothing live: a migration's own folder is barred even from the rest
+of `shared/`.
 
-## `store/` — state and business logic
+### `ui/` and `hooks/`
 
-MobX, and nothing else. No JSX, no DOM.
+Primitives used by two or more slices — `WidgetPanel`, `StatPill`,
+`WidgetValue`, `WidgetLabel`, `FixedDigits`, the badges, `CarDot`,
+`ScrollIndicator`, `NoDataPlaceholder`, `SettingsCard`, `ErrorBoundary` — and
+the DOM-only hooks (`useReactiveDomWrite`, `useReactiveCanvasLoop`,
+`useCanvasAutoResize`, `useVisibleRowCount`, `useRowMoveAnimation`,
+`useClickOutside`). Neither reads a store.
+
+## `entities/` — sim data and the app's model
+
+MobX stores, the hooks that reach them, and the helpers that belong to them. No
+JSX except the odd primitive an entity owns (`app-settings/ReservedSlot`).
 
 ```mermaid
 flowchart TB
     BE["backend events<br/>(bindings.ts types)"]
-    DATA["<b>data/</b><br/>thin frame buffers<br/><i>plain setters · no derived · no timers · reset()</i>"]
-    SET["<b>settings/</b><br/>user settings · layouts · units"]
-    WID["<b>widgets/</b> + per-widget stores<br/><i>computed getters · UI state · timers</i>"]
-    COMP["<b>ui/</b> components<br/><i>observer(), read stores directly</i>"]
+    DATA["<b>sim · session · cars · player ·<br/>environment · chat · sim-perf</b><br/>thin frame buffers<br/><i>plain setters · no derived · no timers · reset()</i>"]
+    SET["<b>app-settings · layout · widget</b><br/>user settings · layouts · the widget model"]
+    WID["widget stores<br/><i>computed getters · UI state · timers</i>"]
+    COMP["components<br/><i>observer(), read stores directly</i>"]
 
     BE --> DATA --> WID --> COMP
     SET --> WID
-    DATA -.->|"simple widgets read data directly"| COMP
+    DATA -.->|"simple widgets read entities directly"| COMP
     SET -.-> COMP
 ```
 
-Every window builds one root over a shared `RendererCore`
-(`src/store/roots/renderer-core.ts`): the data stores, the sim, the settings projection
-widgets read, units, the app-wide widget stores (shared ones, the pit service,
-the recorded track) and the registry of per-instance widget stores. `MainRoot` adds what only the settings
-UI uses (editor, inspector, diagnostics, companion apps, chat sign-in, device
-list), `OverlayRoot` adds only the bindings and the settings-panel state its
-drag-mode popup needs, `RemoteRoot` starts the core without Tauri, and `HudRoot`
-holds the banner's one store and no core at all. Components reach them through
-context hooks per root: `root-store-context.ts` (core, typed `RendererCore`, plus
-the two app-window stores), `main-root-context.ts`, `overlay-root-context.ts`,
-`hud-root-context.ts`. A main-only store is not on the core's type, so a widget
-cannot reach it; the widget, shared and overlay folders may not import the main
-root's hooks either (`.oxlintrc.json`).
+| Slice                                               | Holds                                                                                                                                                           |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sim/`                                              | the sim store, `apply-bundle` (bundle → stores), `telemetry-mask` (the demand mask), `debug`                                                                    |
+| `session/` · `environment/` · `chat/` · `sim-perf/` | one frame buffer each                                                                                                                                           |
+| `cars/`                                             | `cars.store`, `computed.store` (derived values shared by 2+ widgets), `car-identity`, `driver-entry-join`                                                       |
+| `player/`                                           | `player`, `player-position`, `reference-lap`                                                                                                                    |
+| `track/` · `flags/` · `radar/` · `incidents/`       | the stores several widgets share and that have no actions of their own; a schema two widgets share sits here too (`radar.settings-schema.ts`)                   |
+| `widget/`                                           | the widget **as data**: catalogue, instance records and stores (`widget-instances.store`), defaults, placement, availability, frame geometry, `checkedSettings` |
+| `layout/`                                           | layouts, the live widget set (`live-widgets.store`), the mutation log, undo history, virtual desktop, `useWidgetSettings`                                       |
+| `app-settings/`                                     | app settings, units, the system locale                                                                                                                          |
+
+Each store's context and hook sit beside it in a `*-context.ts`, made with
+`createStoreContext`; a hook read where nothing provides its store throws,
+naming the store. A store's constructor takes a narrow interface of what it
+reads (`type FuelWidgetDeps = { … }`), so it never names `RendererCore`.
 
 > [!WARNING]
 > **Never import a store as a singleton.** Each window constructs its own
 > root; a module-level instance would silently be the wrong one.
 
-### Module map
-
-| Folder                                                 | Holds                                                                                                                                                                                                          |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data/`                                                | `player`, `cars`, `session`, `environment`, `chat`, `reference-lap` frame buffers, plus `computed.store.ts` for derived values shared by 2+ widgets                                                            |
-| `settings/`                                            | `app-settings`, `layouts`, `widget-defaults`, `widget-settings`, `units`, `twitch-auth`, plus layout helpers (`layout-resolution`, `layout-resize`, `layout-background`, `widget-history`, `widget-placement`) |
-| `widgets/`                                             | one folder per feature read by 2+ widgets — `flags`, `incidents`, `pit-service`, `radar`, `track-map`                                                                                                          |
-| `sim/`                                                 | sim connection state, `debug`                                                                                                                                                                                  |
-| `hotkeys/`                                             | `actions` registry, `action-registry`, `bindings.store`, `settings-actions`, `bindings-sync`, `bindings-ui`, `device-input`                                                                                    |
-| `preview/`                                             | neutral sample data — scenarios, sample telemetry, sample track, the preview animator                                                                                                                          |
-| `renderer-core.ts` · `*-root.ts` · `*-root-context.ts` | composition per window and access                                                                                                                                                                              |
-| `widget-catalog.ts`                                    | collects the per-widget manifests                                                                                                                                                                              |
-
-> [!NOTE]
-> `preview/` exists so the app never imports from `src/storybook`. Shared fixtures
-> live in this neutral place, which both the app and Storybook may read.
-
-**The preview store is isolated, and the linter holds it there.** A scenario and
-every mock builder write only into the `PreviewCore` handed to
-them — never into the stores a running widget reads. So `src/preview/**`
-carries its own `no-restricted-imports` override: the context hooks in
-`*-root-context`, `@ui/**`, `@platform/**` and `@tauri-apps/**` are all
-refused there, the way every other layer boundary in this project is enforced. A
-fixture that reached a live store would go unnoticed in the layout editor and
-surface as a wrong number in a driver's session; see
-[ADR-0004](adr/0004-widget-preview-runs-on-mocks.md), rule 1.
-
 ### The six store rules
 
-1. **Data stores** use types from `bindings.ts` only — never a hand-written
+1. **Entity stores** use types from `bindings.ts` only — never a hand-written
    duplicate of a backend event shape. They stay thin: plain setters, no derived
    values, no timers, and an explicit `reset()`.
 2. **Widget stores** exist only when a widget has UI state, timers, or non-trivial
-   derived logic. Simple widgets read data stores directly.
-3. **Derived logic shared by 2+ widgets** becomes a `computed` getter on the data
+   derived logic. Simple widgets read entity stores directly.
+3. **Derived logic shared by 2+ widgets** becomes a `computed` getter on the entity
    store, never duplicated per widget.
-4. **One-way flow.** Widget stores read data and settings stores; data stores know
-   nothing about widgets.
-5. **Hooks are DOM-only** — `ResizeObserver`, `getBoundingClientRect`, RAF.
-   Everything else belongs in a store.
+4. **One-way flow.** Widget stores read entity and settings stores; entity stores
+   know nothing about widgets.
+5. **Hooks are DOM-only** — `ResizeObserver`, `getBoundingClientRect`, RAF —
+   apart from the store hooks themselves. Everything else belongs in a store.
 6. **Each value has exactly one owner.**
 
 ### Reactivity rules
@@ -931,27 +895,61 @@ surface as a wrong number in a driver's session; see
 | Widget layout changes go through `resolveLayoutChange` in the manifest   | keeps per-widget branching out of the shared store                                     |
 | Reactions to a settings edit watch `changeToken` (`SettingsMutationLog`) | comparing `JSON.stringify` of the settings tree on every change is both slow and wrong |
 
+## `features/` — what the user does
+
+A feature owns its store, its hook and the UI section that drives it, in one
+folder.
+
+| Slice                              | Holds                                                                                                                                |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `pit-service/`                     | the pit-service state, approach, tyres, the order and auto mode — one folder, read by three widgets and main                         |
+| `hotkey-bindings/`                 | the action registry, the bindings store, device input, settings actions, `BindingCaptureModal`                                       |
+| `layout-editor/`                   | the editor's model: store, gestures, snapping. Its canvas renders widgets and is a page                                              |
+| `widget-settings/`                 | the panel kit (`Card`, `SettingRow`, `setting-rows`, `schema-rows`), `WidgetSettings.tsx`, the panel registry, the two-widget panels |
+| `widget-auto-hide/`                | when a widget hides itself (wheel-to-wheel, flags, radar)                                                                            |
+| `telemetry-inspector/`             | the inspector's feed, its tree, its settings section                                                                                 |
+| `diagnostics/`                     | FPS diagnostics, the export, the HUD store                                                                                           |
+| `remote-screens/`                  | remote screens and devices, their settings section                                                                                   |
+| `companion-apps/` · `twitch-auth/` | the integrations and their settings sections                                                                                         |
+| `preview/`                         | neutral sample data — scenarios, mock builders, sample telemetry and track, the animator                                             |
+
+> [!NOTE]
+> `features/preview/` exists so the app never imports from `src/storybook`.
+> Shared fixtures live in this neutral place, which both pages and Storybook
+> may read.
+
+**The preview store is isolated, and the linter holds it there.** A scenario and
+every mock builder write only into the `PreviewCore` handed to
+them — never into the stores a running widget reads. So `src/features/preview/**`
+carries its own `no-restricted-imports` override: the root contexts
+(`*-root-context`), `@app/**`, `@pages/**`, `@shared/api/**` and
+`@tauri-apps/**` are all refused there. A fixture that reached a live store
+would go unnoticed in the layout editor and surface as a wrong number in a
+driver's session; see [ADR-0004](adr/0004-widget-preview-runs-on-mocks.md),
+rule 1. A page that renders a preview gets it through `PreviewWorldContext`
+(`features/preview/preview-host-context.ts`), provided by the main window.
+
 ### Input bindings
 
 Keyboard shortcuts and controller buttons are **app-level, not per layout**, and
 **dispatched in Rust**: a key acts on the car with every webview paused, and a
 paused main window costs only the actions that write settings.
 
-| Concern                                         | Location                                         |
-| ----------------------------------------------- | ------------------------------------------------ |
-| action list — id, owner, label, default, effect | `src-tauri/src/model/hotkeys.rs`                 |
-| dispatch, OS registration, drag/interact modes  | `src-tauri/src/hotkeys/`                         |
-| device polling                                  | `src-tauri/src/input/`                           |
-| wire types                                      | `bindings.ts`, via `src/types/input-bindings.ts` |
-| settings-UI registry, visibility actions        | `src/store/hotkeys/actions.ts`                   |
-| persisted map (`actionId -> Binding[]`)         | `src/store/hotkeys/bindings.store.ts`            |
-| settings actions                                | `src/store/hotkeys/settings-actions.ts`          |
-| main's half                                     | `src/platform/sync/hotkey-sync.ts`               |
+| Concern                                         | Location                                                    |
+| ----------------------------------------------- | ----------------------------------------------------------- |
+| action list — id, owner, label, default, effect | `src-tauri/src/model/hotkeys.rs`                            |
+| dispatch, OS registration, drag/interact modes  | `src-tauri/src/hotkeys/`                                    |
+| device polling                                  | `src-tauri/src/input/`                                      |
+| wire types                                      | `bindings.ts`, via `src/shared/contracts/input-bindings.ts` |
+| settings-UI registry, visibility actions        | `src/features/hotkey-bindings/actions.ts`                   |
+| persisted map (`actionId -> Binding[]`)         | `src/features/hotkey-bindings/bindings.store.ts`            |
+| settings actions                                | `src/features/hotkey-bindings/settings-actions.ts`          |
+| main's half                                     | `src/app/sync/hotkey-sync.ts`                               |
 
 > [!TIP]
 > **Adding a bindable action is one entry in `HOTKEY_ACTIONS` plus one key under
 > `bindings.actions` in `main-app.json`.** The list is generated into
-> `@utils/hotkey-actions` for the settings UI; persistence and the save reaction
+> `@shared/contracts/hotkey-actions` for the settings UI; persistence and the save reaction
 > are driven off it.
 
 An action's `HotkeyEffect` decides its kind:
@@ -979,55 +977,113 @@ An action's `HotkeyEffect` decides its kind:
   instances it holds that are marked for hotkeys.
 - Conflicts (one key on two actions) are allowed and only warned about.
 
-## `ui/` — everything that renders
+## `widgets/` — the overlay widgets
 
-```mermaid
-flowchart TB
-    subgraph UI["ui/"]
-        APP["<b>app/</b><br/>main/ → settings UI (Ant Design)<br/>overlay/ → OverlayCanvas"]
-        WIDGETS["<b>widgets/</b><br/>one folder per widget +<br/>registry.ts + widget-mount.ts +<br/>widget-manifest.ts"]
-        SHARED["<b>shared/</b><br/>primitives used by 2+ widgets"]
-        HOOKS["<b>hooks/</b><br/>DOM-only hooks used by 2+ widgets"]
-    end
-    APP --> WIDGETS --> SHARED
-    WIDGETS --> HOOKS
-```
+One slice per overlay widget, kebab-case (`pit-service/`, `g-meter/`), flat
+inside: components, `settings-schema.ts`, `manifest.ts`, `mount.ts`, its own
+store, helpers, its settings panel, stories, tests. Beside the slices, the
+layer's own files:
 
-| Folder                       | Holds                                                                                                                                              |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/main/`                  | `MainWindow.tsx`, the settings UI, `sim-name.ts`                                                                                                   |
-| `app/overlay/`               | `OverlayWindow.tsx`, `OverlayCanvas`                                                                                                               |
-| `app/widget-frame.ts`        | frame geometry shared by the two window shells                                                                                                     |
-| `widgets/<Name>/`            | one folder per widget — components, manifest, mount, store, helpers, tests                                                                         |
-| `widgets/registry.ts`        | id → React component, collected from every `mount.ts`                                                                                              |
-| `widgets/widget-mount.ts`    | the `WidgetMount` shape a widget's `mount.ts` exports                                                                                              |
-| `widgets/widget-manifest.ts` | values shared across manifests — `COMMON_WIDGET_DEFAULTS`, appearance defaults, `makeColumnLayoutResolver`                                         |
-| `shared/`                    | `WidgetPanel`, `StatPill`, `WidgetValue`, `WidgetLabel`, badges, `CarDot`, `ScrollIndicator`, `NoDataPlaceholder`, `ErrorBoundary`                 |
-| `hooks/`                     | `useCanvasAutoResize`, `useReactiveCanvasLoop`, `useVisibleRowCount`, `useRowMoveAnimation`, `useClickOutside`, `usePitState`, `useWidgetAutoHide` |
+| File                     | Holds                                                                                                      |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `registry.ts`            | id → React component, collected from every `mount.ts`                                                      |
+| `widget-mount.ts`        | the `WidgetMount` shape a `mount.ts` exports; `WidgetCore` / `WidgetHost`, what a widget store may read    |
+| `widget-manifest.ts`     | values shared across manifests — `COMMON_WIDGET_DEFAULTS`, appearance defaults, `makeColumnLayoutResolver` |
+| `widget-host-context.ts` | how the instance scope is handed the stores a widget store may read                                        |
+| `instance-scope/`        | `WidgetInstanceScope`: builds an instance's store on mount, disposes it on unmount                         |
 
-Components talk to MobX stores and to nothing else. They never import from
-`@tauri-apps/*` or `@platform/*` — the one exception being window and webview APIs
-(`getCurrentWindow`, `getCurrentWebviewWindow`) inside the window-shell components,
-which is what those components are _for_.
+This layer holds **overlay widgets only**. A compound block of the main window
+that FSD would also call a widget (the header, the widget list) lives in
+`app/` or `pages/`, so "widget" means one thing here. The widget _as data_ —
+instance record, manifest type, catalogue — is the entity `entities/widget/`.
+
+## `pages/` — the main window's tabs
+
+| Slice       | Holds                                                                                           |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| `widgets/`  | the widget list, workbench and preview                                                          |
+| `layouts/`  | the layout editor's UI: canvas, list, widget panel, inspector                                   |
+| `settings/` | the settings page, its navigation and sections — `bindings/` among them — and the release notes |
+
+A page is above `widgets/` because it renders them; that is why the editor's
+model is a feature and its canvas is a page.
+
+## `app/` — windows, roots, sync
+
+Every window builds one root over a shared `RendererCore`
+(`src/app/roots/renderer-core.ts`): the entity stores, the sim, the settings
+projection widgets read, units, the app-wide widget stores (shared ones, the
+pit service, the recorded track) and the registry of per-instance widget
+stores. `MainRoot` adds what only the settings UI uses (editor, inspector,
+diagnostics, companion apps, chat sign-in, device list), `OverlayRoot` adds only
+the bindings and the settings-panel state its drag-mode popup needs, plus the
+`settingsClient` that sends its commands to main, `RemoteRoot` starts the core
+without Tauri, and `HudRoot` holds the banner's one store and no core at all.
+The roots stay MobX classes, not React providers: sync, hotkeys, previews and
+Storybook need the stores outside React.
+
+`app/store-providers.tsx` hands a root to React: `CoreProvider` provides every
+core store's context from one `RendererCore`, `AppWindowProvider` and
+`MainProvider` the rest — each a flat typed list, so a wrong store is a compile
+error there. A main-only store's context is not provided in an overlay, so the
+lint keeps `widgets/`, `shared/ui`, `shared/hooks` and the overlay, remote and
+hud shells off the main-only `*-context` files, and `overlay-root.test.ts`
+checks the overlay builds none of their stores.
+
+### `sync/` — the wiring
+
+Transport to stores, per window. It reads stores of every layer below and
+starts with the window; it never reaches the window shells.
+
+| File                                       | Role                                                                                      |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `listeners.ts`                             | `setupMainListeners` / `setupOverlayListeners` — overlay modes, and the overlay's signals |
+| `main-sync.ts`                             | main's startup and the reactions that save                                                |
+| `client-snapshot.ts` · `client-publish.ts` | main's half of the client protocol: snapshots out, commands in (ADR-0007)                 |
+| `client-sync.ts`                           | a client's half, transport-free: installs a snapshot, runs a signal                       |
+| `overlay-sync.ts` · `remote-sync.ts`       | the two transports into `client-sync.ts` — Tauri events, the remote socket                |
+| `settings-client.store.ts`                 | the overlay's commands to main                                                            |
+| `remote-publish.ts`                        | the remote server's lifetime and one snapshot per remote screen                           |
+| `settings-file.ts`                         | the codec between `settings.json` and the stores                                          |
+| `persistence.ts` · `persistence-sync.ts`   | writing settings to disk                                                                  |
+| `hotkey-sync.ts`                           | main's half of the bindings: push the map and the context, apply settings actions         |
+| `chat-sync.ts`                             | Twitch chat stream wiring                                                                 |
+| `pit-service-sync.ts`                      | pit-service cross-window state                                                            |
+| `overlay-windows.ts` · `monitor-watch.ts`  | creating, labelling and tearing down overlay windows; monitor hot-plug                    |
+
+### `windows/` — the shells
+
+`main/` (`MainWindow`, header, footer, status, banners), `overlay/`
+(`OverlayWindow`, `OverlayCanvas`, `WidgetContainer`, the drag toolbar, the F9
+picker), `remote/` and `hud/`. Components talk to MobX stores and to nothing
+else. They never import from `@tauri-apps/*` or `@shared/api/*` — the one
+exception being window and webview APIs (`getCurrentWindow`,
+`getCurrentWebviewWindow`) and starting the window's sync inside the
+window-shell components named in `.oxlintrc.json`, which is what those
+components are _for_.
+
+## Building a widget
 
 ### The widget system
 
-A widget declares itself in two files of its own, and nothing lists it anywhere:
-`manifest.ts` is **plain data** — id, label, design size, shipped
-`userSettings`, an optional `resolveLayoutChange` — and `mount.ts` is the pair
-`{ id, component }`. Both are collected by `import.meta.glob`.
+A widget declares itself in three files of its own slice, and nothing lists it
+anywhere: `settings-schema.ts` describes every setting once, `manifest.ts` is
+**plain data** — id, label, design size, shipped `userSettings` (the schema's
+defaults spread in), the schema itself, an optional `resolveLayoutChange` — and
+`mount.ts` is the pair `{ id, component }`. Manifests and mounts are collected
+by `import.meta.glob`.
 
 ```mermaid
 flowchart TB
-    M1["FuelWidget/manifest.ts"]
-    M2["StandingsWidget/manifest.ts"]
+    M1["fuel/manifest.ts"]
+    M2["standings/manifest.ts"]
     M3["…one per widget"]
-    MT1["FuelWidget/mount.ts"]
-    MT2["StandingsWidget/mount.ts"]
+    MT1["fuel/mount.ts"]
+    MT2["standings/mount.ts"]
     P["*SettingsPanel.tsx<br/><i>PANEL_WIDGET_IDS</i>"]
-    CAT["<b>store/layout/widget-catalog.ts</b><br/>glob → WIDGETS · WIDGET_BY_ID · DEFAULT_WIDGETS"]
-    REG["<b>ui/widgets/registry.ts</b><br/>glob → id → React component"]
-    PREG["<b>panels/panel-registry.ts</b><br/>glob → id → settings panel"]
+    CAT["<b>entities/widget/widget-catalog.ts</b><br/>glob → WIDGETS · WIDGET_BY_ID · DEFAULT_WIDGETS"]
+    REG["<b>widgets/registry.ts</b><br/>glob → id → React component"]
+    PREG["<b>features/widget-settings/panel-registry.ts</b><br/>glob → id → settings panel"]
     MOUNT["the places<br/>that mount widgets"]
     WS["WidgetSettings.tsx"]
     SETTINGS["settings.json<br/>via DEFAULT_WIDGETS"]
@@ -1043,7 +1099,7 @@ flowchart TB
 
 > [!IMPORTANT]
 > **A manifest never imports its own component** — that is why the mount is a
-> second file. The manifest is read by the store layer at import time, and by
+> second file. The manifest is read by `entities/widget` at import time, and by
 > things that never render at all (migrations, `DEFAULT_WIDGETS`, node-side
 > tests); a manifest carrying React would drag the UI layer into all of them.
 > The two also change for unrelated reasons, and a file edited for two unrelated
@@ -1056,17 +1112,39 @@ flowchart TB
 
 **Widget lists are alphabetical by label.** The Widgets page, each monitor's
 list in the layout editor and the F9 picker all show the catalog in that order
-(`compareManifests` in `src/store/layout/widget-catalog.ts`: label, case-insensitive,
+(`compareManifests` in `src/entities/widget/widget-catalog.ts`: label, case-insensitive,
 then id), so a manifest declares no position of its own — a new widget lands
 where its name puts it, and two widgets built in parallel cannot collide on a
 number. Any new list of widgets shown to the user keeps that order: build it from
 `WIDGETS` / `DEFAULT_WIDGETS` or sort by label, never by id or by insertion.
 
-Inside a panel, a plain toggle or color is one element: `panelRows<Settings>()`
-returns `SwitchRow` and `ColorRow`, which take a `settingKey`, read the widget
-from the panel context and write it back themselves — with the key checked
-against that widget's settings type. Anything with logic of its own (a clamped
-number, a unit conversion, a `Segmented`) is still written out by hand.
+**A setting is described once, in the slice** (ADR-0008). `settings-schema.ts`
+calls `defineSettings('<locale block>', { … })` with the builders of
+`shared/lib/widget-settings-dsl.ts` — `bool`, `num`, `choice`, `color`,
+`numRecord`, `nullable` — and from that one description come:
+
+| consumer       | what it takes from the schema                                                                                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| the type       | `SettingsOf<typeof X_SETTINGS.shape>`, exported by the schema file                                                                                                                                                  |
+| the manifest   | `...X_SETTINGS.defaults` in `userSettings`, and `settingsSchema: X_SETTINGS`                                                                                                                                        |
+| load and write | `checkedSettings(type, settings)` (`entities/widget/widget-catalog.ts`): a wrong type or member falls back to the shipped value, a number out of range is clamped — in the file codec and both `updateUserSettings` |
+| the panel      | `schemaRows(X_SETTINGS)` → `<Row setting="…" />`, the control picked by the field's kind                                                                                                                            |
+| Storybook      | the controls, choices as selects through `selectOptions`                                                                                                                                                            |
+
+There is no union of every widget's settings type: `WidgetUserSettings` is
+`BaseUserSettings & Record<string, unknown>`, and code below `widgets/` that
+reads one widget's settings declares the narrow interface it needs. Choices
+several widgets share are constants in `shared/contracts/widget-choices.ts`.
+The format of `settings.json` did not change with the schema.
+
+Inside a panel, a row is one element: `<Row setting="showPower" />` reads the
+widget from the panel context, writes it back itself, and takes its title from
+`settingsPanels.<locale block>.<setting>` and its description from
+`<setting>Desc` — the locale keys are the setting keys, in the shared
+`locales/<lang>/widgets.json`, with `common.*` for strings several widgets
+share. Anything with logic of its own (a slider with a unit in its tooltip, a
+segmented control whose labels are not the members) is still written out by
+hand in a `SettingRow`.
 
 A row that only means something while another is on declares it —
 `dependsOn="showCompass"`, or a predicate — instead of the panel wrapping it in
@@ -1079,9 +1157,10 @@ Settings panels are collected the same way — each exports `PANEL_WIDGET_IDS`
 — but into their own registry rather than into `mount.ts`: the remote screen
 renders widgets through the widget registry and is a plain browser page, so a
 mount carrying its Ant Design panel would ship the whole settings UI to every
-phone on the LAN. The panel itself sits in its widget's folder — only main's
+phone on the LAN. The panel itself sits in its widget's slice — only main's
 panel registry globs `*SettingsPanel.tsx`, so the import graph, not the folder,
-keeps it off the remote screen.
+keeps it off the remote screen. A panel serving two widgets (radar, flags)
+cannot sit in either slice and lives in `features/widget-settings/panels/`.
 
 `WidgetContainer` applies scale, opacity and the radial-gradient background from
 user settings, so a widget never hardcodes its own background.
@@ -1095,31 +1174,35 @@ Where a file lives.
 ```mermaid
 flowchart TB
     Q1{"Who reads it?"}
-    W["the widget's own folder<br/><i>components · manifest · store ·<br/>helpers · hooks · panel · tests</i>"]
-    F["beside the feature's store<br/><i>store/widgets/&lt;feature&gt;/</i>"]
+    W["the widget's own slice<br/><i>widgets/&lt;name&gt;/</i>"]
+    F["one folder for the shared store<br/><i>features/&lt;name&gt;/ if it has actions,<br/>else entities/&lt;name&gt;/</i>"]
     KIND{"What kind of thing?"}
-    SH["ui/shared/"]
-    HK["ui/hooks/"]
-    UT["utils/"]
+    SH["shared/ui/"]
+    HK["shared/hooks/"]
+    UT["shared/lib/"]
 
     Q1 -->|one widget| W
-    Q1 -->|"one feature: its store<br/>and its widgets"| F
-    Q1 -->|"two or more features"| KIND
+    Q1 -->|"several widgets around<br/>one shared store"| F
+    Q1 -->|"two or more slices"| KIND
     KIND -->|a component| SH
     KIND -->|a DOM hook| HK
     KIND -->|a pure helper| UT
 ```
 
-The feature branch works because the layers point one way: a widget may import
-a store, so a helper read by a feature's store and its widgets sits beside the
-store and both reach it. `utils/` is for what crosses features.
+The shared-store branch works because the layers point one way: a widget may
+import an entity or a feature, so a helper read by a shared store and its
+widgets sits with the store and every widget reaches it. The store is never
+split between an entity (its state) and a feature (its actions) for the sake of
+layer purity — the subsystem would be in three places again.
 
 A helper with a single **non-widget** owner sits with its owner —
-`store/layout/layout-*.ts`, `store/sim/debug.ts`, `ui/app/main/sim-name.ts`,
-`ui/app/widget-frame.ts`. A widget never imports from another widget's folder:
-a second consumer moves the file up, and one that loses it moves back down.
+`entities/layout/layout-resolution.ts`, `entities/sim/debug.ts`,
+`app/windows/main/sim-name.ts`, `entities/widget/widget-frame.ts`. A widget
+never imports from another widget's slice, and the lint refuses it: a second
+consumer moves the file down, and one that loses it moves back.
 
-Every MobX class lives in a `*.store.ts` file, and nothing else does.
+Every MobX class lives in a `*.store.ts` file, and nothing else does; its
+context and hook live in the `*-context.ts` beside it.
 
 ### Decomposition rules
 
@@ -1178,7 +1261,7 @@ flowchart LR
 `designWidth` is not constant, because hiding a column should not blow up the type
 size of everything else. `designWidth` tracks the visible column set through
 `colSpecs` in `*-utils.ts`, and `makeColumnLayoutResolver` (in
-`ui/widgets/widget-manifest.ts`) keeps `--wfs` constant while the widget resizes.
+`widgets/widget-manifest.ts`) keeps `--wfs` constant while the widget resizes.
 
 > [!IMPORTANT]
 > A `designWidth` its own settings can compute is **not state — it is a cache**,
@@ -1222,9 +1305,9 @@ The rules that make that safe:
 | Per-frame mutable state (circular buffers, smoothing) lives in `useRef`        | putting it in state would re-render at 60 Hz — the exact thing canvas exists to avoid         |
 | Draws are scheduled with RAF inside `useLayoutEffect`, cancelled on cleanup    | an uncancelled loop keeps drawing into a detached canvas after unmount                        |
 | Resize through `ResizeObserver`, then `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` | the transform is reset by a size change; skipping it gives you a blurry or half-scaled canvas |
-| Colors come from the JS palette, not from CSS                                  | canvas cannot read SCSS tokens — see `utils/colors.ts` and the per-widget `*-utils.ts`        |
+| Colors come from the JS palette, not from CSS                                  | canvas cannot read SCSS tokens — see `shared/lib/colors.ts` and the per-widget `*-utils.ts`   |
 
-Shared DPR sizing and the auto-resize observer live in `ui/hooks/` —
+Shared DPR sizing and the auto-resize observer live in `shared/hooks/` —
 `useCanvasAutoResize` and `useReactiveCanvasLoop` — so a new canvas widget should
 not hand-roll either.
 
@@ -1248,8 +1331,8 @@ not hand-roll either.
 > **Never hardcode a hex or rgba value in a widget.** Use the semantic tokens from
 > `_widget-tokens.scss`; the `$race-*` palette follows Tailwind 500/600. The
 > JS-side equivalents for canvas live in the widget manifests,
-> `ui/widgets/GMeterWidget/g-meter-utils.ts`, `utils/weather-utils.ts` and
-> `utils/colors.ts`, using the same palette hexes.
+> `widgets/g-meter/g-meter-utils.ts`, `shared/lib/weather-utils.ts` and
+> `shared/lib/colors.ts`, using the same palette hexes.
 
 ### Code style
 
@@ -1271,14 +1354,15 @@ not hand-roll either.
 2. No hardcoded background.
 3. Decompose from the start.
 4. Every component `observer()`.
-5. Add `*.stories.tsx` — seed stores via `runInAction` in decorators, include a
-   background decorator.
-6. Add `*SettingsPanel.tsx` in the widget folder and export
-   `PANEL_WIDGET_IDS` from it — the registry picks it up, nothing to wire.
-7. Add `interface *WidgetSettings` to `src/types/widget-settings.ts` and add it to
-   the `WidgetSpecificSettings` union.
-8. Create `manifest.ts` and `mount.ts` next to the widget —
-   both are collected by glob, so no shared file is edited.
+5. Add `*.stories.tsx` through `defineWidgetStories` — see
+   [widget-stories.md](widget-stories.md).
+6. Add `*SettingsPanel.tsx` in the widget slice, built on `schemaRows`, and
+   export `PANEL_WIDGET_IDS` from it — the registry picks it up, nothing to wire.
+7. Describe every setting once in the slice's `settings-schema.ts`, with its
+   strings under `settingsPanels.<locale block>` in all four
+   `locales/*/widgets.json`.
+8. Create `manifest.ts` and `mount.ts` in the slice — both are collected by
+   glob, so no shared file is edited.
 9. Use the `fs()` / `sp()` / `radius()` tokens, `$font-widget`, the
    `$widget-text-*` tokens and the `$race-*` palette.
 
@@ -1312,11 +1396,11 @@ flowchart TB
     style TEL fill:#1e3a5f,color:#fff
 ```
 
-| #   | Channel            | Direction                               | Frontend entry point                  | Backend entry point                            |
-| --- | ------------------ | --------------------------------------- | ------------------------------------- | ---------------------------------------------- |
-| ①   | **Commands**       | frontend → backend, with a return value | `platform/services/*.service.ts`      | `commands.rs`, `input/commands.rs`             |
-| ②   | **Backend events** | backend → both windows, fire-and-forget | `platform/sync/listeners.ts`          | `telemetry/emitter.rs` and friends             |
-| ③   | **Window events**  | main ↔ overlay                          | `platform/services/events.service.ts` | — (never reaches Rust, except two noted below) |
+| #   | Channel            | Direction                               | Frontend entry point           | Backend entry point                            |
+| --- | ------------------ | --------------------------------------- | ------------------------------ | ---------------------------------------------- |
+| ①   | **Commands**       | frontend → backend, with a return value | `shared/api/*.service.ts`      | `commands.rs`, `input/commands.rs`             |
+| ②   | **Backend events** | backend → both windows, fire-and-forget | `app/sync/listeners.ts`        | `telemetry/emitter.rs` and friends             |
+| ③   | **Window events**  | main ↔ overlay                          | `shared/api/events.service.ts` | — (never reaches Rust, except two noted below) |
 
 > [!NOTE]
 > **Backend events are not relayed between windows.** Each window subscribes to the
@@ -1367,8 +1451,8 @@ expecting anything back — a fire-and-forget command, not an event.
 ### Channel ② — backend → frontend
 
 Names come from `src-tauri/src/model/events.rs` through the generated
-`@utils/backend-events`, re-exported by `platform/sync/sim-events.ts`; handlers are wired in
-`platform/sync/listeners.ts`.
+`@shared/contracts/backend-events`, re-exported by `shared/api/sim-events.ts`; handlers are wired in
+`app/sync/listeners.ts`.
 
 | Event                                                    | Emitted by                  | Rate                          | Lands in                                             |
 | -------------------------------------------------------- | --------------------------- | ----------------------------- | ---------------------------------------------------- |
@@ -1394,7 +1478,7 @@ Names come from `src-tauri/src/model/events.rs` through the generated
 Main holds the settings; every overlay and every remote screen is a **client**
 of one protocol (ADR-0007, `docs/adr/0007-main-owns-settings.md`). The envelope
 is `ClientEnvelope` in `src-tauri/src/model/client_protocol.rs`; the payloads
-are `src/types/client-protocol.ts`.
+are `src/shared/contracts/client-protocol.ts`.
 
 | Message    | Direction           | Event / transport                         | Payload                                              |
 | ---------- | ------------------- | ----------------------------------------- | ---------------------------------------------------- |
@@ -1488,10 +1572,10 @@ flowchart TB
     COMP["<b>computations/fuel.rs</b><br/>average · laps left · fuel to add"]
     EM["<b>telemetry/emitter.rs</b><br/>scatter into TelemetryBundle"]
     EV["<code>sim://telemetry/bundle</code>"]
-    SVC["<b>services/events.service.ts</b><br/>listenTo"]
-    SYNC["<b>sync/listeners.ts</b><br/>which store owns this?"]
-    DATA["<b>store/data/computed.store.ts</b><br/>fuel = observable.ref"]
-    UI["<b>ui/widgets/FuelWidget</b><br/>observer() reads it"]
+    SVC["<b>shared/api/events.service.ts</b><br/>listenTo"]
+    SYNC["<b>app/sync/listeners.ts</b><br/>which store owns this?"]
+    DATA["<b>entities/cars/computed.store.ts</b><br/>fuel = observable.ref"]
+    UI["<b>widgets/fuel</b><br/>observer() reads it"]
 
     S --> K --> SRC --> SCH --> COMP --> EM --> EV --> SVC --> SYNC --> DATA --> UI
 
@@ -1525,19 +1609,19 @@ flowchart TB
     L1 --> L2 --> L3 --> L4
 ```
 
-| Technique                                            | Where                                                | The failure it prevents                                                                                                                 |
-| ---------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Rate tiers                                           | `telemetry/scheduler.rs`                             | sending standings 60 times a second when it changes 10 times                                                                            |
-| Demand gating (`telemetryEvents`)                    | widget manifests → `telemetry/emitter.rs`            | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
-| Quantization + repeat suppression                    | `telemetry/quantize.rs`, `telemetry/publications.rs` | resending a frame whose only change is in a decimal no widget prints                                                                    |
-| `observable.ref` on frame buffers                    | `store/data/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
-| Split computeds                                      | `store/data/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
-| `observer()` on every component                      | all of `ui/`                                         | a parent re-render cascading into leaves that did not change                                                                            |
-| Reading the store in the leaf, not passing props     | all of `ui/`                                         | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
-| Root widgets never read 60 Hz fields                 | all widget roots                                     | a whole widget re-rendering at 60 Hz for one number                                                                                     |
-| Canvas + `useRef` + RAF                              | `ui/hooks/useReactiveCanvasLoop`, canvas widgets     | 60 Hz React renders for something that is just pixels                                                                                   |
-| `changeToken`                                        | `store/layout/`                                      | `JSON.stringify` of the settings tree on every keystroke                                                                                |
-| Coalesced overlay commands (75 ms drag, 50 ms popup) | `settings-client.store.ts`                           | a command and a snapshot per mouse-move during a drag                                                                                   |
+| Technique                                            | Where                                                   | The failure it prevents                                                                                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Rate tiers                                           | `telemetry/scheduler.rs`                                | sending standings 60 times a second when it changes 10 times                                                                            |
+| Demand gating (`telemetryEvents`)                    | widget manifests → `telemetry/emitter.rs`               | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
+| Quantization + repeat suppression                    | `telemetry/quantize.rs`, `telemetry/publications.rs`    | resending a frame whose only change is in a decimal no widget prints                                                                    |
+| `observable.ref` on frame buffers                    | `entities/cars/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
+| Split computeds                                      | `entities/cars/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
+| `observer()` on every component                      | every `.tsx` above `shared/`                            | a parent re-render cascading into leaves that did not change                                                                            |
+| Reading the store in the leaf, not passing props     | every `.tsx` above `shared/`                            | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
+| Root widgets never read 60 Hz fields                 | all widget roots                                        | a whole widget re-rendering at 60 Hz for one number                                                                                     |
+| Canvas + `useRef` + RAF                              | `shared/hooks/useReactiveCanvasLoop`, canvas widgets    | 60 Hz React renders for something that is just pixels                                                                                   |
+| `changeToken`                                        | `entities/layout/`                                      | `JSON.stringify` of the settings tree on every keystroke                                                                                |
+| Coalesced overlay commands (75 ms drag, 50 ms popup) | `settings-client.store.ts`                              | a command and a snapshot per mouse-move during a drag                                                                                   |
 
 > [!WARNING]
 > **Never integrate 60 Hz values using the telemetry `sessionTime`.** It stalls,
@@ -1547,7 +1631,7 @@ flowchart TB
 
 `settings.json` carries an integer `schemaVersion` at its top level, unrelated to
 the app's semantic version. Format changes go through the migration chain in
-`src/platform/settings-schema/`, which runs on the **raw blob** — between reading
+`src/shared/settings-schema/`, which runs on the **raw blob** — between reading
 the file and hydrating the stores.
 
 ```mermaid
@@ -1575,7 +1659,7 @@ Three rules, each of which exists because breaking it corrupts real users' files
 
 The widgets a driver sees live in the layout and nowhere else — on disk under
 each monitor (`layouts[].monitors[].widgets[]`), in memory as the layout's flat
-`widgets[]`, each record naming its monitor (`platform/sync/settings-file.ts`
+`widgets[]`, each record naming its monitor (`app/sync/settings-file.ts`
 converts between the two).
 `LiveWidgetsStore.widgets` is a **projection** of the active layout's own
 objects — the same objects, not a copy — so every edit the overlay or the editor
@@ -1656,7 +1740,7 @@ remembering to.
 | Widget isolation | Storybook (`npm run storybook`) | stories only; seed stores via `runInAction` in decorators, always include a background decorator                                                     |
 | Live UI          | Tauri MCP Bridge                | `driver_session` on port 9223 with the app in dev mode, then `webview_screenshot`, `webview_find_element`, `webview_interact`, `ipc_execute_command` |
 
-Frontend tests **mock services, not Tauri** — that is what the `platform/services/`
+Frontend tests **mock services, not Tauri** — that is what the `shared/api/`
 seam is for.
 
 > [!WARNING]
@@ -1670,30 +1754,33 @@ anonymous functions.
 
 ```mermaid
 flowchart TB
-    Q1{"Does it talk to the OS,<br/>the disk or the backend?"}
-    Q2{"Does it render?"}
-    Q3{"Does it hold state<br/>or business logic?"}
-    Q4{"Is it a pure helper?"}
-    Q5{"Used by 2+ widgets,<br/>or by a widget AND a store?"}
+    Q1{"Does it start a window,<br/>build a root or wire transport to stores?"}
+    Q2{"Is it a main-window tab<br/>that renders widgets?"}
+    Q3{"Is it an overlay widget?"}
+    Q4{"Is it something the user does<br/>(a store with actions, its UI)?"}
+    Q5{"Is it sim data or the app's model?"}
 
-    P["<b>platform/</b>"]
-    U["<b>ui/</b>"]
-    S["<b>store/</b>"]
-    UT["<b>utils/</b>"]
-    W["the widget's own folder"]
-    T["<b>types/</b>"]
+    A["<b>app/</b>"]
+    P["<b>pages/</b>"]
+    W["<b>widgets/&lt;name&gt;/</b>"]
+    F["<b>features/&lt;name&gt;/</b>"]
+    E["<b>entities/&lt;name&gt;/</b>"]
+    S["<b>shared/</b><br/>api · contracts · lib · ui · hooks"]
 
-    Q1 -->|yes| P
+    Q1 -->|yes| A
     Q1 -->|no| Q2
-    Q2 -->|yes| U
+    Q2 -->|yes| P
     Q2 -->|no| Q3
-    Q3 -->|yes| S
+    Q3 -->|yes| W
     Q3 -->|no| Q4
-    Q4 -->|yes| Q5
-    Q4 -->|no| T
-    Q5 -->|yes| UT
-    Q5 -->|no| W
+    Q4 -->|yes| F
+    Q4 -->|no| Q5
+    Q5 -->|yes| E
+    Q5 -->|no| S
 ```
+
+And within the answer, next to its lowest consumer — see
+[Where a file lives](#where-a-file-lives).
 
 | I want to…                         | Do this                                                                                       |
 | ---------------------------------- | --------------------------------------------------------------------------------------------- |
@@ -1701,10 +1788,11 @@ flowchart TB
 | add a new computed telemetry value | add or extend a processor in `computations/`, scatter its output in `emitter.rs`              |
 | support a sim quirk                | fix it in `sources/` — never let it reach `computations/`                                     |
 | add a widget                       | follow the [checklist](#adding-a-widget--checklist)                                           |
-| add a keyboard shortcut            | one entry in `ACTIONS`, one key in `main-app.json`                                            |
-| call a new backend command         | a function in the matching `platform/services/*.service.ts`                                   |
+| add a keyboard shortcut            | one entry in `HOTKEY_ACTIONS`, one key in `main-app.json`                                     |
+| add a widget setting               | one field in the slice's `settings-schema.ts`, its strings in `locales/*/widgets.json`        |
+| call a new backend command         | a function in the matching `shared/api/*.service.ts`                                          |
 | share a value between the windows  | a reaction in `main-sync.ts`, a listener in `listeners.ts`, an emitter in `events.service.ts` |
-| change the settings file format    | a migration in `platform/settings-schema/`                                                    |
+| change the settings file format    | a migration in `shared/settings-schema/`                                                      |
 | draw something at 60 Hz            | a canvas widget — see [Canvas widgets](#canvas-widgets)                                       |
 
 ## Commands

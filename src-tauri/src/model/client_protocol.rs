@@ -4,7 +4,7 @@
 //! sending main a command.
 //!
 //! Only the envelope is declared here. The payload a message carries — the
-//! snapshot, the command — is a TypeScript type (`src/types/client-protocol.ts`)
+//! snapshot, the command — is a TypeScript type (`src/shared/contracts/client-protocol.ts`)
 //! that rides beside these fields and is forwarded opaquely: nothing in Rust
 //! reads a widget record, and declaring one here would put the whole settings shape
 //! into the backend contract for a value it only passes on.

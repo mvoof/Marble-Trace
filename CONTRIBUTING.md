@@ -141,11 +141,11 @@ Read by `src-tauri/build.rs` from the environment or from `src-tauri/.env`
 
 ### Tooling
 
-| Variable          | Used by                     | Effect                                                                                                                                                                                                                                           |
-| ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `UPDATE_BINDINGS` | `cargo test --features dev` | Lets the test `regenerates_the_contract_on_demand` rewrite `src/types/bindings.ts` and the generated constants; without it the test does nothing: `UPDATE_BINDINGS=1 cargo test --features dev regenerates_the_contract`, then `npm run format`. |
-| `STORYBOOK_URL`   | `npm run capture:widgets`   | Storybook to take widget pictures from. Default `http://localhost:6006`.                                                                                                                                                                         |
-| `TAURI_DEV_HOST`  | `vite.config.ts`            | Host the dev server binds and serves HMR on, for running the frontend on another device. Set by the Tauri CLI when needed.                                                                                                                       |
+| Variable          | Used by                     | Effect                                                                                                                                                                                                                                                      |
+| ----------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `UPDATE_BINDINGS` | `cargo test --features dev` | Lets the test `regenerates_the_contract_on_demand` rewrite `src/shared/contracts/bindings.ts` and the generated constants; without it the test does nothing: `UPDATE_BINDINGS=1 cargo test --features dev regenerates_the_contract`, then `npm run format`. |
+| `STORYBOOK_URL`   | `npm run capture:widgets`   | Storybook to take widget pictures from. Default `http://localhost:6006`.                                                                                                                                                                                    |
+| `TAURI_DEV_HOST`  | `vite.config.ts`            | Host the dev server binds and serves HMR on, for running the frontend on another device. Set by the Tauri CLI when needed.                                                                                                                                  |
 
 ## Commit messages
 
@@ -203,7 +203,7 @@ A new widget needs a story to be taken from, a line in `SHOTS`, and a width in t
 
 ## Settings schema
 
-User settings are persisted in `settings.json` via `tauri-plugin-store`, and the file is versioned: format changes go through a chain of migrations in `src/platform/settings-schema/`.
+User settings are persisted in `settings.json` via `tauri-plugin-store`, and the file is versioned: format changes go through a chain of migrations in `src/shared/settings-schema/`.
 
 Most changes need no migration. Adding a field with a default, removing one, or adding an action with a default binding are all picked up on the next load — unknown and removed fields are purged from disk automatically, and defaults fill the gaps. A migration is for values that would otherwise be silently misread or be expensive for the user to recreate: a field that changes meaning or unit, a value that moves between blocks, or anything inside `layouts[]`, which the default-merging never reaches.
 

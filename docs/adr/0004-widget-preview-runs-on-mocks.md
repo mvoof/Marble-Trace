@@ -1,7 +1,7 @@
 # ADR 0004: The widget preview runs on mock builders, not on recorded sessions
 
 **Status:** accepted, 2026-09-14
-**Context:** `preview/`, the widget preview, the layout editor, Storybook
+**Context:** `features/preview/`, the widget preview, the layout editor, Storybook
 
 ## Decision
 
@@ -24,7 +24,7 @@ is:
    stores the running widgets use, no singletons, no persistence. The one
    channel between the two worlds is the existing one-way mirror of widget
    settings into the preview. Enforced by `no-restricted-imports` over
-   `src/preview/**`, the way every other layer boundary in this project is
+   `src/features/preview/**`, the way every other layer boundary in this project is
    enforced.
 2. **A scenario belongs to the domain of the widget that needs it.** The flag
    widget declares flag scenarios, the fuel widget declares fuel ones. Neither
@@ -131,8 +131,8 @@ cannot be judged from it.
 
 A scenario is written only when a manifest declares it, and a manifest declares
 only ids that exist; one test pins both directions. `PreviewScenarioId` lives in
-`src/types/` rather than beside the registry, because manifests are read by the
-store layer at import time and a manifest importing the registry would drag the
+`src/shared/contracts/` rather than beside the registry, because manifests are read by the
+catalogue (`entities/widget`) at import time and a manifest importing the registry would drag the
 snapshot and every builder into each chunk that holds a manifest — the remote
 screen's browser bundle included.
 

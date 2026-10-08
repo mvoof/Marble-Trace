@@ -150,7 +150,7 @@ opens the overlays after its own hydration, so it is ready to answer.
 The envelope — `kind`, `clientId`, `commandNo`, `lastHandledCommandNo`,
 `rejected` — is declared in Rust and exported through specta: the hub reads it
 to refuse WS commands and to replay the last snapshot. Command and snapshot
-payloads are TS-only types in `src/types/`; Rust forwards them opaquely.
+payloads are TS-only types in `src/shared/contracts/`; Rust forwards them opaquely.
 
 ## Consequences
 

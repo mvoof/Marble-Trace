@@ -33,21 +33,21 @@ prints saved reports side by side.
 
 ### What each row is
 
-| row                     | source                                                                                                                                                                                                 |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| tick p50/p99/max        | wall time of one `emit_domain_frames` pass (processors, assembly, mask, quantize, delivery), every tick of the span. The time the `dev` build spends sizing bundles is subtracted                      |
-| `<recipient>` bundles/s | `telemetry/delivery.rs`, per window label. `@remote` is the remote-screen mirror                                                                                                                       |
-| `<recipient>` KiB/s     | serialized JSON length of what that recipient was sent (a second serialization, `dev` only)                                                                                                            |
-| first paint             | navigation start to the overlay's `first-contentful-paint`, observed from the entry module before React mounts (`platform/sync/perf-cold-start.ts`) — the overlay's cold start, settings read included |
-| heap at first paint     | `usedJSHeapSize` read as that paint is observed: what the window boots into, before the tape fills the stores                                                                                          |
-| alloc MiB/s             | sum of positive `usedJSHeapSize` deltas every 50 ms. Run with `--enable-precise-memory-info`, which the script sets. Never RSS                                                                         |
-| long tasks ≥50 ms       | `PerformanceObserver('longtask')`. 50 ms is the API's floor                                                                                                                                            |
-| frames over budget      | `requestAnimationFrame` gaps over 25 ms (a 60 Hz frame and a half). The finer-grained stand-in for "tasks over 16 ms", which no browser API reports                                                    |
-| DOM mutations/s         | `MutationObserver` records on the overlay's `body`                                                                                                                                                     |
-| observer wake-ups/s     | `mobx.spy` reactions. A no-op in a production MobX, so always `—` in these runs                                                                                                                        |
-| apply p50/p99/max       | `applyTelemetryBundle` per bundle, MobX reactions included. Ticks that do not carry the 1 Hz tier                                                                                                      |
-| apply 1 Hz full         | the same, on the 1 Hz full bundles (`session` present)                                                                                                                                                 |
-| heap bucket             | sampling heap profile (16 KiB interval, collected objects included), each sample charged to the first matching frame on its stack                                                                      |
+| row                     | source                                                                                                                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| tick p50/p99/max        | wall time of one `emit_domain_frames` pass (processors, assembly, mask, quantize, delivery), every tick of the span. The time the `dev` build spends sizing bundles is subtracted                 |
+| `<recipient>` bundles/s | `telemetry/delivery.rs`, per window label. `@remote` is the remote-screen mirror                                                                                                                  |
+| `<recipient>` KiB/s     | serialized JSON length of what that recipient was sent (a second serialization, `dev` only)                                                                                                       |
+| first paint             | navigation start to the overlay's `first-contentful-paint`, observed from the entry module before React mounts (`app/sync/perf-cold-start.ts`) — the overlay's cold start, settings read included |
+| heap at first paint     | `usedJSHeapSize` read as that paint is observed: what the window boots into, before the tape fills the stores                                                                                     |
+| alloc MiB/s             | sum of positive `usedJSHeapSize` deltas every 50 ms. Run with `--enable-precise-memory-info`, which the script sets. Never RSS                                                                    |
+| long tasks ≥50 ms       | `PerformanceObserver('longtask')`. 50 ms is the API's floor                                                                                                                                       |
+| frames over budget      | `requestAnimationFrame` gaps over 25 ms (a 60 Hz frame and a half). The finer-grained stand-in for "tasks over 16 ms", which no browser API reports                                               |
+| DOM mutations/s         | `MutationObserver` records on the overlay's `body`                                                                                                                                                |
+| observer wake-ups/s     | `mobx.spy` reactions. A no-op in a production MobX, so always `—` in these runs                                                                                                                   |
+| apply p50/p99/max       | `applyTelemetryBundle` per bundle, MobX reactions included. Ticks that do not carry the 1 Hz tier                                                                                                 |
+| apply 1 Hz full         | the same, on the 1 Hz full bundles (`session` present)                                                                                                                                            |
+| heap bucket             | sampling heap profile (16 KiB interval, collected objects included), each sample charged to the first matching frame on its stack                                                                 |
 
 Limits of the method:
 
@@ -79,6 +79,9 @@ One row per measurement. Later tickets add rows here.
 | 2026-10-04 | same + ticket 07                                                      | widgets     | 770 / 775     | 1059          | 12.50 / 12.33 | 7572      | 0.9            | 1.0 / 0.9           | after 07; first paint 1664 / 1600 ms, heap 13.16 / 13.23 MiB       |
 | 2026-10-05 | `refactor/architecture-rework` @ deb97eee + ticket 11                 | widgets     | 570 / 575     | 761           | 9.42 / 9.41   | 7405      | 0.7            | 1.0 / 0.7           | static driver fields off `DriverEntry`; first paint 1616 / 1624 ms |
 | 2026-10-05 | `refactor/architecture-rework` @ 34693683 + ticket 26                 | widgets     | 536 / 542     | 761           | 5.08 / 5.09   | 1009      | 0.8            | 1.2 / 1.0           | identity/join caches, track-map dots via SVG DOM                   |
+| 2026-10-08 | `refactor/architecture-rework` @ 8b240da0 (ticket 26, re-measured)    | widgets     | 520           | 761           | 6.46          | 1481      | 1.1            | —                   | same code as the row above, one run; the environment moved         |
+| 2026-10-08 | `main` @ c459fa83                                                     | widgets     | 506 / 499     | 762           | 6.01 / 6.01   | 1479      | 1.0            | 1.0 / 1.0           | new reference; first paint 1552 / 1504 ms                          |
+| 2026-10-08 | `refactor/fsd-layout` @ ebfacdd8                                      | widgets     | 492 / 562     | 761           | 5.97 / 5.94   | 1481      | 0.9 / 1.0      | 0.9 / 1.1           | FSD layout (ADR-0008): no change; first paint 1764 / 1500 ms       |
 
 ## 2026-10-04 — baseline (ticket 01)
 
@@ -142,7 +145,7 @@ the ticket's 10 % repeatability bar.
 | **total sampled**                       | 12.09         |        | 4.78              |        |
 
 Top allocating sources (self), widgets run: the event payload literal 4.18 MiB/s,
-`TrackMapWidget/TrackMapSvg.tsx` 2.13, `utils/car-identity.ts` 2.05,
+`TrackMapWidget/TrackMapSvg.tsx` 2.13, `entities/cars/car-identity.ts` 2.05,
 `react-dom` 0.63, `react/jsx-runtime` 0.30. In stores-only `car-identity.ts`
 still allocates 1.06 MiB/s, which makes it store-side work that runs per bundle.
 
@@ -237,7 +240,7 @@ Same machine, tape, offset, layout and command as ticket 03, widgets mode, two
 runs. `DriverEntry` (in `driverEntries` and in `relative`) no longer carries
 name, number, class id/badge/colour, car names, flair, AI flag, iRating,
 licence or incidents; the overlay joins them back from `SessionSnapshot.cars`
-(`store/data/driver-entry-join.ts`).
+(`entities/cars/driver-entry-join.ts`).
 
 | metric                           | before (07) | after (11)  |
 | -------------------------------- | ----------- | ----------- |
@@ -296,8 +299,8 @@ aligned to the app's by start time, not by marker (±1 s).
 
 Stores-only: the parse is 1.62 of 1.69 MiB/s (95.7 %); store writes 0.03 MiB/s.
 Top allocating sources with widgets: payload literal 26.1 %,
-`utils/car-identity.ts` 21.6 %, `TrackMapSvg.tsx` 20.0 %, MobX 8.4 %,
-`store/data/driver-entry-join.ts` 5.1 %.
+`entities/cars/car-identity.ts` 21.6 %, `TrackMapSvg.tsx` 20.0 %, MobX 8.4 %,
+`entities/cars/driver-entry-join.ts` 5.1 %.
 
 ### Stream screen (Chrome, 33 telemetry messages/s after the hub's thinning)
 
@@ -337,12 +340,12 @@ two runs plus a 30 s heap profile, so each change carries its own number:
 | track-map dots placed through `transform.baseVal`       | 5.41 / 5.48   | 1009            |
 | the dots' `SVGTransform` items held instead of re-read  | 5.08 / 5.09   | 1009            |
 
-| allocating source (self)          | before (12) | after |
-| --------------------------------- | ----------- | ----- |
-| `utils/car-identity.ts`           | 2.05        | 0.35  |
-| `TrackMapSvg.tsx`                 | 1.89        | 0.56  |
-| `store/data/driver-entry-join.ts` | 0.49        | 0.56  |
-| event payload literal             | 2.46        | 1.99  |
+| allocating source (self)             | before (12) | after |
+| ------------------------------------ | ----------- | ----- |
+| `entities/cars/car-identity.ts`      | 2.05        | 0.35  |
+| `TrackMapSvg.tsx`                    | 1.89        | 0.56  |
+| `entities/cars/driver-entry-join.ts` | 0.49        | 0.56  |
+| event payload literal                | 2.46        | 1.99  |
 
 - **`speed` was in the identity.** It moves every tick, so the standings and
   relative identities compared unequal on every 10 Hz frame and the content
@@ -363,3 +366,34 @@ two runs plus a 30 s heap profile, so each change carries its own number:
   also why the overlay's DOM mutation records fell from 7400 to 1009 per
   second — the dots are still moved every frame (checked live).
 - Apply p99 0.7 → 0.8 ms is one 0.1 ms timer step; tick p99 unchanged.
+
+## 2026-10-08 — FSD layout (ADR-0008), and a moved reference
+
+Tape, offset, layout and command as before; each build a fresh `--build`, the
+three measured back to back on the same machine.
+
+| build                                   | alloc (MiB/s) | DOM mutations/s | tick p99 (µs) | apply p99 (ms) |
+| --------------------------------------- | ------------- | --------------- | ------------- | -------------- |
+| ticket 26 as recorded on 2026-10-05     | 5.08 / 5.09   | 1009            | 536 / 542     | 0.8            |
+| ticket 26 (8b240da0), re-measured today | 6.46          | 1481            | 520           | 1.1            |
+| `main` @ c459fa83                       | 6.01 / 6.01   | 1479            | 506 / 499     | 1.0            |
+| `refactor/fsd-layout` @ ebfacdd8        | 5.97 / 5.94   | 1481            | 492 / 562     | 0.9 / 1.0      |
+
+- **The FSD layout costs nothing.** Against `main` every row is within its
+  spread; the overlay is sent the same 761 KiB/s and mutates the DOM the same
+  1480 times a second.
+- **The 2026-10-05 numbers no longer reproduce, on the code that produced
+  them.** Ticket 26's own commit gives 1481 mutations/s and 6.5 MiB/s today, so
+  the step from 1009 is not in any commit — the bisect over the 19 commits of
+  `refactor/architecture-rework` after it found every one at ~1480. What moved
+  is the environment: WebView2 was updated on 2026-10-07 (154.0.4258.53 →
+  .62), and the run reads the app's own data folder — the layout, its widget
+  settings and the recorded track 244 the tape drives on — which everyday use
+  of the app rewrites. Which of the two it was is not established.
+- From here on, **compare against this section, not against the rows above
+  it**, and compare A/B on one machine: an absolute number from another day
+  is only as good as the environment it was taken in.
+- The `heap` profile of `refactor/fsd-layout` (30 s) charges the same sources
+  ticket 26 reduced at the same rates — `driver-entry-join` 0.56,
+  `TrackMapSvg` 0.55, `car-identity` 0.35 MiB/s; the extra allocation is in
+  React render and commit.

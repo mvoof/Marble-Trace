@@ -1,0 +1,33 @@
+/**
+ * Event names the backend emits, re-exported from the generated contract.
+ *
+ * The names themselves are declared in `src-tauri/src/model/events.rs` and
+ * written out to `@shared/contracts/backend-events` — this module is the frontend's door
+ * onto them, plus the handful of names that never cross the boundary.
+ */
+export {
+  SIM_TELEMETRY_BUNDLE,
+  SIM_TELEMETRY_SLOW,
+  SIM_SESSION,
+  SIM_WEATHER,
+  SIM_STATUS,
+  SIM_PERF,
+  SIM_DISCONNECTED,
+  SIM_CAPABILITIES,
+  SIM_TRACK_SHAPE,
+  SIM_REFERENCE_LAP_UPDATED,
+  CHAT_MESSAGE,
+  CHAT_PRESENCE,
+  CHAT_DELETION,
+  INPUT_DEVICES_EVENT,
+  INPUT_BUTTON_EVENT,
+  REMOTE_DEVICE_EVENT,
+  OVERLAY_MODES_EVENT,
+  HOTKEY_SETTINGS_ACTION_EVENT,
+  CLIENT_TO_MAIN_EVENT,
+  CLIENT_FROM_MAIN_EVENT,
+  CLIENT_CONTROL_EVENT,
+} from '@shared/contracts/backend-events';
+
+/** Heard by the backend recorder: the track's recorded shape was deleted. */
+export const TRACK_MAP_CLEAR = 'track-map:clear';

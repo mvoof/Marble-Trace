@@ -35,7 +35,7 @@ const modulesIn = (relativeFolder: string): string[] =>
 
 /** Shared components are a folder each, plus the odd single file. */
 const sharedComponents = (): string[] =>
-  readdirSync(join(REPO_ROOT, 'src/ui/shared'), { withFileTypes: true })
+  readdirSync(join(REPO_ROOT, 'src/shared/ui'), { withFileTypes: true })
     .filter(
       (entry) =>
         entry.isDirectory() ||
@@ -46,20 +46,20 @@ const sharedComponents = (): string[] =>
 describe('the widget toolbox catalogue', () => {
   it('found the trees it checks against', () => {
     // A folder that silently read as empty would make every check below pass.
-    expect(modulesIn('src/utils').length).toBeGreaterThan(0);
+    expect(modulesIn('src/shared/lib').length).toBeGreaterThan(0);
     expect(sharedComponents().length).toBeGreaterThan(0);
-    expect(modulesIn('src/ui/hooks').length).toBeGreaterThan(0);
+    expect(modulesIn('src/shared/hooks').length).toBeGreaterThan(0);
   });
 
-  it('lists every pure helper in src/utils/', () => {
-    const missing = modulesIn('src/utils').filter(
+  it('lists every pure helper in src/shared/lib/', () => {
+    const missing = modulesIn('src/shared/lib').filter(
       (moduleName) => !isListed(moduleName)
     );
 
     expect(missing).toEqual([]);
   });
 
-  it('lists every shared component in src/ui/shared/', () => {
+  it('lists every shared component in src/shared/ui/', () => {
     const missing = sharedComponents().filter(
       (component) => !isListed(component)
     );
@@ -67,8 +67,8 @@ describe('the widget toolbox catalogue', () => {
     expect(missing).toEqual([]);
   });
 
-  it('lists every shared hook in src/ui/hooks/', () => {
-    const missing = modulesIn('src/ui/hooks')
+  it('lists every shared hook in src/shared/hooks/', () => {
+    const missing = modulesIn('src/shared/hooks')
       .map((fileName) => fileName.replace(/\.ts$/, ''))
       .filter((hookName) => !isListed(hookName));
 

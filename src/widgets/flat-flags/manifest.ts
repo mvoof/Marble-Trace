@@ -1,0 +1,39 @@
+import type { WidgetManifest } from '@shared/contracts/widget-settings';
+import {
+  COMMON_WIDGET_DEFAULTS,
+  TRANSPARENT_APPEARANCE_DEFAULTS,
+} from '@widgets/widget-manifest';
+import { FLAT_FLAGS_SETTINGS } from '@entities/flags/flag-display.settings-schema';
+
+export const FLAT_FLAGS_MANIFEST: WidgetManifest = {
+  id: 'flat-flags',
+  previewScenarios: [
+    'yellow-flag',
+    'safety-car',
+    'blue-flag',
+    'black-flag',
+    'dq-flag',
+    'green-flag',
+    'white-flag',
+    'checkered-flag',
+    'red-flag',
+    'meatball-flag',
+    'debris-flag',
+  ],
+  label: 'Flat Flags',
+  description: 'Banner-style list of active track flags.',
+  autoHeight: true,
+  designWidth: 280,
+  designHeight: 160,
+  userSettings: {
+    enabled: false,
+    x: 760,
+    y: 250,
+    currentWidth: 280,
+    currentHeight: 160,
+    ...COMMON_WIDGET_DEFAULTS,
+    ...TRANSPARENT_APPEARANCE_DEFAULTS,
+    ...FLAT_FLAGS_SETTINGS.defaults,
+  },
+  settingsSchema: FLAT_FLAGS_SETTINGS,
+};

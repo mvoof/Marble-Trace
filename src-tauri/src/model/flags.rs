@@ -6,7 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 
-/// Raw iRacing session flag bit masks. Mirror `src/utils/flags-utils.ts` exactly.
+/// Raw iRacing session flag bit masks. Mirror `SESSION_FLAGS` in `src/shared/lib/driver.ts` exactly.
 pub const CHECKERED: u32 = 0x0000_0001;
 pub const WHITE: u32 = 0x0000_0002;
 pub const GREEN: u32 = 0x0000_0004;

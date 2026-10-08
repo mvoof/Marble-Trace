@@ -1,0 +1,36 @@
+import type { WidgetManifest } from '@shared/contracts/widget-settings';
+import {
+  COMMON_WIDGET_DEFAULTS,
+  PANEL_APPEARANCE_DEFAULTS,
+} from '@widgets/widget-manifest';
+import { DRS_SETTINGS } from './settings-schema';
+
+export const DRS_MANIFEST: WidgetManifest = {
+  id: 'drs',
+  // DRS rides the always-sent 4 Hz carStatus frame, so there is no gated field
+  // to declare.
+  telemetryEvents: [],
+  requiredCapabilities: ['playerDynamics'],
+  previewScenarios: ['drs-armed', 'drs-ready', 'drs-open'],
+  // The baseline car is a GT3: no DRS, so the adapter clears the field and the
+  // widget hides itself. The picker would be offering an empty pane.
+  previewBaseline: false,
+  label: 'DRS',
+  description:
+    'Drag reduction system state: armed past the detection point, ready inside the zone, open.',
+  // Sized to the row it holds: mark, rule, name and the longest state word
+  // ("ACTIVE") at their design sizes, plus the padding around them.
+  designWidth: 215,
+  designHeight: 56,
+  userSettings: {
+    enabled: false,
+    x: 700,
+    y: 600,
+    currentWidth: 215,
+    currentHeight: 56,
+    ...COMMON_WIDGET_DEFAULTS,
+    ...PANEL_APPEARANCE_DEFAULTS,
+    ...DRS_SETTINGS.defaults,
+  },
+  settingsSchema: DRS_SETTINGS,
+};

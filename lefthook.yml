@@ -3,7 +3,7 @@ pre-commit:
   commands:
     lint:
       glob: "*.{ts,tsx,js,mjs}"
-      exclude: "src/types/bindings.ts"
+      exclude: "src/shared/contracts/bindings.ts"
       run: npx oxlint --type-aware --fix --deny-warnings {staged_files}
       stage_fixed: true
     format:

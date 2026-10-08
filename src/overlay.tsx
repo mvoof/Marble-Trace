@@ -1,11 +1,8 @@
-import { watchColdStart } from '@platform/sync/perf-cold-start';
-import { OverlayRoot } from './store/roots/overlay-root';
-import {
-  AppWindowContext,
-  RendererCoreContext,
-} from './store/roots/root-store-context';
-import { OverlayRootContext } from './store/roots/overlay-root-context';
-import { OverlayWindow } from './ui/app/overlay/OverlayWindow';
+import { watchColdStart } from '@app/sync/perf-cold-start';
+import { OverlayRoot } from '@app/roots/overlay-root';
+import { AppWindowProvider, CoreProvider } from '@app/store-providers';
+import { OverlayRootContext } from '@app/roots/overlay-root-context';
+import { OverlayWindow } from '@app/windows/overlay/OverlayWindow';
 import { renderWindow } from './render-window';
 
 watchColdStart();
@@ -13,11 +10,11 @@ watchColdStart();
 const root = new OverlayRoot();
 
 renderWindow(
-  <RendererCoreContext.Provider value={root}>
-    <AppWindowContext.Provider value={root}>
+  <CoreProvider core={root}>
+    <AppWindowProvider stores={root}>
       <OverlayRootContext.Provider value={root}>
         <OverlayWindow />
       </OverlayRootContext.Provider>
-    </AppWindowContext.Provider>
-  </RendererCoreContext.Provider>
+    </AppWindowProvider>
+  </CoreProvider>
 );

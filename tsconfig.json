@@ -16,16 +16,13 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"],
-      "@assets/*": ["./src/assets/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@platform/services/*": ["./src/platform/services/*"],
-      "@platform/sync/*": ["./src/platform/sync/*"],
-      "@platform/settings-schema/*": ["./src/platform/settings-schema/*"],
-      "@store/*": ["./src/store/*"],
-      "@ui/app/*": ["./src/ui/app/*"],
-      "@ui/widgets/*": ["./src/ui/widgets/*"],
-      "@ui/shared/*": ["./src/ui/shared/*"],
-      "@ui/hooks/*": ["./src/ui/hooks/*"]
+      "@app/*": ["./src/app/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@widgets/*": ["./src/widgets/*"],
+      "@features/*": ["./src/features/*"],
+      "@entities/*": ["./src/entities/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@assets/*": ["./src/assets/*"]
     },
 
     /* Linting */

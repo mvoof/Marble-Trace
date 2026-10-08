@@ -19,13 +19,12 @@ and not throwaway.
 | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `src/storybook/define-widget-stories.tsx` | `defineWidgetStories` — builds the whole `meta` but its title; `previewScenario` — names a scenario for a story |
 | `src/storybook/widget-settings-args.ts`   | turns the widget's settings into Controls and writes them back into the store                                   |
-| `src/storybook/setting-options.ts`        | the members of every string-union setting, for the select controls                                              |
 | `src/storybook/story-overrides.ts`        | `whenSet` — a story argument that only overrides the frame when the story set it                                |
 | `src/storybook/with-replay.tsx`           | `withReplay` — plays a burst of frames after mount, for widgets that draw a history                             |
 | `src/storybook/widgetDecorator.tsx`       | the frame standing in for `WidgetContainer` — size, ground, border, `--wfs`                                     |
 | `.storybook/decorators.tsx`               | `withStore` — a fresh `PreviewCore` per story, provided through the context                                     |
-| `src/preview/scenarios.ts`                | the named scenarios (`PreviewScenarioId`) shared with the in-app layout-editor preview                          |
-| `src/preview/mocks/*.ts`                  | mock builders — `mockFuel`, `mockProximity`, `mockField`… — that derive a frame the way the backend does        |
+| `src/features/preview/scenarios.ts`       | the named scenarios (`PreviewScenarioId`) shared with the in-app layout-editor preview                          |
+| `src/features/preview/mocks/*.ts`         | mock builders — `mockFuel`, `mockProximity`, `mockField`… — that derive a frame the way the backend does        |
 
 The widget is **not** rewritten for Storybook. It reads its stores exactly as in
 the app; a story only decides what is in those stores.
@@ -57,30 +56,21 @@ All of it inside `runInAction`. A story file never calls `runInAction`,
 The widget is found from its component through its `mount.ts`, and its shipped
 `userSettings` from `manifest.ts` become args under a **Widget settings** group:
 
-| setting holds                                 | control      |
-| --------------------------------------------- | ------------ |
-| `boolean`                                     | toggle       |
-| `number`                                      | number field |
-| `#rrggbb` / `rgba(…)`                         | color picker |
-| a string union listed in `setting-options.ts` | select       |
-| an object (column sets and the like)          | JSON editor  |
+| setting holds                                   | control      |
+| ----------------------------------------------- | ------------ |
+| `boolean`                                       | toggle       |
+| `number`                                        | number field |
+| `#rrggbb` / `rgba(…)`                           | color picker |
+| a `choice` in the widget's `settings-schema.ts` | select       |
+| an object (column sets and the like)            | JSON editor  |
 
 Left out on purpose — the frame replaces `WidgetContainer` in a story, so they
 would do nothing: `enabled`, `x`, `y`, `currentWidth`, `currentHeight`,
 `opacity`, `fontScale`, `backgroundColor`, `borderColor`.
 
 So a **new setting needs nothing in the story**: it appears on the Controls tab
-by itself. One exception — a new **string union** shows as a plain text field
-until its members are added to `SETTING_OPTIONS` in
-`src/storybook/setting-options.ts`:
-
-```ts
-scaleMode: allOf<RadarScaleMode>()('fixed-scope', 'fixed-cars', 'manual'),
-```
-
-`allOf` fails to compile when a member is missing or misspelled, so the list
-cannot drift from the type. A key two widgets use for different unions gets the
-select only where its default is one of the listed members.
+by itself, and a `choice` in the widget's `settings-schema.ts` brings its
+members along as a select.
 
 A story rendering something that is not a mounted widget (a sub-component, a
 pair of widgets) gets no settings. Pass `widgetId` to `defineWidgetStories` to
@@ -95,8 +85,8 @@ name the widget explicitly.
 ```ts
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { mockProximity } from '@preview/mocks/traffic';
-import type { MockTrafficCar } from '@preview/mocks/traffic';
+import { mockProximity } from '@features/preview/mocks/traffic';
+import type { MockTrafficCar } from '@features/preview/mocks/traffic';
 import { ProximityRadarWidget } from './ProximityRadarWidget';
 import {
   defineWidgetStories,
@@ -157,8 +147,8 @@ seed: (store, args) => {
 },
 ```
 
-- **Write through the data stores' own setters** (`updateProximity`,
-  `updateFuel`…) with frames from `src/preview/mocks/`. Never hand-build a
+- **Write through the entity stores' own setters** (`updateProximity`,
+  `updateFuel`…) with frames from `src/features/preview/mocks/`. Never hand-build a
   frame object: the builders derive dependent fields the way the backend does,
   and a hand-built one drifts the day the frame changes.
 - **Respect the scenario under you.** The seed runs after the scenario, so an
@@ -233,18 +223,18 @@ export const Showcase: Story = {
 };
 ```
 
-`seedInputHistory` lives in `src/preview/preview-animator.ts`, shared with
+`seedInputHistory` lives in `src/features/preview/preview-animator.ts`, shared with
 the in-app preview. See `InputTraceWidget`, `GMeterWidget`, `LapLogWidget` for
 working ones.
 
 ### 5. Scenarios — when to add one
 
-A scenario (`src/preview/scenarios.ts`, id in
-`src/types/preview-scenarios.ts`) is shared with the layout editor's preview
+A scenario (`src/features/preview/scenarios.ts`, id in
+`src/shared/contracts/preview-scenarios.ts`) is shared with the layout editor's preview
 picker. Add one when the **app** should be able to show that state too — a flag,
 a pit stop, three-wide traffic. A state only one story needs stays in that
 story's args. **Nothing that exists only for a story may be added to
-`preview/`**, and nothing in `preview/` may import from
+`features/preview/`**, and nothing in `features/preview/` may import from
 `src/storybook/` (the app must never depend on Storybook).
 
 ---
@@ -269,7 +259,7 @@ story's args. **Nothing that exists only for a story may be added to
 
 ```bash
 npm run storybook          # :6006 — open Widgets/<Name>Widget
-npm run typecheck          # catches a missing member in SETTING_OPTIONS
+npm run typecheck
 ```
 
 On each story: the state looks as named; every control on **Widget settings**

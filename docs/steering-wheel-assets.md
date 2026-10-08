@@ -164,18 +164,19 @@ follows the theme instead of pinning itself to a hex.
 
 ## 4. Register it
 
-Three files, next to each other, none of them shared:
+Two files in the widget's own folder, and the label:
 
-1. **`src/types/widget-settings.ts`** — add the asset name to the
-   `SteeringWheelStyle` union.
-2. **`src/ui/widgets/InputTraceWidget/SteeringWheel/WheelArt.tsx`** — import the
-   SVG with `?react` and add it to `WHEEL_ART`.
-3. **`src/ui/widgets/InputTraceWidget/SteeringWheel/wheel-styles.ts`** — add an
-   entry to `STEERING_WHEEL_STYLE_OPTIONS` with the label the picker shows.
+1. **`src/widgets/input-trace/settings-schema.ts`** — add the asset name to
+   `STEERING_WHEEL_STYLE`. Its order is the order the picker lists the wheels
+   in.
+2. **`src/widgets/input-trace/SteeringWheel/WheelArt.tsx`** — import the SVG
+   with `?react` and add it to `WHEEL_ART`.
+3. **`src/locales/*/widgets.json`** — the name the picker shows, under
+   `settingsPanels.inputTrace.wheelStyles`.
 
-The split between the last two is deliberate: `wheel-styles.ts` is a plain list
-with no SVG imports, so the settings window lists every wheel without bundling
-seven silhouettes it never draws.
+The split between the first two is deliberate: the schema is a plain list with
+no SVG imports, so the settings window lists every wheel without bundling the
+silhouettes it never draws.
 
 No settings migration is needed — an existing `settings.json` simply keeps
 whatever `steeringWheelStyle` it already had, and a file written before the

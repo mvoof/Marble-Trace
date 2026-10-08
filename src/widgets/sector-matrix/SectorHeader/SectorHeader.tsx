@@ -1,0 +1,86 @@
+﻿import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { observer } from 'mobx-react-lite';
+import { usePlayerStore } from '@entities/player/player-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { formatLapTime } from '@shared/lib/telemetry-format';
+import { getGameDelta } from '@shared/lib/delta-utils';
+import { getSectorColor } from '@shared/lib/colors';
+import styles from './SectorHeader.module.scss';
+import type { SectorMatrixWidgetSettings } from '../settings-schema';
+
+interface Props {
+  sectorCount: number;
+}
+
+export const SectorHeader = observer(({ sectorCount }: Props) => {
+  const { lapTiming } = usePlayerStore();
+  const { currentSectorIdx } = useBackendComputedStore();
+
+  const { showPredicted } =
+    useWidgetSettings<SectorMatrixWidgetSettings>('sector-matrix');
+
+  const lapNum = lapTiming?.lap ?? null;
+
+  const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
+  const lapDistPct = lapTiming?.lap_dist_pct ?? 0;
+
+  const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
+
+  const liveDelta = getGameDelta(lapTiming, 'personal_best');
+
+  const predictedTime =
+    bestLapTime !== null && bestLapTime > 0 && liveDelta !== null
+      ? bestLapTime + liveDelta
+      : null;
+
+  return (
+    <div className={styles.root}>
+      <div className={styles.topRow}>
+        <div className={styles.lapInfo}>
+          <span className={styles.lapTag}>▶ L{lapNum ?? '--'}</span>
+
+          <span className={styles.lapTime}>
+            {formatLapTime(currentLapTime)}
+          </span>
+        </div>
+
+        {showPredicted && (
+          <div className={styles.predInfo}>
+            <span className={styles.predLabel}>PRED</span>
+
+            <span className={styles.predTime}>
+              {formatLapTime(predictedTime)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className={styles.progressBar}>
+        {Array.from({ length: sectorCount - 1 }, (_, idx) => (
+          <div
+            key={idx}
+            className={styles.sectorTick}
+            style={{ left: `${((idx + 1) / sectorCount) * 100}%` }}
+          />
+        ))}
+
+        <div
+          className={styles.progressFill}
+          style={{
+            width: `${lapDistPct * 100}%`,
+            background: getSectorColor(currentSectorIdx ?? 0),
+          }}
+        />
+      </div>
+
+      <div className={styles.progressMeta}>
+        <span>{Math.round(lapDistPct * 100)}% LAP</span>
+
+        <span>
+          S{currentSectorIdx === null ? '-' : currentSectorIdx + 1}/
+          {sectorCount}
+        </span>
+      </div>
+    </div>
+  );
+});

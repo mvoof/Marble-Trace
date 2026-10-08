@@ -1,0 +1,10 @@
+import type { WidgetMount } from '@widgets/widget-mount';
+import { WHEEL_TO_WHEEL_MANIFEST } from './manifest';
+import { WheelToWheelWidget } from './WheelToWheelWidget';
+import { WheelToWheelWidgetStore } from './wheel-to-wheel.store';
+
+export const mount: WidgetMount = {
+  id: WHEEL_TO_WHEEL_MANIFEST.id,
+  component: WheelToWheelWidget,
+  store: (context) => new WheelToWheelWidgetStore(context),
+};

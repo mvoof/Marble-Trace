@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { Decorator } from '@storybook/react-vite';
 
-import type { PreviewCore } from '@store/roots/renderer-core';
+import type { PreviewCore } from '@app/roots/renderer-core';
 import { usePreviewStore } from '../../.storybook/decorators';
 
 /**

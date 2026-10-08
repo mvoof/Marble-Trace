@@ -1,0 +1,71 @@
+import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
+import { Button } from 'antd';
+import { Plus } from 'lucide-react';
+import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
+import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
+import { useBindingsUiStore } from '@features/hotkey-bindings/bindings-ui-context';
+import { bindingKey } from '@shared/contracts/input-bindings';
+import { BindingChip } from './BindingChip';
+import { actionLabel } from '@features/hotkey-bindings/binding-labels';
+import styles from './BindingsSettings.module.scss';
+
+interface BindingRowProps {
+  actionId: string;
+}
+
+export const BindingRow = observer(({ actionId }: BindingRowProps) => {
+  const bindings = useBindingsStore();
+  const bindingsUi = useBindingsUiStore();
+  const pitServiceWidget = usePitServiceWidgetStore();
+  const { t } = useTranslation('main-app');
+
+  const action = bindings.registry.byId.get(actionId);
+
+  if (!action) {
+    return null;
+  }
+
+  const bound = bindings.bindingsFor(actionId);
+
+  // A key whose setting is switched off would run and change nothing, so the
+  // row says what to turn on instead of leaving the press unexplained.
+  const isInert = action.isInert?.({ pitServiceWidget }) === true;
+
+  return (
+    <div className={styles.row}>
+      <div className={styles.rowTexts}>
+        <div className={styles.rowLabel}>
+          {actionLabel(action, bindings.registry, t)}
+        </div>
+
+        {isInert && action.inertHintKey && (
+          <div className={styles.rowHint}>
+            {t(`bindings.inert.${action.inertHintKey}`)}
+          </div>
+        )}
+      </div>
+
+      <div className={styles.chips}>
+        {bound.length === 0 ? (
+          <span className={styles.empty}>{t('bindings.unbound')}</span>
+        ) : (
+          bound.map((binding) => (
+            <BindingChip
+              key={bindingKey(binding)}
+              actionId={actionId}
+              binding={binding}
+            />
+          ))
+        )}
+
+        <Button
+          size="small"
+          icon={<Plus size={12} />}
+          aria-label={t('bindings.addBinding')}
+          onClick={() => bindingsUi.startCapture(actionId)}
+        />
+      </div>
+    </div>
+  );
+});

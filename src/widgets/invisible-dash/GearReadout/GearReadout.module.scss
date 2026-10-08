@@ -1,0 +1,15 @@
+@use '../_invisible-dash-scale.scss' as *;
+
+.gear {
+  color: var(--dash-gear-color, inherit);
+  font-size: wfs(72 * $ss);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+@container #{$container} (max-width: #{$compact-max}) {
+  .gear {
+    font-size: floor-size(#{wfs(72 * $ss)}, 30);
+  }
+}

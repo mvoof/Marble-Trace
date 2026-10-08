@@ -17,21 +17,12 @@ const fromRoot = (relativePath: string) => path.resolve(rootDir, relativePath);
  * .storybook/main.ts so the two can never drift apart.
  */
 export const createLayerAliases = (): AliasEntry[] => [
-  {
-    find: '@platform/services',
-    replacement: fromRoot('./src/platform/services'),
-  },
-  { find: '@platform/sync', replacement: fromRoot('./src/platform/sync') },
-  {
-    find: '@platform/settings-schema',
-    replacement: fromRoot('./src/platform/settings-schema'),
-  },
-  { find: '@ui/app', replacement: fromRoot('./src/ui/app') },
-  { find: '@ui/widgets', replacement: fromRoot('./src/ui/widgets') },
-  { find: '@ui/shared', replacement: fromRoot('./src/ui/shared') },
-  { find: '@ui/hooks', replacement: fromRoot('./src/ui/hooks') },
-  { find: '@store', replacement: fromRoot('./src/store') },
-  { find: '@utils', replacement: fromRoot('./src/utils') },
+  { find: '@app', replacement: fromRoot('./src/app') },
+  { find: '@pages', replacement: fromRoot('./src/pages') },
+  { find: '@widgets', replacement: fromRoot('./src/widgets') },
+  { find: '@features', replacement: fromRoot('./src/features') },
+  { find: '@entities', replacement: fromRoot('./src/entities') },
+  { find: '@shared', replacement: fromRoot('./src/shared') },
   { find: '@assets', replacement: fromRoot('./src/assets') },
   { find: '@', replacement: fromRoot('./src') },
 ];

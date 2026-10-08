@@ -1,5 +1,5 @@
 import { useLayoutEffect } from 'react';
-import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
+import { WidgetInstanceScope } from '@widgets/instance-scope/WidgetInstanceScope';
 import type { ComponentType } from 'react';
 import { runInAction } from 'mobx';
 import type {
@@ -9,8 +9,8 @@ import type {
   StoryContext,
 } from '@storybook/react-vite';
 
-import type { PreviewScenarioId } from '@/types/preview-scenarios';
-import type { PreviewCore } from '@store/roots/renderer-core';
+import type { PreviewScenarioId } from '@shared/contracts/preview-scenarios';
+import type { PreviewCore } from '@app/roots/renderer-core';
 import { usePreviewStore, withStore } from '../../.storybook/decorators';
 import { widgetDecorator } from './widgetDecorator';
 import { seedFromSnapshot, seedScenario } from './seed-from-snapshot';
@@ -212,6 +212,9 @@ export const defineWidgetStories = <Args,>(
     parameters: { layout: 'centered' },
     decorators: [withStore(), frameDecorator],
     args: { ...settingsDefaults, ...args } as Args,
-    argTypes: mergeArgTypes(settingsArgTypesOf(settingsDefaults), argTypes),
+    argTypes: mergeArgTypes(
+      settingsArgTypesOf(widgetId ?? '', settingsDefaults),
+      argTypes
+    ),
   } as WidgetMeta<Args>;
 };

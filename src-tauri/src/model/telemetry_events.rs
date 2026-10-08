@@ -2,15 +2,11 @@
 //!
 //! The frontend composes the mask from the `telemetryEvents` each widget
 //! manifest declares; the emitter leaves an unrequested field out of the
-//! bundle. Both halves read this one list: `src/types/telemetry-event-bits.ts`
+//! bundle. Both halves read this one list: `src/shared/contracts/telemetry-event-bits.ts`
 //! is generated from it, and its export names *are* the names a manifest
 //! writes — the bundle field each bit gates, in the bundle's own camelCase —
 //! so the frontend derives `TelemetryEventName` from the module instead of
 //! restating either the names or the bits.
-//!
-//! It lands in `src/types/` rather than beside the other value files in
-//! `src/utils/`: `TelemetryEventName` is part of the contract, and
-//! `src/types/` may import nothing outside itself.
 
 use crate::model::ts_values::ts_values;
 #[cfg(feature = "dev")]
