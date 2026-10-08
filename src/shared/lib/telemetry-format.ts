@@ -89,6 +89,13 @@ export function distanceUnit(unitSystem: UnitSystem): string {
   return unitSystem === 'metric' ? 'м' : 'ft';
 }
 
+/**
+ * The distance unit as an overlay widget prints it. Widget text is English
+ * whatever the app's language, so this is `m`, never the settings' `м`.
+ */
+export const widgetDistanceUnit = (unitSystem: UnitSystem): 'm' | 'ft' =>
+  unitSystem === 'imperial' ? 'ft' : 'm';
+
 export function formatGear(gear: number): string {
   if (gear === 0) return 'N';
   if (gear < 0) return 'R';

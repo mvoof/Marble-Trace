@@ -6,7 +6,10 @@ import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { buildPitApproachView } from '@features/pit-service/pit-approach';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { METERS_TO_FEET } from '@shared/lib/telemetry-format';
+import {
+  metersToDisplayDistance,
+  widgetDistanceUnit,
+} from '@shared/lib/telemetry-format';
 import { ReservedSlot } from '@entities/app-settings/ReservedSlot/ReservedSlot';
 
 import styles from './PitApproachRail.module.scss';
@@ -59,7 +62,7 @@ export const PitApproachRail = observer(
     const isApproach =
       isIdle && pitService.isApproachingWithin(revealOnApproachM);
 
-    const isImperial = units.unitSystem === 'imperial';
+    const { unitSystem } = units;
 
     const railRef = useReactiveDomWrite<HTMLDivElement>(
       (element, scheduleWrite) => {
@@ -82,7 +85,7 @@ export const PitApproachRail = observer(
           shownDistM === null
             ? NO_VALUE_TEXT
             : Math.round(
-                isImperial ? shownDistM * METERS_TO_FEET : shownDistM
+                metersToDisplayDistance(shownDistM, unitSystem)
               ).toString();
 
         scheduleWrite(() => {
@@ -126,7 +129,7 @@ export const PitApproachRail = observer(
           }
         });
       },
-      [player, pitService, withBrakeCue, isIdle, isImperial]
+      [player, pitService, withBrakeCue, isIdle, unitSystem]
     );
 
     // The lane goes away, but not the room it stands in: the rail appears on
@@ -190,7 +193,9 @@ export const PitApproachRail = observer(
           <span className={styles.value} />
 
           {withUnit && (
-            <span className={styles.unit}>{isImperial ? 'ft' : 'm'}</span>
+            <span className={styles.unit}>
+              {widgetDistanceUnit(unitSystem)}
+            </span>
           )}
         </div>
       </div>

@@ -2,6 +2,12 @@ import type { NearbyCar } from '@shared/contracts/bindings';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
 import { computeRelativeGap } from '@shared/lib/driver';
 import { splitDriverName } from '@shared/lib/driver';
+import type { UnitSystem } from '@shared/contracts/domain';
+import {
+  displayDistanceToMeters,
+  metersToDisplayDistance,
+  widgetDistanceUnit,
+} from '@shared/lib/telemetry-format';
 import type {
   BattleNameMode,
   CloseBattleWidgetSettings,
@@ -41,8 +47,6 @@ const TICK_STEP_BY_RANGE_FEET: Record<number, number> = {
   300: 100,
   600: 200,
 };
-
-const METERS_TO_FEET = 3.28084;
 
 /**
  * Past this much of a lap apart the two cars are no longer racing each other,
@@ -103,10 +107,13 @@ export interface AxisTick {
 
 /** Meters into the unit the widget prints, and back. */
 export const toDisplayDistance = (meters: number, isMetric: boolean): number =>
-  isMetric ? meters : meters * METERS_TO_FEET;
+  metersToDisplayDistance(meters, unitSystemOf(isMetric));
 
 export const toMeters = (display: number, isMetric: boolean): number =>
-  isMetric ? display : display / METERS_TO_FEET;
+  displayDistanceToMeters(display, unitSystemOf(isMetric));
+
+const unitSystemOf = (isMetric: boolean): UnitSystem =>
+  isMetric ? 'metric' : 'imperial';
 
 /**
  * The ticks, laid out in the unit they are read in. The axis itself stays in
@@ -428,9 +435,9 @@ export const formatBattleDistance = (
   clearance: number,
   isMetric: boolean
 ): string => {
-  const value = isMetric ? clearance : clearance * METERS_TO_FEET;
+  const value = toDisplayDistance(clearance, isMetric);
 
-  return `${Math.round(value)}${isMetric ? ' m' : ' ft'}`;
+  return `${Math.round(value)} ${widgetDistanceUnit(unitSystemOf(isMetric))}`;
 };
 
 /**
@@ -445,11 +452,11 @@ export const battleDistanceParts = (
   clearance: number,
   isMetric: boolean
 ): { value: string; unit: string } => {
-  const value = isMetric ? clearance : clearance * METERS_TO_FEET;
+  const value = toDisplayDistance(clearance, isMetric);
 
   return {
     value: String(Math.round(value)),
-    unit: isMetric ? 'm' : 'ft',
+    unit: widgetDistanceUnit(unitSystemOf(isMetric)),
   };
 };
 

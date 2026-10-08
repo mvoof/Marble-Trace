@@ -1,7 +1,10 @@
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { distanceUnit, formatDistance } from '@shared/lib/telemetry-format';
+import {
+  formatDistance,
+  widgetDistanceUnit,
+} from '@shared/lib/telemetry-format';
 import { getBarPillColor } from '@entities/radar/radar-constants';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
@@ -114,7 +117,7 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
       const label = `${signOf(rawDist)}${formatDistance(
         Math.abs(rawDist),
         units.unitSystem
-      )}${distanceUnit(units.unitSystem)}`;
+      )}${widgetDistanceUnit(units.unitSystem)}`;
 
       scheduleWrite(() => {
         element.classList.remove(styles.pillEmpty);

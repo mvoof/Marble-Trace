@@ -76,6 +76,13 @@ export class SessionStore {
     );
   }
 
+  /** Car index -> the number painted on the car, as the roster gives it. */
+  get carNumberByIdx(): ReadonlyMap<number, string> {
+    return new Map(
+      (this.sessionInfo?.cars ?? []).map((car) => [car.carIdx, car.carNumber])
+    );
+  }
+
   get competingCarCount(): number {
     return (this.sessionInfo?.cars ?? []).filter(
       (car) => !car.isPaceCar && !car.isSpectator

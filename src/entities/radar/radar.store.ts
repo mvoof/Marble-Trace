@@ -2,9 +2,8 @@ import { action, makeAutoObservable, reaction } from 'mobx';
 import type { IReactionDisposer } from 'mobx';
 
 import {
-  DESIGN_SIZE_PX,
-  resolveScopeScale,
   scopeDistanceOf,
+  scopeRangeMeters,
 } from '@entities/radar/radar-constants';
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
@@ -129,7 +128,7 @@ export class RadarWidgetStore {
       return true;
     }
 
-    const rangeMeters = this.scopeRangeMeters;
+    const rangeMeters = this.currentScopeRange;
 
     return proximity.nearbyCars.some(
       (car) => scopeDistanceOf(car) <= rangeMeters
@@ -141,18 +140,10 @@ export class RadarWidgetStore {
    * resolves it from — so the widget never wakes for a car it would have to
    * leave off the picture, and never stays dark with one drawn inside the rim.
    */
-  private get scopeRangeMeters(): number {
-    const settings = this.settingsOf<ProximityRadarSettings>('proximity-radar');
-
-    const size = Math.min(settings.currentWidth, settings.currentHeight);
-    const radiusPx = size / 2;
-
-    return resolveScopeScale({
-      scaleMode: settings.scaleMode,
-      scopeRange: settings.scopeRange,
-      radiusPx,
-      widgetScale: size / DESIGN_SIZE_PX,
-    }).rangeMeters;
+  private get currentScopeRange(): number {
+    return scopeRangeMeters(
+      this.settingsOf<ProximityRadarSettings>('proximity-radar').scopeRange
+    );
   }
 
   private get scopeHideDelay(): number {

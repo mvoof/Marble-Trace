@@ -13,21 +13,6 @@ import {
  * deleted must not take the other's description with it.
  */
 
-/**
- * What the widget's own size does to the picture. The scope covers
- * `radius / pxPerMeter` meters, so fixing any two of the three fixes the third
- * — this is which two the user pins. `fixed-scope`: the scope is a constant of
- * the design and the widget's size zooms it all. `fixed-cars`: the
- * metres-to-pixels ratio is constant and a bigger widget sees further.
- * `manual`: the scope is typed in by hand and the cars follow it.
- */
-export const RADAR_SCALE_MODE = [
-  'fixed-scope',
-  'fixed-cars',
-  'manual',
-] as const;
-export type RadarScaleMode = (typeof RADAR_SCALE_MODE)[number];
-
 export const RADAR_BACKGROUND_TEXTURE = [
   'none',
   'polar-dots',
@@ -61,16 +46,28 @@ export const PROXIMITY_RADAR_SETTINGS = defineSettings('radar', {
    * no such delay: it goes with the spotter's call.
    */
   hideDelay: num(2, { min: 0, max: 30, step: 0.5 }),
-  scaleMode: choice(RADAR_SCALE_MODE, 'fixed-scope'),
-  /** Radius in meters the circle covers. Read only when `scaleMode` is manual. */
+  /**
+   * Radius in meters the circle covers, whatever the widget's size: a bigger
+   * widget zooms the same picture rather than seeing further.
+   */
   scopeRange: num(10, { min: 5, max: 30, step: 1 }),
   backgroundTexture: choice(RADAR_BACKGROUND_TEXTURE, 'polar-dots'),
   showAxes: bool(true),
-  /** Distance ticks along the vertical axis, drawn only with the axes. */
+  /**
+   * Distances written on the vertical axis, drawn only with the axes. The key
+   * predates the labels — they replaced tick marks — and is kept so nobody's
+   * choice is reset.
+   */
   showAxisTicks: bool(true),
+  /** Opponents' bodies; off leaves only their beams, markers and gaps. */
+  showOpponentCars: bool(true),
+  /** Each opponent's car number written on its body. */
+  showCarNumber: bool(true),
   showRangeRings: bool(true),
   /** The beam that follows an opponent for as long as it is in the scope. */
   showBeam: bool(true),
+  /** The line closing the beam on the rim. */
+  showBeamEdge: bool(true),
   /** White bodies; off paints each car in its own threat color. */
   monochromeCars: bool(true),
   /** Alpha every car body is drawn at, the player's own included. */

@@ -10,7 +10,6 @@
  */
 
 import type { LateralSide } from '@shared/contracts/bindings';
-import type { RadarScaleMode } from './radar.settings-schema';
 
 /** Proximity center distance considered dangerous for RadarBar */
 const BAR_DANGER_DISTANCE = 1.0;
@@ -36,8 +35,7 @@ export const getBarPillColor = (centerDistance: number): string => {
   return RADAR_COLORS.safe;
 };
 
-/** 180 px of widget covers a 10 m radius. */
-export const DESIGN_SIZE_PX = 180;
+/** The circle's radius when nothing valid is set. */
 export const DESIGN_SCOPE_RANGE_M = 10;
 
 /**
@@ -48,53 +46,39 @@ export const DESIGN_SCOPE_RANGE_M = 10;
 export const SIDE_LATERAL_OFFSET_M = 3.4;
 
 interface ScaleInput {
-  scaleMode: RadarScaleMode;
+  /** The radius the user set, in meters. */
   scopeRange: number;
   /** Half of the widget's rendered side, in CSS pixels. */
   radiusPx: number;
-  widgetScale: number;
 }
 
 export interface ScopeScale {
   pxPerMeter: number;
-  /** Meters the circle actually covers, whichever mode produced them. */
+  /** Meters the circle covers. */
   rangeMeters: number;
 }
 
 /**
- * One knob decides both the zoom and what fits in the circle, and the user
- * picks which one it is.
+ * The radius the circle covers. A hand-edited file can carry a zero or a
+ * negative here, and a scope of zero meters is an infinite pxPerMeter — every
+ * car drawn as a full-screen block — so that falls back to the design range.
+ */
+export const scopeRangeMeters = (scopeRange: number): number =>
+  Number.isFinite(scopeRange) && scopeRange > 0
+    ? scopeRange
+    : DESIGN_SCOPE_RANGE_M;
+
+/**
+ * The circle always covers the radius the user set; the widget's size only
+ * zooms the picture, as every other widget does.
  */
 export const resolveScopeScale = ({
-  scaleMode,
   scopeRange,
   radiusPx,
-  widgetScale,
 }: ScaleInput): ScopeScale => {
-  const designPxPerMeter = DESIGN_SIZE_PX / 2 / DESIGN_SCOPE_RANGE_M;
+  const rangeMeters = scopeRangeMeters(scopeRange);
 
-  if (scaleMode === 'fixed-cars') {
-    return {
-      pxPerMeter: designPxPerMeter,
-      rangeMeters: radiusPx / designPxPerMeter,
-    };
-  }
-
-  if (scaleMode === 'manual') {
-    // A hand-edited file can carry a zero or a negative here, and a scope of
-    // zero meters is an infinite pxPerMeter — every car drawn as a full-screen
-    // block. Fall back to the design range instead.
-    const range =
-      Number.isFinite(scopeRange) && scopeRange > 0
-        ? scopeRange
-        : DESIGN_SCOPE_RANGE_M;
-
-    return { pxPerMeter: radiusPx / range, rangeMeters: range };
-  }
-
-  const pxPerMeter = designPxPerMeter * widgetScale;
-
-  return { pxPerMeter, rangeMeters: radiusPx / pxPerMeter };
+  return { pxPerMeter: radiusPx / rangeMeters, rangeMeters };
 };
 
 /**
