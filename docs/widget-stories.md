@@ -19,7 +19,6 @@ and not throwaway.
 | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `src/storybook/define-widget-stories.tsx` | `defineWidgetStories` — builds the whole `meta` but its title; `previewScenario` — names a scenario for a story |
 | `src/storybook/widget-settings-args.ts`   | turns the widget's settings into Controls and writes them back into the store                                   |
-| `src/storybook/setting-options.ts`        | the members of every string-union setting, for the select controls                                              |
 | `src/storybook/story-overrides.ts`        | `whenSet` — a story argument that only overrides the frame when the story set it                                |
 | `src/storybook/with-replay.tsx`           | `withReplay` — plays a burst of frames after mount, for widgets that draw a history                             |
 | `src/storybook/widgetDecorator.tsx`       | the frame standing in for `WidgetContainer` — size, ground, border, `--wfs`                                     |
@@ -57,30 +56,21 @@ All of it inside `runInAction`. A story file never calls `runInAction`,
 The widget is found from its component through its `mount.ts`, and its shipped
 `userSettings` from `manifest.ts` become args under a **Widget settings** group:
 
-| setting holds                                 | control      |
-| --------------------------------------------- | ------------ |
-| `boolean`                                     | toggle       |
-| `number`                                      | number field |
-| `#rrggbb` / `rgba(…)`                         | color picker |
-| a string union listed in `setting-options.ts` | select       |
-| an object (column sets and the like)          | JSON editor  |
+| setting holds                                   | control      |
+| ----------------------------------------------- | ------------ |
+| `boolean`                                       | toggle       |
+| `number`                                        | number field |
+| `#rrggbb` / `rgba(…)`                           | color picker |
+| a `choice` in the widget's `settings-schema.ts` | select       |
+| an object (column sets and the like)            | JSON editor  |
 
 Left out on purpose — the frame replaces `WidgetContainer` in a story, so they
 would do nothing: `enabled`, `x`, `y`, `currentWidth`, `currentHeight`,
 `opacity`, `fontScale`, `backgroundColor`, `borderColor`.
 
 So a **new setting needs nothing in the story**: it appears on the Controls tab
-by itself. One exception — a new **string union** shows as a plain text field
-until its members are added to `SETTING_OPTIONS` in
-`src/storybook/setting-options.ts`:
-
-```ts
-scaleMode: allOf<RadarScaleMode>()('fixed-scope', 'fixed-cars', 'manual'),
-```
-
-`allOf` fails to compile when a member is missing or misspelled, so the list
-cannot drift from the type. A key two widgets use for different unions gets the
-select only where its default is one of the listed members.
+by itself, and a `choice` in the widget's `settings-schema.ts` brings its
+members along as a select.
 
 A story rendering something that is not a mounted widget (a sub-component, a
 pair of widgets) gets no settings. Pass `widgetId` to `defineWidgetStories` to
@@ -269,7 +259,7 @@ story's args. **Nothing that exists only for a story may be added to
 
 ```bash
 npm run storybook          # :6006 — open Widgets/<Name>Widget
-npm run typecheck          # catches a missing member in SETTING_OPTIONS
+npm run typecheck
 ```
 
 On each story: the state looks as named; every control on **Widget settings**

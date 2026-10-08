@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { MainRoot } from '@app/roots/main-root';
 import type { CapabilitiesPayload } from '@shared/contracts/bindings';
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { deleteLayout } from '@features/layout-editor/layout-gestures';
 import type { LayoutsStore } from './layouts.store';
 import type { LayoutEditorStore } from '@features/layout-editor/layout-editor.store';
 import type { LiveWidgetsStore } from './live-widgets.store';
+import type { StandingsViewMode } from '@shared/contracts/widget-choices';
 
 const FULL_CAPABILITIES: CapabilitiesPayload = {
   playerDynamics: true,
@@ -376,8 +376,7 @@ describe('derived design width', () => {
     const standings = store.getWidget('standings')!;
 
     expect(before - standings.designWidth).toBe(
-      200 -
-        (standings.userSettings as { nameColumnWidth: number }).nameColumnWidth
+      200 - (standings.userSettings.nameColumnWidth as number)
     );
     expect(store.getWidget('timer')!.designWidth).toBe(timerWidth);
   });
@@ -1287,7 +1286,7 @@ describe('widgets belong to their monitor', () => {
   it('carries the view the driver switched to onto the stream', () => {
     const store = setUp();
     const viewOf = (id: string) =>
-      store.getSettings<StandingsWidgetSettings>(id).viewMode;
+      store.getSettings<{ viewMode: StandingsViewMode }>(id).viewMode;
 
     store.setWidgetEnabled('standings', true);
 
@@ -1319,17 +1318,18 @@ describe('widgets belong to their monitor', () => {
 
     store.setHotkeysActOn(streamId, false);
 
-    const before =
-      store.getSettings<StandingsWidgetSettings>('standings').viewMode;
+    const before = store.getSettings<{ viewMode: StandingsViewMode }>(
+      'standings'
+    ).viewMode;
 
     store.cycleStandingsViewMode();
 
     expect(
-      store.getSettings<StandingsWidgetSettings>('standings').viewMode
+      store.getSettings<{ viewMode: StandingsViewMode }>('standings').viewMode
     ).not.toBe(before);
-    expect(store.getSettings<StandingsWidgetSettings>(streamId).viewMode).toBe(
-      before
-    );
+    expect(
+      store.getSettings<{ viewMode: StandingsViewMode }>(streamId).viewMode
+    ).toBe(before);
   });
 
   it('stores the hotkey mark only while it departs from the default', () => {

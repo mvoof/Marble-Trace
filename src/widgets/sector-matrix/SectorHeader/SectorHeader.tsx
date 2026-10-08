@@ -5,8 +5,8 @@ import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { formatLapTime } from '@shared/lib/telemetry-format';
 import { getGameDelta } from '@shared/lib/delta-utils';
 import { getSectorColor } from '@shared/lib/colors';
-import type { SectorMatrixWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from './SectorHeader.module.scss';
+import type { SectorMatrixWidgetSettings } from '../settings-schema';
 
 interface Props {
   sectorCount: number;

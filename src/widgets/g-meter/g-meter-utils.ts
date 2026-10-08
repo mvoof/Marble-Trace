@@ -1,4 +1,4 @@
-import type { GMeterColorMode } from '@shared/contracts/widget-settings';
+import type { GMeterColorMode } from './settings-schema';
 
 export const G_CONSTANT = 9.81;
 export const SMOOTHING = 0.12;

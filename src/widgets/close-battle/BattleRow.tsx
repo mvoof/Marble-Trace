@@ -5,7 +5,6 @@ import { observer } from 'mobx-react-lite';
 import { formatBrand, formatCarNumber } from '@shared/lib/driver';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { getContrastTextColor } from '@shared/lib/colors';
-import type { CloseBattleWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   battleDistanceParts,
   battleDriverName,
@@ -15,6 +14,7 @@ import {
 } from './close-battle-utils';
 
 import styles from './BattleRow.module.scss';
+import type { CloseBattleWidgetSettings } from './settings-schema';
 
 // How far back a row of another class is pushed when the user asks for it.
 const OTHER_CLASS_DIM = 0.55;

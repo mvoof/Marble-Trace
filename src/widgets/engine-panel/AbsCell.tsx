@@ -5,9 +5,9 @@ import { EngineCell } from './EngineCell';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useEnginePanelWidgetStore } from '@widgets/engine-panel/engine-panel.store';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import type { EnginePanelWidgetSettings } from '@shared/contracts/widget-settings';
 import type { CellRenderWeight } from './engine-panel-utils';
 import styles from './EnginePanelWidget.module.scss';
+import type { EnginePanelWidgetSettings } from './settings-schema';
 
 export interface AbsCellProps {
   weight: CellRenderWeight;

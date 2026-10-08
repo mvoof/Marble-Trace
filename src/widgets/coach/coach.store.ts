@@ -6,7 +6,6 @@ import type {
   ReferenceLapSample,
   TrackCondition,
 } from '@shared/contracts/bindings';
-import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   createTraceWindowBuffers,
   EMPTY_TRACE_STATS,
@@ -19,6 +18,7 @@ import type { PlayerStore } from '@entities/player/player.store';
 import type { ReferenceLapStore } from '@entities/player/reference-lap.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { SessionStore } from '@entities/session/session.store';
+import type { CoachWidgetSettings } from './settings-schema';
 
 interface CoachDeps {
   player: PlayerStore;

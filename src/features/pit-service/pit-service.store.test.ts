@@ -5,7 +5,6 @@ import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
 
 // A running core whose widget settings the test writes, as main writes its own.
 type WritableCore = RendererCore & { liveWidgets: LiveWidgetsStore };
-import type { PitServiceWidgetSettings } from '@shared/contracts/widget-settings';
 import type { PitStrategy } from '@shared/contracts/pit-strategy';
 import type { PitAutoFrame } from '@shared/contracts/bindings';
 import { PIT_LIMITER_BIT } from '@shared/lib/car-signals';
@@ -51,13 +50,10 @@ describe('PitServiceWidgetStore — pit orders', () => {
   // but auto mode depends on it, so the helper takes both. The strategy is the
   // app's, not the widget's — `setStrategy` below.
   const setSettings = (
-    partial: Partial<PitServiceWidgetSettings> & { enabled?: boolean }
+    partial: Record<string, unknown> & { enabled?: boolean }
   ) => {
     runInAction(() => {
-      const settings =
-        rootStore.liveWidgets.getSettings<PitServiceWidgetSettings>(
-          'pit-service'
-        );
+      const settings = rootStore.liveWidgets.getSettings('pit-service');
 
       rootStore.liveWidgets.updateUserSettings('pit-service', {
         ...settings,

@@ -8,12 +8,12 @@ import {
   getWeatherIcon,
   getSkiesLabel,
 } from '@shared/lib/weather-utils';
-import type { WeatherWidgetSettings } from '@shared/contracts/widget-settings';
 import { useEnvironmentStore } from '@entities/environment/environment-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 
 import styles from './WeatherHeader.module.scss';
+import type { WeatherWidgetSettings } from '../settings-schema';
 
 const ICON_MAP = {
   sun: Sun,

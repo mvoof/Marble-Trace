@@ -212,6 +212,9 @@ export const defineWidgetStories = <Args,>(
     parameters: { layout: 'centered' },
     decorators: [withStore(), frameDecorator],
     args: { ...settingsDefaults, ...args } as Args,
-    argTypes: mergeArgTypes(settingsArgTypesOf(settingsDefaults), argTypes),
+    argTypes: mergeArgTypes(
+      settingsArgTypesOf(widgetId ?? '', settingsDefaults),
+      argTypes
+    ),
   } as WidgetMeta<Args>;
 };

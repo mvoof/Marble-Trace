@@ -1,7 +1,6 @@
 import { computed, makeAutoObservable } from 'mobx';
 
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
-import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 import {
   buildPaceCarRowEntries,
@@ -14,6 +13,7 @@ import type { CarsStore } from '@entities/cars/cars.store';
 import type { SessionStore } from '@entities/session/session.store';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
+import type { RelativeWidgetSettings } from './settings-schema';
 
 interface RelativeDeps {
   liveWidgets: LiveWidgetsView;
@@ -94,7 +94,7 @@ export class RelativeWidgetStore {
       this.root.session.sessionInfo?.cars,
       this.root.backendComputed.relativeEntries,
       (carIdx) => this.root.backendComputed.paceCarPhaseOf(carIdx),
-      this.settings.paceCarShowInPits ?? false
+      this.settings.paceCarShowInPits
     );
   }
 

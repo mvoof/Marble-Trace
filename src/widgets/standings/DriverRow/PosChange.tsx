@@ -3,10 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 import { hasRaceStarted } from '@shared/lib/timer-utils';
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from './DriverRow.module.scss';
 import { useSessionStore } from '@entities/session/session-context';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
+import type { StandingsWidgetSettings } from '../settings-schema';
 
 interface PosChangeProps {
   carIdx: number;

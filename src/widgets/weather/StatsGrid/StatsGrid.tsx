@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { StatCell } from './StatCell';
 
 import styles from './StatsGrid.module.scss';
-import type { WeatherWidgetSettings } from '@shared/contracts/widget-settings';
+import type { WeatherWidgetSettings } from '../settings-schema';
 
 // Beside the conditions the plate is a narrow column, so two cells read better
 // stacked than squeezed into two columns of half its width.

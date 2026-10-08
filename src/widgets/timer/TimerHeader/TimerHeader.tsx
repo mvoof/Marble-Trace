@@ -5,9 +5,9 @@ import {
   resolveSessionColorKey,
   type SessionColorKey,
 } from '@shared/lib/timer-utils';
-import type { TimerWidgetSettings } from '@shared/contracts/widget-settings';
 import { useSessionStore } from '@entities/session/session-context';
 import styles from './TimerHeader.module.scss';
+import type { TimerWidgetSettings } from '../settings-schema';
 
 const SESSION_LABEL_CLASS: Record<SessionColorKey, string> = {
   practice: styles.sessionPractice,

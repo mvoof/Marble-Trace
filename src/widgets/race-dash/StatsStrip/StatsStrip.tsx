@@ -5,13 +5,13 @@ import { positionBandColor } from '../race-dash-utils';
 import { resolveSessionLaps } from '@shared/lib/telemetry-format';
 import { RpmValue } from '../RpmValue/RpmValue';
 import { SpeedReadout } from '../SpeedReadout/SpeedReadout';
-import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { useCarsStore } from '@entities/cars/cars-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
 
 import styles from './StatsStrip.module.scss';
+import type { RaceDashWidgetSettings } from '../settings-schema';
 
 export const StatsStrip = observer(() => {
   const player = usePlayerStore();

@@ -1,7 +1,6 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { InvisibleDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { computeRpmZoneState } from '@shared/lib/car-signals';
 import { formatSpeed, speedUnit } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
@@ -13,6 +12,7 @@ import { zoneDigitColor } from '../invisible-dash-utils';
 import { ShiftBar } from '../ShiftBar/ShiftBar';
 
 import styles from './EngineCluster.module.scss';
+import type { InvisibleDashWidgetSettings } from '../settings-schema';
 
 const RPM_PERCENT_BASE = 100;
 

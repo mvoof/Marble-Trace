@@ -21,10 +21,10 @@ import {
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import type { CarStatusFrame } from '@shared/contracts/bindings';
-import type { EnginePanelWidgetSettings } from '@shared/contracts/widget-settings';
 import type { UnitSystem } from '@shared/contracts/domain';
 
 import styles from './EnginePanelWidget.module.scss';
+import type { EnginePanelWidgetSettings } from './settings-schema';
 
 const OIL_TEMP_LIMIT_C = 135;
 const WATER_TEMP_LIMIT_C = 120;

@@ -1,15 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type {
-  DeltaWidgetSettings,
-  LapDeltaReference,
-} from '@shared/contracts/widget-settings';
 import { LapFlash } from './LapFlash/LapFlash';
 import { DeltaWidget } from './DeltaWidget';
 import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type { DeltaWidgetSettings } from './settings-schema';
+import type { LapDeltaReference } from '@shared/contracts/widget-choices';
 
 /** Long enough that the flash is still up while the story is being looked at. */
 const HELD_FLASH_S = 999;

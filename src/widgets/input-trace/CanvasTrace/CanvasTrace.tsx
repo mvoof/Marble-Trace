@@ -1,7 +1,6 @@
 import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import { useRef, useCallback } from 'react';
 
-import type { InputTraceSettings } from '@shared/contracts/widget-settings';
 import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
 import { useCanvasAutoResize } from '@shared/hooks/useCanvasAutoResize';
 import styles from './CanvasTrace.module.scss';
@@ -16,6 +15,7 @@ import {
   pushTraceSample,
   type TraceBufferState,
 } from './canvas-trace-render';
+import type { InputTraceSettings } from '../settings-schema';
 
 // No frame has been consumed yet; the store's tick starts at 0 and reset()
 // returns it there, so the sentinel must sit outside that range.

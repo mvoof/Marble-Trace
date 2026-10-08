@@ -5,8 +5,8 @@ import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { FlagList } from './FlagList/FlagList';
 
 import styles from './FlatFlagsWidget.module.scss';
-import type { FlagDisplaySettings } from '@shared/contracts/widget-settings';
 import { useFlagsStore } from '@entities/flags/flags-context';
+import type { FlagDisplaySettings } from '@entities/flags/flag-display.settings-schema';
 
 export const FlatFlagsWidget = observer(() => {
   const flags = useFlagsStore();

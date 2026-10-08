@@ -18,11 +18,11 @@ import {
   buildRelativeGridTemplate,
   resolveRowPosition,
 } from '@widgets/relative/relative-utils';
-import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 
 import styles from './DriverRow.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
+import type { RelativeWidgetSettings } from '../settings-schema';
 
 interface DriverRowProps {
   carIdx: number;

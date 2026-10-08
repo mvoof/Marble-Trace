@@ -1,6 +1,6 @@
-import type { InvisibleDashWidgetSettings } from '@shared/contracts/widget-settings';
 import type { RpmZone } from '@shared/lib/car-signals';
 import { rpmZoneDigitColor } from '@shared/lib/car-signals';
+import type { InvisibleDashWidgetSettings } from './settings-schema';
 
 /**
  * Color for a digit driven by the revs, using the widget's own zone palette.

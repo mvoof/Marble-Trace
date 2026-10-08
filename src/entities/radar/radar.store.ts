@@ -1,10 +1,6 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
 import type { IReactionDisposer } from 'mobx';
 
-import type {
-  ProximityRadarSettings,
-  RadarSettings,
-} from '@shared/contracts/widget-settings';
 import {
   DESIGN_SIZE_PX,
   resolveScopeScale,
@@ -15,6 +11,10 @@ import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { SessionStore } from '@entities/session/session.store';
 import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
+import type {
+  ProximityRadarSettings,
+  RadarSettings,
+} from './radar.settings-schema';
 
 interface RadarDeps {
   backendComputed: BackendComputedStore;

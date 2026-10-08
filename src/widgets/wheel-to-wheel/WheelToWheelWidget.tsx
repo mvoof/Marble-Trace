@@ -3,13 +3,13 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useWheelToWheelWidgetStore } from './wheel-to-wheel.store';
-import type { WheelToWheelWidgetSettings } from '@shared/contracts/widget-settings';
 import { BattleSide } from './BattleSide/BattleSide';
 import { GapCenter } from './GapCenter/GapCenter';
 import { RivalHalf } from './RivalHalf/RivalHalf';
 import { RowsLayout } from './RowsLayout/RowsLayout';
 
 import styles from './WheelToWheelWidget.module.scss';
+import type { WheelToWheelWidgetSettings } from './settings-schema';
 
 export const WheelToWheelWidget = observer(() => {
   const wheelToWheel = useWheelToWheelWidgetStore();

@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { COACH_SETTINGS } from './settings-schema';
 
 export const COACH_MANIFEST: WidgetManifest = {
   id: 'coach',
@@ -31,19 +32,7 @@ export const COACH_MANIFEST: WidgetManifest = {
     currentHeight: 130,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    showCallRow: true,
-    showTrace: true,
-    traceChannel: 'speed',
-    windowMeters: 150,
-    showUrgencyBar: true,
-    showCornerExitCalls: true,
-    showSpeed: true,
-    showReferenceLapTime: true,
-    showTrackCondition: true,
-    brakeColor: '#ef4444',
-    gasColor: '#10b981',
-    referenceColor: '#a855f7',
-    gainColor: '#10b981',
-    lossColor: '#ef4444',
+    ...COACH_SETTINGS.defaults,
   },
+  settingsSchema: COACH_SETTINGS,
 };

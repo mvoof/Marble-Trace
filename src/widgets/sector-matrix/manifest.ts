@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { SECTOR_MATRIX_SETTINGS } from './settings-schema';
 
 export const SECTOR_MATRIX_MANIFEST: WidgetManifest = {
   id: 'sector-matrix',
@@ -23,7 +24,7 @@ export const SECTOR_MATRIX_MANIFEST: WidgetManifest = {
     currentHeight: 180,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    showPredicted: true,
-    showSectors: true,
+    ...SECTOR_MATRIX_SETTINGS.defaults,
   },
+  settingsSchema: SECTOR_MATRIX_SETTINGS,
 };

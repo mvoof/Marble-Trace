@@ -1,6 +1,5 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import type { PitServiceWidgetSettings } from '@shared/contracts/widget-settings';
 import type { PitStrategy } from '@shared/contracts/pit-strategy';
 import { PitAutoService } from './pit-auto-service.store';
 import { PitOrder } from './pit-order.store';
@@ -23,6 +22,15 @@ interface PitServiceDeps {
   backendComputed: BackendComputedStore;
   appSettings: AppSettingsStore;
   units: UnitsStore;
+}
+
+/**
+ * The pit-service widget's settings this store reads. Declared here, not
+ * imported: the widget's schema sits in its slice, above this layer.
+ */
+export interface PitServiceDisplaySettings {
+  revealOnApproachM: number;
+  commandRevealSeconds: number;
 }
 
 /**
@@ -138,8 +146,8 @@ export class PitServiceWidgetStore {
    * reveal distance the panel opens at, which this one app-wide store has to
    * pick a single answer for.
    */
-  get settings(): PitServiceWidgetSettings {
-    return this.root.liveWidgets.settingsOfType<PitServiceWidgetSettings>(
+  get settings(): PitServiceDisplaySettings {
+    return this.root.liveWidgets.settingsOfType<PitServiceDisplaySettings>(
       'pit-service'
     );
   }

@@ -1,4 +1,4 @@
-import type { RadarBackgroundTexture } from '@shared/contracts/widget-settings';
+import type { RadarBackgroundTexture } from './radar.settings-schema';
 
 /** Average car body width in meters — the icon is the footprint, not a dot. */
 export const CAR_WIDTH_M = 1.8;

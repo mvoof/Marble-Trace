@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { useCloseBattleWidgetStore } from '@widgets/close-battle/close-battle.store';
-import type { CloseBattleWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   axisTicks,
   buildAxisSegments,
@@ -12,6 +11,7 @@ import {
 } from './close-battle-utils';
 
 import styles from './BattleAxis.module.scss';
+import type { CloseBattleWidgetSettings } from './settings-schema';
 
 /**
  * The axis, the player and the glow.

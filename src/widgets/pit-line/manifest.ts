@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { PIT_LINE_SETTINGS } from './settings-schema';
 
 // The width is the shape and the height is the driver's: the columns are only
 // as wide as the number at their foot — wide enough for three digits at the size
@@ -42,11 +43,7 @@ export const PIT_LINE_MANIFEST: WidgetManifest = {
     currentHeight: DEFAULT_HEIGHT,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    showPitSpeed: true,
-    showPitApproach: true,
-    showPitBrakeCue: true,
-    showUnits: true,
-    revealOnApproachM: 300,
-    alwaysVisible: false,
+    ...PIT_LINE_SETTINGS.defaults,
   },
+  settingsSchema: PIT_LINE_SETTINGS,
 };

@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { PIT_SERVICE_SETTINGS } from './settings-schema';
 
 // The tire grid sets the floor — two corners of three number columns each
 // (ws(26) x 3 + 2 px gaps = 82) plus their air — but the chip row underneath is
@@ -43,15 +44,7 @@ export const PIT_SERVICE_MANIFEST: WidgetManifest = {
     currentHeight: PIT_SERVICE_DESIGN_HEIGHT,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    revealOnApproachM: 400,
-    useLivePositions: true,
-    classPositionInMulticlass: true,
-    showProjectedPosition: true,
-    showFuel: true,
-    showTires: true,
-    showRepairs: true,
-    showFooter: false,
-    alwaysVisible: false,
-    commandRevealSeconds: 5,
+    ...PIT_SERVICE_SETTINGS.defaults,
   },
+  settingsSchema: PIT_SERVICE_SETTINGS,
 };

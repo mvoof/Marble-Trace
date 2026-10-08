@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { LAP_LOG_SETTINGS } from './settings-schema';
 
 export const LAP_LOG_MANIFEST: WidgetManifest = {
   id: 'lap-log',
@@ -23,4 +24,5 @@ export const LAP_LOG_MANIFEST: WidgetManifest = {
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
   },
+  settingsSchema: LAP_LOG_SETTINGS,
 };

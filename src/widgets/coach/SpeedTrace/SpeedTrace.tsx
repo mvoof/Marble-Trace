@@ -1,7 +1,6 @@
 import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import { useCallback, useRef } from 'react';
 
-import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
 import { useCanvasAutoResize } from '@shared/hooks/useCanvasAutoResize';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
@@ -9,6 +8,7 @@ import { useCoachWidgetStore } from '@widgets/coach/coach-stores';
 import { drawSpeedTrace, type SpeedTraceColors } from './speed-trace-render';
 
 import styles from './SpeedTrace.module.scss';
+import type { CoachWidgetSettings } from '../settings-schema';
 
 // Grid and the "now" marker are structural, not semantic — they stay neutral
 // whatever the user picks for the gain/loss pair.

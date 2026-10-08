@@ -15,13 +15,13 @@ import {
   type SessionColorKey,
 } from '@shared/lib/timer-utils';
 
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { SessionClock } from '@widgets/standings/SessionClock/SessionClock';
 import styles from './SessionHeader.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useCarsStore } from '@entities/cars/cars-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
+import type { StandingsWidgetSettings } from '../settings-schema';
 
 // Matches the icon size the footer's stat pills use.
 const STAT_ICON_SIZE_PX = 11;

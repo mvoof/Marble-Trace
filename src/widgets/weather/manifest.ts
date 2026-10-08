@@ -1,12 +1,11 @@
-import type {
-  WeatherWidgetSettings,
-  WidgetManifest,
-} from '@shared/contracts/widget-settings';
+import type { WidgetManifest } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
   makeExactColumnLayoutResolver,
 } from '@widgets/widget-manifest';
+import type { WeatherWidgetSettings } from './settings-schema';
+import { WEATHER_SETTINGS } from './settings-schema';
 
 // The tall layout is a column; the horizontal one lays the same blocks out as
 // rows, so it needs roughly twice the width to keep the same type sizes.
@@ -39,17 +38,9 @@ export const WEATHER_MANIFEST: WidgetManifest = {
     currentHeight: 240,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    showCompass: true,
-    showCompassRing: true,
-    showAirTemp: true,
-    showTrackTemp: true,
-    showWind: true,
-    showHumidity: true,
-    showForecast: true,
-    showTrackWetness: true,
-    showWindBearing: true,
-    horizontal: false,
+    ...WEATHER_SETTINGS.defaults,
   },
+  settingsSchema: WEATHER_SETTINGS,
   resolveLayoutChange: makeExactColumnLayoutResolver<WeatherWidgetSettings>(
     ['horizontal'],
     weatherDesignWidth

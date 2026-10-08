@@ -2,7 +2,6 @@ import { observer } from 'mobx-react-lite';
 
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
-import type { WeatherWidgetSettings } from '@shared/contracts/widget-settings';
 
 import { WindCompass } from './WindCompass/WindCompass';
 import { WeatherHeader } from './WeatherHeader/WeatherHeader';
@@ -12,6 +11,7 @@ import { ForecastBlock } from './ForecastBlock/ForecastBlock';
 import { ForecastStrip } from './ForecastStrip/ForecastStrip';
 
 import styles from './WeatherWidget.module.scss';
+import type { WeatherWidgetSettings } from './settings-schema';
 
 // Matches the stacking rule in StatsGrid: two cells or fewer become one column.
 const MAX_CELLS_IN_ONE_COLUMN = 2;

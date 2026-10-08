@@ -12,10 +12,10 @@ import {
   INITIAL_DELTA_LATCH_STATE,
   isGameDeltaOk,
 } from '@shared/lib/delta-utils';
-import type { DeltaWidgetSettings } from '@shared/contracts/widget-settings';
 import { DeltaGauge } from '../DeltaGauge/DeltaGauge';
 import { DeltaPlate } from '../DeltaPlate/DeltaPlate';
 import styles from './DeltaLive.module.scss';
+import type { DeltaWidgetSettings } from '../settings-schema';
 
 // Long enough to be read out of the corner of the eye on a straight, short
 // enough that the number stands alone again before the next braking point.

@@ -1,7 +1,6 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
@@ -14,6 +13,7 @@ import {
 } from '../RingBadge/ring-geometry';
 
 import styles from './RpmComb.module.scss';
+import type { RaceDashWidgetSettings } from '../settings-schema';
 
 // Coarse enough that each tick is a distinct step the eye can count, fine
 // enough that the last few before the shift point still resolve individually:

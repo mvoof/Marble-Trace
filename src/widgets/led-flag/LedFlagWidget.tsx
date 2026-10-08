@@ -9,14 +9,14 @@ import {
 } from '@widgets/led-flag/led-flag-utils';
 import { SingleLed } from './SingleLed/SingleLed';
 import { LedMatrix } from './LedMatrix/LedMatrix';
-import type { FlagDisplaySettings } from '@shared/contracts/widget-settings';
 
 import styles from './LedFlagWidget.module.scss';
+import type { LedFlagsSettings } from '@entities/flags/flag-display.settings-schema';
 
 export const LedFlagWidget = observer(() => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { split, forceSingleLed } =
-    useWidgetSettings<FlagDisplaySettings>('led-flags');
+    useWidgetSettings<LedFlagsSettings>('led-flags');
 
   const [layout, setLayout] = useState({
     diodesPerBlock: 6,

@@ -1,8 +1,11 @@
 import type { NearbyCar } from '@shared/contracts/bindings';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
-import type { CloseBattleWidgetSettings } from '@shared/contracts/widget-settings';
 import { computeRelativeGap } from '@shared/lib/driver';
 import { splitDriverName } from '@shared/lib/driver';
+import type {
+  BattleNameMode,
+  CloseBattleWidgetSettings,
+} from './settings-schema';
 
 /**
  * The axis ends short of the widget edge: the outermost tick label and the
@@ -574,7 +577,7 @@ const ROW_PAD_RIGHT_PX = 12;
  * name the mode can actually produce and anything past it is ellipsed — a
  * surname the eye reads by its first syllables anyway.
  */
-const NAME_COL_PX: Record<CloseBattleWidgetSettings['nameMode'], number> = {
+const NAME_COL_PX: Record<BattleNameMode, number> = {
   surname: 78,
   initial: 96,
   full: 128,

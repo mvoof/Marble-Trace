@@ -7,10 +7,10 @@ import {
 
 import type { FlagType } from '@shared/contracts/domain';
 import type { RaceFlags } from '@shared/contracts/bindings';
-import type { FlagDisplaySettings } from '@shared/contracts/widget-settings';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
+import type { FlagDisplaySettings } from './flag-display.settings-schema';
 
 interface FlagsDeps {
   liveWidgets: LiveWidgetsView;

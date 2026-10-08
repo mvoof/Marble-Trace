@@ -3,7 +3,6 @@ import type { CSSProperties } from 'react';
 
 import { observer } from 'mobx-react-lite';
 
-import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import type { CoachInactiveReason } from '@shared/contracts/bindings';
 import {
   useCoachWidgetStore,
@@ -11,6 +10,7 @@ import {
 } from '@widgets/coach/coach-stores';
 
 import styles from './CallRow.module.scss';
+import type { CoachWidgetSettings } from '../settings-schema';
 
 /** Brake urgency at or above this pre-arms the row before the hard BRAKE call fires. */
 const BRAKE_SOON_URGENCY = 0.7;

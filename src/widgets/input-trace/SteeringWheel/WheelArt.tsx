@@ -1,6 +1,5 @@
 import type { FunctionComponent, SVGProps } from 'react';
 
-import type { SteeringWheelStyle } from '@shared/contracts/widget-settings';
 import FormulaCompact from '@assets/wheels/formula-compact.svg?react';
 import FormulaConspit from '@assets/wheels/formula-conspit.svg?react';
 import FormulaConspitPro from '@assets/wheels/formula-conspit-pro.svg?react';
@@ -9,6 +8,7 @@ import FormulaOpen from '@assets/wheels/formula-open.svg?react';
 import GtRound from '@assets/wheels/gt-round.svg?react';
 import FlatBottom from '@assets/wheels/flat-bottom-wheel.svg?react';
 import Bagel from '@assets/wheels/bagel.svg?react';
+import type { SteeringWheelStyle } from '../settings-schema';
 
 type WheelArtComponent = FunctionComponent<SVGProps<SVGSVGElement>>;
 

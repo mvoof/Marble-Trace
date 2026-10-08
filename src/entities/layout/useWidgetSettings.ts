@@ -2,10 +2,7 @@ import { use } from 'react';
 
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
-import type {
-  BaseUserSettings,
-  WidgetSpecificSettings,
-} from '@shared/contracts/widget-settings';
+import type { BaseUserSettings } from '@shared/contracts/widget-settings';
 
 /**
  * The settings of the copy this component is being rendered as.
@@ -23,7 +20,7 @@ import type {
  * Storybook, and tests that render a widget bare — where it names the original.
  */
 export const useWidgetSettings = <
-  SpecificSettings extends WidgetSpecificSettings,
+  SpecificSettings extends object = Record<string, unknown>,
 >(
   type: string
 ): BaseUserSettings & SpecificSettings => {

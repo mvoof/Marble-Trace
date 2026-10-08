@@ -1,12 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
 import type {
-  DrsWidgetSettings,
-  FlagDisplaySettings,
-  PitLineWidgetSettings,
-  PitServiceWidgetSettings,
-} from '@shared/contracts/widget-settings';
-import type {
   WidgetInstanceStore,
   WidgetInstanceRegistry,
 } from '@entities/widget/widget-instances.store';
@@ -15,6 +9,7 @@ import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { RadarWidgetStore } from '@entities/radar/radar.store';
 import type { FlagsStore } from '@entities/flags/flags.store';
 import type { PlayerStore } from '@entities/player/player.store';
+import type { FlagDisplaySettings } from '@entities/flags/flag-display.settings-schema';
 
 /** What the pit service tells auto-hide; the pit service is a sibling feature. */
 interface PitServiceVisibility {
@@ -33,6 +28,25 @@ interface WidgetAutoHideDeps {
 }
 
 const NO_LED_FLAG = 'none';
+
+/*
+ * The settings read here, as far as this store reads them. Declared here, not
+ * imported: each is described by its widget's own schema, in a slice above
+ * this layer, and a widget deleted with its folder must not break this one.
+ */
+export interface DrsVisibilitySettings {
+  hideWhenUnavailable: boolean;
+  hideWhenCarHasNoDrs: boolean;
+}
+
+interface PitServiceVisibilitySettings {
+  alwaysVisible: boolean;
+}
+
+interface PitLineVisibilitySettings {
+  alwaysVisible: boolean;
+  revealOnApproachM: number;
+}
 
 /**
  * A per-instance widget store that decides whether its own instance is on
@@ -90,7 +104,7 @@ export class WidgetAutoHideStore {
     // around a body that renders null — an empty box on every GT3 is exactly
     // what this setting is asked for.
     if (widgetType === 'drs') {
-      const settings = this.settingsOf<DrsWidgetSettings>(widgetId);
+      const settings = this.settingsOf<DrsVisibilitySettings>(widgetId);
       const drs = this.root.player.carStatus?.drs ?? null;
 
       if (drs === null) {
@@ -113,7 +127,7 @@ export class WidgetAutoHideStore {
 
     if (widgetType === 'pit-service') {
       return (
-        this.settingsOf<PitServiceWidgetSettings>(widgetId).alwaysVisible ||
+        this.settingsOf<PitServiceVisibilitySettings>(widgetId).alwaysVisible ||
         this.root.pitServiceWidget.panel.isVisible
       );
     }
@@ -123,7 +137,7 @@ export class WidgetAutoHideStore {
     // wanted at the entry itself, so they carry their own reveal distance and
     // ride the panel only for the tail after pit exit.
     if (widgetType === 'pit-line') {
-      const settings = this.settingsOf<PitLineWidgetSettings>(widgetId);
+      const settings = this.settingsOf<PitLineVisibilitySettings>(widgetId);
       const pitService = this.root.pitServiceWidget;
 
       return (
@@ -139,10 +153,10 @@ export class WidgetAutoHideStore {
 
   private settingsOf = <
     SpecificSettings extends
-      | DrsWidgetSettings
+      | DrsVisibilitySettings
       | FlagDisplaySettings
-      | PitServiceWidgetSettings
-      | PitLineWidgetSettings,
+      | PitServiceVisibilitySettings
+      | PitLineVisibilitySettings,
   >(
     widgetId: string
   ) => this.root.liveWidgets.getSettings<SpecificSettings>(widgetId);

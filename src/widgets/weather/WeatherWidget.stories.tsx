@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { EnvironmentFrame } from '@shared/contracts/bindings';
 import type { UnitSystem } from '@shared/contracts/domain';
-import type { WeatherWidgetSettings } from '@shared/contracts/widget-settings';
 import { mockEnvironment, mockForecast } from '@features/preview/mocks/weather';
 import { whenSet } from '@/storybook/story-overrides';
 import { WeatherWidget } from './WeatherWidget';
@@ -10,6 +9,7 @@ import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type { WeatherWidgetSettings } from './settings-schema';
 
 // Three hours of a sky closing in, which is what the strip has to lay out: the
 // widest surface label, a rising rain chance and a wind that keeps moving.

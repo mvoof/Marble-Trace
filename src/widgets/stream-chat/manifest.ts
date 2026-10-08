@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { STREAM_CHAT_SETTINGS } from './settings-schema';
 
 export const STREAM_CHAT_MANIFEST: WidgetManifest = {
   id: 'stream-chat',
@@ -20,19 +21,7 @@ export const STREAM_CHAT_MANIFEST: WidgetManifest = {
     currentHeight: 340,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    compactRows: true,
-    maxMessages: 100,
-    messageLifetimeSeconds: 0,
-    showPlatformGlyph: true,
-    showBadges: true,
-    // Text plates by default: badge artwork is colourful and busy, and this
-    // widget sits over a race track where a glanceable MOD reads faster.
-    badgeImages: false,
-    showBanner: true,
-    showFooter: true,
-    showActivity: true,
-    showEvents: true,
-    showFollows: true,
-    showPlaceholder: true,
+    ...STREAM_CHAT_SETTINGS.defaults,
   },
+  settingsSchema: STREAM_CHAT_SETTINGS,
 };

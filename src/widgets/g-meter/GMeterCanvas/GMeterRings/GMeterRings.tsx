@@ -10,10 +10,10 @@ import {
 } from '@widgets/g-meter/g-meter-utils';
 import { resizeCanvasToDpr } from '@shared/lib/canvas';
 
-import type { GMeterWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from './GMeterRings.module.scss';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
+import type { GMeterWidgetSettings } from '../../settings-schema';
 
 const RING_COLOR = 'rgba(42,43,48,0.8)';
 const OUTER_RING_COLOR = 'rgba(72,74,82,1)';

@@ -3,11 +3,11 @@ import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useCloseBattleWidgetStore } from '@widgets/close-battle/close-battle.store';
-import type { CloseBattleWidgetSettings } from '@shared/contracts/widget-settings';
 import { BattleAxis } from './BattleAxis';
 import { BattleRow } from './BattleRow';
 
 import styles from './CloseBattleWidget.module.scss';
+import type { CloseBattleWidgetSettings } from './settings-schema';
 
 export const CloseBattleWidget = observer(() => {
   const closeBattle = useCloseBattleWidgetStore();

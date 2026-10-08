@@ -1,5 +1,5 @@
-import type { InputTraceSettings } from '@shared/contracts/widget-settings';
 import { normalizedSteering } from '@shared/lib/car-signals';
+import type { InputTraceSettings } from '../settings-schema';
 
 // Circular sample buffers shared by the ingest and paint passes. Channel
 // samples are interleaved: buffer[sampleIndex * channelCount + channelIndex].
@@ -183,7 +183,7 @@ const drawSteering = (pass: ChannelPassContext) => {
     const normalized = normalizedSteering(
       rawSteer,
       steeringLockDeg,
-      settings.steeringZoom ?? 1
+      settings.steeringZoom
     );
 
     const xPos = (sampleIndex / (pass.bufferSize - 1)) * logicalWidth;

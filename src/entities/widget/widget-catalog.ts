@@ -55,6 +55,7 @@ export const WIDGET_BY_ID = new Map(
 // build's widget reads, not a user choice, and a stale copy on disk would
 // outlive the widget that declared it.
 const NON_SERIALIZABLE_WIDGET_KEYS = new Set([
+  'settingsSchema',
   'resolveLayoutChange',
   'deriveDesignWidth',
   'telemetryEvents',
@@ -81,3 +82,30 @@ export const DEFAULT_WIDGETS: WidgetDefaultConfig[] = WIDGETS.map(
 export const DEFAULT_WIDGET_BY_ID = new Map(
   DEFAULT_WIDGETS.map((defaultWidget) => [defaultWidget.id, defaultWidget])
 );
+
+/**
+ * Settings of a widget checked against its schema. A setting the schema
+ * describes keeps a value of the right type — a number clamped into its
+ * bounds — and is left out otherwise; the settings every widget has (geometry,
+ * opacity, the colors of the frame) pass as they are.
+ *
+ * Applied to what the file holds on load and to every write, so a setting
+ * stays inside its bounds whoever writes it.
+ */
+export const checkedSettings = <Settings extends Record<string, unknown>>(
+  type: string,
+  settings: Settings
+): Settings => {
+  const schema = WIDGET_BY_ID.get(type)?.settingsSchema;
+
+  if (!schema) return settings;
+
+  const common = Object.entries(settings).filter(
+    ([key]) => !(key in schema.defaults)
+  );
+
+  return {
+    ...Object.fromEntries(common),
+    ...schema.parseOverrides(settings).overrides,
+  } as Settings;
+};

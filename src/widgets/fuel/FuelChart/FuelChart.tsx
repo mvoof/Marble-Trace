@@ -6,9 +6,9 @@ import { drawBarChart, drawLineChart } from './chart-renderers';
 import { countedLaps } from '../fuel-utils';
 import { resizeCanvasToDpr } from '@shared/lib/canvas';
 
-import type { FuelWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from './FuelChart.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
+import type { FuelWidgetSettings } from '../settings-schema';
 
 export const FuelChart = observer(() => {
   const { fuel } = useBackendComputedStore();

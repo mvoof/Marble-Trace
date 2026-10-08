@@ -12,13 +12,13 @@ import {
   isNearIncidentPenalty,
 } from '@shared/lib/driver';
 
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { StatPill, type StatPillVariant } from '@shared/ui/StatPill/StatPill';
 import styles from './SessionFooter.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useEnvironmentStore } from '@entities/environment/environment-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
+import type { StandingsWidgetSettings } from '../settings-schema';
 
 // Boxed chips would make the strip taller than the rows it sits under, which is
 // the one thing the footer must not be.

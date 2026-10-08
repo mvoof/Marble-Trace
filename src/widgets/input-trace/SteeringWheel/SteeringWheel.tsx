@@ -3,12 +3,12 @@ import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
-import type { InputTraceSettings } from '@shared/contracts/widget-settings';
 import { steeringAngleDeg } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import Logo from '@assets/brand-mark-mono.svg?react';
 import { getWheelArt } from './WheelArt';
 import styles from './SteeringWheel.module.scss';
+import type { InputTraceSettings } from '../settings-schema';
 
 /** The custom property the wheel turns on; both rotators rotate by it in CSS. */
 const STEERING_ANGLE_PROPERTY = '--steering-angle';

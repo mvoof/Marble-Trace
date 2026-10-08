@@ -5,7 +5,6 @@ import { observer } from 'mobx-react-lite';
 import type { TrackPoint } from '@shared/contracts/domain';
 import { getPointAtPct } from '@widgets/track-map/track-map-utils';
 import type { SectorEntry } from '@shared/contracts/bindings';
-import type { TrackMapLeaderLabelMode } from '@shared/contracts/widget-settings';
 import type { CarOnTrack } from '@widgets/track-map/types';
 import { CarDot } from '@shared/ui/CarDot/CarDot';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
@@ -19,6 +18,7 @@ import { getSectorColor } from '@shared/lib/colors';
 import { StartFinishMarker } from './StartFinishMarker/StartFinishMarker';
 
 import styles from './TrackMapSvg.module.scss';
+import type { TrackMapLeaderLabelMode } from '../settings-schema';
 
 interface TrackMapSvgProps {
   svgPath: string;

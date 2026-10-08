@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { PitLineWidgetSettings } from '@shared/contracts/widget-settings';
 import { mockCarStatus } from '@features/preview/mocks/engine';
 import { mockPitTarget } from '@features/preview/mocks/pit';
 import {
@@ -12,6 +11,7 @@ import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type { PitLineWidgetSettings } from './settings-schema';
 
 interface StoryArgs {
   /**

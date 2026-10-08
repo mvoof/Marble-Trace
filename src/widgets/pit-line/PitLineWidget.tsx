@@ -2,11 +2,11 @@ import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import type { PitLineWidgetSettings } from '@shared/contracts/widget-settings';
 
 import { PitSpeedPlate } from './PitSpeedPlate/PitSpeedPlate';
 import { PitApproachRail } from './PitApproachRail/PitApproachRail';
 import styles from './PitLineWidget.module.scss';
+import type { PitLineWidgetSettings } from './settings-schema';
 
 /**
  * Everything about the lane itself: how fast the car may go on it, and how far

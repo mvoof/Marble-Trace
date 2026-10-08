@@ -9,9 +9,9 @@ import { NoDataPlaceholder } from '@shared/ui/NoDataPlaceholder/NoDataPlaceholde
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSimStore } from '@entities/sim/sim-context';
 import { useRelativeWidgetStore } from '@widgets/relative/relative.store';
-import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 
 import styles from './RelativeContent.module.scss';
+import type { RelativeWidgetSettings } from '../settings-schema';
 
 const WIDE_ROW_HEIGHT = 3.5;
 const MEDIUM_ROW_HEIGHT = 3.25;

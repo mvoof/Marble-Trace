@@ -16,10 +16,10 @@ import {
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 
 import styles from './TrackMapView.module.scss';
-import type { TrackMapWidgetSettings } from '@shared/contracts/widget-settings';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSessionStore } from '@entities/session/session-context';
+import type { TrackMapWidgetSettings } from '../settings-schema';
 
 export interface TrackData {
   svgPath: string;
@@ -49,12 +49,7 @@ export const TrackMapView = observer(
     const computed = useBackendComputedStore();
     const { dragMode } = useAppSettingsStore();
 
-    const rawSettings = useWidgetSettings<TrackMapWidgetSettings>('track-map');
-
-    const showSectors = rawSettings.showSectors ?? true;
-    const showSectorsOnMap = rawSettings.showSectorsOnMap ?? showSectors;
-
-    const settings = { ...rawSettings, showSectors, showSectorsOnMap };
+    const settings = useWidgetSettings<TrackMapWidgetSettings>('track-map');
 
     const sectors = sessionInfo?.sectors;
 
@@ -82,14 +77,14 @@ export const TrackMapView = observer(
     // The official positions only refresh at the start/finish line, so a leader the
     // tow truck picked up mid-lap keeps the P1 label until the next crossing that
     // never comes. The live order re-ranks him the moment the field drives past.
-    const useLivePositions = rawSettings.useLivePositions ?? true;
+    const { useLivePositions } = settings;
 
     // Qualifying often puts you alone on track, where the other dots are stale
     // garage positions rather than cars you can actually meet. Same rule as the
     // radar widgets, applied to the competitors only — your own dot stays.
     const hideCompetitors =
       !dragMode &&
-      isHiddenInQualifying(rawSettings.qualifyingVisibility, sessionStore);
+      isHiddenInQualifying(settings.qualifyingVisibility, sessionStore);
 
     const visibleEntries = hideCompetitors
       ? driverIdentities.filter((entry) => entry.isPlayer)
@@ -114,7 +109,7 @@ export const TrackMapView = observer(
     // Only shown while physically on track (lapDistPct >= 0). Hidden while
     // parked in its pit stall (or driving in) unless paceCarShowInPits is on —
     // driving back out is always shown so you can time the merge behind it.
-    const paceCarShowInPits = settings.paceCarShowInPits ?? false;
+    const paceCarShowInPits = settings.paceCarShowInPits;
 
     // A pace car out of the world has no position to draw; the dot is rendered
     // either way and hidden by the draw reaction, so the element list stays a
@@ -163,10 +158,9 @@ export const TrackMapView = observer(
 
     const visibleSectors = settings.showSectorsOnMap ? sectors : null;
 
-    const showStartFinish = settings.showStartFinish ?? true;
+    const showStartFinish = settings.showStartFinish;
 
-    const headingUpActive =
-      (settings.zoomEnabled ?? false) && (settings.zoomRotate ?? false);
+    const headingUpActive = settings.zoomEnabled && settings.zoomRotate;
 
     return (
       <WidgetPanel className={styles.trackMap} gap={0}>
@@ -192,9 +186,7 @@ export const TrackMapView = observer(
           showStartFinish={showStartFinish}
           paceCarUseClassColor={settings.paceCarUseClassColor}
           paceCarColor={settings.paceCarColor}
-          paceCarRadiusPx={
-            settings.paceCarRadiusPx ?? settings.targetDotRadiusPx
-          }
+          paceCarRadiusPx={settings.paceCarRadiusPx}
           classShapes={settings.classShapes}
           carClassOrder={sessionStore.carClassOrder}
           zoomEnabled={settings.zoomEnabled}

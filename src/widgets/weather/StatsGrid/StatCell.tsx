@@ -21,10 +21,10 @@ import { getAirTempColor, getTrackTempColor } from '@shared/lib/colors';
 import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
 import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
 import styles from './StatCell.module.scss';
-import type { WeatherWidgetSettings } from '@shared/contracts/widget-settings';
 import { useEnvironmentStore } from '@entities/environment/environment-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
+import type { WeatherWidgetSettings } from '../settings-schema';
 
 export type StatCellType =
   | 'airTemp'

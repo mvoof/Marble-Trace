@@ -1,4 +1,4 @@
-import type { RadarQualifyingVisibility } from '@shared/contracts/widget-settings';
+import type { QualifyingVisibility } from '@shared/contracts/widget-choices';
 
 interface QualifyingState {
   isQualifyingSession: boolean;
@@ -10,7 +10,7 @@ interface QualifyingState {
  * qualifying session, `auto` only the solo ones where nobody else is on track.
  */
 export const isHiddenInQualifying = (
-  visibility: RadarQualifyingVisibility | undefined,
+  visibility: QualifyingVisibility | undefined,
   session: QualifyingState
 ): boolean => {
   if (visibility === 'never') {

@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
-import type { BatteryWidgetSettings } from '@shared/contracts/widget-settings';
+import type { BatteryWidgetSettings } from './settings-schema';
 import { ChargeRow } from './ChargeRow';
 import { DeployModeStrip } from './DeployModeStrip';
 import { StatusRow } from './StatusRow';

@@ -3,8 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
-import { DEFAULT_PIT_WARNING_LAPS } from '@shared/contracts/backend-constants';
-import { FUEL_AVG_WINDOW_ALL_LAPS } from './fuel-constants';
+import { FUEL_SETTINGS } from './settings-schema';
 
 export const FUEL_MANIFEST: WidgetManifest = {
   id: 'fuel',
@@ -23,16 +22,7 @@ export const FUEL_MANIFEST: WidgetManifest = {
     currentHeight: 360,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    showChart: false,
-    pitWarningLaps: DEFAULT_PIT_WARNING_LAPS,
-    fuelAvgWindow: FUEL_AVG_WINDOW_ALL_LAPS,
-    countYellowFlagLaps: false,
-    showNextStopForecast: true,
-    chartType: 'bar',
-    barWidth: 5,
-    showStatLast: true,
-    showStatAvg10: true,
-    showStatMin: true,
-    showStatMax: true,
+    ...FUEL_SETTINGS.defaults,
   },
+  settingsSchema: FUEL_SETTINGS,
 };

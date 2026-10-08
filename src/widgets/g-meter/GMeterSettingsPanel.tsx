@@ -1,83 +1,52 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Segmented } from 'antd';
-import type {
-  GMeterColorMode,
-  GMeterDisplayMode,
-  GMeterWidgetSettings,
-} from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
+import { G_METER_SETTINGS, type GMeterWidgetSettings } from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['g-meter'];
 
-export const GMeterSettingsPanel = observer(() => {
+const { Row, useLabels } = schemaRows(G_METER_SETTINGS);
+
+// The scale's members are numbers, read as "<n>G" in every language.
+const ScaleRow = observer(() => {
   const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('g-meter');
+  const { title } = useLabels('scale');
+  const { scale } =
+    liveWidgets.getSettings<GMeterWidgetSettings>(panelWidgetId);
+
+  return (
+    <div className={styles.fieldGroup}>
+      <span className={styles.fieldLabel}>{title}</span>
+      <Segmented
+        block
+        value={scale}
+        options={G_METER_SETTINGS.shape.scale.options.map((option) => ({
+          label: `${option}G`,
+          value: option,
+        }))}
+        onChange={(value) =>
+          liveWidgets.updateUserSettings(panelWidgetId, { scale: value })
+        }
+      />
+    </div>
+  );
+});
+
+export const GMeterSettingsPanel = observer(() => {
   const { t } = useTranslation('widgets');
-
-  const settings = liveWidgets.getSettings<GMeterWidgetSettings>(panelWidgetId);
-
-  const update = (partial: Partial<GMeterWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <Card title={t('settingsPanels.gMeter.moduleParameters')}>
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>
-          {t('settingsPanels.gMeter.displayMode')}
-        </span>
-        <Segmented
-          block
-          value={settings.displayMode}
-          options={[
-            { label: t('settingsPanels.gMeter.trail'), value: 'trail' },
-            { label: t('settingsPanels.gMeter.fading'), value: 'fading' },
-            { label: t('settingsPanels.gMeter.peak'), value: 'peak' },
-          ]}
-          onChange={(v) => update({ displayMode: v as GMeterDisplayMode })}
-        />
-      </div>
-
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>
-          {t('settingsPanels.gMeter.scale')}
-        </span>
-        <Segmented
-          block
-          value={settings.scale}
-          options={[
-            { label: '2G', value: 2 },
-            { label: '3G', value: 3 },
-            { label: '4G', value: 4 },
-            { label: '5G', value: 5 },
-          ]}
-          onChange={(v) => update({ scale: v as 2 | 3 | 4 | 5 })}
-        />
-      </div>
-
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>
-          {t('settingsPanels.gMeter.colorMode')}
-        </span>
-        <Segmented
-          block
-          value={settings.colorMode}
-          options={[
-            { label: t('settingsPanels.gMeter.mono'), value: 'mono' },
-            { label: t('settingsPanels.gMeter.simple'), value: 'simple' },
-            { label: t('settingsPanels.gMeter.advanced'), value: 'advanced' },
-          ]}
-          onChange={(v) => update({ colorMode: v as GMeterColorMode })}
-        />
-      </div>
+      <Row setting="displayMode" stacked />
+      <ScaleRow />
+      <Row setting="colorMode" stacked />
     </Card>
   );
 });

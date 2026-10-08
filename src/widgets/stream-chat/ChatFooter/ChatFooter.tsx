@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Activity } from 'lucide-react';
 
 import type { ChatPresence } from '@shared/contracts/bindings';
-import type { StreamChatWidgetSettings } from '@shared/contracts/widget-settings';
 import { useStreamChatWidgetStore } from '@widgets/stream-chat/stream-chat.store';
 import { PlatformGlyph } from '../PlatformGlyph/PlatformGlyph';
 
 import styles from './ChatFooter.module.scss';
+import type { StreamChatWidgetSettings } from '../settings-schema';
 
 const STATUS_CLASS: Record<ChatPresence['status'], string> = {
   live: styles.dotLive,

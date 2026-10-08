@@ -1,14 +1,14 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { TimerWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { panelRows } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
+import { TIMER_SETTINGS } from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['timer'];
 
-const { SwitchRow } = panelRows<TimerWidgetSettings>();
+const { Row } = schemaRows(TIMER_SETTINGS);
 
 export const TimerSettingsPanel = observer(() => {
   const { t } = useTranslation('widgets');
@@ -16,73 +16,34 @@ export const TimerSettingsPanel = observer(() => {
   return (
     <Card title={t('settingsPanels.timer.visibleElements')}>
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showSessionType"
-          title={t('settingsPanels.timer.showSessionType')}
-          desc={t('settingsPanels.timer.showSessionTypeDesc')}
-        />
+        <Row setting="showSessionType" />
       </div>
 
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showLaps"
-          title={t('settingsPanels.timer.showLapCount')}
-          desc={t('settingsPanels.timer.showLapCountDesc')}
-        />
+        <Row setting="showLaps" />
       </div>
 
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showPosition"
-          title={t('settingsPanels.timer.showPosition')}
-          desc={t('settingsPanels.timer.showPositionDesc')}
-        />
+        <Row setting="showPosition" />
       </div>
 
-      <SwitchRow
-        settingKey="useLivePositions"
-        dependsOn="showPosition"
-        title={t('settingsPanels.common.useLivePositions')}
-        desc={t('settingsPanels.common.useLivePositionsDesc')}
-      />
-
-      <SwitchRow
-        settingKey="classPositionInMulticlass"
-        dependsOn="showPosition"
-        title={t('settingsPanels.common.classPositionInMulticlass')}
-        desc={t('settingsPanels.common.classPositionInMulticlassDesc')}
-      />
+      <Row setting="useLivePositions" dependsOn="showPosition" />
+      <Row setting="classPositionInMulticlass" dependsOn="showPosition" />
 
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showWallClock"
-          title={t('settingsPanels.timer.showPcClock')}
-          desc={t('settingsPanels.timer.showPcClockDesc')}
-        />
+        <Row setting="showWallClock" />
       </div>
 
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showSimTime"
-          title={t('settingsPanels.timer.showSimTime')}
-          desc={t('settingsPanels.timer.showSimTimeDesc')}
-        />
+        <Row setting="showSimTime" />
       </div>
 
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showPcDate"
-          title={t('settingsPanels.timer.showPcDate')}
-          desc={t('settingsPanels.timer.showPcDateDesc')}
-        />
+        <Row setting="showPcDate" />
       </div>
 
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="showSimDate"
-          title={t('settingsPanels.timer.showSimDate')}
-          desc={t('settingsPanels.timer.showSimDateDesc')}
-        />
+        <Row setting="showSimDate" />
       </div>
     </Card>
   );

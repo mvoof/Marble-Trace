@@ -1,45 +1,37 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Slider, Switch } from 'antd';
-import type { PitServiceWidgetSettings } from '@shared/contracts/widget-settings';
+import { Slider } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { SettingRow } from '@features/widget-settings/SettingRow';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
+import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { distanceScale } from '@features/widget-settings/distance-scale';
-
-// The pit entry countdown. Below 100 m the box arrives after the braking, and
-// past 1 km it is up for most of a lap on a short track. Zero switches it off.
-const APPROACH_MIN_M = 0;
-const APPROACH_MAX_M = 1000;
-const APPROACH_STEP_M = 50;
+import {
+  PIT_SERVICE_SETTINGS,
+  type PitServiceWidgetSettings,
+} from './settings-schema';
 
 // The slider is read and dragged in the driver's own units; the setting stays
-// meters. The step is rounded to something a foot scale would actually offer
-// rather than to whatever 50 m converts to.
+// meters, its bounds the schema's. The step is rounded to something a foot
+// scale would actually offer rather than to whatever 50 m converts to.
+const APPROACH_STEP_M = 50;
 const APPROACH_STEP_FT = 100;
-
-// Zero switches the reveal off; past fifteen seconds a pit entry has usually
-// shown the panel anyway.
-const REVEAL_MIN_S = 0;
-const REVEAL_MAX_S = 15;
-const REVEAL_STEP_S = 1;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['pit-service'];
 
-const { SwitchRow } = panelRows<PitServiceWidgetSettings>();
+const { Row, useLabels } = schemaRows(PIT_SERVICE_SETTINGS);
+const { revealOnApproachM, commandRevealSeconds } = PIT_SERVICE_SETTINGS.shape;
 
 export const PitServiceSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('pit-service');
   const { t } = useTranslation('widgets');
   const units = useUnitsStore();
+  const revealLabels = useLabels('revealOnApproachM');
+  const commandRevealLabels = useLabels('commandRevealSeconds');
 
   const settings =
     liveWidgets.getSettings<PitServiceWidgetSettings>(panelWidgetId);
@@ -50,8 +42,8 @@ export const PitServiceSettingsPanel = observer(() => {
   const isImperial = units.unitSystem === 'imperial';
 
   const approachScale = distanceScale(isImperial, {
-    minM: APPROACH_MIN_M,
-    maxM: APPROACH_MAX_M,
+    minM: revealOnApproachM.min,
+    maxM: revealOnApproachM.max,
     stepM: APPROACH_STEP_M,
     stepFt: APPROACH_STEP_FT,
   });
@@ -63,80 +55,33 @@ export const PitServiceSettingsPanel = observer(() => {
     });
   };
 
-  const sections = [
-    {
-      titleKey: 'settingsPanels.pitService.fuel',
-      descKey: 'settingsPanels.pitService.fuelDesc',
-      value: settings.showFuel,
-      key: 'showFuel',
-    },
-    {
-      titleKey: 'settingsPanels.pitService.tires',
-      descKey: 'settingsPanels.pitService.tiresDesc',
-      value: settings.showTires,
-      key: 'showTires',
-    },
-    {
-      titleKey: 'settingsPanels.pitService.repairs',
-      descKey: 'settingsPanels.pitService.repairsDesc',
-      value: settings.showRepairs,
-      key: 'showRepairs',
-    },
-    {
-      titleKey: 'settingsPanels.pitService.footer',
-      descKey: 'settingsPanels.pitService.footerDesc',
-      value: settings.showFooter,
-      key: 'showFooter',
-    },
-  ] as const;
-
   return (
     <>
       <Card title={t('settingsPanels.pitService.sections')}>
-        {sections.map((section) => (
-          <SettingRow
-            key={section.key}
-            title={t(section.titleKey)}
-            desc={t(section.descKey)}
-          >
-            <Switch
-              checked={section.value}
-              onChange={(checked) => update({ [section.key]: checked })}
-            />
-          </SettingRow>
-        ))}
+        <Row setting="showFuel" />
+        <Row setting="showTires" />
+        <Row setting="showRepairs" />
+        <Row setting="showFooter" />
       </Card>
 
       <Card title={t('settingsPanels.pitService.position')}>
-        <SwitchRow
-          settingKey="classPositionInMulticlass"
-          title={t('settingsPanels.common.classPositionInMulticlass')}
-          desc={t('settingsPanels.common.classPositionInMulticlassDesc')}
-        />
+        <Row setting="classPositionInMulticlass" />
 
-        <SwitchRow
-          settingKey="showProjectedPosition"
-          title={t('settingsPanels.pitService.projectedPosition')}
-          desc={t('settingsPanels.pitService.projectedPositionDesc')}
-        />
+        <Row setting="showProjectedPosition" />
       </Card>
 
       <Card title={t('settingsPanels.pitService.visibility')}>
-        <SwitchRow
-          settingKey="alwaysVisible"
-          title={t('settingsPanels.pitService.alwaysVisible')}
-          desc={t('settingsPanels.pitService.alwaysVisibleDesc')}
-        />
+        <Row setting="alwaysVisible" />
 
         <div className={styles.fieldGroup}>
           <div className={styles.fieldLabel}>
-            {t('settingsPanels.pitService.revealOnApproach', {
+            {t('settingsPanels.pitService.revealOnApproachM', {
               distance: `${approachScale.toDisplay(settings.revealOnApproachM)} ${approachScale.unit}`,
             })}
           </div>
 
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-            {t('settingsPanels.pitService.revealOnApproachDesc')}
+            {revealLabels.desc}
           </div>
 
           <Slider
@@ -158,13 +103,13 @@ export const PitServiceSettingsPanel = observer(() => {
           </div>
 
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-            {t('settingsPanels.pitService.commandRevealSecondsDesc')}
+            {commandRevealLabels.desc}
           </div>
 
           <Slider
-            min={REVEAL_MIN_S}
-            max={REVEAL_MAX_S}
-            step={REVEAL_STEP_S}
+            min={commandRevealSeconds.min}
+            max={commandRevealSeconds.max}
+            step={commandRevealSeconds.step}
             value={settings.commandRevealSeconds}
             onChange={(value) => update({ commandRevealSeconds: value })}
           />

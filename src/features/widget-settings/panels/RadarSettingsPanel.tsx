@@ -1,14 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Col, InputNumber, Row, Segmented, Select, Slider, Switch } from 'antd';
-import type {
-  BaseUserSettings,
-  RadarBackgroundTexture,
-  RadarQualifyingVisibility,
-  RadarScaleMode,
-  RadarSettings,
-  ProximityRadarSettings,
-} from '@shared/contracts/widget-settings';
+import { Col, InputNumber, Row as GridRow, Select, Slider } from 'antd';
+import type { BaseUserSettings } from '@shared/contracts/widget-settings';
 import {
   LADDER_STEP_M,
   rangeRingRadii,
@@ -24,35 +17,29 @@ import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '../Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows, usePanelWidgetId } from '../setting-rows';
+import { schemaRows } from '../schema-rows';
+import {
+  PROXIMITY_RADAR_SETTINGS,
+  RADAR_BACKGROUND_TEXTURE,
+  RADAR_SCALE_MODE,
+  type ProximityRadarSettings,
+  type RadarBackgroundTexture,
+  type RadarScaleMode,
+} from '@entities/radar/radar.settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['proximity-radar', 'radar-bar'];
 
-const MIN_SCOPE_RANGE_M = 5;
-const MAX_SCOPE_RANGE_M = 30;
-const SCOPE_RANGE_STEP_M = 1;
-
-const MIN_OPACITY = 0.1;
-const MAX_OPACITY = 1;
-const OPACITY_STEP = 0.05;
-
 const asPercent = (opacity: number): number => Math.round(opacity * 100);
 
-const { DependentBlock, SwitchRow } = panelRows<ProximityRadarSettings>();
+const { DependentBlock } = panelRows<ProximityRadarSettings>();
+const { Row } = schemaRows(PROXIMITY_RADAR_SETTINGS);
+const { hideDelay, scopeRange, carOpacity, beamOpacity } =
+  PROXIMITY_RADAR_SETTINGS.shape;
 
 // The range is only the user's to set in manual mode; the other modes derive it.
 const isManualScale = (settings: ProximityRadarSettings): boolean =>
   settings.scaleMode === 'manual';
-
-const SCALE_MODES: RadarScaleMode[] = ['fixed-scope', 'fixed-cars', 'manual'];
-
-const TEXTURES: RadarBackgroundTexture[] = [
-  'none',
-  'polar-dots',
-  'polar-mesh',
-  'hatch',
-  'scanlines',
-];
 
 /**
  * What the circle covers, in the units the user reads. The widget resolves the
@@ -109,7 +96,7 @@ const ScopeCard = observer(() => {
   return (
     <>
       <Card title={t('settingsPanels.radar.scope')}>
-        <Row gutter={24} className={styles.fieldGroup}>
+        <GridRow gutter={24} className={styles.fieldGroup}>
           <Col span={24}>
             <span className={styles.fieldLabel}>
               {t('settingsPanels.radar.scaleMode')}
@@ -120,7 +107,7 @@ const ScopeCard = observer(() => {
               onChange={(value: RadarScaleMode) => {
                 update({ scaleMode: value });
               }}
-              options={SCALE_MODES.map((mode) => ({
+              options={RADAR_SCALE_MODE.map((mode) => ({
                 label: t(`settingsPanels.radar.scaleModes.${mode}`),
                 value: mode,
               }))}
@@ -131,10 +118,10 @@ const ScopeCard = observer(() => {
               })}
             </div>
           </Col>
-        </Row>
+        </GridRow>
 
         <DependentBlock dependsOn={isManualScale}>
-          <Row gutter={24}>
+          <GridRow gutter={24}>
             <Col span={8}>
               <span className={styles.fieldLabel}>
                 {t('settingsPanels.radar.scopeRange')}
@@ -142,9 +129,9 @@ const ScopeCard = observer(() => {
               <InputNumber
                 style={{ width: '100%' }}
                 value={settings.scopeRange}
-                min={MIN_SCOPE_RANGE_M}
-                max={MAX_SCOPE_RANGE_M}
-                step={SCOPE_RANGE_STEP_M}
+                min={scopeRange.min}
+                max={scopeRange.max}
+                step={scopeRange.step}
                 onChange={(value) => {
                   if (value !== null) {
                     update({ scopeRange: value });
@@ -152,59 +139,35 @@ const ScopeCard = observer(() => {
                 }}
               />
             </Col>
-          </Row>
+          </GridRow>
         </DependentBlock>
 
-        <Row gutter={24} className={styles.fieldGroup}>
+        <GridRow gutter={24} className={styles.fieldGroup}>
           <Col span={24}>
             <ScopeReadout settings={settings} />
           </Col>
-        </Row>
+        </GridRow>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showAxes"
-            title={t('settingsPanels.radar.showAxes')}
-            desc={t('settingsPanels.radar.showAxesDesc')}
-          />
+          <Row setting="showAxes" />
         </div>
 
-        <SwitchRow
-          settingKey="showAxisTicks"
-          dependsOn="showAxes"
-          title={t('settingsPanels.radar.showAxisTicks')}
-          desc={t('settingsPanels.radar.showAxisTicksDesc')}
-        />
+        <Row setting="showAxisTicks" dependsOn="showAxes" />
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showRangeRings"
-            title={t('settingsPanels.radar.showRangeRings')}
-          />
+          <Row setting="showRangeRings" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="monochromeCars"
-            title={t('settingsPanels.radar.monochromeCars')}
-            desc={t('settingsPanels.radar.monochromeCarsDesc')}
-          />
+          <Row setting="monochromeCars" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showEdgeMarkers"
-            title={t('settingsPanels.radar.showEdgeMarkers')}
-            desc={t('settingsPanels.radar.showEdgeMarkersDesc')}
-          />
+          <Row setting="showEdgeMarkers" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showBeam"
-            title={t('settingsPanels.radar.showBeam')}
-            desc={t('settingsPanels.radar.showBeamDesc')}
-          />
+          <Row setting="showBeam" />
         </div>
 
         <DependentBlock dependsOn="showBeam">
@@ -214,9 +177,9 @@ const ScopeCard = observer(() => {
             })}
           </div>
           <Slider
-            min={MIN_OPACITY}
-            max={MAX_OPACITY}
-            step={OPACITY_STEP}
+            min={beamOpacity.min}
+            max={beamOpacity.max}
+            step={beamOpacity.step}
             value={settings.beamOpacity}
             onChange={(value) => update({ beamOpacity: value })}
           />
@@ -232,9 +195,9 @@ const ScopeCard = observer(() => {
             })}
           </div>
           <Slider
-            min={MIN_OPACITY}
-            max={MAX_OPACITY}
-            step={OPACITY_STEP}
+            min={carOpacity.min}
+            max={carOpacity.max}
+            step={carOpacity.step}
             value={settings.carOpacity}
             onChange={(value) => update({ carOpacity: value })}
           />
@@ -245,10 +208,10 @@ const ScopeCard = observer(() => {
       </Card>
 
       <Card title={t('settingsPanels.radar.texture')}>
-        <Row gutter={24} className={styles.fieldGroup}>
+        <GridRow gutter={24} className={styles.fieldGroup}>
           <Col span={24}>
             <span className={styles.fieldLabel}>
-              {t('settingsPanels.radar.texturePattern')}
+              {t('settingsPanels.radar.backgroundTexture')}
             </span>
             <Select
               style={{ width: '100%' }}
@@ -256,16 +219,16 @@ const ScopeCard = observer(() => {
               onChange={(value: RadarBackgroundTexture) => {
                 update({ backgroundTexture: value });
               }}
-              options={TEXTURES.map((texture) => ({
+              options={RADAR_BACKGROUND_TEXTURE.map((texture) => ({
                 label: t(`settingsPanels.radar.textures.${texture}`),
                 value: texture,
               }))}
             />
             <div className={styles.fieldDesc}>
-              {t('settingsPanels.radar.textureDesc')}
+              {t('settingsPanels.radar.backgroundTextureDesc')}
             </div>
           </Col>
-        </Row>
+        </GridRow>
       </Card>
     </>
   );
@@ -276,14 +239,6 @@ export const RadarSettingsPanel = observer(
     const liveWidgets = useWidgetEditor();
     const widgetType = liveWidgets.getWidget(widgetId)?.type ?? widgetId;
     const { t } = useTranslation('widgets');
-    const settings = liveWidgets.getSettings<RadarSettings>(widgetId);
-
-    const update = (partial: Partial<RadarSettings>) => {
-      liveWidgets.updateUserSettings(widgetId, {
-        ...settings,
-        ...partial,
-      });
-    };
 
     // The fade-out is the scope's alone, so it is read and written through the
     // narrower type rather than widening the pair's shared contract again.
@@ -300,7 +255,7 @@ export const RadarSettingsPanel = observer(
     return (
       <>
         <Card title={t('settingsPanels.radar.radarBehavior')}>
-          <Row gutter={24} className={styles.fieldGroup}>
+          <GridRow gutter={24} className={styles.fieldGroup}>
             <Col span={24}>
               <div className={styles.fieldDesc}>
                 {t(
@@ -310,20 +265,20 @@ export const RadarSettingsPanel = observer(
                 )}
               </div>
             </Col>
-          </Row>
+          </GridRow>
 
           {widgetType === 'proximity-radar' && (
-            <Row gutter={24} className={styles.fieldGroup}>
+            <GridRow gutter={24} className={styles.fieldGroup}>
               <Col span={8}>
                 <span className={styles.fieldLabel}>
-                  {t('settingsPanels.radar.fadeOutDelay')}
+                  {t('settingsPanels.radar.hideDelay')}
                 </span>
                 <InputNumber
                   style={{ width: '100%' }}
                   value={scopeSettings.hideDelay}
-                  min={0}
-                  max={30}
-                  step={0.5}
+                  min={hideDelay.min}
+                  max={hideDelay.max}
+                  step={hideDelay.step}
                   onChange={(v) => {
                     if (v !== null) {
                       updateScope({ hideDelay: v });
@@ -331,53 +286,23 @@ export const RadarSettingsPanel = observer(
                   }}
                 />
                 <div className={styles.fieldDesc}>
-                  {t('settingsPanels.radar.fadeOutDelayDesc')}
+                  {t('settingsPanels.radar.hideDelayDesc')}
                 </div>
               </Col>
-            </Row>
+            </GridRow>
           )}
 
-          <Row gutter={24} className={styles.fieldGroup}>
-            <Col span={24}>
-              <span className={styles.fieldLabel}>
-                {t('settingsPanels.radar.showDistance')}
-              </span>
-              <Switch
-                checked={settings.showDistance}
-                onChange={(checked) => {
-                  update({ showDistance: checked });
-                }}
-              />
-            </Col>
-          </Row>
+          <div className={styles.fieldGroup}>
+            <Row setting="showDistance" />
+          </div>
         </Card>
 
         {widgetType === 'proximity-radar' && <ScopeCard />}
 
-        <Card title={t('settingsPanels.radar.qualifying')}>
-          <Row gutter={24} className={styles.fieldGroup}>
-            <Col span={24}>
-              <span className={styles.fieldLabel}>
-                {t('settingsPanels.radar.showInQualifying')}
-              </span>
-              <Segmented
-                value={settings.qualifyingVisibility}
-                onChange={(v) => {
-                  update({
-                    qualifyingVisibility: v as RadarQualifyingVisibility,
-                  });
-                }}
-                options={[
-                  { label: t('settingsPanels.radar.always'), value: 'always' },
-                  { label: t('settingsPanels.radar.auto'), value: 'auto' },
-                  { label: t('settingsPanels.radar.never'), value: 'never' },
-                ]}
-              />
-              <div className={styles.fieldDesc}>
-                {t('settingsPanels.radar.autoDesc')}
-              </div>
-            </Col>
-          </Row>
+        <Card title={t('settingsPanels.common.qualifying')}>
+          <div className={styles.fieldGroup}>
+            <Row setting="qualifyingVisibility" stacked />
+          </div>
         </Card>
       </>
     );

@@ -1,7 +1,6 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { InputTraceSettings } from '@shared/contracts/widget-settings';
 
 import { getContrastTextColor } from '@shared/lib/colors';
 
@@ -12,6 +11,7 @@ import styles from './Bar.module.scss';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useInputTraceWidgetStore } from '@widgets/input-trace/input-trace.store';
 import type { InputChannel } from '@widgets/input-trace/input-trace.store';
+import type { InputTraceSettings } from '../../settings-schema';
 
 type BarChannel = InputChannel;
 type BarWidth = 'sm' | 'md' | 'lg';

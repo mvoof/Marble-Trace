@@ -10,7 +10,6 @@ import {
 
 import type { UnitSystem } from '@shared/contracts/domain';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
-import type { WheelToWheelWidgetSettings } from '@shared/contracts/widget-settings';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type { SelfHidingWidgetStore } from '@features/widget-auto-hide/widget-auto-hide.store';
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
@@ -28,6 +27,7 @@ import type { AppSettingsStore } from '@entities/app-settings/app-settings.store
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { SessionStore } from '@entities/session/session.store';
+import type { WheelToWheelWidgetSettings } from './settings-schema';
 
 interface WheelToWheelDeps {
   units: UnitsStore;

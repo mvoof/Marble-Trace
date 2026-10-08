@@ -4,10 +4,10 @@ import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { NoDataPlaceholder } from '@shared/ui/NoDataPlaceholder/NoDataPlaceholder';
 import { useSessionStore } from '@entities/session/session-context';
 import { useSimStore } from '@entities/sim/sim-context';
-import type { SectorMatrixWidgetSettings } from '@shared/contracts/widget-settings';
 import { SectorHeader } from './SectorHeader/SectorHeader';
 import { SectorGrid } from './SectorGrid/SectorGrid';
 import { SectorFooter } from './SectorFooter/SectorFooter';
+import type { SectorMatrixWidgetSettings } from './settings-schema';
 
 export const SectorMatrixWidget = observer(() => {
   const { sessionInfo } = useSessionStore();

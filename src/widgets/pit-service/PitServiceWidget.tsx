@@ -11,8 +11,8 @@ import { OrderChips } from './OrderChips/OrderChips';
 import { ServiceFooter } from './ServiceFooter/ServiceFooter';
 
 import styles from './PitServiceWidget.module.scss';
-import type { PitServiceWidgetSettings } from '@shared/contracts/widget-settings';
 import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
+import type { PitServiceWidgetSettings } from './settings-schema';
 
 export const PitServiceWidget = observer(() => {
   const pitService = usePitServiceWidgetStore();

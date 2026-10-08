@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { DELTA_SETTINGS } from './settings-schema';
 
 export const DELTA_MANIFEST: WidgetManifest = {
   id: 'delta',
@@ -28,10 +29,7 @@ export const DELTA_MANIFEST: WidgetManifest = {
     ...COMMON_WIDGET_DEFAULTS,
     // Painted on the number's plate, not on the container — see below.
     ...PANEL_APPEARANCE_DEFAULTS,
-    reference: 'personal_best',
-    showLapFlash: false,
-    flashDuration: 5,
-    hideWhenNoReference: false,
-    showGauge: true,
+    ...DELTA_SETTINGS.defaults,
   },
+  settingsSchema: DELTA_SETTINGS,
 };

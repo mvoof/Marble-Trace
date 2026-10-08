@@ -4,7 +4,6 @@ import type {
   FuelComputedFrame,
   FuelLapRecord,
 } from '@shared/contracts/bindings';
-import type { FuelWidgetSettings } from '@shared/contracts/widget-settings';
 import { mockLapTiming } from '@features/preview/mocks/delta';
 import { mockCarStatus } from '@features/preview/mocks/engine';
 import { mockFuel } from '@features/preview/mocks/fuel';
@@ -14,6 +13,7 @@ import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type { FuelWidgetSettings } from './settings-schema';
 
 const LAP_FUEL_USED = [
   3.2, 3.1, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3,

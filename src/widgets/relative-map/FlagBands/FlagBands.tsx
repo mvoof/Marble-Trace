@@ -1,13 +1,13 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { LinearMapWidgetSettings } from '@shared/contracts/widget-settings';
 import { projectFlagZoneToWindow } from '@entities/incidents/flag-zones';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useIncidentsWidgetStore } from '@entities/incidents/incidents-context';
 
 import styles from './FlagBands.module.scss';
+import type { LinearMapWidgetSettings } from '../settings-schema';
 
 /**
  * Flat fill rather than the track map's hazard stripes: the strip is 40 px tall
@@ -44,8 +44,8 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
 
   const settings = useWidgetSettings<LinearMapWidgetSettings>('relative-map');
 
-  const isOutline = (settings.flagZoneStyle ?? 'filled') === 'outline';
-  const blink = settings.blinkIncidentZones ?? true;
+  const isOutline = settings.flagZoneStyle === 'outline';
+  const blink = settings.blinkIncidentZones;
   const zoneCount = incidentsStore.zones.length;
 
   const containerRef = useReactiveDomWrite<HTMLDivElement>(
@@ -111,7 +111,7 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
     [computed, incidentsStore, blink, zoneCount, isHorizontal]
   );
 
-  if (!(settings.showIncidentZones ?? true)) {
+  if (!settings.showIncidentZones) {
     return null;
   }
 

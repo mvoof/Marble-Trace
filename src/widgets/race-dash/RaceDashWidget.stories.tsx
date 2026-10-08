@@ -2,10 +2,6 @@ import { useEffect, useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type {
-  RaceDashWidgetSettings,
-  RpmIndicatorMode,
-} from '@shared/contracts/widget-settings';
 import { useStore } from '@app/roots/root-store-context';
 import {
   PREVIEW_CORNER_CENTER_PCT,
@@ -21,6 +17,10 @@ import {
   previewScenario,
 } from '@/storybook/define-widget-stories';
 import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
+import type {
+  RaceDashWidgetSettings,
+  RpmIndicatorMode,
+} from './settings-schema';
 
 interface StoryArgs {
   /** Where on the lap the car sits — the reference speed is read at this point. */

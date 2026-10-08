@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   NAME_COLUMN_DEFAULT_PX,
   NAME_COLUMN_MAX_PX,
@@ -16,6 +15,7 @@ import {
   maxScrollOffset,
   resolveBestLapDisplay,
 } from './standings-utils';
+import type { StandingsWidgetSettings } from './settings-schema';
 
 const makeField = (count: number, playerIdx: number): DriverEntry[] =>
   Array.from(

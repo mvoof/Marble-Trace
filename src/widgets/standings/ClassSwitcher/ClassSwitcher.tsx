@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { ClassGroupHeader } from '@widgets/standings/ClassGroupHeader/ClassGroupHeader';
 
 import styles from './ClassSwitcher.module.scss';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
+import type { StandingsWidgetSettings } from '../settings-schema';
 
 const FLASH_DURATION_MS = 300;
 

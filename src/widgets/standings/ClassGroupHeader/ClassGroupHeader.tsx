@@ -4,9 +4,9 @@ import { Trophy, Users } from 'lucide-react';
 
 import { formatIRating } from '@shared/lib/driver';
 
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { StatPill } from '@shared/ui/StatPill/StatPill';
 import styles from './ClassGroupHeader.module.scss';
+import type { StandingsWidgetSettings } from '../settings-schema';
 
 /** Marks the class header rows, which scroll the classes rather than the drivers. */
 export const CLASS_HEADER_ATTRIBUTE = 'data-class-header';

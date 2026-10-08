@@ -7,8 +7,8 @@ import { getColorClass, type ColorStyles } from '../led-matrix-utils';
 import { useLedBlinkClock } from '../useLedBlinkClock';
 
 import styles from './LedMatrix.module.scss';
-import type { FlagDisplaySettings } from '@shared/contracts/widget-settings';
 import { useFlagsStore } from '@entities/flags/flags-context';
+import type { LedFlagsSettings } from '@entities/flags/flag-display.settings-schema';
 
 interface LedMatrixProps {
   diodesPerBlock: number;
@@ -19,7 +19,7 @@ export const LedMatrix = observer(
   ({ diodesPerBlock, splitRows = 18 }: LedMatrixProps) => {
     const flags = useFlagsStore();
     const { alwaysShow, animate, split } =
-      useWidgetSettings<FlagDisplaySettings>('led-flags');
+      useWidgetSettings<LedFlagsSettings>('led-flags');
     const { ledDisplayFlag: flag, blinkOn } = flags;
     const boardRef = useRef<HTMLDivElement>(null);
 

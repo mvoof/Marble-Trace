@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import type { RpmLightsWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   computeShiftThresholds,
   rpmZoneColorByPct,
@@ -18,6 +17,7 @@ import {
   ledShapeStyle,
 } from '../led-shape';
 import styles from '../RpmLightsWidget.module.scss';
+import type { RpmLightsWidgetSettings } from '../settings-schema';
 
 /**
  * The racing bar: twenty-two LEDs whose colours follow the engine's revs, a hot

@@ -2,7 +2,6 @@ import { use, type CSSProperties, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ColorPicker, Switch } from 'antd';
 
-import type { WidgetSpecificSettings } from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { PanelWidgetContext } from './Card';
 import { SettingRow } from './SettingRow';
@@ -85,7 +84,8 @@ interface RowProps {
 export const usePanelWidgetId = (fallbackId: string): string =>
   use(PanelWidgetContext) ?? fallbackId;
 
-const useBoundSetting = (settingKey: string) => {
+/** A setting of the widget the panel edits: its value and its writer. */
+export const useBoundSetting = (settingKey: string) => {
   const widgetId = use(PanelWidgetContext);
   const editor = useWidgetEditor();
 
@@ -225,7 +225,17 @@ type TypedRowProps<Settings, Value> = Omit<
   dependsOn?: Dependency<Settings>;
 };
 
-export const panelRows = <Settings extends WidgetSpecificSettings>() => ({
+/**
+ * The rows with any key — for `schemaRows`, which types the key itself from
+ * the widget's schema.
+ */
+export const untypedRows = {
+  SwitchRow: SwitchSettingRow,
+  ColorRow: ColorSettingRow,
+  DependentBlock: DependentSettingBlock,
+};
+
+export const panelRows = <Settings extends object>() => ({
   SwitchRow: SwitchSettingRow as React.ComponentType<
     TypedRowProps<Settings, boolean>
   >,

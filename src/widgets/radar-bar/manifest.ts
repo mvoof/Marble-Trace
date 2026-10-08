@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   TRANSPARENT_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { RADAR_BAR_SETTINGS } from '@entities/radar/radar.settings-schema';
 
 export const RADAR_BAR_MANIFEST: WidgetManifest = {
   id: 'radar-bar',
@@ -27,7 +28,7 @@ export const RADAR_BAR_MANIFEST: WidgetManifest = {
     currentHeight: 380,
     ...COMMON_WIDGET_DEFAULTS,
     ...TRANSPARENT_APPEARANCE_DEFAULTS,
-    qualifyingVisibility: 'auto',
-    showDistance: true,
+    ...RADAR_BAR_SETTINGS.defaults,
   },
+  settingsSchema: RADAR_BAR_SETTINGS,
 };

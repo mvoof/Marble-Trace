@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
@@ -10,6 +9,7 @@ import { RingBadge } from './RingBadge/RingBadge';
 import { StatsStrip } from './StatsStrip/StatsStrip';
 
 import styles from './RaceDashWidget.module.scss';
+import type { RaceDashWidgetSettings } from './settings-schema';
 
 /**
  * Picks the strip beside the badge and nothing else. Whether the car is bound by

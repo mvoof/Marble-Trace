@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { LinearMapWidgetSettings } from '@shared/contracts/widget-settings';
 import type { RendererCore } from '@app/roots/renderer-core';
 import {
   PACE_CAR_IDX,
@@ -10,6 +9,7 @@ import {
 import { respaceField } from '@features/preview/field-seed';
 import { RelativeMapWidget } from './RelativeMapWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import type { LinearMapWidgetSettings } from './settings-schema';
 
 /** The lap the spacing below is measured against, in seconds. */
 const LAP_TIME_S = 92.4;

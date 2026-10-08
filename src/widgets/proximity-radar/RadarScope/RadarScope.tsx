@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 
 import type { NearbyCar } from '@shared/contracts/bindings';
 import type { UnitSystem } from '@shared/contracts/domain';
-import type { ProximityRadarSettings } from '@shared/contracts/widget-settings';
 import { formatDistance } from '@shared/lib/telemetry-format';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
@@ -29,6 +28,7 @@ import {
 } from '@entities/radar/radar-scope-utils';
 
 import styles from './RadarScope.module.scss';
+import type { ProximityRadarSettings } from '@entities/radar/radar.settings-schema';
 
 /**
  * Cars further out than this never reach the scope whatever the user sets, and

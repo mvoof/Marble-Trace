@@ -1,12 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, Segmented, Select, Slider, Space, Switch } from 'antd';
-import {
-  InputTraceSettings,
-  SteeringCenterDisplay,
-  SteeringWheelStyle,
-} from '@shared/contracts/widget-settings';
-import { STEERING_WHEEL_STYLE_IDS } from './SteeringWheel/wheel-styles';
+import { ColorPicker, Select, Slider, Space, Switch } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { SettingRow } from '@features/widget-settings/SettingRow';
@@ -15,12 +9,22 @@ import {
   panelRows,
   usePanelWidgetId,
 } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import {
+  INPUT_TRACE_SETTINGS,
+  STEERING_WHEEL_STYLE,
+  type InputTraceSettings,
+  type SteeringWheelStyle,
+} from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['input-trace'];
 
-const { ColorRow, DependentBlock, SwitchRow } = panelRows<InputTraceSettings>();
+const { DependentBlock } = panelRows<InputTraceSettings>();
+const { Row } = schemaRows(INPUT_TRACE_SETTINGS);
+const { steeringZoom, historySeconds, smoothing, lineWidth } =
+  INPUT_TRACE_SETTINGS.shape;
 
 // Only the wheel arts that draw the centre-grip stripe in their own SVG
 // (see wheels/gt-round.svg, wheels/flat-bottom-wheel.svg) read this color.
@@ -62,8 +66,8 @@ export const InputTraceSettingsPanel = observer(() => {
       <Card title={t('settingsPanels.inputTrace.dataChannels')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.inputTrace.throttle')}
-            desc={t('settingsPanels.inputTrace.throttleDesc')}
+            title={t('settingsPanels.inputTrace.showThrottle')}
+            desc={t('settingsPanels.inputTrace.showThrottleDesc')}
           >
             <Space>
               <ColorPicker
@@ -80,8 +84,8 @@ export const InputTraceSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.inputTrace.brake')}
-            desc={t('settingsPanels.inputTrace.brakeDesc')}
+            title={t('settingsPanels.inputTrace.showBrake')}
+            desc={t('settingsPanels.inputTrace.showBrakeDesc')}
           >
             <Space>
               <ColorPicker
@@ -97,23 +101,13 @@ export const InputTraceSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.inputTrace.absActive')}
-            desc={t('settingsPanels.inputTrace.absActiveDesc')}
-          >
-            <Space>
-              <ColorPicker
-                value={settings.absColor}
-                onChange={(c) => update({ absColor: c.toHexString() })}
-              />
-            </Space>
-          </SettingRow>
+          <Row setting="absColor" />
         </div>
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.inputTrace.clutch')}
-            desc={t('settingsPanels.inputTrace.clutchDesc')}
+            title={t('settingsPanels.inputTrace.showClutch')}
+            desc={t('settingsPanels.inputTrace.showClutchDesc')}
           >
             <Space>
               <ColorPicker
@@ -129,21 +123,17 @@ export const InputTraceSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showSteering"
-            title={t('settingsPanels.inputTrace.steeringWheel')}
-            desc={t('settingsPanels.inputTrace.steeringWheelDesc')}
-          />
+          <Row setting="showSteering" />
         </div>
 
         <DependentBlock dependsOn="showSteering">
           <SettingRow
-            title={t('settingsPanels.inputTrace.wheelStyle')}
-            desc={t('settingsPanels.inputTrace.wheelStyleDesc')}
+            title={t('settingsPanels.inputTrace.steeringWheelStyle')}
+            desc={t('settingsPanels.inputTrace.steeringWheelStyleDesc')}
           >
             <Select
               value={settings.steeringWheelStyle}
-              options={STEERING_WHEEL_STYLE_IDS.map((styleId) => ({
+              options={STEERING_WHEEL_STYLE.map((styleId) => ({
                 value: styleId,
                 label: t(`settingsPanels.inputTrace.wheelStyles.${styleId}`),
               }))}
@@ -155,79 +145,25 @@ export const InputTraceSettingsPanel = observer(() => {
           </SettingRow>
         </DependentBlock>
 
-        <DependentBlock dependsOn="showSteering">
-          <SettingRow
-            title={t('settingsPanels.inputTrace.centerDisplay')}
-            desc={t('settingsPanels.inputTrace.centerDisplayDesc')}
-          >
-            <Segmented
-              value={settings.steeringCenterDisplay}
-              options={[
-                {
-                  label: t('settingsPanels.inputTrace.centerNone'),
-                  value: 'none',
-                },
-                {
-                  label: t('settingsPanels.inputTrace.logo'),
-                  value: 'logo',
-                },
-                {
-                  label: t('settingsPanels.inputTrace.gear'),
-                  value: 'gear',
-                },
-                {
-                  label: t('settingsPanels.inputTrace.speed'),
-                  value: 'speed',
-                },
-                {
-                  label: t('settingsPanels.inputTrace.angle'),
-                  value: 'angle',
-                },
-                {
-                  label: t('settingsPanels.inputTrace.speedGear'),
-                  value: 'speed-gear',
-                },
-              ]}
-              onChange={(v) =>
-                update({
-                  steeringCenterDisplay: v as SteeringCenterDisplay,
-                })
-              }
-            />
-          </SettingRow>
-        </DependentBlock>
+        <Row setting="steeringCenterDisplay" dependsOn="showSteering" />
 
-        <ColorRow
-          settingKey="steeringMarkerColor"
-          dependsOn={hasSteeringMarker}
-          hex
-          title={t('settingsPanels.inputTrace.markerColor')}
-          desc={t('settingsPanels.inputTrace.markerColorDesc')}
-        />
-
-        <SwitchRow
-          settingKey="steeringCenterPlate"
-          dependsOn={hasCenterPlate}
-          title={t('settingsPanels.inputTrace.centerPlate')}
-          desc={t('settingsPanels.inputTrace.centerPlateDesc')}
-        />
+        <Row setting="steeringMarkerColor" dependsOn={hasSteeringMarker} />
+        <Row setting="steeringCenterPlate" dependsOn={hasCenterPlate} />
 
         <DependentBlock dependsOn="showSteering">
           <SettingRow
             title={t('settingsPanels.inputTrace.steeringZoom')}
             desc={t('settingsPanels.inputTrace.steeringZoomDesc', {
-              angle: Math.round(
-                steeringLock / 2 / (settings.steeringZoom ?? 1)
-              ),
-              zoom: settings.steeringZoom ?? 1,
+              angle: Math.round(steeringLock / 2 / settings.steeringZoom),
+              zoom: settings.steeringZoom,
               lock: steeringLock,
             })}
           >
             <Slider
-              min={1}
-              max={4}
-              step={0.5}
-              value={settings.steeringZoom ?? 1}
+              min={steeringZoom.min}
+              max={steeringZoom.max}
+              step={steeringZoom.step}
+              value={settings.steeringZoom}
               onChange={(v) => update({ steeringZoom: v })}
               style={{ width: 120 }}
             />
@@ -237,34 +173,26 @@ export const InputTraceSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.inputTrace.layout')}>
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showTrace"
-            title={t('settingsPanels.inputTrace.traceGraph')}
-            desc={t('settingsPanels.inputTrace.traceGraphDesc')}
-          />
+          <Row setting="showTrace" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showInputValues"
-            title={t('settingsPanels.inputTrace.inputValues')}
-            desc={t('settingsPanels.inputTrace.inputValuesDesc')}
-          />
+          <Row setting="showInputValues" />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.inputTrace.graphSettings')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.inputTrace.historyLength')}
-            desc={t('settingsPanels.inputTrace.historyLengthDesc', {
+            title={t('settingsPanels.inputTrace.historySeconds')}
+            desc={t('settingsPanels.inputTrace.historySecondsDesc', {
               seconds: settings.historySeconds,
             })}
           >
             <Slider
-              min={1}
-              max={60}
-              step={1}
+              min={historySeconds.min}
+              max={historySeconds.max}
+              step={historySeconds.step}
               value={settings.historySeconds}
               onChange={(v) => update({ historySeconds: v })}
               style={{ width: 120 }}
@@ -284,9 +212,9 @@ export const InputTraceSettingsPanel = observer(() => {
             }
           >
             <Slider
-              min={0}
-              max={20}
-              step={1}
+              min={smoothing.min}
+              max={smoothing.max}
+              step={smoothing.step}
               value={settings.smoothing}
               onChange={(v) => update({ smoothing: v })}
               style={{ width: 120 }}
@@ -302,9 +230,9 @@ export const InputTraceSettingsPanel = observer(() => {
             })}
           >
             <Slider
-              min={1}
-              max={10}
-              step={0.5}
+              min={lineWidth.min}
+              max={lineWidth.max}
+              step={lineWidth.step}
               value={settings.lineWidth}
               onChange={(v) => update({ lineWidth: v })}
               style={{ width: 120 }}

@@ -1,16 +1,15 @@
-import type {
-  CloseBattleWidgetSettings,
-  WidgetManifest,
-} from '@shared/contracts/widget-settings';
+import type { WidgetManifest } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   TRANSPARENT_APPEARANCE_DEFAULTS,
   makeColumnLayoutResolver,
 } from '@widgets/widget-manifest';
+import { computeCloseBattleDesignWidth } from './close-battle-utils';
 import {
-  NAME_COLUMN_DEFAULT_PX,
-  computeCloseBattleDesignWidth,
-} from '@widgets/close-battle/close-battle-utils';
+  CLOSE_BATTLE_COLUMN_KEYS,
+  CLOSE_BATTLE_SETTINGS,
+  type CloseBattleWidgetSettings,
+} from './settings-schema';
 
 // Every column on the plate is optional except the number, the name and the
 // gap, and the plate spans the widget — so a switched-off column has to take
@@ -18,32 +17,13 @@ import {
 // hole in it instead of the short one they asked for.
 const resolveCloseBattleLayout =
   makeColumnLayoutResolver<CloseBattleWidgetSettings>(
-    [
-      'showClassBadge',
-      'showBrand',
-      'showDistance',
-      'showLapGap',
-      'nameMode',
-      'nameColumnWidth',
-    ],
+    CLOSE_BATTLE_COLUMN_KEYS,
     computeCloseBattleDesignWidth
   );
 
-const CLOSE_BATTLE_COLUMN_DEFAULTS = {
-  showClassBadge: true,
-  showBrand: false,
-  showDistance: true,
-  showLapGap: true,
-  nameMode: 'initial',
-  nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
-} as const;
-
 const CLOSE_BATTLE_DESIGN_WIDTH = computeCloseBattleDesignWidth(
-  CLOSE_BATTLE_COLUMN_DEFAULTS as unknown as CloseBattleWidgetSettings
+  CLOSE_BATTLE_SETTINGS.defaults
 );
-
-/** White: the line sits on the widget's own background, whatever that is. */
-const PLAYER_LINE_DEFAULT_COLOR = '#ffffff';
 
 export const CLOSE_BATTLE_MANIFEST: WidgetManifest = {
   id: 'close-battle',
@@ -64,27 +44,7 @@ export const CLOSE_BATTLE_MANIFEST: WidgetManifest = {
     currentHeight: 420,
     ...COMMON_WIDGET_DEFAULTS,
     ...TRANSPARENT_APPEARANCE_DEFAULTS,
-    trigger: 'gap',
-    gapThreshold: 2,
-    distanceThreshold: 50,
-    hideDelay: 3,
-    sides: 'both',
-    maxRows: 2,
-    showTicks: true,
-    showTickLabels: true,
-    compactMode: false,
-    ...CLOSE_BATTLE_COLUMN_DEFAULTS,
-    mergeOverlapping: true,
-    mergeDistance: 2,
-    hideInPits: true,
-    qualifyingVisibility: 'auto',
-    plateOpacity: 1,
-    scaleByDistance: true,
-    otherClass: 'dim',
-    glowRange: 30,
-    showAxis: true,
-    showPlayerLine: true,
-    playerLineColor: PLAYER_LINE_DEFAULT_COLOR,
-    raceOnly: true,
+    ...CLOSE_BATTLE_SETTINGS.defaults,
   },
+  settingsSchema: CLOSE_BATTLE_SETTINGS,
 };

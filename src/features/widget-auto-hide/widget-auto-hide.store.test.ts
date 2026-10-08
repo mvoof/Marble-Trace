@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { observable } from 'mobx';
 
-import { WidgetAutoHideStore } from './widget-auto-hide.store';
+import {
+  WidgetAutoHideStore,
+  type DrsVisibilitySettings,
+} from './widget-auto-hide.store';
 import type { DrsState } from '@shared/contracts/bindings';
-import type { DrsWidgetSettings } from '@shared/contracts/widget-settings';
 
 type Deps = ConstructorParameters<typeof WidgetAutoHideStore>[0];
 
 const drsStore = (
   drs: DrsState | null,
-  settings: Partial<DrsWidgetSettings> = {}
+  settings: Partial<DrsVisibilitySettings> = {}
 ) =>
   new WidgetAutoHideStore({
     liveWidgets: {

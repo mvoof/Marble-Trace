@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { G_METER_SETTINGS } from './settings-schema';
 
 /** The plate is the circle, so one number sizes the whole widget. */
 const G_METER_DESIGN_SIZE_PX = 240;
@@ -28,8 +29,7 @@ export const G_METER_MANIFEST: WidgetManifest = {
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     borderColor: 'transparent',
-    displayMode: 'fading',
-    scale: 4,
-    colorMode: 'advanced',
+    ...G_METER_SETTINGS.defaults,
   },
+  settingsSchema: G_METER_SETTINGS,
 };

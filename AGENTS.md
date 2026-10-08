@@ -973,7 +973,7 @@ _Held by: review._
 Full guide: [`docs/widget-stories.md`](docs/widget-stories.md) — read it before writing or changing a story.
 
 - Every widget story goes through `defineWidgetStories` (`src/storybook/define-widget-stories.tsx`): it provides the store, the frame, the scenario base and the `runInAction` seeding. No hand-rolled `render`, decorator or `runInAction` in a story file.
-- **The widget's settings are Controls automatically** — read from its `manifest.ts`, written back with `updateUserSettings`. A story never redeclares them; a new string-union setting needs its members in `SETTING_OPTIONS` (`src/storybook/setting-options.ts`), or it shows as a text field.
+- **The widget's settings are Controls automatically** — read from its `manifest.ts`, written back with `updateUserSettings`. A story never redeclares them; a `choice` in the widget's `settings-schema.ts` shows as a select.
 - Seed with the mock builders in `preview/mocks/` and data-store setters; scenario knobs are optional and folded with `whenSet` so they do not overwrite a named scenario.
 - Named `const` PascalCase exports; the only default export is `meta`. No anonymous functions.
 

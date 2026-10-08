@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { RPM_LIGHTS_SETTINGS } from './settings-schema';
 
 export const RPM_LIGHTS_MANIFEST: WidgetManifest = {
   id: 'rpm-lights',
@@ -21,12 +22,7 @@ export const RPM_LIGHTS_MANIFEST: WidgetManifest = {
     currentHeight: 36,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    rpmColorTheme: 'custom',
-    rpmColorLow: '#10b981',
-    rpmColorMid: '#eab308',
-    rpmColorHigh: '#ef4444',
-    rpmColorShift: '#a855f7',
-    rpmColorLimit: '#f97316',
-    ledShape: 'square',
+    ...RPM_LIGHTS_SETTINGS.defaults,
   },
+  settingsSchema: RPM_LIGHTS_SETTINGS,
 };

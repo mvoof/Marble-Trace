@@ -1,46 +1,27 @@
 import type { WidgetManifest } from '@shared/contracts/widget-settings';
-import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
-  DEFAULT_PLAYER_ACCENT_COLOR,
-  DEFAULT_PLAYER_ROW_COLOR,
   PANEL_APPEARANCE_DEFAULTS,
   makeExactColumnLayoutResolver,
 } from '@widgets/widget-manifest';
+import { computeRelativeDesignWidth } from './relative-utils';
 import {
-  NAME_COLUMN_DEFAULT_PX,
-  computeRelativeDesignWidth,
-} from '@widgets/relative/relative-utils';
+  RELATIVE_COLUMN_KEYS,
+  RELATIVE_SETTINGS,
+  type RelativeWidgetSettings,
+} from './settings-schema';
 
 const resolveRelativeLayout =
   makeExactColumnLayoutResolver<RelativeWidgetSettings>(
-    [
-      'showLicBadge',
-      // Change a column's width rather than its presence, so the table is
-      // re-measured for them exactly as for a column being toggled.
-      'showLicenseLetter',
-      'licBadgeStyle',
-      'abbreviateIRating',
-      'showIRating',
-      'showCarNumber',
-      'showCountryFlag',
-      'nameColumnWidth',
-    ],
+    // A column's width changes as well as its presence (the license letter,
+    // the badge style, the abbreviated iRating), so every one of them
+    // re-measures the table exactly as a column being toggled does.
+    RELATIVE_COLUMN_KEYS,
     computeRelativeDesignWidth
   );
 
-const RELATIVE_COLUMN_DEFAULTS = {
-  nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
-  showCarNumber: true,
-  showLicBadge: true,
-  showLicenseLetter: true,
-  licBadgeStyle: 'badge',
-  showIRating: true,
-  abbreviateIRating: true,
-  showCountryFlag: false,
-};
 const RELATIVE_DESIGN_WIDTH = computeRelativeDesignWidth(
-  RELATIVE_COLUMN_DEFAULTS as unknown as RelativeWidgetSettings
+  RELATIVE_SETTINGS.defaults
 );
 
 export const RELATIVE_MANIFEST: WidgetManifest = {
@@ -51,7 +32,7 @@ export const RELATIVE_MANIFEST: WidgetManifest = {
   description: 'Gaps to cars ahead and behind you.',
   resolveLayoutChange: resolveRelativeLayout,
   deriveDesignWidth: (settings) =>
-    computeRelativeDesignWidth(settings as RelativeWidgetSettings),
+    computeRelativeDesignWidth(settings as unknown as RelativeWidgetSettings),
   requiredCapabilities: ['relative'],
   designWidth: RELATIVE_DESIGN_WIDTH,
   designHeight: 400,
@@ -63,16 +44,7 @@ export const RELATIVE_MANIFEST: WidgetManifest = {
     currentHeight: 400,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    useLivePositions: true,
-    // Alone on track the strip holds only stale garage entries.
-    qualifyingVisibility: 'auto',
-    rowPadding: 'narrow',
-    ...RELATIVE_COLUMN_DEFAULTS,
-    showPitIndicator: true,
-    abbreviateNames: true,
-    showDriverFlags: true,
-    playerRowColor: DEFAULT_PLAYER_ROW_COLOR,
-    playerAccentColor: DEFAULT_PLAYER_ACCENT_COLOR,
-    paceCarShowInPits: false,
+    ...RELATIVE_SETTINGS.defaults,
   },
+  settingsSchema: RELATIVE_SETTINGS,
 };

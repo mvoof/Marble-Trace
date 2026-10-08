@@ -1,181 +1,70 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { InputNumber, Segmented } from 'antd';
-import {
-  FlagZoneStyle,
-  LinearMapOrientation,
-  LinearMapWidgetSettings,
-} from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
+import { schemaRows } from '@features/widget-settings/schema-rows';
 import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
+  LINEAR_MAP_SETTINGS,
+  type LinearMapWidgetSettings,
+} from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['relative-map'];
 
-const { ColorRow, SwitchRow } = panelRows<LinearMapWidgetSettings>();
+const { Row } = schemaRows(LINEAR_MAP_SETTINGS);
 
 // The marker is always drawn — there is no switch for it — so its size and the
 // pit option stand on their own; only the colour gives way to the class colour.
 const isOwnPaceCarColor = (settings: LinearMapWidgetSettings): boolean =>
-  settings.paceCarUseClassColor !== true;
+  !settings.paceCarUseClassColor;
 
 export const LinearMapSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('relative-map');
   const { t } = useTranslation('widgets');
-
-  const settings =
-    liveWidgets.getSettings<LinearMapWidgetSettings>(panelWidgetId);
-
-  const update = (partial: Partial<LinearMapWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <>
       <Card title={t('settingsPanels.linearMap.moduleLayout')}>
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.linearMap.orientation')}
-          </span>
-          <Segmented
-            block
-            value={settings.orientation}
-            options={[
-              {
-                label: t('settingsPanels.linearMap.horizontal'),
-                value: 'horizontal',
-              },
-              {
-                label: t('settingsPanels.linearMap.vertical'),
-                value: 'vertical',
-              },
-            ]}
-            onChange={(v) => update({ orientation: v as LinearMapOrientation })}
-          />
+          <Row setting="orientation" stacked />
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.linearMap.playerMarker')}>
+      <Card title={t('settingsPanels.common.playerMarker')}>
         <div className={styles.fieldGroup}>
-          <ColorRow
-            settingKey="playerDotColor"
-            title={t('settingsPanels.linearMap.playerDotColor')}
-            hex
-          />
-
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.linearMap.dotRadius')}
-          </span>
-          <InputNumber
-            style={{ width: '100%' }}
-            value={settings.targetDotRadiusPx}
-            min={1}
-            max={30}
-            onChange={(v) => v !== null && update({ targetDotRadiusPx: v })}
-          />
+          <Row setting="playerDotColor" />
+          <Row setting="targetDotRadiusPx" stacked input />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="classShapes"
-            title={t('settingsPanels.trackMap.classShapes')}
-            desc={t('settingsPanels.trackMap.classShapesDesc')}
-            fallback={false}
-          />
+          <Row setting="classShapes" />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.linearMap.incidentZones')}>
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.linearMap.flagZoneStyle')}
-          </span>
-          <Segmented
-            block
-            value={settings.flagZoneStyle ?? 'filled'}
-            options={[
-              {
-                label: t('settingsPanels.linearMap.flagZoneStyleFilled'),
-                value: 'filled',
-              },
-              {
-                label: t('settingsPanels.linearMap.flagZoneStyleOutline'),
-                value: 'outline',
-              },
-            ]}
-            onChange={(value) =>
-              update({ flagZoneStyle: value as FlagZoneStyle })
-            }
-          />
-          <span className={styles.fieldDesc}>
-            {t('settingsPanels.linearMap.flagZoneStyleDesc')}
-          </span>
+          <Row setting="flagZoneStyle" stacked />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showIncidentZones"
-            title={t('settingsPanels.linearMap.showIncidentZones')}
-            desc={t('settingsPanels.linearMap.showIncidentZonesDesc')}
-            fallback
-          />
+          <Row setting="showIncidentZones" />
         </div>
 
-        <SwitchRow
-          settingKey="blinkIncidentZones"
-          dependsOn="showIncidentZones"
-          title={t('settingsPanels.linearMap.blinkIncidentZones')}
-          fallback
-        />
+        <Row setting="blinkIncidentZones" dependsOn="showIncidentZones" />
       </Card>
 
-      <Card title={t('settingsPanels.trackMap.safetyCar')}>
+      <Card title={t('settingsPanels.common.safetyCar')}>
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="paceCarUseClassColor"
-            title={t('settingsPanels.trackMap.paceCarUseClassColor')}
-            desc={t('settingsPanels.trackMap.paceCarUseClassColorDesc')}
-            fallback={false}
-          />
+          <Row setting="paceCarUseClassColor" />
         </div>
 
-        <ColorRow
-          settingKey="paceCarColor"
-          dependsOn={isOwnPaceCarColor}
-          title={t('settingsPanels.trackMap.paceCarColor')}
-          fallback={'#facc15'}
-          hex
-        />
+        <Row setting="paceCarColor" dependsOn={isOwnPaceCarColor} />
 
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.trackMap.paceCarRadius')}
-          </span>
-          <InputNumber
-            style={{ width: '100%' }}
-            value={settings.paceCarRadiusPx ?? settings.targetDotRadiusPx}
-            min={1}
-            max={30}
-            onChange={(v) => v !== null && update({ paceCarRadiusPx: v })}
-          />
+          <Row setting="paceCarRadiusPx" stacked input />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="paceCarShowInPits"
-            title={t('settingsPanels.trackMap.paceCarShowInPits')}
-            desc={t('settingsPanels.trackMap.paceCarShowInPitsDesc')}
-            fallback={false}
-          />
+          <Row setting="paceCarShowInPits" />
         </div>
       </Card>
     </>

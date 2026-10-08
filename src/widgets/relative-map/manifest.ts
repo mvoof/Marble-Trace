@@ -4,6 +4,8 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import type { LinearMapOrientation } from './settings-schema';
+import { LINEAR_MAP_SETTINGS } from './settings-schema';
 
 export const LINEAR_MAP_SIZES: Record<
   string,
@@ -22,7 +24,7 @@ const resolveRelativeMapLayout: ResolveLayoutChange = (prev, next, current) => {
 
   if (prevOrientation === next.orientation) return null;
 
-  const size = LINEAR_MAP_SIZES[next.orientation];
+  const size = LINEAR_MAP_SIZES[next.orientation as LinearMapOrientation];
 
   if (!size) return null;
 
@@ -51,16 +53,7 @@ export const RELATIVE_MAP_MANIFEST: WidgetManifest = {
     currentHeight: 40,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    orientation: 'horizontal',
-    playerDotColor: '#18181b',
-    targetDotRadiusPx: 10,
-    paceCarUseClassColor: false,
-    paceCarColor: '#facc15',
-    paceCarRadiusPx: 10,
-    paceCarShowInPits: false,
-    classShapes: false,
-    showIncidentZones: true,
-    blinkIncidentZones: true,
-    flagZoneStyle: 'filled',
+    ...LINEAR_MAP_SETTINGS.defaults,
   },
+  settingsSchema: LINEAR_MAP_SETTINGS,
 };

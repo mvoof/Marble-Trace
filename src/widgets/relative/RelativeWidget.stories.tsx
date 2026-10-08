@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 import type { RendererCore } from '@app/roots/renderer-core';
 import type { MockFieldRows } from '@features/preview/mocks/field';
 import {
@@ -16,6 +15,7 @@ import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type { RelativeWidgetSettings } from './settings-schema';
 
 /** The spacing the table is read at by default — a couple of seconds a place. */
 const DEFAULT_GAP_S = 1.8;

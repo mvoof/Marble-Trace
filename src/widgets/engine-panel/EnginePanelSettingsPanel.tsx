@@ -1,20 +1,42 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Switch, Segmented } from 'antd';
-import { EnginePanelWidgetSettings } from '@shared/contracts/widget-settings';
+import { Segmented } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { SettingRow } from '@features/widget-settings/SettingRow';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
+import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
 import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
+  ENGINE_PANEL_SETTINGS,
+  type EnginePanelWidgetSettings,
+} from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['engine-panel'];
 
-const { SwitchRow } = panelRows<EnginePanelWidgetSettings>();
+const { Row } = schemaRows(ENGINE_PANEL_SETTINGS);
+
+// In the order the panel lists them, which is not the order the cells draw in.
+const CELL_TOGGLES = [
+  'showOilTemp',
+  'showWaterTemp',
+  'showOilPress',
+  'showVoltage',
+  'showAbs',
+  'showTc',
+  'showBrakeBias',
+  'showEngineMap',
+  'showTc2',
+  'showEngineBraking',
+  'showBrakeBiasFine',
+  'showPeakBrakeBias',
+  'showDiffEntry',
+  'showDiffMiddle',
+  'showAntiRollFront',
+  'showAntiRollRear',
+  'showBrakeMisc',
+  'showDiffExit',
+] as const;
 
 export const EnginePanelSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -31,138 +53,14 @@ export const EnginePanelSettingsPanel = observer(() => {
     });
   };
 
-  const toggles: {
-    titleKey: string;
-    descKey: string;
-    value: boolean;
-    key: keyof EnginePanelWidgetSettings;
-  }[] = [
-    {
-      titleKey: 'settingsPanels.enginePanel.oilTemperature',
-      descKey: 'settingsPanels.enginePanel.oilTemperatureDesc',
-      value: settings.showOilTemp,
-      key: 'showOilTemp',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.waterTemperature',
-      descKey: 'settingsPanels.enginePanel.waterTemperatureDesc',
-      value: settings.showWaterTemp,
-      key: 'showWaterTemp',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.oilPressure',
-      descKey: 'settingsPanels.enginePanel.oilPressureDesc',
-      value: settings.showOilPress,
-      key: 'showOilPress',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.systemVoltage',
-      descKey: 'settingsPanels.enginePanel.systemVoltageDesc',
-      value: settings.showVoltage,
-      key: 'showVoltage',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.absLevel',
-      descKey: 'settingsPanels.enginePanel.absLevelDesc',
-      value: settings.showAbs,
-      key: 'showAbs',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.tractionControl',
-      descKey: 'settingsPanels.enginePanel.tractionControlDesc',
-      value: settings.showTc,
-      key: 'showTc',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.brakeBias',
-      descKey: 'settingsPanels.enginePanel.brakeBiasDesc',
-      value: settings.showBrakeBias,
-      key: 'showBrakeBias',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.engineMap',
-      descKey: 'settingsPanels.enginePanel.engineMapDesc',
-      value: settings.showEngineMap,
-      key: 'showEngineMap',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.tractionControl2',
-      descKey: 'settingsPanels.enginePanel.tractionControl2Desc',
-      value: settings.showTc2,
-      key: 'showTc2',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.engineBraking',
-      descKey: 'settingsPanels.enginePanel.engineBrakingDesc',
-      value: settings.showEngineBraking,
-      key: 'showEngineBraking',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.brakeBiasFine',
-      descKey: 'settingsPanels.enginePanel.brakeBiasFineDesc',
-      value: settings.showBrakeBiasFine,
-      key: 'showBrakeBiasFine',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.peakBrakeBias',
-      descKey: 'settingsPanels.enginePanel.peakBrakeBiasDesc',
-      value: settings.showPeakBrakeBias,
-      key: 'showPeakBrakeBias',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.diffEntry',
-      descKey: 'settingsPanels.enginePanel.diffEntryDesc',
-      value: settings.showDiffEntry,
-      key: 'showDiffEntry',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.diffMiddle',
-      descKey: 'settingsPanels.enginePanel.diffMiddleDesc',
-      value: settings.showDiffMiddle,
-      key: 'showDiffMiddle',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.antiRollFront',
-      descKey: 'settingsPanels.enginePanel.antiRollFrontDesc',
-      value: settings.showAntiRollFront,
-      key: 'showAntiRollFront',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.antiRollRear',
-      descKey: 'settingsPanels.enginePanel.antiRollRearDesc',
-      value: settings.showAntiRollRear,
-      key: 'showAntiRollRear',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.brakeMisc',
-      descKey: 'settingsPanels.enginePanel.brakeMiscDesc',
-      value: settings.showBrakeMisc,
-      key: 'showBrakeMisc',
-    },
-    {
-      titleKey: 'settingsPanels.enginePanel.diffExit',
-      descKey: 'settingsPanels.enginePanel.diffExitDesc',
-      value: settings.showDiffExit,
-      key: 'showDiffExit',
-    },
-  ];
-
   return (
     <Card title={t('settingsPanels.enginePanel.moduleParameters')}>
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="highlightChanges"
-          title={t('settingsPanels.enginePanel.highlightChanges')}
-          desc={t('settingsPanels.enginePanel.highlightChangesDesc')}
-        />
+        <Row setting="highlightChanges" />
       </div>
 
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="horizontal"
-          title={t('settingsPanels.enginePanel.horizontalLayout')}
-          desc={t('settingsPanels.enginePanel.horizontalLayoutDesc')}
-        />
+        <Row setting="horizontal" />
       </div>
 
       {settings.horizontal ? (
@@ -185,7 +83,7 @@ export const EnginePanelSettingsPanel = observer(() => {
             </div>
             <Segmented
               block
-              value={settings.horizontalColumns ?? 8}
+              value={settings.horizontalColumns}
               options={[
                 {
                   label: t('settingsPanels.enginePanel.cols3'),
@@ -226,7 +124,7 @@ export const EnginePanelSettingsPanel = observer(() => {
             </div>
             <Segmented
               block
-              value={settings.verticalColumns ?? 2}
+              value={settings.verticalColumns}
               options={[
                 { label: t('settingsPanels.enginePanel.cols1'), value: 1 },
                 { label: t('settingsPanels.enginePanel.cols2'), value: 2 },
@@ -239,14 +137,9 @@ export const EnginePanelSettingsPanel = observer(() => {
         </div>
       )}
 
-      {toggles.map((item) => (
-        <div key={item.key} className={styles.fieldGroup}>
-          <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
-            <Switch
-              checked={item.value}
-              onChange={(v) => update({ [item.key]: v })}
-            />
-          </SettingRow>
+      {CELL_TOGGLES.map((setting) => (
+        <div key={setting} className={styles.fieldGroup}>
+          <Row setting={setting} />
         </div>
       ))}
     </Card>

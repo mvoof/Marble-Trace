@@ -28,12 +28,12 @@ import { PosChange } from './PosChange';
 import { PositionCell } from './PositionCell';
 import { IrChangeCell } from './IrChangeCell';
 
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from './DriverRow.module.scss';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
+import type { StandingsWidgetSettings } from '../settings-schema';
 
 interface DriverRowProps {
   carIdx: number;

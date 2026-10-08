@@ -1,12 +1,13 @@
-import type {
-  WheelToWheelWidgetSettings,
-  WidgetManifest,
-} from '@shared/contracts/widget-settings';
+import type { WidgetManifest } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
   makeExactColumnLayoutResolver,
 } from '@widgets/widget-manifest';
+import {
+  WHEEL_TO_WHEEL_SETTINGS,
+  type WheelToWheelWidgetSettings,
+} from './settings-schema';
 
 // Each layout has exactly one design width, so the stored one is a cache of
 // what `layout` already answers — derived on every load and sync, it cannot
@@ -17,18 +18,6 @@ const WHEEL_TO_WHEEL_DESIGN_HEIGHT = 130;
 
 const wheelToWheelDesignWidth = (settings: WheelToWheelWidgetSettings) =>
   settings.layout === 'rows' ? ROWS_DESIGN_WIDTH : COLUMNS_DESIGN_WIDTH;
-
-const WHEEL_TO_WHEEL_DEFAULTS: WheelToWheelWidgetSettings = {
-  layout: 'columns',
-  gapThreshold: 1,
-  hideDelay: 3,
-  // Off: a car passing you in practice is a fight worth seeing too, and the
-  // gap threshold already keeps random traffic off the plate.
-  raceOnly: false,
-  includeLapped: false,
-  // Alone on track there is nobody to fight.
-  qualifyingVisibility: 'auto',
-};
 
 export const WHEEL_TO_WHEEL_MANIFEST: WidgetManifest = {
   id: 'wheel-to-wheel',
@@ -49,8 +38,9 @@ export const WHEEL_TO_WHEEL_MANIFEST: WidgetManifest = {
     currentHeight: WHEEL_TO_WHEEL_DESIGN_HEIGHT,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    ...WHEEL_TO_WHEEL_DEFAULTS,
+    ...WHEEL_TO_WHEEL_SETTINGS.defaults,
   },
+  settingsSchema: WHEEL_TO_WHEEL_SETTINGS,
   resolveLayoutChange:
     makeExactColumnLayoutResolver<WheelToWheelWidgetSettings>(
       ['layout'],

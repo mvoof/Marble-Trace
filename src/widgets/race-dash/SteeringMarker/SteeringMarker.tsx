@@ -2,7 +2,6 @@ import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { usePlayerStore } from '@entities/player/player-context';
-import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { steeringAngleDeg, wrapToHalfTurn } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import {
@@ -13,6 +12,7 @@ import {
 } from '../RingBadge/ring-geometry';
 
 import styles from './SteeringMarker.module.scss';
+import type { RaceDashWidgetSettings } from '../settings-schema';
 
 // Just short of a full turn: the trail winds with the wheel, and one SVG arc
 // cannot close a complete circle — its ends would land on the same point and

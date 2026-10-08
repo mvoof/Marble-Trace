@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { MPS_PER_KMH, mockCarDynamics } from '@features/preview/mocks/dynamics';
+import { InvisibleDashWidget } from './InvisibleDashWidget';
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 import type {
   InvisibleDashBackdropScope,
   InvisibleDashRenderMode,
   InvisibleDashWidgetSettings,
-} from '@shared/contracts/widget-settings';
-import { MPS_PER_KMH, mockCarDynamics } from '@features/preview/mocks/dynamics';
-import { InvisibleDashWidget } from './InvisibleDashWidget';
-import { defineWidgetStories } from '@/storybook/define-widget-stories';
+} from './settings-schema';
 
 interface StoryArgs {
   speedKmh: number;

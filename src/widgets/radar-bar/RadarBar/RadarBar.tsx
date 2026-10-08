@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { RadarSettings } from '@shared/contracts/widget-settings';
 import { distanceUnit, formatDistance } from '@shared/lib/telemetry-format';
 import { getBarPillColor } from '@entities/radar/radar-constants';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
@@ -12,6 +11,7 @@ import { useRadarWidgetStore } from '@entities/radar/radar-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 
 import styles from './RadarBar.module.scss';
+import type { RadarSettings } from '@entities/radar/radar.settings-schema';
 
 const MIN_PILL_PERCENT = 8;
 

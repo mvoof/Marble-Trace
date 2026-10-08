@@ -2,9 +2,9 @@ import { parseClassColor } from '@shared/lib/colors';
 import type { CarEntry, CarIdxFrame } from '@shared/contracts/bindings';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
 import type { CarIdentity } from '@shared/contracts/car-identity';
-import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 import type { PaceCarPitPhase } from '@shared/contracts/bindings';
 import { licColumnWidthPx } from '@shared/ui/RatingBadge/LicBadge.utils';
+import type { RelativeWidgetSettings } from './settings-schema';
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 

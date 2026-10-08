@@ -10,10 +10,10 @@ import {
   splitTime,
   type ClockUrgency,
 } from '@shared/lib/timer-utils';
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { useSessionStore } from '@entities/session/session-context';
 
 import styles from './SessionClock.module.scss';
+import type { StandingsWidgetSettings } from '../settings-schema';
 
 const URGENCY_CLASS: Record<ClockUrgency, string> = {
   normal: '',

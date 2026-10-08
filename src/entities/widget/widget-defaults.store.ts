@@ -1,6 +1,9 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import { DEFAULT_WIDGETS } from '@entities/widget/widget-catalog';
+import {
+  checkedSettings,
+  DEFAULT_WIDGETS,
+} from '@entities/widget/widget-catalog';
 import { mergeWithDefaults } from '@shared/lib/deep-merge';
 import {
   applyLayoutResize,
@@ -11,7 +14,6 @@ import type { WidgetMap } from '@entities/widget/widget-map';
 import type {
   BaseUserSettings,
   WidgetDefaultConfig,
-  WidgetSpecificSettings,
   WidgetUserSettings,
 } from '@shared/contracts/widget-settings';
 import type { CapabilitiesPayload } from '@shared/contracts/bindings';
@@ -20,9 +22,6 @@ import type { CapabilitiesPayload } from '@shared/contracts/bindings';
 interface WidgetDefaultsDeps {
   sim: { readonly capabilities: CapabilitiesPayload | null };
 }
-
-const FUEL_BAR_WIDTH_MIN = 5;
-const FUEL_BAR_WIDTH_MAX = 20;
 
 /**
  * The global widget catalog — the template edited on the Widgets page, before a
@@ -75,7 +74,7 @@ export class WidgetDefaultsStore implements WidgetMap {
     return this.widgets.get(id);
   }
 
-  getSettings<SpecificSettings extends WidgetSpecificSettings>(
+  getSettings<SpecificSettings extends object = Record<string, unknown>>(
     id: string
   ): BaseUserSettings & SpecificSettings {
     void this.changeToken;
@@ -96,21 +95,7 @@ export class WidgetDefaultsStore implements WidgetMap {
 
     if (!widget) return;
 
-    let resolvedPartial = partial;
-
-    if (
-      id === 'fuel' &&
-      'barWidth' in partial &&
-      partial.barWidth !== undefined
-    ) {
-      resolvedPartial = {
-        ...partial,
-        barWidth: Math.max(
-          FUEL_BAR_WIDTH_MIN,
-          Math.min(FUEL_BAR_WIDTH_MAX, partial.barWidth)
-        ),
-      };
-    }
+    const resolvedPartial = checkedSettings(widget.type, partial);
 
     const prevSettings = { ...widget.userSettings };
 

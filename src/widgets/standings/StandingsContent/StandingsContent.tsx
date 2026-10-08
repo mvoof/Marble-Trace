@@ -9,7 +9,6 @@ import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@shared/contracts/domain';
 import type { CarIdentity } from '@shared/contracts/car-identity';
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSimStore } from '@entities/sim/sim-context';
@@ -33,6 +32,7 @@ import { StandingsHeader } from '@widgets/standings/StandingsHeader/StandingsHea
 import { SessionFooter } from '@widgets/standings/SessionFooter/SessionFooter';
 
 import styles from './StandingsContent.module.scss';
+import type { StandingsWidgetSettings } from '../settings-schema';
 
 // One wheel notch moves a small block of rows — matching a text editor's feel
 // rather than crawling a single row at a time.

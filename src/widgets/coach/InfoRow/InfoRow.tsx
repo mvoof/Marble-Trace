@@ -1,7 +1,6 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   formatLapTime,
   formatSpeed,
@@ -15,6 +14,7 @@ import {
 } from '@widgets/coach/coach-stores';
 
 import styles from './InfoRow.module.scss';
+import type { CoachWidgetSettings } from '../settings-schema';
 
 const NO_VALUE_TEXT = '—';
 

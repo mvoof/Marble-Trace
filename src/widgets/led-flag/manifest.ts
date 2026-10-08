@@ -1,31 +1,31 @@
-import type { WidgetManifest } from '@shared/contracts/widget-settings';
 import type {
-  FlagDisplaySettings,
   ResolveLayoutChange,
+  WidgetManifest,
 } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   TRANSPARENT_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import {
+  LED_FLAGS_SETTINGS,
+  type LedFlagsSettings,
+} from '@entities/flags/flag-display.settings-schema';
 
 const resolveLedFlagsLayout: ResolveLayoutChange = (prev, next, current) => {
   if (!('split' in next)) return null;
 
-  const prevSettings = prev as unknown as FlagDisplaySettings;
-  const nextSettings = next as unknown as FlagDisplaySettings;
+  const prevSettings = prev as unknown as LedFlagsSettings;
+  const nextSettings = next as unknown as LedFlagsSettings;
 
-  const prevSplit = !!prevSettings.split;
-  const nextSplit = !!nextSettings.split;
+  const prevSplit = prevSettings.split;
+  const nextSplit = nextSettings.split;
 
   if (prevSplit === nextSplit) return null;
 
   const prevMode = prevSplit ? 'split' : 'single';
   const nextMode = nextSplit ? 'split' : 'single';
 
-  const prevModeWidths =
-    'modeWidths' in prev
-      ? ((prev.modeWidths as Record<string, number>) ?? {})
-      : {};
+  const prevModeWidths = prevSettings.modeWidths;
 
   const savedModeWidths: Record<string, number> = {
     ...prevModeWidths,
@@ -70,10 +70,7 @@ export const LED_FLAGS_MANIFEST: WidgetManifest = {
     currentHeight: 232,
     ...COMMON_WIDGET_DEFAULTS,
     ...TRANSPARENT_APPEARANCE_DEFAULTS,
-    alwaysShow: true,
-    holdDuration: 3,
-    split: false,
-    animate: true,
-    forceSingleLed: false,
+    ...LED_FLAGS_SETTINGS.defaults,
   },
+  settingsSchema: LED_FLAGS_SETTINGS,
 };

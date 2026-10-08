@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { TIMER_SETTINGS } from './settings-schema';
 
 export const TIMER_MANIFEST: WidgetManifest = {
   id: 'timer',
@@ -22,14 +23,7 @@ export const TIMER_MANIFEST: WidgetManifest = {
     currentHeight: 120,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    showSessionType: true,
-    showLaps: true,
-    showPosition: true,
-    useLivePositions: true,
-    classPositionInMulticlass: true,
-    showWallClock: true,
-    showSimTime: true,
-    showPcDate: false,
-    showSimDate: true,
+    ...TIMER_SETTINGS.defaults,
   },
+  settingsSchema: TIMER_SETTINGS,
 };

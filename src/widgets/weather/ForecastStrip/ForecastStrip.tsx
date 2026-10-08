@@ -3,13 +3,13 @@ import { Droplet } from 'lucide-react';
 
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { convertTemp } from '@shared/lib/telemetry-format';
-import type { WeatherWidgetSettings } from '@shared/contracts/widget-settings';
 import { useEnvironmentStore } from '@entities/environment/environment-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 
 import { weatherIconFor } from '../weather-icons';
 import styles from './ForecastStrip.module.scss';
+import type { WeatherWidgetSettings } from '../settings-schema';
 
 // The strip is a row of equal cells, so the hours it can show are bounded by
 // how narrow a cell may get before its temperature stops being readable.

@@ -1,13 +1,13 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { computeRpmZoneState, rpmNumberColor } from '../race-dash-utils';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 
 import styles from './RpmValue.module.scss';
+import type { RaceDashWidgetSettings } from '../settings-schema';
 
 const RPM_COLOR_PROPERTY = '--rpm-value-color';
 

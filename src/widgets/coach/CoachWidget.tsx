@@ -2,13 +2,13 @@ import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
-import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 
 import { CallRow } from './CallRow/CallRow';
 import { InfoRow } from './InfoRow/InfoRow';
 import { SpeedTrace } from './SpeedTrace/SpeedTrace';
 
 import styles from './CoachWidget.module.scss';
+import type { CoachWidgetSettings } from './settings-schema';
 
 /**
  * Driving coach: the advisory call on top, the speed trace against the stored

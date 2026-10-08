@@ -10,7 +10,7 @@
  */
 
 import type { LateralSide } from '@shared/contracts/bindings';
-import type { RadarScaleMode } from '@shared/contracts/widget-settings';
+import type { RadarScaleMode } from './radar.settings-schema';
 
 /** Proximity center distance considered dangerous for RadarBar */
 const BAR_DANGER_DISTANCE = 1.0;

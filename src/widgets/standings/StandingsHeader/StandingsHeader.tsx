@@ -1,11 +1,11 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { buildGridTemplate } from '@widgets/standings/standings-utils';
 import { StandingsHeaderCell } from './StandingsHeaderCell';
 
 import styles from './StandingsHeader.module.scss';
+import type { StandingsWidgetSettings } from '../settings-schema';
 
 export const StandingsHeader = observer(() => {
   const settings = useWidgetSettings<StandingsWidgetSettings>('standings');

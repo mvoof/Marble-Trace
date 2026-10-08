@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   NAME_COLUMN_DEFAULT_PX,
   NAME_COLUMN_MAX_PX,
@@ -8,6 +7,7 @@ import {
   buildRelativeGridTemplate,
   computeRelativeDesignWidth,
 } from '@widgets/relative/relative-utils';
+import type { RelativeWidgetSettings } from './settings-schema';
 
 const settingsWith = (nameColumnWidth: number) =>
   ({

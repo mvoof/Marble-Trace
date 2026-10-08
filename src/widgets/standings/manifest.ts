@@ -1,60 +1,27 @@
 import type { WidgetManifest } from '@shared/contracts/widget-settings';
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
-  DEFAULT_PLAYER_ACCENT_COLOR,
-  DEFAULT_PLAYER_ROW_COLOR,
   PANEL_APPEARANCE_DEFAULTS,
   makeExactColumnLayoutResolver,
 } from '@widgets/widget-manifest';
+import { computeStandingsDesignWidth } from './standings-utils';
 import {
-  NAME_COLUMN_DEFAULT_PX,
-  computeStandingsDesignWidth,
-} from '@widgets/standings/standings-utils';
+  STANDINGS_COLUMN_KEYS,
+  STANDINGS_SETTINGS,
+  type StandingsWidgetSettings,
+} from './settings-schema';
 
 const resolveStandingsLayout =
   makeExactColumnLayoutResolver<StandingsWidgetSettings>(
-    [
-      'showLicBadge',
-      // Both change a column's width rather than its presence, so the table has
-      // to be re-measured for them exactly as it is for a column being toggled.
-      'showLicenseLetter',
-      'licBadgeStyle',
-      'abbreviateIRating',
-      'showIRating',
-      'showIrChange',
-      'showGap',
-      'showLastLap',
-      'showBestLap',
-      'showLapsCompleted',
-      'showPosChange',
-      'showCountryFlag',
-      'showBrand',
-      'showTire',
-      'nameColumnWidth',
-    ],
+    // Some of these change a column's width rather than its presence (the
+    // license letter, the badge style, the abbreviated iRating), so the table
+    // is re-measured for them exactly as for a column being toggled.
+    STANDINGS_COLUMN_KEYS,
     computeStandingsDesignWidth
   );
 
-const STANDINGS_COLUMN_DEFAULTS = {
-  nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
-  showPosChange: true,
-  showCountryFlag: false,
-  showBrand: true,
-  showTire: true,
-  showLicBadge: true,
-  showLicenseLetter: true,
-  licBadgeStyle: 'badge',
-  showIRating: true,
-  abbreviateIRating: true,
-  showIrChange: true,
-  showGap: true,
-  showLastLap: true,
-  showBestLap: true,
-  showLapsCompleted: true,
-};
 const STANDINGS_DESIGN_WIDTH = computeStandingsDesignWidth(
-  STANDINGS_COLUMN_DEFAULTS as unknown as StandingsWidgetSettings
+  STANDINGS_SETTINGS.defaults
 );
 
 export const STANDINGS_MANIFEST: WidgetManifest = {
@@ -73,7 +40,7 @@ export const STANDINGS_MANIFEST: WidgetManifest = {
   description: 'Live session standings and intervals.',
   resolveLayoutChange: resolveStandingsLayout,
   deriveDesignWidth: (settings) =>
-    computeStandingsDesignWidth(settings as StandingsWidgetSettings),
+    computeStandingsDesignWidth(settings as unknown as StandingsWidgetSettings),
   requiredCapabilities: ['standings'],
   designWidth: STANDINGS_DESIGN_WIDTH,
   designHeight: 500,
@@ -85,31 +52,7 @@ export const STANDINGS_MANIFEST: WidgetManifest = {
     currentHeight: 500,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    rowPadding: 'narrow',
-    viewMode: 'all',
-    scrollResetSeconds: 8,
-    ...STANDINGS_COLUMN_DEFAULTS,
-    showLivePosChange: true,
-    useLivePositions: true,
-    driversAhead: 0,
-    driversBehind: 0,
-    groupedRowsPerClass: 0,
-    showColumnHeaders: true,
-    showSessionHeader: true,
-    showSessionTime: true,
-    showWeather: true,
-    showSOF: true,
-    abbreviateSof: true,
-    showTotalDrivers: true,
-    showPitIndicator: true,
-    showPitStops: true,
-    showIncidentsBadge: true,
-    abbreviateNames: false,
-    showDriverFlags: true,
-    hideRetiredDrivers: false,
-    hideDriversWithoutLap: false,
-    dimSecondaryColumns: false,
-    playerRowColor: DEFAULT_PLAYER_ROW_COLOR,
-    playerAccentColor: DEFAULT_PLAYER_ACCENT_COLOR,
+    ...STANDINGS_SETTINGS.defaults,
   },
+  settingsSchema: STANDINGS_SETTINGS,
 };

@@ -2,7 +2,6 @@ import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 
-import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { formatGear } from '@shared/lib/telemetry-format';
 import { computeShiftThresholds } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
@@ -18,6 +17,7 @@ import { SteeringMarker } from '../SteeringMarker/SteeringMarker';
 import { ARC_SWEEP_DEG, RING_SIZE, ringArcPath } from './ring-geometry';
 
 import styles from './RingBadge.module.scss';
+import type { RaceDashWidgetSettings } from '../settings-schema';
 
 const MIN_VISIBLE_ARC_DEG = 0.5;
 const SHIFT_FLASH_MS = 220;

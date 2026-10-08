@@ -4,7 +4,6 @@ import { useSessionStore } from '@entities/session/session-context';
 import { useTrackMapWidgetStore } from '@entities/track/track-map-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   formatSpeed,
   MPS_TO_KMH,
@@ -56,6 +55,17 @@ export interface PitStateResult {
   brake: number;
 }
 
+/**
+ * The race dash's pit-lane settings, as far as this hook reads them. Declared
+ * here, not imported: the race dash's schema sits in its slice, above this
+ * layer.
+ */
+interface PitAssistSettings {
+  pitSpeedLimitOverride: number | null;
+  showPitAssist: boolean;
+  boxCueDistM: number;
+  nearLimitDelta: number;
+}
 export const usePitState = (): PitStateResult => {
   const player = usePlayerStore();
   const { sessionInfo } = useSessionStore();
@@ -65,7 +75,7 @@ export const usePitState = (): PitStateResult => {
   const isPitLaneRecording = trackMap.isPitLaneRecording;
 
   const { pitSpeedLimitOverride, showPitAssist, boxCueDistM, nearLimitDelta } =
-    useWidgetSettings<RaceDashWidgetSettings>('race-dash');
+    useWidgetSettings<PitAssistSettings>('race-dash');
   const system = units.unitSystem;
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
 

@@ -2,35 +2,35 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Slider } from 'antd';
 
-import type { PitLineWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 
 import { Card } from '@features/widget-settings/Card';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
+import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
 import { distanceScale } from '@features/widget-settings/distance-scale';
+import {
+  PIT_LINE_SETTINGS,
+  type PitLineWidgetSettings,
+} from './settings-schema';
 
-// The bars' own pit entry countdown. Zero switches it off and they appear on
-// pit road; past a kilometer they are up for most of a lap on a short track.
-const APPROACH_MIN_M = 0;
-const APPROACH_MAX_M = 1000;
+// The slider's step, per unit system; the bounds are the setting's own.
 const APPROACH_STEP_M = 50;
 const APPROACH_STEP_FT = 100;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['pit-line'];
 
-const { SwitchRow } = panelRows<PitLineWidgetSettings>();
+const { Row, useLabels } = schemaRows(PIT_LINE_SETTINGS);
+const { revealOnApproachM } = PIT_LINE_SETTINGS.shape;
 
 export const PitLineSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('pit-line');
   const { t } = useTranslation('widgets');
   const units = useUnitsStore();
+  const revealLabels = useLabels('revealOnApproachM');
 
   const settings =
     liveWidgets.getSettings<PitLineWidgetSettings>(panelWidgetId);
@@ -38,8 +38,8 @@ export const PitLineSettingsPanel = observer(() => {
   const isImperial = units.unitSystem === 'imperial';
 
   const approachScale = distanceScale(isImperial, {
-    minM: APPROACH_MIN_M,
-    maxM: APPROACH_MAX_M,
+    minM: revealOnApproachM.min,
+    maxM: revealOnApproachM.max,
     stepM: APPROACH_STEP_M,
     stepFt: APPROACH_STEP_FT,
   });
@@ -54,49 +54,26 @@ export const PitLineSettingsPanel = observer(() => {
   return (
     <>
       <Card title={t('settingsPanels.pitLine.sections')}>
-        <SwitchRow
-          settingKey="showPitSpeed"
-          title={t('settingsPanels.pitLine.pitSpeed')}
-          desc={t('settingsPanels.pitLine.pitSpeedDesc')}
-        />
+        <Row setting="showPitSpeed" />
 
-        <SwitchRow
-          settingKey="showPitApproach"
-          title={t('settingsPanels.pitLine.approach')}
-          desc={t('settingsPanels.pitLine.approachDesc')}
-        />
+        <Row setting="showPitApproach" />
 
-        <SwitchRow
-          settingKey="showPitBrakeCue"
-          dependsOn="showPitApproach"
-          title={t('settingsPanels.pitLine.brakeCue')}
-          desc={t('settingsPanels.pitLine.brakeCueDesc')}
-        />
+        <Row setting="showPitBrakeCue" dependsOn="showPitApproach" />
 
-        <SwitchRow
-          settingKey="showUnits"
-          title={t('settingsPanels.pitLine.showUnits')}
-          desc={t('settingsPanels.pitLine.showUnitsDesc')}
-        />
+        <Row setting="showUnits" />
       </Card>
 
       <Card title={t('settingsPanels.pitLine.visibility')}>
-        <SwitchRow
-          settingKey="alwaysVisible"
-          title={t('settingsPanels.pitLine.alwaysVisible')}
-          desc={t('settingsPanels.pitLine.alwaysVisibleDesc')}
-        />
+        <Row setting="alwaysVisible" />
 
         <div className={styles.fieldGroup}>
           <div className={styles.fieldLabel}>
-            {t('settingsPanels.pitLine.revealOnApproach', {
+            {t('settingsPanels.pitLine.revealOnApproachM', {
               distance: `${approachScale.toDisplay(settings.revealOnApproachM)} ${approachScale.unit}`,
             })}
           </div>
 
-          <div className={styles.fieldDesc}>
-            {t('settingsPanels.pitLine.revealOnApproachDesc')}
-          </div>
+          <div className={styles.fieldDesc}>{revealLabels.desc}</div>
 
           <Slider
             min={approachScale.min}

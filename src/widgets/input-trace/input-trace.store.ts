@@ -1,10 +1,10 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
-import type { InputTraceSettings } from '@shared/contracts/widget-settings';
 import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { InputTraceSettings } from './settings-schema';
 
 interface InputTraceDeps {
   player: PlayerStore;

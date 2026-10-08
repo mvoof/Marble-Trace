@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { FlagDisplaySettings } from '@shared/contracts/widget-settings';
 import type { PreviewScenarioId } from '@shared/contracts/preview-scenarios';
 import { LedFlagWidget } from './LedFlagWidget';
 import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type { LedFlagsSettings } from '@entities/flags/flag-display.settings-schema';
 
 const DESIGN_SIZE = 300;
 
@@ -40,7 +40,7 @@ const meta: Meta<StoryArgs> = {
     },
     seed: (store, args) => {
       store.liveWidgets.updateUserSettings('led-flags', {
-        ...store.liveWidgets.getSettings<FlagDisplaySettings>('led-flags'),
+        ...store.liveWidgets.getSettings<LedFlagsSettings>('led-flags'),
         split: args.split,
         animate: args.animate,
         forceSingleLed: args.forceSingleLed,

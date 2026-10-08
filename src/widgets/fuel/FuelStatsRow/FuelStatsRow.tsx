@@ -9,7 +9,6 @@ import {
   NO_FUEL_DATA_PLACEHOLDER,
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,
 } from '@shared/lib/telemetry-format';
-import type { FuelWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   computeLapsToEmpty,
   EMPTY_FUEL_HISTORY_STATS,
@@ -18,6 +17,7 @@ import {
 } from '../fuel-utils';
 import { FuelStatsCell } from './FuelStatsCell/FuelStatsCell';
 import styles from './FuelStatsRow.module.scss';
+import type { FuelWidgetSettings } from '../settings-schema';
 
 export const FuelStatsRow = observer(() => {
   const { fuel } = useBackendComputedStore();

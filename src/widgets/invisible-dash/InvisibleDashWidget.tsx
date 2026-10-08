@@ -1,7 +1,6 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { InvisibleDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 
 import { EngineCluster } from './EngineCluster/EngineCluster';
@@ -19,6 +18,7 @@ import {
 import { useStripFit } from './use-strip-fit';
 
 import styles from './InvisibleDashWidget.module.scss';
+import type { InvisibleDashWidgetSettings } from './settings-schema';
 
 export const InvisibleDashWidget = observer(() => {
   const { stripRef, fit } = useStripFit();

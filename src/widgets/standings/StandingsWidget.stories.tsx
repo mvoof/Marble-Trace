@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { StandingsWidgetStore } from './standings.store';
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import type { MockFieldRows } from '@features/preview/mocks/field';
 import {
   MOCK_DRIVER_FLAG_ROWS,
@@ -13,6 +12,7 @@ import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type { StandingsWidgetSettings } from './settings-schema';
 
 /** The spacing the table is read at by default — a couple of seconds a place. */
 const DEFAULT_GAP_S = 1.8;

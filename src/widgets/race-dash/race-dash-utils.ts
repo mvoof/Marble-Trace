@@ -1,6 +1,6 @@
-import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import type { RpmZone } from '@shared/lib/car-signals';
 import { rpmZoneDigitColor } from '@shared/lib/car-signals';
+import type { RaceDashWidgetSettings } from './settings-schema';
 
 export type { RpmZone, RpmZoneState } from '@shared/lib/car-signals';
 export { computeRpmZoneState } from '@shared/lib/car-signals';

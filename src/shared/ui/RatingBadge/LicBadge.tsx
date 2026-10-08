@@ -1,6 +1,5 @@
-import type { LicBadgeStyle } from '@shared/contracts/widget-settings';
-
 import styles from './LicBadge.module.scss';
+import type { LicBadgeStyle } from '@shared/contracts/widget-choices';
 
 const LICENSE_CLASS_MAP: Record<string, string> = {
   A: styles.licA,

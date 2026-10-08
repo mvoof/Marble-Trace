@@ -1,14 +1,14 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { DrsWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { panelRows } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
+import { DRS_SETTINGS } from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['drs'];
 
-const { SwitchRow } = panelRows<DrsWidgetSettings>();
+const { Row } = schemaRows(DRS_SETTINGS);
 
 export const DrsSettingsPanel = observer(() => {
   const { t } = useTranslation('widgets');
@@ -16,19 +16,11 @@ export const DrsSettingsPanel = observer(() => {
   return (
     <Card title={t('settingsPanels.drs.moduleParameters')}>
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="hideWhenCarHasNoDrs"
-          title={t('settingsPanels.drs.hideWhenCarHasNoDrs')}
-          desc={t('settingsPanels.drs.hideWhenCarHasNoDrsDesc')}
-        />
+        <Row setting="hideWhenCarHasNoDrs" />
       </div>
 
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="hideWhenUnavailable"
-          title={t('settingsPanels.drs.hideWhenUnavailable')}
-          desc={t('settingsPanels.drs.hideWhenUnavailableDesc')}
-        />
+        <Row setting="hideWhenUnavailable" />
       </div>
     </Card>
   );

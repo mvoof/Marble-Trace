@@ -1,9 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type {
-  BattleNameMode,
-  CloseBattleWidgetSettings,
-} from '@shared/contracts/widget-settings';
 import type { RendererCore } from '@app/roots/renderer-core';
 import { mockProximity } from '@features/preview/mocks/traffic';
 import { CloseBattleWidget } from './CloseBattleWidget';
@@ -12,6 +8,10 @@ import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type {
+  BattleNameMode,
+  CloseBattleWidgetSettings,
+} from './settings-schema';
 
 interface StoryArgs {
   /**

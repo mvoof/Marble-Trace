@@ -1,14 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { BatteryWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { panelRows } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
+import {
+  BATTERY_SETTINGS,
+  type BatteryWidgetSettings,
+} from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['battery'];
 
-const { SwitchRow } = panelRows<BatteryWidgetSettings>();
+const { Row } = schemaRows(BATTERY_SETTINGS);
 
 // Compact mode strips the widget to the charge alone, so every other element
 // is only drawn outside it.
@@ -21,33 +24,12 @@ export const BatterySettingsPanel = observer(() => {
   return (
     <Card title={t('settingsPanels.battery.moduleParameters')}>
       <div className={styles.fieldGroup}>
-        <SwitchRow
-          settingKey="compactMode"
-          title={t('settingsPanels.battery.compactMode')}
-          desc={t('settingsPanels.battery.compactModeDesc')}
-        />
+        <Row setting="compactMode" />
       </div>
 
-      <SwitchRow
-        settingKey="showDeployMode"
-        dependsOn={isFullView}
-        title={t('settingsPanels.battery.deployMode')}
-        desc={t('settingsPanels.battery.deployModeDesc')}
-      />
-
-      <SwitchRow
-        settingKey="showPower"
-        dependsOn={isFullView}
-        title={t('settingsPanels.battery.power')}
-        desc={t('settingsPanels.battery.powerDesc')}
-      />
-
-      <SwitchRow
-        settingKey="showLapDeploy"
-        dependsOn={isFullView}
-        title={t('settingsPanels.battery.lapDeploy')}
-        desc={t('settingsPanels.battery.lapDeployDesc')}
-      />
+      <Row setting="showDeployMode" dependsOn={isFullView} />
+      <Row setting="showPower" dependsOn={isFullView} />
+      <Row setting="showLapDeploy" dependsOn={isFullView} />
     </Card>
   );
 });

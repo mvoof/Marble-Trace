@@ -10,10 +10,10 @@ import {
 import { useCarsStore } from '@entities/cars/cars-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
-import type { TimerWidgetSettings } from '@shared/contracts/widget-settings';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import styles from './TimerFooter.module.scss';
+import type { TimerWidgetSettings } from '../settings-schema';
 
 export const TimerFooter = observer(() => {
   const { session, sessionInfo } = useSessionStore();

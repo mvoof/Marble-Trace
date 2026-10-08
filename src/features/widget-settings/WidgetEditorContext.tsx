@@ -2,7 +2,6 @@ import { createContext, use, useMemo, type ReactNode } from 'react';
 import type {
   BaseUserSettings,
   WidgetDefaultConfig,
-  WidgetSpecificSettings,
   WidgetUserSettings,
 } from '@shared/contracts/widget-settings';
 import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
@@ -18,7 +17,7 @@ import { useSettingsMutationLog } from '@entities/layout/mutation-log-context';
 // back to the live active-layout store.
 export interface WidgetEditor {
   getWidget(id: string): WidgetDefaultConfig | undefined;
-  getSettings<SpecificSettings extends WidgetSpecificSettings>(
+  getSettings<SpecificSettings extends object = Record<string, unknown>>(
     id: string
   ): BaseUserSettings & SpecificSettings;
   updateUserSettings(id: string, partial: Partial<WidgetUserSettings>): void;
@@ -32,7 +31,7 @@ const liveEditor = (
   mutations: SettingsMutationLog
 ): WidgetEditor => ({
   getWidget: (id) => store.getWidget(id),
-  getSettings: <S extends WidgetSpecificSettings>(id: string) =>
+  getSettings: <S extends object = Record<string, unknown>>(id: string) =>
     store.getSettings<S>(id),
   updateUserSettings: (id, partial) => store.updateUserSettings(id, partial),
   getChangeToken: () => mutations.changeToken,
@@ -41,7 +40,7 @@ const liveEditor = (
 
 const defaultsEditor = (store: WidgetDefaultsStore): WidgetEditor => ({
   getWidget: (id) => store.getWidget(id),
-  getSettings: <S extends WidgetSpecificSettings>(id: string) =>
+  getSettings: <S extends object = Record<string, unknown>>(id: string) =>
     store.getSettings<S>(id),
   updateUserSettings: (id, partial) => store.updateUserSettings(id, partial),
   getChangeToken: () => store.changeToken,

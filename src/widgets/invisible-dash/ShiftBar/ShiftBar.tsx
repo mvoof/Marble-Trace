@@ -1,7 +1,6 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { InvisibleDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { computeRpmZoneState } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -10,6 +9,7 @@ import { useSessionStore } from '@entities/session/session-context';
 import { shiftBarColor } from '../invisible-dash-utils';
 
 import styles from './ShiftBar.module.scss';
+import type { InvisibleDashWidgetSettings } from '../settings-schema';
 
 const FULL_PERCENT = 100;
 

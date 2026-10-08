@@ -6,7 +6,6 @@ import {
 } from 'mobx';
 
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
-import type { CloseBattleWidgetSettings } from '@shared/contracts/widget-settings';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
 import {
@@ -25,6 +24,7 @@ import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { SessionStore } from '@entities/session/session.store';
 import type { PlayerStore } from '@entities/player/player.store';
+import type { CloseBattleWidgetSettings } from './settings-schema';
 
 interface CloseBattleDeps {
   units: UnitsStore;

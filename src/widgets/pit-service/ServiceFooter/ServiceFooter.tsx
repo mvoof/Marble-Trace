@@ -2,13 +2,13 @@ import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import styles from './ServiceFooter.module.scss';
-import type { PitServiceWidgetSettings } from '@shared/contracts/widget-settings';
 import { resolveServiceState } from '@widgets/pit-service/pit-service-utils';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 import { usePlayerStore } from '@entities/player/player-context';
 
 import { PositionBadge } from './PositionBadge/PositionBadge';
+import type { PitServiceWidgetSettings } from '../settings-schema';
 
 const STATE_LABEL = {
   idle: 'NO ORDER',

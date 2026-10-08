@@ -7,12 +7,12 @@ import type {
   DrivingAdvisory,
   ReferenceLapSample,
 } from '@shared/contracts/bindings';
-import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import { interpolateReferenceSample } from './coach-trace-utils';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { ReferenceLapStore } from '@entities/player/reference-lap.store';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import type { CoachWidgetSettings } from './settings-schema';
 
 interface DrivingCoachDeps {
   player: PlayerStore;

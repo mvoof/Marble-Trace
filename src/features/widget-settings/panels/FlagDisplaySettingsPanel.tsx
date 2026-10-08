@@ -1,16 +1,23 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Slider } from 'antd';
-import { FlagDisplaySettings } from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '../Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows } from '../setting-rows';
+import { schemaRows } from '../schema-rows';
+import {
+  LED_FLAGS_SETTINGS,
+  type FlagDisplaySettings,
+} from '@entities/flags/flag-display.settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['led-flags', 'flat-flags'];
 
-const { DependentBlock, SwitchRow } = panelRows<FlagDisplaySettings>();
+const { DependentBlock } = panelRows<FlagDisplaySettings>();
+// The LED schema holds the flat one's settings too, under the same labels.
+const { Row, useLabels } = schemaRows(LED_FLAGS_SETTINGS);
+const { holdDuration } = LED_FLAGS_SETTINGS.shape;
 
 // A flag held on screen for good has no hold time to set.
 const isHoldShown = (settings: FlagDisplaySettings): boolean =>
@@ -20,6 +27,7 @@ export const FlagDisplaySettingsPanel = observer(
   ({ widgetId }: { widgetId: string }) => {
     const liveWidgets = useWidgetEditor();
     const { t } = useTranslation('widgets');
+    const holdLabels = useLabels('holdDuration');
     const widgetType = liveWidgets.getWidget(widgetId)?.type ?? widgetId;
     const settings = liveWidgets.getSettings<FlagDisplaySettings>(widgetId);
 
@@ -33,11 +41,7 @@ export const FlagDisplaySettingsPanel = observer(
     return (
       <Card title={t('settingsPanels.flagDisplay.displayMode')}>
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="alwaysShow"
-            title={t('settingsPanels.flagDisplay.alwaysShow')}
-            desc={t('settingsPanels.flagDisplay.alwaysShowDesc')}
-          />
+          <Row setting="alwaysShow" />
         </div>
 
         <DependentBlock dependsOn={isHoldShown}>
@@ -46,13 +50,11 @@ export const FlagDisplaySettingsPanel = observer(
               seconds: settings.holdDuration,
             })}
           </span>
-          <div className={styles.fieldDesc}>
-            {t('settingsPanels.flagDisplay.holdDurationDesc')}
-          </div>
+          <div className={styles.fieldDesc}>{holdLabels.desc}</div>
           <Slider
-            min={0}
-            max={30}
-            step={1}
+            min={holdDuration.min}
+            max={holdDuration.max}
+            step={holdDuration.step}
             value={settings.holdDuration}
             onChange={(v) => update({ holdDuration: v })}
           />
@@ -61,30 +63,15 @@ export const FlagDisplaySettingsPanel = observer(
         {widgetType === 'led-flags' && (
           <>
             <div className={styles.fieldGroup}>
-              <SwitchRow
-                settingKey="forceSingleLed"
-                title={t('settingsPanels.flagDisplay.forceSingleLed')}
-                desc={t('settingsPanels.flagDisplay.forceSingleLedDesc')}
-                fallback={false}
-              />
+              <Row setting="forceSingleLed" />
             </div>
 
             <div className={styles.fieldGroup}>
-              <SwitchRow
-                settingKey="split"
-                title={t('settingsPanels.flagDisplay.splitDisplay')}
-                desc={t('settingsPanels.flagDisplay.splitDisplayDesc')}
-                fallback={false}
-              />
+              <Row setting="split" />
             </div>
 
             <div className={styles.fieldGroup}>
-              <SwitchRow
-                settingKey="animate"
-                title={t('settingsPanels.flagDisplay.animateLeds')}
-                desc={t('settingsPanels.flagDisplay.animateLedsDesc')}
-                fallback
-              />
+              <Row setting="animate" />
             </div>
           </>
         )}

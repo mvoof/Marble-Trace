@@ -8,7 +8,6 @@ import {
 
 import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { DriverGroup } from '@shared/contracts/domain';
-import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { computeClassSof, hasSetALap } from '@shared/lib/driver';
 import { hasRaceStarted } from '@shared/lib/timer-utils';
 import {
@@ -24,6 +23,7 @@ import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { SessionStore } from '@entities/session/session.store';
 import type { PlayerPositionStore } from '@entities/player/player-position.store';
+import type { StandingsWidgetSettings } from './settings-schema';
 
 interface StandingsDeps {
   backendComputed: BackendComputedStore;

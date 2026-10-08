@@ -72,3 +72,65 @@ describe('widget catalog telemetry declarations', () => {
     }
   });
 });
+
+// What every widget has, whatever its own schema says: the frame and the look
+// of the container. Anything else a manifest ships must be in its schema.
+const FRAME_SETTING_KEYS = new Set([
+  'enabled',
+  'x',
+  'y',
+  'currentWidth',
+  'currentHeight',
+  'zIndex',
+  'opacity',
+  'fontScale',
+  'backgroundColor',
+  'borderColor',
+]);
+
+describe('widget catalog settings schemas', () => {
+  it('ships every setting its schema describes, at the schema default', () => {
+    for (const manifest of WIDGETS) {
+      const { defaults } = manifest.settingsSchema;
+
+      expect(manifest.userSettings).toMatchObject(defaults);
+    }
+  });
+
+  // The schema is the one description of a widget's own settings; a key a
+  // manifest ships beside it is a typo or a setting nobody can check on load.
+  it('ships no setting of its own that its schema leaves out', () => {
+    for (const manifest of WIDGETS) {
+      const { defaults } = manifest.settingsSchema;
+      const strays = Object.keys(manifest.userSettings).filter(
+        (key) => !FRAME_SETTING_KEYS.has(key) && !(key in defaults)
+      );
+
+      expect({ widget: manifest.id, strays }).toEqual({
+        widget: manifest.id,
+        strays: [],
+      });
+    }
+  });
+
+  // A default its own check would reject or clamp is a default no stored
+  // value could ever equal — the bounds and the default disagree.
+  it('ships defaults that pass the check a stored value must', () => {
+    for (const manifest of WIDGETS) {
+      const { defaults, parseOverrides } = manifest.settingsSchema;
+      const parsed = parseOverrides({ ...defaults });
+
+      expect({ widget: manifest.id, rejected: parsed.rejected }).toEqual({
+        widget: manifest.id,
+        rejected: [],
+      });
+      expect(parsed.overrides).toEqual(defaults);
+    }
+  });
+
+  it('keeps the schema out of the persisted defaults', () => {
+    for (const widget of DEFAULT_WIDGETS) {
+      expect(widget).not.toHaveProperty('settingsSchema');
+    }
+  });
+});

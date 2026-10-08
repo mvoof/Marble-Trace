@@ -2,12 +2,12 @@ import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
-import type { InputTraceSettings } from '@shared/contracts/widget-settings';
 import { InputBars } from './InputBars/InputBars';
 import { CanvasTrace } from './CanvasTrace/CanvasTrace';
 import { SteeringWheel } from './SteeringWheel/SteeringWheel';
 
 import styles from './InputTraceWidget.module.scss';
+import type { InputTraceSettings } from './settings-schema';
 
 export const InputTraceWidget = observer(() => {
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');

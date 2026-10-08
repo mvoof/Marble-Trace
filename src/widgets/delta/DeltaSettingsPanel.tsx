@@ -1,23 +1,32 @@
+import type { TFunction } from 'i18next';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Segmented, Slider, Switch } from 'antd';
-import type {
-  LapDeltaReference,
-  DeltaWidgetSettings,
-} from '@shared/contracts/widget-settings';
+import { Segmented, Slider } from 'antd';
+import type { LapDeltaReference } from '@shared/contracts/widget-choices';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { getDeltaReferenceDesc } from '@features/widget-settings/shared';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import {
   panelRows,
   usePanelWidgetId,
 } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
+import { DELTA_SETTINGS, type DeltaWidgetSettings } from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['delta'];
 
 const { DependentBlock } = panelRows<DeltaWidgetSettings>();
+const { Row } = schemaRows(DELTA_SETTINGS);
+const { flashDuration } = DELTA_SETTINGS.shape;
+
+const referenceDescOf = (t: TFunction): Record<LapDeltaReference, string> => ({
+  personal_best: t('settingsPanels.delta.referenceDesc.personalBest'),
+  personal_optimal: t('settingsPanels.delta.referenceDesc.personalOptimal'),
+  session_best: t('settingsPanels.delta.referenceDesc.sessionBest'),
+  session_optimal: t('settingsPanels.delta.referenceDesc.sessionOptimal'),
+  session_last: t('settingsPanels.delta.referenceDesc.sessionLast'),
+});
 
 export const DeltaSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -51,57 +60,28 @@ export const DeltaSettingsPanel = observer(() => {
             }
           />
           <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-            {getDeltaReferenceDesc(t)[settings.reference]}
+            {referenceDescOf(t)[settings.reference]}
           </div>
         </div>
       </Card>
 
       <Card title={t('settingsPanels.delta.visibility')}>
-        <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.delta.hideWhenNoReference')}
-            </span>
-            <Switch
-              checked={settings.hideWhenNoReference}
-              onChange={(value) => update({ hideWhenNoReference: value })}
-            />
-          </div>
-
-          <div className={styles.fieldRow}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.delta.showGauge')}
-            </span>
-            <Switch
-              checked={settings.showGauge}
-              onChange={(value) => update({ showGauge: value })}
-            />
-          </div>
-        </div>
+        <Row setting="hideWhenNoReference" />
+        <Row setting="showGauge" />
       </Card>
 
       <Card title={t('settingsPanels.delta.lapCompletedCard')}>
-        <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.delta.showAfterLap')}
-            </span>
-            <Switch
-              checked={settings.showLapFlash}
-              onChange={(value) => update({ showLapFlash: value })}
-            />
-          </div>
-        </div>
+        <Row setting="showLapFlash" />
 
         <DependentBlock dependsOn="showLapFlash">
           <div className={styles.fieldLabel}>
-            {t('settingsPanels.delta.displayDuration', {
+            {t('settingsPanels.delta.flashDuration', {
               seconds: settings.flashDuration,
             })}
           </div>
           <Slider
-            min={3}
-            max={10}
+            min={flashDuration.min}
+            max={flashDuration.max}
             step={1}
             value={settings.flashDuration}
             onChange={(value) => update({ flashDuration: value })}

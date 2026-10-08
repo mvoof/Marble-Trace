@@ -2,8 +2,8 @@ import type {
   FuelHistoryStats,
   FuelLapRecord,
 } from '@shared/contracts/bindings';
-import type { FuelWidgetSettings } from '@shared/contracts/widget-settings';
 import { FUEL_AVG_WINDOW_ALL_LAPS, FUEL_THRESHOLDS } from './fuel-constants';
+import type { FuelWidgetSettings } from './settings-schema';
 
 /** Laps that count towards the average; the rest are drawn but never measured. */
 export const countedLaps = (history: FuelLapRecord[]): FuelLapRecord[] =>

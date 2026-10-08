@@ -1,10 +1,10 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { TrackMapWidgetSettings } from '@shared/contracts/widget-settings';
 import { useIncidentsWidgetStore } from '@entities/incidents/incidents-context';
 
 import { FlagZoneStripes } from './FlagZoneStripes';
+import type { TrackMapWidgetSettings } from '../../settings-schema';
 
 interface FlagZonesProps {
   svgPath: string;
@@ -23,7 +23,7 @@ export const FlagZones = observer(
 
     const settings = useWidgetSettings<TrackMapWidgetSettings>('track-map');
 
-    if (!(settings.showIncidentZones ?? true)) {
+    if (!settings.showIncidentZones) {
       return null;
     }
 
@@ -33,8 +33,8 @@ export const FlagZones = observer(
         svgPath={svgPath}
         pathLength={pathLength}
         strokeWidth={strokeWidth}
-        blink={settings.blinkIncidentZones ?? true}
-        zoneStyle={settings.flagZoneStyle ?? 'filled'}
+        blink={settings.blinkIncidentZones}
+        zoneStyle={settings.flagZoneStyle}
       />
     );
   }

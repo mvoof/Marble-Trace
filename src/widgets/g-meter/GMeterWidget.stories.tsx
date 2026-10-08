@@ -1,9 +1,5 @@
 ﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type {
-  GMeterColorMode,
-  GMeterDisplayMode,
-} from '@shared/contracts/widget-settings';
 import {
   G_ACCEL_MPS2,
   mockCarDynamics,
@@ -15,6 +11,7 @@ import {
   previewScenario,
 } from '@/storybook/define-widget-stories';
 import { withReplay } from '@/storybook/with-replay';
+import type { GMeterColorMode, GMeterDisplayMode } from './settings-schema';
 
 interface StoryArgs {
   displayMode: GMeterDisplayMode;

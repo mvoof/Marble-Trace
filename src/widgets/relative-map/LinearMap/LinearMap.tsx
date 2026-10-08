@@ -11,13 +11,10 @@ import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { FlagBands } from '../FlagBands/FlagBands';
 
 import styles from './LinearMap.module.scss';
-import type { LinearMapWidgetSettings } from '@shared/contracts/widget-settings';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useCarsStore } from '@entities/cars/cars-context';
 import { useSessionStore } from '@entities/session/session-context';
-
-const DEFAULT_DOT_RADIUS_PX = 9;
-const DEFAULT_PACE_CAR_COLOR = '#facc15';
+import type { LinearMapWidgetSettings } from '../settings-schema';
 
 /** Half the window the strip covers, in lap fraction, either side of the player. */
 const WINDOW_HALF = 0.5;
@@ -37,12 +34,12 @@ export const LinearMap = observer(() => {
   const settings = useWidgetSettings<LinearMapWidgetSettings>('relative-map');
   const isHorizontal = settings.orientation === 'horizontal';
   const playerDotColor = settings.playerDotColor;
-  const targetDotRadiusPx = settings.targetDotRadiusPx ?? DEFAULT_DOT_RADIUS_PX;
-  const paceCarUseClassColor = settings.paceCarUseClassColor ?? false;
-  const paceCarColor = settings.paceCarColor ?? DEFAULT_PACE_CAR_COLOR;
-  const paceCarRadiusPx = settings.paceCarRadiusPx ?? targetDotRadiusPx;
-  const paceCarShowInPits = settings.paceCarShowInPits ?? false;
-  const classShapes = settings.classShapes ?? false;
+  const targetDotRadiusPx = settings.targetDotRadiusPx;
+  const paceCarUseClassColor = settings.paceCarUseClassColor;
+  const paceCarColor = settings.paceCarColor;
+  const paceCarRadiusPx = settings.paceCarRadiusPx;
+  const paceCarShowInPits = settings.paceCarShowInPits;
+  const classShapes = settings.classShapes;
   const carClassOrder = sessionStore.carClassOrder;
 
   const containerRef = useRef<HTMLDivElement>(null);

@@ -3,7 +3,6 @@ import { useRef, type WheelEvent } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 
-import type { StreamChatWidgetSettings } from '@shared/contracts/widget-settings';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useStreamChatWidgetStore } from '@widgets/stream-chat/stream-chat.store';
 import { ScrollIndicator } from '@shared/ui/ScrollIndicator/ScrollIndicator';
@@ -11,6 +10,7 @@ import { ChatMessageRow } from '../ChatMessageRow/ChatMessageRow';
 import { useFittingRowCount } from './useFittingRowCount';
 
 import styles from './ChatMessageList.module.scss';
+import type { StreamChatWidgetSettings } from '../settings-schema';
 
 // One wheel notch moves a small block of messages, matching the standings feel.
 const WHEEL_STEP_MESSAGES = 3;

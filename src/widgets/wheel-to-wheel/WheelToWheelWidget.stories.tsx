@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { UnitSystem } from '@shared/contracts/domain';
-import type {
-  WheelToWheelLayout,
-  WheelToWheelWidgetSettings,
-} from '@shared/contracts/widget-settings';
 import { WheelToWheelWidget } from './WheelToWheelWidget';
 import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type {
+  WheelToWheelLayout,
+  WheelToWheelWidgetSettings,
+} from './settings-schema';
 
 interface StoryArgs {
   unitSystem: UnitSystem;

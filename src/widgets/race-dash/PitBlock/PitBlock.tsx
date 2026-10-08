@@ -3,13 +3,13 @@ import { observer } from 'mobx-react-lite';
 
 import { usePitState } from '@features/pit-service/usePitState';
 import type { PitState } from '@features/pit-service/usePitState';
-import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
 
 import { pitLimitEmphasis } from '../race-dash-utils';
 import { PitLaneBar } from './PitLaneBar';
 
 import styles from './PitBlock.module.scss';
+import type { RaceDashWidgetSettings } from '../settings-schema';
 
 // Final stretch to the box turns the countdown green — "almost there".
 const BOX_NEAR_M = 50;

@@ -1,18 +1,21 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, Segmented } from 'antd';
-import {
-  RpmLightsWidgetSettings,
-  LedShape,
-} from '@shared/contracts/widget-settings';
+import { ColorPicker } from 'antd';
 import { Card } from '@features/widget-settings/Card';
 
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
+import {
+  RPM_LIGHTS_SETTINGS,
+  type RpmLightsWidgetSettings,
+} from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['rpm-lights'];
+
+const { Row } = schemaRows(RPM_LIGHTS_SETTINGS);
 
 export const RpmLightsSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -39,7 +42,7 @@ export const RpmLightsSettingsPanel = observer(() => {
         <div className={styles.rpmColorGrid}>
           <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>
-              {t('settingsPanels.raceDash.low')}
+              {t('settingsPanels.common.rpmColorLow')}
             </span>
 
             <ColorPicker
@@ -51,7 +54,7 @@ export const RpmLightsSettingsPanel = observer(() => {
 
           <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>
-              {t('settingsPanels.raceDash.mid')}
+              {t('settingsPanels.common.rpmColorMid')}
             </span>
 
             <ColorPicker
@@ -64,7 +67,7 @@ export const RpmLightsSettingsPanel = observer(() => {
 
           <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>
-              {t('settingsPanels.raceDash.high')}
+              {t('settingsPanels.common.rpmColorHigh')}
             </span>
 
             <ColorPicker
@@ -79,7 +82,7 @@ export const RpmLightsSettingsPanel = observer(() => {
 
           <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>
-              {t('settingsPanels.raceDash.shift')}
+              {t('settingsPanels.common.rpmColorShift')}
             </span>
 
             <ColorPicker
@@ -94,7 +97,7 @@ export const RpmLightsSettingsPanel = observer(() => {
 
           <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>
-              {t('settingsPanels.raceDash.blink')}
+              {t('settingsPanels.common.rpmColorLimit')}
             </span>
 
             <ColorPicker
@@ -107,31 +110,7 @@ export const RpmLightsSettingsPanel = observer(() => {
         </div>
       </div>
 
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>
-          {t('settingsPanels.rpmLights.ledShape')}
-        </span>
-
-        <Segmented
-          block
-          value={settings.ledShape}
-          options={[
-            {
-              label: t('settingsPanels.rpmLights.square'),
-              value: 'square',
-            },
-            {
-              label: t('settingsPanels.rpmLights.circle'),
-              value: 'circle',
-            },
-            {
-              label: t('settingsPanels.rpmLights.slant'),
-              value: 'parallelogram',
-            },
-          ]}
-          onChange={(value) => update({ ledShape: value as LedShape })}
-        />
-      </div>
+      <Row setting="ledShape" stacked />
     </Card>
   );
 });

@@ -1,13 +1,13 @@
 import { useId } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { FlagZoneStyle } from '@shared/contracts/widget-settings';
 import {
   splitFlagZoneAtStartFinish,
   type FlagZone,
 } from '@entities/incidents/flag-zones';
 
 import styles from './FlagZoneStripes.module.scss';
+import type { FlagZoneStyle } from '@shared/contracts/widget-choices';
 
 interface FlagZoneStripesProps {
   zones: FlagZone[];

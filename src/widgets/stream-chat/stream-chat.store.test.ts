@@ -3,7 +3,7 @@ import { runInAction } from 'mobx';
 import { PreviewCore } from '@app/roots/renderer-core';
 import { StreamChatWidgetStore } from './stream-chat.store';
 import type { ChatMessage, ChatPlatform } from '@shared/contracts/bindings';
-import type { StreamChatWidgetSettings } from '@shared/contracts/widget-settings';
+import type { StreamChatWidgetSettings } from './settings-schema';
 
 const makeMessage = (
   id: string,
@@ -155,7 +155,40 @@ describe('StreamChatWidgetStore', () => {
   });
 
   it('scrolls the window back through the history and clamps at both ends', () => {
-    setSettings({ maxMessages: 2 });
+    setSettings({ maxMessages: 3 });
+    seed([
+      makeMessage('1', 'a', 'one'),
+      makeMessage('2', 'b', 'two'),
+      makeMessage('3', 'c', 'three'),
+      makeMessage('4', 'd', 'four'),
+      makeMessage('5', 'e', 'five'),
+    ]);
+
+    runInAction(() => chatWidget.scrollByRows(1));
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual([
+      '2',
+      '3',
+      '4',
+    ]);
+
+    runInAction(() => chatWidget.scrollByRows(10));
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual([
+      '1',
+      '2',
+      '3',
+    ]);
+
+    runInAction(() => chatWidget.scrollByRows(-10));
+    expect(chatWidget.isScrolled).toBe(false);
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual([
+      '3',
+      '4',
+      '5',
+    ]);
+  });
+
+  it('caps the feed at maxMessages keeping the newest', () => {
+    setSettings({ maxMessages: 3 });
     seed([
       makeMessage('1', 'a', 'one'),
       makeMessage('2', 'b', 'two'),
@@ -163,26 +196,11 @@ describe('StreamChatWidgetStore', () => {
       makeMessage('4', 'd', 'four'),
     ]);
 
-    runInAction(() => chatWidget.scrollByRows(1));
-    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['2', '3']);
-
-    runInAction(() => chatWidget.scrollByRows(10));
-    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['1', '2']);
-
-    runInAction(() => chatWidget.scrollByRows(-10));
-    expect(chatWidget.isScrolled).toBe(false);
-    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['3', '4']);
-  });
-
-  it('caps the feed at maxMessages keeping the newest', () => {
-    setSettings({ maxMessages: 2 });
-    seed([
-      makeMessage('1', 'a', 'one'),
-      makeMessage('2', 'b', 'two'),
-      makeMessage('3', 'c', 'three'),
+    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual([
+      '2',
+      '3',
+      '4',
     ]);
-
-    expect(chatWidget.visibleMessages.map((m) => m.id)).toEqual(['2', '3']);
   });
 
   it('scrolls once fewer messages fit than the history holds', () => {

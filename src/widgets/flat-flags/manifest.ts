@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   TRANSPARENT_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { FLAT_FLAGS_SETTINGS } from '@entities/flags/flag-display.settings-schema';
 
 export const FLAT_FLAGS_MANIFEST: WidgetManifest = {
   id: 'flat-flags',
@@ -32,7 +33,7 @@ export const FLAT_FLAGS_MANIFEST: WidgetManifest = {
     currentHeight: 160,
     ...COMMON_WIDGET_DEFAULTS,
     ...TRANSPARENT_APPEARANCE_DEFAULTS,
-    alwaysShow: true,
-    holdDuration: 3,
+    ...FLAT_FLAGS_SETTINGS.defaults,
   },
+  settingsSchema: FLAT_FLAGS_SETTINGS,
 };

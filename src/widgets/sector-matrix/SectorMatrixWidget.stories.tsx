@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { SectorMatrixWidgetSettings } from '@shared/contracts/widget-settings';
 import { mockLapDelta, mockLapTiming } from '@features/preview/mocks/delta';
 import { mockSectors } from '@features/preview/mocks/timing';
 import { SectorMatrixWidget } from './SectorMatrixWidget';
@@ -8,6 +7,7 @@ import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type { SectorMatrixWidgetSettings } from './settings-schema';
 
 interface StoryArgs {
   /** The live delta the header carries. */

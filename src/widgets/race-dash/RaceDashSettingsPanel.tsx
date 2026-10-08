@@ -1,12 +1,8 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, InputNumber, Segmented } from 'antd';
+import { ColorPicker, InputNumber } from 'antd';
 
 import { speedUnit } from '@shared/lib/telemetry-format';
-import type {
-  RaceDashWidgetSettings,
-  RpmIndicatorMode,
-} from '@shared/contracts/widget-settings';
 import { Card } from '@features/widget-settings/Card';
 
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
@@ -16,12 +12,18 @@ import {
   panelRows,
   usePanelWidgetId,
 } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
+import {
+  RACE_DASH_SETTINGS,
+  type RaceDashWidgetSettings,
+} from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['race-dash'];
 
-const { ColorRow, DependentBlock, SwitchRow } =
-  panelRows<RaceDashWidgetSettings>();
+const { DependentBlock } = panelRows<RaceDashWidgetSettings>();
+const { Row } = schemaRows(RACE_DASH_SETTINGS);
+const { pitSpeedLimitOverride, nearLimitDelta } = RACE_DASH_SETTINGS.shape;
 
 export const RaceDashSettingsPanel = observer(() => {
   const units = useUnitsStore();
@@ -44,13 +46,13 @@ export const RaceDashSettingsPanel = observer(() => {
       <Card title={t('settingsPanels.raceDash.rpmFill')}>
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
-            {t('settingsPanels.raceDash.zoneColors')}
+            {t('settingsPanels.common.rpmZoneColors')}
           </span>
 
           <div className={styles.rpmColorGrid}>
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.low')}
+                {t('settingsPanels.common.rpmColorLow')}
               </span>
               <ColorPicker
                 value={settings.rpmColorLow}
@@ -64,7 +66,7 @@ export const RaceDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.mid')}
+                {t('settingsPanels.common.rpmColorMid')}
               </span>
               <ColorPicker
                 value={settings.rpmColorMid}
@@ -78,7 +80,7 @@ export const RaceDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.high')}
+                {t('settingsPanels.common.rpmColorHigh')}
               </span>
               <ColorPicker
                 value={settings.rpmColorHigh}
@@ -92,7 +94,7 @@ export const RaceDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.shift')}
+                {t('settingsPanels.common.rpmColorShift')}
               </span>
               <ColorPicker
                 value={settings.rpmColorShift}
@@ -106,7 +108,7 @@ export const RaceDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.blink')}
+                {t('settingsPanels.common.rpmColorLimit')}
               </span>
               <ColorPicker
                 value={settings.rpmColorLimit}
@@ -119,72 +121,31 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="colorizeByRpmZone"
-            title={t('settingsPanels.raceDash.colorizeDigits')}
-            desc={t('settingsPanels.raceDash.colorizeDigitsDesc')}
-          />
+          <Row setting="colorizeByRpmZone" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.raceDash.rpmIndicator')}
-          </span>
-          <Segmented
-            block
-            value={settings.rpmIndicatorMode}
-            options={[
-              { label: t('settingsPanels.raceDash.fill'), value: 'fill' },
-              { label: t('settingsPanels.raceDash.comb'), value: 'comb' },
-              { label: t('settingsPanels.raceDash.glow'), value: 'glow' },
-              { label: t('settingsPanels.raceDash.off'), value: 'off' },
-            ]}
-            onChange={(value) =>
-              update({ rpmIndicatorMode: value as RpmIndicatorMode })
-            }
-          />
+          <Row setting="rpmIndicatorMode" stacked />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showSteeringMarker"
-            title={t('settingsPanels.raceDash.steeringMarker')}
-            desc={t('settingsPanels.raceDash.steeringMarkerDesc')}
-          />
+          <Row setting="showSteeringMarker" />
         </div>
 
-        <ColorRow
-          settingKey="steeringTrailColor"
-          dependsOn="showSteeringMarker"
-          title={t('settingsPanels.raceDash.steeringTrail')}
-          desc={t('settingsPanels.raceDash.steeringTrailDesc')}
-          hex
-        />
+        <Row setting="steeringTrailColor" dependsOn="showSteeringMarker" />
       </Card>
 
       <Card title={t('settingsPanels.common.positions')}>
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="useLivePositions"
-            title={t('settingsPanels.common.useLivePositions')}
-            desc={t('settingsPanels.common.useLivePositionsDesc')}
-          />
+          <Row setting="useLivePositions" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="classPositionInMulticlass"
-            title={t('settingsPanels.common.classPositionInMulticlass')}
-            desc={t('settingsPanels.common.classPositionInMulticlassDesc')}
-          />
+          <Row setting="classPositionInMulticlass" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="colorizePosition"
-            title={t('settingsPanels.raceDash.colorizePosition')}
-            desc={t('settingsPanels.raceDash.colorizePositionDesc')}
-          />
+          <Row setting="colorizePosition" />
         </div>
 
         <DependentBlock dependsOn="colorizePosition">
@@ -195,7 +156,7 @@ export const RaceDashSettingsPanel = observer(() => {
           <div className={styles.rpmColorGrid}>
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.bandWinner')}
+                {t('settingsPanels.raceDash.positionColorP1')}
               </span>
               <ColorPicker
                 value={settings.positionColorP1}
@@ -209,7 +170,7 @@ export const RaceDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.bandTop3')}
+                {t('settingsPanels.raceDash.positionColorTop3')}
               </span>
               <ColorPicker
                 value={settings.positionColorTop3}
@@ -223,7 +184,7 @@ export const RaceDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.bandTop5')}
+                {t('settingsPanels.raceDash.positionColorTop5')}
               </span>
               <ColorPicker
                 value={settings.positionColorTop5}
@@ -237,7 +198,7 @@ export const RaceDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.bandTop10')}
+                {t('settingsPanels.raceDash.positionColorTop10')}
               </span>
               <ColorPicker
                 value={settings.positionColorTop10}
@@ -251,7 +212,7 @@ export const RaceDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.bandRest')}
+                {t('settingsPanels.raceDash.positionColorRest')}
               </span>
               <ColorPicker
                 value={settings.positionColorRest}
@@ -266,28 +227,24 @@ export const RaceDashSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.raceDash.pitAssist')}>
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showPitAssist"
-            title={t('settingsPanels.raceDash.pitLaneAssist')}
-            desc={t('settingsPanels.raceDash.pitLaneAssistDesc')}
-          />
+          <Row setting="showPitAssist" />
         </div>
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
-            {t('settingsPanels.raceDash.pitSpeedOverride', {
+            {t('settingsPanels.raceDash.pitSpeedLimitOverride', {
               unit: speedUnit(units.unitSystem),
             })}
           </span>
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-            {t('settingsPanels.raceDash.pitSpeedOverrideDesc')}
+            {t('settingsPanels.raceDash.pitSpeedLimitOverrideDesc')}
           </div>
           <InputNumber
             style={{ width: '100%' }}
             value={settings.pitSpeedLimitOverride ?? 0}
-            min={0}
-            max={200}
-            step={5}
+            min={pitSpeedLimitOverride.min}
+            max={pitSpeedLimitOverride.max}
+            step={pitSpeedLimitOverride.step}
             onChange={(value) =>
               update({
                 pitSpeedLimitOverride: value && value > 0 ? value : null,
@@ -298,22 +255,24 @@ export const RaceDashSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
-            {t('settingsPanels.raceDash.nearLimitWarning', {
+            {t('settingsPanels.raceDash.nearLimitDelta', {
               unit: speedUnit(units.unitSystem),
             })}
           </span>
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-            {t('settingsPanels.raceDash.nearLimitWarningDesc', {
+            {t('settingsPanels.raceDash.nearLimitDeltaDesc', {
               unit: speedUnit(units.unitSystem),
             })}
           </div>
           <InputNumber
             style={{ width: '100%' }}
             value={settings.nearLimitDelta}
-            min={1}
-            max={30}
-            step={1}
-            onChange={(value) => update({ nearLimitDelta: value ?? 5 })}
+            min={nearLimitDelta.min}
+            max={nearLimitDelta.max}
+            step={nearLimitDelta.step}
+            onChange={(value) =>
+              value !== null && update({ nearLimitDelta: value })
+            }
           />
         </div>
       </Card>

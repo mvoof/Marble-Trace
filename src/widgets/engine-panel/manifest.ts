@@ -1,7 +1,6 @@
-import type { WidgetManifest } from '@shared/contracts/widget-settings';
 import type {
-  EnginePanelWidgetSettings,
   ResolveLayoutChange,
+  WidgetManifest,
 } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
@@ -15,6 +14,14 @@ import {
   planEnginePanel,
   rowUnits,
 } from './engine-panel-utils';
+import { ENGINE_PANEL_SETTINGS } from './settings-schema';
+
+/**
+ * The size the user left each layout mode at, by mode, so switching back
+ * restores it. Kept beside the settings but not one of them: the schema does
+ * not describe it, so it lives for the session and is not written to the file.
+ */
+type LayoutSizes = Record<string, { width: number; height: number }>;
 
 /** The size the widget will actually draw at, in design px. */
 const measure = (
@@ -67,8 +74,7 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
   const before = measure(prev as unknown as Record<string, unknown>, prevCols);
   const after = measure(next as unknown as Record<string, unknown>, nextCols);
 
-  const prevSettings = prev as unknown as EnginePanelWidgetSettings;
-  const prevLayoutSizes = prevSettings.layoutSizes ?? {};
+  const prevLayoutSizes = (prev.layoutSizes ?? {}) as LayoutSizes;
 
   const prevModeKey = prevHorizontal
     ? `horizontal-${prevHorizCols}`
@@ -138,27 +144,7 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
     currentHeight: 124,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    showOilTemp: true,
-    showWaterTemp: true,
-    showOilPress: true,
-    showVoltage: true,
-    showAbs: true,
-    showTc: true,
-    showTc2: true,
-    showBrakeBias: true,
-    showBrakeBiasFine: true,
-    showPeakBrakeBias: true,
-    showEngineMap: true,
-    showEngineBraking: true,
-    showDiffEntry: true,
-    showDiffMiddle: true,
-    showDiffExit: true,
-    showAntiRollFront: true,
-    showAntiRollRear: true,
-    showBrakeMisc: true,
-    highlightChanges: true,
-    horizontal: true,
-    verticalColumns: 3,
-    horizontalColumns: 12,
+    ...ENGINE_PANEL_SETTINGS.defaults,
   },
+  settingsSchema: ENGINE_PANEL_SETTINGS,
 };

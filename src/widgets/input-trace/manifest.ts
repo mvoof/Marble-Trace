@@ -1,10 +1,13 @@
 import type { WidgetManifest } from '@shared/contracts/widget-settings';
-import type { InputTraceSettings } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
   makeColumnLayoutResolver,
 } from '@widgets/widget-manifest';
+import {
+  INPUT_TRACE_SETTINGS,
+  type InputTraceSettings,
+} from './settings-schema';
 
 // Layout constants matching JSX/SCSS values in InputTraceWidget.
 // Bar width = rem(20) @ 16px base = 20px; bar gap = $space-sm = rem(4) = 4px.
@@ -61,16 +64,8 @@ const resolveInputTraceLayout = makeColumnLayoutResolver<InputTraceSettings>(
   computeInputTraceDesignWidth
 );
 
-const INPUT_TRACE_VISIBILITY_DEFAULTS = {
-  showTrace: true,
-  showSteering: true,
-  showThrottle: true,
-  showBrake: true,
-  showClutch: true,
-  showInputValues: false,
-};
 const INPUT_TRACE_DESIGN_WIDTH = computeInputTraceDesignWidth(
-  INPUT_TRACE_VISIBILITY_DEFAULTS as unknown as InputTraceSettings
+  INPUT_TRACE_SETTINGS.defaults
 );
 
 export const INPUT_TRACE_MANIFEST: WidgetManifest = {
@@ -90,21 +85,10 @@ export const INPUT_TRACE_MANIFEST: WidgetManifest = {
     x: 400,
     y: 300,
     currentWidth: INPUT_TRACE_DESIGN_WIDTH,
-    ...INPUT_TRACE_VISIBILITY_DEFAULTS,
     currentHeight: 120,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    steeringCenterDisplay: 'logo',
-    steeringWheelStyle: 'default',
-    steeringCenterPlate: false,
-    steeringMarkerColor: '#eab308',
-    throttleColor: '#10b981',
-    brakeColor: '#ef4444',
-    clutchColor: '#3b82f6',
-    absColor: '#eab308',
-    historySeconds: 5,
-    lineWidth: 3.5,
-    smoothing: 0,
-    steeringZoom: 1,
+    ...INPUT_TRACE_SETTINGS.defaults,
   },
+  settingsSchema: INPUT_TRACE_SETTINGS,
 };

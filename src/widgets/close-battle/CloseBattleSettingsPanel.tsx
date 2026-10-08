@@ -2,52 +2,40 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Segmented, Slider } from 'antd';
 
-import type {
-  RadarQualifyingVisibility,
-  CloseBattleWidgetSettings,
-  BattleNameMode,
-  BattleOtherClass,
-  BattleSides,
-  BattleTrigger,
-} from '@shared/contracts/widget-settings';
 import { useUnitsStore } from '@entities/app-settings/units-context';
-import {
-  NAME_COLUMN_MAX_PX,
-  NAME_COLUMN_MIN_PX,
-  toDisplayDistance,
-  toMeters,
-} from './close-battle-utils';
+import { toDisplayDistance, toMeters } from './close-battle-utils';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { SettingRow } from '@features/widget-settings/SettingRow';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
+import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
 import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
-
-const ROW_COUNTS = [1, 2, 3];
-
-/** What the picker shows for a settings file written before the color existed. */
-const PLAYER_LINE_FALLBACK_COLOR = '#ffffff';
-
-/**
- * Meters — the number is always stored metric, whatever the user reads. The
- * lower bound is the radar's: below 5 m you are already touching.
- */
-const MIN_DISTANCE_THRESHOLD = 5;
-const MAX_DISTANCE_THRESHOLD = 200;
+  CLOSE_BATTLE_SETTINGS,
+  type CloseBattleWidgetSettings,
+} from './settings-schema';
 
 /** Feet round to fives, so the field steps by five of whatever it shows. */
 const DISTANCE_STEP = 5;
 
-const NAME_COLUMN_STEP_PX = 5;
 const NAME_COLUMN_SLIDER_WIDTH_PX = 160;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['close-battle'];
 
-const { SwitchRow, ColorRow } = panelRows<CloseBattleWidgetSettings>();
+const { Row } = schemaRows(CLOSE_BATTLE_SETTINGS);
+const {
+  gapThreshold,
+  distanceThreshold,
+  maxRows,
+  nameColumnWidth,
+  plateOpacity,
+} = CLOSE_BATTLE_SETTINGS.shape;
+
+const ROW_COUNTS = Array.from(
+  { length: maxRows.max - maxRows.min + 1 },
+  (_unused, offset) => maxRows.min + offset
+);
 
 // Labels hang off the ticks, which hang off the axis; one level of nesting, so
 // the labels row names both.
@@ -82,30 +70,15 @@ export const CloseBattleSettingsPanel = observer(() => {
     <>
       <Card title={t('settingsPanels.closeBattle.appearsWhen')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.closeBattle.trigger')}
-            desc={t('settingsPanels.closeBattle.triggerDesc')}
-          >
-            <Segmented<BattleTrigger>
-              value={settings.trigger}
-              onChange={(value) => update({ trigger: value })}
-              options={[
-                { label: t('settingsPanels.closeBattle.gap'), value: 'gap' },
-                {
-                  label: t('settingsPanels.closeBattle.distance'),
-                  value: 'distance',
-                },
-              ]}
-            />
-          </SettingRow>
+          <Row setting="trigger" />
         </div>
 
         <div className={styles.fieldGroup}>
           <SettingRow
             title={
               isGapTrigger
-                ? t('settingsPanels.closeBattle.thresholdSeconds')
-                : t('settingsPanels.closeBattle.thresholdDistance', {
+                ? t('settingsPanels.closeBattle.gapThreshold')
+                : t('settingsPanels.closeBattle.distanceThreshold', {
                     unit: isMetric ? 'm' : 'ft',
                   })
             }
@@ -117,9 +90,9 @@ export const CloseBattleSettingsPanel = observer(() => {
             {isGapTrigger ? (
               <InputNumber
                 value={settings.gapThreshold}
-                min={0.5}
-                max={5}
-                step={0.5}
+                min={gapThreshold.min}
+                max={gapThreshold.max}
+                step={gapThreshold.step}
                 onChange={(value) => {
                   if (value !== null) {
                     update({ gapThreshold: value });
@@ -129,8 +102,8 @@ export const CloseBattleSettingsPanel = observer(() => {
             ) : (
               <InputNumber
                 value={asDisplay(settings.distanceThreshold)}
-                min={asDisplay(MIN_DISTANCE_THRESHOLD)}
-                max={asDisplay(MAX_DISTANCE_THRESHOLD)}
+                min={asDisplay(distanceThreshold.min)}
+                max={asDisplay(distanceThreshold.max)}
                 step={DISTANCE_STEP}
                 onChange={(value) => {
                   if (value !== null) {
@@ -143,42 +116,11 @@ export const CloseBattleSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.closeBattle.hideDelay')}
-            desc={t('settingsPanels.closeBattle.hideDelayDesc')}
-          >
-            <InputNumber
-              value={settings.hideDelay}
-              min={0}
-              max={15}
-              step={0.5}
-              onChange={(value) => {
-                if (value !== null) {
-                  update({ hideDelay: value });
-                }
-              }}
-            />
-          </SettingRow>
+          <Row setting="hideDelay" input />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.closeBattle.sides')}>
-            <Segmented<BattleSides>
-              value={settings.sides}
-              onChange={(value) => update({ sides: value })}
-              options={[
-                { label: t('settingsPanels.closeBattle.both'), value: 'both' },
-                {
-                  label: t('settingsPanels.closeBattle.ahead'),
-                  value: 'ahead',
-                },
-                {
-                  label: t('settingsPanels.closeBattle.behind'),
-                  value: 'behind',
-                },
-              ]}
-            />
-          </SettingRow>
+          <Row setting="sides" />
         </div>
 
         <div className={styles.fieldGroup}>
@@ -195,179 +137,67 @@ export const CloseBattleSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.closeBattle.otherClass')}
-            desc={t('settingsPanels.closeBattle.otherClassDesc')}
-          >
-            <Segmented<BattleOtherClass>
-              value={settings.otherClass}
-              onChange={(value) => update({ otherClass: value })}
-              options={[
-                { label: t('settingsPanels.closeBattle.show'), value: 'show' },
-                { label: t('settingsPanels.closeBattle.dim'), value: 'dim' },
-                { label: t('settingsPanels.closeBattle.hide'), value: 'hide' },
-              ]}
-            />
-          </SettingRow>
+          <Row setting="otherClass" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="hideInPits"
-            title={t('settingsPanels.closeBattle.hideInPits')}
-            desc={t('settingsPanels.closeBattle.hideInPitsDesc')}
-          />
+          <Row setting="hideInPits" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="raceOnly"
-            title={t('settingsPanels.closeBattle.raceOnly')}
-          />
+          <Row setting="raceOnly" />
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.radar.qualifying')}>
+      <Card title={t('settingsPanels.common.qualifying')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.radar.showInQualifying')}
-            desc={t('settingsPanels.radar.autoDesc')}
-          >
-            <Segmented<RadarQualifyingVisibility>
-              value={settings.qualifyingVisibility}
-              onChange={(value) => update({ qualifyingVisibility: value })}
-              options={[
-                { label: t('settingsPanels.radar.always'), value: 'always' },
-                { label: t('settingsPanels.radar.auto'), value: 'auto' },
-                { label: t('settingsPanels.radar.never'), value: 'never' },
-              ]}
-            />
-          </SettingRow>
+          <Row setting="qualifyingVisibility" />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.closeBattle.axis')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.closeBattle.glowRange')}
-            desc={t('settingsPanels.closeBattle.glowRangeDesc')}
-          >
-            <InputNumber
-              value={settings.glowRange}
-              min={0}
-              max={100}
-              step={5}
-              onChange={(value) => {
-                if (value !== null) {
-                  update({ glowRange: value });
-                }
-              }}
-            />
-          </SettingRow>
+          <Row setting="glowRange" input />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showAxis"
-            title={t('settingsPanels.closeBattle.showAxis')}
-            desc={t('settingsPanels.closeBattle.showAxisDesc')}
-            fallback
-          />
+          <Row setting="showAxis" />
         </div>
 
-        <SwitchRow
-          settingKey="showTicks"
-          dependsOn="showAxis"
-          title={t('settingsPanels.closeBattle.showTicks')}
-        />
+        <Row setting="showTicks" dependsOn="showAxis" />
 
-        <SwitchRow
-          settingKey="showTickLabels"
-          dependsOn={areTicksShown}
-          title={t('settingsPanels.closeBattle.showTickLabels')}
-        />
+        <Row setting="showTickLabels" dependsOn={areTicksShown} />
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showPlayerLine"
-            title={t('settingsPanels.closeBattle.showPlayerLine')}
-            desc={t('settingsPanels.closeBattle.showPlayerLineDesc')}
-            fallback
-          />
+          <Row setting="showPlayerLine" />
         </div>
 
-        <ColorRow
-          settingKey="playerLineColor"
-          dependsOn="showPlayerLine"
-          title={t('settingsPanels.closeBattle.playerLineColor')}
-          fallback={PLAYER_LINE_FALLBACK_COLOR}
-          hex
-        />
+        <Row setting="playerLineColor" dependsOn="showPlayerLine" />
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="compactMode"
-            title={t('settingsPanels.closeBattle.compactMode')}
-            desc={t('settingsPanels.closeBattle.compactModeDesc')}
-          />
+          <Row setting="compactMode" />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.closeBattle.plates')}>
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showDistance"
-            title={t('settingsPanels.closeBattle.showDistance')}
-          />
+          <Row setting="showDistance" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showLapGap"
-            title={t('settingsPanels.closeBattle.showLapGap')}
-            desc={t('settingsPanels.closeBattle.showLapGapDesc')}
-          />
+          <Row setting="showLapGap" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showBrand"
-            title={t('settingsPanels.closeBattle.showBrand')}
-            desc={t('settingsPanels.closeBattle.showBrandDesc')}
-          />
+          <Row setting="showBrand" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showClassBadge"
-            title={t('settingsPanels.closeBattle.showClassBadge')}
-          />
+          <Row setting="showClassBadge" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.closeBattle.nameMode')}
-            desc={t('settingsPanels.closeBattle.nameModeDesc')}
-          >
-            <Segmented<BattleNameMode>
-              value={settings.nameMode}
-              onChange={(value) => update({ nameMode: value })}
-              options={[
-                {
-                  label: t('settingsPanels.closeBattle.nameSurname'),
-                  value: 'surname',
-                },
-                {
-                  label: t('settingsPanels.closeBattle.nameInitial'),
-                  value: 'initial',
-                },
-                {
-                  label: t('settingsPanels.closeBattle.nameFull'),
-                  value: 'full',
-                },
-              ]}
-            />
-          </SettingRow>
+          <Row setting="nameMode" />
         </div>
 
         <div className={styles.fieldGroup}>
@@ -377,9 +207,9 @@ export const CloseBattleSettingsPanel = observer(() => {
           >
             <Slider
               style={{ width: NAME_COLUMN_SLIDER_WIDTH_PX }}
-              min={NAME_COLUMN_MIN_PX}
-              max={NAME_COLUMN_MAX_PX}
-              step={NAME_COLUMN_STEP_PX}
+              min={nameColumnWidth.min}
+              max={nameColumnWidth.max}
+              step={nameColumnWidth.step}
               value={settings.nameColumnWidth}
               tooltip={{ formatter: (value) => `${value ?? 0} px` }}
               onChange={(value) => update({ nameColumnWidth: value })}
@@ -393,10 +223,10 @@ export const CloseBattleSettingsPanel = observer(() => {
             desc={t('settingsPanels.closeBattle.plateOpacityDesc')}
           >
             <Slider
-              style={{ width: 160 }}
-              min={0.3}
-              max={1}
-              step={0.05}
+              style={{ width: NAME_COLUMN_SLIDER_WIDTH_PX }}
+              min={plateOpacity.min}
+              max={plateOpacity.max}
+              step={plateOpacity.step}
               value={settings.plateOpacity}
               tooltip={{
                 formatter: (value) => `${Math.round((value ?? 1) * 100)}%`,
@@ -407,39 +237,19 @@ export const CloseBattleSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="mergeOverlapping"
-            title={t('settingsPanels.closeBattle.mergeOverlapping')}
-            desc={t('settingsPanels.closeBattle.mergeOverlappingDesc')}
+          <Row setting="mergeOverlapping" />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <Row
+            setting="mergeDistance"
+            input
+            disabled={!settings.mergeOverlapping}
           />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.closeBattle.mergeDistance')}
-            desc={t('settingsPanels.closeBattle.mergeDistanceDesc')}
-          >
-            <InputNumber
-              value={settings.mergeDistance}
-              min={0.5}
-              max={10}
-              step={0.5}
-              disabled={!settings.mergeOverlapping}
-              onChange={(value) => {
-                if (value !== null) {
-                  update({ mergeDistance: value });
-                }
-              }}
-            />
-          </SettingRow>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="scaleByDistance"
-            title={t('settingsPanels.closeBattle.scaleByDistance')}
-            desc={t('settingsPanels.closeBattle.scaleByDistanceDesc')}
-          />
+          <Row setting="scaleByDistance" />
         </div>
       </Card>
     </>

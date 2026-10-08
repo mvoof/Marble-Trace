@@ -4,10 +4,10 @@ import { observer } from 'mobx-react-lite';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { getDeltaToPreviousBest } from '@shared/lib/delta-utils';
-import type { DeltaWidgetSettings } from '@shared/contracts/widget-settings';
 import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';
 import styles from './DeltaWidget.module.scss';
+import type { DeltaWidgetSettings } from './settings-schema';
 
 export const DeltaWidget = observer(() => {
   const lapStore = useBackendComputedStore();

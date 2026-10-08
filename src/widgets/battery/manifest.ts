@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { BATTERY_SETTINGS } from './settings-schema';
 
 export const BATTERY_MANIFEST: WidgetManifest = {
   id: 'battery',
@@ -29,10 +30,7 @@ export const BATTERY_MANIFEST: WidgetManifest = {
     currentHeight: 92,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    showDeployMode: true,
-    showPower: true,
-    // Off by default: it is a debrief number, not something read at the apex.
-    showLapDeploy: false,
-    compactMode: false,
+    ...BATTERY_SETTINGS.defaults,
   },
+  settingsSchema: BATTERY_SETTINGS,
 };

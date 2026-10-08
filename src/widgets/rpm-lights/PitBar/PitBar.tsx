@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { RpmLightsWidgetSettings } from '@shared/contracts/widget-settings';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePitState, type PitState } from '@features/pit-service/usePitState';
@@ -13,6 +12,7 @@ import {
   ledShapeStyle,
 } from '../led-shape';
 import styles from '../RpmLightsWidget.module.scss';
+import type { RpmLightsWidgetSettings } from '../settings-schema';
 
 const PIT_YELLOW = '#eab308';
 const PIT_GREEN = '#16a34a';

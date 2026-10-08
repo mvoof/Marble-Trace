@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import type { EnginePanelWidgetSettings } from '@shared/contracts/widget-settings';
 import { ENGINE_PANEL_MANIFEST } from './manifest';
 import {
   CELL_SLOTS,
@@ -15,6 +14,7 @@ import {
   type CellSlot,
   type PlannedGroup,
 } from './engine-panel-utils';
+import type { EnginePanelWidgetSettings } from './settings-schema';
 
 const slotsOf = (group: CellSlot['group']) =>
   CELL_SLOTS.filter((slot) => slot.group === group);

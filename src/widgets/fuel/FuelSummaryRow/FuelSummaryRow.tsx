@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 import { formatFuel } from '@shared/lib/telemetry-format';
 import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
-import type { FuelWidgetSettings } from '@shared/contracts/widget-settings';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
@@ -17,6 +16,7 @@ import {
   resolveLapsStatus,
 } from '../fuel-utils';
 import styles from './FuelSummaryRow.module.scss';
+import type { FuelWidgetSettings } from '../settings-schema';
 
 const LAPS_STATUS_CLASSES: Record<FuelLapsStatus, string> = {
   safe: styles.valueSafe,

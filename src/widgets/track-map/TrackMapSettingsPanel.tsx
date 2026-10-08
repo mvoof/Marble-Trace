@@ -1,12 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { InputNumber, Row, Col, Segmented, Slider } from 'antd';
-import {
-  FlagZoneStyle,
-  RadarQualifyingVisibility,
-  TrackMapLeaderLabelMode,
-  TrackMapWidgetSettings,
-} from '@shared/contracts/widget-settings';
+import { InputNumber, Row as GridRow, Col, Slider } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
@@ -14,36 +8,74 @@ import {
   panelRows,
   usePanelWidgetId,
 } from '@features/widget-settings/setting-rows';
-
-const MIN_ZOOM_LEVEL = 1.5;
-const MAX_ZOOM_LEVEL = 10;
-const ZOOM_STEP = 0.5;
-const DEFAULT_ZOOM_LEVEL = 3;
-const MIN_CIRCLE_OPACITY = 0.1;
-const MAX_CIRCLE_OPACITY = 1;
-const CIRCLE_OPACITY_STEP = 0.05;
-const DEFAULT_CIRCLE_OPACITY = 0.85;
+import { schemaRows } from '@features/widget-settings/schema-rows';
+import {
+  TRACK_MAP_SETTINGS,
+  type TrackMapWidgetSettings,
+} from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['track-map'];
 
-const { ColorRow, DependentBlock, SwitchRow } =
-  panelRows<TrackMapWidgetSettings>();
+const { DependentBlock } = panelRows<TrackMapWidgetSettings>();
+const { Row, useLabels } = schemaRows(TRACK_MAP_SETTINGS);
+const { zoomLevel, zoomCircleOpacity } = TRACK_MAP_SETTINGS.shape;
+
+// The four stroke sizes, laid out two by two.
+const STYLING_KEYS = [
+  'trackStrokePx',
+  'trackBorderPx',
+  'sectorStrokePx',
+  'targetDotRadiusPx',
+] as const;
+
+const PERCENT = 100;
 
 // The ground's colour and opacity qualify the ground, which only exists in the
 // follow view — one level of nesting, so both conditions are spelled out here.
 const isCircleGroundShown = (settings: TrackMapWidgetSettings): boolean =>
-  settings.zoomEnabled === true && settings.zoomCircleBackground === true;
+  settings.zoomEnabled && settings.zoomCircleBackground;
 
 // The marker is always drawn — there is no switch for it — so its size and the
 // pit option stand on their own; only the colour gives way to the class colour.
 const isOwnPaceCarColor = (settings: TrackMapWidgetSettings): boolean =>
-  settings.paceCarUseClassColor !== true;
+  !settings.paceCarUseClassColor;
+
+interface StylingCellProps {
+  setting: (typeof STYLING_KEYS)[number];
+}
+
+const StylingCell = observer(({ setting }: StylingCellProps) => {
+  const liveWidgets = useWidgetEditor();
+  const panelWidgetId = usePanelWidgetId('track-map');
+  const { title } = useLabels(setting);
+  const field = TRACK_MAP_SETTINGS.shape[setting];
+  const settings =
+    liveWidgets.getSettings<TrackMapWidgetSettings>(panelWidgetId);
+
+  return (
+    <Col span={12}>
+      <span className={styles.fieldLabel}>{title}</span>
+      <InputNumber
+        style={{ width: '100%' }}
+        value={settings[setting]}
+        min={field.min}
+        max={field.max}
+        onChange={(value) =>
+          value !== null &&
+          liveWidgets.updateUserSettings(panelWidgetId, { [setting]: value })
+        }
+      />
+    </Col>
+  );
+});
 
 export const TrackMapSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('track-map');
   const { t } = useTranslation('widgets');
+  const zoomLevelLabels = useLabels('zoomLevel');
+  const opacityLabels = useLabels('zoomCircleOpacity');
 
   const settings =
     liveWidgets.getSettings<TrackMapWidgetSettings>(panelWidgetId);
@@ -59,305 +91,111 @@ export const TrackMapSettingsPanel = observer(() => {
     <>
       <Card title={t('settingsPanels.trackMap.visualElements')}>
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showSectorsOnMap"
-            title={t('settingsPanels.trackMap.sectorsOnMap')}
-          />
+          <Row setting="showSectorsOnMap" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showStartFinish"
-            title={t('settingsPanels.trackMap.startFinishLine')}
-            fallback
-          />
+          <Row setting="showStartFinish" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="classShapes"
-            title={t('settingsPanels.trackMap.classShapes')}
-            desc={t('settingsPanels.trackMap.classShapesDesc')}
-            fallback={false}
-          />
+          <Row setting="classShapes" />
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.radar.qualifying')}>
+      <Card title={t('settingsPanels.common.qualifying')}>
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.trackMap.showDriversInQualifying')}
-          </span>
-          <Segmented
-            block
-            value={settings.qualifyingVisibility ?? 'always'}
-            options={[
-              { label: t('settingsPanels.radar.always'), value: 'always' },
-              { label: t('settingsPanels.radar.auto'), value: 'auto' },
-              { label: t('settingsPanels.radar.never'), value: 'never' },
-            ]}
-            onChange={(v) =>
-              update({ qualifyingVisibility: v as RadarQualifyingVisibility })
-            }
-          />
-          <div className={styles.fieldDesc}>
-            {t('settingsPanels.trackMap.showDriversInQualifyingDesc')}
-          </div>
+          <Row setting="qualifyingVisibility" stacked />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.trackMap.zoomView')}>
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="zoomEnabled"
-            title={t('settingsPanels.trackMap.zoomEnabled')}
-            desc={t('settingsPanels.trackMap.zoomEnabledDesc')}
-            fallback={false}
-          />
+          <Row setting="zoomEnabled" />
         </div>
 
         <DependentBlock dependsOn="zoomEnabled">
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.trackMap.zoomLevel')}
-          </span>
+          <span className={styles.fieldLabel}>{zoomLevelLabels.title}</span>
           <Slider
-            min={MIN_ZOOM_LEVEL}
-            max={MAX_ZOOM_LEVEL}
-            step={ZOOM_STEP}
-            value={settings.zoomLevel ?? DEFAULT_ZOOM_LEVEL}
-            tooltip={{ formatter: (v) => `${v}x` }}
-            onChange={(v) => update({ zoomLevel: v })}
+            min={zoomLevel.min}
+            max={zoomLevel.max}
+            step={zoomLevel.step}
+            value={settings.zoomLevel}
+            tooltip={{ formatter: (value) => `${value}x` }}
+            onChange={(value) => update({ zoomLevel: value })}
           />
         </DependentBlock>
 
-        <SwitchRow
-          settingKey="zoomRotate"
-          dependsOn="zoomEnabled"
-          title={t('settingsPanels.trackMap.zoomRotate')}
-          desc={t('settingsPanels.trackMap.zoomRotateDesc')}
-          fallback={false}
-        />
-
-        <SwitchRow
-          settingKey="zoomCircleBackground"
-          dependsOn="zoomEnabled"
-          title={t('settingsPanels.trackMap.zoomCircleBackground')}
-          desc={t('settingsPanels.trackMap.zoomCircleBackgroundDesc')}
-          fallback={false}
-        />
-
-        <ColorRow
-          settingKey="zoomCircleColor"
-          dependsOn={isCircleGroundShown}
-          title={t('settingsPanels.trackMap.zoomCircleColor')}
-          hex
-        />
+        <Row setting="zoomRotate" dependsOn="zoomEnabled" />
+        <Row setting="zoomCircleBackground" dependsOn="zoomEnabled" />
+        <Row setting="zoomCircleColor" dependsOn={isCircleGroundShown} />
 
         <DependentBlock dependsOn={isCircleGroundShown}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.trackMap.zoomCircleOpacity')}
-          </span>
+          <span className={styles.fieldLabel}>{opacityLabels.title}</span>
           <Slider
-            min={MIN_CIRCLE_OPACITY}
-            max={MAX_CIRCLE_OPACITY}
-            step={CIRCLE_OPACITY_STEP}
-            value={settings.zoomCircleOpacity ?? DEFAULT_CIRCLE_OPACITY}
-            tooltip={{ formatter: (v) => `${Math.round((v ?? 0) * 100)}%` }}
-            onChange={(v) => update({ zoomCircleOpacity: v })}
+            min={zoomCircleOpacity.min}
+            max={zoomCircleOpacity.max}
+            step={zoomCircleOpacity.step}
+            value={settings.zoomCircleOpacity}
+            tooltip={{
+              formatter: (value) => `${Math.round((value ?? 0) * PERCENT)}%`,
+            }}
+            onChange={(value) => update({ zoomCircleOpacity: value })}
           />
         </DependentBlock>
       </Card>
 
-      <Card title={t('settingsPanels.linearMap.playerMarker')}>
+      <Card title={t('settingsPanels.common.playerMarker')}>
         <div className={styles.fieldGroup}>
-          <ColorRow
-            settingKey="playerDotColor"
-            title={t('settingsPanels.trackMap.playerDotColor')}
-            desc={t('settingsPanels.trackMap.playerDotColorDesc')}
-            hex
-          />
+          <Row setting="playerDotColor" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showPlayerLabel"
-            title={t('settingsPanels.trackMap.showYouLabel')}
-            desc={t('settingsPanels.trackMap.showYouLabelDesc')}
-          />
+          <Row setting="showPlayerLabel" />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.trackMap.leaderLabels')}>
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.trackMap.showP1Label')}
-          </span>
-          <Segmented
-            block
-            value={settings.leaderLabelMode}
-            options={[
-              {
-                label: t('settingsPanels.trackMap.allClasses'),
-                value: 'all',
-              },
-              {
-                label: t('settingsPanels.trackMap.ownClass'),
-                value: 'own-class',
-              },
-              { label: t('settingsPanels.trackMap.hidden'), value: 'none' },
-            ]}
-            onChange={(v) =>
-              update({ leaderLabelMode: v as TrackMapLeaderLabelMode })
-            }
-          />
-
-          <SwitchRow
-            settingKey="useLivePositions"
-            title={t('settingsPanels.common.useLivePositions')}
-            desc={t('settingsPanels.common.useLivePositionsTrackMapDesc')}
-          />
+          <Row setting="leaderLabelMode" stacked />
+          <Row setting="useLivePositions" />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.trackMap.incidentZones')}>
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.trackMap.flagZoneStyle')}
-          </span>
-          <Segmented
-            block
-            value={settings.flagZoneStyle ?? 'filled'}
-            options={[
-              {
-                label: t('settingsPanels.trackMap.flagZoneStyleFilled'),
-                value: 'filled',
-              },
-              {
-                label: t('settingsPanels.trackMap.flagZoneStyleOutline'),
-                value: 'outline',
-              },
-            ]}
-            onChange={(value) =>
-              update({ flagZoneStyle: value as FlagZoneStyle })
-            }
-          />
-          <span className={styles.fieldDesc}>
-            {t('settingsPanels.trackMap.flagZoneStyleDesc')}
-          </span>
+          <Row setting="flagZoneStyle" stacked />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showIncidentZones"
-            title={t('settingsPanels.trackMap.showIncidentZones')}
-            desc={t('settingsPanels.trackMap.showIncidentZonesDesc')}
-            fallback
-          />
+          <Row setting="showIncidentZones" />
         </div>
 
-        <SwitchRow
-          settingKey="blinkIncidentZones"
-          dependsOn="showIncidentZones"
-          title={t('settingsPanels.trackMap.blinkIncidentZones')}
-          fallback
-        />
+        <Row setting="blinkIncidentZones" dependsOn="showIncidentZones" />
       </Card>
 
-      <Card title={t('settingsPanels.trackMap.safetyCar')}>
+      <Card title={t('settingsPanels.common.safetyCar')}>
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="paceCarUseClassColor"
-            title={t('settingsPanels.trackMap.paceCarUseClassColor')}
-            desc={t('settingsPanels.trackMap.paceCarUseClassColorDesc')}
-            fallback={false}
-          />
+          <Row setting="paceCarUseClassColor" />
         </div>
 
-        <ColorRow
-          settingKey="paceCarColor"
-          dependsOn={isOwnPaceCarColor}
-          title={t('settingsPanels.trackMap.paceCarColor')}
-          fallback={'#facc15'}
-          hex
-        />
+        <Row setting="paceCarColor" dependsOn={isOwnPaceCarColor} />
 
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.trackMap.paceCarRadius')}
-          </span>
-          <InputNumber
-            style={{ width: '100%' }}
-            value={settings.paceCarRadiusPx ?? settings.targetDotRadiusPx}
-            min={1}
-            max={30}
-            onChange={(v) => v !== null && update({ paceCarRadiusPx: v })}
-          />
+          <Row setting="paceCarRadiusPx" stacked input />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="paceCarShowInPits"
-            title={t('settingsPanels.trackMap.paceCarShowInPits')}
-            desc={t('settingsPanels.trackMap.paceCarShowInPitsDesc')}
-            fallback={false}
-          />
+          <Row setting="paceCarShowInPits" />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.trackMap.trackStyling')}>
-        <Row gutter={[24, 24]}>
-          <Col span={12}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.trackMap.trackStroke')}
-            </span>
-            <InputNumber
-              style={{ width: '100%' }}
-              value={settings.trackStrokePx}
-              min={1}
-              max={30}
-              onChange={(v) => v !== null && update({ trackStrokePx: v })}
-            />
-          </Col>
-
-          <Col span={12}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.trackMap.trackBorder')}
-            </span>
-            <InputNumber
-              style={{ width: '100%' }}
-              value={settings.trackBorderPx}
-              min={0}
-              max={20}
-              onChange={(v) => v !== null && update({ trackBorderPx: v })}
-            />
-          </Col>
-
-          <Col span={12}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.trackMap.sectorStroke')}
-            </span>
-            <InputNumber
-              style={{ width: '100%' }}
-              value={settings.sectorStrokePx}
-              min={1}
-              max={20}
-              onChange={(v) => v !== null && update({ sectorStrokePx: v })}
-            />
-          </Col>
-
-          <Col span={12}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.trackMap.targetDotRadius')}
-            </span>
-            <InputNumber
-              style={{ width: '100%' }}
-              value={settings.targetDotRadiusPx}
-              min={1}
-              max={30}
-              onChange={(v) => v !== null && update({ targetDotRadiusPx: v })}
-            />
-          </Col>
-        </Row>
+        <GridRow gutter={[24, 24]}>
+          {STYLING_KEYS.map((setting) => (
+            <StylingCell key={setting} setting={setting} />
+          ))}
+        </GridRow>
       </Card>
     </>
   );

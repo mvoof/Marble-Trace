@@ -1,5 +1,6 @@
 import { isPlainObject, mergeWithDefaults } from '@shared/lib/deep-merge';
 import {
+  checkedSettings,
   DEFAULT_WIDGET_BY_ID,
   WIDGET_BY_ID,
 } from '@entities/widget/widget-catalog';
@@ -200,7 +201,7 @@ interface DecodedShape {
 
 /**
  * Settings and design size as the widget is drawn, from what the file holds:
- * the overrides merged over the manifest, the geometry laid on top, and the
+ * the overrides checked and merged over the manifest, the geometry laid on top, and the
  * design size repaired the way the widget's shape demands.
  *
  * A locked ratio is part of the widget's shape, not a resize preference: a
@@ -219,7 +220,7 @@ const decodeShape = (
   const userSettings = {
     ...mergeWithDefaults(
       shipped.userSettings,
-      isPlainObject(settings) ? settings : {}
+      isPlainObject(settings) ? checkedSettings(shipped.id, settings) : {}
     ),
     ...geometry,
   } as WidgetUserSettings;

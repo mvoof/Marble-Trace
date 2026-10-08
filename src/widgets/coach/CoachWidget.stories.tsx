@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import type { DrivingAdvisory } from '@shared/contracts/bindings';
 import { mockLapTiming } from '@features/preview/mocks/delta';
 import { seedCoachAdvisory } from '@features/preview/coach-advisory-seed';
@@ -16,6 +15,7 @@ import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
+import type { CoachWidgetSettings } from './settings-schema';
 
 const BUCKET_COUNT = 1000;
 const KMH_PER_MPS = 3.6;

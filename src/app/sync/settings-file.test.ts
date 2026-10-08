@@ -148,6 +148,24 @@ describe('a widget read back', () => {
     expect(settingsBag(widget)[FLAG]).toBe(chosen);
   });
 
+  it('falls back to the shipped value for a setting of the wrong type', () => {
+    const widget = decodeWidget(storedChat({ [FLAG]: 'yes' }), LEFT)!;
+
+    expect(settingsBag(widget)[FLAG]).toBe(settingsBag(shipped(CHAT))[FLAG]);
+  });
+
+  it('clamps a number into the bounds its schema gives', () => {
+    const widget = decodeWidget(storedChat({ maxMessages: 5000 }), LEFT)!;
+
+    expect(settingsBag(widget).maxMessages).toBe(200);
+  });
+
+  it('keeps a setting every widget has without checking it', () => {
+    const widget = decodeWidget(storedChat({ opacity: 0.5 }), LEFT)!;
+
+    expect(widget.userSettings.opacity).toBe(0.5);
+  });
+
   it('takes its label and flags from the manifest', () => {
     const widget = decodeWidget(storedChat(), LEFT)!;
 

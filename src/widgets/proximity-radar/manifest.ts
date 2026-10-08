@@ -1,5 +1,6 @@
 import type { WidgetManifest } from '@shared/contracts/widget-settings';
 import { COMMON_WIDGET_DEFAULTS } from '@widgets/widget-manifest';
+import { PROXIMITY_RADAR_SETTINGS } from '@entities/radar/radar.settings-schema';
 
 /**
  * The scope is a disc, so its plate is the circle itself — `widgetFrameStyle`
@@ -41,21 +42,7 @@ export const PROXIMITY_RADAR_MANIFEST: WidgetManifest = {
     currentHeight: SCOPE_DESIGN_SIZE_PX,
     ...COMMON_WIDGET_DEFAULTS,
     ...SCOPE_APPEARANCE_DEFAULTS,
-    hideDelay: 2,
-    qualifyingVisibility: 'auto',
-    showDistance: true,
-    scaleMode: 'fixed-scope',
-    scopeRange: 10,
-    backgroundTexture: 'polar-dots',
-    showAxes: true,
-    showAxisTicks: true,
-    showRangeRings: true,
-    showBeam: true,
-    monochromeCars: true,
-    carOpacity: 1,
-    // The setting is the beam's alpha outright, and a solid sector would bury
-    // the scope behind it — the shipped beam is a wash, not a fill.
-    beamOpacity: 0.35,
-    showEdgeMarkers: true,
+    ...PROXIMITY_RADAR_SETTINGS.defaults,
   },
+  settingsSchema: PROXIMITY_RADAR_SETTINGS,
 };

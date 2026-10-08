@@ -3,6 +3,7 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
+import { DRS_SETTINGS } from './settings-schema';
 
 export const DRS_MANIFEST: WidgetManifest = {
   id: 'drs',
@@ -29,7 +30,7 @@ export const DRS_MANIFEST: WidgetManifest = {
     currentHeight: 56,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    hideWhenUnavailable: false,
-    hideWhenCarHasNoDrs: true,
+    ...DRS_SETTINGS.defaults,
   },
+  settingsSchema: DRS_SETTINGS,
 };

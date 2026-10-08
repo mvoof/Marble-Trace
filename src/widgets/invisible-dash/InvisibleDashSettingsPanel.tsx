@@ -1,33 +1,25 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, Segmented, Slider } from 'antd';
+import { ColorPicker, Slider } from 'antd';
 
-import type {
-  InvisibleDashBackdropScope,
-  InvisibleDashRenderMode,
-  InvisibleDashRpmFormat,
-  InvisibleDashWidgetSettings,
-} from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 
 import { Card } from '@features/widget-settings/Card';
-import { SettingRow } from '@features/widget-settings/SettingRow';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
+import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { schemaRows } from '@features/widget-settings/schema-rows';
 import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
+  INVISIBLE_DASH_SETTINGS,
+  type InvisibleDashWidgetSettings,
+} from './settings-schema';
 
 const WIDGET_ID = 'invisible-dash';
-
-const PERCENT_MIN = 0;
-const PERCENT_MAX = 100;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['invisible-dash'];
 
-const { ColorRow, DependentBlock, SwitchRow } =
-  panelRows<InvisibleDashWidgetSettings>();
+const { Row } = schemaRows(INVISIBLE_DASH_SETTINGS);
+const { bloomIntensity } = INVISIBLE_DASH_SETTINGS.shape;
 
 export const InvisibleDashSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -50,155 +42,66 @@ export const InvisibleDashSettingsPanel = observer(() => {
     <>
       <Card title={t('settingsPanels.invisibleDash.projection')}>
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.invisibleDash.render')}
-          </span>
-
-          <Segmented
-            block
-            value={settings.renderMode}
-            options={[
-              {
-                label: t('settingsPanels.invisibleDash.modeProjection'),
-                value: 'projection',
-              },
-              {
-                label: t('settingsPanels.invisibleDash.modeContour'),
-                value: 'contour',
-              },
-            ]}
-            onChange={(value) =>
-              update({ renderMode: value as InvisibleDashRenderMode })
-            }
-          />
-
-          <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-            {t('settingsPanels.invisibleDash.renderDesc')}
-          </div>
+          <Row setting="renderMode" stacked />
         </div>
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
-            {t('settingsPanels.invisibleDash.bloom')}
+            {t('settingsPanels.invisibleDash.bloomIntensity')}
           </span>
 
           <Slider
-            min={PERCENT_MIN}
-            max={PERCENT_MAX}
+            min={bloomIntensity.min}
+            max={bloomIntensity.max}
             value={settings.bloomIntensity}
             disabled={!isProjection}
             onChange={(value) => update({ bloomIntensity: value })}
           />
 
           <div className={styles.fieldDesc}>
-            {t('settingsPanels.invisibleDash.bloomDesc', {
+            {t('settingsPanels.invisibleDash.bloomIntensityDesc', {
               percent: settings.bloomIntensity,
             })}
           </div>
         </div>
 
         <div className={styles.fieldGroup}>
-          <ColorRow
-            settingKey="projectionTint"
-            title={t('settingsPanels.invisibleDash.tint')}
-            desc={t('settingsPanels.invisibleDash.tintDesc')}
-            hex
-            disabled={!isProjection}
-          />
+          <Row setting="projectionTint" disabled={!isProjection} />
         </div>
 
         <div className={styles.fieldGroup}>
-          <ColorRow
-            settingKey="textColor"
-            title={t('settingsPanels.invisibleDash.textColor')}
-            desc={t('settingsPanels.invisibleDash.textColorDesc')}
-            hex
-          />
+          <Row setting="textColor" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.invisibleDash.distance')}
-          </span>
-
-          <Slider
-            min={PERCENT_MIN}
-            max={PERCENT_MAX}
-            value={settings.depth}
-            onChange={(value) => update({ depth: value })}
-          />
-
-          <div className={styles.fieldDesc}>
-            {t('settingsPanels.invisibleDash.distanceDesc')}
-          </div>
+          <Row setting="depth" stacked />
         </div>
 
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.invisibleDash.curvature')}
-          </span>
-
-          <Slider
-            min={PERCENT_MIN}
-            max={PERCENT_MAX}
-            value={settings.curvature}
-            onChange={(value) => update({ curvature: value })}
-          />
-
-          <div className={styles.fieldDesc}>
-            {t('settingsPanels.invisibleDash.curvatureDesc')}
-          </div>
+          <Row setting="curvature" stacked />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.invisibleDash.backdrop')}>
         <div className={styles.fieldGroup}>
-          <ColorRow
-            settingKey="backdropColor"
-            title={t('settingsPanels.invisibleDash.backdropColor')}
-            desc={t('settingsPanels.invisibleDash.backdropColorDesc')}
-          />
+          <Row setting="backdropColor" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.invisibleDash.backdropScope')}
-          </span>
-
-          <Segmented
-            block
-            value={settings.backdropScope}
-            options={[
-              {
-                label: t('settingsPanels.invisibleDash.scopeClusters'),
-                value: 'clusters',
-              },
-              {
-                label: t('settingsPanels.invisibleDash.scopeFull'),
-                value: 'full',
-              },
-            ]}
-            onChange={(value) =>
-              update({ backdropScope: value as InvisibleDashBackdropScope })
-            }
-          />
-
-          <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-            {t('settingsPanels.invisibleDash.backdropScopeDesc')}
-          </div>
+          <Row setting="backdropScope" stacked />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.invisibleDash.zoneColorsCard')}>
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
-            {t('settingsPanels.raceDash.zoneColors')}
+            {t('settingsPanels.common.rpmZoneColors')}
           </span>
 
           <div className={styles.rpmColorGrid}>
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.low')}
+                {t('settingsPanels.common.rpmColorLow')}
               </span>
 
               <ColorPicker
@@ -213,7 +116,7 @@ export const InvisibleDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.mid')}
+                {t('settingsPanels.common.rpmColorMid')}
               </span>
 
               <ColorPicker
@@ -228,7 +131,7 @@ export const InvisibleDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.high')}
+                {t('settingsPanels.common.rpmColorHigh')}
               </span>
 
               <ColorPicker
@@ -243,7 +146,7 @@ export const InvisibleDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.shift')}
+                {t('settingsPanels.common.rpmColorShift')}
               </span>
 
               <ColorPicker
@@ -258,7 +161,7 @@ export const InvisibleDashSettingsPanel = observer(() => {
 
             <div className={styles.rpmColorItem}>
               <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.blink')}
+                {t('settingsPanels.common.rpmColorLimit')}
               </span>
 
               <ColorPicker
@@ -274,103 +177,37 @@ export const InvisibleDashSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.invisibleDash.blocks')}>
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showSpeed"
-            title={t('settingsPanels.invisibleDash.speed')}
-            desc={t('settingsPanels.invisibleDash.speedDesc')}
-          />
+          <Row setting="showSpeed" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showRpm"
-            title={t('settingsPanels.invisibleDash.rpm')}
-            desc={t('settingsPanels.invisibleDash.rpmDesc')}
-          />
+          <Row setting="showRpm" />
         </div>
 
-        <DependentBlock dependsOn="showRpm">
-          <SettingRow
-            title={t('settingsPanels.invisibleDash.rpmFormat')}
-            desc={t('settingsPanels.invisibleDash.rpmFormatDesc')}
-          >
-            <Segmented
-              value={settings.rpmFormat}
-              options={[
-                {
-                  label: t('settingsPanels.invisibleDash.formatAbsolute'),
-                  value: 'absolute',
-                },
-                {
-                  label: t('settingsPanels.invisibleDash.formatPercent'),
-                  value: 'percent',
-                },
-              ]}
-              onChange={(value) =>
-                update({ rpmFormat: value as InvisibleDashRpmFormat })
-              }
-            />
-          </SettingRow>
-        </DependentBlock>
+        <Row setting="rpmFormat" dependsOn="showRpm" />
 
-        <SwitchRow
-          settingKey="colorizeRpmByZone"
-          dependsOn="showRpm"
-          title={t('settingsPanels.invisibleDash.colorizeRpm')}
-          desc={t('settingsPanels.invisibleDash.colorizeRpmDesc')}
-        />
+        <Row setting="colorizeRpmByZone" dependsOn="showRpm" />
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showShiftBar"
-            title={t('settingsPanels.invisibleDash.shiftBar')}
-            desc={t('settingsPanels.invisibleDash.shiftBarDesc')}
-          />
+          <Row setting="showShiftBar" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showGear"
-            title={t('settingsPanels.invisibleDash.gear')}
-            desc={t('settingsPanels.invisibleDash.gearDesc')}
-          />
+          <Row setting="showGear" />
         </div>
 
-        <SwitchRow
-          settingKey="colorizeGearByZone"
-          dependsOn="showGear"
-          title={t('settingsPanels.invisibleDash.colorizeGear')}
-          desc={t('settingsPanels.invisibleDash.colorizeGearDesc')}
-        />
+        <Row setting="colorizeGearByZone" dependsOn="showGear" />
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showPosition"
-            title={t('settingsPanels.invisibleDash.position')}
-            desc={t('settingsPanels.invisibleDash.positionDesc')}
-          />
+          <Row setting="showPosition" />
         </div>
 
-        <SwitchRow
-          settingKey="useLivePositions"
-          dependsOn="showPosition"
-          title={t('settingsPanels.invisibleDash.livePositions')}
-          desc={t('settingsPanels.invisibleDash.livePositionsDesc')}
-        />
+        <Row setting="useLivePositions" dependsOn="showPosition" />
 
-        <SwitchRow
-          settingKey="classPositionInMulticlass"
-          dependsOn="showPosition"
-          title={t('settingsPanels.invisibleDash.classPosition')}
-          desc={t('settingsPanels.invisibleDash.classPositionDesc')}
-        />
+        <Row setting="classPositionInMulticlass" dependsOn="showPosition" />
 
         <div className={styles.fieldGroup}>
-          <SwitchRow
-            settingKey="showLap"
-            title={t('settingsPanels.invisibleDash.lap')}
-            desc={t('settingsPanels.invisibleDash.lapDesc')}
-          />
+          <Row setting="showLap" />
         </div>
       </Card>
     </>
