@@ -79,6 +79,9 @@ One row per measurement. Later tickets add rows here.
 | 2026-10-04 | same + ticket 07                                                      | widgets     | 770 / 775     | 1059          | 12.50 / 12.33 | 7572      | 0.9            | 1.0 / 0.9           | after 07; first paint 1664 / 1600 ms, heap 13.16 / 13.23 MiB       |
 | 2026-10-05 | `refactor/architecture-rework` @ deb97eee + ticket 11                 | widgets     | 570 / 575     | 761           | 9.42 / 9.41   | 7405      | 0.7            | 1.0 / 0.7           | static driver fields off `DriverEntry`; first paint 1616 / 1624 ms |
 | 2026-10-05 | `refactor/architecture-rework` @ 34693683 + ticket 26                 | widgets     | 536 / 542     | 761           | 5.08 / 5.09   | 1009      | 0.8            | 1.2 / 1.0           | identity/join caches, track-map dots via SVG DOM                   |
+| 2026-10-08 | `refactor/architecture-rework` @ 8b240da0 (ticket 26, re-measured)    | widgets     | 520           | 761           | 6.46          | 1481      | 1.1            | —                   | same code as the row above, one run; the environment moved         |
+| 2026-10-08 | `main` @ c459fa83                                                     | widgets     | 506 / 499     | 762           | 6.01 / 6.01   | 1479      | 1.0            | 1.0 / 1.0           | new reference; first paint 1552 / 1504 ms                          |
+| 2026-10-08 | `refactor/fsd-layout` @ ebfacdd8                                      | widgets     | 492 / 562     | 761           | 5.97 / 5.94   | 1481      | 0.9 / 1.0      | 0.9 / 1.1           | FSD layout (ADR-0008): no change; first paint 1764 / 1500 ms       |
 
 ## 2026-10-04 — baseline (ticket 01)
 
@@ -363,3 +366,34 @@ two runs plus a 30 s heap profile, so each change carries its own number:
   also why the overlay's DOM mutation records fell from 7400 to 1009 per
   second — the dots are still moved every frame (checked live).
 - Apply p99 0.7 → 0.8 ms is one 0.1 ms timer step; tick p99 unchanged.
+
+## 2026-10-08 — FSD layout (ADR-0008), and a moved reference
+
+Tape, offset, layout and command as before; each build a fresh `--build`, the
+three measured back to back on the same machine.
+
+| build                                   | alloc (MiB/s) | DOM mutations/s | tick p99 (µs) | apply p99 (ms) |
+| --------------------------------------- | ------------- | --------------- | ------------- | -------------- |
+| ticket 26 as recorded on 2026-10-05     | 5.08 / 5.09   | 1009            | 536 / 542     | 0.8            |
+| ticket 26 (8b240da0), re-measured today | 6.46          | 1481            | 520           | 1.1            |
+| `main` @ c459fa83                       | 6.01 / 6.01   | 1479            | 506 / 499     | 1.0            |
+| `refactor/fsd-layout` @ ebfacdd8        | 5.97 / 5.94   | 1481            | 492 / 562     | 0.9 / 1.0      |
+
+- **The FSD layout costs nothing.** Against `main` every row is within its
+  spread; the overlay is sent the same 761 KiB/s and mutates the DOM the same
+  1480 times a second.
+- **The 2026-10-05 numbers no longer reproduce, on the code that produced
+  them.** Ticket 26's own commit gives 1481 mutations/s and 6.5 MiB/s today, so
+  the step from 1009 is not in any commit — the bisect over the 19 commits of
+  `refactor/architecture-rework` after it found every one at ~1480. What moved
+  is the environment: WebView2 was updated on 2026-10-07 (154.0.4258.53 →
+  .62), and the run reads the app's own data folder — the layout, its widget
+  settings and the recorded track 244 the tape drives on — which everyday use
+  of the app rewrites. Which of the two it was is not established.
+- From here on, **compare against this section, not against the rows above
+  it**, and compare A/B on one machine: an absolute number from another day
+  is only as good as the environment it was taken in.
+- The `heap` profile of `refactor/fsd-layout` (30 s) charges the same sources
+  ticket 26 reduced at the same rates — `driver-entry-join` 0.56,
+  `TrackMapSvg` 0.55, `car-identity` 0.35 MiB/s; the extra allocation is in
+  React render and commit.
