@@ -67,7 +67,6 @@ describe('RadarWidgetStore activation', () => {
 
       rootStore.liveWidgets.updateUserSettings('proximity-radar', {
         ...settings,
-        scaleMode: 'manual',
         scopeRange,
       });
     });

@@ -2,62 +2,28 @@ import { describe, expect, it } from 'vitest';
 
 import {
   DESIGN_SCOPE_RANGE_M,
-  DESIGN_SIZE_PX,
   SIDE_LATERAL_OFFSET_M,
   resolveScopeScale,
   scopeDistanceOf,
 } from './radar-constants';
 
 describe('resolveScopeScale', () => {
-  it('keeps the scope constant while the widget zooms', () => {
-    const small = resolveScopeScale({
-      scaleMode: 'fixed-scope',
-      scopeRange: 10,
-      radiusPx: DESIGN_SIZE_PX / 2,
-      widgetScale: 1,
-    });
+  it('keeps the range the user set while the widget zooms', () => {
+    const small = resolveScopeScale({ scopeRange: 10, radiusPx: 90 });
+    const large = resolveScopeScale({ scopeRange: 10, radiusPx: 180 });
 
-    const large = resolveScopeScale({
-      scaleMode: 'fixed-scope',
-      scopeRange: 10,
-      radiusPx: DESIGN_SIZE_PX,
-      widgetScale: 2,
-    });
-
-    expect(small.rangeMeters).toBeCloseTo(DESIGN_SCOPE_RANGE_M);
-    expect(large.rangeMeters).toBeCloseTo(DESIGN_SCOPE_RANGE_M);
+    expect(small.rangeMeters).toBe(10);
+    expect(large.rangeMeters).toBe(10);
     expect(large.pxPerMeter).toBeCloseTo(small.pxPerMeter * 2);
   });
 
-  it('keeps the car size constant while the scope grows', () => {
-    const small = resolveScopeScale({
-      scaleMode: 'fixed-cars',
-      scopeRange: 10,
-      radiusPx: DESIGN_SIZE_PX / 2,
-      widgetScale: 1,
-    });
-
-    const large = resolveScopeScale({
-      scaleMode: 'fixed-cars',
-      scopeRange: 10,
-      radiusPx: DESIGN_SIZE_PX,
-      widgetScale: 2,
-    });
-
-    expect(large.pxPerMeter).toBe(small.pxPerMeter);
-    expect(large.rangeMeters).toBeCloseTo(small.rangeMeters * 2);
-  });
-
-  it('takes the manual range as the scope, whatever the size', () => {
-    const scale = resolveScopeScale({
-      scaleMode: 'manual',
-      scopeRange: 18,
-      radiusPx: 120,
-      widgetScale: 1.33,
-    });
-
-    expect(scale.rangeMeters).toBe(18);
-    expect(scale.pxPerMeter).toBeCloseTo(120 / 18);
+  it('falls back to the design range on a zero or broken value', () => {
+    expect(resolveScopeScale({ scopeRange: 0, radiusPx: 90 }).rangeMeters).toBe(
+      DESIGN_SCOPE_RANGE_M
+    );
+    expect(
+      resolveScopeScale({ scopeRange: Number.NaN, radiusPx: 90 }).rangeMeters
+    ).toBe(DESIGN_SCOPE_RANGE_M);
   });
 });
 

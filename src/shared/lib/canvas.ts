@@ -151,6 +151,29 @@ export const fillFixedDigits = (
   centerX: number,
   centerY: number
 ): void => {
+  paintFixedDigits(ctx, text, centerX, centerY, 'fill');
+};
+
+/**
+ * The outline of `fillFixedDigits`, cell for cell — stroke first, then fill on
+ * top, for a readout that has to hold on any background.
+ */
+export const strokeFixedDigits = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  centerX: number,
+  centerY: number
+): void => {
+  paintFixedDigits(ctx, text, centerX, centerY, 'stroke');
+};
+
+const paintFixedDigits = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  centerX: number,
+  centerY: number,
+  paint: 'fill' | 'stroke'
+): void => {
   const widths = cellWidthsOf(ctx, text);
   const total = widths.reduce((sum, width) => sum + width, 0);
   const previousAlign = ctx.textAlign;
@@ -162,7 +185,12 @@ export const fillFixedDigits = (
   for (let index = 0; index < widths.length; index++) {
     const cell = widths[index];
 
-    ctx.fillText(text[index], cursor + cell / 2, centerY);
+    if (paint === 'fill') {
+      ctx.fillText(text[index], cursor + cell / 2, centerY);
+    } else {
+      ctx.strokeText(text[index], cursor + cell / 2, centerY);
+    }
+
     cursor += cell;
   }
 

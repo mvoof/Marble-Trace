@@ -5,6 +5,7 @@ import { usePitState } from '@features/pit-service/usePitState';
 import type { PitState } from '@features/pit-service/usePitState';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
 
+import { widgetDistanceUnit } from '@shared/lib/telemetry-format';
 import { pitLimitEmphasis } from '../race-dash-utils';
 import { PitLaneBar } from './PitLaneBar';
 
@@ -69,7 +70,7 @@ export const PitBlock = observer(() => {
   const boxCueLabel = distMode === 'pitExit' ? 'Exit' : 'Box';
 
   const unit = system === 'metric' ? 'KM/H' : 'MPH';
-  const distUnit = system === 'metric' ? 'm' : 'ft';
+  const distUnit = widgetDistanceUnit(system);
   const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');
   const { position } = playerPosition.playerPositionInfo(
     settings.useLivePositions,

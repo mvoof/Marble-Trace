@@ -1,3 +1,15 @@
+import type { UnitSystem } from '@shared/contracts/domain';
+import {
+  fillFixedDigits,
+  measureFixedDigits,
+  strokeFixedDigits,
+} from '@shared/lib/canvas';
+import {
+  displayDistanceToMeters,
+  metersToDisplayDistance,
+  widgetDistanceUnit,
+} from '@shared/lib/telemetry-format';
+
 import type { RadarBackgroundTexture } from './radar.settings-schema';
 
 /** Average car body width in meters — the icon is the footprint, not a dot. */
@@ -9,9 +21,6 @@ export const CAR_CORNER_RADIUS_M = 0.35;
 /** Two cars closer than this along the lane read as one row, not a queue. */
 export const SAME_ROW_M = 2.5;
 
-/** Longitudinal scale ticks — the one axis the sim actually measures. */
-export const LADDER_STEP_M = 2.5;
-
 /** Padding around the body's own angular footprint, in radians. */
 const BEAM_PADDING_RAD = (2 * Math.PI) / 180;
 
@@ -22,7 +31,11 @@ const LABEL_SIDE_PADDING_PX = 2;
 const LABEL_PX_PER_METER = 1.3;
 
 const AXIS_GAP_M = 1.4;
-const RING_COUNT = 2;
+/** Dash and gap of the vertical axis, and of the finer lateral one, in px. */
+const LONGITUDINAL_AXIS_DASH_PX = [12, 3];
+const LATERAL_AXIS_DASH_PX = [1.5, 2.5];
+/** The lateral axis and the range ring share one fine line: both only frame. */
+const FINE_LINE_WIDTH_PX = 0.5;
 const TEXTURE_RING_COUNT = 5;
 const TEXTURE_DOTS_PER_RING = 8;
 const TEXTURE_MESH_STEP_DEG = 15;
@@ -30,15 +43,27 @@ const TEXTURE_HATCH_STEP_PX = 7;
 /** The ink every texture is drawn with — a wash, not a user-tuned dial. */
 const TEXTURE_ALPHA = 0.02;
 const TEXTURE_SCANLINE_STEP_PX = 4;
-const EDGE_MARKER_HALF_ANGLE_RAD = 0.16;
 
-const GRID_INK = 'rgba(250, 250, 250, 0.2)';
-const LADDER_INK = 'rgba(250, 250, 250, 0.32)';
-const EDGE_MARKER_INK = 'rgba(250, 250, 250, 0.45)';
+/** Axis labels per half axis the step aims for, and the steps it picks from. */
+const AXIS_LABELS_PER_HALF = 2.5;
+const AXIS_LABEL_STEPS = [1, 2, 2.5, 5, 10, 15, 20, 25, 50, 100];
+/** Axis label size as a share of the scope radius, and its floor. */
+const AXIS_LABEL_RADIUS_SHARE = 0.11;
+const MIN_AXIS_LABEL_PX = 8;
+/** Room between an axis label and the axis it cuts, in px. */
+const AXIS_LABEL_GAP_PX = 2;
+/** A label closer to the rim than this many font sizes would be cut by it. */
+const AXIS_LABEL_RIM_CLEARANCE = 1.2;
+
+const GRID_INK = 'rgba(250, 250, 250, 0.12)';
+const AXIS_LABEL_INK = 'rgba(250, 250, 250, 0.45)';
 const OPPONENT_INK = 'rgba(250, 250, 250, 0.82)';
 const PLAYER_INK = 'rgba(250, 250, 250, 0.9)';
 const LABEL_ON_LIGHT = 'rgba(8, 9, 10, 0.92)';
 const LABEL_ON_DARK = 'rgba(250, 250, 250, 0.92)';
+const RIM_LABEL_OUTLINE = 'rgba(0, 0, 0, 0.9)';
+/** Numbers and counts on a body are read at a glance, so they are bold. */
+const BODY_TEXT_WEIGHT = 700;
 
 /** Threat thresholds in meters of bumper-to-bumper gap. */
 const DANGER_GAP_M = 1;
@@ -147,11 +172,19 @@ export const carBearingSpan = (
   };
 };
 
+export interface LaneCar {
+  /** Signed offset along the lane, positive ahead. */
+  longitudinal: number;
+  carIdx: number;
+}
+
 export interface LaneRow {
   /** Signed offset along the lane, positive ahead. */
   longitudinal: number;
   /** How many cars share this row — drawn as one body and a `×N`. */
   count: number;
+  /** The row's nearest car — the one whose number a single body carries. */
+  carIdx: number;
 }
 
 /**
@@ -160,14 +193,17 @@ export interface LaneRow {
  * and an actual row becomes one icon with a count rather than an invented
  * second column.
  */
-export const collapseLaneRows = (offsets: number[]): LaneRow[] => {
+export const collapseLaneRows = (cars: LaneCar[]): LaneRow[] => {
   const rows: LaneRow[] = [];
 
-  [...offsets]
-    .sort((first, second) => Math.abs(first) - Math.abs(second))
-    .forEach((offset) => {
+  [...cars]
+    .sort(
+      (first, second) =>
+        Math.abs(first.longitudinal) - Math.abs(second.longitudinal)
+    )
+    .forEach((car) => {
       const existing = rows.find(
-        (row) => Math.abs(row.longitudinal - offset) < SAME_ROW_M
+        (row) => Math.abs(row.longitudinal - car.longitudinal) < SAME_ROW_M
       );
 
       if (existing) {
@@ -176,7 +212,11 @@ export const collapseLaneRows = (offsets: number[]): LaneRow[] => {
         return;
       }
 
-      rows.push({ longitudinal: offset, count: 1 });
+      rows.push({
+        longitudinal: car.longitudinal,
+        count: 1,
+        carIdx: car.carIdx,
+      });
     });
 
   return rows;
@@ -280,14 +320,164 @@ interface GridInput {
   pxPerMeter: number;
   rangeMeters: number;
   carLengthM: number;
+  unitSystem: UnitSystem;
+  /** The widget's text size setting, applied to the axis labels. */
+  fontScale: number;
   showAxes: boolean;
-  showAxisTicks: boolean;
+  showAxisLabels: boolean;
   showRangeRings: boolean;
 }
 
 /**
+ * Step between axis labels, in the unit the driver reads — a round number of
+ * meters or of feet, never a converted one: `16.4ft` is not a scale.
+ */
+export const axisLabelStep = (
+  rangeMeters: number,
+  unitSystem: UnitSystem
+): number => {
+  const wanted =
+    metersToDisplayDistance(rangeMeters, unitSystem) / AXIS_LABELS_PER_HALF;
+
+  return (
+    AXIS_LABEL_STEPS.find((step) => step >= wanted) ??
+    AXIS_LABEL_STEPS[AXIS_LABEL_STEPS.length - 1]
+  );
+};
+
+export const axisLabelText = (value: number, unitSystem: UnitSystem): string =>
+  `${value}${widgetDistanceUnit(unitSystem)}`;
+
+interface AxisLabel {
+  text: string;
+  /** Distance from the centre along the axis, in px. */
+  offsetPx: number;
+  /** Half the room the label keeps clear across the axis, gap included. */
+  halfWidthPx: number;
+}
+
+const axisLabelsFor = (
+  ctx: CanvasRenderingContext2D,
+  radiusPx: number,
+  pxPerMeter: number,
+  rangeMeters: number,
+  unitSystem: UnitSystem,
+  fontPx: number
+): AxisLabel[] => {
+  const step = axisLabelStep(rangeMeters, unitSystem);
+  const reachPx = radiusPx - fontPx * AXIS_LABEL_RIM_CLEARANCE;
+  const labels: AxisLabel[] = [];
+
+  for (
+    let value = step;
+    displayDistanceToMeters(value, unitSystem) * pxPerMeter <= reachPx;
+    value += step
+  ) {
+    const text = axisLabelText(value, unitSystem);
+
+    labels.push({
+      text,
+      offsetPx: displayDistanceToMeters(value, unitSystem) * pxPerMeter,
+      halfWidthPx: ctx.measureText(text).width / 2 + AXIS_LABEL_GAP_PX,
+    });
+  }
+
+  return labels;
+};
+
+/**
+ * One half of the vertical axis, from `fromPx` to `toPx` away from the centre
+ * on the side `direction` picks, cut where a label stands — the number sits in
+ * the axis, as the G-meter's sit in its rings, rather than beside it.
+ */
+const traceAxisAround = (
+  ctx: CanvasRenderingContext2D,
+  fromPx: number,
+  toPx: number,
+  direction: 1 | -1,
+  labels: AxisLabel[],
+  halfCutPx: number
+): void => {
+  let cursor = fromPx;
+
+  labels
+    .filter((label) => label.offsetPx > fromPx && label.offsetPx < toPx)
+    .forEach((label) => {
+      const cutStart = label.offsetPx - halfCutPx;
+
+      if (cutStart > cursor) {
+        ctx.moveTo(0, cursor * direction);
+        ctx.lineTo(0, cutStart * direction);
+      }
+
+      cursor = Math.max(cursor, label.offsetPx + halfCutPx);
+    });
+
+  if (cursor < toPx) {
+    ctx.moveTo(0, cursor * direction);
+    ctx.lineTo(0, toPx * direction);
+  }
+};
+
+interface ArcCut {
+  start: number;
+  end: number;
+}
+
+/**
+ * Where a ring passes through the labels on the vertical axis, as angle
+ * ranges: a label straddling the ring takes the arc under it, top and bottom.
+ */
+const ringCutsFor = (
+  ringPx: number,
+  labels: AxisLabel[],
+  halfHeightPx: number
+): ArcCut[] =>
+  labels
+    .filter((label) => Math.abs(ringPx - label.offsetPx) <= halfHeightPx)
+    .flatMap((label) => {
+      const half = Math.asin(Math.min(1, label.halfWidthPx / ringPx));
+
+      return [-Math.PI / 2, Math.PI / 2].map((center) => ({
+        start: center - half,
+        end: center + half,
+      }));
+    })
+    .sort((first, second) => first.start - second.start);
+
+/** A full ring, less the arcs the cuts take out of it. */
+const traceRingAround = (
+  ctx: CanvasRenderingContext2D,
+  ringPx: number,
+  cuts: ArcCut[]
+): void => {
+  if (cuts.length === 0) {
+    ctx.moveTo(ringPx, 0);
+    ctx.arc(0, 0, ringPx, 0, Math.PI * 2);
+
+    return;
+  }
+
+  // Walk once round from the end of the last cut, so the arc that crosses the
+  // zero angle is drawn in one piece.
+  const lastEnd = cuts[cuts.length - 1].end;
+  let cursor = lastEnd - Math.PI * 2;
+
+  cuts.forEach((cut) => {
+    if (cut.start > cursor) {
+      ctx.moveTo(Math.cos(cursor) * ringPx, Math.sin(cursor) * ringPx);
+      ctx.arc(0, 0, ringPx, cursor, cut.start);
+    }
+
+    cursor = Math.max(cursor, cut.end);
+  });
+};
+
+/**
  * Rings and axes, never a lateral scale: the sim measures along the track and
- * nothing across it, so the ladder ticks live on the vertical axis alone.
+ * nothing across it, so the distances are written on the vertical axis alone.
+ * The axis and the ring both break where a distance is written, so no line
+ * runs through a number.
  */
 export const drawGrid = (
   ctx: CanvasRenderingContext2D,
@@ -296,165 +486,264 @@ export const drawGrid = (
     pxPerMeter,
     rangeMeters,
     carLengthM,
+    unitSystem,
+    fontScale,
     showAxes,
-    showAxisTicks,
+    showAxisLabels,
     showRangeRings,
   }: GridInput
 ): void => {
+  const fontPx = Math.max(
+    MIN_AXIS_LABEL_PX,
+    Math.round(radiusPx * AXIS_LABEL_RADIUS_SHARE * fontScale)
+  );
+
+  ctx.save();
+  ctx.font = `600 ${fontPx}px Rajdhani, sans-serif`;
+
+  const labels =
+    showAxes && showAxisLabels
+      ? axisLabelsFor(
+          ctx,
+          radiusPx,
+          pxPerMeter,
+          rangeMeters,
+          unitSystem,
+          fontPx
+        )
+      : [];
+  const halfHeightPx = fontPx / 2 + AXIS_LABEL_GAP_PX;
+
+  ctx.strokeStyle = GRID_INK;
+
   if (showRangeRings) {
-    ctx.save();
-    ctx.strokeStyle = GRID_INK;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = FINE_LINE_WIDTH_PX;
+    ctx.setLineDash(LATERAL_AXIS_DASH_PX);
+    ctx.beginPath();
 
     rangeRingRadii(rangeMeters).forEach((meters) => {
-      ctx.beginPath();
-      ctx.arc(
-        0,
-        0,
-        Math.min(meters * pxPerMeter, radiusPx - 0.5),
-        0,
-        Math.PI * 2
-      );
-      ctx.stroke();
+      const ringPx = meters * pxPerMeter;
+
+      traceRingAround(ctx, ringPx, ringCutsFor(ringPx, labels, halfHeightPx));
     });
 
-    ctx.restore();
+    ctx.stroke();
   }
 
   if (!showAxes) {
+    ctx.restore();
+
     return;
   }
 
   const lateralGap = AXIS_GAP_M * pxPerMeter;
   const bodyGap = (carLengthM / 2) * pxPerMeter + 4;
 
-  ctx.save();
-  ctx.strokeStyle = GRID_INK;
-  ctx.lineWidth = 1;
+  // The lateral axis is only a reference — the sim measures nothing across
+  // the track — so it is the faintest line on the scope.
+  ctx.lineWidth = FINE_LINE_WIDTH_PX;
+  ctx.setLineDash(LATERAL_AXIS_DASH_PX);
   ctx.beginPath();
   ctx.moveTo(-radiusPx, 0);
   ctx.lineTo(-lateralGap, 0);
   ctx.moveTo(lateralGap, 0);
   ctx.lineTo(radiusPx, 0);
-  ctx.moveTo(0, -radiusPx);
-  ctx.lineTo(0, -bodyGap);
-  ctx.moveTo(0, bodyGap);
-  ctx.lineTo(0, radiusPx);
   ctx.stroke();
 
-  if (!showAxisTicks) {
+  ctx.lineWidth = 1;
+  ctx.setLineDash(LONGITUDINAL_AXIS_DASH_PX);
+  ctx.beginPath();
+  traceAxisAround(ctx, bodyGap, radiusPx, -1, labels, halfHeightPx);
+  traceAxisAround(ctx, bodyGap, radiusPx, 1, labels, halfHeightPx);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  if (labels.length > 0) {
+    ctx.fillStyle = AXIS_LABEL_INK;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    labels.forEach((label) => {
+      ctx.fillText(label.text, 0, -label.offsetPx);
+      ctx.fillText(label.text, 0, label.offsetPx);
+    });
+  }
+
+  ctx.restore();
+};
+
+/**
+ * Half the scope — the one ring left. The rim is the plate's own border, and a
+ * second line drawn on top of it only thickened it.
+ */
+export const rangeRingRadii = (rangeMeters: number): number[] => [
+  rangeMeters / 2,
+];
+
+interface BeamInput {
+  span: BearingSpan;
+  /** How far into the scope the car is: 0 on the rim or past it, 1 well in. */
+  presence: number;
+  radiusPx: number;
+  color: string;
+  /** The beam's alpha at the rim once the car is well inside. */
+  opacity: number;
+  /** Paint the sector, or only its rim line — the edge marker. */
+  fill: boolean;
+  /** Close the sector with a line on the rim. Always on for a bare marker. */
+  edge: boolean;
+}
+
+/** Narrowest the rim line gets, so a car far out still leaves a mark. */
+const MIN_BEAM_HALF_RAD = 0.07;
+
+/**
+ * Share of the range a car travels inside the rim before its beam is fully
+ * up: the marker grows into the beam over this stretch rather than popping.
+ */
+const BEAM_RAMP_SHARE = 0.35;
+
+/** The rim line's alpha against the beam's, and what it keeps on the edge. */
+const RIM_LINE_GAIN = 2.5;
+const RIM_LINE_FLOOR = 0.6;
+const RIM_LINE_WIDTH_PX = 2;
+
+/** Where the beam's wash starts, as a share of the radius from the centre. */
+const BEAM_WASH_START = 0.1;
+
+/**
+ * 0 while the car is on or beyond the rim, rising to 1 once it is a ramp's
+ * length inside — the edge marker turning into the beam.
+ */
+export const beamPresence = (
+  distanceMeters: number,
+  rangeMeters: number
+): number =>
+  Math.min(
+    1,
+    Math.max(
+      0,
+      (rangeMeters - distanceMeters) / (rangeMeters * BEAM_RAMP_SHARE)
+    )
+  );
+
+/**
+ * The sector that follows an opponent, and the arc that closes it on the rim.
+ * The wash is clear at our car and densest at the rim, so the scope around us
+ * stays readable; the arc is the beam's edge and fades with it. A car past the
+ * rim keeps only the arc — that is the edge marker, the same mark the beam
+ * grows out of as the car comes in.
+ */
+export const drawBeam = (
+  ctx: CanvasRenderingContext2D,
+  { span, presence, radiusPx, color, opacity, fill, edge }: BeamInput
+): void => {
+  const half = Math.max(span.half, MIN_BEAM_HALF_RAD);
+  const start = -Math.PI / 2 - half;
+  const end = -Math.PI / 2 + half;
+
+  ctx.save();
+  ctx.rotate(span.center);
+
+  if (fill && presence > 0) {
+    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radiusPx);
+
+    gradient.addColorStop(BEAM_WASH_START, withAlpha(color, 0));
+    gradient.addColorStop(1, withAlpha(color, opacity * presence));
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, radiusPx, start, end);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+  }
+
+  if (!edge) {
     ctx.restore();
 
     return;
   }
 
-  ctx.strokeStyle = LADDER_INK;
+  const lineAlpha =
+    Math.min(1, opacity * RIM_LINE_GAIN) *
+    (RIM_LINE_FLOOR + (1 - RIM_LINE_FLOOR) * presence);
 
-  for (
-    let meters = LADDER_STEP_M;
-    meters <= rangeMeters;
-    meters += LADDER_STEP_M
-  ) {
-    const y = meters * pxPerMeter;
-    const halfTick = meters % (LADDER_STEP_M * 2) === 0 ? 5 : 3;
-
-    ctx.beginPath();
-    ctx.moveTo(-halfTick, -y);
-    ctx.lineTo(halfTick, -y);
-    ctx.moveTo(-halfTick, y);
-    ctx.lineTo(halfTick, y);
-    ctx.stroke();
-  }
-
+  ctx.strokeStyle = withAlpha(color, lineAlpha);
+  ctx.lineWidth = RIM_LINE_WIDTH_PX;
+  ctx.beginPath();
+  ctx.arc(0, 0, radiusPx - RIM_LINE_WIDTH_PX / 2, start, end);
+  ctx.stroke();
   ctx.restore();
 };
 
-/** Half the scope and its rim — the two rings follow whatever the scale is. */
-export const rangeRingRadii = (rangeMeters: number): number[] =>
-  Array.from(
-    { length: RING_COUNT },
-    (_, index) => (rangeMeters / RING_COUNT) * (index + 1)
-  );
+/** Rim label size as a share of the scope radius, and its floor. */
+const RIM_LABEL_RADIUS_SHARE = 0.19;
+const MIN_RIM_LABEL_PX = 11;
+const RIM_LABEL_INSET_PX = 1;
+const RIM_LABEL_OUTLINE_PX = 1.5;
 
-interface BeamInput {
-  span: BearingSpan;
-  distanceMeters: number;
-  rangeMeters: number;
-  pxPerMeter: number;
+interface RimLabelInput {
+  text: string;
+  /** The beam's own bearing, so the label turns with it. */
+  bearing: number;
   radiusPx: number;
   color: string;
-  /** The beam's alpha at its densest stop; distance fades it from there. */
-  opacity: number;
+  fontScale: number;
 }
 
-/** What is left of the beam's alpha where it runs out at the rim. */
-const BEAM_TAIL_FADE = 0.06;
-
-/** The sector that follows an opponent for as long as it is in the scope. */
-export const drawBeam = (
-  ctx: CanvasRenderingContext2D,
-  {
-    span,
-    distanceMeters,
-    rangeMeters,
-    pxPerMeter,
-    radiusPx,
-    color,
-    opacity,
-  }: BeamInput
-): void => {
-  const fade = Math.max(0.15, 1 - distanceMeters / rangeMeters);
-  const stop = Math.min(
-    0.92,
-    Math.max(0.08, (distanceMeters * pxPerMeter) / radiusPx)
+/**
+ * How far out along `bearing` an upright label can sit and keep the same gap
+ * to the rim whichever way the beam points. The text does not turn with the
+ * beam, so at the top and bottom its height faces the rim and on the sides its
+ * width — the inset is the label's own extent in the beam's direction.
+ */
+export const labelDistanceInside = (
+  limitPx: number,
+  bearing: number,
+  halfWidthPx: number,
+  halfHeightPx: number
+): number =>
+  Math.max(
+    0,
+    limitPx -
+      Math.abs(Math.sin(bearing)) * halfWidthPx -
+      Math.abs(Math.cos(bearing)) * halfHeightPx
   );
-
-  const gradient = ctx.createRadialGradient(
-    0,
-    0,
-    radiusPx * 0.1,
-    0,
-    0,
-    radiusPx
-  );
-  gradient.addColorStop(0, withAlpha(color, 0));
-  gradient.addColorStop(stop, withAlpha(color, fade * opacity));
-  gradient.addColorStop(1, withAlpha(color, BEAM_TAIL_FADE * fade * opacity));
-
-  ctx.save();
-  ctx.rotate(span.center);
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.arc(0, 0, radiusPx, -Math.PI / 2 - span.half, -Math.PI / 2 + span.half);
-  ctx.closePath();
-  ctx.fillStyle = gradient;
-  ctx.fill();
-  ctx.restore();
-};
 
 /**
- * A car past the rim still matters — another car inside the circle is what has
- * the widget up, and this one is closing on it. It keeps its bearing and parks
- * on the edge instead of vanishing.
+ * A distance written at the beam's edge, just inside the rim on the beam's
+ * bearing, in the beam's color — outlined in black, since it sits over the
+ * wash, the plate and whatever the stream shows through it.
  */
-export const drawEdgeMarker = (
+export const drawRimLabel = (
   ctx: CanvasRenderingContext2D,
-  bearing: number,
-  radiusPx: number
+  { text, bearing, radiusPx, color, fontScale }: RimLabelInput
 ): void => {
-  ctx.save();
-  ctx.rotate(bearing);
-  ctx.strokeStyle = EDGE_MARKER_INK;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(
-    0,
-    0,
-    radiusPx - 3,
-    -Math.PI / 2 - EDGE_MARKER_HALF_ANGLE_RAD,
-    -Math.PI / 2 + EDGE_MARKER_HALF_ANGLE_RAD
+  const fontPx = Math.max(
+    MIN_RIM_LABEL_PX,
+    Math.round(radiusPx * RIM_LABEL_RADIUS_SHARE * fontScale)
   );
-  ctx.stroke();
+
+  ctx.save();
+  ctx.font = `700 ${fontPx}px Rajdhani, sans-serif`;
+
+  const distancePx = labelDistanceInside(
+    radiusPx - RIM_LINE_WIDTH_PX - RIM_LABEL_INSET_PX,
+    bearing,
+    measureFixedDigits(ctx, text) / 2 + RIM_LABEL_OUTLINE_PX,
+    fontPx / 2 + RIM_LABEL_OUTLINE_PX
+  );
+  const x = Math.sin(bearing) * distancePx;
+  const y = -Math.cos(bearing) * distancePx;
+
+  ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = RIM_LABEL_OUTLINE_PX;
+  ctx.strokeStyle = RIM_LABEL_OUTLINE;
+  strokeFixedDigits(ctx, text, x, y);
+  ctx.fillStyle = color;
+  fillFixedDigits(ctx, text, x, y);
   ctx.restore();
 };
 
@@ -494,16 +783,22 @@ export const drawCar = (
  * shrinks with the icon and switches itself off once it would spill over the
  * paintwork or drop below what a glance can read.
  */
+interface BodyTextInput {
+  text: string;
+  x: number;
+  y: number;
+  bodyColor: string;
+  pxPerMeter: number;
+  /** The widget's text size setting; the body's width still caps the label. */
+  fontScale: number;
+}
+
 export const drawBodyText = (
   ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  bodyColor: string,
-  pxPerMeter: number,
-  weight: 600 | 700 = 600
+  { text, x, y, bodyColor, pxPerMeter, fontScale }: BodyTextInput
 ): void => {
-  const fontPx = labelFontPx(pxPerMeter);
+  const fontPx = Math.round(labelFontPx(pxPerMeter) * fontScale);
+  const weight = BODY_TEXT_WEIGHT;
 
   if (fontPx < MIN_LABEL_PX) {
     return;

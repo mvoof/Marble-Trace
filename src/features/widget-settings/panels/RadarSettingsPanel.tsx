@@ -3,14 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Col, InputNumber, Row as GridRow, Select, Slider } from 'antd';
 import type { BaseUserSettings } from '@shared/contracts/widget-settings';
 import {
-  LADDER_STEP_M,
+  axisLabelStep,
+  axisLabelText,
   rangeRingRadii,
 } from '@entities/radar/radar-scope-utils';
-import {
-  DESIGN_SCOPE_RANGE_M,
-  DESIGN_SIZE_PX,
-  resolveScopeScale,
-} from '@entities/radar/radar-constants';
+import { scopeRangeMeters } from '@entities/radar/radar-constants';
 import { distanceUnit, formatDistance } from '@shared/lib/telemetry-format';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
@@ -21,10 +18,8 @@ import { schemaRows } from '../schema-rows';
 import {
   PROXIMITY_RADAR_SETTINGS,
   RADAR_BACKGROUND_TEXTURE,
-  RADAR_SCALE_MODE,
   type ProximityRadarSettings,
   type RadarBackgroundTexture,
-  type RadarScaleMode,
 } from '@entities/radar/radar.settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
@@ -37,14 +32,9 @@ const { Row } = schemaRows(PROXIMITY_RADAR_SETTINGS);
 const { hideDelay, scopeRange, carOpacity, beamOpacity } =
   PROXIMITY_RADAR_SETTINGS.shape;
 
-// The range is only the user's to set in manual mode; the other modes derive it.
-const isManualScale = (settings: ProximityRadarSettings): boolean =>
-  settings.scaleMode === 'manual';
-
 /**
- * What the circle covers, in the units the user reads. The widget resolves the
- * same numbers from its rendered size, so this says exactly what the overlay
- * will draw rather than a nominal value.
+ * What the circle covers, in the units the user reads — the same numbers the
+ * overlay draws with.
  */
 const ScopeReadout = observer(
   ({ settings }: { settings: BaseUserSettings & ProximityRadarSettings }) => {
@@ -52,14 +42,7 @@ const ScopeReadout = observer(
     const { t } = useTranslation('widgets');
     const { unitSystem } = units;
 
-    const widthPx = settings.currentWidth ?? DESIGN_SIZE_PX;
-
-    const { rangeMeters } = resolveScopeScale({
-      scaleMode: settings.scaleMode,
-      scopeRange: settings.scopeRange,
-      radiusPx: widthPx / 2,
-      widgetScale: widthPx / DESIGN_SIZE_PX,
-    });
+    const rangeMeters = scopeRangeMeters(settings.scopeRange);
 
     const length = (meters: number) =>
       `${formatDistance(meters, unitSystem)}${distanceUnit(unitSystem)}`;
@@ -71,7 +54,10 @@ const ScopeReadout = observer(
         {t('settingsPanels.radar.scopeReadout', {
           range: length(rangeMeters),
           rings,
-          ladder: length(LADDER_STEP_M),
+          ladder: axisLabelText(
+            axisLabelStep(rangeMeters, unitSystem),
+            unitSystem
+          ),
         })}
       </div>
     );
@@ -97,50 +83,24 @@ const ScopeCard = observer(() => {
     <>
       <Card title={t('settingsPanels.radar.scope')}>
         <GridRow gutter={24} className={styles.fieldGroup}>
-          <Col span={24}>
+          <Col span={8}>
             <span className={styles.fieldLabel}>
-              {t('settingsPanels.radar.scaleMode')}
+              {t('settingsPanels.radar.scopeRange')}
             </span>
-            <Select
+            <InputNumber
               style={{ width: '100%' }}
-              value={settings.scaleMode}
-              onChange={(value: RadarScaleMode) => {
-                update({ scaleMode: value });
+              value={settings.scopeRange}
+              min={scopeRange.min}
+              max={scopeRange.max}
+              step={scopeRange.step}
+              onChange={(value) => {
+                if (value !== null) {
+                  update({ scopeRange: value });
+                }
               }}
-              options={RADAR_SCALE_MODE.map((mode) => ({
-                label: t(`settingsPanels.radar.scaleModes.${mode}`),
-                value: mode,
-              }))}
             />
-            <div className={styles.fieldDesc}>
-              {t(`settingsPanels.radar.scaleModeDesc.${settings.scaleMode}`, {
-                range: DESIGN_SCOPE_RANGE_M,
-              })}
-            </div>
           </Col>
         </GridRow>
-
-        <DependentBlock dependsOn={isManualScale}>
-          <GridRow gutter={24}>
-            <Col span={8}>
-              <span className={styles.fieldLabel}>
-                {t('settingsPanels.radar.scopeRange')}
-              </span>
-              <InputNumber
-                style={{ width: '100%' }}
-                value={settings.scopeRange}
-                min={scopeRange.min}
-                max={scopeRange.max}
-                step={scopeRange.step}
-                onChange={(value) => {
-                  if (value !== null) {
-                    update({ scopeRange: value });
-                  }
-                }}
-              />
-            </Col>
-          </GridRow>
-        </DependentBlock>
 
         <GridRow gutter={24} className={styles.fieldGroup}>
           <Col span={24}>
@@ -159,8 +119,12 @@ const ScopeCard = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <Row setting="monochromeCars" />
+          <Row setting="showOpponentCars" />
         </div>
+
+        <Row setting="monochromeCars" dependsOn="showOpponentCars" />
+
+        <Row setting="showCarNumber" dependsOn="showOpponentCars" />
 
         <div className={styles.fieldGroup}>
           <Row setting="showEdgeMarkers" />
@@ -169,6 +133,8 @@ const ScopeCard = observer(() => {
         <div className={styles.fieldGroup}>
           <Row setting="showBeam" />
         </div>
+
+        <Row setting="showBeamEdge" dependsOn="showBeam" />
 
         <DependentBlock dependsOn="showBeam">
           <div className={styles.fieldLabel}>
