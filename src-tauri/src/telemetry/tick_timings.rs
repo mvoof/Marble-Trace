@@ -5,6 +5,9 @@
 //! assembly, mask, quantization and delivery. The samples are kept whole rather than folded
 //! into a running histogram, because p99 over a sixty-second run is a sort of
 //! a few thousand numbers and nothing cheaper is worth its error.
+//!
+//! The summary is read only by the perf run, so it exists only in a `dev`
+//! build.
 
 use std::time::Duration;
 
@@ -12,12 +15,13 @@ use std::time::Duration;
 /// left running all evening holds a bounded buffer instead of a growing one.
 const MAX_SAMPLES: usize = 60 * 60 * 10;
 
+#[cfg(any(feature = "dev", test))]
 const WHOLE_PERCENT: u64 = 100;
 
+#[cfg(any(feature = "dev", test))]
 /// Tick duration percentiles over the span since the last reset, in
 /// microseconds.
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
-#[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct TickSummary {
     pub ticks: u32,
@@ -45,6 +49,7 @@ impl TickTimings {
         self.samples_us.clear();
     }
 
+    #[cfg(any(feature = "dev", test))]
     pub fn summary(&self) -> TickSummary {
         let mut sorted = self.samples_us.clone();
         sorted.sort_unstable();
@@ -58,6 +63,7 @@ impl TickTimings {
     }
 }
 
+#[cfg(any(feature = "dev", test))]
 /// Nearest-rank percentile of an already sorted slice; zero when empty.
 fn percentile(sorted: &[u32], percent: u32) -> u32 {
     if sorted.is_empty() {

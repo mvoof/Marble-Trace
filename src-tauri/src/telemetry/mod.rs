@@ -29,7 +29,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<emitter::TelemetrySlowBundle>()
         .register::<delivery::DeliverySet>()
         .register::<delivery::FieldDelivery>()
-        .register::<tick_timings::TickSummary>()
         .register::<perf_run::PerfRunConfig>()
         .register::<perf_run::OverlayPerfReport>();
 }
