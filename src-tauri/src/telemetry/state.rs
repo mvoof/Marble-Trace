@@ -13,6 +13,7 @@ use crate::sources::source::SourceFrame;
 use crate::telemetry::control::{Control, TelemetryCommand, TelemetryConfig, TelemetryRun};
 use crate::telemetry::delivery::DeliveryCounters;
 use crate::telemetry::masks::MaskRegistry;
+#[cfg(feature = "dev")]
 use crate::telemetry::tick_timings::TickTimings;
 use crate::utils::lock_or_recover;
 
@@ -42,6 +43,8 @@ pub struct TelemetryServiceState {
     pub delivery: Mutex<DeliveryCounters>,
     /// How long each `emit_domain_frames` pass took, reset together with the
     /// delivery counters so one measurement run reads both over one span.
+    /// Only the perf run reads it, so only a `dev` build records it.
+    #[cfg(feature = "dev")]
     pub tick_timings: Mutex<TickTimings>,
 }
 
@@ -56,6 +59,7 @@ impl Default for TelemetryServiceState {
             active_reference: Mutex::new(None),
             masks: MaskRegistry::bootstrapped(),
             delivery: Mutex::new(DeliveryCounters::with_broadcast()),
+            #[cfg(feature = "dev")]
             tick_timings: Mutex::new(TickTimings::default()),
         }
     }

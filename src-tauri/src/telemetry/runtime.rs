@@ -10,6 +10,7 @@ use std::time::{Duration, Instant};
 
 use tauri::{AppHandle, Emitter, Manager};
 
+#[cfg(feature = "dev")]
 use crate::utils::lock_or_recover;
 use tracing::{debug, info, warn};
 
@@ -211,6 +212,7 @@ fn run_telemetry_loop(
 
         // Timed from here rather than around the emit alone: applying a
         // session is tick work too, and the reason it moved off this thread.
+        #[cfg(feature = "dev")]
         let started = Instant::now();
 
         for command in session.commands.try_iter() {
@@ -262,10 +264,16 @@ fn run_telemetry_loop(
             sends_pit_orders,
         };
 
-        let measuring = emit_domain_frames(ctx);
-        let elapsed = started.elapsed().saturating_sub(measuring);
+        #[cfg(feature = "dev")]
+        {
+            let measuring = emit_domain_frames(ctx);
+            let elapsed = started.elapsed().saturating_sub(measuring);
 
-        lock_or_recover(&service.tick_timings).record(elapsed);
+            lock_or_recover(&service.tick_timings).record(elapsed);
+        }
+
+        #[cfg(not(feature = "dev"))]
+        emit_domain_frames(ctx);
     }
 }
 

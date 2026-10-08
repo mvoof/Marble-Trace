@@ -246,6 +246,7 @@ pub async fn get_delivery_counters(
 #[tauri::command]
 pub async fn reset_delivery_counters(state: State<'_, TelemetryState>) -> Result<(), String> {
     lock_or_recover(&state.service.delivery).reset();
+    #[cfg(feature = "dev")]
     lock_or_recover(&state.service.tick_timings).reset();
 
     Ok(())
