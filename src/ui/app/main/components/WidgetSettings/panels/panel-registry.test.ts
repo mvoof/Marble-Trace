@@ -4,6 +4,12 @@ import { WIDGETS } from '@entities/widget/widget-catalog';
 import { SETTINGS_PANELS } from './panel-registry';
 
 describe('settings panel registry', () => {
+  // A glob that misses its folder finds nothing and fails no other case here.
+  it('collects panels from both roots: the widget slices and the pair panels', () => {
+    expect(SETTINGS_PANELS).toHaveProperty('standings');
+    expect(SETTINGS_PANELS).toHaveProperty('proximity-radar');
+  });
+
   it('collects a panel component for every id a panel claims', () => {
     for (const [widgetId, panel] of Object.entries(SETTINGS_PANELS)) {
       expect(typeof panel, `${widgetId} resolved to a non-component`).toBe(
