@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { RendererCore } from '@app/roots/renderer-core';
 import { respaceField } from '@features/preview/field-seed';
 import { mockSectors } from '@features/preview/mocks/timing';
 import { sampleTrack } from '@features/preview/sample-track';

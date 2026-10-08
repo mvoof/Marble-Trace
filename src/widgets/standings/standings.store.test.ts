@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 
-import { PreviewCore } from '@store/roots/renderer-core';
+import { PreviewCore } from '@app/roots/renderer-core';
 import { standingsHotkeyTargets } from '@features/hotkey-bindings/hotkey-targets';
 import { seedScenario } from '@features/preview/scenarios';
 import { DEFAULT_PREVIEW_SCENARIO_ID } from '@features/preview/scenarios';

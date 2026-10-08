@@ -7,7 +7,7 @@ import { useLayoutsStore } from '@entities/layout/layouts-context';
 import type { GroupedRemoteScreen } from '@entities/layout/layouts.store';
 import { DEFAULT_REMOTE_BACKGROUND } from '@shared/lib/remote-screen';
 import type { RemoteDevice } from '@shared/contracts/bindings';
-import styles from '@ui/app/main/components/SettingsPage/SettingsPage.module.scss';
+import styles from '@pages/settings/SettingsPage.module.scss';
 import rowStyles from './RemoteScreenRow.module.scss';
 
 const ICON_SIZE = 14;

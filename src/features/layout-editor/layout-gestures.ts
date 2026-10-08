@@ -1,7 +1,7 @@
 import { runInAction } from 'mobx';
 
 import { fullScreenMonitor } from '@entities/layout/virtual-desktop';
-import { resolveMonitorByName } from '@platform/sync/overlay-resolution';
+import { resolveMonitorByName } from '@app/sync/overlay-resolution';
 
 import type {
   LayoutMonitor,

@@ -1,8 +1,8 @@
-import { watchColdStart } from '@platform/sync/perf-cold-start';
-import { OverlayRoot } from './store/roots/overlay-root';
-import { AppWindowProvider, CoreProvider } from './ui/app/store-providers';
-import { OverlayRootContext } from './store/roots/overlay-root-context';
-import { OverlayWindow } from './ui/app/overlay/OverlayWindow';
+import { watchColdStart } from '@app/sync/perf-cold-start';
+import { OverlayRoot } from '@app/roots/overlay-root';
+import { AppWindowProvider, CoreProvider } from '@app/store-providers';
+import { OverlayRootContext } from '@app/roots/overlay-root-context';
+import { OverlayWindow } from '@app/windows/overlay/OverlayWindow';
 import { renderWindow } from './render-window';
 
 watchColdStart();

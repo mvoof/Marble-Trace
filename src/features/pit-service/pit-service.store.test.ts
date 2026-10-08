@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
-import { RendererCore } from '@store/roots/renderer-core';
+import { RendererCore } from '@app/roots/renderer-core';
 import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
 
 // A running core whose widget settings the test writes, as main writes its own.

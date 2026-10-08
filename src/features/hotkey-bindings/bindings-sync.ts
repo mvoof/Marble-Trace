@@ -1,10 +1,7 @@
 import { listenTo, type UnlistenFn } from '@shared/api/events.service';
-import type { MainRoot } from '@store/roots/main-root';
+import type { MainRoot } from '@app/roots/main-root';
 import type { InputButtonEvent, InputDevice } from '@shared/contracts/bindings';
-import {
-  INPUT_BUTTON_EVENT,
-  INPUT_DEVICES_EVENT,
-} from '@platform/sync/sim-events';
+import { INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT } from '@app/sync/sim-events';
 
 /**
  * The device list and the last button pressed, for the settings screen that

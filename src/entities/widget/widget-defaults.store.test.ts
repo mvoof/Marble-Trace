@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
-import { PreviewCore } from '@store/roots/renderer-core';
+import { PreviewCore } from '@app/roots/renderer-core';
 import { DEFAULT_WIDGETS } from './widget-catalog';
 import type { CapabilitiesPayload } from '@shared/contracts/bindings';
 

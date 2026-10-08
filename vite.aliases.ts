@@ -23,20 +23,6 @@ export const createLayerAliases = (): AliasEntry[] => [
   { find: '@features', replacement: fromRoot('./src/features') },
   { find: '@entities', replacement: fromRoot('./src/entities') },
   { find: '@shared', replacement: fromRoot('./src/shared') },
-  {
-    find: '@platform/services',
-    replacement: fromRoot('./src/platform/services'),
-  },
-  { find: '@platform/sync', replacement: fromRoot('./src/platform/sync') },
-  {
-    find: '@platform/settings-schema',
-    replacement: fromRoot('./src/platform/settings-schema'),
-  },
-  { find: '@ui/app', replacement: fromRoot('./src/ui/app') },
-  { find: '@ui/shared', replacement: fromRoot('./src/ui/shared') },
-  { find: '@ui/hooks', replacement: fromRoot('./src/ui/hooks') },
-  { find: '@store', replacement: fromRoot('./src/store') },
-  { find: '@utils', replacement: fromRoot('./src/utils') },
   { find: '@assets', replacement: fromRoot('./src/assets') },
   { find: '@', replacement: fromRoot('./src') },
 ];

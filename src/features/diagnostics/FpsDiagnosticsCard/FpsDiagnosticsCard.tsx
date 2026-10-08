@@ -4,7 +4,7 @@ import { App, Button, Switch } from 'antd';
 import { Activity, Save, Square } from 'lucide-react';
 import { useDiagnosticsExportStore } from '@features/diagnostics/diagnostics-export-context';
 import { useFpsDiagnosticsStore } from '@features/diagnostics/fps-diagnostics-context';
-import { SettingsCard } from '@ui/app/main/components/SettingsPage/SettingsCard';
+import { SettingsCard } from '@pages/settings/SettingsCard';
 import { DiagnosticsProgress } from './DiagnosticsProgress';
 import { DiagnosticsResultsTable } from './DiagnosticsResultsTable';
 import styles from './FpsDiagnosticsCard.module.scss';

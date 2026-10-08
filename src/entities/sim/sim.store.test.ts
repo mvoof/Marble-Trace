@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 
-import { MainRoot } from '@store/roots/main-root';
+import { MainRoot } from '@app/roots/main-root';
 import type { SavedLayout } from '@entities/widget/widget-settings';
 import { TELEMETRY_EVENT_BITS } from '@shared/contracts/telemetry-events';
 

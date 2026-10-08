@@ -28,7 +28,7 @@ export class BackendComputedStore {
   /**
    * Heavy 10 Hz per-car frame — never read directly in a component render
    * body. Read it inside `useReactiveDomWrite`/`useReactiveCanvasLoop`;
-   * `oxlint` enforces this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * `oxlint` enforces this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   proximity: ProximityFrame | null = null;
@@ -36,7 +36,7 @@ export class BackendComputedStore {
   /**
    * Heavy 10 Hz per-car frame — never read directly in a component render
    * body. Read it inside `useReactiveDomWrite`/`useReactiveCanvasLoop`;
-   * `oxlint` enforces this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * `oxlint` enforces this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   relative: RelativeFrame | null = null;
@@ -44,7 +44,7 @@ export class BackendComputedStore {
   /**
    * Heavy 10 Hz per-car frame — never read directly in a component render
    * body. Read it inside `useReactiveDomWrite`/`useReactiveCanvasLoop`;
-   * `oxlint` enforces this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * `oxlint` enforces this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   driverEntries: DriverEntriesFrame | null = null;
@@ -58,7 +58,7 @@ export class BackendComputedStore {
   /**
    * 60 Hz hot field — never read directly in a component render body. Read it
    * inside `useReactiveDomWrite`/`useReactiveCanvasLoop`; `oxlint` enforces
-   * this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   lapDelta: LapDeltaFrame | null = null;

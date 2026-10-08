@@ -11,7 +11,7 @@ import {
   CHAT_DELETION,
   CHAT_MESSAGE,
   CHAT_PRESENCE,
-} from '@platform/sync/sim-events';
+} from '@app/sync/sim-events';
 
 // Hard ceiling on retained messages. The widget shows far fewer; this only
 // bounds memory on a channel that never stops talking.

@@ -10,7 +10,7 @@ export class CarsStore {
   /**
    * 60 Hz hot field — never read directly in a component render body. Read it
    * inside `useReactiveDomWrite`/`useReactiveCanvasLoop`; `oxlint` enforces
-   * this (`no-restricted-properties`) for `src/ui/**\/*.tsx`.
+   * this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   carPositions: CarPositionsFrame | null = null;

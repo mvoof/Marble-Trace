@@ -6,7 +6,7 @@ import { Search } from 'lucide-react';
 
 import { useTelemetryInspectorStore } from '@features/telemetry-inspector/telemetry-inspector-context';
 import type { InspectorSource } from '@features/telemetry-inspector/inspector';
-import { SettingsCard } from '@ui/app/main/components/SettingsPage/SettingsCard';
+import { SettingsCard } from '@pages/settings/SettingsCard';
 import { DeliveryCountersCard } from './DeliveryCountersCard';
 import { InspectorRowLine } from './InspectorRowLine';
 import styles from './TelemetryInspectorSection.module.scss';

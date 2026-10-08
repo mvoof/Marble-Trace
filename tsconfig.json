@@ -22,15 +22,7 @@
       "@features/*": ["./src/features/*"],
       "@entities/*": ["./src/entities/*"],
       "@shared/*": ["./src/shared/*"],
-      "@assets/*": ["./src/assets/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@platform/services/*": ["./src/platform/services/*"],
-      "@platform/sync/*": ["./src/platform/sync/*"],
-      "@platform/settings-schema/*": ["./src/platform/settings-schema/*"],
-      "@store/*": ["./src/store/*"],
-      "@ui/app/*": ["./src/ui/app/*"],
-      "@ui/shared/*": ["./src/ui/shared/*"],
-      "@ui/hooks/*": ["./src/ui/hooks/*"]
+      "@assets/*": ["./src/assets/*"]
     },
 
     /* Linting */

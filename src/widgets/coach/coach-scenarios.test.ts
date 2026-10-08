@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { RendererCore } from '@store/roots/renderer-core';
+import { RendererCore } from '@app/roots/renderer-core';
 import { seedScenario } from '@features/preview/scenarios';
 import { CoachWidgetStores } from './coach-stores';
 

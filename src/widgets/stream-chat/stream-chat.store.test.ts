@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
-import { PreviewCore } from '@store/roots/renderer-core';
+import { PreviewCore } from '@app/roots/renderer-core';
 import { StreamChatWidgetStore } from './stream-chat.store';
 import type { ChatMessage, ChatPlatform } from '@shared/contracts/bindings';
 import type { StreamChatWidgetSettings } from '@entities/widget/widget-settings';

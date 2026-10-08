@@ -13,7 +13,7 @@ import {
   isSessionEnded,
   resolveSessionClock,
 } from '@shared/lib/timer-utils';
-import { RendererCore } from '@store/roots/renderer-core';
+import { RendererCore } from '@app/roots/renderer-core';
 import { WIDGETS } from '@entities/widget/widget-catalog';
 import { PACE_CAR_IDX } from './mocks/field';
 import { PREVIEW_CAR_LENGTH_M } from './mocks/traffic';

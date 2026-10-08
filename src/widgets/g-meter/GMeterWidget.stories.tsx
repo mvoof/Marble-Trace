@@ -8,7 +8,7 @@ import {
   G_ACCEL_MPS2,
   mockCarDynamics,
 } from '@features/preview/mocks/dynamics';
-import type { RendererCore } from '@store/roots/renderer-core';
+import type { RendererCore } from '@app/roots/renderer-core';
 import { GMeterWidget } from './GMeterWidget';
 import {
   defineWidgetStories,

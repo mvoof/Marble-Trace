@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import { emitLayoutActivated } from '@shared/api/events.service';
-import { listOverlayMonitors } from '@platform/sync/overlay-resolution';
+import { listOverlayMonitors } from '@app/sync/overlay-resolution';
 
 import type { LayoutsStore } from '@entities/layout/layouts.store';
 import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';

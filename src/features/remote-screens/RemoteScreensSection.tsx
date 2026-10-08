@@ -17,8 +17,8 @@ import { useAppSettingsStore } from '@entities/app-settings/app-settings-context
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useRemoteDevicesStore } from '@features/remote-screens/remote-devices-context';
 import { RemoteScreenRow } from './RemoteScreenRow';
-import { SettingsCard } from '@ui/app/main/components/SettingsPage/SettingsCard';
-import styles from '@ui/app/main/components/SettingsPage/SettingsPage.module.scss';
+import { SettingsCard } from '@pages/settings/SettingsCard';
+import styles from '@pages/settings/SettingsPage.module.scss';
 
 /** The server reports client counts, which only change on the network. */
 

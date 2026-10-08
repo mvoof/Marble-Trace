@@ -54,7 +54,7 @@ import {
   SIM_TRACK_SHAPE,
   SIM_CAPABILITIES,
   SIM_REFERENCE_LAP_UPDATED,
-} from '@platform/sync/sim-events';
+} from '@app/sync/sim-events';
 import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { CarsStore } from '@entities/cars/cars.store';
