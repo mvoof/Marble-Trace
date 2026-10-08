@@ -9,11 +9,11 @@
   gap: 12px;
   margin-bottom: 12px;
   flex-wrap: wrap;
+}
 
-  > :nth-child(2) {
-    flex: 1 1 220px;
-    min-width: 0;
-  }
+.filter {
+  flex: 1 1 220px;
+  min-width: 0;
 }
 
 .toggle {
@@ -115,8 +115,52 @@
   font-variant-numeric: tabular-nums;
 }
 
+.desc {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 12px;
+  opacity: 0.55;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unit {
+  flex: none;
+  min-width: 6ch;
+  font-family: $font-mono;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
 .more {
   padding: 0 10px;
+}
+
+.textLine {
+  display: flex;
+  gap: 12px;
+  padding: 0 10px;
+  font-family: $font-mono;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.lineNumber {
+  flex: none;
+  min-width: 5ch;
+  text-align: right;
+  opacity: 0.4;
+  user-select: none;
+}
+
+// Indentation is the structure of a YAML document, so whitespace is kept as it
+// is and a long line wraps instead of being cut off.
+.lineText {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .deliveryLabel {

@@ -227,6 +227,7 @@ fn run_telemetry_loop(
 
         if (tick == 1 || tick.is_multiple_of(SESSION_POLL_TICKS)) && source.session_changed() {
             if let Some(yaml) = source.poll_session() {
+                service.publish_raw_session(Some((yaml.clone(), source.session_tree_parser())));
                 io.parse_session(yaml);
             }
         }
@@ -240,6 +241,7 @@ fn run_telemetry_loop(
                 source.sim_type()
             );
             service.is_connected.store(true, Ordering::Relaxed);
+            service.publish_raw_var_meta(source.raw_var_meta());
             app.emit(
                 EVENT_STATUS,
                 &SimStatus {
@@ -252,6 +254,12 @@ fn run_telemetry_loop(
         }
 
         let due = scheduler.due(Instant::now());
+
+        // Read here rather than in the emitter: only the source can reach the
+        // sim's own variables. Same tier and switch as the adapted frame.
+        if due.hz4 && state.config.inspector_active {
+            service.publish_inspector_raw_values(source.raw_values());
+        }
 
         let ctx = EmitContext {
             app,
@@ -379,6 +387,9 @@ fn reset_telemetry_state(app: &AppHandle, service: &TelemetryServiceState, state
     service.is_connected.store(false, Ordering::Relaxed);
     service.publish_session(None);
     service.publish_active_reference(None);
+    service.publish_raw_var_meta(Vec::new());
+    service.publish_raw_session(None);
+    service.clear_inspector_frame();
     state.reset_connection();
 
     app.emit(

@@ -1,23 +1,44 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Alert, Empty, Input, Segmented, Switch, Tag } from 'antd';
-import { Search } from 'lucide-react';
+import {
+  Alert,
+  Button,
+  Empty,
+  Input,
+  Segmented,
+  Switch,
+  Tag,
+  message,
+} from 'antd';
+import { Copy, Search } from 'lucide-react';
 
 import { useTelemetryInspectorStore } from '@features/telemetry-inspector/telemetry-inspector-context';
-import type { InspectorSource } from '@features/telemetry-inspector/inspector';
+import type {
+  InspectorSource,
+  RawSessionView,
+} from '@features/telemetry-inspector/inspector';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import { DeliveryCountersCard } from './DeliveryCountersCard';
 import { InspectorRowLine } from './InspectorRowLine';
+import { RawSessionText } from './RawSessionText';
+import { SourceNote } from './SourceNote';
 import styles from './TelemetryInspectorSection.module.scss';
 
+const WAITING_KEYS: Record<InspectorSource, string> = {
+  rawTelemetry: 'settingsPage.telemetryInspector.waitingRaw',
+  rawSession: 'settingsPage.telemetryInspector.waitingSession',
+  telemetry: 'settingsPage.telemetryInspector.waiting',
+  session: 'settingsPage.telemetryInspector.waitingSession',
+};
+
 /**
- * Browser over the two raw streams the app receives: the per-tick telemetry
- * frame, and the parsed session YAML.
+ * Browser over what the sim sends and what the app made of it: iRacing's own
+ * variables and session YAML, untouched, beside the adapted frame and the
+ * parsed session.
  *
- * It shows the adapted frame whole — including the fields no widget is sent,
- * before tiering, demand gating and quantization — which makes it the one place
- * that can answer "does this session report that at all?".
+ * The raw views are the one place that can answer "does the sim report that at
+ * all?"; the processed ones answer "did our adapter keep it?".
  *
  * The feed is opened on mount and closed on unmount, and nothing is polled or
  * even kept by the backend in between. That is deliberate: this window was taken
@@ -29,12 +50,17 @@ export const TelemetryInspectorSection = observer(() => {
   const { t } = useTranslation('main-app');
 
   useEffect(() => {
-    void inspector.start();
+    void inspector.open();
 
     return () => {
-      void inspector.stop();
+      void inspector.close();
     };
   }, [inspector]);
+
+  const copyYaml = async () => {
+    await navigator.clipboard.writeText(inspector.rawSession?.yaml ?? '');
+    void message.success(t('settingsPage.telemetryInspector.copied'));
+  };
 
   return (
     <>
@@ -49,6 +75,14 @@ export const TelemetryInspectorSection = observer(() => {
             onChange={(value) => void inspector.setSource(value)}
             options={[
               {
+                value: 'rawTelemetry',
+                label: t('settingsPage.telemetryInspector.sourceRawTelemetry'),
+              },
+              {
+                value: 'rawSession',
+                label: t('settingsPage.telemetryInspector.sourceRawSession'),
+              },
+              {
                 value: 'telemetry',
                 label: t('settingsPage.telemetryInspector.sourceTelemetry'),
               },
@@ -58,8 +92,13 @@ export const TelemetryInspectorSection = observer(() => {
               },
             ]}
           />
+        </div>
 
+        <SourceNote />
+
+        <div className={styles.controls}>
           <Input
+            className={styles.filter}
             allowClear
             prefix={<Search size={14} />}
             placeholder={t('settingsPage.telemetryInspector.filterPlaceholder')}
@@ -67,18 +106,47 @@ export const TelemetryInspectorSection = observer(() => {
             onChange={(event) => inspector.setFilter(event.target.value)}
           />
 
-          <div className={styles.toggle}>
-            <Switch
-              checked={inspector.hideAbsent}
-              onChange={(checked) => inspector.setHideAbsent(checked)}
-            />
+          {inspector.showsAbsent && (
+            <div className={styles.toggle}>
+              <Switch
+                checked={inspector.hideAbsent}
+                onChange={(checked) => inspector.setHideAbsent(checked)}
+              />
 
-            <span>
-              {t('settingsPage.telemetryInspector.hideAbsent', {
-                count: inspector.absentCount,
-              })}
-            </span>
-          </div>
+              <span>
+                {t('settingsPage.telemetryInspector.hideAbsent', {
+                  count: inspector.absentCount,
+                })}
+              </span>
+            </div>
+          )}
+
+          {inspector.source === 'rawSession' && (
+            <>
+              <Segmented<RawSessionView>
+                value={inspector.rawSessionView}
+                onChange={(value) => inspector.setRawSessionView(value)}
+                options={[
+                  {
+                    value: 'tree',
+                    label: t('settingsPage.telemetryInspector.viewTree'),
+                  },
+                  {
+                    value: 'text',
+                    label: t('settingsPage.telemetryInspector.viewText'),
+                  },
+                ]}
+              />
+
+              <Button
+                icon={<Copy size={14} />}
+                disabled={inspector.rawSession === null}
+                onClick={() => void copyYaml()}
+              >
+                {t('settingsPage.telemetryInspector.copyYaml')}
+              </Button>
+            </>
+          )}
         </div>
 
         {inspector.lastError && (
@@ -93,12 +161,10 @@ export const TelemetryInspectorSection = observer(() => {
         {inspector.isEmpty ? (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={t(
-              inspector.source === 'session'
-                ? 'settingsPage.telemetryInspector.waitingSession'
-                : 'settingsPage.telemetryInspector.waiting'
-            )}
+            description={t(WAITING_KEYS[inspector.source])}
           />
+        ) : inspector.showsRawText ? (
+          <RawSessionText />
         ) : (
           <>
             <div className={styles.summary}>

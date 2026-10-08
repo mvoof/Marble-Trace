@@ -27,6 +27,9 @@ first match wins) and shared by both the in-app widget preview and Storybook.
 3. Go to **Settings → Maintenance → Developer Tools → Save Snapshot JSON**
 4. The file is written to `diagnostics/` next to the settings file, and the
    folder is revealed
-5. Move it here, keeping the `telemetry-snapshot-*.json` name, and remove the
+5. The file also carries `raw` — every iRacing variable and the session YAML
+   as the sim sent them. The preview reads only the adapted fields; `raw` is
+   for reading what the sim reported at that moment
+6. Move it here, keeping the `telemetry-snapshot-*.json` name, and remove the
    previous one — the glob takes the first match, so two snapshots make the
    fixture ambiguous

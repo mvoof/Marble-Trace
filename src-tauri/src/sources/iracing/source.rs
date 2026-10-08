@@ -1,12 +1,13 @@
 //! Owns the kerb connection. !Send — lives entirely on the telemetry thread.
 
 use kerb::iracing::IRsdkConnection;
-use kerb::{Connection, SimConnection, SimType as KerbSimType};
+use kerb::{Connection, SimConnection, SimType as KerbSimType, TelemetryValue};
 use tracing::{debug, warn};
 
 use super::frame_map::DeclaredVars;
 use super::session_parse;
 use crate::model::enums::SimType;
+use crate::sources::raw::{RawValue, RawValues, RawVarMeta, SessionTreeParser};
 use crate::sources::source::{SessionParser, SourceFrame, SourceReadResult, TelemetrySource};
 use crate::telemetry::capabilities::Capabilities;
 
@@ -16,6 +17,8 @@ pub struct IracingSource {
     /// What this car declares. Read once — the sim fixes the variable list for
     /// the session when the connection opens.
     declared: DeclaredVars,
+    /// The same list as the sim describes it, for the inspector.
+    var_meta: Vec<RawVarMeta>,
 }
 
 impl IracingSource {
@@ -56,6 +59,19 @@ impl IracingSource {
                     debug!("iRacing adjustment var: {line}");
                 }
 
+                let mut var_meta: Vec<RawVarMeta> = vars
+                    .iter()
+                    .map(|var| RawVarMeta {
+                        name: var.name.clone(),
+                        type_name: var.type_name.to_string(),
+                        unit: var.unit.clone(),
+                        desc: var.desc.clone(),
+                        count: var.count,
+                    })
+                    .collect();
+
+                var_meta.sort_by(|left, right| left.name.cmp(&right.name));
+
                 let mut names: Vec<String> = vars.into_iter().map(|var| var.name).collect();
                 names.sort();
 
@@ -71,6 +87,7 @@ impl IracingSource {
                     connection: conn,
                     last_session_version: -1,
                     declared,
+                    var_meta,
                 })
             }
             Ok(_) => {
@@ -140,5 +157,41 @@ impl TelemetrySource for IracingSource {
 
     fn session_parser(&self) -> SessionParser {
         session_parse::parse_session
+    }
+
+    fn session_tree_parser(&self) -> SessionTreeParser {
+        session_parse::session_tree
+    }
+
+    fn raw_var_meta(&self) -> Vec<RawVarMeta> {
+        self.var_meta.clone()
+    }
+
+    fn raw_values(&self) -> Option<RawValues> {
+        Some(
+            self.connection
+                .telemetry_snapshot()
+                .into_iter()
+                .map(|(name, value)| (name, raw_value(value)))
+                .collect(),
+        )
+    }
+}
+
+/// A one-to-one copy of kerb's value, which does not serialize itself. A single
+/// `char` is a byte, not a letter, and goes out as its number.
+fn raw_value(value: TelemetryValue) -> RawValue {
+    match value {
+        TelemetryValue::Char(byte) => RawValue::Int(i32::from(byte)),
+        TelemetryValue::String(text) | TelemetryValue::Text(text) => RawValue::Text(text),
+        TelemetryValue::Bool(flag) => RawValue::Bool(flag),
+        TelemetryValue::Int(number) => RawValue::Int(number),
+        TelemetryValue::BitField(bits) => RawValue::BitField(bits),
+        TelemetryValue::Float(number) => RawValue::Float(number),
+        TelemetryValue::Double(number) => RawValue::Double(number),
+        TelemetryValue::BoolArray(items) => RawValue::BoolArray(items),
+        TelemetryValue::IntArray(items) => RawValue::IntArray(items),
+        TelemetryValue::FloatArray(items) => RawValue::FloatArray(items),
+        TelemetryValue::DoubleArray(items) => RawValue::DoubleArray(items),
     }
 }

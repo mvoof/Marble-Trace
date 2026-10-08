@@ -9,6 +9,7 @@ use tracing::{debug, info};
 
 use crate::model::defaults::MAX_FUEL_AVG_WINDOW;
 use crate::model::session::SessionSnapshot;
+use crate::sources::raw::{RawSession, RawValues, RawVarMeta};
 use crate::sources::source::SourceFrame;
 use crate::telemetry::delivery::DeliverySet;
 use crate::telemetry::masks::REMOTE_LABEL;
@@ -225,6 +226,31 @@ pub async fn get_inspector_frame(
     state: State<'_, TelemetryState>,
 ) -> Result<Option<SourceFrame>, String> {
     Ok(lock_or_recover(&state.service.inspector_frame).clone())
+}
+
+/// Every telemetry variable's value under the sim's own names, refreshed with
+/// the adapted frame while the feed is open. `None` while the sim is not
+/// connected, or when the source is a tape — a tape records adapted frames.
+#[tauri::command]
+pub async fn get_inspector_raw_values(
+    state: State<'_, TelemetryState>,
+) -> Result<Option<RawValues>, String> {
+    Ok(lock_or_recover(&state.service.inspector_raw_values).clone())
+}
+
+/// The sim's variable list for this connection: type, unit, description and
+/// length of each. Fixed while connected, so the inspector reads it once.
+#[tauri::command]
+pub async fn get_raw_var_meta(state: State<'_, TelemetryState>) -> Result<Vec<RawVarMeta>, String> {
+    Ok(state.service.raw_var_meta())
+}
+
+/// The session text exactly as the sim wrote it, with the same text as a tree.
+#[tauri::command]
+pub async fn get_raw_session(
+    state: State<'_, TelemetryState>,
+) -> Result<Option<RawSession>, String> {
+    Ok(state.service.raw_session())
 }
 
 /// The delivery counters: per recipient, how many bundles went out and how many

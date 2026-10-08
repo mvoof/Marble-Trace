@@ -1,6 +1,7 @@
 import type {
   InspectorRow,
   InspectorValueKind,
+  RowAnnotation,
 } from '@features/telemetry-inspector/inspector';
 
 /**
@@ -65,6 +66,11 @@ export interface BuildOptions {
   hideAbsent: boolean;
   /** Per-array cap, raised by "show all" on that row. */
   arrayLimits: ReadonlyMap<string, number>;
+  /**
+   * The sim's description of each top-level name. Attached to its row, and
+   * searched by the filter too — a variable is often found by what it means.
+   */
+  annotations?: ReadonlyMap<string, RowAnnotation>;
 }
 
 /**
@@ -117,8 +123,15 @@ export const buildRows = (
         continue;
       }
 
+      const annotation =
+        depth === 0 ? options.annotations?.get(name) : undefined;
+      const describedMatch =
+        annotation !== undefined &&
+        annotation.desc.toLowerCase().includes(options.filter);
+
       if (
         options.filter !== '' &&
+        !describedMatch &&
         !subtreeMatches(name, value, options.filter)
       ) {
         continue;
@@ -143,6 +156,7 @@ export const buildRows = (
         length,
         expandable: branch && childCount !== 0,
         expanded,
+        annotation,
       });
 
       if (!expanded) {

@@ -5,6 +5,8 @@ import type {
   CarStatusFrame,
   EnvironmentFrame,
   LapTimingFrame,
+  RawValue,
+  RawVarMeta,
   SessionFrame,
   SessionSnapshot,
 } from '@shared/contracts/bindings';
@@ -27,4 +29,17 @@ export interface TelemetrySnapshot {
   lapTiming: LapTimingFrame | null;
   session: SessionFrame | null;
   sessionInfo: SessionSnapshot | null;
+  /**
+   * The sim's own data at the same moment, untouched: every variable under
+   * iRacing's names with its declaration, and the session YAML as written.
+   * Optional because the committed fixtures predate it; the preview reads only
+   * the adapted fields above.
+   */
+  raw?: RawSnapshot;
+}
+
+export interface RawSnapshot {
+  variables: RawVarMeta[];
+  values: Partial<Record<string, RawValue>> | null;
+  sessionYaml: string | null;
 }

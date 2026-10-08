@@ -480,10 +480,17 @@ finer than the `toFixed` that renders it, and adding a `PartialEq` to its frame.
 
 _Held by: review._
 
-Its own settings section (Maintenance group). Browses the two raw streams as a
-lazy tree: the live `SourceFrame` pulled from the backend (a superset of the
-bundle — every field the adapter produced, including ones no widget receives),
-and the parsed session snapshot read straight from `session.sessionInfo`.
+Its own settings section (Maintenance group), in dev builds only — `tauri:dev`
+and `tauri:build:dev`, whose frontend is built in the `devtools` mode
+(`pages/settings/dev-tools.ts`); a release build shows neither it nor the
+snapshot export. Shows four streams as a lazy
+tree. Two are the sim's own data, untouched: every iRacing variable under its
+own name with the sim's type, unit and description (kerb's `telemetry_snapshot` /
+`var_list_snapshot`, copied one to one in `sources/raw.rs`), and the session
+YAML as written — as text, and as a tree in the document's order. Two are ours,
+and the panel says so: the live `SourceFrame` (a superset of the bundle — every
+field the adapter produced, including ones no widget receives) and the parsed
+session snapshot read straight from `session.sessionInfo`.
 
 Rows are built by `features/telemetry-inspector/inspector-tree.ts`, which descends only into
 branches the user opened. Arrays are expanded by index rather than printed
@@ -492,10 +499,13 @@ with a "show all". Switching to the session **stops** the telemetry feed: that
 stream arrives on `sim://session`, which this window already receives.
 
 **It pulls, it never subscribes.** The settings window is deliberately off the
-telemetry bundle; an inspector listening for it would undo that. The feed is two
-commands — `set_inspector_active`, `get_inspector_frame` — polled at 4 Hz only
-while the panel is mounted, and the backend keeps no frame while it is closed.
-The snapshot export uses the same feed for one frame.
+telemetry bundle; an inspector listening for it would undo that. The feed is
+`set_inspector_active` plus `get_inspector_frame` / `get_inspector_raw_values`,
+polled at 4 Hz only while the panel is mounted, and the backend keeps no frame
+while it is closed; the variable list (`get_raw_var_meta`) is read once per
+connection, the YAML (`get_raw_session`) once per session change. The snapshot
+export uses the same feed for one frame and writes the raw data beside the
+adapted frames (`raw` in `TelemetrySnapshot`).
 
 | Layer                                 | File                                                                                           |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------- |

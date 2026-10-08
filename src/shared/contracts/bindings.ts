@@ -1184,6 +1184,14 @@ export type InstallMismatch = {
  */
 export type InteractHotkeyMode = 'toggle' | 'hold';
 
+export type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | Partial<{ [key in string]: JsonValue }>;
+
 /**
  * Sector timing data for the sector matrix widget.
  * Total delta is provided directly by iRacing via LapTimingFrame delta fields.
@@ -1722,6 +1730,38 @@ export type RadarDistances = {
   rearDist: number | null;
   leftDist: number | null;
   rightDist: number | null;
+};
+
+/**
+ * The session text as the sim wrote it, and the same text as a tree.
+ *
+ * The tree keeps the document's own key order. It is `null` when the text
+ * does not parse — the text is still there to read.
+ */
+export type RawSession = { yaml: string; tree: JsonValue };
+
+/**
+ * One variable's current value. Untagged: the frontend sees a plain number,
+ * boolean, string or array, and the storage type is in `RawVarMeta`.
+ */
+export type RawValue = boolean | number | string | boolean[] | number[];
+
+/**
+ * One telemetry variable as the sim declares it. Fixed for a connection: the
+ * sim publishes its variable list once, when the connection opens.
+ */
+export type RawVarMeta = {
+  name: string;
+  /**
+   * The sim's storage type: `float`, `double`, `int`, `bitfield`, `bool`, `char`.
+   */
+  typeName: string;
+  unit: string;
+  desc: string;
+  /**
+   * `1` for a scalar, the length for an array (`64` for a `CarIdx*` one).
+   */
+  count: number;
 };
 
 export type ReferenceLapData = {

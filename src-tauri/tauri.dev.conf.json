@@ -11,5 +11,8 @@
   "bundle": {
     "targets": ["nsis"],
     "createUpdaterArtifacts": false
+  },
+  "build": {
+    "beforeBuildCommand": "npm run build -- --mode devtools"
   }
 }

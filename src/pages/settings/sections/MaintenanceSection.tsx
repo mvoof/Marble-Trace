@@ -6,9 +6,8 @@ import { useAppSettingsStore } from '@entities/app-settings/app-settings-context
 import { useDiagnosticsExportStore } from '@features/diagnostics/diagnostics-export-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import { FpsDiagnosticsCard } from '@features/diagnostics/FpsDiagnosticsCard/FpsDiagnosticsCard';
+import { hasDevTools } from '../dev-tools';
 import styles from '../SettingsPage.module.scss';
-
-const isDev = import.meta.env.DEV;
 
 export const MaintenanceSection = observer(() => {
   const appSettings = useAppSettingsStore();
@@ -61,7 +60,7 @@ export const MaintenanceSection = observer(() => {
         </div>
       </SettingsCard>
 
-      {isDev && (
+      {hasDevTools && (
         <SettingsCard title={t('settingsPage.developerTools.title')}>
           <div className={styles.fieldGroup}>
             <div className={styles.fieldTitle}>
