@@ -1,11 +1,11 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { FlagList } from './FlagList/FlagList';
 
 import styles from './FlatFlagsWidget.module.scss';
-import type { FlagDisplaySettings } from '@entities/widget/widget-settings';
+import type { FlagDisplaySettings } from '@shared/contracts/widget-settings';
 import { useFlagsStore } from '@entities/flags/flags-context';
 
 export const FlatFlagsWidget = observer(() => {

@@ -9,7 +9,7 @@ import { useBindingsUiStore } from '@features/hotkey-bindings/bindings-ui-contex
 import { useDeviceInputStore } from '@features/hotkey-bindings/device-input-context';
 import { actionLabel } from './binding-labels';
 import { toAccelerator } from './accelerator';
-import styles from '@pages/bindings/BindingsSettings.module.scss';
+import styles from './BindingCaptureModal.module.scss';
 
 export const BindingCaptureModal = observer(() => {
   const bindings = useBindingsStore();

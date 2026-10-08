@@ -3,7 +3,7 @@ import { makeAutoObservable } from 'mobx';
 import type {
   MonitorBounds,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import type { RemoteConnectionState } from '@shared/contracts/remote';
 import type { ClientSnapshot } from '@shared/contracts/client-protocol';
 import { DEFAULT_REMOTE_BACKGROUND, fitScale } from '@shared/lib/remote-screen';

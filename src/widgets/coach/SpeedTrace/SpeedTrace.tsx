@@ -1,7 +1,7 @@
-import { useWidgetInstanceId } from '@entities/widget/useWidgetSettings';
+import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import { useCallback, useRef } from 'react';
 
-import type { CoachWidgetSettings } from '@entities/widget/widget-settings';
+import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
 import { useCanvasAutoResize } from '@shared/hooks/useCanvasAutoResize';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';

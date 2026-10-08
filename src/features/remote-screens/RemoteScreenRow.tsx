@@ -7,7 +7,6 @@ import { useLayoutsStore } from '@entities/layout/layouts-context';
 import type { GroupedRemoteScreen } from '@entities/layout/layouts.store';
 import { DEFAULT_REMOTE_BACKGROUND } from '@shared/lib/remote-screen';
 import type { RemoteDevice } from '@shared/contracts/bindings';
-import styles from '@pages/settings/SettingsPage.module.scss';
 import rowStyles from './RemoteScreenRow.module.scss';
 
 const ICON_SIZE = 14;
@@ -79,7 +78,7 @@ export const RemoteScreenRow = observer(
     };
 
     return (
-      <div className={styles.fieldGroup}>
+      <div className={rowStyles.fieldGroup}>
         <Flex gap={16} align="flex-start" wrap>
           {/* SVG rather than the default canvas: a canvas is rasterised at CSS
               size and comes out soft on a scaled display, and a camera reading
@@ -117,9 +116,9 @@ export const RemoteScreenRow = observer(
 
           <Flex vertical gap={8} flex="1 1 260px">
             <Flex align="center" gap={8} wrap>
-              <span className={styles.fieldTitle}>{group.name}</span>
+              <span className={rowStyles.fieldTitle}>{group.name}</span>
 
-              <span className={styles.fieldDesc}>
+              <span className={rowStyles.fieldDesc}>
                 {screen.bounds.width}×{screen.bounds.height}
               </span>
 
@@ -135,7 +134,7 @@ export const RemoteScreenRow = observer(
             </Flex>
 
             <Flex align="center" gap={6} wrap>
-              <span className={styles.fieldDesc}>
+              <span className={rowStyles.fieldDesc}>
                 {t('settingsPage.remote.usedInLayouts')}:
               </span>
               {group.layouts.map((usage) => {
@@ -155,7 +154,7 @@ export const RemoteScreenRow = observer(
               })}
             </Flex>
 
-            <span className={`${styles.fieldDesc} ${rowStyles.maskedUrl}`}>
+            <span className={`${rowStyles.fieldDesc} ${rowStyles.maskedUrl}`}>
               {url
                 ? revealed
                   ? url
@@ -166,7 +165,7 @@ export const RemoteScreenRow = observer(
             {/* The one thing that differs between a tablet and a browser
                 source: what the page paints behind the widgets. */}
             <Flex align="center" gap={8} wrap>
-              <span className={styles.fieldDesc}>
+              <span className={rowStyles.fieldDesc}>
                 {t('settingsPage.remote.backgroundLabel')}
               </span>
 
@@ -179,7 +178,7 @@ export const RemoteScreenRow = observer(
                 onClear={() => handleBackground('transparent')}
               />
 
-              <span className={styles.fieldDesc}>
+              <span className={rowStyles.fieldDesc}>
                 {isTransparent
                   ? t('settingsPage.remote.backgroundTransparent')
                   : background}
@@ -187,7 +186,7 @@ export const RemoteScreenRow = observer(
             </Flex>
 
             {isTransparent && (
-              <span className={styles.fieldDesc}>
+              <span className={rowStyles.fieldDesc}>
                 {t('settingsPage.remote.obsHint', {
                   width: screen.bounds.width,
                   height: screen.bounds.height,
@@ -196,7 +195,7 @@ export const RemoteScreenRow = observer(
             )}
 
             {reported && (
-              <span className={styles.fieldDesc}>
+              <span className={rowStyles.fieldDesc}>
                 {t('settingsPage.remote.deviceReports', {
                   width: reported.width,
                   height: reported.height,
@@ -207,7 +206,7 @@ export const RemoteScreenRow = observer(
             )}
 
             {reported && !device?.standalone && (
-              <span className={styles.fieldDesc}>
+              <span className={rowStyles.fieldDesc}>
                 {t('settingsPage.remote.addToHomeScreenHint')}
               </span>
             )}

@@ -1,8 +1,8 @@
-import type { WidgetManifest } from '@entities/widget/widget-settings';
+import type { WidgetManifest } from '@shared/contracts/widget-settings';
 import type {
   EnginePanelWidgetSettings,
   ResolveLayoutChange,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,

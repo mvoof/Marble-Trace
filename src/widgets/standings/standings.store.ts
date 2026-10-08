@@ -6,9 +6,9 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { CarIdentity } from '@entities/cars/car-identity-type';
+import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { DriverGroup } from '@shared/contracts/domain';
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { computeClassSof, hasSetALap } from '@shared/lib/driver';
 import { hasRaceStarted } from '@shared/lib/timer-utils';
 import {

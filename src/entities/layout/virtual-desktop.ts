@@ -3,7 +3,7 @@ import type {
   LayoutResolution,
   MonitorBounds,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 /**
  * The monitor a widget belongs to: the one its `monitor` field names. Never

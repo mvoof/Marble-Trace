@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useLayoutEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -6,7 +6,7 @@ import { drawBarChart, drawLineChart } from './chart-renderers';
 import { countedLaps } from '../fuel-utils';
 import { resizeCanvasToDpr } from '@shared/lib/canvas';
 
-import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
+import type { FuelWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from './FuelChart.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 

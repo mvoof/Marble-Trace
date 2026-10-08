@@ -6,7 +6,7 @@ import type {
   ReferenceLapSample,
   TrackCondition,
 } from '@shared/contracts/bindings';
-import type { CoachWidgetSettings } from '@entities/widget/widget-settings';
+import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   createTraceWindowBuffers,
   EMPTY_TRACE_STATS,

@@ -1,7 +1,7 @@
 import { computed, makeAutoObservable } from 'mobx';
 
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
-import type { RelativeWidgetSettings } from '@entities/widget/widget-settings';
+import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 import {
   buildPaceCarRowEntries,

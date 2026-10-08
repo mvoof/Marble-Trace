@@ -1,4 +1,4 @@
-import type { InvisibleDashWidgetSettings } from '@entities/widget/widget-settings';
+import type { InvisibleDashWidgetSettings } from '@shared/contracts/widget-settings';
 import type { RpmZone } from '@shared/lib/car-signals';
 import { rpmZoneDigitColor } from '@shared/lib/car-signals';
 

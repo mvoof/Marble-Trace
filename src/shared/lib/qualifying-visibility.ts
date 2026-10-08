@@ -1,4 +1,4 @@
-import type { RadarQualifyingVisibility } from '@entities/widget/widget-settings';
+import type { RadarQualifyingVisibility } from '@shared/contracts/widget-settings';
 
 interface QualifyingState {
   isQualifyingSession: boolean;

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { MainRoot } from '@app/roots/main-root';
 import type { CapabilitiesPayload } from '@shared/contracts/bindings';
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { deleteLayout } from '@features/layout-editor/layout-gestures';
 import type { LayoutsStore } from './layouts.store';
 import type { LayoutEditorStore } from '@features/layout-editor/layout-editor.store';

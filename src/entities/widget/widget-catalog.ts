@@ -1,7 +1,7 @@
 import type {
   WidgetManifest,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 /**
  * Every widget the app ships, collected from the per-widget manifests.

@@ -1,7 +1,7 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { InvisibleDashWidgetSettings } from '@entities/widget/widget-settings';
+import type { InvisibleDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { resolveSessionLaps } from '@shared/lib/telemetry-format';
 import { useCarsStore } from '@entities/cars/cars-context';
 import { usePlayerStore } from '@entities/player/player-context';

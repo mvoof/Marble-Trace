@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';
+import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 import { useWidgetDefaultsStore } from '@entities/widget/widget-defaults-context';
 import {
   getWidgetLabel,

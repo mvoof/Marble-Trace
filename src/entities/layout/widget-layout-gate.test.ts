@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInAction } from 'mobx';
 import { MainRoot } from '@app/roots/main-root';
 import { registerPitServiceMainReactions } from '@app/sync/pit-service-sync';
-import type { SavedLayout } from '@entities/widget/widget-settings';
+import type { SavedLayout } from '@shared/contracts/widget-settings';
 
 // setWidgets pushes a few settings to the backend through the service layer,
 // which has no Tauri runtime to talk to under vitest.

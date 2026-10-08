@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
-import type { RaceDashWidgetSettings } from '@entities/widget/widget-settings';
+import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 
 import { PitBlock } from './PitBlock/PitBlock';

@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { BLOCKS, buildGridData } from '@widgets/led-flag/led-flag-utils';
@@ -7,7 +7,7 @@ import { getColorClass, type ColorStyles } from '../led-matrix-utils';
 import { useLedBlinkClock } from '../useLedBlinkClock';
 
 import styles from './LedMatrix.module.scss';
-import type { FlagDisplaySettings } from '@entities/widget/widget-settings';
+import type { FlagDisplaySettings } from '@shared/contracts/widget-settings';
 import { useFlagsStore } from '@entities/flags/flags-context';
 
 interface LedMatrixProps {

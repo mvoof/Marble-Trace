@@ -1,7 +1,7 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { StreamChatWidgetSettings } from '@entities/widget/widget-settings';
+import type { StreamChatWidgetSettings } from '@shared/contracts/widget-settings';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { ChatBanner } from './ChatBanner/ChatBanner';
 import { ChatFooter } from './ChatFooter/ChatFooter';

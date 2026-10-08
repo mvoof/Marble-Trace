@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
@@ -11,7 +11,7 @@ import { OrderChips } from './OrderChips/OrderChips';
 import { ServiceFooter } from './ServiceFooter/ServiceFooter';
 
 import styles from './PitServiceWidget.module.scss';
-import type { PitServiceWidgetSettings } from '@entities/widget/widget-settings';
+import type { PitServiceWidgetSettings } from '@shared/contracts/widget-settings';
 import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 
 export const PitServiceWidget = observer(() => {

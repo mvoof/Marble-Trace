@@ -5,7 +5,7 @@ import type {
 import {
   SESSION_CAR_FIELDS,
   type DriverEntry,
-} from '@entities/cars/driver-entry';
+} from '@shared/contracts/driver-entry';
 
 /** What a car with no licence on record shows — AI and some hosted entries. */
 const DEFAULT_LIC_STRING = 'R 0.00';

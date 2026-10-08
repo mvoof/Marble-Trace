@@ -3,7 +3,7 @@ import { placeWidgetOnMonitor } from './virtual-desktop';
 import type {
   MonitorBounds,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 const SCREEN: MonitorBounds = { x: 0, y: 0, width: 1920, height: 1080 };
 

@@ -3,7 +3,7 @@ import { runInAction } from 'mobx';
 import { PreviewCore } from '@app/roots/renderer-core';
 import { StreamChatWidgetStore } from './stream-chat.store';
 import type { ChatMessage, ChatPlatform } from '@shared/contracts/bindings';
-import type { StreamChatWidgetSettings } from '@entities/widget/widget-settings';
+import type { StreamChatWidgetSettings } from '@shared/contracts/widget-settings';
 
 const makeMessage = (
   id: string,

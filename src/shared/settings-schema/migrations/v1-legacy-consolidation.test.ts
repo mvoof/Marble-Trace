@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { mergeWithDefaults } from '@entities/app-settings/deep-merge';
+import { mergeWithDefaults } from '@shared/lib/deep-merge';
 import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
 import { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 import { BindingsStore } from '@features/hotkey-bindings/bindings.store';

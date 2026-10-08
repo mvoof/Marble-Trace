@@ -1,7 +1,7 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { InvisibleDashWidgetSettings } from '@entities/widget/widget-settings';
+import type { InvisibleDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { computeRpmZoneState } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@entities/player/player-context';

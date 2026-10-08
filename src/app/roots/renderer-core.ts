@@ -19,7 +19,7 @@ import { LayoutsStore } from '@entities/layout/layouts.store';
 import { SettingsMutationLog } from '@entities/layout/mutation-log.store';
 import { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 import { UnitsStore } from '@entities/app-settings/units.store';
-import { WidgetAutoHideStore } from '@entities/widget/widget-auto-hide.store';
+import { WidgetAutoHideStore } from '@features/widget-auto-hide/widget-auto-hide.store';
 import { PlayerStore } from '@entities/player/player.store';
 import { CarsStore } from '@entities/cars/cars.store';
 import { SessionStore } from '@entities/session/session.store';

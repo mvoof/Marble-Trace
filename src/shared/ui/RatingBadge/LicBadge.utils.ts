@@ -1,4 +1,4 @@
-import type { LicBadgeStyle } from '@entities/widget/widget-settings';
+import type { LicBadgeStyle } from '@shared/contracts/widget-settings';
 
 export const formatIr = (ir: number, abbreviate = true): string => {
   if (abbreviate && ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;

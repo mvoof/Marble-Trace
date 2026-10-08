@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { runInAction } from 'mobx';
 
 import { MainRoot } from '@app/roots/main-root';
-import type { SavedLayout } from '@entities/widget/widget-settings';
+import type { SavedLayout } from '@shared/contracts/widget-settings';
 import { TELEMETRY_EVENT_BITS } from '@shared/contracts/telemetry-events';
 
 vi.mock('@shared/api/events.service', () => ({

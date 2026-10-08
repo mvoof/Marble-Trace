@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useClickOutside } from '@shared/hooks/useClickOutside';
 import { ConfigProvider, theme } from 'antd';
 import { X } from 'lucide-react';
-import { WidgetSettings } from '@pages/widgets/WidgetSettings/WidgetSettings';
+import { WidgetSettings } from '@features/widget-settings/WidgetSettings';
 import {
   WidgetEditorProvider,
   type WidgetEditor,

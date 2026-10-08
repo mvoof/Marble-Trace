@@ -1,6 +1,6 @@
-import type { CarIdentity } from '@entities/cars/car-identity-type';
-import type { DriverEntry } from '@entities/cars/driver-entry';
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { CarIdentity } from '@shared/contracts/car-identity';
+import type { DriverEntry } from '@shared/contracts/driver-entry';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { licColumnWidthPx } from '@shared/ui/RatingBadge/LicBadge.utils';
 
 export interface VisibleRows {

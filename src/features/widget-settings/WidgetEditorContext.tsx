@@ -4,7 +4,7 @@ import type {
   WidgetDefaultConfig,
   WidgetSpecificSettings,
   WidgetUserSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
 import type { WidgetDefaultsStore } from '@entities/widget/widget-defaults.store';
 import type { SettingsMutationLog } from '@entities/layout/mutation-log.store';

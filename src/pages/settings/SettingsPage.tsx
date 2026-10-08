@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { BindingsSettings } from '@pages/bindings/BindingsSettings';
-import { DevicesSettings } from '@pages/bindings/DevicesSettings';
+import { BindingsSettings } from '@pages/settings/bindings/BindingsSettings';
+import { DevicesSettings } from '@pages/settings/bindings/DevicesSettings';
 import { StreamChatSourceCard } from '@features/twitch-auth/StreamChatSourceCard/StreamChatSourceCard';
 import { SettingsNav } from './SettingsNav';
 import { GeneralSection } from './sections/GeneralSection';

@@ -1,7 +1,7 @@
 import type {
   LayoutMonitor,
   MonitorBounds,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 /**
  * Remote screens are layout monitors with no display behind them. Everything

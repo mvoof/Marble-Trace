@@ -4,14 +4,18 @@ import {
   fileStamp,
   saveTextFileAndReveal,
 } from '@shared/api/file-export.service';
-import type { MainRoot } from '@app/roots/main-root';
+import type { SourceFrame } from '@shared/contracts/bindings';
+import type { SessionStore } from '@entities/session/session.store';
 import type { TelemetrySnapshot } from '@shared/contracts/telemetry-snapshot';
+import type { FpsDiagnosticsStore } from './fps-diagnostics.store';
 import { resultsToCsv } from './report';
 
-type DiagnosticsExportDeps = Pick<
-  MainRoot,
-  'fpsDiagnostics' | 'telemetryInspector' | 'session'
->;
+interface DiagnosticsExportDeps {
+  fpsDiagnostics: FpsDiagnosticsStore;
+  /** The inspector's one-frame capture; the inspector is a sibling feature. */
+  telemetryInspector: { captureOnce: () => Promise<SourceFrame | null> };
+  session: SessionStore;
+}
 
 const EXPORT_DIR = 'diagnostics';
 const JSON_INDENT = 2;

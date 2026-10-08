@@ -9,7 +9,7 @@ import type {
   BattleOtherClass,
   BattleSides,
   BattleTrigger,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
   NAME_COLUMN_MAX_PX,

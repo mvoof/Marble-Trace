@@ -1,7 +1,7 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { RaceDashWidgetSettings } from '@entities/widget/widget-settings';
+import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';

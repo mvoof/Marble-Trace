@@ -1,6 +1,6 @@
 import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
 import type { CapabilitiesPayload } from '@shared/contracts/bindings';
-import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';
+import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 
 /**
  * Which of these widgets the connected sim can actually feed. Shared by the

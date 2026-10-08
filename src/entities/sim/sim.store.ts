@@ -54,18 +54,22 @@ import {
   SIM_TRACK_SHAPE,
   SIM_CAPABILITIES,
   SIM_REFERENCE_LAP_UPDATED,
-} from '@app/sync/sim-events';
+} from '@shared/api/sim-events';
 import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { CarsStore } from '@entities/cars/cars.store';
 import type { EnvironmentStore } from '@entities/environment/environment.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
-import type { PitServiceWidgetStore } from '@features/pit-service/pit-service.store';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { ReferenceLapStore } from '@entities/player/reference-lap.store';
 import type { SessionStore } from '@entities/session/session.store';
 import type { SimPerfStore } from '@entities/sim-perf/sim-perf.store';
 import type { TrackMapWidgetStore } from '@entities/track/track-map.store';
+
+/** All the sim store does to the pit service: clear it on a disconnect. */
+interface ResettablePitService {
+  reset: () => void;
+}
 
 interface SimDeps {
   appSettings: AppSettingsStore;
@@ -73,7 +77,7 @@ interface SimDeps {
   cars: CarsStore;
   environment: EnvironmentStore;
   liveWidgets: LiveWidgetsView;
-  pitServiceWidget: PitServiceWidgetStore;
+  pitServiceWidget: ResettablePitService;
   player: PlayerStore;
   referenceLap: ReferenceLapStore;
   session: SessionStore;

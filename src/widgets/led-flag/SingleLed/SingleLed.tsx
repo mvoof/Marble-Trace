@@ -1,10 +1,10 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { getSingleLedColorClass, type ColorStyles } from '../led-matrix-utils';
 
 import styles from './SingleLed.module.scss';
-import type { FlagDisplaySettings } from '@entities/widget/widget-settings';
+import type { FlagDisplaySettings } from '@shared/contracts/widget-settings';
 import { useFlagsStore } from '@entities/flags/flags-context';
 
 export const SingleLed = observer(() => {

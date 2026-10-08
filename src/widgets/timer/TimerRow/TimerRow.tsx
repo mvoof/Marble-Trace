@@ -1,10 +1,10 @@
-﻿import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+﻿import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { useWallClock } from '../useWallClock';
 import { formatSimDate, formatSimTime } from '@shared/lib/timer-utils';
 import { useSessionStore } from '@entities/session/session-context';
-import type { TimerWidgetSettings } from '@entities/widget/widget-settings';
+import type { TimerWidgetSettings } from '@shared/contracts/widget-settings';
 
 import { TimerItem } from '../TimerItem/TimerItem';
 import styles from './TimerRow.module.scss';

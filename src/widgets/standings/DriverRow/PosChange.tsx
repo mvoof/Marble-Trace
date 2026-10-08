@@ -1,9 +1,9 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 import { hasRaceStarted } from '@shared/lib/timer-utils';
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from './DriverRow.module.scss';
 import { useSessionStore } from '@entities/session/session-context';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';

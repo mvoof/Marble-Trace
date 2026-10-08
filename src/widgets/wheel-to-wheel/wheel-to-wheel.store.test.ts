@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { observable, runInAction } from 'mobx';
 
-import type { DriverEntry } from '@entities/cars/driver-entry';
+import type { DriverEntry } from '@shared/contracts/driver-entry';
 import { WheelToWheelWidgetStore } from './wheel-to-wheel.store';
 
 type Deps = ConstructorParameters<typeof WheelToWheelWidgetStore>[0];

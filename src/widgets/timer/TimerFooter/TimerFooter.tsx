@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { resolveSessionLaps } from '@shared/lib/telemetry-format';
@@ -10,7 +10,7 @@ import {
 import { useCarsStore } from '@entities/cars/cars-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
-import type { TimerWidgetSettings } from '@entities/widget/widget-settings';
+import type { TimerWidgetSettings } from '@shared/contracts/widget-settings';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import styles from './TimerFooter.module.scss';

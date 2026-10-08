@@ -5,7 +5,7 @@ import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
 
 // A running core whose widget settings the test writes, as main writes its own.
 type WritableCore = RendererCore & { liveWidgets: LiveWidgetsStore };
-import type { PitServiceWidgetSettings } from '@entities/widget/widget-settings';
+import type { PitServiceWidgetSettings } from '@shared/contracts/widget-settings';
 import type { PitStrategy } from '@shared/contracts/pit-strategy';
 import type { PitAutoFrame } from '@shared/contracts/bindings';
 import { PIT_LIMITER_BIT } from '@shared/lib/car-signals';

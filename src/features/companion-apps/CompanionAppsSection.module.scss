@@ -1,0 +1,35 @@
+.buttonFlex {
+  flex: 1;
+}
+
+.fieldGroup {
+  padding-bottom: rem(24);
+  margin-bottom: rem(24);
+  border-bottom: 1px solid $sys-border-sub;
+
+  &:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.fieldTitle {
+  font-size: rem(14);
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: rem(4);
+}
+
+.fieldDesc {
+  font-size: rem(12);
+  color: $sys-text-secondary;
+}
+
+.fieldDescBeforeAction {
+  margin-bottom: rem(16);
+}
+
+.statusError {
+  color: #ff4d4f;
+}

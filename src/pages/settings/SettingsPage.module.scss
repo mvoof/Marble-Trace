@@ -136,10 +136,6 @@
   margin: 0 0 rem(20);
 }
 
-.card {
-  margin-bottom: rem(24);
-}
-
 .sliderWidth {
   width: rem(160);
 }
@@ -153,24 +149,6 @@
   font-family: $font-mono;
   font-size: rem(11);
   color: $sys-text-muted;
-}
-
-.cardTitle {
-  color: $sys-text-secondary;
-  font-weight: 500;
-  margin-bottom: rem(12);
-  font-size: rem(11);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.cardContent {
-  background: $sys-bg-card;
-  backdrop-filter: blur(20px);
-  border: 1px solid $sys-border-main;
-  border-radius: 6px;
-  padding: rem(20);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .fieldLabel {
@@ -250,14 +228,6 @@
   color: #ff4d4f;
 }
 
-.remoteServerError {
-  margin-top: rem(8);
-  font-size: rem(12);
-  line-height: 1.4;
-  color: #ff4d4f;
-  overflow-wrap: anywhere;
-}
-
 .errorIcon {
   margin-right: 4px;
   vertical-align: middle;
@@ -265,13 +235,4 @@
 
 .selectWidth {
   width: 140px;
-}
-
-// The token is meant to be read off the screen and typed into a phone, so it
-// gets input-sized monospace rather than the muted description type.
-.tokenInput {
-  width: 260px;
-  font-family: $font-mono;
-  font-size: rem(15);
-  letter-spacing: 0.06em;
 }

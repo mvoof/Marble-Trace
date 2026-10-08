@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { convertTemp, tempUnit } from '@shared/lib/telemetry-format';
 import { parseWeekendFloat, getSkiesLabel } from '@shared/lib/weather-utils';
-import type { WeatherWidgetSettings } from '@entities/widget/widget-settings';
+import type { WeatherWidgetSettings } from '@shared/contracts/widget-settings';
 import { useEnvironmentStore } from '@entities/environment/environment-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';

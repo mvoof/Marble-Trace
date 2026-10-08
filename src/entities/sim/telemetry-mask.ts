@@ -3,7 +3,7 @@ import {
   type TelemetryEventName,
 } from '@shared/contracts/telemetry-events';
 import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
-import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';
+import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 
 /**
  * The mask a set of widgets asks for: the union of the `telemetryEvents` every

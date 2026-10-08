@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { PitLineWidgetSettings } from '@entities/widget/widget-settings';
+import type { PitLineWidgetSettings } from '@shared/contracts/widget-settings';
 import { mockCarStatus } from '@features/preview/mocks/engine';
 import { mockPitTarget } from '@features/preview/mocks/pit';
 import {

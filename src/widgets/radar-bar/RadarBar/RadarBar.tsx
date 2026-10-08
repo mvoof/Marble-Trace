@@ -1,11 +1,11 @@
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { RadarSettings } from '@entities/widget/widget-settings';
+import type { RadarSettings } from '@shared/contracts/widget-settings';
 import { distanceUnit, formatDistance } from '@shared/lib/telemetry-format';
 import { getBarPillColor } from '@entities/radar/radar-constants';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useRadarWidgetStore } from '@entities/radar/radar-context';

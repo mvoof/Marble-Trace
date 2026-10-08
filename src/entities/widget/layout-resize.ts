@@ -2,7 +2,7 @@ import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
 import type {
   WidgetDefaultConfig,
   WidgetUserSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 /**
  * Runs a widget's own `resolveLayoutChange` (declared in its `manifest.ts`) and

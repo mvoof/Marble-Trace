@@ -23,7 +23,7 @@ import type {
   SavedLayout,
   SessionContext,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 export interface RemoteScreenDescriptor {
   layoutId: string;

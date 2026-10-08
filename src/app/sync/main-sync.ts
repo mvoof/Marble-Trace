@@ -19,10 +19,13 @@ import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { registerRemotePublishing } from './remote-publish';
 import { registerClientPublishing } from './client-publish';
 import { registerTrackRotationOwnership } from './track-rotation-sync';
-import { listMonitorBounds, resolveMonitorByName } from './overlay-resolution';
+import {
+  listMonitorBounds,
+  resolveMonitorByName,
+} from '@shared/api/overlay-resolution';
 import { setUpFirstRun } from '@entities/layout/first-run';
 import { watchMonitorArrangement } from './monitor-watch';
-import type { SessionContext } from '@entities/widget/widget-settings';
+import type { SessionContext } from '@shared/contracts/widget-settings';
 import type { MainRoot } from '@app/roots/main-root';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;

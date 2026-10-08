@@ -54,7 +54,7 @@ vi.mock('@shared/api/settings.service', () => ({
   setCarLengthSilent: vi.fn(),
 }));
 
-vi.mock('./overlay-labels', () => ({
+vi.mock('@shared/api/overlay-labels', () => ({
   OVERLAY_LABEL_PREFIX: 'overlay-',
   monitorLabel: (name: string) => `overlay-${name}`,
   listOverlayWindowLabels: vi.fn(async () => ['overlay-LEFT', 'overlay-RIGHT']),

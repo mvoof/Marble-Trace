@@ -1,7 +1,16 @@
 import { listenTo, type UnlistenFn } from '@shared/api/events.service';
-import type { MainRoot } from '@app/roots/main-root';
+import type { BindingsStore } from './bindings.store';
+import type { DeviceInputStore } from './device-input.store';
 import type { InputButtonEvent, InputDevice } from '@shared/contracts/bindings';
-import { INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT } from '@app/sync/sim-events';
+import {
+  INPUT_BUTTON_EVENT,
+  INPUT_DEVICES_EVENT,
+} from '@shared/api/sim-events';
+
+interface DeviceBindingsDeps {
+  bindings: BindingsStore;
+  deviceInput: DeviceInputStore;
+}
 
 /**
  * The device list and the last button pressed, for the settings screen that
@@ -9,7 +18,7 @@ import { INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT } from '@app/sync/sim-events';
  * which reads the wheel; this window only shows them.
  */
 export const setupDeviceBindings = async (
-  root: MainRoot
+  root: DeviceBindingsDeps
 ): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 
@@ -37,7 +46,7 @@ export const setupDeviceBindings = async (
  * the backend matches it by vendor/product and the stored id is rewritten here,
  * so the fallback is used at most once.
  */
-const reconcileDevices = async (root: MainRoot) => {
+const reconcileDevices = async (root: DeviceBindingsDeps) => {
   const remaps = await root.deviceInput.resolveDevices(
     root.bindings.referencedDeviceIds
   );

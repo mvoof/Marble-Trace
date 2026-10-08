@@ -1,4 +1,4 @@
-import type { RaceDashWidgetSettings } from '@entities/widget/widget-settings';
+import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import type { RpmZone } from '@shared/lib/car-signals';
 import { rpmZoneDigitColor } from '@shared/lib/car-signals';
 

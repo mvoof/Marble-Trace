@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Flag, Trophy, Users } from 'lucide-react';
 
@@ -15,7 +15,7 @@ import {
   type SessionColorKey,
 } from '@shared/lib/timer-utils';
 
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { SessionClock } from '@widgets/standings/SessionClock/SessionClock';
 import styles from './SessionHeader.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';

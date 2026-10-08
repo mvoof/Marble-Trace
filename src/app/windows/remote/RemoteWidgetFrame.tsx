@@ -6,7 +6,7 @@ import { widgetFrameStyle } from '@entities/widget/widget-frame';
 import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import styles from './RemoteWidgetFrame.module.scss';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
-import { useWidgetAutoHideStore } from '@entities/widget/widget-auto-hide-context';
+import { useWidgetAutoHideStore } from '@features/widget-auto-hide/widget-auto-hide-context';
 
 interface RemoteWidgetFrameProps {
   widgetId: string;

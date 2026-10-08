@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
@@ -21,7 +21,7 @@ import {
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import type { CarStatusFrame } from '@shared/contracts/bindings';
-import type { EnginePanelWidgetSettings } from '@entities/widget/widget-settings';
+import type { EnginePanelWidgetSettings } from '@shared/contracts/widget-settings';
 import type { UnitSystem } from '@shared/contracts/domain';
 
 import styles from './EnginePanelWidget.module.scss';

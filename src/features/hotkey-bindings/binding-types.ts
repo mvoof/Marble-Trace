@@ -1,6 +1,13 @@
 import type { HotkeyKind } from '@shared/contracts/bindings';
 import type { Binding, BindingTrigger } from '@shared/contracts/input-bindings';
-import type { PitServiceWidgetStore } from '@features/pit-service/pit-service.store';
+
+/** The pit service's auto switches, as an inert rule reads them. */
+interface PitServiceAutoSwitches {
+  readonly auto: {
+    readonly isAutoFuelEnabled: boolean;
+    readonly isAutoTiresEnabled: boolean;
+  };
+}
 
 /**
  * A bindable action as the settings window shows it. What it does is the
@@ -31,7 +38,7 @@ export interface HotkeyAction {
    * nothing to act on", which is otherwise a silent no-op. Read by the
    * settings UI to draw the hint, so it may look at the core alone.
    */
-  isInert?: (root: { pitServiceWidget: PitServiceWidgetStore }) => boolean;
+  isInert?: (root: { pitServiceWidget: PitServiceAutoSwitches }) => boolean;
   /** i18n key under `bindings.inert` explaining how to make the action work. */
   inertHintKey?: string;
 }

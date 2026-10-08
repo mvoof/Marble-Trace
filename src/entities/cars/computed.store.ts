@@ -17,8 +17,8 @@ import type {
   ProximityFrame,
   RelativeFrame,
 } from '@shared/contracts/bindings';
-import type { CarIdentity } from '@entities/cars/car-identity-type';
-import type { DriverEntry } from '@entities/cars/driver-entry';
+import type { CarIdentity } from '@shared/contracts/car-identity';
+import type { DriverEntry } from '@shared/contracts/driver-entry';
 import { CarIdentityCache } from './car-identity';
 
 import { DriverEntryJoin, rosterByCarIdx } from './driver-entry-join';

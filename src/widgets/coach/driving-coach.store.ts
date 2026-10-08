@@ -7,7 +7,7 @@ import type {
   DrivingAdvisory,
   ReferenceLapSample,
 } from '@shared/contracts/bindings';
-import type { CoachWidgetSettings } from '@entities/widget/widget-settings';
+import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import { interpolateReferenceSample } from './coach-trace-utils';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { ReferenceLapStore } from '@entities/player/reference-lap.store';

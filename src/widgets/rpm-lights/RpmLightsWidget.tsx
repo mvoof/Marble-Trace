@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import type { RaceDashWidgetSettings } from '@entities/widget/widget-settings';
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { PIT_LIMITER_BIT } from '@shared/lib/car-signals';
 import { usePlayerStore } from '@entities/player/player-context';
 

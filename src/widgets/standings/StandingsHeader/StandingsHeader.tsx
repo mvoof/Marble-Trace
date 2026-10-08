@@ -1,7 +1,7 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { buildGridTemplate } from '@widgets/standings/standings-utils';
 import { StandingsHeaderCell } from './StandingsHeaderCell';
 

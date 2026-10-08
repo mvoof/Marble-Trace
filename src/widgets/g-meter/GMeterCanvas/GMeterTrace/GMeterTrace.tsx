@@ -18,12 +18,12 @@ import {
   toRgba,
 } from '@widgets/g-meter/g-meter-utils';
 import type { EnvelopePoint, TrailPoint } from '@widgets/g-meter/types';
-import type { GMeterWidgetSettings } from '@entities/widget/widget-settings';
+import type { GMeterWidgetSettings } from '@shared/contracts/widget-settings';
 
 import styles from './GMeterTrace.module.scss';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
-import { useWidgetInstanceId } from '@entities/widget/useWidgetSettings';
+import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 
 const BADGE_BASE_WIDTH_PX = 240;
 const BADGE_FONT_SIZE_PX = 18;

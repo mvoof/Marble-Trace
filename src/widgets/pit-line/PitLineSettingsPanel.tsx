@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Slider } from 'antd';
 
-import type { PitLineWidgetSettings } from '@entities/widget/widget-settings';
+import type { PitLineWidgetSettings } from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 

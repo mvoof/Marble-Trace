@@ -6,7 +6,7 @@ import {
 } from 'mobx';
 
 import type { ChatMessage, ChatPresence } from '@shared/contracts/bindings';
-import type { StreamChatWidgetSettings } from '@entities/widget/widget-settings';
+import type { StreamChatWidgetSettings } from '@shared/contracts/widget-settings';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type { StreamChatHotkeyTarget } from '@features/hotkey-bindings/hotkey-targets';
 import { scrollThumbFor, type ScrollThumb } from '@shared/lib/canvas';

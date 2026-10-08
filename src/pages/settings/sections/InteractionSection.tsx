@@ -4,7 +4,7 @@ import { Segmented, Switch } from 'antd';
 import type { InteractHotkeyMode } from '@shared/contracts/bindings';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
-import { SettingsCard } from '../SettingsCard';
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
 const INTERACT_AUTO_OFF_OPTIONS = [0, 10, 15, 30, 60];

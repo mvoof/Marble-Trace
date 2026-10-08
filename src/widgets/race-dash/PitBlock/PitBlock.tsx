@@ -1,9 +1,9 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { usePitState } from '@features/pit-service/usePitState';
 import type { PitState } from '@features/pit-service/usePitState';
-import type { RaceDashWidgetSettings } from '@entities/widget/widget-settings';
+import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
 
 import { pitLimitEmphasis } from '../race-dash-utils';

@@ -1,8 +1,8 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import styles from './ServiceFooter.module.scss';
-import type { PitServiceWidgetSettings } from '@entities/widget/widget-settings';
+import type { PitServiceWidgetSettings } from '@shared/contracts/widget-settings';
 import { resolveServiceState } from '@widgets/pit-service/pit-service-utils';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';

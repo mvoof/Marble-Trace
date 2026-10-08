@@ -3,7 +3,7 @@ import { observable } from 'mobx';
 
 import { WidgetAutoHideStore } from './widget-auto-hide.store';
 import type { DrsState } from '@shared/contracts/bindings';
-import type { DrsWidgetSettings } from '@entities/widget/widget-settings';
+import type { DrsWidgetSettings } from '@shared/contracts/widget-settings';
 
 type Deps = ConstructorParameters<typeof WidgetAutoHideStore>[0];
 

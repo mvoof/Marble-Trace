@@ -12,7 +12,7 @@ import { WidgetDragToolbar } from '@app/windows/overlay/components/WidgetDragToo
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSimStore } from '@entities/sim/sim-context';
-import { useWidgetAutoHideStore } from '@entities/widget/widget-auto-hide-context';
+import { useWidgetAutoHideStore } from '@features/widget-auto-hide/widget-auto-hide-context';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useOverlayRoot } from '@app/roots/overlay-root-context';
 

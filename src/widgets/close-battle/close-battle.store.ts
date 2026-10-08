@@ -6,7 +6,7 @@ import {
 } from 'mobx';
 
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
-import type { CloseBattleWidgetSettings } from '@entities/widget/widget-settings';
+import type { CloseBattleWidgetSettings } from '@shared/contracts/widget-settings';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
 import {

@@ -1,8 +1,8 @@
 import type { MainRoot } from '@app/roots/main-root';
-import type { LayoutMonitor } from '@entities/widget/widget-settings';
+import type { LayoutMonitor } from '@shared/contracts/widget-settings';
 import { alignMonitorsToHardware } from '@features/layout-editor/layout-gestures';
 import { layoutGestureStores } from '@features/layout-editor/layout-gestures';
-import { listMonitorBounds } from './overlay-resolution';
+import { listMonitorBounds } from '@shared/api/overlay-resolution';
 import { syncOverlayWindows } from './overlay-windows';
 
 // Rearranging displays in Windows raises WM_DISPLAYCHANGE, but neither Tauri

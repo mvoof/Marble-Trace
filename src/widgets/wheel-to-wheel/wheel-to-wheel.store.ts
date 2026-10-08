@@ -9,10 +9,10 @@ import {
 } from 'mobx';
 
 import type { UnitSystem } from '@shared/contracts/domain';
-import type { DriverEntry } from '@entities/cars/driver-entry';
-import type { WheelToWheelWidgetSettings } from '@entities/widget/widget-settings';
+import type { DriverEntry } from '@shared/contracts/driver-entry';
+import type { WheelToWheelWidgetSettings } from '@shared/contracts/widget-settings';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
-import type { SelfHidingWidgetStore } from '@entities/widget/widget-auto-hide.store';
+import type { SelfHidingWidgetStore } from '@features/widget-auto-hide/widget-auto-hide.store';
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 import { formatSpeed } from '@shared/lib/telemetry-format';
 import { computeRelativeGap } from '@shared/lib/driver';

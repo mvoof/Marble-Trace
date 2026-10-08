@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';
+import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 
 // Ten steps is what the editor's toolbar is worth: the actions that push a
 // snapshot are coarse (a drag, a slider release), so a deeper stack costs

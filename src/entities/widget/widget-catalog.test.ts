@@ -6,7 +6,7 @@ import {
   WIDGETS,
 } from '@entities/widget/widget-catalog';
 import { TELEMETRY_EVENT_BITS } from '@shared/contracts/telemetry-events';
-import type { WidgetManifest } from '@entities/widget/widget-settings';
+import type { WidgetManifest } from '@shared/contracts/widget-settings';
 
 // The catalog collects its manifests from disk, so nothing can be missing from
 // a list. What it can get wrong is the order — every list the user sees is

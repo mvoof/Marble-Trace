@@ -14,7 +14,7 @@ import {
 import type {
   LayoutMonitor,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import type { MonitorWidgetRow } from '@entities/layout/live-widgets.store';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
 import { useLayoutsStore } from '@entities/layout/layouts-context';

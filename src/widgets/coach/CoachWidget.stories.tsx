@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { CoachWidgetSettings } from '@entities/widget/widget-settings';
+import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import type { DrivingAdvisory } from '@shared/contracts/bindings';
 import { mockLapTiming } from '@features/preview/mocks/delta';
 import { seedCoachAdvisory } from '@features/preview/coach-advisory-seed';

@@ -1,7 +1,7 @@
 import type {
   LayoutResolution,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 export const DEFAULT_LAYOUT_RESOLUTION: LayoutResolution = {
   width: 1920,

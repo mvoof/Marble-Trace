@@ -1,10 +1,10 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { PitWarningHeader } from './PitWarningHeader/PitWarningHeader';
 import { PitWarningFill } from './PitWarningFill/PitWarningFill';
 
-import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
+import type { FuelWidgetSettings } from '@shared/contracts/widget-settings';
 import { ReservedSlot } from '@entities/app-settings/ReservedSlot/ReservedSlot';
 import styles from './FuelPitWarning.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';

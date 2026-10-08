@@ -1,8 +1,8 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
-import type { CoachWidgetSettings } from '@entities/widget/widget-settings';
+import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 
 import { CallRow } from './CallRow/CallRow';
 import { InfoRow } from './InfoRow/InfoRow';

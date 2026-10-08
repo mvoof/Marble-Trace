@@ -5,7 +5,7 @@ import { Segmented } from 'antd';
 import type {
   LapDeltaReference,
   LicBadgeStyle,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import { SettingRow } from './SettingRow';
 
 interface LicBadgeStyleRowProps {

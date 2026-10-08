@@ -22,7 +22,7 @@ import {
   TICK_GAP_PCT,
   type BattleOpponent,
 } from './close-battle-utils';
-import type { CloseBattleWidgetSettings } from '@entities/widget/widget-settings';
+import type { CloseBattleWidgetSettings } from '@shared/contracts/widget-settings';
 
 /** Meters, the shipped default: a car length or two. */
 const MERGE_DISTANCE = 2;

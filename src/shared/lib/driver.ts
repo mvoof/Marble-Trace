@@ -1,5 +1,5 @@
-import type { CarIdentity } from '@entities/cars/car-identity-type';
-import type { DriverEntry } from '@entities/cars/driver-entry';
+import type { CarIdentity } from '@shared/contracts/car-identity';
+import type { DriverEntry } from '@shared/contracts/driver-entry';
 import { TrackSurface as TrackSurfaceType } from '@shared/contracts/bindings';
 import { TrackSurface, type FlagType } from '@shared/contracts/domain';
 

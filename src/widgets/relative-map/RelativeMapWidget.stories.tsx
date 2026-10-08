@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { LinearMapWidgetSettings } from '@entities/widget/widget-settings';
+import type { LinearMapWidgetSettings } from '@shared/contracts/widget-settings';
 import type { RendererCore } from '@app/roots/renderer-core';
 import {
   PACE_CAR_IDX,

@@ -1,8 +1,8 @@
 import { parseClassColor } from '@shared/lib/colors';
 import type { CarEntry, CarIdxFrame } from '@shared/contracts/bindings';
-import type { DriverEntry } from '@entities/cars/driver-entry';
-import type { CarIdentity } from '@entities/cars/car-identity-type';
-import type { RelativeWidgetSettings } from '@entities/widget/widget-settings';
+import type { DriverEntry } from '@shared/contracts/driver-entry';
+import type { CarIdentity } from '@shared/contracts/car-identity';
+import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 import type { PaceCarPitPhase } from '@shared/contracts/bindings';
 import { licColumnWidthPx } from '@shared/ui/RatingBadge/LicBadge.utils';
 

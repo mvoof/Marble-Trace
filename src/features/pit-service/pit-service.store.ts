@@ -1,6 +1,6 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import type { PitServiceWidgetSettings } from '@entities/widget/widget-settings';
+import type { PitServiceWidgetSettings } from '@shared/contracts/widget-settings';
 import type { PitStrategy } from '@shared/contracts/pit-strategy';
 import { PitAutoService } from './pit-auto-service.store';
 import { PitOrder } from './pit-order.store';

@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { FlagZoneStyle } from '@entities/widget/widget-settings';
+import type { FlagZoneStyle } from '@shared/contracts/widget-settings';
 import {
   splitFlagZoneAtStartFinish,
   type FlagZone,

@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -12,7 +12,7 @@ import {
   INITIAL_DELTA_LATCH_STATE,
   isGameDeltaOk,
 } from '@shared/lib/delta-utils';
-import type { DeltaWidgetSettings } from '@entities/widget/widget-settings';
+import type { DeltaWidgetSettings } from '@shared/contracts/widget-settings';
 import { DeltaGauge } from '../DeltaGauge/DeltaGauge';
 import { DeltaPlate } from '../DeltaPlate/DeltaPlate';
 import styles from './DeltaLive.module.scss';

@@ -4,7 +4,10 @@ import {
   emitSnapshotToClient,
   listenToClients,
 } from '@shared/api/events.service';
-import { listOverlayWindowLabels, monitorLabel } from './overlay-labels';
+import {
+  listOverlayWindowLabels,
+  monitorLabel,
+} from '@shared/api/overlay-labels';
 import { overlaySnapshotFor, snapshotAppInputs } from './client-snapshot';
 import type { MainRoot } from '@app/roots/main-root';
 import type { RejectedCommand } from '@shared/contracts/bindings';

@@ -1,4 +1,4 @@
-import type { ResolveLayoutChange } from '@entities/widget/widget-settings';
+import type { ResolveLayoutChange } from '@shared/contracts/widget-settings';
 
 /**
  * The pieces every widget manifest is built from.

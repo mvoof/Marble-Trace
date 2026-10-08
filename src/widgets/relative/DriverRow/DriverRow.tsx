@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
@@ -18,7 +18,7 @@ import {
   buildRelativeGridTemplate,
   resolveRowPosition,
 } from '@widgets/relative/relative-utils';
-import type { RelativeWidgetSettings } from '@entities/widget/widget-settings';
+import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 
 import styles from './DriverRow.module.scss';

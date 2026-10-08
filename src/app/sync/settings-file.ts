@@ -1,7 +1,4 @@
-import {
-  isPlainObject,
-  mergeWithDefaults,
-} from '@entities/app-settings/deep-merge';
+import { isPlainObject, mergeWithDefaults } from '@shared/lib/deep-merge';
 import {
   DEFAULT_WIDGET_BY_ID,
   WIDGET_BY_ID,
@@ -14,7 +11,7 @@ import type {
   SavedLayout,
   WidgetDefaultConfig,
   WidgetUserSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 /**
  * How widgets and layouts are written to `settings.json`, and read back.

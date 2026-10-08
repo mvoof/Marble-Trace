@@ -1,7 +1,7 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import type { LinearMapWidgetSettings } from '@entities/widget/widget-settings';
+import type { LinearMapWidgetSettings } from '@shared/contracts/widget-settings';
 import { projectFlagZoneToWindow } from '@entities/incidents/flag-zones';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBackendComputedStore } from '@entities/cars/computed-context';

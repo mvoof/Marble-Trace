@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { TRACK_SURFACE_ON_TRACK } from '@shared/lib/driver';
@@ -11,7 +11,7 @@ import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { FlagBands } from '../FlagBands/FlagBands';
 
 import styles from './LinearMap.module.scss';
-import type { LinearMapWidgetSettings } from '@entities/widget/widget-settings';
+import type { LinearMapWidgetSettings } from '@shared/contracts/widget-settings';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useCarsStore } from '@entities/cars/cars-context';
 import { useSessionStore } from '@entities/session/session-context';

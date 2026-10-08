@@ -2,8 +2,11 @@ import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { availableMonitors } from '@tauri-apps/api/window';
 import { PhysicalPosition, PhysicalSize } from '@tauri-apps/api/dpi';
 import type { RendererCore } from '@app/roots/renderer-core';
-import type { LayoutResolution } from '@entities/widget/widget-settings';
-import { monitorLabel, listOverlayWindowLabels } from './overlay-labels';
+import type { LayoutResolution } from '@shared/contracts/widget-settings';
+import {
+  monitorLabel,
+  listOverlayWindowLabels,
+} from '@shared/api/overlay-labels';
 
 const WIN32_DISPLAY_PREFIX = '\\\\.\\';
 

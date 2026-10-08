@@ -5,7 +5,7 @@ import type { UnitSystem } from '@shared/contracts/domain';
 import type { AppLanguage } from '@shared/contracts/domain';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
-import { SettingsCard } from '../SettingsCard';
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
 export const GeneralSection = observer(() => {

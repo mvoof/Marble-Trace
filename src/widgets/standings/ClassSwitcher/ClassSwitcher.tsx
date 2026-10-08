@@ -1,9 +1,9 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { ClassGroupHeader } from '@widgets/standings/ClassGroupHeader/ClassGroupHeader';
 
 import styles from './ClassSwitcher.module.scss';

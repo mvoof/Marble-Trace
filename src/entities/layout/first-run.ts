@@ -7,7 +7,7 @@ import type {
   LayoutResolution,
   SavedLayout,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 /**
  * The hardware, as first-run setup sees it: one question, asked once. The app

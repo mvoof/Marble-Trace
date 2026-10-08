@@ -1,7 +1,7 @@
 import type {
   WidgetDefaultConfig,
   WidgetUserSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 /**
  * The shape shared by the two widget maps: a set of widget configurations

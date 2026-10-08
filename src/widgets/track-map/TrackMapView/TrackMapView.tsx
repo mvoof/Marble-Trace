@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -16,7 +16,7 @@ import {
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
 
 import styles from './TrackMapView.module.scss';
-import type { TrackMapWidgetSettings } from '@entities/widget/widget-settings';
+import type { TrackMapWidgetSettings } from '@shared/contracts/widget-settings';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSessionStore } from '@entities/session/session-context';

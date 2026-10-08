@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 
-import type { RpmLightsWidgetSettings } from '@entities/widget/widget-settings';
+import type { RpmLightsWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   computeShiftThresholds,
   rpmZoneColorByPct,
 } from '@shared/lib/car-signals';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 

@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -9,7 +9,7 @@ import {
 } from '@widgets/led-flag/led-flag-utils';
 import { SingleLed } from './SingleLed/SingleLed';
 import { LedMatrix } from './LedMatrix/LedMatrix';
-import type { FlagDisplaySettings } from '@entities/widget/widget-settings';
+import type { FlagDisplaySettings } from '@shared/contracts/widget-settings';
 
 import styles from './LedFlagWidget.module.scss';
 

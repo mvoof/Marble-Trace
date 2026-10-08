@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import type { CarIdentity } from '@entities/cars/car-identity-type';
+import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { SessionStore } from '@entities/session/session.store';
 import type { PlayerStore } from '@entities/player/player.store';

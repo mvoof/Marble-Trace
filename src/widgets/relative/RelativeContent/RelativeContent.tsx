@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -9,7 +9,7 @@ import { NoDataPlaceholder } from '@shared/ui/NoDataPlaceholder/NoDataPlaceholde
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSimStore } from '@entities/sim/sim-context';
 import { useRelativeWidgetStore } from '@widgets/relative/relative.store';
-import type { RelativeWidgetSettings } from '@entities/widget/widget-settings';
+import type { RelativeWidgetSettings } from '@shared/contracts/widget-settings';
 
 import styles from './RelativeContent.module.scss';
 

@@ -1,4 +1,4 @@
-import type { CarIdentity } from '@entities/cars/car-identity-type';
+import type { CarIdentity } from '@shared/contracts/car-identity';
 
 export type FlagType =
   | 'none'

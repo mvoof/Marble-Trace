@@ -1,10 +1,10 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Trophy, Users } from 'lucide-react';
 
 import { formatIRating } from '@shared/lib/driver';
 
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { StatPill } from '@shared/ui/StatPill/StatPill';
 import styles from './ClassGroupHeader.module.scss';
 

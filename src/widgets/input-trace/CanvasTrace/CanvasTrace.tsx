@@ -1,7 +1,7 @@
-import { useWidgetInstanceId } from '@entities/widget/useWidgetSettings';
+import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import { useRef, useCallback } from 'react';
 
-import type { InputTraceSettings } from '@entities/widget/widget-settings';
+import type { InputTraceSettings } from '@shared/contracts/widget-settings';
 import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
 import { useCanvasAutoResize } from '@shared/hooks/useCanvasAutoResize';
 import styles from './CanvasTrace.module.scss';

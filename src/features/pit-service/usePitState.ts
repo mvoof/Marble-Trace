@@ -3,8 +3,8 @@ import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useTrackMapWidgetStore } from '@entities/track/track-map-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
-import type { RaceDashWidgetSettings } from '@entities/widget/widget-settings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   formatSpeed,
   MPS_TO_KMH,

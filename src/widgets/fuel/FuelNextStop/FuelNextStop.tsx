@@ -1,9 +1,9 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
 import { NO_TIME_DATA_PLACEHOLDER } from '@shared/lib/telemetry-format';
-import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
+import type { FuelWidgetSettings } from '@shared/contracts/widget-settings';
 import { computeNextStopForecast, formatCountdown } from '../fuel-utils';
 import styles from './FuelNextStop.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';

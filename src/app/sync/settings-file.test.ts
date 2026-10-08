@@ -4,7 +4,7 @@ import type {
   LayoutMonitor,
   SavedLayout,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import {
   decodeLayout,
   decodeTemplates,

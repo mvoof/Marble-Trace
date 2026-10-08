@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Select } from 'antd';
 import { WidgetPreview } from '../WidgetPreview/WidgetPreview';
-import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
+import { WidgetSettings } from '@features/widget-settings/WidgetSettings';
 import { DefaultsEditorProvider } from '@features/widget-settings/WidgetEditorContext';
 import {
   PREVIEW_SCENARIO_BY_ID,

@@ -6,7 +6,7 @@ import type {
   RadarQualifyingVisibility,
   WheelToWheelLayout,
   WheelToWheelWidgetSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { SettingRow } from '@features/widget-settings/SettingRow';

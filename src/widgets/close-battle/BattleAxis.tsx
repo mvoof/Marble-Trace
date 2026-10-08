@@ -1,9 +1,9 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { useCloseBattleWidgetStore } from '@widgets/close-battle/close-battle.store';
-import type { CloseBattleWidgetSettings } from '@entities/widget/widget-settings';
+import type { CloseBattleWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   axisTicks,
   buildAxisSegments,

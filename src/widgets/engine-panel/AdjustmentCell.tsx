@@ -3,8 +3,8 @@ import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useEnginePanelWidgetStore } from '@widgets/engine-panel/engine-panel.store';
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
-import type { EnginePanelWidgetSettings } from '@entities/widget/widget-settings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import type { EnginePanelWidgetSettings } from '@shared/contracts/widget-settings';
 import { EngineCell } from './EngineCell';
 import {
   ADJUSTMENT_SPECS,

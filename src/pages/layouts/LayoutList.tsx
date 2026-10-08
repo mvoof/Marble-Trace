@@ -33,7 +33,7 @@ import {
 import type {
   SavedLayout,
   SessionContext,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import { getWidgetLabel } from '@entities/widget/widget-i18n';
 import {
   createLayout,

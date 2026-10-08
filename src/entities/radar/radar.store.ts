@@ -4,7 +4,7 @@ import type { IReactionDisposer } from 'mobx';
 import type {
   ProximityRadarSettings,
   RadarSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import {
   DESIGN_SIZE_PX,
   resolveScopeScale,

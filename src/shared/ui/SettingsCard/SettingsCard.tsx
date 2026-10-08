@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import styles from './SettingsPage.module.scss';
+import styles from './SettingsCard.module.scss';
 
 interface SettingsCardProps {
   title?: string;

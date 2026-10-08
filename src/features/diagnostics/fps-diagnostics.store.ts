@@ -6,7 +6,9 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { MainRoot } from '@app/roots/main-root';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
+import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
+import type { SimPerfStore } from '@entities/sim-perf/sim-perf.store';
 import type {
   DiagnosticsHudState,
   DiagnosticsPhase,
@@ -19,10 +21,11 @@ import {
 import { resolveAppLanguage } from '@entities/app-settings/app-settings.store';
 import { summarize, type SampleStats } from './stats';
 
-type FpsDiagnosticsDeps = Pick<
-  MainRoot,
-  'liveWidgets' | 'appSettings' | 'simPerf'
->;
+interface FpsDiagnosticsDeps {
+  liveWidgets: LiveWidgetsStore;
+  appSettings: AppSettingsStore;
+  simPerf: SimPerfStore;
+}
 
 /**
  * Measures what each overlay configuration costs the sim, using the sim's own

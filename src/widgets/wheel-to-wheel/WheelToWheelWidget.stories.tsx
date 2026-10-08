@@ -4,7 +4,7 @@ import type { UnitSystem } from '@shared/contracts/domain';
 import type {
   WheelToWheelLayout,
   WheelToWheelWidgetSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import { WheelToWheelWidget } from './WheelToWheelWidget';
 import {
   defineWidgetStories,

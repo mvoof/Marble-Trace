@@ -28,7 +28,7 @@ import { SettingsMutationLogContext } from '@entities/layout/mutation-log-contex
 import { LayoutEditorContext } from '@features/layout-editor/layout-editor-context';
 import { AppSettingsContext } from '@entities/app-settings/app-settings-context';
 import { UnitsContext } from '@entities/app-settings/units-context';
-import { WidgetAutoHideContext } from '@entities/widget/widget-auto-hide-context';
+import { WidgetAutoHideContext } from '@features/widget-auto-hide/widget-auto-hide-context';
 import { SettingsPanelUiContext } from '@entities/widget/settings-panel-ui-context';
 import { BindingsContext } from '@features/hotkey-bindings/bindings-context';
 import { BindingsUiContext } from '@features/hotkey-bindings/bindings-ui-context';

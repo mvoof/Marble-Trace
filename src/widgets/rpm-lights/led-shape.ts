@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-import type { RpmLightsWidgetSettings } from '@entities/widget/widget-settings';
+import type { RpmLightsWidgetSettings } from '@shared/contracts/widget-settings';
 
 export const LED_COUNT = 22;
 

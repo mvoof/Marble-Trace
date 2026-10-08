@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { formatFuel } from '@shared/lib/telemetry-format';
@@ -9,7 +9,7 @@ import {
   NO_FUEL_DATA_PLACEHOLDER,
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,
 } from '@shared/lib/telemetry-format';
-import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
+import type { FuelWidgetSettings } from '@shared/contracts/widget-settings';
 import {
   computeLapsToEmpty,
   EMPTY_FUEL_HISTORY_STATS,

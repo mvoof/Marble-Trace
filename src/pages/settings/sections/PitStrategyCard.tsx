@@ -6,7 +6,7 @@ import {
   FUEL_ADJUST_STEPS,
   type FuelAdjustStep,
 } from '@shared/contracts/pit-strategy';
-import { SettingsCard } from '../SettingsCard';
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
 // Remaining tread, in percent. Above 90 every fresh set would be ordered and

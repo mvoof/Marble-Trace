@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { EnginePanelWidgetSettings } from '@entities/widget/widget-settings';
+import type { EnginePanelWidgetSettings } from '@shared/contracts/widget-settings';
 import { ENGINE_PANEL_MANIFEST } from './manifest';
 import {
   CELL_SLOTS,

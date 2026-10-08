@@ -4,7 +4,7 @@ import {
   type TraceWindowBuffers,
   type TraceWindowStats,
 } from '@widgets/coach/coach-trace-utils';
-import type { CoachTraceChannel } from '@entities/widget/widget-settings';
+import type { CoachTraceChannel } from '@shared/contracts/widget-settings';
 
 export interface SpeedTraceColors {
   reference: string;

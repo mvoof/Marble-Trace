@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { mergeWithDefaults } from '@entities/app-settings/deep-merge';
+import { mergeWithDefaults } from '@shared/lib/deep-merge';
 import {
   DEFAULT_WIDGETS,
   DEFAULT_WIDGET_BY_ID,
@@ -20,7 +20,7 @@ import {
   applyDerivedDesignWidth,
   applyLayoutResize,
   deriveWidgetDesignWidth,
-} from '@features/layout-editor/layout-resize';
+} from '@entities/widget/layout-resize';
 
 import type {
   WidgetDefaultConfig,
@@ -35,7 +35,7 @@ import type {
   LapDeltaReference,
   WidgetSpecificSettings,
   WidgetUserSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import { DEFAULT_LAYOUT_RESOLUTION } from '@entities/layout/layout-resolution';
 import {
   clampToBounds,
@@ -46,7 +46,7 @@ import {
   widgetsOnMonitor,
 } from '@entities/layout/virtual-desktop';
 import { isDisplayMonitor } from '@shared/lib/remote-screen';
-import { WidgetHistory } from '@features/layout-editor/widget-history.store';
+import { WidgetHistory } from '@entities/layout/widget-history.store';
 import {
   bottomZIndex,
   buildStarterWidgets,

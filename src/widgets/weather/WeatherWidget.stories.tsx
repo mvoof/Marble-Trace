@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { EnvironmentFrame } from '@shared/contracts/bindings';
 import type { UnitSystem } from '@shared/contracts/domain';
-import type { WeatherWidgetSettings } from '@entities/widget/widget-settings';
+import type { WeatherWidgetSettings } from '@shared/contracts/widget-settings';
 import { mockEnvironment, mockForecast } from '@features/preview/mocks/weather';
 import { whenSet } from '@/storybook/story-overrides';
 import { WeatherWidget } from './WeatherWidget';

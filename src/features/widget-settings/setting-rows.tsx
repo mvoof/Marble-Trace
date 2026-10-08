@@ -2,7 +2,7 @@ import { use, type CSSProperties, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ColorPicker, Switch } from 'antd';
 
-import type { WidgetSpecificSettings } from '@entities/widget/widget-settings';
+import type { WidgetSpecificSettings } from '@shared/contracts/widget-settings';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { PanelWidgetContext } from './Card';
 import { SettingRow } from './SettingRow';

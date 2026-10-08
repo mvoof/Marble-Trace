@@ -8,11 +8,11 @@ import type {
   RadarScaleMode,
   RadarSettings,
   ProximityRadarSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import {
   LADDER_STEP_M,
   rangeRingRadii,
-} from '@widgets/proximity-radar/radar-scope-utils';
+} from '@entities/radar/radar-scope-utils';
 import {
   DESIGN_SCOPE_RANGE_M,
   DESIGN_SIZE_PX,

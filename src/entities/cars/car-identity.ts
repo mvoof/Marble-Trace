@@ -1,8 +1,8 @@
 import {
   MOVING_CAR_FIELDS,
   type CarIdentity,
-} from '@entities/cars/car-identity-type';
-import type { DriverEntry } from '@entities/cars/driver-entry';
+} from '@shared/contracts/car-identity';
+import type { DriverEntry } from '@shared/contracts/driver-entry';
 
 const MOVING_FIELDS: ReadonlySet<string> = new Set(MOVING_CAR_FIELDS);
 

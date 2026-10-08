@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 import { getWidgetLabel } from '@entities/widget/widget-i18n';
-import { WidgetSettings } from '../widgets/WidgetSettings/WidgetSettings';
+import { WidgetSettings } from '@features/widget-settings/WidgetSettings';
 import { Card, PanelWidgetProvider } from '@features/widget-settings/Card';
 import { SettingRow } from '@features/widget-settings/SettingRow';
 import type { SnapPosition } from '@features/layout-editor/snap-position';

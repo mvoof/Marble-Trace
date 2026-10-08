@@ -7,7 +7,7 @@ import { seedInputHistory } from '@features/preview/preview-animator';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useSettingsMutationLog } from '@entities/layout/mutation-log-context';
-import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';
+import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 
 /**
  * Copies the widget set into an isolated store so the widgets drawn against it

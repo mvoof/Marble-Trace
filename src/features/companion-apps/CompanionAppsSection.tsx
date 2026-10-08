@@ -6,9 +6,9 @@ import { AppWindow, Plus, Search } from 'lucide-react';
 
 import { useCompanionAppsStore } from '@features/companion-apps/companion-apps-context';
 import { CompanionAppRow } from './CompanionAppRow';
-import { SettingsCard } from '@pages/settings/SettingsCard';
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import rowStyles from './CompanionAppRow.module.scss';
-import styles from '@pages/settings/SettingsPage.module.scss';
+import styles from './CompanionAppsSection.module.scss';
 
 const ICON_SIZE = 14;
 

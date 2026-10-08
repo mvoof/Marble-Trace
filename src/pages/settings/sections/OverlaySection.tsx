@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Slider, Switch } from 'antd';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
-import { SettingsCard } from '../SettingsCard';
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
 const STEERING_LOCK_MIN_DEG = 180;

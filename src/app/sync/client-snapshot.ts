@@ -6,7 +6,7 @@ import type { ClientSnapshot } from '@shared/contracts/client-protocol';
 import type {
   LayoutMonitor,
   SavedLayout,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 /**
  * What one client draws, as main holds it: one screen of one layout, the

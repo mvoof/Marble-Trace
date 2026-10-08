@@ -1,13 +1,13 @@
 import { runInAction } from 'mobx';
 
 import { fullScreenMonitor } from '@entities/layout/virtual-desktop';
-import { resolveMonitorByName } from '@app/sync/overlay-resolution';
+import { resolveMonitorByName } from '@shared/api/overlay-resolution';
 
 import type {
   LayoutMonitor,
   LayoutResolution,
-} from '@entities/widget/widget-settings';
-import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
+import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 
 /**
  * The gestures that need both sides of the seam: a change to the layout

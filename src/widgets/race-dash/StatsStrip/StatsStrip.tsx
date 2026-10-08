@@ -1,11 +1,11 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { positionBandColor } from '../race-dash-utils';
 import { resolveSessionLaps } from '@shared/lib/telemetry-format';
 import { RpmValue } from '../RpmValue/RpmValue';
 import { SpeedReadout } from '../SpeedReadout/SpeedReadout';
-import type { RaceDashWidgetSettings } from '@entities/widget/widget-settings';
+import type { RaceDashWidgetSettings } from '@shared/contracts/widget-settings';
 import { useCarsStore } from '@entities/cars/cars-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';

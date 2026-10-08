@@ -6,7 +6,7 @@ import type {
   PaceCarFrame,
   PaceCarPitPhase,
 } from '@shared/contracts/bindings';
-import type { DriverEntry } from '@entities/cars/driver-entry';
+import type { DriverEntry } from '@shared/contracts/driver-entry';
 import { TrackSurface } from '@shared/contracts/domain';
 
 // Mock builders for the field domain — the driver list the standings and the

@@ -1,7 +1,7 @@
 import type {
   WeatherWidgetSettings,
   WidgetManifest,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,

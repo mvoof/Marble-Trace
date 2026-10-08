@@ -1,7 +1,7 @@
 import type {
   CloseBattleWidgetSettings,
   WidgetManifest,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   TRANSPARENT_APPEARANCE_DEFAULTS,

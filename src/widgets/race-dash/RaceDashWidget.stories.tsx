@@ -5,7 +5,7 @@ import { runInAction } from 'mobx';
 import type {
   RaceDashWidgetSettings,
   RpmIndicatorMode,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import { useStore } from '@app/roots/root-store-context';
 import {
   PREVIEW_CORNER_CENTER_PCT,

@@ -6,7 +6,7 @@ import { useSimStore } from '@entities/sim/sim-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useTrackMapWidgetStore } from '@entities/track/track-map-context';
 import { useTrackRotationStore } from '@entities/track/track-rotation-context';
-import { SettingsCard } from '../SettingsCard';
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
 export const TrackMapSection = observer(() => {

@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';
+import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 
 // Widget names stay in English everywhere (catalog, editor, settings) —
 // only widget config UI text (descriptions, settings labels) is localized.

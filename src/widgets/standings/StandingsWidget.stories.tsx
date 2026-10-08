@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { StandingsWidgetStore } from './standings.store';
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import type { MockFieldRows } from '@features/preview/mocks/field';
 import {
   MOCK_DRIVER_FLAG_ROWS,

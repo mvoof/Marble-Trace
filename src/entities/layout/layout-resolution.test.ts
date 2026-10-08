@@ -3,7 +3,7 @@ import {
   resolutionsEqual,
   scaleWidgetsToResolution,
 } from './layout-resolution';
-import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';
+import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 
 const makeWidget = (
   overrides: Partial<WidgetDefaultConfig['userSettings']> = {}

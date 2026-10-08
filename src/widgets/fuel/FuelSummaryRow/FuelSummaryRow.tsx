@@ -1,10 +1,10 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { formatFuel } from '@shared/lib/telemetry-format';
 import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
-import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
+import type { FuelWidgetSettings } from '@shared/contracts/widget-settings';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {

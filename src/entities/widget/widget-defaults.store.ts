@@ -1,11 +1,11 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import { DEFAULT_WIDGETS } from '@entities/widget/widget-catalog';
-import { mergeWithDefaults } from '@entities/app-settings/deep-merge';
+import { mergeWithDefaults } from '@shared/lib/deep-merge';
 import {
   applyLayoutResize,
   deriveWidgetDesignWidth,
-} from '@features/layout-editor/layout-resize';
+} from '@entities/widget/layout-resize';
 import { availableWidgetIdsOf } from '@entities/widget/widget-availability';
 import type { WidgetMap } from '@entities/widget/widget-map';
 import type {
@@ -13,11 +13,12 @@ import type {
   WidgetDefaultConfig,
   WidgetSpecificSettings,
   WidgetUserSettings,
-} from '@entities/widget/widget-settings';
-import type { SimStore } from '@entities/sim/sim.store';
+} from '@shared/contracts/widget-settings';
+import type { CapabilitiesPayload } from '@shared/contracts/bindings';
 
+/** The sim's capabilities, which decide the widgets a sim can show. */
 interface WidgetDefaultsDeps {
-  sim: SimStore;
+  sim: { readonly capabilities: CapabilitiesPayload | null };
 }
 
 const FUEL_BAR_WIDTH_MIN = 5;

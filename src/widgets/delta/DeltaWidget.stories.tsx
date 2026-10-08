@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type {
   DeltaWidgetSettings,
   LapDeltaReference,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import { LapFlash } from './LapFlash/LapFlash';
 import { DeltaWidget } from './DeltaWidget';
 import {

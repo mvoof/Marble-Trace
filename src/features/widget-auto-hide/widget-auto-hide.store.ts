@@ -5,23 +5,29 @@ import type {
   FlagDisplaySettings,
   PitLineWidgetSettings,
   PitServiceWidgetSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import type {
   WidgetInstanceStore,
   WidgetInstanceRegistry,
 } from '@entities/widget/widget-instances.store';
-import { widgetTypeFromId } from './widget-instance';
+import { widgetTypeFromId } from '@entities/widget/widget-instance';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { RadarWidgetStore } from '@entities/radar/radar.store';
 import type { FlagsStore } from '@entities/flags/flags.store';
-import type { PitServiceWidgetStore } from '@features/pit-service/pit-service.store';
 import type { PlayerStore } from '@entities/player/player.store';
+
+/** What the pit service tells auto-hide; the pit service is a sibling feature. */
+interface PitServiceVisibility {
+  readonly isOnPitRoad: boolean;
+  isApproachingWithin: (distanceM: number) => boolean;
+  readonly panel: { readonly isVisible: boolean; readonly lingering: boolean };
+}
 
 interface WidgetAutoHideDeps {
   liveWidgets: LiveWidgetsView;
   radar: RadarWidgetStore;
   flags: FlagsStore;
-  pitServiceWidget: PitServiceWidgetStore;
+  pitServiceWidget: PitServiceVisibility;
   player: PlayerStore;
   widgetInstances: WidgetInstanceRegistry;
 }

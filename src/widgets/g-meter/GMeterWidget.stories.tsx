@@ -3,7 +3,7 @@
 import type {
   GMeterColorMode,
   GMeterDisplayMode,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import {
   G_ACCEL_MPS2,
   mockCarDynamics,

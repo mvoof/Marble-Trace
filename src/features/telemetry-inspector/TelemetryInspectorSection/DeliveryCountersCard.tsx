@@ -9,7 +9,7 @@ import type {
   DeliveryFieldRow,
   DeliveryRow,
 } from '@features/telemetry-inspector/inspector';
-import { SettingsCard } from '@pages/settings/SettingsCard';
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from './TelemetryInspectorSection.module.scss';
 
 const MS_PER_SECOND = 1000;

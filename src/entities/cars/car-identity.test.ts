@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DriverEntry } from '@entities/cars/driver-entry';
+import type { DriverEntry } from '@shared/contracts/driver-entry';
 
 import { CarIdentityCache, carIdentityOf } from './car-identity';
 

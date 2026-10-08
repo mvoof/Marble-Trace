@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type {
   BattleNameMode,
   CloseBattleWidgetSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import type { RendererCore } from '@app/roots/renderer-core';
 import { mockProximity } from '@features/preview/mocks/traffic';
 import { CloseBattleWidget } from './CloseBattleWidget';

@@ -10,7 +10,7 @@ import { SettingsMutationLog } from './mutation-log.store';
 import type {
   LayoutMonitor,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 const STARTER: WidgetDefaultConfig[] = [
   {

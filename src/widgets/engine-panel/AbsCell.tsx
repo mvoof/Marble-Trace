@@ -4,8 +4,8 @@ import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { EngineCell } from './EngineCell';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useEnginePanelWidgetStore } from '@widgets/engine-panel/engine-panel.store';
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
-import type { EnginePanelWidgetSettings } from '@entities/widget/widget-settings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import type { EnginePanelWidgetSettings } from '@shared/contracts/widget-settings';
 import type { CellRenderWeight } from './engine-panel-utils';
 import styles from './EnginePanelWidget.module.scss';
 

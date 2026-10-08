@@ -1,10 +1,10 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { NearbyCar } from '@shared/contracts/bindings';
 import type { UnitSystem } from '@shared/contracts/domain';
-import type { ProximityRadarSettings } from '@entities/widget/widget-settings';
+import type { ProximityRadarSettings } from '@shared/contracts/widget-settings';
 import { formatDistance } from '@shared/lib/telemetry-format';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
@@ -26,7 +26,7 @@ import {
   drawGrid,
   drawTexture,
   threatColorForGap,
-} from '../radar-scope-utils';
+} from '@entities/radar/radar-scope-utils';
 
 import styles from './RadarScope.module.scss';
 

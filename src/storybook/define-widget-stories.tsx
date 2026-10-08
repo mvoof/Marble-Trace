@@ -9,7 +9,7 @@ import type {
   StoryContext,
 } from '@storybook/react-vite';
 
-import type { PreviewScenarioId } from '@entities/widget/preview-scenarios';
+import type { PreviewScenarioId } from '@shared/contracts/preview-scenarios';
 import type { PreviewCore } from '@app/roots/renderer-core';
 import { usePreviewStore, withStore } from '../../.storybook/decorators';
 import { widgetDecorator } from './widgetDecorator';

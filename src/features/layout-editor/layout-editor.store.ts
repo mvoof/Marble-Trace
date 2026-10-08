@@ -1,10 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import { emitLayoutActivated } from '@shared/api/events.service';
-import { listOverlayMonitors } from '@app/sync/overlay-resolution';
+import { listOverlayMonitors } from '@shared/api/overlay-resolution';
 
 import type { LayoutsStore } from '@entities/layout/layouts.store';
-import type { WidgetDefaultConfig } from '@entities/widget/widget-settings';
+import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 
 /**
  * What the editing session needs from the live widget map — the two gestures

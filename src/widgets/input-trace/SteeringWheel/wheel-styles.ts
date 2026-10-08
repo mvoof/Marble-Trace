@@ -1,4 +1,4 @@
-import type { SteeringWheelStyle } from '@entities/widget/widget-settings';
+import type { SteeringWheelStyle } from '@shared/contracts/widget-settings';
 
 /**
  * The order the picker lists the wheels in. Deliberately free of the SVG

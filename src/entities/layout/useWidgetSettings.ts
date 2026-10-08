@@ -5,7 +5,7 @@ import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import type {
   BaseUserSettings,
   WidgetSpecificSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 /**
  * The settings of the copy this component is being rendered as.

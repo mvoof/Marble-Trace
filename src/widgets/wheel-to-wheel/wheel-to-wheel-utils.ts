@@ -1,4 +1,4 @@
-import type { DriverEntry } from '@entities/cars/driver-entry';
+import type { DriverEntry } from '@shared/contracts/driver-entry';
 import { TrackSurface } from '@shared/contracts/domain';
 import { computeRelativeGap } from '@shared/lib/driver';
 

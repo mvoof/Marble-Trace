@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { WidgetUserSettings } from '@entities/widget/widget-settings';
+import type { WidgetUserSettings } from '@shared/contracts/widget-settings';
 import { getContrastTextColor } from '@shared/lib/colors';
 
 // Widgets whose plate is not a plain rounded rectangle need the frame that

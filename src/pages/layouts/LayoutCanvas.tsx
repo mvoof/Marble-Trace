@@ -43,7 +43,7 @@ import type {
   LayoutMonitor,
   MonitorBounds,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 import {
   boundsOverlap,
   clearOfMonitors,

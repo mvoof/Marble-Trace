@@ -10,7 +10,7 @@ import type {
   LayoutMonitor,
   WidgetDefaultConfig,
   WidgetUserSettings,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 /**
  * The payloads of the client protocol (ADR-0007). The envelope around them is

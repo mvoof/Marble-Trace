@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import {
   useCallback,
   useEffect,
@@ -8,8 +8,8 @@ import {
 import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@shared/contracts/domain';
-import type { CarIdentity } from '@entities/cars/car-identity-type';
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { CarIdentity } from '@shared/contracts/car-identity';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSimStore } from '@entities/sim/sim-context';

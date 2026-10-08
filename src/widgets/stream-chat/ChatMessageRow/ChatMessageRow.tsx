@@ -1,9 +1,9 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 
 import type { ChatMessage } from '@shared/contracts/bindings';
-import type { StreamChatWidgetSettings } from '@entities/widget/widget-settings';
+import type { StreamChatWidgetSettings } from '@shared/contracts/widget-settings';
 import { PlatformGlyph } from '../PlatformGlyph/PlatformGlyph';
 
 import styles from './ChatMessageRow.module.scss';

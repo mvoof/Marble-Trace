@@ -2,7 +2,7 @@ import type {
   LayoutMonitor,
   LayoutResolution,
   WidgetDefaultConfig,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 // Diagonal offset applied when a freshly added widget would land on top of one
 // that is already centred on the same screen.

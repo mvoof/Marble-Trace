@@ -8,7 +8,7 @@ import {
 import { applySettingsAction } from '@features/hotkey-bindings/settings-actions';
 import type { MainRoot } from '@app/roots/main-root';
 import type { HotkeySettingsAction } from '@shared/contracts/bindings';
-import { HOTKEY_SETTINGS_ACTION_EVENT } from './sim-events';
+import { HOTKEY_SETTINGS_ACTION_EVENT } from '@shared/api/sim-events';
 
 const reportFailure = (what: string) => (error: unknown) =>
   console.error(`[bindings] ${what} failed`, error);

@@ -11,7 +11,7 @@ import {
   deleteSettingsFile,
   setCarLengthSilent,
 } from '@shared/api/settings.service';
-import { mergeWithDefaults } from '@entities/app-settings/deep-merge';
+import { mergeWithDefaults } from '@shared/lib/deep-merge';
 import { detectSystemLanguage } from '@entities/app-settings/system-locale';
 import { createRemoteToken } from '@shared/lib/remote-screen';
 import i18n from '@/i18n';

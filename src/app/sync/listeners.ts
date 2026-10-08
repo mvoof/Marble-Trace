@@ -7,7 +7,10 @@ import type { OverlayModes } from '@shared/contracts/bindings';
 import type { ControlMessage } from '@shared/contracts/client-protocol';
 import { getOverlayModes } from '@shared/api/hotkeys.service';
 import { applyControl } from './client-sync';
-import { CLIENT_CONTROL_EVENT, OVERLAY_MODES_EVENT } from './sim-events';
+import {
+  CLIENT_CONTROL_EVENT,
+  OVERLAY_MODES_EVENT,
+} from '@shared/api/sim-events';
 
 /**
  * Subscribes a window's stores to the signals sent to it. The settings reach an

@@ -6,7 +6,7 @@ import {
   type UnlistenFn,
 } from '@tauri-apps/api/event';
 
-import { listOverlayWindowLabels } from '@app/sync/overlay-labels';
+import { listOverlayWindowLabels } from '@shared/api/overlay-labels';
 import type {
   RemoteControlKind,
   RemoteDevice,
@@ -21,7 +21,7 @@ import {
   CLIENT_FROM_MAIN_EVENT,
   CLIENT_TO_MAIN_EVENT,
   TRACK_MAP_CLEAR,
-} from '@app/sync/sim-events';
+} from '@shared/api/sim-events';
 import { publishRemoteControl } from '@shared/api/remote.service';
 
 /**

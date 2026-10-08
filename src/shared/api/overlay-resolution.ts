@@ -2,7 +2,7 @@ import { availableMonitors, primaryMonitor } from '@tauri-apps/api/window';
 import type {
   LayoutMonitor,
   LayoutResolution,
-} from '@entities/widget/widget-settings';
+} from '@shared/contracts/widget-settings';
 
 const WIN32_DISPLAY_PREFIX = '\\\\.\\';
 

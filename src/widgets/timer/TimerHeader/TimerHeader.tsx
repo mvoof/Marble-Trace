@@ -1,11 +1,11 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import {
   resolveSessionColorKey,
   type SessionColorKey,
 } from '@shared/lib/timer-utils';
-import type { TimerWidgetSettings } from '@entities/widget/widget-settings';
+import type { TimerWidgetSettings } from '@shared/contracts/widget-settings';
 import { useSessionStore } from '@entities/session/session-context';
 import styles from './TimerHeader.module.scss';
 

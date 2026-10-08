@@ -1,0 +1,44 @@
+.fieldGroup {
+  padding-bottom: rem(24);
+  margin-bottom: rem(24);
+  border-bottom: 1px solid $sys-border-sub;
+
+  &:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.fieldTitle {
+  font-size: rem(14);
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: rem(4);
+}
+
+.fieldDesc {
+  font-size: rem(12);
+  color: $sys-text-secondary;
+}
+
+.fieldDescBeforeAction {
+  margin-bottom: rem(16);
+}
+
+.remoteServerError {
+  margin-top: rem(8);
+  font-size: rem(12);
+  line-height: 1.4;
+  color: #ff4d4f;
+  overflow-wrap: anywhere;
+}
+
+// The token is meant to be read off the screen and typed into a phone, so it
+// gets input-sized monospace rather than the muted description type.
+.tokenInput {
+  width: 260px;
+  font-family: $font-mono;
+  font-size: rem(15);
+  letter-spacing: 0.06em;
+}

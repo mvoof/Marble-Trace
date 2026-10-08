@@ -1,9 +1,9 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import type { CSSProperties } from 'react';
 
 import { observer } from 'mobx-react-lite';
 
-import type { CoachWidgetSettings } from '@entities/widget/widget-settings';
+import type { CoachWidgetSettings } from '@shared/contracts/widget-settings';
 import type { CoachInactiveReason } from '@shared/contracts/bindings';
 import {
   useCoachWidgetStore,

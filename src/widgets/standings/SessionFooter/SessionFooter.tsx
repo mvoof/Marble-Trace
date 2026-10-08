@@ -1,4 +1,4 @@
-import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 import { Wrench, Thermometer, Waves, TriangleAlert, Gavel } from 'lucide-react';
 
@@ -12,7 +12,7 @@ import {
   isNearIncidentPenalty,
 } from '@shared/lib/driver';
 
-import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import type { StandingsWidgetSettings } from '@shared/contracts/widget-settings';
 import { StatPill, type StatPillVariant } from '@shared/ui/StatPill/StatPill';
 import styles from './SessionFooter.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
