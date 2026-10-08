@@ -31,6 +31,7 @@ export const Blue: Story = { args: { type: 'blue' } };
 export const Meatball: Story = { args: { type: 'meatball' } };
 export const Black: Story = { args: { type: 'black' } };
 export const Penalty: Story = { args: { type: 'penalty' } };
+export const Furled: Story = { args: { type: 'furled' } };
 export const Checkered: Story = { args: { type: 'checkered' } };
 export const Dq: Story = { args: { type: 'dq' } };
 
@@ -39,6 +40,7 @@ const ALL_TYPES: FlagType[] = [
   'meatball',
   'black',
   'penalty',
+  'furled',
   'checkered',
   'dq',
 ];

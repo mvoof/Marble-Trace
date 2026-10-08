@@ -20,6 +20,8 @@ export const DriverFlagBadge = ({ type }: DriverFlagBadgeProps) => {
         return 'Warning (Black Flag)';
       case 'penalty':
         return 'Active Penalty (Black Flag)';
+      case 'furled':
+        return 'Track Cut Warning (Slow Down)';
       case 'dq':
         return 'Disqualified (DQ Flag)';
       default:

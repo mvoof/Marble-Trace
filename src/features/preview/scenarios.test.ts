@@ -91,6 +91,7 @@ describe('flag scenarios', () => {
     ['safety-car', 'sc'],
     ['blue-flag', 'blue'],
     ['black-flag', 'black'],
+    ['furled-flag', 'furled'],
     ['dq-flag', 'dq'],
     ['green-flag', 'green'],
     ['white-flag', 'white'],

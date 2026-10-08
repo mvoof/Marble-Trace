@@ -14,6 +14,7 @@ export const FLAG_LABEL: Record<FlagType, string> = {
   penalty: 'PENALTY',
   sc: 'PACE CAR',
   dq: 'DISQUALIFIED',
+  furled: 'SLOW DOWN',
 };
 
 export const BLINK_FLAGS = new Set<FlagType>(['yellow', 'red']);

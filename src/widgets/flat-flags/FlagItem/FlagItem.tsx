@@ -20,6 +20,7 @@ const FLAG_ITEM_CLASS: Record<FlagType, string> = {
   penalty: styles.itemBlack,
   sc: styles.itemSc,
   dq: styles.itemDq,
+  furled: styles.itemFurled,
 };
 
 interface FlagItemProps {

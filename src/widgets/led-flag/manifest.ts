@@ -49,6 +49,7 @@ export const LED_FLAGS_MANIFEST: WidgetManifest = {
     'safety-car',
     'blue-flag',
     'black-flag',
+    'furled-flag',
     'dq-flag',
     'green-flag',
     'white-flag',

@@ -156,7 +156,7 @@ export const parseDriverFlags = (rawFlags: number): FlagType => {
   if (rawFlags & SESSION_FLAGS.disqualify) return 'dq';
   if (rawFlags & SESSION_FLAGS.repair) return 'meatball';
   if (rawFlags & SESSION_FLAGS.black) return 'penalty';
-  if (rawFlags & SESSION_FLAGS.furled) return 'black';
+  if (rawFlags & SESSION_FLAGS.furled) return 'furled';
   if (rawFlags & SESSION_FLAGS.blue) return 'blue';
   if (rawFlags & SESSION_FLAGS.checkered) return 'checkered';
 
