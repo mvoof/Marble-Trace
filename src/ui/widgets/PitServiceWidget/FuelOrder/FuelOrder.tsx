@@ -6,7 +6,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import styles from './FuelOrder.module.scss';
 import { litersToDisplayFuel } from '@shared/lib/telemetry-format';
 import type { UnitSystem } from '@shared/contracts/domain';
-import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 
 // The sim always reports fuel in liters; only the readout follows the setting.

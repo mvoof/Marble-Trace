@@ -3,18 +3,18 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { BindingsSettings } from '@ui/app/main/components/BindingsSettings/BindingsSettings';
 import { DevicesSettings } from '@ui/app/main/components/BindingsSettings/DevicesSettings';
-import { StreamChatSourceCard } from './StreamChatSourceCard/StreamChatSourceCard';
+import { StreamChatSourceCard } from '@features/twitch-auth/StreamChatSourceCard/StreamChatSourceCard';
 import { SettingsNav } from './SettingsNav';
 import { GeneralSection } from './sections/GeneralSection';
-import { CompanionAppsSection } from './sections/CompanionAppsSection';
+import { CompanionAppsSection } from '@features/companion-apps/CompanionAppsSection';
 import { UpdatesSection } from './sections/UpdatesSection';
 import { OverlaySection } from './sections/OverlaySection';
 import { InteractionSection } from './sections/InteractionSection';
 import { TrackMapSection } from './sections/TrackMapSection';
 import { SharedValuesSection } from './sections/SharedValuesSection';
 import { MaintenanceSection } from './sections/MaintenanceSection';
-import { TelemetryInspectorSection } from './sections/TelemetryInspectorSection/TelemetryInspectorSection';
-import { RemoteScreensSection } from './sections/RemoteScreensSection';
+import { TelemetryInspectorSection } from '@features/telemetry-inspector/TelemetryInspectorSection/TelemetryInspectorSection';
+import { RemoteScreensSection } from '@features/remote-screens/RemoteScreensSection';
 import {
   DEFAULT_SECTION,
   groupOfSection,

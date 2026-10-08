@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Select } from 'antd';
 import { WidgetPreview } from '../WidgetPreview/WidgetPreview';
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
-import { DefaultsEditorProvider } from '../WidgetSettings/WidgetEditorContext';
+import { DefaultsEditorProvider } from '@features/widget-settings/WidgetEditorContext';
 import {
   PREVIEW_SCENARIO_BY_ID,
   DEFAULT_PREVIEW_SCENARIO_ID,
-} from '@/preview/scenarios';
+} from '@features/preview/scenarios';
 import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
 import styles from './WidgetWorkbench.module.scss';
 

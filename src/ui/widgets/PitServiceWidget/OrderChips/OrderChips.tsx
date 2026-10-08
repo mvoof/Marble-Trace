@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import styles from './OrderChips.module.scss';
 import { OrderToggle } from '@ui/widgets/PitServiceWidget/OrderToggle/OrderToggle';
-import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 import { usePlayerStore } from '@entities/player/player-context';
 
 const UNKNOWN_COMPOUND = '—';

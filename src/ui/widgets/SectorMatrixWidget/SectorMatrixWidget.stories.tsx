@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { SectorMatrixWidgetSettings } from '@entities/widget/widget-settings';
-import { mockLapDelta, mockLapTiming } from '@/preview/mocks/delta';
-import { mockSectors } from '@/preview/mocks/timing';
+import { mockLapDelta, mockLapTiming } from '@features/preview/mocks/delta';
+import { mockSectors } from '@features/preview/mocks/timing';
 import { SectorMatrixWidget } from './SectorMatrixWidget';
 import {
   defineWidgetStories,

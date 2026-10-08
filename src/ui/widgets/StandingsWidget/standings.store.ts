@@ -18,7 +18,7 @@ import {
 } from '@shared/lib/canvas';
 import { MOVE_DURATION_MS } from '@shared/lib/animation';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
-import type { StandingsHotkeyTarget } from '@store/hotkeys/hotkey-targets';
+import type { StandingsHotkeyTarget } from '@features/hotkey-bindings/hotkey-targets';
 import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';

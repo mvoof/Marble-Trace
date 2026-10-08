@@ -19,9 +19,9 @@ import {
 
 import { getWidgetLabel } from '@entities/widget/widget-i18n';
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
-import { Card, PanelWidgetProvider } from '../WidgetSettings/panels/Card';
-import { SettingRow } from '../WidgetSettings/panels/SettingRow';
-import type { SnapPosition } from './snap-position';
+import { Card, PanelWidgetProvider } from '@features/widget-settings/Card';
+import { SettingRow } from '@features/widget-settings/SettingRow';
+import type { SnapPosition } from '@features/layout-editor/snap-position';
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import styles from './WidgetInspector.module.scss';
 

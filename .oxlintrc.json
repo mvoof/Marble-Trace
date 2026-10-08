@@ -103,7 +103,7 @@
       }
     },
     {
-      "files": ["src/store/**", "src/entities/**"],
+      "files": ["src/store/**", "src/entities/**", "src/features/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -233,7 +233,7 @@
       }
     },
     {
-      "files": ["src/preview/**"],
+      "files": ["src/features/preview/**"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -286,7 +286,7 @@
       }
     },
     {
-      "files": ["src/ui/**"],
+      "files": ["src/ui/**", "src/features/**/*.tsx"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -440,7 +440,11 @@
       }
     },
     {
-      "files": ["src/ui/**/*.tsx", "src/shared/ui/**/*.tsx"],
+      "files": [
+        "src/ui/**/*.tsx",
+        "src/shared/ui/**/*.tsx",
+        "src/features/**/*.tsx"
+      ],
       "rules": {
         "no-restricted-properties": [
           "error",

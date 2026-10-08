@@ -12,8 +12,8 @@ import {
   isCornerOrdered,
   orderedPressure,
   type CornerPosition,
-} from '@store/widgets/pit-service/pit-tires';
-import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+} from '@features/pit-service/pit-tires';
+import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 

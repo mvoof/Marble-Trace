@@ -8,15 +8,15 @@ import type {
   InvisibleDashRpmFormat,
   InvisibleDashWidgetSettings,
 } from '@entities/widget/widget-settings';
-import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import styles from '@features/widget-settings/WidgetSettings.module.scss';
 
-import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
-import { SettingRow } from '@ui/app/main/components/WidgetSettings/panels/SettingRow';
-import { useWidgetEditor } from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';
+import { Card } from '@features/widget-settings/Card';
+import { SettingRow } from '@features/widget-settings/SettingRow';
+import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import {
   panelRows,
   usePanelWidgetId,
-} from '@ui/app/main/components/WidgetSettings/panels/setting-rows';
+} from '@features/widget-settings/setting-rows';
 
 const WIDGET_ID = 'invisible-dash';
 

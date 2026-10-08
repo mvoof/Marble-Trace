@@ -3,9 +3,9 @@ import { runInAction } from 'mobx';
 import { MainRoot } from '@store/roots/main-root';
 import type { CapabilitiesPayload } from '@shared/contracts/bindings';
 import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
-import { deleteLayout } from '@store/layout/layout-gestures';
+import { deleteLayout } from '@features/layout-editor/layout-gestures';
 import type { LayoutsStore } from './layouts.store';
-import type { LayoutEditorStore } from '@store/layout/layout-editor.store';
+import type { LayoutEditorStore } from '@features/layout-editor/layout-editor.store';
 import type { LiveWidgetsStore } from './live-widgets.store';
 
 const FULL_CAPABILITIES: CapabilitiesPayload = {

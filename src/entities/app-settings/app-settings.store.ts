@@ -22,7 +22,10 @@ import type {
   InteractHotkeyMode,
   OverlayModes,
 } from '@shared/contracts/bindings';
-import type { FuelAdjustStep, PitStrategy } from '@/types/pit-strategy';
+import type {
+  FuelAdjustStep,
+  PitStrategy,
+} from '@shared/contracts/pit-strategy';
 import type { SettingsLockReason } from '@shared/settings-schema/types';
 
 export const resolveAppLanguage = (language: AppLanguage) =>

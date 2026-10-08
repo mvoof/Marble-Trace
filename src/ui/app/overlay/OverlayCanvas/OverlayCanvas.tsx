@@ -10,7 +10,7 @@ import { usePreviewContentStore } from '@ui/app/preview-content-store';
 import styles from './OverlayCanvas.module.scss';
 import { CoreProvider } from '@ui/app/store-providers';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
-import { useBindingsStore } from '@store/hotkeys/bindings-context';
+import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
 import { useSimStore } from '@entities/sim/sim-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';

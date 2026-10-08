@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 
 import { PitLimiterRow } from './PitLimiterRow';
 import { PitSpeedGauge } from './PitSpeedGauge';

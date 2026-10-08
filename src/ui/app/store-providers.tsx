@@ -17,7 +17,7 @@ import { SimContext } from '@entities/sim/sim-context';
 import { FlagsContext } from '@entities/flags/flags-context';
 import { IncidentsWidgetContext } from '@entities/incidents/incidents-context';
 import { RadarWidgetContext } from '@entities/radar/radar-context';
-import { PitServiceWidgetContext } from '@store/widgets/pit-service/pit-service-context';
+import { PitServiceWidgetContext } from '@features/pit-service/pit-service-context';
 import { TrackMapWidgetContext } from '@entities/track/track-map-context';
 import { TrackRotationContext } from '@entities/track/track-rotation-context';
 import { LiveWidgetsContext } from '@entities/layout/live-widgets-context';
@@ -25,25 +25,25 @@ import { MainLiveWidgetsContext } from '@entities/layout/main-live-widgets-conte
 import { WidgetDefaultsContext } from '@entities/widget/widget-defaults-context';
 import { LayoutsContext } from '@entities/layout/layouts-context';
 import { SettingsMutationLogContext } from '@entities/layout/mutation-log-context';
-import { LayoutEditorContext } from '@store/layout/layout-editor-context';
+import { LayoutEditorContext } from '@features/layout-editor/layout-editor-context';
 import { AppSettingsContext } from '@entities/app-settings/app-settings-context';
 import { UnitsContext } from '@entities/app-settings/units-context';
 import { WidgetAutoHideContext } from '@entities/widget/widget-auto-hide-context';
 import { SettingsPanelUiContext } from '@entities/widget/settings-panel-ui-context';
-import { BindingsContext } from '@store/hotkeys/bindings-context';
-import { BindingsUiContext } from '@store/hotkeys/bindings-ui-context';
-import { DeviceInputContext } from '@store/hotkeys/device-input-context';
-import { FpsDiagnosticsContext } from '@store/diagnostics/fps-diagnostics-context';
-import { DiagnosticsExportContext } from '@store/diagnostics/diagnostics-export-context';
-import { TelemetryInspectorContext } from '@store/diagnostics/telemetry-inspector-context';
-import { TwitchAuthContext } from '@store/integrations/twitch-auth-context';
-import { CompanionAppsContext } from '@store/integrations/companion-apps-context';
-import { RemoteDevicesContext } from '@store/remote/remote-devices-context';
+import { BindingsContext } from '@features/hotkey-bindings/bindings-context';
+import { BindingsUiContext } from '@features/hotkey-bindings/bindings-ui-context';
+import { DeviceInputContext } from '@features/hotkey-bindings/device-input-context';
+import { FpsDiagnosticsContext } from '@features/diagnostics/fps-diagnostics-context';
+import { DiagnosticsExportContext } from '@features/diagnostics/diagnostics-export-context';
+import { TelemetryInspectorContext } from '@features/telemetry-inspector/telemetry-inspector-context';
+import { TwitchAuthContext } from '@features/twitch-auth/twitch-auth-context';
+import { CompanionAppsContext } from '@features/companion-apps/companion-apps-context';
+import { RemoteDevicesContext } from '@features/remote-screens/remote-devices-context';
 import { WidgetHostContext } from '@ui/widgets/widget-host-context';
 import {
   PreviewWorldContext,
   type PreviewWorld,
-} from '@/preview/preview-host-context';
+} from '@features/preview/preview-host-context';
 
 /** One context and the store it holds — typed together, so a wrong store is a compile error here. */
 interface ProvidedStore {

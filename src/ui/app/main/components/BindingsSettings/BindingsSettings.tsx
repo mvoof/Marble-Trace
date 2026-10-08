@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Popconfirm } from 'antd';
-import { useBindingsStore } from '@store/hotkeys/bindings-context';
-import { useBindingsUiStore } from '@store/hotkeys/bindings-ui-context';
-import { useDeviceInputStore } from '@store/hotkeys/device-input-context';
+import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
+import { useBindingsUiStore } from '@features/hotkey-bindings/bindings-ui-context';
+import { useDeviceInputStore } from '@features/hotkey-bindings/device-input-context';
 import { BindingGroup } from './BindingGroup';
 import { BindingSearch } from './BindingSearch';
-import { BindingCaptureModal } from './BindingCaptureModal';
-import { actionLabel, bindingLabel } from './binding-labels';
+import { BindingCaptureModal } from '@features/hotkey-bindings/BindingCaptureModal';
+import {
+  actionLabel,
+  bindingLabel,
+} from '@features/hotkey-bindings/binding-labels';
 import styles from './BindingsSettings.module.scss';
 
 export const BindingsSettings = observer(() => {

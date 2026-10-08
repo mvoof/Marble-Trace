@@ -60,7 +60,7 @@ import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { CarsStore } from '@entities/cars/cars.store';
 import type { EnvironmentStore } from '@entities/environment/environment.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
-import type { PitServiceWidgetStore } from '@store/widgets/pit-service/pit-service.store';
+import type { PitServiceWidgetStore } from '@features/pit-service/pit-service.store';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { ReferenceLapStore } from '@entities/player/reference-lap.store';
 import type { SessionStore } from '@entities/session/session.store';

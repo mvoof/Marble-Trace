@@ -1,16 +1,19 @@
 import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { usePreviewWorldFactory } from '@/preview/preview-host-context';
+import { usePreviewWorldFactory } from '@features/preview/preview-host-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
-import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
+import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
 import { widgetFrameStyle } from '@entities/widget/widget-frame';
-import { seedScenario, DEFAULT_PREVIEW_SCENARIO_ID } from '@/preview/scenarios';
-import { seedInputHistory } from '@/preview/preview-animator';
+import {
+  seedScenario,
+  DEFAULT_PREVIEW_SCENARIO_ID,
+} from '@features/preview/scenarios';
+import { seedInputHistory } from '@features/preview/preview-animator';
 import styles from './WidgetPreview.module.scss';
 
 interface WidgetPreviewProps {

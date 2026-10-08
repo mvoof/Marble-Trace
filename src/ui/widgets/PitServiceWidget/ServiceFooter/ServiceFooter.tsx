@@ -5,7 +5,7 @@ import styles from './ServiceFooter.module.scss';
 import type { PitServiceWidgetSettings } from '@entities/widget/widget-settings';
 import { resolveServiceState } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
-import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 import { usePlayerStore } from '@entities/player/player-context';
 
 import { PositionBadge } from './PositionBadge/PositionBadge';

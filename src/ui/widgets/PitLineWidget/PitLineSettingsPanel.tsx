@@ -3,16 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { Slider } from 'antd';
 
 import type { PitLineWidgetSettings } from '@entities/widget/widget-settings';
-import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 
-import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
-import { useWidgetEditor } from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';
+import { Card } from '@features/widget-settings/Card';
+import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import {
   panelRows,
   usePanelWidgetId,
-} from '@ui/app/main/components/WidgetSettings/panels/setting-rows';
-import { distanceScale } from '@ui/app/main/components/WidgetSettings/panels/distance-scale';
+} from '@features/widget-settings/setting-rows';
+import { distanceScale } from '@features/widget-settings/distance-scale';
 
 // The bars' own pit entry countdown. Zero switches it off and they appear on
 // pit road; past a kilometer they are up for most of a lap on a short track.

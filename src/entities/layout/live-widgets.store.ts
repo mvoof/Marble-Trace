@@ -20,7 +20,7 @@ import {
   applyDerivedDesignWidth,
   applyLayoutResize,
   deriveWidgetDesignWidth,
-} from '@store/layout/layout-resize';
+} from '@features/layout-editor/layout-resize';
 
 import type {
   WidgetDefaultConfig,
@@ -46,7 +46,7 @@ import {
   widgetsOnMonitor,
 } from '@entities/layout/virtual-desktop';
 import { isDisplayMonitor } from '@shared/lib/remote-screen';
-import { WidgetHistory } from '@store/layout/widget-history.store';
+import { WidgetHistory } from '@features/layout-editor/widget-history.store';
 import {
   bottomZIndex,
   buildStarterWidgets,

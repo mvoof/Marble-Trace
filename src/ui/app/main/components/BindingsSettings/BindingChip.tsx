@@ -2,10 +2,13 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Tooltip } from 'antd';
 import { X } from 'lucide-react';
-import type { Binding } from '@/types/input-bindings';
-import { useBindingsStore } from '@store/hotkeys/bindings-context';
-import { useDeviceInputStore } from '@store/hotkeys/device-input-context';
-import { actionLabel, bindingLabel } from './binding-labels';
+import type { Binding } from '@shared/contracts/input-bindings';
+import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
+import { useDeviceInputStore } from '@features/hotkey-bindings/device-input-context';
+import {
+  actionLabel,
+  bindingLabel,
+} from '@features/hotkey-bindings/binding-labels';
 import styles from './BindingsSettings.module.scss';
 
 interface BindingChipProps {

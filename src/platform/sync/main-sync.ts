@@ -1,5 +1,5 @@
-import { alignMonitorsToHardware } from '@store/layout/layout-gestures';
-import { layoutGestureStores } from '@store/layout/layout-gestures';
+import { alignMonitorsToHardware } from '@features/layout-editor/layout-gestures';
+import { layoutGestureStores } from '@features/layout-editor/layout-gestures';
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
@@ -9,7 +9,7 @@ import {
   hydrateFromDisk,
   readSettingsFile,
 } from './persistence-sync';
-import { setupDeviceBindings } from '@store/hotkeys/bindings-sync';
+import { setupDeviceBindings } from '@features/hotkey-bindings/bindings-sync';
 import { listenSettingsActions, registerHotkeyReactions } from './hotkey-sync';
 import { setupMainListeners } from './listeners';
 import { registerChatReactions } from './chat-sync';

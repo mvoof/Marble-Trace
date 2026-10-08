@@ -21,7 +21,7 @@ import {
 import {
   usePreviewWorldFactory,
   type PreviewCoreHandle,
-} from '@/preview/preview-host-context';
+} from '@features/preview/preview-host-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
@@ -32,10 +32,13 @@ import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
-import { seedScenario, DEFAULT_PREVIEW_SCENARIO_ID } from '@/preview/scenarios';
+import {
+  seedScenario,
+  DEFAULT_PREVIEW_SCENARIO_ID,
+} from '@features/preview/scenarios';
 import { resolveBackgroundSrc } from '@entities/layout/layout-background';
 import { monitorsBounds } from '@entities/layout/virtual-desktop';
-import { seedInputHistory } from '@/preview/preview-animator';
+import { seedInputHistory } from '@features/preview/preview-animator';
 import type {
   LayoutMonitor,
   MonitorBounds,

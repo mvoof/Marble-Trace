@@ -7,16 +7,16 @@ import type {
   StandingsViewMode,
   StandingsWidgetSettings,
 } from '@entities/widget/widget-settings';
-import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
-import { SettingRow } from '@ui/app/main/components/WidgetSettings/panels/SettingRow';
-import { useWidgetEditor } from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';
+import styles from '@features/widget-settings/WidgetSettings.module.scss';
+import { Card } from '@features/widget-settings/Card';
+import { SettingRow } from '@features/widget-settings/SettingRow';
+import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import {
   panelRows,
   usePanelWidgetId,
   type SwitchKey,
-} from '@ui/app/main/components/WidgetSettings/panels/setting-rows';
-import { LicBadgeStyleRow } from '@ui/app/main/components/WidgetSettings/panels/shared';
+} from '@features/widget-settings/setting-rows';
+import { LicBadgeStyleRow } from '@features/widget-settings/shared';
 import { NAME_COLUMN_MAX_PX, NAME_COLUMN_MIN_PX } from './standings-utils';
 
 const PLAYER_WINDOW_OPTIONS = [0, 1, 2, 3, 4, 5].map((count) => ({

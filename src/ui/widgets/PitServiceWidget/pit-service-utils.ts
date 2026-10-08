@@ -1,7 +1,7 @@
 import type { ChassisFrame, PitServiceFrame } from '@shared/contracts/bindings';
 import type { DriverEntry } from '@entities/cars/driver-entry';
 import type { UnitSystem } from '@shared/contracts/domain';
-import type { CornerPosition } from '@store/widgets/pit-service/pit-tires';
+import type { CornerPosition } from '@features/pit-service/pit-tires';
 import { computeRelativeGap } from '@shared/lib/driver';
 
 export interface TireCornerData {

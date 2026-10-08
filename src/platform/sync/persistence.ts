@@ -8,7 +8,7 @@ import type { UnitSystem } from '@shared/contracts/domain';
 import type { SessionContext } from '@entities/widget/widget-settings';
 import type { AppSettings } from '@entities/app-settings/app-settings.store';
 import type { MainRoot } from '@store/roots/main-root';
-import type { BindingMap } from '@/types/input-bindings';
+import type { BindingMap } from '@shared/contracts/input-bindings';
 import { CURRENT_SCHEMA_VERSION } from '@shared/settings-schema/index';
 import type { InputDevice } from '@shared/contracts/bindings';
 import {

@@ -2,8 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { CarStatusFrame } from '@shared/contracts/bindings';
 import type { UnitSystem } from '@shared/contracts/domain';
-import { mockCarStatus, mockHybridCarStatus } from '@/preview/mocks/engine';
-import { mockCarInputs } from '@/preview/mocks/inputs';
+import {
+  mockCarStatus,
+  mockHybridCarStatus,
+} from '@features/preview/mocks/engine';
+import { mockCarInputs } from '@features/preview/mocks/inputs';
 import { whenSet } from '@/storybook/story-overrides';
 import { EnginePanelWidget } from './EnginePanelWidget';
 import {

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { MockTrafficCar } from '@/preview/mocks/traffic';
-import { mockProximity } from '@/preview/mocks/traffic';
+import type { MockTrafficCar } from '@features/preview/mocks/traffic';
+import { mockProximity } from '@features/preview/mocks/traffic';
 import { ProximityRadarWidget } from './ProximityRadarWidget';
 import {
   defineWidgetStories,

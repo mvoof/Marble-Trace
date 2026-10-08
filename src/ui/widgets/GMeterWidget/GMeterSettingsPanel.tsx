@@ -6,10 +6,10 @@ import type {
   GMeterDisplayMode,
   GMeterWidgetSettings,
 } from '@entities/widget/widget-settings';
-import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
-import { useWidgetEditor } from '@ui/app/main/components/WidgetSettings/WidgetEditorContext';
-import { usePanelWidgetId } from '@ui/app/main/components/WidgetSettings/panels/setting-rows';
+import styles from '@features/widget-settings/WidgetSettings.module.scss';
+import { Card } from '@features/widget-settings/Card';
+import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
+import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['g-meter'];

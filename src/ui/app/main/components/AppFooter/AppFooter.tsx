@@ -1,7 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
-import { openExternalLink } from '@store/integrations/external-link';
+// AppFooter belongs to app/ (ticket 08), where shared/api is allowed (decisions.md 4).
+// oxlint-disable-next-line no-restricted-imports
+import { openExternalLink } from '@shared/api/external-link';
 import styles from './AppFooter.module.scss';
 
 const SITE_URL = 'https://marbletrace.com/';

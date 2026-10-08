@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import type { RaceDashWidgetSettings } from '@entities/widget/widget-settings';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
-import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 
 import { PitBlock } from './PitBlock/PitBlock';
 import { RingBadge } from './RingBadge/RingBadge';

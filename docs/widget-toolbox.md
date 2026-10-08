@@ -76,11 +76,11 @@ No stores, no Tauri, and no React beyond `store-context.ts`'s one
 **Never edit these** — change the Rust declaration and regenerate
 (`AGENTS.md` → Rust Backend). Importable from any layer.
 
-| Module                 | Reach for it when                                                                                                                                                                                      |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `backend-constants.ts` | You need a backend default as a compile-time literal (pit warning laps, fuel window bounds, default car length, default class color). **Generated from Rust — never edit.**                            |
-| `backend-events.ts`    | You need a `sim://…` or `chat://…` event name. **Generated from Rust — never edit**; `platform/sync/sim-events.ts` re-exports these and adds the frontend-only ones.                                   |
-| `hotkey-actions.ts`    | You need the bindable action list, its ids, labels or default keys. **Generated from Rust — never edit**; the backend dispatches the keys, `store/hotkeys/` builds the settings UI's registry from it. |
+| Module                 | Reach for it when                                                                                                                                                                                                 |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `backend-constants.ts` | You need a backend default as a compile-time literal (pit warning laps, fuel window bounds, default car length, default class color). **Generated from Rust — never edit.**                                       |
+| `backend-events.ts`    | You need a `sim://…` or `chat://…` event name. **Generated from Rust — never edit**; `platform/sync/sim-events.ts` re-exports these and adds the frontend-only ones.                                              |
+| `hotkey-actions.ts`    | You need the bindable action list, its ids, labels or default keys. **Generated from Rust — never edit**; the backend dispatches the keys, `features/hotkey-bindings/` builds the settings UI's registry from it. |
 
 ---
 
@@ -88,12 +88,12 @@ No stores, no Tauri, and no React beyond `store-context.ts`'s one
 
 Read by one feature's store and its widgets, nowhere else.
 
-| Module                                      | Reach for it when                                                                                                                         |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `entities/radar/radar-constants.ts`         | Radar geometry (car width, corner radius, lateral offset) and the gap-to-color ramps used by every proximity view.                        |
-| `entities/incidents/flag-zones.ts`          | Incident and flag zones on a track line: computing them, measuring them, splitting one across start/finish, projecting one into a window. |
-| `store/widgets/pit-service/pit-approach.ts` | The pit lane as a measured leg: metres to the pit entry line, and the view the approach rail is drawn from — fill, braking cue, urgency.  |
-| `store/widgets/pit-service/pit-tires.ts`    | The four corners of a tire order: which ones the sim has checked, the pressure ordered for each, and which are worn past a threshold.     |
+| Module                                 | Reach for it when                                                                                                                         |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `entities/radar/radar-constants.ts`    | Radar geometry (car width, corner radius, lateral offset) and the gap-to-color ramps used by every proximity view.                        |
+| `entities/incidents/flag-zones.ts`     | Incident and flag zones on a track line: computing them, measuring them, splitting one across start/finish, projecting one into a window. |
+| `features/pit-service/pit-approach.ts` | The pit lane as a measured leg: metres to the pit entry line, and the view the approach rail is drawn from — fill, braking cue, urgency.  |
+| `features/pit-service/pit-tires.ts`    | The four corners of a tire order: which ones the sim has checked, the pressure ordered for each, and which are worn past a threshold.     |
 
 ---
 
@@ -177,4 +177,4 @@ How to use them: [widget-stories.md](widget-stories.md).
 | `SETTING_OPTIONS` — string-union selects | `setting-options.ts` — add a new union setting's members here |
 | `whenSet`                                | `story-overrides.ts` — a knob that overrides only when set    |
 | `withReplay`                             | `with-replay.tsx` — a burst of frames for history widgets     |
-| mock builders                            | `src/preview/mocks/*.ts`                                      |
+| mock builders                            | `src/features/preview/mocks/*.ts`                             |

@@ -2,9 +2,9 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Row, Col, ColorPicker, Slider } from 'antd';
 import { getWidgetLabel } from '@entities/widget/widget-i18n';
-import styles from './WidgetSettings.module.scss';
-import { Card, PanelWidgetProvider } from './panels/Card';
-import { useWidgetEditor } from './WidgetEditorContext';
+import styles from '@features/widget-settings/WidgetSettings.module.scss';
+import { Card, PanelWidgetProvider } from '@features/widget-settings/Card';
+import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import { settingsPanelForWidget } from './panels/panel-registry';
 
 export const WidgetSettings = observer(

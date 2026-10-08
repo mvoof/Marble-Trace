@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { RendererCore } from '@store/roots/renderer-core';
-import { respaceField } from '@/preview/field-seed';
-import { mockSectors } from '@/preview/mocks/timing';
-import { sampleTrack } from '@/preview/sample-track';
+import { respaceField } from '@features/preview/field-seed';
+import { mockSectors } from '@features/preview/mocks/timing';
+import { sampleTrack } from '@features/preview/sample-track';
 import {
   defineWidgetStories,
   previewScenario,

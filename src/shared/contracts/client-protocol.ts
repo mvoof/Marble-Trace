@@ -4,8 +4,8 @@ import type {
   InteractHotkeyMode,
   RemoteControlKind,
 } from '@shared/contracts/bindings';
-import type { BindingMap } from '@/types/input-bindings';
-import type { PitStrategy } from '@/types/pit-strategy';
+import type { BindingMap } from '@shared/contracts/input-bindings';
+import type { PitStrategy } from '@shared/contracts/pit-strategy';
 import type {
   LayoutMonitor,
   WidgetDefaultConfig,

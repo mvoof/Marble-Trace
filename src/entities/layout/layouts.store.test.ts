@@ -4,8 +4,8 @@ import { MainRoot } from '@store/roots/main-root';
 import { buildSettings } from '@platform/sync/persistence';
 
 import { LayoutsStore } from './layouts.store';
-import { deleteLayout } from '@store/layout/layout-gestures';
-import { layoutGestureStores } from '@store/layout/layout-gestures';
+import { deleteLayout } from '@features/layout-editor/layout-gestures';
+import { layoutGestureStores } from '@features/layout-editor/layout-gestures';
 import { SettingsMutationLog } from './mutation-log.store';
 import type {
   LayoutMonitor,

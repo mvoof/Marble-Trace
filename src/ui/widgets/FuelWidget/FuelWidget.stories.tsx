@@ -5,9 +5,9 @@ import type {
   FuelLapRecord,
 } from '@shared/contracts/bindings';
 import type { FuelWidgetSettings } from '@entities/widget/widget-settings';
-import { mockLapTiming } from '@/preview/mocks/delta';
-import { mockCarStatus } from '@/preview/mocks/engine';
-import { mockFuel } from '@/preview/mocks/fuel';
+import { mockLapTiming } from '@features/preview/mocks/delta';
+import { mockCarStatus } from '@features/preview/mocks/engine';
+import { mockFuel } from '@features/preview/mocks/fuel';
 import { whenSet } from '@/storybook/story-overrides';
 import { FuelWidget } from './FuelWidget';
 import {

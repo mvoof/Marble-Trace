@@ -2,7 +2,7 @@ import { runInAction } from 'mobx';
 
 import { openRemoteSocket } from '@shared/api/remote-socket.service';
 import { applyTelemetryBundle } from '@entities/sim/apply-bundle';
-import type { RemoteScreenStore } from '@store/remote/remote-screen.store';
+import type { RemoteScreenStore } from '@features/remote-screens/remote-screen.store';
 import type { RendererCore } from '@store/roots/renderer-core';
 import type { RemoteMessage } from '@shared/contracts/remote';
 import type { ClientSnapshot } from '@shared/contracts/client-protocol';

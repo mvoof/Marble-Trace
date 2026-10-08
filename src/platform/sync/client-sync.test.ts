@@ -2,7 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { RemoteRoot } from '@store/roots/remote-root';
 import { OverlayRoot } from '@store/roots/overlay-root';
-import { RemoteScreenStore } from '@store/remote/remote-screen.store';
+import { RemoteScreenStore } from '@features/remote-screens/remote-screen.store';
 import type { RendererCore } from '@store/roots/renderer-core';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type { RemoteControlKind } from '@shared/contracts/bindings';

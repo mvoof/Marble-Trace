@@ -2,7 +2,10 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Segmented, Slider, Switch } from 'antd';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
-import { FUEL_ADJUST_STEPS, type FuelAdjustStep } from '@/types/pit-strategy';
+import {
+  FUEL_ADJUST_STEPS,
+  type FuelAdjustStep,
+} from '@shared/contracts/pit-strategy';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';
 

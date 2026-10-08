@@ -1,8 +1,8 @@
 import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { usePitState } from '@ui/hooks/usePitState';
-import type { PitState } from '@ui/hooks/usePitState';
+import { usePitState } from '@features/pit-service/usePitState';
+import type { PitState } from '@features/pit-service/usePitState';
 import type { RaceDashWidgetSettings } from '@entities/widget/widget-settings';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
 

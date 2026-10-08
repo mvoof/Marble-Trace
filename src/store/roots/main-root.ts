@@ -4,17 +4,17 @@ import {
   buildAppWindowStores,
   type AppWindowStores,
 } from './app-window-stores';
-import type { BindingsStore } from '../hotkeys/bindings.store';
+import type { BindingsStore } from '@features/hotkey-bindings/bindings.store';
 import type { SettingsPanelUiStore } from '@entities/widget/settings-panel-ui.store';
-import { LayoutEditorStore } from '../layout/layout-editor.store';
-import { CompanionAppsStore } from '../integrations/companion-apps.store';
-import { TwitchAuthStore } from '../integrations/twitch-auth.store';
-import { DeviceInputStore } from '../hotkeys/device-input.store';
-import { BindingsUiStore } from '../hotkeys/bindings-ui.store';
-import { RemoteDevicesStore } from '../remote/remote-devices.store';
-import { FpsDiagnosticsStore } from '../diagnostics/fps-diagnostics.store';
-import { DiagnosticsExportStore } from '../diagnostics/diagnostics-export.store';
-import { TelemetryInspectorStore } from '../diagnostics/telemetry-inspector.store';
+import { LayoutEditorStore } from '@features/layout-editor/layout-editor.store';
+import { CompanionAppsStore } from '@features/companion-apps/companion-apps.store';
+import { TwitchAuthStore } from '@features/twitch-auth/twitch-auth.store';
+import { DeviceInputStore } from '@features/hotkey-bindings/device-input.store';
+import { BindingsUiStore } from '@features/hotkey-bindings/bindings-ui.store';
+import { RemoteDevicesStore } from '@features/remote-screens/remote-devices.store';
+import { FpsDiagnosticsStore } from '@features/diagnostics/fps-diagnostics.store';
+import { DiagnosticsExportStore } from '@features/diagnostics/diagnostics-export.store';
+import { TelemetryInspectorStore } from '@features/telemetry-inspector/telemetry-inspector.store';
 import { TrackRotationStore } from '@entities/track/track-rotation.store';
 
 /**

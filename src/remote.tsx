@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { initRemoteSync } from '@platform/sync/remote-sync';
-import { RemoteScreenStore } from '@store/remote/remote-screen.store';
-import { RemoteScreenContext } from '@store/remote/remote-screen-context';
+import { RemoteScreenStore } from '@features/remote-screens/remote-screen.store';
+import { RemoteScreenContext } from '@features/remote-screens/remote-screen-context';
 import { RemoteRoot } from '@store/roots/remote-root';
 import { CoreProvider } from '@ui/app/store-providers';
 import { RemoteWindow } from '@ui/app/remote/RemoteWindow';

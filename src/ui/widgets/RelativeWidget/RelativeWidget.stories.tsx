@@ -2,15 +2,15 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { RelativeWidgetSettings } from '@entities/widget/widget-settings';
 import type { RendererCore } from '@store/roots/renderer-core';
-import type { MockFieldRows } from '@/preview/mocks/field';
+import type { MockFieldRows } from '@features/preview/mocks/field';
 import {
   MOCK_DRIVER_FLAG_ROWS,
   MOCK_PIT_ROWS,
   PACE_CAR_IDX,
   mockPaceCarEntry,
   mockPaceCarFrame,
-} from '@/preview/mocks/field';
-import { respaceField } from '@/preview/field-seed';
+} from '@features/preview/mocks/field';
+import { respaceField } from '@features/preview/field-seed';
 import { RelativeWidget } from './RelativeWidget';
 import {
   defineWidgetStories,

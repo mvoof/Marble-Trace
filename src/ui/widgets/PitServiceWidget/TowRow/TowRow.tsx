@@ -5,7 +5,7 @@ import {
   countdownUnit,
   formatCountdown,
 } from '@ui/widgets/PitServiceWidget/pit-service-utils';
-import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
+import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 
 export const TowRow = observer(() => {
   const widget = usePitServiceWidgetStore();

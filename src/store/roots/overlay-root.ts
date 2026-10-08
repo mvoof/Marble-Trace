@@ -3,8 +3,8 @@ import {
   buildAppWindowStores,
   type AppWindowStores,
 } from './app-window-stores';
-import type { BindingsStore } from '../hotkeys/bindings.store';
-import { SettingsClientStore } from '../layout/settings-client.store';
+import type { BindingsStore } from '@features/hotkey-bindings/bindings.store';
+import { SettingsClientStore } from '@app/sync/settings-client.store';
 import type { SettingsPanelUiStore } from '@entities/widget/settings-panel-ui.store';
 
 /**

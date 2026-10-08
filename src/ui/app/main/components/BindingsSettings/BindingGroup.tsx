@@ -2,12 +2,12 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Tag, Tooltip } from 'antd';
 import { ChevronDown } from 'lucide-react';
-import { APP_OWNER } from '@/types/input-bindings';
-import { widgetVisibilityActionId } from '@store/hotkeys/actions';
-import { useBindingsStore } from '@store/hotkeys/bindings-context';
+import { APP_OWNER } from '@shared/contracts/input-bindings';
+import { widgetVisibilityActionId } from '@features/hotkey-bindings/actions';
+import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { BindingRow } from './BindingRow';
-import { ownerLabel } from './binding-labels';
+import { ownerLabel } from '@features/hotkey-bindings/binding-labels';
 import styles from './BindingsSettings.module.scss';
 
 interface BindingGroupProps {

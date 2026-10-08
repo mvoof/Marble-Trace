@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { reaction } from 'mobx';
 import { Button, Input, Tooltip } from 'antd';
 import { Keyboard } from 'lucide-react';
-import { useBindingsUiStore } from '@store/hotkeys/bindings-ui-context';
-import { useDeviceInputStore } from '@store/hotkeys/device-input-context';
-import { bindingLabel } from './binding-labels';
-import { toAccelerator } from './accelerator';
+import { useBindingsUiStore } from '@features/hotkey-bindings/bindings-ui-context';
+import { useDeviceInputStore } from '@features/hotkey-bindings/device-input-context';
+import { bindingLabel } from '@features/hotkey-bindings/binding-labels';
+import { toAccelerator } from '@features/hotkey-bindings/accelerator';
 import styles from './BindingsSettings.module.scss';
 
 /**

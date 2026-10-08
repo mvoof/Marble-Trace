@@ -5,7 +5,7 @@ import { mergeWithDefaults } from '@entities/app-settings/deep-merge';
 import {
   applyLayoutResize,
   deriveWidgetDesignWidth,
-} from '@store/layout/layout-resize';
+} from '@features/layout-editor/layout-resize';
 import { availableWidgetIdsOf } from '@entities/widget/widget-availability';
 import type { WidgetMap } from '@entities/widget/widget-map';
 import type {

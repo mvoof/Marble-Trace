@@ -18,9 +18,9 @@ import { useSimStore } from '@entities/sim/sim-context';
 import {
   useLayoutEditorStore,
   useLayoutGestureStores,
-} from '@store/layout/layout-editor-context';
+} from '@features/layout-editor/layout-editor-context';
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
-import { useRemoteDevicesStore } from '@store/remote/remote-devices-context';
+import { useRemoteDevicesStore } from '@features/remote-screens/remote-devices-context';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
 import {
   resolveBackgroundSrc,
@@ -39,7 +39,7 @@ import {
   createLayout,
   deleteLayout,
   removeMonitor,
-} from '@store/layout/layout-gestures';
+} from '@features/layout-editor/layout-gestures';
 import styles from './LayoutList.module.scss';
 
 interface LayoutPreviewProps {

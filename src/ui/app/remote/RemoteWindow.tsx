@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { RemoteCanvas } from './RemoteCanvas';
 import { RemoteStatusOverlay } from './RemoteStatusOverlay';
 import styles from './RemoteWindow.module.scss';
-import { useRemoteScreenStore } from '@store/remote/remote-screen-context';
+import { useRemoteScreenStore } from '@features/remote-screens/remote-screen-context';
 
 /**
  * Shell of a remote screen: the browser-side counterpart of `OverlayWindow`.

@@ -29,34 +29,44 @@ const { constructed, tracked } = vi.hoisted(() => {
   return { constructed: constructedNames, tracked: trackConstruction };
 });
 
-vi.mock('../layout/layout-editor.store', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('../layout/layout-editor.store')>();
+vi.mock(
+  '@features/layout-editor/layout-editor.store',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@features/layout-editor/layout-editor.store')
+      >();
 
-  return {
-    ...actual,
-    LayoutEditorStore: tracked('LayoutEditorStore', actual.LayoutEditorStore),
-  };
-});
+    return {
+      ...actual,
+      LayoutEditorStore: tracked('LayoutEditorStore', actual.LayoutEditorStore),
+    };
+  }
+);
 
-vi.mock('../integrations/companion-apps.store', async (importOriginal) => {
+vi.mock(
+  '@features/companion-apps/companion-apps.store',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@features/companion-apps/companion-apps.store')
+      >();
+
+    return {
+      ...actual,
+      CompanionAppsStore: tracked(
+        'CompanionAppsStore',
+        actual.CompanionAppsStore
+      ),
+    };
+  }
+);
+
+vi.mock('@features/twitch-auth/twitch-auth.store', async (importOriginal) => {
   const actual =
     await importOriginal<
-      typeof import('../integrations/companion-apps.store')
+      typeof import('@features/twitch-auth/twitch-auth.store')
     >();
-
-  return {
-    ...actual,
-    CompanionAppsStore: tracked(
-      'CompanionAppsStore',
-      actual.CompanionAppsStore
-    ),
-  };
-});
-
-vi.mock('../integrations/twitch-auth.store', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('../integrations/twitch-auth.store')>();
 
   return {
     ...actual,
@@ -64,98 +74,125 @@ vi.mock('../integrations/twitch-auth.store', async (importOriginal) => {
   };
 });
 
-vi.mock('../hotkeys/device-input.store', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('../hotkeys/device-input.store')>();
+vi.mock(
+  '@features/hotkey-bindings/device-input.store',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@features/hotkey-bindings/device-input.store')
+      >();
 
-  return {
-    ...actual,
-    DeviceInputStore: tracked('DeviceInputStore', actual.DeviceInputStore),
-  };
-});
+    return {
+      ...actual,
+      DeviceInputStore: tracked('DeviceInputStore', actual.DeviceInputStore),
+    };
+  }
+);
 
-vi.mock('../hotkeys/bindings-ui.store', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('../hotkeys/bindings-ui.store')>();
+vi.mock(
+  '@features/hotkey-bindings/bindings-ui.store',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@features/hotkey-bindings/bindings-ui.store')
+      >();
 
-  return {
-    ...actual,
-    BindingsUiStore: tracked('BindingsUiStore', actual.BindingsUiStore),
-  };
-});
+    return {
+      ...actual,
+      BindingsUiStore: tracked('BindingsUiStore', actual.BindingsUiStore),
+    };
+  }
+);
 
-vi.mock('../remote/remote-devices.store', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('../remote/remote-devices.store')>();
+vi.mock(
+  '@features/remote-screens/remote-devices.store',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@features/remote-screens/remote-devices.store')
+      >();
 
-  return {
-    ...actual,
-    RemoteDevicesStore: tracked(
-      'RemoteDevicesStore',
-      actual.RemoteDevicesStore
-    ),
-  };
-});
+    return {
+      ...actual,
+      RemoteDevicesStore: tracked(
+        'RemoteDevicesStore',
+        actual.RemoteDevicesStore
+      ),
+    };
+  }
+);
 
-vi.mock('../diagnostics/fps-diagnostics.store', async (importOriginal) => {
-  const actual =
-    await importOriginal<
-      typeof import('../diagnostics/fps-diagnostics.store')
-    >();
+vi.mock(
+  '@features/diagnostics/fps-diagnostics.store',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@features/diagnostics/fps-diagnostics.store')
+      >();
 
-  return {
-    ...actual,
-    FpsDiagnosticsStore: tracked(
-      'FpsDiagnosticsStore',
-      actual.FpsDiagnosticsStore
-    ),
-  };
-});
+    return {
+      ...actual,
+      FpsDiagnosticsStore: tracked(
+        'FpsDiagnosticsStore',
+        actual.FpsDiagnosticsStore
+      ),
+    };
+  }
+);
 
-vi.mock('../diagnostics/diagnostics-export.store', async (importOriginal) => {
-  const actual =
-    await importOriginal<
-      typeof import('../diagnostics/diagnostics-export.store')
-    >();
+vi.mock(
+  '@features/diagnostics/diagnostics-export.store',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@features/diagnostics/diagnostics-export.store')
+      >();
 
-  return {
-    ...actual,
-    DiagnosticsExportStore: tracked(
-      'DiagnosticsExportStore',
-      actual.DiagnosticsExportStore
-    ),
-  };
-});
+    return {
+      ...actual,
+      DiagnosticsExportStore: tracked(
+        'DiagnosticsExportStore',
+        actual.DiagnosticsExportStore
+      ),
+    };
+  }
+);
 
-vi.mock('../diagnostics/telemetry-inspector.store', async (importOriginal) => {
-  const actual =
-    await importOriginal<
-      typeof import('../diagnostics/telemetry-inspector.store')
-    >();
+vi.mock(
+  '@features/telemetry-inspector/telemetry-inspector.store',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@features/telemetry-inspector/telemetry-inspector.store')
+      >();
 
-  return {
-    ...actual,
-    TelemetryInspectorStore: tracked(
-      'TelemetryInspectorStore',
-      actual.TelemetryInspectorStore
-    ),
-  };
-});
+    return {
+      ...actual,
+      TelemetryInspectorStore: tracked(
+        'TelemetryInspectorStore',
+        actual.TelemetryInspectorStore
+      ),
+    };
+  }
+);
 
-vi.mock('../diagnostics/diagnostics-hud.store', async (importOriginal) => {
-  const actual =
-    await importOriginal<
-      typeof import('../diagnostics/diagnostics-hud.store')
-    >();
+vi.mock(
+  '@features/diagnostics/diagnostics-hud.store',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('@features/diagnostics/diagnostics-hud.store')
+      >();
 
-  return {
-    ...actual,
-    DiagnosticsHudStore: tracked(
-      'DiagnosticsHudStore',
-      actual.DiagnosticsHudStore
-    ),
-  };
-});
+    return {
+      ...actual,
+      DiagnosticsHudStore: tracked(
+        'DiagnosticsHudStore',
+        actual.DiagnosticsHudStore
+      ),
+    };
+  }
+);
 
 vi.mock('@entities/track/track-rotation.store', async (importOriginal) => {
   const actual =

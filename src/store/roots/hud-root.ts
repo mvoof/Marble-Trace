@@ -1,4 +1,4 @@
-import { DiagnosticsHudStore } from '../diagnostics/diagnostics-hud.store';
+import { DiagnosticsHudStore } from '@features/diagnostics/diagnostics-hud.store';
 
 /**
  * The in-game diagnostics banner window. It renders one banner from one event

@@ -2,12 +2,12 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { Plus } from 'lucide-react';
-import { usePitServiceWidgetStore } from '@store/widgets/pit-service/pit-service-context';
-import { useBindingsStore } from '@store/hotkeys/bindings-context';
-import { useBindingsUiStore } from '@store/hotkeys/bindings-ui-context';
-import { bindingKey } from '@/types/input-bindings';
+import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
+import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
+import { useBindingsUiStore } from '@features/hotkey-bindings/bindings-ui-context';
+import { bindingKey } from '@shared/contracts/input-bindings';
 import { BindingChip } from './BindingChip';
-import { actionLabel } from './binding-labels';
+import { actionLabel } from '@features/hotkey-bindings/binding-labels';
 import styles from './BindingsSettings.module.scss';
 
 interface BindingRowProps {

@@ -3,7 +3,7 @@ import { SimStore } from '@entities/sim/sim.store';
 import { FlagsStore } from '@entities/flags/flags.store';
 import { IncidentsWidgetStore } from '@entities/incidents/incidents.store';
 import { RadarWidgetStore } from '@entities/radar/radar.store';
-import { PitServiceWidgetStore } from '../widgets/pit-service/pit-service.store';
+import { PitServiceWidgetStore } from '@features/pit-service/pit-service.store';
 import { PlayerPositionStore } from '@entities/player/player-position.store';
 import {
   SharedWidgetStores,

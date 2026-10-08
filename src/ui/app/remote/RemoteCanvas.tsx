@@ -4,7 +4,7 @@ import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
 import { RemoteWidgetFrame } from './RemoteWidgetFrame';
 import styles from './RemoteCanvas.module.scss';
-import { useRemoteScreenStore } from '@store/remote/remote-screen-context';
+import { useRemoteScreenStore } from '@features/remote-screens/remote-screen-context';
 
 /**
  * Draws one remote screen.

@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { BatteryWidgetSettings } from '@entities/widget/widget-settings';
-import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card } from '@ui/app/main/components/WidgetSettings/panels/Card';
-import { panelRows } from '@ui/app/main/components/WidgetSettings/panels/setting-rows';
+import styles from '@features/widget-settings/WidgetSettings.module.scss';
+import { Card } from '@features/widget-settings/Card';
+import { panelRows } from '@features/widget-settings/setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['battery'];

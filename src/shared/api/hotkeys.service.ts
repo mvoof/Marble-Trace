@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
 import type { HotkeyContext, OverlayModes } from '@shared/contracts/bindings';
-import type { BindingMap } from '@/types/input-bindings';
+import type { BindingMap } from '@shared/contracts/input-bindings';
 
 /**
  * The hotkey dispatcher lives in the backend (`src-tauri/src/hotkeys/`). These

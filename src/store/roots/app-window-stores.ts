@@ -1,5 +1,5 @@
-import { ActionRegistry } from '@store/hotkeys/action-registry';
-import { BindingsStore } from '@store/hotkeys/bindings.store';
+import { ActionRegistry } from '@features/hotkey-bindings/action-registry';
+import { BindingsStore } from '@features/hotkey-bindings/bindings.store';
 import { SettingsPanelUiStore } from '@entities/widget/settings-panel-ui.store';
 import { DEFAULT_WIDGETS } from '@entities/widget/widget-catalog';
 

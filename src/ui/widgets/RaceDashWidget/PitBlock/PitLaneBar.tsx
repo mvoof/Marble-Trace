@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { usePitState } from '@ui/hooks/usePitState';
+import { usePitState } from '@features/pit-service/usePitState';
 
 import styles from './PitLaneBar.module.scss';
 

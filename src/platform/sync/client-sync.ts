@@ -4,7 +4,7 @@ import type { TrackRotationPayload } from '@shared/api/events.service';
 import {
   standingsHotkeyTargets,
   streamChatHotkeyTargets,
-} from '@store/hotkeys/hotkey-targets';
+} from '@features/hotkey-bindings/hotkey-targets';
 import type { RendererCore } from '@store/roots/renderer-core';
 import type {
   ClientSnapshot,

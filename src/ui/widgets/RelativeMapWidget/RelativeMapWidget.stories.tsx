@@ -6,8 +6,8 @@ import {
   PACE_CAR_IDX,
   mockPaceCarEntry,
   mockPaceCarFrame,
-} from '@/preview/mocks/field';
-import { respaceField } from '@/preview/field-seed';
+} from '@features/preview/mocks/field';
+import { respaceField } from '@features/preview/field-seed';
 import { RelativeMapWidget } from './RelativeMapWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 

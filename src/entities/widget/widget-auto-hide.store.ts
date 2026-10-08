@@ -14,7 +14,7 @@ import { widgetTypeFromId } from './widget-instance';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { RadarWidgetStore } from '@entities/radar/radar.store';
 import type { FlagsStore } from '@entities/flags/flags.store';
-import type { PitServiceWidgetStore } from '@store/widgets/pit-service/pit-service.store';
+import type { PitServiceWidgetStore } from '@features/pit-service/pit-service.store';
 import type { PlayerStore } from '@entities/player/player.store';
 
 interface WidgetAutoHideDeps {

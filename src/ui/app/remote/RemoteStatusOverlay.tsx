@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { Loader2, ShieldAlert, WifiOff } from 'lucide-react';
 
 import styles from './RemoteStatusOverlay.module.scss';
-import { useRemoteScreenStore } from '@store/remote/remote-screen-context';
+import { useRemoteScreenStore } from '@features/remote-screens/remote-screen-context';
 
 const ICON_SIZE = 28;
 
