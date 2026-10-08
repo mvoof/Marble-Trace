@@ -958,7 +958,7 @@ export type ResolveLayoutChange = (
 /**
  * What a widget declares about itself, in its own `manifest.ts`. Plain data:
  * no React, so the catalog the stores read carries no UI with it. The id →
- * component map lives in `ui/widgets/registry.ts`.
+ * component map lives in `widgets/registry.ts`.
  */
 export interface WidgetManifest extends WidgetMeta {
   userSettings: WidgetUserSettings;

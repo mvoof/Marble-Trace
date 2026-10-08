@@ -29,7 +29,6 @@
       "@platform/settings-schema/*": ["./src/platform/settings-schema/*"],
       "@store/*": ["./src/store/*"],
       "@ui/app/*": ["./src/ui/app/*"],
-      "@ui/widgets/*": ["./src/ui/widgets/*"],
       "@ui/shared/*": ["./src/ui/shared/*"],
       "@ui/hooks/*": ["./src/ui/hooks/*"]
     },

@@ -286,7 +286,7 @@
       }
     },
     {
-      "files": ["src/ui/**", "src/features/**/*.tsx"],
+      "files": ["src/ui/**", "src/widgets/**", "src/features/**/*.tsx"],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -311,7 +311,7 @@
     },
     {
       "files": [
-        "src/ui/widgets/**",
+        "src/widgets/**",
         "src/ui/shared/**",
         "src/ui/hooks/**",
         "src/shared/ui/**",
@@ -442,6 +442,7 @@
     {
       "files": [
         "src/ui/**/*.tsx",
+        "src/widgets/**/*.tsx",
         "src/shared/ui/**/*.tsx",
         "src/features/**/*.tsx"
       ],

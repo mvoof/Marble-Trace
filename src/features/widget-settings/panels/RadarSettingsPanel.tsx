@@ -12,7 +12,7 @@ import type {
 import {
   LADDER_STEP_M,
   rangeRingRadii,
-} from '@ui/widgets/ProximityRadarWidget/radar-scope-utils';
+} from '@widgets/proximity-radar/radar-scope-utils';
 import {
   DESIGN_SCOPE_RANGE_M,
   DESIGN_SIZE_PX,

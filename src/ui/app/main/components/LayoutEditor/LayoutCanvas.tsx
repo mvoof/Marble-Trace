@@ -28,8 +28,8 @@ import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useSettingsMutationLog } from '@entities/layout/mutation-log-context';
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import { useTrackRotationStore } from '@entities/track/track-rotation-context';
-import { componentForWidget } from '@ui/widgets/registry';
-import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
+import { componentForWidget } from '@widgets/registry';
+import { WidgetInstanceScope } from '@widgets/instance-scope/WidgetInstanceScope';
 import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
 import {

@@ -1,5 +1,5 @@
 import { useLayoutEffect } from 'react';
-import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
+import { WidgetInstanceScope } from '@widgets/instance-scope/WidgetInstanceScope';
 import type { ComponentType } from 'react';
 import { runInAction } from 'mobx';
 import type {

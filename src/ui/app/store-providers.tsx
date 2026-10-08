@@ -39,7 +39,7 @@ import { TelemetryInspectorContext } from '@features/telemetry-inspector/telemet
 import { TwitchAuthContext } from '@features/twitch-auth/twitch-auth-context';
 import { CompanionAppsContext } from '@features/companion-apps/companion-apps-context';
 import { RemoteDevicesContext } from '@features/remote-screens/remote-devices-context';
-import { WidgetHostContext } from '@ui/widgets/widget-host-context';
+import { WidgetHostContext } from '@widgets/widget-host-context';
 import {
   PreviewWorldContext,
   type PreviewWorld,

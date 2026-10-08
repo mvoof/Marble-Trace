@@ -33,7 +33,6 @@ export const createLayerAliases = (): AliasEntry[] => [
     replacement: fromRoot('./src/platform/settings-schema'),
   },
   { find: '@ui/app', replacement: fromRoot('./src/ui/app') },
-  { find: '@ui/widgets', replacement: fromRoot('./src/ui/widgets') },
   { find: '@ui/shared', replacement: fromRoot('./src/ui/shared') },
   { find: '@ui/hooks', replacement: fromRoot('./src/ui/hooks') },
   { find: '@store', replacement: fromRoot('./src/store') },

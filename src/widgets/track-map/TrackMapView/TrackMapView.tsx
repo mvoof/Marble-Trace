@@ -1,0 +1,210 @@
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
+import type { TrackPoint } from '@shared/contracts/domain';
+import { parseClassColor } from '@shared/lib/colors';
+import { RecordingOverlay } from '@widgets/track-map/RecordingOverlay/RecordingOverlay';
+import { TrackMapSvg } from '@widgets/track-map/TrackMapSvg/TrackMapSvg';
+import type { CarOnTrack } from '@widgets/track-map/types';
+import { RotationControls } from './RotationControls/RotationControls';
+import {
+  rotatePoints,
+  buildSvgPathAndViewBox,
+} from '@widgets/track-map/track-map-utils';
+import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
+
+import styles from './TrackMapView.module.scss';
+import type { TrackMapWidgetSettings } from '@entities/widget/widget-settings';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useSessionStore } from '@entities/session/session-context';
+
+export interface TrackData {
+  svgPath: string;
+  viewBox: string;
+  points: TrackPoint[];
+  rotation?: number;
+}
+
+export interface TrackMapViewProps {
+  trackData: TrackData | null;
+  isRecording: boolean;
+  recordingProgress: number;
+  isWaitingForSF: boolean;
+  onRotate?: (direction: 'cw' | 'ccw') => void;
+}
+
+export const TrackMapView = observer(
+  ({
+    trackData,
+    isRecording,
+    recordingProgress,
+    isWaitingForSF,
+    onRotate,
+  }: TrackMapViewProps) => {
+    const sessionStore = useSessionStore();
+    const { sessionInfo } = sessionStore;
+    const computed = useBackendComputedStore();
+    const { dragMode } = useAppSettingsStore();
+
+    const rawSettings = useWidgetSettings<TrackMapWidgetSettings>('track-map');
+
+    const showSectors = rawSettings.showSectors ?? true;
+    const showSectorsOnMap = rawSettings.showSectorsOnMap ?? showSectors;
+
+    const settings = { ...rawSettings, showSectors, showSectorsOnMap };
+
+    const sectors = sessionInfo?.sectors;
+
+    // Identities, not entries: who is on the map changes when a car joins or
+    // leaves, while where each dot goes is read inside the draw reaction.
+    const driverIdentities = computed.driverIdentities;
+
+    const rotatedTrackData = useMemo(() => {
+      if (!trackData) return null;
+      const rotation = trackData.rotation ?? 0;
+      if (rotation === 0) return trackData;
+
+      const rotatedPts = rotatePoints(trackData.points, rotation);
+      const { svgPath: rotatedSvgPath, viewBox: rotatedViewBox } =
+        buildSvgPathAndViewBox(rotatedPts);
+
+      return {
+        svgPath: rotatedSvgPath,
+        viewBox: rotatedViewBox,
+        points: rotatedPts,
+        rotation,
+      };
+    }, [trackData]);
+
+    // The official positions only refresh at the start/finish line, so a leader the
+    // tow truck picked up mid-lap keeps the P1 label until the next crossing that
+    // never comes. The live order re-ranks him the moment the field drives past.
+    const useLivePositions = rawSettings.useLivePositions ?? true;
+
+    // Qualifying often puts you alone on track, where the other dots are stale
+    // garage positions rather than cars you can actually meet. Same rule as the
+    // radar widgets, applied to the competitors only — your own dot stays.
+    const hideCompetitors =
+      !dragMode &&
+      isHiddenInQualifying(rawSettings.qualifyingVisibility, sessionStore);
+
+    const visibleEntries = hideCompetitors
+      ? driverIdentities.filter((entry) => entry.isPlayer)
+      : driverIdentities;
+
+    const competitorCars: CarOnTrack[] = visibleEntries.map((entry) => ({
+      carIdx: entry.carIdx,
+      carNumber: entry.carNumber,
+      carClassColor: entry.carClassColor,
+      carClassId: entry.carClassId,
+      isPlayer: entry.isPlayer,
+      position: useLivePositions
+        ? entry.livePosition || entry.position
+        : entry.position,
+      classPosition: useLivePositions
+        ? entry.liveClassPosition || entry.classPosition
+        : entry.classPosition,
+    }));
+
+    // Pace cars are filtered out of standings, so pull them straight from the
+    // session roster. In multiclass races each class has its own pace car.
+    // Only shown while physically on track (lapDistPct >= 0). Hidden while
+    // parked in its pit stall (or driving in) unless paceCarShowInPits is on —
+    // driving back out is always shown so you can time the merge behind it.
+    const paceCarShowInPits = settings.paceCarShowInPits ?? false;
+
+    // A pace car out of the world has no position to draw; the dot is rendered
+    // either way and hidden by the draw reaction, so the element list stays a
+    // function of the roster rather than of where the car happens to be.
+    const paceCars: CarOnTrack[] = (sessionInfo?.cars ?? []).flatMap((car) => {
+      if (!car.isPaceCar) return [];
+
+      const pitPhase = computed.paceCarPhaseOf(car.carIdx);
+
+      if (
+        !paceCarShowInPits &&
+        pitPhase !== 'onTrack' &&
+        pitPhase !== 'pitOut'
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          carIdx: car.carIdx,
+          carNumber: '',
+          carClassColor: parseClassColor(car.carClassColor),
+          carClassId: car.carClassId,
+          isPlayer: false,
+          position: 0,
+          classPosition: 0,
+          isPaceCar: true,
+          pitPhase,
+        },
+      ];
+    });
+
+    const cars: CarOnTrack[] = [...competitorCars, ...paceCars];
+
+    if (!rotatedTrackData) {
+      return (
+        <WidgetPanel className={styles.trackMap} gap={0}>
+          <RecordingOverlay
+            isRecording={isRecording}
+            isWaitingForSF={isWaitingForSF}
+            progress={recordingProgress}
+          />
+        </WidgetPanel>
+      );
+    }
+
+    const visibleSectors = settings.showSectorsOnMap ? sectors : null;
+
+    const showStartFinish = settings.showStartFinish ?? true;
+
+    const headingUpActive =
+      (settings.zoomEnabled ?? false) && (settings.zoomRotate ?? false);
+
+    return (
+      <WidgetPanel className={styles.trackMap} gap={0}>
+        {/* Heading-up mode drives the orientation from the car, so the manual
+            90° rotation would have no visible effect here. */}
+        {dragMode && onRotate && !headingUpActive && (
+          <RotationControls onRotate={onRotate} />
+        )}
+
+        <TrackMapSvg
+          svgPath={rotatedTrackData.svgPath}
+          viewBox={rotatedTrackData.viewBox}
+          points={rotatedTrackData.points}
+          cars={cars}
+          sectors={visibleSectors}
+          playerDotColor={settings.playerDotColor}
+          showPlayerLabel={settings.showPlayerLabel}
+          leaderLabelMode={settings.leaderLabelMode}
+          trackStrokePx={settings.trackStrokePx}
+          trackBorderPx={settings.trackBorderPx}
+          sectorStrokePx={settings.sectorStrokePx}
+          targetDotRadiusPx={settings.targetDotRadiusPx}
+          showStartFinish={showStartFinish}
+          paceCarUseClassColor={settings.paceCarUseClassColor}
+          paceCarColor={settings.paceCarColor}
+          paceCarRadiusPx={
+            settings.paceCarRadiusPx ?? settings.targetDotRadiusPx
+          }
+          classShapes={settings.classShapes}
+          carClassOrder={sessionStore.carClassOrder}
+          zoomEnabled={settings.zoomEnabled}
+          zoomLevel={settings.zoomLevel}
+          zoomRotate={settings.zoomRotate}
+          zoomCircleBackground={settings.zoomCircleBackground}
+          zoomCircleColor={settings.zoomCircleColor}
+          zoomCircleOpacity={settings.zoomCircleOpacity}
+        />
+      </WidgetPanel>
+    );
+  }
+);

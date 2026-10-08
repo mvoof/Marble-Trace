@@ -28,7 +28,7 @@ export type SettingsPanel = ComponentType<{ widgetId: string }>;
 const panelModules = import.meta.glob<PanelModule>(
   [
     '../../../../../features/widget-settings/panels/*SettingsPanel.tsx',
-    '../../../../widgets/*/*SettingsPanel.tsx',
+    '../../../../../../widgets/*/*SettingsPanel.tsx',
   ],
   {
     eager: true,

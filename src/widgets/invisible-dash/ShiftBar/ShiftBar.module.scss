@@ -1,0 +1,24 @@
+@use '../_invisible-dash-scale.scss' as *;
+
+.track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: ws(3 * $ss);
+  margin-bottom: ws(4 * $ss);
+  overflow: hidden;
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.fill {
+  position: absolute;
+  inset: 0 var(--shift-fill-right, 100%) 0 0;
+  background: var(--shift-fill-color, transparent);
+}
+
+// A sub-pixel bar is a smudge, not a signal — it keeps a minimum thickness.
+@container #{$container} (max-width: #{$compact-max}) {
+  .track {
+    height: floor-size(#{ws(3 * $ss)}, 2);
+  }
+}

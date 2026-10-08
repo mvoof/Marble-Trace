@@ -1,0 +1,31 @@
+import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
+import type { WidgetCore } from '@widgets/widget-mount';
+import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
+import { CoachWidgetStore } from './coach.store';
+import { DrivingCoachWidgetStore } from './driving-coach.store';
+
+/**
+ * One coach instance's stores: the call (`advisory`) and the speed trace
+ * (`trace`). Two classes because they share no state — the trace never decides
+ * the call — but one lifetime, so the mount builds and disposes them together.
+ */
+export class CoachWidgetStores {
+  readonly advisory: DrivingCoachWidgetStore;
+  readonly trace: CoachWidgetStore;
+
+  constructor(context: WidgetInstanceContext<WidgetCore>) {
+    this.advisory = new DrivingCoachWidgetStore(context);
+    this.trace = new CoachWidgetStore(context);
+  }
+
+  dispose() {
+    this.advisory.dispose();
+    this.trace.dispose();
+  }
+}
+
+export const useDrivingCoachWidgetStore = () =>
+  useWidgetInstanceStore<CoachWidgetStores>().advisory;
+
+export const useCoachWidgetStore = () =>
+  useWidgetInstanceStore<CoachWidgetStores>().trace;

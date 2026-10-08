@@ -1,0 +1,109 @@
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useEffect, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+import type { StandingsWidgetSettings } from '@entities/widget/widget-settings';
+import { ClassGroupHeader } from '@widgets/standings/ClassGroupHeader/ClassGroupHeader';
+
+import styles from './ClassSwitcher.module.scss';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
+
+const FLASH_DURATION_MS = 300;
+
+export const ClassSwitcher = observer(() => {
+  const standingsWidget = useStandingsWidgetStore();
+  const appSettings = useAppSettingsStore();
+
+  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
+  const { allClassGroups } = standingsWidget;
+  const activeIndex = standingsWidget.activeClassIndex;
+
+  const group = allClassGroups[activeIndex];
+  const total = allClassGroups.length;
+
+  const [flashDir, setFlashDir] = useState<'prev' | 'next' | null>(null);
+  const prevIndexRef = useRef(activeIndex);
+
+  useEffect(() => {
+    const prev = prevIndexRef.current;
+    prevIndexRef.current = activeIndex;
+
+    if (prev === activeIndex || total <= 1) {
+      return;
+    }
+
+    let dir: 'prev' | 'next';
+
+    if (activeIndex === (prev + 1) % total) {
+      dir = 'next';
+    } else if (activeIndex === (prev - 1 + total) % total) {
+      dir = 'prev';
+    } else {
+      return;
+    }
+
+    setFlashDir(dir);
+    const timerId = setTimeout(() => setFlashDir(null), FLASH_DURATION_MS);
+
+    return () => clearTimeout(timerId);
+  }, [activeIndex, total]);
+
+  if (
+    settings.viewMode !== 'cycling' ||
+    allClassGroups.length === 0 ||
+    !group
+  ) {
+    return null;
+  }
+
+  const handlePrev = () => {
+    standingsWidget.cyclePrev(total);
+  };
+
+  const handleNext = () => {
+    standingsWidget.cycleNext(total);
+  };
+
+  const paginationLabel = total > 1 ? `${activeIndex + 1}/${total}` : undefined;
+
+  // The arrows are only clickable while the mouse can reach the overlay, so
+  // outside interact mode they are dead weight over the table.
+  const navHidden = appSettings.interactMode ? '' : styles.navBtnHidden;
+
+  return (
+    <div className={styles.switcher}>
+      <button
+        type="button"
+        className={`${styles.navBtn} ${navHidden} ${flashDir === 'prev' ? styles.navBtnFlash : ''}`}
+        onClick={handlePrev}
+        onMouseDown={(e) => e.stopPropagation()}
+        disabled={total <= 1}
+        aria-label="Previous class"
+      >
+        <ChevronLeft size={14} />
+      </button>
+
+      <ClassGroupHeader
+        className={group.className}
+        classShortName={group.classShortName}
+        classColor={group.classColor}
+        classSof={group.classSof}
+        totalDrivers={group.totalDrivers}
+        paginationLabel={paginationLabel}
+      />
+
+      <button
+        type="button"
+        className={`${styles.navBtn} ${navHidden} ${flashDir === 'next' ? styles.navBtnFlash : ''}`}
+        onClick={handleNext}
+        onMouseDown={(e) => e.stopPropagation()}
+        disabled={total <= 1}
+        aria-label="Next class"
+      >
+        <ChevronRight size={14} />
+      </button>
+    </div>
+  );
+});

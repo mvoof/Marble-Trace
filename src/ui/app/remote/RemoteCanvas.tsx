@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { componentForWidget } from '@ui/widgets/registry';
-import { WidgetInstanceScope } from '@ui/widgets/WidgetInstanceScope/WidgetInstanceScope';
+import { componentForWidget } from '@widgets/registry';
+import { WidgetInstanceScope } from '@widgets/instance-scope/WidgetInstanceScope';
 import { RemoteWidgetFrame } from './RemoteWidgetFrame';
 import styles from './RemoteCanvas.module.scss';
 import { useRemoteScreenStore } from '@features/remote-screens/remote-screen-context';

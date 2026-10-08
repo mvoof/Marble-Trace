@@ -31,7 +31,7 @@ Give those five more attention than the ones a command checks.
 
 Then confirm each field exists, in this order:
 
-1. Offline: grep `src/types/bindings.ts`. It is the generated contract and the
+1. Offline: grep `src/shared/contracts/bindings.ts`. It is the generated contract and the
    only honest list. Raw sim frames are **snake_case** (`velocity_x`) — they keep
    kerb's names; the envelope and computed frames are camelCase. Search a raw
    field in snake_case.
@@ -44,7 +44,7 @@ If a field does not exist, **stop and say so.** Adding it is the backend route
 Record for each field its **rate tier** — the table is in
 [architecture.md](../../../docs/architecture.md) → Rate tiers.
 
-**The gated fields are the exports of `src/types/telemetry-event-bits.ts`
+**The gated fields are the exports of `src/shared/contracts/telemetry-event-bits.ts`
 (generated from Rust). Open that file — it is the list, and it grows.**
 The four on the 60 Hz tier (`carDynamics`, `carInputs`, `carPositions`,
 `lapDelta`) are **hot**; note which you use, steps 3 and 9 depend on it.
@@ -82,12 +82,12 @@ Decide, and write down before any file:
 - `designWidth` / `designHeight`. If columns are toggleable, `designWidth` is
   computed by a `compute…DesignWidth` in the widget's `*-utils.ts` and driven by
   `makeColumnLayoutResolver` — copy the pattern from
-  `src/ui/widgets/CloseBattleWidget/manifest.ts`.
+  `src/widgets/close-battle/manifest.ts`.
 - **The layout knobs**, which are easy to miss because they are all optional:
   `autoHeight`, `lockAspectRatio`, `scaleFromHeight`, `overflowVisible`,
   `transparentContainer`. Read the doc comments on `WidgetMeta` in
-  `src/types/widget-settings.ts`. A non-rectangular plate also needs a case in
-  `widgetFrameBorderRadius` (`src/ui/app/widget-frame.ts`).
+  `src/entities/widget/widget-settings.ts`. A non-rectangular plate also needs a case in
+  `widgetFrameBorderRadius` (`src/entities/widget/widget-frame.ts`).
 - The component split. `<Name>Widget.tsx` is a thin orchestrator. A component
   that **reads a store** is `observer()` and reads it directly rather than taking
   derived props; a presentational shell taking only props need not be one
@@ -119,7 +119,7 @@ belongs.
 
 **Ask** which settings the widget actually needs. Then write:
 
-1. `interface <Name>WidgetSettings` in `src/types/widget-settings.ts`, and its
+1. `interface <Name>WidgetSettings` in `src/entities/widget/widget-settings.ts`, and its
    entry in the `WidgetSpecificSettings` union.
 2. The `userSettings` block of the manifest (step 6).
 
@@ -128,7 +128,7 @@ default on the next load. Say so rather than writing one.
 
 ## Step 6 — Generate `manifest.ts` and `mount.ts`
 
-Both in `src/ui/widgets/<Name>Widget/`. Mechanical once steps 1, 3 and 5 are
+Both in `src/widgets/<kebab-name>/`. Mechanical once steps 1, 3 and 5 are
 answered — generate them.
 
 Declare no `order` or position: every widget list is alphabetical by `label`,
@@ -206,7 +206,7 @@ first** and follow it. In short: spread `defineWidgetStories({ widget, size,
 seed, seedSnapshot, args, argTypes })` from `@/storybook/define-widget-stories`
 — it mounts the widget with its frame and does the seeding. The widget's
 settings become Controls by themselves; `StoryArgs` holds only telemetry knobs,
-seeded through `preview/mocks/` builders and `whenSet`. Any new
+seeded through `features/preview/mocks/` builders and `whenSet`. Any new
 string-union setting gets its members in `src/storybook/setting-options.ts`.
 One story per state worth seeing, starting with the race look the site picture
 is taken from. Named `const` PascalCase exports, only `meta` as default.
@@ -220,7 +220,7 @@ There is no test for this — it is enforced by review, not by a runner. Read
   rest is lifted into a parent that never re-renders and passed down as
   `children`.
 - A single number per frame goes through `useReactiveDomWrite`
-  (`ui/hooks/useReactiveDomWrite.ts`) instead of React.
+  (`shared/hooks/useReactiveDomWrite.ts`) instead of React.
 - More, smaller components does not fix this — every child still costs a
   `jsx()` allocation from its parent each frame.
 

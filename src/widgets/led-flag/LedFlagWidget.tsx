@@ -1,0 +1,88 @@
+import { useWidgetSettings } from '@entities/widget/useWidgetSettings';
+import { useEffect, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import {
+  MIN_SINGLE_LED_PX,
+  computeDiodesPerBlock,
+  computeSplitRows,
+} from '@widgets/led-flag/led-flag-utils';
+import { SingleLed } from './SingleLed/SingleLed';
+import { LedMatrix } from './LedMatrix/LedMatrix';
+import type { FlagDisplaySettings } from '@entities/widget/widget-settings';
+
+import styles from './LedFlagWidget.module.scss';
+
+export const LedFlagWidget = observer(() => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const { split, forceSingleLed } =
+    useWidgetSettings<FlagDisplaySettings>('led-flags');
+
+  const [layout, setLayout] = useState({
+    diodesPerBlock: 6,
+    splitRows: 18,
+    isSingleLed: false,
+  });
+
+  useEffect(() => {
+    const el = wrapperRef.current;
+
+    if (!el) {
+      return;
+    }
+
+    const obs = new ResizeObserver(([entry]) => {
+      const smallestSide = split
+        ? entry.contentRect.height
+        : Math.min(entry.contentRect.width, entry.contentRect.height);
+
+      if (smallestSide < MIN_SINGLE_LED_PX) {
+        setLayout((prev) =>
+          prev.isSingleLed ? prev : { ...prev, isSingleLed: true }
+        );
+      } else {
+        const nextDiodes = computeDiodesPerBlock(smallestSide);
+        const nextSplitRows = computeSplitRows(entry.contentRect.height);
+
+        setLayout((prev) =>
+          !prev.isSingleLed &&
+          prev.diodesPerBlock === nextDiodes &&
+          prev.splitRows === nextSplitRows
+            ? prev
+            : {
+                isSingleLed: false,
+                diodesPerBlock: nextDiodes,
+                splitRows: nextSplitRows,
+              }
+        );
+      }
+    });
+
+    obs.observe(el);
+
+    return () => obs.disconnect();
+  }, [split]);
+
+  const content =
+    forceSingleLed || layout.isSingleLed ? (
+      <SingleLed />
+    ) : (
+      <LedMatrix
+        diodesPerBlock={layout.diodesPerBlock}
+        splitRows={layout.splitRows}
+      />
+    );
+
+  return (
+    <div ref={wrapperRef} className={styles.wrapper}>
+      {split ? (
+        <div className={styles.splitWrapper}>
+          <div className={styles.leftSlot}>{content}</div>
+          <div className={styles.rightSlot}>{content}</div>
+        </div>
+      ) : (
+        content
+      )}
+    </div>
+  );
+});

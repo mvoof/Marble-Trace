@@ -11,8 +11,8 @@ import type {
  * new folder, and no shared file has to be touched for it to ship.
  *
  * They carry no React: a manifest is plain data, the id -> component map is
- * `ui/widgets/registry.ts`, and nothing here imports it. That is what lets the
- * store layer read a file under `ui/` without pulling the UI in behind it.
+ * `widgets/registry.ts`, and nothing here imports it. That is what lets the
+ * entities layer read a file under `widgets/` without pulling the UI in behind it.
  *
  * Every list the user sees is alphabetical by label — the Widgets page, each
  * monitor's list in the layout editor, the F9 picker — so the catalog is kept
@@ -20,7 +20,7 @@ import type {
  * where its name puts it.
  */
 const manifestModules = import.meta.glob<Record<string, WidgetManifest>>(
-  '../../ui/widgets/*/manifest.ts',
+  '../../widgets/*/manifest.ts',
   { eager: true }
 );
 
