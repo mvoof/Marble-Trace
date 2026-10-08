@@ -32,6 +32,10 @@ const flagsToList = (flags: RaceFlags): FlagType[] => {
     result.push('dq');
   }
 
+  if (flags.furled) {
+    result.push('furled');
+  }
+
   if (flags.meatball) {
     result.push('meatball');
   }
@@ -78,6 +82,12 @@ const flagToPriority = (flags: RaceFlags): FlagType => {
 
   if (flags.black) {
     return 'black';
+  }
+
+  // The slowdown for a track cut: iRacing raises the furled bit, not the
+  // black one, so it would otherwise show no flag at all.
+  if (flags.furled) {
+    return 'furled';
   }
 
   if (flags.meatball) {

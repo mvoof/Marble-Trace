@@ -65,6 +65,9 @@ export const CheckeredFlag: Story = {
   parameters: previewScenario('checkered-flag'),
 };
 export const BlackFlag: Story = { parameters: previewScenario('black-flag') };
+export const FurledFlag: Story = {
+  parameters: previewScenario('furled-flag'),
+};
 export const MeatballFlag: Story = {
   parameters: previewScenario('meatball-flag'),
 };

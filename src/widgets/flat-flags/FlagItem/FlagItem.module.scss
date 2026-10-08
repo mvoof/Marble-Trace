@@ -54,6 +54,16 @@
   }
 }
 
+.itemFurled {
+  background-color: #222;
+  color: #fff;
+  border-left: 4px solid $led-yellow;
+
+  &::before {
+    color: $led-yellow;
+  }
+}
+
 .itemMeatball {
   background-color: $led-orange;
   color: #000;

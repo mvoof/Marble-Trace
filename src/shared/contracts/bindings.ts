@@ -2241,17 +2241,6 @@ export type TelemetryBundle = {
 export type TelemetrySlowBundle = { carStatus: CarStatusFrame };
 
 /**
- * Tick duration percentiles over the span since the last reset, in
- * microseconds.
- */
-export type TickSummary = {
-  ticks: number;
-  p50Us: number;
-  p99Us: number;
-  maxUs: number;
-};
-
-/**
  * Percentiles of one timed operation, in milliseconds.
  */
 export type TimingSummary = {

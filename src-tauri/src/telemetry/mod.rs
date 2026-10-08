@@ -18,6 +18,7 @@ pub mod runtime;
 pub mod scheduler;
 pub mod state;
 pub mod storage;
+#[cfg(feature = "dev")]
 pub mod tick_timings;
 
 /// The two bundles this layer assembles, and the counters that say what was
@@ -29,7 +30,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<emitter::TelemetrySlowBundle>()
         .register::<delivery::DeliverySet>()
         .register::<delivery::FieldDelivery>()
-        .register::<tick_timings::TickSummary>()
         .register::<perf_run::PerfRunConfig>()
         .register::<perf_run::OverlayPerfReport>();
 }

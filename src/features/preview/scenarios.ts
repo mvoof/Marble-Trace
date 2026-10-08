@@ -395,6 +395,14 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
+    id: 'furled-flag',
+    label: 'Slowdown (track cut)',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { furled: true });
+    },
+  },
+  {
     id: 'dq-flag',
     label: 'Disqualify flag (DQ)',
     apply: (store) => {

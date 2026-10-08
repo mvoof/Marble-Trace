@@ -12,9 +12,14 @@ use crate::model::flags::{
 ///
 /// * `session_bits` — `SessionFlags` telemetry value (session-wide).
 /// * `player_car_bits` — `CarIdxSessionFlags[player_car_idx]` (per-player car).
+///
+/// The player's own flags (black, furled, repair) are read from both fields:
+/// `SessionFlags` carries them for the player too, and in a test drive or a
+/// practice `CarIdxSessionFlags` can stay empty while the slowdown is shown.
 pub fn decode_race_flags(session_bits: u32, player_car_bits: u32) -> RaceFlags {
     let s = session_bits;
     let p = player_car_bits;
+    let player_bits = p | s;
 
     RaceFlags {
         // session-wide
@@ -29,11 +34,11 @@ pub fn decode_race_flags(session_bits: u32, player_car_bits: u32) -> RaceFlags {
         caution: s & CAUTION != 0,
         caution_waving: s & CAUTION_WAVING != 0,
         // player-car
-        black: p & (BLACK | DISQUALIFY) != 0,
-        disqualify: p & DISQUALIFY != 0,
+        black: player_bits & (BLACK | DISQUALIFY) != 0,
+        disqualify: player_bits & DISQUALIFY != 0,
         meatball: (p & MEATBALL_MASK) == MEATBALL_MASK || (s & MEATBALL_MASK) == MEATBALL_MASK,
-        furled: p & FURLED != 0,
-        repair: p & REPAIR != 0,
+        furled: player_bits & FURLED != 0,
+        repair: player_bits & REPAIR != 0,
     }
 }
 
@@ -113,6 +118,34 @@ mod tests {
     fn player_furled_flag() {
         let flags = decode_race_flags(0, FURLED);
         assert!(flags.furled);
+    }
+
+    #[test]
+    fn session_furled_flag() {
+        let flags = decode_race_flags(FURLED, 0);
+        assert!(flags.furled);
+        assert!(!flags.black);
+    }
+
+    #[test]
+    fn session_black_flag() {
+        let flags = decode_race_flags(BLACK, 0);
+        assert!(flags.black);
+        assert!(!flags.disqualify);
+    }
+
+    #[test]
+    fn session_disqualify_flag() {
+        let flags = decode_race_flags(DISQUALIFY, 0);
+        assert!(flags.black);
+        assert!(flags.disqualify);
+    }
+
+    #[test]
+    fn session_repair_flag() {
+        let flags = decode_race_flags(REPAIR, 0);
+        assert!(flags.repair);
+        assert!(!flags.meatball);
     }
 
     #[test]

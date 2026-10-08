@@ -72,6 +72,9 @@ export const getColorClass = (
     case 'black':
       return isEdge ? styles.colorWhite : '';
 
+    case 'furled':
+      return isEdge ? styles.colorYellow : '';
+
     case 'dq': {
       if (isEdge) return styles.colorWhite;
       const normX = matrixSizeX > 1 ? gx / (matrixSizeX - 1) : 0.5;
@@ -104,6 +107,7 @@ export const getSingleLedColorClass = (
     case 'green':
       return styles.colorGreen;
     case 'yellow':
+    case 'furled':
       return styles.colorYellow;
     case 'red':
       return styles.colorRed;

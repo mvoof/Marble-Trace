@@ -11,9 +11,9 @@ export type FlagType =
   | 'black'
   | 'meatball'
   | 'debris'
-  | 'penalty'
   | 'sc'
-  | 'dq';
+  | 'dq'
+  | 'furled';
 
 /**
  * iRacing Track Surface types (irsdk_TrkLoc enum)

@@ -16,6 +16,7 @@ export type PreviewScenarioId =
   | 'safety-car'
   | 'blue-flag'
   | 'black-flag'
+  | 'furled-flag'
   | 'dq-flag'
   | 'green-flag'
   | 'white-flag'

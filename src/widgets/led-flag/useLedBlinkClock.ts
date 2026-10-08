@@ -9,6 +9,7 @@ const BLINKING_FLAGS: ReadonlySet<FlagType> = new Set([
   'debris',
   'meatball',
   'black',
+  'furled',
   'sc',
   'dq',
   'red',

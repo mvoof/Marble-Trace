@@ -17,9 +17,9 @@ export const DriverFlagBadge = ({ type }: DriverFlagBadgeProps) => {
       case 'meatball':
         return 'Mechanical Damage (Meatball Flag)';
       case 'black':
-        return 'Warning (Black Flag)';
-      case 'penalty':
         return 'Active Penalty (Black Flag)';
+      case 'furled':
+        return 'Track Cut Warning (Slow Down)';
       case 'dq':
         return 'Disqualified (DQ Flag)';
       default:

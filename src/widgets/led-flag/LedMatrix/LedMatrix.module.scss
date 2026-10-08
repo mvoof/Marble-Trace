@@ -179,6 +179,14 @@ $board-padding: 4px;
     );
   }
 
+  &.flag-furled .colorYellow {
+    background-color: color-mix(
+      in srgb,
+      $led-yellow calc((1 - var(--phase-a)) * 100%),
+      $led-surface-panel
+    );
+  }
+
   // `--phase-a` here is the eased 0->1 breath itself, written straight from
   // `useLedBlinkClock`'s rAF loop rather than flipped every half-cycle: 0 is
   // full white (the keyframe's 0%/100%), 1 is the dimmed midpoint (its 50%).

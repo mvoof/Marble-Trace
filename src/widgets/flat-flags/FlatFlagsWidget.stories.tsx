@@ -15,6 +15,7 @@ const ALL_FLAGS: FlagType[] = [
   'white',
   'checkered',
   'black',
+  'furled',
   'debris',
   'sc',
   'dq',
@@ -54,6 +55,9 @@ export const SingleGreen: Story = { parameters: previewScenario('green-flag') };
 export const Yellow: Story = { parameters: previewScenario('yellow-flag') };
 export const SafetyCar: Story = { parameters: previewScenario('safety-car') };
 export const DqFlag: Story = { parameters: previewScenario('dq-flag') };
+export const FurledFlag: Story = {
+  parameters: previewScenario('furled-flag'),
+};
 
 // The two combinations no scenario states: a local yellow with debris under it,
 // and every flag at once — the row the widget has to stay readable at.

@@ -14,7 +14,6 @@ use crate::telemetry::delivery::DeliverySet;
 use crate::telemetry::masks::REMOTE_LABEL;
 use crate::telemetry::runtime::spawn_telemetry_thread;
 use crate::telemetry::state::TelemetryState;
-use crate::telemetry::tick_timings::TickSummary;
 use crate::utils::lock_or_recover;
 
 #[tauri::command]
@@ -241,19 +240,13 @@ pub async fn get_delivery_counters(
     Ok(lock_or_recover(&state.service.delivery).snapshot())
 }
 
-/// Tick duration percentiles since the last reset — how long the backend takes
-/// to turn one frame into delivered bundles.
-#[tauri::command]
-pub async fn get_tick_summary(state: State<'_, TelemetryState>) -> Result<TickSummary, String> {
-    Ok(lock_or_recover(&state.service.tick_timings).summary())
-}
-
 /// Restarts every recipient's counters and the tick timings, giving a
 /// measurement run a defined start. The recipients themselves are left
 /// registered.
 #[tauri::command]
 pub async fn reset_delivery_counters(state: State<'_, TelemetryState>) -> Result<(), String> {
     lock_or_recover(&state.service.delivery).reset();
+    #[cfg(feature = "dev")]
     lock_or_recover(&state.service.tick_timings).reset();
 
     Ok(())

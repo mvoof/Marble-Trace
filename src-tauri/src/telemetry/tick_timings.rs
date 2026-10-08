@@ -5,6 +5,8 @@
 //! assembly, mask, quantization and delivery. The samples are kept whole rather than folded
 //! into a running histogram, because p99 over a sixty-second run is a sort of
 //! a few thousand numbers and nothing cheaper is worth its error.
+//!
+//! Only the perf run reads it, so the module exists only in a `dev` build.
 
 use std::time::Duration;
 
@@ -17,7 +19,6 @@ const WHOLE_PERCENT: u64 = 100;
 /// Tick duration percentiles over the span since the last reset, in
 /// microseconds.
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
-#[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct TickSummary {
     pub ticks: u32,
