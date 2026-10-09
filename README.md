@@ -18,7 +18,7 @@
 </div>
 
 <p align="center">
-  Marble Trace is actively developed — new widgets, fixes, and features land regularly.<br>
+  Marble Trace™ is actively developed — new widgets, fixes, and features land regularly.<br>
   Got a bug, an idea, or just want to share your setup? Join the community on Discord.
 </p>
 <p align="center">
@@ -400,4 +400,8 @@ See [CHANGELOG.md](CHANGELOG.md) for the full release history.
 
 ## License
 
-Distributed under the [GNU General Public License v3.0 (GPLv3)](LICENSE). © 2026 voof
+The Marble Trace source code is licensed under the [GNU General Public License v3.0 (GPL-3.0)](LICENSE). © 2026 voof
+
+The Marble Trace name, logo, and other branding are not licensed under the GPL-3.0. Permission to use, modify, and distribute the source code does not grant permission to use the Marble Trace name or logo in a way that suggests an official or endorsed version.
+
+Forks and derivative works that are distributed (conveyed, in the GPL's terms) must comply with the GPL-3.0 license; private modifications you do not distribute carry no such obligations. If you distribute a modified version under a different name or branding, please make it clear that it is not the official Marble Trace project.
