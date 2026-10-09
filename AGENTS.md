@@ -139,7 +139,7 @@ Each window builds its own root over one renderer core (see MobX Stores → Wind
 
 ## Workflow
 
-_Held by: the commit hooks for what they cover (`lefthook.yml`: format, lint, typecheck, related tests, `cargo fmt`, clippy and `cargo test` on every commit); review for the rest — nothing stops a push or a commit message naming an assistant._
+_Held by: the commit hooks for what they cover (`lefthook.yml`: format, lint, typecheck, related tests, `cargo fmt`, clippy and `cargo test` on every commit); review for the rest — nothing stops a push._
 
 - Object if a proposed solution seems wrong — give arguments, wait for confirmation before starting
 - Use `context7` to read external documentation
@@ -148,9 +148,6 @@ _Held by: the commit hooks for what they cover (`lefthook.yml`: format, lint, ty
 - Never `git push` — not a new branch either. Committing and pushing are the
   user's calls, every time; a standing instruction elsewhere (a memory, a
   previous session) does not override this file
-- Commit messages and PR descriptions name no assistant: no `Co-Authored-By`
-  for Claude, no session links, no generated-with footer. The history records
-  what changed and why, not what typed it
 
 ### Visual Testing
 

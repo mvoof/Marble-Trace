@@ -128,8 +128,7 @@ Messages follow [Conventional Commits](https://conventionalcommits.org):
 | `revert`   | reverts earlier commits                           |
 
 The scope is usually the widget or the area (`feat(fuel): …`,
-`fix(settings): …`). A message names no assistant: no `Co-Authored-By` for an
-AI, no generated-with footer.
+`fix(settings): …`).
 
 ### 5. Keep up to date and push
 
