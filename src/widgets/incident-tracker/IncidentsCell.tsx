@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
-import { useIncidentHudStore } from './incident-hud-context';
+import { useIncidentTrackerStore } from './incident-tracker-context';
 import { MetricCell, type MetricTone } from './MetricCell';
 import styles from './IncidentsCell.module.scss';
 
@@ -22,7 +22,7 @@ const incidentsTone = (count: number, isAlarmed: boolean): MetricTone => {
 
 /** The session's incident points, over the limit when the session has one. */
 export const IncidentsCell = observer(() => {
-  const store = useIncidentHudStore();
+  const store = useIncidentTrackerStore();
   const count = store.countedIncidents;
   const limit = store.incidentLimit;
   const tone = incidentsTone(count, store.isDisqualified || store.isNearLimit);

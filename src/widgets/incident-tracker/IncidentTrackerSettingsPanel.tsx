@@ -3,18 +3,18 @@ import { useTranslation } from 'react-i18next';
 
 import { Card } from '@features/widget-settings/Card';
 import { schemaRows } from '@features/widget-settings/schema-rows';
-import { INCIDENT_HUD_SETTINGS } from './settings-schema';
+import { INCIDENT_TRACKER_SETTINGS } from './settings-schema';
 
 // Widget ids this panel configures — read by the panel registry.
-export const PANEL_WIDGET_IDS = ['incident-hud'];
+export const PANEL_WIDGET_IDS = ['incident-tracker'];
 
-const { Row } = schemaRows(INCIDENT_HUD_SETTINGS);
+const { Row } = schemaRows(INCIDENT_TRACKER_SETTINGS);
 
-export const IncidentHudSettingsPanel = observer(() => {
+export const IncidentTrackerSettingsPanel = observer(() => {
   const { t } = useTranslation('widgets');
 
   return (
-    <Card title={t('settingsPanels.incidentHud.moduleParameters')}>
+    <Card title={t('settingsPanels.incidentTracker.moduleParameters')}>
       <Row setting="showProjectedSr" />
       <Row setting="srChipMode" dependsOn="showProjectedSr" />
       <Row setting="showPenalties" />

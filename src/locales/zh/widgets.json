@@ -84,7 +84,7 @@
     "drs": {
       "description": "DRS 状态：通过检测点后待命、进入区域后可用、已开启。"
     },
-    "incident-hud": {
+    "incident-tracker": {
       "description": "事故点、处罚，以及到终点时的安全评级估算。"
     }
   },
@@ -832,7 +832,7 @@
       "hideWhenUnavailable": "不可用时隐藏",
       "hideWhenUnavailableDesc": "DRS 不可用时完全不显示，而不是显示一块暗色面板。"
     },
-    "incidentHud": {
+    "incidentTracker": {
       "moduleParameters": "模块参数",
       "showProjectedSr": "安全评级估算",
       "showProjectedSrDesc": "估算的安全评级及其自本节开始以来的变化。这是社区模型的估算——iRacing 不公开公式。在不影响评级的赛事中显示 OFF。",

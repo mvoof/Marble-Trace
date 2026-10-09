@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
-import { UNKNOWN_VALUE } from './incident-hud-utils';
-import { useIncidentHudStore } from './incident-hud-context';
+import { UNKNOWN_VALUE } from './incident-tracker-utils';
+import { useIncidentTrackerStore } from './incident-tracker-context';
 import { MetricCell } from './MetricCell';
 import styles from './CleanCornersCell.module.scss';
 
@@ -13,7 +13,7 @@ const LABEL = 'CLN';
  * the good news: the session is level or better already.
  */
 export const CleanCornersCell = observer(() => {
-  const needed = useIncidentHudStore().cleanCornersNeeded;
+  const needed = useIncidentTrackerStore().cleanCornersNeeded;
 
   if (needed === null) {
     return (

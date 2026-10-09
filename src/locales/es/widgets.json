@@ -84,7 +84,7 @@
     "drs": {
       "description": "Estado del DRS: armado tras la detección, listo en la zona, abierto."
     },
-    "incident-hud": {
+    "incident-tracker": {
       "description": "Incidentes, penalizaciones y una estimación del Safety Rating al final."
     }
   },
@@ -832,7 +832,7 @@
       "hideWhenUnavailable": "Ocultar cuando no esté disponible",
       "hideWhenUnavailableDesc": "No dibujar nada mientras el DRS no esté disponible, en lugar de una placa apagada."
     },
-    "incidentHud": {
+    "incidentTracker": {
       "moduleParameters": "Parámetros del módulo",
       "showProjectedSr": "Estimación de Safety Rating",
       "showProjectedSrDesc": "El Safety Rating estimado y su cambio desde el inicio de la sesión. Es una estimación de un modelo de la comunidad: iRacing no publica la fórmula. Muestra OFF en una sesión que no lo cambia.",

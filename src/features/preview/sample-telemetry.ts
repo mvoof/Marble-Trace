@@ -146,7 +146,7 @@ export const seedSampleTelemetry = action((store: PreviewTarget) => {
   store.backendComputed.updateIncidents({ incidents: [] });
 
   // The recording carries no Safety Rating estimate — it was made before the
-  // frame existed — so the baseline states a clean race for the Incident HUD.
+  // frame existed — so the baseline states a clean race for the Incident Tracker.
   store.player.updateSafetyRating(mockSafetyRating());
 
   const entries = computeDriverEntries(

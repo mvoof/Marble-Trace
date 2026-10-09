@@ -3,10 +3,10 @@ import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@widgets/widget-manifest';
-import { INCIDENT_HUD_SETTINGS } from './settings-schema';
+import { INCIDENT_TRACKER_SETTINGS } from './settings-schema';
 
-export const INCIDENT_HUD_MANIFEST: WidgetManifest = {
-  id: 'incident-hud',
+export const INCIDENT_TRACKER_MANIFEST: WidgetManifest = {
+  id: 'incident-tracker',
   telemetryEvents: ['safetyRating'],
   previewScenarios: [
     'incident-clean',
@@ -15,7 +15,7 @@ export const INCIDENT_HUD_MANIFEST: WidgetManifest = {
     'incident-dq',
     'incident-unranked',
   ],
-  label: 'Incident HUD',
+  label: 'Incident Tracker',
   description:
     'Incidents, penalties and an estimated Safety Rating at the flag.',
   autoHeight: true,
@@ -34,7 +34,7 @@ export const INCIDENT_HUD_MANIFEST: WidgetManifest = {
     currentHeight: 60,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
-    ...INCIDENT_HUD_SETTINGS.defaults,
+    ...INCIDENT_TRACKER_SETTINGS.defaults,
   },
-  settingsSchema: INCIDENT_HUD_SETTINGS,
+  settingsSchema: INCIDENT_TRACKER_SETTINGS,
 };

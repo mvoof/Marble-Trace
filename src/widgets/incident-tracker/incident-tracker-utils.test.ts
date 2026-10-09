@@ -5,7 +5,7 @@ import {
   formatSr,
   formatSrDelta,
   roundCornersUp,
-} from './incident-hud-utils';
+} from './incident-tracker-utils';
 
 describe('formatting', () => {
   it('writes the rating to the hundredth, or a dash', () => {

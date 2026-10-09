@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
-import { useIncidentHudStore } from './incident-hud-context';
+import { useIncidentTrackerStore } from './incident-tracker-context';
 import { MetricCell, type MetricTone } from './MetricCell';
 import styles from './PenaltiesCell.module.scss';
 
@@ -27,7 +27,7 @@ const penaltiesTone = (served: number, isNearNext: boolean): MetricTone => {
  * otherwise.
  */
 export const PenaltiesCell = observer(() => {
-  const store = useIncidentHudStore();
+  const store = useIncidentTrackerStore();
   const status = store.penaltyStatus;
   const toNext = store.incidentsToNextPenalty;
 

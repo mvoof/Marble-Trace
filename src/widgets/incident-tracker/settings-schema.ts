@@ -5,7 +5,7 @@ import {
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
 
-export const INCIDENT_HUD_SETTINGS = defineSettings('incidentHud', {
+export const INCIDENT_TRACKER_SETTINGS = defineSettings('incidentTracker', {
   /** The Safety Rating estimate and its change this session. */
   showProjectedSr: bool(true),
   /**
@@ -19,6 +19,6 @@ export const INCIDENT_HUD_SETTINGS = defineSettings('incidentHud', {
   srChipMode: choice(['delta', 'projected'], 'delta'),
 });
 
-export type IncidentHudWidgetSettings = SettingsOf<
-  typeof INCIDENT_HUD_SETTINGS.shape
+export type IncidentTrackerWidgetSettings = SettingsOf<
+  typeof INCIDENT_TRACKER_SETTINGS.shape
 >;

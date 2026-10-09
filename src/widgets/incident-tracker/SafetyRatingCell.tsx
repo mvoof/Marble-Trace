@@ -5,8 +5,8 @@ import {
   deltaDirection,
   formatSr,
   type DeltaDirection,
-} from './incident-hud-utils';
-import { useIncidentHudStore } from './incident-hud-context';
+} from './incident-tracker-utils';
+import { useIncidentTrackerStore } from './incident-tracker-context';
 import styles from './SafetyRatingCell.module.scss';
 
 const DELTA_CLASS: Record<DeltaDirection, string> = {
@@ -24,7 +24,7 @@ const UNRATED_LABEL = 'OFF';
  * an estimate — iRacing publishes no formula.
  */
 export const SafetyRatingCell = observer(() => {
-  const store = useIncidentHudStore();
+  const store = useIncidentTrackerStore();
   const deltaClass = DELTA_CLASS[deltaDirection(store.srDelta)];
 
   return (

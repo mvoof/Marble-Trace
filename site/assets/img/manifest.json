@@ -169,17 +169,17 @@
       }
     ]
   },
-  "assets/widgets/incident-hud.png": {
+  "assets/widgets/incident-tracker.png": {
     "width": 540,
     "height": 174,
     "variants": [
       {
         "width": 480,
-        "path": "assets/img/widgets/incident-hud-480.webp"
+        "path": "assets/img/widgets/incident-tracker-480.webp"
       },
       {
         "width": 540,
-        "path": "assets/img/widgets/incident-hud-540.webp"
+        "path": "assets/img/widgets/incident-tracker-540.webp"
       }
     ]
   },

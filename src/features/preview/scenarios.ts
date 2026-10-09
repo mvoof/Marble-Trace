@@ -236,7 +236,7 @@ const OFFICIAL_INCIDENT_RULES = {
   incidentPenaltySubsequent: 4,
 };
 
-// The Incident HUD reads the player's points off the estimate's own frame and
+// The Incident Tracker reads the player's points off the estimate's own frame and
 // the rules off the session, so a scenario states both — the roster count
 // rides along through `applyIncidents` for the widgets that read it there.
 const applySafetyRating = (

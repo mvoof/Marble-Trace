@@ -84,7 +84,7 @@
     "drs": {
       "description": "DRS state: armed past the detection point, ready in the zone, open."
     },
-    "incident-hud": {
+    "incident-tracker": {
       "description": "Incidents, penalties and an estimated Safety Rating at the flag."
     }
   },
@@ -832,7 +832,7 @@
       "hideWhenUnavailable": "Hide when unavailable",
       "hideWhenUnavailableDesc": "Draw nothing while DRS is unavailable, instead of a quiet plate."
     },
-    "incidentHud": {
+    "incidentTracker": {
       "moduleParameters": "Module parameters",
       "showProjectedSr": "Safety Rating estimate",
       "showProjectedSrDesc": "The estimated Safety Rating and its change since the session started. An estimate from a community model — iRacing does not publish the formula. Shows OFF in a session that does not change it.",

@@ -5,7 +5,7 @@ import {
   defineWidgetStories,
   previewScenario,
 } from '@/storybook/define-widget-stories';
-import { IncidentHudWidget } from './IncidentHudWidget';
+import { IncidentTrackerWidget } from './IncidentTrackerWidget';
 
 interface StoryArgs {
   /** The sim has not sent the licence yet: no rating, so no estimate. */
@@ -15,9 +15,9 @@ interface StoryArgs {
 }
 
 const meta: Meta<StoryArgs> = {
-  title: 'Widgets/IncidentHudWidget',
+  title: 'Widgets/IncidentTrackerWidget',
   ...defineWidgetStories<StoryArgs>({
-    widget: IncidentHudWidget,
+    widget: IncidentTrackerWidget,
     // The plate paints its own ground from --widget-bg; the frame around it
     // stays empty, as the transparent container does on the overlay.
     size: {

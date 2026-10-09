@@ -11,40 +11,50 @@ import type { WidgetInstanceContext } from '@entities/widget/widget-instances.st
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { SessionStore } from '@entities/session/session.store';
-import { formatSr, formatSrDelta, roundCornersUp } from './incident-hud-utils';
-import type { IncidentHudWidgetSettings } from './settings-schema';
+import {
+  formatSr,
+  formatSrDelta,
+  roundCornersUp,
+} from './incident-tracker-utils';
+import type { IncidentTrackerWidgetSettings } from './settings-schema';
 
 /** `LicSubLevel` is the rating × 100. */
 const SUB_LEVEL_SCALE = 100;
 
-interface IncidentHudDeps {
+interface IncidentTrackerDeps {
   liveWidgets: LiveWidgetsView;
   player: PlayerStore;
   session: SessionStore;
 }
 
 /**
- * One Incident HUD: which estimate it shows, and where the driver stands
+ * One Incident Tracker: which estimate it shows, and where the driver stands
  * against the session's penalties. Built per instance (`mount.ts`), so two
  * copies follow their own projection mode.
  */
-export class IncidentHudWidgetStore {
-  private readonly root: IncidentHudDeps;
+export class IncidentTrackerWidgetStore {
+  private readonly root: IncidentTrackerDeps;
 
   private readonly instanceId: string;
 
-  constructor({ core, instanceId }: WidgetInstanceContext<IncidentHudDeps>) {
+  constructor({
+    core,
+    instanceId,
+  }: WidgetInstanceContext<IncidentTrackerDeps>) {
     this.root = core;
     this.instanceId = instanceId;
 
-    makeAutoObservable<IncidentHudWidgetStore, 'root' | 'instanceId'>(this, {
-      root: false,
-      instanceId: false,
-    });
+    makeAutoObservable<IncidentTrackerWidgetStore, 'root' | 'instanceId'>(
+      this,
+      {
+        root: false,
+        instanceId: false,
+      }
+    );
   }
 
-  get settings(): IncidentHudWidgetSettings {
-    return this.root.liveWidgets.getSettings<IncidentHudWidgetSettings>(
+  get settings(): IncidentTrackerWidgetSettings {
+    return this.root.liveWidgets.getSettings<IncidentTrackerWidgetSettings>(
       this.instanceId
     );
   }
