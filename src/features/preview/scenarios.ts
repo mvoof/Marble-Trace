@@ -727,7 +727,6 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
         driverIncidents: 3,
         srStart: 3.12,
         srNow: 3.02,
-        srFinish: 3.08,
         cleanCornersNeeded: 106.4,
       });
     },
@@ -742,7 +741,6 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
         driverIncidents: 11,
         srStart: 2.75,
         srNow: 2.48,
-        srFinish: 2.56,
         cleanCornersNeeded: 182.6,
       });
     },
@@ -756,7 +754,6 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
         driverIncidents: 17,
         srStart: 2.75,
         srNow: 2.31,
-        srFinish: 2.31,
         cleanCornersNeeded: 341.2,
       });
     },
@@ -772,7 +769,6 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
         driverIncidents: 4,
         isRanked: false,
         srNow: 2.75,
-        srFinish: 2.75,
         cleanCornersNeeded: null,
       });
     },

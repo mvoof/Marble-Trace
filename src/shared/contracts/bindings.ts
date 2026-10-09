@@ -2079,14 +2079,12 @@ export type SafetyRatingFrame = {
    */
   srStart: number | null;
   /**
-   * The estimate for the corners and incidents so far.
+   * The estimate for the corners and incidents so far — with the earlier
+   * sessions of the event carried in. No projection to the flag: the time
+   * left keeps running through the cool-down, and a guess at the distance
+   * to go would be counted as clean corners never driven.
    */
   srNow: number | null;
-  /**
-   * The estimate at the flag, with the corners left driven clean; `None`
-   * when the distance left cannot be estimated.
-   */
-  srFinish: number | null;
   /**
    * Clean corners still needed for the session to come out level or better;
    * `None` without a rating or in a session that does not move it.

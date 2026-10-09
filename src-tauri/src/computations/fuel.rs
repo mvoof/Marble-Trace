@@ -444,7 +444,7 @@ pub fn refuel_plan(
 /// session runs on the clock rather than on a lap count. A timed session is
 /// estimated from the time left and the best lap (the last one until there is
 /// a best); `None` while neither lap time exists.
-pub fn laps_to_finish(
+fn laps_to_finish(
     lap_timing: &LapTimingFrame,
     session: &SessionSnapshot,
     session_num: Option<i32>,

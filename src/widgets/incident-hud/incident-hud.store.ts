@@ -11,8 +11,11 @@ import type { WidgetInstanceContext } from '@entities/widget/widget-instances.st
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { SessionStore } from '@entities/session/session.store';
-import { roundCornersUp } from './incident-hud-utils';
+import { formatSr, formatSrDelta, roundCornersUp } from './incident-hud-utils';
 import type { IncidentHudWidgetSettings } from './settings-schema';
+
+/** `LicSubLevel` is the rating × 100. */
+const SUB_LEVEL_SCALE = 100;
 
 interface IncidentHudDeps {
   liveWidgets: LiveWidgetsView;
@@ -112,38 +115,67 @@ export class IncidentHudWidgetStore {
     );
   }
 
-  get srStart(): number | null {
-    return this.frame?.srStart ?? null;
+  /**
+   * The player's rating as iRacing states it (`LicSubLevel`). iRacing rewrites
+   * it only once an event is over, so through practice, qualifying and the
+   * race it is the rating the whole event started from — the big number,
+   * which holds still while the chip moves.
+   */
+  get srOfficial(): number | null {
+    const sessionInfo = this.root.session.sessionInfo;
+    const player = sessionInfo?.cars.find(
+      (car) => car.carIdx === sessionInfo.playerCarIdx
+    );
+    const subLevel = player?.licSubLevel ?? null;
+
+    // Before the roster carries the licence, the backend's own start value.
+    if (subLevel === null) {
+      return this.frame?.srStart ?? null;
+    }
+
+    return subLevel / SUB_LEVEL_SCALE;
   }
 
   /**
-   * The rating shown: at the flag or at the car, as the instance is set. An
-   * unrated session shows where it started, since it changes nothing.
+   * Where the rating stands after everything driven in the event so far: the
+   * backend carries each session's outcome into the next, so in the race this
+   * already holds the qualifying. An unrated session changes nothing.
    */
-  get srShown(): number | null {
-    const frame = this.frame;
-
-    if (!frame || !this.isRated) {
-      return this.srStart;
+  get srProjected(): number | null {
+    if (!this.isRated) {
+      return this.srOfficial;
     }
 
-    if (this.settings.projectionMode === 'finish') {
-      return frame.srFinish ?? frame.srNow;
-    }
-
-    return frame.srNow;
+    return this.frame?.srNow ?? null;
   }
 
-  /** The estimated change this session; `null` when unrated or unknown. */
+  /**
+   * The change over the whole event so far — qualifying and race together, the
+   * figure the site shows once the event is over; `null` when unrated.
+   */
   get srDelta(): number | null {
-    const shown = this.srShown;
-    const start = this.srStart;
+    const projected = this.srProjected;
+    const official = this.srOfficial;
 
-    if (!this.isRated || shown === null || start === null) {
+    if (!this.isRated || projected === null || official === null) {
       return null;
     }
 
-    return shown - start;
+    return projected - official;
+  }
+
+  /**
+   * The chip beside the rating, for a rated session: the change so far, or —
+   * as the instance is set — the rating that change leads to.
+   */
+  get chipText(): string {
+    if (this.settings.srChipMode === 'projected') {
+      return formatSr(this.srProjected);
+    }
+
+    const delta = this.srDelta;
+
+    return delta === null ? formatSr(null) : formatSrDelta(delta);
   }
 
   get cleanCornersNeeded(): number | null {

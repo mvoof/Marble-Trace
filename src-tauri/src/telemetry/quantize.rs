@@ -135,7 +135,6 @@ pub fn safety_rating(frame: &mut SafetyRatingFrame) {
 
     round_rating(&mut frame.sr_start);
     round_rating(&mut frame.sr_now);
-    round_rating(&mut frame.sr_finish);
     frame.corners_driven = round(frame.corners_driven, CORNERS_DP);
     frame.clean_corners_needed = frame
         .clean_corners_needed

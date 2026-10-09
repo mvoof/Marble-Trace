@@ -16,7 +16,7 @@ export const IncidentHudSettingsPanel = observer(() => {
   return (
     <Card title={t('settingsPanels.incidentHud.moduleParameters')}>
       <Row setting="showProjectedSr" />
-      <Row setting="projectionMode" dependsOn="showProjectedSr" />
+      <Row setting="srChipMode" dependsOn="showProjectedSr" />
       <Row setting="showPenalties" />
       <Row setting="showCleanCorners" />
     </Card>

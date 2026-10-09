@@ -20,7 +20,6 @@ export const mockSafetyRating = (
   isRanked: null,
   srStart: 2.75,
   srNow: 2.84,
-  srFinish: 2.96,
   cleanCornersNeeded: 0,
   ...overrides,
 });

@@ -33,7 +33,6 @@ use serde::{Deserialize, Serialize};
 use tracing::info;
 
 use crate::capabilities::Capabilities;
-use crate::computations::fuel::laps_to_finish;
 use crate::computations::{
     ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate,
 };
@@ -103,11 +102,11 @@ pub struct SafetyRatingFrame {
     pub is_ranked: Option<bool>,
     /// The rating the session started from; `None` until the sim sends it.
     pub sr_start: Option<f32>,
-    /// The estimate for the corners and incidents so far.
+    /// The estimate for the corners and incidents so far — with the earlier
+    /// sessions of the event carried in. No projection to the flag: the time
+    /// left keeps running through the cool-down, and a guess at the distance
+    /// to go would be counted as clean corners never driven.
     pub sr_now: Option<f32>,
-    /// The estimate at the flag, with the corners left driven clean; `None`
-    /// when the distance left cannot be estimated.
-    pub sr_finish: Option<f32>,
     /// Clean corners still needed for the session to come out level or better;
     /// `None` without a rating or in a session that does not move it.
     pub clean_corners_needed: Option<f32>,
@@ -260,13 +259,8 @@ fn update_cpi(cpi_old: f64, corners: f64, incidents: f64, licence: Licence) -> f
 }
 
 /// The rating after a session of weighted `corners` and `incidents`, started
-/// at `sr_before` in `licence`.
-pub fn project_sr(sr_before: f64, licence: Licence, corners: f64, incidents: f64) -> f64 {
-    project(sr_before, licence, corners, incidents).0
-}
-
-/// [`project_sr`] with the licence the rating ends in: a session that crosses
-/// a whole number leaves the next one starting in the neighbouring band.
+/// at `sr_before` in `licence`, and the licence it ends in: a session that
+/// crosses a whole number leaves the next one starting in the neighbouring band.
 fn project(sr_before: f64, licence: Licence, corners: f64, incidents: f64) -> (f64, Licence) {
     let cpi_old = cpi_from_sr(sr_before, licence);
     let cpi = update_cpi(cpi_old, corners, incidents, licence);
@@ -613,26 +607,6 @@ impl SafetyRatingProcessor {
             });
         }
 
-        let (laps_left, _) = laps_to_finish(
-            ctx.lap_timing,
-            session,
-            ctx.session_num,
-            ctx.session_time_remain,
-        );
-        let corners_left = laps_left
-            .zip(corners_per_lap)
-            .map(|(laps, per_lap)| f64::from(laps.max(0.0)) * per_lap);
-        let sr_finish = rated
-            .zip(corners_left)
-            .map(|((sr, licence), corners_left)| {
-                project_sr(
-                    sr,
-                    licence,
-                    (corners + corners_left) * weighting,
-                    incidents * weighting,
-                )
-            });
-
         let clean_corners = rated.filter(|_| weight > 0.0).map(|(sr, licence)| {
             clean_corners_needed(incidents, corners, cpi_from_sr(sr, licence))
         });
@@ -645,7 +619,6 @@ impl SafetyRatingProcessor {
             is_ranked: session.league_id.map(|_| false),
             sr_start: start_rating.map(|(sr, _)| sr as f32),
             sr_now: sr_now.map(|sr| sr as f32),
-            sr_finish: sr_finish.map(|sr| sr as f32),
             clean_corners_needed: clean_corners.map(|needed| needed as f32),
         }
     }
@@ -988,7 +961,7 @@ mod tests {
             // The vectors take the band from the rating, as a reader of
             // `LicString` would.
             let start = licence(case.class_index, case.sr_before.floor() as i32);
-            let projected = project_sr(case.sr_before, start, case.corners, case.incident_points);
+            let (projected, _) = project(case.sr_before, start, case.corners, case.incident_points);
             let cpi = update_cpi(
                 cpi_from_sr(case.sr_before, start),
                 case.corners,
@@ -1358,17 +1331,14 @@ mod tests {
     }
 
     #[test]
-    fn a_clean_race_projects_a_gain_at_the_flag() {
+    fn clean_corners_raise_the_estimate() {
         let session = race_session(false);
         let mut processor = SafetyRatingProcessor::default();
 
         step(&mut processor, &session, race_tick(0.10, 0));
         let frame = step(&mut processor, &session, race_tick(0.15, 0));
 
-        let now = frame.sr_now.expect("rated");
-        let finish = frame.sr_finish.expect("a lap race has a distance left");
-
-        assert!(finish > now, "{finish} should exceed {now}");
+        assert!(frame.sr_now.expect("rated") > 2.75);
         assert_eq!(frame.clean_corners_needed, Some(0.0));
     }
 
@@ -1394,7 +1364,6 @@ mod tests {
 
         assert_eq!(frame.sr_start, None);
         assert_eq!(frame.sr_now, None);
-        assert_eq!(frame.sr_finish, None);
         assert_eq!(frame.clean_corners_needed, None);
     }
 

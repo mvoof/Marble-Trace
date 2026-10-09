@@ -43,7 +43,6 @@ const meta: Meta<StoryArgs> = {
             driverIncidents: 2,
             srStart: null,
             srNow: null,
-            srFinish: null,
             cleanCornersNeeded: null,
           })
         );

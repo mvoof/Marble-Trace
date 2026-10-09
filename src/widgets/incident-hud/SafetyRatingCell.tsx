@@ -4,7 +4,6 @@ import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import {
   deltaDirection,
   formatSr,
-  formatSrDelta,
   type DeltaDirection,
 } from './incident-hud-utils';
 import { useIncidentHudStore } from './incident-hud-context';
@@ -20,29 +19,26 @@ const DELTA_CLASS: Record<DeltaDirection, string> = {
 const UNRATED_LABEL = 'OFF';
 
 /**
- * The upper tier: the Safety Rating estimate and its change since the session
- * started. Every figure is an estimate — iRacing publishes no formula.
+ * The upper tier: the rating as iRacing states it, which holds still through
+ * the event, and a chip with what the event has done to it so far. The chip is
+ * an estimate — iRacing publishes no formula.
  */
 export const SafetyRatingCell = observer(() => {
   const store = useIncidentHudStore();
-  const delta = store.srDelta;
-  const deltaClass = DELTA_CLASS[deltaDirection(delta)];
+  const deltaClass = DELTA_CLASS[deltaDirection(store.srDelta)];
 
   return (
     <div className={styles.row}>
       <div className={styles.rating}>
         <span className={styles.label}>SR</span>
-        <FixedDigits className={styles.value} text={formatSr(store.srShown)} />
+        <FixedDigits
+          className={styles.value}
+          text={formatSr(store.srOfficial)}
+        />
       </div>
 
       <div className={`${styles.delta} ${deltaClass}`}>
-        {store.isRated ? (
-          <FixedDigits
-            text={delta === null ? formatSr(null) : formatSrDelta(delta)}
-          />
-        ) : (
-          UNRATED_LABEL
-        )}
+        {store.isRated ? <FixedDigits text={store.chipText} /> : UNRATED_LABEL}
       </div>
     </div>
   );

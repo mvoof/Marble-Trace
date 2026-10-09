@@ -15,8 +15,8 @@ export const INCIDENT_HUD_SETTINGS = defineSettings('incidentHud', {
   showPenalties: bool(true),
   /** Clean corners still needed for the session to come out level. */
   showCleanCorners: bool(true),
-  /** `finish` counts the corners left as driven clean; `current` stops at the car. */
-  projectionMode: choice(['finish', 'current'], 'finish'),
+  /** What the chip beside the rating shows: the change so far, or the rating it leads to. */
+  srChipMode: choice(['delta', 'projected'], 'delta'),
 });
 
 export type IncidentHudWidgetSettings = SettingsOf<
