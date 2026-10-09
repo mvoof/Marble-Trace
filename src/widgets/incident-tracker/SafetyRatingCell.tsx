@@ -38,7 +38,15 @@ export const SafetyRatingCell = observer(() => {
       </div>
 
       <div className={`${styles.delta} ${deltaClass}`}>
-        {store.isRated ? <FixedDigits text={store.chipText} /> : UNRATED_LABEL}
+        {store.isRated ? (
+          <>
+            {/* The chip is the model's estimate, never iRacing's number. */}
+            <span className={styles.approx}>≈</span>
+            <FixedDigits text={store.chipText} />
+          </>
+        ) : (
+          UNRATED_LABEL
+        )}
       </div>
     </div>
   );

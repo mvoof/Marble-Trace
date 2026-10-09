@@ -35,6 +35,12 @@
   font-weight: 700;
 }
 
+// Marks the chip as an estimate: quieter than the number it qualifies.
+.approx {
+  margin-right: sp(xxxs);
+  opacity: 0.7;
+}
+
 .deltaNeutral {
   color: $widget-text-secondary;
   background: $widget-tint-neutral;
