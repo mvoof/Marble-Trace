@@ -24,7 +24,7 @@ use crate::computations::pit_actions::{self, PitActionInput};
 use crate::computations::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
 use crate::computations::{
     coach, driver_entries, fuel, incidents, lap_delta, pace_car, pit_stops, proximity,
-    ComputeContext, ComputedOutput, ProcessorCommand, TickRate,
+    safety_rating, ComputeContext, ComputedOutput, ProcessorCommand, TickRate,
 };
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::environment::EnvironmentFrame;
@@ -38,7 +38,7 @@ use crate::model::relative::RelativeFrame;
 use crate::model::session::{SessionFrame, SessionSnapshot};
 use crate::model::telemetry_events::{
     EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS, EVENT_COACH, EVENT_DRIVER_ENTRIES,
-    EVENT_INCIDENTS, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
+    EVENT_INCIDENTS, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE, EVENT_SAFETY_RATING,
 };
 use crate::model::track_shape::TrackRecordingFrame;
 use crate::sources::iracing::pit_command::send_pit_order;
@@ -105,6 +105,8 @@ pub struct TelemetryBundle {
     pub fuel: Option<fuel::FuelComputedFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pit_stops: Option<pit_stops::PitStopsFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub safety_rating: Option<safety_rating::SafetyRatingFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pit_service: Option<PitServiceFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -609,7 +611,7 @@ fn measure_size(_bundle: &TelemetryBundle) -> (Option<usize>, Duration) {
 /// Removes from `bundle` every demand-gated field the mask does not ask for.
 ///
 /// The four 60 Hz fields are already left out at assembly, so for them this is
-/// a no-op; stating all seven in one place is what makes the function a
+/// a no-op; stating all of them in one place is what makes the function a
 /// complete answer to *what may this bundle carry*, which is what the delivery
 /// counters are compared against.
 pub fn apply_event_mask(bundle: &mut TelemetryBundle, active_mask: u32) {
@@ -648,6 +650,10 @@ pub fn apply_event_mask(bundle: &mut TelemetryBundle, active_mask: u32) {
     if (active_mask & EVENT_COACH) == 0 {
         bundle.coach = None;
     }
+
+    if (active_mask & EVENT_SAFETY_RATING) == 0 {
+        bundle.safety_rating = None;
+    }
 }
 
 fn quantize_bundle(bundle: &mut TelemetryBundle) {
@@ -678,6 +684,10 @@ fn quantize_bundle(bundle: &mut TelemetryBundle) {
     if let Some(frame) = bundle.coach.as_mut() {
         quantize::coach(frame);
     }
+
+    if let Some(frame) = bundle.safety_rating.as_mut() {
+        quantize::safety_rating(frame);
+    }
 }
 
 fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
@@ -692,6 +702,7 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::PaceCar(frame) => bundle.pace_car = Some(frame),
         ComputedOutput::Relative(frame) => bundle.relative = Some(frame),
         ComputedOutput::DriverEntries(frame) => bundle.driver_entries = Some(frame),
+        ComputedOutput::SafetyRating(frame) => bundle.safety_rating = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),
         ComputedOutput::TrackShape(_) => {} // handled in Hz60 loop directly
         ComputedOutput::ReferenceLap(_) => {} // handled in Hz60 loop directly

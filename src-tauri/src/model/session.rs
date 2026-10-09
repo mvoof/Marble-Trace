@@ -83,6 +83,15 @@ pub struct SessionSnapshot {
     /// Incidents between each further penalty after the first. `None` when only
     /// the first one is given.
     pub incident_penalty_subsequent: Option<i32>,
+    /// Corners on this layout (`WeekendInfo.TrackNumTurns`) — the count iRacing
+    /// scores Safety Rating by. `None` when the sim does not report it.
+    pub track_num_turns: Option<i32>,
+    /// A team event (`WeekendInfo.TeamRacing`): the incident limit and the
+    /// penalties count the crew's points, not one driver's.
+    pub team_racing: bool,
+    /// The league the session runs in (`WeekendInfo.LeagueID`); `None` outside
+    /// a league. A league session never changes Safety Rating.
+    pub league_id: Option<i32>,
     pub current_session_num: i32,
     pub sessions: Vec<SessionEntry>,
     pub player_car_idx: i32,
@@ -169,6 +178,14 @@ pub struct CarEntry {
     pub i_rating: i32,
     pub lic_string: String,
     pub lic_color: String,
+    /// iRacing's `LicLevel`, 1..24: the licence class and the whole-number
+    /// Safety Rating band in one — level 13 is class B band 1. `None` until
+    /// the sim has sent it.
+    pub lic_level: Option<i32>,
+    /// iRacing's `LicSubLevel`: the Safety Rating × 100 (`347` is 3.47).
+    /// `None` until the sim has sent it; never a default, a made-up rating
+    /// would give a confidently wrong estimate.
+    pub lic_sub_level: Option<i32>,
     pub incident_count: i32,
     pub is_pace_car: bool,
     /// The sim is driving this car. AI drivers carry no `flair_id`, so this is

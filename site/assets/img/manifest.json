@@ -169,6 +169,20 @@
       }
     ]
   },
+  "assets/widgets/incident-hud.png": {
+    "width": 540,
+    "height": 180,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/incident-hud-480.webp"
+      },
+      {
+        "width": 540,
+        "path": "assets/img/widgets/incident-hud-540.webp"
+      }
+    ]
+  },
   "assets/widgets/input-trace.png": {
     "width": 1590,
     "height": 444,

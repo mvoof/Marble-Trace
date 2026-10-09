@@ -1,0 +1,38 @@
+.cell {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxxs);
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.label {
+  font-size: fs(xxxs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: $widget-text-secondary;
+}
+
+.value {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxxs);
+  font-size: fs(sm);
+  font-weight: 700;
+}
+
+.toneNeutral {
+  color: $widget-text-primary;
+}
+
+.tonePositive {
+  color: $widget-status-positive;
+}
+
+.toneWarning {
+  color: $widget-status-warning;
+}
+
+.toneDanger {
+  color: $widget-status-danger;
+}

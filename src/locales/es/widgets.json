@@ -49,19 +49,19 @@
       "description": "Círculo de fricción con las fuerzas G laterales y longitudinales."
     },
     "sector-matrix": {
-      "description": "Tiempos sector a sector con barra de progreso, delta por sector en directo, ÚLTIMA y MEJOR."
+      "description": "Tiempos por sector: progreso, delta de cada sector, ÚLTIMA y MEJOR."
     },
     "lap-log": {
-      "description": "Las últimas 8 vueltas con su tiempo y su delta frente a tu mejor vuelta. La mejor vuelta queda resaltada."
+      "description": "Las últimas 8 vueltas con su tiempo y delta frente a tu mejor vuelta."
     },
     "engine-panel": {
-      "description": "Temperaturas de líquidos, presiones y todos los ajustes internos que expone el coche: ABS, control de tracción, reparto de frenada, mapa motor, freno motor y diferencial."
+      "description": "Temperaturas, presiones y los ajustes internos que expone el coche."
     },
     "rpm-lights": {
-      "description": "Barra de LED de cambio independiente, guiada por las revoluciones, con animaciones del limitador de boxes."
+      "description": "Barra LED de cambio guiada por las RPM, con animación del limitador."
     },
     "race-dash": {
-      "description": "Panel de cabina: anillo de marcha, velocidad con vuelta, posición y revoluciones, y modo pit lane."
+      "description": "Panel de cabina: marcha, velocidad, vuelta, posición, RPM y modo boxes."
     },
     "stream-chat": {
       "description": "Chat en directo de Twitch y YouTube en un solo hilo."
@@ -73,16 +73,19 @@
       "description": "Velocidad en el pit lane frente al límite y la distancia hasta tu box."
     },
     "coach": {
-      "description": "Indicación de freno y acelerador, y traza de velocidad frente a tu mejor vuelta guardada, coloreada según el tiempo ganado o perdido."
+      "description": "Indicaciones de freno y gas, y traza de velocidad frente a tu mejor vuelta."
     },
     "invisible-dash": {
-      "description": "Proyección sobre el parabrisas: columna del motor y marcha a la izquierda, posición y vuelta a la derecha, el centro despejado."
+      "description": "Proyección en el parabrisas: motor y marcha, posición y vuelta."
     },
     "battery": {
-      "description": "Carga de la batería híbrida, qué hace el MGU-K con ella y el modo de despliegue en los coches con selector."
+      "description": "Carga híbrida, lo que hace el MGU-K y el modo de despliegue si existe."
     },
     "drs": {
-      "description": "Estado del DRS: armado tras el punto de detección, listo dentro de la zona, abierto."
+      "description": "Estado del DRS: armado tras la detección, listo en la zona, abierto."
+    },
+    "incident-hud": {
+      "description": "Incidentes, penalizaciones y una estimación del Safety Rating al final."
     }
   },
   "settingsPanels": {
@@ -828,6 +831,19 @@
       "hideWhenCarHasNoDrsDesc": "Quita el widget de la pantalla en un coche que no tiene DRS. Desactivado, la placa permanece y muestra N/A.",
       "hideWhenUnavailable": "Ocultar cuando no esté disponible",
       "hideWhenUnavailableDesc": "No dibujar nada mientras el DRS no esté disponible, en lugar de una placa apagada."
+    },
+    "incidentHud": {
+      "moduleParameters": "Parámetros del módulo",
+      "showProjectedSr": "Estimación de Safety Rating",
+      "showProjectedSrDesc": "El Safety Rating estimado y su cambio desde el inicio de la sesión. Es una estimación de un modelo de la comunidad: iRacing no publica la fórmula. Muestra OFF en una sesión que no lo cambia.",
+      "projectionMode": "Estimar en",
+      "projectionModeDesc": "La bandera cuenta como limpias las curvas que faltan. Ahora se detiene donde está el coche.",
+      "projectionMode_finish": "La bandera",
+      "projectionMode_current": "Ahora",
+      "showPenalties": "Penalizaciones",
+      "showPenaltiesDesc": "Drive-through cumplidos y, entre paréntesis, los incidentes que faltan para el siguiente. DQ al superar el límite. Oculto en una sesión sin penalizaciones.",
+      "showCleanCorners": "Curvas limpias",
+      "showCleanCornersDesc": "Curvas sin incidentes necesarias para que la sesión deje de restar Safety Rating. Cero significa que ya estás igual o mejor."
     }
   },
   "streamChat": {

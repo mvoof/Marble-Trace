@@ -83,6 +83,9 @@
     },
     "drs": {
       "description": "DRS 状态：通过检测点后待命、进入区域后可用、已开启。"
+    },
+    "incident-hud": {
+      "description": "事故点、处罚，以及到终点时的安全评级估算。"
     }
   },
   "settingsPanels": {
@@ -828,6 +831,19 @@
       "hideWhenCarHasNoDrsDesc": "在完全没有 DRS 的赛车上移除该组件。关闭时，面板保留并显示 N/A。",
       "hideWhenUnavailable": "不可用时隐藏",
       "hideWhenUnavailableDesc": "DRS 不可用时完全不显示，而不是显示一块暗色面板。"
+    },
+    "incidentHud": {
+      "moduleParameters": "模块参数",
+      "showProjectedSr": "安全评级估算",
+      "showProjectedSrDesc": "估算的安全评级及其自本节开始以来的变化。这是社区模型的估算——iRacing 不公开公式。在不影响评级的赛事中显示 OFF。",
+      "projectionMode": "估算时点",
+      "projectionModeDesc": "终点：把剩余弯道按干净完成计算。当前：只计算已经跑过的部分。",
+      "projectionMode_finish": "终点",
+      "projectionMode_current": "当前",
+      "showPenalties": "处罚",
+      "showPenaltiesDesc": "已执行的 drive-through，括号内为距下一次处罚剩余的事故点。超过上限显示 DQ。 在不设处罚的赛事中隐藏。",
+      "showCleanCorners": "干净弯道",
+      "showCleanCornersDesc": "本节不再降低安全评级之前需要无事故跑完的弯道数。为零表示已持平或上升。"
     }
   },
   "streamChat": {

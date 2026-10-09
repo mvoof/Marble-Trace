@@ -61,6 +61,8 @@ export const mockCarStatus = (
   energy_battery_to_mgu_k_lap: null,
   dc_mguk_deploy_mode: null,
   drs: null,
+  player_car_my_incident_count: 0,
+  player_car_team_incident_count: 0,
   ...overrides,
 });
 

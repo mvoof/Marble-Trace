@@ -55,13 +55,13 @@
       "description": "Last 8 laps with time and delta vs personal best. Best lap highlighted."
     },
     "engine-panel": {
-      "description": "Liquid temperatures, pressures, and every in-car adjustment the car exposes — ABS, traction control, brake bias, engine map, engine braking and the differential."
+      "description": "Liquid temperatures, pressures and the in-car adjustments the car exposes."
     },
     "rpm-lights": {
-      "description": "Standalone shift-light LED bar driven by engine RPM, with pit-limiter animations."
+      "description": "Shift-light LED bar driven by engine RPM, with pit-limiter animations."
     },
     "race-dash": {
-      "description": "Cockpit cluster: gear ring, speed readout with lap/position/RPM, and pit-lane mode."
+      "description": "Cockpit cluster: gear, speed, lap, position and RPM, plus a pit-lane mode."
     },
     "stream-chat": {
       "description": "Twitch and YouTube live chat in one feed."
@@ -73,16 +73,19 @@
       "description": "Pit lane speed against the limit, and the roll to your stall."
     },
     "coach": {
-      "description": "Brake/gas call and a speed trace against your stored best lap, colored by time gained or lost."
+      "description": "Brake and gas calls, with a speed trace against your stored best lap."
     },
     "invisible-dash": {
-      "description": "Windscreen projection: engine column and gear on the left, position and lap on the right, empty in the middle."
+      "description": "Windscreen projection: engine and gear left, position and lap right."
     },
     "battery": {
-      "description": "Hybrid battery charge, what the MGU-K is doing with it, and the deploy mode on cars that expose a selector."
+      "description": "Hybrid charge, what the MGU-K is doing, and the deploy mode where there is one."
     },
     "drs": {
-      "description": "Drag reduction system state: armed past the detection point, ready inside the zone, open."
+      "description": "DRS state: armed past the detection point, ready in the zone, open."
+    },
+    "incident-hud": {
+      "description": "Incidents, penalties and an estimated Safety Rating at the flag."
     }
   },
   "settingsPanels": {
@@ -828,6 +831,19 @@
       "hideWhenCarHasNoDrsDesc": "Take the widget off the screen on a car that has no DRS at all. Off, the plate stays and reads N/A.",
       "hideWhenUnavailable": "Hide when unavailable",
       "hideWhenUnavailableDesc": "Draw nothing while DRS is unavailable, instead of a quiet plate."
+    },
+    "incidentHud": {
+      "moduleParameters": "Module parameters",
+      "showProjectedSr": "Safety Rating estimate",
+      "showProjectedSrDesc": "The estimated Safety Rating and its change since the session started. An estimate from a community model — iRacing does not publish the formula. Shows OFF in a session that does not change it.",
+      "projectionMode": "Estimate at",
+      "projectionModeDesc": "At the flag counts the corners still to drive as clean ones. Now stops at where the car is.",
+      "projectionMode_finish": "The flag",
+      "projectionMode_current": "Now",
+      "showPenalties": "Penalties",
+      "showPenaltiesDesc": "Drive-throughs served and, in brackets, the incidents left before the next one. DQ once over the limit. Hidden in a session that hands out no penalties.",
+      "showCleanCorners": "Clean corners",
+      "showCleanCornersDesc": "Corners to drive without an incident before this session stops costing Safety Rating. Zero means it is level or better already."
     }
   },
   "streamChat": {

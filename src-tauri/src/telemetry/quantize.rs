@@ -30,6 +30,7 @@
 use crate::computations::coach::{CoachCall, CoachFrame};
 use crate::computations::driver_entries::{DriverEntriesFrame, DriverEntry};
 use crate::computations::proximity::ProximityFrame;
+use crate::computations::safety_rating::SafetyRatingFrame;
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::player::PitTargetFrame;
 use crate::model::relative::RelativeFrame;
@@ -47,6 +48,10 @@ const LAP_TIME_DP: u32 = 3;
 const DISTANCE_DP: u32 = 2;
 /// Speeds in m/s: a hundredth is well under the whole km/h a readout prints.
 const SPEED_DP: u32 = 2;
+/// Safety Rating estimates, drawn to the hundredth.
+const SAFETY_RATING_DP: u32 = 3;
+/// Corners driven and still needed, drawn as whole corners.
+const CORNERS_DP: u32 = 1;
 
 fn round(value: f32, decimals: u32) -> f32 {
     let factor = 10f32.powi(decimals as i32);
@@ -121,6 +126,20 @@ pub fn coach(frame: &mut CoachFrame) {
     frame.brake_point_distance_m = frame
         .brake_point_distance_m
         .map(|metres| round_to_step(metres, COACH_COUNTDOWN_STEP_M));
+}
+
+pub fn safety_rating(frame: &mut SafetyRatingFrame) {
+    let round_rating = |rating: &mut Option<f32>| {
+        *rating = rating.map(|value| round(value, SAFETY_RATING_DP));
+    };
+
+    round_rating(&mut frame.sr_start);
+    round_rating(&mut frame.sr_now);
+    round_rating(&mut frame.sr_finish);
+    frame.corners_driven = round(frame.corners_driven, CORNERS_DP);
+    frame.clean_corners_needed = frame
+        .clean_corners_needed
+        .map(|corners| round(corners, CORNERS_DP));
 }
 
 pub fn car_positions(frame: &mut CarPositionsFrame) {

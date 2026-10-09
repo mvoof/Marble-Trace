@@ -1,0 +1,6 @@
+// Room for three digits whatever the count, so a count crossing 9 or 99 does
+// not move the caption beside it.
+.count {
+  display: inline-block;
+  min-width: 3ch;
+}

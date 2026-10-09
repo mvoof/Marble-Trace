@@ -199,6 +199,10 @@ settingsPanels.<localeBlock>.<setting>Desc       # description, optional
 settingsPanels.<localeBlock>.<setting>_<member>  # a choice's members
 ```
 
+The catalog description is one short sentence (two at most), **80 characters or
+fewer in every language** — the widget list clamps it to three lines, and a test
+fails a longer one.
+
 The keys are the setting keys. All four locales with the same keys —
 `widget-locales.test.ts` fails on a key one language lacks, but a widget missing
 from all four passes every command while the driver reads raw keys.

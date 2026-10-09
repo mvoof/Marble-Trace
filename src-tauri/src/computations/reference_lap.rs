@@ -525,6 +525,8 @@ mod tests {
             energy_battery_to_mgu_k_lap: None,
             dc_mguk_deploy_mode: None,
             drs: None,
+            player_car_my_incident_count: None,
+            player_car_team_incident_count: None,
         }
     }
 

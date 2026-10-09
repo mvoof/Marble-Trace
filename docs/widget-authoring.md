@@ -95,9 +95,9 @@ budget test (step 9).
 **Is it demand-gated?** The gated fields are the
 exports of `src/shared/contracts/telemetry-event-bits.ts` (generated from
 `src-tauri/src/model/telemetry_events.rs`) — **read that file, it is the list**,
-and it grows. At the time of writing it holds nine:
+and it grows. At the time of writing it holds ten:
 `carDynamics`, `carInputs`, `carPositions`, `lapDelta` (the 60 Hz four, the
-**hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`, `coach`.
+**hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`, `coach`, `safetyRating`.
 
 A widget that reads a gated field without declaring it in `telemetryEvents`
 **renders empty in the app and correct in Storybook** — the failure mode this
@@ -319,13 +319,19 @@ settingsPanels.<locale block>.<setting>Desc   # its description, optional
 settingsPanels.<locale block>.<setting>_<member>   # a choice's members
 ```
 
+The catalog description is **one short sentence, two at most, and no longer
+than 80 characters in any language**. The widget list clamps it to three lines,
+and a description cut off mid-word tells the driver less than a short one; the
+settings panel is where a widget explains itself, row by row.
+
 The locale keys **are the setting keys**, so a schema field needs no label of
 its own; a field takes a `label` only to borrow a `common.*` string several
 widgets share. All four files, or the driver reads a raw key where a label
 should be.
 
 > _Enforced by:_ `widget-locales.test.ts`, partly — a key in one language and
-> not the others fails, and so does a block left behind by a deleted widget. A
+> not the others fails, and so does a block left behind by a deleted widget, or a
+> catalog description over 80 characters. A
 > widget whose strings are missing from all four fails nothing; it is the
 > quietest step on the route, which is why it has one of its own.
 

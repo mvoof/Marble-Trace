@@ -8,6 +8,7 @@ import type {
   LapTimingFrame,
   PitServiceFrame,
   PitTargetFrame,
+  SafetyRatingFrame,
 } from '@shared/contracts/bindings';
 
 export class PlayerStore {
@@ -32,6 +33,7 @@ export class PlayerStore {
   pitTargetDistM: number | null = null;
   pitTargetType: 'pitbox' | 'pitExit' | null = null;
   pitLaneProgressPct: number | null = null;
+  safetyRating: SafetyRatingFrame | null = null;
 
   // Every telemetry frame is replaced wholesale — nothing ever mutates one in
   // place — so `observable.ref` is all the reactivity these need. Deep
@@ -46,6 +48,7 @@ export class PlayerStore {
       chassis: observable.ref,
       pitService: observable.ref,
       lapTiming: observable.ref,
+      safetyRating: observable.ref,
     });
   }
 
@@ -104,6 +107,10 @@ export class PlayerStore {
     this.lapTiming = frame;
   }
 
+  updateSafetyRating(frame: SafetyRatingFrame) {
+    this.safetyRating = frame;
+  }
+
   updatePitTarget(frame: PitTargetFrame | null) {
     this.pitTargetDistM = frame?.distM ?? null;
     this.pitTargetType = frame?.target ?? null;
@@ -120,5 +127,6 @@ export class PlayerStore {
     this.pitTargetDistM = null;
     this.pitTargetType = null;
     this.pitLaneProgressPct = null;
+    this.safetyRating = null;
   }
 }

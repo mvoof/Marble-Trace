@@ -440,28 +440,16 @@ pub fn refuel_plan(
     })
 }
 
-pub fn compute(
-    car_status: &CarStatusFrame,
+/// Laps the player still has to drive, from where the car is, and whether the
+/// session runs on the clock rather than on a lap count. A timed session is
+/// estimated from the time left and the best lap (the last one until there is
+/// a best); `None` while neither lap time exists.
+pub fn laps_to_finish(
     lap_timing: &LapTimingFrame,
     session: &SessionSnapshot,
     session_num: Option<i32>,
     session_time_remain: Option<f64>,
-    fuel_settings: FuelSettings,
-    fuel_state: &FuelState,
-) -> FuelComputedFrame {
-    let fuel_level = car_status.fuel_level;
-    let pit_warning_laps = fuel_settings.pit_warning_laps;
-
-    let avg_per_lap = fuel_state.avg(fuel_settings.avg_window);
-
-    let laps_remaining = avg_per_lap.and_then(|avg| {
-        if avg > 0.0 {
-            Some(fuel_level / avg)
-        } else {
-            None
-        }
-    });
-
+) -> (Option<f32>, bool) {
     let current_session_num = session_num.unwrap_or(session.current_session_num);
 
     let sessions = &session.sessions;
@@ -493,6 +481,34 @@ pub fn compute(
                 .map(|remain| remain as f32 / lap_time_sec)
         })
     };
+
+    (laps_to_finish, is_timed_race)
+}
+
+pub fn compute(
+    car_status: &CarStatusFrame,
+    lap_timing: &LapTimingFrame,
+    session: &SessionSnapshot,
+    session_num: Option<i32>,
+    session_time_remain: Option<f64>,
+    fuel_settings: FuelSettings,
+    fuel_state: &FuelState,
+) -> FuelComputedFrame {
+    let fuel_level = car_status.fuel_level;
+    let pit_warning_laps = fuel_settings.pit_warning_laps;
+
+    let avg_per_lap = fuel_state.avg(fuel_settings.avg_window);
+
+    let laps_remaining = avg_per_lap.and_then(|avg| {
+        if avg > 0.0 {
+            Some(fuel_level / avg)
+        } else {
+            None
+        }
+    });
+
+    let (laps_to_finish, is_timed_race) =
+        laps_to_finish(lap_timing, session, session_num, session_time_remain);
 
     let fuel_needed = match (laps_to_finish, avg_per_lap) {
         (Some(ltf), Some(avg)) if avg > 0.0 => Some(ltf * avg),
@@ -652,6 +668,8 @@ mod tests {
             energy_battery_to_mgu_k_lap: None,
             dc_mguk_deploy_mode: None,
             drs: None,
+            player_car_my_incident_count: None,
+            player_car_team_incident_count: None,
         }
     }
 

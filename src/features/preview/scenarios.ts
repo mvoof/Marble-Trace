@@ -18,6 +18,7 @@ import {
   mockPitTarget,
 } from './mocks/pit';
 import { mockFuel } from './mocks/fuel';
+import { mockSafetyRating } from './mocks/safety-rating';
 import { respaceField } from './field-seed';
 import {
   mockIncidents,
@@ -226,6 +227,29 @@ const applyIncidents = (
       incidentPenaltySubsequent,
     });
   }
+};
+
+/** The penalty steps and the limit of an official road race. */
+const OFFICIAL_INCIDENT_RULES = {
+  incidentLimit: 17,
+  incidentPenaltyInitial: 8,
+  incidentPenaltySubsequent: 4,
+};
+
+// The Incident HUD reads the player's points off the estimate's own frame and
+// the rules off the session, so a scenario states both — the roster count
+// rides along through `applyIncidents` for the widgets that read it there.
+const applySafetyRating = (
+  store: PreviewTarget,
+  overrides: Parameters<typeof mockSafetyRating>[0] = {}
+) => {
+  const frame = mockSafetyRating(overrides);
+
+  store.player.updateSafetyRating(frame);
+  applyIncidents(store, {
+    incidents: frame.driverIncidents,
+    ...OFFICIAL_INCIDENT_RULES,
+  });
 };
 
 /** Where the safety car is put: a third of the way round, clear of the player. */
@@ -681,6 +705,75 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
         incidentLimit: 17,
         incidentPenaltyInitial: 8,
         incidentPenaltySubsequent: 4,
+      });
+    },
+  },
+  {
+    id: 'incident-clean',
+    label: 'Incidents — clean race',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applySafetyRating(store);
+    },
+  },
+  {
+    id: 'incident-minor',
+    label: 'Incidents — a few',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Three points early on: the estimate dips below the start and the
+      // clean corners owed run to three digits, the widest that cell gets.
+      applySafetyRating(store, {
+        driverIncidents: 3,
+        srStart: 3.12,
+        srNow: 3.02,
+        srFinish: 3.08,
+        cleanCornersNeeded: 106.4,
+      });
+    },
+  },
+  {
+    id: 'incident-penalty-warning',
+    label: 'Incidents — near a penalty',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // One drive-through served at 8 and the next one a point away at 12.
+      applySafetyRating(store, {
+        driverIncidents: 11,
+        srStart: 2.75,
+        srNow: 2.48,
+        srFinish: 2.56,
+        cleanCornersNeeded: 182.6,
+      });
+    },
+  },
+  {
+    id: 'incident-dq',
+    label: 'Incidents — disqualified',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applySafetyRating(store, {
+        driverIncidents: 17,
+        srStart: 2.75,
+        srNow: 2.31,
+        srFinish: 2.31,
+        cleanCornersNeeded: 341.2,
+      });
+    },
+  },
+  {
+    id: 'incident-unranked',
+    label: 'Incidents — unranked session',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // A league race: the points still count against the limit, the rating
+      // does not move, and the widget says so instead of estimating a change.
+      applySafetyRating(store, {
+        driverIncidents: 4,
+        isRanked: false,
+        srNow: 2.75,
+        srFinish: 2.75,
+        cleanCornersNeeded: null,
       });
     },
   },

@@ -1,0 +1,49 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(sm);
+}
+
+.rating {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+}
+
+.label {
+  font-size: fs(xxxs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: $widget-text-secondary;
+}
+
+.value {
+  font-size: fs(xl);
+  font-weight: 700;
+  color: $widget-text-primary;
+}
+
+// A chip rather than coloured text: the change is the number the driver checks,
+// and a plate keeps it readable over any track behind the overlay.
+.delta {
+  padding: sp(xxxs) sp(xs);
+  border-radius: radius(sm);
+  font-size: fs(xs);
+  font-weight: 700;
+}
+
+.deltaNeutral {
+  color: $widget-text-secondary;
+  background: $widget-tint-neutral;
+}
+
+.deltaUp {
+  color: $widget-status-positive;
+  background: $widget-tint-positive;
+}
+
+.deltaDown {
+  color: $widget-status-danger;
+  background: $widget-tint-danger;
+}

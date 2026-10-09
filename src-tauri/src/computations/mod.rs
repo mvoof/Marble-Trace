@@ -15,6 +15,7 @@ pub mod proximity;
 pub mod reference_lap;
 pub mod reference_selection;
 pub mod relative;
+pub mod safety_rating;
 pub mod track_shape;
 
 use std::collections::HashMap;
@@ -44,6 +45,7 @@ use pit_stops::{PitStopsFrame, PitStopsProcessor};
 use proximity::{ProximityFrame, ProximityProcessor};
 use reference_lap::ReferenceLapProcessor;
 use relative::RelativeProcessor;
+use safety_rating::{SafetyRatingFrame, SafetyRatingProcessor};
 use track_shape::TrackShapeProcessor;
 
 /// Processor identity — reserved for diagnostics and per-processor gating (Этап 3+).
@@ -61,6 +63,7 @@ pub enum ProcessorId {
     ReferenceLap,
     Relative,
     DriverEntries,
+    SafetyRating,
     TrackShape,
 }
 
@@ -116,6 +119,7 @@ pub enum ComputedOutput {
     ReferenceLap(ReferenceLapData),
     Relative(RelativeFrame),
     DriverEntries(DriverEntriesFrame),
+    SafetyRating(SafetyRatingFrame),
     TrackShape(TrackShapePayload),
     TrackRecording(TrackRecordingFrame),
     PitLanePct {
@@ -175,6 +179,7 @@ impl Default for ProcessorRegistry {
                 Box::new(ReferenceLapProcessor::default()),
                 Box::new(RelativeProcessor::default()),
                 Box::new(DriverEntriesProcessor::default()),
+                Box::new(SafetyRatingProcessor::default()),
                 Box::new(TrackShapeProcessor::default()),
             ],
         }
@@ -255,5 +260,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<proximity::LateralSide>()
         .register::<proximity::NearbyCar>()
         .register::<proximity::ProximityFrame>()
-        .register::<proximity::RadarDistances>();
+        .register::<proximity::RadarDistances>()
+        .register::<safety_rating::SafetyRatingFrame>();
 }
