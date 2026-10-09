@@ -320,8 +320,12 @@ pub trait TelemetrySource {
     fn poll_session(&mut self) -> Option<String>;
     fn session_parser(&self) -> SessionParser;
     fn session_tree_parser(&self) -> SessionTreeParser;
-    fn raw_var_meta(&self) -> Vec<RawVarMeta>; // default: empty
-    fn raw_values(&self) -> Option<RawValues>; // default: None
+    fn raw_var_meta(&self) -> Vec<RawVarMeta> {
+        Vec::new()
+    }
+    fn raw_values(&self) -> Option<RawValues> {
+        None
+    }
 }
 ```
 

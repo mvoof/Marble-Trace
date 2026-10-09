@@ -46,8 +46,8 @@ npm run tauri:dev          # the app in dev mode, with the `dev` feature
 npm run storybook          # widgets in isolation on :6006, no sim needed
 ```
 
-`npm run tauri:dev` opens two windows: **main** (the settings) and the
-transparent **overlay** the widgets are drawn in.
+`npm run tauri:dev` opens **main** (the settings) and one transparent
+**overlay** window per monitor, the widgets of that monitor drawn in it.
 
 ### Build
 

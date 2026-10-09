@@ -140,7 +140,9 @@ Formula wheels have large openings between the grips and the plate, and a
 display in the middle that is bright and roughly the same size — those want
 `--min-hole 0.006` or so. Round GT wheels have three enormous gaps and little
 else, and are happy near `0.0015`. Some of the wheels already in the repo were traced
-with:
+with the commands below. The source photos are not checked in — only the SVGs
+are — so these record the flags that worked, not commands to rerun; use your
+own photo's path:
 
 ```bash
 npm run wheel:trace -- gt-round.jpg          gt-round      --threshold 205 --min-hole 0.0015
