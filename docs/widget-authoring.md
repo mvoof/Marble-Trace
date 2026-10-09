@@ -180,10 +180,23 @@ render at 1.7× and grow on every click. See "Toggleable-column widgets" in
 about shape, and the rest are easy to miss because they are all optional:
 `autoHeight`, `lockAspectRatio` (resize keeps the ratio — for a circular plate),
 `scaleFromHeight` (`--wfs` follows the height instead, for a widget whose middle
-grows horizontally), `overflowVisible` and `transparentContainer`. Read the
+grows horizontally), `contentSized` (the plate is as wide and tall as what it
+draws), `overflowVisible` and `transparentContainer`. Read the
 doc comments on `WidgetMeta` in `src/shared/contracts/widget-settings.ts` — they are short
 and they are where these are actually explained. A plate that is not a rectangle
 also needs a case in `widgetFrameBorderRadius` (`src/entities/widget/widget-frame.ts`).
+
+**Resize handles follow what can change.** A widget is offered only the
+handles that change something it draws (`resizeDirectionsFor` in
+`widget-frame.ts`, shared by the overlay and the layout editor): all eight for
+a plate that stretches both ways, `e`/`w` for an `autoHeight` one, and **only
+the corners for a `contentSized` one** — it stretches in neither axis, so a drag
+can only scale it. A plate sized by its content (a column that leaves the row
+narrows it) declares `contentSized` with `transparentContainer` and paints its
+own ground from `--widget-bg`; its frame then hugs the plate, the corner drag
+scales from the drawn box so the corner follows the pointer, and snapping
+measures the drawn size. `widget-catalog.test.ts` fails a `contentSized`
+widget that does not paint its own plate.
 
 **Decomposition.** `WidgetName.tsx` is a thin orchestrator. A component that
 **reads a store** is `observer()`, and it reads that store **directly** rather

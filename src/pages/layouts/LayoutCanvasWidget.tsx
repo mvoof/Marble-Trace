@@ -5,6 +5,8 @@ import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
 import type { MonitorBounds } from '@shared/contracts/widget-settings';
 import {
   resizeDirectionsFor,
+  scaleFromCorner,
+  widgetBoxSize,
   widgetFrameStyle,
   type ResizeDirection,
 } from '@entities/widget/widget-frame';
@@ -79,6 +81,10 @@ export const LayoutCanvasWidget = observer(
       widgetH: 0,
       widgetX: 0,
       widgetY: 0,
+      // The box a content-sized widget drew at the press, in layout pixels
+      // (`offsetWidth` ignores the canvas zoom).
+      drawnW: 0,
+      drawnH: 0,
     });
 
     const x = widget?.userSettings.x ?? 100;
@@ -89,6 +95,7 @@ export const LayoutCanvasWidget = observer(
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
     const autoHeight = widget?.autoHeight ?? false;
+    const contentSized = widget?.contentSized ?? false;
     const overflowVisible = widget?.overflowVisible ?? false;
     const transparentContainer = widget?.transparentContainer ?? false;
 
@@ -104,6 +111,7 @@ export const LayoutCanvasWidget = observer(
       widgetScale,
       transparentContainer,
       autoHeight,
+      contentSized,
     });
 
     const frameBorderRadius = frameStyle.borderRadius;
@@ -201,6 +209,9 @@ export const LayoutCanvasWidget = observer(
         mainSettings.pushUndo();
 
         const current = mainSettings.getWidget(widgetId);
+        const drawnBox = (
+          event.currentTarget as HTMLElement
+        ).closest<HTMLElement>('[data-widget-id]');
 
         isResizingRef.current = true;
         resizeStartRef.current = {
@@ -210,6 +221,8 @@ export const LayoutCanvasWidget = observer(
           widgetH: current?.userSettings.currentHeight ?? designHeight,
           widgetX: current?.userSettings.x ?? 0,
           widgetY: current?.userSettings.y ?? 0,
+          drawnW: drawnBox?.offsetWidth ?? 0,
+          drawnH: drawnBox?.offsetHeight ?? 0,
         };
 
         const onMouseMove = (moveEvent: MouseEvent) => {
@@ -227,6 +240,29 @@ export const LayoutCanvasWidget = observer(
           const startH = resizeStartRef.current.widgetH;
           const startX = resizeStartRef.current.widgetX;
           const startY = resizeStartRef.current.widgetY;
+
+          // A content-sized widget only scales: the grid and the ratio lock
+          // have no edge of their own to act on.
+          if (widget?.contentSized) {
+            const scaled = scaleFromCorner({
+              direction,
+              dx,
+              start: { x: startX, y: startY, width: startW, height: startH },
+              drawn: {
+                width: resizeStartRef.current.drawnW,
+                height: resizeStartRef.current.drawnH,
+              },
+              minWidth: minW,
+            });
+
+            mainSettings.updateSize(widgetId, scaled.width, scaled.height);
+
+            if (scaled.x !== startX || scaled.y !== startY) {
+              mainSettings.updatePosition(widgetId, scaled.x, scaled.y);
+            }
+
+            return;
+          }
 
           let newW = startW;
           let newH = startH;
@@ -346,11 +382,13 @@ export const LayoutCanvasWidget = observer(
         isRatioLocked,
         widget?.lockAspectRatio,
         widget?.scaleFromHeight,
+        widget?.contentSized,
       ]
     );
 
     const resizeDirections = resizeDirectionsFor({
       autoHeight,
+      contentSized,
       lockAspectRatio: widget?.lockAspectRatio,
       scaleFromHeight,
     });
@@ -362,8 +400,7 @@ export const LayoutCanvasWidget = observer(
         style={{
           left: x,
           top: y,
-          width,
-          height: autoHeight ? 'auto' : height,
+          ...widgetBoxSize({ width, height, autoHeight, contentSized }),
         }}
       >
         <div

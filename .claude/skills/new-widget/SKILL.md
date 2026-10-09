@@ -84,8 +84,10 @@ Decide, and write down before any file:
   `makeColumnLayoutResolver` — copy the pattern from
   `src/widgets/close-battle/manifest.ts`.
 - **The layout knobs**, which are easy to miss because they are all optional:
-  `autoHeight`, `lockAspectRatio`, `scaleFromHeight`, `overflowVisible`,
-  `transparentContainer`. Read the doc comments on `WidgetMeta` in
+  `autoHeight`, `contentSized`, `lockAspectRatio`, `scaleFromHeight`,
+  `overflowVisible`, `transparentContainer`. A plate sized by its content in
+  both axes is `contentSized` + `transparentContainer` and gets corner handles
+  only. Read the doc comments on `WidgetMeta` in
   `src/shared/contracts/widget-settings.ts`. A non-rectangular plate also needs a case in
   `widgetFrameBorderRadius` (`src/entities/widget/widget-frame.ts`).
 - The component split. `<Name>Widget.tsx` is a thin orchestrator. A component

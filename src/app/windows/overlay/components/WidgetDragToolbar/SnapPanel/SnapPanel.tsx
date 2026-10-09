@@ -65,7 +65,12 @@ export const SnapPanel = observer(({ widgetId, onClose }: SnapPanelProps) => {
 
   const widgetX = widget.userSettings.x;
   const widgetY = widget.userSettings.y;
-  const widgetW = widget.userSettings.currentWidth;
+  // The panel hangs under the toolbar, at the right edge of what the widget
+  // draws — for a content-sized widget that is narrower than its stored width.
+  const drawnBox = widget.contentSized
+    ? document.querySelector<HTMLElement>(`[data-widget-id="${widgetId}"]`)
+    : null;
+  const widgetW = drawnBox?.offsetWidth ?? widget.userSettings.currentWidth;
   const screenH = window.innerHeight;
 
   const panelLeft = widgetX + widgetW - PANEL_WIDTH - 4;
@@ -73,16 +78,20 @@ export const SnapPanel = observer(({ widgetId, onClose }: SnapPanelProps) => {
   const clampedTop = Math.min(panelTop, screenH - 120 - SNAP_MARGIN);
 
   const snapTo = (pos: SnapPosition) => {
-    const width = widget.userSettings.currentWidth;
     // autoHeight widgets size themselves from content, so the stored
     // currentHeight is stale -- measure the real rendered box instead,
-    // otherwise center/bottom snaps land using a phantom height.
-    const measuredHeight = document
+    // otherwise center/bottom snaps land using a phantom height. A
+    // content-sized widget does the same with its width.
+    const measuredBox = document
       .querySelector(`[data-widget-id="${widgetId}"]`)
-      ?.getBoundingClientRect().height;
+      ?.getBoundingClientRect();
+    const width =
+      widget.contentSized && measuredBox?.width
+        ? measuredBox.width
+        : widget.userSettings.currentWidth;
     const height =
-      widget.autoHeight && measuredHeight
-        ? measuredHeight
+      (widget.autoHeight || widget.contentSized) && measuredBox?.height
+        ? measuredBox.height
         : widget.userSettings.currentHeight;
     const screenW = window.innerWidth;
     const m = SNAP_MARGIN;

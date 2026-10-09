@@ -20,9 +20,10 @@ export const INCIDENT_TRACKER_MANIFEST: WidgetManifest = {
     'Incidents, penalties and an estimated Safety Rating at the flag.',
   autoHeight: true,
   // The plate follows its content — a session without penalties drops a
-  // column — so the widget paints its own background and border on it, and
-  // the container stays transparent.
+  // column — so the widget paints its own background and border on it, the
+  // container stays transparent and hugs it, and a drag can only scale it.
   transparentContainer: true,
+  contentSized: true,
   requiredCapabilities: ['standings'],
   designWidth: 180,
   designHeight: 60,

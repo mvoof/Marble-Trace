@@ -75,9 +75,9 @@ interface FuelStrategySettings {
 // are visibly separate the moment the copy appears.
 const DUPLICATE_OFFSET_PX = 24;
 
-// How much of an auto-height widget is kept on its monitor when it is dragged
-// down — its real height is not known to the store.
-const AUTO_HEIGHT_VISIBLE_PX = 24;
+// How much of an auto-sized widget is kept on its monitor when it is dragged
+// past an edge — its real size is not known to the store.
+const AUTO_SIZE_VISIBLE_PX = 24;
 
 export type { PickableWidget };
 
@@ -97,15 +97,19 @@ const GEOMETRY_KEYS = [
  * as tall as its content, and its `currentHeight` is only the manifest's number
  * — usually taller than what it draws — so clamping by it would stop the widget
  * short of the bottom edge. Only a strip along its top is kept on screen, so
- * it can never be dragged out of sight entirely.
+ * it can never be dragged out of sight entirely. A content-sized widget draws
+ * narrower than its `currentWidth` too, and gets the same strip along its left.
  */
 const clampSizeOf = (
   widget: WidgetDefaultConfig
 ): { width: number; height: number } => ({
-  width: widget.userSettings.currentWidth,
-  height: widget.autoHeight
-    ? Math.min(AUTO_HEIGHT_VISIBLE_PX, widget.userSettings.currentHeight)
-    : widget.userSettings.currentHeight,
+  width: widget.contentSized
+    ? Math.min(AUTO_SIZE_VISIBLE_PX, widget.userSettings.currentWidth)
+    : widget.userSettings.currentWidth,
+  height:
+    widget.autoHeight || widget.contentSized
+      ? Math.min(AUTO_SIZE_VISIBLE_PX, widget.userSettings.currentHeight)
+      : widget.userSettings.currentHeight,
 });
 
 // A deep copy: a nested value (a column set, a colour map) shared by reference

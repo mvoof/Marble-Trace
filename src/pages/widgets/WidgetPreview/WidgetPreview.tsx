@@ -8,7 +8,7 @@ import { componentForWidget } from '@widgets/registry';
 import { WidgetInstanceScope } from '@widgets/instance-scope/WidgetInstanceScope';
 import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
-import { widgetFrameStyle } from '@entities/widget/widget-frame';
+import { widgetBoxSize, widgetFrameStyle } from '@entities/widget/widget-frame';
 import {
   seedScenario,
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -81,6 +81,7 @@ export const WidgetPreview = observer(
           designWidth: widget.designWidth,
           designHeight: widget.designHeight,
           autoHeight: widget.autoHeight,
+          contentSized: widget.contentSized,
           overflowVisible: widget.overflowVisible,
           transparentContainer: widget.transparentContainer,
           requiredCapabilities: widget.requiredCapabilities,
@@ -95,7 +96,13 @@ export const WidgetPreview = observer(
       return <div className={styles.empty}>{t('widgetPreview.noPreview')}</div>;
     }
 
-    const { userSettings, designWidth, autoHeight, overflowVisible } = widget;
+    const {
+      userSettings,
+      designWidth,
+      autoHeight,
+      contentSized,
+      overflowVisible,
+    } = widget;
     const widgetScale = userSettings.currentWidth / designWidth;
     const frameStyle = widgetFrameStyle({
       widgetType: widget ? widget.type : widgetId,
@@ -103,6 +110,7 @@ export const WidgetPreview = observer(
       widgetScale,
       transparentContainer: widget.transparentContainer,
       autoHeight,
+      contentSized,
     });
 
     return (
@@ -113,8 +121,12 @@ export const WidgetPreview = observer(
               overflowVisible ? styles.overflowVisible : ''
             }`}
             style={{
-              width: userSettings.currentWidth,
-              height: autoHeight ? 'auto' : userSettings.currentHeight,
+              ...widgetBoxSize({
+                width: userSettings.currentWidth,
+                height: userSettings.currentHeight,
+                autoHeight,
+                contentSized,
+              }),
               ...frameStyle,
             }}
           >

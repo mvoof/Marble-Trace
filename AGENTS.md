@@ -1029,11 +1029,12 @@ other. Always read the widget as `widget.type`, never `widget.id`.
 
 ### Widget appearance
 
-_Held by: review._
+_Held by: test (a `contentSized` widget that does not paint its own plate — `widget-catalog.test.ts`; the handles each kind is offered — `widget-frame.test.ts`); review (the rest)._
 
 - `WidgetContainer` applies opacity and radial-gradient background from user settings — don't hardcode background in the widget. (Exception: `backgroundColor: 'transparent'` defaults may apply a custom CSS background on `WidgetPanel` with an explanatory comment.)
 - Root element is always `<WidgetPanel>` — never a bare `<div>`.
 - Layout: flexbox with `flex: 1 1 0` and `min-width: 0`. Column sizing: `ch` units when max char count is known.
+- **Resize handles only where the widget changes** (`resizeDirectionsFor`, `entities/widget/widget-frame.ts`): eight for a plate that stretches both ways, `e`/`w` for `autoHeight`, **corners only for `contentSized`** — a plate as wide and tall as its content (a column that leaves the row narrows it) stretches in neither axis, so a drag can only scale it. Such a widget declares `contentSized` with `transparentContainer` and paints its own ground from `--widget-bg` (`widget-catalog.test.ts` holds the pairing); its frame hugs the plate.
 
 ### Canvas components
 

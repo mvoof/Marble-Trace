@@ -15,6 +15,13 @@ export interface WidgetMeta {
   designWidth: number;
   designHeight: number;
   autoHeight?: boolean;
+  /**
+   * The widget is as wide and as tall as what it draws — a column that
+   * leaves the row narrows it — and paints its own plate
+   * (`transparentContainer`). Its frame hugs the plate, and resizing can only
+   * scale it, so only the corners are offered. Implies `autoHeight`.
+   */
+  contentSized?: boolean;
   overflowVisible?: boolean;
   transparentContainer?: boolean;
   /** Resize handles keep designWidth:designHeight ratio locked (e.g. a widget
