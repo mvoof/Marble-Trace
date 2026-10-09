@@ -44,6 +44,8 @@ specta = { version = "2.0.0-rc.22", features = ["derive", "serde_json"], optiona
 specta-typescript = { version = "0.0.9", optional = true }
 specta-serde = { version = "0.0.9", optional = true }
 serde_yaml_ng = "0.10"
+# The live iRating estimate in the standings: the community formula, not iRacing's.
+irating = "0.1"
 # Recorded telemetry tapes (dev feature): gzipped JSON lines.
 flate2 = { version = "1", optional = true }
 bitflags = "2"

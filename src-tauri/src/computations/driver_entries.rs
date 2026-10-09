@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::sync::Mutex;
 
+use irating::{calculate as calculate_irating_changes, RaceResult};
 use serde::{Deserialize, Serialize};
 
 use crate::capabilities::Capabilities;
@@ -15,8 +16,6 @@ use crate::model::session::{
 use crate::utils::lock_or_recover;
 
 const FALLBACK_SORT_POSITION: i32 = 999;
-const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
-const IR_CHANGE_OFFSET: f64 = 100.0;
 
 /// One car's standing at this tick. Only what moves during a session travels
 /// here: who the car is — driver, number, class, car, licence, rating — is the
@@ -852,15 +851,13 @@ fn number_positions(entries: &mut [DriverEntry]) {
     }
 }
 
-// Turbo87 iRating delta algorithm — port of iracing-irating.ts
-fn chance(a: f64, b: f64, factor: f64) -> f64 {
-    let exp_a = (-a / factor).exp();
-
-    let exp_b = (-b / factor).exp();
-
-    ((1.0 - exp_a) * exp_b) / ((1.0 - exp_b) * exp_a + (1.0 - exp_a) * exp_b)
-}
-
+/// Not iRacing's formula — iRacing publishes none. This is the community estimate
+/// from Kenny Powell's "iRacing SOF iRating Calculator" spreadsheet
+/// (https://github.com/SIMRacingApps/SIMRacingApps/issues/209#issuecomment-531877336),
+/// as implemented by the `irating` crate (https://github.com/Turbo87/irating-rs).
+/// What is ours is who races whom: each class is scored on its own, and a car the
+/// sim has never placed is a non-starter of that class rather than a finisher.
+///
 /// `use_live` picks which finishing order the projection assumes: the live on-track
 /// order, so the gain/loss updates mid-lap, or the sim's official one, which only
 /// moves when a car crosses start/finish. Both are computed every tick and the
@@ -868,95 +865,79 @@ fn chance(a: f64, b: f64, factor: f64) -> f64 {
 fn compute_ir_deltas(entries: &[DriverEntry], use_live: bool) -> HashMap<i32, i32> {
     let mut result = HashMap::new();
 
-    let br1 = 1600.0 / std::f64::consts::LN_2;
+    // classId -> [(carIdx, rank, iRating)]
+    let mut starters: HashMap<i32, Vec<(i32, i32, u32)>> = HashMap::new();
+    let mut non_starters: HashMap<i32, Vec<(i32, u32)>> = HashMap::new();
 
-    // Group by class
-    let mut buckets: HashMap<i32, Vec<(i32, i32, i32)>> = HashMap::new(); // classId -> [(carIdx, classPos, iRating)]
+    for entry in entries {
+        // No rating (AI, a fresh account) is nobody to score against.
+        let Some(i_rating) = u32::try_from(entry.i_rating)
+            .ok()
+            .filter(|rating| *rating > 0)
+        else {
+            continue;
+        };
 
-    for e in entries {
-        // `class_position` gates who takes part: a car the sim has not placed at all
-        // (garage, never left the pits) is not racing anyone yet. `assign_live_positions`
+        // `class_position` decides who started: a car the sim has not placed at all
+        // (garage, never left the pits) is registered but not racing. `assign_live_positions`
         // hands every entry a `live_class_position`, so it cannot make that call.
-        if e.i_rating <= 0 || e.class_position <= 0 {
+        if entry.class_position <= 0 {
+            non_starters
+                .entry(entry.car_class_id)
+                .or_default()
+                .push((entry.car_idx, i_rating));
+
             continue;
         }
 
         let rank = if use_live {
-            e.live_class_position
+            entry.live_class_position
         } else {
-            e.class_position
+            entry.class_position
         };
 
-        buckets
-            .entry(e.car_class_id)
+        starters
+            .entry(entry.car_class_id)
             .or_default()
-            .push((e.car_idx, rank, e.i_rating));
+            .push((entry.car_idx, rank, i_rating));
     }
 
-    // The scoring below treats the position as a dense rank in `1..=n` — it subtracts it
-    // from the field size. Either source is numbered over every entry, including the ones
-    // skipped above, so it can exceed `n` and leave gaps. Re-rank by it instead of
-    // trusting its raw value.
-    for bucket in buckets.values_mut() {
-        bucket.sort_by_key(|&(_, class_pos, _)| class_pos);
-
-        for (index, entry) in bucket.iter_mut().enumerate() {
-            entry.1 = index as i32 + 1;
-        }
-    }
-
-    for bucket in buckets.values() {
-        if bucket.len() < 2 {
+    for (class_id, mut class_starters) in starters {
+        if class_starters.len() < 2 {
             continue;
         }
 
-        let n = bucket.len();
+        // The crate reads the position as a dense rank in `1..=n`. Either source is
+        // numbered over every entry, including the non-starters split off above, so
+        // it can exceed `n` and leave gaps. Re-rank by it instead of trusting its value.
+        class_starters.sort_by_key(|&(_, rank, _)| rank);
 
-        let ir_ratings: Vec<f64> = bucket.iter().map(|&(_, _, ir)| ir as f64).collect();
+        let class_non_starters = non_starters.remove(&class_id).unwrap_or_default();
+        let last_starter_rank = class_starters.len();
 
-        // Build chances matrix
-        let mut chances: Vec<Vec<f64>> = vec![vec![0.0; n]; n];
+        let race_results: Vec<RaceResult<i32>> =
+            class_starters
+                .iter()
+                .enumerate()
+                .map(|(index, &(car_idx, _, i_rating))| (car_idx, index as u32 + 1, i_rating, true))
+                .chain(class_non_starters.iter().enumerate().map(
+                    |(index, &(car_idx, i_rating))| {
+                        (
+                            car_idx,
+                            (last_starter_rank + index) as u32 + 1,
+                            i_rating,
+                            false,
+                        )
+                    },
+                ))
+                .map(RaceResult::from)
+                .collect();
 
-        for i in 0..n {
-            for j in 0..n {
-                chances[i][j] = chance(ir_ratings[i], ir_ratings[j], br1);
-            }
-        }
-
-        let expected_scores: Vec<f64> = chances
-            .iter()
-            .map(|row| row.iter().sum::<f64>() - 0.5)
-            .collect();
-
-        let num_registrations = n;
-        let num_starters = n; // all are starters (no DNSes in current implementation)
-        let num_non_starters = 0usize;
-
-        let fudge_factors: Vec<f64> = bucket
-            .iter()
-            .enumerate()
-            .map(|(i, _)| {
-                let x = (num_registrations as f64) - (num_non_starters as f64) / 2.0;
-                let finish_rank = bucket[i].1 as f64; // class position
-                (x / 2.0 - finish_rank) / IR_CHANGE_OFFSET
-            })
-            .collect();
-
-        let changes: Vec<f64> = bucket
-            .iter()
-            .enumerate()
-            .map(|(i, &(_, class_pos, _))| {
-                ((num_registrations as f64
-                    - class_pos as f64
-                    - expected_scores[i]
-                    - fudge_factors[i])
-                    * IR_CHANGE_SCALE_FACTOR)
-                    / num_starters as f64
-            })
-            .collect();
-
-        for (i, &(car_idx, _, _)) in bucket.iter().enumerate() {
-            result.insert(car_idx, changes[i].round() as i32);
+        for outcome in calculate_irating_changes(race_results) {
+            result.insert(
+                outcome.race_result.driver,
+                outcome.irating_change.round() as i32,
+            );
         }
     }
 
@@ -2141,15 +2122,13 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn test_ir_deltas_rank_densely_around_skipped_cars() {
-        // Car 9 sits in the garage: the sim never placed it, so it races nobody and
-        // drops out of the bucket. It still holds a live position, leaving a gap the
-        // scoring must not see — the field has to score as three cars ranked 1..3.
+    fn test_ir_deltas_rank_densely_around_gaps() {
+        // Positions numbered over a wider field leave gaps; the field still has to
+        // score as three cars ranked 1..3.
         let sparse = vec![
-            make_ir_entry(0, 1, 1, 3000),
-            make_ir_entry(1, 2, 2, 2000),
-            make_ir_entry(9, 0, 3, 1500),
-            make_ir_entry(2, 3, 4, 1000),
+            make_ir_entry(0, 2, 2, 3000),
+            make_ir_entry(1, 5, 5, 2000),
+            make_ir_entry(2, 9, 9, 1000),
         ];
 
         let dense = vec![
@@ -2158,10 +2137,58 @@ pub(crate) mod tests {
             make_ir_entry(2, 3, 3, 1000),
         ];
 
-        let sparse_deltas = compute_ir_deltas(&sparse, true);
+        assert_eq!(
+            compute_ir_deltas(&sparse, true),
+            compute_ir_deltas(&dense, true)
+        );
+    }
 
-        assert_eq!(sparse_deltas.get(&9), None);
-        assert_eq!(sparse_deltas, compute_ir_deltas(&dense, true));
+    #[test]
+    fn test_ir_deltas_score_an_unplaced_car_as_a_non_starter() {
+        // Car 9 sits in the garage: the sim never placed it. It is registered for the
+        // race, so it is scored as a non-starter — it loses, and its rating stays in
+        // the field the others are scored against. Its live position is ignored.
+        let with_non_starter = vec![
+            make_ir_entry(0, 1, 1, 3000),
+            make_ir_entry(1, 2, 2, 2000),
+            make_ir_entry(9, 0, 3, 1500),
+            make_ir_entry(2, 3, 4, 1000),
+        ];
+
+        let starters_only = vec![
+            make_ir_entry(0, 1, 1, 3000),
+            make_ir_entry(1, 2, 2, 2000),
+            make_ir_entry(2, 3, 3, 1000),
+        ];
+
+        let deltas = compute_ir_deltas(&with_non_starter, true);
+
+        assert!(deltas[&9] < 0);
+        assert_ne!(deltas, compute_ir_deltas(&starters_only, true));
+    }
+
+    #[test]
+    fn test_ir_deltas_need_two_starters_in_the_class() {
+        // Before anyone is placed there is no race to score, non-starters included.
+        let entries = vec![make_ir_entry(0, 1, 1, 2000), make_ir_entry(1, 0, 2, 2000)];
+
+        assert!(compute_ir_deltas(&entries, true).is_empty());
+    }
+
+    #[test]
+    fn test_ir_deltas_skip_unrated_cars() {
+        // An AI car carries no iRating: it is nobody to score against.
+        let entries = vec![
+            make_ir_entry(0, 1, 1, 2000),
+            make_ir_entry(1, 2, 2, 0),
+            make_ir_entry(2, 3, 3, 2000),
+        ];
+
+        let deltas = compute_ir_deltas(&entries, true);
+
+        assert_eq!(deltas.get(&1), None);
+        assert!(deltas[&0] > 0);
+        assert!(deltas[&2] < 0);
     }
 
     #[test]
