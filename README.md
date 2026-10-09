@@ -5,7 +5,7 @@
   </picture>
 </p>
 
-<h1 align="center">Marble Trace™</h1>
+<h1 align="center">Marble Trace</h1>
 
 <p align="center">
   <strong>Open-source iRacing telemetry overlay — beautiful, lightweight, always on top.</strong>
@@ -18,7 +18,7 @@
 </div>
 
 <p align="center">
-  Marble Trace is actively developed — new widgets, fixes, and features land regularly.<br>
+  Marble Trace™ is actively developed — new widgets, fixes, and features land regularly.<br>
   Got a bug, an idea, or just want to share your setup? Join the community on Discord.
 </p>
 <p align="center">
