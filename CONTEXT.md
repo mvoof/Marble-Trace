@@ -62,9 +62,10 @@ the corner). Its `id` addresses the instance, its `type` names the widget, its
 further instance made by duplicating one.
 
 **Hotkey mark** — whether a widget's hotkeys act on an instance (`hotkeys`).
-On by default on a physical display, never on a browser screen, which only
-shows. The marked, switched-on instance is the widget's **primary instance**
-(`primaryInstanceOf`), the one widget stores read.
+Absent means on, a browser screen included, so a stream follows what the driver
+switches. The marked, switched-on instance is the widget's **primary instance**
+(`primaryInstanceOf`), the one widget stores read; a physical display is
+preferred over a browser screen.
 
 **Browser screen** — the user-facing name of a remote screen: a virtual screen
 a browser opens by link (tablet, phone, OBS), not a monitor of the PC.
@@ -73,6 +74,24 @@ a browser opens by link (tablet, phone, OBS), not a monitor of the PC.
 browser on the LAN. A monitor in every way that matters to a layout: it owns its
 own widget set, it is parked in free desktop space, and no overlay window is
 opened for it.
+
+## Backend to frontend
+
+**Gated field** — a bundle field filled only while some widget declares it in its
+manifest's `telemetryEvents` (`carDynamics`, `carInputs`, `carPositions`,
+`lapDelta`, `driverEntries`, `relative`, `proximity`, `incidents`, `coach`). The
+mask gates publication, never computation.
+
+**Slow slice** — `sim://telemetry/slow` (`TelemetrySlowBundle`): the player's
+`car_status` at 4 Hz, the only telemetry the main window takes.
+
+**Client snapshot / signal / command** — the protocol between main, which owns the
+settings, and its clients (overlays, remote screens): a _snapshot_ is state main
+publishes, a _signal_ a one-off event (`RemoteControlKind`), a _command_ an
+overlay's request to change a setting. See ADR-0007.
+
+**Tape** — a recorded live session (`MARBLE_TRACE_RECORD`) played back in place
+of the sim (`MARBLE_TRACE_REPLAY`); `dev` builds only.
 
 ## Widget preview
 
@@ -100,7 +119,7 @@ its own declares none and gets no picker; its preview still renders, against the
 snapshot. The **layout editor** is the other consumer, and takes session-wide
 scenarios that move the whole canvas at once.
 
-**Preview store** — the isolated `RootStore({ skipInit: true })` a preview
+**Preview store** — the isolated `PreviewCore` (a `RendererCore` built with `skipInit`) a preview
 renders against. It shares nothing with the stores the running widgets use;
 settings are mirrored into it one way and nothing travels back. See
 [ADR-0004](docs/adr/0004-widget-preview-runs-on-mocks.md).

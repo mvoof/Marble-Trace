@@ -24,7 +24,8 @@ MARBLE_TRACE_REPLAY=<tape> npm run tauri:dev        # play a tape instead of the
 ```
 
 Every environment variable (runtime, build time, tooling):
-`CONTRIBUTING.md` → Environment variables.
+`CONTRIBUTING.md` → Environment variables. Recording, replaying and `npm run perf`:
+`docs/telemetry-tapes.md`. Every doc, by task: `docs/README.md`.
 
 ## How a rule is held
 
@@ -40,7 +41,7 @@ keep. When a rule moves from review to a tool, its section says so.
 
 ## Architecture overview
 
-**Two windows, one Tauri app.** `main` (800×600) — settings UI built with Ant Design. `overlay` (1920×1080, always-on-top, transparent) — renders all widgets via `OverlayCanvas`. Each window has its own JS context and independent MobX instances; main holds the settings and the overlays are its clients (see "Main owns the settings" below).
+**Two windows, one Tauri app.** `main` (800×600) — settings UI built with Ant Design. `overlay-<monitor>` (one per monitor, sized to it, always-on-top, transparent) — renders that monitor's widgets via `OverlayCanvas`. Each window has its own JS context and independent MobX instances; main holds the settings and the overlays are its clients (see "Main owns the settings" below).
 
 **Rust backend layers** (`src-tauri/src/`), strict one-way imports:
 
@@ -126,7 +127,7 @@ Each window builds its own root over one renderer core (see MobX Stores → Wind
 - **React 19** + **TypeScript** — Frontend UI
 - **Tauri 2** — Desktop app framework (Windows)
 - **Rust** — Backend, telemetry processing
-- **kerb** — multi-sim telemetry library (local path dep `../../kerb`)
+- **kerb** — multi-sim telemetry library (crates.io, `kerb` in `src-tauri/Cargo.toml`)
 - **MobX** — State management
 - **SCSS Modules** — Styling
 - **Vite** — Bundler and dev server
@@ -170,23 +171,25 @@ _Held by: review for the layer imports — Rust has no import lint, and `computa
 | `model/`        | serde + specta types only. No `kerb` or `tauri`.                                                                                                  |
 | `sources/`      | **Only** layer allowed to `use kerb`. Maps `IracingFrame` → `SourceFrame`.                                                                        |
 | `computations/` | Pure logic. No kerb, no tauri. One processor per computed frame (`fuel`, `lap_delta`, `pace_car`, `pit_stops`, `proximity`, `driver_entries`, …). |
-| `commands/`     | The Tauri command surface, split by what it touches: `settings`, `telemetry`, `track`, `pit`.                                                     |
+| `commands/`     | The Tauri command surface, split by what it touches: `settings`, `telemetry`, `track`, `pit`, `companions`, `perf`, `install`.                    |
 | `telemetry/`    | Runtime: assembles `TelemetryBundle`, emits `sim://telemetry/bundle`.                                                                             |
 
-- `specta` auto-generates `src/shared/contracts/bindings.ts` on `npm run tauri dev` — **never edit manually**. It is written one type per line; the checked-in copy is `oxfmt`-formatted, so **run `npm run format` after every regeneration** or the next commit carries a reformat of the whole file instead of your one-line change.
+Beside the layers sit the runtimes that own their own commands: `chat/`
+(Twitch, YouTube), `companions/`, `hotkeys/`, `input/`, `remote/`.
+
+- `specta` auto-generates `src/shared/contracts/bindings.ts` on `npm run tauri dev` — **never edit manually**. Every `tauri:dev`, `perf --build` or `cargo test` regenerates it and the other generated contracts (below) unformatted, so the working tree shows them rewritten wholesale. **Leave them alone**: the `format` hook in `lefthook.yml` runs `oxfmt` on the staged files, so a commit takes them back to the checked-in form and only a real change to the contract remains. Do not format or revert them by hand.
 - The whole export lives in `src-tauri/src/bindings.rs`, and each module registers
   its own types in a `register_types` beside them (`model/`, `computations/`,
   `sources/`, `telemetry/`) — a new type is declared and registered in one file.
   Regenerate without launching the app:
-  `UPDATE_BINDINGS=1 cargo test --features dev regenerates_the_contract`, then
-  `npm run format`.
+  `UPDATE_BINDINGS=1 cargo test --features dev regenerates_the_contract`.
 - **Values do not go through specta** — it exports types, and a default or an
   event name is a value the frontend needs as a compile-time literal (widget
   manifests are read at import time, long before anything could `await` a
   command). Those are declared once via the `ts_values!` macro
   (`model/ts_values.rs`) and generated into `src/shared/contracts/backend-constants.ts`,
-  `src/shared/contracts/backend-events.ts` and `src/shared/contracts/telemetry-event-bits.ts` (the
-  demand mask). All are checked in and pinned by a test, so a Rust constant
+  `src/shared/contracts/backend-events.ts`, `src/shared/contracts/telemetry-event-bits.ts` (the
+  demand mask) and `src/shared/contracts/hotkey-actions.ts` (the action list). All are checked in and pinned by a test, so a Rust constant
   changed without regenerating fails `cargo test`.
 - **The envelope and computed frames are camelCase; raw frames carry kerb's
   names.** `TelemetryBundle`, `TelemetrySlowBundle` and `SourceFrame` carry
@@ -376,13 +379,13 @@ Most changes need no migration at all. Full guide: `docs/settings-schema.md`.
 
 _Held by: review._
 
-| Hz    | Fields                                                                                       |
-| ----- | -------------------------------------------------------------------------------------------- |
-| 60    | `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `pitTarget`, `coach`                 |
-| 10    | `carIdx`, `chassis`, `lapTiming`, `proximity`, `driverEntries`, `paceCar`                    |
-| 4     | `carStatus`, `fuel`, `pitStops`                                                              |
-| 1     | `session`, `environment`                                                                     |
-| async | `sim://session`, `sim://weather`, `sim://status`, `sim://disconnected`, `sim://capabilities` |
+| Hz    | Fields                                                                                                                                                         |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 60    | `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`                                                                 |
+| 10    | `carIdx`, `chassis`, `lapTiming`, `proximity`, `driverEntries`, `relative`, `incidents`, `paceCar`                                                             |
+| 4     | `carStatus`, `fuel`, `pitStops`, `lapLog`, `pitService`, `pitAuto`                                                                                             |
+| 1     | `session`, `environment`                                                                                                                                       |
+| async | `sim://session`, `sim://weather`, `sim://status`, `sim://disconnected`, `sim://capabilities`, `sim://perf`, `sim://track-shape`, `sim://reference-lap/updated` |
 
 Event names are declared in `src-tauri/src/model/events.rs` and generated into
 `src/shared/contracts/backend-events.ts`; `src/shared/api/sim-events.ts` re-exports them
@@ -459,7 +462,7 @@ why the declaration sits next to the widget instead of in a list elsewhere.
 _Held by: review (the precision chosen, the `PartialEq` on a suppressed frame)._
 
 `telemetry/quantize.rs` rounds the per-car frames to the precision a widget draws
-(positions 4 dp, gaps 2 dp, lap times 3 dp, distances 2 dp), and
+(positions 4 dp, gaps 2 dp, lap times 3 dp, distances and speeds 2 dp; the coach's call to the step it is drawn at), and
 `telemetry/publications.rs` then drops any frame identical to the last one
 published. The order is load-bearing: raw floats are never bit-identical two
 ticks running, so without rounding first nothing would ever compare equal.
@@ -528,7 +531,7 @@ _Held by: compiler (an overlay writing settings — the core holds `LiveWidgetsV
 | -------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `RendererCore` | every renderer, and previews | entity stores, sim, settings projection (`layouts`, `liveWidgets`, `widgetDefaults`, `appSettings`, `settingsMutations`), units, widget stores, `widgetAutoHide` |
 | `OverlayRoot`  | `overlay.tsx`                | core + `AppWindowStores` (`bindings`, `settingsPanelUi`) + `settingsClient`                                                                                      |
-| `MainRoot`     | `main.tsx`                   | core + `AppWindowStores` + editor, companion apps, twitch auth, device list, bindings UI, remote devices, fps diagnostics, export, inspector                     |
+| `MainRoot`     | `main.tsx`                   | core + `AppWindowStores` + editor, companion apps, twitch auth, device list, bindings UI, remote devices, fps diagnostics, export, inspector, track rotation     |
 | `RemoteRoot`   | `remote.tsx`                 | core, started without Tauri                                                                                                                                      |
 | `HudRoot`      | `hud.tsx`                    | `diagnosticsHud` only — no core                                                                                                                                  |
 
@@ -649,12 +652,11 @@ picture: `docs/architecture.md` → Cross-window synchronization.
 
 - **Read-only.** A device reports only its viewport, applied once to fit a newly
   created screen.
-- A screen's `purpose` says who opens its URL. `'device'` is a tablet and is the
-  default. `'stream'` is an OBS browser source: the page paints no ground of its
-  own and shows no status card, and the screen is created already
-  `fittedToDevice` so the first source that connects cannot resize a layout the
-  user has built. `?widget=<instance id>` narrows the page to one widget's own
-  rectangle, for a streamer placing widgets in their scene one at a time.
+- One kind of screen, whoever opens it: a tablet and an OBS browser source read
+  the same page, and `background` (any CSS color, or `'transparent'`) is the
+  only difference. A transparent screen paints no ground of its own and shows
+  no status card (`RemoteStatusOverlay`). `fittedToDevice` marks a screen as
+  already matched to a device, so only the first connection resizes it.
 - `remote.html` is a separate Vite entry and stays free of `@tauri-apps/*` —
   so does `client-sync.ts`, which it imports.
 
@@ -913,7 +915,7 @@ _Held by: lint (a hot field read directly in a component body under `src/{app,pa
 - Root widget must not read 60 Hz fields (`carDynamics`, `carInputs`) — delegate to sub-components.
 - A component that reads a hot field returns as little as possible; everything unchanged by it is created by a parent that does not re-render and arrives as `children` (`docs/rendering.md`).
 - Decompose any visual section that is self-contained, has a distinct update rate, or would push the parent past ~150 lines.
-- **Never read a hot field (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`, and the heavy per-car frames `driverEntries`, `relative`, `proximity`) directly in a component body that also renders markup around it.** A single number per frame goes through `useReactiveDomWrite`; canvas widgets go through `useReactiveCanvasLoop`. `oxlint` fails the build on any direct read of these names in those `.tsx` files (`no-restricted-properties`, `.oxlintrc.json`) — a legitimate read inside `useReactiveDomWrite`/`useReactiveCanvasLoop` needs `// oxlint-disable-next-line no-restricted-properties`. That catches the fact of a direct read, not which contour it belongs on — see "How this is enforced" in `docs/rendering.md` — so get the contour right the first time; a reviewer applies that part of the rule, no tool does.
+- **Never read a hot field (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`, and the heavy per-car frames `driverEntries`, `relative`, `proximity`, and `fieldEntries`, the roster-joined `driverEntries`) directly in a component body that also renders markup around it.** A single number per frame goes through `useReactiveDomWrite`; canvas widgets go through `useReactiveCanvasLoop`. `oxlint` fails the build on any direct read of these names in those `.tsx` files (`no-restricted-properties`, `.oxlintrc.json`) — a legitimate read inside `useReactiveDomWrite`/`useReactiveCanvasLoop` needs `// oxlint-disable-next-line no-restricted-properties`. That catches the fact of a direct read, not which contour it belongs on — see "How this is enforced" in `docs/rendering.md` — so get the contour right the first time; a reviewer applies that part of the rule, no tool does.
 
 ### `ws()` scaling
 
@@ -926,9 +928,11 @@ ws($px)     // raw geometry: grid columns, canvas/SVG sizes, icon sizes
 fs($step)   // font — xxxs(10) xxs(11) xs(12) sm(13) md(15) lg(18) xl(22) xxl(28) xxxl(32)
 sp($step)   // spacing (2px grid) — xxxs(2) xxs(4) xs(6) sm(8) md(10) lg(12) xl(16) xxl(20)
 radius($step) // sm(3) md(4) lg(6)
+wfs($px)    // font size off the scale — ws() × --font-scale, like fs()
+plate($color) // a plate the widget paints itself, faded by its background opacity
 ```
 
-Use `fs()`/`sp()`/`radius()` for typography/spacing/radius; `ws()` only for layout geometry not on a scale. Never use `rem` (doesn't scale), `vw`/`vh` (= screen size in overlay), or `ws()` for borders (always plain `px`).
+Use `fs()`/`sp()`/`radius()` for typography/spacing/radius; `ws()` only for layout geometry not on a scale; `wfs()` for a font size the scale lacks — never `ws()` for a font, it ignores the user's font scale. Never use `rem` (doesn't scale), `vw`/`vh` (= screen size in overlay), or `ws()` for borders (always plain `px`).
 
 For **toggleable-column widgets** (Standings, Relative): `designWidth` tracks the visible column set via `colSpecs` in `*-utils.ts`. `makeColumnLayoutResolver` in `src/widgets/widget-manifest.ts` keeps `--wfs` constant while the widget resizes.
 

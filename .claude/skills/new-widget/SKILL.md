@@ -296,7 +296,7 @@ Nothing collects these; do all three.
    `src/storybook/with-replay.tsx` for a widget that draws a history). Ask the
    user to run `npm run storybook`, or run it if it is not up, then
    `npm run capture:widgets -- <file>`
-   ([CONTRIBUTING → Widget screenshots](../../../CONTRIBUTING.md#widget-screenshots)).
+   ([docs/widget-screenshots.md](../../../docs/widget-screenshots.md)).
    It refreshes the site's WebP copies in `site/assets/img/` too — they are
    part of the change. Stop Storybook afterwards.
 2. `README.md`: a `### <Name>` section in its group with one or two sentences and

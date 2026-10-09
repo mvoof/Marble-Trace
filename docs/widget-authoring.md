@@ -95,9 +95,9 @@ budget test (step 9).
 **Is it demand-gated?** The gated fields are the
 exports of `src/shared/contracts/telemetry-event-bits.ts` (generated from
 `src-tauri/src/model/telemetry_events.rs`) — **read that file, it is the list**,
-and it grows. At the time of writing it holds eight:
+and it grows. At the time of writing it holds nine:
 `carDynamics`, `carInputs`, `carPositions`, `lapDelta` (the 60 Hz four, the
-**hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`.
+**hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`, `coach`.
 
 A widget that reads a gated field without declaring it in `telemetryEvents`
 **renders empty in the app and correct in Storybook** — the failure mode this
@@ -106,8 +106,8 @@ the traffic. See [architecture.md → Demand gating](architecture.md).
 
 **Does the sim have to support it?** Separately from the mask,
 `requiredCapabilities` in the manifest hides the widget from the catalog when the
-connected sim cannot feed it (`availableWidgetIds` in
-`entities/layout/live-widgets.store.ts`). It names keys of
+connected sim cannot feed it (`availableWidgetIdsOf` in
+`entities/widget/widget-availability.ts`). It names keys of
 `CapabilitiesPayload`, not telemetry fields: a widget reading `carDynamics` or
 `carInputs` for the player's own car declares `['playerDynamics']`; the others in
 use are `chassis`, `fuel`, `inputs`, `radar`, `relative`, `sectors`,
@@ -218,7 +218,7 @@ of those two branches it is on — this is what step 9 checks by review.
 
 ## Step 4 — Check the toolbox before writing a helper
 
-There are roughly 20 helper modules, 14 shared components and 9 shared hooks.
+There are 14 helper modules, 17 shared components and 8 shared hooks.
 [**docs/widget-toolbox.md**](widget-toolbox.md) lists all of them with one line
 each on when to reach for it, plus the design tokens and the rule for where a new
 helper belongs.
@@ -450,7 +450,7 @@ of this; it is three edits by hand.
    story). A widget that draws a history needs a burst of frames after mount:
    `withReplay` from `src/storybook/with-replay.tsx`. Then, with
    `npm run storybook` running, `npm run capture:widgets -- <file>`
-   ([CONTRIBUTING → Widget screenshots](../CONTRIBUTING.md#widget-screenshots)).
+   ([widget-screenshots.md](widget-screenshots.md)).
    It also refreshes the site's WebP copies in `site/assets/img/`; commit
    them with the PNG.
 2. **The README.** A `### <Name>` section in the widget's group: one or two

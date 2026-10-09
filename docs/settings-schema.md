@@ -99,9 +99,11 @@ Five things about this order matter:
    (`updateUserSettings`). Like `mergeWithDefaults`, it runs after migrations —
    a migration writing a value the schema refuses has its work undone.
 
-5. **Both windows run the chain**, each on its own parse of the file, but only
-   the main window writes. That is why a migration must be pure — a side effect
-   would happen twice.
+5. **Only the main window runs the chain** (`app/sync/persistence-sync.ts`:
+   `readSettingsFile` → `runMigrations` → `hydrateFromDisk`) and only it writes.
+   An overlay or remote screen reads no settings file; it draws the snapshot main
+   sends (ADR-0007). A migration must still be pure — the runner clones the blob
+   and a side effect has no place in a step.
 
 ## Locked settings
 
@@ -110,9 +112,9 @@ When `runMigrations` cannot bring the file to the current schema, the file is
 (`from-the-future`), predates the chain (`too-old`), or is not a settings object
 (`corrupt`).
 
-`appSettings.settingsLocked` then suppresses every write. Both `initMainSync` and
-`initOverlaySync` return early — no hydration, no default layout, no save
-reactions — and `OverlayCanvas` renders nothing, because the widget map still
+`appSettings.settingsLocked` then suppresses every write. `initMainSync` returns
+early — no hydration, no default layout, no save reactions — the flag travels to
+the overlays in the client snapshot, and `OverlayCanvas` renders nothing, because the widget map still
 holds shipped defaults and painting them looks exactly like the user losing their
 config. The main window shows `SettingsLockBanner`.
 
@@ -152,6 +154,9 @@ Before the first save at a new version, the old file is copied to
 - A value **moves** between blocks, or between a widget and the app.
 - A rename whose value is **expensive for the user to recreate**: wheel bindings,
   calibration, a hand-drawn layout.
+- **Renaming a widget's `id`.** Without a step, every saved instance under the
+  old id is dropped and the widget comes back at its default position, settings
+  lost — the user has to place and set it up again.
 - Any **shape change inside a persisted array**, since `mergeWithDefaults` will
   not reconcile array elements for you.
 - **A value inside `layouts[]` that changes meaning, moves or is renamed.**

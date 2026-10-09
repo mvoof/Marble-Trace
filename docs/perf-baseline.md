@@ -8,22 +8,24 @@ section.
 
 ## How to measure
 
-```powershell
+```bash
 # once per code change: release backend with the `dev` feature (the tape
 # source lives there), production frontend, hidden source maps, no installer
-npm run perf -- --tape D:\tapes\session-1791104931.tape.jsonl.gz --from 600 --build
+npm run perf -- --tape D:/tapes/session-1791104931.tape.jsonl.gz --from 600 --build
 
 # the baseline: two runs each, so the spread is printed beside the numbers
-npm run perf -- --tape D:\tapes\session-1791104931.tape.jsonl.gz --from 600 --runs 2
-npm run perf -- --tape D:\tapes\session-1791104931.tape.jsonl.gz --from 600 --runs 2 --mode stores-only
+npm run perf -- --tape D:/tapes/session-1791104931.tape.jsonl.gz --from 600 --runs 2
+npm run perf -- --tape D:/tapes/session-1791104931.tape.jsonl.gz --from 600 --runs 2 --mode stores-only
 
 # where the overlay's bytes go (sampling heap profile over CDP)
-npm run perf -- --tape D:\tapes\session-1791104931.tape.jsonl.gz --from 600 --seconds 30 --heap
-npm run perf -- --tape D:\tapes\session-1791104931.tape.jsonl.gz --from 600 --seconds 30 --heap --mode stores-only
+npm run perf -- --tape D:/tapes/session-1791104931.tape.jsonl.gz --from 600 --seconds 30 --heap
+npm run perf -- --tape D:/tapes/session-1791104931.tape.jsonl.gz --from 600 --seconds 30 --heap --mode stores-only
 ```
 
 Close every running Marble Trace first: the instances share one WebView2 data
 folder and one settings file. Leave the machine idle, with no build running.
+Recording a tape, the flags and what to do when a run finds no tape:
+[telemetry-tapes.md](telemetry-tapes.md).
 
 A run plays the tape from `--from` seconds and waits 10 s to warm up. It then
 resets the counters and measures for 60 s. After that the app writes a JSON

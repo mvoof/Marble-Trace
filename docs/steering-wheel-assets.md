@@ -107,7 +107,7 @@ Both path styles work in Git Bash — `/c/Users/you/photo.jpg` and
 `C:/Users/you/photo.jpg` — because MSYS rewrites the POSIX form before the
 native Python sees it. In PowerShell, use the `C:\…` form.
 
-`<asset-name>` is the file name and, further down, the setting value: lowercase,
+`<asset-name>` is the file name and, further down, the setting value (`flat-bottom-wheel.svg` is the one file whose setting value, `flat-bottom`, differs): lowercase,
 hyphen-separated, and named for the **kind** of wheel rather than its brand
 (`gt-round`, `formula-open`), since the user is picking a shape.
 
@@ -123,7 +123,8 @@ noise got traced; far fewer means the gaps between the spokes were filled in.
 
 ### When the result is wrong
 
-Three flags, in the order you'll reach for them:
+Three flags, in the order you'll reach for them (a fourth, `--out-dir`, changes
+where the SVG is written; it defaults to `src/assets/wheels`):
 
 | Flag          | Default | Raise it when…                                                   | Lower it when…                                                           |
 | ------------- | ------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------ |
@@ -138,12 +139,12 @@ as wheel.
 Formula wheels have large openings between the grips and the plate, and a
 display in the middle that is bright and roughly the same size — those want
 `--min-hole 0.006` or so. Round GT wheels have three enormous gaps and little
-else, and are happy near `0.0015`. The wheels already in the repo were traced
+else, and are happy near `0.0015`. Some of the wheels already in the repo were traced
 with:
 
 ```bash
 npm run wheel:trace -- gt-round.jpg          gt-round      --threshold 205 --min-hole 0.0015
-npm run wheel:trace -- gt-flat-bottom.jpg    gt-flat-bottom                --min-hole 0.0015
+npm run wheel:trace -- flat-bottom.jpg       flat-bottom-wheel             --min-hole 0.0015
 npm run wheel:trace -- formula-open.jpg      formula-open                  --min-hole 0.006
 npm run wheel:trace -- formula-compact.jpg   formula-compact               --min-hole 0.009 --tolerance 0.8
 ```
