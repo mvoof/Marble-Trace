@@ -76,7 +76,7 @@ as a set of always-on-top widgets over the game window.
 ```mermaid
 flowchart LR
     SIM["Racing simulator<br/>iRacing"]
-    KERB["<b>kerb</b><br/>telemetry library<br/>(separate repo)"]
+    KERB["<b>kerb</b><br/>telemetry library<br/>(crates.io, same author)"]
     RUST["<b>Rust backend</b><br/>reads · adapts · computes · persists"]
     MAIN["<b>main window</b><br/>settings UI"]
     OVL["<b>overlay windows</b><br/>widgets over the game"]
@@ -173,7 +173,7 @@ To regenerate without launching the app:
 
 ```bash
 UPDATE_BINDINGS=1 cargo test --features dev regenerates_the_contract
-npm run format   # the checked-in copy is oxfmt-formatted
+# no format step: the lefthook format hook formats the staged contract on commit
 ```
 
 ```mermaid
@@ -273,22 +273,32 @@ The payoff: a sim quirk fixed in `sources/` is fixed everywhere, and
 Plain data. `serde` for the wire format, `specta` for TypeScript generation. One
 file per subject:
 
-| File               | Holds                                                           |
-| ------------------ | --------------------------------------------------------------- |
-| `cars.rs`          | per-car frames — dynamics, inputs, positions, status, `car_idx` |
-| `session.rs`       | session snapshot, results, qualifying entries, driver roster    |
-| `environment.rs`   | track and weather conditions                                    |
-| `flags.rs`         | flag state                                                      |
-| `player.rs`        | the player's own car and lap timing                             |
-| `lap_log.rs`       | completed-lap records                                           |
-| `reference_lap.rs` | the stored reference lap                                        |
-| `relative.rs`      | relative-gap entries                                            |
-| `track_shape.rs`   | the recorded track outline                                      |
-| `pit_command.rs`   | pit service orders                                              |
-| `input.rs`         | controller devices and button events                            |
-| `chat.rs`          | chat messages, presence, deletions                              |
-| `capabilities.rs`  | what the connected sim supports                                 |
-| `enums.rs`         | shared enums — session type, flags, spotter state               |
+| File                                              | Holds                                                           |
+| ------------------------------------------------- | --------------------------------------------------------------- |
+| `cars.rs`                                         | per-car frames — dynamics, inputs, positions, status, `car_idx` |
+| `session.rs`                                      | session snapshot, results, qualifying entries, driver roster    |
+| `environment.rs`                                  | track and weather conditions                                    |
+| `flags.rs`                                        | flag state                                                      |
+| `player.rs`                                       | the player's own car and lap timing                             |
+| `lap_log.rs`                                      | completed-lap records                                           |
+| `reference_lap.rs`                                | the stored reference lap                                        |
+| `relative.rs`                                     | relative-gap entries                                            |
+| `track_shape.rs`                                  | the recorded track outline                                      |
+| `pit_command.rs`                                  | pit service orders                                              |
+| `pit_action.rs`                                   | `PitAction`, the pit orders a key or a click can issue          |
+| `pit_auto.rs`                                     | pit auto mode — config, claims, the frame on the bundle         |
+| `hotkeys.rs`                                      | the bindable action list, `Binding`, overlay modes              |
+| `input.rs`                                        | controller devices and button events                            |
+| `client_protocol.rs`                              | the snapshot / command envelope between main and its clients    |
+| `remote.rs`                                       | remote screen server config and devices                         |
+| `companions.rs`                                   | companion apps and their status                                 |
+| `sim_perf.rs`                                     | the sim's own frame-rate / CPU numbers                          |
+| `install.rs`                                      | the installation-mismatch report                                |
+| `chat.rs`                                         | chat messages, presence, deletions                              |
+| `capabilities.rs`                                 | what the connected sim supports                                 |
+| `enums.rs`                                        | shared enums — session type, flags, spotter state               |
+| `events.rs`, `defaults.rs`, `telemetry_events.rs` | `ts_values!` values: event names, defaults, mask bits           |
+| `ts_values.rs`                                    | the `ts_values!` macro itself                                   |
 
 This layer is the **entire** backend↔frontend contract. If the frontend can see
 it, it is defined here.
@@ -309,6 +319,13 @@ pub trait TelemetrySource {
     fn session_changed(&mut self) -> bool;
     fn poll_session(&mut self) -> Option<String>;
     fn session_parser(&self) -> SessionParser;
+    fn session_tree_parser(&self) -> SessionTreeParser;
+    fn raw_var_meta(&self) -> Vec<RawVarMeta> {
+        Vec::new()
+    }
+    fn raw_values(&self) -> Option<RawValues> {
+        None
+    }
 }
 ```
 
@@ -321,6 +338,11 @@ parsed session comes back to the loop with the files read for it.
 > **This is the only place `use kerb` is allowed.** Adding a second sim means
 > adding a sibling folder that implements this trait — and touching nothing else.
 
+Beside the trait, `sources/raw.rs` holds the sim's own data as the telemetry
+inspector reads it, and the `dev` feature adds `tape.rs` and `replay.rs` — record
+a live session (`MARBLE_TRACE_RECORD`) and play it back in place of the sim
+(`MARBLE_TRACE_REPLAY`).
+
 ### Module map — `sources/iracing/`
 
 | File               | Responsibility                                                                                   |
@@ -331,6 +353,7 @@ parsed session comes back to the loop with the files read for it.
 | `car_classes.rs`   | resolves class badges (map in `car_badges.rs`) and colors (see below)                            |
 | `flags.rs`         | decodes the iRacing flag bitfield                                                                |
 | `weather.rs`       | weather and track-condition decoding                                                             |
+| `car_badges.rs`    | the hand-maintained `CarID → badge` map                                                          |
 | `pit_command.rs`   | encodes our pit orders into iRacing's command format                                             |
 
 ### Normalizations that happen here, and only here
@@ -387,7 +410,8 @@ grep -o "CarID: [0-9]*\|CarClassID: [0-9]*\|CarScreenName: .*" session.yaml | pa
 
 ## `computations/` — pure logic
 
-Nine processors, one subject each, sharing one shape:
+Twelve registered processors (`ProcessorId` in `computations/mod.rs`), one subject
+each, sharing one shape, plus helpers that are not processors:
 
 ```mermaid
 flowchart LR
@@ -397,34 +421,49 @@ flowchart LR
     CTX --> P --> OUT
 ```
 
-| Processor          | Computes                                         |
-| ------------------ | ------------------------------------------------ |
-| `fuel.rs`          | consumption average, laps remaining, fuel to add |
-| `lap_delta.rs`     | delta to reference and session-best              |
-| `lap_log.rs`       | per-lap records as laps complete                 |
-| `pit_stops.rs`     | pit timing and stop detection                    |
-| `proximity.rs`     | cars alongside, for the radar widgets            |
-| `reference_lap.rs` | capture and comparison of the reference lap      |
-| `relative.rs`      | relative gaps to cars around you                 |
-| `standings.rs`     | the live standings table, per class              |
-| `track_shape.rs`   | records the track outline from driven laps       |
+| Processor           | Rate  | Computes                                         |
+| ------------------- | ----- | ------------------------------------------------ |
+| `coach.rs`          | 60 Hz | the driving coach's call against the reference   |
+| `lap_delta.rs`      | 60 Hz | delta to reference and session-best              |
+| `reference_lap.rs`  | 60 Hz | capture and comparison of the reference lap      |
+| `track_shape.rs`    | 60 Hz | records the track outline from driven laps       |
+| `driver_entries.rs` | 10 Hz | the whole field's table: positions, laps, times  |
+| `incidents.rs`      | 10 Hz | stopped / off-track zones for the track map      |
+| `pace_car.rs`       | 10 Hz | pace car state                                   |
+| `proximity.rs`      | 10 Hz | cars alongside, for the radar widgets            |
+| `relative.rs`       | 10 Hz | relative gaps to cars around you                 |
+| `fuel.rs`           | 4 Hz  | consumption average, laps remaining, fuel to add |
+| `lap_log.rs`        | 4 Hz  | per-lap records as laps complete                 |
+| `pit_stops.rs`      | 4 Hz  | pit timing and stop detection                    |
+
+The helpers are called by the emitter or by a processor, not registered:
+`pit_target.rs` (distance to the pit box, every tick), `pit_auto.rs` and
+`pit_actions.rs` (pit orders, see below), `reference_selection.rs`,
+`lap_time_settle.rs` and `car_speed.rs`. There is no standings processor: the
+table is `driver_entries.rs`.
 
 No `kerb`, no `tauri`, no I/O. That is exactly why this layer is the easy one to
 unit-test — and why sim quirks must be resolved upstream before they reach it.
 
 ## `telemetry/` — the runtime
 
-| File              | Role                                                                   |
-| ----------------- | ---------------------------------------------------------------------- |
-| `runtime.rs`      | owns the telemetry thread and the connection lifecycle                 |
-| `state.rs`        | only what crosses threads: command sender, snapshots, masks, counters  |
-| `loop_state.rs`   | what the loop alone writes — session, grid, pit markers, processors    |
-| `control.rs`      | `TelemetryCommand`s and the config a run starts with                   |
-| `scheduler.rs`    | decides which rate tiers are due this tick                             |
-| `emitter.rs`      | runs the processor registry, assembles one `TelemetryBundle`, emits it |
-| `io_worker.rs`    | session-YAML parsing and every file read or write, off the loop        |
-| `storage.rs`      | the track-shape and reference-lap files, shared with the commands      |
-| `capabilities.rs` | reports what the connected sim can actually provide                    |
+| File                             | Role                                                                   |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| `runtime.rs`                     | owns the telemetry thread and the connection lifecycle                 |
+| `state.rs`                       | only what crosses threads: command sender, snapshots, masks, counters  |
+| `loop_state.rs`                  | what the loop alone writes — session, grid, pit markers, processors    |
+| `control.rs`                     | `TelemetryCommand`s and the config a run starts with                   |
+| `scheduler.rs`                   | decides which rate tiers are due this tick                             |
+| `emitter.rs`                     | runs the processor registry, assembles one `TelemetryBundle`, emits it |
+| `masks.rs`                       | the demand mask each window registered, keyed by window label          |
+| `dispatch.rs`                    | groups windows by mask value: one bundle built per distinct mask       |
+| `delivery.rs`                    | per-recipient counters of what each bundle carried                     |
+| `quantize.rs`                    | rounds per-car frames to what a widget draws                           |
+| `publications.rs`                | drops a frame equal to the last one published                          |
+| `tick_timings.rs`, `perf_run.rs` | `dev` only: tick timing and the timed perf run (`MARBLE_TRACE_PERF`)   |
+| `io_worker.rs`                   | session-YAML parsing and every file read or write, off the loop        |
+| `storage.rs`                     | the track-shape and reference-lap files, shared with the commands      |
+| `capabilities.rs`                | reports what the connected sim can actually provide                    |
 
 The thread owns its state. A command never writes it: it sends a
 `TelemetryCommand`, drained at the top of the next tick, and a value that must
@@ -440,12 +479,12 @@ The backend does not emit everything 60 times a second. Fields are grouped by ho
 fast they actually change, and each tick emits one bundle containing only the
 tiers that are due.
 
-| Rate  | Fields                                                            |
-| ----- | ----------------------------------------------------------------- |
-| 60 Hz | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`        |
-| 10 Hz | `car_idx`, `chassis`, `lap_timing`, `proximity`, `driver_entries` |
-| 4 Hz  | `car_status`, `fuel`, `pit_stops`                                 |
-| 1 Hz  | `session`, `environment`                                          |
+| Rate  | Fields                                                                                                 |
+| ----- | ------------------------------------------------------------------------------------------------------ |
+| 60 Hz | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`, `coach`, `pit_target`, `track_recording`   |
+| 10 Hz | `car_idx`, `chassis`, `lap_timing`, `proximity`, `driver_entries`, `relative`, `incidents`, `pace_car` |
+| 4 Hz  | `car_status`, `fuel`, `pit_stops`, `pit_service`, `lap_log`, `pit_auto`                                |
+| 1 Hz  | `session`, `environment`                                                                               |
 
 ```mermaid
 flowchart LR
@@ -477,7 +516,7 @@ pit lane percentages once they become known (which re-emits the track shape).
 Tauri delivers an event only to webviews that hold a listener for it, so a window
 which never subscribes to the bundle pays nothing at all: no IPC, no parse, no
 store write. Only windows that draw widgets subscribe — `SimStore.subscribeBundle`
-gates on the `overlay` hash — which leaves the main window off 60 bundles a second
+gates on the overlay page — which leaves the main window off 60 bundles a second
 it would render nothing from.
 
 Not rendering is not quite the same as needing nothing: the layout auto-switch
@@ -499,10 +538,11 @@ and to `SimStore.subscribeSlowBundle`; it does not go back to the bundle.
 ### Demand gating
 
 Being due is necessary but not sufficient: a gated field is filled only while
-some widget actually wants it. Two groups are gated — the four raw 60 Hz frames,
-where the whole cost is downstream of the sim, and the three per-car frames on
+some widget actually wants it. Nine fields are gated — the four raw 60 Hz frames,
+where the whole cost is downstream of the sim, the three per-car frames on
 the 10 Hz tier, which are by far the largest payloads the app moves (a
-`DriverEntry` is ~25 fields, times the whole field).
+`DriverEntry` is ~25 fields, times the whole field), `incidents`, and the coach's
+call (`coach`, 60 Hz).
 
 > [!NOTE]
 > `driver_entries` is the table of the whole field — positions, laps, times, pit
@@ -522,7 +562,8 @@ the 10 Hz tier, which are by far the largest payloads the app moves (a
 | Gated field                                                | Tier  |
 | ---------------------------------------------------------- | ----- |
 | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta` | 60 Hz |
-| `driver_entries`, `relative`, `proximity`                  | 10 Hz |
+| `coach`                                                    | 60 Hz |
+| `driver_entries`, `relative`, `proximity`, `incidents`     | 10 Hz |
 
 Everything else is small, infrequent, or both, and is always sent. Each widget names what it reads in its own
 `manifest.ts`:
@@ -537,7 +578,11 @@ export const G_METER_MANIFEST: WidgetManifest = {
 
 `SimStore` (`updateOwnActiveEvents`) unions the declarations of the enabled widgets in
 the active layout and sends the result to `set_active_events` as a bitmask;
-`emitter.rs` reads it and leaves an unrequested field out of the bundle. The
+`emitter.rs` reads it and leaves an unrequested field out of the bundle. The mask
+is per recipient: `telemetry/masks.rs` keeps one per window label (a remote
+screen registers through `set_remote_active_events`), and `telemetry/dispatch.rs`
+builds and serializes one bundle per distinct mask value, so a monitor showing
+only a fuel widget does not receive the per-car frames of another monitor. The
 names and their bit values are declared once in `model/telemetry_events.rs` and
 generated into `src/shared/contracts/telemetry-event-bits.ts`, which
 `src/shared/contracts/telemetry-events.ts` derives `TelemetryEventName` from.
@@ -555,8 +600,8 @@ flowchart LR
 > tick regardless, so a widget enabled mid-race finds its history intact. Only a
 > field that is a pure snapshot of the current tick may be skipped at the source,
 > which is why the mask covers the raw 60 Hz frames, `lap_delta` (whose state is
-> owned by the reference-lap processor, not by the delta itself) and the three
-> per-car frames, which are dropped from the bundle _after_ their processors have
+> owned by the reference-lap processor, not by the delta itself), `coach`,
+> `incidents` and the three per-car frames, which are dropped from the bundle _after_ their processors have
 > run.
 >
 > What is saved is everything downstream of the computation: the serialization,
@@ -580,7 +625,7 @@ flowchart LR
 
 **Quantize** (`telemetry/quantize.rs`) rounds the per-car frames to the precision
 a widget actually draws — positions to 4 dp, gaps to 2 dp, lap times to 3 dp,
-distances to 2 dp. Every one of those is at least one decimal finer than the
+distances to 2 dp, speeds to 2 dp. Every one of those is at least one decimal finer than the
 `toFixed` that renders it.
 
 **Suppress repeats** (`telemetry/publications.rs`) compares each frame against
@@ -639,7 +684,7 @@ It is built the opposite way round from a widget:
 > taken off it on purpose (a window that draws no widgets has no use for 60
 > bundles a second), and an inspector that listened for the bundle would hand
 > that entire cost straight back. `TelemetryInspectorStore` therefore imports no
-> event API at all — only two commands.
+> event API at all — only commands.
 
 4 Hz is not a compromise: nobody reads a table of a hundred numbers sixty times a
 second. The same feed backs the snapshot export, which opens it for one frame and
@@ -655,16 +700,20 @@ too.
 
 ## `input/`, `chat/` and the command surface
 
-| Module              | Role                                                                                                                                                          |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `input/dinput.rs`   | DirectInput8 game-controller polling                                                                                                                          |
-| `input/identity.rs` | device identity and re-matching after a driver reinstall                                                                                                      |
-| `input/runtime.rs`  | the polling thread                                                                                                                                            |
-| `input/commands.rs` | `resolve_input_devices`, `set_input_polling_enabled`                                                                                                          |
-| `chat/`             | Twitch chat stream — independent of any sim connection                                                                                                        |
-| `commands/`         | the Tauri command surface, split by what it touches — `settings`, `telemetry`, `track`, `pit` (see [Command catalogue](#command-catalogue-frontend--backend)) |
-| `capabilities.rs`   | per-sim feature reporting                                                                                                                                     |
-| `logging.rs`        | tracing setup — `RUST_LOG=marble_trace_lib=debug npm run tauri:dev`                                                                                           |
+| Module                | Role                                                                                                                                                                                           |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `input/dinput.rs`     | DirectInput8 game-controller polling                                                                                                                                                           |
+| `input/identity.rs`   | device identity and re-matching after a driver reinstall                                                                                                                                       |
+| `input/runtime.rs`    | the polling thread                                                                                                                                                                             |
+| `input/commands.rs`   | `resolve_input_devices`, `set_input_polling_enabled`                                                                                                                                           |
+| `chat/`               | Twitch chat (IRC, `eventsub.rs`, `helix.rs`, `secrets.rs`) and YouTube — independent of any sim connection                                                                                     |
+| `commands/`           | the Tauri command surface, split by what it touches — `settings`, `telemetry`, `track`, `pit`, `companions`, `install`, `perf` (see [Command catalogue](#command-catalogue-frontend--backend)) |
+| `hotkeys/`            | global key registration and dispatch, drag / interact modes (`dispatch.rs`, `modes.rs`, `runtime.rs`)                                                                                          |
+| `remote/`             | the LAN server for remote screens: `server`, `hub` (fan-out), `mirror`, `pages`, `csp`, `commands`                                                                                             |
+| `companions/`         | companion apps — catalog, process detection, registry, icons                                                                                                                                   |
+| `process_priority.rs` | asks Windows to schedule the sim ahead of the overlay                                                                                                                                          |
+| `capabilities.rs`     | per-sim feature reporting                                                                                                                                                                      |
+| `logging.rs`          | tracing setup — `RUST_LOG=marble_trace_lib=debug npm run tauri:dev`                                                                                                                            |
 
 ### Twitch: two sources, one owner per event
 
@@ -773,6 +822,7 @@ and `storybook`.
 | `widget-choices.ts`                                                      | the setting choices several widgets share (`QUALIFYING_VISIBILITY`, …)     |
 | `input-bindings.ts` · `hotkey-actions.ts`                                | `Binding`, `BindingMap`; the generated action list for the settings UI     |
 | `pit-strategy.ts` · `diagnostics.ts` · `telemetry-snapshot.ts` · `…`     | hand-written types that the API or the snapshot carries                    |
+| `car-identity.ts` · `driver-entry.ts` · `preview-scenarios.ts`           | car identity, the driver-entry row shape, the preview scenario names       |
 | `domain.ts`                                                              | small app-level types (units, language, flag type, track surface)          |
 
 Imports nothing outside itself. A type only one slice reads stays in that slice.
@@ -802,18 +852,28 @@ monitor, it lives here (or, for the wiring, in `app/sync/`). **Nothing else
 imports from `@tauri-apps/*`** except the window shells reaching their own
 window.
 
-| File                                          | Wraps                                                                                                                             |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `events.service.ts`                           | **the only `@tauri-apps/api/event` import in the codebase** — every emitter and `listenTo`                                        |
-| `telemetry.service.ts`                        | `startTelemetryStream`, `stopTelemetryStream`, `getConnectionStatus`, `getLastSessionInfo`, `setActiveEventsSilent`               |
-| `track.service.ts`                            | `getCachedTrackShape`, `deleteTrackShape`, `resetPitLanePct`, `getActiveReferenceLap`, `deleteReferenceLap`                       |
-| `settings.service.ts`                         | `settingsFileExists`, `backupSettingsFile`, `logSettingsSnapshot`, `deleteSettingsFile`, and the `*Silent` setters                |
-| `twitch.service.ts`                           | `twitchHasClientId`, `twitchAccount`, `twitchRequestDeviceCode`, `twitchPollDeviceToken`, `twitchSignOut`, chat stream start/stop |
-| `input.service.ts`                            | `resolveInputDevices`, `setInputPollingEnabled`                                                                                   |
-| `pit.service.ts`                              | `sendPitOrder`                                                                                                                    |
-| `remote-socket.service.ts`                    | the remote page's WebSocket — the browser half of the client transport                                                            |
-| `sim-events.ts`                               | **every backend event name constant**, re-exported from the generated `@shared/contracts/backend-events`                          |
-| `overlay-labels.ts` · `overlay-resolution.ts` | the monitor-name → window-label mapping; monitor geometry                                                                         |
+| File                                          | Wraps                                                                                                                                   |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `events.service.ts`                           | **the only `@tauri-apps/api/event` import in the codebase** — every emitter and `listenTo`                                              |
+| `telemetry.service.ts`                        | `startTelemetryStream`, `stopTelemetryStream`, `getConnectionStatus`, `getLastSessionInfo`, `setActiveEventsSilent`, the inspector feed |
+| `track.service.ts`                            | `getCachedTrackShape`, `deleteTrackShape`, `resetPitLanePct`, `getActiveReferenceLap`, `deleteReferenceLap`                             |
+| `track-settings.service.ts`                   | `readTrackRotations`, `writeTrackRotations`                                                                                             |
+| `settings.service.ts`                         | `settingsFileExists`, `backupSettingsFile`, `logSettingsSnapshot`, `deleteSettingsFile`, and the `*Silent` setters                      |
+| `twitch.service.ts`                           | `twitchHasClientId`, `twitchAccount`, `twitchRequestDeviceCode`, `twitchPollDeviceToken`, `twitchSignOut`, chat stream start/stop       |
+| `input.service.ts`                            | `resolveInputDevices`, `setInputPollingEnabled`                                                                                         |
+| `pit.service.ts`                              | `runPitAction`, `togglePitAuto`, `setPitStrategySilent`                                                                                 |
+| `hotkeys.service.ts`                          | `setHotkeyBindings`, `setHotkeyContext`, `requestDragMode`, `requestInteractMode`, `getOverlayModes`                                    |
+| `remote.service.ts`                           | `startRemoteServer`, `stopRemoteServer`, `getRemoteServerInfo`, `getRemoteDevices`, `publishRemoteSnapshot`, `publishRemoteControl`     |
+| `companions.service.ts`                       | detect, launch and close companion apps                                                                                                 |
+| `diagnostics-hud.service.ts`                  | open and close the HUD window, emit its state                                                                                           |
+| `perf.service.ts`                             | `getPerfRun`, `submitOverlayPerf` (the perf harness)                                                                                    |
+| `install.service.ts`                          | `checkInstallIntegrity`                                                                                                                 |
+| `window-visibility.service.ts`                | `watchMinimized`                                                                                                                        |
+| `file-export.service.ts`                      | `saveTextFileAndReveal`                                                                                                                 |
+| `opener.service.ts` · `external-link.ts`      | `openExternalUrl`, `openExternalLink`                                                                                                   |
+| `remote-socket.service.ts`                    | the remote page's WebSocket — the browser half of the client transport                                                                  |
+| `sim-events.ts`                               | **every backend event name constant**, re-exported from the generated `@shared/contracts/backend-events`                                |
+| `overlay-labels.ts` · `overlay-resolution.ts` | the monitor-name → window-label mapping; monitor geometry                                                                               |
 
 Because services are the seam, **tests mock services, not Tauri.**
 
@@ -1020,7 +1080,7 @@ Every window builds one root over a shared `RendererCore`
 projection widgets read, units, the app-wide widget stores (shared ones, the
 pit service, the recorded track) and the registry of per-instance widget
 stores. `MainRoot` adds what only the settings UI uses (editor, inspector,
-diagnostics, companion apps, chat sign-in, device list), `OverlayRoot` adds only
+diagnostics, companion apps, chat sign-in, device list, track rotation), `OverlayRoot` adds only
 the bindings and the settings-panel state its drag-mode popup needs, plus the
 `settingsClient` that sends its commands to main, `RemoteRoot` starts the core
 without Tauri, and `HudRoot` holds the banner's one store and no core at all.
@@ -1053,6 +1113,9 @@ starts with the window; it never reaches the window shells.
 | `persistence.ts` · `persistence-sync.ts`   | writing settings to disk                                                                  |
 | `hotkey-sync.ts`                           | main's half of the bindings: push the map and the context, apply settings actions         |
 | `chat-sync.ts`                             | Twitch chat stream wiring                                                                 |
+| `track-rotation-sync.ts`                   | the track-map rotation request/echo between windows                                       |
+| `diagnostics-hud-sync.ts`                  | the HUD window's one listener                                                             |
+| `perf-run.ts` · `perf-cold-start.ts`       | the perf harness: report an overlay's run, watch its cold start                           |
 | `pit-service-sync.ts`                      | pit-service cross-window state                                                            |
 | `overlay-windows.ts` · `monitor-watch.ts`  | creating, labelling and tearing down overlay windows; monitor hot-plug                    |
 
@@ -1256,6 +1319,8 @@ flowchart LR
 | `sp($step)`     | spacing, 2px grid                                                            | xxxs(2) xxs(4) xs(6) sm(8) md(10) lg(12) xl(16) xxl(20)              |
 | `radius($step)` | corner radius                                                                | sm(3) md(4) lg(6)                                                    |
 | `ws($px)`       | raw geometry not on a scale — grid columns, canvas and SVG sizes, icon sizes | any px value                                                         |
+| `wfs($px)`      | a font size off the type scale — `ws()` times the user's `--font-scale`      | any px value                                                         |
+| `plate($color)` | a plate the widget paints itself, faded by its background-opacity setting    | a colour token                                                       |
 
 > [!WARNING]
 > Never use `rem` (does not scale with `--wfs`), never `vw` / `vh` (**in the
@@ -1388,7 +1453,7 @@ flowchart TB
         O["overlay windows"]
     end
     subgraph BE["Rust backend"]
-        CMD["commands.rs"]
+        CMD["commands/ · hotkeys/ · input/ ·<br/>remote/ · chat/ commands.rs"]
         TEL["telemetry/emitter.rs"]
     end
 
@@ -1401,11 +1466,11 @@ flowchart TB
     style TEL fill:#1e3a5f,color:#fff
 ```
 
-| #   | Channel            | Direction                               | Frontend entry point           | Backend entry point                            |
-| --- | ------------------ | --------------------------------------- | ------------------------------ | ---------------------------------------------- |
-| ①   | **Commands**       | frontend → backend, with a return value | `shared/api/*.service.ts`      | `commands.rs`, `input/commands.rs`             |
-| ②   | **Backend events** | backend → both windows, fire-and-forget | `app/sync/listeners.ts`        | `telemetry/emitter.rs` and friends             |
-| ③   | **Window events**  | main ↔ overlay                          | `shared/api/events.service.ts` | — (never reaches Rust, except two noted below) |
+| #   | Channel            | Direction                               | Frontend entry point           | Backend entry point                                    |
+| --- | ------------------ | --------------------------------------- | ------------------------------ | ------------------------------------------------------ |
+| ①   | **Commands**       | frontend → backend, with a return value | `shared/api/*.service.ts`      | `commands/`, `{hotkeys,input,remote,chat}/commands.rs` |
+| ②   | **Backend events** | backend → both windows, fire-and-forget | `app/sync/listeners.ts`        | `telemetry/emitter.rs` and friends                     |
+| ③   | **Window events**  | main ↔ overlay                          | `shared/api/events.service.ts` | — (never reaches Rust, except two noted below)         |
 
 > [!NOTE]
 > **Backend events are not relayed between windows.** Each window subscribes to the
@@ -1417,36 +1482,46 @@ flowchart TB
 Every `invoke` in the app goes through a service function. No component and no
 store calls `invoke` directly.
 
-| Service file           | Function                                         | Rust command                          | Purpose                                                    |
-| ---------------------- | ------------------------------------------------ | ------------------------------------- | ---------------------------------------------------------- |
-| `telemetry.service.ts` | `startTelemetryStream`                           | `start_telemetry_stream`              | begin reading the sim                                      |
-|                        | `stopTelemetryStream`                            | `stop_telemetry_stream`               | stop reading                                               |
-|                        | `getConnectionStatus`                            | `get_connection_status`               | is a sim connected                                         |
-|                        | `getLastSessionInfo`                             | `get_last_session_info`               | last known session, for a cold start                       |
-|                        | `setActiveEventsSilent`                          | `set_active_events`                   | tell the backend which events anyone is listening to       |
-| `track.service.ts`     | `getCachedTrackShape`                            | `get_cached_track_shape`              | load a recorded track outline                              |
-|                        | `deleteTrackShape`                               | `delete_track_shape`                  | discard it                                                 |
-|                        | `resetPitLanePct`                                | `reset_pit_lane_pct`                  | re-detect pit lane bounds                                  |
-|                        | `getActiveReferenceLap`                          | `get_active_reference_lap`            | the reference lap the telemetry thread made active         |
-|                        | `deleteReferenceLap`                             | `delete_reference_lap`                | discard it                                                 |
-| `settings.service.ts`  | `settingsFileExists`                             | `settings_file_exists`                | first-run detection                                        |
-|                        | `backupSettingsFile`                             | `backup_settings_file`                | snapshot before a risky write                              |
-|                        | `deleteSettingsFile`                             | `delete_settings_file`                | factory reset                                              |
-|                        | `logSettingsSnapshot`                            | `log_settings_snapshot`               | diagnostics                                                |
-|                        | `setPitWarningLapsSilent`                        | `set_pit_warning_laps`                | push a computation setting                                 |
-|                        | `setFuelAvgWindowSilent`                         | `set_fuel_avg_window`                 | push a computation setting                                 |
-|                        | `setCarLengthSilent`                             | `set_car_length`                      | push a computation setting                                 |
-| `twitch.service.ts`    | `twitchHasClientId` … `twitchSignOut`            | Twitch auth commands                  | device-code OAuth flow                                     |
-|                        | `startChatStreamSilent` / `stopChatStreamSilent` | chat stream commands                  | connect and disconnect chat                                |
-| `input.service.ts`     | `resolveInputDevices`                            | `resolve_input_devices`               | enumerate controllers                                      |
-|                        | `setInputPollingEnabled`                         | `set_input_polling_enabled`           | start/stop DirectInput polling                             |
-| `pit.service.ts`       | `runPitAction`                                   | `run_pit_action`                      | a click on the pit order, resolved on the telemetry thread |
-|                        | `togglePitAuto`                                  | `toggle_pit_auto`                     | the auto mode plate                                        |
-|                        | `setPitStrategySilent`                           | `set_pit_strategy`                    | push the pit rules, the fuel step and the layout gate      |
-| `hotkeys.service.ts`   | `setHotkeyBindings`                              | `set_hotkey_bindings`                 | the effective binding map, to the dispatcher               |
-|                        | `setHotkeyContext`                               | `set_hotkey_context`                  | the layout gate and the interact key's settings            |
-|                        | `requestDragMode` / `requestInteractMode`        | `set_drag_mode` / `set_interact_mode` | ask the dispatcher to switch a mode                        |
-|                        | `getOverlayModes`                                | `get_overlay_modes`                   | the modes, for a window that just loaded                   |
+| Service file            | Function                                                                                                        | Rust command                                                                                                              | Purpose                                                     |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `telemetry.service.ts`  | `startTelemetryStream`                                                                                          | `start_telemetry_stream`                                                                                                  | begin reading the sim                                       |
+|                         | `stopTelemetryStream`                                                                                           | `stop_telemetry_stream`                                                                                                   | stop reading                                                |
+|                         | `getConnectionStatus`                                                                                           | `get_connection_status`                                                                                                   | is a sim connected                                          |
+|                         | `getLastSessionInfo`                                                                                            | `get_last_session_info`                                                                                                   | last known session, for a cold start                        |
+|                         | `setActiveEventsSilent` / `clearActiveEventsSilent`                                                             | `set_active_events` / `clear_active_events`                                                                               | tell the backend which events a window needs, and drop them |
+|                         | `setRemoteActiveEventsSilent` / `clearRemoteActiveEventsSilent`                                                 | `set_remote_active_events` / `clear_remote_active_events`                                                                 | the same, for the remote screens' own mask                  |
+|                         | `setInspectorActive`, `getInspectorFrame`, `getInspectorRawValues`, `getRawVarMeta`, `getRawSession`            | `set_inspector_active`, `get_inspector_frame`, `get_inspector_raw_values`, `get_raw_var_meta`, `get_raw_session`          | the telemetry inspector's pull feed                         |
+|                         | `getDeliveryCounters` / `resetDeliveryCounters`                                                                 | `get_delivery_counters` / `reset_delivery_counters`                                                                       | FPS diagnostics: what the backend sent                      |
+| `track.service.ts`      | `getCachedTrackShape`                                                                                           | `get_cached_track_shape`                                                                                                  | load a recorded track outline                               |
+|                         | `deleteTrackShape`                                                                                              | `delete_track_shape`                                                                                                      | discard it                                                  |
+|                         | `resetPitLanePct`                                                                                               | `reset_pit_lane_pct`                                                                                                      | re-detect pit lane bounds                                   |
+|                         | `getActiveReferenceLap`                                                                                         | `get_active_reference_lap`                                                                                                | the reference lap the telemetry thread made active          |
+|                         | `deleteReferenceLap`                                                                                            | `delete_reference_lap`                                                                                                    | discard it                                                  |
+| `settings.service.ts`   | `settingsFileExists`                                                                                            | `settings_file_exists`                                                                                                    | first-run detection                                         |
+|                         | `backupSettingsFile`                                                                                            | `backup_settings_file`                                                                                                    | snapshot before a risky write                               |
+|                         | `deleteSettingsFile`                                                                                            | `delete_settings_file`                                                                                                    | factory reset                                               |
+|                         | `logSettingsSnapshot`                                                                                           | `log_settings_snapshot`                                                                                                   | diagnostics                                                 |
+|                         | `setPitWarningLapsSilent`                                                                                       | `set_pit_warning_laps`                                                                                                    | push a computation setting                                  |
+|                         | `setFuelAvgWindowSilent`                                                                                        | `set_fuel_avg_window`                                                                                                     | push a computation setting                                  |
+|                         | `setFuelCountYellowLapsSilent`                                                                                  | `set_fuel_count_yellow_laps`                                                                                              | push a computation setting                                  |
+|                         | `setCarLengthSilent`                                                                                            | `set_car_length`                                                                                                          | push a computation setting                                  |
+| `twitch.service.ts`     | `twitchHasClientId` … `twitchSignOut`                                                                           | Twitch auth commands                                                                                                      | device-code OAuth flow                                      |
+|                         | `startChatStreamSilent` / `stopChatStreamSilent`                                                                | chat stream commands                                                                                                      | connect and disconnect chat                                 |
+| `input.service.ts`      | `resolveInputDevices`                                                                                           | `resolve_input_devices`                                                                                                   | enumerate controllers                                       |
+|                         | `setInputPollingEnabled`                                                                                        | `set_input_polling_enabled`                                                                                               | start/stop DirectInput polling                              |
+| `pit.service.ts`        | `runPitAction`                                                                                                  | `run_pit_action`                                                                                                          | a click on the pit order, resolved on the telemetry thread  |
+|                         | `togglePitAuto`                                                                                                 | `toggle_pit_auto`                                                                                                         | the auto mode plate                                         |
+|                         | `setPitStrategySilent`                                                                                          | `set_pit_strategy`                                                                                                        | push the pit rules, the fuel step and the layout gate       |
+| `hotkeys.service.ts`    | `setHotkeyBindings`                                                                                             | `set_hotkey_bindings`                                                                                                     | the effective binding map, to the dispatcher                |
+|                         | `setHotkeyContext`                                                                                              | `set_hotkey_context`                                                                                                      | the layout gate and the interact key's settings             |
+|                         | `requestDragMode` / `requestInteractMode`                                                                       | `set_drag_mode` / `set_interact_mode`                                                                                     | ask the dispatcher to switch a mode                         |
+|                         | `getOverlayModes`                                                                                               | `get_overlay_modes`                                                                                                       | the modes, for a window that just loaded                    |
+| `remote.service.ts`     | `startRemoteServer` / `stopRemoteServer`                                                                        | `start_remote_server` / `stop_remote_server`                                                                              | the LAN server's lifetime                                   |
+|                         | `getRemoteServerInfo`, `getRemoteDevices`, `remoteScreenUrl`                                                    | `get_remote_server_info`, `get_remote_devices`, `remote_screen_url`                                                       | what the settings section shows                             |
+|                         | `publishRemoteSnapshot` / `publishRemoteControl`                                                                | `publish_remote_snapshot` / `publish_remote_control`                                                                      | main's snapshots and signals, to the hub                    |
+| `companions.service.ts` | `detectCompanionApps`, `companionAppStatuses`, `launchCompanionApp`, `closeCompanionApp(s)`, `companionAppIcon` | `detect_companion_apps`, `companion_app_statuses`, `launch_companion_app`, `close_companion_app(s)`, `companion_app_icon` | companion apps                                              |
+| `install.service.ts`    | `checkInstallIntegrity`                                                                                         | `check_install_integrity`                                                                                                 | the install-mismatch banner (temporary until 0.29.0)        |
+| `perf.service.ts`       | `getPerfRun` / `submitOverlayPerf`                                                                              | `get_perf_run` / `submit_overlay_perf`                                                                                    | the perf harness (dev builds)                               |
 
 The `*Silent` naming marks a setter that pushes a value into the backend without
 expecting anything back — a fire-and-forget command, not an event.
@@ -1459,24 +1534,26 @@ Names come from `src-tauri/src/model/events.rs` through the generated
 `@shared/contracts/backend-events`, re-exported by `shared/api/sim-events.ts`; handlers are wired in
 `app/sync/listeners.ts`.
 
-| Event                                                    | Emitted by                  | Rate                          | Lands in                                             |
-| -------------------------------------------------------- | --------------------------- | ----------------------------- | ---------------------------------------------------- |
-| `sim://telemetry/bundle`                                 | `telemetry/emitter.rs`      | every tick, tiered            | the `data/` stores                                   |
-| `sim://session`                                          | session polling             | on change                     | `session.store.ts`                                   |
-| `sim://weather`                                          | weather decoding            | async                         | `environment.store.ts`                               |
-| `sim://status`                                           | connection lifecycle        | on change                     | `sim.store.ts`                                       |
-| `sim://disconnected`                                     | connection lifecycle        | on loss                       | `sim.store.ts` — triggers `reset()`                  |
-| `sim://capabilities`                                     | `telemetry/capabilities.rs` | on connect                    | `sim.store.ts`                                       |
-| `sim://track-shape`                                      | `telemetry/emitter.rs`      | on discovery or pit-pct patch | the track map widget store                           |
-| `sim://reference-lap/updated`                            | `telemetry/emitter.rs`      | active reference changes      | `reference-lap.store.ts`                             |
-| `sim://telemetry/slow`                                   | `telemetry/emitter.rs`      | 4 Hz                          | `player.store.ts` — **windows off the bundle only**  |
-| `app://overlay-modes`                                    | `hotkeys/runtime.rs`        | on change                     | `app-settings.store.ts`, every window                |
-| `hotkey://settings-action`                               | `hotkeys/runtime.rs`        | on a settings key             | `settings-actions.ts`, main only                     |
-| `client://control`                                       | `hotkeys/runtime.rs`, main  | on a view key or signal       | `applyControl` in every overlay, plus the remote hub |
-| `sim://perf`                                             | `telemetry/emitter.rs`      | 1 Hz                          | `sim-perf.store.ts`                                  |
-| `input://devices`                                        | `input/runtime.rs`          | on device change              | `device-input.store.ts`                              |
-| `input://button`                                         | `input/runtime.rs`          | on press/release              | `device-input.store.ts`, for binding capture         |
-| `chat://message` · `chat://presence` · `chat://deletion` | `chat/`                     | async                         | `chat.store.ts`                                      |
+| Event                                                    | Emitted by                                         | Rate                          | Lands in                                                                                    |
+| -------------------------------------------------------- | -------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `sim://telemetry/bundle`                                 | `telemetry/emitter.rs`                             | every tick, tiered            | the entity stores, via `apply-bundle.ts`                                                    |
+| `sim://session`                                          | session polling                                    | on change                     | `session.store.ts`                                                                          |
+| `sim://weather`                                          | weather decoding                                   | async                         | `environment.store.ts`                                                                      |
+| `sim://status`                                           | connection lifecycle                               | on change                     | `sim.store.ts`                                                                              |
+| `sim://disconnected`                                     | connection lifecycle                               | on loss                       | `sim.store.ts` — triggers `reset()`                                                         |
+| `sim://capabilities`                                     | `telemetry/capabilities.rs`                        | on connect                    | `sim.store.ts`                                                                              |
+| `sim://track-shape`                                      | `telemetry/emitter.rs`                             | on discovery or pit-pct patch | the track map widget store                                                                  |
+| `sim://reference-lap/updated`                            | `telemetry/emitter.rs`                             | active reference changes      | `reference-lap.store.ts`                                                                    |
+| `sim://telemetry/slow`                                   | `telemetry/emitter.rs`                             | 4 Hz                          | `player.store.ts` (`updateCarStatus`), via `sim.store.ts` — **windows off the bundle only** |
+| `perf://begin` · `perf://end`                            | `telemetry/perf_run.rs` (dev, `MARBLE_TRACE_PERF`) | once per run                  | `app/sync/perf-run.ts`, every overlay                                                       |
+| `remote://device`                                        | `remote/server.rs`                                 | a device comes, goes, reports | `listenRemoteDevice` in `remote-publish.ts`                                                 |
+| `app://overlay-modes`                                    | `hotkeys/runtime.rs`                               | on change                     | `app-settings.store.ts`, every window                                                       |
+| `hotkey://settings-action`                               | `hotkeys/runtime.rs`                               | on a settings key             | `settings-actions.ts`, main only                                                            |
+| `client://control`                                       | `hotkeys/runtime.rs`, main                         | on a view key or signal       | `applyControl` in every overlay, plus the remote hub                                        |
+| `sim://perf`                                             | `telemetry/emitter.rs`                             | with the sim's counters       | `sim-perf.store.ts`, via `sim.store.ts`                                                     |
+| `input://devices`                                        | `input/runtime.rs`                                 | on device change              | `device-input.store.ts`                                                                     |
+| `input://button`                                         | `input/runtime.rs`                                 | on press/release              | `device-input.store.ts`, for binding capture                                                |
+| `chat://message` · `chat://presence` · `chat://deletion` | `chat/`                                            | async                         | `chat.store.ts`                                                                             |
 
 ### Channel ③ — main ↔ clients
 
@@ -1815,6 +1892,7 @@ npm run format             # oxfmt write
 npm run storybook          # isolated widget stories on :6006
 
 cd src-tauri && cargo fmt
+cd src-tauri && cargo clippy --all-targets   # --all-targets, or test modules go unlinted
 RUST_LOG=marble_trace_lib=debug npm run tauri:dev   # verbose backend logs
 MARBLE_TRACE_RECORD=<dir> npm run tauri:dev         # record live sessions as tapes (dev feature)
 MARBLE_TRACE_REPLAY=<tape> npm run tauri:dev        # play a tape instead of the sim (dev feature)

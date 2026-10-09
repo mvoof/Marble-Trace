@@ -68,11 +68,12 @@ No stores, no Tauri, and no React beyond `store-context.ts`'s one
 **Never edit these** — change the Rust declaration and regenerate
 (`AGENTS.md` → Rust Backend). Importable from any layer.
 
-| Module                 | Reach for it when                                                                                                                                                                                                 |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `backend-constants.ts` | You need a backend default as a compile-time literal (pit warning laps, fuel window bounds, default car length, default class color). **Generated from Rust — never edit.**                                       |
-| `backend-events.ts`    | You need a `sim://…` or `chat://…` event name. **Generated from Rust — never edit**; `shared/api/sim-events.ts` re-exports these and adds the frontend-only ones.                                                 |
-| `hotkey-actions.ts`    | You need the bindable action list, its ids, labels or default keys. **Generated from Rust — never edit**; the backend dispatches the keys, `features/hotkey-bindings/` builds the settings UI's registry from it. |
+| Module                    | Reach for it when                                                                                                                                                                                                 |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `backend-constants.ts`    | You need a backend default as a compile-time literal (pit warning laps, fuel window bounds, default car length, default class color). **Generated from Rust — never edit.**                                       |
+| `backend-events.ts`       | You need a `sim://…` or `chat://…` event name. **Generated from Rust — never edit**; `shared/api/sim-events.ts` re-exports these and adds the frontend-only ones.                                                 |
+| `hotkey-actions.ts`       | You need the bindable action list, its ids, labels or default keys. **Generated from Rust — never edit**; the backend dispatches the keys, `features/hotkey-bindings/` builds the settings UI's registry from it. |
+| `telemetry-event-bits.ts` | You need the demand mask: the bit of each gated bundle field (`carDynamics`, `coach`, …), as declared in a manifest's `telemetryEvents`. **Generated from Rust — never edit.**                                    |
 
 ---
 
@@ -145,9 +146,13 @@ import `_variables.scss`, `_functions.scss` or `_widget-tokens.scss` yourself.
 | `sp($step)`     | spacing, on a 2px grid                                                       | `xxxs` 2, `xxs` 4, `xs` 6, `sm` 8, `md` 10, `lg` 12, `xl` 16, `xxl` 20                |
 | `radius($step)` | corner radius                                                                | `sm` 3, `md` 4, `lg` 6                                                                |
 | `ws($px)`       | raw geometry not on a scale — grid columns, canvas and SVG sizes, icon sizes | any px                                                                                |
+| `wfs($px)`      | a font size off the type scale; follows `--font-scale` like `fs()`           | any px                                                                                |
+| `plate($color)` | a widget's own plate, faded by the user's background opacity                 | a colour token                                                                        |
 
 Reach for `fs()` / `sp()` / `radius()` first; `ws()` only for geometry none of
-them covers. **Never** `ws()` for a border — borders stay plain `px`, or they
+them covers, `wfs()` only for a font size the type scale lacks — a font through
+plain `ws()` ignores the user's font scale. `plate()` is for a background the
+widget paints itself; text and graphics never go through it. **Never** `ws()` for a border — borders stay plain `px`, or they
 vanish at small scales.
 
 Colors come from `_widget-tokens.scss` as semantic names — `$widget-text-primary`,

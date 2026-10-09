@@ -1,7 +1,9 @@
 // Runs the app on a recorded tape for a fixed span and prints what it cost —
-// the perf harness of docs/perf-baseline.md.
+// the perf harness of docs/perf-baseline.md; how to use it is
+// docs/telemetry-tapes.md. Write the tape path with forward slashes: Git Bash
+// drops the backslashes of D:\tapes\… before the script sees them.
 //
-//   npm run perf -- --tape D:\tapes\session.tape.jsonl.gz --from 600 --build
+//   npm run perf -- --tape D:/tapes/session.tape.jsonl.gz --from 600 --build
 //   npm run perf -- --tape <tape> --from 600 --runs 2
 //   npm run perf -- --tape <tape> --from 600 --mode stores-only
 //   npm run perf -- --report a.json --report b.json     print saved reports
@@ -289,6 +291,15 @@ const main = async () => {
 
   if (!options.tape) {
     throw new Error('--tape is required');
+  }
+
+  // A tape the app cannot open falls back to the live sim without a word, and
+  // the run then ends with no report; Git Bash dropping the backslashes of
+  // D:\tapes\… is the usual cause.
+  if (!existsSync(options.tape)) {
+    throw new Error(
+      `tape ${options.tape} not found — write the path with forward slashes (D:/tapes/…)`
+    );
   }
 
   if (options.build) {

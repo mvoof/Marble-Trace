@@ -6,23 +6,30 @@ import { describe, expect, it } from 'vitest';
 
 /**
  * A route whose links have rotted is worse than no route, because it is followed
- * anyway. Every relative path and anchor the route and the catalogue point at
- * has to resolve, and this checks it rather than someone.
+ * anyway. Every relative path and anchor the route, the catalogue and the doc
+ * indexes point at has to resolve, and this checks it rather than someone.
  */
 
-const DOCS_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../docs');
+const ROOT_DIR = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
-const PAGES = ['widget-authoring.md', 'widget-toolbox.md'];
+const PAGES = [
+  'CONTRIBUTING.md',
+  'docs/README.md',
+  'docs/telemetry-tapes.md',
+  'docs/widget-authoring.md',
+  'docs/widget-screenshots.md',
+  'docs/widget-toolbox.md',
+];
 
 const MARKDOWN_LINK = /\[[^\]]*\]\(([^)\s]+)\)/g;
 
-/** GitHub's slug: lowercase, punctuation dropped, spaces to hyphens. */
+/** GitHub's slug: lowercase, punctuation dropped, each space to a hyphen. */
 const slugify = (heading: string): string =>
   heading
     .toLowerCase()
     .replace(/[^\w\s-]/g, '')
     .trim()
-    .replace(/\s+/g, '-');
+    .replace(/\s/g, '-');
 
 const anchorsOf = (filePath: string): Set<string> => {
   const headings = readFileSync(filePath, 'utf8').matchAll(/^#{1,6}\s+(.+)$/gm);
@@ -33,55 +40,58 @@ const anchorsOf = (filePath: string): Set<string> => {
 interface Link {
   page: string;
   target: string;
+  filePath: string;
+  anchor: string | undefined;
 }
 
 const linksOf = (page: string): Link[] => {
-  const body = readFileSync(join(DOCS_DIR, page), 'utf8');
+  const pagePath = join(ROOT_DIR, page);
+  const body = readFileSync(pagePath, 'utf8');
 
   return [...body.matchAll(MARKDOWN_LINK)]
-    .map((match) => ({ page, target: match[1] }))
-    .filter(
-      ({ target }) => !target.startsWith('http') && !target.startsWith('#')
-    );
+    .map((match) => match[1])
+    .filter((target) => !target.startsWith('http') && !target.startsWith('#'))
+    .map((target) => {
+      const [filePart, anchor] = target.split('#');
+
+      return {
+        page,
+        target,
+        filePath: resolve(dirname(pagePath), filePart),
+        anchor,
+      };
+    });
 };
 
 const allLinks = PAGES.flatMap(linksOf);
 
 describe('the route links', () => {
   it('points at pages that exist', () => {
-    const broken = allLinks.filter(({ target }) => {
-      const [filePart] = target.split('#');
-
-      return !existsSync(resolve(DOCS_DIR, filePart));
-    });
+    const broken = allLinks.filter(({ filePath }) => !existsSync(filePath));
 
     expect(broken).toEqual([]);
   });
 
   it('points at anchors that exist', () => {
-    const broken = allLinks.filter(({ target }) => {
-      const [filePart, anchor] = target.split('#');
-
-      if (anchor === undefined) {
-        return false;
-      }
-
-      const filePath = resolve(DOCS_DIR, filePart);
-
-      return existsSync(filePath) && !anchorsOf(filePath).has(anchor);
-    });
+    const broken = allLinks.filter(
+      ({ filePath, anchor }) =>
+        anchor !== undefined &&
+        existsSync(filePath) &&
+        !anchorsOf(filePath).has(anchor)
+    );
 
     expect(broken).toEqual([]);
   });
 
   it('is reachable from the files an author already opens', () => {
-    const agents = readFileSync(resolve(DOCS_DIR, '../AGENTS.md'), 'utf8');
+    const agents = readFileSync(join(ROOT_DIR, 'AGENTS.md'), 'utf8');
     const contributing = readFileSync(
-      resolve(DOCS_DIR, '../CONTRIBUTING.md'),
+      join(ROOT_DIR, 'CONTRIBUTING.md'),
       'utf8'
     );
 
     expect(agents).toContain('docs/widget-authoring.md');
     expect(contributing).toContain('docs/widget-authoring.md');
+    expect(contributing).toContain('docs/README.md');
   });
 });

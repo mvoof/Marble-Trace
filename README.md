@@ -61,7 +61,6 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 Cockpit cluster combining a gear ring, speed readout, lap/position/RPM stats, a live driving-coach tab, and a dedicated pit-lane mode.
 
 <img src="site/assets/widgets/race-dash.png" alt="Race Dash" width="418">
-<img src="site/assets/widgets/race-dash-pit.png" alt="Race Dash Pit" width="418">
 
 ---
 
@@ -344,32 +343,16 @@ Download **`Marble Trace_<version>_x64-setup.exe`** from the [latest release](ht
 
 ---
 
-## Prerequisites
-
-| Tool                                                                | Version                     |
-| ------------------------------------------------------------------- | --------------------------- |
-| [Node.js](https://nodejs.org/)                                      | 18+                         |
-| [Rust](https://rustup.rs/)                                          | 1.70+                       |
-| [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) | —                           |
-| Windows                                                             | iRacing SDK is Windows-only |
-
-## Setup
-
-```bash
-npm install
-```
-
 ## Development
 
 ```bash
+npm install
 npm run tauri:dev
 ```
 
-## Build
-
-```bash
-npm run tauri:build:release
-```
+Prerequisites, every script, the workflow and the environment variables are in
+[CONTRIBUTING.md](CONTRIBUTING.md); every developer doc, by task, in
+[docs/README.md](docs/README.md).
 
 ---
 
