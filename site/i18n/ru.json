@@ -3,7 +3,7 @@
   "Marble Trace is a free, open-source iRacing overlay for Windows, built in Rust and Tauri. 28 widgets: standings, relative, track map, fuel, delta, radar — on your monitors, a tablet, a phone or OBS.": "Marble Trace — бесплатный оверлей для iRacing на Windows с открытым кодом, написанный на Rust и Tauri. 28 виджетов: таблица результатов, relative, карта трассы, топливо, дельта, радар — на ваших мониторах, планшете, телефоне или в OBS.",
   "LLM summary": "Краткое описание для LLM",
   "28 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network.": "28 бесплатных виджетов для iRacing: таблица результатов, relative, карта трассы, топливо, дельта, радар. Ядро на Rust, на любом экране в вашей сети.",
-  "Marble Trace widgets over an iRacing race at Snetterton": "Виджеты Marble Trace поверх гонки iRacing в Снеттертоне",
+  "Marble Trace — open-source iRacing telemetry overlay": "Marble Trace — оверлей телеметрии iRacing с открытым исходным кодом",
   "Marble Trace": "Marble Trace",
   "Free, open-source iRacing telemetry overlay built with Rust and Tauri. 28 widgets including standings, relative, track map, fuel calculator, delta and proximity radar. Layouts switch per session and can be opened on any screen on the local network, including a tablet, a phone or an OBS browser source.": "Бесплатный оверлей телеметрии для iRacing с открытым кодом, построенный на Rust и Tauri. 28 виджетов, среди них таблица результатов, relative, карта трассы, калькулятор топлива, дельта и радар близости. Раскладки переключаются по типу сессии и открываются на любом экране в локальной сети, включая планшет, телефон и источник браузера в OBS.",
   "mvoof": "mvoof",

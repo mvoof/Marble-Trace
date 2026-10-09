@@ -1,6 +1,6 @@
 # Architecture
 
-This document is the map you should read first. It explains what Marble-Trace
+This document is the map you should read first. It explains what Marble Trace™
 is, how each half of it is built, how the two halves talk, and where your code
 belongs when you add something. It assumes no prior knowledge of the codebase.
 
