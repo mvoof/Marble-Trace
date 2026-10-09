@@ -301,7 +301,16 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
                 .registry
                 .run(TickRate::Hz4, capabilities, &compute_ctx)
             {
-                scatter_output(&mut bundle, output);
+                match output {
+                    ComputedOutput::SafetyRating { frame, save } => {
+                        if let Some(state_to_save) = save {
+                            io.save_safety_rating(*state_to_save);
+                        }
+
+                        bundle.safety_rating = Some(frame);
+                    }
+                    other => scatter_output(&mut bundle, other),
+                }
             }
         }
     }
@@ -702,7 +711,8 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::PaceCar(frame) => bundle.pace_car = Some(frame),
         ComputedOutput::Relative(frame) => bundle.relative = Some(frame),
         ComputedOutput::DriverEntries(frame) => bundle.driver_entries = Some(frame),
-        ComputedOutput::SafetyRating(frame) => bundle.safety_rating = Some(frame),
+        // The save is handed to the I/O worker on the 4 Hz tier, its own.
+        ComputedOutput::SafetyRating { frame, .. } => bundle.safety_rating = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),
         ComputedOutput::TrackShape(_) => {} // handled in Hz60 loop directly
         ComputedOutput::ReferenceLap(_) => {} // handled in Hz60 loop directly

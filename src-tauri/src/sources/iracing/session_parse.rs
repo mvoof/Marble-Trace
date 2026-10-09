@@ -320,6 +320,8 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         track_num_turns: weekend.track_num_turns.filter(|turns| *turns > 0),
         team_racing: weekend.team_racing.unwrap_or(0) != 0,
         league_id: weekend.league_id.filter(|league| *league > 0),
+        event_type: weekend.event_type.unwrap_or_default(),
+        sub_session_id: weekend.sub_session_id.filter(|id| *id > 0),
         current_session_num: session_info.current_session_num.unwrap_or(0),
         sessions,
         player_car_idx: driver_info.driver_car_idx.unwrap_or(-1),
@@ -381,6 +383,9 @@ struct RawWeekendInfo {
     team_racing: Option<i32>,
     #[serde(rename = "LeagueID")]
     league_id: Option<i32>,
+    event_type: Option<String>,
+    #[serde(rename = "SubSessionID")]
+    sub_session_id: Option<i32>,
     weekend_options: Option<RawWeekendOptions>,
     /// Unmodeled WeekendInfo keys — the weather forecast lives here
     /// (WeatherForecastList / WeatherForecast, format varies by build).
@@ -560,6 +565,8 @@ WeekendInfo:
  TrackNumTurns: 13
  TeamRacing: 1
  LeagueID: 0
+ EventType: Race
+ SubSessionID: 89241518
  WeekendOptions:
   Date: 2025-05-21
   IncidentLimit: 17
@@ -657,6 +664,8 @@ QualifyResultsInfo:
         assert_eq!(snapshot.track_num_turns, Some(13));
         assert!(snapshot.team_racing);
         assert_eq!(snapshot.league_id, None, "LeagueID 0 is no league");
+        assert_eq!(snapshot.event_type, "Race");
+        assert_eq!(snapshot.sub_session_id, Some(89_241_518));
         assert_eq!(snapshot.current_session_num, 1);
         assert_eq!(snapshot.sessions.len(), 2);
         assert_eq!(snapshot.sessions[0].session_laps, "unlimited");

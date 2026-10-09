@@ -24,6 +24,7 @@ export const IncidentHudWidget = observer(() => {
       direction="column"
       gap={0}
       minWidth={0}
+      fitContent
       className={styles.root}
     >
       {settings.showProjectedSr ? (

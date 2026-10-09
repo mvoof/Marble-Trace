@@ -1,8 +1,10 @@
+// The change sits at the plate's right edge, over the last counter; the plate
+// is as wide as its widest tier, so the gap never grows past what it holds.
 .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: sp(sm);
+  gap: sp(lg);
 }
 
 .rating {

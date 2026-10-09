@@ -459,11 +459,28 @@ default when the sim has not sent them. It runs on the 4 Hz tier all session
 and publishes `safety_rating` only while a widget asks for it. Its tests run the
 reference vectors (`safety_rating_vectors.json`, copied unchanged).
 
+Every ranked session of an event moves the rating — practice, qualifying and
+the race each with its own weight — so each is estimated on its own, and the
+next one starts where the previous one left the rating. iRacing writes the new
+rating into the session YAML only after the event (seen on a live event), so
+within one the estimate is carried over from session to session; should the
+YAML change mid-event after all, the sim's number wins. Both moments are logged
+(`safety rating:` in the backend log). A practice or test server (`WeekendInfo.EventType` other than `Race`)
+weighs nothing — Sporting Code 3.7.1.1 scores practice only inside a ranked
+event.
+
+The event in progress — each session's starting values, the distance driven,
+the carried estimate — is written to `safety_rating.json` in the app data
+directory (one file, overwritten; at most every quarter lap while driving), and
+read back with the session whose `SubSessionID` it names, so a restart of the
+app mid-event carries on where it stopped.
+
 Known limits: the estimate covers the local driver only (a teammate's stint on
-another PC is invisible to the SDK); a session is known unranked only in a
-league (`LeagueID`) — elsewhere the YAML cannot tell, so the widget keeps its
-estimate and marks it `≈`; and dirt ovals score incidents differently from what
-the model was fitted on.
+another PC is invisible to the SDK); corners driven while the app was not
+running are not counted; a session is known
+unranked only in a league (`LeagueID`) or on a practice server — elsewhere the
+YAML cannot tell, so the widget keeps its estimate and marks it `≈`; and dirt
+ovals score incidents differently from what the model was fitted on.
 
 No `kerb`, no `tauri`, no I/O. That is exactly why this layer is the easy one to
 unit-test — and why sim quirks must be resolved upstream before they reach it.

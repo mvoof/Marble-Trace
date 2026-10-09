@@ -315,6 +315,7 @@ fn apply_session_update(
         parsed,
         cached_track,
         stored_references,
+        saved_safety_rating,
     } = update;
     let snapshot = parsed.snapshot;
     let new_track_id = snapshot.track_id;
@@ -349,6 +350,14 @@ fn apply_session_update(
     // session it parsed before — the same one applied here before this.
     if let Some(payload) = cached_track {
         apply_cached_track(app, payload, state);
+    }
+
+    // Reaches the processor before its first tick on this session; one that
+    // has already started counting this event ignores it.
+    if let Some(saved) = saved_safety_rating {
+        state
+            .registry
+            .command(ProcessorCommand::RestoreSafetyRating(Box::new(saved)));
     }
 
     let player_car = snapshot

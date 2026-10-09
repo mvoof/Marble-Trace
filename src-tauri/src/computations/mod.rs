@@ -45,7 +45,7 @@ use pit_stops::{PitStopsFrame, PitStopsProcessor};
 use proximity::{ProximityFrame, ProximityProcessor};
 use reference_lap::ReferenceLapProcessor;
 use relative::RelativeProcessor;
-use safety_rating::{SafetyRatingFrame, SafetyRatingProcessor};
+use safety_rating::{SafetyRatingFrame, SafetyRatingProcessor, SafetyRatingState};
 use track_shape::TrackShapeProcessor;
 
 /// Processor identity — reserved for diagnostics and per-processor gating (Этап 3+).
@@ -119,7 +119,11 @@ pub enum ComputedOutput {
     ReferenceLap(ReferenceLapData),
     Relative(RelativeFrame),
     DriverEntries(DriverEntriesFrame),
-    SafetyRating(SafetyRatingFrame),
+    SafetyRating {
+        frame: SafetyRatingFrame,
+        /// The event's state to write to disk, when it changed enough to.
+        save: Option<Box<SafetyRatingState>>,
+    },
     TrackShape(TrackShapePayload),
     TrackRecording(TrackRecordingFrame),
     PitLanePct {
@@ -148,6 +152,8 @@ pub enum ProcessorCommand {
     ResetReferenceLap,
     /// The reference lap the coach compares against changed, or there is none.
     ActiveReference(Option<Arc<ReferenceLapData>>),
+    /// The Safety Rating state saved for this event before the app restarted.
+    RestoreSafetyRating(Box<SafetyRatingState>),
 }
 
 pub trait Processor: Send {

@@ -16,6 +16,7 @@ use tracing::{error, warn};
 
 use super::storage;
 use crate::computations::reference_selection::StoredReferences;
+use crate::computations::safety_rating::SafetyRatingState;
 use crate::model::reference_lap::ReferenceLapData;
 use crate::model::track_shape::TrackShapePayload;
 use crate::sources::source::{ParsedSession, SessionParser};
@@ -34,12 +35,16 @@ pub struct SessionUpdate {
     /// only time the processor needs to hear of it.
     pub cached_track: Option<TrackShapePayload>,
     pub stored_references: StoredReferences,
+    /// The Safety Rating state saved for this very event before the app
+    /// restarted; `None` for any other event.
+    pub saved_safety_rating: Option<SafetyRatingState>,
 }
 
 enum IoJob {
     ParseSession(String),
     SaveTrackShape(TrackShapePayload),
     SaveReferenceLap(Box<ReferenceLapData>),
+    SaveSafetyRating(SafetyRatingState),
     PatchPitLanePct {
         track_id: i32,
         pit_in_pct: f32,
@@ -101,6 +106,10 @@ impl IoWorker {
         self.send(IoJob::SaveReferenceLap(Box::new(data)));
     }
 
+    pub fn save_safety_rating(&self, state: SafetyRatingState) {
+        self.send(IoJob::SaveSafetyRating(state));
+    }
+
     pub fn patch_pit_lane_pct(&self, track_id: i32, pit_in_pct: f32, pit_exit_pct: f32) {
         self.send(IoJob::PatchPitLanePct {
             track_id,
@@ -151,6 +160,11 @@ impl Worker {
                     storage::save_reference_lap(data_dir, &data);
                 }
             }
+            IoJob::SaveSafetyRating(state) => {
+                if let Some(data_dir) = &self.data_dir {
+                    storage::save_safety_rating(data_dir, state);
+                }
+            }
             IoJob::PatchPitLanePct {
                 track_id,
                 pit_in_pct,
@@ -187,6 +201,7 @@ impl Worker {
                 parsed,
                 cached_track: None,
                 stored_references: StoredReferences::default(),
+                saved_safety_rating: None,
             });
         };
 
@@ -197,11 +212,16 @@ impl Worker {
         };
 
         let stored_references = storage::read_stored_references(data_dir, &parsed.snapshot);
+        let saved_safety_rating = parsed
+            .snapshot
+            .sub_session_id
+            .and_then(|sub_session_id| storage::load_safety_rating(data_dir, sub_session_id));
 
         Some(SessionUpdate {
             parsed,
             cached_track,
             stored_references,
+            saved_safety_rating,
         })
     }
 }
@@ -291,6 +311,32 @@ mod tests {
         std::fs::remove_dir_all(&data_dir).ok();
 
         assert_eq!(loaded, vec![Some(42), None, Some(7)]);
+    }
+
+    fn event_yaml(sub_session_id: i32) -> String {
+        format!("WeekendInfo:\n TrackID: 42\n SubSessionID: {sub_session_id}\n")
+    }
+
+    #[test]
+    fn the_safety_rating_saved_for_this_event_comes_with_its_session() {
+        let data_dir = temp_data_dir("safety-rating");
+        storage::save_safety_rating(&data_dir, SafetyRatingState::empty_for(500));
+
+        let worker = quiet_worker(&data_dir);
+        worker.parse_session(event_yaml(500));
+        worker.parse_session(event_yaml(501));
+        let same_event = next_session(&worker);
+        let other_event = next_session(&worker);
+
+        std::fs::remove_dir_all(&data_dir).ok();
+
+        assert_eq!(
+            same_event
+                .saved_safety_rating
+                .map(|state| state.sub_session_id),
+            Some(500)
+        );
+        assert!(other_event.saved_safety_rating.is_none());
     }
 
     #[test]

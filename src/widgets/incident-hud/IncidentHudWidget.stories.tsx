@@ -18,7 +18,14 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/IncidentHudWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: IncidentHudWidget,
-    size: { width: 180 },
+    // The plate paints its own ground from --widget-bg; the frame around it
+    // stays empty, as the transparent container does on the overlay.
+    size: {
+      width: 180,
+      background: 'transparent',
+      widgetBg: 'rgba(21, 22, 26, 0.8)',
+      border: 'none',
+    },
     seed: (store, args) => {
       const sessionInfo = store.session.sessionInfo;
 

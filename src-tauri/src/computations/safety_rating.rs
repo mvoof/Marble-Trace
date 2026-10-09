@@ -30,10 +30,13 @@
 //! stint driven on another PC.
 
 use serde::{Deserialize, Serialize};
+use tracing::info;
 
 use crate::capabilities::Capabilities;
 use crate::computations::fuel::laps_to_finish;
-use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::computations::{
+    ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate,
+};
 use crate::model::enums::TrackSurface;
 use crate::model::session::SessionSnapshot;
 
@@ -111,7 +114,7 @@ pub struct SafetyRatingFrame {
 }
 
 /// A licence class and a whole-number band, as the model reads a licence.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Licence {
     /// 0 Rookie, 1 D, 2 C, 3 B, 4 A, 5 Pro.
     pub class_index: i32,
@@ -153,6 +156,19 @@ pub fn session_weight(session_type: &str) -> f32 {
     }
 
     0.0
+}
+
+/// The multiplier of a session inside its event. A practice or test server
+/// (`WeekendInfo.EventType`) is not a ranked event, so nothing on it counts —
+/// Sporting Code 3.7.1.1 scores practice only inside a ranked event.
+pub fn event_session_weight(event_type: &str, session_type: &str) -> f32 {
+    let event = event_type.to_ascii_lowercase();
+
+    if event.contains("practice") || event.contains("test") {
+        return 0.0;
+    }
+
+    session_weight(session_type)
 }
 
 /// CPI at the floor of a band — the exact CPI of e.g. "3.00".
@@ -246,11 +262,18 @@ fn update_cpi(cpi_old: f64, corners: f64, incidents: f64, licence: Licence) -> f
 /// The rating after a session of weighted `corners` and `incidents`, started
 /// at `sr_before` in `licence`.
 pub fn project_sr(sr_before: f64, licence: Licence, corners: f64, incidents: f64) -> f64 {
+    project(sr_before, licence, corners, incidents).0
+}
+
+/// [`project_sr`] with the licence the rating ends in: a session that crosses
+/// a whole number leaves the next one starting in the neighbouring band.
+fn project(sr_before: f64, licence: Licence, corners: f64, incidents: f64) -> (f64, Licence) {
     let cpi_old = cpi_from_sr(sr_before, licence);
     let cpi = update_cpi(cpi_old, corners, incidents, licence);
-    let (sr, _) = remap_band(cpi, licence);
+    let (sr, band) = remap_band(cpi, licence);
+    let delta = (sr - sr_before).clamp(-MAX_ABS_SESSION_DELTA, MAX_ABS_SESSION_DELTA);
 
-    sr_before + (sr - sr_before).clamp(-MAX_ABS_SESSION_DELTA, MAX_ABS_SESSION_DELTA)
+    (sr_before + delta, licence.in_band(band))
 }
 
 /// Corners to drive clean before the session stops costing rating:
@@ -304,18 +327,73 @@ impl CornerAccumulator {
 }
 
 /// What a session started from, each value latched once it is known.
-#[derive(Debug, Default, Clone)]
-struct SessionStart {
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SessionStart {
     session_num: Option<i32>,
     driver_incidents: Option<i32>,
     team_incidents: Option<i32>,
+    /// The rating the session is estimated from.
     rating: Option<(f64, Licence)>,
+    /// The YAML's own rating as first seen in this session — stale or not.
+    yaml_rating: Option<f64>,
+    /// The previous session's outcome, used while the YAML still shows the
+    /// rating from before it.
+    carried: Option<Carry>,
+}
+
+/// Where one session of an event left the rating, for the next to start from.
+///
+/// iRacing scores every ranked session of an event — practice, qualifying and
+/// the race each move SR (Sporting Code 3.7.1.1) — but writes the new rating
+/// into the session YAML only once the event is over (seen on a live event:
+/// `LicSubLevel` unchanged from practice to the race). So the next session
+/// starts from this estimate; should the YAML ever change mid-event, the sim's
+/// number wins.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct Carry {
+    /// The YAML rating the carrying session saw; equal means not rewritten.
+    yaml_rating: Option<f64>,
+    rating: (f64, Licence),
+}
+
+/// Distance driven between two saves while nothing else changes, in laps.
+const SAVE_EVERY_LAPS: f64 = 0.25;
+
+/// What the processor knows about the event in progress, written to disk so a
+/// restart of the app mid-event picks up where it left off — the qualifying
+/// carried into the race included. Never history: one event, overwritten.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SafetyRatingState {
+    /// The event (`WeekendInfo.SubSessionID`) the state belongs to.
+    pub sub_session_id: i32,
+    start: SessionStart,
+    distance_laps: f64,
+    outcome: Option<Carry>,
+}
+
+#[cfg(test)]
+impl SafetyRatingState {
+    /// An event with nothing counted yet, for tests of where the state goes.
+    pub fn empty_for(sub_session_id: i32) -> Self {
+        Self {
+            sub_session_id,
+            start: SessionStart::default(),
+            distance_laps: 0.0,
+            outcome: None,
+        }
+    }
 }
 
 #[derive(Default)]
 pub struct SafetyRatingProcessor {
     start: SessionStart,
     corners: CornerAccumulator,
+    /// The current session's outcome so far, handed on when it changes.
+    outcome: Option<Carry>,
+    /// The event the state belongs to; a different one starts from scratch.
+    sub_session_id: Option<i32>,
+    /// The last state handed out to be saved.
+    saved: Option<SafetyRatingState>,
 }
 
 /// Points since the session's base. A counter that went backwards was reset
@@ -352,17 +430,144 @@ impl SafetyRatingProcessor {
             return;
         }
 
+        let is_next_session = self.start.session_num.is_some();
+
+        // Logged so a live event answers whether the YAML is rewritten
+        // between sessions, and how the estimate compares with the site.
+        if let Some(carry) = self.outcome.filter(|_| is_next_session) {
+            info!(
+                from_session = ?self.start.session_num,
+                to_session = ?session_num,
+                sr_end = carry.rating.0,
+                yaml_sr = ?carry.yaml_rating,
+                "safety rating: session ended, carrying the estimate"
+            );
+        }
+
         self.start = SessionStart {
             session_num,
+            carried: self.outcome.take().filter(|_| is_next_session),
             ..SessionStart::default()
         };
         self.corners = CornerAccumulator::default();
+    }
+
+    /// The rating this session starts from: carried over from the previous
+    /// session until the YAML is rewritten, the YAML's own first value
+    /// otherwise. The first value is kept because the YAML may already carry
+    /// the rating iRacing wrote after this session.
+    fn start_rating(&mut self, yaml: Option<(f64, Licence)>) -> Option<(f64, Licence)> {
+        let yaml_sr = yaml.map(|(sr, _)| sr);
+
+        if self.start.yaml_rating.is_none() {
+            self.start.yaml_rating = yaml_sr;
+        }
+
+        if let Some(carry) = self.start.carried {
+            if yaml_sr.is_none() || yaml_sr == carry.yaml_rating {
+                return Some(carry.rating);
+            }
+
+            // Rewritten: the sim's rating replaces the estimate for good.
+            info!(
+                session = ?self.start.session_num,
+                carried_sr = carry.rating.0,
+                yaml_before = ?carry.yaml_rating,
+                yaml_now = ?yaml_sr,
+                "safety rating: the session YAML was rewritten mid-event"
+            );
+            self.start.carried = None;
+            self.start.rating = yaml;
+            self.start.yaml_rating = yaml_sr;
+        }
+
+        if self.start.rating.is_none() {
+            self.start.rating = yaml;
+        }
+
+        self.start.rating
+    }
+
+    /// A new event without a disconnect in between starts from scratch.
+    fn follow_event(&mut self, sub_session_id: Option<i32>) {
+        if self.sub_session_id == sub_session_id {
+            return;
+        }
+
+        if self.sub_session_id.is_some() {
+            self.reset_state();
+        }
+
+        self.sub_session_id = sub_session_id;
+    }
+
+    fn reset_state(&mut self) {
+        self.start = SessionStart::default();
+        self.corners = CornerAccumulator::default();
+        self.outcome = None;
+        self.saved = None;
+    }
+
+    /// Takes over a state saved before the app restarted — only into a
+    /// processor that has not started on anything yet, so a stale save can
+    /// never overwrite the event being counted.
+    fn restore(&mut self, state: SafetyRatingState) {
+        if self.start.session_num.is_some() {
+            return;
+        }
+
+        info!(
+            sub_session_id = state.sub_session_id,
+            session = ?state.start.session_num,
+            distance_laps = state.distance_laps,
+            "safety rating: restored the event after a restart"
+        );
+
+        self.sub_session_id = Some(state.sub_session_id);
+        self.start = state.start.clone();
+        self.corners = CornerAccumulator {
+            distance_laps: state.distance_laps,
+            previous_pct: None,
+        };
+        self.outcome = state.outcome;
+        self.saved = Some(state);
+    }
+
+    /// The state to write, when it differs from the last one written: at once
+    /// for a new session or a new start value (an incident base, a rating),
+    /// every [`SAVE_EVERY_LAPS`] for the distance alone. The incident count
+    /// itself is not state — the sim keeps counting from the saved base.
+    fn state_to_save(&mut self) -> Option<SafetyRatingState> {
+        let state = SafetyRatingState {
+            sub_session_id: self.sub_session_id?,
+            start: self.start.clone(),
+            distance_laps: self.corners.distance_laps,
+            outcome: self.outcome,
+        };
+
+        let is_due = match &self.saved {
+            None => true,
+            Some(saved) => {
+                saved.sub_session_id != state.sub_session_id
+                    || saved.start != state.start
+                    || state.distance_laps - saved.distance_laps >= SAVE_EVERY_LAPS
+            }
+        };
+
+        if !is_due {
+            return None;
+        }
+
+        self.saved = Some(state.clone());
+
+        Some(state)
     }
 
     fn frame(&mut self, ctx: &ComputeContext) -> SafetyRatingFrame {
         let session = ctx.session;
         let session_num = ctx.session_num.or(Some(session.current_session_num));
 
+        self.follow_event(session.sub_session_id);
         self.begin_session_if_new(session_num);
 
         let surface = usize::try_from(session.player_car_idx)
@@ -383,16 +588,12 @@ impl SafetyRatingProcessor {
         )
         .filter(|_| session.team_racing);
 
-        // The YAML rating may already be the one iRacing wrote after this
-        // session, so only the first one seen in it counts as the start.
-        if self.start.rating.is_none() {
-            self.start.rating = player_rating(session);
-        }
+        let start_rating = self.start_rating(player_rating(session));
 
         let weight = session_num
             .and_then(|num| usize::try_from(num).ok())
             .and_then(|num| session.sessions.get(num))
-            .map(|entry| session_weight(&entry.session_type_label))
+            .map(|entry| event_session_weight(&session.event_type, &entry.session_type_label))
             .unwrap_or(0.0);
         let weighting = f64::from(weight);
         let corners_per_lap = session.track_num_turns.map(f64::from);
@@ -400,11 +601,17 @@ impl SafetyRatingProcessor {
         let incidents = f64::from(driver_incidents);
 
         // Without the corners on a lap there is no distance to score.
-        let rated = self.start.rating.filter(|_| corners_per_lap.is_some());
+        let rated = start_rating.filter(|_| corners_per_lap.is_some());
+        let now = rated
+            .map(|(sr, licence)| project(sr, licence, corners * weighting, incidents * weighting));
+        let sr_now = now.map(|(sr, _)| sr);
 
-        let sr_now = rated.map(|(sr, licence)| {
-            project_sr(sr, licence, corners * weighting, incidents * weighting)
-        });
+        if let Some(end) = now {
+            self.outcome = Some(Carry {
+                yaml_rating: self.start.yaml_rating,
+                rating: end,
+            });
+        }
 
         let (laps_left, _) = laps_to_finish(
             ctx.lap_timing,
@@ -436,7 +643,7 @@ impl SafetyRatingProcessor {
             corners_driven: corners as f32,
             session_weight: weight,
             is_ranked: session.league_id.map(|_| false),
-            sr_start: self.start.rating.map(|(sr, _)| sr as f32),
+            sr_start: start_rating.map(|(sr, _)| sr as f32),
             sr_now: sr_now.map(|sr| sr as f32),
             sr_finish: sr_finish.map(|sr| sr as f32),
             clean_corners_needed: clean_corners.map(|needed| needed as f32),
@@ -461,12 +668,23 @@ impl Processor for SafetyRatingProcessor {
     }
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
-        Some(ComputedOutput::SafetyRating(self.frame(ctx)))
+        let frame = self.frame(ctx);
+
+        Some(ComputedOutput::SafetyRating {
+            frame,
+            save: self.state_to_save().map(Box::new),
+        })
     }
 
     fn reset(&mut self) {
-        self.start = SessionStart::default();
-        self.corners = CornerAccumulator::default();
+        self.reset_state();
+        self.sub_session_id = None;
+    }
+
+    fn command(&mut self, command: &ProcessorCommand) {
+        if let ProcessorCommand::RestoreSafetyRating(state) = command {
+            self.restore(state.as_ref().clone());
+        }
     }
 }
 
@@ -824,6 +1042,18 @@ mod tests {
     }
 
     #[test]
+    fn a_practice_or_test_server_moves_nothing() {
+        assert_eq!(event_session_weight("Race", "Practice"), WEIGHT_OPEN);
+        assert_eq!(event_session_weight("Practice", "Practice"), 0.0);
+        assert_eq!(event_session_weight("Test", "Practice"), 0.0);
+        assert_eq!(
+            event_session_weight("Time Trial", "Time Trial"),
+            WEIGHT_LONE
+        );
+        assert_eq!(event_session_weight("", "Race"), WEIGHT_RACE);
+    }
+
+    #[test]
     fn clean_corners_level_the_session_out() {
         assert_eq!(clean_corners_needed(0.0, 50.0, 25.0), 0.0);
         assert_eq!(clean_corners_needed(4.0, 30.0, 25.0), 70.0);
@@ -958,6 +1188,162 @@ mod tests {
         assert_eq!(race_frame.team_incidents, Some(0));
         assert_eq!(race_frame.corners_driven, 0.0);
         assert_eq!(race_frame.session_weight, WEIGHT_RACE);
+    }
+
+    fn practice_tick(pct: f32, incidents: i32) -> Tick {
+        Tick {
+            session_num: 0,
+            pct,
+            my_incidents: incidents,
+            team_incidents: incidents,
+        }
+    }
+
+    #[test]
+    fn the_race_starts_where_the_practice_left_the_rating() {
+        let session = race_session(false);
+        let mut processor = SafetyRatingProcessor::default();
+
+        step(&mut processor, &session, practice_tick(0.10, 0));
+        let practice = step(&mut processor, &session, practice_tick(0.18, 4));
+        let practice_end = practice.sr_now.expect("rated");
+
+        assert!(practice_end < 2.75, "four points in a lap cost rating");
+
+        // The YAML still reads 2.75: the race carries the practice's outcome.
+        let race = step(&mut processor, &session, race_tick(0.50, 4));
+
+        assert_eq!(race.sr_start, Some(practice_end));
+        assert_eq!(race.driver_incidents, 0);
+    }
+
+    #[test]
+    fn a_rewritten_yaml_rating_replaces_the_carried_one() {
+        let mut session = race_session(false);
+        let mut processor = SafetyRatingProcessor::default();
+
+        step(&mut processor, &session, practice_tick(0.10, 0));
+        step(&mut processor, &session, practice_tick(0.18, 4));
+        step(&mut processor, &session, race_tick(0.50, 4));
+
+        // iRacing writes the practice's result into the YAML mid-race.
+        session.cars[0].lic_sub_level = Some(271);
+        let race = step(&mut processor, &session, race_tick(0.52, 4));
+
+        assert_eq!(race.sr_start, Some(2.71));
+    }
+
+    #[test]
+    fn the_first_session_starts_from_the_yaml() {
+        let session = race_session(false);
+        let mut processor = SafetyRatingProcessor::default();
+
+        let race = step(&mut processor, &session, race_tick(0.50, 0));
+
+        assert_eq!(race.sr_start, Some(2.75));
+    }
+
+    const EVENT: i32 = 89_241_518;
+
+    fn event_session() -> SessionSnapshot {
+        SessionSnapshot {
+            sub_session_id: Some(EVENT),
+            ..race_session(false)
+        }
+    }
+
+    #[test]
+    fn a_restart_mid_event_picks_up_the_carried_qualifying() {
+        let session = event_session();
+        let mut before = SafetyRatingProcessor::default();
+
+        step(&mut before, &session, practice_tick(0.10, 0));
+        let practice_end = step(&mut before, &session, practice_tick(0.18, 4))
+            .sr_now
+            .expect("rated");
+        step(&mut before, &session, race_tick(0.30, 4));
+        step(&mut before, &session, race_tick(0.40, 5));
+        let saved = before.state_to_save().expect("a first state is always due");
+
+        // The app restarts: a fresh processor, then the file, then the sim.
+        let mut after = SafetyRatingProcessor::default();
+        after.command(&ProcessorCommand::RestoreSafetyRating(Box::new(saved)));
+        let race = step(&mut after, &session, race_tick(0.45, 5));
+
+        assert_eq!(race.sr_start, Some(practice_end));
+        assert_eq!(race.driver_incidents, 1, "the base survives the restart");
+        assert!(
+            (race.corners_driven - 2.0).abs() < 1e-3,
+            "0.10 lap before the restart, the jump over it uncounted"
+        );
+    }
+
+    #[test]
+    fn a_saved_state_never_overwrites_an_event_in_progress() {
+        let session = event_session();
+        let mut processor = SafetyRatingProcessor::default();
+
+        step(&mut processor, &session, race_tick(0.10, 0));
+        processor.command(&ProcessorCommand::RestoreSafetyRating(Box::new(
+            SafetyRatingState::empty_for(EVENT),
+        )));
+        let race = step(&mut processor, &session, race_tick(0.15, 0));
+
+        assert!(race.corners_driven > 0.0);
+    }
+
+    #[test]
+    fn a_new_event_starts_from_scratch() {
+        let session = event_session();
+        let mut processor = SafetyRatingProcessor::default();
+
+        step(&mut processor, &session, race_tick(0.10, 0));
+        step(&mut processor, &session, race_tick(0.15, 2));
+
+        let next_event = SessionSnapshot {
+            sub_session_id: Some(EVENT + 1),
+            ..event_session()
+        };
+        let race = step(&mut processor, &next_event, race_tick(0.20, 2));
+
+        assert_eq!(race.driver_incidents, 0);
+        assert_eq!(race.corners_driven, 0.0);
+    }
+
+    #[test]
+    fn the_state_is_saved_on_a_change_and_every_quarter_lap() {
+        let session = event_session();
+        let mut processor = SafetyRatingProcessor::default();
+
+        step(&mut processor, &session, race_tick(0.10, 0));
+        assert!(processor.state_to_save().is_some(), "the first state");
+
+        step(&mut processor, &session, race_tick(0.15, 0));
+        assert!(processor.state_to_save().is_none(), "a twentieth of a lap");
+
+        step(&mut processor, &session, race_tick(0.17, 1));
+        assert!(
+            processor.state_to_save().is_none(),
+            "the count is not a start value"
+        );
+
+        for pct in [0.22, 0.27, 0.32, 0.37] {
+            step(&mut processor, &session, race_tick(pct, 1));
+        }
+        assert!(processor.state_to_save().is_some(), "a quarter lap on");
+
+        step(&mut processor, &session, practice_tick(0.40, 1));
+        assert!(processor.state_to_save().is_some(), "a new session");
+    }
+
+    #[test]
+    fn nothing_is_saved_without_an_event_id() {
+        let session = race_session(false);
+        let mut processor = SafetyRatingProcessor::default();
+
+        step(&mut processor, &session, race_tick(0.10, 0));
+
+        assert!(processor.state_to_save().is_none());
     }
 
     #[test]

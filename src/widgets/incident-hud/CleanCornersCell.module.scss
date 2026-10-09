@@ -3,4 +3,6 @@
 .count {
   display: inline-block;
   min-width: 3ch;
+  // Flush right, so the count ends under the rating's change above it.
+  text-align: right;
 }

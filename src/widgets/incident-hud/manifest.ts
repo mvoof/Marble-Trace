@@ -19,6 +19,10 @@ export const INCIDENT_HUD_MANIFEST: WidgetManifest = {
   description:
     'Incidents, penalties and an estimated Safety Rating at the flag.',
   autoHeight: true,
+  // The plate follows its content — a session without penalties drops a
+  // column — so the widget paints its own background and border on it, and
+  // the container stays transparent.
+  transparentContainer: true,
   requiredCapabilities: ['standings'],
   designWidth: 180,
   designHeight: 60,

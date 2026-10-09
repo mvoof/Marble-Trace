@@ -92,6 +92,13 @@ pub struct SessionSnapshot {
     /// The league the session runs in (`WeekendInfo.LeagueID`); `None` outside
     /// a league. A league session never changes Safety Rating.
     pub league_id: Option<i32>,
+    /// The event this server runs (`WeekendInfo.SubSessionID`): practice,
+    /// qualifying and race share it. `None` offline, where the sim sends none.
+    pub sub_session_id: Option<i32>,
+    /// What the server is for (`WeekendInfo.EventType`): `Race` for an event
+    /// with practice, qualifying and a race; `Practice`, `Test` or
+    /// `Time Trial` for a server that is only that. Empty when not reported.
+    pub event_type: String,
     pub current_session_num: i32,
     pub sessions: Vec<SessionEntry>,
     pub player_car_idx: i32,
