@@ -410,7 +410,7 @@ grep -o "CarID: [0-9]*\|CarClassID: [0-9]*\|CarScreenName: .*" session.yaml | pa
 
 ## `computations/` — pure logic
 
-Twelve registered processors (`ProcessorId` in `computations/mod.rs`), one subject
+Thirteen registered processors (`ProcessorId` in `computations/mod.rs`), one subject
 each, sharing one shape, plus helpers that are not processors:
 
 ```mermaid
@@ -435,12 +435,52 @@ flowchart LR
 | `fuel.rs`           | 4 Hz  | consumption average, laps remaining, fuel to add |
 | `lap_log.rs`        | 4 Hz  | per-lap records as laps complete                 |
 | `pit_stops.rs`      | 4 Hz  | pit timing and stop detection                    |
+| `safety_rating.rs`  | 4 Hz  | corners driven, Safety Rating estimate           |
 
 The helpers are called by the emitter or by a processor, not registered:
 `pit_target.rs` (distance to the pit box, every tick), `pit_auto.rs` and
 `pit_actions.rs` (pit orders, see below), `reference_selection.rs`,
 `lap_time_settle.rs` and `car_speed.rs`. There is no standings processor: the
 table is `driver_entries.rs`.
+
+### The Safety Rating estimate
+
+iRacing publishes no Safety Rating formula. `safety_rating.rs` implements the
+model reconstructed by [Nishizumi-SR](https://github.com/nishizumi-maho/Nishizumi-SR)
+(MIT) from the before/after CPI that iRacing's own results report for 123k
+driver-sessions — held-out error about 0.03 SR. The hidden state is CPI
+(corners per incident), folded in as a moving average whose memory grows with
+the band; the ~0.4 jump across a whole number falls out of the band remap and is
+not added on top. The processor counts corners by distance driven
+(`TrackNumTurns` × lap fraction, the pit box and tows excluded), takes the
+incidents from `PlayerCarMyIncidentCount` against their value at the session's
+start, and the start rating and band from `LicSubLevel` and `LicLevel` — no
+default when the sim has not sent them. It runs on the 4 Hz tier all session
+and publishes `safety_rating` only while a widget asks for it. Its tests run the
+reference vectors (`safety_rating_vectors.json`, copied unchanged).
+
+Every ranked session of an event moves the rating — practice, qualifying and
+the race each with its own weight — so each is estimated on its own, and the
+next one starts where the previous one left the rating. iRacing writes the new
+rating into the session YAML only after the event (seen on a live event), so
+within one the estimate is carried over from session to session; should the
+YAML change mid-event after all, the sim's number wins. Both moments are logged
+(`safety rating:` in the backend log). A practice or test server (`WeekendInfo.EventType` other than `Race`)
+weighs nothing — Sporting Code 3.7.1.1 scores practice only inside a ranked
+event.
+
+The event in progress — each session's starting values, the distance driven,
+the carried estimate — is written to `safety_rating.json` in the app data
+directory (one file, overwritten; at most every quarter lap while driving), and
+read back with the session whose `SubSessionID` it names, so a restart of the
+app mid-event carries on where it stopped.
+
+Known limits: the estimate covers the local driver only (a teammate's stint on
+another PC is invisible to the SDK); corners driven while the app was not
+running are not counted; a session is known
+unranked only in a league (`LeagueID`) or on a practice server — elsewhere the
+YAML cannot tell, so the widget keeps its estimate and marks it `≈`; and dirt
+ovals score incidents differently from what the model was fitted on.
 
 No `kerb`, no `tauri`, no I/O. That is exactly why this layer is the easy one to
 unit-test — and why sim quirks must be resolved upstream before they reach it.
@@ -483,7 +523,7 @@ tiers that are due.
 | ----- | ------------------------------------------------------------------------------------------------------ |
 | 60 Hz | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`, `coach`, `pit_target`, `track_recording`   |
 | 10 Hz | `car_idx`, `chassis`, `lap_timing`, `proximity`, `driver_entries`, `relative`, `incidents`, `pace_car` |
-| 4 Hz  | `car_status`, `fuel`, `pit_stops`, `pit_service`, `lap_log`, `pit_auto`                                |
+| 4 Hz  | `car_status`, `fuel`, `pit_stops`, `pit_service`, `lap_log`, `pit_auto`, `safety_rating`               |
 | 1 Hz  | `session`, `environment`                                                                               |
 
 ```mermaid
@@ -538,11 +578,11 @@ and to `SimStore.subscribeSlowBundle`; it does not go back to the bundle.
 ### Demand gating
 
 Being due is necessary but not sufficient: a gated field is filled only while
-some widget actually wants it. Nine fields are gated — the four raw 60 Hz frames,
+some widget actually wants it. Ten fields are gated — the four raw 60 Hz frames,
 where the whole cost is downstream of the sim, the three per-car frames on
 the 10 Hz tier, which are by far the largest payloads the app moves (a
-`DriverEntry` is ~25 fields, times the whole field), `incidents`, and the coach's
-call (`coach`, 60 Hz).
+`DriverEntry` is ~25 fields, times the whole field), `incidents`, the coach's
+call (`coach`, 60 Hz) and the Safety Rating estimate (`safety_rating`, 4 Hz).
 
 > [!NOTE]
 > `driver_entries` is the table of the whole field — positions, laps, times, pit

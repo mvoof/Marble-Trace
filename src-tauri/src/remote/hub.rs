@@ -318,7 +318,7 @@ impl RemoteHub {
 /// make every bundle look 60 Hz-only and start throwing away the session clock
 /// along with the motion data, which is why the test below pins them to the
 /// real serialization.
-const SLOW_FIELD_KEYS: [&str; 16] = [
+const SLOW_FIELD_KEYS: [&str; 17] = [
     "\"carIdx\"",
     "\"paceCar\"",
     "\"chassis\"",
@@ -335,6 +335,7 @@ const SLOW_FIELD_KEYS: [&str; 16] = [
     "\"environment\"",
     "\"lapLog\"",
     "\"trackRecording\"",
+    "\"safetyRating\"",
 ];
 
 /// Whether this bundle carries anything below 60 Hz.

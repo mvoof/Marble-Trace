@@ -131,6 +131,18 @@ export type CarEntry = {
   iRating: number;
   licString: string;
   licColor: string;
+  /**
+   * iRacing's `LicLevel`, 1..24: the licence class and the whole-number
+   * Safety Rating band in one — level 13 is class B band 1. `None` until
+   * the sim has sent it.
+   */
+  licLevel: number | null;
+  /**
+   * iRacing's `LicSubLevel`: the Safety Rating × 100 (`347` is 3.47).
+   * `None` until the sim has sent it; never a default, a made-up rating
+   * would give a confidently wrong estimate.
+   */
+  licSubLevel: number | null;
   incidentCount: number;
   isPaceCar: boolean;
   /**
@@ -418,6 +430,18 @@ export type CarStatusFrame = {
    * Drag reduction system state, on the cars that have one
    */
   drs: DrsState | null;
+  /**
+   * The local driver's own incident points this session — not the team's,
+   * and live, unlike `CurDriverIncidentCount` in the session YAML.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercarmyincidentcount/
+   */
+  player_car_my_incident_count: number | null;
+  /**
+   * The whole crew's incident points in a team race, which is what the
+   * session's incident limit and penalties count.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercarteamincidentcount/
+   */
+  player_car_team_incident_count: number | null;
 };
 
 /**
@@ -2024,6 +2048,50 @@ export type ResultPosition = {
   reasonOutId: number | null;
 };
 
+/**
+ * What the Safety Rating estimate knows at this tick.
+ */
+export type SafetyRatingFrame = {
+  /**
+   * The local driver's own incident points this session.
+   */
+  driverIncidents: number;
+  /**
+   * The crew's incident points this session; only in a team race, where
+   * the limit and the penalties count them.
+   */
+  teamIncidents: number | null;
+  /**
+   * Corners driven this session, by distance — real corners, not weighted.
+   */
+  cornersDriven: number;
+  /**
+   * The session's corner and incident multiplier; 0 where SR does not move.
+   */
+  sessionWeight: number;
+  /**
+   * `Some(false)` for a session known not to change SR (a league), `None`
+   * when the session YAML cannot tell.
+   */
+  isRanked: boolean | null;
+  /**
+   * The rating the session started from; `None` until the sim sends it.
+   */
+  srStart: number | null;
+  /**
+   * The estimate for the corners and incidents so far — with the earlier
+   * sessions of the event carried in. No projection to the flag: the time
+   * left keeps running through the cool-down, and a guess at the distance
+   * to go would be counted as clean corners never driven.
+   */
+  srNow: number | null;
+  /**
+   * Clean corners still needed for the session to come out level or better;
+   * `None` without a rating or in a session that does not move it.
+   */
+  cleanCornersNeeded: number | null;
+};
+
 export type SectorEntry = { sectorNum: number; sectorStartPct: number };
 
 export type SessionEntry = {
@@ -2130,6 +2198,32 @@ export type SessionSnapshot = {
    * the first one is given.
    */
   incidentPenaltySubsequent: number | null;
+  /**
+   * Corners on this layout (`WeekendInfo.TrackNumTurns`) — the count iRacing
+   * scores Safety Rating by. `None` when the sim does not report it.
+   */
+  trackNumTurns: number | null;
+  /**
+   * A team event (`WeekendInfo.TeamRacing`): the incident limit and the
+   * penalties count the crew's points, not one driver's.
+   */
+  teamRacing: boolean;
+  /**
+   * The league the session runs in (`WeekendInfo.LeagueID`); `None` outside
+   * a league. A league session never changes Safety Rating.
+   */
+  leagueId: number | null;
+  /**
+   * The event this server runs (`WeekendInfo.SubSessionID`): practice,
+   * qualifying and race share it. `None` offline, where the sim sends none.
+   */
+  subSessionId: number | null;
+  /**
+   * What the server is for (`WeekendInfo.EventType`): `Race` for an event
+   * with practice, qualifying and a race; `Practice`, `Test` or
+   * `Time Trial` for a server that is only that. Empty when not reported.
+   */
+  eventType: string;
   currentSessionNum: number;
   sessions: SessionEntry[];
   playerCarIdx: number;
@@ -2260,6 +2354,7 @@ export type TelemetryBundle = {
   carStatus?: CarStatusFrame | null;
   fuel?: FuelComputedFrame | null;
   pitStops?: PitStopsFrame | null;
+  safetyRating?: SafetyRatingFrame | null;
   pitService?: PitServiceFrame | null;
   lapLog?: LapLogFrame | null;
   session?: SessionFrame | null;

@@ -95,9 +95,9 @@ budget test (step 9).
 **Is it demand-gated?** The gated fields are the
 exports of `src/shared/contracts/telemetry-event-bits.ts` (generated from
 `src-tauri/src/model/telemetry_events.rs`) — **read that file, it is the list**,
-and it grows. At the time of writing it holds nine:
+and it grows. At the time of writing it holds ten:
 `carDynamics`, `carInputs`, `carPositions`, `lapDelta` (the 60 Hz four, the
-**hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`, `coach`.
+**hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`, `coach`, `safetyRating`.
 
 A widget that reads a gated field without declaring it in `telemetryEvents`
 **renders empty in the app and correct in Storybook** — the failure mode this
@@ -180,10 +180,23 @@ render at 1.7× and grow on every click. See "Toggleable-column widgets" in
 about shape, and the rest are easy to miss because they are all optional:
 `autoHeight`, `lockAspectRatio` (resize keeps the ratio — for a circular plate),
 `scaleFromHeight` (`--wfs` follows the height instead, for a widget whose middle
-grows horizontally), `overflowVisible` and `transparentContainer`. Read the
+grows horizontally), `contentSized` (the plate is as wide and tall as what it
+draws), `overflowVisible` and `transparentContainer`. Read the
 doc comments on `WidgetMeta` in `src/shared/contracts/widget-settings.ts` — they are short
 and they are where these are actually explained. A plate that is not a rectangle
 also needs a case in `widgetFrameBorderRadius` (`src/entities/widget/widget-frame.ts`).
+
+**Resize handles follow what can change.** A widget is offered only the
+handles that change something it draws (`resizeDirectionsFor` in
+`widget-frame.ts`, shared by the overlay and the layout editor): all eight for
+a plate that stretches both ways, `e`/`w` for an `autoHeight` one, and **only
+the corners for a `contentSized` one** — it stretches in neither axis, so a drag
+can only scale it. A plate sized by its content (a column that leaves the row
+narrows it) declares `contentSized` with `transparentContainer` and paints its
+own ground from `--widget-bg`; its frame then hugs the plate, the corner drag
+scales from the drawn box so the corner follows the pointer, and snapping
+measures the drawn size. `widget-catalog.test.ts` fails a `contentSized`
+widget that does not paint its own plate.
 
 **Decomposition.** `WidgetName.tsx` is a thin orchestrator. A component that
 **reads a store** is `observer()`, and it reads that store **directly** rather
@@ -319,13 +332,19 @@ settingsPanels.<locale block>.<setting>Desc   # its description, optional
 settingsPanels.<locale block>.<setting>_<member>   # a choice's members
 ```
 
+The catalog description is **one short sentence, two at most, and no longer
+than 80 characters in any language**. The widget list clamps it to three lines,
+and a description cut off mid-word tells the driver less than a short one; the
+settings panel is where a widget explains itself, row by row.
+
 The locale keys **are the setting keys**, so a schema field needs no label of
 its own; a field takes a `label` only to borrow a `common.*` string several
 widgets share. All four files, or the driver reads a raw key where a label
 should be.
 
 > _Enforced by:_ `widget-locales.test.ts`, partly — a key in one language and
-> not the others fails, and so does a block left behind by a deleted widget. A
+> not the others fails, and so does a block left behind by a deleted widget, or a
+> catalog description over 80 characters. A
 > widget whose strings are missing from all four fails nothing; it is the
 > quietest step on the route, which is why it has one of its own.
 

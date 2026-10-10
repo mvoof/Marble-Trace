@@ -58,6 +58,7 @@ const SHOTS = {
   fuel: ['FuelWidget', 'full-preview'],
   'fuel-pit-stop': ['FuelWidget', 'pit-window-open'],
   'g-metr': ['GMeter', 'showcase'],
+  'incident-tracker': ['IncidentTrackerWidget', 'minor-incidents'],
   'input-trace': ['InputTraceWidget', 'showcase'],
   'invisible-dash': ['InvisibleDashWidget', 'default'],
   'lap-log': ['LapLogWidget', 'with-history'],

@@ -11,6 +11,13 @@ import zh from '@/locales/zh/widgets.json';
 // what finds them: every block has to belong to a widget the catalog ships.
 const LANGUAGES = { en, es, ru, zh };
 
+/**
+ * The widget list clamps a description to three lines, about 95 characters at
+ * its width; this leaves room for the widest script. One short sentence, two
+ * at most — the settings panel is where a widget explains itself.
+ */
+const MAX_CATALOG_DESCRIPTION_LENGTH = 80;
+
 /** Strings several widgets share; owned by none of them. */
 const SHARED_BLOCKS = new Set(['common']);
 
@@ -49,6 +56,20 @@ describe('widget locale strings', () => {
       expect(strayKeys(Object.keys(strings.settingsPanels), owners)).toEqual(
         []
       );
+    }
+  );
+
+  it.each(Object.entries(LANGUAGES))(
+    'keeps every catalog description short enough to show whole (%s)',
+    (_language, strings) => {
+      const tooLong = Object.entries(strings.catalog)
+        .filter(
+          ([, entry]) =>
+            entry.description.length > MAX_CATALOG_DESCRIPTION_LENGTH
+        )
+        .map(([id, entry]) => `${id} (${entry.description.length})`);
+
+      expect(tooLong).toEqual([]);
     }
   );
 

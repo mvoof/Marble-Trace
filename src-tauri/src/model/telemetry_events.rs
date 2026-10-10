@@ -46,6 +46,11 @@ ts_values! {
     /// The driving coach's call against the reference lap. Computed on every
     /// tick so the latch survives the coach being switched off and on again.
     pub const EVENT_COACH: u32 = 1 << 8 => coach;
+
+    /// The player's incidents and the Safety Rating estimate. A small frame,
+    /// but the corner count moves on every tick while driving; computed all
+    /// session so a widget switched on mid-race reads the whole distance.
+    pub const EVENT_SAFETY_RATING: u32 = 1 << 9 => safetyRating;
 }
 
 #[cfg(all(test, feature = "dev"))]

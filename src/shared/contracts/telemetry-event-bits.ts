@@ -52,3 +52,10 @@ export const incidents = 128;
  * tick so the latch survives the coach being switched off and on again.
  */
 export const coach = 256;
+
+/**
+ * The player's incidents and the Safety Rating estimate. A small frame,
+ * but the corner count moves on every tick while driving; computed all
+ * session so a widget switched on mid-race reads the whole distance.
+ */
+export const safetyRating = 512;

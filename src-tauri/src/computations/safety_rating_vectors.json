@@ -1,0 +1,3210 @@
+{
+  "_meta": {
+    "what": "Golden test vectors for the Nishizumi SR estimator.",
+    "generated_by": "tools/gen_vectors.py",
+    "guide": "docs/INTEGRATION.md",
+    "tolerance": {
+      "sr": 1e-9,
+      "cpi_relative": 1e-9,
+      "note": "log/exp differ by an ulp between runtimes; compare with a tolerance, never for equality."
+    }
+  },
+  "constants": {
+    "a_slope": 1.5236,
+    "r_ratio": 1.4562,
+    "f0_cpi": 3.4949,
+    "window_band1": 1060.0,
+    "window_band_ratio": 1.4142,
+    "window_factor_rookie": 0.69,
+    "window_factor_class_d": 0.83,
+    "max_abs_session_delta": 3.0,
+    "sr_display_max": 4.99,
+    "band_crossing_bonus": 0.42738495038199764
+  },
+  "session_weights": {
+    "race": 1.0,
+    "heat": 1.0,
+    "qualify": 0.5,
+    "qualify_lone": 0.35,
+    "warmup": 0.5,
+    "practice": 0.5,
+    "practice_lone": 0.35,
+    "time_trial": 0.35,
+    "unknown": 0.0
+  },
+  "session_weight_lookups": [
+    {
+      "session_type": "race",
+      "weight": 1.0
+    },
+    {
+      "session_type": "heat",
+      "weight": 1.0
+    },
+    {
+      "session_type": "qualify",
+      "weight": 0.5
+    },
+    {
+      "session_type": "qualify_lone",
+      "weight": 0.35
+    },
+    {
+      "session_type": "warmup",
+      "weight": 0.5
+    },
+    {
+      "session_type": "practice",
+      "weight": 0.5
+    },
+    {
+      "session_type": "practice_lone",
+      "weight": 0.35
+    },
+    {
+      "session_type": "time_trial",
+      "weight": 0.35
+    },
+    {
+      "session_type": "unknown",
+      "weight": 0.0
+    },
+    {
+      "session_type": "Race",
+      "weight": 1.0
+    },
+    {
+      "session_type": "something else",
+      "weight": 0.0
+    }
+  ],
+  "target_cpi_to_hold_3_00": [
+    {
+      "class_index": 0,
+      "target_cpi": 10.791898048491126
+    },
+    {
+      "class_index": 1,
+      "target_cpi": 15.715161938212777
+    },
+    {
+      "class_index": 2,
+      "target_cpi": 22.88441881442544
+    },
+    {
+      "class_index": 3,
+      "target_cpi": 33.32429067756633
+    },
+    {
+      "class_index": 4,
+      "target_cpi": 48.52683208467209
+    },
+    {
+      "class_index": 5,
+      "target_cpi": 70.66477288169949
+    }
+  ],
+  "license_levels": [
+    {
+      "lic_level": 1,
+      "class_index": 0,
+      "band": 1
+    },
+    {
+      "lic_level": 2,
+      "class_index": 0,
+      "band": 2
+    },
+    {
+      "lic_level": 3,
+      "class_index": 0,
+      "band": 3
+    },
+    {
+      "lic_level": 4,
+      "class_index": 0,
+      "band": 4
+    },
+    {
+      "lic_level": 5,
+      "class_index": 1,
+      "band": 1
+    },
+    {
+      "lic_level": 6,
+      "class_index": 1,
+      "band": 2
+    },
+    {
+      "lic_level": 7,
+      "class_index": 1,
+      "band": 3
+    },
+    {
+      "lic_level": 8,
+      "class_index": 1,
+      "band": 4
+    },
+    {
+      "lic_level": 9,
+      "class_index": 2,
+      "band": 1
+    },
+    {
+      "lic_level": 10,
+      "class_index": 2,
+      "band": 2
+    },
+    {
+      "lic_level": 11,
+      "class_index": 2,
+      "band": 3
+    },
+    {
+      "lic_level": 12,
+      "class_index": 2,
+      "band": 4
+    },
+    {
+      "lic_level": 13,
+      "class_index": 3,
+      "band": 1
+    },
+    {
+      "lic_level": 14,
+      "class_index": 3,
+      "band": 2
+    },
+    {
+      "lic_level": 15,
+      "class_index": 3,
+      "band": 3
+    },
+    {
+      "lic_level": 16,
+      "class_index": 3,
+      "band": 4
+    },
+    {
+      "lic_level": 17,
+      "class_index": 4,
+      "band": 1
+    },
+    {
+      "lic_level": 18,
+      "class_index": 4,
+      "band": 2
+    },
+    {
+      "lic_level": 19,
+      "class_index": 4,
+      "band": 3
+    },
+    {
+      "lic_level": 20,
+      "class_index": 4,
+      "band": 4
+    },
+    {
+      "lic_level": 21,
+      "class_index": 5,
+      "band": 1
+    },
+    {
+      "lic_level": 22,
+      "class_index": 5,
+      "band": 2
+    },
+    {
+      "lic_level": 23,
+      "class_index": 5,
+      "band": 3
+    },
+    {
+      "lic_level": 24,
+      "class_index": 5,
+      "band": 4
+    }
+  ],
+  "license_strings": [
+    {
+      "lic_string": "A 4.99",
+      "class_index": 4
+    },
+    {
+      "lic_string": "B 3.54",
+      "class_index": 3
+    },
+    {
+      "lic_string": "C 2.99",
+      "class_index": 2
+    },
+    {
+      "lic_string": "D 1.20",
+      "class_index": 1
+    },
+    {
+      "lic_string": "R 0.80",
+      "class_index": 0
+    },
+    {
+      "lic_string": "Rookie 2.50",
+      "class_index": 0
+    },
+    {
+      "lic_string": "Class B",
+      "class_index": 3
+    },
+    {
+      "lic_string": "P 4.10",
+      "class_index": 5
+    },
+    {
+      "lic_string": "",
+      "class_index": null
+    },
+    {
+      "lic_string": "nonsense",
+      "class_index": null
+    }
+  ],
+  "band_floors": [
+    {
+      "class_index": 0,
+      "band": 1,
+      "floor_cpi": 5.08927338
+    },
+    {
+      "class_index": 0,
+      "band": 2,
+      "floor_cpi": 7.410999895955999
+    },
+    {
+      "class_index": 0,
+      "band": 3,
+      "floor_cpi": 10.791898048491126
+    },
+    {
+      "class_index": 0,
+      "band": 4,
+      "floor_cpi": 15.715161938212777
+    },
+    {
+      "class_index": 1,
+      "band": 1,
+      "floor_cpi": 7.410999895955999
+    },
+    {
+      "class_index": 1,
+      "band": 2,
+      "floor_cpi": 10.791898048491126
+    },
+    {
+      "class_index": 1,
+      "band": 3,
+      "floor_cpi": 15.715161938212777
+    },
+    {
+      "class_index": 1,
+      "band": 4,
+      "floor_cpi": 22.88441881442544
+    },
+    {
+      "class_index": 2,
+      "band": 1,
+      "floor_cpi": 10.791898048491126
+    },
+    {
+      "class_index": 2,
+      "band": 2,
+      "floor_cpi": 15.715161938212777
+    },
+    {
+      "class_index": 2,
+      "band": 3,
+      "floor_cpi": 22.88441881442544
+    },
+    {
+      "class_index": 2,
+      "band": 4,
+      "floor_cpi": 33.32429067756633
+    },
+    {
+      "class_index": 3,
+      "band": 1,
+      "floor_cpi": 15.715161938212777
+    },
+    {
+      "class_index": 3,
+      "band": 2,
+      "floor_cpi": 22.88441881442544
+    },
+    {
+      "class_index": 3,
+      "band": 3,
+      "floor_cpi": 33.32429067756633
+    },
+    {
+      "class_index": 3,
+      "band": 4,
+      "floor_cpi": 48.52683208467209
+    },
+    {
+      "class_index": 4,
+      "band": 1,
+      "floor_cpi": 22.88441881442544
+    },
+    {
+      "class_index": 4,
+      "band": 2,
+      "floor_cpi": 33.32429067756633
+    },
+    {
+      "class_index": 4,
+      "band": 3,
+      "floor_cpi": 48.52683208467209
+    },
+    {
+      "class_index": 4,
+      "band": 4,
+      "floor_cpi": 70.66477288169949
+    },
+    {
+      "class_index": 5,
+      "band": 1,
+      "floor_cpi": 33.32429067756633
+    },
+    {
+      "class_index": 5,
+      "band": 2,
+      "floor_cpi": 48.52683208467209
+    },
+    {
+      "class_index": 5,
+      "band": 3,
+      "floor_cpi": 70.66477288169949
+    },
+    {
+      "class_index": 5,
+      "band": 4,
+      "floor_cpi": 102.9020422703308
+    }
+  ],
+  "sr_cpi": [
+    {
+      "sr": 1.0,
+      "class_index": 0,
+      "band": 1,
+      "cpi": 5.08927338,
+      "sr_round_trip": 1.0
+    },
+    {
+      "sr": 1.01,
+      "class_index": 0,
+      "band": 1,
+      "cpi": 5.1227861881797425,
+      "sr_round_trip": 1.01
+    },
+    {
+      "sr": 1.25,
+      "class_index": 0,
+      "band": 1,
+      "cpi": 5.996764823028425,
+      "sr_round_trip": 1.25
+    },
+    {
+      "sr": 1.5,
+      "class_index": 0,
+      "band": 1,
+      "cpi": 7.066075185513249,
+      "sr_round_trip": 1.5
+    },
+    {
+      "sr": 1.75,
+      "class_index": 0,
+      "band": 1,
+      "cpi": 8.326059133683225,
+      "sr_round_trip": 1.75
+    },
+    {
+      "sr": 1.99,
+      "class_index": 0,
+      "band": 1,
+      "cpi": 9.746535711861767,
+      "sr_round_trip": 1.99
+    },
+    {
+      "sr": 2.0,
+      "class_index": 0,
+      "band": 2,
+      "cpi": 7.410999895955999,
+      "sr_round_trip": 2.0
+    },
+    {
+      "sr": 2.01,
+      "class_index": 0,
+      "band": 2,
+      "cpi": 7.4598012472273405,
+      "sr_round_trip": 2.01
+    },
+    {
+      "sr": 2.25,
+      "class_index": 0,
+      "band": 2,
+      "cpi": 8.732488935293992,
+      "sr_round_trip": 2.25
+    },
+    {
+      "sr": 2.5,
+      "class_index": 0,
+      "band": 2,
+      "cpi": 10.289618685144392,
+      "sr_round_trip": 2.5
+    },
+    {
+      "sr": 2.75,
+      "class_index": 0,
+      "band": 2,
+      "cpi": 12.124407310469511,
+      "sr_round_trip": 2.75
+    },
+    {
+      "sr": 2.99,
+      "class_index": 0,
+      "band": 2,
+      "cpi": 14.192905303613108,
+      "sr_round_trip": 2.99
+    },
+    {
+      "sr": 3.0,
+      "class_index": 0,
+      "band": 3,
+      "cpi": 10.791898048491126,
+      "sr_round_trip": 3.0
+    },
+    {
+      "sr": 3.01,
+      "class_index": 0,
+      "band": 3,
+      "cpi": 10.862962576212453,
+      "sr_round_trip": 3.01
+    },
+    {
+      "sr": 3.25,
+      "class_index": 0,
+      "band": 3,
+      "cpi": 12.71625038757511,
+      "sr_round_trip": 3.25
+    },
+    {
+      "sr": 3.5,
+      "class_index": 0,
+      "band": 3,
+      "cpi": 14.983742729307263,
+      "sr_round_trip": 3.5
+    },
+    {
+      "sr": 3.75,
+      "class_index": 0,
+      "band": 3,
+      "cpi": 17.655561925505705,
+      "sr_round_trip": 3.75
+    },
+    {
+      "sr": 3.99,
+      "class_index": 0,
+      "band": 3,
+      "cpi": 20.66770870312141,
+      "sr_round_trip": 3.99
+    },
+    {
+      "sr": 4.0,
+      "class_index": 0,
+      "band": 4,
+      "cpi": 15.715161938212777,
+      "sr_round_trip": 4.0
+    },
+    {
+      "sr": 4.01,
+      "class_index": 0,
+      "band": 4,
+      "cpi": 15.818646103480575,
+      "sr_round_trip": 4.01
+    },
+    {
+      "sr": 4.25,
+      "class_index": 0,
+      "band": 4,
+      "cpi": 18.517403814386874,
+      "sr_round_trip": 4.25
+    },
+    {
+      "sr": 4.5,
+      "class_index": 0,
+      "band": 4,
+      "cpi": 21.819326162417237,
+      "sr_round_trip": 4.5
+    },
+    {
+      "sr": 4.75,
+      "class_index": 0,
+      "band": 4,
+      "cpi": 25.710029275921407,
+      "sr_round_trip": 4.75
+    },
+    {
+      "sr": 4.99,
+      "class_index": 0,
+      "band": 4,
+      "cpi": 30.096317413485394,
+      "sr_round_trip": 4.99
+    },
+    {
+      "sr": 1.0,
+      "class_index": 1,
+      "band": 1,
+      "cpi": 7.410999895955999,
+      "sr_round_trip": 1.0
+    },
+    {
+      "sr": 1.01,
+      "class_index": 1,
+      "band": 1,
+      "cpi": 7.4598012472273405,
+      "sr_round_trip": 1.01
+    },
+    {
+      "sr": 1.25,
+      "class_index": 1,
+      "band": 1,
+      "cpi": 8.732488935293992,
+      "sr_round_trip": 1.25
+    },
+    {
+      "sr": 1.5,
+      "class_index": 1,
+      "band": 1,
+      "cpi": 10.289618685144392,
+      "sr_round_trip": 1.5
+    },
+    {
+      "sr": 1.75,
+      "class_index": 1,
+      "band": 1,
+      "cpi": 12.124407310469511,
+      "sr_round_trip": 1.75
+    },
+    {
+      "sr": 1.99,
+      "class_index": 1,
+      "band": 1,
+      "cpi": 14.192905303613104,
+      "sr_round_trip": 1.99
+    },
+    {
+      "sr": 2.0,
+      "class_index": 1,
+      "band": 2,
+      "cpi": 10.791898048491126,
+      "sr_round_trip": 2.0
+    },
+    {
+      "sr": 2.01,
+      "class_index": 1,
+      "band": 2,
+      "cpi": 10.862962576212453,
+      "sr_round_trip": 2.01
+    },
+    {
+      "sr": 2.25,
+      "class_index": 1,
+      "band": 2,
+      "cpi": 12.71625038757511,
+      "sr_round_trip": 2.25
+    },
+    {
+      "sr": 2.5,
+      "class_index": 1,
+      "band": 2,
+      "cpi": 14.983742729307263,
+      "sr_round_trip": 2.5
+    },
+    {
+      "sr": 2.75,
+      "class_index": 1,
+      "band": 2,
+      "cpi": 17.655561925505705,
+      "sr_round_trip": 2.75
+    },
+    {
+      "sr": 2.99,
+      "class_index": 1,
+      "band": 2,
+      "cpi": 20.66770870312141,
+      "sr_round_trip": 2.99
+    },
+    {
+      "sr": 3.0,
+      "class_index": 1,
+      "band": 3,
+      "cpi": 15.715161938212777,
+      "sr_round_trip": 3.0
+    },
+    {
+      "sr": 3.01,
+      "class_index": 1,
+      "band": 3,
+      "cpi": 15.818646103480575,
+      "sr_round_trip": 3.01
+    },
+    {
+      "sr": 3.25,
+      "class_index": 1,
+      "band": 3,
+      "cpi": 18.517403814386874,
+      "sr_round_trip": 3.25
+    },
+    {
+      "sr": 3.5,
+      "class_index": 1,
+      "band": 3,
+      "cpi": 21.819326162417237,
+      "sr_round_trip": 3.5
+    },
+    {
+      "sr": 3.75,
+      "class_index": 1,
+      "band": 3,
+      "cpi": 25.710029275921407,
+      "sr_round_trip": 3.75
+    },
+    {
+      "sr": 3.99,
+      "class_index": 1,
+      "band": 3,
+      "cpi": 30.096317413485394,
+      "sr_round_trip": 3.99
+    },
+    {
+      "sr": 4.0,
+      "class_index": 1,
+      "band": 4,
+      "cpi": 22.88441881442544,
+      "sr_round_trip": 4.0
+    },
+    {
+      "sr": 4.01,
+      "class_index": 1,
+      "band": 4,
+      "cpi": 23.03511245588841,
+      "sr_round_trip": 4.01
+    },
+    {
+      "sr": 4.25,
+      "class_index": 1,
+      "band": 4,
+      "cpi": 26.96504343451016,
+      "sr_round_trip": 4.25
+    },
+    {
+      "sr": 4.5,
+      "class_index": 1,
+      "band": 4,
+      "cpi": 31.773302757711974,
+      "sr_round_trip": 4.5
+    },
+    {
+      "sr": 4.75,
+      "class_index": 1,
+      "band": 4,
+      "cpi": 37.43894463159674,
+      "sr_round_trip": 4.75
+    },
+    {
+      "sr": 4.99,
+      "class_index": 1,
+      "band": 4,
+      "cpi": 43.82625741751742,
+      "sr_round_trip": 4.99
+    },
+    {
+      "sr": 1.0,
+      "class_index": 2,
+      "band": 1,
+      "cpi": 10.791898048491126,
+      "sr_round_trip": 1.0
+    },
+    {
+      "sr": 1.01,
+      "class_index": 2,
+      "band": 1,
+      "cpi": 10.862962576212453,
+      "sr_round_trip": 1.01
+    },
+    {
+      "sr": 1.25,
+      "class_index": 2,
+      "band": 1,
+      "cpi": 12.71625038757511,
+      "sr_round_trip": 1.25
+    },
+    {
+      "sr": 1.5,
+      "class_index": 2,
+      "band": 1,
+      "cpi": 14.983742729307263,
+      "sr_round_trip": 1.5
+    },
+    {
+      "sr": 1.75,
+      "class_index": 2,
+      "band": 1,
+      "cpi": 17.655561925505705,
+      "sr_round_trip": 1.75
+    },
+    {
+      "sr": 1.99,
+      "class_index": 2,
+      "band": 1,
+      "cpi": 20.667708703121402,
+      "sr_round_trip": 1.99
+    },
+    {
+      "sr": 2.0,
+      "class_index": 2,
+      "band": 2,
+      "cpi": 15.715161938212777,
+      "sr_round_trip": 2.0
+    },
+    {
+      "sr": 2.01,
+      "class_index": 2,
+      "band": 2,
+      "cpi": 15.818646103480575,
+      "sr_round_trip": 2.01
+    },
+    {
+      "sr": 2.25,
+      "class_index": 2,
+      "band": 2,
+      "cpi": 18.517403814386874,
+      "sr_round_trip": 2.25
+    },
+    {
+      "sr": 2.5,
+      "class_index": 2,
+      "band": 2,
+      "cpi": 21.819326162417237,
+      "sr_round_trip": 2.5
+    },
+    {
+      "sr": 2.75,
+      "class_index": 2,
+      "band": 2,
+      "cpi": 25.710029275921407,
+      "sr_round_trip": 2.75
+    },
+    {
+      "sr": 2.99,
+      "class_index": 2,
+      "band": 2,
+      "cpi": 30.096317413485394,
+      "sr_round_trip": 2.99
+    },
+    {
+      "sr": 3.0,
+      "class_index": 2,
+      "band": 3,
+      "cpi": 22.88441881442544,
+      "sr_round_trip": 3.0
+    },
+    {
+      "sr": 3.01,
+      "class_index": 2,
+      "band": 3,
+      "cpi": 23.03511245588841,
+      "sr_round_trip": 3.01
+    },
+    {
+      "sr": 3.25,
+      "class_index": 2,
+      "band": 3,
+      "cpi": 26.96504343451016,
+      "sr_round_trip": 3.25
+    },
+    {
+      "sr": 3.5,
+      "class_index": 2,
+      "band": 3,
+      "cpi": 31.773302757711974,
+      "sr_round_trip": 3.5
+    },
+    {
+      "sr": 3.75,
+      "class_index": 2,
+      "band": 3,
+      "cpi": 37.43894463159674,
+      "sr_round_trip": 3.75
+    },
+    {
+      "sr": 3.99,
+      "class_index": 2,
+      "band": 3,
+      "cpi": 43.82625741751742,
+      "sr_round_trip": 3.99
+    },
+    {
+      "sr": 4.0,
+      "class_index": 2,
+      "band": 4,
+      "cpi": 33.32429067756633,
+      "sr_round_trip": 4.0
+    },
+    {
+      "sr": 4.01,
+      "class_index": 2,
+      "band": 4,
+      "cpi": 33.54373075826471,
+      "sr_round_trip": 4.01
+    },
+    {
+      "sr": 4.25,
+      "class_index": 2,
+      "band": 4,
+      "cpi": 39.266496249333706,
+      "sr_round_trip": 4.25
+    },
+    {
+      "sr": 4.5,
+      "class_index": 2,
+      "band": 4,
+      "cpi": 46.26828347578018,
+      "sr_round_trip": 4.5
+    },
+    {
+      "sr": 4.75,
+      "class_index": 2,
+      "band": 4,
+      "cpi": 54.51859117253119,
+      "sr_round_trip": 4.75
+    },
+    {
+      "sr": 4.99,
+      "class_index": 2,
+      "band": 4,
+      "cpi": 63.81979605138888,
+      "sr_round_trip": 4.99
+    },
+    {
+      "sr": 1.0,
+      "class_index": 3,
+      "band": 1,
+      "cpi": 15.715161938212777,
+      "sr_round_trip": 1.0
+    },
+    {
+      "sr": 1.01,
+      "class_index": 3,
+      "band": 1,
+      "cpi": 15.818646103480575,
+      "sr_round_trip": 1.01
+    },
+    {
+      "sr": 1.25,
+      "class_index": 3,
+      "band": 1,
+      "cpi": 18.517403814386874,
+      "sr_round_trip": 1.25
+    },
+    {
+      "sr": 1.5,
+      "class_index": 3,
+      "band": 1,
+      "cpi": 21.819326162417237,
+      "sr_round_trip": 1.5
+    },
+    {
+      "sr": 1.75,
+      "class_index": 3,
+      "band": 1,
+      "cpi": 25.710029275921407,
+      "sr_round_trip": 1.75
+    },
+    {
+      "sr": 1.99,
+      "class_index": 3,
+      "band": 1,
+      "cpi": 30.096317413485387,
+      "sr_round_trip": 1.99
+    },
+    {
+      "sr": 2.0,
+      "class_index": 3,
+      "band": 2,
+      "cpi": 22.88441881442544,
+      "sr_round_trip": 2.0
+    },
+    {
+      "sr": 2.01,
+      "class_index": 3,
+      "band": 2,
+      "cpi": 23.03511245588841,
+      "sr_round_trip": 2.01
+    },
+    {
+      "sr": 2.25,
+      "class_index": 3,
+      "band": 2,
+      "cpi": 26.96504343451016,
+      "sr_round_trip": 2.25
+    },
+    {
+      "sr": 2.5,
+      "class_index": 3,
+      "band": 2,
+      "cpi": 31.773302757711974,
+      "sr_round_trip": 2.5
+    },
+    {
+      "sr": 2.75,
+      "class_index": 3,
+      "band": 2,
+      "cpi": 37.43894463159674,
+      "sr_round_trip": 2.75
+    },
+    {
+      "sr": 2.99,
+      "class_index": 3,
+      "band": 2,
+      "cpi": 43.82625741751742,
+      "sr_round_trip": 2.99
+    },
+    {
+      "sr": 3.0,
+      "class_index": 3,
+      "band": 3,
+      "cpi": 33.32429067756633,
+      "sr_round_trip": 3.0
+    },
+    {
+      "sr": 3.01,
+      "class_index": 3,
+      "band": 3,
+      "cpi": 33.54373075826471,
+      "sr_round_trip": 3.01
+    },
+    {
+      "sr": 3.25,
+      "class_index": 3,
+      "band": 3,
+      "cpi": 39.266496249333706,
+      "sr_round_trip": 3.25
+    },
+    {
+      "sr": 3.5,
+      "class_index": 3,
+      "band": 3,
+      "cpi": 46.26828347578018,
+      "sr_round_trip": 3.5
+    },
+    {
+      "sr": 3.75,
+      "class_index": 3,
+      "band": 3,
+      "cpi": 54.51859117253119,
+      "sr_round_trip": 3.75
+    },
+    {
+      "sr": 3.99,
+      "class_index": 3,
+      "band": 3,
+      "cpi": 63.81979605138888,
+      "sr_round_trip": 3.99
+    },
+    {
+      "sr": 4.0,
+      "class_index": 3,
+      "band": 4,
+      "cpi": 48.52683208467209,
+      "sr_round_trip": 4.0
+    },
+    {
+      "sr": 4.01,
+      "class_index": 3,
+      "band": 4,
+      "cpi": 48.84638073018506,
+      "sr_round_trip": 4.01
+    },
+    {
+      "sr": 4.25,
+      "class_index": 3,
+      "band": 4,
+      "cpi": 57.17987183827973,
+      "sr_round_trip": 4.25
+    },
+    {
+      "sr": 4.5,
+      "class_index": 3,
+      "band": 4,
+      "cpi": 67.37587439743109,
+      "sr_round_trip": 4.5
+    },
+    {
+      "sr": 4.75,
+      "class_index": 3,
+      "band": 4,
+      "cpi": 79.3899724654399,
+      "sr_round_trip": 4.75
+    },
+    {
+      "sr": 4.99,
+      "class_index": 3,
+      "band": 4,
+      "cpi": 92.93438701003247,
+      "sr_round_trip": 4.99
+    },
+    {
+      "sr": 1.0,
+      "class_index": 4,
+      "band": 1,
+      "cpi": 22.88441881442544,
+      "sr_round_trip": 1.0
+    },
+    {
+      "sr": 1.01,
+      "class_index": 4,
+      "band": 1,
+      "cpi": 23.03511245588841,
+      "sr_round_trip": 1.01
+    },
+    {
+      "sr": 1.25,
+      "class_index": 4,
+      "band": 1,
+      "cpi": 26.96504343451016,
+      "sr_round_trip": 1.25
+    },
+    {
+      "sr": 1.5,
+      "class_index": 4,
+      "band": 1,
+      "cpi": 31.773302757711974,
+      "sr_round_trip": 1.5
+    },
+    {
+      "sr": 1.75,
+      "class_index": 4,
+      "band": 1,
+      "cpi": 37.43894463159674,
+      "sr_round_trip": 1.75
+    },
+    {
+      "sr": 1.99,
+      "class_index": 4,
+      "band": 1,
+      "cpi": 43.82625741751741,
+      "sr_round_trip": 1.99
+    },
+    {
+      "sr": 2.0,
+      "class_index": 4,
+      "band": 2,
+      "cpi": 33.32429067756633,
+      "sr_round_trip": 2.0
+    },
+    {
+      "sr": 2.01,
+      "class_index": 4,
+      "band": 2,
+      "cpi": 33.54373075826471,
+      "sr_round_trip": 2.01
+    },
+    {
+      "sr": 2.25,
+      "class_index": 4,
+      "band": 2,
+      "cpi": 39.266496249333706,
+      "sr_round_trip": 2.25
+    },
+    {
+      "sr": 2.5,
+      "class_index": 4,
+      "band": 2,
+      "cpi": 46.26828347578018,
+      "sr_round_trip": 2.5
+    },
+    {
+      "sr": 2.75,
+      "class_index": 4,
+      "band": 2,
+      "cpi": 54.51859117253119,
+      "sr_round_trip": 2.75
+    },
+    {
+      "sr": 2.99,
+      "class_index": 4,
+      "band": 2,
+      "cpi": 63.81979605138888,
+      "sr_round_trip": 2.99
+    },
+    {
+      "sr": 3.0,
+      "class_index": 4,
+      "band": 3,
+      "cpi": 48.52683208467209,
+      "sr_round_trip": 3.0
+    },
+    {
+      "sr": 3.01,
+      "class_index": 4,
+      "band": 3,
+      "cpi": 48.84638073018506,
+      "sr_round_trip": 3.01
+    },
+    {
+      "sr": 3.25,
+      "class_index": 4,
+      "band": 3,
+      "cpi": 57.17987183827973,
+      "sr_round_trip": 3.25
+    },
+    {
+      "sr": 3.5,
+      "class_index": 4,
+      "band": 3,
+      "cpi": 67.37587439743109,
+      "sr_round_trip": 3.5
+    },
+    {
+      "sr": 3.75,
+      "class_index": 4,
+      "band": 3,
+      "cpi": 79.3899724654399,
+      "sr_round_trip": 3.75
+    },
+    {
+      "sr": 3.99,
+      "class_index": 4,
+      "band": 3,
+      "cpi": 92.93438701003247,
+      "sr_round_trip": 3.99
+    },
+    {
+      "sr": 4.0,
+      "class_index": 4,
+      "band": 4,
+      "cpi": 70.66477288169949,
+      "sr_round_trip": 4.0
+    },
+    {
+      "sr": 4.01,
+      "class_index": 4,
+      "band": 4,
+      "cpi": 71.13009961929548,
+      "sr_round_trip": 4.01
+    },
+    {
+      "sr": 4.25,
+      "class_index": 4,
+      "band": 4,
+      "cpi": 83.26532937090295,
+      "sr_round_trip": 4.25
+    },
+    {
+      "sr": 4.5,
+      "class_index": 4,
+      "band": 4,
+      "cpi": 98.11274829753916,
+      "sr_round_trip": 4.5
+    },
+    {
+      "sr": 4.75,
+      "class_index": 4,
+      "band": 4,
+      "cpi": 115.60767790417358,
+      "sr_round_trip": 4.75
+    },
+    {
+      "sr": 4.99,
+      "class_index": 4,
+      "band": 4,
+      "cpi": 135.33105436400928,
+      "sr_round_trip": 4.99
+    },
+    {
+      "sr": 1.0,
+      "class_index": 5,
+      "band": 1,
+      "cpi": 33.32429067756633,
+      "sr_round_trip": 1.0
+    },
+    {
+      "sr": 1.01,
+      "class_index": 5,
+      "band": 1,
+      "cpi": 33.54373075826471,
+      "sr_round_trip": 1.01
+    },
+    {
+      "sr": 1.25,
+      "class_index": 5,
+      "band": 1,
+      "cpi": 39.266496249333706,
+      "sr_round_trip": 1.25
+    },
+    {
+      "sr": 1.5,
+      "class_index": 5,
+      "band": 1,
+      "cpi": 46.26828347578018,
+      "sr_round_trip": 1.5
+    },
+    {
+      "sr": 1.75,
+      "class_index": 5,
+      "band": 1,
+      "cpi": 54.51859117253119,
+      "sr_round_trip": 1.75
+    },
+    {
+      "sr": 1.99,
+      "class_index": 5,
+      "band": 1,
+      "cpi": 63.81979605138886,
+      "sr_round_trip": 1.99
+    },
+    {
+      "sr": 2.0,
+      "class_index": 5,
+      "band": 2,
+      "cpi": 48.52683208467209,
+      "sr_round_trip": 2.0
+    },
+    {
+      "sr": 2.01,
+      "class_index": 5,
+      "band": 2,
+      "cpi": 48.84638073018506,
+      "sr_round_trip": 2.01
+    },
+    {
+      "sr": 2.25,
+      "class_index": 5,
+      "band": 2,
+      "cpi": 57.17987183827973,
+      "sr_round_trip": 2.25
+    },
+    {
+      "sr": 2.5,
+      "class_index": 5,
+      "band": 2,
+      "cpi": 67.37587439743109,
+      "sr_round_trip": 2.5
+    },
+    {
+      "sr": 2.75,
+      "class_index": 5,
+      "band": 2,
+      "cpi": 79.3899724654399,
+      "sr_round_trip": 2.75
+    },
+    {
+      "sr": 2.99,
+      "class_index": 5,
+      "band": 2,
+      "cpi": 92.93438701003247,
+      "sr_round_trip": 2.99
+    },
+    {
+      "sr": 3.0,
+      "class_index": 5,
+      "band": 3,
+      "cpi": 70.66477288169949,
+      "sr_round_trip": 3.0
+    },
+    {
+      "sr": 3.01,
+      "class_index": 5,
+      "band": 3,
+      "cpi": 71.13009961929548,
+      "sr_round_trip": 3.01
+    },
+    {
+      "sr": 3.25,
+      "class_index": 5,
+      "band": 3,
+      "cpi": 83.26532937090295,
+      "sr_round_trip": 3.25
+    },
+    {
+      "sr": 3.5,
+      "class_index": 5,
+      "band": 3,
+      "cpi": 98.11274829753916,
+      "sr_round_trip": 3.5
+    },
+    {
+      "sr": 3.75,
+      "class_index": 5,
+      "band": 3,
+      "cpi": 115.60767790417358,
+      "sr_round_trip": 3.75
+    },
+    {
+      "sr": 3.99,
+      "class_index": 5,
+      "band": 3,
+      "cpi": 135.33105436400928,
+      "sr_round_trip": 3.99
+    },
+    {
+      "sr": 4.0,
+      "class_index": 5,
+      "band": 4,
+      "cpi": 102.9020422703308,
+      "sr_round_trip": 4.0
+    },
+    {
+      "sr": 4.01,
+      "class_index": 5,
+      "band": 4,
+      "cpi": 103.57965106561808,
+      "sr_round_trip": 4.01
+    },
+    {
+      "sr": 4.25,
+      "class_index": 5,
+      "band": 4,
+      "cpi": 121.25097262990887,
+      "sr_round_trip": 4.25
+    },
+    {
+      "sr": 4.5,
+      "class_index": 5,
+      "band": 4,
+      "cpi": 142.87178407087652,
+      "sr_round_trip": 4.5
+    },
+    {
+      "sr": 4.75,
+      "class_index": 5,
+      "band": 4,
+      "cpi": 168.34790056405757,
+      "sr_round_trip": 4.75
+    },
+    {
+      "sr": 4.99,
+      "class_index": 5,
+      "band": 4,
+      "cpi": 197.0690813648703,
+      "sr_round_trip": 4.99
+    }
+  ],
+  "remap": [
+    {
+      "cpi": 2.035709352,
+      "class_index": 0,
+      "band": 1,
+      "sr": 0.0,
+      "final_band": 0
+    },
+    {
+      "cpi": 4.580346042,
+      "class_index": 0,
+      "band": 1,
+      "sr": 0.4120877679617384,
+      "final_band": 0
+    },
+    {
+      "cpi": 5.08927338,
+      "class_index": 0,
+      "band": 1,
+      "sr": 1.0,
+      "final_band": 1
+    },
+    {
+      "cpi": 7.63391007,
+      "class_index": 0,
+      "band": 1,
+      "sr": 1.6177666387135994,
+      "final_band": 1
+    },
+    {
+      "cpi": 11.196401436,
+      "class_index": 0,
+      "band": 1,
+      "sr": 2.628678584633,
+      "final_band": 2
+    },
+    {
+      "cpi": 20.35709352,
+      "class_index": 0,
+      "band": 1,
+      "sr": 3.966927989366261,
+      "final_band": 3
+    },
+    {
+      "cpi": 61.07128056,
+      "class_index": 0,
+      "band": 1,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 2.9643999583823994,
+      "class_index": 0,
+      "band": 2,
+      "sr": 0.0,
+      "final_band": 0
+    },
+    {
+      "cpi": 6.669899906360399,
+      "class_index": 0,
+      "band": 2,
+      "sr": 1.4120877679617383,
+      "final_band": 1
+    },
+    {
+      "cpi": 7.410999895955999,
+      "class_index": 0,
+      "band": 2,
+      "sr": 2.0,
+      "final_band": 2
+    },
+    {
+      "cpi": 11.116499843933997,
+      "class_index": 0,
+      "band": 2,
+      "sr": 2.6177666387135994,
+      "final_band": 2
+    },
+    {
+      "cpi": 16.3041997711032,
+      "class_index": 0,
+      "band": 2,
+      "sr": 3.6286785846329996,
+      "final_band": 3
+    },
+    {
+      "cpi": 29.643999583823994,
+      "class_index": 0,
+      "band": 2,
+      "sr": 4.96692798936626,
+      "final_band": 4
+    },
+    {
+      "cpi": 88.93199875147198,
+      "class_index": 0,
+      "band": 2,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 4.316759219396451,
+      "class_index": 0,
+      "band": 3,
+      "sr": 0.3217845897705446,
+      "final_band": 0
+    },
+    {
+      "cpi": 9.712708243642012,
+      "class_index": 0,
+      "band": 3,
+      "sr": 2.4120877679617383,
+      "final_band": 2
+    },
+    {
+      "cpi": 10.791898048491126,
+      "class_index": 0,
+      "band": 3,
+      "sr": 3.0,
+      "final_band": 3
+    },
+    {
+      "cpi": 16.187847072736687,
+      "class_index": 0,
+      "band": 3,
+      "sr": 3.6177666387135994,
+      "final_band": 3
+    },
+    {
+      "cpi": 23.742175706680477,
+      "class_index": 0,
+      "band": 3,
+      "sr": 4.628678584633,
+      "final_band": 4
+    },
+    {
+      "cpi": 43.1675921939645,
+      "class_index": 0,
+      "band": 3,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 129.5027765818935,
+      "class_index": 0,
+      "band": 3,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 6.286064775285111,
+      "class_index": 0,
+      "band": 4,
+      "sr": 1.3217845897705445,
+      "final_band": 1
+    },
+    {
+      "cpi": 14.143645744391499,
+      "class_index": 0,
+      "band": 4,
+      "sr": 3.4120877679617383,
+      "final_band": 3
+    },
+    {
+      "cpi": 15.715161938212777,
+      "class_index": 0,
+      "band": 4,
+      "sr": 4.0,
+      "final_band": 4
+    },
+    {
+      "cpi": 23.572742907319167,
+      "class_index": 0,
+      "band": 4,
+      "sr": 4.6177666387136,
+      "final_band": 4
+    },
+    {
+      "cpi": 34.57335626406811,
+      "class_index": 0,
+      "band": 4,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 62.86064775285111,
+      "class_index": 0,
+      "band": 4,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 188.58194325855334,
+      "class_index": 0,
+      "band": 4,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 4.316759219396451,
+      "class_index": 2,
+      "band": 1,
+      "sr": 0.0,
+      "final_band": 0
+    },
+    {
+      "cpi": 9.712708243642012,
+      "class_index": 2,
+      "band": 1,
+      "sr": 0.4120877679617384,
+      "final_band": 0
+    },
+    {
+      "cpi": 10.791898048491126,
+      "class_index": 2,
+      "band": 1,
+      "sr": 1.0,
+      "final_band": 1
+    },
+    {
+      "cpi": 16.187847072736687,
+      "class_index": 2,
+      "band": 1,
+      "sr": 1.6177666387135994,
+      "final_band": 1
+    },
+    {
+      "cpi": 23.742175706680477,
+      "class_index": 2,
+      "band": 1,
+      "sr": 2.6286785846329996,
+      "final_band": 2
+    },
+    {
+      "cpi": 43.1675921939645,
+      "class_index": 2,
+      "band": 1,
+      "sr": 3.966927989366261,
+      "final_band": 3
+    },
+    {
+      "cpi": 129.5027765818935,
+      "class_index": 2,
+      "band": 1,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 6.286064775285111,
+      "class_index": 2,
+      "band": 2,
+      "sr": 0.0,
+      "final_band": 0
+    },
+    {
+      "cpi": 14.143645744391499,
+      "class_index": 2,
+      "band": 2,
+      "sr": 1.4120877679617383,
+      "final_band": 1
+    },
+    {
+      "cpi": 15.715161938212777,
+      "class_index": 2,
+      "band": 2,
+      "sr": 2.0,
+      "final_band": 2
+    },
+    {
+      "cpi": 23.572742907319167,
+      "class_index": 2,
+      "band": 2,
+      "sr": 2.6177666387135994,
+      "final_band": 2
+    },
+    {
+      "cpi": 34.57335626406811,
+      "class_index": 2,
+      "band": 2,
+      "sr": 3.628678584633,
+      "final_band": 3
+    },
+    {
+      "cpi": 62.86064775285111,
+      "class_index": 2,
+      "band": 2,
+      "sr": 4.96692798936626,
+      "final_band": 4
+    },
+    {
+      "cpi": 188.58194325855334,
+      "class_index": 2,
+      "band": 2,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 9.153767525770176,
+      "class_index": 2,
+      "band": 3,
+      "sr": 0.32178458977054436,
+      "final_band": 0
+    },
+    {
+      "cpi": 20.595976932982897,
+      "class_index": 2,
+      "band": 3,
+      "sr": 2.412087767961738,
+      "final_band": 2
+    },
+    {
+      "cpi": 22.88441881442544,
+      "class_index": 2,
+      "band": 3,
+      "sr": 3.0,
+      "final_band": 3
+    },
+    {
+      "cpi": 34.32662822163816,
+      "class_index": 2,
+      "band": 3,
+      "sr": 3.6177666387135994,
+      "final_band": 3
+    },
+    {
+      "cpi": 50.34572139173597,
+      "class_index": 2,
+      "band": 3,
+      "sr": 4.628678584633,
+      "final_band": 4
+    },
+    {
+      "cpi": 91.53767525770176,
+      "class_index": 2,
+      "band": 3,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 274.6130257731053,
+      "class_index": 2,
+      "band": 3,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 13.329716271026534,
+      "class_index": 2,
+      "band": 4,
+      "sr": 1.3217845897705445,
+      "final_band": 1
+    },
+    {
+      "cpi": 29.9918616098097,
+      "class_index": 2,
+      "band": 4,
+      "sr": 3.4120877679617387,
+      "final_band": 3
+    },
+    {
+      "cpi": 33.32429067756633,
+      "class_index": 2,
+      "band": 4,
+      "sr": 4.0,
+      "final_band": 4
+    },
+    {
+      "cpi": 49.9864360163495,
+      "class_index": 2,
+      "band": 4,
+      "sr": 4.617766638713599,
+      "final_band": 4
+    },
+    {
+      "cpi": 73.31343949064593,
+      "class_index": 2,
+      "band": 4,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 133.29716271026533,
+      "class_index": 2,
+      "band": 4,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 399.891488130796,
+      "class_index": 2,
+      "band": 4,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 9.153767525770176,
+      "class_index": 4,
+      "band": 1,
+      "sr": 0.0,
+      "final_band": 0
+    },
+    {
+      "cpi": 20.595976932982897,
+      "class_index": 4,
+      "band": 1,
+      "sr": 0.4120877679617379,
+      "final_band": 0
+    },
+    {
+      "cpi": 22.88441881442544,
+      "class_index": 4,
+      "band": 1,
+      "sr": 1.0,
+      "final_band": 1
+    },
+    {
+      "cpi": 34.32662822163816,
+      "class_index": 4,
+      "band": 1,
+      "sr": 1.6177666387135994,
+      "final_band": 1
+    },
+    {
+      "cpi": 50.34572139173597,
+      "class_index": 4,
+      "band": 1,
+      "sr": 2.628678584632999,
+      "final_band": 2
+    },
+    {
+      "cpi": 91.53767525770176,
+      "class_index": 4,
+      "band": 1,
+      "sr": 3.9669279893662606,
+      "final_band": 3
+    },
+    {
+      "cpi": 274.6130257731053,
+      "class_index": 4,
+      "band": 1,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 13.329716271026534,
+      "class_index": 4,
+      "band": 2,
+      "sr": 0.0,
+      "final_band": 0
+    },
+    {
+      "cpi": 29.9918616098097,
+      "class_index": 4,
+      "band": 2,
+      "sr": 1.4120877679617387,
+      "final_band": 1
+    },
+    {
+      "cpi": 33.32429067756633,
+      "class_index": 4,
+      "band": 2,
+      "sr": 2.0,
+      "final_band": 2
+    },
+    {
+      "cpi": 49.9864360163495,
+      "class_index": 4,
+      "band": 2,
+      "sr": 2.6177666387135994,
+      "final_band": 2
+    },
+    {
+      "cpi": 73.31343949064593,
+      "class_index": 4,
+      "band": 2,
+      "sr": 3.6286785846329996,
+      "final_band": 3
+    },
+    {
+      "cpi": 133.29716271026533,
+      "class_index": 4,
+      "band": 2,
+      "sr": 4.966927989366261,
+      "final_band": 4
+    },
+    {
+      "cpi": 399.891488130796,
+      "class_index": 4,
+      "band": 2,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 19.410732833868835,
+      "class_index": 4,
+      "band": 3,
+      "sr": 0.32178458977054436,
+      "final_band": 0
+    },
+    {
+      "cpi": 43.67414887620488,
+      "class_index": 4,
+      "band": 3,
+      "sr": 2.4120877679617383,
+      "final_band": 2
+    },
+    {
+      "cpi": 48.52683208467209,
+      "class_index": 4,
+      "band": 3,
+      "sr": 3.0,
+      "final_band": 3
+    },
+    {
+      "cpi": 72.79024812700813,
+      "class_index": 4,
+      "band": 3,
+      "sr": 3.6177666387135994,
+      "final_band": 3
+    },
+    {
+      "cpi": 106.7590305862786,
+      "class_index": 4,
+      "band": 3,
+      "sr": 4.628678584633,
+      "final_band": 4
+    },
+    {
+      "cpi": 194.10732833868835,
+      "class_index": 4,
+      "band": 3,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 582.321985016065,
+      "class_index": 4,
+      "band": 3,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 28.265909152679797,
+      "class_index": 4,
+      "band": 4,
+      "sr": 1.3217845897705445,
+      "final_band": 1
+    },
+    {
+      "cpi": 63.59829559352954,
+      "class_index": 4,
+      "band": 4,
+      "sr": 3.4120877679617383,
+      "final_band": 3
+    },
+    {
+      "cpi": 70.66477288169949,
+      "class_index": 4,
+      "band": 4,
+      "sr": 4.0,
+      "final_band": 4
+    },
+    {
+      "cpi": 105.99715932254924,
+      "class_index": 4,
+      "band": 4,
+      "sr": 4.617766638713599,
+      "final_band": 4
+    },
+    {
+      "cpi": 155.46250033973888,
+      "class_index": 4,
+      "band": 4,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 282.65909152679797,
+      "class_index": 4,
+      "band": 4,
+      "sr": 4.99,
+      "final_band": 4
+    },
+    {
+      "cpi": 847.9772745803939,
+      "class_index": 4,
+      "band": 4,
+      "sr": 4.99,
+      "final_band": 4
+    }
+  ],
+  "windows": [
+    {
+      "band": 1,
+      "class_index": 0,
+      "window": 731.4
+    },
+    {
+      "band": 2,
+      "class_index": 0,
+      "window": 1034.3458799999999
+    },
+    {
+      "band": 3,
+      "class_index": 0,
+      "window": 1462.7719434959995
+    },
+    {
+      "band": 4,
+      "class_index": 0,
+      "window": 2068.6520824920426
+    },
+    {
+      "band": 1,
+      "class_index": 1,
+      "window": 879.8
+    },
+    {
+      "band": 2,
+      "class_index": 1,
+      "window": 1244.2131599999998
+    },
+    {
+      "band": 3,
+      "class_index": 1,
+      "window": 1759.5662508719995
+    },
+    {
+      "band": 4,
+      "class_index": 1,
+      "window": 2488.3785919831816
+    },
+    {
+      "band": 1,
+      "class_index": 2,
+      "window": 1060.0
+    },
+    {
+      "band": 2,
+      "class_index": 2,
+      "window": 1499.052
+    },
+    {
+      "band": 3,
+      "class_index": 2,
+      "window": 2119.9593383999995
+    },
+    {
+      "band": 4,
+      "class_index": 2,
+      "window": 2998.0464963652794
+    },
+    {
+      "band": 1,
+      "class_index": 3,
+      "window": 1060.0
+    },
+    {
+      "band": 2,
+      "class_index": 3,
+      "window": 1499.052
+    },
+    {
+      "band": 3,
+      "class_index": 3,
+      "window": 2119.9593383999995
+    },
+    {
+      "band": 4,
+      "class_index": 3,
+      "window": 2998.0464963652794
+    },
+    {
+      "band": 1,
+      "class_index": 4,
+      "window": 1060.0
+    },
+    {
+      "band": 2,
+      "class_index": 4,
+      "window": 1499.052
+    },
+    {
+      "band": 3,
+      "class_index": 4,
+      "window": 2119.9593383999995
+    },
+    {
+      "band": 4,
+      "class_index": 4,
+      "window": 2998.0464963652794
+    },
+    {
+      "band": 1,
+      "class_index": 5,
+      "window": 1060.0
+    },
+    {
+      "band": 2,
+      "class_index": 5,
+      "window": 1499.052
+    },
+    {
+      "band": 3,
+      "class_index": 5,
+      "window": 2119.9593383999995
+    },
+    {
+      "band": 4,
+      "class_index": 5,
+      "window": 2998.0464963652794
+    }
+  ],
+  "alphas": [
+    {
+      "corners": 0.0,
+      "band": 1,
+      "class_index": 0,
+      "alpha": 0.0
+    },
+    {
+      "corners": 0.0,
+      "band": 1,
+      "class_index": 1,
+      "alpha": 0.0
+    },
+    {
+      "corners": 0.0,
+      "band": 1,
+      "class_index": 2,
+      "alpha": 0.0
+    },
+    {
+      "corners": 0.0,
+      "band": 1,
+      "class_index": 4,
+      "alpha": 0.0
+    },
+    {
+      "corners": 0.0,
+      "band": 3,
+      "class_index": 0,
+      "alpha": 0.0
+    },
+    {
+      "corners": 0.0,
+      "band": 3,
+      "class_index": 1,
+      "alpha": 0.0
+    },
+    {
+      "corners": 0.0,
+      "band": 3,
+      "class_index": 2,
+      "alpha": 0.0
+    },
+    {
+      "corners": 0.0,
+      "band": 3,
+      "class_index": 4,
+      "alpha": 0.0
+    },
+    {
+      "corners": 1.0,
+      "band": 1,
+      "class_index": 0,
+      "alpha": 0.0013663066598271767
+    },
+    {
+      "corners": 1.0,
+      "band": 1,
+      "class_index": 1,
+      "alpha": 0.0011359762494627113
+    },
+    {
+      "corners": 1.0,
+      "band": 1,
+      "class_index": 2,
+      "alpha": 0.0009429513680986323
+    },
+    {
+      "corners": 1.0,
+      "band": 1,
+      "class_index": 4,
+      "alpha": 0.0009429513680986323
+    },
+    {
+      "corners": 1.0,
+      "band": 3,
+      "class_index": 0,
+      "alpha": 0.0006833999418303094
+    },
+    {
+      "corners": 1.0,
+      "band": 3,
+      "class_index": 1,
+      "alpha": 0.0005681604158913611
+    },
+    {
+      "corners": 1.0,
+      "band": 3,
+      "class_index": 2,
+      "alpha": 0.0004715959242191925
+    },
+    {
+      "corners": 1.0,
+      "band": 3,
+      "class_index": 4,
+      "alpha": 0.0004715959242191925
+    },
+    {
+      "corners": 50.0,
+      "band": 1,
+      "class_index": 0,
+      "alpha": 0.06607770989996598
+    },
+    {
+      "corners": 50.0,
+      "band": 1,
+      "class_index": 1,
+      "alpha": 0.05524637330967208
+    },
+    {
+      "corners": 50.0,
+      "band": 1,
+      "class_index": 2,
+      "alpha": 0.04607460349553061
+    },
+    {
+      "corners": 50.0,
+      "band": 1,
+      "class_index": 4,
+      "alpha": 0.04607460349553061
+    },
+    {
+      "corners": 50.0,
+      "band": 3,
+      "class_index": 0,
+      "alpha": 0.03360408448019758
+    },
+    {
+      "corners": 50.0,
+      "band": 3,
+      "class_index": 1,
+      "alpha": 0.028016154007508565
+    },
+    {
+      "corners": 50.0,
+      "band": 3,
+      "class_index": 2,
+      "alpha": 0.023309397272707644
+    },
+    {
+      "corners": 50.0,
+      "band": 3,
+      "class_index": 4,
+      "alpha": 0.023309397272707644
+    },
+    {
+      "corners": 200.0,
+      "band": 1,
+      "class_index": 0,
+      "alpha": 0.23924824370354336
+    },
+    {
+      "corners": 200.0,
+      "band": 1,
+      "class_index": 1,
+      "alpha": 0.2033376904368589
+    },
+    {
+      "corners": 200.0,
+      "band": 1,
+      "class_index": 2,
+      "alpha": 0.17194793429121435
+    },
+    {
+      "corners": 200.0,
+      "band": 1,
+      "class_index": 4,
+      "alpha": 0.17194793429121435
+    },
+    {
+      "corners": 200.0,
+      "band": 3,
+      "class_index": 0,
+      "alpha": 0.12779144335303905
+    },
+    {
+      "corners": 200.0,
+      "band": 3,
+      "class_index": 1,
+      "alpha": 0.10744253070671994
+    },
+    {
+      "corners": 200.0,
+      "band": 3,
+      "class_index": 2,
+      "alpha": 0.09002798447113136
+    },
+    {
+      "corners": 200.0,
+      "band": 3,
+      "class_index": 4,
+      "alpha": 0.09002798447113136
+    },
+    {
+      "corners": 1060.0,
+      "band": 1,
+      "class_index": 0,
+      "alpha": 0.7652596718352884
+    },
+    {
+      "corners": 1060.0,
+      "band": 1,
+      "class_index": 1,
+      "alpha": 0.7002538343876428
+    },
+    {
+      "corners": 1060.0,
+      "band": 1,
+      "class_index": 2,
+      "alpha": 0.6321205588285577
+    },
+    {
+      "corners": 1060.0,
+      "band": 1,
+      "class_index": 4,
+      "alpha": 0.6321205588285577
+    },
+    {
+      "corners": 1060.0,
+      "band": 3,
+      "class_index": 0,
+      "alpha": 0.5155066532659778
+    },
+    {
+      "corners": 1060.0,
+      "band": 3,
+      "class_index": 1,
+      "alpha": 0.45251553547600043
+    },
+    {
+      "corners": 1060.0,
+      "band": 3,
+      "class_index": 2,
+      "alpha": 0.39347515700006663
+    },
+    {
+      "corners": 1060.0,
+      "band": 3,
+      "class_index": 4,
+      "alpha": 0.39347515700006663
+    },
+    {
+      "corners": 2500.0,
+      "band": 1,
+      "class_index": 0,
+      "alpha": 0.9672254267371458
+    },
+    {
+      "corners": 2500.0,
+      "band": 1,
+      "class_index": 1,
+      "alpha": 0.9416651094441935
+    },
+    {
+      "corners": 2500.0,
+      "band": 1,
+      "class_index": 2,
+      "alpha": 0.9054371480948524
+    },
+    {
+      "corners": 2500.0,
+      "band": 1,
+      "class_index": 4,
+      "alpha": 0.9054371480948524
+    },
+    {
+      "corners": 2500.0,
+      "band": 3,
+      "class_index": 0,
+      "alpha": 0.8189684430348619
+    },
+    {
+      "corners": 2500.0,
+      "band": 3,
+      "class_index": 1,
+      "alpha": 0.7584804122431138
+    },
+    {
+      "corners": 2500.0,
+      "band": 3,
+      "class_index": 2,
+      "alpha": 0.6924962206915836
+    },
+    {
+      "corners": 2500.0,
+      "band": 3,
+      "class_index": 4,
+      "alpha": 0.6924962206915836
+    },
+    {
+      "corners": 9000.0,
+      "band": 1,
+      "class_index": 0,
+      "alpha": 0.999995471719045
+    },
+    {
+      "corners": 9000.0,
+      "band": 1,
+      "class_index": 1,
+      "alpha": 0.9999639137133443
+    },
+    {
+      "corners": 9000.0,
+      "band": 1,
+      "class_index": 2,
+      "alpha": 0.999794603035228
+    },
+    {
+      "corners": 9000.0,
+      "band": 1,
+      "class_index": 4,
+      "alpha": 0.999794603035228
+    },
+    {
+      "corners": 9000.0,
+      "band": 3,
+      "class_index": 0,
+      "alpha": 0.9978722753169568
+    },
+    {
+      "corners": 9000.0,
+      "band": 3,
+      "class_index": 1,
+      "alpha": 0.9939934030472997
+    },
+    {
+      "corners": 9000.0,
+      "band": 3,
+      "class_index": 2,
+      "alpha": 0.9856694899549254
+    },
+    {
+      "corners": 9000.0,
+      "band": 3,
+      "class_index": 4,
+      "alpha": 0.9856694899549254
+    }
+  ],
+  "update_cpi": [
+    {
+      "cpi_old": 10.0,
+      "corners": 0.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 10.0
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 0.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 10.0
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 0.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 10.0
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 40.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 10.270427237924778
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 40.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 10.201458432258773
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 40.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 9.743448466588395
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 300.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 12.215572508719285
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 300.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 12.126018928128051
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 300.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 11.53411470969993
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 2000.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 37.968680628167114
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 2000.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 37.44503649475123
+    },
+    {
+      "cpi_old": 10.0,
+      "corners": 2000.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 34.14834410693648
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 0.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 22.9
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 0.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 22.9
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 0.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 22.9
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 40.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 23.519278374847737
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 40.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 23.16070527674498
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 40.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 20.92731201938809
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 300.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 27.97366104496716
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 300.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 27.50843283141763
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 300.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 24.639936135120735
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 2000.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 86.94827863850267
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 2000.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 84.2502373014801
+    },
+    {
+      "cpi_old": 22.9,
+      "corners": 2000.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 69.21569433165706
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 0.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 48.5
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 0.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 48.5
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 0.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 48.5
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 40.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 49.81157210393518
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 40.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 48.2301394666027
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 40.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 39.46051101347508
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 300.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 59.24552666728853
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 300.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 57.19682658285407
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 300.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 46.050015483190556
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 2000.0,
+      "incident_points": 0.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 184.1481010466105
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 2000.0,
+      "incident_points": 1.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 172.45172643973098
+    },
+    {
+      "cpi_old": 48.5,
+      "corners": 2000.0,
+      "incident_points": 8.0,
+      "band": 2,
+      "class_index": 2,
+      "cpi_new": 119.37573434618952
+    }
+  ],
+  "session_cpi": [
+    {
+      "corners": 100.0,
+      "incident_points": 0.0,
+      "cpi": null
+    },
+    {
+      "corners": 100.0,
+      "incident_points": 4.0,
+      "cpi": 25.0
+    },
+    {
+      "corners": 0.0,
+      "incident_points": 3.0,
+      "cpi": 0.0
+    },
+    {
+      "corners": 42.0,
+      "incident_points": 8.0,
+      "cpi": 5.25
+    }
+  ],
+  "project": [
+    {
+      "comment": "clean laps crossing 3.00 - the band-remap bonus",
+      "sr_before": 2.99,
+      "class_index": 2,
+      "corners": 42.0,
+      "incident_points": 0.0,
+      "projected_sr": 3.4600727290581217,
+      "delta": 0.4700727290581215,
+      "cpi_new": 30.951471003760545
+    },
+    {
+      "comment": "8x in a short race",
+      "sr_before": 3.46,
+      "class_index": 2,
+      "corners": 70.0,
+      "incident_points": 8.0,
+      "projected_sr": 3.3393500597755317,
+      "delta": -0.12064994022446829,
+      "cpi_new": 28.593670434253582
+    },
+    {
+      "comment": "already at the display ceiling",
+      "sr_before": 4.99,
+      "class_index": 4,
+      "corners": 300.0,
+      "incident_points": 0.0,
+      "projected_sr": 4.99,
+      "delta": 0.0,
+      "cpi_new": 149.57369138277627
+    },
+    {
+      "comment": "rookie, short window",
+      "sr_before": 1.0,
+      "class_index": 0,
+      "corners": 150.0,
+      "incident_points": 4.0,
+      "projected_sr": 1.2661135491299933,
+      "delta": 0.2661135491299933,
+      "cpi_new": 6.060522990742569
+    },
+    {
+      "comment": "class D",
+      "sr_before": 2.5,
+      "class_index": 1,
+      "corners": 500.0,
+      "incident_points": 2.0,
+      "projected_sr": 3.495150366130979,
+      "delta": 0.9951503661309791,
+      "cpi_new": 21.749985446077332
+    },
+    {
+      "comment": "class B, endurance stint",
+      "sr_before": 3.0,
+      "class_index": 3,
+      "corners": 1200.0,
+      "incident_points": 6.0,
+      "projected_sr": 3.6804768759161743,
+      "delta": 0.6804768759161743,
+      "cpi_new": 52.08676790309156
+    },
+    {
+      "comment": "class A, long race",
+      "sr_before": 4.2,
+      "class_index": 4,
+      "corners": 2500.0,
+      "incident_points": 12.0,
+      "projected_sr": 4.849011953788784,
+      "delta": 0.6490119537887837,
+      "cpi_new": 123.36999160958173
+    },
+    {
+      "comment": "no corners driven - nothing may change",
+      "sr_before": 2.0,
+      "class_index": 2,
+      "corners": 0.0,
+      "incident_points": 0.0,
+      "projected_sr": 2.0,
+      "delta": 0.0,
+      "cpi_new": 15.715161938212777
+    },
+    {
+      "comment": "perfectly clean",
+      "sr_before": 2.0,
+      "class_index": 2,
+      "corners": 100.0,
+      "incident_points": 0.0,
+      "projected_sr": 2.1016375682764843,
+      "delta": 0.10163756827648429,
+      "cpi_new": 16.799259390390205
+    },
+    {
+      "comment": "disaster near the floor",
+      "sr_before": 0.5,
+      "class_index": 0,
+      "corners": 200.0,
+      "incident_points": 20.0,
+      "projected_sr": 0.7002396385285021,
+      "delta": 0.20023963852850213,
+      "cpi_new": 5.533941001057157
+    },
+    {
+      "comment": "pro, one incident",
+      "sr_before": 3.99,
+      "class_index": 5,
+      "corners": 800.0,
+      "incident_points": 1.0,
+      "projected_sr": 4.878540280819194,
+      "delta": 0.8885402808191936,
+      "cpi_new": 183.16709698544582
+    },
+    {
+      "comment": "one bad lap at Spa (21 corners, weight 1.00)",
+      "sr_before": 2.75,
+      "class_index": 2,
+      "corners": 21.0,
+      "incident_points": 4.0,
+      "projected_sr": 2.6695608900390626,
+      "delta": -0.0804391099609374,
+      "cpi_new": 24.387866516222
+    },
+    {
+      "comment": "the same lap in open qualifying",
+      "sr_before": 2.75,
+      "class_index": 2,
+      "corners": 10.5,
+      "incident_points": 2.0,
+      "projected_sr": 2.709108836862022,
+      "delta": -0.040891163137978026,
+      "cpi_new": 25.02918749999142
+    }
+  ],
+  "corner_accumulator": [
+    {
+      "comment": "one full lap in 2% steps",
+      "corners_per_lap": 14.0,
+      "samples": [
+        {
+          "lap_dist_pct": 0.0,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.02,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.04,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.06,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.08,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.1,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.12,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.14,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.16,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.18,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.2,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.22,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.24,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.26,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.28,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.3,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.32,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.34,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.36,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.38,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.4,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.42,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.44,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.46,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.48,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.5,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.52,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.54,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.56,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.58,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.6,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.62,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.64,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.66,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.68,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.7,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.72,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.74,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.76,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.78,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.8,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.82,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.84,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.86,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.88,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.9,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.92,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.94,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.96,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.98,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.0,
+          "track_surface": 3
+        }
+      ],
+      "corners": 14.00000000000001
+    },
+    {
+      "comment": "crossing start/finish",
+      "corners_per_lap": 20.0,
+      "samples": [
+        {
+          "lap_dist_pct": 0.9,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.95,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.99,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.03,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.08,
+          "track_surface": 3
+        }
+      ],
+      "corners": 3.6
+    },
+    {
+      "comment": "a tow: the jump itself credits nothing",
+      "corners_per_lap": 20.0,
+      "samples": [
+        {
+          "lap_dist_pct": 0.1,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.15,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.8,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.85,
+          "track_surface": 3
+        }
+      ],
+      "corners": 1.9999999999999984
+    },
+    {
+      "comment": "time spent in the pit box",
+      "corners_per_lap": 20.0,
+      "samples": [
+        {
+          "lap_dist_pct": 0.1,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.15,
+          "track_surface": 1
+        },
+        {
+          "lap_dist_pct": 0.2,
+          "track_surface": 1
+        },
+        {
+          "lap_dist_pct": 0.25,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.3,
+          "track_surface": 3
+        }
+      ],
+      "corners": 0.9999999999999998
+    },
+    {
+      "comment": "out of the world and back",
+      "corners_per_lap": 20.0,
+      "samples": [
+        {
+          "lap_dist_pct": 0.1,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.15,
+          "track_surface": -1
+        },
+        {
+          "lap_dist_pct": 0.4,
+          "track_surface": 3
+        },
+        {
+          "lap_dist_pct": 0.45,
+          "track_surface": 3
+        }
+      ],
+      "corners": 0.9999999999999998
+    }
+  ]
+}

@@ -91,6 +91,11 @@ windows = { version = "0.58", features = [
     "Win32_UI_WindowsAndMessaging",
 ] }
 
+[dev-dependencies]
+# The Safety Rating reference vectors sit on band floors, where one ulp decides
+# the band: the default parser rounds some of their numbers off by one.
+serde_json = { version = "1.0", features = ["float_roundtrip"] }
+
 [features]
 default = []
 dev = [

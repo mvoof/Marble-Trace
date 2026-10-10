@@ -44,6 +44,19 @@ describe('widget catalog collection', () => {
   });
 });
 
+describe('widget catalog sizing', () => {
+  // The frame of a content-sized widget hugs a plate the widget paints itself;
+  // a container that painted the user's background would be the stored width
+  // again, with the plate sitting in it.
+  it('lets only a widget that paints its own plate size to its content', () => {
+    const plateless = WIDGETS.filter(
+      (manifest) => manifest.contentSized && !manifest.transparentContainer
+    ).map((manifest) => manifest.id);
+
+    expect(plateless).toEqual([]);
+  });
+});
+
 describe('widget catalog telemetry declarations', () => {
   it('declares only events the backend knows how to gate', () => {
     const known = Object.keys(TELEMETRY_EVENT_BITS);

@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import type { ReactNode } from 'react';
 
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
-import { widgetFrameStyle } from '@entities/widget/widget-frame';
+import { widgetBoxSize, widgetFrameStyle } from '@entities/widget/widget-frame';
 import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import styles from './RemoteWidgetFrame.module.scss';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
@@ -46,6 +46,7 @@ export const RemoteWidgetFrame = observer(
     const width = userSettings.currentWidth;
     const height = userSettings.currentHeight;
     const autoHeight = widget.autoHeight ?? false;
+    const contentSized = widget.contentSized ?? false;
     const transparentContainer = widget.transparentContainer ?? false;
 
     const widgetScale = widget.scaleFromHeight
@@ -58,6 +59,7 @@ export const RemoteWidgetFrame = observer(
       widgetScale,
       transparentContainer,
       autoHeight,
+      contentSized,
       hidden: isHidden,
     });
 
@@ -68,8 +70,7 @@ export const RemoteWidgetFrame = observer(
         style={{
           left: userSettings.x,
           top: userSettings.y,
-          width,
-          height: autoHeight ? 'auto' : height,
+          ...widgetBoxSize({ width, height, autoHeight, contentSized }),
         }}
       >
         <ErrorBoundary>

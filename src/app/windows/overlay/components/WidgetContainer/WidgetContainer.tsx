@@ -3,6 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
 import {
   resizeDirectionsFor,
+  scaleFromCorner,
+  widgetBoxSize,
   widgetFrameStyle,
   type ResizeDirection,
 } from '@entities/widget/widget-frame';
@@ -50,6 +52,10 @@ export const WidgetContainer = observer(
       widgetH: 0,
       widgetX: 0,
       widgetY: 0,
+      // The box a content-sized widget drew at the press; its stored width is
+      // only the scale, not its size.
+      drawnW: 0,
+      drawnH: 0,
     });
 
     const isConnected = simStore.status === 'connected';
@@ -69,6 +75,7 @@ export const WidgetContainer = observer(
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
     const autoHeight = widget?.autoHeight ?? false;
+    const contentSized = widget?.contentSized ?? false;
     const overflowVisible = widget?.overflowVisible ?? false;
     const transparentContainer = widget?.transparentContainer ?? false;
 
@@ -130,6 +137,9 @@ export const WidgetContainer = observer(
         e.stopPropagation();
 
         const currentWidget = liveWidgets.getWidget(widgetId);
+        const drawnBox = (e.currentTarget as HTMLElement).closest<HTMLElement>(
+          '[data-widget-id]'
+        );
 
         isResizingRef.current = true;
 
@@ -140,6 +150,8 @@ export const WidgetContainer = observer(
           widgetH: currentWidget?.userSettings.currentHeight ?? designHeight,
           widgetX: currentWidget?.userSettings.x ?? 0,
           widgetY: currentWidget?.userSettings.y ?? 0,
+          drawnW: drawnBox?.offsetWidth ?? 0,
+          drawnH: drawnBox?.offsetHeight ?? 0,
         };
 
         const onMouseMove = (ev: MouseEvent) => {
@@ -155,6 +167,29 @@ export const WidgetContainer = observer(
           const startH = resizeStartRef.current.widgetH;
           const startX = resizeStartRef.current.widgetX;
           const startY = resizeStartRef.current.widgetY;
+
+          if (widget?.contentSized) {
+            const scaled = scaleFromCorner({
+              direction,
+              dx,
+              start: { x: startX, y: startY, width: startW, height: startH },
+              drawn: {
+                width: resizeStartRef.current.drawnW,
+                height: resizeStartRef.current.drawnH,
+              },
+              minWidth: minW,
+            });
+
+            settingsClient.resizeWidget(
+              widgetId,
+              scaled.x,
+              scaled.y,
+              scaled.width,
+              scaled.height
+            );
+
+            return;
+          }
 
           let newW = startW;
           let newH = startH;
@@ -230,11 +265,13 @@ export const WidgetContainer = observer(
         designHeight,
         widget?.lockAspectRatio,
         widget?.scaleFromHeight,
+        widget?.contentSized,
       ]
     );
 
     const resizeDirections: ResizeDirection[] = resizeDirectionsFor({
       autoHeight,
+      contentSized,
       lockAspectRatio: widget?.lockAspectRatio,
       scaleFromHeight,
     });
@@ -245,10 +282,13 @@ export const WidgetContainer = observer(
       widgetScale,
       transparentContainer,
       autoHeight,
+      contentSized,
       hidden: shouldHide,
     });
 
     const borderRadius = frameStyle.borderRadius;
+    const boxSize = widgetBoxSize({ width, height, autoHeight, contentSized });
+    const isAutoSized = boxSize.width === 'auto' || boxSize.height === 'auto';
 
     return (
       <div
@@ -257,14 +297,13 @@ export const WidgetContainer = observer(
         style={{
           left: x,
           top: y,
-          width,
-          height: autoHeight ? 'auto' : height,
+          ...boxSize,
         }}
       >
         <div
           role="presentation"
           className={`${styles.dragWrapper} ${dragMode ? styles.draggingCursor : ''}`}
-          style={autoHeight ? { height: 'auto' } : undefined}
+          style={isAutoSized ? boxSize : undefined}
           onMouseDown={handleDragMouseDown}
         >
           <ErrorBoundary>

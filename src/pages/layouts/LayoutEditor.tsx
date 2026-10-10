@@ -407,19 +407,34 @@ export const LayoutEditor = observer(
     const handleSnap = (pos: SnapPosition) => {
       if (!selectedWidget) return;
 
-      const width = selectedWidget.userSettings.currentWidth;
+      const widgetElement = document.querySelector<HTMLElement>(
+        `[data-widget-id="${selectedWidget.id}"]`
+      );
+      // A content-sized widget draws narrower than its stored width, which is
+      // only its scale: measure it. `offsetWidth` is already in world units —
+      // the canvas zoom is a CSS transform, which layout sizes ignore.
+      const width =
+        selectedWidget.contentSized && widgetElement
+          ? widgetElement.offsetWidth
+          : selectedWidget.userSettings.currentWidth;
       // autoHeight widgets size themselves from content, so the stored
       // currentHeight is stale -- measure the real rendered box and convert
       // it from screen pixels (the canvas is zoomed via CSS transform: scale)
       // back to world units using the known width as a scale reference.
-      const widgetElement = document.querySelector(
-        `[data-widget-id="${selectedWidget.id}"]`
-      );
-      const widgetRect = widgetElement?.getBoundingClientRect();
-      const height =
-        selectedWidget.autoHeight && widgetRect && widgetRect.width > 0
-          ? Math.round(widgetRect.height * (width / widgetRect.width))
-          : selectedWidget.userSettings.currentHeight;
+      const measuredHeight = (): number => {
+        if (selectedWidget.contentSized && widgetElement) {
+          return widgetElement.offsetHeight;
+        }
+
+        const widgetRect = widgetElement?.getBoundingClientRect();
+
+        if (selectedWidget.autoHeight && widgetRect && widgetRect.width > 0) {
+          return Math.round(widgetRect.height * (width / widgetRect.width));
+        }
+
+        return selectedWidget.userSettings.currentHeight;
+      };
+      const height = measuredHeight();
       // Widget coordinates are virtual-desktop wide, so the corners are those
       // of the screen the widget currently sits on, not of the desktop box.
       const monitors = layouts.editingLayout?.monitors ?? [];

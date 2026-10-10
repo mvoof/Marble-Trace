@@ -40,7 +40,7 @@
     <title>Marble Trace — Free Open-Source iRacing Telemetry Overlay</title>
     <meta
       name="description"
-      content="Marble Trace is a free, open-source iRacing overlay for Windows, built in Rust and Tauri. 28 widgets: standings, relative, track map, fuel, delta, radar — on your monitors, a tablet, a phone or OBS."
+      content="Marble Trace is a free, open-source iRacing overlay for Windows, built in Rust and Tauri. 29 widgets: standings, relative, track map, fuel, delta, radar — on your monitors, a tablet, a phone or OBS."
     />
     <meta
       name="keywords"
@@ -81,7 +81,7 @@
     />
     <meta
       property="og:description"
-      content="28 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network."
+      content="29 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network."
     />
     <meta property="og:url" content="https://marbletrace.com/" />
     <meta property="og:image" content="https://marbletrace.com/og-image.jpg" />
@@ -98,7 +98,7 @@
     />
     <meta
       name="twitter:description"
-      content="28 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network."
+      content="29 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network."
     />
     <meta name="twitter:image" content="https://marbletrace.com/og-image.jpg" />
 
@@ -112,7 +112,7 @@
             "@type": "SoftwareApplication",
             "@id": "https://marbletrace.com/#app",
             "name": "Marble Trace",
-            "description": "Free, open-source iRacing telemetry overlay built with Rust and Tauri. 28 widgets including standings, relative, track map, fuel calculator, delta and proximity radar. Layouts switch per session and can be opened on any screen on the local network, including a tablet, a phone or an OBS browser source.",
+            "description": "Free, open-source iRacing telemetry overlay built with Rust and Tauri. 29 widgets including standings, relative, track map, fuel calculator, delta and proximity radar. Layouts switch per session and can be opened on any screen on the local network, including a tablet, a phone or an OBS browser source.",
             "operatingSystem": "Windows 10, Windows 11",
             "applicationCategory": "GameApplication",
             "applicationSubCategory": "Sim racing telemetry overlay",
@@ -791,7 +791,7 @@
                   <h3 class="stage-name" id="gw-name">Race Dash</h3>
                   <p class="stage-index" aria-hidden="true">
                     <span id="gw-index">01</span> /
-                    <span id="gw-total">28</span>
+                    <span id="gw-total">29</span>
                   </p>
                 </div>
               </div>
@@ -1499,6 +1499,31 @@
                     type="button"
                     class="frame"
                     role="tab"
+                    id="gw-tab-incident-tracker"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/incident-tracker.png"
+                    data-name="Incident Tracker"
+                    data-alt="Incident Tracker widget"
+                    data-group="Car &amp; Session"
+                    data-desc-id="gw-desc-incident-tracker"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/incident-tracker.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">Incident Tracker</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
                     id="gw-tab-stream-chat"
                     aria-controls="gw-stage"
                     aria-selected="false"
@@ -1529,7 +1554,7 @@
                frame. The stage reads its description from here. -->
           <details class="catalog">
             <summary class="catalog-summary">
-              All 28 widgets, one line each
+              All 29 widgets, one line each
             </summary>
 
             <div class="catalog-body">
@@ -1740,6 +1765,13 @@
                       session is turning.
                     </dd>
                   </div>
+                  <div class="catalog-item">
+                    <dt>Incident Tracker</dt>
+                    <dd id="gw-desc-incident-tracker">
+                      Incidents against the limit, the next penalty, and an
+                      estimate of your Safety Rating at the flag.
+                    </dd>
+                  </div>
                 </dl>
               </div>
               <div class="catalog-group">
@@ -1789,7 +1821,7 @@
          hidden from assistive tech - every word on it is said again in the
          sections around it.
 
-         The counts are the repo's own: 28 widget manifests, four locales.
+         The counts are the repo's own: 29 widget manifests, four locales.
          The loop is CSS alone - each track holds its row twice and slides by
          one row's width.
          ==================================================================== -->
@@ -1865,7 +1897,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">28 widgets</li>
+              <li class="tape-word">29 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>
@@ -1873,7 +1905,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">28 widgets</li>
+              <li class="tape-word">29 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>
@@ -1881,7 +1913,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">28 widgets</li>
+              <li class="tape-word">29 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>
@@ -1891,7 +1923,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">28 widgets</li>
+              <li class="tape-word">29 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>
@@ -1899,7 +1931,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">28 widgets</li>
+              <li class="tape-word">29 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>
@@ -1907,7 +1939,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">28 widgets</li>
+              <li class="tape-word">29 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>

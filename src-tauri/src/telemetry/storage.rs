@@ -1,5 +1,6 @@
 //! The files the telemetry layer keeps under the app data directory: one
-//! recorded shape per track, one reference lap per track, car and condition.
+//! recorded shape per track, one reference lap per track, car and condition,
+//! and the Safety Rating state of the event in progress.
 //!
 //! Plain functions on a directory, so the I/O worker and the commands share
 //! them and a test can point them at a temporary one. Nothing here may be
@@ -11,12 +12,15 @@ use std::sync::Arc;
 use tracing::{info, warn};
 
 use crate::computations::reference_selection::StoredReferences;
+use crate::computations::safety_rating::SafetyRatingState;
 use crate::model::reference_lap::{ReferenceLapData, TrackCondition};
 use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::TrackShapePayload;
 
 const TRACKS_DIR: &str = "tracks";
 const REFERENCE_LAPS_DIR: &str = "reference_laps";
+/// One file, overwritten: the Safety Rating state of the event in progress.
+const SAFETY_RATING_FILE: &str = "safety_rating.json";
 const FILE_VERSION: u32 = 1;
 
 pub fn track_shape_path(data_dir: &Path, track_id: i32) -> PathBuf {
@@ -159,6 +163,41 @@ pub fn save_reference_lap(data_dir: &Path, data: &ReferenceLapData) {
     if let Ok(json) = serde_json::to_string(&stored) {
         let _ = fs::write(reference_lap_path(data_dir, &key), json);
     }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct StoredSafetyRating {
+    version: u32,
+    state: SafetyRatingState,
+}
+
+/// Overwrites the saved Safety Rating state with the event in progress.
+pub fn save_safety_rating(data_dir: &Path, state: SafetyRatingState) {
+    let stored = StoredSafetyRating {
+        version: FILE_VERSION,
+        state,
+    };
+
+    if fs::create_dir_all(data_dir).is_err() {
+        return;
+    }
+
+    if let Ok(json) = serde_json::to_string(&stored) {
+        let _ = fs::write(data_dir.join(SAFETY_RATING_FILE), json);
+    }
+}
+
+/// The saved Safety Rating state, when it belongs to this event. A save from
+/// an earlier event is left on disk for the next save to overwrite.
+pub fn load_safety_rating(data_dir: &Path, sub_session_id: i32) -> Option<SafetyRatingState> {
+    let json = fs::read_to_string(data_dir.join(SAFETY_RATING_FILE)).ok()?;
+    let stored = serde_json::from_str::<StoredSafetyRating>(&json).ok()?;
+
+    if stored.version < FILE_VERSION || stored.state.sub_session_id != sub_session_id {
+        return None;
+    }
+
+    Some(stored.state)
 }
 
 /// The reference laps stored for the session's track and the player's car —

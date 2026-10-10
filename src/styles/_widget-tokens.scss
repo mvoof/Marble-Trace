@@ -91,6 +91,8 @@ $widget-row-player-gradient: linear-gradient(
 // Tints — translucent fills derived from palette (row highlights, sector cells)
 $widget-tint-positive: rgba($race-green, 0.12);
 $widget-tint-positive-subtle: rgba($race-green, 0.07);
+$widget-tint-danger: rgba($race-red, 0.12);
+$widget-tint-neutral: rgba($race-neutral, 0.1);
 $widget-tint-best-lap: rgba($race-purple, 0.1);
 
 // Status

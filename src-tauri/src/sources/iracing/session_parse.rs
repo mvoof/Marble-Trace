@@ -219,6 +219,8 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                 i_rating: raw_driver.i_rating.unwrap_or(0),
                 lic_string: raw_driver.lic_string.unwrap_or_default(),
                 lic_color: raw_driver.lic_color.unwrap_or_default(),
+                lic_level: raw_driver.lic_level.filter(|level| *level > 0),
+                lic_sub_level: raw_driver.lic_sub_level.filter(|sub_level| *sub_level >= 0),
                 incident_count: raw_driver.cur_driver_incident_count.unwrap_or(0),
                 is_pace_car: raw_driver.car_is_pace_car == Some(1)
                     || (pace_car_idx.is_some() && raw_driver.car_idx == pace_car_idx),
@@ -315,6 +317,11 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                 .as_ref()
                 .and_then(|options| options.incident_warning_subsequent_limit.as_ref()),
         ),
+        track_num_turns: weekend.track_num_turns.filter(|turns| *turns > 0),
+        team_racing: weekend.team_racing.unwrap_or(0) != 0,
+        league_id: weekend.league_id.filter(|league| *league > 0),
+        event_type: weekend.event_type.unwrap_or_default(),
+        sub_session_id: weekend.sub_session_id.filter(|id| *id > 0),
         current_session_num: session_info.current_session_num.unwrap_or(0),
         sessions,
         player_car_idx: driver_info.driver_car_idx.unwrap_or(-1),
@@ -372,6 +379,13 @@ struct RawWeekendInfo {
     track_wind_vel: Option<String>,
     track_wind_dir: Option<String>,
     track_relative_humidity: Option<String>,
+    track_num_turns: Option<i32>,
+    team_racing: Option<i32>,
+    #[serde(rename = "LeagueID")]
+    league_id: Option<i32>,
+    event_type: Option<String>,
+    #[serde(rename = "SubSessionID")]
+    sub_session_id: Option<i32>,
     weekend_options: Option<RawWeekendOptions>,
     /// Unmodeled WeekendInfo keys — the weather forecast lives here
     /// (WeatherForecastList / WeatherForecast, format varies by build).
@@ -487,6 +501,8 @@ struct RawDriver {
     i_rating: Option<i32>,
     lic_string: Option<String>,
     lic_color: Option<String>,
+    lic_level: Option<i32>,
+    lic_sub_level: Option<i32>,
     cur_driver_incident_count: Option<i32>,
     car_is_pace_car: Option<i32>,
     #[serde(rename = "CarIsAI")]
@@ -546,6 +562,11 @@ WeekendInfo:
  TrackWindVel: 0.89 m/s
  TrackWindDir: 0.00 rad
  TrackRelativeHumidity: 45 %
+ TrackNumTurns: 13
+ TeamRacing: 1
+ LeagueID: 0
+ EventType: Race
+ SubSessionID: 89241518
  WeekendOptions:
   Date: 2025-05-21
   IncidentLimit: 17
@@ -592,6 +613,8 @@ DriverInfo:
    CarScreenName: Mazda MX-5
    CarScreenNameShort: MX-5
    IRating: 2350
+   LicLevel: 19
+   LicSubLevel: 351
    LicString: A 3.51
    LicColor: 0x0153db
    CurDriverIncidentCount: 2
@@ -638,6 +661,11 @@ QualifyResultsInfo:
         assert_eq!(snapshot.incident_limit, Some(17));
         assert_eq!(snapshot.incident_penalty_initial, Some(8));
         assert_eq!(snapshot.incident_penalty_subsequent, Some(4));
+        assert_eq!(snapshot.track_num_turns, Some(13));
+        assert!(snapshot.team_racing);
+        assert_eq!(snapshot.league_id, None, "LeagueID 0 is no league");
+        assert_eq!(snapshot.event_type, "Race");
+        assert_eq!(snapshot.sub_session_id, Some(89_241_518));
         assert_eq!(snapshot.current_session_num, 1);
         assert_eq!(snapshot.sessions.len(), 2);
         assert_eq!(snapshot.sessions[0].session_laps, "unlimited");
@@ -660,6 +688,12 @@ QualifyResultsInfo:
         assert_eq!(player.car_class_short_name, "MX-5");
         assert_eq!(player.car_class_color, "#ffd259");
         assert_eq!(player.i_rating, 2350);
+        assert_eq!(player.lic_level, Some(19));
+        assert_eq!(player.lic_sub_level, Some(351));
+        assert_eq!(
+            snapshot.cars[1].lic_sub_level, None,
+            "a rating the sim has not sent is unknown, not zero"
+        );
         assert!(!player.is_pace_car);
         // An AI session publishes no `FlairID` at all, so the robot badge in the
         // country-flag column hangs on this flag alone.

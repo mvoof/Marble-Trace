@@ -9,6 +9,7 @@ import { action } from 'mobx';
 import { TrackSurface } from '@shared/contracts/domain';
 import type { PreviewTarget } from './preview-target';
 import { computeDriverEntries } from './mocks/driver-entries';
+import { mockSafetyRating } from './mocks/safety-rating';
 import { mockCarPositions } from './mocks/field';
 import { seedField } from './field-seed';
 import { mockLapDelta, mockLapLog, mockLapTiming } from './mocks/delta';
@@ -143,6 +144,10 @@ export const seedSampleTelemetry = action((store: PreviewTarget) => {
   // No incident markers in the baseline: they are laid down by a scenario, and
   // re-seeding the same store has to take them back off the map again.
   store.backendComputed.updateIncidents({ incidents: [] });
+
+  // The recording carries no Safety Rating estimate — it was made before the
+  // frame existed — so the baseline states a clean race for the Incident Tracker.
+  store.player.updateSafetyRating(mockSafetyRating());
 
   const entries = computeDriverEntries(
     sampleSnapshot.carIdx ?? null,

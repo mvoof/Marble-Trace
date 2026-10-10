@@ -222,6 +222,16 @@ pub struct CarStatusFrame {
 
     /// Drag reduction system state, on the cars that have one
     pub drs: Option<DrsState>,
+
+    /// The local driver's own incident points this session — not the team's,
+    /// and live, unlike `CurDriverIncidentCount` in the session YAML.
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/playercarmyincidentcount/
+    pub player_car_my_incident_count: Option<i32>,
+
+    /// The whole crew's incident points in a team race, which is what the
+    /// session's incident limit and penalties count.
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/playercarteamincidentcount/
+    pub player_car_team_incident_count: Option<i32>,
 }
 
 // iRacing emits uninitialized memory (garbage floats or zeroes) for temp fields

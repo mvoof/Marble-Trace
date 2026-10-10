@@ -1,0 +1,6 @@
+// The limit is context for the count, read once per session, so it sits small
+// on the count's baseline rather than competing with it.
+.limit {
+  font-size: fs(xxxs);
+  opacity: 0.75;
+}

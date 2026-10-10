@@ -1,0 +1,41 @@
+import type { WidgetManifest } from '@shared/contracts/widget-settings';
+import {
+  COMMON_WIDGET_DEFAULTS,
+  PANEL_APPEARANCE_DEFAULTS,
+} from '@widgets/widget-manifest';
+import { INCIDENT_TRACKER_SETTINGS } from './settings-schema';
+
+export const INCIDENT_TRACKER_MANIFEST: WidgetManifest = {
+  id: 'incident-tracker',
+  telemetryEvents: ['safetyRating'],
+  previewScenarios: [
+    'incident-clean',
+    'incident-minor',
+    'incident-penalty-warning',
+    'incident-dq',
+    'incident-unranked',
+  ],
+  label: 'Incident Tracker',
+  description:
+    'Incidents, penalties and an estimated Safety Rating at the flag.',
+  autoHeight: true,
+  // The plate follows its content — a session without penalties drops a
+  // column — so the widget paints its own background and border on it, the
+  // container stays transparent and hugs it, and a drag can only scale it.
+  transparentContainer: true,
+  contentSized: true,
+  requiredCapabilities: ['standings'],
+  designWidth: 180,
+  designHeight: 60,
+  userSettings: {
+    enabled: false,
+    x: 200,
+    y: 200,
+    currentWidth: 180,
+    currentHeight: 60,
+    ...COMMON_WIDGET_DEFAULTS,
+    ...PANEL_APPEARANCE_DEFAULTS,
+    ...INCIDENT_TRACKER_SETTINGS.defaults,
+  },
+  settingsSchema: INCIDENT_TRACKER_SETTINGS,
+};

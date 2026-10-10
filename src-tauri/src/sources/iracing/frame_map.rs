@@ -134,6 +134,8 @@ impl From<&IracingFrame> for CarStatusFrame {
             energy_battery_to_mgu_k_lap: Some(f.energy_battery_to_mgu_k_lap),
             dc_mguk_deploy_mode: Some(f.dc_mguk_deploy_mode),
             drs: Some(DrsState::from(f.drs_status)),
+            player_car_my_incident_count: Some(f.player_car_my_incident_count),
+            player_car_team_incident_count: Some(f.player_car_team_incident_count),
         }
     }
 }

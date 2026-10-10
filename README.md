@@ -49,7 +49,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 - **Driving HUD** — [Race Dash](#race-dash) · [Invisible Dash](#invisible-dash) · [RPM Lights](#rpm-lights) · [Engine Panel](#engine-panel) · [Battery](#battery) · [DRS](#drs) · [Input Trace](#input-trace) · [G-Meter](#g-meter) · [Coach](#coach)
 - **Timing & Standings** — [Standings](#standings) · [Relative](#relative) · [Relative Map](#relative-map) · [Delta HUD](#delta-hud) · [Sector Matrix](#sector-matrix) · [Lap Log](#lap-log) · [Timer](#timer)
 - **Awareness** — [Track Map](#track-map) · [Proximity Radar](#proximity-radar) · [Radar Bar](#radar-bar) · [Close Battle](#close-battle) · [Wheel to Wheel](#wheel-to-wheel) · [Flags (LED/Flat)](#flags-led--flat)
-- **Car & Session** — [Pit Service](#pit-service) · [Pit Line](#pit-line) · [Fuel](#fuel) · [Weather](#weather)
+- **Car & Session** — [Pit Service](#pit-service) · [Pit Line](#pit-line) · [Fuel](#fuel) · [Weather](#weather) · [Incident Tracker](#incident-tracker)
 - **Streaming** — [Stream Chat](#stream-chat)
 
 ---
@@ -285,6 +285,14 @@ Wind direction compass, temperature, humidity, and forecast strip for dynamic we
 
 ---
 
+### Incident Tracker
+
+Your incidents against the session limit, the drive-throughs served and how many points are left before the next one, and an estimate of where your Safety Rating lands at the flag — with the clean corners it would take to break even. Two compact tiers; the penalty column is left out in a session that hands out none. The rating is an estimate from a community model (see [Credits](#credits)); a session that does not move it shows **OFF**.
+
+<img src="site/assets/widgets/incident-tracker.png" alt="Incident Tracker" width="180">
+
+---
+
 ## Streaming
 
 ### Stream Chat
@@ -378,6 +386,14 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the full release history.
+
+---
+
+## Credits
+
+Marble Trace's Safety Rating estimate comes from the community, not from iRacing — iRacing does not publish the formula, and the widget shows the number as an estimate.
+
+- **Safety Rating** — the model reconstructed by [Nishizumi-SR](https://github.com/nishizumi-maho/Nishizumi-SR) (MIT) from iRacing's official before/after CPI on 123k race sessions.
 
 ---
 

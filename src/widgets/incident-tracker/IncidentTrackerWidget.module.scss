@@ -1,0 +1,29 @@
+// The plate is as wide as what it holds — a session without penalties or a
+// tier switched off narrows it — so it paints the user's background and border
+// itself; the container around it is transparent (`transparentContainer`).
+.root {
+  justify-content: center;
+  padding: sp(xs) sp(sm);
+  border: 1px solid var(--widget-border);
+  border-radius: radius(lg);
+  background: var(--widget-bg);
+  font-family: $font-widget;
+  line-height: 1;
+}
+
+// A hairline between the tiers: parts of one readout, not two cards.
+.divider {
+  height: 1px;
+  margin: sp(xxs) 0;
+  background: $widget-border-default;
+}
+
+// Spread to the plate's edges, so the last counter sits under the rating's
+// change. The plate is only as wide as its widest tier, so a dropped column
+// narrows it rather than opening a hole between the cells.
+.counters {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: sp(lg);
+}

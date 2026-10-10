@@ -29,6 +29,7 @@ use crate::computations::coach::CoachFrame;
 use crate::computations::driver_entries::DriverEntriesFrame;
 use crate::computations::pace_car::PaceCarFrame;
 use crate::computations::proximity::ProximityFrame;
+use crate::computations::safety_rating::SafetyRatingFrame;
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::relative::RelativeFrame;
 use crate::telemetry::emitter::TelemetryBundle;
@@ -43,6 +44,7 @@ pub struct Publications {
     proximity: Option<ProximityFrame>,
     pace_car: Option<PaceCarFrame>,
     coach: Option<CoachFrame>,
+    safety_rating: Option<SafetyRatingFrame>,
 }
 
 /// Clears `field` when it is equal to what was published last, and records it
@@ -76,6 +78,7 @@ impl Publications {
         take_if_changed(&mut bundle.proximity, &mut self.proximity, force);
         take_if_changed(&mut bundle.pace_car, &mut self.pace_car, force);
         take_if_changed(&mut bundle.coach, &mut self.coach, force);
+        take_if_changed(&mut bundle.safety_rating, &mut self.safety_rating, force);
     }
 }
 

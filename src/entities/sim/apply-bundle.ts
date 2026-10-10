@@ -54,6 +54,9 @@ export const applyTelemetryBundle = (
     if (bundle.chassis) root.player.updateChassis(bundle.chassis);
     if (bundle.pitService) root.player.updatePitService(bundle.pitService);
 
+    if (bundle.safetyRating)
+      root.player.updateSafetyRating(bundle.safetyRating);
+
     if (bundle.proximity)
       root.backendComputed.updateProximity(bundle.proximity);
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Incident Tracker Widget:** Your session incidents against the limit, penalties served and how far the next one is, an estimate of your Safety Rating at the flag, and how many clean corners it takes to break even. The SR estimate is based on [Nishizumi-SR](https://github.com/nishizumi-maho/Nishizumi-SR).
+
 ## [0.25.0] — 2026-10-01
 
 ### Added

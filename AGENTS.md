@@ -380,7 +380,7 @@ _Held by: review._
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 60    | `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`                                                                 |
 | 10    | `carIdx`, `chassis`, `lapTiming`, `proximity`, `driverEntries`, `relative`, `incidents`, `paceCar`                                                             |
-| 4     | `carStatus`, `fuel`, `pitStops`, `lapLog`, `pitService`, `pitAuto`                                                                                             |
+| 4     | `carStatus`, `fuel`, `pitStops`, `lapLog`, `pitService`, `pitAuto`, `safetyRating`                                                                             |
 | 1     | `session`, `environment`                                                                                                                                       |
 | async | `sim://session`, `sim://weather`, `sim://status`, `sim://disconnected`, `sim://capabilities`, `sim://perf`, `sim://track-shape`, `sim://reference-lap/updated` |
 
@@ -419,11 +419,11 @@ Orders are not sent while a tape is replayed.
 
 _Held by: test (a manifest declaring an event the backend does not gate, or one twice — `widget-catalog.test.ts`); review (declaring every gated field a widget reads, and nothing it does not)._
 
-Nine bundle fields are filled **only while a widget asks for them**: the four
+Ten bundle fields are filled **only while a widget asks for them**: the four
 60 Hz frames (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`), the
 three heavy per-car frames on the 10 Hz tier (`driverEntries`, `relative`,
-`proximity`), `incidents` and the coach's call (`coach`, 60 Hz). Everything
-else is always sent. Every
+`proximity`), `incidents`, the coach's call (`coach`, 60 Hz) and the Safety
+Rating estimate (`safetyRating`, 4 Hz). Everything else is always sent. Every
 widget declares its appetite in its own `manifest.ts`:
 
 ```ts
@@ -769,7 +769,7 @@ is set normally.
 
 ## Widget System
 
-_Held by: test (every manifest has a mount and a schema whose defaults pass their own check, no mount or panel claims a widget the catalog does not ship, the catalog is alphabetical, no locale block outlives its widget — `widget-catalog.test.ts`, `registry.test.ts`, `panel-registry.test.ts`, `widget-locales.test.ts`); review (a manifest never importing its component, panel rows sitting directly after their parent)._
+_Held by: test (every manifest has a mount and a schema whose defaults pass their own check, no mount or panel claims a widget the catalog does not ship, the catalog is alphabetical, no locale block outlives its widget, no catalog description runs past 80 characters — `widget-catalog.test.ts`, `registry.test.ts`, `panel-registry.test.ts`, `widget-locales.test.ts`); review (a manifest never importing its component, panel rows sitting directly after their parent)._
 
 Each widget is one slice, `src/widgets/<name>/` (kebab-case; components inside
 stay PascalCase), and ships three files of its own that nothing lists by hand:
@@ -1029,11 +1029,12 @@ other. Always read the widget as `widget.type`, never `widget.id`.
 
 ### Widget appearance
 
-_Held by: review._
+_Held by: test (a `contentSized` widget that does not paint its own plate — `widget-catalog.test.ts`; the handles each kind is offered — `widget-frame.test.ts`); review (the rest)._
 
 - `WidgetContainer` applies opacity and radial-gradient background from user settings — don't hardcode background in the widget. (Exception: `backgroundColor: 'transparent'` defaults may apply a custom CSS background on `WidgetPanel` with an explanatory comment.)
 - Root element is always `<WidgetPanel>` — never a bare `<div>`.
 - Layout: flexbox with `flex: 1 1 0` and `min-width: 0`. Column sizing: `ch` units when max char count is known.
+- **Resize handles only where the widget changes** (`resizeDirectionsFor`, `entities/widget/widget-frame.ts`): eight for a plate that stretches both ways, `e`/`w` for `autoHeight`, **corners only for `contentSized`** — a plate as wide and tall as its content (a column that leaves the row narrows it) stretches in neither axis, so a drag can only scale it. Such a widget declares `contentSized` with `transparentContainer` and paints its own ground from `--widget-bg` (`widget-catalog.test.ts` holds the pairing); its frame hugs the plate.
 
 ### Canvas components
 
@@ -1057,11 +1058,11 @@ checklist below is what a reviewer applies to code that already exists.
 4. Every component `observer()`
 5. Add `*.stories.tsx` through `defineWidgetStories` — see `docs/widget-stories.md`
 6. Add `*SettingsPanel.tsx` in the widget slice, built on `schemaRows`, and export `PANEL_WIDGET_IDS` from it — the panel registry picks it up, nothing else to wire
-7. Describe every setting once in the slice's `settings-schema.ts` (`defineSettings`), with its strings under `settingsPanels.<locale block>` in all four `locales/*/widgets.json`, keyed by the setting keys — no shared settings type to edit
+7. Describe every setting once in the slice's `settings-schema.ts` (`defineSettings`), with its strings under `settingsPanels.<locale block>` in all four `locales/*/widgets.json`, keyed by the setting keys — no shared settings type to edit. The `catalog.<id>.description` is one short sentence, two at most, 80 characters or fewer in every language: the widget list clamps it to three lines (`widget-locales.test.ts`)
 8. Create `manifest.ts` and `mount.ts` in the slice, the manifest spreading the schema's `defaults` and naming it as `settingsSchema` — both are collected by glob, so no shared file is edited
    8a. Declare `telemetryEvents` in the manifest for every gated field the widget
    reads (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `driverEntries`,
-   `relative`, `proximity`, `incidents`, `coach`) — without it the backend never sends them (see
+   `relative`, `proximity`, `incidents`, `coach`, `safetyRating`) — without it the backend never sends them (see
    Demand-gated bundle fields)
    8b. If any of those is a hot field, keep the component that reads it down to
    one or two elements and pass the static part in as `children` — splitting into
