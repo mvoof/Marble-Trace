@@ -285,10 +285,19 @@ pub struct CornerAccumulator {
 }
 
 impl CornerAccumulator {
-    /// One tick. The pit box and the world outside the car earn nothing and
-    /// break the trail; a jump bigger than a tick could drive resynchronises.
-    pub fn update(&mut self, lap_dist_pct: Option<f32>, surface: TrackSurface) {
-        let in_world = !matches!(surface, TrackSurface::NotInWorld | TrackSurface::InPitStall);
+    /// One tick. The pit box, the world outside the car and a teammate's stint
+    /// earn nothing and break the trail; a jump bigger than a tick could drive
+    /// resynchronises. `driver_in_car` is the SDK's `IsOnTrack` — the local
+    /// driver in the car — since in a team race the surface is the shared
+    /// car's, on track while someone else drives it.
+    pub fn update(
+        &mut self,
+        lap_dist_pct: Option<f32>,
+        surface: TrackSurface,
+        driver_in_car: bool,
+    ) {
+        let in_world = driver_in_car
+            && !matches!(surface, TrackSurface::NotInWorld | TrackSurface::InPitStall);
         let pct = lap_dist_pct
             .map(f64::from)
             .filter(|pct| in_world && (0.0..=1.0).contains(pct));
@@ -569,7 +578,11 @@ impl SafetyRatingProcessor {
             .and_then(|idx| ctx.car_idx.car_idx_track_surface.get(idx).copied())
             .unwrap_or_default();
 
-        self.corners.update(ctx.lap_timing.lap_dist_pct, surface);
+        self.corners.update(
+            ctx.lap_timing.lap_dist_pct,
+            surface,
+            ctx.car_status.is_on_track == Some(true),
+        );
 
         let driver_incidents = since_base(
             &mut self.start.driver_incidents,
@@ -989,6 +1002,7 @@ mod tests {
                 accumulator.update(
                     Some(sample.lap_dist_pct),
                     TrackSurface::from(sample.track_surface),
+                    true,
                 );
             }
 
@@ -999,6 +1013,26 @@ mod tests {
                 run.comment
             );
         }
+    }
+
+    #[test]
+    fn a_teammates_stint_earns_no_corners() {
+        const CORNERS_PER_LAP: f64 = 20.0;
+        let mut accumulator = CornerAccumulator::default();
+
+        accumulator.update(Some(0.10), ON_TRACK, true);
+        accumulator.update(Some(0.15), ON_TRACK, true);
+
+        // The teammate drives the shared car: still on track, not ours.
+        for pct in [0.20, 0.25, 0.30] {
+            accumulator.update(Some(pct), ON_TRACK, false);
+        }
+
+        // Back in the car: the trail restarts, the stint is not credited.
+        accumulator.update(Some(0.35), ON_TRACK, true);
+        accumulator.update(Some(0.40), ON_TRACK, true);
+
+        assert!((accumulator.corners(CORNERS_PER_LAP) - 2.0).abs() < 1e-4);
     }
 
     #[test]
@@ -1096,6 +1130,7 @@ mod tests {
         let car_status = CarStatusFrame {
             player_car_my_incident_count: Some(tick.my_incidents),
             player_car_team_incident_count: Some(tick.team_incidents),
+            is_on_track: Some(true),
             ..CarStatusFrame::default()
         };
         let start_positions = HashMap::new();
