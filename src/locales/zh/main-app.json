@@ -334,6 +334,12 @@
       "checkingEllipsis": "正在检查...",
       "checkForUpdates": "检查更新"
     },
+    "about": {
+      "title": "关于 Marble Trace",
+      "tagline": "iRacing 遥测叠加层。免费开源，采用 GPL-3.0 许可。",
+      "trademarks": "Marble Trace™ 及 Marble Trace 标志是 voof 的商标。iRacing 是 iRacing.com Motorsport Simulations, LLC 的商标。TAURI 是 The Tauri Programme within the Commons Conservancy 的商标。Windows 是 Microsoft 集团公司的商标。Twitch 是 Twitch Interactive, Inc. 的商标。YouTube 是 Google LLC 的商标。所有其他名称均为其各自所有者的财产。",
+      "independence": "Marble Trace 是一个独立的开源项目。它并非由 iRacing 开发，与 iRacing.com Motorsport Simulations, LLC 没有任何关系，也与其及下列任何公司无关联，未获得其赞助或认可。"
+    },
     "trackMap": {
       "title": "赛道地图",
       "reRecordTitle": "重新录制赛道",
@@ -496,6 +502,7 @@
         "general": "常规",
         "companionApps": "配套程序",
         "updates": "更新",
+        "about": "关于",
         "overlay": "组件显示",
         "interaction": "交互模式",
         "bindings": "输入绑定",

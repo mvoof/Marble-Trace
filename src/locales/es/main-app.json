@@ -336,6 +336,12 @@
       "checkingEllipsis": "Comprobando...",
       "checkForUpdates": "Buscar actualizaciones"
     },
+    "about": {
+      "title": "Acerca de Marble Trace",
+      "tagline": "Un overlay de telemetría para iRacing. Gratuito y de código abierto bajo GPL-3.0.",
+      "trademarks": "Marble Trace™ y el logotipo de Marble Trace son marcas comerciales de voof. iRacing es una marca de iRacing.com Motorsport Simulations, LLC. TAURI es una marca de The Tauri Programme within the Commons Conservancy. Windows es una marca del grupo de empresas Microsoft. Twitch es una marca de Twitch Interactive, Inc. YouTube es una marca de Google LLC. Los demás nombres pertenecen a sus respectivos propietarios.",
+      "independence": "Marble Trace es un proyecto independiente de código abierto. No está hecho por iRacing, no tiene ninguna relación con iRacing.com Motorsport Simulations, LLC y no está afiliado, patrocinado ni respaldado por ella ni por ninguna de las empresas indicadas a continuación."
+    },
     "trackMap": {
       "title": "Mapa del circuito",
       "reRecordTitle": "Volver a grabar el circuito",
@@ -498,6 +504,7 @@
         "general": "General",
         "companionApps": "Aplicaciones complementarias",
         "updates": "Actualizaciones",
+        "about": "Acerca de",
         "overlay": "Visibilidad de widgets",
         "interaction": "Modos de interacción",
         "bindings": "Asignaciones de control",

@@ -340,6 +340,12 @@
       "checkingEllipsis": "Проверка...",
       "checkForUpdates": "Проверить обновления"
     },
+    "about": {
+      "title": "О Marble Trace",
+      "tagline": "Телеметрический оверлей для iRacing. Бесплатный, с открытым кодом под GPL-3.0.",
+      "trademarks": "Marble Trace™ и логотип Marble Trace являются товарными знаками voof. iRacing — товарный знак iRacing.com Motorsport Simulations, LLC. TAURI — товарный знак The Tauri Programme within the Commons Conservancy. Windows — товарный знак группы компаний Microsoft. Twitch — товарный знак Twitch Interactive, Inc. YouTube — товарный знак Google LLC. Все прочие названия принадлежат их владельцам.",
+      "independence": "Marble Trace — независимый проект с открытым кодом. Он не создан iRacing, никак не связан с iRacing.com Motorsport Simulations, LLC, не аффилирован с ней и с другими перечисленными ниже компаниями, не спонсируется и не одобрен ими."
+    },
     "trackMap": {
       "title": "Карта трассы",
       "reRecordTitle": "Перезаписать трассу",
@@ -502,6 +508,7 @@
         "general": "Общие",
         "companionApps": "Сопутствующие программы",
         "updates": "Обновления",
+        "about": "О программе",
         "overlay": "Показ виджетов",
         "interaction": "Режимы взаимодействия",
         "bindings": "Привязки управления",
