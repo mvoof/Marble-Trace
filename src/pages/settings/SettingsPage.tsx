@@ -8,6 +8,7 @@ import { SettingsNav } from './SettingsNav';
 import { GeneralSection } from './sections/GeneralSection';
 import { CompanionAppsSection } from '@features/companion-apps/CompanionAppsSection';
 import { UpdatesSection } from './sections/UpdatesSection';
+import { AboutSection } from './sections/AboutSection';
 import { OverlaySection } from './sections/OverlaySection';
 import { InteractionSection } from './sections/InteractionSection';
 import { TrackMapSection } from './sections/TrackMapSection';
@@ -27,6 +28,7 @@ const SECTION_COMPONENTS: Record<SettingsSectionId, () => React.ReactElement> =
     general: GeneralSection,
     companionApps: CompanionAppsSection,
     updates: UpdatesSection,
+    about: AboutSection,
     overlay: OverlaySection,
     interaction: InteractionSection,
     bindings: BindingsSettings,

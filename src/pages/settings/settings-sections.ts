@@ -8,6 +8,7 @@ import { hasDevTools } from './dev-tools';
 export type SettingsSectionId =
   | 'general'
   | 'updates'
+  | 'about'
   | 'companionApps'
   | 'overlay'
   | 'interaction'
@@ -27,7 +28,10 @@ export interface SettingsGroup {
 }
 
 export const SETTINGS_GROUPS: SettingsGroup[] = [
-  { id: 'application', sections: ['general', 'companionApps', 'updates'] },
+  {
+    id: 'application',
+    sections: ['general', 'companionApps', 'updates', 'about'],
+  },
   { id: 'overlay', sections: ['overlay', 'interaction'] },
   { id: 'controls', sections: ['bindings', 'devices'] },
   // Widget data: what the widgets draw from, and the values several of them
