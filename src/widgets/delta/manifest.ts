@@ -7,7 +7,7 @@ import { DELTA_SETTINGS } from './settings-schema';
 
 export const DELTA_MANIFEST: WidgetManifest = {
   id: 'delta',
-  label: 'Delta HUD',
+  label: 'Delta',
   description: 'Live delta HUD — one glance, am I faster or slower?',
   requiredCapabilities: ['sectors'],
   previewScenarios: ['delta-ahead', 'delta-behind', 'delta-personal-best'],

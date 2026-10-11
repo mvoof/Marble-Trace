@@ -47,7 +47,7 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 Every widget is independently positioned, resized, and styled — drag it anywhere on screen, scale it to taste, adjust opacity so it never blocks your view. Each one ships with its own set of options: toggle individual data fields, switch layouts, pick colours, set visibility rules. You only see what you actually need, exactly where you want it.
 
 - **Driving HUD** — [Race Dash](#race-dash) · [Invisible Dash](#invisible-dash) · [RPM Lights](#rpm-lights) · [Engine Panel](#engine-panel) · [Battery](#battery) · [DRS](#drs) · [Input Trace](#input-trace) · [G-Meter](#g-meter) · [Coach](#coach)
-- **Timing & Standings** — [Standings](#standings) · [Relative](#relative) · [Relative Map](#relative-map) · [Delta HUD](#delta-hud) · [Sector Matrix](#sector-matrix) · [Lap Log](#lap-log) · [Timer](#timer)
+- **Timing & Standings** — [Standings](#standings) · [Relative](#relative) · [Relative Map](#relative-map) · [Delta](#delta) · [Sector Matrix](#sector-matrix) · [Lap Log](#lap-log) · [Timer](#timer)
 - **Awareness** — [Track Map](#track-map) · [Proximity Radar](#proximity-radar) · [Radar Bar](#radar-bar) · [Close Battle](#close-battle) · [Wheel to Wheel](#wheel-to-wheel) · [Flags (LED/Flat)](#flags-led--flat)
 - **Car & Session** — [Pit Service](#pit-service) · [Pit Line](#pit-line) · [Fuel](#fuel) · [Weather](#weather) · [Incident Tracker](#incident-tracker)
 - **Streaming** — [Stream Chat](#stream-chat)
@@ -156,12 +156,12 @@ Compact 1-D track map showing relative car positions along the lap. Horizontal o
 
 ---
 
-### Delta HUD
+### Delta
 
 Live delta bar that compares your current lap against a configurable reference — your personal best (PB), your personal optimal (PO, best sectors combined), session best (SB), session optimal (SO), or the previous lap in the session (SL). The bar fills green when you are ahead and red when behind. When you cross the finish line a lap flash card appears (top, bottom, left, or right of the widget) showing the completed lap time and its delta. Card display duration is adjustable.
 
-<img src="site/assets/widgets/delta.png" alt="Delta HUD" width="296">
-<img src="site/assets/widgets/delta-best.png" alt="Delta HUD Best" width="200">
+<img src="site/assets/widgets/delta.png" alt="Delta" width="296">
+<img src="site/assets/widgets/delta-best.png" alt="Delta Best" width="200">
 
 ---
 
