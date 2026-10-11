@@ -17,7 +17,7 @@
 ## Widgets
 
 - Driving HUD: Race Dash, Invisible Dash, RPM Lights, Engine Panel, Battery, DRS, Input Trace, G-Meter, Coach
-- Timing & standings: Standings, Relative, Relative Map, Delta HUD, Sector Matrix, Lap Log, Timer
+- Timing & standings: Standings, Relative, Relative Map, Delta, Sector Matrix, Lap Log, Timer
 - Awareness: Track Map, Proximity Radar, Radar Bar, Close Battle, Wheel to Wheel, Flags (LED and flat)
 - Car & session: Pit Service, Pit Line, Fuel calculator, Weather
 - Streaming: Stream Chat
