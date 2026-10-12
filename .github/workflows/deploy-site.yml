@@ -13,6 +13,8 @@ on:
     branches: [main]
     paths:
       - 'site/**'
+      # The app's version, read into the page's structured data
+      - 'package.json'
       - '.github/workflows/deploy-site.yml'
   workflow_dispatch:
 

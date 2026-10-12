@@ -11,10 +11,18 @@
     />
   </symbol>
 
-  <symbol id="icon-windows" viewBox="0 0 16 16">
-    <path
-      d="M0 2.23 6.46 1.35v6.24H0V2.23Zm0 6.13h6.46v6.29L0 13.77V8.36Zm7.18-7.11 8.82-1.25v7.6H7.18V1.25Zm0 7.11h8.82v7.64l-8.82-1.25V8.36Z"
-    />
+  <symbol
+    id="icon-download"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M12 15V3" />
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="m7 10 5 5 5-5" />
   </symbol>
 
   <symbol

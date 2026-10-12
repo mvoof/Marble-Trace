@@ -155,6 +155,58 @@ const responsiveImages = () => {
   };
 };
 
+const APP_PACKAGE = join(ROOT, '..', 'package.json');
+const APP_VERSION_PLACEHOLDER = '__APP_VERSION__';
+
+/**
+ * The app's version in the page's structured data comes from the app's own
+ * package.json, so a release never leaves the search snippet behind; the
+ * deploy workflow rebuilds the site when that file changes.
+ */
+const appVersion = () => {
+  const { version } = JSON.parse(readFileSync(APP_PACKAGE, 'utf8'));
+
+  return {
+    name: 'marble-trace-app-version',
+    transformIndexHtml: {
+      order: 'pre',
+      handler: (html) => html.replaceAll(APP_VERSION_PLACEHOLDER, version),
+    },
+  };
+};
+
+const SITEMAP_LASTMOD = /<lastmod>[^<]*<\/lastmod>/g;
+
+/**
+ * public/sitemap.xml is copied as written; the build stamps every <lastmod>
+ * with the day it ran, which is the day the published pages last changed.
+ */
+const sitemapLastmod = () => {
+  let outDir = 'dist';
+
+  return {
+    name: 'marble-trace-sitemap-lastmod',
+    apply: 'build',
+
+    configResolved(config) {
+      outDir = join(config.root, config.build.outDir);
+    },
+
+    closeBundle() {
+      const sitemap = join(outDir, 'sitemap.xml');
+      const today = new Date().toISOString().slice(0, 10);
+
+      writeFileSync(
+        sitemap,
+        readFileSync(sitemap, 'utf8').replace(
+          SITEMAP_LASTMOD,
+          `<lastmod>${today}</lastmod>`
+        )
+      );
+    },
+  };
+};
+
 // Relative base so the built site works from any location: domain root,
 // a sub-path (e.g. GitHub Pages /Marble-Trace/), or opened straight from disk.
 // Nothing is inlined: a data: URI in a srcset is one more thing the translated
@@ -164,5 +216,10 @@ export default defineConfig({
   build: {
     assetsInlineLimit: 0,
   },
-  plugins: [responsiveImages(), localizedPages()],
+  plugins: [
+    appVersion(),
+    responsiveImages(),
+    localizedPages(),
+    sitemapLastmod(),
+  ],
 });
