@@ -515,26 +515,29 @@ tick timings.
 
 ### Rate tiers
 
-The backend does not emit everything 60 times a second. Fields are grouped by how
-fast they actually change, and each tick emits one bundle containing only the
-tiers that are due.
+The backend does not emit everything 60 times a second. It computes on every
+tick but **publishes** on every Nth one — the overlay clock,
+`appSettings.overlayUpdateHz`, 30 Hz by default (60 / 30 / 20 / 15;
+[ADR-0009](adr/0009-overlay-changes-on-one-clock.md)). Fields are grouped by how
+fast they actually change, and a published tick carries the hot fields plus
+whichever slower tiers are due.
 
-| Rate  | Fields                                                                                                 |
-| ----- | ------------------------------------------------------------------------------------------------------ |
-| 60 Hz | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`, `coach`, `pit_target`, `track_recording`   |
-| 10 Hz | `car_idx`, `chassis`, `lap_timing`, `proximity`, `driver_entries`, `relative`, `incidents`, `pace_car` |
-| 4 Hz  | `car_status`, `fuel`, `pit_stops`, `pit_service`, `lap_log`, `pit_auto`, `safety_rating`               |
-| 1 Hz  | `session`, `environment`                                                                               |
+| Rate          | Fields                                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
+| clock (30 Hz) | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`, `coach`, `pit_target`, `track_recording`   |
+| 10 Hz         | `car_idx`, `chassis`, `lap_timing`, `proximity`, `driver_entries`, `relative`, `incidents`, `pace_car` |
+| 4 Hz          | `car_status`, `fuel`, `pit_stops`, `pit_service`, `lap_log`, `pit_auto`, `safety_rating`               |
+| 1 Hz          | `session`, `environment`                                                                               |
 
 ```mermaid
 flowchart LR
     T["tick<br/>≈60 Hz"]
-    SCH{"scheduler:<br/>which tiers<br/>are due?"}
+    SCH{"scheduler:<br/>published tick?<br/>which tiers<br/>are due?"}
     B["one TelemetryBundle<br/><i>only the due tiers filled</i>"]
     E["sim://telemetry/bundle"]
 
     T --> SCH
-    SCH -->|always| B
+    SCH -->|"every Nth tick (the clock)"| B
     SCH -->|"every 100 ms"| B
     SCH -->|"every 250 ms"| B
     SCH -->|"every 1000 ms"| B
@@ -545,7 +548,10 @@ flowchart LR
 > Sources do not tick at exactly 60 Hz — iRacing wakes on a Win32 event, other sims
 > poll with a `sleep` and drift between roughly 58 and 62 Hz. The scheduler
 > therefore gates the 10/4/1 Hz groups on **elapsed monotonic time, never on a
-> frame count.**
+> frame count** — and checks them only on a published tick, so a slow tier never
+> changes the overlay between two hot ones. The clock itself counts ticks: a
+> divisor of the source rate keeps every published tick a whole number of ticks
+> apart.
 
 The emitter also handles side-channel work that is not part of the periodic
 bundle: saving a discovered track shape, persisting a reference lap, and patching
@@ -1717,9 +1723,20 @@ Every arrow is one-way. Nothing downstream calls back upstream.
 
 ## Performance
 
-The governing constraint: **the sim produces 60 Hz and React cannot render at
-60 Hz.** The architecture absorbs that rate in four places, each one cheaper than
-the layer above it.
+Two constraints, paid by two parties.
+
+**The game pays for every change of the overlay.** Each change makes DWM compose
+a frame on the GPU the game draws on; a static overlay costs it almost nothing,
+one widget changing at 60 Hz cost it about half its 1% low. So the overlay
+changes on **one clock** (30 Hz by default) and nothing on it animates between
+two bundles — no CSS transition or animation on a value that follows telemetry
+(`src/widgets/widget-transitions.test.ts`). Measured in
+[perf-methodology.md](perf-methodology.md); decided in
+[ADR-0009](adr/0009-overlay-changes-on-one-clock.md).
+
+**The app pays for the work of each change: the sim produces 60 Hz and React
+cannot render at 60 Hz.** The architecture absorbs that rate in four places,
+each one cheaper than the layer above it.
 
 ```mermaid
 flowchart TB
@@ -1731,19 +1748,21 @@ flowchart TB
     L1 --> L2 --> L3 --> L4
 ```
 
-| Technique                                            | Where                                                   | The failure it prevents                                                                                                                 |
-| ---------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Rate tiers                                           | `telemetry/scheduler.rs`                                | sending standings 60 times a second when it changes 10 times                                                                            |
-| Demand gating (`telemetryEvents`)                    | widget manifests → `telemetry/emitter.rs`               | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
-| Quantization + repeat suppression                    | `telemetry/quantize.rs`, `telemetry/publications.rs`    | resending a frame whose only change is in a decimal no widget prints                                                                    |
-| `observable.ref` on frame buffers                    | `entities/cars/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
-| Split computeds                                      | `entities/cars/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
-| `observer()` on every component                      | every `.tsx` above `shared/`                            | a parent re-render cascading into leaves that did not change                                                                            |
-| Reading the store in the leaf, not passing props     | every `.tsx` above `shared/`                            | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
-| Root widgets never read 60 Hz fields                 | all widget roots                                        | a whole widget re-rendering at 60 Hz for one number                                                                                     |
-| Canvas + `useRef` + RAF                              | `shared/hooks/useReactiveCanvasLoop`, canvas widgets    | 60 Hz React renders for something that is just pixels                                                                                   |
-| `changeToken`                                        | `entities/layout/`                                      | `JSON.stringify` of the settings tree on every keystroke                                                                                |
-| Coalesced overlay commands (75 ms drag, 50 ms popup) | `settings-client.store.ts`                              | a command and a snapshot per mouse-move during a drag                                                                                   |
+| Technique                                            | Where                                                    | The failure it prevents                                                                                                                 |
+| ---------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| One overlay clock                                    | `telemetry/scheduler.rs`, `overlayUpdateHz`              | the overlay changing — and DWM composing a frame on the game's GPU — on every source tick                                               |
+| No transitions on telemetry-driven values            | widget stylesheets, `widgets/widget-transitions.test.ts` | a transition re-run by each value redrawing the overlay at the monitor's rate whatever the clock                                        |
+| Rate tiers                                           | `telemetry/scheduler.rs`                                 | sending standings 60 times a second when it changes 10 times                                                                            |
+| Demand gating (`telemetryEvents`)                    | widget manifests → `telemetry/emitter.rs`                | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
+| Quantization + repeat suppression                    | `telemetry/quantize.rs`, `telemetry/publications.rs`     | resending a frame whose only change is in a decimal no widget prints                                                                    |
+| `observable.ref` on frame buffers                    | `entities/cars/cars.store.ts`, `computed.store.ts`       | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
+| Split computeds                                      | `entities/cars/computed.store.ts` and the widget stores  | one changed field invalidating an unrelated derived value                                                                               |
+| `observer()` on every component                      | every `.tsx` above `shared/`                             | a parent re-render cascading into leaves that did not change                                                                            |
+| Reading the store in the leaf, not passing props     | every `.tsx` above `shared/`                             | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
+| Root widgets never read 60 Hz fields                 | all widget roots                                         | a whole widget re-rendering at 60 Hz for one number                                                                                     |
+| Canvas + `useRef` + RAF                              | `shared/hooks/useReactiveCanvasLoop`, canvas widgets     | 60 Hz React renders for something that is just pixels                                                                                   |
+| `changeToken`                                        | `entities/layout/`                                       | `JSON.stringify` of the settings tree on every keystroke                                                                                |
+| Coalesced overlay commands (75 ms drag, 50 ms popup) | `settings-client.store.ts`                               | a command and a snapshot per mouse-move during a drag                                                                                   |
 
 > [!WARNING]
 > **Never integrate 60 Hz values using the telemetry `sessionTime`.** It stalls,

@@ -337,6 +337,17 @@ Bindings are app-wide, not per layout. Devices are matched by their DirectInput 
 
 ---
 
+## Performance
+
+The overlay is a transparent window over the sim, and every time its content changes Windows composes a new frame on the same GPU the game is drawing on. So Marble Trace redraws the overlay on **one clock** — 30 times a second by default, nothing animating in between — while the telemetry behind it is still computed at the sim's full rate. Tables, fuel and weather update at their own slower rates on the same clock.
+
+- **Tunable** — Settings → Overlay → Overlay update rate: 60, 30, 20 or 15 Hz. 60 is the smoothest motion and costs the game the most frames.
+- **Measured, not guessed** — on an iRacing replay with every widget on screen, the overlay costs about 8% of the average frame rate; going from 60 Hz with animated bars to the 30 Hz clock raised the 1% low by 40% and cut stutters by two thirds.
+
+How it is measured: [docs/perf-methodology.md](docs/perf-methodology.md). Why it is built this way: [ADR-0009](docs/adr/0009-overlay-changes-on-one-clock.md).
+
+---
+
 ## Installation
 
 Download **`Marble Trace_<version>_x64-setup.exe`** from the [latest release](https://github.com/mvoof/Marble-Trace/releases/latest) and run it. There is nothing else to install.

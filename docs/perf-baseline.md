@@ -84,6 +84,8 @@ One row per measurement. Later tickets add rows here.
 | 2026-10-08 | `refactor/architecture-rework` @ 8b240da0 (ticket 26, re-measured)    | widgets     | 520           | 761           | 6.46          | 1481      | 1.1            | —                   | same code as the row above, one run; the environment moved         |
 | 2026-10-08 | `main` @ c459fa83                                                     | widgets     | 506 / 499     | 762           | 6.01 / 6.01   | 1479      | 1.0            | 1.0 / 1.0           | new reference; first paint 1552 / 1504 ms                          |
 | 2026-10-08 | `refactor/fsd-layout` @ ebfacdd8                                      | widgets     | 492 / 562     | 761           | 5.97 / 5.94   | 1481      | 0.9 / 1.0      | 0.9 / 1.1           | FSD layout (ADR-0008): no change; first paint 1764 / 1500 ms       |
+| 2026-10-12 | `perf/overlay-update-rate` @ 977ff074 + transitions removed           | widgets     | 764           | 764           | 4.78          | 991       | 1.0            | 1.5                 | overlay clock at 60 Hz: unchanged from `main`                      |
+| 2026-10-12 | same                                                                  | widgets     | 743           | 726           | 4.16          | 640       | 1.1            | 1.1                 | overlay clock at 30 Hz (the default): 26.43 bundles/s              |
 
 ## 2026-10-04 — baseline (ticket 01)
 
@@ -399,3 +401,35 @@ three measured back to back on the same machine.
   ticket 26 reduced at the same rates — `driver-entry-join` 0.56,
   `TrackMapSvg` 0.55, `car-identity` 0.35 MiB/s; the extra allocation is in
   React render and commit.
+
+## 2026-10-12 — the overlay clock (ADR-0009)
+
+Code `perf/overlay-update-rate` after 977ff074, with the per-bundle transitions
+removed; a fresh `--build`. Tape, offset and command as before, on the `race`
+layout (the developer's race layout; 18 widgets on `DISPLAY1`), one run each,
+the rate set through `overlayUpdateHz` in the settings file.
+
+| metric                           | 60 Hz | 30 Hz |
+| -------------------------------- | ----- | ----- |
+| tick p50 (µs)                    | 101   | 43    |
+| tick p99 (µs)                    | 764   | 743   |
+| overlay-DISPLAY1 bundles/s       | 52.87 | 26.43 |
+| overlay-DISPLAY1 KiB/s           | 764   | 726   |
+| overlay-DISPLAY1 alloc (MiB/s)   | 4.78  | 4.16  |
+| overlay-DISPLAY1 DOM mutations/s | 991   | 640   |
+| overlay-DISPLAY1 apply p99 (ms)  | 1.0   | 1.1   |
+
+- **Half the bundles, barely fewer bytes.** The hot frames are small; the bytes
+  are the 10 Hz per-car frames, which keep their rate. The wire is 5 % lighter,
+  the bundle count halves.
+- **The tick median halves**: a tick that does not publish runs the processors
+  and stops before assembly, quantization and delivery. p99 is the published
+  tick, unchanged.
+- Allocation −13 %, DOM mutations −35 %: the hot widgets write half as often.
+- These are the app's own costs. What the clock buys the **game** — 1% low
+  69 → 96–99, stutters 85 → 25–35 per minute — is not visible to this harness
+  at all; it is measured with `npm run perf:game`
+  ([perf-methodology.md](perf-methodology.md)).
+- A rate changed mid-run shows here as a bundle count between the two: a first
+  pair of runs read 47.67 and 32.23 bundles/s because the setting was toggled in
+  the main window while they ran. Leave the app alone during a run.

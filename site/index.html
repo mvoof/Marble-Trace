@@ -2689,7 +2689,8 @@
 
             <p class="perf-desc">
               A Rust core built on kerb, our own telemetry crate. Each window
-              gets only what its widgets draw.
+              gets only what its widgets draw, and the overlay redraws on one
+              clock so the game keeps its frames.
             </p>
 
             <a
@@ -2741,7 +2742,7 @@
                 </span>
                 <span class="perf-node-name">Rust core</span>
                 <span class="perf-node-sub"
-                  >60 &middot; 10 &middot; 4 &middot; 1 Hz</span
+                  >30 &middot; 10 &middot; 4 &middot; 1 Hz</span
                 >
               </li>
 
@@ -2772,8 +2773,8 @@
 
             <ul class="perf-facts">
               <li class="perf-fact">
-                <span class="perf-fact-name">60 Hz</span>
-                <span class="perf-fact-desc">On the sim's own signal</span>
+                <span class="perf-fact-name">30 Hz</span>
+                <span class="perf-fact-desc">One clock, light on game frames</span>
               </li>
 
               <li class="perf-fact">

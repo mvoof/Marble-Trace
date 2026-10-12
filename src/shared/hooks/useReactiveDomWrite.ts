@@ -24,7 +24,7 @@ import { autorun } from 'mobx';
  * The exception is the first run, whose writes all happen synchronously inside
  * the layout effect: the element has just been mounted carrying none of the value yet, and
  * deferring it would paint one frame of whatever the stylesheet falls back to
- * before jumping — visibly, since these values are usually transitioned.
+ * before jumping.
  *
  * Use it only for hot telemetry fields — an angle, an offset, a level. At 10 Hz
  * the answer is the shell/body split instead.

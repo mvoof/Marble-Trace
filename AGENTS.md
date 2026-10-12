@@ -21,11 +21,13 @@ cd src-tauri && cargo clippy --all-targets   # --all-targets or test modules go 
 RUST_LOG=marble_trace_lib=debug npm run tauri:dev   # verbose backend logs
 MARBLE_TRACE_RECORD=<dir> npm run tauri:dev         # record live sessions as tapes (dev feature)
 MARBLE_TRACE_REPLAY=<tape> npm run tauri:dev        # play a tape instead of the sim (dev feature)
+npm run perf:game -- run --name <n> --layout <layout>  # PresentMon capture of what the overlay costs the game
 ```
 
 Every environment variable (runtime, build time, tooling):
 `CONTRIBUTING.md` → Environment variables. Recording, replaying and `npm run perf`:
-`docs/telemetry-tapes.md`. Every doc, by task: `docs/README.md`.
+`docs/telemetry-tapes.md`. What the overlay costs the game, `npm run perf:game`:
+`docs/perf-methodology.md`. Every doc, by task: `docs/README.md`.
 
 ## How a rule is held
 
@@ -374,11 +376,17 @@ Most changes need no migration at all. Full guide: `docs/settings-schema.md`.
 
 ### Telemetry Bundle rates
 
-_Held by: review._
+_Held by: test (the scheduler's rates and that a timed tier is never due off a published tick — `telemetry/scheduler.rs`); review (the rest)._
+
+The processors run on every source tick (~60 Hz). A bundle is **published** on
+every Nth tick — the overlay clock, `appSettings.overlayUpdateHz` (60 / 30 / 20 /
+15, default 30, `set_overlay_update_hz`) — and the slower tiers are only ever due
+on a published tick (ADR-0009). Every bundle is one change of the overlay, and
+every change costs the game a composed frame: never publish off the clock.
 
 | Hz    | Fields                                                                                                                                                         |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 60    | `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`                                                                 |
+| clock | `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`                                                                 |
 | 10    | `carIdx`, `chassis`, `lapTiming`, `proximity`, `driverEntries`, `relative`, `incidents`, `paceCar`                                                             |
 | 4     | `carStatus`, `fuel`, `pitStops`, `lapLog`, `pitService`, `pitAuto`, `safetyRating`                                                                             |
 | 1     | `session`, `environment`                                                                                                                                       |
@@ -1029,7 +1037,9 @@ other. Always read the widget as `widget.type`, never `widget.id`.
 
 ### Widget appearance
 
-_Held by: test (a `contentSized` widget that does not paint its own plate — `widget-catalog.test.ts`; the handles each kind is offered — `widget-frame.test.ts`); review (the rest)._
+_Held by: test (a `contentSized` widget that does not paint its own plate — `widget-catalog.test.ts`; the handles each kind is offered — `widget-frame.test.ts`; a transition outside the state-change list — `widgets/widget-transitions.test.ts`); review (the rest)._
+
+- **Nothing animates between bundles.** A value that moves with telemetry is set on the overlay clock, without a CSS `transition` or `animation`: one re-run by each value never stops, and keeps the overlay — and DWM on the game's GPU — redrawing at the monitor's rate whatever the clock says (ADR-0009). A transition is for a change of state (a light switching on, the limiter engaging) and is listed with its reason in `STATE_CHANGE_TRANSITIONS`.
 
 - `WidgetContainer` applies opacity and radial-gradient background from user settings — don't hardcode background in the widget. (Exception: `backgroundColor: 'transparent'` defaults may apply a custom CSS background on `WidgetPanel` with an explanatory comment.)
 - Root element is always `<WidgetPanel>` — never a bare `<div>`.
