@@ -7,9 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.0] — 2026-10-12
+
 ### Added
 
 - **Incident Tracker Widget:** Your session incidents against the limit, penalties served and how far the next one is, an estimate of your Safety Rating at the flag, and how many clean corners it takes to break even. The SR estimate is based on [Nishizumi-SR](https://github.com/nishizumi-maho/Nishizumi-SR).
+- **Track-Cut Slowdown in Flags:** The slow-down flag iRacing shows for cutting the track now appears in the LED and flat flag widgets and on driver rows.
+- **Resulting Fuel in Pit Service:** The fuel order now shows the level the tank will have after the stop.
+
+### Changed
+
+- **Each Screen Has Its Own Widgets:** In the layout editor every monitor and remote screen lists all widgets with its own switch, so putting a widget on a second screen is one click. Copies of a widget live within one screen, a widget can no longer be dragged off its screen, and the inspector can move a widget to another screen, copy settings from another copy or reset them. Your layouts are converted automatically.
+- **Hotkeys and Pit Orders Without the Settings Window:** Keyboard shortcuts, controller buttons and automatic pit orders now run in the app's core, so they work with every window minimized.
+- **Proximity Radar Scope:** The radar now has a single radius in meters (the widget's size only zooms it), distances on the axis, gaps written at the rim, optional car numbers, and a beam that grows denser towards the edge.
+- **Live iRating Estimate:** Standings now estimate iRating with the original irating formula, per class, counting cars without a position as non-starters.
+- **Delta HUD Is Now Delta:** The widget is renamed; your settings stay as they were.
+- **About Section:** Settings gain an About section with the trademark notice.
+
+### Fixed
+
+- **Player Ranked First While in the Pits:** Standings no longer put you in the lead when the sim sends a bogus position while you sit in the pit stall; cars without a position are sorted to the bottom.
+- **Pace Car Stuck on "Pit Out":** The pace car parked on the pit lane is no longer shown as leaving the pits.
+- **Widget Copies Lost Their Rounded Plate:** A copy of a widget now keeps the same frame shape as the original.
 
 ## [0.25.0] — 2026-10-01
 
