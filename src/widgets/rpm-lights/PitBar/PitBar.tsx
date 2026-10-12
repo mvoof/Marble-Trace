@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
@@ -120,9 +120,6 @@ export const PitBar = observer(() => {
 
   const [tick, setTick] = useState(0);
   const [indicatorTick, setIndicatorTick] = useState(0);
-  const rafRef = useRef<number>(0);
-  const lastBodyRef = useRef(0);
-  const lastIndicatorRef = useRef(0);
 
   const bodyInterval = PIT_TICK_INTERVAL[pitState];
 
@@ -131,24 +128,21 @@ export const PitBar = observer(() => {
       return;
     }
 
-    const loop = (now: number) => {
-      if (now - lastBodyRef.current >= bodyInterval) {
-        setTick((previous) => previous + 1);
-        lastBodyRef.current = now;
-      }
-
-      if (now - lastIndicatorRef.current >= INDICATOR_INTERVAL_MS) {
-        setIndicatorTick((previous) => previous + 1);
-        lastIndicatorRef.current = now;
-      }
-
-      rafRef.current = requestAnimationFrame(loop);
-    };
-
-    rafRef.current = requestAnimationFrame(loop);
+    // Timers, not a requestAnimationFrame loop: rAF runs at the monitor's rate
+    // and kept the overlay building a frame on every refresh (ADR-0009); a step
+    // here is a DOM change only when it lands.
+    const bodyTimer = setInterval(
+      () => setTick((previous) => previous + 1),
+      bodyInterval
+    );
+    const indicatorTimer = setInterval(
+      () => setIndicatorTick((previous) => previous + 1),
+      INDICATOR_INTERVAL_MS
+    );
 
     return () => {
-      cancelAnimationFrame(rafRef.current);
+      clearInterval(bodyTimer);
+      clearInterval(indicatorTimer);
     };
   }, [bodyInterval]);
 

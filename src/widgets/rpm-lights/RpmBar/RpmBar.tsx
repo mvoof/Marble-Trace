@@ -6,6 +6,7 @@ import {
 } from '@shared/lib/car-signals';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useBlinkHandle, type BlinkCycle } from '@shared/hooks/useBlink';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
@@ -19,6 +20,9 @@ import {
 import styles from '../RpmLightsWidget.module.scss';
 import type { RpmLightsWidgetSettings } from '../settings-schema';
 
+/** The shift light: an eight-per-second flash, dim and lit 60 ms each. */
+const SHIFT_BLINK: BlinkCycle = { stepMs: 60, steps: 2 };
+
 /**
  * The racing bar: twenty-two LEDs whose colours follow the engine's revs, a hot
  * field that changes on every physics tick. The LEDs themselves are markup React
@@ -30,6 +34,7 @@ export const RpmBar = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
   const settings = useWidgetSettings<RpmLightsWidgetSettings>('rpm-lights');
+  const shiftBlink = useBlinkHandle();
 
   const barRef = useReactiveDomWrite<HTMLElement>(
     (element, scheduleWrite) => {
@@ -73,7 +78,8 @@ export const RpmBar = observer(() => {
       });
 
       scheduleWrite(() => {
-        element.classList.toggle(styles.barBlink, isShift);
+        shiftBlink.attach(element);
+        shiftBlink.run(isShift ? SHIFT_BLINK : null);
 
         for (const [index, color] of ledColors.entries()) {
           const led = element.children[index];
@@ -87,7 +93,7 @@ export const RpmBar = observer(() => {
         }
       });
     },
-    [player, sessionStore, settings]
+    [player, sessionStore, settings, shiftBlink]
   );
 
   const ledStyle = ledShapeStyle(settings.ledShape);

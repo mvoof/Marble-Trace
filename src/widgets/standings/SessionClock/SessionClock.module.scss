@@ -43,20 +43,13 @@
 
 .clockCritical {
   color: $widget-status-danger;
-  animation: sessionClockPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
   .clockIcon {
     color: inherit;
   }
 }
 
-@keyframes sessionClockPulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.55;
-  }
+// `CRITICAL_BLINK` in SessionClock writes the step.
+.clockCritical[data-blink-step='1'] {
+  opacity: 0.55;
 }

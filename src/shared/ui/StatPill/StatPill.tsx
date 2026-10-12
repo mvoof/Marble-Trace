@@ -2,6 +2,8 @@ import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { LucideIcon } from 'lucide-react';
 
+import { useBlink, type BlinkCycle } from '@shared/hooks/useBlink';
+
 import styles from './StatPill.module.scss';
 
 /** Icon tint driven by a token; `iconColor` overrides it with a data-driven value. */
@@ -22,6 +24,9 @@ const ICON_TONE_CLASS: Record<StatPillTone, string> = {
 };
 
 const ICON_SIZE_PX = 11;
+
+/** A value about to hit its limit dims and returns each second. */
+const PULSE_BLINK: BlinkCycle = { stepMs: 1000, steps: 2 };
 
 interface StatPillProps {
   /** Value shown at the pill's end — the only required part. */
@@ -50,8 +55,11 @@ export const StatPill = observer(
     variant = 'chip',
     className,
   }: StatPillProps) => {
+    const pulseRef = useBlink<HTMLSpanElement>(pulse ? PULSE_BLINK : null);
+
     return (
       <span
+        ref={pulseRef}
         className={[
           styles.pill,
           variant === 'inline' ? styles.pillInline : '',

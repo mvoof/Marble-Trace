@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp } from 'lucide-react';
 
@@ -6,6 +7,11 @@ import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { buildPitApproachView } from '@features/pit-service/pit-approach';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import {
+  useBlink,
+  useBlinkHandle,
+  type BlinkCycle,
+} from '@shared/hooks/useBlink';
 import {
   metersToDisplayDistance,
   widgetDistanceUnit,
@@ -33,6 +39,15 @@ const RAIL_HEIGHT_PX = 130;
 // the signal, not one arrow blown up to fill the column.
 const GO_ARROW_SIZE = 22;
 const GO_ARROW_STROKE = 3;
+
+/** Inside the braking point: the column flashes red, 200 ms a side. */
+const BRAKE_BLINK: BlinkCycle = { stepMs: 200, steps: 2 };
+
+/**
+ * The GO arrows run the column in fourteen 100 ms steps — one length of the bar
+ * in 1.4 s. Must match `$go-steps` in the stylesheet.
+ */
+const GO_SWEEP: BlinkCycle = { stepMs: 100, steps: 14 };
 
 interface PitApproachRailProps {
   withBrakeCue: boolean;
@@ -63,6 +78,18 @@ export const PitApproachRail = observer(
       isIdle && pitService.isApproachingWithin(revealOnApproachM);
 
     const { unitSystem } = units;
+    const brakeBlink = useBlinkHandle();
+    const goSweepRef = useBlink<HTMLSpanElement>(
+      pitService.isPitLimitReleased ? GO_SWEEP : null
+    );
+
+    // The rail unmounts for the GO column, and its reactive write with it, so
+    // nothing would be left to stop a flash that was running when it went.
+    useLayoutEffect(() => {
+      if (pitService.isPitLimitReleased) {
+        brakeBlink.run(null);
+      }
+    }, [brakeBlink, pitService.isPitLimitReleased]);
 
     const railRef = useReactiveDomWrite<HTMLDivElement>(
       (element, scheduleWrite) => {
@@ -97,6 +124,11 @@ export const PitApproachRail = observer(
             element.classList.add(styles[`urgency${view.urgency}`]);
           }
 
+          brakeBlink.attach(element);
+          brakeBlink.run(
+            !isIdle && view.urgency === 'brake' ? BRAKE_BLINK : null
+          );
+
           element.style.setProperty(
             FILL_WIDTH_PROPERTY,
             `${isIdle ? 0 : view.fill * PCT}%`
@@ -129,7 +161,7 @@ export const PitApproachRail = observer(
           }
         });
       },
-      [player, pitService, withBrakeCue, isIdle, unitSystem]
+      [player, pitService, withBrakeCue, isIdle, unitSystem, brakeBlink]
     );
 
     // The lane goes away, but not the room it stands in: the rail appears on
@@ -149,7 +181,7 @@ export const PitApproachRail = observer(
               arrows blinking in place: the leading arrow is solid and the tail
               fades out behind it, so the run has a direction even in a frame.
             */}
-            <span className={styles.goArrows}>
+            <span ref={goSweepRef} className={styles.goArrows}>
               <ChevronUp
                 size={GO_ARROW_SIZE}
                 strokeWidth={GO_ARROW_STROKE}

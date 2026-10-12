@@ -105,24 +105,18 @@
   pointer-events: none;
 }
 
+// `CORE_GLOW_BLINK` in RingBadge writes the step.
 .coreGlowBlink {
-  animation: coreGlowPulse 0.5s steps(2, start) infinite;
+  opacity: 0.45;
 }
 
-@keyframes coreGlowPulse {
-  50% {
-    opacity: 0.14;
-  }
-
-  0%,
-  100% {
-    opacity: 0.45;
-  }
+.coreGlowBlink[data-blink-step='1'] {
+  opacity: 0.14;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .coreGlowBlink {
-    animation: none;
+  .coreGlowBlink[data-blink-step='1'] {
+    opacity: 0.45;
   }
 }
 
@@ -187,22 +181,13 @@
   color: var(--ring-gear-color, #{$widget-text-primary});
 }
 
-.blinkPulse {
-  animation: gearPulse 0.5s ease-in-out infinite alternate;
-}
-
-@keyframes gearPulse {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0.35;
-  }
+// `REDLINE_BLINK` writes the step.
+.blinkPulse[data-blink-step='1'] {
+  opacity: 0.35;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .blinkPulse {
-    animation: none;
+  .blinkPulse[data-blink-step='1'] {
+    opacity: 1;
   }
 }

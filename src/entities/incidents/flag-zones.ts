@@ -1,4 +1,11 @@
 import type { IncidentPoint } from '@shared/contracts/bindings';
+import type { BlinkCycle } from '@shared/hooks/useBlink';
+
+/**
+ * How a live zone flashes on both maps: lit and dimmed 550 ms each, so the track
+ * map and the relative strip switch together.
+ */
+export const FLAG_ZONE_BLINK: BlinkCycle = { stepMs: 550, steps: 2 };
 
 /**
  * A stretch of the lap worth warning about.

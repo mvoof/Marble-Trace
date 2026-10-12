@@ -11,6 +11,7 @@ import {
   type ClockUrgency,
 } from '@shared/lib/timer-utils';
 import { useSessionStore } from '@entities/session/session-context';
+import { useBlink, type BlinkCycle } from '@shared/hooks/useBlink';
 
 import styles from './SessionClock.module.scss';
 import type { StandingsWidgetSettings } from '../settings-schema';
@@ -28,26 +29,16 @@ const CLOCK_WIDTH_CHARS = 9;
 // Matches the icons the rest of the header carries.
 const ICON_SIZE_PX = 11;
 
+/** The last minutes of a timed session: the clock dims and returns each second. */
+const CRITICAL_BLINK: BlinkCycle = { stepMs: 1000, steps: 2 };
+
 export const SessionClock = observer(() => {
   const { session, sessionInfo } = useSessionStore();
 
   const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
-  if (!settings.showSessionTime) {
-    return null;
-  }
-
   const sessionState = session?.session_state ?? null;
-
-  if (isSessionEnded(sessionState)) {
-    return (
-      <span className={styles.clock}>
-        <Timer size={ICON_SIZE_PX} className={styles.clockIcon} />
-        END
-      </span>
-    );
-  }
-
+  const isEnded = isSessionEnded(sessionState);
   const remain = session?.session_time_remain ?? null;
 
   const currentSession =
@@ -67,6 +58,25 @@ export const SessionClock = observer(() => {
 
   const urgency = isCountdown ? resolveClockUrgency(remain) : 'normal';
 
+  const clockRef = useBlink<HTMLSpanElement>(
+    settings.showSessionTime && !isEnded && urgency === 'critical'
+      ? CRITICAL_BLINK
+      : null
+  );
+
+  if (!settings.showSessionTime) {
+    return null;
+  }
+
+  if (isEnded) {
+    return (
+      <span className={styles.clock}>
+        <Timer size={ICON_SIZE_PX} className={styles.clockIcon} />
+        END
+      </span>
+    );
+  }
+
   const { main, secs } = splitTime(rawSeconds);
 
   const isLead = !isLapLimited;
@@ -77,6 +87,7 @@ export const SessionClock = observer(() => {
 
   return (
     <span
+      ref={clockRef}
       className={`${styles.clock} ${isLead ? '' : styles.clockMuted} ${URGENCY_CLASS[urgency]}`}
     >
       <Timer size={ICON_SIZE_PX} className={styles.clockIcon} />

@@ -1037,9 +1037,9 @@ other. Always read the widget as `widget.type`, never `widget.id`.
 
 ### Widget appearance
 
-_Held by: test (a `contentSized` widget that does not paint its own plate — `widget-catalog.test.ts`; the handles each kind is offered — `widget-frame.test.ts`; a transition outside the state-change list — `widgets/widget-transitions.test.ts`); review (the rest)._
+_Held by: test (a `contentSized` widget that does not paint its own plate — `widget-catalog.test.ts`; the handles each kind is offered — `widget-frame.test.ts`; a transition outside the state-change list, or an infinite animation — `widgets/widget-transitions.test.ts`); review (the rest)._
 
-- **Nothing animates between bundles.** A value that moves with telemetry is set on the overlay clock, without a CSS `transition` or `animation`: one re-run by each value never stops, and keeps the overlay — and DWM on the game's GPU — redrawing at the monitor's rate whatever the clock says (ADR-0009). A transition is for a change of state (a light switching on, the limiter engaging) and is listed with its reason in `STATE_CHANGE_TRANSITIONS`.
+- **Nothing animates between bundles.** A value that moves with telemetry is set on the overlay clock, without a CSS `transition` or `animation`: one re-run by each value never stops, and keeps the overlay — and DWM on the game's GPU — redrawing at the monitor's rate whatever the clock says (ADR-0009). A transition is for a change of state (a light switching on, the limiter engaging) and is listed with its reason in `STATE_CHANGE_TRANSITIONS`. Anything that flashes goes through `useBlink` (`shared/hooks/useBlink.ts`) and styles its steps on `data-blink-step` — never an `infinite` animation, which redraws on every display refresh for as long as it runs; a one-shot animation on a change of state is fine.
 
 - `WidgetContainer` applies opacity and radial-gradient background from user settings — don't hardcode background in the widget. (Exception: `backgroundColor: 'transparent'` defaults may apply a custom CSS background on `WidgetPanel` with an explanatory comment.)
 - Root element is always `<WidgetPanel>` — never a bare `<div>`.

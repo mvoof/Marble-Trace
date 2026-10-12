@@ -34,18 +34,39 @@ const STATE_CHANGE_TRANSITIONS: Record<string, string> = {
 
 const WIDGETS_DIR = dirname(fileURLToPath(import.meta.url));
 
-// Keyed by the path below `src/widgets`, with forward slashes.
-const STYLESHEETS: Record<string, string> = Object.fromEntries(
-  readdirSync(WIDGETS_DIR, { recursive: true, encoding: 'utf8' })
-    .filter((file) => file.endsWith('.module.scss'))
-    .map((file) => [
-      file.split(sep).join('/'),
-      readFileSync(join(WIDGETS_DIR, file), 'utf8'),
+// The shared components the widgets are built from render on the overlay too.
+const SHARED_UI_DIR = join(WIDGETS_DIR, '..', 'shared', 'ui');
+
+// Keyed by the path below `directory`, with forward slashes.
+const stylesheetsUnder = (directory: string): Record<string, string> =>
+  Object.fromEntries(
+    readdirSync(directory, { recursive: true, encoding: 'utf8' })
+      .filter((file) => file.endsWith('.module.scss'))
+      .map((file) => [
+        file.split(sep).join('/'),
+        readFileSync(join(directory, file), 'utf8'),
+      ])
+  );
+
+const STYLESHEETS = stylesheetsUnder(WIDGETS_DIR);
+
+const OVERLAY_STYLESHEETS: Record<string, string> = {
+  ...STYLESHEETS,
+  ...Object.fromEntries(
+    Object.entries(stylesheetsUnder(SHARED_UI_DIR)).map(([file, source]) => [
+      `shared/ui/${file}`,
+      source,
     ])
-);
+  ),
+};
 
 const TRANSITION_DECLARATION =
   /(?:^|[;{\s])transition(?:-property)?\s*:\s*([^;]+);/g;
+
+const ANIMATION_DECLARATION =
+  /(?:^|[;{\s])animation(?:-iteration-count)?\s*:\s*([^;]+);/g;
+
+const INFINITE = /\binfinite\b/;
 
 const SCSS_COMMENT = /\/\*[\s\S]*?\*\/|\/\/.*$/gm;
 
@@ -53,6 +74,11 @@ const runningTransitionsIn = (source: string): string[] =>
   [...source.replace(SCSS_COMMENT, '').matchAll(TRANSITION_DECLARATION)]
     .map((match) => match[1].trim())
     .filter((value) => value !== 'none');
+
+const endlessAnimationsIn = (source: string): string[] =>
+  [...source.replace(SCSS_COMMENT, '').matchAll(ANIMATION_DECLARATION)]
+    .map((match) => match[1].trim())
+    .filter((value) => INFINITE.test(value));
 
 describe('widget transitions', () => {
   it('declares no transition on a value that moves with telemetry', () => {
@@ -77,6 +103,22 @@ describe('widget transitions', () => {
         runningTransitionsIn(source ?? ''),
         `${file} is listed but declares no transition`
       ).not.toEqual([]);
+    }
+  });
+});
+
+describe('overlay animations', () => {
+  // An endless animation is the same cost as a transition that never stops:
+  // even a `steps()` one has the browser build a frame on every display refresh
+  // for as long as it runs. A blink goes through `useBlink`
+  // (`shared/hooks/useBlink.ts`), which writes the DOM only when its step
+  // changes; a one-shot animation on a change of state is fine.
+  it('declares no animation that runs forever', () => {
+    for (const [file, source] of Object.entries(OVERLAY_STYLESHEETS)) {
+      expect(
+        endlessAnimationsIn(source),
+        `${file}: an infinite animation keeps the overlay redrawing on every display frame (ADR-0009); blink through useBlink instead`
+      ).toEqual([]);
     }
   });
 });

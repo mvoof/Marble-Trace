@@ -24,17 +24,7 @@
   background: var(--rpm-seg-color);
 }
 
-.barBlink .seg {
-  animation: blinkBar 0.12s steps(2, start) infinite;
-}
-
-@keyframes blinkBar {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.1;
-  }
+// The shift flash: `useBlink` writes the step on the bar (`SHIFT_BLINK` in RpmBar).
+.bar[data-blink-step='1'] .seg {
+  opacity: 0.1;
 }

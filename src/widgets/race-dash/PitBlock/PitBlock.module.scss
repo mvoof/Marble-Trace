@@ -186,7 +186,6 @@
 
   .boxValue {
     color: $race-green;
-    animation: countPulse 0.7s ease-in-out infinite;
 
     small {
       color: rgba($race-green, 0.6);
@@ -194,14 +193,13 @@
   }
 }
 
-@keyframes countPulse {
-  50% {
-    transform: scale(1.12);
-  }
+// `BOX_NEAR_BLINK` in PitBlock writes the step.
+.boxCueNear[data-blink-step='1'] .boxValue {
+  transform: scale(1.12);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .boxCueNear .boxValue {
-    animation: none;
+  .boxCueNear[data-blink-step='1'] .boxValue {
+    transform: none;
   }
 }

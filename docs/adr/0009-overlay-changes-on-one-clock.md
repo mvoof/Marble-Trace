@@ -77,9 +77,14 @@ per run:
 - Bars and fills jump to their value instead of easing into it.
 - The input trace and the coach receive 30 samples a second; they are to carry
   the skipped sample in the bundle so their history keeps every one.
-- Infinite CSS animations on alert states (flags, pit approach, punctures) still
-  run at the monitor's rate while the alert is on. They are the next to move
-  onto the clock.
+- An alert that flashes (flags, pit approach, punctures, the shift light) does
+  so through `useBlink`, a timer that writes the DOM only when its step changes,
+  never through an infinite CSS animation — which, even as `steps()`, has the
+  browser build a frame on every display refresh while it runs. Pulses that
+  used to ease are two-state blinks now. The flashes are not aligned with the
+  bundles: a 2 Hz blink adds four overlay changes a second, against the 165 an
+  animation cost. `widgets/widget-transitions.test.ts` fails on an infinite
+  animation in a widget or a shared component.
 - The cost depends on how little headroom the GPU has. With the game capped
   well below the refresh rate it may vanish; the numbers above are the
   GPU-bound case, the one that matters.

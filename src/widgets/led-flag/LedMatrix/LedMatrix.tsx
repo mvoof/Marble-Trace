@@ -1,10 +1,10 @@
-import { useRef } from 'react';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
+import { useBlink } from '@shared/hooks/useBlink';
 import { BLOCKS, buildGridData } from '@widgets/led-flag/led-flag-utils';
 import { getColorClass, type ColorStyles } from '../led-matrix-utils';
-import { useLedBlinkClock } from '../useLedBlinkClock';
+import { boardBlinkCycle } from '../led-blink';
 
 import styles from './LedMatrix.module.scss';
 import { useFlagsStore } from '@entities/flags/flags-context';
@@ -20,23 +20,30 @@ export const LedMatrix = observer(
     const flags = useFlagsStore();
     const { alwaysShow, animate, split } =
       useWidgetSettings<LedFlagsSettings>('led-flags');
-    const { ledDisplayFlag: flag, blinkOn } = flags;
-    const boardRef = useRef<HTMLDivElement>(null);
-
-    const isOff =
-      flag === 'none' ||
-      (!animate && (flag === 'yellow' || flag === 'red') && !blinkOn);
-
-    useLedBlinkClock(boardRef, flag, !!animate, isOff);
-
-    if (!alwaysShow && flag === 'none') {
-      return null;
-    }
+    const { ledDisplayFlag: flag } = flags;
+    const isOff = flag === 'none';
 
     const dpbX = split ? 3 : diodesPerBlock;
     const dpbY = split ? splitRows : diodesPerBlock;
     const widthBlocks = split ? 1 : BLOCKS;
     const heightBlocks = split ? 1 : BLOCKS;
+    const matrixSizeX = widthBlocks * dpbX;
+    const matrixSizeY = heightBlocks * dpbY;
+
+    const maxRing = Math.min(
+      12,
+      split
+        ? Math.floor((matrixSizeY - 1) / 2)
+        : Math.floor((Math.min(matrixSizeX, matrixSizeY) - 1) / 2)
+    );
+
+    const boardRef = useBlink<HTMLDivElement>(
+      isOff ? null : boardBlinkCycle(flag, animate, maxRing)
+    );
+
+    if (!alwaysShow && isOff) {
+      return null;
+    }
 
     const gridData = buildGridData(
       dpbX,
@@ -45,17 +52,8 @@ export const LedMatrix = observer(
       heightBlocks,
       !!split
     );
-    const matrixSizeX = widthBlocks * dpbX;
-    const matrixSizeY = heightBlocks * dpbY;
 
     const checkerSize = dpbX >= 8 ? 3 : dpbX >= 6 ? 2 : 1;
-
-    const maxRing = Math.min(
-      12,
-      split
-        ? Math.floor((matrixSizeY - 1) / 2)
-        : Math.floor((Math.min(matrixSizeX, matrixSizeY) - 1) / 2)
-    );
 
     return (
       <div
