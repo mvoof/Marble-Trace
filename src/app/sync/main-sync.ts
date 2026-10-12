@@ -129,6 +129,12 @@ const registerAppSettingsSaveReactions = (
     }
   ),
   reaction(
+    () => root.appSettings.appSettings.overlayUpdateHz,
+    () => {
+      void onSave();
+    }
+  ),
+  reaction(
     () => root.appSettings.appSettings.updateCheckInterval,
     () => {
       void onSave();

@@ -25,6 +25,7 @@ use super::scheduler::EmitScheduler;
 use super::state::TelemetryServiceState;
 use crate::computations::ProcessorCommand;
 use crate::model::capabilities::CapabilitiesPayload;
+use crate::model::defaults::SOURCE_TICK_HZ;
 use crate::model::enums::{SimStatus, SimType};
 use crate::model::track_shape::TrackShapePayload;
 use crate::sources::create_source;
@@ -253,7 +254,8 @@ fn run_telemetry_loop(
             .ok();
         }
 
-        let due = scheduler.due(Instant::now());
+        let publish_every = SOURCE_TICK_HZ / state.config.overlay_update_hz.max(1);
+        let due = scheduler.due(Instant::now(), publish_every);
 
         // Read here rather than in the emitter: only the source can reach the
         // sim's own variables. Same tier and switch as the adapted frame.

@@ -1,7 +1,3 @@
-// One telemetry frame of catch-up: long enough to smooth the steps the sim
-// sends the progress in, short enough that the bar is never behind the car.
-$rail-glide: 120ms;
-
 // One full length of the column, floor to ceiling. Long enough to read as a
 // run rather than a flicker.
 $exit-cycle: 1.4s;
@@ -62,9 +58,6 @@ $exit-cycle: 1.4s;
   right: 0;
   height: var(--rail-fill, 0%);
   background: rgba($race-blue, 0.35);
-  // The lane progress lands in steps, one telemetry frame at a time; a bar that
-  // catches up over a frame's worth of time reads as the car rolling.
-  transition: height $rail-glide linear;
 }
 
 // Where braking has to start to roll to a stop in the stall.

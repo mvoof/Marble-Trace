@@ -16,7 +16,6 @@
   inset: 0;
   background: linear-gradient(90deg, $widget-status-info, $widget-status-info);
   width: calc(var(--progress, 0) * 100%);
-  transition: width 0.3s ease;
 }
 
 .progressLabelMax {

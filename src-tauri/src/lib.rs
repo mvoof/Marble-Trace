@@ -30,9 +30,9 @@ use commands::{
     get_inspector_frame, get_inspector_raw_values, get_last_session_info, get_raw_session,
     get_raw_var_meta, launch_companion_app, log_settings_snapshot, reset_delivery_counters,
     reset_pit_lane_pct, run_pit_action, set_active_events, set_car_length, set_fuel_avg_window,
-    set_fuel_count_yellow_laps, set_inspector_active, set_pit_strategy, set_pit_warning_laps,
-    set_remote_active_events, settings_file_exists, start_telemetry_stream, stop_telemetry_stream,
-    toggle_pit_auto,
+    set_fuel_count_yellow_laps, set_inspector_active, set_overlay_update_hz, set_pit_strategy,
+    set_pit_warning_laps, set_remote_active_events, settings_file_exists, start_telemetry_stream,
+    stop_telemetry_stream, toggle_pit_auto,
 };
 use companions::CompanionsState;
 use hotkeys::commands::{
@@ -187,6 +187,7 @@ pub fn run() {
             #[cfg(feature = "dev")]
             submit_overlay_perf,
             set_car_length,
+            set_overlay_update_hz,
             get_connection_status,
             delete_track_shape,
             get_cached_track_shape,

@@ -11,6 +11,7 @@ vi.mock('@shared/api/settings.service', () => ({
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
   setCarLengthSilent: vi.fn(),
+  setOverlayUpdateHzSilent: vi.fn(),
 }));
 const setPitStrategySilentMock = vi.hoisted(() => vi.fn());
 

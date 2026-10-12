@@ -1,16 +1,12 @@
 // Position is a transform on a stage-height layer, so its percent is a percent
-// of the stage — and a transform is composited, which is what lets the 10 Hz
-// proximity frame be smoothed into continuous motion by a transition instead of
-// a per-frame JS animation.
-$plate-move-duration: 140ms;
-
+// of the stage. It moves on the overlay's own clock, without a transition: a
+// running transition redraws the overlay every display frame (ADR-0009).
 .slot {
   position: absolute;
   z-index: calc(100 - var(--stack-index, 0));
   inset: 0;
   pointer-events: none;
   will-change: transform;
-  transition: transform $plate-move-duration linear;
 }
 
 .plate {
@@ -29,14 +25,6 @@ $plate-move-duration: 140ms;
   // of tearing open as they get smaller.
   transform: translateY(-50%) scale(var(--plate-scale, 1))
     translateY(calc(var(--stack-index, 0) * #{ws(9)}));
-  transition: transform $plate-move-duration ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .slot,
-  .plate {
-    transition: none;
-  }
 }
 
 // A grid, not a flex row: every column has a width of its own and keeps it even

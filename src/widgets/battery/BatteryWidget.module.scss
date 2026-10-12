@@ -119,7 +119,6 @@ $cell-slant: -8deg;
   min-width: 0;
   border-radius: 2px;
   transform: skewX($cell-slant);
-  transition: background-color 0.2s ease-in-out;
 }
 
 .cellFull {

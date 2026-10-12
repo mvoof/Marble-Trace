@@ -289,6 +289,11 @@
       "metric": "公制（km/h，°C，L）",
       "imperial": "英制（mph，°F，gal）"
     },
+    "overlayPerformance": {
+      "title": "性能",
+      "updateRateTitle": "叠加层刷新率",
+      "updateRateDesc": "小部件重绘的频率。每次重绘都会让游戏多合成一帧：60 Hz 最流畅，但丢帧最多；30 Hz 在保持流畅的同时代价小得多。"
+    },
     "steeringLock": {
       "title": "方向盘",
       "rangeTitle": "方向盘转角范围",

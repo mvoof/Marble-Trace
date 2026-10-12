@@ -165,12 +165,12 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     // is the derived default rather than twenty-two `None`s written out.
     let mut bundle = TelemetryBundle::default();
 
-    // 60 Hz — raw frames
-    if (active_mask & EVENT_CAR_DYNAMICS) != 0 {
+    // 60 Hz — raw frames, on the ticks that publish
+    if due.publish && (active_mask & EVENT_CAR_DYNAMICS) != 0 {
         bundle.car_dynamics = Some(frame.car_dynamics.clone());
     }
 
-    if (active_mask & EVENT_CAR_INPUTS) != 0 {
+    if due.publish && (active_mask & EVENT_CAR_INPUTS) != 0 {
         bundle.car_inputs = Some(frame.car_inputs.clone());
     }
 
@@ -179,7 +179,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     let session_info = session_snapshot.as_deref();
 
     // 60 Hz — lightweight car positions for smooth map/relative rendering
-    if (active_mask & EVENT_CAR_POSITIONS) != 0 {
+    if due.publish && (active_mask & EVENT_CAR_POSITIONS) != 0 {
         bundle.car_positions = Some(frame.car_positions.clone());
     }
 
@@ -353,6 +353,13 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         if let Err(e) = app.emit(EVENT_SIM_PERF, &frame.sim_perf) {
             warn!("Failed to emit sim perf: {}", e);
         }
+    }
+
+    // Everything above that keeps state has run; what is left only builds and
+    // sends the bundle. Between published ticks there is nothing to send — a
+    // frame computed here is a snapshot the next published tick replaces.
+    if !due.publish {
+        return Duration::ZERO;
     }
 
     // Drop what nobody asked for. Deliberately after the processors have run:
@@ -781,6 +788,7 @@ mod tests {
     fn hot_tick() -> DueGroups {
         DueGroups {
             first: false,
+            publish: true,
             hz10: false,
             hz4: false,
             hz1: false,
