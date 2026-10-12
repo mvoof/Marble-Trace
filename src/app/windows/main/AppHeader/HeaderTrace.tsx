@@ -114,7 +114,7 @@ export const HeaderTrace = () => {
       context.shadowBlur = 0;
     };
 
-    const render = (timestamp: number) => {
+    const draw = (timestamp: number) => {
       context.clearRect(0, 0, width, height);
 
       // Base phase advances 2π (one full cycle) every DRIFT_SECONDS_PER_CYCLE.
@@ -124,18 +124,55 @@ export const HeaderTrace = () => {
       for (const wave of WAVES) {
         drawWave(wave, phase);
       }
+    };
 
+    const render = (timestamp: number) => {
+      draw(timestamp);
       frameHandle = requestAnimationFrame(render);
     };
 
-    const observer = new ResizeObserver(resize);
+    // The loop runs only while someone can be looking at it. WebView2 keeps
+    // firing rAF at the monitor's rate in a minimized or background window, and
+    // this one sits behind the game for the whole session — so the waves drift
+    // while the window is focused and hold their last frame otherwise.
+    const isWatched = () =>
+      document.visibilityState === 'visible' && document.hasFocus();
+
+    const syncLoop = () => {
+      const running = frameHandle !== 0;
+
+      if (isWatched() && !running) {
+        frameHandle = requestAnimationFrame(render);
+      } else if (!isWatched() && running) {
+        cancelAnimationFrame(frameHandle);
+
+        frameHandle = 0;
+      }
+    };
+
+    const onResize = () => {
+      resize();
+
+      // Resizing the backing store clears it; a paused loop would leave it blank.
+      if (frameHandle === 0) {
+        draw(performance.now());
+      }
+    };
+
+    const observer = new ResizeObserver(onResize);
     observer.observe(canvas);
-    resize();
-    frameHandle = requestAnimationFrame(render);
+    onResize();
+    syncLoop();
+    window.addEventListener('focus', syncLoop);
+    window.addEventListener('blur', syncLoop);
+    document.addEventListener('visibilitychange', syncLoop);
 
     return () => {
       cancelAnimationFrame(frameHandle);
       observer.disconnect();
+      window.removeEventListener('focus', syncLoop);
+      window.removeEventListener('blur', syncLoop);
+      document.removeEventListener('visibilitychange', syncLoop);
     };
   }, []);
 
