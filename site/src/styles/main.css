@@ -163,13 +163,6 @@ button:focus-visible {
   white-space: nowrap;
 }
 
-.btn-hero-dark svg {
-  width: 15px;
-  height: 15px;
-  fill: currentColor;
-  flex-shrink: 0;
-}
-
 .btn-hero-dark:hover {
   background-color: #242933;
   transform: translateY(-1.5px);
@@ -3735,12 +3728,6 @@ body.is-viewer-open {
   transition:
     transform var(--transition-fast),
     background-color var(--transition-fast);
-}
-
-.download-button svg {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
 }
 
 .download-button:hover {

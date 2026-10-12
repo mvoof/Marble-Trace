@@ -227,13 +227,6 @@
   user-select: none;
 }
 
-.btn-download svg {
-  width: 14px;
-  height: 14px;
-  fill: currentColor;
-  flex-shrink: 0;
-}
-
 .btn-download:hover {
   background-color: var(--color-btn-download-bg-hover);
   box-shadow: var(--color-btn-download-shadow-hover);

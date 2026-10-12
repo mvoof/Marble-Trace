@@ -37,10 +37,12 @@
         });
       })();
     </script>
-    <title>Marble Trace — Free Open-Source iRacing Telemetry Overlay</title>
+    <title>
+      Free iRacing Overlay — 29 Widgets, OBS & Tablets | Marble Trace
+    </title>
     <meta
       name="description"
-      content="Marble Trace is a free, open-source iRacing overlay for Windows, built in Rust and Tauri. 29 widgets: standings, relative, track map, fuel, delta, radar — on your monitors, a tablet, a phone or OBS."
+      content="Free, open-source iRacing overlay for Windows: 29 widgets — relative, standings, track map, fuel, delta, radar — on monitors, tablets, phones and OBS. No ads."
     />
     <meta
       name="keywords"
@@ -77,7 +79,7 @@
     <meta property="og:locale" content="en_US" />
     <meta
       property="og:title"
-      content="Marble Trace — Free Open-Source iRacing Telemetry Overlay"
+      content="Free iRacing Overlay — 29 Widgets, OBS & Tablets | Marble Trace"
     />
     <meta
       property="og:description"
@@ -94,7 +96,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="Marble Trace — Free Open-Source iRacing Telemetry Overlay"
+      content="Free iRacing Overlay — 29 Widgets, OBS & Tablets | Marble Trace"
     />
     <meta
       name="twitter:description"
@@ -114,6 +116,9 @@
             "name": "Marble Trace",
             "description": "Free, open-source iRacing telemetry overlay built with Rust and Tauri. 29 widgets including standings, relative, track map, fuel calculator, delta and proximity radar. Layouts switch per session and can be opened on any screen on the local network, including a tablet, a phone or an OBS browser source.",
             "operatingSystem": "Windows 10, Windows 11",
+            "softwareVersion": "__APP_VERSION__",
+            "releaseNotes": "https://github.com/mvoof/Marble-Trace/releases",
+            "screenshot": "https://marbletrace.com/og-image.jpg",
             "applicationCategory": "GameApplication",
             "applicationSubCategory": "Sim racing telemetry overlay",
             "isAccessibleForFree": true,
@@ -385,9 +390,6 @@
             rel="noopener noreferrer"
             class="btn-download"
           >
-            <svg aria-hidden="true">
-              <use href="assets/icons/sprite.svg#icon-windows" />
-            </svg>
             <span>Download</span>
           </a>
 
@@ -556,9 +558,6 @@
           rel="noopener noreferrer"
           class="btn-download"
         >
-          <svg aria-hidden="true">
-            <use href="assets/icons/sprite.svg#icon-windows" />
-          </svg>
           <span>Download for Windows</span>
         </a>
       </div>
@@ -615,7 +614,7 @@
 
               <!-- Buttons Group -->
               <div class="hero-buttons">
-                <!-- Windows Download Button -->
+                <!-- Download Button -->
                 <a
                   href="https://github.com/mvoof/Marble-Trace/releases/latest"
                   data-download
@@ -623,9 +622,6 @@
                   rel="noopener noreferrer"
                   class="btn-hero-dark"
                 >
-                  <svg aria-hidden="true">
-                    <use href="assets/icons/sprite.svg#icon-windows" />
-                  </svg>
                   <span>DOWNLOAD</span>
                 </a>
 
@@ -801,7 +797,7 @@
                   sizes="(max-width: 1180px) 92vw, 64vw"
                   id="gw-shot"
                   src="assets/widgets/race-dash.png"
-                  alt="Race Dash widget"
+                  alt="Race Dash iRacing overlay widget: speed, gear, RPM, position and lap in one strip"
                   decoding="async"
                 />
               </div>
@@ -830,7 +826,7 @@
                     tabindex="0"
                     data-shot="assets/widgets/race-dash.png"
                     data-name="Race Dash"
-                    data-alt="Race Dash widget"
+                    data-alt="Race Dash iRacing overlay widget: speed, gear, RPM, position and lap in one strip"
                     data-group="Race &amp; Performance"
                     data-desc-id="gw-desc-race-dash"
                   >
@@ -855,7 +851,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/pit-line.png"
                     data-name="Pit Line"
-                    data-alt="Pit Line widget"
+                    data-alt="Pit Line iRacing overlay widget: pit limiter, pit-lane speed and distance to the pit box"
                     data-group="Race &amp; Performance"
                     data-desc-id="gw-desc-pit-line"
                   >
@@ -880,7 +876,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/rpm-lights.png"
                     data-name="RPM Lights"
-                    data-alt="RPM Lights widget"
+                    data-alt="RPM Lights iRacing overlay widget: shift light bar with custom colours and shift point"
                     data-group="Race &amp; Performance"
                     data-desc-id="gw-desc-rpm-lights"
                   >
@@ -905,7 +901,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/engine.png"
                     data-name="Engine Panel"
-                    data-alt="Engine Panel widget"
+                    data-alt="Engine Panel iRacing overlay widget: water, oil, fuel pressure and voltage"
                     data-group="Race &amp; Performance"
                     data-desc-id="gw-desc-engine"
                   >
@@ -930,7 +926,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/battery.png"
                     data-name="Battery"
-                    data-alt="Battery widget"
+                    data-alt="Battery iRacing overlay widget: hybrid charge, MGU-K deployment and energy per lap"
                     data-group="Race &amp; Performance"
                     data-desc-id="gw-desc-battery"
                   >
@@ -955,7 +951,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/drs.png"
                     data-name="DRS"
-                    data-alt="DRS widget"
+                    data-alt="DRS iRacing overlay widget: drag reduction system armed, available and open"
                     data-group="Race &amp; Performance"
                     data-desc-id="gw-desc-drs"
                   >
@@ -980,7 +976,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/input-trace.png"
                     data-name="Input Trace"
-                    data-alt="Input Trace widget"
+                    data-alt="Input Trace iRacing overlay widget: throttle, brake and steering trace"
                     data-group="Race &amp; Performance"
                     data-desc-id="gw-desc-input-trace"
                   >
@@ -1005,7 +1001,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/g-metr.png"
                     data-name="G-Meter"
-                    data-alt="G-Meter widget"
+                    data-alt="G-Meter iRacing overlay widget: lateral and longitudinal g-force with lap peaks"
                     data-group="Race &amp; Performance"
                     data-desc-id="gw-desc-g-metr"
                   >
@@ -1030,7 +1026,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/coach.png"
                     data-name="Coach"
-                    data-alt="Coach widget"
+                    data-alt="Coach iRacing overlay widget: braking and traction guidance against a reference lap"
                     data-group="Race &amp; Performance"
                     data-desc-id="gw-desc-coach"
                   >
@@ -1055,7 +1051,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/invisible-dash.png"
                     data-name="Invisible Dash"
-                    data-alt="Invisible Dash widget"
+                    data-alt="Invisible Dash iRacing overlay widget: speed, gear and position with no panel"
                     data-group="Race &amp; Performance"
                     data-desc-id="gw-desc-invisible-dash"
                   >
@@ -1080,7 +1076,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/standings.png"
                     data-name="Standings"
-                    data-alt="Standings widget"
+                    data-alt="Standings iRacing overlay widget: multi-class order with gaps, class badges, pit state and licence"
                     data-group="Timing &amp; Standings"
                     data-desc-id="gw-desc-standings"
                   >
@@ -1105,7 +1101,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/relative.png"
                     data-name="Relative"
-                    data-alt="Relative widget"
+                    data-alt="Relative iRacing overlay widget: cars ahead and behind on track with live gaps"
                     data-group="Timing &amp; Standings"
                     data-desc-id="gw-desc-relative"
                   >
@@ -1130,7 +1126,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/relative-map.png"
                     data-name="Relative Map"
-                    data-alt="Relative Map widget"
+                    data-alt="Relative Map iRacing overlay widget: nearby cars laid out along the track by distance"
                     data-group="Timing &amp; Standings"
                     data-desc-id="gw-desc-relative-map"
                   >
@@ -1155,7 +1151,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/delta.png"
                     data-name="Delta"
-                    data-alt="Delta widget"
+                    data-alt="Delta iRacing overlay widget: live delta to your best lap or the session best"
                     data-group="Timing &amp; Standings"
                     data-desc-id="gw-desc-delta"
                   >
@@ -1180,7 +1176,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/sector-matrix.png"
                     data-name="Sector Matrix"
-                    data-alt="Sector Matrix widget"
+                    data-alt="Sector Matrix iRacing overlay widget: sector times of every lap side by side"
                     data-group="Timing &amp; Standings"
                     data-desc-id="gw-desc-sector-matrix"
                   >
@@ -1205,7 +1201,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/lap-log.png"
                     data-name="Lap Log"
-                    data-alt="Lap Log widget"
+                    data-alt="Lap Log iRacing overlay widget: stint lap times with the best and invalid laps marked"
                     data-group="Timing &amp; Standings"
                     data-desc-id="gw-desc-lap-log"
                   >
@@ -1230,7 +1226,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/timer.png"
                     data-name="Timer"
-                    data-alt="Timer widget"
+                    data-alt="Timer iRacing overlay widget: session clock, stint countdown and time to the pit stop"
                     data-group="Timing &amp; Standings"
                     data-desc-id="gw-desc-timer"
                   >
@@ -1255,7 +1251,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/map.png"
                     data-name="Track Map"
-                    data-alt="Track Map widget"
+                    data-alt="Track Map iRacing overlay widget: live track layout with every car and your class highlighted"
                     data-group="Awareness"
                     data-desc-id="gw-desc-map"
                   >
@@ -1280,7 +1276,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/proximity-radar.png"
                     data-name="Proximity Radar"
-                    data-alt="Proximity Radar widget"
+                    data-alt="Proximity Radar iRacing overlay widget: 360° blind-spot radar with distance to the car beside you"
                     data-group="Awareness"
                     data-desc-id="gw-desc-proximity-radar"
                   >
@@ -1305,7 +1301,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/radar-bar.png"
                     data-name="Radar Bar"
-                    data-alt="Radar Bar widget"
+                    data-alt="Radar Bar iRacing overlay widget: side-by-side warning bars on the screen edges"
                     data-group="Awareness"
                     data-desc-id="gw-desc-radar-bar"
                   >
@@ -1330,7 +1326,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/close-battle.png"
                     data-name="Close Battle"
-                    data-alt="Close Battle widget"
+                    data-alt="Close Battle iRacing overlay widget: rivals ahead and behind on a distance axis"
                     data-group="Awareness"
                     data-desc-id="gw-desc-close-battle"
                   >
@@ -1355,7 +1351,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/wheel-to-wheel.png"
                     data-name="Wheel to Wheel"
-                    data-alt="Wheel to Wheel widget"
+                    data-alt="Wheel to Wheel iRacing overlay widget: you and your nearest rival with the gap between you"
                     data-group="Awareness"
                     data-desc-id="gw-desc-wheel-to-wheel"
                   >
@@ -1380,7 +1376,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/flat-flag.png"
                     data-name="Flat Flags"
-                    data-alt="Flat Flags widget"
+                    data-alt="Flat Flags iRacing overlay widget: race flag states as plain panels"
                     data-group="Awareness"
                     data-desc-id="gw-desc-flat-flag"
                   >
@@ -1405,7 +1401,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/led-flag-dual.png"
                     data-name="LED Flags"
-                    data-alt="LED Flags widget"
+                    data-alt="LED Flags iRacing overlay widget: race flags as light panels at both screen edges"
                     data-group="Awareness"
                     data-desc-id="gw-desc-led-flag-dual"
                   >
@@ -1430,7 +1426,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/pit-service.png"
                     data-name="Pit Service"
-                    data-alt="Pit Service widget"
+                    data-alt="Pit Service iRacing overlay widget: fuel, tyres, pressures and repairs for the pit stop"
                     data-group="Car &amp; Session"
                     data-desc-id="gw-desc-pit-stop"
                   >
@@ -1455,7 +1451,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/fuel.png"
                     data-name="Fuel"
-                    data-alt="Fuel widget"
+                    data-alt="Fuel iRacing overlay widget: fuel per lap, laps left and fuel to add"
                     data-group="Car &amp; Session"
                     data-desc-id="gw-desc-fuel"
                   >
@@ -1480,7 +1476,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/weather.png"
                     data-name="Weather"
-                    data-alt="Weather widget"
+                    data-alt="Weather iRacing overlay widget: air and track temperature, humidity and wind"
                     data-group="Car &amp; Session"
                     data-desc-id="gw-desc-weather"
                   >
@@ -1505,7 +1501,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/incident-tracker.png"
                     data-name="Incident Tracker"
-                    data-alt="Incident Tracker widget"
+                    data-alt="Incident Tracker iRacing overlay widget: incident count, next penalty and Safety Rating estimate"
                     data-group="Car &amp; Session"
                     data-desc-id="gw-desc-incident-tracker"
                   >
@@ -1530,7 +1526,7 @@
                     tabindex="-1"
                     data-shot="assets/widgets/stream-chat.png"
                     data-name="Stream Chat"
-                    data-alt="Stream Chat widget"
+                    data-alt="Stream Chat iRacing overlay widget: Twitch and YouTube chat on the overlay"
                     data-group="Streaming"
                     data-desc-id="gw-desc-stream-chat"
                   >
@@ -1994,7 +1990,7 @@
               <img
                 class="screens-scene-shot"
                 src="assets/screens/rig.webp"
-                alt="A sim racing rig with a triple monitor, a monitor above it, a tablet and a phone on the cockpit"
+                alt="A sim racing rig with iRacing overlay widgets on a triple monitor, a monitor above it, a tablet and a phone"
                 decoding="async"
               />
 
@@ -2338,7 +2334,7 @@
                 class="layout-shot"
                 data-shot="garage"
                 src="assets/layouts/garage.webp"
-                alt="The garage layout on screen"
+                alt="iRacing overlay layout for the garage session"
                 loading="lazy"
                 decoding="async"
               />
@@ -2347,7 +2343,7 @@
                 class="layout-shot"
                 data-shot="practice"
                 src="assets/layouts/practice.webp"
-                alt="The practice layout on screen"
+                alt="iRacing overlay layout for the practice session"
                 loading="lazy"
                 decoding="async"
               />
@@ -2356,7 +2352,7 @@
                 class="layout-shot"
                 data-shot="qualify"
                 src="assets/layouts/qualify.webp"
-                alt="The qualifying layout on screen"
+                alt="iRacing overlay layout for the qualifying session"
                 loading="lazy"
                 decoding="async"
               />
@@ -2365,7 +2361,7 @@
                 class="layout-shot is-active"
                 data-shot="race"
                 src="assets/layouts/race.webp"
-                alt="The race layout on screen"
+                alt="iRacing overlay layout for the race session"
                 loading="lazy"
                 decoding="async"
               />
@@ -2975,9 +2971,6 @@
               data-download
               class="download-button"
             >
-              <svg aria-hidden="true">
-                <use href="assets/icons/sprite.svg#icon-windows" />
-              </svg>
               <span>Download for Windows</span>
             </a>
 
@@ -3109,7 +3102,7 @@
               aria-label="Download for Windows"
             >
               <svg aria-hidden="true">
-                <use href="assets/icons/sprite.svg#icon-windows" />
+                <use href="assets/icons/sprite.svg#icon-download" />
               </svg>
             </a>
           </div>
