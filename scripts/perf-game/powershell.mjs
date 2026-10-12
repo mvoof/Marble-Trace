@@ -74,6 +74,20 @@ $full = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
 $half = New-Object System.Drawing.Bitmap $full, ([int]($bounds.Width / ${SCREENSHOT_SCALE})), ([int]($bounds.Height / ${SCREENSHOT_SCALE}))
 $half.Save(${psString(filePath)}, [System.Drawing.Imaging.ImageFormat]::Png)`);
 
+/**
+ * Whether a process with this executable name (without `.exe`) owns the
+ * foreground window. Another window over the game — a chat, an editor — makes
+ * DWM compose the game like an overlay would, and its redraws cost the game's
+ * frames the same way.
+ */
+export const ownsForegroundWindow = (name) =>
+  runPowerShell(`
+Add-Type -Namespace PerfGame -Name Foreground -MemberDefinition '[DllImport("user32.dll")] public static extern System.IntPtr GetForegroundWindow(); [DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(System.IntPtr window, out int processId);' -ErrorAction SilentlyContinue
+$owner = 0
+[void][PerfGame.Foreground]::GetWindowThreadProcessId([PerfGame.Foreground]::GetForegroundWindow(), [ref]$owner)
+(Get-Process -Id $owner -ErrorAction SilentlyContinue).Name -eq ${psString(name)}`) ===
+  'True';
+
 /** Process ids running the given executable name (without `.exe`). */
 export const processIdsOf = (name) => {
   const output = runPowerShell(

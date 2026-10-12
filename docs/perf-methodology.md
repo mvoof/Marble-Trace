@@ -94,7 +94,11 @@ ADR-0009 was measured in.
    usable for large effects but every run sees a different scene.
 3. **The game full screen**, borderless, as the user would race; note the FPS
    cap, VRR and resolution. Close what else draws: browsers, recorders, the
-   editor you are reading results in.
+   editor you are reading results in. **Nothing may sit over the game window**
+   — a chat or an editor on top is composed like an overlay, and its redraws
+   cost the game the same way (one such capture of the game "alone" read 78
+   stutters a minute against 1). `run` warns when the game is not the
+   foreground window and saves a screenshot with every capture.
 4. **90 s per capture** after 15 s of warm-up (105 s captured).
 5. **Settings.** A run makes the chosen layout active, turns layout auto-switch
    off (a replay's session would switch it back), switches off every widget not

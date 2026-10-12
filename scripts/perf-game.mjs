@@ -40,14 +40,21 @@ import {
   sleep,
   withRunSettings,
 } from './perf-game/app.mjs';
-import { capture, summarizeCapture } from './perf-game/presentmon.mjs';
+import {
+  GAME_PROCESS,
+  capture,
+  summarizeCapture,
+} from './perf-game/presentmon.mjs';
 import {
   DEBUGGING_PORT,
   probeChanges,
   probeHeap,
   probeProcesses,
 } from './perf-game/probes.mjs';
-import { saveScreenshot } from './perf-game/powershell.mjs';
+import {
+  ownsForegroundWindow,
+  saveScreenshot,
+} from './perf-game/powershell.mjs';
 
 const MS_PER_SECOND = 1000;
 const DEFAULT_CAPTURE_SECONDS = 105;
@@ -130,8 +137,17 @@ const run = async (options) => {
   const csvPath = path.join(outDir, `${options.name}.csv`);
   const seconds = numberOption(options.seconds, DEFAULT_CAPTURE_SECONDS);
   const skip = numberOption(options.skip, DEFAULT_SKIP_SECONDS);
-  const captureGame = () =>
-    capture({ csvPath, seconds, elevate: Boolean(options.elevate) });
+  const captureGame = async () => {
+    saveScreenshot(path.join(outDir, `${options.name}.png`));
+
+    if (!ownsForegroundWindow(GAME_PROCESS.replace(/\.exe$/i, ''))) {
+      console.error(
+        'warning: the game is not the foreground window — anything drawn over it is measured too; check the screenshot'
+      );
+    }
+
+    await capture({ csvPath, seconds, elevate: Boolean(options.elevate) });
+  };
 
   if (options['no-app']) {
     await sleep(APP_LEAD_SECONDS * MS_PER_SECOND);
@@ -145,7 +161,6 @@ const run = async (options) => {
       const stop = await launchApp();
 
       try {
-        saveScreenshot(path.join(outDir, `${options.name}.png`));
         await captureGame();
       } finally {
         await stop();
