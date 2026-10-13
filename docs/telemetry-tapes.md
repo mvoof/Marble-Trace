@@ -11,7 +11,7 @@ and Storybook run on mock builders, never on a recording
 a 35-minute race is about 95 MB.
 
 Everything here needs a build with the cargo feature `dev`: `npm run tauri:dev`,
-`npm run tauri:build:dev`, or the binary `npm run perf -- --build` makes. A
+`npm run tauri:build:dev`, or the binary `npm run perf:build` makes. A
 release build ignores every tape and perf variable.
 
 ---

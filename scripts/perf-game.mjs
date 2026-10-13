@@ -3,7 +3,8 @@
 // replay, and the app-side probes that explain it. `npm run perf` measures
 // what the app costs itself on a tape; this measures what it costs the game.
 //
-//   npm run perf:game -- run --name s0 --no-app                game alone
+//   npm run perf:game -- mark                                  remember where the replay stands
+//   npm run perf:game -- run --name s0 --no-app --rewind       game alone, from that point
 //   npm run perf:game -- run --name all-30 --layout perf-all --rate 30
 //   npm run perf:game -- run --name one --widgets lap-log      only these on
 //   npm run perf:game -- report <capture.csv>...               summarize again
@@ -11,8 +12,11 @@
 //   npm run perf:game -- heap [--seconds 120] [--tape …]       heap, GC, garbage vs held
 //   npm run perf:game -- processes [--seconds 30]              CPU / memory / GPU per process
 //
-// run         one capture. Start the replay first, at the same point every
-//             time. The app is restarted on the given layout, its settings
+// mark        saves the frame the iRacing replay stands on (<out>/replay-point.json)
+//             as the point every --rewind run starts from.
+// run         one capture. The replay must cover the same stretch every time:
+//             --rewind puts it back on the marked frame and plays it, or start
+//             it there by hand. The app is restarted on the given layout, its settings
 //             window minimized, the screen saved beside the capture, the game
 //             captured for --seconds (default 105, the first --skip 15 dropped),
 //             the app closed and the settings file put back byte for byte.
@@ -21,6 +25,7 @@
 // --widgets   instance ids to keep on (comma-separated); the rest switched off
 // --rate      overlay update rate in Hz: 60, 30, 20 or 15
 // --no-app    capture the game alone, after the same lead time as an app run
+// --rewind    rewind the replay to the point `mark` saved and play it first
 // --elevate   let PresentMon ask for administrator rights (UAC) itself; not
 //             needed when the account is in "Performance Log Users"
 // --tape/--from  for changes and heap: run the app on a tape instead of the sim
@@ -55,6 +60,7 @@ import {
   ownsForegroundWindow,
   saveScreenshot,
 } from './perf-game/powershell.mjs';
+import { markReplayPoint, rewindReplay } from './perf-game/replay.mjs';
 
 const MS_PER_SECOND = 1000;
 const DEFAULT_CAPTURE_SECONDS = 105;
@@ -66,7 +72,7 @@ const DEFAULT_PROCESS_SECONDS = 30;
 const APP_LEAD_SECONDS = 20;
 const OVERLAY_RATES_HZ = [60, 30, 20, 15];
 
-const FLAGS = new Set(['no-app', 'elevate']);
+const FLAGS = new Set(['no-app', 'elevate', 'rewind']);
 
 const parseArgs = (argv) => {
   const [command, ...rest] = argv;
@@ -137,6 +143,13 @@ const run = async (options) => {
   const csvPath = path.join(outDir, `${options.name}.csv`);
   const seconds = numberOption(options.seconds, DEFAULT_CAPTURE_SECONDS);
   const skip = numberOption(options.skip, DEFAULT_SKIP_SECONDS);
+
+  if (options.rewind) {
+    console.error(
+      `replay: back to frame ${await rewindReplay(outDir)}, playing`
+    );
+  }
+
   const captureGame = async () => {
     saveScreenshot(path.join(outDir, `${options.name}.png`));
 
@@ -200,6 +213,8 @@ const withProbedApp = async (options, probe) => {
 
 const COMMANDS = {
   run,
+  mark: (options) =>
+    console.error(`replay point: frame ${markReplayPoint(outDirOf(options))}`),
   report,
   changes: (options) =>
     withProbedApp(options, () =>

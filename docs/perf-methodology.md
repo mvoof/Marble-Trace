@@ -74,6 +74,8 @@ Per capture, after dropping the first 15 s (`scripts/perf-game/presentmon.mjs`):
 | hitch        | a frame longer than 50 ms, counted apart                                                                                                      |
 | latency      | PresentMon `DisplayLatency`, average and p99                                                                                                  |
 | GPU busy     | PresentMon `GPUBusy`: the game's own GPU time per frame — where the overlay's cost shows up                                                   |
+| long frames  | share of frames longer than **2× the capture's median frame** — the frames the 1% low is made of                                              |
+| long CPU/GPU | mean `CPUBusy` / `GPUBusy` of the long frames. CPU grown and GPU not: the game was waiting, not drawing more (see Reading a result)           |
 | present mode | share of frames per PresentMon `PresentMode`; **must** be `Hardware: Independent Flip` for runs to be comparable                              |
 
 The present mode is the first thing to read. `Composed: Flip` means DWM is
@@ -88,24 +90,31 @@ ADR-0009 was measured in.
    same session are. Alternate the scenarios (S0, A, B, A, B, S0) so a drift in
    conditions shows up rather than landing in one scenario.
 2. **A replay, not live driving.** Save a replay of a session with the field you
-   want to measure, pick a point, use one camera. Before every capture rewind to
-   that point and press play; the harness waits the same lead time for every
+   want to measure, pick a point, use one camera. `mark` saves the frame the
+   replay stands on, and `run --rewind` puts the replay back on it and plays it
+   before every capture; the harness then waits the same lead time for every
    run, app or not, so each capture covers the same stretch. Live driving is
-   usable for large effects but every run sees a different scene.
-3. **The game full screen**, borderless, as the user would race; note the FPS
+   usable for large effects but every run sees a different scene. Two points of
+   one replay can differ a lot — the same build and layout read a 1% low of 96
+   at one and 65 at another — so compare only runs taken from one point.
+3. **At least three runs per scenario.** A run does not land on a stable value:
+   the same build, layout and point fell either near 65 or near 110–125 from one
+   run to the next. One capture per variant proves nothing; read the spread of
+   three, and suspect any single number that disagrees with the rest.
+4. **The game full screen**, borderless, as the user would race; note the FPS
    cap, VRR and resolution. Close what else draws: browsers, recorders, the
    editor you are reading results in. **Nothing may sit over the game window**
    — a chat or an editor on top is composed like an overlay, and its redraws
    cost the game the same way (one such capture of the game "alone" read 78
    stutters a minute against 1). `run` warns when the game is not the
    foreground window and saves a screenshot with every capture.
-4. **90 s per capture** after 15 s of warm-up (105 s captured).
-5. **Settings.** A run makes the chosen layout active, turns layout auto-switch
+5. **90 s per capture** after 15 s of warm-up (105 s captured).
+6. **Settings.** A run makes the chosen layout active, turns layout auto-switch
    off (a replay's session would switch it back), switches off every widget not
    asked for and sets the overlay rate — then restores the settings file byte
    for byte. Close Marble Trace before a run; the harness starts its own build
-   (`src-tauri/target/release/marble-trace.exe`, from `npm run perf -- --build`).
-6. **PresentMon access.** Capturing needs ETW rights: administrator, or the
+   (`src-tauri/target/release/marble-trace.exe`, from `npm run perf:build`).
+7. **PresentMon access.** Capturing needs ETW rights: administrator, or the
    account in the _Performance Log Users_ group (`net localgroup "Performance
 Log Users" <user> /add`, then sign out and in). Without either, pass
    `--elevate` and confirm the UAC prompt on each run.
@@ -123,12 +132,50 @@ Log Users" <user> /add`, then sign out and in). Without either, pass
 
 A layout with every widget (`perf-all`) is worth keeping for these runs.
 
+## Step by step
+
+One session, start to finish. Every `run` below takes `--rewind --elevate`
+(the latter only without _Performance Log Users_) and `--out <dir>`, the same
+directory for the whole session: the replay point is kept there.
+
+1. **Build the binary under test.** `npm run perf:build`. To compare two
+   commits, build the other one in a `git worktree` with
+   `CARGO_TARGET_DIR` pointing at this repo's `src-tauri/target`, keep both
+   `marble-trace.exe` files under their own names, and copy the one a run
+   measures into place before it.
+2. **Set up the game.** iRacing full screen, borderless; open the replay, pick
+   one camera. Close every window that draws, and Marble Trace itself.
+3. **Mark the point.** Stand the replay where the captures should begin and run
+   `npm run perf:game -- mark`. The stretch after it must hold for the whole
+   capture: 20 s of lead and 105 s of capture.
+4. **Take the reference.** `run --name s0a --no-app`.
+5. **Alternate the variants**, three runs each: A, B, A, B, A, B
+   (`run --name a1 --layout perf-all --rate 30`, …). A variant is a widget set
+   (`--widgets`), a rate (`--rate`) or a build (step 1).
+6. **Close with the reference.** `run --name s0b --no-app`. If it moved far from
+   `s0a`, the conditions drifted during the session and the variants between
+   them cannot be compared.
+7. **Check every screenshot** beside its capture: the game in front, the
+   expected widgets on, nothing else over it.
+8. **Read the numbers** with `report <capture.csv>...` and Reading a result
+   below: the present mode first, then the spread of each variant's three runs,
+   then the long frames.
+9. **Bisect** when a set costs more than expected: halve it with `--widgets`,
+   three runs per half, and keep halving the half that holds the cost. Before
+   blaming a widget's drawing, check how often it changes the overlay at all
+   (`changes`, below): a widget that changes on every bundle costs what any
+   other such widget would.
+
+Captures, screenshots and the replay point stay in `--out`; copy what is worth
+keeping out of the temporary directory before it is cleaned.
+
 ## Commands
 
 ```bash
-npm run perf -- --build                                    # the measured binary, once per change
-npm run perf:game -- run --name s0 --no-app --elevate      # game alone
-npm run perf:game -- run --name all-30 --layout perf-all --rate 30 --elevate
+npm run perf:build                                         # the measured binary, once per change
+npm run perf:game -- mark                                  # remember where the replay stands
+npm run perf:game -- run --name s0 --no-app --rewind --elevate      # game alone
+npm run perf:game -- run --name all-30 --layout perf-all --rate 30 --rewind --elevate
 npm run perf:game -- report <capture.csv>...               # summarize saved captures side by side
 npm run perf:game -- changes --tape D:/tapes/x.tape.jsonl.gz --from 600 --layout perf-all
 npm run perf:game -- heap --seconds 120 --tape D:/tapes/x.tape.jsonl.gz --from 600
@@ -170,6 +217,19 @@ Pitfalls found the hard way:
   rate reproduced a real widget's cost within the run-to-run spread, and it is
   how the rate curve below was taken without editing a widget.
 - **DWM's CPU time reads zero** without administrator rights.
+- **One run is not a result.** Captures of one variant fell into two groups, a
+  1% low near 65 or near 110–125, with nothing changed between them — the 15 Hz
+  map read 109, then 63. Hence three runs per variant.
+- **The long frames are the game waiting, not drawing.** In the slow group the
+  game's long frames took ~15 ms of CPU against ~5 ms for a normal one, while
+  its GPU time barely moved (7.3 against 6.5 ms). Lowering the priority of every
+  app process and pinning them to four cores of their own changed nothing, so
+  the game is not losing CPU to the overlay's threads; it waits on something
+  both share when the overlay presents. The only lever found is how often the
+  overlay changes.
+- **What a widget draws matters far less than how often it changes.** Splitting
+  the track map so the moving dots sat on their own compositor layer above a
+  static track did not move its cost.
 
 ## Results so far
 
@@ -190,6 +250,29 @@ Every run kept `Hardware: Independent Flip`, `SyncInterval 0`, tearing allowed.
 Bisecting `perf-all` found no single expensive widget: any one widget changing
 at 60 Hz cost about what all of them did. The full set of runs, including the
 2×2 of clock against transitions, is in ADR-0009.
+
+A second point of the same replay, 2026-10-13, heavier for any overlay, after
+the alert animations moved to timers and the radar off its own frame loop. One
+or two runs per row, so read them as groups, not as exact values:
+
+| overlay, 30 Hz                                                       | avg FPS   | 1% low        | long frames | stutters/min   |
+| -------------------------------------------------------------------- | --------- | ------------- | ----------- | -------------- |
+| none                                                                 | 155–158   | 129–135       | ~0 %        | 0–1            |
+| `perf-all`, 29 widgets                                               | 141–143   | 64–67         | 2–3 %       | 41–70          |
+| standings, relative                                                  | 151.8     | 125.2         | 0.1 %       | 8              |
+| delta, fuel, radar-bar, weather                                      | 150.2     | 121.7         | —           | 23             |
+| track map alone                                                      | 144.2     | 64.7          | 2.4 %       | 123            |
+| track map alone, 15 / 20 Hz                                          | 148 / 145 | 109 · 63 / 65 | —           | 16 · 141 / 107 |
+| `perf-all` on the previous build (before the alert and radar change) | 134.8     | 67.1          | —           | 38             |
+
+- The cost followed how often the overlay changed, not the widget. On this
+  replay the four widgets of the second set hardly changed (a delta with no
+  reference, a fuel figure at 4 Hz, an empty radar bar), the tables changed
+  about ten times a second, and the track map on every bundle — the one widget
+  of the set the game paid for.
+- The alert and radar change raised the average frame rate (141–143 against 135) and left the 1% low where it was at this point.
+- The 15 Hz map fell once in each group (109 and 63): too few runs to tell
+  whether a lower clock makes the slow group rarer.
 
 ### What this corrects in the earlier picture
 
@@ -219,12 +302,14 @@ for the other, which is why it is measured with both harnesses.
 
 ### Reading a result
 
-| observation                                    | look at                                                                 |
-| ---------------------------------------------- | ----------------------------------------------------------------------- |
-| present mode is not Independent Flip           | the system, not the app: MPO support, Windows version, driver           |
-| the app with no widget already costs the game  | the transparent window and WebView2 themselves                          |
-| a static widget is fine, a changing one is not | the rate of change: the clock, then `changes` for anything animating    |
-| a lower clock changes nothing                  | `changes`: something animates between bundles                           |
-| one widget accounts for most of the cost       | that widget's drawing                                                   |
-| avg FPS holds but 1% low and stutter move      | normal for this cost — GPU busy per frame, missed vblanks               |
-| the cost disappears with an FPS cap            | GPU headroom absorbs it; the uncapped, GPU-bound case is the one to fix |
+| observation                                    | look at                                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| present mode is not Independent Flip           | the system, not the app: MPO support, Windows version, driver                |
+| the app with no widget already costs the game  | the transparent window and WebView2 themselves                               |
+| a static widget is fine, a changing one is not | the rate of change: the clock, then `changes` for anything animating         |
+| a lower clock changes nothing                  | `changes`: something animates between bundles                                |
+| one widget accounts for most of the cost       | how often it changes the overlay (`changes`), then its drawing               |
+| runs of one variant disagree                   | more runs; the result is the groups they fall into, not their mean           |
+| long frames grow in CPU time, not in GPU time  | the game waiting while the overlay presents: fewer changes, not cheaper ones |
+| avg FPS holds but 1% low and stutter move      | normal for this cost — GPU busy per frame, missed vblanks                    |
+| the cost disappears with an FPS cap            | GPU headroom absorbs it; the uncapped, GPU-bound case is the one to fix      |

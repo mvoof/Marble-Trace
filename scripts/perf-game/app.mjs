@@ -42,9 +42,7 @@ export const assertAppNotRunning = () => {
   }
 
   if (!existsSync(APP_EXE)) {
-    throw new Error(
-      `${APP_EXE} not found — build it with npm run perf -- --build`
-    );
+    throw new Error(`${APP_EXE} not found — build it with npm run perf:build`);
   }
 };
 

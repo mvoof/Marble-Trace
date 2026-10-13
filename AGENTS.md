@@ -21,6 +21,7 @@ cd src-tauri && cargo clippy --all-targets   # --all-targets or test modules go 
 RUST_LOG=marble_trace_lib=debug npm run tauri:dev   # verbose backend logs
 MARBLE_TRACE_RECORD=<dir> npm run tauri:dev         # record live sessions as tapes (dev feature)
 MARBLE_TRACE_REPLAY=<tape> npm run tauri:dev        # play a tape instead of the sim (dev feature)
+npm run perf:build                                     # the release binary perf and perf:game measure
 npm run perf:game -- run --name <n> --layout <layout>  # PresentMon capture of what the overlay costs the game
 ```
 

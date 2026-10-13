@@ -27,6 +27,7 @@
     "build-storybook": "storybook build",
     "capture:widgets": "node scripts/capture-widgets.mjs",
     "perf": "node scripts/perf-run.mjs",
+    "perf:build": "node scripts/perf-run.mjs --build",
     "perf:game": "node scripts/perf-game.mjs",
     "cargo:format": "cd src-tauri && cargo fmt",
     "test": "vitest run",

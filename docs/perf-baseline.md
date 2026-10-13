@@ -92,7 +92,7 @@ One row per measurement. Later tickets add rows here.
 **Machine.** AMD Ryzen 7 7700 (8 cores), 32 GB RAM, NVIDIA RTX 4070, Windows 11
 Pro, WebView2 154.0.4258.53, one monitor (`DISPLAY1`).
 
-**Build.** `npm run perf -- --build`: `tauri build --features dev --no-bundle`,
+**Build.** `npm run perf:build` (or `--build` with a run): `tauri build --features dev --no-bundle`,
 production Vite frontend. The backend carries specta and the tape source,
 which are `dev` only. A release build has neither.
 

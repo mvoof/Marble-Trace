@@ -102,6 +102,8 @@ const STUTTER_FACTOR = 2;
 const STUTTER_WINDOW = 20;
 /** A frame this long is a hitch, counted apart from stutters. */
 const HITCH_MS = 50;
+/** A long frame takes more than this many times the capture's median frame. */
+const LONG_FRAME_FACTOR = 2;
 const P99 = 0.99;
 const P999 = 0.999;
 const MEDIAN = 0.5;
@@ -184,6 +186,16 @@ export const summarizeCapture = (csvPath, skipSeconds) => {
   const latency = numbers('DisplayLatency')
     .filter((value) => value > 0)
     .sort(ascending);
+  // Where a long frame went: when the game's CPU time grows with it and its GPU
+  // time does not, the game was waiting rather than drawing more.
+  const medianFrame = percentile(sorted, MEDIAN);
+  const longRows = kept.filter(
+    (row) => Number(row[column('FrameTime')]) > LONG_FRAME_FACTOR * medianFrame
+  );
+  const meanOver = (rowsOf, name) =>
+    rowsOf.length > 0
+      ? mean(rowsOf.map((row) => Number(row[column(name)]))).toFixed(1)
+      : '—';
   const modes = {};
 
   for (const row of kept) {
@@ -208,6 +220,8 @@ export const summarizeCapture = (csvPath, skipSeconds) => {
         ? `${mean(latency).toFixed(1)} / ${percentile(latency, P99).toFixed(1)}`
         : '—',
     'GPU busy ms': round(mean(numbers('GPUBusy')), 2),
+    'long frames %': round((longRows.length / kept.length) * PERCENT),
+    'long CPU/GPU ms': `${meanOver(longRows, 'CPUBusy')} / ${meanOver(longRows, 'GPUBusy')}`,
     'present mode': Object.entries(modes)
       .sort((left, right) => right[1] - left[1])
       .map(
