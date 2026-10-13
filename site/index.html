@@ -176,6 +176,14 @@
               },
               {
                 "@type": "Question",
+                "name": "Will it lower my FPS?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "A little. Any overlay drawn over a game costs it something: Windows combines the two every time the overlay changes. Marble Trace keeps those changes few — the overlay changes only on one clock, 30 times a second by default, and nothing animates in between. If you notice stutter, lower the overlay update rate in Settings → Widget display."
+                }
+              },
+              {
+                "@type": "Question",
                 "name": "What do I need to install?",
                 "acceptedAnswer": {
                   "@type": "Answer",
@@ -2670,8 +2678,11 @@
          60 Hz and the tiers are the scheduler's (telemetry/scheduler.rs), "on
          demand" is the per-window mask (telemetry/state.rs, emitter.rs), and
          kerb waits on iRacing's data-ready event rather than polling
-         (kerb src/iracing/connection.rs). Change one of those and this band
-         has to change with it.
+         (kerb src/iracing/connection.rs). The rates are the overlay update
+         rate setting (appSettings.overlayUpdateHz), and "still between" is
+         the rule that nothing animates between bundles, held by
+         widgets/widget-transitions.test.ts (ADR-0009). Change one of those
+         and this band has to change with it.
          ==================================================================== -->
       <section
         id="performance"
@@ -2771,10 +2782,113 @@
               </li>
             </ol>
 
+            <!-- The overlay update rate, as the setting in the app offers it
+                 (appSettings.overlayUpdateHz: 60, 30, 20, 15). Twelve sim
+                 ticks, slowed down: the overlay changes only on every Nth
+                 one. Twelve divides by all four rates. rate-demo.js runs the
+                 sweep and the buttons; without it the page still shows the
+                 30 Hz pattern. -->
+            <div
+              class="perf-rate"
+              data-rate-demo
+              data-template="{n} overlay changes a second"
+            >
+              <div class="perf-rate-head">
+                <p class="perf-rate-title">Overlay update rate</p>
+
+                <div
+                  class="perf-rate-picker"
+                  role="group"
+                  aria-label="Overlay update rate"
+                >
+                  <button
+                    type="button"
+                    class="perf-rate-option"
+                    data-rate="60"
+                    aria-pressed="false"
+                  >
+                    60 Hz
+                  </button>
+                  <button
+                    type="button"
+                    class="perf-rate-option"
+                    data-rate="30"
+                    aria-pressed="true"
+                  >
+                    30 Hz
+                  </button>
+                  <button
+                    type="button"
+                    class="perf-rate-option"
+                    data-rate="20"
+                    aria-pressed="false"
+                  >
+                    20 Hz
+                  </button>
+                  <button
+                    type="button"
+                    class="perf-rate-option"
+                    data-rate="15"
+                    aria-pressed="false"
+                  >
+                    15 Hz
+                  </button>
+                </div>
+              </div>
+
+              <div class="perf-rate-lanes" aria-hidden="true">
+                <span class="perf-rate-label">iRacing &middot; 60 Hz</span>
+                <ol class="perf-rate-row">
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                  <li class="perf-rate-tick" data-rate-tick></li>
+                </ol>
+
+                <span class="perf-rate-label">Overlay</span>
+                <ol class="perf-rate-row">
+                  <li class="perf-rate-frame is-change" data-rate-frame></li>
+                  <li class="perf-rate-frame" data-rate-frame></li>
+                  <li class="perf-rate-frame is-change" data-rate-frame></li>
+                  <li class="perf-rate-frame" data-rate-frame></li>
+                  <li class="perf-rate-frame is-change" data-rate-frame></li>
+                  <li class="perf-rate-frame" data-rate-frame></li>
+                  <li class="perf-rate-frame is-change" data-rate-frame></li>
+                  <li class="perf-rate-frame" data-rate-frame></li>
+                  <li class="perf-rate-frame is-change" data-rate-frame></li>
+                  <li class="perf-rate-frame" data-rate-frame></li>
+                  <li class="perf-rate-frame is-change" data-rate-frame></li>
+                  <li class="perf-rate-frame" data-rate-frame></li>
+                </ol>
+              </div>
+
+              <p class="perf-rate-note">
+                <strong class="perf-rate-readout" data-rate-readout
+                  >30 overlay changes a second</strong
+                >
+                &mdash; each one a frame Windows composes over the game, so a
+                lower rate is lighter on it. Set it in Settings &rarr; Widget
+                display.
+              </p>
+            </div>
+
             <ul class="perf-facts">
               <li class="perf-fact">
-                <span class="perf-fact-name">30 Hz</span>
-                <span class="perf-fact-desc">One clock, light on game frames</span>
+                <span class="perf-fact-name">Your rate</span>
+                <span class="perf-fact-desc">60 &middot; 30 &middot; 20 &middot; 15 Hz, 30 by default</span>
+              </li>
+
+              <li class="perf-fact">
+                <span class="perf-fact-name">Still between</span>
+                <span class="perf-fact-desc">Nothing animates between updates</span>
               </li>
 
               <li class="perf-fact">
@@ -2868,6 +2982,23 @@
                 Run iRacing in windowed or borderless mode. In exclusive
                 fullscreen the game draws over every other window, the overlay
                 included.
+              </p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">Will it lower my FPS?</summary>
+              <p class="faq-answer">
+                A little. Any overlay drawn over a game costs it something:
+                Windows combines the two every time the overlay changes.
+                Marble Trace keeps those changes few &mdash; the overlay
+                changes only on one clock, 30 times a second by default, and
+                nothing animates in between. If you notice stutter, lower the
+                overlay update rate in Settings &rarr; Widget display.
+                <a
+                  href="https://github.com/mvoof/Marble-Trace/blob/main/docs/perf-methodology.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >How we measure it</a
+                >.
               </p>
             </details>
             <details class="faq-item">
@@ -3225,6 +3356,7 @@
     <script type="module" src="src/components/layout-demo.js"></script>
     <script type="module" src="src/components/screens-demo.js"></script>
     <script type="module" src="src/components/interact-demo.js"></script>
+    <script type="module" src="src/components/rate-demo.js"></script>
     <script type="module" src="src/components/page-modes.js"></script>
     <script type="module" src="src/components/release.js"></script>
     <script type="module" src="src/components/copyright-year.js"></script>
