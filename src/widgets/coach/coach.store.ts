@@ -11,9 +11,11 @@ import {
   EMPTY_TRACE_STATS,
   fillTraceWindow,
   NO_VALUE,
+  playerLapDistPct,
   type TraceWindowBuffers,
   type TraceWindowStats,
 } from './coach-trace-utils';
+import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { ReferenceLapStore } from '@entities/player/reference-lap.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
@@ -22,6 +24,7 @@ import type { CoachWidgetSettings } from './settings-schema';
 
 interface CoachDeps {
   player: PlayerStore;
+  backendComputed: BackendComputedStore;
   referenceLap: ReferenceLapStore;
   liveWidgets: LiveWidgetsView;
   session: SessionStore;
@@ -140,9 +143,10 @@ export class CoachWidgetStore {
   }
 
   private start() {
-    // Speed arrives at 60 Hz and position at 10 Hz; recording on the speed
-    // frame keeps the trace as dense as the bucket grid allows, and repeated
-    // writes to one bucket simply keep the latest value for it.
+    // Speed and the position the coach frame carries both arrive on the overlay
+    // clock; recording on the speed frame keeps the trace as dense as the
+    // bucket grid allows, and repeated writes to one bucket simply keep the
+    // latest value for it.
     this.disposers.push(
       reaction(
         () => this.root.player.carDynamics?.speed,
@@ -177,9 +181,9 @@ export class CoachWidgetStore {
   }
 
   private recordSample(speed: number | undefined) {
-    const lapDistPct = this.root.player.lapTiming?.lap_dist_pct;
+    const lapDistPct = this.currentDistPct;
 
-    if (speed === undefined || lapDistPct == null || lapDistPct < 0) return;
+    if (speed === undefined || lapDistPct === null) return;
 
     const previous = this.previousDistPct;
 
@@ -202,18 +206,27 @@ export class CoachWidgetStore {
     );
     const brake = this.root.player.carInputs?.brake ?? 0;
 
-    // Forward-fill the buckets jumped over since the last sample. One bucket is
+    // Fill the buckets jumped over since the last sample. One bucket is
     // trackLength/1000 metres — on a short track that is about a metre, which a
-    // car covers in well under one 60 Hz frame, so at speed whole runs of
-    // buckets are never landed on. Left empty they read as missing data and the
-    // line is drawn as a series of dashes. The reference lap is forward-filled
-    // the same way on the Rust side, for the same reason.
+    // car covers in well under one frame, so at speed whole runs of buckets are
+    // never landed on. Left empty they read as missing data and the line is
+    // drawn as a series of dashes; filled with the new value alone they read as
+    // a flat step. They are filled along the straight line from the previous
+    // sample to this one instead.
     const previousBucket = this.previousBucket;
 
     if (previousBucket !== null && bucket > previousBucket + 1) {
+      const fromSpeed = this.ownSpeedByBucket[previousBucket];
+      const fromBrake = this.ownBrakeByBucket[previousBucket];
+      const span = bucket - previousBucket;
+
       for (let skipped = previousBucket + 1; skipped < bucket; skipped++) {
-        this.ownSpeedByBucket[skipped] = speed;
-        this.ownBrakeByBucket[skipped] = brake;
+        const weight = (skipped - previousBucket) / span;
+
+        this.ownSpeedByBucket[skipped] =
+          fromSpeed + (speed - fromSpeed) * weight;
+        this.ownBrakeByBucket[skipped] =
+          fromBrake + (brake - fromBrake) * weight;
       }
     }
 
@@ -308,9 +321,10 @@ export class CoachWidgetStore {
   }
 
   get currentDistPct(): number | null {
-    const lapDistPct = this.root.player.lapTiming?.lap_dist_pct;
-
-    return lapDistPct == null || lapDistPct < 0 ? null : lapDistPct;
+    return playerLapDistPct(
+      this.root.backendComputed.coach,
+      this.root.player.lapTiming
+    );
   }
 
   get trackLengthM(): number {

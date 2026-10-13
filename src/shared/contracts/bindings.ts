@@ -715,6 +715,14 @@ export type CoachFrame = {
    * inside that braking zone, where a countdown to a point behind would lie.
    */
   brakePointDistanceM: number | null;
+  /**
+   * The player's position on the lap on this tick, 0..1, whether the coach
+   * is calling or idle. The coach widget draws its trace by distance, and
+   * `lapTiming` reaches the windows only on the 10 Hz tier: positions that
+   * coarse put a whole run of trace buckets under one speed, a step every
+   * tenth of a second.
+   */
+  lapDistPct: number | null;
 };
 
 /**

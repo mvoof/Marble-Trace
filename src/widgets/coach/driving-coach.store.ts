@@ -7,7 +7,10 @@ import type {
   DrivingAdvisory,
   ReferenceLapSample,
 } from '@shared/contracts/bindings';
-import { interpolateReferenceSample } from './coach-trace-utils';
+import {
+  interpolateReferenceSample,
+  playerLapDistPct,
+} from './coach-trace-utils';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { ReferenceLapStore } from '@entities/player/reference-lap.store';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
@@ -163,10 +166,13 @@ export class DrivingCoachWidgetStore {
 
   /** The reference lap interpolated at the player's position — for the readouts. */
   private get referenceSample(): ReferenceLapSample | null {
-    const lapDistPct = this.root.player.lapTiming?.lap_dist_pct;
+    const lapDistPct = playerLapDistPct(
+      this.root.backendComputed.coach,
+      this.root.player.lapTiming
+    );
     const data = this.root.referenceLap.data;
 
-    if (!data || lapDistPct == null || lapDistPct < 0) return null;
+    if (!data || lapDistPct === null) return null;
 
     return interpolateReferenceSample(data.samples, lapDistPct);
   }

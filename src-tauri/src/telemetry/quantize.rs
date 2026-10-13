@@ -126,6 +126,9 @@ pub fn coach(frame: &mut CoachFrame) {
     frame.brake_point_distance_m = frame
         .brake_point_distance_m
         .map(|metres| round_to_step(metres, COACH_COUNTDOWN_STEP_M));
+    // A position, not a figure the row draws: rounded like every other lap
+    // position, a decimal finer than the trace's thousand buckets.
+    round_opt(&mut frame.lap_dist_pct, POSITION_DP);
 }
 
 pub fn safety_rating(frame: &mut SafetyRatingFrame) {
