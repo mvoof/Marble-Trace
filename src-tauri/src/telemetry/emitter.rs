@@ -231,7 +231,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         // 60 Hz computed (lap delta, gated by lap_delta_active inside processor)
         for output in state
             .registry
-            .run(TickRate::Hz60, capabilities, &compute_ctx)
+            .run(TickRate::OverlayClock, capabilities, &compute_ctx)
         {
             match output {
                 ComputedOutput::TrackShape(payload) => {
@@ -758,9 +758,9 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         // The save is handed to the I/O worker on the 4 Hz tier, its own.
         ComputedOutput::SafetyRating { frame, .. } => bundle.safety_rating = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),
-        ComputedOutput::TrackShape(_) => {} // handled in Hz60 loop directly
-        ComputedOutput::ReferenceLap(_) => {} // handled in Hz60 loop directly
-        ComputedOutput::PitLanePct { .. } => {} // handled in Hz60 loop directly
+        ComputedOutput::TrackShape(_) => {} // handled in OverlayClock loop directly
+        ComputedOutput::ReferenceLap(_) => {} // handled in OverlayClock loop directly
+        ComputedOutput::PitLanePct { .. } => {} // handled in OverlayClock loop directly
     }
 }
 

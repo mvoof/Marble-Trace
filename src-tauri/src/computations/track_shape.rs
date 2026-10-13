@@ -284,7 +284,7 @@ impl Processor for TrackShapeProcessor {
     }
 
     fn rate(&self) -> TickRate {
-        TickRate::Hz60
+        TickRate::OverlayClock
     }
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
