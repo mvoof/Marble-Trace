@@ -75,8 +75,11 @@ per run:
   the compass step instead of gliding, and a readout lags by up to 33 ms. The
   user can choose 60 Hz back in Settings → Overlay.
 - Bars and fills jump to their value instead of easing into it.
-- The input trace and the coach receive 30 samples a second; they are to carry
-  the skipped sample in the bundle so their history keeps every one.
+- The input trace would receive only the published ticks — half of them at
+  30 Hz — so the bundle carries the ticks in between as `inputSamples`, which
+  only the trace asks for, and its history keeps every one. The coach needs no
+  such field: it records by distance, and its position arrives on the 10 Hz
+  tier anyway.
 - An alert that flashes (flags, pit approach, punctures, the shift light) does
   so through `useBlink`, a timer that writes the DOM only when its step changes,
   never through an infinite CSS animation — which, even as `steps()`, has the

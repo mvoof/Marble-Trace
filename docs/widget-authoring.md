@@ -95,9 +95,9 @@ budget test (step 9).
 **Is it demand-gated?** The gated fields are the
 exports of `src/shared/contracts/telemetry-event-bits.ts` (generated from
 `src-tauri/src/model/telemetry_events.rs`) — **read that file, it is the list**,
-and it grows. At the time of writing it holds ten:
+and it grows. At the time of writing it holds eleven:
 `carDynamics`, `carInputs`, `carPositions`, `lapDelta` (the 60 Hz four, the
-**hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`, `coach`, `safetyRating`.
+**hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`, `coach`, `safetyRating`, `inputSamples`.
 
 A widget that reads a gated field without declaring it in `telemetryEvents`
 **renders empty in the app and correct in Storybook** — the failure mode this

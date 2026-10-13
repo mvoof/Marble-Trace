@@ -1,10 +1,21 @@
-import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
+import {
+  makeAutoObservable,
+  observable,
+  reaction,
+  type IReactionDisposer,
+} from 'mobx';
 
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { InputTraceSettings } from './settings-schema';
+import type {
+  CarDynamicsFrame,
+  CarInputsFrame,
+  InputSample,
+} from '@shared/contracts/bindings';
+import type { TraceSample } from './CanvasTrace/canvas-trace-render';
 
 interface InputTraceDeps {
   player: PlayerStore;
@@ -18,6 +29,19 @@ type SmoothedInputs = Record<InputChannel, number>;
 const advance = (previous: number, raw: number, smoothing: number): number =>
   smoothing <= 0 ? raw : (previous * smoothing + raw) / (smoothing + 1);
 
+// The one sample a bundle without `inputSamples` stands for — a preview, a
+// story, or a window the samples are not sent to.
+const sampleOfFrames = (
+  inputs: CarInputsFrame | null,
+  dynamics: CarDynamicsFrame | null
+): InputSample => ({
+  throttle: inputs?.throttle ?? 0,
+  brake: inputs?.brake ?? 0,
+  clutch: inputs?.clutch ?? null,
+  brakeAbsActive: inputs?.brake_abs_active ?? false,
+  steeringWheelAngle: dynamics?.steering_wheel_angle ?? 0,
+});
+
 export class InputTraceWidgetStore {
   smoothed: SmoothedInputs = { throttle: 0, brake: 0, clutch: 0 };
 
@@ -28,6 +52,13 @@ export class InputTraceWidgetStore {
   // frame. The buffer is sized for 60 samples per second, so a double push
   // halves the visible history.
   frameTick = 0;
+
+  // What the last frame adds to the trace: one point per source tick it
+  // covers, already smoothed. A bundle goes out on the overlay clock, every Nth
+  // tick, and carries the ticks in between as `inputSamples`; pushing all of
+  // them keeps the trace at the sim's own rate — and `historySeconds` true —
+  // whatever the clock is.
+  frameSamples: TraceSample[] = [];
 
   private readonly disposers: IReactionDisposer[] = [];
 
@@ -44,7 +75,7 @@ export class InputTraceWidgetStore {
 
     makeAutoObservable<InputTraceWidgetStore, 'root' | 'disposers'>(
       this,
-      { root: false, disposers: false },
+      { root: false, disposers: false, frameSamples: observable.ref },
       { autoBind: true }
     );
 
@@ -57,19 +88,33 @@ export class InputTraceWidgetStore {
               this.instanceId
             );
 
-          this.smoothed = {
-            throttle: advance(
-              this.smoothed.throttle,
-              inputs?.throttle ?? 0,
-              smoothing
-            ),
-            brake: advance(this.smoothed.brake, inputs?.brake ?? 0, smoothing),
-            clutch: advance(
-              this.smoothed.clutch,
-              inputs?.clutch != null ? 1 - inputs.clutch : 0,
-              smoothing
-            ),
-          };
+          const samples = this.root.player.inputSamples ?? [
+            sampleOfFrames(inputs, this.root.player.carDynamics),
+          ];
+
+          // Smoothed tick by tick, so the filter keeps the strength it has at
+          // the sim's rate whatever the overlay clock is.
+          this.frameSamples = samples.map((sample) => {
+            this.smoothed = {
+              throttle: advance(
+                this.smoothed.throttle,
+                sample.throttle,
+                smoothing
+              ),
+              brake: advance(this.smoothed.brake, sample.brake, smoothing),
+              clutch: advance(
+                this.smoothed.clutch,
+                sample.clutch !== null ? 1 - sample.clutch : 0,
+                smoothing
+              ),
+            };
+
+            return {
+              ...this.smoothed,
+              absActive: sample.brakeAbsActive,
+              steeringWheelAngle: sample.steeringWheelAngle,
+            };
+          });
 
           this.frameTick++;
         }
@@ -90,6 +135,7 @@ export class InputTraceWidgetStore {
   reset() {
     this.smoothed = { throttle: 0, brake: 0, clutch: 0 };
     this.frameTick = 0;
+    this.frameSamples = [];
   }
 }
 

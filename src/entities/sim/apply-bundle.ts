@@ -34,7 +34,14 @@ export const applyTelemetryBundle = (
     }
 
     if (bundle.carIdx) root.cars.updateCarIdx(bundle.carIdx);
-    if (bundle.carInputs) root.player.updateCarInputs(bundle.carInputs);
+
+    if (bundle.carInputs) {
+      root.player.updateCarInputs(
+        bundle.carInputs,
+        bundle.inputSamples ?? null
+      );
+    }
+
     if (bundle.carPositions) root.cars.updateCarPositions(bundle.carPositions);
     if (bundle.carStatus) root.player.updateCarStatus(bundle.carStatus);
     if (bundle.lapTiming) root.player.updateLapTiming(bundle.lapTiming);

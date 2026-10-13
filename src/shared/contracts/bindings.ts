@@ -1179,6 +1179,30 @@ export type InputDeviceResolution = {
 };
 
 /**
+ * The driver's inputs on one source tick, for a trace that draws every tick.
+ *
+ * A bundle is published on the overlay clock, every Nth source tick, so the
+ * raw frames it carries skip the ticks in between. A trace built from them
+ * loses those samples — half of them at the default 30 Hz — and with them a
+ * brake tap shorter than a publication. `inputSamples` carries every tick
+ * since the last published one, oldest first, so the trace keeps the sim's
+ * own rate while the overlay still changes only on the clock.
+ */
+export type InputSample = {
+  throttle: number;
+  brake: number;
+  /**
+   * Clutch engagement, as `CarInputsFrame::clutch`: 1.0 is the pedal released.
+   */
+  clutch: number | null;
+  brakeAbsActive: boolean;
+  /**
+   * Radians, as `CarDynamicsFrame::steering_wheel_angle`.
+   */
+  steeringWheelAngle: number;
+};
+
+/**
  * Reported only when the running executable sits outside the directory the
  * installer registered — never for a normal install, and never when there is
  * no registry entry to compare against (a portable copy, a build run straight
@@ -2340,6 +2364,7 @@ export type SpotterState =
 export type TelemetryBundle = {
   carDynamics?: CarDynamicsFrame | null;
   carInputs?: CarInputsFrame | null;
+  inputSamples?: InputSample[] | null;
   carPositions?: CarPositionsFrame | null;
   lapDelta?: LapDeltaFrame | null;
   coach?: CoachFrame | null;

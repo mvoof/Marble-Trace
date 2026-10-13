@@ -386,7 +386,7 @@ every change costs the game a composed frame: never publish off the clock.
 
 | Hz    | Fields                                                                                                                                                         |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| clock | `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`                                                                 |
+| clock | `carDynamics`, `carInputs`, `inputSamples`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`                                                 |
 | 10    | `carIdx`, `chassis`, `lapTiming`, `proximity`, `driverEntries`, `relative`, `incidents`, `paceCar`                                                             |
 | 4     | `carStatus`, `fuel`, `pitStops`, `lapLog`, `pitService`, `pitAuto`, `safetyRating`                                                                             |
 | 1     | `session`, `environment`                                                                                                                                       |
@@ -427,11 +427,13 @@ Orders are not sent while a tape is replayed.
 
 _Held by: test (a manifest declaring an event the backend does not gate, or one twice — `widget-catalog.test.ts`); review (declaring every gated field a widget reads, and nothing it does not)._
 
-Ten bundle fields are filled **only while a widget asks for them**: the four
+Eleven bundle fields are filled **only while a widget asks for them**: the four
 60 Hz frames (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`), the
 three heavy per-car frames on the 10 Hz tier (`driverEntries`, `relative`,
-`proximity`), `incidents`, the coach's call (`coach`, 60 Hz) and the Safety
-Rating estimate (`safetyRating`, 4 Hz). Everything else is always sent. Every
+`proximity`), `incidents`, the coach's call (`coach`, 60 Hz), the Safety
+Rating estimate (`safetyRating`, 4 Hz) and the input trace's per-tick inputs
+(`inputSamples` — every source tick since the last publication, so a trace
+keeps the sim's rate on any overlay clock). Everything else is always sent. Every
 widget declares its appetite in its own `manifest.ts`:
 
 ```ts
@@ -1072,7 +1074,7 @@ checklist below is what a reviewer applies to code that already exists.
 8. Create `manifest.ts` and `mount.ts` in the slice, the manifest spreading the schema's `defaults` and naming it as `settingsSchema` — both are collected by glob, so no shared file is edited
    8a. Declare `telemetryEvents` in the manifest for every gated field the widget
    reads (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `driverEntries`,
-   `relative`, `proximity`, `incidents`, `coach`, `safetyRating`) — without it the backend never sends them (see
+   `relative`, `proximity`, `incidents`, `coach`, `safetyRating`, `inputSamples`) — without it the backend never sends them (see
    Demand-gated bundle fields)
    8b. If any of those is a hot field, keep the component that reads it down to
    one or two elements and pass the static part in as `children` — splitting into

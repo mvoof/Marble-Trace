@@ -5,6 +5,7 @@ import type {
   CarInputsFrame,
   CarStatusFrame,
   ChassisFrame,
+  InputSample,
   LapTimingFrame,
   PitServiceFrame,
   PitTargetFrame,
@@ -26,6 +27,13 @@ export class PlayerStore {
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   carInputs: CarInputsFrame | null = null;
+  /**
+   * Every source tick's inputs since the previous bundle, oldest first — set
+   * with `carInputs`, only while the input trace asks for them, and null
+   * otherwise. The bundle goes out on the overlay clock; these are the ticks
+   * it skipped. Hot like `carInputs`.
+   */
+  inputSamples: InputSample[] | null = null;
   carStatus: CarStatusFrame | null = null;
   chassis: ChassisFrame | null = null;
   pitService: PitServiceFrame | null = null;
@@ -44,6 +52,7 @@ export class PlayerStore {
     makeAutoObservable(this, {
       carDynamics: observable.ref,
       carInputs: observable.ref,
+      inputSamples: observable.ref,
       carStatus: observable.ref,
       chassis: observable.ref,
       pitService: observable.ref,
@@ -87,7 +96,8 @@ export class PlayerStore {
     this.carDynamics = frame;
   }
 
-  updateCarInputs(frame: CarInputsFrame) {
+  updateCarInputs(frame: CarInputsFrame, samples: InputSample[] | null = null) {
+    this.inputSamples = samples;
     this.carInputs = frame;
   }
 
@@ -120,6 +130,7 @@ export class PlayerStore {
   reset() {
     this.carDynamics = null;
     this.carInputs = null;
+    this.inputSamples = null;
     this.carStatus = null;
     this.chassis = null;
     this.pitService = null;
