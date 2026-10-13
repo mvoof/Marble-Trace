@@ -387,8 +387,8 @@ every change costs the game a composed frame: never publish off the clock.
 
 | Hz    | Fields                                                                                                                                                         |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| clock | `carDynamics`, `carInputs`, `inputSamples`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`                                                 |
-| 10    | `carIdx`, `chassis`, `lapTiming`, `proximity`, `driverEntries`, `relative`, `incidents`, `paceCar`                                                             |
+| clock | `carDynamics`, `carInputs`, `inputSamples`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`, `proximity`                                    |
+| 10    | `carIdx`, `chassis`, `lapTiming`, `driverEntries`, `relative`, `incidents`, `paceCar`                                                                          |
 | 4     | `carStatus`, `fuel`, `pitStops`, `lapLog`, `pitService`, `pitAuto`, `safetyRating`                                                                             |
 | 1     | `session`, `environment`                                                                                                                                       |
 | async | `sim://session`, `sim://weather`, `sim://status`, `sim://disconnected`, `sim://capabilities`, `sim://perf`, `sim://track-shape`, `sim://reference-lap/updated` |
@@ -430,8 +430,8 @@ _Held by: test (a manifest declaring an event the backend does not gate, or one 
 
 Eleven bundle fields are filled **only while a widget asks for them**: the four
 60 Hz frames (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`), the
-three heavy per-car frames on the 10 Hz tier (`driverEntries`, `relative`,
-`proximity`), `incidents`, the coach's call (`coach`, 60 Hz), the Safety
+three heavy per-car frames on the 10 Hz tier (`driverEntries`, `relative`),
+`incidents`, the coach's call (`coach`, clock tier), the Safety
 Rating estimate (`safetyRating`, 4 Hz) and the input trace's per-tick inputs
 (`inputSamples` — every source tick since the last publication, so a trace
 keeps the sim's rate on any overlay clock). Everything else is always sent. Every

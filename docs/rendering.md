@@ -103,7 +103,7 @@ counter-rotate by it in CSS, so one write per frame turns the whole ring and
 keeps the letters upright, and React renders nothing.
 
 At 10 Hz the escape hatch is not the answer — the shell/body split is. Those
-frames carry per-car arrays, and their problem is width, not rate.
+frames carry per-car arrays (`driverEntries`, `relative`), and their problem is width, not rate.
 
 ## The hot/cold split
 

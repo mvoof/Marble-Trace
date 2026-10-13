@@ -430,7 +430,7 @@ flowchart LR
 | `driver_entries.rs` | 10 Hz | the whole field's table: positions, laps, times  |
 | `incidents.rs`      | 10 Hz | stopped / off-track zones for the track map      |
 | `pace_car.rs`       | 10 Hz | pace car state                                   |
-| `proximity.rs`      | 10 Hz | cars alongside, for the radar widgets            |
+| `proximity.rs`      | clock | cars alongside, for the radar widgets            |
 | `relative.rs`       | 10 Hz | relative gaps to cars around you                 |
 | `fuel.rs`           | 4 Hz  | consumption average, laps remaining, fuel to add |
 | `lap_log.rs`        | 4 Hz  | per-lap records as laps complete                 |
@@ -522,12 +522,12 @@ tick but **publishes** on every Nth one — the overlay clock,
 fast they actually change, and a published tick carries the hot fields plus
 whichever slower tiers are due.
 
-| Rate          | Fields                                                                                                 |
-| ------------- | ------------------------------------------------------------------------------------------------------ |
-| clock (30 Hz) | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`, `coach`, `pit_target`, `track_recording`   |
-| 10 Hz         | `car_idx`, `chassis`, `lap_timing`, `proximity`, `driver_entries`, `relative`, `incidents`, `pace_car` |
-| 4 Hz          | `car_status`, `fuel`, `pit_stops`, `pit_service`, `lap_log`, `pit_auto`, `safety_rating`               |
-| 1 Hz          | `session`, `environment`                                                                               |
+| Rate          | Fields                                                                                                            |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| clock (30 Hz) | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`, `coach`, `pit_target`, `track_recording`, `proximity` |
+| 10 Hz         | `car_idx`, `chassis`, `lap_timing`, `driver_entries`, `relative`, `incidents`, `pace_car`                         |
+| 4 Hz          | `car_status`, `fuel`, `pit_stops`, `pit_service`, `lap_log`, `pit_auto`, `safety_rating`                          |
+| 1 Hz          | `session`, `environment`                                                                                          |
 
 ```mermaid
 flowchart LR
@@ -607,9 +607,9 @@ call (`coach`, 60 Hz) and the Safety Rating estimate (`safety_rating`, 4 Hz).
 
 | Gated field                                                | Tier  |
 | ---------------------------------------------------------- | ----- |
-| `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta` | 60 Hz |
-| `coach`                                                    | 60 Hz |
-| `driver_entries`, `relative`, `proximity`, `incidents`     | 10 Hz |
+| `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta` | clock |
+| `coach`, `proximity`                                       | clock |
+| `driver_entries`, `relative`, `incidents`                  | 10 Hz |
 
 Everything else is small, infrequent, or both, and is always sent. Each widget names what it reads in its own
 `manifest.ts`:
