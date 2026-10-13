@@ -83,6 +83,20 @@ composing the game itself — no multi-plane overlay support, an older Windows, 
 driver setting — which is a different and more expensive regime than the one
 ADR-0009 was measured in.
 
+## What you need
+
+None of this ships with the repository; each item says how to get it.
+
+| what                                    | how to get it                                                                                                                                                                                                                                                                                       |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| the binary under test                   | `npm run perf:build` — `src-tauri/target/release/marble-trace.exe`, the build every run starts                                                                                                                                                                                                      |
+| PresentMon                              | [PresentMon's releases](https://github.com/GameTechDev/PresentMon/releases): the installer puts the console binary where the harness looks, or download the console `.exe` alone and point `PRESENTMON` at it (`CONTRIBUTING.md` → Environment variables)                                           |
+| rights to capture                       | administrator, the _Performance Log Users_ group, or `--elevate` on each run (Protocol, step 7)                                                                                                                                                                                                     |
+| an iRacing replay                       | drive or spectate a session with the field you want to measure and save its replay in iRacing; open it again before a session. A replay is yours — the numbers below were taken on one that is not shared                                                                                           |
+| a layout with every widget (`perf-all`) | in the app, Layouts → add a layout named `perf-all`, switch every widget on for the monitor the game is on and place them so none hides another. Any layout name works with `--layout`; `perf-all` is only the name these docs use                                                                  |
+| widget ids for `--widgets`              | the instance ids of the layout passed with `--layout`. The first instance of a widget on a layout carries the widget's own id (`track-map`, `standings`, …, the folder names under `src/widgets/`); a further copy is `<id>-2`, `<id>-3`, as `%APPDATA%m.voof.marble-tracesettings.json` lists them |
+| a tape, for `changes` and `heap` only   | record one: [telemetry-tapes.md](telemetry-tapes.md) → Record a session. Tapes are large and stay out of git                                                                                                                                                                                        |
+
 ## Protocol
 
 1. **One machine, one day, alternating.** Absolute numbers from another day or
@@ -177,8 +191,8 @@ npm run perf:game -- mark                                  # remember where the 
 npm run perf:game -- run --name s0 --no-app --rewind --elevate      # game alone
 npm run perf:game -- run --name all-30 --layout perf-all --rate 30 --rewind --elevate
 npm run perf:game -- report <capture.csv>...               # summarize saved captures side by side
-npm run perf:game -- changes --tape D:/tapes/x.tape.jsonl.gz --from 600 --layout perf-all
-npm run perf:game -- heap --seconds 120 --tape D:/tapes/x.tape.jsonl.gz --from 600
+npm run perf:game -- changes --tape <your tape> --from 600 --layout perf-all
+npm run perf:game -- heap --seconds 120 --tape <your tape> --from 600
 npm run perf:game -- processes --seconds 30                # with the app (and game) running
 ```
 

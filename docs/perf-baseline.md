@@ -8,18 +8,23 @@ section.
 
 ## How to measure
 
+`<tape>` is a tape you recorded yourself — how: [telemetry-tapes.md](telemetry-tapes.md)
+→ Record a session. The one the runs below were taken on is not shared, so your
+numbers are your machine's and your session's: compare them with each other,
+not with these.
+
 ```bash
 # once per code change: release backend with the `dev` feature (the tape
 # source lives there), production frontend, hidden source maps, no installer
-npm run perf -- --tape D:/tapes/session-1791104931.tape.jsonl.gz --from 600 --build
+npm run perf -- --tape <tape> --from 600 --build
 
 # the baseline: two runs each, so the spread is printed beside the numbers
-npm run perf -- --tape D:/tapes/session-1791104931.tape.jsonl.gz --from 600 --runs 2
-npm run perf -- --tape D:/tapes/session-1791104931.tape.jsonl.gz --from 600 --runs 2 --mode stores-only
+npm run perf -- --tape <tape> --from 600 --runs 2
+npm run perf -- --tape <tape> --from 600 --runs 2 --mode stores-only
 
 # where the overlay's bytes go (sampling heap profile over CDP)
-npm run perf -- --tape D:/tapes/session-1791104931.tape.jsonl.gz --from 600 --seconds 30 --heap
-npm run perf -- --tape D:/tapes/session-1791104931.tape.jsonl.gz --from 600 --seconds 30 --heap --mode stores-only
+npm run perf -- --tape <tape> --from 600 --seconds 30 --heap
+npm run perf -- --tape <tape> --from 600 --seconds 30 --heap --mode stores-only
 ```
 
 Close every running Marble Trace first: the instances share one WebView2 data
@@ -92,7 +97,7 @@ One row per measurement. Later tickets add rows here.
 **Machine.** AMD Ryzen 7 7700 (8 cores), 32 GB RAM, NVIDIA RTX 4070, Windows 11
 Pro, WebView2 154.0.4258.53, one monitor (`DISPLAY1`).
 
-**Build.** `npm run perf:build` (or `--build` with a run): `tauri build --features dev --no-bundle`,
+**Build.** `npm run perf -- --build`: `tauri build --features dev --no-bundle`,
 production Vite frontend. The backend carries specta and the tape source,
 which are `dev` only. A release build has neither.
 

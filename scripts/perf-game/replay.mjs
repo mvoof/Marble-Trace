@@ -65,14 +65,29 @@ try {
 }`)
   );
 
-const broadcast = (message, var1, var2) =>
-  runPowerShell(`
+// Every argument is spliced into a PowerShell command, so each must be a plain
+// integer: a hand-edited replay-point.json must not become a command.
+const assertIntegers = (...values) => {
+  for (const value of values) {
+    if (!Number.isInteger(value)) {
+      throw new Error(
+        `replay broadcast takes integers only, got ${JSON.stringify(value)}`
+      );
+    }
+  }
+};
+
+const broadcast = (message, var1, var2) => {
+  assertIntegers(message, var1, var2);
+
+  return runPowerShell(`
 Add-Type -Namespace PerfGame -Name Broadcast -MemberDefinition @'
 [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern uint RegisterWindowMessage(string name);
 [DllImport("user32.dll")] public static extern bool SendNotifyMessage(System.IntPtr window, uint message, System.IntPtr wParam, System.IntPtr lParam);
 '@ -ErrorAction SilentlyContinue
 $id = [PerfGame.Broadcast]::RegisterWindowMessage('IRSDK_BROADCASTMSG')
 [void][PerfGame.Broadcast]::SendNotifyMessage([System.IntPtr]0xFFFF, $id, [System.IntPtr](${var1} -shl 16 -bor ${message}), [System.IntPtr]${var2})`);
+};
 
 const pointPath = (outDir) => path.join(outDir, POINT_FILE);
 

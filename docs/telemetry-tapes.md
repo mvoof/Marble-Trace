@@ -66,6 +66,10 @@ PowerShell, or the next run records too.
 
 ## Replay a tape
 
+`session-1791104931.tape.jsonl.gz` here and below is one recording on the
+author's machine and is not shared; put the name of a tape you recorded
+(Record a session, above) in its place.
+
 ```powershell
 $env:MARBLE_TRACE_REPLAY = 'D:/tapes/session-1791104931.tape.jsonl.gz'; npm run tauri:dev
 ```
