@@ -2785,9 +2785,10 @@
             <!-- The overlay update rate, as the setting in the app offers it
                  (appSettings.overlayUpdateHz: 60, 30, 20, 15), in one line.
                  The twelve dots are sim ticks at 60 Hz, slowed down; only
-                 every Nth is an overlay change. Twelve divides by all four
-                 rates. rate-demo.js runs the sweep and the buttons; without
-                 it the page still shows the 30 Hz pattern. -->
+                 every Nth is an overlay change, and those glow in a slow
+                 wave. Twelve divides by all four rates. The wave is CSS;
+                 rate-demo.js sets the rate and runs the wave only while the
+                 line is on screen. -->
             <div
               class="perf-rate"
               data-rate-demo
@@ -2835,18 +2836,18 @@
               </div>
 
               <ol class="perf-rate-row" aria-hidden="true">
-                <li class="perf-rate-dot is-change" data-rate-dot></li>
-                <li class="perf-rate-dot" data-rate-dot></li>
-                <li class="perf-rate-dot is-change" data-rate-dot></li>
-                <li class="perf-rate-dot" data-rate-dot></li>
-                <li class="perf-rate-dot is-change" data-rate-dot></li>
-                <li class="perf-rate-dot" data-rate-dot></li>
-                <li class="perf-rate-dot is-change" data-rate-dot></li>
-                <li class="perf-rate-dot" data-rate-dot></li>
-                <li class="perf-rate-dot is-change" data-rate-dot></li>
-                <li class="perf-rate-dot" data-rate-dot></li>
-                <li class="perf-rate-dot is-change" data-rate-dot></li>
-                <li class="perf-rate-dot" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 0" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 1" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 2" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 3" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 4" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 5" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 6" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 7" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 8" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 9" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 10" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 11" data-rate-dot></li>
               </ol>
 
               <span class="perf-rate-readout" data-rate-readout
@@ -2868,11 +2869,6 @@
               <li class="perf-fact">
                 <span class="perf-fact-name">On demand</span>
                 <span class="perf-fact-desc">Unused data is never sent</span>
-              </li>
-
-              <li class="perf-fact">
-                <span class="perf-fact-name">Open source</span>
-                <span class="perf-fact-desc">GPL-3.0 app, MIT kerb</span>
               </li>
             </ul>
           </div>

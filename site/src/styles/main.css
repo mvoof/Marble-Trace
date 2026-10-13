@@ -2540,39 +2540,47 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-/* Twelve sim ticks; the overlay changes on the lit ones. */
+/* Twelve sim ticks. The ones the overlay changes on glow in turn, a slow
+   wave left to right; the rest stay dim. Each dot's place in the wave is its
+   --i, set in the markup. */
 .perf-rate-row {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .perf-rate-dot {
-  width: 0.5rem;
-  height: 0.5rem;
+  --wave: 3.6s;
+
+  width: 0.45rem;
+  height: 0.45rem;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.14);
-  transition:
-    background-color 140ms ease-out,
-    box-shadow 140ms ease-out;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 400ms ease;
 }
 
 .perf-rate-dot.is-change {
-  box-shadow: inset 0 0 0 1.5px var(--band-accent);
-  background-color: transparent;
+  background-color: rgba(79, 143, 227, 0.4);
 }
 
-.perf-rate-dot.is-change.is-lit {
-  background-color: var(--band-accent);
-  box-shadow: 0 0 8px rgba(79, 143, 227, 0.55);
+.perf-rate.is-playing .perf-rate-dot.is-change {
+  animation: perf-rate-wave var(--wave) ease-in-out infinite;
+  animation-delay: calc(var(--i) * var(--wave) / 12);
 }
 
-.perf-rate-dot.is-current {
-  outline: 1.5px solid var(--band-ink);
-  outline-offset: 2px;
+@keyframes perf-rate-wave {
+  0%,
+  40%,
+  100% {
+    background-color: rgba(79, 143, 227, 0.35);
+  }
+
+  14% {
+    background-color: rgba(79, 143, 227, 0.95);
+  }
 }
 
 .perf-rate-readout {
@@ -2585,13 +2593,17 @@ button:focus-visible {
   .perf-rate-option {
     transition: none;
   }
+
+  .perf-rate.is-playing .perf-rate-dot.is-change {
+    animation: none;
+  }
 }
 
 /* ---- Facts --------------------------------------------------------------- */
 
 .perf-facts {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   list-style: none;
   margin: 0;
   padding: 0;
