@@ -1,15 +1,15 @@
 /**
- * Marble Trace Site — Overlay update rate demo
+ * Marble Trace Site — Overlay update rate, in one line
  *
- * Twelve sim ticks at 60 Hz, slowed down so the eye can follow them. A cursor
- * sweeps the top row; on every Nth tick — N from the rate picked, 60 / 30 /
- * 20 / 15 Hz as the app's own setting offers — the overlay row lights a
- * change, and the readout says how many changes a second that is.
+ * Twelve dots are twelve sim ticks at 60 Hz, slowed down so the eye can follow
+ * them. A cursor runs along them; on every Nth — N from the rate picked, 60 /
+ * 30 / 20 / 15 Hz as the app's own setting offers — the overlay changes and
+ * the dot lights, and the readout says how many changes a second that is.
  *
- * The pattern itself is classes on the markup, so the page shows the 30 Hz
- * row without this script. The sweep runs only while the demo is on screen,
- * and not at all for a visitor who asked for reduced motion; the buttons
- * answer either way.
+ * The 30 Hz pattern is classes on the markup, so the page shows it without
+ * this script. The sweep runs only while the demo is on screen, and not at
+ * all for a visitor who asked for reduced motion; the buttons answer either
+ * way.
  */
 
 (() => {
@@ -38,36 +38,31 @@
     ).matches;
     const template = demo.getAttribute('data-template') || '{n}';
     const options = Array.from(demo.querySelectorAll('[data-rate]'));
-    const ticks = Array.from(demo.querySelectorAll('[data-rate-tick]'));
-    const frames = Array.from(demo.querySelectorAll('[data-rate-frame]'));
+    const dots = Array.from(demo.querySelectorAll('[data-rate-dot]'));
     const readout = demo.querySelector('[data-rate-readout]');
+    const lastDot = dots.length - 1;
 
     let every = SIM_HZ / DEFAULT_RATE_HZ;
     let cursor = 0;
     let timer = 0;
     let running = false;
 
-    const isChange = (index) => index % every === 0;
+    // Every Nth dot is a change; while the sweep runs, a change lights once
+    // the cursor has reached it, and the cursor itself is marked.
+    const paint = (reached, withCursor) => {
+      dots.forEach((dot, index) => {
+        const isChange = index % every === 0;
 
-    // The overlay row as the rate draws it: every Nth tick is a change. While
-    // the sweep runs, a change lights only once the cursor has reached it.
-    const paint = (lightUpTo) => {
-      frames.forEach((frame, index) => {
-        frame.classList.toggle(CHANGE_CLASS, isChange(index));
-        frame.classList.toggle(
-          LIT_CLASS,
-          isChange(index) && index <= lightUpTo
-        );
+        dot.classList.toggle(CHANGE_CLASS, isChange);
+        dot.classList.toggle(LIT_CLASS, isChange && index <= reached);
+        dot.classList.toggle(CURRENT_CLASS, withCursor && index === reached);
       });
-      ticks.forEach((tick, index) =>
-        tick.classList.toggle(CURRENT_CLASS, index === lightUpTo)
-      );
     };
 
     const step = () => {
-      paint(cursor);
+      paint(cursor, true);
 
-      const atEnd = cursor === ticks.length - 1;
+      const atEnd = cursor === lastDot;
 
       cursor = atEnd ? 0 : cursor + 1;
       timer = window.setTimeout(step, atEnd ? WRAP_PAUSE_MS : STEP_MS);
@@ -87,7 +82,7 @@
         cursor = 0;
         step();
       } else {
-        paint(ticks.length - 1);
+        paint(lastDot, false);
       }
     };
 
@@ -95,9 +90,7 @@
       option.addEventListener('click', () => pick(option))
     );
 
-    // The still picture: every change of the rate lit, no cursor.
-    paint(ticks.length - 1);
-    ticks.forEach((tick) => tick.classList.remove(CURRENT_CLASS));
+    paint(lastDot, false);
 
     if (reducedMotion || !('IntersectionObserver' in window)) {
       return;
@@ -113,8 +106,7 @@
       } else if (!visible && running) {
         running = false;
         window.clearTimeout(timer);
-        paint(ticks.length - 1);
-        ticks.forEach((tick) => tick.classList.remove(CURRENT_CLASS));
+        paint(lastDot, false);
       }
     });
 

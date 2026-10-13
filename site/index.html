@@ -2783,101 +2783,75 @@
             </ol>
 
             <!-- The overlay update rate, as the setting in the app offers it
-                 (appSettings.overlayUpdateHz: 60, 30, 20, 15). Twelve sim
-                 ticks, slowed down: the overlay changes only on every Nth
-                 one. Twelve divides by all four rates. rate-demo.js runs the
-                 sweep and the buttons; without it the page still shows the
-                 30 Hz pattern. -->
+                 (appSettings.overlayUpdateHz: 60, 30, 20, 15), in one line.
+                 The twelve dots are sim ticks at 60 Hz, slowed down; only
+                 every Nth is an overlay change. Twelve divides by all four
+                 rates. rate-demo.js runs the sweep and the buttons; without
+                 it the page still shows the 30 Hz pattern. -->
             <div
               class="perf-rate"
               data-rate-demo
               data-template="{n} overlay changes a second"
             >
-              <div class="perf-rate-head">
-                <p class="perf-rate-title">Overlay update rate</p>
+              <span class="perf-rate-title">Overlay update rate</span>
 
-                <div
-                  class="perf-rate-picker"
-                  role="group"
-                  aria-label="Overlay update rate"
+              <div
+                class="perf-rate-picker"
+                role="group"
+                aria-label="Overlay update rate"
+              >
+                <button
+                  type="button"
+                  class="perf-rate-option"
+                  data-rate="60"
+                  aria-pressed="false"
                 >
-                  <button
-                    type="button"
-                    class="perf-rate-option"
-                    data-rate="60"
-                    aria-pressed="false"
-                  >
-                    60 Hz
-                  </button>
-                  <button
-                    type="button"
-                    class="perf-rate-option"
-                    data-rate="30"
-                    aria-pressed="true"
-                  >
-                    30 Hz
-                  </button>
-                  <button
-                    type="button"
-                    class="perf-rate-option"
-                    data-rate="20"
-                    aria-pressed="false"
-                  >
-                    20 Hz
-                  </button>
-                  <button
-                    type="button"
-                    class="perf-rate-option"
-                    data-rate="15"
-                    aria-pressed="false"
-                  >
-                    15 Hz
-                  </button>
-                </div>
+                  60 Hz
+                </button>
+                <button
+                  type="button"
+                  class="perf-rate-option"
+                  data-rate="30"
+                  aria-pressed="true"
+                >
+                  30 Hz
+                </button>
+                <button
+                  type="button"
+                  class="perf-rate-option"
+                  data-rate="20"
+                  aria-pressed="false"
+                >
+                  20 Hz
+                </button>
+                <button
+                  type="button"
+                  class="perf-rate-option"
+                  data-rate="15"
+                  aria-pressed="false"
+                >
+                  15 Hz
+                </button>
               </div>
 
-              <div class="perf-rate-lanes" aria-hidden="true">
-                <span class="perf-rate-label">iRacing &middot; 60 Hz</span>
-                <ol class="perf-rate-row">
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                  <li class="perf-rate-tick" data-rate-tick></li>
-                </ol>
+              <ol class="perf-rate-row" aria-hidden="true">
+                <li class="perf-rate-dot is-change" data-rate-dot></li>
+                <li class="perf-rate-dot" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" data-rate-dot></li>
+                <li class="perf-rate-dot" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" data-rate-dot></li>
+                <li class="perf-rate-dot" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" data-rate-dot></li>
+                <li class="perf-rate-dot" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" data-rate-dot></li>
+                <li class="perf-rate-dot" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" data-rate-dot></li>
+                <li class="perf-rate-dot" data-rate-dot></li>
+              </ol>
 
-                <span class="perf-rate-label">Overlay</span>
-                <ol class="perf-rate-row">
-                  <li class="perf-rate-frame is-change" data-rate-frame></li>
-                  <li class="perf-rate-frame" data-rate-frame></li>
-                  <li class="perf-rate-frame is-change" data-rate-frame></li>
-                  <li class="perf-rate-frame" data-rate-frame></li>
-                  <li class="perf-rate-frame is-change" data-rate-frame></li>
-                  <li class="perf-rate-frame" data-rate-frame></li>
-                  <li class="perf-rate-frame is-change" data-rate-frame></li>
-                  <li class="perf-rate-frame" data-rate-frame></li>
-                  <li class="perf-rate-frame is-change" data-rate-frame></li>
-                  <li class="perf-rate-frame" data-rate-frame></li>
-                  <li class="perf-rate-frame is-change" data-rate-frame></li>
-                  <li class="perf-rate-frame" data-rate-frame></li>
-                </ol>
-              </div>
-
-              <p class="perf-rate-note">
-                <strong class="perf-rate-readout" data-rate-readout
-                  >30 overlay changes a second</strong
-                >
-                &mdash; each one a frame Windows composes over the game, so a
-                lower rate is lighter on it. Set it in Settings &rarr; Widget
-                display.
-              </p>
+              <span class="perf-rate-readout" data-rate-readout
+                >30 overlay changes a second</span
+              >
             </div>
 
             <ul class="perf-facts">
