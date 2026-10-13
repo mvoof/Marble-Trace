@@ -1,11 +1,13 @@
-import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
+import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
+import { useLayoutEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { NearbyCar } from '@shared/contracts/bindings';
 import type { BaseUserSettings } from '@shared/contracts/widget-settings';
 import type { UnitSystem } from '@shared/contracts/domain';
 import { formatDistance } from '@shared/lib/telemetry-format';
+import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useRadarWidgetStore } from '@entities/radar/radar-context';
@@ -40,8 +42,6 @@ import type { ProximityRadarSettings } from '@entities/radar/radar.settings-sche
  */
 const EDGE_MARKER_REACH = 1.5;
 
-const NO_CAR_NUMBERS: ReadonlyMap<number, string> = new Map();
-
 export const RadarScope = observer(() => {
   // A ref would be null on the first render — the scope renders nothing until
   // there is traffic — and an effect keyed on a ref never learns that the
@@ -58,135 +58,137 @@ export const RadarScope = observer(() => {
   // second.
   const visible = useRadarWidgetStore().isVisibleForWidget('proximity-radar');
 
-  // The cars are read inside the draw loop instead of here. The loop repaints on
-  // every animation frame regardless, so reading the frame in the render body
-  // would buy nothing and would wake React sixty times a second — the whole of
-  // this widget's debt. See `docs/rendering.md`.
-  const carsRef = useRef({
-    carLength: appSettings.appSettings.carLength,
-    carNumbers: NO_CAR_NUMBERS,
-  });
+  const liveWidgets = useLiveWidgetsStore();
+  const instanceId = useWidgetInstanceId('proximity-radar');
 
-  const settings = useWidgetSettings<ProximityRadarSettings>('proximity-radar');
-
-  const settingsRef = useRef(settings);
-  const unitSystemRef = useRef(units.unitSystem);
-
-  // The roster changes with the session, not with the tick, so it is read here
-  // and handed to the loop like the settings are.
-  const carNumbers = session.carNumberByIdx;
-
-  // Written after the render rather than during it: a render body that mutates
-  // a ref is not replayable, and the draw loop only ever reads them on the next
-  // frame anyway. No dependency list — every render carries a newer tick.
-  useLayoutEffect(() => {
-    carsRef.current = {
-      carLength: appSettings.appSettings.carLength,
-      carNumbers,
-    };
-    settingsRef.current = settings;
-    unitSystemRef.current = units.unitSystem;
-  });
+  // Bumped by the observer below: a new size is the one reason to repaint that
+  // no observable carries.
+  const [sizeVersion, setSizeVersion] = useState(0);
 
   useLayoutEffect(() => {
     if (!canvas) {
       return;
     }
 
-    const ctx = canvas.getContext('2d');
+    const observer = new ResizeObserver(() =>
+      setSizeVersion((version) => version + 1)
+    );
 
-    if (!ctx) {
-      return;
-    }
+    observer.observe(canvas);
 
-    let frame = 0;
+    return () => observer.disconnect();
+  }, [canvas]);
 
-    const draw = () => {
-      frame = requestAnimationFrame(draw);
+  // Paints when what it reads changes — the proximity frame on the overlay
+  // clock, a setting, the roster, the units — or the size does, which rebuilds
+  // the loop. It used to repaint on every animation frame, which kept the
+  // overlay redrawing at the monitor's rate while the scope was up (ADR-0009).
+  useReactiveCanvasLoop(
+    (scheduleDraw) => {
+      // oxlint-disable-next-line no-restricted-properties
+      const allCars = computed.proximity?.nearbyCars ?? [];
+      // Read here, not in the render, so the autorun tracks every one of them.
+      const settings =
+        liveWidgets.getSettings<ProximityRadarSettings>(instanceId);
+      const scope = { ...settings };
+      const { carLength } = appSettings.appSettings;
+      const { unitSystem } = units;
+      const carNumbers = session.carNumberByIdx;
 
-      const dpr = window.devicePixelRatio || 1;
-      const size = Math.min(canvas.clientWidth, canvas.clientHeight);
-
-      if (size <= 0) {
+      if (!canvas) {
         return;
       }
 
-      if (canvas.width !== Math.round(size * dpr)) {
-        canvas.width = Math.round(size * dpr);
-        canvas.height = Math.round(size * dpr);
-      }
+      scheduleDraw(() => {
+        const ctx = canvas.getContext('2d');
 
-      const scope = settingsRef.current;
-      const { carLength, carNumbers: numbers } = carsRef.current;
-      const unitSystem = unitSystemRef.current;
-      // Inside a hand-rolled RAF loop (not useReactiveCanvasLoop), same escape
-      // hatch without the shared primitive's grep signal. See docs/rendering.md.
-      const radiusPx = size / 2;
+        if (!ctx) {
+          return;
+        }
 
-      const { pxPerMeter, rangeMeters } = resolveScopeScale({
-        scopeRange: scope.scopeRange,
-        radiusPx,
-      });
+        const dpr = window.devicePixelRatio || 1;
+        const size = Math.min(canvas.clientWidth, canvas.clientHeight);
 
-      // Cars past the marker reach cannot reach the picture, whatever they do.
-      const nearbyCars =
-        // oxlint-disable-next-line no-restricted-properties
-        computed.proximity?.nearbyCars.filter(
+        if (size <= 0) {
+          return;
+        }
+
+        if (canvas.width !== Math.round(size * dpr)) {
+          canvas.width = Math.round(size * dpr);
+          canvas.height = Math.round(size * dpr);
+        }
+
+        const radiusPx = size / 2;
+
+        const { pxPerMeter, rangeMeters } = resolveScopeScale({
+          scopeRange: scope.scopeRange,
+          radiusPx,
+        });
+
+        // Cars past the marker reach cannot reach the picture, whatever they do.
+        const nearbyCars = allCars.filter(
           (car) => car.clearance <= rangeMeters * EDGE_MARKER_REACH
-        ) ?? [];
+        );
 
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, size, size);
-      ctx.translate(radiusPx, radiusPx);
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(0, 0, radiusPx, 0, Math.PI * 2);
-      ctx.clip();
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, size, size);
+        ctx.translate(radiusPx, radiusPx);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, radiusPx, 0, Math.PI * 2);
+        ctx.clip();
 
-      drawTexture(ctx, scope.backgroundTexture, radiusPx);
-      drawGrid(ctx, {
-        radiusPx,
-        pxPerMeter,
-        rangeMeters,
-        carLengthM: carLength,
-        unitSystem,
-        fontScale: scope.fontScale,
-        showAxes: scope.showAxes,
-        showAxisLabels: scope.showAxisTicks,
-        showRangeRings: scope.showRangeRings,
+        drawTexture(ctx, scope.backgroundTexture, radiusPx);
+        drawGrid(ctx, {
+          radiusPx,
+          pxPerMeter,
+          rangeMeters,
+          carLengthM: carLength,
+          unitSystem,
+          fontScale: scope.fontScale,
+          showAxes: scope.showAxes,
+          showAxisLabels: scope.showAxisTicks,
+          showRangeRings: scope.showRangeRings,
+        });
+
+        const lane: LaneContext = {
+          radiusPx,
+          pxPerMeter,
+          rangeMeters,
+          carLengthM: carLength,
+          scope,
+          carNumbers,
+          unitSystem,
+        };
+
+        drawCenterLane(ctx, nearbyCars, lane);
+
+        drawSideLane(ctx, nearbyCars, 'left', lane);
+        drawSideLane(ctx, nearbyCars, 'right', lane);
+
+        drawCar(ctx, {
+          x: 0,
+          y: 0,
+          color: SCOPE_INK.player,
+          alpha: scope.carOpacity,
+          pxPerMeter,
+          carLengthM: carLength,
+        });
+
+        ctx.restore();
       });
-
-      const lane: LaneContext = {
-        radiusPx,
-        pxPerMeter,
-        rangeMeters,
-        carLengthM: carLength,
-        scope,
-        carNumbers: numbers,
-        unitSystem,
-      };
-
-      drawCenterLane(ctx, nearbyCars, lane);
-
-      drawSideLane(ctx, nearbyCars, 'left', lane);
-      drawSideLane(ctx, nearbyCars, 'right', lane);
-
-      drawCar(ctx, {
-        x: 0,
-        y: 0,
-        color: SCOPE_INK.player,
-        alpha: scope.carOpacity,
-        pxPerMeter,
-        carLengthM: carLength,
-      });
-
-      ctx.restore();
-    };
-
-    frame = requestAnimationFrame(draw);
-
-    return () => cancelAnimationFrame(frame);
-  }, [canvas, computed]);
+    },
+    [
+      canvas,
+      computed,
+      liveWidgets,
+      instanceId,
+      appSettings,
+      units,
+      session,
+      sizeVersion,
+    ]
+  );
 
   if (!visible || !computed.hasProximity) {
     return null;
