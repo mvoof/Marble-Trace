@@ -36,24 +36,13 @@
   opacity: 0.09;
 }
 
-.flagBandBlink {
-  animation: bandPulse 1.1s steps(1, end) infinite;
-}
-
-@keyframes bandPulse {
-  0%,
-  55% {
-    opacity: 0.22;
-  }
-
-  56%,
-  100% {
-    opacity: 0.09;
-  }
+// The layer carries the step (`FLAG_ZONE_BLINK`); only a live band ahead dims.
+.bandLayer[data-blink-step='1'] .flagBandBlink {
+  opacity: 0.09;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flagBandBlink {
-    animation: none;
+  .bandLayer[data-blink-step='1'] .flagBandBlink {
+    opacity: 0.22;
   }
 }

@@ -101,6 +101,39 @@ pub struct CarInputsFrame {
     pub brake_abs_active: bool,
 }
 
+/// The driver's inputs on one source tick, for a trace that draws every tick.
+///
+/// A bundle is published on the overlay clock, every Nth source tick, so the
+/// raw frames it carries skip the ticks in between. A trace built from them
+/// loses those samples — half of them at the default 30 Hz — and with them a
+/// brake tap shorter than a publication. `inputSamples` carries every tick
+/// since the last published one, oldest first, so the trace keeps the sim's
+/// own rate while the overlay still changes only on the clock.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Debug, Clone, Copy, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct InputSample {
+    pub throttle: f32,
+    pub brake: f32,
+    /// Clutch engagement, as `CarInputsFrame::clutch`: 1.0 is the pedal released.
+    pub clutch: Option<f32>,
+    pub brake_abs_active: bool,
+    /// Radians, as `CarDynamicsFrame::steering_wheel_angle`.
+    pub steering_wheel_angle: f32,
+}
+
+impl InputSample {
+    pub fn from_frames(inputs: &CarInputsFrame, dynamics: &CarDynamicsFrame) -> Self {
+        Self {
+            throttle: inputs.throttle,
+            brake: inputs.brake,
+            clutch: inputs.clutch,
+            brake_abs_active: inputs.brake_abs_active,
+            steering_wheel_angle: dynamics.steering_wheel_angle,
+        }
+    }
+}
+
 /// Car status telemetry — vehicle systems, fuel, engine, and pit state.
 ///
 /// Contains fuel levels, engine temperatures, voltage, oil pressure,

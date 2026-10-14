@@ -53,27 +53,29 @@ same route and writes the files.
 
 ### Test and measure
 
-| …                                                     | Read                                                                             |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------- |
-| record a session as a tape, replay it without iRacing | [telemetry-tapes.md](telemetry-tapes.md)                                         |
-| measure performance (`npm run perf`)                  | [telemetry-tapes.md → Measure](telemetry-tapes.md#measure-performance-on-a-tape) |
-| see the baseline numbers and add a new run            | [perf-baseline.md](perf-baseline.md)                                             |
-| check the UI in the real app                          | [AGENTS.md → Visual Testing](../AGENTS.md#visual-testing)                        |
+| …                                                             | Read                                                                             |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| record a session as a tape, replay it without iRacing         | [telemetry-tapes.md](telemetry-tapes.md)                                         |
+| measure performance (`npm run perf`)                          | [telemetry-tapes.md → Measure](telemetry-tapes.md#measure-performance-on-a-tape) |
+| measure what the overlay costs the game (`npm run perf:game`) | [perf-methodology.md](perf-methodology.md)                                       |
+| see the baseline numbers and add a new run                    | [perf-baseline.md](perf-baseline.md)                                             |
+| check the UI in the real app                                  | [AGENTS.md → Visual Testing](../AGENTS.md#visual-testing)                        |
 
 ## Every page
 
-| Page                                                 | Holds                                                                     |
-| ---------------------------------------------------- | ------------------------------------------------------------------------- |
-| [architecture.md](architecture.md)                   | the full architecture: backend layers, frontend layers, the IPC, settings |
-| [rendering.md](rendering.md)                         | hot/cold split, `useReactiveDomWrite`, `useReactiveCanvasLoop`            |
-| [settings-schema.md](settings-schema.md)             | the settings load pipeline and how to write a migration                   |
-| [widget-authoring.md](widget-authoring.md)           | the route for a new widget, ordered by cost                               |
-| [widget-toolbox.md](widget-toolbox.md)               | every module of `shared/lib`, `shared/ui`, `shared/hooks` (test-checked)  |
-| [widget-stories.md](widget-stories.md)               | `defineWidgetStories`, seeding, controls                                  |
-| [widget-screenshots.md](widget-screenshots.md)       | `capture:widgets`, `SHOTS`, the site's WebP copies                        |
-| [steering-wheel-assets.md](steering-wheel-assets.md) | tracing a wheel photo into an SVG and registering it                      |
-| [telemetry-tapes.md](telemetry-tapes.md)             | recording, replaying, `npm run perf`                                      |
-| [perf-baseline.md](perf-baseline.md)                 | measured numbers, append-only                                             |
-| [adr/](adr/README.md)                                | architecture decision records                                             |
-| [research/](research/)                               | investigations kept for reference (WebView2 flags)                        |
-| [agents/](agents/)                                   | how an agent uses the issue tracker, the domain docs, React Doctor        |
+| Page                                                 | Holds                                                                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| [architecture.md](architecture.md)                   | the full architecture: backend layers, frontend layers, the IPC, settings                              |
+| [rendering.md](rendering.md)                         | what the game and the app each pay for, hot/cold split, `useReactiveDomWrite`, `useReactiveCanvasLoop` |
+| [settings-schema.md](settings-schema.md)             | the settings load pipeline and how to write a migration                                                |
+| [widget-authoring.md](widget-authoring.md)           | the route for a new widget, ordered by cost                                                            |
+| [widget-toolbox.md](widget-toolbox.md)               | every module of `shared/lib`, `shared/ui`, `shared/hooks` (test-checked)                               |
+| [widget-stories.md](widget-stories.md)               | `defineWidgetStories`, seeding, controls                                                               |
+| [widget-screenshots.md](widget-screenshots.md)       | `capture:widgets`, `SHOTS`, the site's WebP copies                                                     |
+| [steering-wheel-assets.md](steering-wheel-assets.md) | tracing a wheel photo into an SVG and registering it                                                   |
+| [telemetry-tapes.md](telemetry-tapes.md)             | recording, replaying, `npm run perf`                                                                   |
+| [perf-baseline.md](perf-baseline.md)                 | measured numbers, append-only                                                                          |
+| [perf-methodology.md](perf-methodology.md)           | what the overlay costs the game: the bundle and the clock, metrics, protocol, `npm run perf:game`      |
+| [adr/](adr/README.md)                                | architecture decision records                                                                          |
+| [research/](research/)                               | investigations kept for reference (WebView2 flags)                                                     |
+| [agents/](agents/)                                   | how an agent uses the issue tracker, the domain docs, React Doctor                                     |

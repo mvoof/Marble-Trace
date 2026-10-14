@@ -63,7 +63,6 @@ $speed-limit-seam: $pit-readout-seam;
   right: 0;
   height: var(--speed-fill, 0%);
   background: rgba($race-green, 0.34);
-  transition: height 80ms linear;
 }
 
 .fillOver {

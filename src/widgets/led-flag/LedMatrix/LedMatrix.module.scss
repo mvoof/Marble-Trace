@@ -1,5 +1,3 @@
-@use 'sass:math';
-
 $diode-size: 10px;
 $diode-margin: 1px;
 $diode-cell: $diode-size + $diode-margin * 2;
@@ -86,18 +84,30 @@ $board-padding: 4px;
 }
 
 // Every rule below reads `--phase-a`/`--phase-b` instead of running its own
-// `animation`. Both are written once per tick, on `.board`, by
-// `useLedBlinkClock` — a matrix can hold 500+ diodes, and one shared DOM
-// write reaching all of them (via `color-mix()`, a static formula) replaced
-// what used to be one running CSS Animation instance per diode. `--phase-a`
-// goes 0 -> 1 across each half-cycle and back; `--phase-b` is its complement,
-// for the patterns that need one group inverted relative to the other rather
-// than swapped to a different color. See the widget's own entry in the FPS
-// diagnostics CSV (2026-09-08) for the cost this replaced.
-//
-// The green "fill" wipe (`ledGreenFill-*` below) is left as CSS animation:
-// it is a genuine multi-step sequence per ring, not a two-state blink, and
-// there are far fewer distinct rings than diodes.
+// `animation`. `LedMatrix` writes the blink step on `.board` through `useBlink`
+// and the two follow from it here, so one attribute change reaches every diode
+// (via `color-mix()`, a static formula) — a matrix holds 500+ of them, and one
+// running CSS Animation per diode made this the most expensive widget in the
+// overlay (FPS diagnostics, 2026-09-08). `--phase-a` is 0 on the lit half and 1
+// on the dark one; `--phase-b` is its complement, for the patterns that invert
+// one group against the other rather than switching it off.
+.board,
+.board[data-blink-step='0'] {
+  --phase-a: 0;
+  --phase-b: 1;
+}
+
+.board[data-blink-step='1'] {
+  --phase-a: 1;
+  --phase-b: 0;
+}
+
+// Without the animation a yellow or a red still flashes, in step with the other
+// flag widgets: the dark half switches every diode off.
+.board:not(.animate)[data-blink-step='1'] .diode {
+  background-color: $led-surface-panel;
+}
+
 .board.animate {
   &.flag-yellow .colorYellow {
     --diode-phase: var(--phase-a);
@@ -187,9 +197,7 @@ $board-padding: 4px;
     );
   }
 
-  // `--phase-a` here is the eased 0->1 breath itself, written straight from
-  // `useLedBlinkClock`'s rAF loop rather than flipped every half-cycle: 0 is
-  // full white (the keyframe's 0%/100%), 1 is the dimmed midpoint (its 50%).
+  // White breathes rather than blinks: its dark half is only half dark.
   &.flag-white .colorWhite {
     background-color: color-mix(
       in srgb,
@@ -257,37 +265,21 @@ $board-padding: 4px;
   }
 }
 
+// The green "fill": the rings light from the edge inwards, one per step, hold
+// lit for two steps and go dark for two — `$max-r + 4` steps a second, the
+// step written by `LedMatrix` (`greenFillCycle`). Only the lit cells need a
+// rule; every other step leaves the ring dark.
+.board.animate.flag-green .colorGreen {
+  background-color: $led-surface-panel;
+}
+
 @for $max-r from 0 through 12 {
-  $steps: $max-r + 4;
-
-  @for $r from 0 through $max-r {
-    .board.animate.flag-green[data-max-ring='#{$max-r}']
-      .colorGreen[data-ring='#{$r}'] {
-      animation: ledGreenFill-#{$max-r}-#{$r} 1s infinite steps(1);
-    }
-
-    @keyframes ledGreenFill-#{$max-r}-#{$r} {
-      @for $s from 0 through $steps {
-        $pct: math.div($s, $steps) * 100%;
-
-        $is-on: false;
-        @if $s < $max-r {
-          $pos: $max-r - $s;
-          @if $r >= $pos {
-            $is-on: true;
-          }
-        } @else if $s < $max-r + 2 {
-          $is-on: true;
-        } @else {
-          $is-on: false;
-        }
-
-        #{$pct} {
-          @if $is-on {
-            background-color: $led-green;
-          } @else {
-            background-color: $led-surface-panel;
-          }
+  @for $step from 0 through $max-r + 1 {
+    @for $r from 0 through $max-r {
+      @if $step >= $max-r or $r >= $max-r - $step {
+        .board.animate.flag-green[data-max-ring='#{$max-r}'][data-blink-step='#{$step}']
+          .colorGreen[data-ring='#{$r}'] {
+          background-color: $led-green;
         }
       }
     }

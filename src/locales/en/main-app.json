@@ -291,6 +291,11 @@
       "metric": "Metric (km/h, °C, L)",
       "imperial": "Imperial (mph, °F, gal)"
     },
+    "overlayPerformance": {
+      "title": "Performance",
+      "updateRateTitle": "Overlay update rate",
+      "updateRateDesc": "How often widgets redraw. Every redraw costs the game a composited frame: 60 Hz moves smoothest and costs the most dropped frames, 30 Hz keeps motion smooth at a fraction of the cost."
+    },
     "steeringLock": {
       "title": "Steering Wheel",
       "rangeTitle": "Steering Lock",

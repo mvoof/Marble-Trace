@@ -9,15 +9,17 @@ import {
 import {
   COLOR_TURN,
   ENVELOPE_SPREAD,
-  FADING_DECAY,
   G_CONSTANT,
   RADIUS_RATIO,
-  SMOOTHING,
-  TRACE_LENGTH,
+  TRACE_DURATION_MS,
   computeColor,
+  decayOver,
+  smoothingOver,
+  ticksElapsed,
   toRgba,
 } from '@widgets/g-meter/g-meter-utils';
 import type { EnvelopePoint, TrailPoint } from '@widgets/g-meter/types';
+import type { CarDynamicsFrame } from '@shared/contracts/bindings';
 
 import styles from './GMeterTrace.module.scss';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -291,6 +293,118 @@ interface GMeterTraceProps {
   height: number;
 }
 
+interface MeterState {
+  smoothedLatG: number;
+  smoothedLonG: number;
+  peakTop: number;
+  peakBottom: number;
+  peakLeft: number;
+  peakRight: number;
+  gEnvelope: EnvelopePoint[];
+  gHistory: TrailPoint[];
+  lastScale: number;
+  lastDynamics: CarDynamicsFrame | null | undefined;
+  lastFrameAt: number | null;
+}
+
+/**
+ * Moves the meter on by one telemetry frame that covers `ticks` 60 Hz ticks:
+ * the dot closes on the raw reading, the peaks and the envelope take it in,
+ * the fading envelope decays and the trail gains a point and loses the ones
+ * older than it reaches back.
+ */
+const advanceMeter = (
+  state: MeterState,
+  rawLat: number,
+  rawLon: number,
+  ticks: number,
+  now: number,
+  settings: GMeterWidgetSettings
+): void => {
+  const smoothing = smoothingOver(ticks);
+
+  state.smoothedLatG += (rawLat - state.smoothedLatG) * smoothing;
+  state.smoothedLonG += (rawLon - state.smoothedLonG) * smoothing;
+
+  let dist = Math.hypot(state.smoothedLatG, state.smoothedLonG);
+  const maxG = settings.scale;
+
+  if (dist > maxG) {
+    const ratio = maxG / dist;
+
+    state.smoothedLatG *= ratio;
+    state.smoothedLonG *= ratio;
+    dist = maxG;
+  }
+
+  if (state.smoothedLonG < 0) {
+    state.peakTop = Math.max(state.peakTop, Math.abs(state.smoothedLonG));
+  }
+
+  if (state.smoothedLonG > 0) {
+    state.peakBottom = Math.max(state.peakBottom, state.smoothedLonG);
+  }
+
+  if (state.smoothedLatG < 0) {
+    state.peakLeft = Math.max(state.peakLeft, Math.abs(state.smoothedLatG));
+  }
+
+  if (state.smoothedLatG > 0) {
+    state.peakRight = Math.max(state.peakRight, state.smoothedLatG);
+  }
+
+  const color = computeColor(
+    settings.colorMode,
+    state.smoothedLatG,
+    state.smoothedLonG,
+    dist
+  );
+
+  const angle = Math.atan2(state.smoothedLonG, state.smoothedLatG);
+  let degree = Math.round(angle * (180 / Math.PI));
+
+  if (degree < 0) {
+    degree += 360;
+  }
+
+  for (let delta = -ENVELOPE_SPREAD; delta <= ENVELOPE_SPREAD; delta++) {
+    const idx = (degree + delta + 360) % 360;
+    const smoothedR = dist * Math.cos((delta * Math.PI) / 180);
+
+    if (smoothedR > state.gEnvelope[idx].r) {
+      state.gEnvelope[idx].r = smoothedR;
+      state.gEnvelope[idx].color = color;
+    }
+  }
+
+  if (settings.displayMode === 'fading') {
+    const decay = decayOver(ticks);
+
+    for (let index = 0; index < 360; index++) {
+      state.gEnvelope[index].r *= decay;
+    }
+
+    state.peakTop *= decay;
+    state.peakBottom *= decay;
+    state.peakLeft *= decay;
+    state.peakRight *= decay;
+  }
+
+  state.gHistory.push({
+    lat: state.smoothedLatG,
+    lon: state.smoothedLonG,
+    color,
+    atMs: now,
+  });
+
+  while (
+    state.gHistory.length > 0 &&
+    now - state.gHistory[0].atMs > TRACE_DURATION_MS
+  ) {
+    state.gHistory.shift();
+  }
+};
+
 // Not wrapped in observer() intentionally: useReactiveCanvasLoop subscribes to
 // MobX observables directly, so React re-renders are not needed for data updates.
 // observer() would cause 60 Hz React re-renders on every carDynamics change.
@@ -310,7 +424,7 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
     dimsRef.current = { width, height };
   }, [width, height]);
 
-  const stateRef = useRef({
+  const stateRef = useRef<MeterState>({
     smoothedLatG: 0,
     smoothedLonG: 0,
     peakTop: 0,
@@ -321,8 +435,12 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
       { length: 360 },
       (): EnvelopePoint => ({ r: 0, color: COLOR_TURN })
     ),
-    gHistory: [] as TrailPoint[],
+    gHistory: [],
     lastScale: -1,
+    // The frame the state last advanced on, and when: the loop also re-runs on
+    // a settings edit, which must repaint without counting as time or a point.
+    lastDynamics: undefined,
+    lastFrameAt: null,
   });
 
   const drawTrace = useCallback(
@@ -489,76 +607,27 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
 
       state.lastScale = settings.scale;
 
-      state.smoothedLatG += (rawLat - state.smoothedLatG) * SMOOTHING;
-      state.smoothedLonG += (rawLon - state.smoothedLonG) * SMOOTHING;
+      // The state advances once per telemetry frame, by the time that frame
+      // covers. The loop also re-runs on a settings edit, which only repaints:
+      // advancing there too added a point and a step of smoothing for nothing.
+      if (dynamics !== state.lastDynamics) {
+        const now = performance.now();
+        const ticks =
+          state.lastFrameAt === null
+            ? 1
+            : ticksElapsed(now - state.lastFrameAt);
 
-      let dist = Math.sqrt(state.smoothedLatG ** 2 + state.smoothedLonG ** 2);
-      const maxG = settings.scale;
-
-      if (dist > maxG) {
-        const ratio = maxG / dist;
-
-        state.smoothedLatG *= ratio;
-        state.smoothedLonG *= ratio;
-        dist = maxG;
-      }
-
-      if (state.smoothedLonG < 0) {
-        state.peakTop = Math.max(state.peakTop, Math.abs(state.smoothedLonG));
-      }
-      if (state.smoothedLonG > 0) {
-        state.peakBottom = Math.max(state.peakBottom, state.smoothedLonG);
-      }
-      if (state.smoothedLatG < 0) {
-        state.peakLeft = Math.max(state.peakLeft, Math.abs(state.smoothedLatG));
-      }
-      if (state.smoothedLatG > 0) {
-        state.peakRight = Math.max(state.peakRight, state.smoothedLatG);
+        state.lastDynamics = dynamics;
+        state.lastFrameAt = now;
+        advanceMeter(state, rawLat, rawLon, ticks, now, settings);
       }
 
       const color = computeColor(
         settings.colorMode,
         state.smoothedLatG,
         state.smoothedLonG,
-        dist
+        Math.hypot(state.smoothedLatG, state.smoothedLonG)
       );
-
-      const angle = Math.atan2(state.smoothedLonG, state.smoothedLatG);
-      let degree = Math.round(angle * (180 / Math.PI));
-
-      if (degree < 0) {
-        degree += 360;
-      }
-
-      for (let delta = -ENVELOPE_SPREAD; delta <= ENVELOPE_SPREAD; delta++) {
-        const idx = (degree + delta + 360) % 360;
-        const smoothedR = dist * Math.cos((delta * Math.PI) / 180);
-
-        if (smoothedR > state.gEnvelope[idx].r) {
-          state.gEnvelope[idx].r = smoothedR;
-          state.gEnvelope[idx].color = color;
-        }
-      }
-
-      if (settings.displayMode === 'fading') {
-        for (let index = 0; index < 360; index++) {
-          state.gEnvelope[index].r *= FADING_DECAY;
-        }
-        state.peakTop *= FADING_DECAY;
-        state.peakBottom *= FADING_DECAY;
-        state.peakLeft *= FADING_DECAY;
-        state.peakRight *= FADING_DECAY;
-      }
-
-      state.gHistory.push({
-        lat: state.smoothedLatG,
-        lon: state.smoothedLonG,
-        color,
-      });
-
-      if (state.gHistory.length > TRACE_LENGTH) {
-        state.gHistory.shift();
-      }
 
       scheduleDraw(() => {
         drawTrace(canvas, settings, fontScale, color);

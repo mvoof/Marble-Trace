@@ -36,7 +36,11 @@
 
 .pillPulse {
   border-color: rgba($race-red, 0.5);
-  animation: statPillPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+// `PULSE_BLINK` in StatPill writes the step.
+.pillPulse[data-blink-step='1'] {
+  opacity: 0.6;
 }
 
 .icon {
@@ -72,15 +76,4 @@
 
 .valueDanger {
   color: $widget-status-danger;
-}
-
-@keyframes statPillPulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.6;
-  }
 }

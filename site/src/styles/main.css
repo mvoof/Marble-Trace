@@ -2483,6 +2483,122 @@ button:focus-visible {
   color: var(--band-muted);
 }
 
+/* ---- Overlay update rate, one line --------------------------------------- */
+
+.perf-rate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin: 0 0 2rem;
+}
+
+.perf-rate-title {
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--band-ink);
+}
+
+/* The app's own segmented control, in the band's colours. */
+.perf-rate-picker {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--band-rule);
+  border-radius: 7px;
+}
+
+.perf-rate-option {
+  padding: 0.28rem 0.6rem;
+  border: 0;
+  border-radius: 5px;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--band-muted);
+  background: none;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.perf-rate-option:hover {
+  color: var(--band-ink);
+}
+
+.perf-rate-option[aria-pressed='true'] {
+  color: #0b1015;
+  background-color: var(--band-accent);
+}
+
+.perf-rate-option:focus-visible {
+  outline: 2px solid var(--band-accent);
+  outline-offset: 2px;
+}
+
+/* Twelve sim ticks. The ones the overlay changes on glow in turn, a slow
+   wave left to right; the rest stay dim. Each dot's place in the wave is its
+   --i, set in the markup. */
+.perf-rate-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.perf-rate-dot {
+  --wave: 3.6s;
+
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 400ms ease;
+}
+
+.perf-rate-dot.is-change {
+  background-color: rgba(79, 143, 227, 0.4);
+}
+
+.perf-rate.is-playing .perf-rate-dot.is-change {
+  animation: perf-rate-wave var(--wave) ease-in-out infinite;
+  animation-delay: calc(var(--i) * var(--wave) / 12);
+}
+
+@keyframes perf-rate-wave {
+  0%,
+  40%,
+  100% {
+    background-color: rgba(79, 143, 227, 0.35);
+  }
+
+  14% {
+    background-color: rgba(79, 143, 227, 0.95);
+  }
+}
+
+.perf-rate-readout {
+  font-size: 0.86rem;
+  color: var(--band-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .perf-rate-dot,
+  .perf-rate-option {
+    transition: none;
+  }
+
+  .perf-rate.is-playing .perf-rate-dot.is-change {
+    animation: none;
+  }
+}
+
 /* ---- Facts --------------------------------------------------------------- */
 
 .perf-facts {

@@ -13,9 +13,6 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  transition:
-    left 80ms linear,
-    width 80ms linear;
 }
 
 // Zero marker stays inside the track — it reads as part of the bar, not as a

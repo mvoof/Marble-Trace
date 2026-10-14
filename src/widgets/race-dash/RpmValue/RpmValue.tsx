@@ -1,8 +1,13 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { computeRpmZoneState, rpmNumberColor } from '../race-dash-utils';
+import {
+  computeRpmZoneState,
+  REDLINE_BLINK,
+  rpmNumberColor,
+} from '../race-dash-utils';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useBlinkHandle } from '@shared/hooks/useBlink';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 
@@ -21,6 +26,7 @@ export const RpmValue = observer(() => {
   const sessionStore = useSessionStore();
 
   const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');
+  const redlineBlink = useBlinkHandle();
 
   const valueRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
@@ -40,10 +46,12 @@ export const RpmValue = observer(() => {
       scheduleWrite(() => {
         element.style.setProperty(RPM_COLOR_PROPERTY, zoneColor ?? '');
         element.classList.toggle(styles.blinkPulse, isBlink);
+        redlineBlink.attach(element);
+        redlineBlink.run(isBlink ? REDLINE_BLINK : null);
         element.textContent = String(rpm);
       });
     },
-    [player, sessionStore, settings]
+    [player, sessionStore, settings, redlineBlink]
   );
 
   return <span ref={valueRef} className={styles.value} />;

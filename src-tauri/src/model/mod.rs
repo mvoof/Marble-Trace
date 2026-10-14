@@ -78,6 +78,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<pit_command::PitCommandRequest>()
         .register::<player::CarDynamicsFrame>()
         .register::<player::CarInputsFrame>()
+        .register::<player::InputSample>()
         .register::<player::CarStatusFrame>()
         .register::<player::ChassisFrame>()
         .register::<player::LapTimingFrame>()

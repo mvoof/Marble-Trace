@@ -3,6 +3,7 @@
 // docs/telemetry-tapes.md. Write the tape path with forward slashes: Git Bash
 // drops the backslashes of D:\tapes\… before the script sees them.
 //
+//   npm run perf:build                                  the binary alone (perf and perf:game run it)
 //   npm run perf -- --tape D:/tapes/session.tape.jsonl.gz --from 600 --build
 //   npm run perf -- --tape <tape> --from 600 --runs 2
 //   npm run perf -- --tape <tape> --from 600 --mode stores-only
@@ -285,6 +286,13 @@ const main = async () => {
     printTable(
       options.reports.map((file) => JSON.parse(readFileSync(file, 'utf8')))
     );
+
+    return;
+  }
+
+  // `--build` alone builds the binary and stops: what `perf:game` runs too.
+  if (options.build && !options.tape) {
+    build();
 
     return;
   }

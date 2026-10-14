@@ -1,4 +1,8 @@
-import type { ReferenceLapSample } from '@shared/contracts/bindings';
+import type {
+  CoachFrame,
+  LapTimingFrame,
+  ReferenceLapSample,
+} from '@shared/contracts/bindings';
 
 /**
  * Number of points sampled across the whole window. Odd so one point lands
@@ -340,4 +344,20 @@ export const interpolateReferenceSample = (
       upper.steeringWheelAngle
     ),
   };
+};
+
+/**
+ * The player's position on the lap, 0..1, or null when the sim has none. The
+ * coach frame carries it on the overlay clock; `lapTiming` carries it only on
+ * the 10 Hz tier, and drawing by that puts a run of trace buckets under one
+ * speed — a step every tenth of a second. `lapTiming` remains the fallback for
+ * a window no coach frame reaches: a preview, a story.
+ */
+export const playerLapDistPct = (
+  coachFrame: CoachFrame | null,
+  lapTiming: LapTimingFrame | null
+): number | null => {
+  const lapDistPct = coachFrame?.lapDistPct ?? lapTiming?.lap_dist_pct ?? null;
+
+  return lapDistPct === null || lapDistPct < 0 ? null : lapDistPct;
 };

@@ -10,7 +10,9 @@ import {
 import {
   deleteSettingsFile,
   setCarLengthSilent,
+  setOverlayUpdateHzSilent,
 } from '@shared/api/settings.service';
+import { DEFAULT_OVERLAY_UPDATE_HZ } from '@shared/contracts/backend-constants';
 import { mergeWithDefaults } from '@shared/lib/deep-merge';
 import { detectSystemLanguage } from '@entities/app-settings/system-locale';
 import { createRemoteToken } from '@shared/lib/remote-screen';
@@ -61,6 +63,11 @@ const DEFAULT_APP_SETTINGS = {
   // widget — the radars and Close Battle must not disagree about how far away
   // the same car is — and the backend keeps exactly one of it per process.
   carLength: 4.4,
+  // How often the overlays are redrawn, in Hz. Every redraw makes DWM compose a
+  // frame on the GPU the game draws on, and at 60 Hz that cost iRacing about
+  // half its 1% low; 30 gave most of it back (ADR-0009). The backend publishes
+  // at this rate, so every widget moves on the same frames.
+  overlayUpdateHz: DEFAULT_OVERLAY_UPDATE_HZ,
   // Pit stop strategy (`PitStrategy`). The car's, not a screen's — these used
   // to be widget settings, and the copy on a stream screen was silently ignored.
   pitAutoFuel: false,
@@ -232,6 +239,7 @@ export class AppSettingsStore {
     // starts on the shipped default: a file that says otherwise has to be
     // pushed across on the way in, not on the first time the user touches it.
     setCarLengthSilent(this.appSettings.carLength);
+    setOverlayUpdateHzSilent(this.appSettings.overlayUpdateHz);
     void i18n.changeLanguage(resolveAppLanguage(this.appSettings.language));
   }
 
@@ -396,6 +404,11 @@ export class AppSettingsStore {
   setCarLength(value: number) {
     this.appSettings.carLength = value;
     setCarLengthSilent(value);
+  }
+
+  setOverlayUpdateHz(value: number) {
+    this.appSettings.overlayUpdateHz = value;
+    setOverlayUpdateHzSilent(value);
   }
 
   setPitAutoFuel(value: boolean) {

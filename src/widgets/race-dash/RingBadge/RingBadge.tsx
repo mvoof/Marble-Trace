@@ -5,8 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 import { formatGear } from '@shared/lib/telemetry-format';
 import { computeShiftThresholds } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useBlinkHandle, type BlinkCycle } from '@shared/hooks/useBlink';
 import {
   computeRpmZoneState,
+  REDLINE_BLINK,
   rpmFillColor,
   rpmNumberColor,
 } from '../race-dash-utils';
@@ -21,6 +23,9 @@ import type { RaceDashWidgetSettings } from '../settings-schema';
 
 const MIN_VISIBLE_ARC_DEG = 0.5;
 const SHIFT_FLASH_MS = 220;
+
+/** The core glow strobes at the redline, faster than the digit: 250 ms a side. */
+const CORE_GLOW_BLINK: BlinkCycle = { stepMs: 250, steps: 2 };
 
 const GLOW_COLOR_PROPERTY = '--core-glow-color';
 const GLOW_SCALE_PROPERTY = '--core-glow-scale';
@@ -42,6 +47,8 @@ export const RingBadge = observer(() => {
   const sessionStore = useSessionStore();
 
   const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');
+  const glowBlink = useBlinkHandle();
+  const gearBlink = useBlinkHandle();
 
   const showFill = settings.rpmIndicatorMode === 'fill';
   const showComb = settings.rpmIndicatorMode === 'comb';
@@ -168,6 +175,8 @@ export const RingBadge = observer(() => {
 
         if (glow instanceof HTMLElement) {
           glow.classList.toggle(styles.coreGlowBlink, isBlink);
+          glowBlink.attach(glow);
+          glowBlink.run(isBlink ? CORE_GLOW_BLINK : null);
           glow.style.setProperty(GLOW_COLOR_PROPERTY, fillColor);
           glow.style.setProperty(GLOW_SCALE_PROPERTY, String(coreGlowScale));
         }
@@ -176,12 +185,14 @@ export const RingBadge = observer(() => {
 
         if (gearDigit instanceof HTMLElement) {
           gearDigit.classList.toggle(styles.blinkPulse, isBlink);
+          gearBlink.attach(gearDigit);
+          gearBlink.run(isBlink ? REDLINE_BLINK : null);
           gearDigit.style.setProperty(GEAR_COLOR_PROPERTY, gearColor ?? '');
           gearDigit.textContent = gearText;
         }
       });
     },
-    [player, sessionStore, settings, showFill, showComb]
+    [player, sessionStore, settings, showFill, showComb, glowBlink, gearBlink]
   );
 
   return (

@@ -1,7 +1,11 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { projectFlagZoneToWindow } from '@entities/incidents/flag-zones';
+import {
+  FLAG_ZONE_BLINK,
+  projectFlagZoneToWindow,
+} from '@entities/incidents/flag-zones';
+import { useBlinkHandle } from '@shared/hooks/useBlink';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useIncidentsWidgetStore } from '@entities/incidents/incidents-context';
@@ -47,6 +51,7 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
   const isOutline = settings.flagZoneStyle === 'outline';
   const blink = settings.blinkIncidentZones;
   const zoneCount = incidentsStore.zones.length;
+  const zoneBlink = useBlinkHandle();
 
   const containerRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
@@ -76,6 +81,14 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
       });
 
       scheduleWrite(() => {
+        const isAnyBlinking = placements.some(
+          (placement) =>
+            placement !== null && placement.isActive && !placement.isBehind
+        );
+
+        zoneBlink.attach(element);
+        zoneBlink.run(blink && isAnyBlinking ? FLAG_ZONE_BLINK : null);
+
         for (const [bandIndex, placement] of placements.entries()) {
           const band = element.children[bandIndex];
 
@@ -108,7 +121,7 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
         }
       });
     },
-    [computed, incidentsStore, blink, zoneCount, isHorizontal]
+    [computed, incidentsStore, blink, zoneCount, isHorizontal, zoneBlink]
   );
 
   if (!settings.showIncidentZones) {

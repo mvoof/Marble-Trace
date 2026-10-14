@@ -217,6 +217,12 @@ pub struct CoachFrame {
     /// Metres to where the reference braked for the next corner — `None` once
     /// inside that braking zone, where a countdown to a point behind would lie.
     pub brake_point_distance_m: Option<f32>,
+    /// The player's position on the lap on this tick, 0..1, whether the coach
+    /// is calling or idle. The coach widget draws its trace by distance, and
+    /// `lapTiming` reaches the windows only on the 10 Hz tier: positions that
+    /// coarse put a whole run of trace buckets under one speed, a step every
+    /// tenth of a second.
+    pub lap_dist_pct: Option<f32>,
 }
 
 /// Distance ahead from `from_pct` to `to_pct`, wrapping around the lap, in `[0, 1)`.
@@ -1093,6 +1099,7 @@ impl CoachProcessor {
             without_exit_calls: CoachCall::from(&without_exit_calls),
             apex_distance_m,
             brake_point_distance_m,
+            lap_dist_pct: None,
         }
     }
 }
@@ -1107,11 +1114,15 @@ impl Processor for CoachProcessor {
     }
 
     fn rate(&self) -> TickRate {
-        TickRate::Hz60
+        TickRate::OverlayClock
     }
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
-        Some(ComputedOutput::Coach(self.frame(ctx)))
+        let mut frame = self.frame(ctx);
+
+        frame.lap_dist_pct = ctx.lap_timing.lap_dist_pct.filter(|pct| *pct >= 0.0);
+
+        Some(ComputedOutput::Coach(frame))
     }
 
     fn reset(&mut self) {
@@ -1131,6 +1142,16 @@ impl Processor for CoachProcessor {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
+
+    use crate::computations::fuel::FuelSettings;
+    use crate::model::cars::CarIdxFrame;
+    use crate::model::environment::EnvironmentFrame;
+    use crate::model::player::{
+        CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
+        PitServiceFrame,
+    };
+    use crate::model::session::SessionSnapshot;
 
     const TRACK_LENGTH_M: f32 = 1000.0;
     const BUCKET_COUNT: usize = 1000;
@@ -1593,5 +1614,61 @@ mod tests {
         assert!(is_steering_unsettled(&sawtooth));
         assert!(!is_steering_unsettled(&arc));
         assert!(!is_steering_unsettled(&noise));
+    }
+
+    fn compute_at(processor: &mut CoachProcessor, lap_dist_pct: Option<f32>) -> CoachFrame {
+        let session = SessionSnapshot::default();
+        let start_positions = HashMap::new();
+        let lap_timing = LapTimingFrame {
+            lap_dist_pct,
+            ..LapTimingFrame::default()
+        };
+        let ctx = ComputeContext {
+            car_dynamics: &CarDynamicsFrame::default(),
+            car_inputs: &CarInputsFrame::default(),
+            car_idx: &CarIdxFrame::default(),
+            lap_timing: &lap_timing,
+            car_status: &CarStatusFrame::default(),
+            pit_service: &PitServiceFrame::default(),
+            chassis: &ChassisFrame::default(),
+            environment: &EnvironmentFrame::default(),
+            session: &session,
+            track_length_m: 0.0,
+            car_length_m: 0.0,
+            start_positions: &start_positions,
+            fuel_settings: FuelSettings::default(),
+            lap_delta_active: false,
+            session_num: None,
+            session_time: None,
+            session_time_remain: None,
+            session_state: None,
+        };
+
+        match processor.compute(&ctx) {
+            Some(ComputedOutput::Coach(frame)) => frame,
+            other => panic!("expected a coach frame, got {other:?}"),
+        }
+    }
+
+    // The widget records its own trace with no reference lap at all, so the
+    // position has to arrive while the coach itself is idle.
+    #[test]
+    fn an_idle_coach_still_reports_the_position() {
+        let mut processor = CoachProcessor::default();
+        let frame = compute_at(&mut processor, Some(0.25));
+
+        assert_eq!(
+            frame.inactive_reason,
+            Some(CoachInactiveReason::NoReference)
+        );
+        assert_eq!(frame.lap_dist_pct, Some(0.25));
+    }
+
+    #[test]
+    fn a_position_the_sim_marks_invalid_is_not_reported() {
+        let mut processor = CoachProcessor::default();
+
+        assert_eq!(compute_at(&mut processor, Some(-1.0)).lap_dist_pct, None);
+        assert_eq!(compute_at(&mut processor, None).lap_dist_pct, None);
     }
 }

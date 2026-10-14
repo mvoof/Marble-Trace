@@ -11,7 +11,7 @@ and Storybook run on mock builders, never on a recording
 a 35-minute race is about 95 MB.
 
 Everything here needs a build with the cargo feature `dev`: `npm run tauri:dev`,
-`npm run tauri:build:dev`, or the binary `npm run perf -- --build` makes. A
+`npm run tauri:build:dev`, or the binary `npm run perf:build` makes. A
 release build ignores every tape and perf variable.
 
 ---
@@ -65,6 +65,10 @@ PowerShell, or the next run records too.
 ---
 
 ## Replay a tape
+
+`session-1791104931.tape.jsonl.gz` here and below is one recording on the
+author's machine and is not shared; put the name of a tape you recorded
+(Record a session, above) in its place.
 
 ```powershell
 $env:MARBLE_TRACE_REPLAY = 'D:/tapes/session-1791104931.tape.jsonl.gz'; npm run tauri:dev

@@ -142,5 +142,8 @@ export const mockCoachFrame = (call: MockCoachCall = {}): CoachFrame => {
     withoutExitCalls: shown,
     apexDistanceM: call.apexDistanceM ?? null,
     brakePointDistanceM: call.brakePointDistanceM ?? null,
+    // The scenario places the car through `lapTiming`, which the coach reads
+    // when its own frame carries no position.
+    lapDistPct: null,
   };
 };

@@ -2,7 +2,8 @@ import { observer } from 'mobx-react-lite';
 
 import type { FlagType } from '@shared/contracts/domain';
 import { BLINK_FLAGS, FLAG_LABEL } from '@widgets/flat-flags/flat-flags-utils';
-import { useFlagsStore } from '@entities/flags/flags-context';
+import { FLAG_BLINK } from '@entities/flags/flag-blink';
+import { useBlink } from '@shared/hooks/useBlink';
 
 import styles from './FlagItem.module.scss';
 
@@ -27,13 +28,12 @@ interface FlagItemProps {
 }
 
 export const FlagItem = observer(({ flag }: FlagItemProps) => {
-  const { blinkOn } = useFlagsStore();
-  const isBlinkOff = BLINK_FLAGS.has(flag) && !blinkOn;
+  const blinkRef = useBlink<HTMLDivElement>(
+    BLINK_FLAGS.has(flag) ? FLAG_BLINK : null
+  );
 
   return (
-    <div
-      className={`${styles.item} ${FLAG_ITEM_CLASS[flag]}${isBlinkOff ? ` ${styles.itemBlinkOff}` : ''}`}
-    >
+    <div ref={blinkRef} className={`${styles.item} ${FLAG_ITEM_CLASS[flag]}`}>
       {FLAG_LABEL[flag]}
     </div>
   );

@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use crate::computations::fuel::FuelSettings;
 use crate::computations::pit_auto::PitAutoCommand;
-use crate::model::defaults::DEFAULT_CAR_LENGTH_M;
+use crate::model::defaults::{DEFAULT_CAR_LENGTH_M, DEFAULT_OVERLAY_UPDATE_HZ};
 use crate::model::pit_action::PitAction;
 use crate::model::pit_auto::PitAutoConfig;
 
@@ -30,6 +30,8 @@ pub struct TelemetryConfig {
     /// instead of subscribing: the settings window must never take the 60 Hz
     /// bundle again.
     pub inspector_active: bool,
+    /// How often a bundle is published, in Hz; a divisor of `SOURCE_TICK_HZ`.
+    pub overlay_update_hz: u32,
 }
 
 impl Default for TelemetryConfig {
@@ -39,6 +41,7 @@ impl Default for TelemetryConfig {
             fuel: FuelSettings::default(),
             pit_auto: PitAutoConfig::default(),
             inspector_active: false,
+            overlay_update_hz: DEFAULT_OVERLAY_UPDATE_HZ,
         }
     }
 }

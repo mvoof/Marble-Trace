@@ -51,6 +51,11 @@ ts_values! {
     /// but the corner count moves on every tick while driving; computed all
     /// session so a widget switched on mid-race reads the whole distance.
     pub const EVENT_SAFETY_RATING: u32 = 1 << 9 => safetyRating;
+
+    /// The player's inputs on every source tick since the last publication, for
+    /// the input trace: the bundle itself goes out on the overlay clock and
+    /// would hand it only every Nth tick.
+    pub const EVENT_INPUT_SAMPLES: u32 = 1 << 10 => inputSamples;
 }
 
 #[cfg(all(test, feature = "dev"))]

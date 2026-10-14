@@ -21,11 +21,14 @@ cd src-tauri && cargo clippy --all-targets   # --all-targets or test modules go 
 RUST_LOG=marble_trace_lib=debug npm run tauri:dev   # verbose backend logs
 MARBLE_TRACE_RECORD=<dir> npm run tauri:dev         # record live sessions as tapes (dev feature)
 MARBLE_TRACE_REPLAY=<tape> npm run tauri:dev        # play a tape instead of the sim (dev feature)
+npm run perf:build                                     # the release binary perf and perf:game measure
+npm run perf:game -- run --name <n> --layout <layout>  # PresentMon capture of what the overlay costs the game
 ```
 
 Every environment variable (runtime, build time, tooling):
 `CONTRIBUTING.md` → Environment variables. Recording, replaying and `npm run perf`:
-`docs/telemetry-tapes.md`. Every doc, by task: `docs/README.md`.
+`docs/telemetry-tapes.md`. What the overlay costs the game, `npm run perf:game`:
+`docs/perf-methodology.md`. Every doc, by task: `docs/README.md`.
 
 ## How a rule is held
 
@@ -374,12 +377,18 @@ Most changes need no migration at all. Full guide: `docs/settings-schema.md`.
 
 ### Telemetry Bundle rates
 
-_Held by: review._
+_Held by: test (the scheduler's rates and that a timed tier is never due off a published tick — `telemetry/scheduler.rs`); review (the rest)._
+
+The processors run on every source tick (~60 Hz). A bundle is **published** on
+every Nth tick — the overlay clock, `appSettings.overlayUpdateHz` (60 / 30 / 20 /
+15, default 30, `set_overlay_update_hz`) — and the slower tiers are only ever due
+on a published tick (ADR-0009). Every bundle is one change of the overlay, and
+every change costs the game a composed frame: never publish off the clock.
 
 | Hz    | Fields                                                                                                                                                         |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 60    | `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`                                                                 |
-| 10    | `carIdx`, `chassis`, `lapTiming`, `proximity`, `driverEntries`, `relative`, `incidents`, `paceCar`                                                             |
+| clock | `carDynamics`, `carInputs`, `inputSamples`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`, `proximity`                                    |
+| 10    | `carIdx`, `chassis`, `lapTiming`, `driverEntries`, `relative`, `incidents`, `paceCar`                                                                          |
 | 4     | `carStatus`, `fuel`, `pitStops`, `lapLog`, `pitService`, `pitAuto`, `safetyRating`                                                                             |
 | 1     | `session`, `environment`                                                                                                                                       |
 | async | `sim://session`, `sim://weather`, `sim://status`, `sim://disconnected`, `sim://capabilities`, `sim://perf`, `sim://track-shape`, `sim://reference-lap/updated` |
@@ -419,11 +428,13 @@ Orders are not sent while a tape is replayed.
 
 _Held by: test (a manifest declaring an event the backend does not gate, or one twice — `widget-catalog.test.ts`); review (declaring every gated field a widget reads, and nothing it does not)._
 
-Ten bundle fields are filled **only while a widget asks for them**: the four
+Eleven bundle fields are filled **only while a widget asks for them**: the four
 60 Hz frames (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`), the
-three heavy per-car frames on the 10 Hz tier (`driverEntries`, `relative`,
-`proximity`), `incidents`, the coach's call (`coach`, 60 Hz) and the Safety
-Rating estimate (`safetyRating`, 4 Hz). Everything else is always sent. Every
+three heavy per-car frames on the 10 Hz tier (`driverEntries`, `relative`),
+`incidents`, the coach's call (`coach`, clock tier), the Safety
+Rating estimate (`safetyRating`, 4 Hz) and the input trace's per-tick inputs
+(`inputSamples` — every source tick since the last publication, so a trace
+keeps the sim's rate on any overlay clock). Everything else is always sent. Every
 widget declares its appetite in its own `manifest.ts`:
 
 ```ts
@@ -1029,7 +1040,9 @@ other. Always read the widget as `widget.type`, never `widget.id`.
 
 ### Widget appearance
 
-_Held by: test (a `contentSized` widget that does not paint its own plate — `widget-catalog.test.ts`; the handles each kind is offered — `widget-frame.test.ts`); review (the rest)._
+_Held by: test (a `contentSized` widget that does not paint its own plate — `widget-catalog.test.ts`; the handles each kind is offered — `widget-frame.test.ts`; a transition outside the state-change list, or an infinite animation — `widgets/widget-transitions.test.ts`); review (the rest)._
+
+- **Nothing animates between bundles.** A value that moves with telemetry is set on the overlay clock, without a CSS `transition` or `animation`: one re-run by each value never stops, and keeps the overlay — and DWM on the game's GPU — redrawing at the monitor's rate whatever the clock says (ADR-0009). A transition is for a change of state (a light switching on, the limiter engaging) and is listed with its reason in `STATE_CHANGE_TRANSITIONS`. Anything that flashes goes through `useBlink` (`shared/hooks/useBlink.ts`) and styles its steps on `data-blink-step` — never an `infinite` animation, which redraws on every display refresh for as long as it runs; a one-shot animation on a change of state is fine.
 
 - `WidgetContainer` applies opacity and radial-gradient background from user settings — don't hardcode background in the widget. (Exception: `backgroundColor: 'transparent'` defaults may apply a custom CSS background on `WidgetPanel` with an explanatory comment.)
 - Root element is always `<WidgetPanel>` — never a bare `<div>`.
@@ -1062,7 +1075,7 @@ checklist below is what a reviewer applies to code that already exists.
 8. Create `manifest.ts` and `mount.ts` in the slice, the manifest spreading the schema's `defaults` and naming it as `settingsSchema` — both are collected by glob, so no shared file is edited
    8a. Declare `telemetryEvents` in the manifest for every gated field the widget
    reads (`carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `driverEntries`,
-   `relative`, `proximity`, `incidents`, `coach`, `safetyRating`) — without it the backend never sends them (see
+   `relative`, `proximity`, `incidents`, `coach`, `safetyRating`, `inputSamples`) — without it the backend never sends them (see
    Demand-gated bundle fields)
    8b. If any of those is a hot field, keep the component that reads it down to
    one or two elements and pass the static part in as `children` — splitting into

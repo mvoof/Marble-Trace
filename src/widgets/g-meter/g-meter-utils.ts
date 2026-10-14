@@ -1,9 +1,42 @@
 import type { GMeterColorMode } from './settings-schema';
 
 export const G_CONSTANT = 9.81;
-export const SMOOTHING = 0.12;
-export const TRACE_LENGTH = 100;
-export const FADING_DECAY = 0.9992;
+
+/**
+ * The meter's three rates were tuned per frame at the sim's 60 Hz. The overlay
+ * now draws on its own clock (30 Hz by default, ADR-0009), so each is applied
+ * over the time that actually passed — at any clock the dot lags, the envelope
+ * fades and the trail reaches back exactly as they did at 60 Hz.
+ */
+const TUNED_FRAME_MS = 1000 / 60;
+
+/** Share of the gap to the raw reading the dot closes per 60 Hz tick. */
+const SMOOTHING = 0.12;
+
+/** How far back the trail reaches: the hundred points it held at 60 Hz. */
+export const TRACE_DURATION_MS = (100 * 1000) / 60;
+
+/** What the fading envelope keeps of itself per 60 Hz tick. */
+const FADING_DECAY = 0.9992;
+
+/**
+ * The longest gap counted as time passing. A longer one — a paused replay, a
+ * stream that stalled — counts as this much, so the meter resumes rather than
+ * jumping straight to the new reading and wiping the fading envelope.
+ */
+const MAX_FRAME_GAP_MS = 250;
+
+/** 60 Hz ticks' worth of time between two frames, `elapsedMs` apart. */
+export const ticksElapsed = (elapsedMs: number): number =>
+  Math.min(Math.max(elapsedMs, 0), MAX_FRAME_GAP_MS) / TUNED_FRAME_MS;
+
+/** The share of the gap the dot closes over `ticks` ticks. */
+export const smoothingOver = (ticks: number): number =>
+  1 - (1 - SMOOTHING) ** ticks;
+
+/** What the fading envelope keeps of itself over `ticks` ticks. */
+export const decayOver = (ticks: number): number => FADING_DECAY ** ticks;
+
 export const ENVELOPE_SPREAD = 10;
 export const RADIUS_RATIO = 0.78;
 

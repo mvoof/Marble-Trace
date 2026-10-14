@@ -456,7 +456,7 @@ impl Processor for LapDeltaProcessor {
     }
 
     fn rate(&self) -> TickRate {
-        TickRate::Hz60
+        TickRate::OverlayClock
     }
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {

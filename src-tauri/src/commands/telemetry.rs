@@ -7,7 +7,7 @@ use std::sync::atomic::Ordering;
 use tauri::{AppHandle, State, Window};
 use tracing::{debug, info};
 
-use crate::model::defaults::MAX_FUEL_AVG_WINDOW;
+use crate::model::defaults::{MAX_FUEL_AVG_WINDOW, SOURCE_TICK_HZ};
 use crate::model::session::SessionSnapshot;
 use crate::sources::raw::{RawSession, RawValues, RawVarMeta};
 use crate::sources::source::SourceFrame;
@@ -190,6 +190,28 @@ pub async fn set_car_length(state: State<'_, TelemetryState>, length: f32) -> Re
         .configure(|config| config.car_length_m = length);
 
     debug!("Car length updated in backend to: {}m", length);
+
+    Ok(())
+}
+
+/// How often the overlays are sent a bundle. The processors keep running at
+/// the source's rate; only publication follows this (ADR-0009).
+#[tauri::command]
+pub async fn set_overlay_update_hz(
+    state: State<'_, TelemetryState>,
+    hz: u32,
+) -> Result<(), String> {
+    if hz == 0 || hz > SOURCE_TICK_HZ || !SOURCE_TICK_HZ.is_multiple_of(hz) {
+        return Err(format!(
+            "Overlay update rate must divide {SOURCE_TICK_HZ} Hz evenly, got {hz} Hz"
+        ));
+    }
+
+    state
+        .service
+        .configure(|config| config.overlay_update_hz = hz);
+
+    debug!("Overlay update rate set to {hz} Hz");
 
     Ok(())
 }

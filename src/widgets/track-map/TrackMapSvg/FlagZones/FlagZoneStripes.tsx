@@ -2,9 +2,11 @@ import { useId } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
+  FLAG_ZONE_BLINK,
   splitFlagZoneAtStartFinish,
   type FlagZone,
 } from '@entities/incidents/flag-zones';
+import { useBlink } from '@shared/hooks/useBlink';
 
 import styles from './FlagZoneStripes.module.scss';
 import type { FlagZoneStyle } from '@shared/contracts/widget-choices';
@@ -48,6 +50,9 @@ export const FlagZoneStripes = observer(
     const uniqueId = useId();
     const patternId = `${uniqueId}-pattern`;
     const maskId = `${uniqueId}-mask`;
+    const hazardBlinkRef = useBlink<SVGGElement>(
+      blink && zones.some((zone) => zone.isActive) ? FLAG_ZONE_BLINK : null
+    );
 
     if (zones.length === 0 || pathLength === 0) {
       return null;
@@ -95,7 +100,10 @@ export const FlagZoneStripes = observer(
         .join(' ');
 
       return (
-        <g className={layerClass}>
+        <g
+          ref={layerIsActive ? hazardBlinkRef : undefined}
+          className={layerClass}
+        >
           {/* The glow is an inner wash, so the outline style does without it. */}
           {!isOutline &&
             layerSegments.map((segment) => (

@@ -39,8 +39,7 @@ interface BattleRowProps {
  *
  * Two layers on purpose: the outer one spans the whole stage, so its
  * `translateY` in percent is a percent *of the stage*. Position and size are
- * therefore transforms — composited, and cheap enough to transition, which is
- * what turns the 10 Hz proximity frame into continuous motion.
+ * therefore transforms, set on each published frame without a transition.
  */
 export const BattleRow = observer(
   ({ opponent, topPct, stackIndex }: BattleRowProps) => {

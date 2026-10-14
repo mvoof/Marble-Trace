@@ -5,7 +5,6 @@ import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
 import { useCanvasAutoResize } from '@shared/hooks/useCanvasAutoResize';
 import styles from './CanvasTrace.module.scss';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
-import { usePlayerStore } from '@entities/player/player-context';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useInputTraceWidgetStore } from '@widgets/input-trace/input-trace.store';
 import {
@@ -23,9 +22,8 @@ const NO_FRAME_CONSUMED = -1;
 
 // Not wrapped in observer() intentionally: useReactiveCanvasLoop subscribes to
 // MobX observables directly, so React re-renders are not needed for data updates.
-// observer() would cause 60 Hz React re-renders on every carInputs change.
+// observer() would cause a React re-render on every telemetry frame.
 export const CanvasTrace = () => {
-  const telemetry = usePlayerStore();
   const liveWidgets = useLiveWidgetsStore();
   const instanceId = useWidgetInstanceId('input-trace');
   const inputTrace = useInputTraceWidgetStore();
@@ -51,8 +49,6 @@ export const CanvasTrace = () => {
 
   useReactiveCanvasLoop(
     (scheduleDraw) => {
-      // oxlint-disable-next-line no-restricted-properties
-      const inputs = telemetry.carInputs;
       const settings = liveWidgets.getSettings<InputTraceSettings>(instanceId);
       const state = bufferStateRef.current;
 
@@ -77,40 +73,27 @@ export const CanvasTrace = () => {
       // settings, and changing it must repaint the steering trace.
       const steeringLockDeg = appSettings.appSettings.steeringLock;
 
-      const smoothed = inputTrace.smoothed;
-
       ensureTraceBuffers(state, settings);
 
-      // This autorun runs more than once per telemetry frame: `carDynamics`
-      // and `carInputs` land in the same bundle action, and the store's
-      // smoothing reaction then writes `smoothed` from inside the same MobX
-      // flush, re-invalidating an autorun pass that already completed. Settings
-      // edits re-run it too. Appending on every pass would push ~2 samples per
-      // frame and halve the configured `historySeconds`, so the append is gated
+      // This autorun runs more than once per telemetry frame: the store's
+      // reaction writes `frameTick` and `frameSamples` in one MobX flush, which
+      // can re-invalidate an autorun pass that already completed. Settings
+      // edits re-run it too. Appending on every pass would push a frame's samples
+      // twice and halve the configured `historySeconds`, so the append is gated
       // on the store's per-frame tick while the repaint below still happens.
-      const { frameTick } = inputTrace;
+      const { frameTick, frameSamples } = inputTrace;
 
       if (frameTick !== lastFrameTickRef.current) {
         lastFrameTickRef.current = frameTick;
 
-        pushTraceSample(
-          state,
-          {
-            throttle: smoothed.throttle,
-            brake: smoothed.brake,
-            clutch: smoothed.clutch,
-            absActive: !!inputs?.brake_abs_active,
-            steeringWheelAngle:
-              // oxlint-disable-next-line no-restricted-properties
-              telemetry.carDynamics?.steering_wheel_angle ?? 0,
-          },
-          settings
-        );
+        for (const sample of frameSamples) {
+          pushTraceSample(state, sample, settings);
+        }
       }
 
       scheduleDraw(() => draw(settings, steeringLockDeg));
     },
-    [telemetry, liveWidgets, inputTrace, appSettings, draw]
+    [liveWidgets, inputTrace, appSettings, draw]
   );
 
   const redrawOnResize = useCallback(() => {

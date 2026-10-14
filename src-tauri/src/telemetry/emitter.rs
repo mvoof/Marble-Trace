@@ -1,3 +1,4 @@
+use std::mem;
 /// Event names, `TelemetryBundle` assembly and emission.
 ///
 /// Receives the adapted frame plus the due emit groups from the scheduler,
@@ -31,14 +32,15 @@ use crate::model::environment::EnvironmentFrame;
 use crate::model::lap_log::LapLogFrame;
 use crate::model::pit_auto::PitAutoFrame;
 use crate::model::player::{
-    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
+    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, InputSample, LapTimingFrame,
     PitServiceFrame, PitTargetFrame,
 };
 use crate::model::relative::RelativeFrame;
 use crate::model::session::{SessionFrame, SessionSnapshot};
 use crate::model::telemetry_events::{
     EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS, EVENT_COACH, EVENT_DRIVER_ENTRIES,
-    EVENT_INCIDENTS, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE, EVENT_SAFETY_RATING,
+    EVENT_INCIDENTS, EVENT_INPUT_SAMPLES, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
+    EVENT_SAFETY_RATING,
 };
 use crate::model::track_shape::TrackRecordingFrame;
 use crate::sources::iracing::pit_command::send_pit_order;
@@ -77,6 +79,8 @@ pub struct TelemetryBundle {
     pub car_dynamics: Option<CarDynamicsFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub car_inputs: Option<CarInputsFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub input_samples: Option<Vec<InputSample>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub car_positions: Option<CarPositionsFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -165,13 +169,29 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     // is the derived default rather than twenty-two `None`s written out.
     let mut bundle = TelemetryBundle::default();
 
-    // 60 Hz — raw frames
-    if (active_mask & EVENT_CAR_DYNAMICS) != 0 {
+    // 60 Hz — raw frames, on the ticks that publish
+    if due.publish && (active_mask & EVENT_CAR_DYNAMICS) != 0 {
         bundle.car_dynamics = Some(frame.car_dynamics.clone());
     }
 
-    if (active_mask & EVENT_CAR_INPUTS) != 0 {
+    if due.publish && (active_mask & EVENT_CAR_INPUTS) != 0 {
         bundle.car_inputs = Some(frame.car_inputs.clone());
+    }
+
+    // Every tick, published or not: the trace draws each one, and a bundle
+    // carries the ticks since the previous one. Nothing is kept while no trace
+    // asks, so a trace switched on starts from the tick it appeared.
+    if (active_mask & EVENT_INPUT_SAMPLES) != 0 {
+        record_input_sample(
+            &mut state.input_samples,
+            InputSample::from_frames(&frame.car_inputs, &frame.car_dynamics),
+        );
+
+        if due.publish {
+            bundle.input_samples = Some(mem::take(&mut state.input_samples));
+        }
+    } else {
+        state.input_samples.clear();
     }
 
     // A clone of the Arc, so the processors below can borrow the rest of the state.
@@ -179,7 +199,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     let session_info = session_snapshot.as_deref();
 
     // 60 Hz — lightweight car positions for smooth map/relative rendering
-    if (active_mask & EVENT_CAR_POSITIONS) != 0 {
+    if due.publish && (active_mask & EVENT_CAR_POSITIONS) != 0 {
         bundle.car_positions = Some(frame.car_positions.clone());
     }
 
@@ -211,7 +231,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         // 60 Hz computed (lap delta, gated by lap_delta_active inside processor)
         for output in state
             .registry
-            .run(TickRate::Hz60, capabilities, &compute_ctx)
+            .run(TickRate::OverlayClock, capabilities, &compute_ctx)
         {
             match output {
                 ComputedOutput::TrackShape(payload) => {
@@ -353,6 +373,13 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         if let Err(e) = app.emit(EVENT_SIM_PERF, &frame.sim_perf) {
             warn!("Failed to emit sim perf: {}", e);
         }
+    }
+
+    // Everything above that keeps state has run; what is left only builds and
+    // sends the bundle. Between published ticks there is nothing to send — a
+    // frame computed here is a snapshot the next published tick replaces.
+    if !due.publish {
+        return Duration::ZERO;
     }
 
     // Drop what nobody asked for. Deliberately after the processors have run:
@@ -663,6 +690,23 @@ pub fn apply_event_mask(bundle: &mut TelemetryBundle, active_mask: u32) {
     if (active_mask & EVENT_SAFETY_RATING) == 0 {
         bundle.safety_rating = None;
     }
+
+    if (active_mask & EVENT_INPUT_SAMPLES) == 0 {
+        bundle.input_samples = None;
+    }
+}
+
+/// The most ticks a bundle carries in `input_samples`. Four covers the slowest
+/// overlay clock (15 Hz over a 60 Hz source); the rest is room for a stalled
+/// publication, past which the oldest ticks are dropped rather than let grow.
+const MAX_INPUT_SAMPLES: usize = 30;
+
+fn record_input_sample(samples: &mut Vec<InputSample>, sample: InputSample) {
+    if samples.len() >= MAX_INPUT_SAMPLES {
+        samples.remove(0);
+    }
+
+    samples.push(sample);
 }
 
 fn quantize_bundle(bundle: &mut TelemetryBundle) {
@@ -714,9 +758,9 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         // The save is handed to the I/O worker on the 4 Hz tier, its own.
         ComputedOutput::SafetyRating { frame, .. } => bundle.safety_rating = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),
-        ComputedOutput::TrackShape(_) => {} // handled in Hz60 loop directly
-        ComputedOutput::ReferenceLap(_) => {} // handled in Hz60 loop directly
-        ComputedOutput::PitLanePct { .. } => {} // handled in Hz60 loop directly
+        ComputedOutput::TrackShape(_) => {} // handled in OverlayClock loop directly
+        ComputedOutput::ReferenceLap(_) => {} // handled in OverlayClock loop directly
+        ComputedOutput::PitLanePct { .. } => {} // handled in OverlayClock loop directly
     }
 }
 
@@ -781,6 +825,7 @@ mod tests {
     fn hot_tick() -> DueGroups {
         DueGroups {
             first: false,
+            publish: true,
             hz10: false,
             hz4: false,
             hz1: false,
@@ -1054,5 +1099,52 @@ mod tests {
             right[1].car_positions.is_some(),
             "the group was gone, so its record went with it"
         );
+    }
+
+    fn sample_with_throttle(throttle: f32) -> InputSample {
+        InputSample {
+            throttle,
+            brake: 0.0,
+            clutch: None,
+            brake_abs_active: false,
+            steering_wheel_angle: 0.0,
+        }
+    }
+
+    #[test]
+    fn input_samples_keep_every_tick_oldest_first() {
+        let mut samples = Vec::new();
+
+        record_input_sample(&mut samples, sample_with_throttle(0.1));
+        record_input_sample(&mut samples, sample_with_throttle(0.2));
+
+        let throttles: Vec<f32> = samples.iter().map(|sample| sample.throttle).collect();
+
+        assert_eq!(throttles, vec![0.1, 0.2]);
+    }
+
+    #[test]
+    fn a_stalled_publication_drops_the_oldest_input_samples() {
+        let mut samples = Vec::new();
+        let overflow = 5;
+
+        for tick in 0..MAX_INPUT_SAMPLES + overflow {
+            record_input_sample(&mut samples, sample_with_throttle(tick as f32));
+        }
+
+        assert_eq!(samples.len(), MAX_INPUT_SAMPLES);
+        assert_eq!(samples[0].throttle, overflow as f32);
+    }
+
+    #[test]
+    fn the_mask_strips_input_samples_nobody_asked_for() {
+        let mut bundle = TelemetryBundle {
+            input_samples: Some(vec![sample_with_throttle(1.0)]),
+            ..TelemetryBundle::default()
+        };
+
+        apply_event_mask(&mut bundle, EVENT_CAR_INPUTS);
+
+        assert!(bundle.input_samples.is_none());
     }
 }

@@ -176,6 +176,14 @@
               },
               {
                 "@type": "Question",
+                "name": "Will it lower my FPS?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "A little. Any overlay drawn over a game costs it something: Windows combines the two every time the overlay changes. Marble Trace keeps those changes few — the overlay changes only on one clock, 30 times a second by default, and nothing animates in between. If you notice stutter, lower the overlay update rate in Settings → Widget display."
+                }
+              },
+              {
+                "@type": "Question",
                 "name": "What do I need to install?",
                 "acceptedAnswer": {
                   "@type": "Answer",
@@ -2670,8 +2678,11 @@
          60 Hz and the tiers are the scheduler's (telemetry/scheduler.rs), "on
          demand" is the per-window mask (telemetry/state.rs, emitter.rs), and
          kerb waits on iRacing's data-ready event rather than polling
-         (kerb src/iracing/connection.rs). Change one of those and this band
-         has to change with it.
+         (kerb src/iracing/connection.rs). The rates are the overlay update
+         rate setting (appSettings.overlayUpdateHz), and "still between" is
+         the rule that nothing animates between bundles, held by
+         widgets/widget-transitions.test.ts (ADR-0009). Change one of those
+         and this band has to change with it.
          ==================================================================== -->
       <section
         id="performance"
@@ -2689,7 +2700,8 @@
 
             <p class="perf-desc">
               A Rust core built on kerb, our own telemetry crate. Each window
-              gets only what its widgets draw.
+              gets only what its widgets draw, and the overlay redraws on one
+              clock so the game keeps its frames.
             </p>
 
             <a
@@ -2741,7 +2753,7 @@
                 </span>
                 <span class="perf-node-name">Rust core</span>
                 <span class="perf-node-sub"
-                  >60 &middot; 10 &middot; 4 &middot; 1 Hz</span
+                  >30 &middot; 10 &middot; 4 &middot; 1 Hz</span
                 >
               </li>
 
@@ -2770,20 +2782,93 @@
               </li>
             </ol>
 
+            <!-- The overlay update rate, as the setting in the app offers it
+                 (appSettings.overlayUpdateHz: 60, 30, 20, 15), in one line.
+                 The twelve dots are sim ticks at 60 Hz, slowed down; only
+                 every Nth is an overlay change, and those glow in a slow
+                 wave. Twelve divides by all four rates. The wave is CSS;
+                 rate-demo.js sets the rate and runs the wave only while the
+                 line is on screen. -->
+            <div
+              class="perf-rate"
+              data-rate-demo
+              data-template="{n} overlay changes a second"
+            >
+              <span class="perf-rate-title">Overlay update rate</span>
+
+              <div
+                class="perf-rate-picker"
+                role="group"
+                aria-label="Overlay update rate"
+              >
+                <button
+                  type="button"
+                  class="perf-rate-option"
+                  data-rate="60"
+                  aria-pressed="false"
+                >
+                  60 Hz
+                </button>
+                <button
+                  type="button"
+                  class="perf-rate-option"
+                  data-rate="30"
+                  aria-pressed="true"
+                >
+                  30 Hz
+                </button>
+                <button
+                  type="button"
+                  class="perf-rate-option"
+                  data-rate="20"
+                  aria-pressed="false"
+                >
+                  20 Hz
+                </button>
+                <button
+                  type="button"
+                  class="perf-rate-option"
+                  data-rate="15"
+                  aria-pressed="false"
+                >
+                  15 Hz
+                </button>
+              </div>
+
+              <ol class="perf-rate-row" aria-hidden="true">
+                <li class="perf-rate-dot is-change" style="--i: 0" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 1" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 2" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 3" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 4" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 5" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 6" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 7" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 8" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 9" data-rate-dot></li>
+                <li class="perf-rate-dot is-change" style="--i: 10" data-rate-dot></li>
+                <li class="perf-rate-dot" style="--i: 11" data-rate-dot></li>
+              </ol>
+
+              <span class="perf-rate-readout" data-rate-readout
+                >30 overlay changes a second</span
+              >
+            </div>
+
             <ul class="perf-facts">
               <li class="perf-fact">
-                <span class="perf-fact-name">60 Hz</span>
-                <span class="perf-fact-desc">On the sim's own signal</span>
+                <span class="perf-fact-name">Your rate</span>
+                <span class="perf-fact-desc">60 &middot; 30 &middot; 20 &middot; 15 Hz, 30 by default</span>
+              </li>
+
+              <li class="perf-fact">
+                <span class="perf-fact-name">Still between</span>
+                <span class="perf-fact-desc">Nothing animates between updates</span>
               </li>
 
               <li class="perf-fact">
                 <span class="perf-fact-name">On demand</span>
                 <span class="perf-fact-desc">Unused data is never sent</span>
-              </li>
-
-              <li class="perf-fact">
-                <span class="perf-fact-name">Open source</span>
-                <span class="perf-fact-desc">GPL-3.0 app, MIT kerb</span>
               </li>
             </ul>
           </div>
@@ -2867,6 +2952,23 @@
                 Run iRacing in windowed or borderless mode. In exclusive
                 fullscreen the game draws over every other window, the overlay
                 included.
+              </p>
+            </details>
+            <details class="faq-item">
+              <summary class="faq-question">Will it lower my FPS?</summary>
+              <p class="faq-answer">
+                A little. Any overlay drawn over a game costs it something:
+                Windows combines the two every time the overlay changes.
+                Marble Trace keeps those changes few &mdash; the overlay
+                changes only on one clock, 30 times a second by default, and
+                nothing animates in between. If you notice stutter, lower the
+                overlay update rate in Settings &rarr; Widget display.
+                <a
+                  href="https://github.com/mvoof/Marble-Trace/blob/main/docs/perf-methodology.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >How we measure it</a
+                >.
               </p>
             </details>
             <details class="faq-item">
@@ -3224,6 +3326,7 @@
     <script type="module" src="src/components/layout-demo.js"></script>
     <script type="module" src="src/components/screens-demo.js"></script>
     <script type="module" src="src/components/interact-demo.js"></script>
+    <script type="module" src="src/components/rate-demo.js"></script>
     <script type="module" src="src/components/page-modes.js"></script>
     <script type="module" src="src/components/release.js"></script>
     <script type="module" src="src/components/copyright-year.js"></script>

@@ -6,16 +6,32 @@ allocation pump. Read this before building a widget that declares a hot
 
 ## What actually costs
 
-The overlay held 1.0-2.5 GB and cost the game 10-20 FPS. The heap is **not
-leaking** — the collector keeps up and live memory saws up and down. The cost is
-the rate of allocation: a sampling heap profile of a race puts
+Two different prices, paid by two different parties.
+
+**The game pays for every change of the overlay.** Each one makes DWM compose a
+frame on the GPU the game is drawing on, however little changed and however it
+was drawn. Measured with PresentMon, one small widget turning at 60 Hz cost
+iRacing as much as twenty-nine widgets did; a static overlay cost it almost
+nothing ([ADR-0009](adr/0009-overlay-changes-on-one-clock.md),
+[perf-methodology.md](perf-methodology.md)). So the overlay changes on one
+clock — a bundle at most every 33 ms by default — and **nothing on it animates
+between bundles**: a value that moves with telemetry is set without a CSS
+transition or animation, and `src/widgets/widget-transitions.test.ts` fails on
+one. A transition re-run by each value never stops, and keeps the overlay
+changing at the monitor's rate whatever the clock says.
+
+**The app pays for the work of each change.** The overlay used to hold 1.0-2.5
+GB. The heap is **not leaking** — a forced full collection takes it back to a
+couple of hundred MiB; the collector just runs late. What fills it is the rate
+of allocation: a sampling heap profile of a race puts
 
 - **57%** of all allocation in `jsxDEV` — creating React elements,
 - **17%** in the reconciler,
 - **under 1%** in parsing the bundle and writing it to stores.
 
-So the price is not the arrival of frames. It is rebuilding element trees on
-every arrival, for output that differs by two or three numbers.
+So the app's price is not the arrival of frames. It is rebuilding element
+trees on every arrival, for output that differs by two or three numbers. The
+rest of this file is about that price; the game's is settled by the clock.
 
 ## Vocabulary
 
@@ -87,7 +103,7 @@ counter-rotate by it in CSS, so one write per frame turns the whole ring and
 keeps the letters upright, and React renders nothing.
 
 At 10 Hz the escape hatch is not the answer — the shell/body split is. Those
-frames carry per-car arrays, and their problem is width, not rate.
+frames carry per-car arrays (`driverEntries`, `relative`), and their problem is width, not rate.
 
 ## The hot/cold split
 

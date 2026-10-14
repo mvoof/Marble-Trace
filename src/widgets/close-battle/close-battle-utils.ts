@@ -259,7 +259,7 @@ export const buildPlateGroups = (
 
     if (collision && mergeOverlapping) {
       // The key stays the leader's car: rewriting it when a lower carIdx joins
-      // would remount the plate mid-battle and drop its position transition.
+      // would remount the plate mid-battle.
       collision.merged.push(opponent);
       continue;
     }

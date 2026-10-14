@@ -32,6 +32,7 @@ vi.mock('@shared/api/settings.service', () => ({
   setFuelAvgWindowSilent: vi.fn(),
   setFuelCountYellowLapsSilent: vi.fn(),
   setCarLengthSilent: vi.fn(),
+  setOverlayUpdateHzSilent: vi.fn(),
 }));
 
 // RendererCore subscribes to sim events on construction; the node test

@@ -59,3 +59,10 @@ export const coach = 256;
  * session so a widget switched on mid-race reads the whole distance.
  */
 export const safetyRating = 512;
+
+/**
+ * The player's inputs on every source tick since the last publication, for
+ * the input trace: the bundle itself goes out on the overlay clock and
+ * would hand it only every Nth tick.
+ */
+export const inputSamples = 1024;

@@ -16,8 +16,12 @@ import {
 import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
+import { useBlink, type BlinkCycle } from '@shared/hooks/useBlink';
 
 const WEAR_TO_PCT = 100;
+
+/** A punctured tire's outline flashes red, 600 ms a side. */
+const PUNCTURE_BLINK: BlinkCycle = { stepMs: 600, steps: 2 };
 const MIN_FILL_PCT = 5;
 // Heavier and larger than an inline icon: it is read at a glance over a busy
 // tread, not next to a label.
@@ -34,6 +38,9 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
   const units = useUnitsStore();
 
   const data = buildTireCorner(position, chassis, units.unitSystem);
+  const punctureRef = useBlink<HTMLDivElement>(
+    data.isPunctured ? PUNCTURE_BLINK : null
+  );
   const ordered = isCornerOrdered(position, pitService);
   const orderedKpa = orderedPressure(position, pitService);
 
@@ -72,6 +79,7 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
       </div>
 
       <div
+        ref={punctureRef}
         className={`${styles.tire} ${data.isPunctured ? styles.puncture : ''}`}
       >
         {zones.map((zone, index) => (

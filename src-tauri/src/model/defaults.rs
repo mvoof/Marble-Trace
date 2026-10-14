@@ -34,6 +34,18 @@ ts_values! {
     /// maths until the user picks one for the car they are driving.
     pub const DEFAULT_CAR_LENGTH_M: f32 = 4.4 => DEFAULT_CAR_LENGTH_M;
 
+    /// How often the overlays are sent a bundle, in Hz. Each bundle is one
+    /// change of the overlay, and every change makes DWM compose a frame on the
+    /// GPU the game is drawing on: at 60 Hz that cost iRacing about half its
+    /// 1% low; 30 Hz gave most of it back (ADR-0009). The processors run at
+    /// the source's own rate whatever this says.
+    pub const DEFAULT_OVERLAY_UPDATE_HZ: u32 = 30 => DEFAULT_OVERLAY_UPDATE_HZ;
+
+    /// The source's tick rate the overlay rate divides. A rate is accepted only
+    /// when it divides this evenly, so every published tick is a whole number
+    /// of source ticks apart.
+    pub const SOURCE_TICK_HZ: u32 = 60 => SOURCE_TICK_HZ;
+
     /// Shown for a car whose class the sim reported without a colour.
     pub const DEFAULT_CLASS_COLOR: &str = "#888888" => DEFAULT_CLASS_COLOR;
 

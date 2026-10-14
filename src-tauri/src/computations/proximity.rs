@@ -74,7 +74,7 @@ impl Processor for ProximityProcessor {
     }
 
     fn rate(&self) -> TickRate {
-        TickRate::Hz10
+        TickRate::OverlayClock
     }
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {

@@ -715,6 +715,14 @@ export type CoachFrame = {
    * inside that braking zone, where a countdown to a point behind would lie.
    */
   brakePointDistanceM: number | null;
+  /**
+   * The player's position on the lap on this tick, 0..1, whether the coach
+   * is calling or idle. The coach widget draws its trace by distance, and
+   * `lapTiming` reaches the windows only on the 10 Hz tier: positions that
+   * coarse put a whole run of trace buckets under one speed, a step every
+   * tenth of a second.
+   */
+  lapDistPct: number | null;
 };
 
 /**
@@ -1176,6 +1184,30 @@ export type InputDeviceResolution = {
    * device — see `input::identity`.
    */
   remaps: InputDeviceRemap[];
+};
+
+/**
+ * The driver's inputs on one source tick, for a trace that draws every tick.
+ *
+ * A bundle is published on the overlay clock, every Nth source tick, so the
+ * raw frames it carries skip the ticks in between. A trace built from them
+ * loses those samples — half of them at the default 30 Hz — and with them a
+ * brake tap shorter than a publication. `inputSamples` carries every tick
+ * since the last published one, oldest first, so the trace keeps the sim's
+ * own rate while the overlay still changes only on the clock.
+ */
+export type InputSample = {
+  throttle: number;
+  brake: number;
+  /**
+   * Clutch engagement, as `CarInputsFrame::clutch`: 1.0 is the pedal released.
+   */
+  clutch: number | null;
+  brakeAbsActive: boolean;
+  /**
+   * Radians, as `CarDynamicsFrame::steering_wheel_angle`.
+   */
+  steeringWheelAngle: number;
 };
 
 /**
@@ -2340,6 +2372,7 @@ export type SpotterState =
 export type TelemetryBundle = {
   carDynamics?: CarDynamicsFrame | null;
   carInputs?: CarInputsFrame | null;
+  inputSamples?: InputSample[] | null;
   carPositions?: CarPositionsFrame | null;
   lapDelta?: LapDeltaFrame | null;
   coach?: CoachFrame | null;

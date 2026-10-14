@@ -41,3 +41,9 @@ export const setCarLengthSilent = (length: number): void => {
     console.error('[settings.service] set_car_length failed:', error)
   );
 };
+
+export const setOverlayUpdateHzSilent = (rateHz: number): void => {
+  invoke('set_overlay_update_hz', { hz: rateHz }).catch((error) =>
+    console.error('[settings.service] set_overlay_update_hz failed:', error)
+  );
+};

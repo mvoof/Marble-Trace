@@ -261,7 +261,7 @@ export const drawInputTrace = (
   }
 };
 
-interface TraceSample {
+export interface TraceSample {
   throttle: number;
   brake: number;
   clutch: number;

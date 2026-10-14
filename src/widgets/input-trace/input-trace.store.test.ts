@@ -3,10 +3,18 @@ import { runInAction } from 'mobx';
 import { PreviewCore } from '@app/roots/renderer-core';
 import type { WidgetStoreFactory } from '@entities/widget/widget-instances.store';
 import type { WidgetCore } from '@widgets/widget-mount';
-import type { CarInputsFrame } from '@shared/contracts/bindings';
+import type { CarInputsFrame, InputSample } from '@shared/contracts/bindings';
 import { InputTraceWidgetStore } from './input-trace.store';
 
 const INPUT_TRACE = 'input-trace';
+
+const sampleWithThrottle = (throttle: number): InputSample => ({
+  throttle,
+  brake: 0,
+  clutch: null,
+  brakeAbsActive: false,
+  steeringWheelAngle: 0,
+});
 
 const createInputTrace: WidgetStoreFactory<WidgetCore> = (context) =>
   new InputTraceWidgetStore(context);
@@ -85,5 +93,33 @@ describe('InputTraceWidgetStore — frameTick', () => {
     pushFrame(0.8);
 
     expect(inputTrace.smoothed.throttle).toBeCloseTo(0.8);
+  });
+
+  it('adds one point per source tick the bundle carries', () => {
+    runInAction(() => {
+      core.liveWidgets.updateUserSettings(INPUT_TRACE, { smoothing: 0 });
+      core.player.updateCarInputs({ throttle: 0.4 } as CarInputsFrame, [
+        sampleWithThrottle(0.2),
+        sampleWithThrottle(0.4),
+      ]);
+    });
+
+    expect(inputTrace.frameTick).toBe(1);
+    expect(inputTrace.frameSamples.map((sample) => sample.throttle)).toEqual([
+      0.2, 0.4,
+    ]);
+  });
+
+  // Previews and stories set the frame alone; the trace still moves.
+  it('falls back to the frame itself without input samples', () => {
+    runInAction(() => {
+      core.liveWidgets.updateUserSettings(INPUT_TRACE, { smoothing: 0 });
+    });
+
+    pushFrame(0.6);
+
+    expect(inputTrace.frameSamples.map((sample) => sample.throttle)).toEqual([
+      0.6,
+    ]);
   });
 });

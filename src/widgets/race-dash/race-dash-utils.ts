@@ -1,6 +1,10 @@
 import type { RpmZone } from '@shared/lib/car-signals';
 import { rpmZoneDigitColor } from '@shared/lib/car-signals';
 import type { RaceDashWidgetSettings } from './settings-schema';
+import type { BlinkCycle } from '@shared/hooks/useBlink';
+
+/** At the redline the gear and the rev number flash together, 500 ms a side. */
+export const REDLINE_BLINK: BlinkCycle = { stepMs: 500, steps: 2 };
 
 export type { RpmZone, RpmZoneState } from '@shared/lib/car-signals';
 export { computeRpmZoneState } from '@shared/lib/car-signals';

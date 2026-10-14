@@ -291,6 +291,11 @@
       "metric": "Métrico (km/h, °C, L)",
       "imperial": "Imperial (mph, °F, gal)"
     },
+    "overlayPerformance": {
+      "title": "Rendimiento",
+      "updateRateTitle": "Frecuencia de actualización del overlay",
+      "updateRateDesc": "Con qué frecuencia se redibujan los widgets. Cada redibujado le cuesta al juego un fotograma compuesto: 60 Hz es lo más fluido y lo que más fotogramas pierde, 30 Hz mantiene el movimiento fluido con una fracción del coste."
+    },
     "steeringLock": {
       "title": "Volante",
       "rangeTitle": "Recorrido del volante",

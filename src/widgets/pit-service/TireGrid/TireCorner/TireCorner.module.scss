@@ -147,17 +147,11 @@
     0 0 8px #000;
 }
 
-@keyframes puncturePulse {
-  0%,
-  100% {
-    outline: 1px solid transparent;
-  }
-
-  50% {
-    outline: 1px solid rgba($race-red, 0.6);
-  }
+// `PUNCTURE_BLINK` in TireCorner writes the step.
+.puncture {
+  outline: 1px solid transparent;
 }
 
-.puncture {
-  animation: puncturePulse 1.2s infinite;
+.puncture[data-blink-step='1'] {
+  outline-color: rgba($race-red, 0.6);
 }

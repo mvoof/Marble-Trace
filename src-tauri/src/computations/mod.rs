@@ -69,7 +69,7 @@ pub enum ProcessorId {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TickRate {
-    Hz60,
+    OverlayClock,
     Hz10,
     Hz4,
     /// No 1 Hz processors yet; the tier exists for future sims/processors.

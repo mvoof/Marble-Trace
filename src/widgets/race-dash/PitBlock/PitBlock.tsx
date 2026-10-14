@@ -6,6 +6,7 @@ import type { PitState } from '@features/pit-service/usePitState';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
 
 import { widgetDistanceUnit } from '@shared/lib/telemetry-format';
+import { useBlink, type BlinkCycle } from '@shared/hooks/useBlink';
 import { pitLimitEmphasis } from '../race-dash-utils';
 import { PitLaneBar } from './PitLaneBar';
 
@@ -14,6 +15,9 @@ import type { RaceDashWidgetSettings } from '../settings-schema';
 
 // Final stretch to the box turns the countdown green — "almost there".
 const BOX_NEAR_M = 50;
+
+/** Inside the last metres the count throbs, 350 ms a side. */
+const BOX_NEAR_BLINK: BlinkCycle = { stepMs: 350, steps: 2 };
 
 // The backend resolves a target for every lap position, so out on track with
 // the limiter armed the box reads a whole lap away. The cue is only honest on
@@ -67,6 +71,9 @@ export const PitBlock = observer(() => {
   const showBoxCue =
     (isOnPitRoad || isApproachingEntry) && distMode !== null && distM !== null;
   const isNearBox = distM !== null && distM <= BOX_NEAR_M;
+  const boxCueRef = useBlink<HTMLDivElement>(
+    showBoxCue && isNearBox ? BOX_NEAR_BLINK : null
+  );
   const boxCueLabel = distMode === 'pitExit' ? 'Exit' : 'Box';
 
   const unit = system === 'metric' ? 'KM/H' : 'MPH';
@@ -133,6 +140,7 @@ export const PitBlock = observer(() => {
               <div className={styles.divider} />
 
               <div
+                ref={boxCueRef}
                 className={`${styles.boxCue} ${isNearBox ? styles.boxCueNear : ''}`}
               >
                 <span className={styles.boxLabel}>{boxCueLabel}</span>

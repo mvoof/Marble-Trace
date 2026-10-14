@@ -11,6 +11,7 @@ use crate::computations::pit_auto::PitAuto;
 use crate::computations::reference_selection::{ReferenceChange, ReferenceSelection};
 use crate::computations::{driver_entries, ProcessorCommand, ProcessorRegistry};
 use crate::model::pit_action::PitAction;
+use crate::model::player::InputSample;
 use crate::model::session::SessionSnapshot;
 use crate::telemetry::control::{TelemetryCommand, TelemetryConfig};
 use crate::telemetry::publications::PublicationRegistry;
@@ -64,6 +65,9 @@ pub struct LoopState {
     pub pending_reference: ReferenceChange,
     /// The track wetness of the last frame, for a session that arrives between two.
     pub track_wetness: Option<i32>,
+    /// The player's inputs on each tick since the last publication, while the
+    /// input trace asks for them — what the next bundle's `input_samples` carries.
+    pub input_samples: Vec<InputSample>,
 }
 
 impl LoopState {
@@ -85,6 +89,7 @@ impl LoopState {
             references: ReferenceSelection::default(),
             pending_reference: None,
             track_wetness: None,
+            input_samples: Vec::new(),
         }
     }
 
@@ -145,6 +150,7 @@ impl LoopState {
         self.references = ReferenceSelection::default();
         self.pending_reference = None;
         self.track_wetness = None;
+        self.input_samples.clear();
     }
 
     /// Queues a change of the active reference for the next tick to announce.

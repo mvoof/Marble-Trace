@@ -15,15 +15,8 @@
   border-radius: radius('sm');
   background: $widget-border-subtle;
   transform: skewX(-20deg);
-  transition: background-color 120ms linear;
 }
 
 .segmentLit {
   background: var(--side-accent);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .segment {
-    transition: none;
-  }
 }
