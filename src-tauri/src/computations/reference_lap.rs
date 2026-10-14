@@ -416,7 +416,12 @@ impl Processor for ReferenceLapProcessor {
 mod tests {
     use super::*;
     use crate::computations::lap_time_settle::SETTLE_GRACE_S;
-    use crate::model::cars::CarIdxFrame;
+    use crate::model::cars::{CarIdxFrame, PaceFormation, PacingFrame};
+
+    static NO_PACING: PacingFrame = PacingFrame {
+        formation: PaceFormation::NotPacing,
+        car_idx_pace_line: Vec::new(),
+    };
     use crate::model::player::{CarDynamicsFrame, CarInputsFrame, CarStatusFrame, LapTimingFrame};
     use crate::model::session::{CarEntry, SessionSnapshot};
     use std::collections::HashMap;
@@ -717,6 +722,7 @@ mod tests {
             car_dynamics: args.dynamics,
             car_inputs: args.inputs,
             car_idx: args.car_idx,
+            pacing: &NO_PACING,
             lap_timing: args.lap_timing,
             car_status: args.car_status,
             pit_service: Box::leak(Box::default()),

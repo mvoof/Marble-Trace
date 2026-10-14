@@ -111,9 +111,11 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
         return;
       }
 
+      // oxlint-disable-next-line no-restricted-properties
+      const formation = computed.proximity?.formation ?? false;
       const { carLength } = appSettings.appSettings;
       const { topPercent, heightPercent } = pillGeometryOf(rawDist, carLength);
-      const color = getBarPillColor(Math.abs(rawDist));
+      const color = getBarPillColor(Math.abs(rawDist), formation);
       const label = `${signOf(rawDist)}${formatDistance(
         Math.abs(rawDist),
         units.unitSystem

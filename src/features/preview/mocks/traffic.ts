@@ -115,7 +115,10 @@ const computeRadarDistances = (cars: NearbyCar[]): RadarDistances => {
  * that cap their rows keep the first ones, so an unsorted fixture drops the
  * wrong cars.
  */
-export const mockProximity = (cars: MockTrafficCar[]): ProximityFrame => {
+export const mockProximity = (
+  cars: MockTrafficCar[],
+  formation = false
+): ProximityFrame => {
   const nearbyCars = cars
     .map(toNearbyCar)
     .sort((first, second) => first.clearance - second.clearance);
@@ -127,5 +130,6 @@ export const mockProximity = (cars: MockTrafficCar[]): ProximityFrame => {
     // holding one and reporting a clear side is a state no tick produces.
     spotterLeft: nearbyCars.some((car) => car.lateralSide === 'left'),
     spotterRight: nearbyCars.some((car) => car.lateralSide === 'right'),
+    formation,
   };
 };

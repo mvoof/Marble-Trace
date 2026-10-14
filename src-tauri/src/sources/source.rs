@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
+use crate::model::cars::{CarIdxFrame, CarPositionsFrame, PacingFrame};
 use crate::model::enums::SimType;
 use crate::model::environment::{EnvironmentFrame, WeatherForecastEntry};
 use crate::model::player::{
@@ -36,6 +36,10 @@ pub struct SourceFrame {
     pub session: SessionFrame,
     pub environment: EnvironmentFrame,
     pub sim_perf: SimPerfFrame,
+    /// Absent from tapes recorded before it existed, which then read as no
+    /// formation.
+    #[serde(default)]
+    pub pacing: PacingFrame,
 }
 
 /// Result of one session parse: the normalized snapshot plus the

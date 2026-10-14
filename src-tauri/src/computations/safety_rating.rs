@@ -680,7 +680,7 @@ mod tests {
 
     use super::*;
     use crate::computations::fuel::FuelSettings;
-    use crate::model::cars::CarIdxFrame;
+    use crate::model::cars::{CarIdxFrame, PacingFrame};
     use crate::model::environment::EnvironmentFrame;
     use crate::model::player::{
         CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
@@ -1138,6 +1138,7 @@ mod tests {
             car_dynamics: &CarDynamicsFrame::default(),
             car_inputs: &CarInputsFrame::default(),
             car_idx: &car_idx,
+            pacing: &PacingFrame::default(),
             lap_timing: &lap_timing,
             car_status: &car_status,
             pit_service: &PitServiceFrame::default(),

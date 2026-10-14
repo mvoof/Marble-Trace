@@ -17,6 +17,8 @@ interface StoryArgs {
    * backend derives them.
    */
   cars?: MockTrafficCar[];
+  /** Lined up behind the pace car: the same cars, drawn without warnings. */
+  formation?: boolean;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -33,7 +35,9 @@ const meta: Meta<StoryArgs> = {
       store.appSettings.dragMode = true;
 
       if (args.cars !== undefined) {
-        store.backendComputed.updateProximity(mockProximity(args.cars));
+        store.backendComputed.updateProximity(
+          mockProximity(args.cars, args.formation ?? false)
+        );
       }
     },
   }),
@@ -85,6 +89,19 @@ export const QueueAlongside: Story = {
     cars: [
       { carIdx: 1, longitudinalDist: 0.5, side: 'right' },
       { carIdx: 5, longitudinalDist: -5.5, side: 'right' },
+    ],
+  },
+};
+
+/** Double file behind the pace car: the next column alongside, the line ahead. */
+export const PaceFormation: Story = {
+  args: {
+    formation: true,
+    cars: [
+      { carIdx: 1, longitudinalDist: 0.3, side: 'right' },
+      { carIdx: 2, longitudinalDist: 6.5, side: 'center' },
+      { carIdx: 3, longitudinalDist: 6.8, side: 'right' },
+      { carIdx: 4, longitudinalDist: -6.4, side: 'center' },
     ],
   },
 };

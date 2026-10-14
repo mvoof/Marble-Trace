@@ -22,7 +22,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::capabilities::Capabilities;
-use crate::model::cars::CarIdxFrame;
+use crate::model::cars::{CarIdxFrame, PacingFrame};
 use crate::model::enums::SessionState;
 use crate::model::environment::EnvironmentFrame;
 use crate::model::player::{
@@ -83,6 +83,7 @@ pub struct ComputeContext<'a> {
     pub car_dynamics: &'a CarDynamicsFrame,
     pub car_inputs: &'a CarInputsFrame,
     pub car_idx: &'a CarIdxFrame,
+    pub pacing: &'a PacingFrame,
     pub lap_timing: &'a LapTimingFrame,
     pub car_status: &'a CarStatusFrame,
     pub pit_service: &'a PitServiceFrame,

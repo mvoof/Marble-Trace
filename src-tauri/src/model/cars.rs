@@ -13,8 +13,9 @@ use serde::{Deserialize, Serialize};
 ///
 /// Sim-neutral on purpose: every source decodes its own encoding into this, so
 /// `computations/` never sees a raw simulator enum value. `Off` is distinct
-/// from `Clear` — a spotter that is switched off says nothing, and proximity
-/// falls back to geometry rather than trusting a "nothing alongside" answer.
+/// from `Clear` — a spotter that is switched off says nothing at all, where a
+/// clear one says nobody is alongside. Proximity places no car on a side in
+/// either case.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -26,6 +27,33 @@ pub enum SpotterState {
     CarLeftRight,
     TwoCarsLeft,
     TwoCarsRight,
+}
+
+/// How the field is lined up behind the pace car, if it is.
+///
+/// Sim-neutral, like [`SpotterState`]: the source decodes its own encoding, and
+/// start and restart are one value each — the computations only ask whether the
+/// field runs in one column or two.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum PaceFormation {
+    #[default]
+    NotPacing,
+    SingleFile,
+    DoubleFile,
+}
+
+/// Where each car sits in the pace formation. Read by the backend only — it is
+/// part of `SourceFrame` and never of the bundle, since no widget draws it.
+///
+/// @see https://sajax.github.io/irsdkdocs/telemetry/caridxpaceline/
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+pub struct PacingFrame {
+    pub formation: PaceFormation,
+    /// Column of each car in the formation (-1 = not in it)
+    pub car_idx_pace_line: Vec<i32>,
 }
 
 use crate::model::enums::TrackSurface;

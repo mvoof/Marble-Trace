@@ -40,6 +40,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<capabilities::CapabilitiesPayload>()
         .register::<cars::CarIdxFrame>()
         .register::<cars::CarPositionsFrame>()
+        .register::<cars::PacingFrame>()
         .register::<client_protocol::ClientEnvelope>()
         .register::<client_protocol::RejectedCommand>()
         .register::<companions::CompanionApp>()
