@@ -5,7 +5,7 @@ import type {
   SessionFrame,
   SessionState as BindingSessionState,
   SessionType,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import { mockSession, mockSessionEntry } from '@features/preview/mocks/timing';
 import { whenSet } from '@/storybook/story-overrides';
 import { TimerWidget } from './TimerWidget';

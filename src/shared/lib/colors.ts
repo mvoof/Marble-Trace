@@ -1,4 +1,4 @@
-import { DEFAULT_CLASS_COLOR } from '@shared/contracts/backend-constants';
+import { DEFAULT_CLASS_COLOR } from '@shared/contracts/generated/backend-constants';
 import type { CSSProperties } from 'react';
 
 /**

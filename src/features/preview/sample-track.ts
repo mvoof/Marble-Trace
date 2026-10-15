@@ -1,4 +1,7 @@
-import type { TrackPoint, TrackShapePayload } from '@shared/contracts/bindings';
+import type {
+  TrackPoint,
+  TrackShapePayload,
+} from '@shared/contracts/generated/bindings';
 
 // Neutral, fully synthetic track fixture shared by any consumer that needs to
 // render the track map against predictable geometry (in-app widget preview,

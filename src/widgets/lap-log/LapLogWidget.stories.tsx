@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { LapHistoryEntry } from '@shared/contracts/bindings';
+import type { LapHistoryEntry } from '@shared/contracts/generated/bindings';
 import {
   mockLapDelta,
   mockLapLog,

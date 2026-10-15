@@ -7,7 +7,7 @@ import type {
   InputButtonEvent,
   InputDevice,
   InputDeviceResolution,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /**
  * Data store: what the backend reports about game controllers. No derived

@@ -3,11 +3,11 @@ import { runInAction } from 'mobx';
 
 import { RendererCore } from '@app/roots/renderer-core';
 import { mockCoachFrame } from '@features/preview/mocks/coach';
-import { REFERENCE_LAP_BUCKET_COUNT } from '@shared/contracts/backend-constants';
+import { REFERENCE_LAP_BUCKET_COUNT } from '@shared/contracts/generated/backend-constants';
 import type {
   CarDynamicsFrame,
   LapTimingFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import { CoachWidgetStore } from './coach.store';
 import { playerLapDistPct } from './coach-trace-utils';
 

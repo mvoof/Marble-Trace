@@ -3,7 +3,7 @@ import type {
   RawValue,
   RawVarMeta,
   SourceFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /** What an inspector row holds, which decides how it is drawn and formatted. */
 export type InspectorValueKind =

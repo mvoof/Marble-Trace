@@ -7,7 +7,7 @@ import {
 } from 'mobx';
 
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
-import type { CarStatusFrame } from '@shared/contracts/bindings';
+import type { CarStatusFrame } from '@shared/contracts/generated/bindings';
 import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
 import { ADJUSTMENT_FIELDS } from './engine-panel-utils';
 import type { PlayerStore } from '@entities/player/player.store';

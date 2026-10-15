@@ -7,7 +7,7 @@ import type {
   RawVarMeta,
   SessionSnapshot,
   SourceFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 export const startTelemetryStream = async (): Promise<void> =>
   invoke('start_telemetry_stream');

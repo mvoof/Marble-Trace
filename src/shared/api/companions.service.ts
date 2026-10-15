@@ -5,7 +5,7 @@ import type {
   CompanionApp,
   CompanionStatus,
   DetectedApp,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 export const detectCompanionApps = () =>
   invoke<DetectedApp[]>('detect_companion_apps');

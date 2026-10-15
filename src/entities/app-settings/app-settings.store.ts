@@ -12,7 +12,7 @@ import {
   setCarLengthSilent,
   setOverlayUpdateHzSilent,
 } from '@shared/api/settings.service';
-import { DEFAULT_OVERLAY_UPDATE_HZ } from '@shared/contracts/backend-constants';
+import { DEFAULT_OVERLAY_UPDATE_HZ } from '@shared/contracts/generated/backend-constants';
 import { mergeWithDefaults } from '@shared/lib/deep-merge';
 import { detectSystemLanguage } from '@entities/app-settings/system-locale';
 import { createRemoteToken } from '@shared/lib/remote-screen';
@@ -23,7 +23,7 @@ import type {
   InstallMismatch,
   InteractHotkeyMode,
   OverlayModes,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import type {
   FuelAdjustStep,
   PitStrategy,

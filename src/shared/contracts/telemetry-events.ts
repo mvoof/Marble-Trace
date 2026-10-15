@@ -1,4 +1,4 @@
-import * as TELEMETRY_EVENT_BITS_MODULE from '@shared/contracts/telemetry-event-bits';
+import * as TELEMETRY_EVENT_BITS_MODULE from '@shared/contracts/generated/telemetry-event-bits';
 
 /**
  * The high-frequency telemetry a widget asks the backend to send.

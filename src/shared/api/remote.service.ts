@@ -6,7 +6,7 @@ import type {
   RemoteDevice,
   RemoteServerConfig,
   RemoteServerInfo,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /**
  * The remote-widgets server. Everything here runs in the main window only —

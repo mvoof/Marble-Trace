@@ -6,7 +6,7 @@ import {
 } from 'mobx';
 
 import type { FlagType } from '@shared/contracts/domain';
-import type { RaceFlags } from '@shared/contracts/bindings';
+import type { RaceFlags } from '@shared/contracts/generated/bindings';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { BackendComputedStore } from '@entities/cars/computed.store';

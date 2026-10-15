@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type {
   FuelComputedFrame,
   FuelLapRecord,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import { mockLapTiming } from '@features/preview/mocks/delta';
 import { mockCarStatus } from '@features/preview/mocks/engine';
 import { mockFuel } from '@features/preview/mocks/fuel';

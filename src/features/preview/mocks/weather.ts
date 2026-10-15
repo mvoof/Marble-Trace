@@ -2,7 +2,7 @@ import type {
   EnvironmentFrame,
   Skies,
   WeatherForecastEntry,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 // Mock builders for the weather domain. Pure: each returns a *complete*
 // environment frame typed from the generated bindings, so a field added to the

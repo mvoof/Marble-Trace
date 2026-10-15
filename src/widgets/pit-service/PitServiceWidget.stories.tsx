@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { PitServiceFrame } from '@shared/contracts/bindings';
+import type { PitServiceFrame } from '@shared/contracts/generated/bindings';
 import { mockFuel } from '@features/preview/mocks/fuel';
 import {
   mockChassis,

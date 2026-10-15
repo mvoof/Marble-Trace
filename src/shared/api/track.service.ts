@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import type {
   ReferenceLapData,
   TrackShapePayload,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 export const getCachedTrackShape =
   async (): Promise<TrackShapePayload | null> =>

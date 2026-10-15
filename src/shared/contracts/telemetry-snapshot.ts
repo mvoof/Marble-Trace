@@ -9,7 +9,7 @@ import type {
   RawVarMeta,
   SessionFrame,
   SessionSnapshot,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /**
  * A frozen copy of one telemetry tick: a fixture for previews and Storybook, and

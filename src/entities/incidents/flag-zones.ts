@@ -1,4 +1,4 @@
-import type { IncidentPoint } from '@shared/contracts/bindings';
+import type { IncidentPoint } from '@shared/contracts/generated/bindings';
 import type { BlinkCycle } from '@shared/hooks/useBlink';
 
 /**

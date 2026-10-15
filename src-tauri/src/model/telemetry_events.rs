@@ -2,7 +2,7 @@
 //!
 //! The frontend composes the mask from the `telemetryEvents` each widget
 //! manifest declares; the emitter leaves an unrequested field out of the
-//! bundle. Both halves read this one list: `src/shared/contracts/telemetry-event-bits.ts`
+//! bundle. Both halves read this one list: `src/shared/contracts/generated/telemetry-event-bits.ts`
 //! is generated from it, and its export names *are* the names a manifest
 //! writes — the bundle field each bit gates, in the bundle's own camelCase —
 //! so the frontend derives `TelemetryEventName` from the module instead of

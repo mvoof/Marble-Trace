@@ -2,7 +2,7 @@ import type {
   CoachFrame,
   LapTimingFrame,
   ReferenceLapSample,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /**
  * Number of points sampled across the whole window. Odd so one point lands

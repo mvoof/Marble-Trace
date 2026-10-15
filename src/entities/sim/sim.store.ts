@@ -39,7 +39,7 @@ import type {
   ReferenceLapData,
   SimPerfFrame,
   TelemetrySlowBundle,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import { applyTelemetryBundle } from '@entities/sim/apply-bundle';
 import { debug } from '@entities/sim/debug';
 import type { TelemetryStatus } from '@shared/contracts/domain';

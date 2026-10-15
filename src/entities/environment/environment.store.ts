@@ -3,7 +3,7 @@ import { makeAutoObservable, observableRef } from 'mobx';
 import type {
   EnvironmentFrame,
   WeatherForecastEntry,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 export class EnvironmentStore {
   environment: EnvironmentFrame | null = null;

@@ -6,7 +6,7 @@ import {
   isNearIncidentPenalty,
   type IncidentPenaltyStatus,
 } from '@shared/lib/driver';
-import type { SafetyRatingFrame } from '@shared/contracts/bindings';
+import type { SafetyRatingFrame } from '@shared/contracts/generated/bindings';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { PlayerStore } from '@entities/player/player.store';

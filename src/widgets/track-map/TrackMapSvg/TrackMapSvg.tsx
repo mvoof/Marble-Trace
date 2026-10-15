@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 
 import type { TrackPoint } from '@shared/contracts/domain';
 import { getPointAtPct } from '@widgets/track-map/track-map-utils';
-import type { SectorEntry } from '@shared/contracts/bindings';
+import type { SectorEntry } from '@shared/contracts/generated/bindings';
 import type { CarOnTrack } from '@widgets/track-map/types';
 import { CarDot } from '@shared/ui/CarDot/CarDot';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';

@@ -5,7 +5,7 @@ import { Button, Popconfirm, Switch, Tag, Tooltip } from 'antd';
 import { AppWindow, Play, Square, Trash2 } from 'lucide-react';
 
 import { useCompanionAppsStore } from '@features/companion-apps/companion-apps-context';
-import type { CompanionApp } from '@shared/contracts/bindings';
+import type { CompanionApp } from '@shared/contracts/generated/bindings';
 import styles from './CompanionAppRow.module.scss';
 
 const ICON_SIZE = 14;

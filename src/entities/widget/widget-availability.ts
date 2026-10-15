@@ -1,5 +1,5 @@
 import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
-import type { CapabilitiesPayload } from '@shared/contracts/bindings';
+import type { CapabilitiesPayload } from '@shared/contracts/generated/bindings';
 import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 
 /**

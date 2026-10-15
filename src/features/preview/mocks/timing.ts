@@ -2,7 +2,7 @@ import type {
   SectorEntry,
   SessionEntry,
   SessionFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 // Mock builders for the session-timing domain — the session clock, the lap
 // limit and the session header the timer draws. Pure: each takes a partial

@@ -5,7 +5,7 @@ import {
   WidgetAutoHideStore,
   type DrsVisibilitySettings,
 } from './widget-auto-hide.store';
-import type { DrsState } from '@shared/contracts/bindings';
+import type { DrsState } from '@shared/contracts/generated/bindings';
 
 type Deps = ConstructorParameters<typeof WidgetAutoHideStore>[0];
 

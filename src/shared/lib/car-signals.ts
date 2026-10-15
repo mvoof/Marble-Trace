@@ -1,7 +1,7 @@
 import type {
   CarStatusFrame,
   SessionSnapshot,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /** The pit limiter's bit in the sim's `engine_warnings` bitmask. */
 export const PIT_LIMITER_BIT = 0x10;

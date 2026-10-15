@@ -14,7 +14,7 @@ import type {
   CarDynamicsFrame,
   CarInputsFrame,
   InputSample,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import type { TraceSample } from './CanvasTrace/canvas-trace-render';
 
 interface InputTraceDeps {

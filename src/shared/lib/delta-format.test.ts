@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { LapHistoryEntry } from '@shared/contracts/bindings';
+import type { LapHistoryEntry } from '@shared/contracts/generated/bindings';
 import {
   DELTA_GAUGE_RANGES,
   DELTA_SLOTS,

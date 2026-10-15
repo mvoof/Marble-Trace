@@ -10,12 +10,12 @@
 export type {
   RemoteControlKind,
   RemoteStreamKind,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 import type {
   RemoteControlKind,
   RemoteStreamKind,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /** Message kinds the server pushes over the socket. */
 export type RemoteMessageKind = RemoteControlKind | RemoteStreamKind;

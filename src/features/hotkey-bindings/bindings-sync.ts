@@ -1,7 +1,10 @@
 import { listenTo, type UnlistenFn } from '@shared/api/events.service';
 import type { BindingsStore } from './bindings.store';
 import type { DeviceInputStore } from './device-input.store';
-import type { InputButtonEvent, InputDevice } from '@shared/contracts/bindings';
+import type {
+  InputButtonEvent,
+  InputDevice,
+} from '@shared/contracts/generated/bindings';
 import {
   INPUT_BUTTON_EVENT,
   INPUT_DEVICES_EVENT,

@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { CapabilitiesPayload } from '@shared/contracts/bindings';
+import type { CapabilitiesPayload } from '@shared/contracts/generated/bindings';
 import type { TelemetryEventName } from '@shared/contracts/telemetry-events';
 import type { PreviewScenarioId } from '@shared/contracts/preview-scenarios';
 

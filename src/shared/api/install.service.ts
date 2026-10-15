@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type { InstallMismatch } from '@shared/contracts/bindings';
+import type { InstallMismatch } from '@shared/contracts/generated/bindings';
 
 /**
  * Temporary — part of the `.msi` migration, removed together with everything

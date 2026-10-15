@@ -10,7 +10,7 @@ import type { AppSettings } from '@entities/app-settings/app-settings.store';
 import type { MainRoot } from '@app/roots/main-root';
 import type { BindingMap } from '@shared/contracts/input-bindings';
 import { CURRENT_SCHEMA_VERSION } from '@shared/settings-schema/migrate';
-import type { InputDevice } from '@shared/contracts/bindings';
+import type { InputDevice } from '@shared/contracts/generated/bindings';
 import {
   decodeLayout,
   decodeTemplates,

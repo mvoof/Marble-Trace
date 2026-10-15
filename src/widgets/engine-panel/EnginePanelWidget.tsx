@@ -20,7 +20,7 @@ import {
 } from './engine-panel-utils';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
-import type { CarStatusFrame } from '@shared/contracts/bindings';
+import type { CarStatusFrame } from '@shared/contracts/generated/bindings';
 import type { UnitSystem } from '@shared/contracts/domain';
 
 import styles from './EnginePanelWidget.module.scss';

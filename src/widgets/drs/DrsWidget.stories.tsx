@@ -4,7 +4,7 @@ import {
   mockCarStatus,
   mockHybridCarStatus,
 } from '@features/preview/mocks/engine';
-import type { DrsState } from '@shared/contracts/bindings';
+import type { DrsState } from '@shared/contracts/generated/bindings';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 import { DrsWidget } from './DrsWidget';
 

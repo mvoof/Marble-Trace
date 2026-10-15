@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import type { ChatPlatform } from '@shared/contracts/bindings';
+import type { ChatPlatform } from '@shared/contracts/generated/bindings';
 
 import styles from './PlatformGlyph.module.scss';
 

@@ -1,4 +1,4 @@
-import type { PitAutoConfig } from '@shared/contracts/bindings';
+import type { PitAutoConfig } from '@shared/contracts/generated/bindings';
 import type { UnitSystem } from '@shared/contracts/domain';
 import type { PitStrategy } from '@shared/contracts/pit-strategy';
 

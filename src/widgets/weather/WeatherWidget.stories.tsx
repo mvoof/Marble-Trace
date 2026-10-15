@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { EnvironmentFrame } from '@shared/contracts/bindings';
+import type { EnvironmentFrame } from '@shared/contracts/generated/bindings';
 import type { UnitSystem } from '@shared/contracts/domain';
 import { mockEnvironment, mockForecast } from '@features/preview/mocks/weather';
 import { whenSet } from '@/storybook/story-overrides';

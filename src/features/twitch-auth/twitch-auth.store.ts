@@ -7,7 +7,7 @@ import {
   twitchRequestDeviceCode,
   twitchSignOut,
 } from '@shared/api/twitch.service';
-import type { TwitchDeviceCode } from '@shared/contracts/bindings';
+import type { TwitchDeviceCode } from '@shared/contracts/generated/bindings';
 import { openExternalLink } from '@shared/api/external-link';
 import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 

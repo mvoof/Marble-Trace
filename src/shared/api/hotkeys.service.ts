@@ -1,6 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type { HotkeyContext, OverlayModes } from '@shared/contracts/bindings';
+import type {
+  HotkeyContext,
+  OverlayModes,
+} from '@shared/contracts/generated/bindings';
 import type { BindingMap } from '@shared/contracts/input-bindings';
 
 /**

@@ -19,7 +19,7 @@ _Held by: review for the layer imports — Rust has no import lint, and `computa
 Beside the layers sit the runtimes that own their own commands: `chat/`
 (Twitch, YouTube), `companions/`, `hotkeys/`, `input/`, `remote/`.
 
-- `specta` auto-generates `src/shared/contracts/bindings.ts` on `npm run tauri dev` — **never edit manually**. Every `tauri:dev`, `perf --build` or `cargo test` regenerates it and the other generated contracts (below) unformatted, so the working tree shows them rewritten wholesale. **Leave them alone**: the `format` hook in `lefthook.yml` runs `oxfmt` on the staged files, so a commit takes them back to the checked-in form and only a real change to the contract remains. Do not format or revert them by hand.
+- `specta` auto-generates `src/shared/contracts/generated/bindings.ts` on `npm run tauri dev` — **never edit manually**. Every `tauri:dev`, `perf --build` or `cargo test` regenerates it and the other generated contracts (below) unformatted, so the working tree shows them rewritten wholesale. **Leave them alone**: the `format` hook in `lefthook.yml` runs `oxfmt` on the staged files, so a commit takes them back to the checked-in form and only a real change to the contract remains. Do not format or revert them by hand.
 - The whole export lives in `src-tauri/src/bindings.rs`, and each module registers
   its own types in a `register_types` beside them (`model/`, `computations/`,
   `sources/`, `telemetry/`) — a new type is declared and registered in one file.
@@ -29,9 +29,9 @@ Beside the layers sit the runtimes that own their own commands: `chat/`
   event name is a value the frontend needs as a compile-time literal (widget
   manifests are read at import time, long before anything could `await` a
   command). Those are declared once via the `ts_values!` macro
-  (`model/ts_values.rs`) and generated into `src/shared/contracts/backend-constants.ts`,
-  `src/shared/contracts/backend-events.ts`, `src/shared/contracts/telemetry-event-bits.ts` (the
-  demand mask) and `src/shared/contracts/hotkey-actions.ts` (the action list). All are checked in and pinned by a test, so a Rust constant
+  (`model/ts_values.rs`) and generated into `src/shared/contracts/generated/backend-constants.ts`,
+  `src/shared/contracts/generated/backend-events.ts`, `src/shared/contracts/generated/telemetry-event-bits.ts` (the
+  demand mask) and `src/shared/contracts/generated/hotkey-actions.ts` (the action list). All are checked in and pinned by a test, so a Rust constant
   changed without regenerating fails `cargo test`.
 - **The envelope and computed frames are camelCase; raw frames carry kerb's
   names.** `TelemetryBundle`, `TelemetrySlowBundle` and `SourceFrame` carry

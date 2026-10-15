@@ -18,7 +18,7 @@ import type {
   TelemetryBundle,
   TrackShapePayload,
   WeatherForecastEntry,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /**
  * The remote screen's transport for the client of ADR-0007

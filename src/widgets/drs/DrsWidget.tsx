@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
-import type { DrsState } from '@shared/contracts/bindings';
+import type { DrsState } from '@shared/contracts/generated/bindings';
 // The wing itself — three slats stepping down and to the left, each cut on the
 // slant. It paints in `currentColor`, which the root sets per state.
 import DrsWing from '@assets/drs-wing.svg?react';

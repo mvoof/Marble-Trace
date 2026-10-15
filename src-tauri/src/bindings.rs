@@ -1,5 +1,6 @@
-//! Generation of the frontend contract: `src/shared/contracts/bindings.ts` and the
-//! generated value files beside it.
+//! Generation of the frontend contract:
+//! `src/shared/contracts/generated/bindings.ts` and the generated value files
+//! beside it.
 //!
 //! This used to sit inline in `run()`, together with thirty `#[cfg(feature =
 //! "dev")] use` lines that existed for no other reason. Moving it here does two
@@ -26,30 +27,30 @@ use specta_typescript::Typescript;
 /// run`/`tauri dev` happen to set cwd to `src-tauri/`, and panicked on
 /// `NotFound` the moment that stopped being true.
 ///
-/// Everything generated lands in `src/shared/contracts/`, the contract layer
-/// every other layer may import: the specta types and the `ts_values!` value
-/// files alike — a default, an event name and a mask bit are compile-time
-/// literals the widget manifests read at import time.
+/// Everything generated lands in `src/shared/contracts/generated/`, inside the
+/// contract layer every other layer may import: the specta types and the
+/// `ts_values!` value files alike — a default, an event name and a mask bit
+/// are compile-time literals the widget manifests read at import time.
 pub const BINDINGS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../src/shared/contracts/bindings.ts"
+    "/../src/shared/contracts/generated/bindings.ts"
 );
 pub const CONSTANTS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../src/shared/contracts/backend-constants.ts"
+    "/../src/shared/contracts/generated/backend-constants.ts"
 );
 pub const EVENTS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../src/shared/contracts/backend-events.ts"
+    "/../src/shared/contracts/generated/backend-events.ts"
 );
 /// The bindable actions, declared in `model/hotkeys.rs`.
 pub const HOTKEY_ACTIONS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../src/shared/contracts/hotkey-actions.ts"
+    "/../src/shared/contracts/generated/hotkey-actions.ts"
 );
 pub const TELEMETRY_EVENT_BITS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../src/shared/contracts/telemetry-event-bits.ts"
+    "/../src/shared/contracts/generated/telemetry-event-bits.ts"
 );
 
 /// Every type the frontend may name, collected from the modules that declare

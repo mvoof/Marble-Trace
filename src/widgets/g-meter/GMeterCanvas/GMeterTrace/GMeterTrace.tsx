@@ -19,7 +19,7 @@ import {
   toRgba,
 } from '@widgets/g-meter/g-meter-utils';
 import type { EnvelopePoint, TrailPoint } from '@widgets/g-meter/types';
-import type { CarDynamicsFrame } from '@shared/contracts/bindings';
+import type { CarDynamicsFrame } from '@shared/contracts/generated/bindings';
 
 import styles from './GMeterTrace.module.scss';
 import { usePlayerStore } from '@entities/player/player-context';

@@ -13,7 +13,7 @@ import type {
   CompanionApp,
   CompanionStatus,
   DetectedApp,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 
 interface CompanionAppsDeps {

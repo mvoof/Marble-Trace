@@ -10,7 +10,7 @@ import { listOverlayWindowLabels } from '@shared/api/overlay-labels';
 import type {
   RemoteControlKind,
   RemoteDevice,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import type {
   ClientToMainMessage,
   ControlMessage,

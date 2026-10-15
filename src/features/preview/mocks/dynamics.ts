@@ -1,4 +1,4 @@
-import type { CarDynamicsFrame } from '@shared/contracts/bindings';
+import type { CarDynamicsFrame } from '@shared/contracts/generated/bindings';
 
 // Mock builders for the dynamics domain — the motion of the player's own car:
 // how fast it is going, what the engine is doing and how the car is loaded.

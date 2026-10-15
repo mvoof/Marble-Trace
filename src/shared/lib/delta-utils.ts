@@ -1,7 +1,7 @@
 import type {
   LapHistoryEntry,
   LapTimingFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import type { LapDeltaReference } from '@shared/contracts/widget-choices';
 
 export type DeltaState = 'ahead' | 'behind' | 'neutral';

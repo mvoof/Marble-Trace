@@ -16,7 +16,7 @@ import type {
   RawValue,
   RawVarMeta,
   SourceFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import type {
   DeliveryFieldRow,
   DeliveryRow,

@@ -4,7 +4,7 @@ import { getRemoteServerInfo } from '@shared/api/remote.service';
 import type {
   RemoteDevice,
   RemoteServerInfo,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /** How often the remote-screens page asks the server how it is. */
 const SERVER_INFO_POLL_MS = 3000;

@@ -31,7 +31,7 @@ Give those five more attention than the ones a command checks.
 
 Then confirm each field exists, in this order:
 
-1. Offline: grep `src/shared/contracts/bindings.ts`. It is the generated contract and the
+1. Offline: grep `src/shared/contracts/generated/bindings.ts`. It is the generated contract and the
    only honest list. Raw sim frames are **snake_case** (`velocity_x`) — they keep
    kerb's names; the envelope and computed frames are camelCase. Search a raw
    field in snake_case.
@@ -44,7 +44,7 @@ If a field does not exist, **stop and say so.** Adding it is the backend route
 Record for each field its **rate tier** — the table is in
 [architecture.md](../../../docs/architecture.md) → Rate tiers.
 
-**The gated fields are the exports of `src/shared/contracts/telemetry-event-bits.ts`
+**The gated fields are the exports of `src/shared/contracts/generated/telemetry-event-bits.ts`
 (generated from Rust). Open that file — it is the list, and it grows.**
 The four on the 60 Hz tier (`carDynamics`, `carInputs`, `carPositions`,
 `lapDelta`) are **hot**; note which you use, steps 3 and 9 depend on it.

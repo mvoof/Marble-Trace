@@ -51,7 +51,7 @@ import {
 } from '@entities/widget/widget-placement';
 import type { WidgetMap } from '@entities/widget/widget-map';
 import type { WidgetDefaultsStore } from '@entities/widget/widget-defaults.store';
-import type { CapabilitiesPayload } from '@shared/contracts/bindings';
+import type { CapabilitiesPayload } from '@shared/contracts/generated/bindings';
 import {
   LAP_DELTA_REFERENCE,
   STANDINGS_VIEW_MODE,

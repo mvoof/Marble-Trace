@@ -9,7 +9,7 @@
  * `utils/`.
  */
 
-import type { LateralSide } from '@shared/contracts/bindings';
+import type { LateralSide } from '@shared/contracts/generated/bindings';
 
 /** Proximity center distance considered dangerous for RadarBar */
 const BAR_DANGER_DISTANCE = 1.0;

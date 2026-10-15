@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { DrivingAdvisory } from '@shared/contracts/bindings';
+import type { DrivingAdvisory } from '@shared/contracts/generated/bindings';
 import { mockLapTiming } from '@features/preview/mocks/delta';
 import { seedCoachAdvisory } from '@features/preview/coach-advisory-seed';
 import {

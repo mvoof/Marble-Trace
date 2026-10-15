@@ -1,9 +1,9 @@
-import type { HotkeyActionSpec } from '@shared/contracts/bindings';
+import type { HotkeyActionSpec } from '@shared/contracts/generated/bindings';
 import {
   HOTKEY_ACTIONS,
   WIDGET_VISIBILITY_ACTION_PREFIX,
   WIDGET_VISIBILITY_ACTION_SUFFIX,
-} from '@shared/contracts/hotkey-actions';
+} from '@shared/contracts/generated/hotkey-actions';
 import type { HotkeyAction } from './binding-types';
 
 /**

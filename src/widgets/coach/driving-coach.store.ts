@@ -6,7 +6,7 @@ import type {
   CoachInactiveReason,
   DrivingAdvisory,
   ReferenceLapSample,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import {
   interpolateReferenceSample,
   playerLapDistPct,

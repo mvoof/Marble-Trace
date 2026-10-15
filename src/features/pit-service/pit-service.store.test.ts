@@ -6,7 +6,7 @@ import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
 // A running core whose widget settings the test writes, as main writes its own.
 type WritableCore = RendererCore & { liveWidgets: LiveWidgetsStore };
 import type { PitStrategy } from '@shared/contracts/pit-strategy';
-import type { PitAutoFrame } from '@shared/contracts/bindings';
+import type { PitAutoFrame } from '@shared/contracts/generated/bindings';
 import { PIT_LIMITER_BIT } from '@shared/lib/car-signals';
 
 const runPitActionMock = vi.hoisted(() => vi.fn());
