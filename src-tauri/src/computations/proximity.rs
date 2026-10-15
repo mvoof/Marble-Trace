@@ -332,8 +332,13 @@ pub fn compute(
         })
         .collect();
 
-    let radar_distances =
-        compute_radar_distances(&nearby_cars, spotter_left, spotter_right, car_length_m);
+    let radar_distances = compute_radar_distances(
+        &nearby_cars,
+        spotter_left,
+        spotter_right,
+        formation.is_some(),
+        car_length_m,
+    );
 
     ProximityFrame {
         nearby_cars,
@@ -348,6 +353,7 @@ fn compute_radar_distances(
     cars: &[NearbyCar],
     spotter_left: bool,
     spotter_right: bool,
+    formation: bool,
     car_length_m: f32,
 ) -> RadarDistances {
     let mut left_dist: Option<f32> = None;
@@ -355,16 +361,23 @@ fn compute_radar_distances(
     let mut left_clearance: f32 = 999.0;
     let mut right_clearance: f32 = 999.0;
 
-    if spotter_left || spotter_right {
+    // In formation the columns place the cars and the spotter is usually
+    // quiet, so a side holds whichever car of the next column is alongside.
+    let left_open = spotter_left || formation;
+    let right_open = spotter_right || formation;
+
+    if left_open || right_open {
         for car in cars {
-            if spotter_left
-                && car.lateral_side == LateralSide::Left
-                && car.clearance < left_clearance
+            if formation && car.clearance >= ALONGSIDE_THRESHOLD_M {
+                continue;
+            }
+
+            if left_open && car.lateral_side == LateralSide::Left && car.clearance < left_clearance
             {
                 left_clearance = car.clearance;
                 left_dist = Some(car.longitudinal_dist);
             }
-            if spotter_right
+            if right_open
                 && car.lateral_side == LateralSide::Right
                 && car.clearance < right_clearance
             {
@@ -497,6 +510,9 @@ mod tests {
         assert_eq!(side_of(&frame, 1), LateralSide::Right);
         assert_eq!(side_of(&frame, 2), LateralSide::Center);
         assert_eq!(side_of(&frame, 3), LateralSide::Right);
+        let right = frame.radar_distances.right_dist.expect("car beside");
+        assert!((right - 0.5).abs() < 0.01);
+        assert!(frame.radar_distances.left_dist.is_none());
         let front = frame.radar_distances.front_dist.expect("car ahead in line");
         assert!((front - (9.0 - CAR_M)).abs() < 0.01);
     }
