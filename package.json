@@ -18,7 +18,7 @@
     "wheel:trace": "uv run --no-project scripts/trace-wheel-svg.py",
     "tauri:build:release": "tauri build",
     "tauri:build:dev": "tauri build --config src-tauri/tauri.dev.conf.json --no-sign --features dev",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit",
     "lint": "oxlint --type-aware .",
     "lint:fix": "oxlint --type-aware --fix .",
     "format": "oxfmt --write \"./**/*.{js,jsx,ts,tsx,json,scss,md}\"",

@@ -17,7 +17,7 @@ pre-commit:
       stage_fixed: true
     typecheck:
       glob: "*.{ts,tsx}"
-      run: npx tsc --noEmit
+      run: npm run typecheck
     test:
       glob: "*.{ts,tsx,js,mjs}"
       run: npx vitest related --run {staged_files}

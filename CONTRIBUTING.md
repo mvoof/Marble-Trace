@@ -61,7 +61,7 @@ npm run tauri:build:release   # what ships
 | Command                                      | Does                                                                                                 |
 | -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `npm test`                                   | vitest, once                                                                                         |
-| `npm run typecheck`                          | `tsc --noEmit`                                                                                       |
+| `npm run typecheck`                          | `tsc --noEmit` over the app and the vite config (`tsconfig.node.json`)                               |
 | `npm run lint` / `npm run lint:fix`          | oxlint, type-aware — this is what enforces the layers                                                |
 | `npm run format`                             | oxfmt over ts, scss, json, md                                                                        |
 | `cd src-tauri && cargo fmt`                  | Rust formatting                                                                                      |
