@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { reaction, runInAction } from 'mobx';
 
 import { PreviewCore } from '@app/roots/renderer-core';
@@ -53,13 +53,18 @@ export const usePreviewContentStore = (active: boolean): PreviewCore | null => {
   const settingsMutations = useSettingsMutationLog();
   const units = useUnitsStore();
 
-  const [previewStore, setPreviewStore] = useState<PreviewCore | null>(null);
+  // Flips once, during render: an effect would paint a frame without the store
+  // first and then render again.
+  const [wasActivated, setWasActivated] = useState(active);
 
-  useEffect(() => {
-    if (!active || previewStore) return;
+  if (active && !wasActivated) {
+    setWasActivated(true);
+  }
 
-    setPreviewStore(new PreviewCore());
-  }, [active, previewStore]);
+  const previewStore = useMemo(
+    () => (wasActivated ? new PreviewCore() : null),
+    [wasActivated]
+  );
 
   useEffect(() => () => previewStore?.dispose(), [previewStore]);
 
