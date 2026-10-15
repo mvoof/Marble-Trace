@@ -13,14 +13,14 @@ use std::time::{Duration, Instant};
 
 use std::sync::OnceLock;
 
-use windows::core::{Interface, GUID};
+use windows::core::{Interface, BOOL, GUID};
 use windows::Win32::Devices::HumanInterfaceDevice::{
     DirectInput8Create, IDirectInput8W, IDirectInputDevice8W, DI8DEVCLASS_GAMECTRL, DIDATAFORMAT,
     DIDEVCAPS, DIDEVICEINSTANCEW, DIDFT_ANYINSTANCE, DIDFT_BUTTON, DIDFT_POV, DIDF_ABSAXIS,
     DIEDFL_ATTACHEDONLY, DIENUM_CONTINUE, DIOBJECTDATAFORMAT, DIRECTINPUT_VERSION,
     DISCL_BACKGROUND, DISCL_NONEXCLUSIVE,
 };
-use windows::Win32::Foundation::{BOOL, E_FAIL, HINSTANCE, HWND};
+use windows::Win32::Foundation::{E_FAIL, HINSTANCE, HWND};
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
 
 use super::identity::DeviceIdentity;

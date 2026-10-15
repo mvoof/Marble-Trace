@@ -51,16 +51,18 @@ flate2 = { version = "1", optional = true }
 bitflags = "2"
 # Companion-app icons: the executable's icon is read through GDI and handed to
 # the UI as a PNG data URL, which needs an encoder and base64 and nothing else.
-png = "0.17"
-base64 = "0.22"
+png = "0.18"
+base64 = "0.23"
 # Stream chat: Twitch IRC rides a WebSocket, YouTube InnerTube is plain HTTP.
 # rustls throughout so no OpenSSL toolchain is needed on Windows builds.
-tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }
+tokio-tungstenite = { version = "0.30", features = ["rustls-tls-webpki-roots"] }
 # OAuth tokens go to the Windows Credential Manager, never to settings.json.
-keyring = { version = "3", features = ["windows-native"] }
-reqwest = { version = "0.12", default-features = false, features = [
+keyring = "4"
+reqwest = { version = "0.13", default-features = false, features = [
+    "form",
     "json",
-    "rustls-tls",
+    "query",
+    "rustls",
 ] }
 
 # Remote widgets: the same overlay bundle served over the LAN so a tablet can
@@ -76,8 +78,8 @@ local-ip-address = "0.6"
 [target.'cfg(windows)'.dependencies]
 # Automatic discovery reads the uninstall registry, which is a plain key walk
 # the windows crate would spell out in three screens of unsafe.
-winreg = "0.52"
-windows = { version = "0.58", features = [
+winreg = "0.56"
+windows = { version = "0.62", features = [
     "Win32_Devices_HumanInterfaceDevice",
     "Win32_Foundation",
     "Win32_Graphics_Gdi",
