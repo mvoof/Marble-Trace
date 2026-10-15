@@ -70,6 +70,13 @@ components        — observer(); read stores directly
 3. Shared derived used by 2+ widgets → `computed` getter on the entity store, not duplicated.
 4. **One-way flow** — widget stores read entities/settings; entity stores know nothing about widgets.
 5. **Hooks** = DOM/browser only (`ResizeObserver`, `getBoundingClientRect`, RAF). Everything else belongs in a store.
+   A value goes in a store when any of these holds: it is derived from telemetry
+   or settings, it runs a timer or a reaction, something besides its component
+   reads it (another component, a hotkey, sync, a preview), it must survive a
+   remount, or it is worth a unit test. What none of them touches stays in the
+   component as `useState`/`useRef`: a DOM measurement (size, path length, the
+   canvas element), transient UI state (hover, a local popover), a form draft
+   before it is saved.
 6. **Each value has exactly one owner.**
 
 ### Reactivity rules

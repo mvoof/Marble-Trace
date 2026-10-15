@@ -87,6 +87,7 @@ export const LinearMap = observer(() => {
 
   const dotsRef = useReactiveDomWrite<SVGSVGElement>(
     (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
       const entries = computed.relativeEntries;
       const playerLapDistPct =
         entries.find((entry) => entry.isPlayer)?.lapDistPct ?? 0;

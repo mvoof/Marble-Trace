@@ -31,6 +31,7 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
     (element, scheduleWrite) => {
       const paceCar = relativeWidget.paceCarRowOf(carIdx);
       const livePlayer =
+        // oxlint-disable-next-line no-restricted-properties
         computed.relativeEntries.find((entry) => entry.isPlayer) ?? null;
 
       if (!paceCar) {

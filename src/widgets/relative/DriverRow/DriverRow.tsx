@@ -46,6 +46,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
   const gapRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
+      // oxlint-disable-next-line no-restricted-properties
       const entries = computed.relativeEntries;
       const liveDriver = entries.find((entry) => entry.carIdx === carIdx);
       const livePlayer = entries.find((entry) => entry.isPlayer) ?? null;

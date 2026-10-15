@@ -8,7 +8,7 @@ import {
   SETTINGS_FILE,
   type Settings,
 } from './persistence';
-import { runMigrations } from '@shared/settings-schema/index';
+import { runMigrations } from '@shared/settings-schema/migrate';
 import type { MigrationResult } from '@shared/settings-schema/types';
 import type { MainRoot } from '@app/roots/main-root';
 

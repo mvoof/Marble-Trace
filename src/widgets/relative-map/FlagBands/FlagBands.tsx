@@ -56,6 +56,7 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
   const containerRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
       const playerLapDistPct =
+        // oxlint-disable-next-line no-restricted-properties
         computed.relativeEntries.find((entry) => entry.isPlayer)?.lapDistPct ??
         0;
 

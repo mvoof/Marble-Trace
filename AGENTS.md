@@ -75,7 +75,7 @@ compiler, test, or review). Read the file for the area before editing it.
   screens are read-only (ADR-0007).
 - **Every component is `observer()`.** Hot fields (`carDynamics`, `carInputs`,
   `carPositions`, `lapDelta`, `driverEntries`, `relative`, `proximity`,
-  `fieldEntries`) are read only inside `useReactiveDomWrite` /
+  `fieldEntries`, `relativeEntries`) are read only inside `useReactiveDomWrite` /
   `useReactiveCanvasLoop` (`docs/rendering.md`).
 - **One overlay clock.** Publish only on it; nothing animates between bundles —
   state-change transitions only, blinking through `useBlink` (ADR-0009).

@@ -522,12 +522,12 @@ tick but **publishes** on every Nth one — the overlay clock,
 fast they actually change, and a published tick carries the hot fields plus
 whichever slower tiers are due.
 
-| Rate          | Fields                                                                                                            |
-| ------------- | ----------------------------------------------------------------------------------------------------------------- |
-| clock (30 Hz) | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`, `coach`, `pit_target`, `track_recording`, `proximity` |
-| 10 Hz         | `car_idx`, `chassis`, `lap_timing`, `driver_entries`, `relative`, `incidents`, `pace_car`                         |
-| 4 Hz          | `car_status`, `fuel`, `pit_stops`, `pit_service`, `lap_log`, `pit_auto`, `safety_rating`                          |
-| 1 Hz          | `session`, `environment`                                                                                          |
+| Rate          | Fields                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| clock (30 Hz) | `car_dynamics`, `car_inputs`, `input_samples`, `car_positions`, `lap_delta`, `coach`, `pit_target`, `track_recording`, `proximity` |
+| 10 Hz         | `car_idx`, `chassis`, `lap_timing`, `driver_entries`, `relative`, `incidents`, `pace_car`                                          |
+| 4 Hz          | `car_status`, `fuel`, `pit_stops`, `pit_service`, `lap_log`, `pit_auto`, `safety_rating`                                           |
+| 1 Hz          | `session`, `environment`                                                                                                           |
 
 ```mermaid
 flowchart LR
@@ -584,11 +584,14 @@ and to `SimStore.subscribeSlowBundle`; it does not go back to the bundle.
 ### Demand gating
 
 Being due is necessary but not sufficient: a gated field is filled only while
-some widget actually wants it. Ten fields are gated — the four raw 60 Hz frames,
-where the whole cost is downstream of the sim, the three per-car frames on
-the 10 Hz tier, which are by far the largest payloads the app moves (a
+some widget actually wants it. Eleven fields are gated — the four raw 60 Hz frames,
+where the whole cost is downstream of the sim, the three per-car frames
+(`driver_entries` and `relative` on the 10 Hz tier, `proximity` on the clock),
+the first two by far the largest payloads the app moves (a
 `DriverEntry` is ~25 fields, times the whole field), `incidents`, the coach's
-call (`coach`, 60 Hz) and the Safety Rating estimate (`safety_rating`, 4 Hz).
+call (`coach`, clock tier), the Safety Rating estimate (`safety_rating`, 4 Hz)
+and the input trace's per-tick inputs (`input_samples`, every source tick since
+the last publication).
 
 > [!NOTE]
 > `driver_entries` is the table of the whole field — positions, laps, times, pit
@@ -647,7 +650,7 @@ flowchart LR
 > field that is a pure snapshot of the current tick may be skipped at the source,
 > which is why the mask covers the raw 60 Hz frames, `lap_delta` (whose state is
 > owned by the reference-lap processor, not by the delta itself), `coach`,
-> `incidents` and the three per-car frames, which are dropped from the bundle _after_ their processors have
+> `incidents`, `safety_rating`, `input_samples` and the three per-car frames, which are dropped from the bundle _after_ their processors have
 > run.
 >
 > What is saved is everything downstream of the computation: the serialization,
