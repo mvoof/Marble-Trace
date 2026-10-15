@@ -1,4 +1,4 @@
-import { comparer, runInAction } from 'mobx';
+import { runInAction, compareStructural } from 'mobx';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
 import { emitToMain, listenToMain } from '@shared/api/events.service';
@@ -28,7 +28,7 @@ export const applyOverlaySnapshot = (
     applyClientSnapshot(root, message.snapshot);
 
     if (
-      !comparer.structural(root.bindings.overrides, message.snapshot.bindings)
+      !compareStructural(root.bindings.overrides, message.snapshot.bindings)
     ) {
       root.bindings.applyBindings(message.snapshot.bindings);
     }

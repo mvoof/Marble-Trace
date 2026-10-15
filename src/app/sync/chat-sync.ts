@@ -1,4 +1,4 @@
-import { comparer, reaction, type IReactionDisposer } from 'mobx';
+import { reaction, type IReactionDisposer, compareStructural } from 'mobx';
 
 import {
   startChatStreamSilent,
@@ -63,7 +63,7 @@ export const registerChatReactions = (
 
       void onSave();
     },
-    { equals: comparer.structural, fireImmediately: true, delay: 400 }
+    { equals: compareStructural, fireImmediately: true, delay: 400 }
   ),
   reaction(
     () => ({
@@ -74,6 +74,6 @@ export const registerChatReactions = (
     () => {
       void onSave();
     },
-    { equals: comparer.structural }
+    { equals: compareStructural }
   ),
 ];

@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable } from 'mobx';
+import { makeAutoObservable, observableRef } from 'mobx';
 
 import type { DiagnosticsHudState } from '@shared/contracts/diagnostics';
 
@@ -13,7 +13,7 @@ export class DiagnosticsHudStore {
   state: DiagnosticsHudState | null = null;
 
   constructor() {
-    makeAutoObservable(this, { state: observable.ref });
+    makeAutoObservable(this, { state: observableRef });
   }
 
   applyState(state: DiagnosticsHudState) {

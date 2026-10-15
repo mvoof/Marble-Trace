@@ -1,4 +1,4 @@
-import { computed, makeAutoObservable } from 'mobx';
+import { computedStruct, makeAutoObservable } from 'mobx';
 
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import { isHiddenInQualifying } from '@shared/lib/qualifying-visibility';
@@ -54,7 +54,7 @@ export class RelativeWidgetStore {
 
     makeAutoObservable<RelativeWidgetStore, 'root' | 'instanceId'>(
       this,
-      { root: false, instanceId: false, rowOrder: computed.struct },
+      { root: false, instanceId: false, rowOrder: computedStruct },
       { autoBind: true }
     );
   }

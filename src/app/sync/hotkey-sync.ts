@@ -1,4 +1,4 @@
-import { comparer, reaction, type IReactionDisposer } from 'mobx';
+import { reaction, type IReactionDisposer, compareStructural } from 'mobx';
 
 import { listenTo, type UnlistenFn } from '@shared/api/events.service';
 import {
@@ -47,7 +47,7 @@ export const registerHotkeyReactions = (
     (context) => {
       setHotkeyContext(context).catch(reportFailure('pushing the context'));
     },
-    { equals: comparer.structural, fireImmediately: true }
+    { equals: compareStructural, fireImmediately: true }
   ),
 ];
 

@@ -1,8 +1,8 @@
 import {
   makeAutoObservable,
-  observable,
   reaction,
   type IReactionDisposer,
+  observableRef,
 } from 'mobx';
 
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
@@ -75,7 +75,7 @@ export class InputTraceWidgetStore {
 
     makeAutoObservable<InputTraceWidgetStore, 'root' | 'disposers'>(
       this,
-      { root: false, disposers: false, frameSamples: observable.ref },
+      { root: false, disposers: false, frameSamples: observableRef },
       { autoBind: true }
     );
 

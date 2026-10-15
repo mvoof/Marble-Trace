@@ -1,9 +1,9 @@
 import {
-  comparer,
   makeAutoObservable,
   reaction,
   runInAction,
   type IReactionDisposer,
+  compareStructural,
 } from 'mobx';
 import { listenTo, type UnlistenFn } from '@shared/api/events.service';
 import { maskOfWidgets } from '@entities/sim/telemetry-mask';
@@ -162,7 +162,7 @@ export class SimStore {
             gateClosed: this.ownGateClosed,
           }),
           () => this.updateOwnActiveEvents(),
-          { fireImmediately: true, equals: comparer.structural }
+          { fireImmediately: true, equals: compareStructural }
         )
       );
 
@@ -193,7 +193,7 @@ export class SimStore {
             gateClosed: this.remoteGateClosed,
           }),
           () => this.updateRemoteActiveEvents(),
-          { fireImmediately: true, equals: comparer.structural }
+          { fireImmediately: true, equals: compareStructural }
         )
       );
     }

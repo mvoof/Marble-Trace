@@ -1,4 +1,4 @@
-import { comparer, makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction, compareStructural } from 'mobx';
 
 import { emitToMain } from '@shared/api/events.service';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
@@ -148,7 +148,7 @@ export class SettingsClientStore {
     const changed: SettingsRecord = {};
 
     for (const [key, value] of Object.entries(partial)) {
-      if (value !== undefined && !comparer.structural(current[key], value)) {
+      if (value !== undefined && !compareStructural(current[key], value)) {
         changed[key] = value;
       }
     }

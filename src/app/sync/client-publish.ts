@@ -1,4 +1,4 @@
-import { comparer, observable, reaction, runInAction } from 'mobx';
+import { observable, reaction, runInAction, compareStructural } from 'mobx';
 
 import {
   emitSnapshotToClient,
@@ -241,7 +241,7 @@ export const registerClientPublishing = async (root: MainRoot) => {
       Array.from(clients.values(), (state) => state.lastHandledCommandNo),
     ],
     () => void publishAll(),
-    { delay: PUBLISH_DEBOUNCE_MS, equals: comparer.structural }
+    { delay: PUBLISH_DEBOUNCE_MS, equals: compareStructural }
   );
 
   return {

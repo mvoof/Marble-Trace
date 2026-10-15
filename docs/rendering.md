@@ -213,7 +213,7 @@ for comparison, not an asserted budget.
 
 ## Per-field observables: asked and answered
 
-Telemetry frames are stored as whole `observable.ref` values, so a component
+Telemetry frames are stored as whole `observableRef` values, so a component
 reading one field of a frame wakes on every change to that frame — including
 fields it never reads. Splitting frames into per-field observables (with or
 without a delta on the wire) was the obvious fix for that class.

@@ -1,9 +1,9 @@
 import {
   makeAutoObservable,
-  observable,
   reaction,
   runInAction,
   type IReactionDisposer,
+  observableRef,
 } from 'mobx';
 
 import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
@@ -134,7 +134,7 @@ export class FpsDiagnosticsStore {
 
     makeAutoObservable(
       this,
-      { steps: observable.ref, results: observable.ref },
+      { steps: observableRef, results: observableRef },
       { autoBind: true }
     );
   }

@@ -1,4 +1,4 @@
-import { observable, runInAction } from 'mobx';
+import { observable, runInAction, observableRef } from 'mobx';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SimPerfFrame } from '@shared/contracts/bindings';
@@ -36,7 +36,7 @@ const makeRoot = (): FakeRoot => {
   // object here would leave the reaction silent and every run would stall.
   const simPerf = observable.object<{ simPerf: SimPerfFrame | null }>(
     { simPerf: null },
-    { simPerf: observable.ref }
+    { simPerf: observableRef }
   );
 
   const root = {
