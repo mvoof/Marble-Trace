@@ -169,7 +169,7 @@ Before the first save at a new version, the old file is copied to
 
 ## Adding a migration, step by step
 
-1. **Bump `CURRENT_SCHEMA_VERSION`** in `src/shared/settings-schema/index.ts`
+1. **Bump `CURRENT_SCHEMA_VERSION`** in `src/shared/settings-schema/migrate.ts`
    — but only if the current version has already shipped. See
    [One version per release](#one-version-per-release).
 2. **Add `migrations/v{n}-{slug}.ts`** exporting a `Migration` with `to: n` and a
@@ -285,7 +285,7 @@ Two behaviours are deliberate and worth knowing before you fight them:
 
 ## Testing
 
-Runner tests live in `settings-schema/index.test.ts` and drive `runMigrations`
+Runner tests live in `settings-schema/migrate.test.ts` and drive `runMigrations`
 with a synthetic `SchemaConfig`, which is also how `too-old` is reachable at all.
 They cover the chain invariants, all five statuses, non-mutation of the input and
 idempotency.
@@ -308,7 +308,7 @@ Each migration gets its own test next to it, from fixtures. Mandatory cases:
 
 ## Retention
 
-`OLDEST_SUPPORTED_VERSION` in `settings-schema/index.ts` is the floor. Files
+`OLDEST_SUPPORTED_VERSION` in `settings-schema/migrate.ts` is the floor. Files
 below it get the `too-old` status and are left alone rather than migrated.
 
 It is currently 0 and nothing has ever been dropped, so `too-old` is unreachable

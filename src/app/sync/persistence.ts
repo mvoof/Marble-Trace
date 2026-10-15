@@ -9,7 +9,7 @@ import type { SessionContext } from '@shared/contracts/widget-settings';
 import type { AppSettings } from '@entities/app-settings/app-settings.store';
 import type { MainRoot } from '@app/roots/main-root';
 import type { BindingMap } from '@shared/contracts/input-bindings';
-import { CURRENT_SCHEMA_VERSION } from '@shared/settings-schema/index';
+import { CURRENT_SCHEMA_VERSION } from '@shared/settings-schema/migrate';
 import type { InputDevice } from '@shared/contracts/bindings';
 import {
   decodeLayout,

@@ -433,7 +433,7 @@
           },
           {
             "property": "proximity",
-            "message": "Heavy per-car frame (10 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+            "message": "Per-car frame on the overlay clock — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
           },
           {
             "property": "driverEntries",
@@ -441,6 +441,10 @@
           },
           {
             "property": "fieldEntries",
+            "message": "Heavy per-car frame (10 Hz), joined with the session roster — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+          },
+          {
+            "property": "relativeEntries",
             "message": "Heavy per-car frame (10 Hz), joined with the session roster — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
           }
         ]

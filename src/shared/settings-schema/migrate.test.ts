@@ -5,7 +5,7 @@ import {
   OLDEST_SUPPORTED_VERSION,
   runMigrations,
   type SchemaConfig,
-} from './index';
+} from './migrate';
 import type { Migration, SettingsBlob } from './types';
 
 const step = (to: number, migrate: Migration['migrate']): Migration => ({

@@ -1,4 +1,4 @@
-// The layer and slice boundaries of src/ (docs/adr, AGENTS.md → Layers), as an
+// The layer and slice boundaries of src/ (ADR-0008, docs/rules/layers.md), as an
 // oxlint JS plugin: `no-restricted-imports` cannot say "any slice but your
 // own", and oxlint keeps only the last override that sets a rule, so one rule
 // per concern is the only way the two checks do not overwrite each other.

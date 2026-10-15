@@ -8,7 +8,7 @@ line; it is never edited into agreeing with the new one.
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------- |
 | [0001](0001-per-field-telemetry-observables.md)    | Telemetry frames stay whole observables rather than one observable per field                            | accepted, 2026-09-06      |
 | [0002](0002-settings-writes-mark-themselves.md)    | A settings write marks itself in a log both stores share                                                | partly superseded by 0007 |
-| [0003](0003-widget-state-lives-in-three-stores.md) | Widget-related state lives in three stores: layout records, the live map, the edit session              | accepted, 2026-09-10      |
+| [0003](0003-widget-state-lives-in-three-stores.md) | Widget-related state lives in three stores: layout records, the live map, the edit session              | partly superseded by 0007 |
 | [0004](0004-widget-preview-runs-on-mocks.md)       | The widget preview runs on mock builders, not on recorded sessions                                      | accepted, 2026-09-14      |
 | [0005](0005-monitors-own-their-widgets.md)         | Each monitor owns its widgets                                                                           | accepted, 2026-10-03      |
 | [0006](0006-telemetry-stays-json.md)               | Telemetry stays JSON — the binary transport failed its measured gate                                    | accepted, 2026-10-05      |

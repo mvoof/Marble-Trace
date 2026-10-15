@@ -1,6 +1,8 @@
 # ADR 0003: Widget-related state lives in three stores, split on one seam
 
-**Status:** accepted, 2026-09-10
+**Status:** accepted, 2026-09-10; partly superseded by ADR-0007 (2026-10-05) —
+`LiveWidgetsStore` no longer runs cross-window sync or an echo guard: main owns
+the settings and the other windows install snapshots.
 **Context:** the layout and widget settings stores (`entities/layout/`, `entities/widget/`)
 
 ## Decision

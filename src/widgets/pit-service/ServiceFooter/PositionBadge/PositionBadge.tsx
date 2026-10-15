@@ -30,6 +30,7 @@ export const PositionBadge = observer(
     // escape hatch: `PositionBadge` is deliberately the smallest component
     // that re-renders on `relative`, split out of `ServiceFooter` for exactly
     // that reason. See "The hot/cold split" in docs/rendering.md.
+    // oxlint-disable-next-line no-restricted-properties
     const { relativeEntries } = useBackendComputedStore();
     const playerPosition = usePlayerPositionStore();
 

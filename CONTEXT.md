@@ -79,7 +79,8 @@ opened for it.
 
 **Gated field** — a bundle field filled only while some widget declares it in its
 manifest's `telemetryEvents` (`carDynamics`, `carInputs`, `carPositions`,
-`lapDelta`, `driverEntries`, `relative`, `proximity`, `incidents`, `coach`). The
+`lapDelta`, `driverEntries`, `relative`, `proximity`, `incidents`, `coach`,
+`safetyRating`, `inputSamples`; the list is `telemetry-event-bits.ts`). The
 mask gates publication, never computation.
 
 **Slow slice** — `sim://telemetry/slow` (`TelemetrySlowBundle`): the player's

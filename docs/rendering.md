@@ -2,7 +2,7 @@
 
 How to write a widget that reads telemetry without turning the overlay into an
 allocation pump. Read this before building a widget that declares a hot
-`telemetryEvents` field; the rest of the widget rules live in `AGENTS.md`.
+`telemetryEvents` field; the rest of the widget rules live in `docs/rules/widgets.md`.
 
 ## What actually costs
 
@@ -37,13 +37,13 @@ rest of this file is about that price; the game's is settled by the clock.
 
 We use the industry terms, not our own.
 
-| Term                                                                                     | Means                                                                                                                                                                                                                                                |
-| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [wasted render](https://react.dev/reference/react/memo)                                  | a render that produces the same output                                                                                                                                                                                                               |
-| [lifting content up](https://overreacted.io/before-you-memo/)                            | creating a static subtree in a parent that does not re-render, and passing it down as `children`                                                                                                                                                     |
-| [dereference late](https://github.com/mobxjs/mobx/blob/main/docs/react-optimizations.md) | pass observable objects around; read their properties in the component that renders them                                                                                                                                                             |
-| imperative updates                                                                       | writing a changing value straight to the DOM or a canvas, outside React's render                                                                                                                                                                     |
-| hot field                                                                                | a bundle field that changes on every tick: `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, and the heavy per-car frames `driverEntries`, `relative`, `proximity` (`fieldEntries`, the roster-joined `driverEntries`, is linted the same way) |
+| Term                                                                                     | Means                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [wasted render](https://react.dev/reference/react/memo)                                  | a render that produces the same output                                                                                                                                                                                                                                                     |
+| [lifting content up](https://overreacted.io/before-you-memo/)                            | creating a static subtree in a parent that does not re-render, and passing it down as `children`                                                                                                                                                                                           |
+| [dereference late](https://github.com/mobxjs/mobx/blob/main/docs/react-optimizations.md) | pass observable objects around; read their properties in the component that renders them                                                                                                                                                                                                   |
+| imperative updates                                                                       | writing a changing value straight to the DOM or a canvas, outside React's render                                                                                                                                                                                                           |
+| hot field                                                                                | a bundle field that changes on every tick: `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, and the heavy per-car frames `driverEntries`, `relative`, `proximity` (`fieldEntries` and `relativeEntries`, the roster-joined `driverEntries` and `relative`, are linted the same way) |
 
 ## Splitting components smaller does not fix this
 
@@ -152,7 +152,7 @@ keeping a Playwright stage in every pull request.
 correctness of the contour.** `no-restricted-properties` (an override over the `.tsx`
 files of `src/{app,pages,widgets,features}/` and `src/shared/ui/` in `.oxlintrc.json`) fails the build on any read of a hot field's name
 — `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `relative`,
-`proximity`, `driverEntries`, `fieldEntries` — property access and destructuring alike. The
+`proximity`, `driverEntries`, `fieldEntries`, `relativeEntries` — property access and destructuring alike. The
 rule matches the property name alone, with no notion of "inside a component
 body" versus "inside `useReactiveDomWrite`/`useReactiveCanvasLoop`'s
 `reactiveEffect`" — oxlint 1.67 has no AST-selector rule (`no-restricted-syntax`)
@@ -177,7 +177,7 @@ declares a hot field is expected to name, in review, which contour each hot
 field is on and why — the same information the retired harness would have
 measured, and the one thing neither the lint rule nor the JSDoc can check: a
 disabled line is trivially easy to add, hard to prove correct by grep alone.
-`AGENTS.md` and `docs/widget-authoring.md` carry the rule for anyone (human or
+`docs/rules/widgets.md` and `docs/widget-authoring.md` carry the rule for anyone (human or
 AI) opening such a file. This is a real trade: a regression in a hot widget's
 allocation behavior can land and go unnoticed until someone profiles the
 overlay again, rather than failing a build. See "The overlay's own number"
