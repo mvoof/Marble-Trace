@@ -23,12 +23,22 @@ const RADAR_COLORS = {
   warning: '#eab308',
   /** Safe distance */
   safe: '#22c55e',
+  /** Lined up behind the pace car: a neighbour, not a threat */
+  formation: '#94a3b8',
 } as const;
 
 /**
- * Solid (no alpha) color for RadarBar pill based on center distance.
+ * Solid (no alpha) color for RadarBar pill based on center distance. In a
+ * pace formation the car alongside is the next column, so it is never a threat.
  */
-export const getBarPillColor = (centerDistance: number): string => {
+export const getBarPillColor = (
+  centerDistance: number,
+  formation: boolean
+): string => {
+  if (formation) {
+    return RADAR_COLORS.formation;
+  }
+
   if (centerDistance <= BAR_DANGER_DISTANCE) return RADAR_COLORS.danger;
   if (centerDistance <= BAR_WARNING_DISTANCE) return RADAR_COLORS.warning;
 

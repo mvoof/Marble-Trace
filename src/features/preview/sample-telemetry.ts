@@ -219,6 +219,7 @@ export const seedSampleTelemetry = action((store: PreviewTarget) => {
     },
     spotterLeft: true,
     spotterRight: true,
+    formation: false,
   };
 
   store.backendComputed.updateProximity(baselineProximity);

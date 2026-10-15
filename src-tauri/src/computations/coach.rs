@@ -1145,7 +1145,7 @@ mod tests {
     use std::collections::HashMap;
 
     use crate::computations::fuel::FuelSettings;
-    use crate::model::cars::CarIdxFrame;
+    use crate::model::cars::{CarIdxFrame, PacingFrame};
     use crate::model::environment::EnvironmentFrame;
     use crate::model::player::{
         CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
@@ -1627,6 +1627,7 @@ mod tests {
             car_dynamics: &CarDynamicsFrame::default(),
             car_inputs: &CarInputsFrame::default(),
             car_idx: &CarIdxFrame::default(),
+            pacing: &PacingFrame::default(),
             lap_timing: &lap_timing,
             car_status: &CarStatusFrame::default(),
             pit_service: &PitServiceFrame::default(),

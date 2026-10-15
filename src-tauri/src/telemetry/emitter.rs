@@ -211,6 +211,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
             car_dynamics: &frame.car_dynamics,
             car_inputs: &frame.car_inputs,
             car_idx: &frame.car_idx,
+            pacing: &frame.pacing,
             lap_timing: &frame.lap_timing,
             car_status: &frame.car_status,
             pit_service: &frame.pit_service,

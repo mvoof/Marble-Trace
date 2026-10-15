@@ -79,7 +79,7 @@ const signOf = (rawDist: number): string => {
  * One side of the bar radar. The distance to the car alongside changes on every
  * proximity frame, so the pill's position, its colour and its label all go to
  * the DOM through the reactive-DOM primitive; what re-renders this component is
- * only the spotter turning the side on and off. See `docs/rendering.md`.
+ * only the side turning on and off — by the spotter, or the formation's columns. See `docs/rendering.md`.
  */
 export const RadarBar = observer(({ side }: RadarBarProps) => {
   const units = useUnitsStore();
@@ -90,9 +90,9 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
   const radarSettings = useWidgetSettings<RadarSettings>('radar-bar');
 
   const visible = radarStore.isVisibleForWidget('radar-bar');
-  const spotterActive =
-    side === 'left' ? computed.spotterLeft : computed.spotterRight;
-  const sideVisible = appSettings.dragMode || spotterActive;
+  const carAlongside =
+    side === 'left' ? computed.carAlongsideLeft : computed.carAlongsideRight;
+  const sideVisible = appSettings.dragMode || carAlongside;
 
   const pillRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
@@ -111,9 +111,11 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
         return;
       }
 
+      // oxlint-disable-next-line no-restricted-properties
+      const formation = computed.proximity?.formation ?? false;
       const { carLength } = appSettings.appSettings;
       const { topPercent, heightPercent } = pillGeometryOf(rawDist, carLength);
-      const color = getBarPillColor(Math.abs(rawDist));
+      const color = getBarPillColor(Math.abs(rawDist), formation);
       const label = `${signOf(rawDist)}${formatDistance(
         Math.abs(rawDist),
         units.unitSystem

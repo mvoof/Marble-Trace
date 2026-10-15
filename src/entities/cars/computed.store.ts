@@ -158,6 +158,31 @@ export class BackendComputedStore {
     return this.proximity?.spotterRight ?? false;
   }
 
+  /**
+   * A car alongside on the left: the spotter's call, or in a pace formation a
+   * car of the next column, which the spotter does not call.
+   */
+  get carAlongsideLeft(): boolean {
+    const proximity = this.proximity;
+
+    if (proximity?.formation) {
+      return proximity.radarDistances.leftDist !== null;
+    }
+
+    return this.spotterLeft;
+  }
+
+  /** The right-hand twin of `carAlongsideLeft`. */
+  get carAlongsideRight(): boolean {
+    const proximity = this.proximity;
+
+    if (proximity?.formation) {
+      return proximity.radarDistances.rightDist !== null;
+    }
+
+    return this.spotterRight;
+  }
+
   /** How far the standings class cycle wraps: the classes in the field. */
   get carClassCount(): number {
     return new Set(this.fieldEntries.map((entry) => entry.carClassId)).size;

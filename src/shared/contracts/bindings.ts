@@ -1484,6 +1484,29 @@ export type PaceCarPitPhase =
 export type PaceCarState = { carIdx: number; phase: PaceCarPitPhase };
 
 /**
+ * How the field is lined up behind the pace car, if it is.
+ *
+ * Sim-neutral, like [`SpotterState`]: the source decodes its own encoding, and
+ * start and restart are one value each — the computations only ask whether the
+ * field runs in one column or two.
+ */
+export type PaceFormation = 'notPacing' | 'singleFile' | 'doubleFile';
+
+/**
+ * Where each car sits in the pace formation. Read by the backend only — it is
+ * part of `SourceFrame` and never of the bundle, since no widget draws it.
+ *
+ * @see https://sajax.github.io/irsdkdocs/telemetry/caridxpaceline/
+ */
+export type PacingFrame = {
+  formation: PaceFormation;
+  /**
+   * Column of each car in the formation (-1 = not in it)
+   */
+  car_idx_pace_line: number[];
+};
+
+/**
  * What an overlay needs to know about the run, read once when it loads.
  */
 export type PerfRunConfig = {
@@ -1728,6 +1751,12 @@ export type ProximityFrame = {
   radarDistances: RadarDistances;
   spotterLeft: boolean;
   spotterRight: boolean;
+  /**
+   * The field is lined up behind the pace car. Sides then come from the
+   * formation's columns, and a car that close is where it should be rather
+   * than a threat — the widgets drop their warnings while this holds.
+   */
+  formation: boolean;
 };
 
 /**
@@ -2350,6 +2379,11 @@ export type SourceFrame = {
   session: SessionFrame;
   environment: EnvironmentFrame;
   simPerf: SimPerfFrame;
+  /**
+   * Absent from tapes recorded before it existed, which then read as no
+   * formation.
+   */
+  pacing?: PacingFrame;
 };
 
 /**
@@ -2357,8 +2391,9 @@ export type SourceFrame = {
  *
  * Sim-neutral on purpose: every source decodes its own encoding into this, so
  * `computations/` never sees a raw simulator enum value. `Off` is distinct
- * from `Clear` — a spotter that is switched off says nothing, and proximity
- * falls back to geometry rather than trusting a "nothing alongside" answer.
+ * from `Clear` — a spotter that is switched off says nothing at all, where a
+ * clear one says nobody is alongside. Proximity places no car on a side in
+ * either case.
  */
 export type SpotterState =
   | 'off'

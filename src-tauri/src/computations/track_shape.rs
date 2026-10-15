@@ -628,7 +628,12 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
 
-    use crate::model::cars::CarIdxFrame;
+    use crate::model::cars::{CarIdxFrame, PaceFormation, PacingFrame};
+
+    static NO_PACING: PacingFrame = PacingFrame {
+        formation: PaceFormation::NotPacing,
+        car_idx_pace_line: Vec::new(),
+    };
     use crate::model::player::{CarDynamicsFrame, CarInputsFrame, CarStatusFrame, LapTimingFrame};
     use crate::model::session::SessionSnapshot;
 
@@ -779,6 +784,7 @@ mod tests {
             car_dynamics: args.dynamics,
             car_inputs: args.car_inputs,
             car_idx: args.car_idx,
+            pacing: &NO_PACING,
             lap_timing: args.lap_timing,
             car_status: args.car_status,
             pit_service: Box::leak(Box::default()),

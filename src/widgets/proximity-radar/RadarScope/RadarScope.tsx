@@ -87,6 +87,8 @@ export const RadarScope = observer(() => {
     (scheduleDraw) => {
       // oxlint-disable-next-line no-restricted-properties
       const allCars = computed.proximity?.nearbyCars ?? [];
+      // oxlint-disable-next-line no-restricted-properties
+      const formation = computed.proximity?.formation ?? false;
       // Read here, not in the render, so the autorun tracks every one of them.
       const settings =
         liveWidgets.getSettings<ProximityRadarSettings>(instanceId);
@@ -159,6 +161,7 @@ export const RadarScope = observer(() => {
           scope,
           carNumbers,
           unitSystem,
+          formation,
         };
 
         drawCenterLane(ctx, nearbyCars, lane);
@@ -211,7 +214,16 @@ interface LaneContext {
   scope: BaseUserSettings & ProximityRadarSettings;
   carNumbers: ReadonlyMap<number, string>;
   unitSystem: UnitSystem;
+  /** Lined up behind the pace car: every car is where it should be. */
+  formation: boolean;
 }
+
+/**
+ * The color a gap is drawn in. In formation the cars beside and in front are
+ * the formation itself, so nothing is a threat and every car is drawn in ink.
+ */
+const threatColorOf = (lane: LaneContext, gapMeters: number): string =>
+  lane.formation ? SCOPE_INK.opponent : threatColorForGap(gapMeters);
 
 /**
  * The beam for a car in the scope and the edge marker for one past it are one
@@ -228,7 +240,8 @@ const drawTracking = (
   const { radiusPx, rangeMeters, scope } = lane;
   const inScope = distanceMeters <= rangeMeters;
 
-  if (distanceMeters > rangeMeters * EDGE_MARKER_REACH) {
+  // A beam is a warning, and a formation holds nothing to warn about.
+  if (lane.formation || distanceMeters > rangeMeters * EDGE_MARKER_REACH) {
     return;
   }
 
@@ -340,7 +353,7 @@ const drawCenterLane = (
 
   centerCars.forEach((car) => {
     const centerMeters = car.longitudinalDist;
-    const threat = threatColorForGap(Math.abs(car.bumperDist));
+    const threat = threatColorOf(lane, Math.abs(car.bumperDist));
 
     drawTracking(
       ctx,
@@ -384,7 +397,7 @@ const drawCenterLane = (
       lane,
       formatDistance(gapMeters, lane.unitSystem),
       carBearingSpan(0, car.longitudinalDist, carLengthM).center,
-      threatColorForGap(gapMeters)
+      threatColorOf(lane, gapMeters)
     );
   });
 };
@@ -426,7 +439,7 @@ const drawSideLane = (
         lane,
         carBearingSpan(lateral, row.longitudinal, carLengthM),
         Math.hypot(lateral, row.longitudinal),
-        threatColorForGap(Math.abs(row.longitudinal))
+        threatColorOf(lane, Math.abs(row.longitudinal))
       );
     });
 
@@ -448,7 +461,7 @@ const drawSideLane = (
 
   // Side by side is dangerous long before the gap is, so the overlap itself is
   // the threat: zero means door to door.
-  const threat = threatColorForGap(Math.abs(nearest.longitudinal));
+  const threat = threatColorOf(lane, Math.abs(nearest.longitudinal));
 
   drawTracking(
     ctx,
@@ -482,7 +495,7 @@ const drawSideLane = (
       { x, y: -row.longitudinal * pxPerMeter },
       scope.monochromeCars
         ? SCOPE_INK.opponent
-        : threatColorForGap(Math.abs(row.longitudinal)),
+        : threatColorOf(lane, Math.abs(row.longitudinal)),
       label
     );
   });

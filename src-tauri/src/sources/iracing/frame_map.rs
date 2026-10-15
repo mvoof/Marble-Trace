@@ -5,7 +5,9 @@
 //!
 //! @see https://sajax.github.io/irsdkdocs/telemetry/
 
-use crate::model::cars::{CarIdxFrame, CarPositionsFrame, SpotterState};
+use crate::model::cars::{
+    CarIdxFrame, CarPositionsFrame, PaceFormation, PacingFrame, SpotterState,
+};
 use crate::model::enums::{DrsState, SessionState, Skies, TrackSurface};
 use crate::model::environment::EnvironmentFrame;
 use crate::model::player::{
@@ -34,6 +36,7 @@ impl From<&IracingFrame> for SourceFrame {
             session: SessionFrame::from(f),
             environment: EnvironmentFrame::from(f),
             sim_perf: SimPerfFrame::from(f),
+            pacing: PacingFrame::from(f),
         }
     }
 }
@@ -392,6 +395,27 @@ impl From<&IracingFrame> for CarPositionsFrame {
     }
 }
 
+impl From<&IracingFrame> for PacingFrame {
+    fn from(f: &IracingFrame) -> Self {
+        Self {
+            formation: pace_formation_from_iracing(f.pace_mode),
+            car_idx_pace_line: f.car_idx_pace_line.clone(),
+        }
+    }
+}
+
+/// `PaceMode` is an iRacing enum sent as a plain integer; this is the only
+/// place that knows what those numbers mean.
+///
+/// @see https://sajax.github.io/irsdkdocs/telemetry/pacemode/
+fn pace_formation_from_iracing(raw: i32) -> PaceFormation {
+    match raw {
+        0 | 2 => PaceFormation::SingleFile,
+        1 | 3 => PaceFormation::DoubleFile,
+        _ => PaceFormation::NotPacing,
+    }
+}
+
 /// `CarLeftRight` is an iRacing enum sent as a plain integer; this is the only
 /// place that knows what those numbers mean.
 ///
@@ -428,8 +452,17 @@ mod spotter_tests {
         assert_eq!(spotter_from_iracing(6), SpotterState::TwoCarsRight);
     }
 
-    // An unmapped value must not read as "spotter off" — that would switch
-    // proximity to its geometry fallback for a car that is simply unknown.
+    #[test]
+    fn decodes_every_pace_mode_value() {
+        assert_eq!(pace_formation_from_iracing(0), PaceFormation::SingleFile);
+        assert_eq!(pace_formation_from_iracing(1), PaceFormation::DoubleFile);
+        assert_eq!(pace_formation_from_iracing(2), PaceFormation::SingleFile);
+        assert_eq!(pace_formation_from_iracing(3), PaceFormation::DoubleFile);
+        assert_eq!(pace_formation_from_iracing(4), PaceFormation::NotPacing);
+    }
+
+    // An unmapped value must not read as "spotter off": the spotter is
+    // talking, this build just does not know the word.
     #[test]
     fn unknown_values_read_as_clear() {
         assert_eq!(spotter_from_iracing(-1), SpotterState::Clear);

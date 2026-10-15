@@ -54,6 +54,7 @@ describe('RadarWidgetStore activation', () => {
         },
         spotterLeft: false,
         spotterRight: false,
+        formation: false,
         ...frame,
       });
     });

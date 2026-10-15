@@ -17,6 +17,8 @@ interface StoryArgs {
    * cannot state a side distance its own traffic denies.
    */
   cars?: MockTrafficCar[];
+  /** Lined up behind the pace car: the same cars, drawn without warnings. */
+  formation?: boolean;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -34,7 +36,9 @@ const meta: Meta<StoryArgs> = {
       store.appSettings.dragMode = true;
 
       if (args.cars !== undefined) {
-        store.backendComputed.updateProximity(mockProximity(args.cars));
+        store.backendComputed.updateProximity(
+          mockProximity(args.cars, args.formation ?? false)
+        );
       }
     },
   }),
@@ -55,4 +59,12 @@ export const BothSides: Story = {
 // Overlapping mirror to mirror — the closest the side pill ever reads.
 export const VeryClose: Story = {
   args: { cars: [{ carIdx: 7, longitudinalDist: 0.3, side: 'left' }] },
+};
+
+/** Double file behind the pace car: the car alongside is the next column. */
+export const PaceFormation: Story = {
+  args: {
+    formation: true,
+    cars: [{ carIdx: 1, longitudinalDist: 0.3, side: 'right' }],
+  },
 };
