@@ -85,7 +85,7 @@ git checkout -b feature/short-description upstream/main
 
 ### 2. Change
 
-Follow the rules in [AGENTS.md](AGENTS.md) — every section there says what
+Follow the rules in [AGENTS.md](AGENTS.md) and [docs/rules/](docs/rules/layers.md) — every section there says what
 enforces it: a lint rule, a test, or review. Add tests where the change has
 behaviour worth pinning.
 

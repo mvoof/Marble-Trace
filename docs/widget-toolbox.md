@@ -15,7 +15,7 @@ Read this at step 4 of [the route](widget-authoring.md), before writing a helper
 
 ## Where a new helper belongs
 
-The rule is [`AGENTS.md` → Where a file lives](../AGENTS.md), in one sentence:
+The rule is [`rules/widgets.md` → Where a file lives](rules/widgets.md#where-a-file-lives), in one sentence:
 **a file sits next to its lowest consumer, and moves down a layer only when its
 consumers sit in different slices.**
 
@@ -66,7 +66,7 @@ No stores, no Tauri, and no React beyond `store-context.ts`'s one
 ## `src/shared/contracts/` — generated from Rust
 
 **Never edit these** — change the Rust declaration and regenerate
-(`AGENTS.md` → Rust Backend). Importable from any layer.
+(`docs/rules/backend.md`). Importable from any layer.
 
 | Module                    | Reach for it when                                                                                                                                                                                                 |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -118,7 +118,7 @@ Read by one feature's store and its widgets, nowhere else.
 ## `src/shared/hooks/` — DOM and browser hooks used by two or more widgets
 
 Hooks are for the DOM and the browser only. Everything else belongs in a store
-([`AGENTS.md` → MobX Stores](../AGENTS.md)).
+([`rules/stores.md` → Layer rules](rules/stores.md#layer-rules)).
 
 | Hook                    | Reach for it when                                                                                                                                                                                                                                                                         |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -1282,7 +1282,7 @@ user settings, so a widget never hardcodes its own background.
 ### Where a file lives
 
 **A file sits next to its lowest consumer, and moves up only when its consumers
-sit in different branches of the tree.** The full table is in `AGENTS.md` →
+sit in different branches of the tree.** The full table is in `docs/rules/widgets.md` →
 Where a file lives.
 
 ```mermaid

@@ -4,7 +4,7 @@ You have an idea and no files. This is the order to do things in, and why that
 order.
 
 Everything here is already written down somewhere — the layer rules in
-[`AGENTS.md`](../AGENTS.md), the layers, the stores and the bundle in
+[`docs/rules/`](rules/layers.md), the layers, the stores and the bundle in
 [architecture.md](architecture.md), the hot/cold rendering split in
 [rendering.md](rendering.md), the migrations in
 [settings-schema.md](settings-schema.md). None of those answers the question you
@@ -68,8 +68,8 @@ Three questions, in order.
 **Does the field exist?** Offline, the answer is `src/shared/contracts/bindings.ts` — the
 generated contract, and the only honest list. The raw sim frames in it are
 **snake_case** (`velocity_x`, `steering_wheel_angle`) — they keep kerb's names —
-while the bundle envelope and every computed frame are camelCase (`AGENTS.md`
-→ Rust Backend). Search for a raw field in snake*case. Against a live sim, the answer is the
+while the bundle envelope and every computed frame are camelCase (`docs/rules/backend.md`
+→ Layers and the contract). Search for a raw field in snake*case. Against a live sim, the answer is the
 **Telemetry Inspector** (Settings → Maintenance): it browses the raw
 `SourceFrame`, which is a \_superset* of the bundle — every field the adapter
 produced, including ones no widget receives — and the parsed session snapshot

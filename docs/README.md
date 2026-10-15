@@ -23,7 +23,7 @@ for the shape of the app.
 | …                                                  | Read                                                                                           |
 | -------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | the whole architecture, backend to widget          | [architecture.md](architecture.md)                                                             |
-| the rules, short, with what enforces each          | [AGENTS.md](../AGENTS.md)                                                                      |
+| the rules, with what enforces each                 | [AGENTS.md](../AGENTS.md), then [rules/](rules/layers.md) by area                              |
 | why a decision went the way it did                 | [adr/](adr/README.md) — one file per decision                                                  |
 | how the 60 Hz feed renders without re-rendering    | [rendering.md](rendering.md)                                                                   |
 | how windows share settings (main, overlay, remote) | [architecture.md → Cross-window synchronization](architecture.md#cross-window-synchronization) |
@@ -59,7 +59,7 @@ same route and writes the files.
 | measure performance (`npm run perf`)                          | [telemetry-tapes.md → Measure](telemetry-tapes.md#measure-performance-on-a-tape) |
 | measure what the overlay costs the game (`npm run perf:game`) | [perf-methodology.md](perf-methodology.md)                                       |
 | see the baseline numbers and add a new run                    | [perf-baseline.md](perf-baseline.md)                                             |
-| check the UI in the real app                                  | [AGENTS.md → Visual Testing](../AGENTS.md#visual-testing)                        |
+| check the UI in the real app                                  | [AGENTS.md → Workflow](../AGENTS.md#workflow)                                    |
 
 ## Every page
 
@@ -79,3 +79,4 @@ same route and writes the files.
 | [adr/](adr/README.md)                                | architecture decision records                                                                          |
 | [research/](research/)                               | investigations kept for reference (WebView2 flags)                                                     |
 | [agents/](agents/)                                   | how an agent uses the issue tracker, the domain docs, React Doctor                                     |
+| [rules/](rules/layers.md)                            | the full rules by area — layers, backend, telemetry, stores, widgets, style — with what holds each     |

@@ -2,7 +2,7 @@
 
 How to write a widget that reads telemetry without turning the overlay into an
 allocation pump. Read this before building a widget that declares a hot
-`telemetryEvents` field; the rest of the widget rules live in `AGENTS.md`.
+`telemetryEvents` field; the rest of the widget rules live in `docs/rules/widgets.md`.
 
 ## What actually costs
 
@@ -177,7 +177,7 @@ declares a hot field is expected to name, in review, which contour each hot
 field is on and why — the same information the retired harness would have
 measured, and the one thing neither the lint rule nor the JSDoc can check: a
 disabled line is trivially easy to add, hard to prove correct by grep alone.
-`AGENTS.md` and `docs/widget-authoring.md` carry the rule for anyone (human or
+`docs/rules/widgets.md` and `docs/widget-authoring.md` carry the rule for anyone (human or
 AI) opening such a file. This is a real trade: a regression in a hot widget's
 allocation behavior can land and go unnoticed until someone profiles the
 overlay again, rather than failing a build. See "The overlay's own number"
