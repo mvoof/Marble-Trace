@@ -87,15 +87,15 @@ ADR-0009 was measured in.
 
 None of this ships with the repository; each item says how to get it.
 
-| what                                    | how to get it                                                                                                                                                                                                                                                                                       |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| the binary under test                   | `npm run perf:build` — `src-tauri/target/release/marble-trace.exe`, the build every run starts                                                                                                                                                                                                      |
-| PresentMon                              | [PresentMon's releases](https://github.com/GameTechDev/PresentMon/releases): the installer puts the console binary where the harness looks, or download the console `.exe` alone and point `PRESENTMON` at it (`CONTRIBUTING.md` → Environment variables)                                           |
-| rights to capture                       | administrator, the _Performance Log Users_ group, or `--elevate` on each run (Protocol, step 7)                                                                                                                                                                                                     |
-| an iRacing replay                       | drive or spectate a session with the field you want to measure and save its replay in iRacing; open it again before a session. A replay is yours — the numbers below were taken on one that is not shared                                                                                           |
-| a layout with every widget (`perf-all`) | in the app, Layouts → add a layout named `perf-all`, switch every widget on for the monitor the game is on and place them so none hides another. Any layout name works with `--layout`; `perf-all` is only the name these docs use                                                                  |
+| what                                    | how to get it                                                                                                                                                                                                                                                                                        |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| the binary under test                   | `npm run perf:build` — `src-tauri/target/release/marble-trace.exe`, the build every run starts                                                                                                                                                                                                       |
+| PresentMon                              | [PresentMon's releases](https://github.com/GameTechDev/PresentMon/releases): the installer puts the console binary where the harness looks, or download the console `.exe` alone and point `PRESENTMON` at it (`CONTRIBUTING.md` → Environment variables)                                            |
+| rights to capture                       | administrator, the _Performance Log Users_ group, or `--elevate` on each run (Protocol, step 7)                                                                                                                                                                                                      |
+| an iRacing replay                       | drive or spectate a session with the field you want to measure and save its replay in iRacing; open it again before a session. A replay is yours — the numbers below were taken on one that is not shared                                                                                            |
+| a layout with every widget (`perf-all`) | in the app, Layouts → add a layout named `perf-all`, switch every widget on for the monitor the game is on and place them so none hides another. Any layout name works with `--layout`; `perf-all` is only the name these docs use                                                                   |
 | widget ids for `--widgets`              | the instance ids of the layout passed with `--layout`. The first instance of a widget on a layout carries the widget's own id (`track-map`, `standings`, …, the folder names under `src/widgets/`); a further copy is `<id>-2`, `<id>-3`, as `%APPDATA%m.voof.marble-tracesettings.json` lists them |
-| a tape, for `changes` and `heap` only   | record one: [telemetry-tapes.md](telemetry-tapes.md) → Record a session. Tapes are large and stay out of git                                                                                                                                                                                        |
+| a tape, for `changes` and `heap` only   | record one: [telemetry-tapes.md](telemetry-tapes.md) → Record a session. Tapes are large and stay out of git                                                                                                                                                                                         |
 
 ## Protocol
 
@@ -130,7 +130,7 @@ None of this ships with the repository; each item says how to get it.
    (`src-tauri/target/release/marble-trace.exe`, from `npm run perf:build`).
 7. **PresentMon access.** Capturing needs ETW rights: administrator, or the
    account in the _Performance Log Users_ group (`net localgroup "Performance
-Log Users" <user> /add`, then sign out and in). Without either, pass
+   Log Users" <user> /add`, then sign out and in). Without either, pass
    `--elevate` and confirm the UAC prompt on each run.
 
 ### Scenarios

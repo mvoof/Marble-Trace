@@ -31,7 +31,9 @@ export interface BlobWidget {
   [key: string]: unknown;
 }
 
-export const asObject = (value: unknown): Record<string, unknown> | undefined =>
+export const asObject = (
+  value: unknown
+): Record<string, unknown> | undefined =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : undefined;

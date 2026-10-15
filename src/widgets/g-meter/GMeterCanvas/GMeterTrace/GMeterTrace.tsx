@@ -431,10 +431,10 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
     peakBottom: 0,
     peakLeft: 0,
     peakRight: 0,
-    gEnvelope: Array.from(
-      { length: 360 },
-      (): EnvelopePoint => ({ r: 0, color: COLOR_TURN })
-    ),
+    gEnvelope: Array.from({ length: 360 }, (): EnvelopePoint => ({
+      r: 0,
+      color: COLOR_TURN,
+    })),
     gHistory: [],
     lastScale: -1,
     // The frame the state last advanced on, and when: the loop also re-runs on
