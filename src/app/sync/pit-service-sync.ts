@@ -1,4 +1,4 @@
-import { comparer, reaction, type IReactionDisposer } from 'mobx';
+import { reaction, type IReactionDisposer, compareStructural } from 'mobx';
 
 import { pitAutoConfigOf } from '@features/pit-service/pit-auto-config';
 import { setPitStrategySilent } from '@shared/api/pit.service';
@@ -24,6 +24,6 @@ export const registerPitServiceMainReactions = (
         root.liveWidgets.isWidgetOnScreen('pit-service')
       ),
     (strategy) => setPitStrategySilent(strategy),
-    { equals: comparer.structural, fireImmediately: true }
+    { equals: compareStructural, fireImmediately: true }
   ),
 ];

@@ -1,4 +1,4 @@
-import { comparer, reaction } from 'mobx';
+import { reaction, compareStructural } from 'mobx';
 
 import {
   emitTrackRotation,
@@ -52,7 +52,7 @@ export const registerTrackRotationOwnership = async (
           console.error('[track-rotation] failed to reach the remote:', error)
         );
       },
-      { fireImmediately: true, equals: comparer.structural }
+      { fireImmediately: true, equals: compareStructural }
     ),
   ];
 

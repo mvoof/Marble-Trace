@@ -1705,7 +1705,7 @@ flowchart TB
     EV["<code>sim://telemetry/bundle</code>"]
     SVC["<b>shared/api/events.service.ts</b><br/>listenTo"]
     SYNC["<b>app/sync/listeners.ts</b><br/>which store owns this?"]
-    DATA["<b>entities/cars/computed.store.ts</b><br/>fuel = observable.ref"]
+    DATA["<b>entities/cars/computed.store.ts</b><br/>fuel = observableRef"]
     UI["<b>widgets/fuel</b><br/>observer() reads it"]
 
     S --> K --> SRC --> SCH --> COMP --> EM --> EV --> SVC --> SYNC --> DATA --> UI
@@ -1744,7 +1744,7 @@ each one cheaper than the layer above it.
 ```mermaid
 flowchart TB
     L1["<b>1 — Backend tiering</b><br/>only 4 fields are truly 60 Hz;<br/>the rest emit at 10 / 4 / 1 Hz"]
-    L2["<b>2 — observable.ref</b><br/>frames are replaced, never mutated in place —<br/>no deep observability cost per field"]
+    L2["<b>2 — observableRef</b><br/>frames are replaced, never mutated in place —<br/>no deep observability cost per field"]
     L3["<b>3 — Component decomposition</b><br/>a 60 Hz value is read by the smallest leaf,<br/>so one cell re-renders, not a widget"]
     L4["<b>4 — Canvas</b><br/>high-frequency visuals bypass React entirely;<br/>RAF + useRef, no renders at all"]
 
@@ -1758,7 +1758,7 @@ flowchart TB
 | Rate tiers                                           | `telemetry/scheduler.rs`                                 | sending standings 60 times a second when it changes 10 times                                                                            |
 | Demand gating (`telemetryEvents`)                    | widget manifests → `telemetry/emitter.rs`                | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
 | Quantization + repeat suppression                    | `telemetry/quantize.rs`, `telemetry/publications.rs`     | resending a frame whose only change is in a decimal no widget prints                                                                    |
-| `observable.ref` on frame buffers                    | `entities/cars/cars.store.ts`, `computed.store.ts`       | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
+| `observableRef` on frame buffers                     | `entities/cars/cars.store.ts`, `computed.store.ts`       | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
 | Split computeds                                      | `entities/cars/computed.store.ts` and the widget stores  | one changed field invalidating an unrelated derived value                                                                               |
 | `observer()` on every component                      | every `.tsx` above `shared/`                             | a parent re-render cascading into leaves that did not change                                                                            |
 | Reading the store in the leaf, not passing props     | every `.tsx` above `shared/`                             | dereferencing in the parent, which makes the parent the subscriber and re-renders the whole subtree                                     |
@@ -1947,7 +1947,7 @@ npm run tauri:build:dev    # dev build, unsigned
 npm run tauri:build:release
 
 npm test                   # vitest run (also runs on commit via lefthook)
-npm run typecheck          # tsc --noEmit
+npm run typecheck          # tsc --noEmit, app and vite config
 npm run lint               # oxlint --type-aware — this is what enforces the layers
 npm run lint:fix
 npm run format             # oxfmt write

@@ -18,7 +18,7 @@ built with Tauri 2 on Windows.
   a dead end.
 - **The actual lever is `ICoreWebView2Controller::put_IsVisible`.** WebView2 only
   drops into its low-activity/throttled substate when the app sets `IsVisible =
-false` — Microsoft's own guidance is to flip it in response to `WM_SIZE`
+  false` — Microsoft's own guidance is to flip it in response to `WM_SIZE`
   (`SIZE_MINIMIZED` / `SIZE_RESTORED`). The overlay window in this app is
   always-on-top and frequently occluded by the sim but is not minimized, so it is
   already outside the case Microsoft optimizes for either way — occlusion alone

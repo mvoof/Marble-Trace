@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable } from 'mobx';
+import { makeAutoObservable, observableRef } from 'mobx';
 
 import type { SimPerfFrame } from '@shared/contracts/bindings';
 
@@ -12,7 +12,7 @@ export class SimPerfStore {
   simPerf: SimPerfFrame | null = null;
 
   constructor() {
-    makeAutoObservable(this, { simPerf: observable.ref });
+    makeAutoObservable(this, { simPerf: observableRef });
   }
 
   updateSimPerf(frame: SimPerfFrame) {

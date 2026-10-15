@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable } from 'mobx';
+import { makeAutoObservable, observableRef } from 'mobx';
 
 import type {
   EnvironmentFrame,
@@ -10,7 +10,7 @@ export class EnvironmentStore {
   weatherForecast: WeatherForecastEntry[] = [];
 
   constructor() {
-    makeAutoObservable(this, { environment: observable.ref });
+    makeAutoObservable(this, { environment: observableRef });
   }
 
   updateEnvironment(frame: EnvironmentFrame) {

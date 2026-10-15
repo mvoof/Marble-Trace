@@ -482,7 +482,7 @@ of this; it is three edits by hand.
    copy a neighbour's `<li>` and change `id`, `data-shot`, `data-name`,
    `data-alt`, `data-group`, `data-desc-id` and the caption. The description
    itself goes once into the catalogue under the gallery (`<details
-class="catalog">`): a `<div class="catalog-item">` in the same group with
+   class="catalog">`): a `<div class="catalog-item">` in the same group with
    `<dd id="gw-desc-<file>">`, the id `data-desc-id` points at. Then
    `npm run i18n:sync` in `site/` and the new strings translated in
    `site/i18n/ru.json`, `es.json`, `zh.json` — the widget's name stays

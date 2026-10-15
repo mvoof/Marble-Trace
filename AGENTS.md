@@ -13,7 +13,7 @@ npm run tauri:build:dev    # dev build (no signing)
 npm run tauri:build:release
 
 npm test                   # vitest run (also runs on commit via lefthook)
-npm run typecheck          # tsc --noEmit
+npm run typecheck          # tsc --noEmit, app and vite config
 npm run lint               # oxlint --type-aware
 npm run lint:fix
 npm run format             # oxfmt write

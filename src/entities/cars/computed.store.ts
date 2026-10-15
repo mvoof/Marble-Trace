@@ -1,4 +1,10 @@
-import { comparer, computed, makeAutoObservable, observable } from 'mobx';
+import {
+  computed,
+  makeAutoObservable,
+  observableRef,
+  computedStruct,
+  compareShallow,
+} from 'mobx';
 
 import type {
   CarEntry,
@@ -74,7 +80,7 @@ export class BackendComputedStore {
   private readonly relativeIdentityCache = new CarIdentityCache();
 
   // Every telemetry frame is replaced wholesale — nothing ever mutates one in
-  // place — so `observable.ref` is all the reactivity these need. Deep
+  // place — so `observableRef` is all the reactivity these need. Deep
   // observability would rebuild a proxy for each frame, and for the per-car
   // arrays it would convert ~15 arrays of 64 entries on every tick, purely to
   // observe fields nobody writes.
@@ -92,23 +98,23 @@ export class BackendComputedStore {
       relativeJoin: false,
       fieldIdentityCache: false,
       relativeIdentityCache: false,
-      proximity: observable.ref,
-      fuel: observable.ref,
-      relative: observable.ref,
-      incidents: observable.ref,
-      driverEntries: observable.ref,
-      pitStops: observable.ref,
-      paceCar: observable.ref,
-      coach: observable.ref,
-      pitAuto: observable.ref,
-      lapDelta: observable.ref,
-      lapHistory: observable.ref,
-      lastCompletedLap: observable.ref,
+      proximity: observableRef,
+      fuel: observableRef,
+      relative: observableRef,
+      incidents: observableRef,
+      driverEntries: observableRef,
+      pitStops: observableRef,
+      paceCar: observableRef,
+      coach: observableRef,
+      pitAuto: observableRef,
+      lapDelta: observableRef,
+      lapHistory: observableRef,
+      lastCompletedLap: observableRef,
       // The lap-delta frame is replaced on every tick while its sector arrays
       // change once a sector. Compared by content, they wake a widget when a
       // sector is actually posted rather than sixty times a second.
-      sectorTimes: computed.struct,
-      sectorDeltas: computed.struct,
+      sectorTimes: computedStruct,
+      sectorDeltas: computedStruct,
       // Rebuilt when the session roster is, not when a frame arrives.
       roster: computed,
       // The per-car frames are replaced on every tick, but all a row or a dot
@@ -116,8 +122,8 @@ export class BackendComputedStore {
       // hands back the same object for a car that did not change, so the list
       // compares by reference, and wakes a widget when a car actually changes
       // rather than on every tick — see `docs/rendering.md`.
-      driverIdentities: computed({ equals: comparer.shallow }),
-      relativeIdentities: computed({ equals: comparer.shallow }),
+      driverIdentities: computed({ equals: compareShallow }),
+      relativeIdentities: computed({ equals: compareShallow }),
     });
   }
 

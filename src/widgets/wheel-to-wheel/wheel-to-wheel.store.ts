@@ -1,11 +1,12 @@
 import {
   action,
-  comparer,
   computed,
   makeAutoObservable,
   makeObservable,
   reaction,
   type IReactionDisposer,
+  computedStruct,
+  compareStructural,
 } from 'mobx';
 
 import type { UnitSystem } from '@shared/contracts/domain';
@@ -80,7 +81,7 @@ export class BattleSlotView {
     private readonly unitSystem: () => UnitSystem
   ) {
     makeObservable(this, {
-      identity: computed.struct,
+      identity: computedStruct,
       speedText: computed,
       litSegments: computed,
       gapText: computed,
@@ -214,7 +215,7 @@ export class WheelToWheelWidgetStore implements SelfHidingWidgetStore {
           );
         },
         {
-          equals: comparer.structural,
+          equals: compareStructural,
           // Rivals already alongside when the store starts must be held too,
           // or the first time they drop back the plate vanishes without its
           // delay.

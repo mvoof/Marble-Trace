@@ -1,6 +1,6 @@
 import { alignMonitorsToHardware } from '@features/layout-editor/layout-gestures';
 import { layoutGestureStores } from '@features/layout-editor/layout-gestures';
-import { comparer, reaction, type IReactionDisposer } from 'mobx';
+import { reaction, type IReactionDisposer, compareStructural } from 'mobx';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 import { logSettingsSnapshot } from './persistence';
@@ -51,7 +51,7 @@ const registerOverlayReadSaveReactions = (
     () => {
       void onSave();
     },
-    { equals: comparer.structural }
+    { equals: compareStructural }
   ),
 ];
 
@@ -242,7 +242,7 @@ const registerBindingReactions = (
         hasDeviceBindings || isCapturing || isSearchingByKey
       );
     },
-    { fireImmediately: true, equals: comparer.structural }
+    { fireImmediately: true, equals: compareStructural }
   ),
 ];
 
@@ -263,7 +263,7 @@ const registerDisplayPreferenceReactions = (
     () => {
       void onSave();
     },
-    { equals: comparer.structural }
+    { equals: compareStructural }
   ),
 ];
 

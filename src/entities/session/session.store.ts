@@ -1,4 +1,4 @@
-import { makeAutoObservable, observable } from 'mobx';
+import { makeAutoObservable, observableRef } from 'mobx';
 
 import type {
   SessionFrame,
@@ -11,14 +11,14 @@ export class SessionStore {
   sessionInfo: SessionSnapshot | null = null;
 
   // Every telemetry frame is replaced wholesale — nothing ever mutates one in
-  // place — so `observable.ref` is all the reactivity these need. Deep
+  // place — so `observableRef` is all the reactivity these need. Deep
   // observability would rebuild a proxy for each frame, and for the per-car
   // arrays it would convert ~15 arrays of 64 entries on every tick, purely to
   // observe fields nobody writes.
   constructor() {
     makeAutoObservable(this, {
-      session: observable.ref,
-      sessionInfo: observable.ref,
+      session: observableRef,
+      sessionInfo: observableRef,
     });
   }
 

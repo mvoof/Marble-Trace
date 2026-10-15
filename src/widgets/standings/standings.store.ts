@@ -1,9 +1,9 @@
 import {
-  comparer,
   makeAutoObservable,
   reaction,
   runInAction,
   type IReactionDisposer,
+  compareStructural,
 } from 'mobx';
 
 import type { CarIdentity } from '@shared/contracts/car-identity';
@@ -213,7 +213,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
           hasRaceStarted(this.root.session.session?.session_state ?? null),
         ],
         () => this.resetSettledOrder(),
-        { equals: comparer.structural }
+        { equals: compareStructural }
       )
     );
   }

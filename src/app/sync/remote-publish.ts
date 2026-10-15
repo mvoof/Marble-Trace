@@ -1,4 +1,4 @@
-import { comparer, reaction, runInAction } from 'mobx';
+import { reaction, runInAction, compareStructural } from 'mobx';
 
 import { listenRemoteDevice } from '@shared/api/events.service';
 import {
@@ -168,7 +168,7 @@ export const registerRemotePublishing = (root: MainRoot) => {
 
         publishAll(root);
       },
-      { delay: PUBLISH_DEBOUNCE_MS, equals: comparer.structural }
+      { delay: PUBLISH_DEBOUNCE_MS, equals: compareStructural }
     ),
   ];
 

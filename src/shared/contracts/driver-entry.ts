@@ -29,7 +29,9 @@ export const SESSION_CAR_FIELDS = {
 } as const satisfies Record<string, keyof CarEntry>;
 
 type SessionCarFields = {
-  [Field in keyof typeof SESSION_CAR_FIELDS]: CarEntry[(typeof SESSION_CAR_FIELDS)[Field]];
+  [
+    Field in keyof typeof SESSION_CAR_FIELDS
+  ]: CarEntry[(typeof SESSION_CAR_FIELDS)[Field]];
 };
 
 /**

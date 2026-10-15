@@ -207,13 +207,11 @@ export class TelemetryInspectorStore {
       bundles: set.bundles,
       elapsedMs: set.elapsedMs,
       hz: ratePerSecond(set.bundles, set.elapsedMs),
-      fields: set.fields.map(
-        (delivered): DeliveryFieldRow => ({
-          field: delivered.field,
-          bundles: delivered.bundles,
-          hz: ratePerSecond(delivered.bundles, set.elapsedMs),
-        })
-      ),
+      fields: set.fields.map((delivered): DeliveryFieldRow => ({
+        field: delivered.field,
+        bundles: delivered.bundles,
+        hz: ratePerSecond(delivered.bundles, set.elapsedMs),
+      })),
     }));
   }
 

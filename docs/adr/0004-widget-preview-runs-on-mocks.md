@@ -99,7 +99,7 @@ the old shape in silence.
 Three consequences:
 
 - A **builder returns a complete frame** — `mockFuel(overrides?:
-Partial<FuelComputedFrame>): FuelComputedFrame` — so a story states only its
+  Partial<FuelComputedFrame>): FuelComputedFrame` — so a story states only its
   difference and the casts disappear. A contract change then breaks one builder
   instead of leaking into seventeen stories.
 - A story **takes a scenario as its base and keeps its controls on top**:
