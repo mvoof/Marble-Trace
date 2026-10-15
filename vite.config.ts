@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
-import { createLayerAliases, SCSS_ADDITIONAL_DATA } from './vite.aliases';
-import { devContentSecurityPolicy } from './vite.csp';
+import { createLayerAliases, SCSS_ADDITIONAL_DATA } from './vite.aliases.ts';
+import { devContentSecurityPolicy } from './vite.csp.ts';
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -26,17 +26,18 @@ export default defineConfig(() => ({
   build: {
     // Hidden maps for `npm run perf -- --build`, which resolves a heap
     // profile's minified frames back to source files. Never in a release.
-    sourcemap: process.env.MARBLE_TRACE_SOURCEMAPS === '1' ? 'hidden' : false,
-    rollupOptions: {
+    sourcemap:
+      process.env.MARBLE_TRACE_SOURCEMAPS === '1' ? ('hidden' as const) : false,
+    rolldownOptions: {
       input: {
         // The windows Tauri opens, one page each, so a window bundles only
         // its own shell: the overlay never loads antd or the settings UI.
-        main: resolve(__dirname, 'main.html'),
-        overlay: resolve(__dirname, 'overlay.html'),
-        hud: resolve(__dirname, 'hud.html'),
+        main: resolve(import.meta.dirname, 'main.html'),
+        overlay: resolve(import.meta.dirname, 'overlay.html'),
+        hud: resolve(import.meta.dirname, 'hud.html'),
         // A layout rendered in a browser on another device. A separate entry
         // because it must not pull in the Tauri API.
-        remote: resolve(__dirname, 'remote.html'),
+        remote: resolve(import.meta.dirname, 'remote.html'),
       },
     },
   },

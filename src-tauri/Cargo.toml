@@ -46,7 +46,7 @@ sys-locale = "0.3"
 # i64) and types every float as `number | null` unless lossless floats are
 # enabled — a contract migration, not a bump, and the API still moves
 # between release candidates.
-specta ={ version = "2.0.0-rc.22", features = ["derive", "serde_json"], optional = true }
+specta = { version = "2.0.0-rc.22", features = ["derive", "serde_json"], optional = true }
 specta-typescript = { version = "0.0.9", optional = true }
 specta-serde = { version = "0.0.9", optional = true }
 serde_yaml_ng = "0.10"
