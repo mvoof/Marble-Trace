@@ -1,7 +1,7 @@
 import { observable, runInAction, observableRef } from 'mobx';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { SimPerfFrame } from '@shared/contracts/bindings';
+import type { SimPerfFrame } from '@shared/contracts/generated/bindings';
 import type { MainRoot } from '@app/roots/main-root';
 import { FpsDiagnosticsStore } from './fps-diagnostics.store';
 

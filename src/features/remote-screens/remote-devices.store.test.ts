@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { RemoteServerInfo } from '@shared/contracts/bindings';
+import type { RemoteServerInfo } from '@shared/contracts/generated/bindings';
 import { RemoteDevicesStore } from './remote-devices.store';
 
 const getRemoteServerInfoMock = vi.hoisted(() => vi.fn());

@@ -22,7 +22,7 @@ import type {
   PitStopsFrame,
   ProximityFrame,
   RelativeFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
 import { CarIdentityCache } from './car-identity';

@@ -3,7 +3,10 @@
  * which dispatches them, and generated into `bindings.ts`. Re-exported here
  * with the helpers every layer compares bindings by.
  */
-import type { Binding, HotkeyTrigger } from '@shared/contracts/bindings';
+import type {
+  Binding,
+  HotkeyTrigger,
+} from '@shared/contracts/generated/bindings';
 
 export type { Binding };
 

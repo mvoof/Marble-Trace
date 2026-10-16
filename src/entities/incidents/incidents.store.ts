@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import type { IncidentPoint } from '@shared/contracts/bindings';
+import type { IncidentPoint } from '@shared/contracts/generated/bindings';
 import {
   computeIncidentZones,
   type FlagZone,

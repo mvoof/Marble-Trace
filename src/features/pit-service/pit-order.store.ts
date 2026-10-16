@@ -1,7 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import { runPitAction } from '@shared/api/pit.service';
-import type { PitAction, TireCompoundEntry } from '@shared/contracts/bindings';
+import type {
+  PitAction,
+  TireCompoundEntry,
+} from '@shared/contracts/generated/bindings';
 import type { CornerPosition } from '@features/pit-service/pit-tires';
 import { ALL_CORNERS, isCornerOrdered } from '@features/pit-service/pit-tires';
 import type { PitServiceWidgetStore } from './pit-service.store';

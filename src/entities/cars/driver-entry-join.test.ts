@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type {
   CarEntry,
   DriverEntry as LiveDriverEntry,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 import {
   DriverEntryJoin,

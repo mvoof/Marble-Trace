@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Segmented, Switch } from 'antd';
-import type { InteractHotkeyMode } from '@shared/contracts/bindings';
+import type { InteractHotkeyMode } from '@shared/contracts/generated/bindings';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';

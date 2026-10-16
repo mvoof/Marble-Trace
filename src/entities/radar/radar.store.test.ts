@@ -5,7 +5,10 @@ import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
 
 // A running core whose widget settings the test writes, as main writes its own.
 type WritableCore = RendererCore & { liveWidgets: LiveWidgetsStore };
-import type { LateralSide, ProximityFrame } from '@shared/contracts/bindings';
+import type {
+  LateralSide,
+  ProximityFrame,
+} from '@shared/contracts/generated/bindings';
 import type { ProximityRadarSettings } from './radar.settings-schema';
 
 // RendererCore construction reaches the backend through these services; there is

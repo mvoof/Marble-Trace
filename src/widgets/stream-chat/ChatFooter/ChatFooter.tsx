@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Activity } from 'lucide-react';
 
-import type { ChatPresence } from '@shared/contracts/bindings';
+import type { ChatPresence } from '@shared/contracts/generated/bindings';
 import { useStreamChatWidgetStore } from '@widgets/stream-chat/stream-chat.store';
 import { PlatformGlyph } from '../PlatformGlyph/PlatformGlyph';
 

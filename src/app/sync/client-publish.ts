@@ -10,7 +10,7 @@ import {
 } from '@shared/api/overlay-labels';
 import { overlaySnapshotFor, snapshotAppInputs } from './client-snapshot';
 import type { MainRoot } from '@app/roots/main-root';
-import type { RejectedCommand } from '@shared/contracts/bindings';
+import type { RejectedCommand } from '@shared/contracts/generated/bindings';
 import type {
   ClientCommand,
   CommandMessage,

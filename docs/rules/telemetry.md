@@ -21,7 +21,7 @@ every change costs the game a composed frame: never publish off the clock.
 | async | `sim://session`, `sim://weather`, `sim://status`, `sim://disconnected`, `sim://capabilities`, `sim://perf`, `sim://track-shape`, `sim://reference-lap/updated` |
 
 Event names are declared in `src-tauri/src/model/events.rs` and generated into
-`src/shared/contracts/backend-events.ts`; `src/shared/api/sim-events.ts` re-exports them
+`src/shared/contracts/generated/backend-events.ts`; `src/shared/api/sim-events.ts` re-exports them
 and adds the few that never cross the boundary. Never use telemetry
 `sessionTime` for 60 Hz integration — use `performance.now()`.
 
@@ -77,7 +77,7 @@ in the active layout and sends the mask to the backend
 (`set_active_events`); `emitter.rs` leaves an unrequested field out of the
 bundle. The names and their bit values are declared once, in
 `src-tauri/src/model/telemetry_events.rs` (`ts_values!`), and generated into
-`src/shared/contracts/telemetry-event-bits.ts`; `src/shared/contracts/telemetry-events.ts` derives
+`src/shared/contracts/generated/telemetry-event-bits.ts`; `src/shared/contracts/telemetry-events.ts` derives
 `TelemetryEventName` from it. A new gated field is one line there.
 
 **Gate the publication, never the computation.** A processor that carries state

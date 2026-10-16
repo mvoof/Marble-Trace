@@ -3,8 +3,11 @@ import { spy } from 'mobx';
 import type {
   OverlayPerfReport,
   TimingSummary,
-} from '@shared/contracts/bindings';
-import { PERF_BEGIN, PERF_END } from '@shared/contracts/backend-events';
+} from '@shared/contracts/generated/bindings';
+import {
+  PERF_BEGIN,
+  PERF_END,
+} from '@shared/contracts/generated/backend-events';
 import { listenTo } from '@shared/api/events.service';
 import {
   currentWindowLabel,

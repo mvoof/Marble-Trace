@@ -5,7 +5,7 @@ import {
   mockCarStatus,
   mockHybridCarStatus,
 } from '@features/preview/mocks/engine';
-import type { CarStatusFrame } from '@shared/contracts/bindings';
+import type { CarStatusFrame } from '@shared/contracts/generated/bindings';
 import {
   CHANGE_HIGHLIGHT_MS,
   EnginePanelWidgetStore,

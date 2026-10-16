@@ -1,10 +1,10 @@
 import { makeAutoObservable } from 'mobx';
 
-import { REFERENCE_LAP_BUCKET_COUNT } from '@shared/contracts/backend-constants';
+import { REFERENCE_LAP_BUCKET_COUNT } from '@shared/contracts/generated/backend-constants';
 import type {
   ReferenceLapData,
   ReferenceLapSample,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 export class ReferenceLapStore {
   data: ReferenceLapData | null = null;

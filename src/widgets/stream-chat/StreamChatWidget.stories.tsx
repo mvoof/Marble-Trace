@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { ChatMessage, ChatPresence } from '@shared/contracts/bindings';
+import type {
+  ChatMessage,
+  ChatPresence,
+} from '@shared/contracts/generated/bindings';
 import { StreamChatWidget } from './StreamChatWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 

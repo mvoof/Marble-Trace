@@ -1,6 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type { PitAction, PitAutoConfig } from '@shared/contracts/bindings';
+import type {
+  PitAction,
+  PitAutoConfig,
+} from '@shared/contracts/generated/bindings';
 
 /**
  * A manual change to the pit order. The telemetry thread works out the

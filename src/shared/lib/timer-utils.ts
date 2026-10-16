@@ -1,4 +1,7 @@
-import type { SessionState, SessionType } from '@shared/contracts/bindings';
+import type {
+  SessionState,
+  SessionType,
+} from '@shared/contracts/generated/bindings';
 
 const SECONDS_IN_HOUR = 3600;
 const SECONDS_IN_MINUTE = 60;

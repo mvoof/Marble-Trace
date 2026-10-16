@@ -1,4 +1,4 @@
-import type { NearbyCar } from '@shared/contracts/bindings';
+import type { NearbyCar } from '@shared/contracts/generated/bindings';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
 import { computeRelativeGap } from '@shared/lib/driver';
 import { splitDriverName } from '@shared/lib/driver';

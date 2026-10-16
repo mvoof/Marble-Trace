@@ -1,6 +1,6 @@
 import { makeAutoObservable, observableRef } from 'mobx';
 
-import type { SimPerfFrame } from '@shared/contracts/bindings';
+import type { SimPerfFrame } from '@shared/contracts/generated/bindings';
 
 /**
  * The sim's own performance counters, arriving at 1 Hz.

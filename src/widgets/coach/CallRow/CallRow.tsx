@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 
 import { observer } from 'mobx-react-lite';
 
-import type { CoachInactiveReason } from '@shared/contracts/bindings';
+import type { CoachInactiveReason } from '@shared/contracts/generated/bindings';
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,

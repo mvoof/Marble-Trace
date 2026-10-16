@@ -160,7 +160,7 @@ full.
 The boundary between the halves is generated, not hand-written. Rust types in
 `src-tauri/src/model/` are annotated with
 [specta](https://github.com/specta-rs/specta), and `npm run tauri:dev` regenerates
-`src/shared/contracts/bindings.ts` from them.
+`src/shared/contracts/generated/bindings.ts` from them.
 
 The export itself lives in `src-tauri/src/bindings.rs`, and every module
 registers its own types in a `register_types` next to where they are declared —
@@ -179,13 +179,13 @@ UPDATE_BINDINGS=1 cargo test --features dev regenerates_the_contract
 ```mermaid
 flowchart LR
     A["<b>src-tauri/src/model/*.rs</b><br/>#[derive(specta::Type)]<br/>struct FuelFrame"]
-    B["<b>src/shared/contracts/bindings.ts</b><br/>export type FuelFrame = { … }"]
+    B["<b>src/shared/contracts/generated/bindings.ts</b><br/>export type FuelFrame = { … }"]
     C["every frontend layer<br/>reads these types"]
     A -->|"specta, on npm run tauri:dev"| B --> C
 ```
 
 > [!IMPORTANT]
-> **Never edit `src/shared/contracts/bindings.ts` by hand, and never hand-write a TypeScript
+> **Never edit `src/shared/contracts/generated/bindings.ts` by hand, and never hand-write a TypeScript
 > interface that duplicates a backend payload.** If a shape is wrong, fix the Rust
 > struct and regenerate. A hand-written duplicate will drift, and nothing will
 > tell you.
@@ -201,12 +201,12 @@ So they are declared once in Rust, through the `ts_values!` macro in
 `src-tauri/src/model/ts_values.rs`, which emits both the Rust `const` and the
 TypeScript from a single list:
 
-| Rust                | Generated TypeScript                        |
-| ------------------- | ------------------------------------------- |
-| `model/defaults.rs` | `src/shared/contracts/backend-constants.ts` |
-| `model/events.rs`   | `src/shared/contracts/backend-events.ts`    |
+| Rust                | Generated TypeScript                                  |
+| ------------------- | ----------------------------------------------------- |
+| `model/defaults.rs` | `src/shared/contracts/generated/backend-constants.ts` |
+| `model/events.rs`   | `src/shared/contracts/generated/backend-events.ts`    |
 
-They land in `src/shared/contracts/` beside `bindings.ts`, as plain `const`
+They land in `src/shared/contracts/generated/` beside `bindings.ts`, as plain `const`
 exports rather than types — which is why they skip specta. Both generated files are checked in and pinned by
 a test, so a constant changed in Rust without regenerating fails `cargo test`
 rather than silently leaving the two halves on different numbers.
@@ -633,7 +633,7 @@ screen registers through `set_remote_active_events`), and `telemetry/dispatch.rs
 builds and serializes one bundle per distinct mask value, so a monitor showing
 only a fuel widget does not receive the per-car frames of another monitor. The
 names and their bit values are declared once in `model/telemetry_events.rs` and
-generated into `src/shared/contracts/telemetry-event-bits.ts`, which
+generated into `src/shared/contracts/generated/telemetry-event-bits.ts`, which
 `src/shared/contracts/telemetry-events.ts` derives `TelemetryEventName` from.
 
 ```mermaid
@@ -921,7 +921,7 @@ window.
 | `file-export.service.ts`                      | `saveTextFileAndReveal`                                                                                                                 |
 | `opener.service.ts` · `external-link.ts`      | `openExternalUrl`, `openExternalLink`                                                                                                   |
 | `remote-socket.service.ts`                    | the remote page's WebSocket — the browser half of the client transport                                                                  |
-| `sim-events.ts`                               | **every backend event name constant**, re-exported from the generated `@shared/contracts/backend-events`                                |
+| `sim-events.ts`                               | **every backend event name constant**, re-exported from the generated `@shared/contracts/generated/backend-events`                      |
 | `overlay-labels.ts` · `overlay-resolution.ts` | the monitor-name → window-label mapping; monitor geometry                                                                               |
 
 Because services are the seam, **tests mock services, not Tauri.**
@@ -1063,7 +1063,7 @@ paused main window costs only the actions that write settings.
 > [!TIP]
 > **Adding a bindable action is one entry in `HOTKEY_ACTIONS` plus one key under
 > `bindings.actions` in `main-app.json`.** The list is generated into
-> `@shared/contracts/hotkey-actions` for the settings UI; persistence and the save reaction
+> `@shared/contracts/generated/hotkey-actions` for the settings UI; persistence and the save reaction
 > are driven off it.
 
 An action's `HotkeyEffect` decides its kind:
@@ -1580,7 +1580,7 @@ expecting anything back — a fire-and-forget command, not an event.
 ### Channel ② — backend → frontend
 
 Names come from `src-tauri/src/model/events.rs` through the generated
-`@shared/contracts/backend-events`, re-exported by `shared/api/sim-events.ts`; handlers are wired in
+`@shared/contracts/generated/backend-events`, re-exported by `shared/api/sim-events.ts`; handlers are wired in
 `app/sync/listeners.ts`.
 
 | Event                                                    | Emitted by                                         | Rate                          | Lands in                                                                                    |

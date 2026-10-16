@@ -1,4 +1,4 @@
-import type { CarInputsFrame } from '@shared/contracts/bindings';
+import type { CarInputsFrame } from '@shared/contracts/generated/bindings';
 
 // Mock builders for the driver-input domain. Pure: nothing here touches a
 // store, so the history below can be replayed into a preview store, asserted in

@@ -7,7 +7,7 @@ import {
 } from '@shared/api/hotkeys.service';
 import { applySettingsAction } from '@features/hotkey-bindings/settings-actions';
 import type { MainRoot } from '@app/roots/main-root';
-import type { HotkeySettingsAction } from '@shared/contracts/bindings';
+import type { HotkeySettingsAction } from '@shared/contracts/generated/bindings';
 import { HOTKEY_SETTINGS_ACTION_EVENT } from '@shared/api/sim-events';
 
 const reportFailure = (what: string) => (error: unknown) =>

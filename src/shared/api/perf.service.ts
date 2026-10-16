@@ -4,7 +4,7 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type {
   OverlayPerfReport,
   PerfRunConfig,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /**
  * The perf run this app was started for, or `null`. The commands exist only in

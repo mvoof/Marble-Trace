@@ -3,7 +3,7 @@ import type {
   LapHistoryEntry,
   LapLogFrame,
   LapTimingFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 // Mock builders for the delta domain — the live delta, the sector split and the
 // lap history the three timing widgets draw. Pure: each takes a partial

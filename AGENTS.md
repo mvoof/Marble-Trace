@@ -66,8 +66,9 @@ compiler, test, or review). Read the file for the area before editing it.
   `app → pages → widgets → features → entities → shared`; a slice never imports
   a sibling slice (named exceptions: `allowedSiblings` in `.oxlintrc.json`).
   Direct file paths; no `index.ts`, no barrels.
-- **Generated contracts are untouched.** `src/shared/contracts/bindings.ts` and
-  the `ts_values!` outputs are regenerated, never edited, never formatted by
+- **Generated contracts are untouched.** Everything in
+  `src/shared/contracts/generated/` (specta's `bindings.ts` and the
+  `ts_values!` outputs) is regenerated, never edited, never formatted by
   hand — the commit hook formats them.
 - **Stores through context hooks**, never as singletons. Business logic in MobX
   stores; components only read stores, never `@tauri-apps/*` or `@shared/api/*`.

@@ -1,4 +1,4 @@
-import type { CarStatusFrame } from '@shared/contracts/bindings';
+import type { CarStatusFrame } from '@shared/contracts/generated/bindings';
 import type { EnginePanelWidgetSettings } from './settings-schema';
 
 /** How a value is turned into the string the cell draws. */

@@ -9,7 +9,7 @@ import type {
   RawValue,
   RawVarMeta,
   SourceFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import type { SessionStore } from '@entities/session/session.store';
 import type { TelemetrySnapshot } from '@shared/contracts/telemetry-snapshot';
 import type { FpsDiagnosticsStore } from './fps-diagnostics.store';

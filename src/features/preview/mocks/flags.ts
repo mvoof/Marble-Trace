@@ -1,4 +1,4 @@
-import type { RaceFlags } from '@shared/contracts/bindings';
+import type { RaceFlags } from '@shared/contracts/generated/bindings';
 
 // Mock builders for the flag domain. Pure: each takes a partial override and
 // returns a *complete* frame typed from the generated bindings, so a field

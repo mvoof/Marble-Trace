@@ -6,7 +6,7 @@ import { Copy, Maximize2, EyeOff } from 'lucide-react';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import type { GroupedRemoteScreen } from '@entities/layout/layouts.store';
 import { DEFAULT_REMOTE_BACKGROUND } from '@shared/lib/remote-screen';
-import type { RemoteDevice } from '@shared/contracts/bindings';
+import type { RemoteDevice } from '@shared/contracts/generated/bindings';
 import rowStyles from './RemoteScreenRow.module.scss';
 
 const ICON_SIZE = 14;

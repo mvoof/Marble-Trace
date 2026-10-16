@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { RaceFlags } from '@shared/contracts/bindings';
+import type { RaceFlags } from '@shared/contracts/generated/bindings';
 import { mockFlags } from '@features/preview/mocks/flags';
 import { FlagsStore } from './flags.store';
 

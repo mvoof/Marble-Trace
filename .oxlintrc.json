@@ -59,7 +59,7 @@
     "node_modules/**",
     "src-tauri/target/**",
     "src-tauri/gen/schemas/**",
-    "src/shared/contracts/bindings.ts",
+    "src/shared/contracts/generated/**",
     "src/storybook/__mocks__/**",
     ".storybook/**"
   ],

@@ -1,11 +1,11 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
-import { REFERENCE_LAP_BUCKET_COUNT } from '@shared/contracts/backend-constants';
+import { REFERENCE_LAP_BUCKET_COUNT } from '@shared/contracts/generated/backend-constants';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type {
   ReferenceLapSample,
   TrackCondition,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import {
   createTraceWindowBuffers,
   EMPTY_TRACE_STATS,

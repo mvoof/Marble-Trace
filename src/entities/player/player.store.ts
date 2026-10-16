@@ -10,7 +10,7 @@ import type {
   PitServiceFrame,
   PitTargetFrame,
   SafetyRatingFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 export class PlayerStore {
   /**

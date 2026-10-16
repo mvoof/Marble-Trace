@@ -16,7 +16,7 @@ import type {
   WidgetDefaultConfig,
   WidgetUserSettings,
 } from '@shared/contracts/widget-settings';
-import type { CapabilitiesPayload } from '@shared/contracts/bindings';
+import type { CapabilitiesPayload } from '@shared/contracts/generated/bindings';
 
 /** The sim's capabilities, which decide the widgets a sim can show. */
 interface WidgetDefaultsDeps {

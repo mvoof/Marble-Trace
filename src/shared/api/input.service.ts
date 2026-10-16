@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import type {
   InputDevice,
   InputDeviceResolution,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 export const resolveInputDevices = async (
   known: InputDevice[]

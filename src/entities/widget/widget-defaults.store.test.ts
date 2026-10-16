@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
 import { PreviewCore } from '@app/roots/renderer-core';
 import { DEFAULT_WIDGETS } from './widget-catalog';
-import type { CapabilitiesPayload } from '@shared/contracts/bindings';
+import type { CapabilitiesPayload } from '@shared/contracts/generated/bindings';
 
 const FULL_CAPABILITIES: CapabilitiesPayload = {
   playerDynamics: true,

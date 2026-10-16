@@ -3,7 +3,7 @@ import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useLayoutEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { NearbyCar } from '@shared/contracts/bindings';
+import type { NearbyCar } from '@shared/contracts/generated/bindings';
 import type { BaseUserSettings } from '@shared/contracts/widget-settings';
 import type { UnitSystem } from '@shared/contracts/domain';
 import { formatDistance } from '@shared/lib/telemetry-format';

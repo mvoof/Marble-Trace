@@ -4,7 +4,7 @@ import type {
   TwitchAccount,
   TwitchDeviceCode,
   TwitchTokenResult,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 // Not in bindings.ts: the backend command takes this shape as a plain
 // serde struct that specta does not export.

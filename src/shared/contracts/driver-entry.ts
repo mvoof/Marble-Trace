@@ -1,7 +1,7 @@
 import type {
   CarEntry,
   DriverEntry as LiveDriverEntry,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 /**
  * The fields a driver row reads from the session roster rather than from the

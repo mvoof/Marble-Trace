@@ -1,7 +1,7 @@
 import type {
   CarEntry,
   DriverEntry as LiveDriverEntry,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import {
   SESSION_CAR_FIELDS,
   type DriverEntry,

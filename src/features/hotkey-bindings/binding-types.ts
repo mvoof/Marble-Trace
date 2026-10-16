@@ -1,4 +1,4 @@
-import type { HotkeyKind } from '@shared/contracts/bindings';
+import type { HotkeyKind } from '@shared/contracts/generated/bindings';
 import type { Binding, BindingTrigger } from '@shared/contracts/input-bindings';
 
 /** The pit service's auto switches, as an inert rule reads them. */

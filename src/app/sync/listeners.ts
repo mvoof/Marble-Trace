@@ -3,7 +3,7 @@ import { runInAction } from 'mobx';
 import { listenTo, type UnlistenFn } from '@shared/api/events.service';
 import type { RendererCore } from '@app/roots/renderer-core';
 import type { OverlayRoot } from '@app/roots/overlay-root';
-import type { OverlayModes } from '@shared/contracts/bindings';
+import type { OverlayModes } from '@shared/contracts/generated/bindings';
 import type { ControlMessage } from '@shared/contracts/client-protocol';
 import { getOverlayModes } from '@shared/api/hotkeys.service';
 import { applyControl } from './client-sync';

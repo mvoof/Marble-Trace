@@ -10,7 +10,7 @@ import { resolveAppLanguage } from '@entities/app-settings/app-settings.store';
 import { clientSnapshotFor, snapshotAppInputs } from './client-snapshot';
 import type { MainRoot } from '@app/roots/main-root';
 import type { ClientSnapshot } from '@shared/contracts/client-protocol';
-import type { RemoteDevice } from '@shared/contracts/bindings';
+import type { RemoteDevice } from '@shared/contracts/generated/bindings';
 
 /**
  * Main-window half of the remote screens: it owns the server's lifetime and

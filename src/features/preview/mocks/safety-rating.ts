@@ -1,4 +1,4 @@
-import type { SafetyRatingFrame } from '@shared/contracts/bindings';
+import type { SafetyRatingFrame } from '@shared/contracts/generated/bindings';
 
 // Mock builder for the Safety Rating estimate. Pure: it takes a partial
 // override and returns a *complete* frame typed from the generated bindings, so

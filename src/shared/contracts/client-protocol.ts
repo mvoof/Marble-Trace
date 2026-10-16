@@ -3,7 +3,7 @@ import type {
   ClientEnvelope,
   InteractHotkeyMode,
   RemoteControlKind,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import type { BindingMap } from '@shared/contracts/input-bindings';
 import type { PitStrategy } from '@shared/contracts/pit-strategy';
 import type {

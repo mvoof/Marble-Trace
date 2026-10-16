@@ -6,7 +6,7 @@ import type {
   ChatMessage,
   ChatPlatform,
   ChatPresence,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 import {
   CHAT_DELETION,
   CHAT_MESSAGE,

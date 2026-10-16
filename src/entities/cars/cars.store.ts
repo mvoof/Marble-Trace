@@ -3,7 +3,7 @@ import { makeAutoObservable, observableRef } from 'mobx';
 import type {
   CarIdxFrame,
   CarPositionsFrame,
-} from '@shared/contracts/bindings';
+} from '@shared/contracts/generated/bindings';
 
 export class CarsStore {
   carIdx: CarIdxFrame | null = null;

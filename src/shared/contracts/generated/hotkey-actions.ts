@@ -3,7 +3,7 @@
 // `bindings.ts` and only handles types; these are values, so they come from
 // here. Edit the Rust declaration, not this file.
 
-import type { HotkeyActionSpec } from '@shared/contracts/bindings';
+import type { HotkeyActionSpec } from '@shared/contracts/generated/bindings';
 
 /** Every bindable action but the generated per-widget visibility ones. */
 export const HOTKEY_ACTIONS: readonly HotkeyActionSpec[] = [

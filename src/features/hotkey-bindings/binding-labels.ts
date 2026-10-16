@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { APP_OWNER, type Binding } from '@shared/contracts/input-bindings';
 import type { HotkeyAction } from '@features/hotkey-bindings/binding-types';
-import type { InputDevice } from '@shared/contracts/bindings';
+import type { InputDevice } from '@shared/contracts/generated/bindings';
 import type { ActionRegistry } from '@features/hotkey-bindings/action-registry';
 import { POV_BUTTON_BASE, POV_DIRECTION_COUNT } from './pov';
 

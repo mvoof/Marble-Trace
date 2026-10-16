@@ -5,7 +5,10 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import type { ChatMessage, ChatPresence } from '@shared/contracts/bindings';
+import type {
+  ChatMessage,
+  ChatPresence,
+} from '@shared/contracts/generated/bindings';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type { StreamChatHotkeyTarget } from '@features/hotkey-bindings/hotkey-targets';
 import { scrollThumbFor, type ScrollThumb } from '@shared/lib/canvas';

@@ -2,7 +2,7 @@ import {
   DEFAULT_PIT_WARNING_LAPS,
   FUEL_AVG_WINDOW_ALL_LAPS,
   FUEL_AVG_WINDOW_MAX,
-} from '@shared/contracts/backend-constants';
+} from '@shared/contracts/generated/backend-constants';
 import {
   bool,
   choice,
