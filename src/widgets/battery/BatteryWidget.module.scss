@@ -1,7 +1,7 @@
-// The slant every cell and the bar itself are cut on. One angle, declared once:
-// the cells lean along the direction of travel, and a second value anywhere
-// would show up as a cell out of step with its neighbours.
-$cell-slant: -8deg;
+// How far a cell's top edge leans ahead of its foot: the bar's height × tan 8°.
+// One value, declared once: the cells lean along the direction of travel, and a
+// second value anywhere would show up as a cell out of step with its neighbours.
+$cell-slant: ws(1.25);
 
 .root {
   width: 100%;
@@ -97,6 +97,15 @@ $cell-slant: -8deg;
   white-space: nowrap;
 }
 
+// Three digit cells whatever the charge, so 100 and 9 sit in the same slot and
+// the bar beside them never changes length. The pad in the text cannot hold it:
+// a leading space in an inline-block cell renders zero wide.
+.chargeDigits {
+  display: inline-block;
+  min-width: 3ch;
+  text-align: right;
+}
+
 .chargeUnit {
   font-size: 0.5em;
   opacity: 0.6;
@@ -104,11 +113,12 @@ $cell-slant: -8deg;
 
 // The gap is a seam between cells, not a space they sit in: hold it near a
 // sixth of the cell pitch and the bar reads as one lit strip divided up, let it
-// grow and the same cells read as hatching with the bar missing.
+// grow and the same cells read as hatching with the bar missing. The slant is
+// taken back out of it, so the seam between two cut cells stays ws(1.5).
 .bar {
   display: flex;
   align-items: stretch;
-  gap: ws(1.5);
+  gap: calc(#{ws(1.5)} - #{$cell-slant});
   flex: 1 1 auto;
   min-width: 0;
   height: ws(9);
@@ -117,8 +127,15 @@ $cell-slant: -8deg;
 .cell {
   flex: 1 1 0;
   min-width: 0;
-  border-radius: 2px;
-  transform: skewX($cell-slant);
+  // A parallelogram cut inside the cell's own box, not a skew transform: a skew
+  // pushes the anti-aliased edges outside the box the webview repaints, and a
+  // cell that goes dark in one frame leaves a sliver of its colour behind.
+  clip-path: polygon(
+    #{$cell-slant} 0,
+    100% 0,
+    calc(100% - #{$cell-slant}) 100%,
+    0 100%
+  );
 }
 
 .cellFull {

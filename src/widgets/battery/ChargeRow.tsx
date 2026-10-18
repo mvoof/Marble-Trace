@@ -32,7 +32,10 @@ export const ChargeRow = observer(() => {
       <div className={`${styles.chargeDivider} ${DIVIDER_CLASS[level]}`} />
 
       <div className={styles.chargeValue}>
-        <FixedDigits text={formatChargePct(charge)} />
+        <FixedDigits
+          className={styles.chargeDigits}
+          text={formatChargePct(charge)}
+        />
         <span className={styles.chargeUnit}>%</span>
       </div>
     </div>
