@@ -98,8 +98,7 @@ $cell-slant: ws(1.25);
 }
 
 // Three digit cells whatever the charge, so 100 and 9 sit in the same slot and
-// the bar beside them never changes length. The pad in the text cannot hold it:
-// a leading space in an inline-block cell renders zero wide.
+// the bar beside them never changes length.
 .chargeDigits {
   display: inline-block;
   min-width: 3ch;
