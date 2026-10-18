@@ -79,7 +79,7 @@ export const formatMguPowerKw = (watts: number | null): string => {
   return `${sign}${Math.abs(kw).toString().padStart(3, ' ')}`;
 };
 
-/** Charge as a whole percent, padded so 9% and 90% occupy the same width. */
+/** Charge as a whole percent; the readout reserves the three-digit slot. */
 export const formatChargePct = (fraction: number | null): string => {
   if (fraction === null) {
     return '··';
