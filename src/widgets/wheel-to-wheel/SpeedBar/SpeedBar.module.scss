@@ -1,20 +1,33 @@
+// Segments are parallelograms cut by clip-path, not skewed with a transform: a
+// skew pushes anti-aliased edges outside the box the webview repaints, and a
+// segment that goes dark in one frame left a sliver of its accent behind.
+// The slant is height × tan(20°); the flex gap gives it back so the visible gap
+// between segments stays sp('xxs').
 .bar {
+  --segment-slant: #{ws(3)};
+
   display: flex;
-  gap: sp('xxs');
+  gap: calc(#{sp('xxs')} - var(--segment-slant));
   width: 100%;
   height: ws(8);
 }
 
 .barCompact {
+  --segment-slant: #{ws(1.5)};
+
   height: ws(4);
 }
 
 .segment {
   flex: 1 1 0;
   min-width: 0;
-  border-radius: radius('sm');
   background: $widget-border-subtle;
-  transform: skewX(-20deg);
+  clip-path: polygon(
+    var(--segment-slant) 0,
+    100% 0,
+    calc(100% - var(--segment-slant)) 100%,
+    0 100%
+  );
 }
 
 .segmentLit {
