@@ -44,7 +44,11 @@ const DEV_ORIGIN: &str = "http://localhost:1420";
 
 #[derive(Clone)]
 struct ServerState {
-    app: AppHandle,
+    // Behind an `Arc` because axum clones the state on every request, on any
+    // worker thread, and an `AppHandle` clone bumps a non-atomic `Rc` inside
+    // tao's Windows event loop. A page reload's burst of parallel requests
+    // raced that count until the process aborted with ILLEGAL_INSTRUCTION.
+    app: Arc<AppHandle>,
     hub: Arc<RemoteHub>,
     dev: bool,
 }
@@ -132,7 +136,7 @@ pub async fn serve(
     let dev = cfg!(debug_assertions);
 
     let state = ServerState {
-        app,
+        app: Arc::new(app),
         hub: Arc::clone(&hub),
         dev,
     };
@@ -360,7 +364,7 @@ async fn websocket(
 /// One connected browser. Reads nothing but keepalives: the remote screens are
 /// read-only by protocol, so a compromised client on the network cannot write
 /// into the user's settings.
-async fn client_loop(socket: WebSocket, app: AppHandle, hub: Arc<RemoteHub>, screen: String) {
+async fn client_loop(socket: WebSocket, app: Arc<AppHandle>, hub: Arc<RemoteHub>, screen: String) {
     let (mut sink, mut stream) = socket.split();
     let mut rx = hub.subscribe();
 
