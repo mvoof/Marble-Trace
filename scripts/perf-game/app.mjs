@@ -46,15 +46,46 @@ export const assertAppNotRunning = () => {
   }
 };
 
+/** Widest row `pack` lays out before starting the next, in layout pixels. */
+const PACK_ROW_WIDTH = 1900;
+const PACK_GAP = 8;
+
+/**
+ * Moves the widgets into rows from the monitor's top-left corner, tallest
+ * first, so the overlay window can shrink to them without cutting any off.
+ */
+const packFromTopLeft = (widgets) => {
+  const byHeight = [...widgets].sort(
+    (first, second) => second.frame.height - first.frame.height
+  );
+  let rowX = 0;
+  let rowY = 0;
+  let rowHeight = 0;
+
+  for (const widget of byHeight) {
+    if (rowX > 0 && rowX + widget.frame.width > PACK_ROW_WIDTH) {
+      rowX = 0;
+      rowY += rowHeight + PACK_GAP;
+      rowHeight = 0;
+    }
+
+    widget.frame.x = rowX;
+    widget.frame.y = rowY;
+    rowX += widget.frame.width + PACK_GAP;
+    rowHeight = Math.max(rowHeight, widget.frame.height);
+  }
+};
+
 /**
  * What a run changes in the settings. Only the given fields are touched:
  * `layout` becomes the active layout with layout auto-switching off (a replay
  * would switch it back to its session's layout), `widgets` keeps only those
- * instance ids on among the ones already on, `rateHz` sets the overlay update
- * rate.
+ * instance ids on among the ones already on, `pack` gathers them in the
+ * monitor's top-left corner, `rateHz` sets the overlay update rate.
  */
-const applyRunSettings = (settings, { layout, widgets, rateHz }) => {
+const applyRunSettings = (settings, { layout, widgets, pack, rateHz }) => {
   const enabled = [];
+  const extents = [];
 
   if (layout) {
     const target = settings.layouts.find(
@@ -77,6 +108,8 @@ const applyRunSettings = (settings, { layout, widgets, rateHz }) => {
   const keep = widgets ? new Set(widgets) : null;
 
   for (const monitor of active?.monitors ?? []) {
+    const shown = [];
+
     for (const widget of monitor.widgets) {
       if (widget.enabled === false) {
         continue;
@@ -86,7 +119,24 @@ const applyRunSettings = (settings, { layout, widgets, rateHz }) => {
         widget.enabled = false;
       } else {
         enabled.push(`${monitor.name}/${widget.id}`);
+        shown.push(widget);
       }
+    }
+
+    if (pack) {
+      packFromTopLeft(shown);
+    }
+
+    if (shown.length > 0) {
+      extents.push({
+        monitor: monitor.name,
+        right: Math.max(
+          ...shown.map((widget) => widget.frame.x + widget.frame.width)
+        ),
+        bottom: Math.max(
+          ...shown.map((widget) => widget.frame.y + widget.frame.height)
+        ),
+      });
     }
   }
 
@@ -94,7 +144,7 @@ const applyRunSettings = (settings, { layout, widgets, rateHz }) => {
     settings.app.overlayUpdateHz = rateHz;
   }
 
-  return { layout: active?.name, enabled };
+  return { layout: active?.name, enabled, extents };
 };
 
 /**
@@ -119,9 +169,11 @@ export const withRunSettings = async (outDir, change, body) => {
 
 /**
  * Starts the app, waits for it, hides its settings window. `env` adds to the
- * environment — a tape, a debugging port. Returns a function that stops it.
+ * environment — a tape, a debugging port. `afterStart` gets the process id
+ * once the windows are up, before the settle wait. Returns a function that
+ * stops it.
  */
-export const launchApp = async (env = {}) => {
+export const launchApp = async (env = {}, afterStart = () => {}) => {
   const child = spawn(APP_EXE, [], {
     env: { ...process.env, ...env },
     stdio: 'ignore',
@@ -130,6 +182,7 @@ export const launchApp = async (env = {}) => {
 
   await sleep(STARTUP_SECONDS * MS_PER_SECOND);
   minimizeSettingsWindow(child.pid);
+  afterStart(child.pid);
   await sleep(SETTLE_SECONDS * MS_PER_SECOND);
 
   const stop = async () => {

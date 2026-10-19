@@ -62,6 +62,43 @@ $found = New-Object System.Collections.ArrayList
   $true }, [IntPtr]::Zero) | Out-Null
 $found -join ','`);
 
+const SWP_NOMOVE = 0x0002;
+const SWP_NOZORDER = 0x0004;
+const SWP_NOACTIVATE = 0x0010;
+const DEFAULT_DPI = 96;
+
+/**
+ * Shrinks every overlay window of the app with this process id to `width` ×
+ * `height` layout pixels (scaled by the window's DPI), keeping its top-left
+ * corner, and returns each one's rect after the change. Widgets are placed
+ * from that corner, so the ones inside the size stay where they were.
+ */
+export const resizeOverlayWindows = (processId, width, height) =>
+  runPowerShell(`${USER32}
+Add-Type -Namespace PerfGame -Name Placement -MemberDefinition @'
+[StructLayout(LayoutKind.Sequential)] public struct Rect { public int Left; public int Top; public int Right; public int Bottom; }
+[DllImport("user32.dll")] public static extern bool SetWindowPos(System.IntPtr window, System.IntPtr after, int x, int y, int width, int height, uint flags);
+[DllImport("user32.dll")] public static extern bool GetWindowRect(System.IntPtr window, out Rect rect);
+[DllImport("user32.dll")] public static extern uint GetDpiForWindow(System.IntPtr window);
+'@ -ErrorAction SilentlyContinue
+$found = New-Object System.Collections.ArrayList
+[PerfGame.User32]::EnumWindows({ param($window, $parameter)
+  $owner = 0
+  [void][PerfGame.User32]::GetWindowThreadProcessId($window, [ref]$owner)
+  if ($owner -eq ${processId}) {
+    $title = New-Object System.Text.StringBuilder 256
+    [void][PerfGame.User32]::GetWindowText($window, $title, 256)
+    if ($title.ToString() -like 'Marble Trace Overlay*') {
+      $scale = [PerfGame.Placement]::GetDpiForWindow($window) / ${DEFAULT_DPI}
+      [void][PerfGame.Placement]::SetWindowPos($window, [IntPtr]::Zero, 0, 0, [int](${width} * $scale), [int](${height} * $scale), ${SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE})
+      $rect = New-Object PerfGame.Placement+Rect
+      [void][PerfGame.Placement]::GetWindowRect($window, [ref]$rect)
+      [void]$found.Add("$($title.ToString()): $($rect.Left),$($rect.Top) $($rect.Right - $rect.Left)x$($rect.Bottom - $rect.Top)")
+    }
+  }
+  $true }, [IntPtr]::Zero) | Out-Null
+$found -join '; '`);
+
 const SCREENSHOT_SCALE = 2;
 
 /** Saves the primary screen, at half size, to `filePath`. */
