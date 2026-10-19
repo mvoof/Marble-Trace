@@ -15,6 +15,7 @@ line; it is never edited into agreeing with the new one.
 | [0007](0007-main-owns-settings.md)                 | Main owns the settings; every other window is a client of one protocol                                  | accepted, 2026-10-05      |
 | [0008](0008-frontend-by-feature-sliced-design.md)  | The frontend is laid out by Feature-Sliced Design; a widget's settings are described once, in its slice | accepted, 2026-10-08      |
 | [0009](0009-overlay-changes-on-one-clock.md)       | The overlay changes on one clock, 30 Hz by default; nothing on it animates between ticks                | accepted, 2026-10-12      |
+| [0010](0010-overlay-window-covers-its-monitor.md)  | The overlay window covers its whole monitor; it is not shrunk to the widgets' bounding box              | accepted, 2026-10-19      |
 
 When a decision is resolved, see [`docs/agents/domain.md`](../agents/domain.md)
 for how the record is written.
