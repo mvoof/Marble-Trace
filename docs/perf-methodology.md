@@ -247,7 +247,7 @@ Pitfalls found the hard way:
 
 ## Results so far
 
-Ryzen 7 7700, RTX 4070, 3440×1440 @ 164 Hz, WebView2 154, iRacing full screen,
+Ryzen 7 7700, RTX 4070, 3440×1440 @ 164 Hz, WebView2 154, iRacing borderless windowed,
 GPU-bound (~90 % busy, `GPUBusy` ~6.3 ms of a ~6.5 ms frame), one replay
 segment at Road Atlanta, 2026-10-12.
 

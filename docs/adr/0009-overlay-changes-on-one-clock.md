@@ -27,7 +27,7 @@ Every change of the overlay makes DWM compose a frame on the GPU the game is
 drawing on. A static overlay costs the game almost nothing; a changing one
 costs it in proportion to how often it changes, whatever is drawn and however
 small. Measured on one machine (Ryzen 7 7700, RTX 4070, 3440×1440 @ 164 Hz,
-the game GPU-bound at ~90 %), iRacing full screen, one replay segment, 90 s
+the game GPU-bound at ~90 %), iRacing borderless windowed, one replay segment, 90 s
 per run:
 
 | overlay                                       | avg FPS         | 1% low (p99)   | stutters/min  |

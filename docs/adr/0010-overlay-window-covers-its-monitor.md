@@ -18,7 +18,8 @@ nothing in it changes. A bbox window would remove that cost, but it removes
 nothing that a driver feels, and real layouts leave nothing to shrink.
 
 Measured on one machine (Ryzen 7 7700, RTX 4070, 3440×1440 @ 164 Hz),
-iRacing full screen, one replay point, 90 s per run, three runs per variant.
+iRacing borderless windowed (an overlay cannot draw over exclusive full
+screen), one replay point, 90 s per run, three runs per variant.
 In each pair the same widgets are packed in the monitor's top-left corner and
 draw the same pixels. Only the window differs: the whole monitor, or shrunk
 from that corner to the widgets plus 16 px.
