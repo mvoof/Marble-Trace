@@ -24,6 +24,11 @@
 //             for the run so the replay's session cannot switch it back
 // --widgets   instance ids to keep on (comma-separated); the rest switched off
 // --rate      overlay update rate in Hz: 60, 30, 20 or 15
+// --pack      gather the widgets that are on in rows from the monitor's
+//             top-left corner, for this run only
+// --shrink-overlay  shrink the overlay window from its top-left corner to the
+//             widgets on it (with --pack: to the cluster) — the window-area
+//             variant of docs/perf-methodology.md; one monitor only
 // --no-app    capture the game alone, after the same lead time as an app run
 // --rewind    rewind the replay to the point `mark` saved and play it first
 // --elevate   let PresentMon ask for administrator rights (UAC) itself; not
@@ -58,6 +63,7 @@ import {
 } from './perf-game/probes.mjs';
 import {
   ownsForegroundWindow,
+  resizeOverlayWindows,
   saveScreenshot,
 } from './perf-game/powershell.mjs';
 import { markReplayPoint, rewindReplay } from './perf-game/replay.mjs';
@@ -71,8 +77,16 @@ const DEFAULT_PROCESS_SECONDS = 30;
 /** What an app run spends starting and settling, so a game-only capture covers the same stretch. */
 const APP_LEAD_SECONDS = 20;
 const OVERLAY_RATES_HZ = [60, 30, 20, 15];
+/** Room around the widgets a shrunk overlay keeps, for shadows and outlines. */
+const SHRINK_PADDING = 16;
 
-const FLAGS = new Set(['no-app', 'elevate', 'rewind']);
+const FLAGS = new Set([
+  'no-app',
+  'elevate',
+  'rewind',
+  'pack',
+  'shrink-overlay',
+]);
 
 const parseArgs = (argv) => {
   const [command, ...rest] = argv;
@@ -122,6 +136,7 @@ const runChange = (options) => {
   return {
     layout: options.layout,
     widgets: options.widgets?.split(',').filter(Boolean),
+    pack: Boolean(options.pack),
     rateHz,
   };
 };
@@ -133,6 +148,30 @@ const tapeEnv = (options) =>
         MARBLE_TRACE_REPLAY_FROM: options.from ?? '0',
       }
     : {};
+
+/** What `launchApp` runs once the overlay is up: shrinks it if asked to. */
+const shrinkOverlayStep = (options, extents) => {
+  if (!options['shrink-overlay']) {
+    return undefined;
+  }
+
+  if (extents.length !== 1) {
+    throw new Error(
+      `--shrink-overlay needs widgets on exactly one monitor, have ${extents.length}`
+    );
+  }
+
+  const [{ right, bottom }] = extents;
+
+  return (processId) => {
+    const rects = resizeOverlayWindows(
+      processId,
+      right + SHRINK_PADDING,
+      bottom + SHRINK_PADDING
+    );
+    console.error(`overlay shrunk: ${rects || 'no overlay window found'}`);
+  };
+};
 
 const run = async (options) => {
   if (!options.name) {
@@ -171,7 +210,10 @@ const run = async (options) => {
       console.error(
         `${applied.layout}: ${applied.enabled.length} widgets on — ${applied.enabled.join(' ')}`
       );
-      const stop = await launchApp();
+      const stop = await launchApp(
+        {},
+        shrinkOverlayStep(options, applied.extents)
+      );
 
       try {
         await captureGame();
