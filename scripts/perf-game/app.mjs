@@ -31,6 +31,8 @@ const MS_PER_SECOND = 1000;
 const STARTUP_SECONDS = 12;
 /** After hiding the settings window, before anything is measured. */
 const SETTLE_SECONDS = 8;
+/** Seconds `stop` keeps killing the app before it gives up. */
+const STOP_ATTEMPTS = 15;
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -186,17 +188,31 @@ export const launchApp = async (env = {}, afterStart = () => {}) => {
   await sleep(SETTLE_SECONDS * MS_PER_SECOND);
 
   const stop = async () => {
-    for (const processId of processIdsOf(APP_PROCESS_NAME)) {
-      try {
-        process.kill(processId);
-      } catch {
-        // Already gone.
+    // The app's own exit path saves the settings: the restore that follows
+    // must not start while any instance is still alive to overwrite it.
+    for (let attempt = 0; attempt < STOP_ATTEMPTS; attempt += 1) {
+      const running = processIdsOf(APP_PROCESS_NAME);
+
+      if (running.length === 0) {
+        await sleep(MS_PER_SECOND);
+
+        return;
       }
+
+      for (const processId of running) {
+        try {
+          process.kill(processId);
+        } catch {
+          // Already gone.
+        }
+      }
+
+      await sleep(MS_PER_SECOND);
     }
 
-    // The app's own exit path saves the settings; give it no chance to race
-    // the restore that follows.
-    await sleep(MS_PER_SECOND);
+    throw new Error(
+      'Marble Trace is still running after the run — close it before the settings are restored'
+    );
   };
 
   return stop;
