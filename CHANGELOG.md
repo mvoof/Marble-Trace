@@ -16,11 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Smoother Game With the Overlay On:** The overlay now updates on one steady clock, 30 Hz by default, and widgets no longer animate between updates. In our tests the game's 1% low FPS rose from 69 to about 97 and stutters dropped to a third.
-- **Radar During the Formation Lap:** While the field is lined up behind the pace car, the radar places cars by their formation columns and shows no warnings or threat colours.
+- **Radar During the Formation Lap:** While the field is lined up behind the pace car, the radar shows the cars in your own column ahead and behind, and no warnings or threat colours. The other column is not drawn: iRacing does not say which side it is on.
 
 ### Fixed
 
 - **Crash on Remote Screen Reload:** Refreshing a remote screen, such as an OBS browser source, could crash the app.
+- **"Class 0" Instead of GT4:** A GT4 field with the BMW M4 G82 GT4 Evo or the Ford Mustang GT4 is now badged GT4 in AI and hosted sessions, not "Class 0".
 - **Battery Bar Jumping at 99%:** The battery widget no longer changes width when the charge drops from 100 to 99.
 
 ## [0.26.0] — 2026-10-12
