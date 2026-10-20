@@ -5,7 +5,7 @@ import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { steeringAngleDeg } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import Logo from '@assets/brand-mark-mono.svg?react';
+import Logo from '@assets/brand-mark.svg?react';
 import { getWheelArt } from './WheelArt';
 import styles from './SteeringWheel.module.scss';
 import type { InputTraceSettings } from '../settings-schema';
