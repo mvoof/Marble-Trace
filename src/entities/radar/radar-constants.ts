@@ -106,5 +106,10 @@ export const scopeDistanceOf = (car: {
     return Math.abs(car.longitudinalDist);
   }
 
+  // The next column of a formation is drawn nowhere, so it never wakes the scope.
+  if (car.lateralSide === 'otherColumn') {
+    return Infinity;
+  }
+
   return Math.hypot(SIDE_LATERAL_OFFSET_M, car.longitudinalDist);
 };

@@ -201,6 +201,24 @@ mod tests {
         );
     }
 
+    /// An AI race at the Charlotte Roval (2026-10-20): six GT4 makes in class 0,
+    /// unnamed by the sim. One unmapped make had left the class as "Class 0".
+    #[test]
+    fn badges_a_multi_make_gt4_ai_race() {
+        let mut cars = vec![
+            make_car(0, 0, 119, "Porsche 718 Cayman GT4", ""),
+            make_car(1, 0, 135, "Mclaren 570s GT4", ""),
+            make_car(2, 0, 150, "Aston Martin Vantage GT4", ""),
+            make_car(3, 0, 157, "Mercedes AMG GT4", ""),
+            make_car(4, 0, 189, "BMW M4 G82 GT4 EVO", ""),
+            make_car(5, 0, 204, "Ford Mustang GT4", ""),
+        ];
+
+        apply_class_badges(&mut cars);
+
+        assert_eq!(badges(&cars), ["GT4"; 6]);
+    }
+
     #[test]
     fn a_lone_category_car_is_badged_by_its_category() {
         let mut cars = vec![make_car(0, 4036, 173, "Ferrari 296 GT3", "Ferrari 296 GT3")];

@@ -165,27 +165,15 @@ export class BackendComputedStore {
   }
 
   /**
-   * A car alongside on the left: the spotter's call, or in a pace formation a
-   * car of the next column, which the spotter does not call.
+   * A car alongside on the left, as the spotter calls it. The next column of a
+   * pace formation is on no side: the sim does not say which.
    */
   get carAlongsideLeft(): boolean {
-    const proximity = this.proximity;
-
-    if (proximity?.formation) {
-      return proximity.radarDistances.leftDist !== null;
-    }
-
     return this.spotterLeft;
   }
 
   /** The right-hand twin of `carAlongsideLeft`. */
   get carAlongsideRight(): boolean {
-    const proximity = this.proximity;
-
-    if (proximity?.formation) {
-      return proximity.radarDistances.rightDist !== null;
-    }
-
     return this.spotterRight;
   }
 

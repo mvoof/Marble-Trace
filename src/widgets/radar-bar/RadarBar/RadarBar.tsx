@@ -79,7 +79,7 @@ const signOf = (rawDist: number): string => {
  * One side of the bar radar. The distance to the car alongside changes on every
  * proximity frame, so the pill's position, its colour and its label all go to
  * the DOM through the reactive-DOM primitive; what re-renders this component is
- * only the side turning on and off — by the spotter, or the formation's columns. See `docs/rendering.md`.
+ * only the side turning on and off, as the spotter calls it. See `docs/rendering.md`.
  */
 export const RadarBar = observer(({ side }: RadarBarProps) => {
   const units = useUnitsStore();
