@@ -65,16 +65,20 @@ const CAR_ID_BADGES: &[(i32, &str)] = &[
     // GT4
     (119, GT4), // Porsche 718 Cayman GT4 — verified
     (122, GT4),
-    (135, GT4),
-    (150, GT4),
+    (135, GT4), // McLaren 570S GT4 — verified
+    (150, GT4), // Aston Martin Vantage GT4 — verified
     (157, GT4), // Mercedes AMG GT4 — verified
+    (189, GT4), // BMW M4 G82 GT4 Evo — verified
+    (204, GT4), // Ford Mustang GT4 — verified
     // GTE
+    (40, GTE), // Ford GT GT2 — iRacing lists it as a GTE car
     (92, GTE),
     (93, GTE), // Ferrari 488 GTE — verified
     (102, GTE),
     (109, GTE),
     (127, GTE),
-    // GTP / LMDh
+    // GTP / LMDh, and the historic Nissan GTP ZX-T
+    (77, GTP),
     (159, GTP),
     (168, GTP),
     (170, GTP),
