@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Smoother Game With the Overlay On:** The overlay now updates on one steady clock, 30 Hz by default, and widgets no longer animate between updates. In our tests the game's 1% low FPS rose from 69 to about 97 and stutters dropped to a third.
 - **Radar During the Formation Lap:** While the field is lined up behind the pace car, the radar shows the cars in your own column ahead and behind, and no warnings or threat colours. The other column is not drawn: iRacing does not say which side it is on.
+- **New Logo:** Marble Trace has a new mark, in the app, on its icon and on the website.
 
 ### Fixed
 
