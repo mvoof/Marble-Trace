@@ -164,9 +164,9 @@ fn formation_of(pacing: &PacingFrame, player_idx: usize) -> Option<Formation> {
 /// The sim does not say which side the pole column is on, and no rule fits
 /// every track: both are road courses, yet the pole line ran on the left at
 /// the Charlotte Roval and on the right at Spa (AI races, 2026-10-20). The
-/// spotter is silent while pacing, so nothing tells the side — the next
-/// column is `OtherColumn`. Tracks are being checked for a rule in
-/// https://github.com/mvoof/Marble-Trace/issues/612.
+/// spotter is mostly silent while pacing, so the next column is
+/// `OtherColumn` unless the spotter calls a car's side. Tracks are being
+/// checked for a rule in https://github.com/mvoof/Marble-Trace/issues/612.
 fn formation_side(formation: &Formation, line: i32) -> LateralSide {
     if !formation.double_file || line < 0 || line == formation.player_line {
         return LateralSide::Center;
@@ -302,11 +302,19 @@ pub fn compute(
     });
 
     let formation = formation_of(pacing, player_idx);
+    let called_sides = spotter_sides(spotter, &cars);
 
+    // A side the spotter calls is known, so it wins over the formation's
+    // columns; every other car keeps its place in or beside the player's line.
     let sides = match &formation {
         Some(formation) => cars
             .iter()
-            .map(|&(idx, _)| {
+            .zip(called_sides)
+            .map(|(&(idx, _), called)| {
+                if called != LateralSide::Center {
+                    return called;
+                }
+
                 let line = pacing
                     .car_idx_pace_line
                     .get(idx as usize)
@@ -316,7 +324,7 @@ pub fn compute(
                 formation_side(formation, line)
             })
             .collect(),
-        None => spotter_sides(spotter, &cars),
+        None => called_sides,
     };
 
     let nearby_cars: Vec<NearbyCar> = cars
@@ -507,12 +515,30 @@ mod tests {
     }
 
     #[test]
+    fn a_side_the_spotter_calls_in_formation_places_the_car() {
+        let pacing = PacingFrame {
+            formation: PaceFormation::DoubleFile,
+            // player in column 1; car 1 beside in the other column, car 2
+            // ahead in the other column too
+            car_idx_pace_line: vec![1, 0, 0],
+        };
+        let frame = run(&car_idx_frame(&[0.5, 9.0], SpotterState::CarLeft), &pacing);
+
+        assert!(frame.formation);
+        assert_eq!(side_of(&frame, 1), LateralSide::Left);
+        assert_eq!(side_of(&frame, 2), LateralSide::OtherColumn);
+        let left = frame.radar_distances.left_dist.expect("car called left");
+        assert!((left - 0.5).abs() < 0.01);
+        assert!(frame.radar_distances.front_dist.is_none());
+    }
+
+    #[test]
     fn single_file_keeps_everyone_in_the_players_lane() {
         let pacing = PacingFrame {
             formation: PaceFormation::SingleFile,
             car_idx_pace_line: vec![0, 0, 0],
         };
-        let frame = run(&car_idx_frame(&[1.0, -8.0], SpotterState::CarLeft), &pacing);
+        let frame = run(&car_idx_frame(&[1.0, -8.0], SpotterState::Clear), &pacing);
 
         assert!(frame.formation);
         assert_eq!(side_of(&frame, 1), LateralSide::Center);
