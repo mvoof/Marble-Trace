@@ -2465,8 +2465,8 @@ button:focus-visible {
 }
 
 .perf-node-app .perf-node-icon img {
-  width: 2.6rem;
-  height: auto;
+  width: auto;
+  height: 2.6rem;
 }
 
 .perf-node-name {
