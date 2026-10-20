@@ -61,10 +61,13 @@ export const VeryClose: Story = {
   args: { cars: [{ carIdx: 7, longitudinalDist: 0.3, side: 'left' }] },
 };
 
-/** Double file behind the pace car: the car alongside is the next column. */
+/**
+ * Double file behind the pace car: the next column alongside is on no side,
+ * since the sim does not say which, so the bar shows nothing for it.
+ */
 export const PaceFormation: Story = {
   args: {
     formation: true,
-    cars: [{ carIdx: 1, longitudinalDist: 0.3, side: 'right' }],
+    cars: [{ carIdx: 1, longitudinalDist: 0.3, side: 'otherColumn' }],
   },
 };

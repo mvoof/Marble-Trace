@@ -1383,7 +1383,16 @@ export type LapTimingFrame = {
  */
 export type LastCompletedLap = { lapNum: number; delta: number | null };
 
-export type LateralSide = 'left' | 'right' | 'center';
+export type LateralSide =
+  | 'left'
+  | 'right'
+  | 'center'
+  /**
+   * In the next column of a pace formation. The sim names the column but
+   * not the side it runs on, and that side changes from track to track, so
+   * the car is beside the player's lane without being placed left or right.
+   */
+  | 'otherColumn';
 
 export type NearbyCar = {
   carIdx: number;
@@ -1752,9 +1761,9 @@ export type ProximityFrame = {
   spotterLeft: boolean;
   spotterRight: boolean;
   /**
-   * The field is lined up behind the pace car. Sides then come from the
-   * formation's columns, and a car that close is where it should be rather
-   * than a threat — the widgets drop their warnings while this holds.
+   * The field is lined up behind the pace car. A car that close is where it
+   * should be rather than a threat — the widgets drop their warnings while
+   * this holds — and the next column is `OtherColumn`, on no side.
    */
   formation: boolean;
 };

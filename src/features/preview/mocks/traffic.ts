@@ -87,7 +87,8 @@ const computeRadarDistances = (cars: NearbyCar[]): RadarDistances => {
   let rearDist: number | null = null;
 
   for (const car of cars) {
-    if (claimed.has(car.carIdx)) {
+    // The next column of a formation is on no side, and not ahead or behind.
+    if (claimed.has(car.carIdx) || car.lateralSide === 'otherColumn') {
       continue;
     }
 

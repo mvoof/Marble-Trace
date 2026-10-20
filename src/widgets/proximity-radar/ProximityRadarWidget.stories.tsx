@@ -93,14 +93,17 @@ export const QueueAlongside: Story = {
   },
 };
 
-/** Double file behind the pace car: the next column alongside, the line ahead. */
+/**
+ * Double file behind the pace car: the player's own line ahead and behind. The
+ * next column is on no side, since the sim does not say which, and is not drawn.
+ */
 export const PaceFormation: Story = {
   args: {
     formation: true,
     cars: [
-      { carIdx: 1, longitudinalDist: 0.3, side: 'right' },
+      { carIdx: 1, longitudinalDist: 0.3, side: 'otherColumn' },
       { carIdx: 2, longitudinalDist: 6.5, side: 'center' },
-      { carIdx: 3, longitudinalDist: 6.8, side: 'right' },
+      { carIdx: 3, longitudinalDist: 6.8, side: 'otherColumn' },
       { carIdx: 4, longitudinalDist: -6.4, side: 'center' },
     ],
   },
