@@ -82,9 +82,9 @@
 }
 
 .brand-icon-wrap {
-  /* The mark is 222:124 */
-  width: 46px;
-  height: 26px;
+  /* The mark is 25:28 */
+  width: 25px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,8 +94,8 @@
 .brand-icon {
   width: 100%;
   height: 100%;
-  object-fit: contain;
   display: block;
+  color: var(--color-brand);
 }
 
 .brand-name {
@@ -354,6 +354,10 @@
   align-items: center;
   gap: 0.65rem;
   text-decoration: none;
+}
+
+.drawer-brand .brand-icon {
+  color: var(--color-drawer-text);
 }
 
 .drawer-brand .brand-name {

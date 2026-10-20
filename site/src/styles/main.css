@@ -640,6 +640,10 @@ button:focus-visible {
   gap: 0.9rem;
 }
 
+.footer-logo {
+  color: #ffffff;
+}
+
 .footer-brand .brand-name {
   font-family: var(--font-family);
   font-weight: 600;
@@ -2464,9 +2468,10 @@ button:focus-visible {
   background-color: rgba(79, 143, 227, 0.1);
 }
 
-.perf-node-app .perf-node-icon img {
-  width: 2.6rem;
-  height: auto;
+.perf-node-logo {
+  width: 2.3rem;
+  height: 2.6rem;
+  color: #ffffff;
 }
 
 .perf-node-name {
