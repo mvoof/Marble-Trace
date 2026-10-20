@@ -12,7 +12,11 @@
   z-index: 30;
 }
 
+// Above the HeaderTrace canvas, which is absolutely positioned and would
+// otherwise paint over these static columns.
 .brand {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: rem(12);
@@ -34,12 +38,16 @@
 }
 
 .nav {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .status {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
