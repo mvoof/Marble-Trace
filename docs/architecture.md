@@ -393,9 +393,8 @@ flowchart TB
 
 The map in `car_badges.rs` is the only hand-maintained list, and it is keyed by
 **car**, not by class: the Ferrari 296 GT3 is class 2708 in a multi-make field
-and 4036 in its own series, and `GT3` in both. The order follows irdashies, with
-the map ahead of the sim's name so "GT3 Class" never reaches a badge column
-sized for `GT3`.
+and 4036 in its own series, and `GT3` in both. The map comes ahead of the sim's
+name so "GT3 Class" never reaches a badge column sized for `GT3`.
 
 `CLASS_COLOR_MAP` corrects known mismatches between telemetry and in-game colors.
 `session_parse.rs` only calls `apply_class_badges()` and `normalize_class_color()`.
