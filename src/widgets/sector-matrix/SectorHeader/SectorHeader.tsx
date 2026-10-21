@@ -37,7 +37,7 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
     <div className={styles.root}>
       <div className={styles.topRow}>
         <div className={styles.lapInfo}>
-          <span className={styles.lapTag}>▶ L{lapNum ?? '--'}</span>
+          <span className={styles.lapTag}>L{lapNum ?? '--'}</span>
 
           <span className={styles.lapTime}>
             {formatLapTime(currentLapTime)}
