@@ -83,6 +83,35 @@ describe('fillTraceWindow', () => {
     }
   });
 
+  it('draws a speed ramp on a long track as a slope, not a staircase', () => {
+    // 20 m a bucket against 2.5 m a point: a nearest-bucket lookup held each
+    // speed across eight points.
+    const rampSpeed = (bucket: number) => 30 + bucket * 0.05;
+    const referenceSamples = referenceLap(0).map((sample, bucket) => ({
+      ...sample,
+      speed: rampSpeed(bucket),
+    }));
+    const ownSpeedByBucket = Float32Array.from(
+      { length: BUCKET_COUNT },
+      (_unused, bucket) => rampSpeed(bucket) - 1
+    );
+    const buffers = createTraceWindowBuffers();
+
+    fill(buffers, {
+      referenceSamples,
+      ownSpeedByBucket,
+      trackLengthM: 20_800,
+    });
+
+    const isRising = (drawn: number[]) =>
+      drawn.every(
+        (value, index) => index === 0 || value > (drawn[index - 1] ?? 0)
+      );
+
+    expect(isRising(values(buffers.referenceSpeed))).toBe(true);
+    expect(isRising(values(buffers.ownSpeed))).toBe(true);
+  });
+
   it('reports zero delta when both laps ran the same speed', () => {
     const buffers = createTraceWindowBuffers();
 
