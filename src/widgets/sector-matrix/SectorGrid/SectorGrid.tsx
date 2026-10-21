@@ -16,6 +16,8 @@ const BORDER_COLOR_PROPERTY = '--chip-border';
 const DELTA_COLOR_PROPERTY = '--chip-delta-color';
 const TIME_COLOR_PROPERTY = '--chip-time-color';
 
+const ONE_COLUMN = 1;
+
 const colsForCount = (count: number): number => {
   if (count <= 3) return 1;
   if (count <= 6) return 2;
@@ -36,8 +38,6 @@ const applyChipState = (chip: Element, state: SectorChipState): void => {
     return;
   }
 
-  chip.classList.toggle(styles.chipCurrent, state.isCurrent);
-  chip.classList.toggle(styles.chipFuture, state.isFuture);
   chip.style.setProperty(BORDER_COLOR_PROPERTY, state.borderColor);
   chip.style.setProperty(DELTA_COLOR_PROPERTY, state.deltaColor);
   chip.style.setProperty(TIME_COLOR_PROPERTY, state.timeColor ?? '');
@@ -108,7 +108,7 @@ export const SectorGrid = observer(({ sectorCount }: Props) => {
   return (
     <div
       ref={gridRef}
-      className={styles.grid}
+      className={`${styles.grid} ${cols === ONE_COLUMN ? styles.gridOneColumn : ''}`}
       style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
     >
       {Array.from({ length: sectorCount }, (_unused, sectorIndex) => {

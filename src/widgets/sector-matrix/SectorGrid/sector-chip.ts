@@ -10,7 +10,6 @@ const NEUTRAL_COLOR = 'var(--sector-neutral)';
 const DIM_COLOR = 'var(--sector-dim)';
 const IDLE_BORDER_COLOR = 'rgba(255, 255, 255, 0.1)';
 
-const LIVE_LABEL = 'LIVE';
 const PENDING_TIME = '--.---';
 
 export interface SectorChipState {
@@ -18,7 +17,10 @@ export interface SectorChipState {
   isFuture: boolean;
   /** The sector's time, or the running one while the car is in it. */
   displayTime: string;
-  /** The delta against the personal best; absent on a sector not reached yet. */
+  /**
+   * The delta against the personal best; absent on a sector not reached yet,
+   * and on the running one until there is a best to measure it against.
+   */
   deltaText: string | null;
   deltaColor: string;
   borderColor: string;
@@ -66,29 +68,29 @@ export const sectorChipStateOf = ({
 
   const isOnLap = currentSectorIdx !== null;
 
-  const isDone =
-    (isOnLap && sectorIndex < currentSectorIdx) ||
-    (sectorTime !== null && sectorTime > 0);
-
-  const isCurrent = sectorIndex === currentSectorIdx && !isDone;
+  // The index alone decides: the backend writes the running sector's time into
+  // its slot too, so a time is no sign the car has left the sector.
+  const isCurrent = sectorIndex === currentSectorIdx;
   const isFuture = !isOnLap || sectorIndex > currentSectorIdx;
 
   const delta = sectorDeltas[sectorIndex] ?? null;
 
   const displayTime = (() => {
-    if (isDone) {
+    if (isCurrent) {
+      const completedSectorSum = sectorTimes
+        .slice(0, sectorIndex)
+        .reduce<number>((sum, time) => sum + (time ?? 0), 0);
+
+      return formatSectorTime(
+        sectorTime ?? currentLapTime - completedSectorSum
+      );
+    }
+
+    if (sectorTime !== null && sectorTime > 0) {
       return formatSectorTime(sectorTime);
     }
 
-    if (!isCurrent) {
-      return PENDING_TIME;
-    }
-
-    const completedSectorSum = sectorTimes
-      .slice(0, sectorIndex)
-      .reduce<number>((sum, time) => sum + (time ?? 0), 0);
-
-    return (currentLapTime - completedSectorSum).toFixed(3);
+    return PENDING_TIME;
   })();
 
   const borderColor = (() => {
@@ -96,7 +98,9 @@ export const sectorChipStateOf = ({
       return IDLE_BORDER_COLOR;
     }
 
-    if (isCurrent) {
+    // The running sector's edge follows its live delta, and keeps the last one
+    // once the car leaves it; green only marks it until there is a best lap.
+    if (isCurrent && delta === null) {
       return AHEAD_COLOR;
     }
 
@@ -107,12 +111,11 @@ export const sectorChipStateOf = ({
     isCurrent,
     isFuture,
     displayTime,
-    deltaText: isFuture
-      ? null
-      : isCurrent
-        ? LIVE_LABEL
+    deltaText:
+      isFuture || (isCurrent && delta === null)
+        ? null
         : formatSectorDelta(delta),
-    deltaColor: isCurrent ? DIM_COLOR : colorForDeltaState(delta),
+    deltaColor: colorForDeltaState(delta),
     borderColor,
     timeColor: isFuture ? DIM_COLOR : null,
   };
