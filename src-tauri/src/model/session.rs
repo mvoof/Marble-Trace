@@ -84,7 +84,8 @@ pub struct SessionSnapshot {
     /// the first one is given.
     pub incident_penalty_subsequent: Option<i32>,
     /// Corners on this layout (`WeekendInfo.TrackNumTurns`) — the count iRacing
-    /// scores Safety Rating by. `None` when the sim does not report it.
+    /// scores Safety Rating by, but for the layouts in `SCORED_CORNERS`
+    /// (`computations/safety_rating.rs`). `None` when the sim does not report it.
     pub track_num_turns: Option<i32>,
     /// A team event (`WeekendInfo.TeamRacing`): the incident limit and the
     /// penalties count the crew's points, not one driver's.

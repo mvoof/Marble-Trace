@@ -78,6 +78,16 @@ const SUB_LEVEL_SCALE: f64 = 100.0;
 /// a teleport covers more, and is resynchronised without crediting corners.
 const MAX_TICK_FRACTION: f64 = 0.10;
 
+/// Layouts whose Safety Rating is scored on fewer corners than the session's
+/// `TrackNumTurns` says, as (`TrackID`, corners per lap). Each value is the
+/// `corners_per_lap` of an official result on the layout; the track catalogue
+/// carries the session's number, so neither can stand in for it.
+const SCORED_CORNERS: &[(i32, i32)] = &[
+    // Nordschleife Industriefahrten: the session says 154. Subsession
+    // 89528004 — 11x took CPI 19.74 → 18.46, which 73 a lap matches.
+    (249, 73),
+];
+
 /// Sporting Code 3.6.1.1, "Table of Corner and Incident Multipliers".
 const WEIGHT_RACE: f32 = 1.0;
 const WEIGHT_OPEN: f32 = 0.5;
@@ -399,6 +409,16 @@ pub struct SafetyRatingProcessor {
     saved: Option<SafetyRatingState>,
 }
 
+/// Corners a lap of this layout is worth to the rating.
+fn scored_corners_per_lap(session: &SessionSnapshot) -> Option<f64> {
+    let scored = SCORED_CORNERS
+        .iter()
+        .find(|(track_id, _)| *track_id == session.track_id)
+        .map(|(_, corners)| *corners);
+
+    scored.or(session.track_num_turns).map(f64::from)
+}
+
 /// Points since the session's base. A counter that went backwards was reset
 /// by the sim, and becomes the new base.
 fn since_base(base: &mut Option<i32>, current: Option<i32>) -> Option<i32> {
@@ -603,7 +623,7 @@ impl SafetyRatingProcessor {
             .map(|entry| event_session_weight(&session.event_type, &entry.session_type_label))
             .unwrap_or(0.0);
         let weighting = f64::from(weight);
-        let corners_per_lap = session.track_num_turns.map(f64::from);
+        let corners_per_lap = scored_corners_per_lap(session);
         let corners = self.corners.corners(corners_per_lap.unwrap_or(0.0));
         let incidents = f64::from(driver_incidents);
 
@@ -1172,6 +1192,25 @@ mod tests {
         assert_eq!(frame.session_weight, WEIGHT_RACE);
         assert_eq!(frame.sr_start, Some(2.75));
         assert!((frame.corners_driven - 1.0).abs() < 1e-4);
+    }
+
+    #[test]
+    fn the_nordschleife_scores_its_official_corners() {
+        let session = SessionSnapshot {
+            track_id: 249,
+            track_num_turns: Some(154),
+            ..race_session(false)
+        };
+        let mut processor = SafetyRatingProcessor::default();
+
+        step(&mut processor, &session, race_tick(0.10, 0));
+        let frame = step(&mut processor, &session, race_tick(0.15, 0));
+
+        assert!(
+            (frame.corners_driven - 3.65).abs() < 1e-3,
+            "{}",
+            frame.corners_driven
+        );
     }
 
     #[test]
