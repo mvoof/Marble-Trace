@@ -105,9 +105,6 @@ export interface FillTraceWindowParams {
 
 const wrapPct = (pct: number): number => ((pct % 1) + 1) % 1;
 
-const bucketForPct = (pct: number, bucketCount: number): number =>
-  Math.min(Math.floor(wrapPct(pct) * bucketCount), bucketCount - 1);
-
 /** Seconds to cover `distanceM` at `speedMps`, floored so a stopped car cannot diverge. */
 const secondsFor = (distanceM: number, speedMps: number): number =>
   distanceM / Math.max(speedMps, MIN_SPEED_FOR_TIME_MPS);
@@ -115,26 +112,63 @@ const secondsFor = (distanceM: number, speedMps: number): number =>
 const isValue = (value: number): boolean => !Number.isNaN(value);
 
 /**
- * Nearest-bucket reference lookup. The window is sampled far more densely than
- * the reference is stored, so interpolating between buckets would only smooth a
- * curve the driver cannot act on at that resolution anyway.
+ * Where `pct` falls between two bucket centres. A bucket holds the value for
+ * the interval `[i/N, (i+1)/N)`, so its value sits at `(i + 0.5)/N`.
+ *
+ * The window is sampled far more densely than the buckets are stored — 2.5 m a
+ * point on the default window against trackLength/1000 a bucket, 20 m on the
+ * Nordschleife — so a nearest-bucket lookup holds one value across up to eight
+ * points and draws the traces as a staircase. Both traces are read along the
+ * line between the two centres instead.
+ *
+ * Written into a module-level slot rather than returned: the window is refilled
+ * on every telemetry frame and must not allocate.
  */
-const referenceSpeedAt = (
-  samples: ReferenceLapSample[] | null,
-  pct: number
-): number => {
-  if (!samples || samples.length === 0) return NO_VALUE;
+const bucketSpan = { lower: 0, upper: 0, weight: 0 };
 
-  return samples[bucketForPct(pct, samples.length)]?.speed ?? NO_VALUE;
+const locateBetweenBuckets = (pct: number, bucketCount: number) => {
+  const position = wrapPct(pct) * bucketCount - 0.5;
+  const lowerIndex = Math.floor(position);
+
+  bucketSpan.lower = (lowerIndex + bucketCount) % bucketCount;
+  bucketSpan.upper = (lowerIndex + 1) % bucketCount;
+  bucketSpan.weight = position - lowerIndex;
 };
 
-const referenceBrakeAt = (
+/**
+ * The line between two neighbouring buckets; where one of them holds nothing —
+ * the edge of what this lap has driven, a gap in a reference — the other alone.
+ */
+const blendBuckets = (lower: number, upper: number): number => {
+  if (!isValue(lower)) return upper;
+
+  if (!isValue(upper)) return lower;
+
+  return lower + (upper - lower) * bucketSpan.weight;
+};
+
+const bucketValueAt = (values: Float32Array, pct: number): number => {
+  locateBetweenBuckets(pct, values.length);
+
+  return blendBuckets(
+    values[bucketSpan.lower] ?? NO_VALUE,
+    values[bucketSpan.upper] ?? NO_VALUE
+  );
+};
+
+const referenceValueAt = (
   samples: ReferenceLapSample[] | null,
+  field: 'speed' | 'brake',
   pct: number
 ): number => {
   if (!samples || samples.length === 0) return NO_VALUE;
 
-  return samples[bucketForPct(pct, samples.length)]?.brake ?? NO_VALUE;
+  locateBetweenBuckets(pct, samples.length);
+
+  return blendBuckets(
+    samples[bucketSpan.lower]?.[field] ?? NO_VALUE,
+    samples[bucketSpan.upper]?.[field] ?? NO_VALUE
+  );
 };
 
 /**
@@ -168,7 +202,6 @@ export const fillTraceWindow = (
   }
 
   const step = (windowMeters * 2) / (TRACE_POINT_COUNT - 1);
-  const bucketCount = ownSpeedByBucket.length;
 
   let cumulativeDeltaS = NO_VALUE;
   let previousOwnSpeed = NO_VALUE;
@@ -185,17 +218,16 @@ export const fillTraceWindow = (
 
     buffers.offsetM[index] = offsetM;
 
-    const referenceSpeed = referenceSpeedAt(referenceSamples, pct);
-    const referenceBrake = referenceBrakeAt(referenceSamples, pct);
+    const referenceSpeed = referenceValueAt(referenceSamples, 'speed', pct);
+    const referenceBrake = referenceValueAt(referenceSamples, 'brake', pct);
 
     // Nothing ahead of the car has been driven this lap yet, and a bucket the
     // car has not reached still holds the previous lap's value until it is
     // cleared — both must read as absent rather than as a flat line.
-    const bucket = bucketForPct(pct, bucketCount);
     const ownSpeed =
-      offsetM > 0 ? NO_VALUE : (ownSpeedByBucket[bucket] ?? NO_VALUE);
+      offsetM > 0 ? NO_VALUE : bucketValueAt(ownSpeedByBucket, pct);
     const ownBrake =
-      offsetM > 0 ? NO_VALUE : (ownBrakeByBucket[bucket] ?? NO_VALUE);
+      offsetM > 0 ? NO_VALUE : bucketValueAt(ownBrakeByBucket, pct);
 
     buffers.referenceSpeed[index] = referenceSpeed;
     buffers.ownSpeed[index] = ownSpeed;
