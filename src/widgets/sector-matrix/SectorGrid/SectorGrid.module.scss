@@ -50,9 +50,11 @@
   align-items: baseline;
 }
 
+// The label and the delta share one row and shrink together in four- and
+// five-column grids: S20 and +10.25 at these caps fill about 92% of the chip.
 .sectorLabel {
   font-family: $font-mono;
-  font-size: fs(xs);
+  font-size: min(#{fs(xs)}, 16cqi);
   font-weight: 800;
   letter-spacing: 0.12em;
 }
@@ -70,7 +72,7 @@
 .sectorDelta {
   color: var(--chip-delta-color, var(--sector-neutral));
   font-family: $font-mono;
-  font-size: wfs(14);
+  font-size: min(#{wfs(14)}, 18cqi);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
