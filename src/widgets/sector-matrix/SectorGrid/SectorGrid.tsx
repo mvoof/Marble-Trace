@@ -21,10 +21,10 @@ const ONE_COLUMN = 1;
 const colsForCount = (count: number): number => {
   if (count <= 3) return 1;
   if (count <= 6) return 2;
-  if (count <= 12) return 3;
-  if (count <= 20) return 4;
 
-  return 5;
+  // More sectors add rows, never columns: a fourth column leaves the time too
+  // little width to stay readable.
+  return 3;
 };
 
 /**

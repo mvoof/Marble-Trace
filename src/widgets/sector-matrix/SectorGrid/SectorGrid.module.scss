@@ -50,8 +50,8 @@
   align-items: baseline;
 }
 
-// The label and the delta share one row and shrink together in four- and
-// five-column grids: S20 and +10.25 at these caps fill about 92% of the chip.
+// The label and the delta share one row and shrink together once a larger font
+// scale outgrows the chip: S20 and +10.25 at these caps fill about 92% of it.
 .sectorLabel {
   font-family: $font-mono;
   font-size: min(#{fs(xs)}, 16cqi);
@@ -77,8 +77,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-// The time never wraps, so in four- and five-column grids it shrinks to fit
-// its chip: eight monospace glyphs (1:00.000) span about 4.4em.
+// The time never wraps, so once a larger font scale outgrows the chip it
+// shrinks to fit: eight monospace glyphs (1:00.000) span about 4.4em.
 .chipTime {
   font-family: $font-mono;
   font-size: min(#{fs(lg)}, 22cqi);
