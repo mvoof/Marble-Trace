@@ -15,8 +15,8 @@
 //! 3. `CarScreenNameShort` — the car name, when the class holds one model;
 //! 4. `Class <CarClassID>` — a multi-model class nothing above could name.
 //!
-//! The order is irdashies' with the map moved ahead of the sim's name, which
-//! would otherwise print "GT3 Class" into a badge column sized for `GT3`.
+//! The map comes ahead of the sim's name, which would otherwise print "GT3
+//! Class" into a badge column sized for `GT3`.
 //!
 //! # Adding a car
 //!

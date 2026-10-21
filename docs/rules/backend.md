@@ -69,7 +69,8 @@ one badge per class is resolved from the cars in it:
 | 3   | `CarScreenNameShort` | the car name, when the class holds one model                     |
 | 4   | `Class <CarClassID>` | a multi-model class nothing above could name                     |
 
-This is irdashies' order with the map moved ahead of the sim's name. The map is
+The map comes ahead of the sim's name, so "GT3 Class" never reaches a badge
+column sized for `GT3`. The map is
 keyed by **car, not class**: a car keeps its category in whatever class a session
 puts it in (the Ferrari 296 GT3 is class 2708 in a multi-make field and 4036 in
 its own series), while iRacing mints a class id per series. No other derivation
