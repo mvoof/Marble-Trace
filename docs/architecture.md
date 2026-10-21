@@ -451,7 +451,9 @@ driver-sessions — held-out error about 0.03 SR. The hidden state is CPI
 (corners per incident), folded in as a moving average whose memory grows with
 the band; the ~0.4 jump across a whole number falls out of the band remap and is
 not added on top. The processor counts corners by distance driven
-(`TrackNumTurns` × lap fraction, the pit box and tows excluded), takes the
+(`TrackNumTurns` × lap fraction, the pit box and tows excluded — but the
+Nordschleife, which the session puts at 154 corners and the results score at
+73: `SCORED_CORNERS`), takes the
 incidents from `PlayerCarMyIncidentCount` against their value at the session's
 start, and the start rating and band from `LicSubLevel` and `LicLevel` — no
 default when the sim has not sent them. It runs on the 4 Hz tier all session
