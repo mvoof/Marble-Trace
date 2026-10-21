@@ -7,6 +7,7 @@ const CURRENT_LAP_TIME_S = 40;
 const FIRST_SECTOR_TIME_S = 28.412;
 const RUNNING_SECTOR_TIME_S = 11.588;
 const RUNNING_SECTOR_DELTA_S = -0.12;
+const RUNNING_SECTOR_BEHIND_DELTA_S = 0.34;
 
 const chipsAt = (currentSectorIdx: number | null) =>
   Array.from({ length: SECTOR_COUNT }, (_unused, sectorIndex) =>
@@ -67,7 +68,7 @@ describe('sectorChipStateOf', () => {
       sectorIndex: 1,
       currentSectorIdx: 1,
       sectorTimes: [FIRST_SECTOR_TIME_S, RUNNING_SECTOR_TIME_S, null],
-      sectorDeltas: [null, RUNNING_SECTOR_DELTA_S, null],
+      sectorDeltas: [null, RUNNING_SECTOR_BEHIND_DELTA_S, null],
       currentLapTime: CURRENT_LAP_TIME_S,
     });
 

@@ -20,6 +20,7 @@
   flex-direction: column;
   gap: sp(xxxs);
   min-width: 0;
+  container-type: inline-size;
 }
 
 // Dividers are hairlines inset from the plate edges, never full bleed.
@@ -74,9 +75,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+// The time never wraps, so in four- and five-column grids it shrinks to fit
+// its chip: eight monospace glyphs (1:00.000) span about 4.4em.
 .chipTime {
   font-family: $font-mono;
-  font-size: fs(lg);
+  font-size: min(#{fs(lg)}, 22cqi);
   font-weight: 400;
   line-height: 1;
   color: var(--chip-time-color, #{$widget-text-primary});
