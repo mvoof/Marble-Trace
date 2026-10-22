@@ -31,5 +31,7 @@ export const mockCornerSpeeds = (
     apexPassed: step >= 2,
     exitPassed: step >= 3,
     fromReference: true,
+    // Braking a touch later than the reference: carrying more speed in.
+    pace: 'faster',
   };
 };

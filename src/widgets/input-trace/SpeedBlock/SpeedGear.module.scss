@@ -10,11 +10,11 @@
   padding-right: sp(sm);
 }
 
+// Only the number is in the flow, so it is what sits on the block's centre
+// line; the unit hangs below it on its own.
 .speed {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: sp(xxs);
 }
 
 .speedValue {
@@ -28,6 +28,10 @@
 }
 
 .speedUnit {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: sp(xs);
   font-family: $font-widget;
   font-size: fs(xxxs);
   font-weight: 700;

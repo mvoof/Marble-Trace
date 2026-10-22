@@ -3,7 +3,7 @@
   display: grid;
   grid-template-rows: repeat(3, minmax(0, 1fr));
   align-items: center;
-  width: ws(40);
+  width: ws(50);
   height: 100%;
   box-sizing: border-box;
   padding: ws(4) 0;
@@ -14,7 +14,24 @@
   display: flex;
   align-items: baseline;
   justify-content: flex-end;
+  gap: ws(2);
   color: var(--corner-accent);
+}
+
+// A slot as wide as the arrow on every row, so the figures stay in one column
+// whichever row the arrow is on.
+.pace {
+  display: flex;
+  align-items: center;
+  width: ws(14);
+  height: ws(14);
+  align-self: center;
+}
+
+.paceIcon {
+  width: 100%;
+  height: 100%;
+  color: $widget-text-primary;
 }
 
 // A fixed three-cell slot of a monospaced face, right aligned, so a two-digit
@@ -22,7 +39,7 @@
 .cornerValue {
   width: 3ch;
   font-family: $font-mono;
-  font-size: wfs(22);
+  font-size: wfs(19);
   font-weight: 700;
   line-height: 1;
   text-align: right;

@@ -14,6 +14,7 @@ const frameOf = (
   apexPassed: passed[1],
   exitPassed: passed[2],
   fromReference,
+  pace: null,
 });
 
 const litOf = (frame: CornerSpeedsFrame): boolean[] =>
