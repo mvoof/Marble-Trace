@@ -315,7 +315,7 @@
       "showSpeedGear": "Velocidad y marcha",
       "showSpeedGearDesc": "La velocidad del coche y la marcha en grande, aparte del volante.",
       "showCornerSpeeds": "Velocidades en curva",
-      "showCornerSpeedsDesc": "Velocidad de entrada, vértice y salida de cada curva según tu vuelta de referencia, se encienden al pasar cada punto. Sin vuelta de referencia, tus propias velocidades.",
+      "showCornerSpeedsDesc": "Velocidad de entrada, vértice y salida de cada curva según tu vuelta de referencia; se ilumina el punto hacia el que vas. Sin vuelta de referencia, tus propias velocidades.",
       "showSlide": "Derrape",
       "showSlideDesc": "Colorear la línea del volante mientras el coche derrapa de lado."
     },

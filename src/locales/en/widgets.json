@@ -315,7 +315,7 @@
       "showSpeedGear": "Speed and Gear",
       "showSpeedGearDesc": "The car's speed and a large gear, apart from the steering wheel.",
       "showCornerSpeeds": "Corner Speeds",
-      "showCornerSpeedsDesc": "Entry, apex and exit speed of each corner from your reference lap, lit as you pass each point. With no reference lap yet, your own speeds.",
+      "showCornerSpeedsDesc": "Entry, apex and exit speed of each corner from your reference lap; the point you are heading for is lit. With no reference lap yet, your own speeds.",
       "showSlide": "Slide",
       "showSlideDesc": "Color the steering line while the car slides sideways."
     },

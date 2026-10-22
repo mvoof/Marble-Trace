@@ -20,9 +20,9 @@ const ACCENT_PROPERTY = '--corner-accent';
 
 /**
  * Entry, apex and exit, top to bottom, with no labels: each row is told by its
- * colour. The figures are the reference lap's — with none, the car's own — and
- * each lights up as the car passes its point. The frame changes a few times a
- * corner, so it is read here directly.
+ * colour. One figure is lit at a time — with a reference, the point the car is
+ * heading for; with none, the car's own point passed last. The frame changes
+ * a few times a corner, so it is read here directly.
  */
 export const CornerSpeeds = observer(() => {
   const backendComputed = useBackendComputedStore();
@@ -51,7 +51,7 @@ export const CornerSpeeds = observer(() => {
         <div
           key={row.point}
           className={
-            row.reached
+            row.lit
               ? styles.cornerRow
               : `${styles.cornerRow} ${styles.cornerRowPending}`
           }

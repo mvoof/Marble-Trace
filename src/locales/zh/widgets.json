@@ -315,7 +315,7 @@
       "showSpeedGear": "速度和挡位",
       "showSpeedGearDesc": "车速和大号挡位，独立于方向盘显示。",
       "showCornerSpeeds": "弯道速度",
-      "showCornerSpeedsDesc": "每个弯道的入弯、弯心和出弯速度取自参考圈，经过各点时点亮。尚无参考圈时显示你自己的速度。",
+      "showCornerSpeedsDesc": "每个弯道的入弯、弯心和出弯速度取自参考圈；你正驶向的那个点会点亮。尚无参考圈时显示你自己的速度。",
       "showSlide": "侧滑",
       "showSlideDesc": "车辆横向侧滑时为方向盘曲线着色。"
     },
