@@ -1120,6 +1120,7 @@ mod tests {
             clutch: None,
             brake_abs_active: false,
             steering_wheel_angle: 0.0,
+            body_slip_deg: None,
         }
     }
 

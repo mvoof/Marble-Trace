@@ -120,16 +120,31 @@ pub struct InputSample {
     pub brake_abs_active: bool,
     /// Radians, as `CarDynamicsFrame::steering_wheel_angle`.
     pub steering_wheel_angle: f32,
+    /// The angle between where the car points and where it is going, degrees:
+    /// how far it is sliding sideways. `None` with no velocity from the sim, or
+    /// too slow for the angle to mean anything.
+    pub body_slip_deg: Option<f32>,
 }
+
+/// Below this forward speed the slip angle swings on noise, m/s.
+const MIN_SLIP_SPEED_MPS: f32 = 5.0;
 
 impl InputSample {
     pub fn from_frames(inputs: &CarInputsFrame, dynamics: &CarDynamicsFrame) -> Self {
+        let body_slip_deg = match (dynamics.velocity_x, dynamics.velocity_y) {
+            (Some(forward), Some(sideways)) if forward >= MIN_SLIP_SPEED_MPS => {
+                Some(sideways.atan2(forward).to_degrees())
+            }
+            _ => None,
+        };
+
         Self {
             throttle: inputs.throttle,
             brake: inputs.brake,
             clutch: inputs.clutch,
             brake_abs_active: inputs.brake_abs_active,
             steering_wheel_angle: dynamics.steering_wheel_angle,
+            body_slip_deg,
         }
     }
 }

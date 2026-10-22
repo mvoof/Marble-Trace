@@ -1226,6 +1226,12 @@ export type InputSample = {
    * Radians, as `CarDynamicsFrame::steering_wheel_angle`.
    */
   steeringWheelAngle: number;
+  /**
+   * The angle between where the car points and where it is going, degrees:
+   * how far it is sliding sideways. `None` with no velocity from the sim, or
+   * too slow for the angle to mean anything.
+   */
+  bodySlipDeg: number | null;
 };
 
 /**

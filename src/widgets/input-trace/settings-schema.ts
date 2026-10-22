@@ -71,6 +71,9 @@ export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
    */
   showSteeringTrace: nullable(bool(true), null),
   steeringTraceColor: color('rgba(255, 255, 255, 0.7)'),
+  /** Paints the steering line in `slideColor` while the car slides sideways. */
+  showSlide: bool(true),
+  slideColor: color('#a855f7'),
   historySeconds: num(5, { min: 1, max: 60, step: 1 }),
   lineWidth: num(3.5, { min: 1, max: 10, step: 0.5 }),
   smoothing: num(0, { min: 0, max: 20, step: 1 }),

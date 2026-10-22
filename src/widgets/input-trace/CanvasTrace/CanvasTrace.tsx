@@ -69,6 +69,8 @@ export const CanvasTrace = () => {
         showSteering: _showSteering,
         showSteeringTrace: _showSteeringTrace,
         steeringTraceColor: _steeringTraceColor,
+        showSlide: _showSlide,
+        slideColor: _slideColor,
         steeringZoom: _steeringZoom,
       } = settings;
 

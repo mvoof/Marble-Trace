@@ -10,6 +10,7 @@ export interface TraceBufferState {
   buffer: Float32Array;
   absBuffer: Uint8Array;
   steerBuffer: Float32Array;
+  slideBuffer: Uint8Array;
   head: number;
   count: number;
 }
@@ -18,6 +19,7 @@ export const createTraceBufferState = (): TraceBufferState => ({
   buffer: new Float32Array(0),
   absBuffer: new Uint8Array(0),
   steerBuffer: new Float32Array(0),
+  slideBuffer: new Uint8Array(0),
   head: 0,
   count: 0,
 });
@@ -169,17 +171,24 @@ const drawPlainChannel = (
   ctx.stroke();
 };
 
+// Like the brake under ABS, the steering line re-strokes whenever the car
+// starts or stops sliding, so the slide carries its own colour without a break.
 const drawSteering = (pass: ChannelPassContext) => {
   const { ctx, state, settings, steeringLockDeg, logicalWidth, logicalHeight } =
     pass;
 
-  ctx.strokeStyle = settings.steeringTraceColor;
+  const colorOf = (isSliding: boolean): string =>
+    isSliding && settings.showSlide
+      ? settings.slideColor
+      : settings.steeringTraceColor;
+
   ctx.lineWidth = settings.lineWidth;
   ctx.beginPath();
 
   const verticalInset = settings.lineWidth / 2;
   const drawableHalfHeight = logicalHeight / 2 - verticalInset;
 
+  let currentSliding = false;
   let started = false;
 
   for (let sampleIndex = 0; sampleIndex < state.count; sampleIndex++) {
@@ -194,7 +203,21 @@ const drawSteering = (pass: ChannelPassContext) => {
     const xPos = (sampleIndex / (pass.bufferSize - 1)) * logicalWidth;
     const yPos = logicalHeight / 2 - normalized * drawableHalfHeight;
 
+    const sampleSliding = state.slideBuffer[circularIndex] === 1;
+
+    if (started && sampleSliding !== currentSliding) {
+      ctx.lineTo(xPos, yPos);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(xPos, yPos);
+      ctx.strokeStyle = colorOf(sampleSliding);
+      currentSliding = sampleSliding;
+    }
+
     if (!started) {
+      ctx.strokeStyle = colorOf(sampleSliding);
+      currentSliding = sampleSliding;
       ctx.moveTo(xPos, yPos);
       started = true;
     } else {
@@ -272,6 +295,8 @@ export interface TraceSample {
   clutch: number;
   absActive: boolean;
   steeringWheelAngle: number;
+  /** The car is sliding sideways past `SLIDE_ANGLE_DEG`. */
+  sliding: boolean;
 }
 
 // Resizes the circular buffers when the settings change. Split out from
@@ -312,6 +337,11 @@ export const ensureTraceBuffers = (
     buffersResized = true;
   }
 
+  if (state.slideBuffer.length !== bufferSize) {
+    state.slideBuffer = new Uint8Array(bufferSize);
+    buffersResized = true;
+  }
+
   if (buffersResized) {
     state.head = 0;
     state.count = 0;
@@ -348,6 +378,7 @@ export const pushTraceSample = (
 
   state.absBuffer[state.head] = sample.absActive ? 1 : 0;
   state.steerBuffer[state.head] = sample.steeringWheelAngle;
+  state.slideBuffer[state.head] = sample.sliding ? 1 : 0;
 
   state.head = (state.head + 1) % bufferSize;
 

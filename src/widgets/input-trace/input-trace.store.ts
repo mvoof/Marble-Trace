@@ -26,6 +26,12 @@ export type InputChannel = 'throttle' | 'brake' | 'clutch';
 
 type SmoothedInputs = Record<InputChannel, number>;
 
+/**
+ * A slip angle past this is the car sliding, not cornering — a GT car takes a
+ * fast corner at up to a degree and a half, degrees.
+ */
+const SLIDE_ANGLE_DEG = 3;
+
 const advance = (previous: number, raw: number, smoothing: number): number =>
   smoothing <= 0 ? raw : (previous * smoothing + raw) / (smoothing + 1);
 
@@ -40,6 +46,8 @@ const sampleOfFrames = (
   clutch: inputs?.clutch ?? null,
   brakeAbsActive: inputs?.brake_abs_active ?? false,
   steeringWheelAngle: dynamics?.steering_wheel_angle ?? 0,
+  // Read per tick on the backend; the single published frame has no angle.
+  bodySlipDeg: null,
 });
 
 export class InputTraceWidgetStore {
@@ -113,6 +121,7 @@ export class InputTraceWidgetStore {
               ...this.smoothed,
               absActive: sample.brakeAbsActive,
               steeringWheelAngle: sample.steeringWheelAngle,
+              sliding: Math.abs(sample.bodySlipDeg ?? 0) >= SLIDE_ANGLE_DEG,
             };
           });
 

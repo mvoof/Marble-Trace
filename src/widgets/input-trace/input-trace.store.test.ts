@@ -11,12 +11,16 @@ import { InputTraceWidgetStore } from './input-trace.store';
 
 const INPUT_TRACE = 'input-trace';
 
-const sampleWithThrottle = (throttle: number): InputSample => ({
+const sampleWithThrottle = (
+  throttle: number,
+  bodySlipDeg: number | null = null
+): InputSample => ({
   throttle,
   brake: 0,
   clutch: null,
   brakeAbsActive: false,
   steeringWheelAngle: 0,
+  bodySlipDeg,
 });
 
 const createInputTrace: WidgetStoreFactory<WidgetCore> = (context) =>
@@ -68,6 +72,22 @@ describe('InputTraceWidgetStore — frameTick', () => {
     });
 
     expect(inputTrace.frameTick).toBe(1);
+  });
+
+  it('marks the ticks the car slid sideways on', () => {
+    runInAction(() => {
+      core.player.updateCarInputs({ throttle: 1 } as CarInputsFrame, [
+        sampleWithThrottle(1, 0.8),
+        sampleWithThrottle(1, -4.5),
+        sampleWithThrottle(1, null),
+      ]);
+    });
+
+    expect(inputTrace.frameSamples.map((sample) => sample.sliding)).toEqual([
+      false,
+      true,
+      false,
+    ]);
   });
 
   it('returns to zero on reset', () => {

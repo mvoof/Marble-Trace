@@ -159,6 +159,24 @@ export const InputTraceSettingsPanel = observer(() => {
 
         <DependentBlock dependsOn={isSteeringTraceShown}>
           <SettingRow
+            title={t('settingsPanels.inputTrace.showSlide')}
+            desc={t('settingsPanels.inputTrace.showSlideDesc')}
+          >
+            <Space>
+              <ColorPicker
+                value={settings.slideColor}
+                onChange={(c) => update({ slideColor: c.toHexString() })}
+              />
+              <Switch
+                checked={settings.showSlide}
+                onChange={(v) => update({ showSlide: v })}
+              />
+            </Space>
+          </SettingRow>
+        </DependentBlock>
+
+        <DependentBlock dependsOn={isSteeringTraceShown}>
+          <SettingRow
             title={t('settingsPanels.inputTrace.steeringZoom')}
             desc={t('settingsPanels.inputTrace.steeringZoomDesc', {
               angle: Math.round(steeringLock / 2 / settings.steeringZoom),
