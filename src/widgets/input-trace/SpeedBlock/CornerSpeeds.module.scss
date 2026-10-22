@@ -5,7 +5,7 @@
   flex-direction: column;
   justify-content: center;
   gap: ws(2);
-  width: ws(50);
+  width: ws(36);
   height: 100%;
 }
 
@@ -14,24 +14,7 @@
   display: flex;
   align-items: baseline;
   justify-content: flex-end;
-  gap: ws(2);
   color: var(--corner-accent);
-}
-
-// A slot as wide as the arrow on every row, so the figures stay in one column
-// whichever row the arrow is on.
-.pace {
-  display: flex;
-  align-items: center;
-  width: ws(14);
-  height: ws(14);
-  align-self: center;
-}
-
-.paceIcon {
-  width: 100%;
-  height: 100%;
-  color: $widget-text-primary;
 }
 
 // A fixed three-cell slot of a monospaced face, right aligned, so a two-digit
