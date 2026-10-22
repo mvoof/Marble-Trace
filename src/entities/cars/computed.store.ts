@@ -9,6 +9,7 @@ import {
 import type {
   CarEntry,
   CoachFrame,
+  CornerSpeedsFrame,
   DriverEntriesFrame,
   FuelComputedFrame,
   IncidentsFrame,
@@ -57,6 +58,8 @@ export class BackendComputedStore {
   pitStops: PitStopsFrame | null = null;
   /** The driving coach's call, as the telemetry thread makes it (60 Hz, on demand). */
   coach: CoachFrame | null = null;
+  /** The player's corner speeds and the same corner on earlier laps (on demand). */
+  cornerSpeeds: CornerSpeedsFrame | null = null;
   /** Each pace car's pit phase, as the telemetry thread tracks it (10 Hz). */
   paceCar: PaceCarFrame | null = null;
   /** Auto pit mode as the telemetry thread decides it, on the 4 Hz tier. */
@@ -106,6 +109,7 @@ export class BackendComputedStore {
       pitStops: observableRef,
       paceCar: observableRef,
       coach: observableRef,
+      cornerSpeeds: observableRef,
       pitAuto: observableRef,
       lapDelta: observableRef,
       lapHistory: observableRef,
@@ -250,6 +254,10 @@ export class BackendComputedStore {
     this.coach = frame;
   }
 
+  updateCornerSpeeds(frame: CornerSpeedsFrame) {
+    this.cornerSpeeds = frame;
+  }
+
   /** carIdx → pit phase, for every pace car the session has. */
   get paceCarPhases(): Map<number, PaceCarPitPhase> {
     return new Map(
@@ -288,6 +296,7 @@ export class BackendComputedStore {
     this.pitStops = null;
     this.paceCar = null;
     this.coach = null;
+    this.cornerSpeeds = null;
     this.pitAuto = null;
     this.lapDelta = null;
     this.lapHistory = [];

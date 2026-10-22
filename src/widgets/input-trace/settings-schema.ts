@@ -67,6 +67,14 @@ export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
   // it describes the wheel on the desk, not this widget. Only the display
   // zoom on top of it belongs here.
   steeringZoom: num(1, { min: 1, max: 4, step: 0.5 }),
+  /**
+   * The entry, apex and exit speeds of the corner. With the wheel hidden the
+   * block also carries the car's speed and gear, which the hub shows otherwise.
+   */
+  showSpeedBlock: bool(false),
+  entrySpeedColor: color('#3b82f6'),
+  apexSpeedColor: color('#ef4444'),
+  exitSpeedColor: color('#10b981'),
 });
 
 export type InputTraceSettings = SettingsOf<typeof INPUT_TRACE_SETTINGS.shape>;

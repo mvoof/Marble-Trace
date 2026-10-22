@@ -14,13 +14,18 @@ import {
 // WidgetPanel gap={8} raw px; edgeInset padding: 2px × 2 = 4px total.
 // Wheel natural width = designHeight (aspect-ratio 1:1, height: 100%).
 // INPUT_TRACE_CHART_DESIGN_PX gives the trace its share; all-visible defaults
-// sum to 534px.
+// sum to 534px; the speed block, off by default, adds its own width.
 const INPUT_TRACE_BAR_PX = 20;
 const INPUT_TRACE_BAR_GAP_PX = 4;
 const INPUT_TRACE_WHEEL_PX = 120;
 const INPUT_TRACE_PANEL_GAP_PX = 8;
 const INPUT_TRACE_EDGE_PX = 4;
 const INPUT_TRACE_CHART_DESIGN_PX = 318;
+// SpeedBlock: the corner speeds column, and the speed and gear beside it when
+// the wheel is hidden, sp(md) apart — widths from SpeedBlock/*.module.scss.
+const INPUT_TRACE_CORNER_SPEEDS_PX = 56;
+const INPUT_TRACE_SPEED_GEAR_PX = 112;
+const INPUT_TRACE_SPEED_BLOCK_GAP_PX = 10;
 
 const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {
   const barCount = [
@@ -44,6 +49,16 @@ const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {
     sections.push(barsWidth);
   }
 
+  if (settings.showSpeedBlock) {
+    sections.push(
+      settings.showSteering
+        ? INPUT_TRACE_CORNER_SPEEDS_PX
+        : INPUT_TRACE_CORNER_SPEEDS_PX +
+            INPUT_TRACE_SPEED_BLOCK_GAP_PX +
+            INPUT_TRACE_SPEED_GEAR_PX
+    );
+  }
+
   if (settings.showSteering) {
     sections.push(INPUT_TRACE_WHEEL_PX);
   }
@@ -60,7 +75,14 @@ const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {
 };
 
 const resolveInputTraceLayout = makeColumnLayoutResolver<InputTraceSettings>(
-  ['showTrace', 'showSteering', 'showThrottle', 'showBrake', 'showClutch'],
+  [
+    'showTrace',
+    'showSteering',
+    'showThrottle',
+    'showBrake',
+    'showClutch',
+    'showSpeedBlock',
+  ],
   computeInputTraceDesignWidth
 );
 
@@ -70,7 +92,7 @@ const INPUT_TRACE_DESIGN_WIDTH = computeInputTraceDesignWidth(
 
 export const INPUT_TRACE_MANIFEST: WidgetManifest = {
   id: 'input-trace',
-  telemetryEvents: ['carDynamics', 'carInputs', 'inputSamples'],
+  telemetryEvents: ['carDynamics', 'carInputs', 'inputSamples', 'cornerSpeeds'],
   label: 'Input Trace',
   description: 'Live throttle, brake, and clutch inputs.',
   resolveLayoutChange: resolveInputTraceLayout,

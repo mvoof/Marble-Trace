@@ -1,0 +1,48 @@
+.speedGear {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: sp(md);
+  width: ws(112);
+  height: 100%;
+  box-sizing: border-box;
+  // Off the plate's straight right edge, which the wheel no longer fills.
+  padding-right: sp(sm);
+}
+
+.speed {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: sp(xxs);
+}
+
+.speedValue {
+  width: 3ch;
+  font-family: $font-mono;
+  font-size: wfs(30);
+  font-weight: 700;
+  line-height: 1;
+  text-align: right;
+  color: $widget-text-primary;
+}
+
+.speedUnit {
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $widget-text-muted;
+}
+
+.gear {
+  width: 1ch;
+  font-family: $font-mono;
+  font-size: wfs(84);
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  color: $widget-text-primary;
+}

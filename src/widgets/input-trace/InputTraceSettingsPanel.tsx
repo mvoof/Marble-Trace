@@ -171,6 +171,16 @@ export const InputTraceSettingsPanel = observer(() => {
         </DependentBlock>
       </Card>
 
+      <Card title={t('settingsPanels.inputTrace.speedBlock')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="showSpeedBlock" />
+        </div>
+
+        <Row setting="entrySpeedColor" dependsOn="showSpeedBlock" />
+        <Row setting="apexSpeedColor" dependsOn="showSpeedBlock" />
+        <Row setting="exitSpeedColor" dependsOn="showSpeedBlock" />
+      </Card>
+
       <Card title={t('settingsPanels.inputTrace.layout')}>
         <div className={styles.fieldGroup}>
           <Row setting="showTrace" />

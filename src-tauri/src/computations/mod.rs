@@ -1,5 +1,6 @@
 pub mod car_speed;
 pub mod coach;
+pub mod corner_speeds;
 pub mod driver_entries;
 pub mod fuel;
 pub mod incidents;
@@ -35,6 +36,7 @@ use crate::model::lap_log::LapLogFrame;
 use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes};
 use crate::model::relative::RelativeFrame;
 use coach::{CoachFrame, CoachProcessor};
+use corner_speeds::{CornerSpeedsFrame, CornerSpeedsProcessor};
 use driver_entries::{DriverEntriesFrame, DriverEntriesProcessor};
 use fuel::{FuelComputedFrame, FuelProcessor};
 use incidents::{IncidentsFrame, IncidentsProcessor};
@@ -53,6 +55,7 @@ use track_shape::TrackShapeProcessor;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProcessorId {
     Coach,
+    CornerSpeeds,
     Fuel,
     LapDelta,
     LapLog,
@@ -110,6 +113,7 @@ pub struct ComputeContext<'a> {
 #[derive(Debug, Clone)]
 pub enum ComputedOutput {
     Coach(CoachFrame),
+    CornerSpeeds(CornerSpeedsFrame),
     Fuel(FuelComputedFrame),
     LapDelta(LapDeltaFrame),
     LapLog(LapLogFrame),
@@ -176,6 +180,7 @@ impl Default for ProcessorRegistry {
         Self {
             processors: vec![
                 Box::new(CoachProcessor::default()),
+                Box::new(CornerSpeedsProcessor::default()),
                 Box::new(FuelProcessor::default()),
                 Box::new(LapDeltaProcessor::default()),
                 Box::new(LapLogProcessor::default()),
@@ -253,6 +258,9 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<coach::CoachFrame>()
         .register::<coach::CoachInactiveReason>()
         .register::<coach::DrivingAdvisory>()
+        .register::<corner_speeds::CornerPass>()
+        .register::<corner_speeds::CornerSpeeds>()
+        .register::<corner_speeds::CornerSpeedsFrame>()
         .register::<driver_entries::DriverEntriesFrame>()
         .register::<driver_entries::DriverEntry>()
         .register::<fuel::FuelComputedFrame>()

@@ -790,6 +790,39 @@ export type CompanionStatus = {
 };
 
 /**
+ * The car's pass through a corner, as far as it has got.
+ */
+export type CornerPass = {
+  entry: number;
+  /**
+   * The lowest speed so far; final once `apex_passed`.
+   */
+  apex: number;
+  apexPassed: boolean;
+  /**
+   * `None` until the car is the exit distance past the apex.
+   */
+  exit: number | null;
+};
+
+/**
+ * One corner's three speeds, m/s.
+ */
+export type CornerSpeeds = { entry: number; apex: number; exit: number };
+
+export type CornerSpeedsFrame = {
+  /**
+   * The corner being driven, or the one just left; `None` on the approach
+   * to the next.
+   */
+  current: CornerPass | null;
+  /**
+   * The same corner on the reference lap — on the approach, the one ahead.
+   */
+  target: CornerSpeeds | null;
+};
+
+/**
  * One recipient's totals over the span its counters have been running.
  */
 export type DeliverySet = {
@@ -2270,7 +2303,8 @@ export type SessionSnapshot = {
   incidentPenaltySubsequent: number | null;
   /**
    * Corners on this layout (`WeekendInfo.TrackNumTurns`) — the count iRacing
-   * scores Safety Rating by. `None` when the sim does not report it.
+   * scores Safety Rating by, but for the layouts in `SCORED_CORNERS`
+   * (`computations/safety_rating.rs`). `None` when the sim does not report it.
    */
   trackNumTurns: number | null;
   /**
@@ -2420,6 +2454,7 @@ export type TelemetryBundle = {
   carPositions?: CarPositionsFrame | null;
   lapDelta?: LapDeltaFrame | null;
   coach?: CoachFrame | null;
+  cornerSpeeds?: CornerSpeedsFrame | null;
   carIdx?: CarIdxFrame | null;
   chassis?: ChassisFrame | null;
   lapTiming?: LapTimingFrame | null;

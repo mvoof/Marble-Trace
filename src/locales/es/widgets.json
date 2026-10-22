@@ -301,7 +301,16 @@
       "smoothingRaw": "Datos en bruto (60 Hz)",
       "smoothingFactor": "Factor: {{factor}}",
       "lineWidth": "Grosor de línea",
-      "lineWidthDesc": "Grosor: {{px}} px"
+      "lineWidthDesc": "Grosor: {{px}} px",
+      "speedBlock": "Bloque de velocidad",
+      "showSpeedBlock": "Velocidades en curva",
+      "showSpeedBlockDesc": "Velocidad de entrada, vértice y salida de cada curva frente a tu vuelta de referencia. Con el volante oculto también muestra la velocidad y la marcha.",
+      "entrySpeedColor": "Color de entrada",
+      "entrySpeedColorDesc": "La velocidad máxima al llegar a la curva.",
+      "apexSpeedColor": "Color del vértice",
+      "apexSpeedColorDesc": "La velocidad mínima en la curva.",
+      "exitSpeedColor": "Color de salida",
+      "exitSpeedColorDesc": "La velocidad cuando el acelerador vuelve a fondo."
     },
     "linearMap": {
       "moduleLayout": "Disposición del módulo",

@@ -1,0 +1,44 @@
+// Three rows sharing the widget's height: entry, apex, exit.
+.corners {
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  width: ws(56);
+  height: 100%;
+  box-sizing: border-box;
+  padding: ws(4) 0;
+}
+
+// The row's colour is the user's, per point; every figure in it takes it.
+.cornerRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--corner-accent);
+}
+
+// Both figures sit in a fixed three-cell slot of a monospaced face, right
+// aligned, so a two-digit speed never shifts its neighbour.
+.cornerValue {
+  width: 3ch;
+  font-family: $font-mono;
+  font-size: wfs(22);
+  font-weight: 700;
+  line-height: 1;
+  text-align: right;
+}
+
+.cornerReference {
+  width: 3ch;
+  font-family: $font-mono;
+  font-size: wfs(10);
+  font-weight: 600;
+  line-height: 1;
+  text-align: right;
+  color: $widget-text-muted;
+}
+
+// A point the car has not reached yet: its target, dimmed.
+.cornerRowPending .cornerValue {
+  opacity: 0.35;
+}

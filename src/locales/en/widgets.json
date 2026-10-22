@@ -301,7 +301,16 @@
       "smoothingRaw": "Raw data (60Hz)",
       "smoothingFactor": "Factor: {{factor}}",
       "lineWidth": "Line Width",
-      "lineWidthDesc": "Thickness: {{px}}px"
+      "lineWidthDesc": "Thickness: {{px}}px",
+      "speedBlock": "Speed Block",
+      "showSpeedBlock": "Corner Speeds",
+      "showSpeedBlockDesc": "Entry, apex and exit speed of each corner against your reference lap. With the steering wheel hidden it also shows the speed and gear.",
+      "entrySpeedColor": "Entry Color",
+      "entrySpeedColorDesc": "The fastest speed on the way into the corner.",
+      "apexSpeedColor": "Apex Color",
+      "apexSpeedColorDesc": "The lowest speed through the corner.",
+      "exitSpeedColor": "Exit Color",
+      "exitSpeedColorDesc": "The speed when the throttle is fully back on."
     },
     "linearMap": {
       "moduleLayout": "Module Layout",

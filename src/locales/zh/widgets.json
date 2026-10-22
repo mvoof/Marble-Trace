@@ -301,7 +301,16 @@
       "smoothingRaw": "原始数据（60Hz）",
       "smoothingFactor": "系数：{{factor}}",
       "lineWidth": "线宽",
-      "lineWidthDesc": "粗细：{{px}}px"
+      "lineWidthDesc": "粗细：{{px}}px",
+      "speedBlock": "速度模块",
+      "showSpeedBlock": "弯道速度",
+      "showSpeedBlockDesc": "每个弯道的入弯、弯心和出弯速度，与你的参考圈对比。隐藏方向盘时还会显示车速和挡位。",
+      "entrySpeedColor": "入弯颜色",
+      "entrySpeedColorDesc": "进入弯道前的最高速度。",
+      "apexSpeedColor": "弯心颜色",
+      "apexSpeedColorDesc": "弯道中的最低速度。",
+      "exitSpeedColor": "出弯颜色",
+      "exitSpeedColorDesc": "油门重新全开时的速度。"
     },
     "linearMap": {
       "moduleLayout": "模块布局",

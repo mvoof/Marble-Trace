@@ -1,5 +1,9 @@
 ﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import {
+  mockCornerSpeeds,
+  type CornerProgress,
+} from '@features/preview/mocks/corner-speeds';
 import { mockCarDynamics } from '@features/preview/mocks/dynamics';
 import { mockCarInputs } from '@features/preview/mocks/inputs';
 import { seedInputHistory } from '@features/preview/preview-animator';
@@ -19,6 +23,7 @@ interface StoryArgs {
   showTrace: boolean;
   steeringWheelAngle: number;
   steeringLock: number;
+  cornerProgress: CornerProgress;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -57,6 +62,10 @@ const meta: Meta<StoryArgs> = {
       store.player.updateCarDynamics(
         mockCarDynamics({ steering_wheel_angle: args.steeringWheelAngle })
       );
+
+      store.backendComputed.updateCornerSpeeds(
+        mockCornerSpeeds(args.cornerProgress)
+      );
     },
     args: {
       throttle: 0.6,
@@ -69,6 +78,7 @@ const meta: Meta<StoryArgs> = {
       showTrace: true,
       steeringWheelAngle: 0.5,
       steeringLock: 900,
+      cornerProgress: 'exited',
     },
   }),
 };
@@ -122,4 +132,24 @@ export const SteeringLeft: Story = {
 
 export const SteeringRight: Story = {
   args: { steeringWheelAngle: -1.5 },
+};
+
+/** The corner speeds beside the wheel: the corner just left, all three lit. */
+export const CornerSpeeds: Story = {
+  args: { showSpeedBlock: true },
+};
+
+/** On the approach: the reference lap's three figures, dimmed. */
+export const CornerSpeedsApproach: Story = {
+  args: { showSpeedBlock: true, cornerProgress: 'approach' },
+};
+
+/** Past the brake point: the entry lit, the apex and exit still targets. */
+export const CornerSpeedsBraking: Story = {
+  args: { showSpeedBlock: true, cornerProgress: 'braking' },
+};
+
+/** With the wheel hidden the block carries the speed and gear too. */
+export const CornerSpeedsWithoutWheel: Story = {
+  args: { showSpeedBlock: true, showSteering: false },
 };

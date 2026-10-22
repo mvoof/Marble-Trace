@@ -301,7 +301,16 @@
       "smoothingRaw": "Сырые данные (60 Гц)",
       "smoothingFactor": "Коэффициент: {{factor}}",
       "lineWidth": "Толщина линии",
-      "lineWidthDesc": "Толщина: {{px}}px"
+      "lineWidthDesc": "Толщина: {{px}}px",
+      "speedBlock": "Блок скорости",
+      "showSpeedBlock": "Скорости в повороте",
+      "showSpeedBlockDesc": "Скорость входа, апекса и выхода в каждом повороте против твоего референс-круга. Если руль скрыт, показывает ещё скорость и передачу.",
+      "entrySpeedColor": "Цвет входа",
+      "entrySpeedColorDesc": "Максимальная скорость на подходе к повороту.",
+      "apexSpeedColor": "Цвет апекса",
+      "apexSpeedColorDesc": "Минимальная скорость в повороте.",
+      "exitSpeedColor": "Цвет выхода",
+      "exitSpeedColorDesc": "Скорость, когда газ снова открыт полностью."
     },
     "linearMap": {
       "moduleLayout": "Расположение модуля",
