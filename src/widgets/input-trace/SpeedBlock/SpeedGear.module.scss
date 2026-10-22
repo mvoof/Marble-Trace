@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: sp(md);
-  width: ws(112);
+  width: ws(116);
   height: 100%;
   box-sizing: border-box;
   // Off the plate's straight right edge, which the wheel no longer fills.
@@ -20,7 +20,7 @@
 .speedValue {
   width: 3ch;
   font-family: $font-mono;
-  font-size: wfs(30);
+  font-size: wfs(34);
   font-weight: 700;
   line-height: 1;
   text-align: right;
@@ -44,7 +44,7 @@
 .gear {
   width: 1ch;
   font-family: $font-mono;
-  font-size: wfs(84);
+  font-size: wfs(72);
   font-weight: 800;
   line-height: 1;
   text-align: center;

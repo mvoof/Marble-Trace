@@ -23,7 +23,8 @@ const ACCENT_PROPERTY = '--corner-accent';
  * Entry, apex and exit, top to bottom, with no labels: each row is told by its
  * colour. One figure is lit at a time — with a reference, the point the car is
  * heading for; with none, the car's own point passed last. Beside the lit
- * one, a single arrow: faster or slower than the reference at this spot. The
+ * one, a single arrow: up to carry more speed than now, down to carry less,
+ * against the reference at this spot. The
  * frame changes a few times a corner, so it is read here directly.
  */
 export const CornerSpeeds = observer(() => {
@@ -46,8 +47,10 @@ export const CornerSpeeds = observer(() => {
   const rows = cornerSpeedRows(frame);
   const pace = frame?.pace ?? null;
 
+  // What to do about it, not where the car stands: slower than the reference
+  // points up — carry more speed — and faster points down.
   const PaceIcon =
-    pace === 'faster' ? ChevronUp : pace === 'slower' ? ChevronDown : null;
+    pace === 'slower' ? ChevronUp : pace === 'faster' ? ChevronDown : null;
 
   const textOf = (speed: number | null): string =>
     speed === null ? EMPTY_VALUE : formatSpeed(speed, units.unitSystem);
