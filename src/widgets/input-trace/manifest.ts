@@ -24,7 +24,7 @@ const INPUT_TRACE_EDGE_PX = 4;
 const INPUT_TRACE_CHART_DESIGN_PX = 318;
 // The corner speeds column and the speed and gear block — widths from
 // SpeedBlock/*.module.scss.
-const INPUT_TRACE_CORNER_SPEEDS_PX = 56;
+const INPUT_TRACE_CORNER_SPEEDS_PX = 40;
 const INPUT_TRACE_SPEED_GEAR_PX = 112;
 
 const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {

@@ -11,8 +11,6 @@ export interface CornerSpeedRow {
    */
   value: number | null;
   reached: boolean;
-  /** The reference beside a reached figure, m/s. */
-  reference: number | null;
 }
 
 /**
@@ -32,10 +30,10 @@ export const cornerSpeedRows = (
     reference: number | null
   ): CornerSpeedRow => {
     if (reached) {
-      return { point, value: own, reached, reference };
+      return { point, value: own, reached };
     }
 
-    return { point, value: reference ?? own, reached, reference: null };
+    return { point, value: reference ?? own, reached };
   };
 
   return [

@@ -58,10 +58,6 @@ export const CornerSpeeds = observer(() => {
           style={{ [ACCENT_PROPERTY]: accentOf[row.point] } as CSSProperties}
         >
           <span className={styles.cornerValue}>{textOf(row.value)}</span>
-
-          <span className={styles.cornerReference}>
-            {row.reference === null ? '' : textOf(row.reference)}
-          </span>
         </div>
       ))}
     </div>

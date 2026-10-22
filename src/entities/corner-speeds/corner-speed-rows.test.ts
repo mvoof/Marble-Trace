@@ -9,9 +9,9 @@ describe('cornerSpeedRows', () => {
     const rows = cornerSpeedRows({ current: null, target: TARGET });
 
     expect(rows).toEqual([
-      { point: 'entry', value: 60, reached: false, reference: null },
-      { point: 'apex', value: 25, reached: false, reference: null },
-      { point: 'exit', value: 40, reached: false, reference: null },
+      { point: 'entry', value: 60, reached: false },
+      { point: 'apex', value: 25, reached: false },
+      { point: 'exit', value: 40, reached: false },
     ]);
   });
 
@@ -21,10 +21,10 @@ describe('cornerSpeedRows', () => {
       target: TARGET,
     });
 
-    expect(rows.map((row) => [row.value, row.reached, row.reference])).toEqual([
-      [62, true, 60],
-      [25, false, null],
-      [40, false, null],
+    expect(rows.map((row) => [row.value, row.reached])).toEqual([
+      [62, true],
+      [25, false],
+      [40, false],
     ]);
   });
 
@@ -34,10 +34,10 @@ describe('cornerSpeedRows', () => {
       target: TARGET,
     });
 
-    expect(rows.map((row) => [row.value, row.reached, row.reference])).toEqual([
-      [62, true, 60],
-      [27, true, 25],
-      [41, true, 40],
+    expect(rows.map((row) => [row.value, row.reached])).toEqual([
+      [62, true],
+      [27, true],
+      [41, true],
     ]);
   });
 
@@ -51,7 +51,6 @@ describe('cornerSpeedRows', () => {
       point: 'apex',
       value: 30,
       reached: false,
-      reference: null,
     });
     expect(rows[2].value).toBeNull();
   });
