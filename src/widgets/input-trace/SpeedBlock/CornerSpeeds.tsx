@@ -20,9 +20,9 @@ const ACCENT_PROPERTY = '--corner-accent';
 
 /**
  * Entry, apex and exit, top to bottom, with no labels: each row is told by its
- * colour. A point the car has not reached yet shows the reference lap's
- * figure dimmed, and lights up with the car's own once it is passed. The frame changes a
- * few times a corner, so it is read here directly.
+ * colour. The figures are the reference lap's — with none, the car's own — and
+ * each lights up as the car passes its point. The frame changes a few times a
+ * corner, so it is read here directly.
  */
 export const CornerSpeeds = observer(() => {
   const backendComputed = useBackendComputedStore();

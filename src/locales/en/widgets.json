@@ -315,7 +315,7 @@
       "showSpeedGear": "Speed and Gear",
       "showSpeedGearDesc": "The car's speed and a large gear, apart from the steering wheel.",
       "showCornerSpeeds": "Corner Speeds",
-      "showCornerSpeedsDesc": "Entry, apex and exit speed of each corner. The corners and the dimmed targets come from your reference lap for this track and car. With no reference yet, the speeds are read from your own driving and shown without targets."
+      "showCornerSpeedsDesc": "Entry, apex and exit speed of each corner from your reference lap, lit as you pass each point. With no reference lap yet, your own speeds."
     },
     "linearMap": {
       "moduleLayout": "Module Layout",

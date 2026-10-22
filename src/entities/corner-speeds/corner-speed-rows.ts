@@ -4,12 +4,9 @@ export type CornerSpeedPoint = 'entry' | 'apex' | 'exit';
 
 export interface CornerSpeedRow {
   point: CornerSpeedPoint;
-  /**
-   * The large figure, m/s: the car's own once it has reached the point, the
-   * reference lap's before that — the target. With no reference, the lowest
-   * speed so far stands in at an apex not yet passed.
-   */
+  /** The speed at this point, m/s — the reference lap's, or with none the car's own. */
   value: number | null;
+  /** Whether the car has got to the point yet — what lights the figure up. */
   reached: boolean;
 }
 
@@ -19,36 +16,20 @@ export interface CornerSpeedRow {
  */
 export const cornerSpeedRows = (
   frame: CornerSpeedsFrame | null
-): CornerSpeedRow[] => {
-  const pass = frame?.current ?? null;
-  const target = frame?.target ?? null;
-
-  const row = (
-    point: CornerSpeedPoint,
-    reached: boolean,
-    own: number | null,
-    reference: number | null
-  ): CornerSpeedRow => {
-    if (reached) {
-      return { point, value: own, reached };
-    }
-
-    return { point, value: reference ?? own, reached };
-  };
-
-  return [
-    row('entry', pass !== null, pass?.entry ?? null, target?.entry ?? null),
-    row(
-      'apex',
-      pass?.apexPassed ?? false,
-      pass?.apex ?? null,
-      target?.apex ?? null
-    ),
-    row(
-      'exit',
-      (pass?.exit ?? null) !== null,
-      pass?.exit ?? null,
-      target?.exit ?? null
-    ),
-  ];
-};
+): CornerSpeedRow[] => [
+  {
+    point: 'entry',
+    value: frame?.entry ?? null,
+    reached: frame?.entryPassed ?? false,
+  },
+  {
+    point: 'apex',
+    value: frame?.apex ?? null,
+    reached: frame?.apexPassed ?? false,
+  },
+  {
+    point: 'exit',
+    value: frame?.exit ?? null,
+    reached: frame?.exitPassed ?? false,
+  },
+];

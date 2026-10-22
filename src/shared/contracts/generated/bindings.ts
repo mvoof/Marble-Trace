@@ -789,37 +789,22 @@ export type CompanionStatus = {
   exists: boolean;
 };
 
-/**
- * The car's pass through a corner, as far as it has got.
- */
-export type CornerPass = {
-  entry: number;
-  /**
-   * The lowest speed so far; final once `apex_passed`.
-   */
-  apex: number;
-  apexPassed: boolean;
-  /**
-   * `None` until the car is the exit distance past the apex.
-   */
-  exit: number | null;
-};
-
-/**
- * One corner's three speeds, m/s.
- */
-export type CornerSpeeds = { entry: number; apex: number; exit: number };
-
 export type CornerSpeedsFrame = {
   /**
-   * The corner being driven, or the one just left; `None` on the approach
-   * to the next.
+   * The speeds of the corner the car is in, or the next one, m/s. With no
+   * reference the car's own, each `None` until the car has one for it — the
+   * apex is the lowest so far until it is passed.
    */
-  current: CornerPass | null;
+  entry: number | null;
+  apex: number | null;
+  exit: number | null;
+  entryPassed: boolean;
+  apexPassed: boolean;
+  exitPassed: boolean;
   /**
-   * The same corner on the reference lap — on the approach, the one ahead.
+   * Whether the speeds are the reference lap's rather than the car's own.
    */
-  target: CornerSpeeds | null;
+  fromReference: boolean;
 };
 
 /**

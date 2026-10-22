@@ -28,7 +28,7 @@
 //! trace.
 
 use crate::computations::coach::{CoachCall, CoachFrame};
-use crate::computations::corner_speeds::{CornerSpeeds, CornerSpeedsFrame};
+use crate::computations::corner_speeds::CornerSpeedsFrame;
 use crate::computations::driver_entries::{DriverEntriesFrame, DriverEntry};
 use crate::computations::proximity::ProximityFrame;
 use crate::computations::safety_rating::SafetyRatingFrame;
@@ -132,24 +132,11 @@ pub fn coach(frame: &mut CoachFrame) {
     round_opt(&mut frame.lap_dist_pct, POSITION_DP);
 }
 
-/// The corner speeds are drawn as whole km/h or mph; the lowest speed moves on
-/// every tick while the car is still slowing, and nothing finer would be seen.
+/// The corner speeds are drawn as whole km/h or mph.
 pub fn corner_speeds(frame: &mut CornerSpeedsFrame) {
-    let round_speeds = |speeds: &mut CornerSpeeds| {
-        speeds.entry = round(speeds.entry, SPEED_DP);
-        speeds.apex = round(speeds.apex, SPEED_DP);
-        speeds.exit = round(speeds.exit, SPEED_DP);
-    };
-
-    if let Some(pass) = frame.current.as_mut() {
-        pass.entry = round(pass.entry, SPEED_DP);
-        pass.apex = round(pass.apex, SPEED_DP);
-        round_opt(&mut pass.exit, SPEED_DP);
-    }
-
-    if let Some(speeds) = frame.target.as_mut() {
-        round_speeds(speeds);
-    }
+    round_opt(&mut frame.entry, SPEED_DP);
+    round_opt(&mut frame.apex, SPEED_DP);
+    round_opt(&mut frame.exit, SPEED_DP);
 }
 
 pub fn safety_rating(frame: &mut SafetyRatingFrame) {
