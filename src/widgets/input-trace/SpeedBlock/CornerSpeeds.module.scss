@@ -1,12 +1,12 @@
-// Three rows sharing the widget's height: entry, apex, exit.
+// Entry, apex, exit packed tight on the block's centre line, the apex level
+// with the car's speed beside it, so all of them are read at one glance.
 .corners {
-  display: grid;
-  grid-template-rows: repeat(3, minmax(0, 1fr));
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: ws(2);
   width: ws(50);
   height: 100%;
-  box-sizing: border-box;
-  padding: ws(4) 0;
 }
 
 // The row's colour is the user's, per point; every figure in it takes it.
