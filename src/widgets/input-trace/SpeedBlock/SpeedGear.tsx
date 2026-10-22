@@ -1,8 +1,6 @@
 import { observer } from 'mobx-react-lite';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
@@ -19,15 +17,10 @@ import type { InputTraceSettings } from '../settings-schema';
  * The car's speed and gear, a block of their own whether the wheel is shown
  * or not. Both move on every physics tick, so the markup is rendered once and
  * the two numbers are written into it. See `docs/rendering.md`.
- *
- * Against the reference lap at this spot, an arrow says which way to go: above
- * the speed to carry more, below it to carry less. The pace changes a few
- * times a corner, so it is read here directly.
  */
 export const SpeedGear = observer(() => {
   const player = usePlayerStore();
   const units = useUnitsStore();
-  const backendComputed = useBackendComputedStore();
 
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
 
@@ -58,20 +51,10 @@ export const SpeedGear = observer(() => {
     return null;
   }
 
-  const pace = backendComputed.cornerSpeeds?.pace ?? null;
-
   return (
     <div ref={rootRef} className={styles.speedGear}>
       <div className={styles.speed}>
-        {pace === 'slower' && (
-          <ChevronUp className={styles.paceUp} strokeWidth={3} />
-        )}
-
         <span className={styles.speedValue} />
-
-        {pace === 'faster' && (
-          <ChevronDown className={styles.paceDown} strokeWidth={3} />
-        )}
 
         <span className={styles.speedUnit}>{speedUnit(units.unitSystem)}</span>
       </div>

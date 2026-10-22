@@ -39,24 +39,6 @@ const SAME_APEX_M: f32 = 50.0;
 const FALLBACK_EXIT_PCT: f32 = 0.02;
 const FALLBACK_HOLD_PCT: f32 = 0.01;
 const FALLBACK_SAME_APEX_PCT: f32 = 0.005;
-/// How much faster or slower than the reference at the same spot turns the
-/// pace arrow on — 3 km/h, m/s.
-const PACE_ON_MPS: f32 = 0.8;
-/// And how close it must come back to turn it off again — 1 km/h, m/s. The gap
-/// keeps the arrow from flickering on the threshold.
-const PACE_OFF_MPS: f32 = 0.3;
-
-/// The car's speed against the reference lap's at the same spot.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize)]
-#[cfg_attr(feature = "dev", derive(specta::Type))]
-#[serde(rename_all = "camelCase")]
-pub enum Pace {
-    Faster,
-    Slower,
-    #[default]
-    Even,
-}
-
 /// One corner's three speeds, m/s.
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct CornerSpeeds {
@@ -80,8 +62,6 @@ pub struct CornerSpeedsFrame {
     pub exit_passed: bool,
     /// Whether the speeds are the reference lap's rather than the car's own.
     pub from_reference: bool,
-    /// The car against the reference at this spot; `None` with no reference.
-    pub pace: Option<Pace>,
 }
 
 impl CornerSpeedsFrame {
@@ -296,8 +276,6 @@ pub struct CornerSpeedsProcessor {
     reference: Option<Arc<ReferenceLapData>>,
     /// The reference's corners, found once the track length is known.
     corners: Option<Vec<CornerRecord>>,
-    /// Held between ticks, so the arrow turns off only once well back level.
-    pace: Pace,
     /// Reads the car's own corners while there is no reference.
     detector: CornerDetector,
     /// The car's own corner finished last.
@@ -314,15 +292,7 @@ impl CornerSpeedsProcessor {
         }
 
         match self.corners.as_deref() {
-            Some(corners) if !corners.is_empty() => {
-                let frame = reference_frame(corners, lap_pct, track);
-                let pace = self.pace(speed, lap_pct);
-
-                CornerSpeedsFrame {
-                    pace: Some(pace),
-                    ..frame
-                }
-            }
+            Some(corners) if !corners.is_empty() => reference_frame(corners, lap_pct, track),
             _ => self.own_frame(speed, lap_pct, track),
         }
     }
@@ -348,7 +318,6 @@ impl CornerSpeedsProcessor {
                 apex_passed: active.apex_passed,
                 exit_passed: false,
                 from_reference: false,
-                pace: None,
             };
         }
 
@@ -361,34 +330,6 @@ impl CornerSpeedsProcessor {
             },
             None => CornerSpeedsFrame::default(),
         }
-    }
-
-    /// The car's speed against the reference lap's at the same spot.
-    fn pace(&mut self, speed: f32, lap_pct: f32) -> Pace {
-        let Some(samples) = self
-            .reference
-            .as_deref()
-            .map(|reference| &reference.samples)
-        else {
-            return Pace::Even;
-        };
-
-        if samples.is_empty() {
-            return Pace::Even;
-        }
-
-        let bucket = ((lap_pct * samples.len() as f32) as usize).min(samples.len() - 1);
-        let difference = speed - samples[bucket].speed;
-
-        self.pace = match self.pace {
-            _ if difference >= PACE_ON_MPS => Pace::Faster,
-            _ if difference <= -PACE_ON_MPS => Pace::Slower,
-            Pace::Faster if difference > PACE_OFF_MPS => Pace::Faster,
-            Pace::Slower if difference < -PACE_OFF_MPS => Pace::Slower,
-            _ => Pace::Even,
-        };
-
-        self.pace
     }
 
     fn forget_own(&mut self) {
@@ -578,17 +519,6 @@ mod tests {
         let exited = processor.frame(60.0, 0.42, TRACK);
 
         assert!(exited.exit_passed);
-    }
-
-    #[test]
-    fn the_pace_arrow_compares_with_the_reference_at_the_same_spot() {
-        let mut processor = processor(&[(0.2, 30.0)]);
-
-        assert_eq!(processor.frame(62.0, 0.1, TRACK).pace, Some(Pace::Faster));
-        // Still a little faster: inside the gap the arrow stays.
-        assert_eq!(processor.frame(60.5, 0.1, TRACK).pace, Some(Pace::Faster));
-        assert_eq!(processor.frame(60.1, 0.1, TRACK).pace, Some(Pace::Even));
-        assert_eq!(processor.frame(58.0, 0.1, TRACK).pace, Some(Pace::Slower));
     }
 
     #[test]

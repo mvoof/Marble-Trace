@@ -805,10 +805,6 @@ export type CornerSpeedsFrame = {
    * Whether the speeds are the reference lap's rather than the car's own.
    */
   fromReference: boolean;
-  /**
-   * The car against the reference at this spot; `None` with no reference.
-   */
-  pace: Pace | null;
 };
 
 /**
@@ -1505,11 +1501,6 @@ export type OverlayPerfReport = {
    */
   heapAtFirstPaintBytes?: number | null;
 };
-
-/**
- * The car's speed against the reference lap's at the same spot.
- */
-export type Pace = 'faster' | 'slower' | 'even';
 
 /**
  * Every pace car in the session roster, with its phase. Empty when the session

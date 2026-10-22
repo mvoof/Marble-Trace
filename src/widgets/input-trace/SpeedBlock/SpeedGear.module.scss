@@ -11,7 +11,7 @@
 }
 
 // Only the number is in the flow, so it is what sits on the block's centre
-// line; the arrows and the unit hang above and below it on their own.
+// line; the unit hangs below it on its own.
 .speed {
   position: relative;
   display: flex;
@@ -27,31 +27,11 @@
   color: $widget-text-primary;
 }
 
-// One spot above the number, one below: the arrow is read where the eye
-// already is.
-.paceUp,
-.paceDown {
-  position: absolute;
-  left: 50%;
-  width: ws(16);
-  height: ws(16);
-  transform: translateX(-50%);
-  color: $widget-text-primary;
-}
-
-.paceUp {
-  bottom: 100%;
-}
-
-.paceDown {
-  top: 100%;
-}
-
-// Below the down arrow's spot, so the two never overlap.
 .speedUnit {
   position: absolute;
-  top: calc(100% + #{ws(16)});
+  top: 100%;
   right: 0;
+  margin-top: sp(xs);
   font-family: $font-widget;
   font-size: fs(xxxs);
   font-weight: 700;

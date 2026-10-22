@@ -259,7 +259,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<coach::CoachInactiveReason>()
         .register::<coach::DrivingAdvisory>()
         .register::<corner_speeds::CornerSpeedsFrame>()
-        .register::<corner_speeds::Pace>()
         .register::<driver_entries::DriverEntriesFrame>()
         .register::<driver_entries::DriverEntry>()
         .register::<fuel::FuelComputedFrame>()
