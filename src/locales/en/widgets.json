@@ -318,7 +318,13 @@
       "showSlide": "Slide",
       "showSlideDesc": "Color the steering line while the car slides sideways.",
       "showBars": "Pedal Bars",
-      "showBarsDesc": "Show the throttle, brake and clutch bars beside the graph."
+      "showBarsDesc": "Show the throttle, brake and clutch bars beside the graph.",
+      "showSpeedTargetColor": "Target Colour",
+      "showSpeedTargetColorDesc": "Colour the speed against the lit corner target from your reference lap: within 5 km/h of it, or over it.",
+      "speedOnTargetColor": "On Target",
+      "speedOnTargetColorDesc": "Within 5 km/h of the target.",
+      "speedOverTargetColor": "Over Target",
+      "speedOverTargetColorDesc": "More than 5 km/h over the target."
     },
     "linearMap": {
       "moduleLayout": "Module Layout",

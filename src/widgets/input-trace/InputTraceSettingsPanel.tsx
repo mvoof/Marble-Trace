@@ -42,6 +42,9 @@ const hasCenterPlate = (settings: InputTraceSettings): boolean =>
   settings.steeringWheelStyle !== 'default' &&
   settings.steeringCenterDisplay !== 'none';
 
+const hasSpeedTargetColor = (settings: InputTraceSettings): boolean =>
+  settings.showSpeedGear && settings.showSpeedTargetColor;
+
 export const InputTraceSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('input-trace');
@@ -300,6 +303,10 @@ export const InputTraceSettingsPanel = observer(() => {
         <div className={styles.fieldGroup}>
           <Row setting="showSpeedGear" />
         </div>
+
+        <Row setting="showSpeedTargetColor" dependsOn="showSpeedGear" />
+        <Row setting="speedOnTargetColor" dependsOn={hasSpeedTargetColor} />
+        <Row setting="speedOverTargetColor" dependsOn={hasSpeedTargetColor} />
 
         <div className={styles.fieldGroup}>
           <Row setting="showCornerSpeeds" />

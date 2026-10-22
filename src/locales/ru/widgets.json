@@ -318,7 +318,13 @@
       "showSlide": "Занос",
       "showSlideDesc": "Красить линию руля, пока машину несёт боком.",
       "showBars": "Столбцы",
-      "showBarsDesc": "Показывать столбцы газа, тормоза и сцепления рядом с графиком."
+      "showBarsDesc": "Показывать столбцы газа, тормоза и сцепления рядом с графиком.",
+      "showSpeedTargetColor": "Цвет по цели",
+      "showSpeedTargetColorDesc": "Красить скорость относительно горящей цели поворота из референса: в пределах 5 км/ч от неё или выше.",
+      "speedOnTargetColor": "В цели",
+      "speedOnTargetColorDesc": "В пределах 5 км/ч от цели.",
+      "speedOverTargetColor": "Выше цели",
+      "speedOverTargetColorDesc": "Больше чем на 5 км/ч выше цели."
     },
     "linearMap": {
       "moduleLayout": "Расположение модуля",

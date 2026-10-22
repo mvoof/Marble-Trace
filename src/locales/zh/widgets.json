@@ -318,7 +318,13 @@
       "showSlide": "侧滑",
       "showSlideDesc": "车辆横向侧滑时为方向盘曲线着色。",
       "showBars": "踏板条",
-      "showBarsDesc": "在图表旁显示油门、刹车和离合踏板条。"
+      "showBarsDesc": "在图表旁显示油门、刹车和离合踏板条。",
+      "showSpeedTargetColor": "目标着色",
+      "showSpeedTargetColorDesc": "根据参考圈中点亮的弯道目标为车速着色：在目标 5 km/h 以内或高于目标。",
+      "speedOnTargetColor": "达到目标",
+      "speedOnTargetColorDesc": "与目标相差 5 km/h 以内。",
+      "speedOverTargetColor": "高于目标",
+      "speedOverTargetColorDesc": "比目标高出 5 km/h 以上。"
     },
     "linearMap": {
       "moduleLayout": "模块布局",

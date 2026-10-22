@@ -318,7 +318,13 @@
       "showSlide": "Derrape",
       "showSlideDesc": "Colorear la línea del volante mientras el coche derrapa de lado.",
       "showBars": "Barras de pedales",
-      "showBarsDesc": "Mostrar las barras de acelerador, freno y embrague junto al gráfico."
+      "showBarsDesc": "Mostrar las barras de acelerador, freno y embrague junto al gráfico.",
+      "showSpeedTargetColor": "Color por objetivo",
+      "showSpeedTargetColorDesc": "Colorear la velocidad frente al objetivo de curva iluminado de tu vuelta de referencia: a 5 km/h o por encima.",
+      "speedOnTargetColor": "En objetivo",
+      "speedOnTargetColorDesc": "A menos de 5 km/h del objetivo.",
+      "speedOverTargetColor": "Por encima",
+      "speedOverTargetColorDesc": "Más de 5 km/h por encima del objetivo."
     },
     "linearMap": {
       "moduleLayout": "Disposición del módulo",
