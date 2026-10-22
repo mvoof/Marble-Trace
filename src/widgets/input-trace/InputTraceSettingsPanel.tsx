@@ -64,7 +64,19 @@ export const InputTraceSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.inputTrace.dataChannels')}>
+      <Card title={t('settingsPanels.inputTrace.layout')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="showTrace" />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <Row setting="showBars" />
+        </div>
+
+        <Row setting="showInputValues" dependsOn="showBars" />
+      </Card>
+
+      <Card title={t('settingsPanels.inputTrace.graphSettings')}>
         <div className={styles.fieldGroup}>
           <SettingRow
             title={t('settingsPanels.inputTrace.showThrottle')}
@@ -194,63 +206,7 @@ export const InputTraceSettingsPanel = observer(() => {
             />
           </SettingRow>
         </DependentBlock>
-      </Card>
 
-      <Card title={t('settingsPanels.inputTrace.steeringWheel')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="showSteering" />
-        </div>
-
-        <DependentBlock dependsOn="showSteering">
-          <SettingRow
-            title={t('settingsPanels.inputTrace.steeringWheelStyle')}
-            desc={t('settingsPanels.inputTrace.steeringWheelStyleDesc')}
-          >
-            <Select
-              value={settings.steeringWheelStyle}
-              options={STEERING_WHEEL_STYLE.map((styleId) => ({
-                value: styleId,
-                label: t(`settingsPanels.inputTrace.wheelStyles.${styleId}`),
-              }))}
-              onChange={(value) =>
-                update({ steeringWheelStyle: value as SteeringWheelStyle })
-              }
-              style={{ width: 180 }}
-            />
-          </SettingRow>
-        </DependentBlock>
-
-        <Row setting="steeringCenterDisplay" dependsOn="showSteering" />
-
-        <Row setting="steeringMarkerColor" dependsOn={hasSteeringMarker} />
-        <Row setting="steeringCenterPlate" dependsOn={hasCenterPlate} />
-      </Card>
-
-      <Card title={t('settingsPanels.inputTrace.speedBlock')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="showSpeedGear" />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <Row setting="showCornerSpeeds" />
-        </div>
-
-        <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
-        <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
-        <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
-      </Card>
-
-      <Card title={t('settingsPanels.inputTrace.layout')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="showTrace" />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <Row setting="showInputValues" />
-        </div>
-      </Card>
-
-      <Card title={t('settingsPanels.inputTrace.graphSettings')}>
         <div className={styles.fieldGroup}>
           <SettingRow
             title={t('settingsPanels.inputTrace.historySeconds')}
@@ -308,6 +264,50 @@ export const InputTraceSettingsPanel = observer(() => {
             />
           </SettingRow>
         </div>
+      </Card>
+
+      <Card title={t('settingsPanels.inputTrace.steeringWheel')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="showSteering" />
+        </div>
+
+        <DependentBlock dependsOn="showSteering">
+          <SettingRow
+            title={t('settingsPanels.inputTrace.steeringWheelStyle')}
+            desc={t('settingsPanels.inputTrace.steeringWheelStyleDesc')}
+          >
+            <Select
+              value={settings.steeringWheelStyle}
+              options={STEERING_WHEEL_STYLE.map((styleId) => ({
+                value: styleId,
+                label: t(`settingsPanels.inputTrace.wheelStyles.${styleId}`),
+              }))}
+              onChange={(value) =>
+                update({ steeringWheelStyle: value as SteeringWheelStyle })
+              }
+              style={{ width: 180 }}
+            />
+          </SettingRow>
+        </DependentBlock>
+
+        <Row setting="steeringCenterDisplay" dependsOn="showSteering" />
+
+        <Row setting="steeringMarkerColor" dependsOn={hasSteeringMarker} />
+        <Row setting="steeringCenterPlate" dependsOn={hasCenterPlate} />
+      </Card>
+
+      <Card title={t('settingsPanels.inputTrace.speedBlock')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="showSpeedGear" />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <Row setting="showCornerSpeeds" />
+        </div>
+
+        <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
       </Card>
     </>
   );

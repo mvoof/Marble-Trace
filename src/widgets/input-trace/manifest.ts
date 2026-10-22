@@ -33,7 +33,7 @@ const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {
     settings.showBrake,
     settings.showClutch,
   ].filter(Boolean).length;
-  const hasBars = barCount > 0;
+  const hasBars = settings.showBars && barCount > 0;
   const barsWidth = hasBars
     ? barCount * INPUT_TRACE_BAR_PX +
       Math.max(0, barCount - 1) * INPUT_TRACE_BAR_GAP_PX
@@ -81,6 +81,7 @@ const resolveInputTraceLayout = makeColumnLayoutResolver<InputTraceSettings>(
     'showClutch',
     'showCornerSpeeds',
     'showSpeedGear',
+    'showBars',
   ],
   computeInputTraceDesignWidth
 );

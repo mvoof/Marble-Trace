@@ -9,7 +9,10 @@ import type { InputTraceSettings } from '../settings-schema';
 export const InputBars = observer(() => {
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
 
-  if (!settings.showThrottle && !settings.showBrake && !settings.showClutch) {
+  const hasChannel =
+    settings.showThrottle || settings.showBrake || settings.showClutch;
+
+  if (!settings.showBars || !hasChannel) {
     return null;
   }
 

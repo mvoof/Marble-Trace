@@ -251,7 +251,6 @@
       "colorMode_advanced": "Avanzado"
     },
     "inputTrace": {
-      "dataChannels": "Canales de datos",
       "showThrottle": "Acelerador",
       "showThrottleDesc": "Muestra la traza del acelerador en el gráfico.",
       "showBrake": "Freno",
@@ -317,7 +316,9 @@
       "showCornerSpeeds": "Velocidades en curva",
       "showCornerSpeedsDesc": "Velocidad de entrada, vértice y salida de cada curva según tu vuelta de referencia; se ilumina el punto hacia el que vas. Sin vuelta de referencia, tus propias velocidades.",
       "showSlide": "Derrape",
-      "showSlideDesc": "Colorear la línea del volante mientras el coche derrapa de lado."
+      "showSlideDesc": "Colorear la línea del volante mientras el coche derrapa de lado.",
+      "showBars": "Barras de pedales",
+      "showBarsDesc": "Mostrar las barras de acelerador, freno y embrague junto al gráfico."
     },
     "linearMap": {
       "moduleLayout": "Disposición del módulo",

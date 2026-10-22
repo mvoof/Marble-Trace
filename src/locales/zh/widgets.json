@@ -251,7 +251,6 @@
       "colorMode_advanced": "高级"
     },
     "inputTrace": {
-      "dataChannels": "数据通道",
       "showThrottle": "油门",
       "showThrottleDesc": "在图表上显示油门轨迹。",
       "showBrake": "刹车",
@@ -317,7 +316,9 @@
       "showCornerSpeeds": "弯道速度",
       "showCornerSpeedsDesc": "每个弯道的入弯、弯心和出弯速度取自参考圈；你正驶向的那个点会点亮。尚无参考圈时显示你自己的速度。",
       "showSlide": "侧滑",
-      "showSlideDesc": "车辆横向侧滑时为方向盘曲线着色。"
+      "showSlideDesc": "车辆横向侧滑时为方向盘曲线着色。",
+      "showBars": "踏板条",
+      "showBarsDesc": "在图表旁显示油门、刹车和离合踏板条。"
     },
     "linearMap": {
       "moduleLayout": "模块布局",

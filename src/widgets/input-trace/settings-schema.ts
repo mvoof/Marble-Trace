@@ -43,6 +43,8 @@ export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
   showThrottle: bool(true),
   showBrake: bool(true),
   showClutch: bool(true),
+  /** The pedal bars beside the graph; the channels still pick which ones. */
+  showBars: bool(true),
   showInputValues: bool(false),
   steeringCenterDisplay: choice(STEERING_CENTER_DISPLAY, 'logo'),
   steeringWheelStyle: choice(STEERING_WHEEL_STYLE, 'default'),

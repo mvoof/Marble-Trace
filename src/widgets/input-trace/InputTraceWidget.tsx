@@ -15,7 +15,8 @@ export const InputTraceWidget = observer(() => {
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
 
   const barsEffectivelyHidden =
-    !settings.showThrottle && !settings.showBrake && !settings.showClutch;
+    !settings.showBars ||
+    (!settings.showThrottle && !settings.showBrake && !settings.showClutch);
 
   const showTrace = settings.showTrace;
 
