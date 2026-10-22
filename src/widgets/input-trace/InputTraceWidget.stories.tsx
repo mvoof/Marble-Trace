@@ -136,20 +136,25 @@ export const SteeringRight: Story = {
 
 /** The corner speeds beside the wheel: the corner just left, all three lit. */
 export const CornerSpeeds: Story = {
-  args: { showSpeedBlock: true },
+  args: { showCornerSpeeds: true },
 };
 
 /** On the approach: the reference lap's three figures, dimmed. */
 export const CornerSpeedsApproach: Story = {
-  args: { showSpeedBlock: true, cornerProgress: 'approach' },
+  args: { showCornerSpeeds: true, cornerProgress: 'approach' },
 };
 
 /** Past the brake point: the entry lit, the apex and exit still targets. */
 export const CornerSpeedsBraking: Story = {
-  args: { showSpeedBlock: true, cornerProgress: 'braking' },
+  args: { showCornerSpeeds: true, cornerProgress: 'braking' },
 };
 
-/** With the wheel hidden the block carries the speed and gear too. */
+/** The speed and gear as a block of their own, beside the wheel. */
+export const SpeedGear: Story = {
+  args: { showSpeedGear: true },
+};
+
+/** Corner speeds, speed and gear, no wheel: the plate's right edge goes straight. */
 export const CornerSpeedsWithoutWheel: Story = {
-  args: { showSpeedBlock: true, showSteering: false },
+  args: { showCornerSpeeds: true, showSpeedGear: true, showSteering: false },
 };

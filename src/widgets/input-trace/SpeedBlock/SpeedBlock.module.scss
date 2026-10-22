@@ -1,9 +1,0 @@
-// Width per part is mirrored in manifest.ts (INPUT_TRACE_CORNER_SPEEDS_PX,
-// INPUT_TRACE_SPEED_GEAR_PX), which sizes the widget's design width.
-.root {
-  display: flex;
-  align-items: center;
-  gap: sp(md);
-  flex-shrink: 0;
-  height: 100%;
-}

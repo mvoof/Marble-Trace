@@ -4,6 +4,7 @@ import {
   color,
   defineSettings,
   num,
+  nullable,
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
 
@@ -59,7 +60,17 @@ export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
   throttleColor: color('#10b981'),
   brakeColor: color('#ef4444'),
   clutchColor: color('#3b82f6'),
+  /** Paints the brake trace and bar in `absColor` while ABS is working. */
+  showAbs: bool(true),
   absColor: color('#eab308'),
+  /**
+   * The steering angle as a line across the graph, apart from the wheel.
+   * `null` until the user sets it: the line then follows `showSteering`, which
+   * used to switch both — so a wheel turned off before the split keeps its
+   * graph without the line. Read it through `isSteeringTraceShown`.
+   */
+  showSteeringTrace: nullable(bool(true), null),
+  steeringTraceColor: color('rgba(255, 255, 255, 0.7)'),
   historySeconds: num(5, { min: 1, max: 60, step: 1 }),
   lineWidth: num(3.5, { min: 1, max: 10, step: 0.5 }),
   smoothing: num(0, { min: 0, max: 20, step: 1 }),
@@ -67,14 +78,17 @@ export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
   // it describes the wheel on the desk, not this widget. Only the display
   // zoom on top of it belongs here.
   steeringZoom: num(1, { min: 1, max: 4, step: 0.5 }),
-  /**
-   * The entry, apex and exit speeds of the corner. With the wheel hidden the
-   * block also carries the car's speed and gear, which the hub shows otherwise.
-   */
-  showSpeedBlock: bool(false),
+  /** The car's speed and gear, as a block of their own beside the wheel. */
+  showSpeedGear: bool(false),
+  /** The entry, apex and exit speeds of the corner against the reference lap. */
+  showCornerSpeeds: bool(false),
   entrySpeedColor: color('#3b82f6'),
   apexSpeedColor: color('#ef4444'),
   exitSpeedColor: color('#10b981'),
 });
 
 export type InputTraceSettings = SettingsOf<typeof INPUT_TRACE_SETTINGS.shape>;
+
+export const isSteeringTraceShown = (
+  settings: Pick<InputTraceSettings, 'showSteeringTrace' | 'showSteering'>
+): boolean => settings.showSteeringTrace ?? settings.showSteering;

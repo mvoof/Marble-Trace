@@ -1,5 +1,8 @@
 import { normalizedSteering } from '@shared/lib/car-signals';
-import type { InputTraceSettings } from '../settings-schema';
+import {
+  isSteeringTraceShown,
+  type InputTraceSettings,
+} from '../settings-schema';
 
 // Circular sample buffers shared by the ingest and paint passes. Channel
 // samples are interleaved: buffer[sampleIndex * channelCount + channelIndex].
@@ -22,7 +25,6 @@ export const createTraceBufferState = (): TraceBufferState => ({
 const SAMPLES_PER_SECOND = 60;
 const GRID_LINE_COUNT = 3;
 const GRID_LINE_COLOR = 'rgba(255, 255, 255, 0.06)';
-const STEERING_LINE_COLOR = 'rgba(255, 255, 255, 0.7)';
 
 type TraceChannel = { color: string; type: 'throttle' | 'brake' | 'clutch' };
 
@@ -95,6 +97,9 @@ const drawBrakeChannel = (
   let currentAbs = false;
   let started = false;
 
+  const colorOf = (isAbsActive: boolean): string =>
+    isAbsActive && settings.showAbs ? settings.absColor : settings.brakeColor;
+
   ctx.strokeStyle = settings.brakeColor;
   ctx.beginPath();
 
@@ -114,12 +119,12 @@ const drawBrakeChannel = (
 
       ctx.beginPath();
       ctx.moveTo(xPos, yPos);
-      ctx.strokeStyle = sampleAbs ? settings.absColor : settings.brakeColor;
+      ctx.strokeStyle = colorOf(sampleAbs);
       currentAbs = sampleAbs;
     }
 
     if (!started) {
-      ctx.strokeStyle = sampleAbs ? settings.absColor : settings.brakeColor;
+      ctx.strokeStyle = colorOf(sampleAbs);
       currentAbs = sampleAbs;
       ctx.moveTo(xPos, yPos);
       started = true;
@@ -168,7 +173,7 @@ const drawSteering = (pass: ChannelPassContext) => {
   const { ctx, state, settings, steeringLockDeg, logicalWidth, logicalHeight } =
     pass;
 
-  ctx.strokeStyle = STEERING_LINE_COLOR;
+  ctx.strokeStyle = settings.steeringTraceColor;
   ctx.lineWidth = settings.lineWidth;
   ctx.beginPath();
 
@@ -206,7 +211,7 @@ export const drawInputTrace = (
   settings: InputTraceSettings,
   steeringLockDeg: number
 ) => {
-  if (state.buffer.length === 0 && !settings.showSteering) return;
+  if (state.buffer.length === 0 && !isSteeringTraceShown(settings)) return;
 
   const ctx = canvas.getContext('2d');
 
@@ -256,7 +261,7 @@ export const drawInputTrace = (
     }
   }
 
-  if (settings.showSteering) {
+  if (isSteeringTraceShown(settings)) {
     drawSteering(pass);
   }
 };

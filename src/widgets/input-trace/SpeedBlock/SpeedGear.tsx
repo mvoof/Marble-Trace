@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
@@ -10,15 +11,18 @@ import {
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 
 import styles from './SpeedGear.module.scss';
+import type { InputTraceSettings } from '../settings-schema';
 
 /**
- * The car's speed and gear, for when the wheel and its hub are hidden. Both
- * move on every physics tick, so the markup is rendered once and the two
+ * The car's speed and gear, a block of their own whether the wheel is shown
+ * or not. Both move on every physics tick, so the markup is rendered once and the two
  * numbers are written into it. See `docs/rendering.md`.
  */
 export const SpeedGear = observer(() => {
   const player = usePlayerStore();
   const units = useUnitsStore();
+
+  const settings = useWidgetSettings<InputTraceSettings>('input-trace');
 
   const rootRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
@@ -40,8 +44,12 @@ export const SpeedGear = observer(() => {
         }
       });
     },
-    [player, units]
+    [player, units, settings.showSpeedGear]
   );
+
+  if (!settings.showSpeedGear) {
+    return null;
+  }
 
   return (
     <div ref={rootRef} className={styles.speedGear}>

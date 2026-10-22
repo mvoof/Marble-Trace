@@ -36,6 +36,10 @@ export const CornerSpeeds = observer(() => {
     exit: settings.exitSpeedColor,
   };
 
+  if (!settings.showCornerSpeeds) {
+    return null;
+  }
+
   const rows = cornerSpeedRows(backendComputed.cornerSpeeds);
 
   const textOf = (speed: number | null): string =>
