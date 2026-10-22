@@ -315,7 +315,7 @@
       "showSpeedGear": "Velocidad y marcha",
       "showSpeedGearDesc": "La velocidad del coche y la marcha en grande, aparte del volante.",
       "showCornerSpeeds": "Velocidades en curva",
-      "showCornerSpeedsDesc": "Velocidad de entrada, vértice y salida de cada curva frente a tu vuelta de referencia."
+      "showCornerSpeedsDesc": "Velocidad de entrada, vértice y salida de cada curva. Las curvas y los objetivos atenuados vienen de tu vuelta de referencia para esta pista y coche. Sin referencia todavía, las velocidades se leen de tu propia conducción y se muestran sin objetivos."
     },
     "linearMap": {
       "moduleLayout": "Disposición del módulo",
