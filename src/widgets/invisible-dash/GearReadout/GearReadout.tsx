@@ -1,13 +1,18 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { computeRpmZoneState, REDLINE_BLINK } from '@shared/lib/car-signals';
+import {
+  computeRpmZoneState,
+  REDLINE_BLINK,
+  rpmDigitColorsOf,
+  shiftDigitState,
+} from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBlinkHandle } from '@shared/hooks/useBlink';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 
-import { formatGear, zoneDigitColor } from '../invisible-dash-utils';
+import { formatGear } from '../invisible-dash-utils';
 
 import styles from './GearReadout.module.scss';
 import type { InvisibleDashWidgetSettings } from '../settings-schema';
@@ -42,11 +47,10 @@ export const GearReadout = observer(() => {
         gear
       );
 
-      const gearColor = settings.colorizeGearByZone
-        ? zoneDigitColor(zone, settings)
-        : null;
-
-      const isBlink = settings.blinkAtShift && zone === 'blink';
+      const { color: gearColor, isBlink } = shiftDigitState(zone, {
+        colors: settings.colorizeGearByZone ? rpmDigitColorsOf(settings) : null,
+        blink: settings.blinkAtShift,
+      });
 
       const gearText = formatGear(gear);
 

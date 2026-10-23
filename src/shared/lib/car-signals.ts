@@ -150,6 +150,48 @@ export const rpmZoneDigitColor = (
   return null;
 };
 
+/** The digit colours as every widget's settings store them. */
+export interface RpmDigitColorSettings {
+  rpmColorHigh: string;
+  rpmColorShift: string;
+  rpmColorLimit: string;
+}
+
+export const rpmDigitColorsOf = (
+  settings: RpmDigitColorSettings
+): RpmDigitColors => ({
+  high: settings.rpmColorHigh,
+  shift: settings.rpmColorShift,
+  limit: settings.rpmColorLimit,
+});
+
+export interface ShiftDigitOptions {
+  /** The zone palette, or `null` with the zone tint switched off. */
+  colors: RpmDigitColors | null;
+  /** Whether this digit flashes at the shift point. */
+  blink: boolean;
+}
+
+export interface ShiftDigitState {
+  /** The zone tint, or `null` to keep the digit's own colour. */
+  color: string | null;
+  /** Flashing — on `REDLINE_BLINK`, never a CSS animation. */
+  isBlink: boolean;
+}
+
+/**
+ * How a digit driven by the revs — a gear, an RPM number — looks in this zone:
+ * the tint it takes and whether it flashes. Every widget decides it here, so a
+ * gear in one widget and an RPM number in another change at the same revs.
+ */
+export const shiftDigitState = (
+  zone: RpmZone,
+  { colors, blink }: ShiftDigitOptions
+): ShiftDigitState => ({
+  color: colors ? rpmZoneDigitColor(zone, colors) : null,
+  isBlink: blink && zone === 'blink',
+});
+
 // Shared steering-angle math. `steering_wheel_angle` arrives in radians and is
 // consumed by two widgets with different readings — the input trace normalizes
 // it against the driver's lock-to-lock range (app setting `steeringLock`), the

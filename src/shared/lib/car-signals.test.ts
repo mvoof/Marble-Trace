@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   normalizedSteering,
+  shiftDigitState,
   steeringAngleDeg,
   wrapToHalfTurn,
 } from './car-signals';
@@ -70,5 +71,39 @@ describe('wrapToHalfTurn', () => {
   it('resolves the half-turn boundary to the negative end of the range', () => {
     expect(wrapToHalfTurn(180)).toBe(-180);
     expect(wrapToHalfTurn(-180)).toBe(-180);
+  });
+});
+
+describe('shiftDigitState', () => {
+  const COLORS = { high: 'red', shift: 'purple', limit: 'orange' };
+
+  it('takes the zone tint from the high zone up', () => {
+    expect(shiftDigitState('mid', { colors: COLORS, blink: false }).color).toBe(
+      null
+    );
+    expect(
+      shiftDigitState('high', { colors: COLORS, blink: false }).color
+    ).toBe('red');
+    expect(
+      shiftDigitState('blink', { colors: COLORS, blink: false }).color
+    ).toBe('orange');
+  });
+
+  it('keeps its own colour with the tint off', () => {
+    expect(shiftDigitState('blink', { colors: null, blink: true }).color).toBe(
+      null
+    );
+  });
+
+  it('flashes only at the shift point, and only with the blink on', () => {
+    expect(
+      shiftDigitState('blink', { colors: null, blink: true }).isBlink
+    ).toBe(true);
+    expect(
+      shiftDigitState('shift', { colors: null, blink: true }).isBlink
+    ).toBe(false);
+    expect(
+      shiftDigitState('blink', { colors: COLORS, blink: false }).isBlink
+    ).toBe(false);
   });
 });

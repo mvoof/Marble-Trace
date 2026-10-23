@@ -1,7 +1,12 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { computeRpmZoneState, REDLINE_BLINK } from '@shared/lib/car-signals';
+import {
+  computeRpmZoneState,
+  REDLINE_BLINK,
+  rpmDigitColorsOf,
+  shiftDigitState,
+} from '@shared/lib/car-signals';
 import { formatSpeed, speedUnit } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBlinkHandle } from '@shared/hooks/useBlink';
@@ -11,7 +16,6 @@ import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 
-import { zoneDigitColor } from '../invisible-dash-utils';
 import { ShiftBar } from '../ShiftBar/ShiftBar';
 
 import styles from './EngineCluster.module.scss';
@@ -59,11 +63,10 @@ export const EngineCluster = observer(() => {
           ? `${Math.round(pct * RPM_PERCENT_BASE)}%`
           : String(rpm);
 
-      const rpmColor = settings.colorizeRpmByZone
-        ? zoneDigitColor(zone, settings)
-        : null;
-
-      const isBlink = settings.blinkAtShift && zone === 'blink';
+      const { color: rpmColor, isBlink } = shiftDigitState(zone, {
+        colors: settings.colorizeRpmByZone ? rpmDigitColorsOf(settings) : null,
+        blink: settings.blinkAtShift,
+      });
 
       // oxlint-disable-next-line no-restricted-properties
       const speed = player.carDynamics?.speed ?? 0;

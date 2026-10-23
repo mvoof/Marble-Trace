@@ -1,8 +1,12 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { computeRpmZoneState, rpmNumberColor } from '../race-dash-utils';
-import { REDLINE_BLINK } from '@shared/lib/car-signals';
+import { computeRpmZoneState } from '../race-dash-utils';
+import {
+  REDLINE_BLINK,
+  rpmDigitColorsOf,
+  shiftDigitState,
+} from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBlinkHandle } from '@shared/hooks/useBlink';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -37,9 +41,12 @@ export const RpmValue = observer(() => {
         player.carDynamics?.gear ?? 0
       );
 
-      const zoneColor = rpmNumberColor(zone, settings);
-      const isBlink =
-        settings.blinkAtShift && zoneColor !== null && zone === 'blink';
+      // The number flashes only while it is tinted: a white number flashing
+      // beside a ring that already does would say the same thing twice.
+      const { color: zoneColor, isBlink } = shiftDigitState(zone, {
+        colors: settings.colorizeByRpmZone ? rpmDigitColorsOf(settings) : null,
+        blink: settings.blinkAtShift && settings.colorizeByRpmZone,
+      });
 
       scheduleWrite(() => {
         element.style.setProperty(RPM_COLOR_PROPERTY, zoneColor ?? '');

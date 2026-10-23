@@ -1,5 +1,4 @@
 import type { RpmZone } from '@shared/lib/car-signals';
-import { rpmZoneDigitColor } from '@shared/lib/car-signals';
 import type { RaceDashWidgetSettings } from './settings-schema';
 
 export type { RpmZone, RpmZoneState } from '@shared/lib/car-signals';
@@ -102,25 +101,6 @@ export const positionBandColor = (
   }
 
   return settings.positionColorRest;
-};
-
-/**
- * Tint for the gear digit and RPM number. Neutral (null) below the high zone
- * so the cluster does not flicker with color during normal driving.
- */
-export const rpmNumberColor = (
-  zone: RpmZone,
-  settings: RaceDashWidgetSettings
-): string | null => {
-  if (!settings.colorizeByRpmZone) {
-    return null;
-  }
-
-  return rpmZoneDigitColor(zone, {
-    high: settings.rpmColorHigh,
-    shift: settings.rpmColorShift,
-    limit: settings.rpmColorLimit,
-  });
 };
 
 // The plate as shipped: see the breakdown in manifest.ts.

@@ -14,7 +14,8 @@ import {
 import {
   computeRpmZoneState,
   REDLINE_BLINK,
-  rpmZoneDigitColor,
+  rpmDigitColorsOf,
+  shiftDigitState,
 } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBlinkHandle } from '@shared/hooks/useBlink';
@@ -61,15 +62,17 @@ export const SpeedGear = observer(() => {
             ).zone
           : null;
 
-      const gearColor =
-        zone !== null && settings.colorizeGearByZone
-          ? (rpmZoneDigitColor(zone, {
-              high: settings.rpmColorHigh,
-              shift: settings.rpmColorShift,
-              limit: settings.rpmColorLimit,
-            }) ?? '')
-          : '';
-      const isBlink = settings.blinkAtShift && zone === 'blink';
+      const gearState =
+        zone === null
+          ? null
+          : shiftDigitState(zone, {
+              colors: settings.colorizeGearByZone
+                ? rpmDigitColorsOf(settings)
+                : null,
+              blink: settings.blinkAtShift,
+            });
+      const gearColor = gearState?.color ?? '';
+      const isBlink = gearState?.isBlink ?? false;
 
       const speedColor = settings.showSpeedTargetColor
         ? targetSpeedColor(speed, backendComputed.cornerSpeeds, {
