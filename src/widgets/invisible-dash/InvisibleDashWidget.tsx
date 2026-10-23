@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 
+import { CornerSpeeds } from './CornerSpeeds/CornerSpeeds';
 import { EngineCluster } from './EngineCluster/EngineCluster';
 import { GearReadout } from './GearReadout/GearReadout';
 import { RaceCluster } from './RaceCluster/RaceCluster';
@@ -75,9 +76,14 @@ export const InvisibleDashWidget = observer(() => {
           >
             <EngineCluster />
 
-            {settings.showGear && (settings.showSpeed || settings.showRpm) && (
-              <span className={styles.separator} />
-            )}
+            <CornerSpeeds />
+
+            {settings.showGear &&
+              (settings.showSpeed ||
+                settings.showRpm ||
+                settings.showCornerSpeeds) && (
+                <span className={styles.separator} />
+              )}
 
             <GearReadout />
           </div>

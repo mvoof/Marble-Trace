@@ -225,6 +225,23 @@ export const RaceDashSettingsPanel = observer(() => {
         </DependentBlock>
       </Card>
 
+      <Card title={t('settingsPanels.common.cornerSpeedsCard')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="showCornerSpeeds" />
+        </div>
+
+        <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
+
+        <div className={styles.fieldGroup}>
+          <Row setting="showSpeedTargetColor" />
+        </div>
+
+        <Row setting="speedOnTargetColor" dependsOn="showSpeedTargetColor" />
+        <Row setting="speedOverTargetColor" dependsOn="showSpeedTargetColor" />
+      </Card>
+
       <Card title={t('settingsPanels.raceDash.pitAssist')}>
         <div className={styles.fieldGroup}>
           <Row setting="showPitAssist" />

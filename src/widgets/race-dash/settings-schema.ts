@@ -48,6 +48,21 @@ export const RACE_DASH_SETTINGS = defineSettings('raceDash', {
   showSteeringMarker: bool(false),
   /** Color of the trail the steering marker leaves behind it on the rim. */
   steeringTrailColor: color('#f59e0b'),
+  /**
+   * Colours the speed against the lit corner target: on it within 5 km/h,
+   * over it past that. Below it, or with no reference, the speed keeps its
+   * own colour.
+   */
+  showSpeedTargetColor: bool(false, { label: 'common.showSpeedTargetColor' }),
+  speedOnTargetColor: color('#eab308', { label: 'common.speedOnTargetColor' }),
+  speedOverTargetColor: color('#ef4444', {
+    label: 'common.speedOverTargetColor',
+  }),
+  /** The entry, apex and exit speeds of the corner, a column beside the speed. */
+  showCornerSpeeds: bool(false, { label: 'common.showCornerSpeeds' }),
+  entrySpeedColor: color('#3b82f6', { label: 'common.entrySpeedColor' }),
+  apexSpeedColor: color('#ef4444', { label: 'common.apexSpeedColor' }),
+  exitSpeedColor: color('#10b981', { label: 'common.exitSpeedColor' }),
 });
 
 export type RaceDashWidgetSettings = SettingsOf<

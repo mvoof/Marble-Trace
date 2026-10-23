@@ -2,12 +2,28 @@ import type { WidgetManifest } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
+  makeColumnLayoutResolver,
 } from '@widgets/widget-manifest';
-import { RACE_DASH_SETTINGS } from './settings-schema';
+import { computeRaceDashDesignWidth } from './race-dash-utils';
+import {
+  RACE_DASH_SETTINGS,
+  type RaceDashWidgetSettings,
+} from './settings-schema';
+
+// The corner speeds are a column of their own beside the speed: switching
+// them on widens the plate by what they take instead of squeezing the cells.
+const resolveRaceDashLayout = makeColumnLayoutResolver<RaceDashWidgetSettings>(
+  ['showCornerSpeeds'],
+  computeRaceDashDesignWidth
+);
+
+const RACE_DASH_DESIGN_WIDTH = computeRaceDashDesignWidth(
+  RACE_DASH_SETTINGS.defaults
+);
 
 export const RACE_DASH_MANIFEST: WidgetManifest = {
   id: 'race-dash',
-  telemetryEvents: ['carDynamics', 'driverEntries'],
+  telemetryEvents: ['carDynamics', 'driverEntries', 'cornerSpeeds'],
   // The dash draws no flags — its own state is the pit block: the lane bar,
   // the box countdown and the limiter banner, all off `usePitState`, which
   // reads exactly what these three scenarios force.
@@ -21,7 +37,9 @@ export const RACE_DASH_MANIFEST: WidgetManifest = {
   // position/lap column 74 + 30) + border 2. The right padding is wider than
   // the left: that column's numbers sit flush against its own edge, and the
   // plate's right cap is a half-circle that cuts into the content box there.
-  designWidth: 418,
+  // The corner speeds, off by default, add 12 + 28.
+  resolveLayoutChange: resolveRaceDashLayout,
+  designWidth: RACE_DASH_DESIGN_WIDTH,
   designHeight: 104,
   transparentContainer: true,
   // The pit banner hangs over the plate's top edge like in the prototype —
@@ -36,7 +54,7 @@ export const RACE_DASH_MANIFEST: WidgetManifest = {
     enabled: false,
     x: 400,
     y: 100,
-    currentWidth: 418,
+    currentWidth: RACE_DASH_DESIGN_WIDTH,
     currentHeight: 104,
     ...COMMON_WIDGET_DEFAULTS,
     // Container stays transparent (transparentContainer); these colors are

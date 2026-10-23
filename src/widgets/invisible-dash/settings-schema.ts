@@ -65,6 +65,21 @@ export const INVISIBLE_DASH_SETTINGS = defineSettings('invisibleDash', {
   rpmFormat: choice(INVISIBLE_DASH_RPM_FORMAT, 'absolute'),
   useLivePositions: bool(true),
   classPositionInMulticlass: bool(true),
+  /**
+   * Colours the speed against the lit corner target: on it within 5 km/h,
+   * over it past that. Below it, or with no reference, the speed keeps the
+   * text colour.
+   */
+  showSpeedTargetColor: bool(false, { label: 'common.showSpeedTargetColor' }),
+  speedOnTargetColor: color('#eab308', { label: 'common.speedOnTargetColor' }),
+  speedOverTargetColor: color('#ef4444', {
+    label: 'common.speedOverTargetColor',
+  }),
+  /** The entry, apex and exit speeds of the corner, a column beside the engine. */
+  showCornerSpeeds: bool(false, { label: 'common.showCornerSpeeds' }),
+  entrySpeedColor: color('#3b82f6', { label: 'common.entrySpeedColor' }),
+  apexSpeedColor: color('#ef4444', { label: 'common.apexSpeedColor' }),
+  exitSpeedColor: color('#10b981', { label: 'common.exitSpeedColor' }),
 });
 
 export type InvisibleDashWidgetSettings = SettingsOf<

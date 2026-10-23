@@ -90,14 +90,16 @@ export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
    * over it past that. Below it, or with no reference, the speed keeps its
    * own colour.
    */
-  showSpeedTargetColor: bool(false),
-  speedOnTargetColor: color('#eab308'),
-  speedOverTargetColor: color('#ef4444'),
+  showSpeedTargetColor: bool(false, { label: 'common.showSpeedTargetColor' }),
+  speedOnTargetColor: color('#eab308', { label: 'common.speedOnTargetColor' }),
+  speedOverTargetColor: color('#ef4444', {
+    label: 'common.speedOverTargetColor',
+  }),
   /** The entry, apex and exit speeds of the corner against the reference lap. */
-  showCornerSpeeds: bool(false),
-  entrySpeedColor: color('#3b82f6'),
-  apexSpeedColor: color('#ef4444'),
-  exitSpeedColor: color('#10b981'),
+  showCornerSpeeds: bool(false, { label: 'common.showCornerSpeeds' }),
+  entrySpeedColor: color('#3b82f6', { label: 'common.entrySpeedColor' }),
+  apexSpeedColor: color('#ef4444', { label: 'common.apexSpeedColor' }),
+  exitSpeedColor: color('#10b981', { label: 'common.exitSpeedColor' }),
 });
 
 export type InputTraceSettings = SettingsOf<typeof INPUT_TRACE_SETTINGS.shape>;

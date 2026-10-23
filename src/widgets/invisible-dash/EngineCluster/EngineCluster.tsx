@@ -4,6 +4,8 @@ import { observer } from 'mobx-react-lite';
 import { computeRpmZoneState } from '@shared/lib/car-signals';
 import { formatSpeed, speedUnit } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { targetSpeedState } from '@entities/corner-speeds/target-speed';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
@@ -22,11 +24,15 @@ const RPM_COLOR_PROPERTY = '--dash-rpm-color';
  * The revs and the speed. Both move on every physics tick, so the cluster is
  * markup React renders once and a single pass per animation frame fills. See
  * `docs/rendering.md`.
+ *
+ * With the target colour on, the speed takes the on-target or over-target
+ * colour against the lit corner target, written with the number.
  */
 export const EngineCluster = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
   const units = useUnitsStore();
+  const backendComputed = useBackendComputedStore();
 
   const settings =
     useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
@@ -52,11 +58,19 @@ export const EngineCluster = observer(() => {
         ? zoneDigitColor(zone, settings)
         : null;
 
-      const speedText = formatSpeed(
-        // oxlint-disable-next-line no-restricted-properties
-        player.carDynamics?.speed ?? 0,
-        units.unitSystem
-      );
+      // oxlint-disable-next-line no-restricted-properties
+      const speed = player.carDynamics?.speed ?? 0;
+      const speedText = formatSpeed(speed, units.unitSystem);
+
+      const targetState = settings.showSpeedTargetColor
+        ? targetSpeedState(speed, backendComputed.cornerSpeeds)
+        : null;
+      const speedColor =
+        targetState === 'onTarget'
+          ? settings.speedOnTargetColor
+          : targetState === 'over'
+            ? settings.speedOverTargetColor
+            : '';
 
       scheduleWrite(() => {
         element.style.setProperty(RPM_COLOR_PROPERTY, rpmColor ?? '');
@@ -71,10 +85,11 @@ export const EngineCluster = observer(() => {
 
         if (speedValue instanceof HTMLElement) {
           speedValue.textContent = speedText;
+          speedValue.style.color = speedColor;
         }
       });
     },
-    [player, sessionStore, units, settings]
+    [player, sessionStore, units, backendComputed, settings]
   );
 
   if (!settings.showSpeed && !settings.showRpm && !settings.showShiftBar) {

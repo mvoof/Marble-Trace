@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { positionBandColor } from '../race-dash-utils';
 import { resolveSessionLaps } from '@shared/lib/telemetry-format';
+import { CornerSpeeds } from '../CornerSpeeds/CornerSpeeds';
 import { RpmValue } from '../RpmValue/RpmValue';
 import { SpeedReadout } from '../SpeedReadout/SpeedReadout';
 import { useCarsStore } from '@entities/cars/cars-context';
@@ -49,8 +50,16 @@ export const StatsStrip = observer(() => {
       : '—';
 
   return (
-    <div className={styles.root}>
+    <div
+      className={
+        settings.showCornerSpeeds
+          ? `${styles.root} ${styles.rootWithCorners}`
+          : styles.root
+      }
+    >
       <SpeedReadout />
+
+      {settings.showCornerSpeeds && <CornerSpeeds />}
 
       <div className={`${styles.divider} ${styles.dividerOne}`} />
 

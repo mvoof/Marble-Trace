@@ -126,3 +126,17 @@ export const rpmNumberColor = (
     limit: settings.rpmColorLimit,
   });
 };
+
+// The plate as shipped: see the breakdown in manifest.ts.
+const RACE_DASH_BASE_PX = 418;
+// The corner speeds column (ws(28), StatsStrip.module.scss) and the column gap
+// in front of it (ws(12)).
+const CORNER_SPEEDS_PX = 40;
+
+/** The plate's design width for the cells the settings show. */
+export const computeRaceDashDesignWidth = (
+  settings: Pick<RaceDashWidgetSettings, 'showCornerSpeeds'>
+): number =>
+  settings.showCornerSpeeds
+    ? RACE_DASH_BASE_PX + CORNER_SPEEDS_PX
+    : RACE_DASH_BASE_PX;

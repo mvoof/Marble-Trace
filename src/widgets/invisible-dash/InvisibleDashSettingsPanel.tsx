@@ -21,6 +21,9 @@ export const PANEL_WIDGET_IDS = ['invisible-dash'];
 const { Row } = schemaRows(INVISIBLE_DASH_SETTINGS);
 const { bloomIntensity } = INVISIBLE_DASH_SETTINGS.shape;
 
+const hasSpeedTargetColor = (settings: InvisibleDashWidgetSettings): boolean =>
+  settings.showSpeed && settings.showSpeedTargetColor;
+
 export const InvisibleDashSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId(WIDGET_ID);
@@ -179,6 +182,18 @@ export const InvisibleDashSettingsPanel = observer(() => {
         <div className={styles.fieldGroup}>
           <Row setting="showSpeed" />
         </div>
+
+        <Row setting="showSpeedTargetColor" dependsOn="showSpeed" />
+        <Row setting="speedOnTargetColor" dependsOn={hasSpeedTargetColor} />
+        <Row setting="speedOverTargetColor" dependsOn={hasSpeedTargetColor} />
+
+        <div className={styles.fieldGroup}>
+          <Row setting="showCornerSpeeds" />
+        </div>
+
+        <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
 
         <div className={styles.fieldGroup}>
           <Row setting="showRpm" />
