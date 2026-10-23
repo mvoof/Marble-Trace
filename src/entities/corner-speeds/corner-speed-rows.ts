@@ -10,7 +10,12 @@ export interface CornerSpeedRow {
   lit: boolean;
 }
 
-const POINTS: CornerSpeedPoint[] = ['entry', 'apex', 'exit'];
+/** The points in the order every readout draws them, top to bottom. */
+export const CORNER_SPEED_POINTS: CornerSpeedPoint[] = [
+  'entry',
+  'apex',
+  'exit',
+];
 
 /**
  * Which point is lit, one at a time. A reference figure is a target, so the
@@ -23,7 +28,7 @@ const litIndexOf = (frame: CornerSpeedsFrame): number | null => {
   const passedCount = passed.filter(Boolean).length;
 
   if (frame.fromReference) {
-    return Math.min(passedCount, POINTS.length - 1);
+    return Math.min(passedCount, CORNER_SPEED_POINTS.length - 1);
   }
 
   return passedCount > 0 ? passedCount - 1 : null;
@@ -39,7 +44,7 @@ export const cornerSpeedRows = (
   const values = [frame?.entry, frame?.apex, frame?.exit];
   const litIndex = frame ? litIndexOf(frame) : null;
 
-  return POINTS.map((point, index) => ({
+  return CORNER_SPEED_POINTS.map((point, index) => ({
     point,
     value: values[index] ?? null,
     lit: index === litIndex,

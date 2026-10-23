@@ -2,15 +2,23 @@ import { observer } from 'mobx-react-lite';
 
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
-import { targetSpeedState } from '@entities/corner-speeds/target-speed';
+import { targetSpeedColor } from '@entities/corner-speeds/target-speed';
 import { usePlayerStore } from '@entities/player/player-context';
+import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
   formatGear,
   formatSpeed,
   speedUnit,
 } from '@shared/lib/telemetry-format';
+import {
+  computeRpmZoneState,
+  REDLINE_BLINK,
+  rpmDigitColorsOf,
+  shiftDigitState,
+} from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useBlinkHandle } from '@shared/hooks/useBlink';
 
 import styles from './SpeedGear.module.scss';
 import type { InputTraceSettings } from '../settings-schema';
@@ -21,34 +29,57 @@ import type { InputTraceSettings } from '../settings-schema';
  * the two numbers are written into it. See `docs/rendering.md`.
  *
  * With the target colour on, the speed takes the on-target or over-target
- * colour against the lit corner target, written with the number.
+ * colour against the lit corner target, written with the number. The gear
+ * can take the rev zone's colour and flash at the shift point — the flash on a
+ * timer, never a CSS animation (ADR-0009).
  */
 export const SpeedGear = observer(() => {
   const player = usePlayerStore();
   const units = useUnitsStore();
   const backendComputed = useBackendComputedStore();
+  const sessionStore = useSessionStore();
 
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
+  const shiftBlink = useBlinkHandle();
 
   const rootRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
       // oxlint-disable-next-line no-restricted-properties
       const carDynamics = player.carDynamics;
-      const speedText = formatSpeed(carDynamics?.speed ?? 0, units.unitSystem);
-      const gearText = formatGear(carDynamics?.gear ?? 0);
+      const speed = carDynamics?.speed ?? 0;
+      const speedText = formatSpeed(speed, units.unitSystem);
+      const gearNumber = carDynamics?.gear ?? 0;
+      const gearText = formatGear(gearNumber);
 
-      const state = settings.showSpeedTargetColor
-        ? targetSpeedState(
-            carDynamics?.speed ?? 0,
-            backendComputed.cornerSpeeds
-          )
-        : null;
-      const speedColor =
-        state === 'onTarget'
-          ? settings.speedOnTargetColor
-          : state === 'over'
-            ? settings.speedOverTargetColor
-            : '';
+      // The zone is only worked out for a setting that reads it.
+      const zone =
+        settings.colorizeGearByZone || settings.blinkAtShift
+          ? computeRpmZoneState(
+              Math.round(carDynamics?.rpm ?? 0),
+              sessionStore.sessionInfo,
+              player.carStatus,
+              gearNumber
+            ).zone
+          : null;
+
+      const gearState =
+        zone === null
+          ? null
+          : shiftDigitState(zone, {
+              colors: settings.colorizeGearByZone
+                ? rpmDigitColorsOf(settings)
+                : null,
+              blink: settings.blinkAtShift,
+            });
+      const gearColor = gearState?.color ?? '';
+      const isBlink = gearState?.isBlink ?? false;
+
+      const speedColor = settings.showSpeedTargetColor
+        ? targetSpeedColor(speed, backendComputed.cornerSpeeds, {
+            onTarget: settings.speedOnTargetColor,
+            over: settings.speedOverTargetColor,
+          })
+        : '';
 
       scheduleWrite(() => {
         const speed = element.querySelector(`.${styles.speedValue}`);
@@ -60,11 +91,16 @@ export const SpeedGear = observer(() => {
         }
 
         if (gear instanceof HTMLElement) {
+          gear.style.color = gearColor;
+          gear.classList.toggle(styles.blinkPulse, isBlink);
           gear.textContent = gearText;
         }
+
+        shiftBlink.attach(gear);
+        shiftBlink.run(isBlink ? REDLINE_BLINK : null);
       });
     },
-    [player, units, backendComputed, settings]
+    [player, units, backendComputed, sessionStore, settings, shiftBlink]
   );
 
   if (!settings.showSpeedGear) {

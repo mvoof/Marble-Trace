@@ -226,6 +226,25 @@ describe('a widget read back', () => {
     );
   });
 
+  it('keeps the design width a locked-ratio widget derives from its settings', () => {
+    const raceDash = shipped('race-dash');
+    const widenedWidth = raceDash.designWidth + 40;
+
+    const widget = decodeWidget(
+      {
+        id: 'race-dash',
+        type: 'race-dash',
+        enabled: true,
+        frame: { x: 0, y: 0, width: widenedWidth, height: 999 },
+        settings: { showCornerSpeeds: true },
+      },
+      LEFT
+    )!;
+
+    expect(widget.designWidth).toBe(widenedWidth);
+    expect(widget.userSettings.currentHeight).toBe(raceDash.designHeight);
+  });
+
   it('rebuilds the weather design width from its orientation', () => {
     const weather = shipped('weather');
 

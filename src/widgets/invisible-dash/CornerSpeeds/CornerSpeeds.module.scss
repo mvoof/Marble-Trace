@@ -1,0 +1,35 @@
+@use '../_invisible-dash-scale.scss' as *;
+
+// Right of the speed, packed tight so the three read at one glance with it.
+.corners {
+  display: flex;
+  flex-direction: column;
+  gap: ws(2 * $ss);
+  margin-left: ws(20 * $ss);
+}
+
+// A fixed three-cell slot, right aligned, so a two-digit speed lines up with a
+// three-digit one. The colour is the user's, per point.
+.cornerValue {
+  width: 3ch;
+  font-size: wfs(22 * $ss);
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--corner-accent);
+}
+
+// Every figure but the one to read now.
+.cornerValuePending {
+  opacity: 0.35;
+}
+
+@container #{$container} (max-width: #{$compact-max}) {
+  .corners {
+    margin-left: ws(10 * $ss);
+  }
+
+  .cornerValue {
+    font-size: floor-size(#{wfs(22 * $ss)}, 11);
+  }
+}

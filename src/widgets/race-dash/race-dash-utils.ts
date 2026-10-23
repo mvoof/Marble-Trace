@@ -1,10 +1,5 @@
 import type { RpmZone } from '@shared/lib/car-signals';
-import { rpmZoneDigitColor } from '@shared/lib/car-signals';
 import type { RaceDashWidgetSettings } from './settings-schema';
-import type { BlinkCycle } from '@shared/hooks/useBlink';
-
-/** At the redline the gear and the rev number flash together, 500 ms a side. */
-export const REDLINE_BLINK: BlinkCycle = { stepMs: 500, steps: 2 };
 
 export type { RpmZone, RpmZoneState } from '@shared/lib/car-signals';
 export { computeRpmZoneState } from '@shared/lib/car-signals';
@@ -108,21 +103,16 @@ export const positionBandColor = (
   return settings.positionColorRest;
 };
 
-/**
- * Tint for the gear digit and RPM number. Neutral (null) below the high zone
- * so the cluster does not flicker with color during normal driving.
- */
-export const rpmNumberColor = (
-  zone: RpmZone,
-  settings: RaceDashWidgetSettings
-): string | null => {
-  if (!settings.colorizeByRpmZone) {
-    return null;
-  }
+// The plate as shipped: see the breakdown in manifest.ts.
+const RACE_DASH_BASE_PX = 418;
+// The corner speeds column (ws(28), StatsStrip.module.scss) and the column gap
+// in front of it (ws(12)).
+const CORNER_SPEEDS_PX = 40;
 
-  return rpmZoneDigitColor(zone, {
-    high: settings.rpmColorHigh,
-    shift: settings.rpmColorShift,
-    limit: settings.rpmColorLimit,
-  });
-};
+/** The plate's design width for the cells the settings show. */
+export const computeRaceDashDesignWidth = (
+  settings: Pick<RaceDashWidgetSettings, 'showCornerSpeeds'>
+): number =>
+  settings.showCornerSpeeds
+    ? RACE_DASH_BASE_PX + CORNER_SPEEDS_PX
+    : RACE_DASH_BASE_PX;

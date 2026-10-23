@@ -8,6 +8,10 @@ import {
   mockReferenceLap,
   referenceSpeedKmhAt,
 } from '@features/preview/mocks/coach';
+import {
+  mockCornerSpeeds,
+  type CornerProgress,
+} from '@features/preview/mocks/corner-speeds';
 import { MPS_PER_KMH, mockCarDynamics } from '@features/preview/mocks/dynamics';
 import { mockLapTiming } from '@features/preview/mocks/delta';
 import { mockPitCarStatus, mockPitTarget } from '@features/preview/mocks/pit';
@@ -44,7 +48,13 @@ interface StoryArgs {
   showSteeringMarker: boolean;
   steeringTrailColor: string;
   steeringWheelAngle: number;
+  showCornerSpeeds: boolean;
+  showSpeedTargetColor: boolean;
+  cornerProgress: CornerProgress;
 }
+
+/** The plate with the corner speeds column — 418 plus its 40. */
+const WIDTH_WITH_CORNER_SPEEDS = 458;
 
 /** How far down the lane the car is, in each of the two pit phases. */
 const LANE_PROGRESS_TO_BOX = 0.4;
@@ -70,7 +80,13 @@ const meta: Meta<StoryArgs> = {
       store.liveWidgets.updateUserSettings('race-dash', {
         showSteeringMarker: args.showSteeringMarker,
         steeringTrailColor: args.steeringTrailColor,
+        showCornerSpeeds: args.showCornerSpeeds,
+        showSpeedTargetColor: args.showSpeedTargetColor,
       });
+
+      store.backendComputed.updateCornerSpeeds(
+        mockCornerSpeeds(args.cornerProgress)
+      );
 
       // A scenario states the whole car — the lap it is on, the speed it is
       // carrying and where in the pits it is. The knobs below are the other
@@ -132,6 +148,9 @@ const meta: Meta<StoryArgs> = {
       showSteeringMarker: false,
       steeringTrailColor: '#f59e0b',
       steeringWheelAngle: 0,
+      showCornerSpeeds: false,
+      showSpeedTargetColor: false,
+      cornerProgress: 'exited',
     },
     argTypes: {
       atPct: { control: { type: 'range', min: 0, max: 1, step: 0.01 } },
@@ -145,6 +164,12 @@ const meta: Meta<StoryArgs> = {
       boxDistM: { control: { type: 'number' } },
       showSteeringMarker: { control: 'boolean' },
       steeringTrailColor: { control: 'color' },
+      showCornerSpeeds: { control: 'boolean' },
+      showSpeedTargetColor: { control: 'boolean' },
+      cornerProgress: {
+        control: 'radio',
+        options: ['approach', 'braking', 'pastApex', 'exited'],
+      },
       steeringWheelAngle: {
         control: { type: 'range', min: -450, max: 450, step: 5 },
       },
@@ -330,4 +355,15 @@ export const SteeringMarkerLapped: Story = {
 
 export const NoReferenceLap: Story = {
   args: { referenceLap: false, speedKmh: 172 },
+};
+
+/** Past the brake point: the entry lit, the speed coloured against the apex. */
+export const CornerSpeeds: Story = {
+  args: {
+    showCornerSpeeds: true,
+    showSpeedTargetColor: true,
+    cornerProgress: 'braking',
+    speedKmh: 99,
+  },
+  parameters: { widgetFrame: { width: WIDTH_WITH_CORNER_SPEEDS } },
 };

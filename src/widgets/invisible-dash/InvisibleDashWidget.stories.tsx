@@ -1,5 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import {
+  mockCornerSpeeds,
+  type CornerProgress,
+} from '@features/preview/mocks/corner-speeds';
 import { MPS_PER_KMH, mockCarDynamics } from '@features/preview/mocks/dynamics';
 import { InvisibleDashWidget } from './InvisibleDashWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
@@ -19,6 +23,9 @@ interface StoryArgs {
   backdropColor: string;
   backdropScope: InvisibleDashBackdropScope;
   bloomIntensity: number;
+  showCornerSpeeds: boolean;
+  showSpeedTargetColor: boolean;
+  cornerProgress: CornerProgress;
 }
 
 const DESIGN_WIDTH = 900;
@@ -44,9 +51,15 @@ const meta: Meta<StoryArgs> = {
         backdropColor: args.backdropColor,
         backdropScope: args.backdropScope,
         bloomIntensity: args.bloomIntensity,
+        showCornerSpeeds: args.showCornerSpeeds,
+        showSpeedTargetColor: args.showSpeedTargetColor,
       };
 
       store.liveWidgets.updateUserSettings('invisible-dash', settings);
+
+      store.backendComputed.updateCornerSpeeds(
+        mockCornerSpeeds(args.cornerProgress)
+      );
 
       store.player.updateCarDynamics(
         mockCarDynamics({
@@ -66,6 +79,9 @@ const meta: Meta<StoryArgs> = {
       backdropColor: 'rgba(0, 0, 0, 0)',
       backdropScope: 'clusters',
       bloomIntensity: 60,
+      showCornerSpeeds: false,
+      showSpeedTargetColor: false,
+      cornerProgress: 'exited',
     },
     argTypes: {
       speedKmh: { control: { type: 'number' } },
@@ -77,6 +93,12 @@ const meta: Meta<StoryArgs> = {
       backdropColor: { control: 'color' },
       backdropScope: { control: 'radio', options: ['clusters', 'full'] },
       bloomIntensity: { control: { type: 'range', min: 0, max: 100, step: 5 } },
+      showCornerSpeeds: { control: 'boolean' },
+      showSpeedTargetColor: { control: 'boolean' },
+      cornerProgress: {
+        control: 'radio',
+        options: ['approach', 'braking', 'pastApex', 'exited'],
+      },
     },
   }),
 };
@@ -137,4 +159,14 @@ export const FlatGlass: Story = {
 
 export const ShiftZone: Story = {
   args: { rpm: 8400, gear: 6, speedKmh: 291 },
+};
+
+/** Past the brake point: the entry lit, the speed coloured against the apex. */
+export const CornerSpeeds: Story = {
+  args: {
+    showCornerSpeeds: true,
+    showSpeedTargetColor: true,
+    cornerProgress: 'braking',
+    speedKmh: 99,
+  },
 };

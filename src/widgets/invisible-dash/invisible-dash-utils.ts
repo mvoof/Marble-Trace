@@ -1,21 +1,5 @@
 import type { RpmZone } from '@shared/lib/car-signals';
-import { rpmZoneDigitColor } from '@shared/lib/car-signals';
 import type { InvisibleDashWidgetSettings } from './settings-schema';
-
-/**
- * Color for a digit driven by the revs, using the widget's own zone palette.
- * Null below the high zone — the readout only takes on color when the shift
- * point is close, so it does not flicker through a normal lap.
- */
-export const zoneDigitColor = (
-  zone: RpmZone,
-  settings: InvisibleDashWidgetSettings
-): string | null =>
-  rpmZoneDigitColor(zone, {
-    high: settings.rpmColorHigh,
-    shift: settings.rpmColorShift,
-    limit: settings.rpmColorLimit,
-  });
 
 /** Fill color of the shift bar at the given zone — it is colored all the way down. */
 export const shiftBarColor = (

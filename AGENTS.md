@@ -55,7 +55,7 @@ compiler, test, or review). Read the file for the area before editing it.
 | the bundle: rates, gated fields, rounding, slow slice, inspector, pit orders | `docs/rules/telemetry.md`                                            |
 | stores, window roots, main↔overlay/remote sync, layout editor, settings file | `docs/rules/stores.md`, `docs/settings-schema.md`                    |
 | any widget: system, instances, appearance, panel, story, checklist           | `docs/rules/widgets.md`; building one: `docs/widget-authoring.md`    |
-| a component reading 60 Hz data                                               | `docs/rendering.md`                                                  |
+| a component reading telemetry or a computed frame; blinking, transitions     | `docs/rendering.md`, `docs/adr/0009-…` — before writing it           |
 | code style, SCSS, tokens, `ws()`, live numbers                               | `docs/rules/frontend-style.md`, `docs/widget-toolbox.md`             |
 | why something is built this way                                              | `docs/architecture.md`, `docs/adr/`                                  |
 

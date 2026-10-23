@@ -1,14 +1,21 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { computeRpmZoneState } from '@shared/lib/car-signals';
+import {
+  computeRpmZoneState,
+  REDLINE_BLINK,
+  rpmDigitColorsOf,
+  shiftDigitState,
+} from '@shared/lib/car-signals';
 import { formatSpeed, speedUnit } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useBlinkHandle } from '@shared/hooks/useBlink';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { targetSpeedColor } from '@entities/corner-speeds/target-speed';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 
-import { zoneDigitColor } from '../invisible-dash-utils';
 import { ShiftBar } from '../ShiftBar/ShiftBar';
 
 import styles from './EngineCluster.module.scss';
@@ -22,14 +29,22 @@ const RPM_COLOR_PROPERTY = '--dash-rpm-color';
  * The revs and the speed. Both move on every physics tick, so the cluster is
  * markup React renders once and a single pass per animation frame fills. See
  * `docs/rendering.md`.
+ *
+ * With the blink on, the RPM number flashes at the shift point on a timer, not
+ * a CSS animation (ADR-0009).
+ *
+ * With the target colour on, the speed takes the on-target or over-target
+ * colour against the lit corner target, written with the number.
  */
 export const EngineCluster = observer(() => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
   const units = useUnitsStore();
+  const backendComputed = useBackendComputedStore();
 
   const settings =
     useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
+  const shiftBlink = useBlinkHandle();
 
   const rootRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
@@ -48,15 +63,21 @@ export const EngineCluster = observer(() => {
           ? `${Math.round(pct * RPM_PERCENT_BASE)}%`
           : String(rpm);
 
-      const rpmColor = settings.colorizeRpmByZone
-        ? zoneDigitColor(zone, settings)
-        : null;
+      const { color: rpmColor, isBlink } = shiftDigitState(zone, {
+        colors: settings.colorizeRpmByZone ? rpmDigitColorsOf(settings) : null,
+        blink: settings.blinkAtShift,
+      });
 
-      const speedText = formatSpeed(
-        // oxlint-disable-next-line no-restricted-properties
-        player.carDynamics?.speed ?? 0,
-        units.unitSystem
-      );
+      // oxlint-disable-next-line no-restricted-properties
+      const speed = player.carDynamics?.speed ?? 0;
+      const speedText = formatSpeed(speed, units.unitSystem);
+
+      const speedColor = settings.showSpeedTargetColor
+        ? targetSpeedColor(speed, backendComputed.cornerSpeeds, {
+            onTarget: settings.speedOnTargetColor,
+            over: settings.speedOverTargetColor,
+          })
+        : '';
 
       scheduleWrite(() => {
         element.style.setProperty(RPM_COLOR_PROPERTY, rpmColor ?? '');
@@ -64,17 +85,22 @@ export const EngineCluster = observer(() => {
         const rpmValue = element.querySelector(`.${styles.rpm}`);
 
         if (rpmValue instanceof HTMLElement) {
+          rpmValue.classList.toggle(styles.blinkPulse, isBlink);
           rpmValue.textContent = rpmText;
         }
+
+        shiftBlink.attach(rpmValue);
+        shiftBlink.run(isBlink ? REDLINE_BLINK : null);
 
         const speedValue = element.querySelector(`.${styles.speed}`);
 
         if (speedValue instanceof HTMLElement) {
           speedValue.textContent = speedText;
+          speedValue.style.color = speedColor;
         }
       });
     },
-    [player, sessionStore, units, settings]
+    [player, sessionStore, units, backendComputed, settings, shiftBlink]
   );
 
   if (!settings.showSpeed && !settings.showRpm && !settings.showShiftBar) {

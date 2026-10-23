@@ -26,6 +26,16 @@
   padding: 0 ws(30) 0 ws(12);
 }
 
+// The corner speeds ride in the speed's own cell, a column right of it — no
+// hairline between them, they are one reading. The widget widens by the column
+// and its gap (CORNER_SPEEDS_PX in race-dash-utils).
+.rootWithCorners {
+  grid-template-columns: ws(70) ws(28) 1px ws(78) 1px 1fr;
+  grid-template-areas:
+    'capSpeed corners divOne capRpm divTwo info'
+    'valSpeed corners divOne valRpm divTwo info';
+}
+
 // Internal hairlines use a fixed token, not var(--widget-border) — the
 // user's border-color setting must restyle only the plate outline.
 .divider {

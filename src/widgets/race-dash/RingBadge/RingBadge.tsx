@@ -3,15 +3,15 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 
 import { formatGear } from '@shared/lib/telemetry-format';
-import { computeShiftThresholds } from '@shared/lib/car-signals';
+import {
+  computeShiftThresholds,
+  REDLINE_BLINK,
+  rpmDigitColorsOf,
+  shiftDigitState,
+} from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBlinkHandle, type BlinkCycle } from '@shared/hooks/useBlink';
-import {
-  computeRpmZoneState,
-  REDLINE_BLINK,
-  rpmFillColor,
-  rpmNumberColor,
-} from '../race-dash-utils';
+import { computeRpmZoneState, rpmFillColor } from '../race-dash-utils';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { RpmComb } from '../RpmComb/RpmComb';
@@ -115,18 +115,23 @@ export const RingBadge = observer(() => {
       const fillDeg = pct * ARC_SWEEP_DEG;
 
       const fillColor = rpmFillColor(zone, settings);
-      const isBlink = zone === 'blink';
+      const isAtBlink = zone === 'blink';
 
       // When neither ring scale is shown, the gear digit stays white — the core
       // glow already carries the zone color, so tinting the digit too would
       // wash the two together.
-      const gearColor =
-        showFill || showComb ? rpmNumberColor(zone, settings) : null;
+      const { color: gearColor, isBlink } = shiftDigitState(zone, {
+        colors:
+          (showFill || showComb) && settings.colorizeByRpmZone
+            ? rpmDigitColorsOf(settings)
+            : null,
+        blink: settings.blinkAtShift,
+      });
 
       // Grows from a small dot at the center out to the full circle by the time
       // rpm hits the shift point — same zone colors as the fill arc, just as a
       // filled disc instead of a ring.
-      const coreGlowScale = isBlink
+      const coreGlowScale = isAtBlink
         ? 1
         : Math.min(Math.max(rpm / (shiftRpm || 1), 0), 1);
 

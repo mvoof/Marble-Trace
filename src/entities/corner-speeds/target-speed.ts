@@ -35,3 +35,30 @@ export const targetSpeedState = (
 
   return difference > 0 ? 'over' : null;
 };
+
+export interface TargetSpeedColors {
+  onTarget: string;
+  over: string;
+}
+
+/**
+ * The colour the speed is written in against the lit target: one of `colors`,
+ * or `''` to leave the speed its own colour.
+ *
+ * Call it only with the target colour switched on: reading the frame
+ * subscribes the caller to it, and without a reference it changes on every
+ * bundle under braking.
+ */
+export const targetSpeedColor = (
+  speed: number,
+  frame: CornerSpeedsFrame | null,
+  colors: TargetSpeedColors
+): string => {
+  const state = targetSpeedState(speed, frame);
+
+  if (state === 'onTarget') {
+    return colors.onTarget;
+  }
+
+  return state === 'over' ? colors.over : '';
+};

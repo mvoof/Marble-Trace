@@ -24,6 +24,8 @@ interface StoryArgs {
   steeringWheelAngle: number;
   steeringLock: number;
   cornerProgress: CornerProgress;
+  rpm: number;
+  gear: number;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -60,7 +62,11 @@ const meta: Meta<StoryArgs> = {
       );
 
       store.player.updateCarDynamics(
-        mockCarDynamics({ steering_wheel_angle: args.steeringWheelAngle })
+        mockCarDynamics({
+          steering_wheel_angle: args.steeringWheelAngle,
+          rpm: args.rpm,
+          gear: args.gear,
+        })
       );
 
       store.backendComputed.updateCornerSpeeds(
@@ -79,6 +85,8 @@ const meta: Meta<StoryArgs> = {
       steeringWheelAngle: 0.5,
       steeringLock: 900,
       cornerProgress: 'exited',
+      rpm: 6400,
+      gear: 4,
     },
   }),
 };
@@ -157,4 +165,15 @@ export const SpeedGear: Story = {
 /** Corner speeds, speed and gear, no wheel: the plate's right edge goes straight. */
 export const CornerSpeedsWithoutWheel: Story = {
   args: { showCornerSpeeds: true, showSpeedGear: true, showSteering: false },
+};
+
+/** At the shift point: the gear in the zone colour, flashing. */
+export const GearAtShiftPoint: Story = {
+  args: {
+    showSpeedGear: true,
+    colorizeGearByZone: true,
+    blinkAtShift: true,
+    rpm: 9200,
+    gear: 2,
+  },
 };

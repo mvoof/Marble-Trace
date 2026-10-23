@@ -1,0 +1,27 @@
+// Placed into StatsStrip's grid beside the speed, spanning both of its rows, so
+// the three figures centre on the caption and the number together.
+.corners {
+  grid-area: corners;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: ws(2);
+}
+
+// A fixed three-cell slot of a monospaced face, right aligned, so a two-digit
+// speed lines up with a three-digit one. The colour is the user's, per point.
+.cornerValue {
+  width: 3ch;
+  font-family: $font-mono;
+  font-size: wfs(15);
+  font-weight: 700;
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--corner-accent);
+}
+
+// Every figure but the one to read now.
+.cornerValuePending {
+  opacity: 0.35;
+}
