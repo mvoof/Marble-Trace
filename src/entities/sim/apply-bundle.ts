@@ -76,6 +76,11 @@ export const applyTelemetryBundle = (
     if (bundle.pitStops) root.backendComputed.updatePitStops(bundle.pitStops);
     if (bundle.paceCar) root.backendComputed.updatePaceCar(bundle.paceCar);
     if (bundle.coach) root.backendComputed.updateCoach(bundle.coach);
+
+    if (bundle.cornerSpeeds) {
+      root.backendComputed.updateCornerSpeeds(bundle.cornerSpeeds);
+    }
+
     if (bundle.pitAuto) root.backendComputed.updatePitAuto(bundle.pitAuto);
     if (bundle.lapDelta) root.backendComputed.updateLapDelta(bundle.lapDelta);
     if (bundle.lapLog) root.backendComputed.updateLapLog(bundle.lapLog);

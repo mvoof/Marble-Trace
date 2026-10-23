@@ -21,11 +21,12 @@ use super::quantize;
 use super::scheduler::DueGroups;
 use super::state::TelemetryServiceState;
 use crate::capabilities::Capabilities;
+use crate::computations::input_sample::input_sample;
 use crate::computations::pit_actions::{self, PitActionInput};
 use crate::computations::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
 use crate::computations::{
-    coach, driver_entries, fuel, incidents, lap_delta, pace_car, pit_stops, proximity,
-    safety_rating, ComputeContext, ComputedOutput, ProcessorCommand, TickRate,
+    coach, corner_speeds, driver_entries, fuel, incidents, lap_delta, pace_car, pit_stops,
+    proximity, safety_rating, ComputeContext, ComputedOutput, ProcessorCommand, TickRate,
 };
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::environment::EnvironmentFrame;
@@ -38,9 +39,9 @@ use crate::model::player::{
 use crate::model::relative::RelativeFrame;
 use crate::model::session::{SessionFrame, SessionSnapshot};
 use crate::model::telemetry_events::{
-    EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS, EVENT_COACH, EVENT_DRIVER_ENTRIES,
-    EVENT_INCIDENTS, EVENT_INPUT_SAMPLES, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
-    EVENT_SAFETY_RATING,
+    EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS, EVENT_COACH, EVENT_CORNER_SPEEDS,
+    EVENT_DRIVER_ENTRIES, EVENT_INCIDENTS, EVENT_INPUT_SAMPLES, EVENT_LAP_DELTA, EVENT_PROXIMITY,
+    EVENT_RELATIVE, EVENT_SAFETY_RATING,
 };
 use crate::model::track_shape::TrackRecordingFrame;
 use crate::sources::iracing::pit_command::send_pit_order;
@@ -87,6 +88,8 @@ pub struct TelemetryBundle {
     pub lap_delta: Option<lap_delta::LapDeltaFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub coach: Option<coach::CoachFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub corner_speeds: Option<corner_speeds::CornerSpeedsFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub car_idx: Option<CarIdxFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -184,7 +187,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     if (active_mask & EVENT_INPUT_SAMPLES) != 0 {
         record_input_sample(
             &mut state.input_samples,
-            InputSample::from_frames(&frame.car_inputs, &frame.car_dynamics),
+            input_sample(&frame.car_inputs, &frame.car_dynamics),
         );
 
         if due.publish {
@@ -692,6 +695,10 @@ pub fn apply_event_mask(bundle: &mut TelemetryBundle, active_mask: u32) {
         bundle.safety_rating = None;
     }
 
+    if (active_mask & EVENT_CORNER_SPEEDS) == 0 {
+        bundle.corner_speeds = None;
+    }
+
     if (active_mask & EVENT_INPUT_SAMPLES) == 0 {
         bundle.input_samples = None;
     }
@@ -742,6 +749,10 @@ fn quantize_bundle(bundle: &mut TelemetryBundle) {
     if let Some(frame) = bundle.safety_rating.as_mut() {
         quantize::safety_rating(frame);
     }
+
+    if let Some(frame) = bundle.corner_speeds.as_mut() {
+        quantize::corner_speeds(frame);
+    }
 }
 
 fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
@@ -749,6 +760,7 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::Fuel(frame) => bundle.fuel = Some(frame),
         ComputedOutput::LapDelta(frame) => bundle.lap_delta = Some(frame),
         ComputedOutput::Coach(frame) => bundle.coach = Some(frame),
+        ComputedOutput::CornerSpeeds(frame) => bundle.corner_speeds = Some(frame),
         ComputedOutput::LapLog(frame) => bundle.lap_log = Some(frame),
         ComputedOutput::PitStops(frame) => bundle.pit_stops = Some(frame),
         ComputedOutput::Proximity(frame) => bundle.proximity = Some(frame),
@@ -1109,6 +1121,7 @@ mod tests {
             clutch: None,
             brake_abs_active: false,
             steering_wheel_angle: 0.0,
+            body_slip_deg: None,
         }
     }
 

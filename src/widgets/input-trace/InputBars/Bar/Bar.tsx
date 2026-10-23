@@ -65,7 +65,8 @@ export const Bar = observer(
     const containerRef = useReactiveDomWrite<HTMLDivElement>(
       (element, scheduleWrite) => {
         const clamped = Math.max(0, Math.min(1, inputTrace.smoothed[channel]));
-        const isAbsActive = channel === 'brake' && player.isAbsActive;
+        const isAbsActive =
+          channel === 'brake' && settings.showAbs && player.isAbsActive;
 
         const color = isAbsActive
           ? settings.absColor

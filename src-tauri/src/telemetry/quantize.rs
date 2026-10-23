@@ -28,6 +28,7 @@
 //! trace.
 
 use crate::computations::coach::{CoachCall, CoachFrame};
+use crate::computations::corner_speeds::CornerSpeedsFrame;
 use crate::computations::driver_entries::{DriverEntriesFrame, DriverEntry};
 use crate::computations::proximity::ProximityFrame;
 use crate::computations::safety_rating::SafetyRatingFrame;
@@ -129,6 +130,13 @@ pub fn coach(frame: &mut CoachFrame) {
     // A position, not a figure the row draws: rounded like every other lap
     // position, a decimal finer than the trace's thousand buckets.
     round_opt(&mut frame.lap_dist_pct, POSITION_DP);
+}
+
+/// The corner speeds are drawn as whole km/h or mph.
+pub fn corner_speeds(frame: &mut CornerSpeedsFrame) {
+    round_opt(&mut frame.entry, SPEED_DP);
+    round_opt(&mut frame.apex, SPEED_DP);
+    round_opt(&mut frame.exit, SPEED_DP);
 }
 
 pub fn safety_rating(frame: &mut SafetyRatingFrame) {

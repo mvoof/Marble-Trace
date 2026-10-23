@@ -56,6 +56,11 @@ ts_values! {
     /// the input trace: the bundle itself goes out on the overlay clock and
     /// would hand it only every Nth tick.
     pub const EVENT_INPUT_SAMPLES: u32 = 1 << 10 => inputSamples;
+
+    /// The player's entry, apex and exit speeds through the corner, against the
+    /// same corner on the previous and the best lap. Computed on every tick so
+    /// a widget switched on mid-session already has laps to compare against.
+    pub const EVENT_CORNER_SPEEDS: u32 = 1 << 11 => cornerSpeeds;
 }
 
 #[cfg(all(test, feature = "dev"))]

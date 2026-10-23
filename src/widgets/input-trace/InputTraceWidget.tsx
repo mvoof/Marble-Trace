@@ -4,6 +4,8 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { InputBars } from './InputBars/InputBars';
 import { CanvasTrace } from './CanvasTrace/CanvasTrace';
+import { CornerSpeeds } from './SpeedBlock/CornerSpeeds';
+import { SpeedGear } from './SpeedBlock/SpeedGear';
 import { SteeringWheel } from './SteeringWheel/SteeringWheel';
 
 import styles from './InputTraceWidget.module.scss';
@@ -13,12 +15,17 @@ export const InputTraceWidget = observer(() => {
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
 
   const barsEffectivelyHidden =
-    !settings.showThrottle && !settings.showBrake && !settings.showClutch;
+    !settings.showBars ||
+    (!settings.showThrottle && !settings.showBrake && !settings.showClutch);
 
   const showTrace = settings.showTrace;
 
   const allHidden =
-    !showTrace && !settings.showSteering && barsEffectivelyHidden;
+    !showTrace &&
+    !settings.showSteering &&
+    !settings.showSpeedGear &&
+    !settings.showCornerSpeeds &&
+    barsEffectivelyHidden;
 
   if (allHidden) {
     return (
@@ -39,6 +46,10 @@ export const InputTraceWidget = observer(() => {
       )}
 
       <InputBars />
+
+      <CornerSpeeds />
+
+      <SpeedGear />
 
       <SteeringWheel />
     </WidgetPanel>

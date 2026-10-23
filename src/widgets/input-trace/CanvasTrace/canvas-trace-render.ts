@@ -1,5 +1,8 @@
 import { normalizedSteering } from '@shared/lib/car-signals';
-import type { InputTraceSettings } from '../settings-schema';
+import {
+  isSteeringTraceShown,
+  type InputTraceSettings,
+} from '../settings-schema';
 
 // Circular sample buffers shared by the ingest and paint passes. Channel
 // samples are interleaved: buffer[sampleIndex * channelCount + channelIndex].
@@ -7,6 +10,7 @@ export interface TraceBufferState {
   buffer: Float32Array;
   absBuffer: Uint8Array;
   steerBuffer: Float32Array;
+  slideBuffer: Uint8Array;
   head: number;
   count: number;
 }
@@ -15,6 +19,7 @@ export const createTraceBufferState = (): TraceBufferState => ({
   buffer: new Float32Array(0),
   absBuffer: new Uint8Array(0),
   steerBuffer: new Float32Array(0),
+  slideBuffer: new Uint8Array(0),
   head: 0,
   count: 0,
 });
@@ -22,7 +27,6 @@ export const createTraceBufferState = (): TraceBufferState => ({
 const SAMPLES_PER_SECOND = 60;
 const GRID_LINE_COUNT = 3;
 const GRID_LINE_COLOR = 'rgba(255, 255, 255, 0.06)';
-const STEERING_LINE_COLOR = 'rgba(255, 255, 255, 0.7)';
 
 type TraceChannel = { color: string; type: 'throttle' | 'brake' | 'clutch' };
 
@@ -95,6 +99,9 @@ const drawBrakeChannel = (
   let currentAbs = false;
   let started = false;
 
+  const colorOf = (isAbsActive: boolean): string =>
+    isAbsActive && settings.showAbs ? settings.absColor : settings.brakeColor;
+
   ctx.strokeStyle = settings.brakeColor;
   ctx.beginPath();
 
@@ -114,12 +121,12 @@ const drawBrakeChannel = (
 
       ctx.beginPath();
       ctx.moveTo(xPos, yPos);
-      ctx.strokeStyle = sampleAbs ? settings.absColor : settings.brakeColor;
+      ctx.strokeStyle = colorOf(sampleAbs);
       currentAbs = sampleAbs;
     }
 
     if (!started) {
-      ctx.strokeStyle = sampleAbs ? settings.absColor : settings.brakeColor;
+      ctx.strokeStyle = colorOf(sampleAbs);
       currentAbs = sampleAbs;
       ctx.moveTo(xPos, yPos);
       started = true;
@@ -164,17 +171,24 @@ const drawPlainChannel = (
   ctx.stroke();
 };
 
+// Like the brake under ABS, the steering line re-strokes whenever the car
+// starts or stops sliding, so the slide carries its own colour without a break.
 const drawSteering = (pass: ChannelPassContext) => {
   const { ctx, state, settings, steeringLockDeg, logicalWidth, logicalHeight } =
     pass;
 
-  ctx.strokeStyle = STEERING_LINE_COLOR;
+  const colorOf = (isSliding: boolean): string =>
+    isSliding && settings.showSlide
+      ? settings.slideColor
+      : settings.steeringTraceColor;
+
   ctx.lineWidth = settings.lineWidth;
   ctx.beginPath();
 
   const verticalInset = settings.lineWidth / 2;
   const drawableHalfHeight = logicalHeight / 2 - verticalInset;
 
+  let currentSliding = false;
   let started = false;
 
   for (let sampleIndex = 0; sampleIndex < state.count; sampleIndex++) {
@@ -189,7 +203,21 @@ const drawSteering = (pass: ChannelPassContext) => {
     const xPos = (sampleIndex / (pass.bufferSize - 1)) * logicalWidth;
     const yPos = logicalHeight / 2 - normalized * drawableHalfHeight;
 
+    const sampleSliding = state.slideBuffer[circularIndex] === 1;
+
+    if (started && sampleSliding !== currentSliding) {
+      ctx.lineTo(xPos, yPos);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(xPos, yPos);
+      ctx.strokeStyle = colorOf(sampleSliding);
+      currentSliding = sampleSliding;
+    }
+
     if (!started) {
+      ctx.strokeStyle = colorOf(sampleSliding);
+      currentSliding = sampleSliding;
       ctx.moveTo(xPos, yPos);
       started = true;
     } else {
@@ -206,8 +234,6 @@ export const drawInputTrace = (
   settings: InputTraceSettings,
   steeringLockDeg: number
 ) => {
-  if (state.buffer.length === 0 && !settings.showSteering) return;
-
   const ctx = canvas.getContext('2d');
 
   if (!ctx) return;
@@ -218,6 +244,9 @@ export const drawInputTrace = (
   const channels = visibleChannels(settings);
 
   ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+  // Nothing to draw: the cleared canvas drops the last trace.
+  if (state.buffer.length === 0 && !isSteeringTraceShown(settings)) return;
 
   drawGrid(ctx, logicalWidth, logicalHeight);
 
@@ -256,7 +285,7 @@ export const drawInputTrace = (
     }
   }
 
-  if (settings.showSteering) {
+  if (isSteeringTraceShown(settings)) {
     drawSteering(pass);
   }
 };
@@ -267,6 +296,8 @@ export interface TraceSample {
   clutch: number;
   absActive: boolean;
   steeringWheelAngle: number;
+  /** The car is sliding sideways past `SLIDE_ANGLE_DEG`. */
+  sliding: boolean;
 }
 
 // Resizes the circular buffers when the settings change. Split out from
@@ -307,6 +338,11 @@ export const ensureTraceBuffers = (
     buffersResized = true;
   }
 
+  if (state.slideBuffer.length !== bufferSize) {
+    state.slideBuffer = new Uint8Array(bufferSize);
+    buffersResized = true;
+  }
+
   if (buffersResized) {
     state.head = 0;
     state.count = 0;
@@ -343,6 +379,7 @@ export const pushTraceSample = (
 
   state.absBuffer[state.head] = sample.absActive ? 1 : 0;
   state.steerBuffer[state.head] = sample.steeringWheelAngle;
+  state.slideBuffer[state.head] = sample.sliding ? 1 : 0;
 
   state.head = (state.head + 1) % bufferSize;
 

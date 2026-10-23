@@ -46,17 +46,17 @@ export type CarDynamicsFrame = {
    */
   steering_wheel_angle: number;
   /**
-   * Vehicle velocity along X axis (lateral) in m/s
+   * Vehicle velocity along X axis (forward, in the car's frame) in m/s
    * @see https://sajax.github.io/irsdkdocs/telemetry/velocityx/
    */
   velocity_x: number | null;
   /**
-   * Vehicle velocity along Y axis (vertical) in m/s
+   * Vehicle velocity along Y axis (sideways, in the car's frame) in m/s
    * @see https://sajax.github.io/irsdkdocs/telemetry/velocityy/
    */
   velocity_y: number | null;
   /**
-   * Vehicle velocity along Z axis (forward) in m/s
+   * Vehicle velocity along Z axis (vertical, in the car's frame) in m/s
    * @see https://sajax.github.io/irsdkdocs/telemetry/velocityz/
    */
   velocity_z: number | null;
@@ -789,6 +789,24 @@ export type CompanionStatus = {
   exists: boolean;
 };
 
+export type CornerSpeedsFrame = {
+  /**
+   * The speeds of the corner the car is in, or the next one, m/s. With no
+   * reference the car's own, each `None` until the car has one for it — the
+   * apex is the lowest so far until it is passed.
+   */
+  entry: number | null;
+  apex: number | null;
+  exit: number | null;
+  entryPassed: boolean;
+  apexPassed: boolean;
+  exitPassed: boolean;
+  /**
+   * Whether the speeds are the reference lap's rather than the car's own.
+   */
+  fromReference: boolean;
+};
+
 /**
  * One recipient's totals over the span its counters have been running.
  */
@@ -1208,6 +1226,12 @@ export type InputSample = {
    * Radians, as `CarDynamicsFrame::steering_wheel_angle`.
    */
   steeringWheelAngle: number;
+  /**
+   * The angle between where the car points and where it is going, degrees:
+   * how far it is sliding sideways. `None` with no velocity from the sim, or
+   * too slow for the angle to mean anything.
+   */
+  bodySlipDeg: number | null;
 };
 
 /**
@@ -2270,7 +2294,8 @@ export type SessionSnapshot = {
   incidentPenaltySubsequent: number | null;
   /**
    * Corners on this layout (`WeekendInfo.TrackNumTurns`) — the count iRacing
-   * scores Safety Rating by. `None` when the sim does not report it.
+   * scores Safety Rating by, but for the layouts in `SCORED_CORNERS`
+   * (`computations/safety_rating.rs`). `None` when the sim does not report it.
    */
   trackNumTurns: number | null;
   /**
@@ -2420,6 +2445,7 @@ export type TelemetryBundle = {
   carPositions?: CarPositionsFrame | null;
   lapDelta?: LapDeltaFrame | null;
   coach?: CoachFrame | null;
+  cornerSpeeds?: CornerSpeedsFrame | null;
   carIdx?: CarIdxFrame | null;
   chassis?: ChassisFrame | null;
   lapTiming?: LapTimingFrame | null;

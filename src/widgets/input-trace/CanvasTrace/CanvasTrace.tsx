@@ -65,7 +65,12 @@ export const CanvasTrace = () => {
         brakeColor: _brakeColor,
         clutchColor: _clutchColor,
         absColor: _absColor,
+        showAbs: _showAbs,
         showSteering: _showSteering,
+        showSteeringTrace: _showSteeringTrace,
+        steeringTraceColor: _steeringTraceColor,
+        showSlide: _showSlide,
+        slideColor: _slideColor,
         steeringZoom: _steeringZoom,
       } = settings;
 

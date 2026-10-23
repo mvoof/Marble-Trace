@@ -30,15 +30,15 @@ pub struct CarDynamicsFrame {
     /// @see https://sajax.github.io/irsdkdocs/telemetry/steeringwheelangle/
     pub steering_wheel_angle: f32,
 
-    /// Vehicle velocity along X axis (lateral) in m/s
+    /// Vehicle velocity along X axis (forward, in the car's frame) in m/s
     /// @see https://sajax.github.io/irsdkdocs/telemetry/velocityx/
     pub velocity_x: Option<f32>,
 
-    /// Vehicle velocity along Y axis (vertical) in m/s
+    /// Vehicle velocity along Y axis (sideways, in the car's frame) in m/s
     /// @see https://sajax.github.io/irsdkdocs/telemetry/velocityy/
     pub velocity_y: Option<f32>,
 
-    /// Vehicle velocity along Z axis (forward) in m/s
+    /// Vehicle velocity along Z axis (vertical, in the car's frame) in m/s
     /// @see https://sajax.github.io/irsdkdocs/telemetry/velocityz/
     pub velocity_z: Option<f32>,
 
@@ -120,18 +120,10 @@ pub struct InputSample {
     pub brake_abs_active: bool,
     /// Radians, as `CarDynamicsFrame::steering_wheel_angle`.
     pub steering_wheel_angle: f32,
-}
-
-impl InputSample {
-    pub fn from_frames(inputs: &CarInputsFrame, dynamics: &CarDynamicsFrame) -> Self {
-        Self {
-            throttle: inputs.throttle,
-            brake: inputs.brake,
-            clutch: inputs.clutch,
-            brake_abs_active: inputs.brake_abs_active,
-            steering_wheel_angle: dynamics.steering_wheel_angle,
-        }
-    }
+    /// The angle between where the car points and where it is going, degrees:
+    /// how far it is sliding sideways. `None` with no velocity from the sim, or
+    /// too slow for the angle to mean anything.
+    pub body_slip_deg: Option<f32>,
 }
 
 /// Car status telemetry — vehicle systems, fuel, engine, and pit state.

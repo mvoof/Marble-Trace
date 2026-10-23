@@ -66,3 +66,10 @@ export const safetyRating = 512;
  * would hand it only every Nth tick.
  */
 export const inputSamples = 1024;
+
+/**
+ * The player's entry, apex and exit speeds through the corner, against the
+ * same corner on the previous and the best lap. Computed on every tick so
+ * a widget switched on mid-session already has laps to compare against.
+ */
+export const cornerSpeeds = 2048;
