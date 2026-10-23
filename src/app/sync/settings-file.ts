@@ -166,13 +166,9 @@ const designWithoutOverride = (
   if (!shipped) return null;
 
   const derive = WIDGET_BY_ID.get(type)?.deriveDesignWidth;
-  const hasLockedRatio = !!shipped.lockAspectRatio && shipped.designWidth > 0;
 
   return {
-    width:
-      derive && !hasLockedRatio
-        ? Math.max(1, derive(userSettings))
-        : shipped.designWidth,
+    width: derive ? Math.max(1, derive(userSettings)) : shipped.designWidth,
     height: shipped.designHeight,
   };
 };
@@ -226,22 +222,29 @@ const decodeShape = (
   } as WidgetUserSettings;
 
   const hasLockedRatio = !!shipped.lockAspectRatio && shipped.designWidth > 0;
+  const derive = WIDGET_BY_ID.get(shipped.id)?.deriveDesignWidth;
 
+  // The ratio is the one the settings draw at: a locked plate that widens by a
+  // column of its own (Race Dash's corner speeds) derives that width, and the
+  // manifest's width would scale the widened content past the frame.
   if (hasLockedRatio) {
+    const lockedWidth = derive
+      ? Math.max(1, derive(userSettings))
+      : shipped.designWidth;
+
     userSettings.currentHeight = Math.round(
-      userSettings.currentWidth * (shipped.designHeight / shipped.designWidth)
+      userSettings.currentWidth * (shipped.designHeight / lockedWidth)
     );
 
     return {
       userSettings,
-      designWidth: shipped.designWidth,
+      designWidth: lockedWidth,
       designHeight: shipped.designHeight,
     };
   }
 
   const storedWidth = finiteOr(design?.width, shipped.designWidth);
   const storedHeight = finiteOr(design?.height, shipped.designHeight);
-  const derive = WIDGET_BY_ID.get(shipped.id)?.deriveDesignWidth;
 
   if (!derive) {
     return {

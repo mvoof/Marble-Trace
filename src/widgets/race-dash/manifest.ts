@@ -39,6 +39,8 @@ export const RACE_DASH_MANIFEST: WidgetManifest = {
   // plate's right cap is a half-circle that cuts into the content box there.
   // The corner speeds, off by default, add 12 + 28.
   resolveLayoutChange: resolveRaceDashLayout,
+  deriveDesignWidth: (settings) =>
+    computeRaceDashDesignWidth(settings as unknown as RaceDashWidgetSettings),
   designWidth: RACE_DASH_DESIGN_WIDTH,
   designHeight: 104,
   transparentContainer: true,
