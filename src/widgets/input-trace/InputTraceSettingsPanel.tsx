@@ -318,8 +318,8 @@ export const InputTraceSettingsPanel = observer(() => {
 
         <DependentBlock dependsOn="showSteering">
           <SettingRow
-            title={t('settingsPanels.common.steeringCardStyle')}
-            desc={t('settingsPanels.common.steeringCardStyleDesc')}
+            title={t('settingsPanels.inputTrace.steeringWheelStyle')}
+            desc={t('settingsPanels.inputTrace.steeringWheelStyleDesc')}
           >
             <Select
               value={settings.steeringWheelStyle}
