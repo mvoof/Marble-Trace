@@ -21,6 +21,7 @@ use super::quantize;
 use super::scheduler::DueGroups;
 use super::state::TelemetryServiceState;
 use crate::capabilities::Capabilities;
+use crate::computations::input_sample::input_sample;
 use crate::computations::pit_actions::{self, PitActionInput};
 use crate::computations::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
 use crate::computations::{
@@ -186,7 +187,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     if (active_mask & EVENT_INPUT_SAMPLES) != 0 {
         record_input_sample(
             &mut state.input_samples,
-            InputSample::from_frames(&frame.car_inputs, &frame.car_dynamics),
+            input_sample(&frame.car_inputs, &frame.car_dynamics),
         );
 
         if due.publish {

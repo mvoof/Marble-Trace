@@ -234,8 +234,6 @@ export const drawInputTrace = (
   settings: InputTraceSettings,
   steeringLockDeg: number
 ) => {
-  if (state.buffer.length === 0 && !isSteeringTraceShown(settings)) return;
-
   const ctx = canvas.getContext('2d');
 
   if (!ctx) return;
@@ -246,6 +244,9 @@ export const drawInputTrace = (
   const channels = visibleChannels(settings);
 
   ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+
+  // Nothing to draw: the cleared canvas drops the last trace.
+  if (state.buffer.length === 0 && !isSteeringTraceShown(settings)) return;
 
   drawGrid(ctx, logicalWidth, logicalHeight);
 

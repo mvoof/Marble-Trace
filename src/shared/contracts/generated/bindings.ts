@@ -46,17 +46,17 @@ export type CarDynamicsFrame = {
    */
   steering_wheel_angle: number;
   /**
-   * Vehicle velocity along X axis (lateral) in m/s
+   * Vehicle velocity along X axis (forward, in the car's frame) in m/s
    * @see https://sajax.github.io/irsdkdocs/telemetry/velocityx/
    */
   velocity_x: number | null;
   /**
-   * Vehicle velocity along Y axis (vertical) in m/s
+   * Vehicle velocity along Y axis (sideways, in the car's frame) in m/s
    * @see https://sajax.github.io/irsdkdocs/telemetry/velocityy/
    */
   velocity_y: number | null;
   /**
-   * Vehicle velocity along Z axis (forward) in m/s
+   * Vehicle velocity along Z axis (vertical, in the car's frame) in m/s
    * @see https://sajax.github.io/irsdkdocs/telemetry/velocityz/
    */
   velocity_z: number | null;

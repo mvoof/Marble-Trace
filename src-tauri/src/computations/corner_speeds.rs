@@ -274,8 +274,10 @@ fn reference_corners(reference: &ReferenceLapData, track: Track) -> Vec<CornerRe
 #[derive(Default)]
 pub struct CornerSpeedsProcessor {
     reference: Option<Arc<ReferenceLapData>>,
-    /// The reference's corners, found once the track length is known.
+    /// The reference's corners, found again whenever the track length changes.
     corners: Option<Vec<CornerRecord>>,
+    /// The track length the corners were found with; 0 while it is unknown.
+    corners_length_m: f32,
     /// Reads the car's own corners while there is no reference.
     detector: CornerDetector,
     /// The car's own corner finished last.
@@ -284,7 +286,8 @@ pub struct CornerSpeedsProcessor {
 
 impl CornerSpeedsProcessor {
     fn frame(&mut self, speed: f32, lap_pct: f32, track: Track) -> CornerSpeedsFrame {
-        if self.corners.is_none() {
+        if self.corners.is_none() || self.corners_length_m != track.length_m {
+            self.corners_length_m = track.length_m;
             self.corners = self
                 .reference
                 .as_deref()
@@ -568,6 +571,22 @@ mod tests {
             processor.frame(0.0, 0.01, TRACK),
             CornerSpeedsFrame::default()
         );
+    }
+
+    #[test]
+    fn the_reference_corners_are_found_again_once_the_track_length_is_known() {
+        let mut processor = processor(&[(0.2, 30.0)]);
+
+        processor.frame(60.0, 0.0, Track { length_m: 0.0 });
+
+        let unknown_exit = processor.corners.as_ref().unwrap()[0].exit_pct;
+
+        processor.frame(60.0, 0.0, Track { length_m: 2000.0 });
+
+        let known_exit = processor.corners.as_ref().unwrap()[0].exit_pct;
+
+        assert!((unknown_exit - 0.32).abs() < 0.005);
+        assert!((known_exit - 0.35).abs() < 0.005);
     }
 
     #[test]

@@ -4,6 +4,7 @@ pub mod corner_speeds;
 pub mod driver_entries;
 pub mod fuel;
 pub mod incidents;
+pub mod input_sample;
 pub mod lap_delta;
 pub mod lap_log;
 pub mod lap_time_settle;
