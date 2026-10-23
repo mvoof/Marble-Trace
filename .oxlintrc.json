@@ -30,6 +30,7 @@
       {
         "allowedSiblings": {
           "entities/cars": ["session"],
+          "entities/corner-speeds": ["app-settings", "cars"],
           "entities/flags": ["cars", "layout", "player"],
           "entities/incidents": ["cars", "session"],
           "entities/layout": ["widget"],

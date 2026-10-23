@@ -35,7 +35,7 @@ app → pages → widgets → features → entities → shared
 - **A slice does not import a sibling slice of its layer** (entities, features,
   widgets, pages). The exceptions are named edges between entities —
   `allowedSiblings` in `.oxlintrc.json`, checked to stay acyclic: cars →
-  session; player → cars, session; incidents → cars, session; flags → cars,
+  session; corner-speeds → app-settings, cars; player → cars, session; incidents → cars, session; flags → cars,
   layout, player; radar → app-settings, cars, layout, session; layout → widget;
   sim → app-settings, cars, environment, layout, player, session, sim-perf,
   track, widget. A new edge is one entry there, never an `@x` re-export file

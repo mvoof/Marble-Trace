@@ -59,7 +59,7 @@ export const StatsStrip = observer(() => {
     >
       <SpeedReadout />
 
-      {settings.showCornerSpeeds && <CornerSpeeds />}
+      <CornerSpeeds />
 
       <div className={`${styles.divider} ${styles.dividerOne}`} />
 

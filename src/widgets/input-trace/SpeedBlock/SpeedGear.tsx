@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
-import { targetSpeedState } from '@entities/corner-speeds/target-speed';
+import { targetSpeedColor } from '@entities/corner-speeds/target-speed';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
@@ -34,21 +34,16 @@ export const SpeedGear = observer(() => {
     (element, scheduleWrite) => {
       // oxlint-disable-next-line no-restricted-properties
       const carDynamics = player.carDynamics;
-      const speedText = formatSpeed(carDynamics?.speed ?? 0, units.unitSystem);
+      const speed = carDynamics?.speed ?? 0;
+      const speedText = formatSpeed(speed, units.unitSystem);
       const gearText = formatGear(carDynamics?.gear ?? 0);
 
-      const state = settings.showSpeedTargetColor
-        ? targetSpeedState(
-            carDynamics?.speed ?? 0,
-            backendComputed.cornerSpeeds
-          )
-        : null;
-      const speedColor =
-        state === 'onTarget'
-          ? settings.speedOnTargetColor
-          : state === 'over'
-            ? settings.speedOverTargetColor
-            : '';
+      const speedColor = settings.showSpeedTargetColor
+        ? targetSpeedColor(speed, backendComputed.cornerSpeeds, {
+            onTarget: settings.speedOnTargetColor,
+            over: settings.speedOverTargetColor,
+          })
+        : '';
 
       scheduleWrite(() => {
         const speed = element.querySelector(`.${styles.speedValue}`);

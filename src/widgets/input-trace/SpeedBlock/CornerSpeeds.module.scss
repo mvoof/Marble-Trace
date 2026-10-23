@@ -1,24 +1,17 @@
-// Entry, apex, exit packed tight on the block's centre line, the apex level
+// Entry, apex and exit packed tight on the block's centre line, the apex level
 // with the car's speed beside it, so all of them are read at one glance.
 .corners {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   justify-content: center;
   gap: ws(2);
   width: ws(36);
   height: 100%;
 }
 
-// The row's colour is the user's, per point; every figure in it takes it.
-.cornerRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-end;
-  color: var(--corner-accent);
-}
-
 // A fixed three-cell slot of a monospaced face, right aligned, so a two-digit
-// speed lines up with a three-digit one.
+// speed lines up with a three-digit one. The colour is the user's, per point.
 .cornerValue {
   width: 3ch;
   font-family: $font-mono;
@@ -26,9 +19,10 @@
   font-weight: 700;
   line-height: 1;
   text-align: right;
+  color: var(--corner-accent);
 }
 
 // Every figure but the one to read now.
-.cornerRowPending .cornerValue {
+.cornerValuePending {
   opacity: 0.35;
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { CornerSpeedsFrame } from '@shared/contracts/generated/bindings';
 import { MPS_TO_KMH } from '@shared/lib/telemetry-format';
-import { targetSpeedState } from './target-speed';
+import { targetSpeedColor, targetSpeedState } from './target-speed';
 
 const KMH = 1 / MPS_TO_KMH;
 
@@ -36,5 +36,20 @@ describe('targetSpeedState', () => {
       targetSpeedState(100 * KMH, { ...HEADING_FOR_APEX, fromReference: false })
     ).toBeNull();
     expect(targetSpeedState(100 * KMH, null)).toBeNull();
+  });
+});
+
+describe('targetSpeedColor', () => {
+  const COLORS = { onTarget: 'yellow', over: 'red' };
+
+  it('takes the colour of the state', () => {
+    expect(targetSpeedColor(100 * KMH, HEADING_FOR_APEX, COLORS)).toBe(
+      'yellow'
+    );
+    expect(targetSpeedColor(140 * KMH, HEADING_FOR_APEX, COLORS)).toBe('red');
+  });
+
+  it('leaves the speed its own colour below the target', () => {
+    expect(targetSpeedColor(90 * KMH, HEADING_FOR_APEX, COLORS)).toBe('');
   });
 });
