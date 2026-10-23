@@ -13,3 +13,15 @@
     font-size: floor-size(#{wfs(72 * $ss)}, 30);
   }
 }
+
+// The shift point flash, written by `useBlinkHandle` — a timer, never a CSS
+// animation (ADR-0009).
+.blinkPulse[data-blink-step='1'] {
+  opacity: 0.35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blinkPulse[data-blink-step='1'] {
+    opacity: 1;
+  }
+}

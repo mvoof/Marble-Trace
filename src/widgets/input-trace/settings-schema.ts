@@ -85,6 +85,13 @@ export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
   steeringZoom: num(1, { min: 1, max: 4, step: 0.5 }),
   /** The car's speed and gear, as a block of their own beside the wheel. */
   showSpeedGear: bool(false),
+  /** Tint the gear with the zone colour at high revs. */
+  colorizeGearByZone: bool(false, { label: 'common.colorizeGearByZone' }),
+  rpmColorHigh: color('#ef4444', { label: 'common.rpmColorHigh' }),
+  rpmColorShift: color('#a855f7', { label: 'common.rpmColorShift' }),
+  rpmColorLimit: color('#f97316', { label: 'common.rpmColorLimit' }),
+  /** The gear flashes at the shift point. */
+  blinkAtShift: bool(false, { label: 'common.blinkAtShift' }),
   /**
    * Colours the speed against the lit corner target: on it within 5 km/h,
    * over it past that. Below it, or with no reference, the speed keeps its

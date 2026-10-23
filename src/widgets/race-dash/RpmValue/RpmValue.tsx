@@ -1,11 +1,8 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import {
-  computeRpmZoneState,
-  REDLINE_BLINK,
-  rpmNumberColor,
-} from '../race-dash-utils';
+import { computeRpmZoneState, rpmNumberColor } from '../race-dash-utils';
+import { REDLINE_BLINK } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBlinkHandle } from '@shared/hooks/useBlink';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -41,7 +38,8 @@ export const RpmValue = observer(() => {
       );
 
       const zoneColor = rpmNumberColor(zone, settings);
-      const isBlink = zoneColor !== null && zone === 'blink';
+      const isBlink =
+        settings.blinkAtShift && zoneColor !== null && zone === 'blink';
 
       scheduleWrite(() => {
         element.style.setProperty(RPM_COLOR_PROPERTY, zoneColor ?? '');

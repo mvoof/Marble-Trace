@@ -4,6 +4,7 @@ import { ColorPicker, InputNumber } from 'antd';
 
 import { speedUnit } from '@shared/lib/telemetry-format';
 import { Card } from '@features/widget-settings/Card';
+import { RpmZoneColorGrid } from '@features/widget-settings/RpmZoneColorGrid';
 
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { useUnitsStore } from '@entities/app-settings/units-context';
@@ -43,91 +44,51 @@ export const RaceDashSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.raceDash.rpmFill')}>
+      <Card title={t('settingsPanels.common.speedCard')}>
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.common.rpmZoneColors')}
-          </span>
-
-          <div className={styles.rpmColorGrid}>
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.common.rpmColorLow')}
-              </span>
-              <ColorPicker
-                value={settings.rpmColorLow}
-                onChange={(color) =>
-                  update({ rpmColorLow: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.common.rpmColorMid')}
-              </span>
-              <ColorPicker
-                value={settings.rpmColorMid}
-                onChange={(color) =>
-                  update({ rpmColorMid: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.common.rpmColorHigh')}
-              </span>
-              <ColorPicker
-                value={settings.rpmColorHigh}
-                onChange={(color) =>
-                  update({ rpmColorHigh: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.common.rpmColorShift')}
-              </span>
-              <ColorPicker
-                value={settings.rpmColorShift}
-                onChange={(color) =>
-                  update({ rpmColorShift: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.common.rpmColorLimit')}
-              </span>
-              <ColorPicker
-                value={settings.rpmColorLimit}
-                onChange={(color) =>
-                  update({ rpmColorLimit: color.toHexString() })
-                }
-              />
-            </div>
-          </div>
+          <Row setting="showSpeedTargetColor" />
         </div>
+
+        <Row setting="speedOnTargetColor" dependsOn="showSpeedTargetColor" />
+        <Row setting="speedOverTargetColor" dependsOn="showSpeedTargetColor" />
+      </Card>
+
+      <Card title={t('settingsPanels.common.cornerSpeedsCard')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="showCornerSpeeds" />
+        </div>
+
+        <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
+      </Card>
+
+      <Card title={t('settingsPanels.common.gearRpmCard')}>
+        <RpmZoneColorGrid
+          colors={{
+            rpmColorLow: settings.rpmColorLow,
+            rpmColorMid: settings.rpmColorMid,
+            rpmColorHigh: settings.rpmColorHigh,
+            rpmColorShift: settings.rpmColorShift,
+            rpmColorLimit: settings.rpmColorLimit,
+          }}
+          onChange={(key, color) => update({ [key]: color })}
+        />
 
         <div className={styles.fieldGroup}>
           <Row setting="colorizeByRpmZone" />
         </div>
 
         <div className={styles.fieldGroup}>
-          <Row setting="rpmIndicatorMode" stacked />
+          <Row setting="blinkAtShift" />
         </div>
 
+        <div className={styles.fieldGroup}>
+          <Row setting="rpmIndicatorMode" stacked />
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.common.steeringCard')}>
         <div className={styles.fieldGroup}>
           <Row setting="showSteeringMarker" />
         </div>
@@ -223,23 +184,6 @@ export const RaceDashSettingsPanel = observer(() => {
             </div>
           </div>
         </DependentBlock>
-      </Card>
-
-      <Card title={t('settingsPanels.common.cornerSpeedsCard')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="showCornerSpeeds" />
-        </div>
-
-        <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
-        <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
-        <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
-
-        <div className={styles.fieldGroup}>
-          <Row setting="showSpeedTargetColor" />
-        </div>
-
-        <Row setting="speedOnTargetColor" dependsOn="showSpeedTargetColor" />
-        <Row setting="speedOverTargetColor" dependsOn="showSpeedTargetColor" />
       </Card>
 
       <Card title={t('settingsPanels.raceDash.pitAssist')}>

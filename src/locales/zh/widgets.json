@@ -150,7 +150,14 @@
       "speedOnTargetColorDesc": "与目标相差 5 km/h 以内。",
       "speedOverTargetColor": "高于目标",
       "speedOverTargetColorDesc": "比目标高出 5 km/h 以上。",
-      "cornerSpeedsCard": "弯道速度"
+      "cornerSpeedsCard": "弯道速度",
+      "colorizeGearByZone": "挡位上色",
+      "colorizeGearByZoneDesc": "高转速时用区域颜色为挡位数字上色。",
+      "blinkAtShift": "换挡点闪烁",
+      "blinkAtShiftDesc": "转速达到换挡点时，挡位和转速闪烁。",
+      "speedCard": "速度",
+      "gearRpmCard": "挡位与转速",
+      "steeringCard": "方向盘"
     },
     "delta": {
       "deltaReference": "差值参考",
@@ -314,8 +321,6 @@
       "smoothingFactor": "系数：{{factor}}",
       "lineWidth": "线宽",
       "lineWidthDesc": "粗细：{{px}}px",
-      "speedBlock": "速度",
-      "steeringWheel": "方向盘",
       "showAbs": "ABS 生效",
       "showAbsDesc": "ABS 工作时为刹车曲线和刹车条着色。",
       "showSteeringTrace": "方向盘曲线",
@@ -460,7 +465,6 @@
       "includeLappedDesc": "正赛中，领先或落后一圈的车辆也算作对手。非正赛时圈数本来就不计入。"
     },
     "raceDash": {
-      "rpmFill": "转速填充",
       "colorizeByRpmZone": "数字上色",
       "colorizeByRpmZoneDesc": "高转速时用区域颜色为挡位数字和转速数字上色。",
       "rpmIndicatorMode": "转速指示器",
@@ -802,7 +806,6 @@
       "textColorDesc": "高转速区以下时数字的颜色。",
       "depth": "距离",
       "depthDesc": "把读数推入场景——倾斜、缩小并淡出。文字以超采样渲染，因此在任何距离都保持锐利。",
-      "blocks": "模块",
       "showSpeed": "速度",
       "showSpeedDesc": "左侧组中最大的数字，使用应用的单位制。",
       "showRpm": "转速",
@@ -819,11 +822,8 @@
       "showPositionDesc": "右侧组中的场上名次。",
       "showLap": "圈数",
       "showLapDesc": "当前圈数与总圈数，位于名次下方。",
-      "zoneColorsCard": "转速颜色",
       "colorizeRpmByZone": "转速上色",
       "colorizeRpmByZoneDesc": "高转速时用区域颜色为转速数字上色。",
-      "colorizeGearByZone": "挡位上色",
-      "colorizeGearByZoneDesc": "高转速时用区域颜色为挡位数字上色。",
       "useLivePositions": "实时名次",
       "useLivePositionsDesc": "按赛道上的实际顺序排名，而不是模拟器只在起终点线刷新的官方名次。",
       "classPositionInMulticlass": "多组别中的组内名次",

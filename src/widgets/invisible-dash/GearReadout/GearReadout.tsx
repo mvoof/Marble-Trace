@@ -1,8 +1,9 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { computeRpmZoneState } from '@shared/lib/car-signals';
+import { computeRpmZoneState, REDLINE_BLINK } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useBlinkHandle } from '@shared/hooks/useBlink';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 
@@ -17,6 +18,9 @@ const GEAR_COLOR_PROPERTY = '--dash-gear-color';
  * The gear, and the zone colour it is painted in. The gear changes with the
  * shift and the zone with the revs, both off the 60 Hz dynamics frame, so both
  * are written straight to the digit. See `docs/rendering.md`.
+ *
+ * With the blink on, the digit flashes at the shift point on a timer, not a
+ * CSS animation (ADR-0009).
  */
 export const GearReadout = observer(() => {
   const player = usePlayerStore();
@@ -24,6 +28,7 @@ export const GearReadout = observer(() => {
 
   const settings =
     useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
+  const shiftBlink = useBlinkHandle();
 
   const gearRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
@@ -41,14 +46,19 @@ export const GearReadout = observer(() => {
         ? zoneDigitColor(zone, settings)
         : null;
 
+      const isBlink = settings.blinkAtShift && zone === 'blink';
+
       const gearText = formatGear(gear);
 
       scheduleWrite(() => {
         element.style.setProperty(GEAR_COLOR_PROPERTY, gearColor ?? '');
+        element.classList.toggle(styles.blinkPulse, isBlink);
+        shiftBlink.attach(element);
+        shiftBlink.run(isBlink ? REDLINE_BLINK : null);
         element.textContent = gearText;
       });
     },
-    [player, sessionStore, settings]
+    [player, sessionStore, settings, shiftBlink]
   );
 
   if (!settings.showGear) {

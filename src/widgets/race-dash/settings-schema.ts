@@ -30,6 +30,8 @@ export const RACE_DASH_SETTINGS = defineSettings('raceDash', {
   rpmColorLimit: color('#f97316', { label: 'common.rpmColorLimit' }),
   /** Tint the gear digit and RPM number with the zone color at high revs. */
   colorizeByRpmZone: bool(true),
+  /** The gear, the RPM number and the core glow flash at the shift point. */
+  blinkAtShift: bool(true, { label: 'common.blinkAtShift' }),
   rpmIndicatorMode: choice(RPM_INDICATOR_MODE, 'fill'),
   /** Source of the P-number in the stats strip and the pit block. */
   useLivePositions: bool(true, { label: 'common.useLivePositions' }),

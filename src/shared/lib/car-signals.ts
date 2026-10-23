@@ -1,3 +1,4 @@
+import type { BlinkCycle } from '@shared/hooks/useBlink';
 import type {
   CarStatusFrame,
   SessionSnapshot,
@@ -74,6 +75,12 @@ export const computeShiftThresholds = (
 };
 
 export type RpmZone = 'low' | 'mid' | 'high' | 'shift' | 'blink';
+
+/**
+ * At the shift point a digit driven by the revs flashes, 500 ms a side — the
+ * same cycle in every widget, so two on screen switch together.
+ */
+export const REDLINE_BLINK: BlinkCycle = { stepMs: 500, steps: 2 };
 
 export interface RpmZoneState {
   /** RPM as a fraction of redline, clamped to 0..1 — the full gauge scale. */

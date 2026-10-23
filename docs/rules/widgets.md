@@ -77,6 +77,17 @@ on whether the feature exists at all, never on a value a hotkey flips (the
 Standings view mode): a row that comes and goes under the pointer is worse than
 one that changes nothing.
 
+A setting several widgets share is found in the same place in each of them. The
+cards they share take their titles from `settingsPanels.common` and come in one
+order after the widget's own cards: Speed (`speedCard`), Corner Speeds
+(`cornerSpeedsCard`), Gear and RPM (`gearRpmCard`, the rev zone colours through
+`RpmZoneColorGrid`, the zone tint, the shift point blink), Steering
+(`steeringCard`), Positions (`positions`); a card only one widget has, such as
+Race Dash's pit assist, closes the panel. A shared setting carries one key and
+one `common.*` label in every schema (`blinkAtShift`, `showCornerSpeeds`,
+`rpmColorHigh` …), so a driver who learns it in one widget recognises it in the
+next.
+
 Settings panels are collected the same way: each `*SettingsPanel.tsx` exports
 `PANEL_WIDGET_IDS` (usually one id, two for the radar and flag pairs), and
 `features/widget-settings/panel-registry.ts` globs them into `SETTINGS_PANELS`.

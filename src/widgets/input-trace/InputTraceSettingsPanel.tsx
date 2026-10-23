@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ColorPicker, Select, Slider, Space, Switch } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
+import { RpmZoneColorGrid } from '@features/widget-settings/RpmZoneColorGrid';
 import { SettingRow } from '@features/widget-settings/SettingRow';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import {
@@ -44,6 +45,10 @@ const hasCenterPlate = (settings: InputTraceSettings): boolean =>
 
 const hasSpeedTargetColor = (settings: InputTraceSettings): boolean =>
   settings.showSpeedGear && settings.showSpeedTargetColor;
+
+// The gear is drawn in the speed block only.
+const hasGearZoneColor = (settings: InputTraceSettings): boolean =>
+  settings.showSpeedGear && settings.colorizeGearByZone;
 
 export const InputTraceSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
@@ -269,15 +274,52 @@ export const InputTraceSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.inputTrace.steeringWheel')}>
+      <Card title={t('settingsPanels.common.speedCard')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="showSpeedGear" />
+        </div>
+
+        <Row setting="showSpeedTargetColor" dependsOn="showSpeedGear" />
+        <Row setting="speedOnTargetColor" dependsOn={hasSpeedTargetColor} />
+        <Row setting="speedOverTargetColor" dependsOn={hasSpeedTargetColor} />
+      </Card>
+
+      <Card title={t('settingsPanels.common.cornerSpeedsCard')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="showCornerSpeeds" />
+        </div>
+
+        <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
+      </Card>
+
+      <Card title={t('settingsPanels.common.gearRpmCard')}>
+        <DependentBlock dependsOn={hasGearZoneColor}>
+          <RpmZoneColorGrid
+            colors={{
+              rpmColorHigh: settings.rpmColorHigh,
+              rpmColorShift: settings.rpmColorShift,
+              rpmColorLimit: settings.rpmColorLimit,
+            }}
+            onChange={(key, color) => update({ [key]: color })}
+          />
+        </DependentBlock>
+
+        <Row setting="colorizeGearByZone" dependsOn="showSpeedGear" />
+
+        <Row setting="blinkAtShift" dependsOn="showSpeedGear" />
+      </Card>
+
+      <Card title={t('settingsPanels.common.steeringCard')}>
         <div className={styles.fieldGroup}>
           <Row setting="showSteering" />
         </div>
 
         <DependentBlock dependsOn="showSteering">
           <SettingRow
-            title={t('settingsPanels.inputTrace.steeringWheelStyle')}
-            desc={t('settingsPanels.inputTrace.steeringWheelStyleDesc')}
+            title={t('settingsPanels.common.steeringCardStyle')}
+            desc={t('settingsPanels.common.steeringCardStyleDesc')}
           >
             <Select
               value={settings.steeringWheelStyle}
@@ -297,24 +339,6 @@ export const InputTraceSettingsPanel = observer(() => {
 
         <Row setting="steeringMarkerColor" dependsOn={hasSteeringMarker} />
         <Row setting="steeringCenterPlate" dependsOn={hasCenterPlate} />
-      </Card>
-
-      <Card title={t('settingsPanels.inputTrace.speedBlock')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="showSpeedGear" />
-        </div>
-
-        <Row setting="showSpeedTargetColor" dependsOn="showSpeedGear" />
-        <Row setting="speedOnTargetColor" dependsOn={hasSpeedTargetColor} />
-        <Row setting="speedOverTargetColor" dependsOn={hasSpeedTargetColor} />
-
-        <div className={styles.fieldGroup}>
-          <Row setting="showCornerSpeeds" />
-        </div>
-
-        <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
-        <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
-        <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
       </Card>
     </>
   );

@@ -54,7 +54,9 @@ export const INVISIBLE_DASH_SETTINGS = defineSettings('invisibleDash', {
   /** Tint the RPM number with the zone color at high revs. */
   colorizeRpmByZone: bool(true),
   /** Tint the gear digit with the zone color at high revs. */
-  colorizeGearByZone: bool(false),
+  colorizeGearByZone: bool(false, { label: 'common.colorizeGearByZone' }),
+  /** The gear digit and the RPM number flash at the shift point. */
+  blinkAtShift: bool(false, { label: 'common.blinkAtShift' }),
   /** How far the strip is pushed into the scene, 0–100: tilt, shrink and fade. */
   depth: num(45, PERCENT),
   /**

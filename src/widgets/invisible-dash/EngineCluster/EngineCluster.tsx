@@ -1,9 +1,10 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { computeRpmZoneState } from '@shared/lib/car-signals';
+import { computeRpmZoneState, REDLINE_BLINK } from '@shared/lib/car-signals';
 import { formatSpeed, speedUnit } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useBlinkHandle } from '@shared/hooks/useBlink';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { targetSpeedColor } from '@entities/corner-speeds/target-speed';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -25,6 +26,9 @@ const RPM_COLOR_PROPERTY = '--dash-rpm-color';
  * markup React renders once and a single pass per animation frame fills. See
  * `docs/rendering.md`.
  *
+ * With the blink on, the RPM number flashes at the shift point on a timer, not
+ * a CSS animation (ADR-0009).
+ *
  * With the target colour on, the speed takes the on-target or over-target
  * colour against the lit corner target, written with the number.
  */
@@ -36,6 +40,7 @@ export const EngineCluster = observer(() => {
 
   const settings =
     useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
+  const shiftBlink = useBlinkHandle();
 
   const rootRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
@@ -58,6 +63,8 @@ export const EngineCluster = observer(() => {
         ? zoneDigitColor(zone, settings)
         : null;
 
+      const isBlink = settings.blinkAtShift && zone === 'blink';
+
       // oxlint-disable-next-line no-restricted-properties
       const speed = player.carDynamics?.speed ?? 0;
       const speedText = formatSpeed(speed, units.unitSystem);
@@ -75,8 +82,12 @@ export const EngineCluster = observer(() => {
         const rpmValue = element.querySelector(`.${styles.rpm}`);
 
         if (rpmValue instanceof HTMLElement) {
+          rpmValue.classList.toggle(styles.blinkPulse, isBlink);
           rpmValue.textContent = rpmText;
         }
+
+        shiftBlink.attach(rpmValue);
+        shiftBlink.run(isBlink ? REDLINE_BLINK : null);
 
         const speedValue = element.querySelector(`.${styles.speed}`);
 
@@ -86,7 +97,7 @@ export const EngineCluster = observer(() => {
         }
       });
     },
-    [player, sessionStore, units, backendComputed, settings]
+    [player, sessionStore, units, backendComputed, settings, shiftBlink]
   );
 
   if (!settings.showSpeed && !settings.showRpm && !settings.showShiftBar) {

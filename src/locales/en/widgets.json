@@ -150,7 +150,14 @@
       "speedOnTargetColorDesc": "Within 5 km/h of the target.",
       "speedOverTargetColor": "Over Target",
       "speedOverTargetColorDesc": "More than 5 km/h over the target.",
-      "cornerSpeedsCard": "Corner Speeds"
+      "cornerSpeedsCard": "Corner Speeds",
+      "colorizeGearByZone": "Colorize Gear",
+      "colorizeGearByZoneDesc": "Tint the gear digit with the zone color at high revs.",
+      "blinkAtShift": "Blink at Shift Point",
+      "blinkAtShiftDesc": "Blink the gear and the revs once they reach the shift point.",
+      "speedCard": "Speed",
+      "gearRpmCard": "Gear and RPM",
+      "steeringCard": "Steering"
     },
     "delta": {
       "deltaReference": "Delta Reference",
@@ -314,8 +321,6 @@
       "smoothingFactor": "Factor: {{factor}}",
       "lineWidth": "Line Width",
       "lineWidthDesc": "Thickness: {{px}}px",
-      "speedBlock": "Speed",
-      "steeringWheel": "Steering Wheel",
       "showAbs": "ABS Active",
       "showAbsDesc": "Color the brake trace and bar while ABS is working.",
       "showSteeringTrace": "Steering Line",
@@ -460,7 +465,6 @@
       "includeLappedDesc": "In a race, a car a lap ahead or behind counts as a rival too. Outside a race lap counts are ignored anyway."
     },
     "raceDash": {
-      "rpmFill": "RPM Fill",
       "colorizeByRpmZone": "Colorize Digits",
       "colorizeByRpmZoneDesc": "Tint the gear digit and RPM number with the zone color at high revs.",
       "rpmIndicatorMode": "RPM Indicator",
@@ -802,7 +806,6 @@
       "textColorDesc": "Color of the numbers below the high rev zone.",
       "depth": "Distance",
       "depthDesc": "Pushes the readout into the scene — tilt, shrink and fade. The text is rendered supersampled, so it stays sharp at any distance.",
-      "blocks": "Blocks",
       "showSpeed": "Speed",
       "showSpeedDesc": "Largest number in the left cluster, in the app's unit system.",
       "showRpm": "RPM",
@@ -819,11 +822,8 @@
       "showPositionDesc": "Place in the field, in the right cluster.",
       "showLap": "Lap",
       "showLapDesc": "Current lap out of the session total, under the position.",
-      "zoneColorsCard": "Rev Colors",
       "colorizeRpmByZone": "Colorize RPM",
       "colorizeRpmByZoneDesc": "Tint the RPM number with the zone color at high revs.",
-      "colorizeGearByZone": "Colorize Gear",
-      "colorizeGearByZoneDesc": "Tint the gear digit with the zone color at high revs.",
       "useLivePositions": "Live Positions",
       "useLivePositionsDesc": "Rank by order on track instead of the sim's official number, which only refreshes at start/finish.",
       "classPositionInMulticlass": "Class Position in Multiclass",
