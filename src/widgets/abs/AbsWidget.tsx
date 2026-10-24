@@ -2,7 +2,9 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { usePlayerStore } from '@entities/player/player-context';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import styles from './AbsWidget.module.scss';
+import type { AbsWidgetSettings } from './settings-schema';
 
 /** What the level reads on a car with no ABS adjustment, when kept on screen. */
 const NO_LEVEL_LABEL = '--';
@@ -17,6 +19,7 @@ const NO_LEVEL_LABEL = '--';
  */
 export const AbsWidget = observer(() => {
   const { carStatus, isAbsActive } = usePlayerStore();
+  const settings = useWidgetSettings<AbsWidgetSettings>('abs');
 
   const dcAbs = carStatus?.dc_abs ?? null;
   const levelText =
@@ -29,11 +32,17 @@ export const AbsWidget = observer(() => {
       minWidth={0}
       className={`${styles.root} ${isAbsActive ? styles.rootActive : ''}`}
     >
-      <div className={styles.badge}>ABS</div>
-
-      <div className={styles.level}>
-        <FixedDigits text={levelText} />
+      <div
+        className={`${styles.badge} ${settings.showLevel ? '' : styles.badgeAlone}`}
+      >
+        ABS
       </div>
+
+      {settings.showLevel ? (
+        <div className={styles.level}>
+          <FixedDigits text={levelText} />
+        </div>
+      ) : null}
     </WidgetPanel>
   );
 });

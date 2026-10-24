@@ -62,3 +62,11 @@ export const NoAdjustment: Story = {
     noAdjustment: true,
   },
 };
+
+/** The level switched off: the badge alone, square-cut, the light only. */
+export const BadgeOnly: Story = {
+  args: {
+    showLevel: false,
+  },
+  parameters: { widgetFrame: { width: 92 } },
+};

@@ -854,6 +854,8 @@
     },
     "abs": {
       "moduleParameters": "Parámetros del módulo",
+      "showLevel": "Mostrar nivel de ABS",
+      "showLevelDesc": "Muestra el ajuste de ABS de la cabina junto a la placa. Desactivado, solo queda la placa.",
       "hideWhenCarHasNoAbs": "Ocultar en coches sin ajuste de ABS",
       "hideWhenCarHasNoAbsDesc": "Quita el widget de la pantalla en un coche sin ajuste de ABS en la cabina. Desactivado, la placa se queda y muestra --."
     },

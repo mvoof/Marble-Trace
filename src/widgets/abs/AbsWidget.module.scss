@@ -37,6 +37,15 @@ $badge-slant: ws(14);
   line-height: 1;
 }
 
+// With no level beside it the slant points at nothing, so the badge fills the
+// plate and takes the square, rounded edge the level block had.
+.badgeAlone {
+  flex: 1 1 auto;
+  padding-right: 0;
+  border-radius: radius(md);
+  clip-path: none;
+}
+
 .level {
   flex: 1 1 auto;
   min-width: 0;

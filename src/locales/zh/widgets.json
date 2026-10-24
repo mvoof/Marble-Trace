@@ -854,6 +854,8 @@
     },
     "abs": {
       "moduleParameters": "模块参数",
+      "showLevel": "显示 ABS 档位",
+      "showLevelDesc": "在标牌旁显示座舱 ABS 设置。关闭时只保留标牌。",
       "hideWhenCarHasNoAbs": "在无 ABS 调节的车上隐藏",
       "hideWhenCarHasNoAbsDesc": "在座舱内没有 ABS 设置的车上将小部件移出屏幕。关闭时，面板保留并显示 --。"
     },

@@ -6,6 +6,11 @@ import {
 
 export const ABS_SETTINGS = defineSettings('abs', {
   /**
+   * Draw the cockpit level beside the badge. Off, the badge fills the plate
+   * square-cut and the widget narrows to it — just the light.
+   */
+  showLevel: bool(true),
+  /**
    * Take the widget off the screen on a car with no ABS adjustment in the
    * cockpit. Off, the plate stays where the driver put it and reads `--`, for a
    * fixed layout shared across several cars.

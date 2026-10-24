@@ -854,6 +854,8 @@
     },
     "abs": {
       "moduleParameters": "Module parameters",
+      "showLevel": "Show ABS level",
+      "showLevelDesc": "Draw the in-car ABS setting beside the badge. Off, only the badge is left.",
       "hideWhenCarHasNoAbs": "Hide on cars without ABS adjustment",
       "hideWhenCarHasNoAbsDesc": "Take the widget off the screen on a car with no ABS setting in the cockpit. Off, the plate stays and reads --."
     },

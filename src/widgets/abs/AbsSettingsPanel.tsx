@@ -16,6 +16,10 @@ export const AbsSettingsPanel = observer(() => {
   return (
     <Card title={t('settingsPanels.abs.moduleParameters')}>
       <div className={styles.fieldGroup}>
+        <Row setting="showLevel" />
+      </div>
+
+      <div className={styles.fieldGroup}>
         <Row setting="hideWhenCarHasNoAbs" />
       </div>
     </Card>
