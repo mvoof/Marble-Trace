@@ -66,7 +66,8 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/TimerWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: TimerWidget,
-    size: { width: 240, height: 120 },
+    // The manifest sizes the timer by its content (autoHeight), so the frame does too.
+    size: { width: 240, height: 'auto' },
     seedSnapshot: true,
     seed: (store, args) => {
       const sessionInfo = store.session.sessionInfo;
@@ -213,6 +214,12 @@ export const TimedRace: Story = {
     sessionLaps: 'unlimited',
     remainSec: 30 * 60,
     currentLap: 8,
+    // Every clock on, so the README and site picture shows both columns full.
+    showWallClock: true,
+    showSimTime: true,
+    showPcDate: true,
+    showSimDate: true,
+    simTimeOfDay: 14 * 3600 + 23 * 60,
   },
 };
 
