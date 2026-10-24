@@ -1,4 +1,5 @@
 import {
+  LAP_COUNTER,
   LIC_BADGE_STYLE,
   ROW_PADDING,
   STANDINGS_VIEW_MODE,
@@ -94,9 +95,14 @@ export const STANDINGS_SETTINGS = defineSettings('standings', {
   /** Driver rows each class gets in grouped view (0 = split the widget height evenly between classes). */
   groupedRowsPerClass: num(0, { min: 0, max: 30, step: 1 }),
   showColumnHeaders: bool(true),
+  /** The whole bar above the table: session type, field, SOF, track, laps and clock. */
   showSessionHeader: bool(true),
   /** Session time remaining (or elapsed) in the header, same clock as the Timer widget. */
   showSessionTime: bool(true),
+  /** The lap out of the session's total, in the header. */
+  showLapProgress: bool(true),
+  /** Whose lap the header counts: the race's (the leader's) or the player's. */
+  lapCounter: choice(LAP_COUNTER, 'session', { label: 'common.lapCounter' }),
   showWeather: bool(true),
   showSOF: bool(true),
   /**

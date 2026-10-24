@@ -66,7 +66,8 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/TimerWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: TimerWidget,
-    size: { width: 240, height: 120 },
+    // The manifest sizes the timer by its content (autoHeight), so the frame does too.
+    size: { width: 240, height: 'auto' },
     seedSnapshot: true,
     seed: (store, args) => {
       const sessionInfo = store.session.sessionInfo;
@@ -98,13 +99,20 @@ const meta: Meta<StoryArgs> = {
         });
       }
 
-      const carIdx = store.cars.carIdx;
+      // The counter reads the standings frame. The whole field is put on the
+      // story's lap, so the session's lap and the player's own read the same.
+      const driverEntries = store.backendComputed.driverEntries;
 
-      if (carIdx && args.currentLap !== undefined) {
-        const lapByCar = [...carIdx.car_idx_lap];
+      if (driverEntries && args.currentLap !== undefined) {
+        const storyLap = args.currentLap;
 
-        lapByCar[sessionInfo?.playerCarIdx ?? 0] = args.currentLap;
-        store.cars.updateCarIdx({ ...carIdx, car_idx_lap: lapByCar });
+        store.backendComputed.updateDriverEntries({
+          ...driverEntries,
+          entries: driverEntries.entries.map((entry) => ({
+            ...entry,
+            lap: storyLap,
+          })),
+        });
       }
 
       store.liveWidgets.updateUserSettings('timer', {
@@ -209,6 +217,12 @@ export const TimedRace: Story = {
     sessionLaps: 'unlimited',
     remainSec: 30 * 60,
     currentLap: 8,
+    // Every clock on, so the README and site picture shows both columns full.
+    showWallClock: true,
+    showSimTime: true,
+    showPcDate: true,
+    showSimDate: true,
+    simTimeOfDay: 14 * 3600 + 23 * 60,
   },
 };
 

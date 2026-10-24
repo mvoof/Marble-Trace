@@ -25,6 +25,14 @@ export type RowPadding = (typeof ROW_PADDING)[number];
 export const LIC_BADGE_STYLE = ['badge', 'plain', 'dark'] as const;
 export type LicBadgeStyle = (typeof LIC_BADGE_STYLE)[number];
 
+/**
+ * Whose lap a lap counter shows: `session` is the race's own lap — the
+ * leader's — and `player` is the lap the player is on, which a lapped car
+ * reads lower.
+ */
+export const LAP_COUNTER = ['session', 'player'] as const;
+export type LapCounter = (typeof LAP_COUNTER)[number];
+
 export const LAP_DELTA_REFERENCE = [
   'personal_best',
   'personal_optimal',

@@ -8,6 +8,7 @@ import {
   isSessionEnded,
 } from '@shared/lib/timer-utils';
 import { useCarsStore } from '@entities/cars/cars-context';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
 
@@ -17,11 +18,13 @@ import type { TimerWidgetSettings } from '../settings-schema';
 
 export const TimerFooter = observer(() => {
   const { session, sessionInfo } = useSessionStore();
-  const { carIdx, leaderBestLapTime } = useCarsStore();
+  const { leaderBestLapTime } = useCarsStore();
+  const { leaderLap } = useBackendComputedStore();
   const playerPosition = usePlayerPositionStore();
 
   const {
     showLaps,
+    lapCounter,
     showPosition,
     useLivePositions,
     classPositionInMulticlass,
@@ -35,15 +38,14 @@ export const TimerFooter = observer(() => {
     return null;
   }
 
+  const currentLap =
+    lapCounter === 'session' ? leaderLap : playerPosition.playerLap;
   const sessions = sessionInfo?.sessions ?? [];
 
   const sessionNum = session?.session_num ?? null;
   const currentSession =
     sessionNum !== null ? (sessions[sessionNum] ?? null) : null;
   const remain = session?.session_time_remain ?? null;
-  const playerCarIdx = sessionInfo?.playerCarIdx ?? null;
-  const currentLap =
-    playerCarIdx !== null ? (carIdx?.car_idx_lap[playerCarIdx] ?? null) : null;
   const totalLaps =
     sessionNum !== null
       ? resolveSessionLaps(

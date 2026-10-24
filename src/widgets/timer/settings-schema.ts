@@ -1,5 +1,7 @@
+import { LAP_COUNTER } from '@shared/contracts/widget-choices';
 import {
   bool,
+  choice,
   defineSettings,
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
@@ -7,6 +9,8 @@ import {
 export const TIMER_SETTINGS = defineSettings('timer', {
   showSessionType: bool(true),
   showLaps: bool(true),
+  /** Whose lap the footer counts: the race's (the leader's) or the player's. */
+  lapCounter: choice(LAP_COUNTER, 'session', { label: 'common.lapCounter' }),
   showPosition: bool(true),
   /** Source of the position shown in the footer. */
   useLivePositions: bool(true, { label: 'common.useLivePositions' }),

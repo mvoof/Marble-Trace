@@ -36,6 +36,9 @@ const SCROLL_RESET_OPTIONS = [0, 5, 8, 15, 30];
 
 const NAME_COLUMN_SLIDER_WIDTH_PX = 160;
 
+const isLapProgressShown = (settings: StandingsWidgetSettings): boolean =>
+  settings.showSessionHeader && settings.showLapProgress;
+
 export const StandingsSettingsPanel = observer(() => {
   const liveWidgets = useWidgetEditor();
   const panelWidgetId = usePanelWidgetId('standings');
@@ -215,7 +218,9 @@ export const StandingsSettingsPanel = observer(() => {
       <Card title={t('settingsPanels.standings.headerInfo')}>
         <Row setting="showColumnHeaders" />
         <Row setting="showSessionHeader" />
-        <Row setting="showSessionTime" />
+        <Row setting="showSessionTime" dependsOn="showSessionHeader" />
+        <Row setting="showLapProgress" dependsOn="showSessionHeader" />
+        <Row setting="lapCounter" dependsOn={isLapProgressShown} />
         <Row setting="showSOF" />
         <Row setting="abbreviateSof" dependsOn="showSOF" />
         <Row setting="showTotalDrivers" />

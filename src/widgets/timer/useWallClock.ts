@@ -13,10 +13,17 @@ export const useWallClock = () => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       const now = new Date();
+      const time = formatWallClock(now);
+      const date = formatPcDate(now);
 
-      setWallClock({
-        time: formatWallClock(now),
-        date: formatPcDate(now),
+      // The tick is per second but the readout is per minute: handing React
+      // the same object skips the render for the 59 ticks that change nothing.
+      setWallClock((previous) => {
+        if (previous.time === time && previous.date === date) {
+          return previous;
+        }
+
+        return { time, date };
       });
     }, WALL_CLOCK_INTERVAL_MS);
 

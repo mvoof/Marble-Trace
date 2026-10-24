@@ -205,6 +205,20 @@ export class BackendComputedStore {
   }
 
   /**
+   * The session's lap: the lap the leader is on. A number of its own, so a
+   * reader wakes when the leader starts a lap rather than when any car moves.
+   */
+  get leaderLap(): number | null {
+    const identities = this.driverIdentities;
+
+    if (identities.length === 0) {
+      return null;
+    }
+
+    return Math.max(...identities.map((entry) => entry.lap));
+  }
+
+  /**
    * One car's live entry, moving numbers and all. Read inside a reaction that
    * writes to the DOM — a component that reads it in render wakes on every tick.
    */

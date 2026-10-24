@@ -5,18 +5,19 @@ import styles from './TimerItem.module.scss';
 
 interface TimerItemProps {
   label: string;
-  align?: 'left' | 'right';
+  variant?: 'time' | 'date';
   children: ReactNode;
 }
 
 export const TimerItem = observer(
-  ({ label, align = 'left', children }: TimerItemProps) => {
+  ({ label, variant = 'time', children }: TimerItemProps) => {
+    const valueClassName =
+      variant === 'date' ? `${styles.value} ${styles.dateValue}` : styles.value;
+
     return (
-      <span
-        className={align === 'right' ? styles.clockItemRight : styles.clockItem}
-      >
+      <span className={styles.clockItem}>
         <span className={styles.label}>{label}</span>
-        <span className={styles.value}>{children}</span>
+        <span className={valueClassName}>{children}</span>
       </span>
     );
   }

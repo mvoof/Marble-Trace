@@ -5,7 +5,7 @@
   padding: sp(xxs) sp(sm);
   font-family: $font-widget;
   font-weight: 700;
-  font-size: fs(xxxl);
+  font-size: wfs(42);
   line-height: 1;
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
@@ -18,7 +18,7 @@
 .sessionEndedLabel {
   color: $widget-text-secondary;
   letter-spacing: 4px;
-  font-size: fs(xxxl);
+  font-size: wfs(42);
 }
 
 .timeSeconds {

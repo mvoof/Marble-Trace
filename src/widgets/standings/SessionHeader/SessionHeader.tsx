@@ -20,6 +20,7 @@ import styles from './SessionHeader.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useCarsStore } from '@entities/cars/cars-context';
 import { useSessionStore } from '@entities/session/session-context';
+import { usePlayerPositionStore } from '@entities/player/player-position-context';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
 import type { StandingsWidgetSettings } from '../settings-schema';
 
@@ -34,7 +35,8 @@ const SESSION_TYPE_CLASS: Record<SessionColorKey, string> = {
 };
 
 export const SessionHeader = observer(() => {
-  const { driverIdentities } = useBackendComputedStore();
+  const { driverIdentities, leaderLap } = useBackendComputedStore();
+  const playerPosition = usePlayerPositionStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
   const standingsWidget = useStandingsWidgetStore();
@@ -60,16 +62,14 @@ export const SessionHeader = observer(() => {
   const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
   const trackName = sessionInfo?.trackDisplayName ?? '';
 
-  const leaderLap =
-    driverIdentities.length > 0
-      ? Math.max(...driverIdentities.map((entry) => entry.lap))
-      : null;
+  const shownLap =
+    settings.lapCounter === 'session' ? leaderLap : playerPosition.playerLap;
 
   const totalLaps = currentSession?.sessionLaps
     ? resolveSessionLaps(
         currentSession.sessionLaps,
         session?.session_time_remain ?? null,
-        leaderLap,
+        shownLap,
         leaderBestLapTime
       )
     : null;
@@ -80,7 +80,9 @@ export const SessionHeader = observer(() => {
     currentSession?.sessionLaps,
     currentSession?.sessionType
   );
-  const lapProgress = buildLapProgress(leaderLap, totalLaps, !isLapLimited);
+  const lapProgress = settings.showLapProgress
+    ? buildLapProgress(shownLap, totalLaps, !isLapLimited)
+    : null;
 
   // Whether anything precedes the SOF in the left group — a rule with nothing on
   // its left would read as the edge of a missing item.

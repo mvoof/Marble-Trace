@@ -32,6 +32,14 @@ export class PlayerPositionStore {
     );
   }
 
+  /**
+   * The lap the player is on, off the same standings frame as the session's
+   * lap, so the two can be read side by side.
+   */
+  get playerLap(): number | null {
+    return this.playerEntry?.lap ?? null;
+  }
+
   /** Whether the standings frame carries the player at all, as a stable flag. */
   get hasPlayerEntry(): boolean {
     return this.playerEntry !== null;
