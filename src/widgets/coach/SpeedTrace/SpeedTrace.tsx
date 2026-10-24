@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite';
 import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import { useCallback, useRef } from 'react';
 
@@ -23,11 +24,9 @@ const traceColors = (settings: CoachWidgetSettings): SpeedTraceColors => ({
   marker: MARKER_COLOR,
 });
 
-// Not wrapped in observer() intentionally: useReactiveCanvasLoop subscribes to
-// the store directly, so a React re-render per telemetry frame is not needed.
 // The window itself is built in the store on the telemetry frame — this
 // component only paints the buffers it already holds.
-export const SpeedTrace = () => {
+export const SpeedTrace = observer(() => {
   const coachTrace = useCoachWidgetStore();
   const liveWidgets = useLiveWidgetsStore();
   const instanceId = useWidgetInstanceId('coach');
@@ -89,4 +88,4 @@ export const SpeedTrace = () => {
       />
     </div>
   );
-};
+});
