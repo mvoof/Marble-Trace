@@ -20,7 +20,19 @@
   grid-column: -2;
 
   .twoColumns & {
-    border-left: 1px solid $widget-border-subtle;
+    position: relative;
+  }
+
+  // The divider runs from under the label to just past the value, not the
+  // whole cell, so the two readings sit apart without boxing them in.
+  .twoColumns &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: sp(sm);
+    bottom: sp(xs);
+    width: 1px;
+    background-color: $widget-border-subtle;
   }
 }
 

@@ -4,13 +4,13 @@
   grid-auto-flow: column;
   align-items: center;
   margin: sp(xxs) sp(sm) sp(sm);
-  padding: sp(xs) 0;
   border-radius: radius(md);
-  background-color: $widget-surface-cell;
-  border: 1px solid $widget-border-subtle;
+  background-color: rgba(#ffffff, 0.05);
 }
 
 .footerItem {
+  position: relative;
+  padding: sp(sm) 0;
   text-align: center;
   font-family: $font-mono;
   font-size: fs(xs);
@@ -19,6 +19,12 @@
   letter-spacing: 1px;
 }
 
-.footerItem + .footerItem {
-  border-left: 1px solid $widget-border-subtle;
+.footerItem + .footerItem::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: sp(xxs);
+  bottom: sp(xxs);
+  width: 1px;
+  background-color: $widget-border-subtle;
 }
