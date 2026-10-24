@@ -14,7 +14,7 @@
     position: absolute;
     inset: 0;
     // A shade lighter than the plate, whatever colour the user gives it.
-    border: 3px solid color-mix(in srgb, var(--widget-bg) 92%, white);
+    border: 3px solid color-mix(in srgb, var(--widget-bg) 96%, white);
     border-radius: 50%;
     pointer-events: none;
   }
