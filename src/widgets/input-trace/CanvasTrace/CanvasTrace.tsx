@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite';
 import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import { useRef, useCallback } from 'react';
 
@@ -20,10 +21,7 @@ import type { InputTraceSettings } from '../settings-schema';
 // returns it there, so the sentinel must sit outside that range.
 const NO_FRAME_CONSUMED = -1;
 
-// Not wrapped in observer() intentionally: useReactiveCanvasLoop subscribes to
-// MobX observables directly, so React re-renders are not needed for data updates.
-// observer() would cause a React re-render on every telemetry frame.
-export const CanvasTrace = () => {
+export const CanvasTrace = observer(() => {
   const liveWidgets = useLiveWidgetsStore();
   const instanceId = useWidgetInstanceId('input-trace');
   const inputTrace = useInputTraceWidgetStore();
@@ -119,4 +117,4 @@ export const CanvasTrace = () => {
       />
     </div>
   );
-};
+});

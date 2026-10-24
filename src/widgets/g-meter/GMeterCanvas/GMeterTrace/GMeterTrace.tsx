@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite';
 import { useRef, useCallback, useLayoutEffect } from 'react';
 
 import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
@@ -290,10 +291,7 @@ const advanceMeter = (
   }
 };
 
-// Not wrapped in observer() intentionally: useReactiveCanvasLoop subscribes to
-// MobX observables directly, so React re-renders are not needed for data updates.
-// observer() would cause 60 Hz React re-renders on every carDynamics change.
-export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
+export const GMeterTrace = observer(({ width, height }: GMeterTraceProps) => {
   const widgetId = useWidgetInstanceId('g-meter');
   const telemetry = usePlayerStore();
   const liveWidgets = useLiveWidgetsStore();
@@ -528,4 +526,4 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
       aria-label="G-meter trace"
     />
   );
-};
+});
