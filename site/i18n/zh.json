@@ -51,7 +51,7 @@
   "Language": "语言",
   "Download for Windows": "下载 Windows 版",
   "Marble Trace widgets over the iRacing cockpit: standings, relative, track map, fuel, weather, radar and the race dash": "iRacing 驾驶舱上的 Marble Trace 小组件：排名、相对位置、赛道地图、燃油、天气、雷达和赛车仪表",
-  "OPEN SOURCE TELEMETRY OVERLAY FOR IRACING": "开源 IRACING 遥测叠加层",
+  "Free open-source iRacing overlay": "免费开源 iRacing 叠加层",
   "YOUR RACE.": "你的比赛。",
   "YOUR DATA.": "你的数据。",
   "A free, transparent overlay for iRacing that never blocks your view. A tiny Rust core reads telemetry straight from the sim.": "一款免费、透明的 iRacing 叠加层，从不遮挡视线。小巧的 Rust 内核直接从模拟器读取遥测数据。",

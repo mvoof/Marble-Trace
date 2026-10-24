@@ -51,7 +51,7 @@
   "Language": "Язык",
   "Download for Windows": "Скачать для Windows",
   "Marble Trace widgets over the iRacing cockpit: standings, relative, track map, fuel, weather, radar and the race dash": "Виджеты Marble Trace поверх кокпита iRacing: таблица результатов, relative, карта трассы, топливо, погода, радар и гоночная панель",
-  "OPEN SOURCE TELEMETRY OVERLAY FOR IRACING": "ОВЕРЛЕЙ ТЕЛЕМЕТРИИ ДЛЯ IRACING С ОТКРЫТЫМ КОДОМ",
+  "Free open-source iRacing overlay": "Бесплатный оверлей для iRacing с открытым кодом",
   "YOUR RACE.": "ТВОЯ ГОНКА.",
   "YOUR DATA.": "ТВОИ ДАННЫЕ.",
   "A free, transparent overlay for iRacing that never blocks your view. A tiny Rust core reads telemetry straight from the sim.": "Бесплатный прозрачный оверлей для iRacing, который никогда не закрывает обзор. Маленькое ядро на Rust читает телеметрию прямо из симулятора.",
