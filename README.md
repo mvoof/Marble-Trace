@@ -106,7 +106,7 @@ Drag reduction system state at a glance: armed past the detection point, ready i
 
 ### ABS
 
-The ABS setting from the cockpit, 0 to 12, beside a badge that lights yellow while ABS is working and stays a quiet grey otherwise.
+The ABS setting from the cockpit, 0 to 12, beside a badge that lights yellow while ABS is working and stays a quiet grey otherwise. Switch the level off to keep only the badge; on a car with no ABS adjustment the widget hides itself.
 
 <img src="site/assets/widgets/abs.png" alt="ABS" width="150">
 
