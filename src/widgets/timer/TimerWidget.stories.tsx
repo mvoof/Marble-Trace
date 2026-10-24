@@ -104,11 +104,14 @@ const meta: Meta<StoryArgs> = {
       const driverEntries = store.backendComputed.driverEntries;
 
       if (driverEntries && args.currentLap !== undefined) {
-        const lap = args.currentLap;
+        const storyLap = args.currentLap;
 
         store.backendComputed.updateDriverEntries({
           ...driverEntries,
-          entries: driverEntries.entries.map((entry) => ({ ...entry, lap })),
+          entries: driverEntries.entries.map((entry) => ({
+            ...entry,
+            lap: storyLap,
+          })),
         });
       }
 

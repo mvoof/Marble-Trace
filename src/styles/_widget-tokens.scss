@@ -53,6 +53,8 @@ $widget-text-best-lap: $race-purple;
 $widget-surface-base: plate(rgba(0, 0, 0, 0.75));
 $widget-surface-overlay: plate(rgba(0, 0, 0, 0.8));
 $widget-surface-cell: plate(rgba(16, 16, 18, 0.65));
+// A plate raised a shade off the panel it sits in, rather than sunk into it.
+$widget-surface-raised: plate(rgba(255, 255, 255, 0.05));
 
 // Opaque plate for widgets that draw free-standing rows over the track rather
 // than inside a panel — a see-through row loses its own edges against a corner.

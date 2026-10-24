@@ -5,7 +5,7 @@
   align-items: center;
   margin: sp(xxs) sp(sm) sp(sm);
   border-radius: radius(md);
-  background-color: rgba(#ffffff, 0.05);
+  background-color: $widget-surface-raised;
 }
 
 .footerItem {

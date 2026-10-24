@@ -159,7 +159,8 @@ describe('BackendComputedStore leaderLap', () => {
       session.updateSessionInfo(makeRoster([1, 1, 1]));
       store.updateDriverEntries({
         entries: laps.map(
-          (lap, carIdx) => ({ carIdx, lap }) as unknown as DriverEntry
+          (lapNumber, carIdx) =>
+            ({ carIdx, lap: lapNumber }) as unknown as DriverEntry
         ),
         playerCarIdx: 0,
       });
