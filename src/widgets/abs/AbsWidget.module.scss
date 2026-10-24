@@ -1,0 +1,59 @@
+// The badge carries the state, the level never changes colour: a lit number
+// would read as "this value is wrong" rather than "ABS is working".
+.root {
+  --abs-badge: #{$race-neutral};
+
+  width: 100%;
+  height: 100%;
+  font-family: $font-widget;
+  align-items: stretch;
+  padding: sp(xxs);
+}
+
+// Lit only while the brakes are being held off a lock.
+.rootActive {
+  --abs-badge: #{$race-yellow};
+}
+
+$badge-slant: ws(14);
+
+// A parallelogram cut inside the badge's own box, not a skew transform: a skew
+// pushes the anti-aliased edge outside the box the webview repaints, and a
+// badge that goes dark in one frame leaves a sliver of yellow behind.
+.badge {
+  flex: 0 0 62%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: $badge-slant;
+  border-radius: radius(md) 0 0 radius(md);
+  clip-path: polygon(0 0, 100% 0, calc(100% - #{$badge-slant}) 100%, 0 100%);
+  background: var(--abs-badge);
+  color: $widget-text-on-accent;
+  font-size: fs(xxl);
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+// With no level beside it the slant points at nothing, so the badge fills the
+// plate and takes the square, rounded edge the level block had.
+.badgeAlone {
+  flex: 1 1 auto;
+  padding-right: 0;
+  border-radius: radius(md);
+  clip-path: none;
+}
+
+.level {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $widget-text-primary;
+  font-size: fs(xxxl);
+  font-weight: 700;
+  line-height: 1;
+}

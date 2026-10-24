@@ -38,11 +38,11 @@
       })();
     </script>
     <title>
-      Free iRacing Overlay — 29 Widgets, OBS & Tablets | Marble Trace
+      Free iRacing Overlay — 30 Widgets, OBS & Tablets | Marble Trace
     </title>
     <meta
       name="description"
-      content="Free, open-source iRacing overlay for Windows: 29 widgets — relative, standings, track map, fuel, delta, radar — on monitors, tablets, phones and OBS. No ads."
+      content="Free, open-source iRacing overlay for Windows: 30 widgets — relative, standings, track map, fuel, delta, radar — on monitors, tablets, phones and OBS. No ads."
     />
     <meta
       name="keywords"
@@ -79,11 +79,11 @@
     <meta property="og:locale" content="en_US" />
     <meta
       property="og:title"
-      content="Free iRacing Overlay — 29 Widgets, OBS & Tablets | Marble Trace"
+      content="Free iRacing Overlay — 30 Widgets, OBS & Tablets | Marble Trace"
     />
     <meta
       property="og:description"
-      content="29 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network."
+      content="30 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network."
     />
     <meta property="og:url" content="https://marbletrace.com/" />
     <meta property="og:image" content="https://marbletrace.com/og-image.jpg" />
@@ -96,11 +96,11 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="Free iRacing Overlay — 29 Widgets, OBS & Tablets | Marble Trace"
+      content="Free iRacing Overlay — 30 Widgets, OBS & Tablets | Marble Trace"
     />
     <meta
       name="twitter:description"
-      content="29 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network."
+      content="30 free widgets for iRacing: standings, relative, track map, fuel, delta, radar. Rust core, on any screen on your network."
     />
     <meta name="twitter:image" content="https://marbletrace.com/og-image.jpg" />
 
@@ -114,7 +114,7 @@
             "@type": "SoftwareApplication",
             "@id": "https://marbletrace.com/#app",
             "name": "Marble Trace",
-            "description": "Free, open-source iRacing telemetry overlay built with Rust and Tauri. 29 widgets including standings, relative, track map, fuel calculator, delta and proximity radar. Layouts switch per session and can be opened on any screen on the local network, including a tablet, a phone or an OBS browser source.",
+            "description": "Free, open-source iRacing telemetry overlay built with Rust and Tauri. 30 widgets including standings, relative, track map, fuel calculator, delta and proximity radar. Layouts switch per session and can be opened on any screen on the local network, including a tablet, a phone or an OBS browser source.",
             "operatingSystem": "Windows 10, Windows 11",
             "softwareVersion": "__APP_VERSION__",
             "releaseNotes": "https://github.com/mvoof/Marble-Trace/releases",
@@ -787,7 +787,7 @@
                   <h3 class="stage-name" id="gw-name">Race Dash</h3>
                   <p class="stage-index" aria-hidden="true">
                     <span id="gw-index">01</span> /
-                    <span id="gw-total">29</span>
+                    <span id="gw-total">30</span>
                   </p>
                 </div>
               </div>
@@ -963,6 +963,31 @@
                       decoding="async"
                     />
                     <span class="frame-caption">DRS</span>
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    class="frame"
+                    role="tab"
+                    id="gw-tab-abs"
+                    aria-controls="gw-stage"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-shot="assets/widgets/abs.png"
+                    data-name="ABS"
+                    data-alt="ABS iRacing overlay widget: in-car ABS setting with a badge lit while ABS is working"
+                    data-group="Race &amp; Performance"
+                    data-desc-id="gw-desc-abs"
+                  >
+                    <img
+                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/abs.png"
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span class="frame-caption">ABS</span>
                   </button>
                 </li>
                 <li role="presentation">
@@ -1550,7 +1575,7 @@
                frame. The stage reads its description from here. -->
           <details class="catalog">
             <summary class="catalog-summary">
-              All 29 widgets, one line each
+              All 30 widgets, one line each
             </summary>
 
             <div class="catalog-body">
@@ -1597,6 +1622,13 @@
                     <dd id="gw-desc-drs">
                       Armed past the detection point, ready inside the zone,
                       open &mdash; the drag reduction system at a glance.
+                    </dd>
+                  </div>
+                  <div class="catalog-item">
+                    <dt>ABS</dt>
+                    <dd id="gw-desc-abs">
+                      The in-car ABS setting, with a badge that lights while ABS
+                      is working.
                     </dd>
                   </div>
                   <div class="catalog-item">
@@ -1817,7 +1849,7 @@
          hidden from assistive tech - every word on it is said again in the
          sections around it.
 
-         The counts are the repo's own: 29 widget manifests, four locales.
+         The counts are the repo's own: 30 widget manifests, four locales.
          The loop is CSS alone - each track holds its row twice and slides by
          one row's width.
          ==================================================================== -->
@@ -1851,6 +1883,7 @@
               <li class="tape-badge">Engine Panel</li>
               <li class="tape-badge">RPM Lights</li>
               <li class="tape-badge">DRS</li>
+              <li class="tape-badge">ABS</li>
               <li class="tape-badge">Battery</li>
               <li class="tape-badge">Stream Chat</li>
             </ul>
@@ -1881,6 +1914,7 @@
               <li class="tape-badge">Engine Panel</li>
               <li class="tape-badge">RPM Lights</li>
               <li class="tape-badge">DRS</li>
+              <li class="tape-badge">ABS</li>
               <li class="tape-badge">Battery</li>
               <li class="tape-badge">Stream Chat</li>
             </ul>
@@ -1893,7 +1927,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">29 widgets</li>
+              <li class="tape-word">30 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>
@@ -1901,7 +1935,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">29 widgets</li>
+              <li class="tape-word">30 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>
@@ -1909,7 +1943,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">29 widgets</li>
+              <li class="tape-word">30 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>
@@ -1919,7 +1953,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">29 widgets</li>
+              <li class="tape-word">30 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>
@@ -1927,7 +1961,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">29 widgets</li>
+              <li class="tape-word">30 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>
@@ -1935,7 +1969,7 @@
               <li class="tape-word">Free forever</li>
               <li class="tape-word">Open source</li>
               <li class="tape-word">Rust core</li>
-              <li class="tape-word">29 widgets</li>
+              <li class="tape-word">30 widgets</li>
               <li class="tape-word">Any screen</li>
               <li class="tape-word">OBS ready</li>
               <li class="tape-word">Wheel buttons</li>

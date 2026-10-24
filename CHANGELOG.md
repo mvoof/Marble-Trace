@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **ABS Widget:** The ABS setting from the cockpit, 0 to 12, beside a badge that lights yellow while ABS is working. The level can be switched off to keep only the badge, and the widget hides itself on cars without an ABS adjustment.
+
 ## [0.27.0] — 2026-10-20
 
 ### Added

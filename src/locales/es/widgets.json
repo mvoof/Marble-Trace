@@ -81,6 +81,9 @@
     "battery": {
       "description": "Carga híbrida, lo que hace el MGU-K y el modo de despliegue si existe."
     },
+    "abs": {
+      "description": "Nivel de ABS de la cabina; la placa se ilumina mientras el ABS actúa."
+    },
     "drs": {
       "description": "Estado del DRS: armado tras la detección, listo en la zona, abierto."
     },
@@ -848,6 +851,13 @@
       "showPowerDesc": "Mostrar qué hace el MGU-K y con cuánta potencia, en kilovatios.",
       "showLapDeploy": "Despliegue en esta vuelta",
       "showLapDeployDesc": "Mostrar la energía enviada de la batería al MGU-K en esta vuelta, en megajulios."
+    },
+    "abs": {
+      "moduleParameters": "Parámetros del módulo",
+      "showLevel": "Mostrar nivel de ABS",
+      "showLevelDesc": "Muestra el ajuste de ABS de la cabina junto a la placa. Desactivado, solo queda la placa.",
+      "hideWhenCarHasNoAbs": "Ocultar en coches sin ajuste de ABS",
+      "hideWhenCarHasNoAbsDesc": "Quita el widget de la pantalla en un coche sin ajuste de ABS en la cabina. Desactivado, la placa se queda y muestra --."
     },
     "drs": {
       "moduleParameters": "Parámetros del módulo",

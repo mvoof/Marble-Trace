@@ -46,7 +46,7 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 
 Every widget is independently positioned, resized, and styled — drag it anywhere on screen, scale it to taste, adjust opacity so it never blocks your view. Each one ships with its own set of options: toggle individual data fields, switch layouts, pick colours, set visibility rules. You only see what you actually need, exactly where you want it.
 
-- **Driving HUD** — [Race Dash](#race-dash) · [Invisible Dash](#invisible-dash) · [RPM Lights](#rpm-lights) · [Engine Panel](#engine-panel) · [Battery](#battery) · [DRS](#drs) · [Input Trace](#input-trace) · [G-Meter](#g-meter) · [Coach](#coach)
+- **Driving HUD** — [Race Dash](#race-dash) · [Invisible Dash](#invisible-dash) · [RPM Lights](#rpm-lights) · [Engine Panel](#engine-panel) · [Battery](#battery) · [DRS](#drs) · [ABS](#abs) · [Input Trace](#input-trace) · [G-Meter](#g-meter) · [Coach](#coach)
 - **Timing & Standings** — [Standings](#standings) · [Relative](#relative) · [Relative Map](#relative-map) · [Delta](#delta) · [Sector Matrix](#sector-matrix) · [Lap Log](#lap-log) · [Timer](#timer)
 - **Awareness** — [Track Map](#track-map) · [Proximity Radar](#proximity-radar) · [Radar Bar](#radar-bar) · [Close Battle](#close-battle) · [Wheel to Wheel](#wheel-to-wheel) · [Flags (LED/Flat)](#flags-led--flat)
 - **Car & Session** — [Pit Service](#pit-service) · [Pit Line](#pit-line) · [Fuel](#fuel) · [Weather](#weather) · [Incident Tracker](#incident-tracker)
@@ -101,6 +101,14 @@ Hybrid battery charge, what the MGU-K is doing with it — deploying or harvesti
 Drag reduction system state at a glance: armed past the detection point, ready inside the zone, open.
 
 <img src="site/assets/widgets/drs.png" alt="DRS" width="216">
+
+---
+
+### ABS
+
+The ABS setting from the cockpit, 0 to 12, beside a badge that lights yellow while ABS is working and stays a quiet grey otherwise. Switch the level off to keep only the badge; on a car with no ABS adjustment the widget hides itself.
+
+<img src="site/assets/widgets/abs.png" alt="ABS" width="150">
 
 ---
 

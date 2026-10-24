@@ -43,6 +43,8 @@ $widget-label: color-mix(
   var(--widget-text-color, #ffffff) 82%,
   transparent
 );
+// Text set on a solid race-palette fill (a lit badge), where white washes out.
+$widget-text-on-accent: #0b0c0f;
 $widget-text-accent: $race-green;
 $widget-text-sof: $race-lilac;
 $widget-text-best-lap: $race-purple;

@@ -47,6 +47,7 @@ const KEEP_BORDER = process.argv.includes('--border');
 // entry of a widget is its picture on the site; the ones after it are the
 // variants the README shows beside it.
 const SHOTS = {
+  abs: ['AbsWidget', 'active'],
   battery: ['BatteryWidget', 'deploying'],
   'close-battle': ['CloseBattleWidget', 'ahead-behind-and-merged'],
   coach: ['CoachWidget', 'brake-call'],
