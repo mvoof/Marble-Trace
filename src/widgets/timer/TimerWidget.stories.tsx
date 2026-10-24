@@ -98,10 +98,17 @@ const meta: Meta<StoryArgs> = {
         });
       }
 
-      const lapTiming = store.player.lapTiming;
+      // The counter reads the standings frame. The whole field is put on the
+      // story's lap, so the session's lap and the player's own read the same.
+      const driverEntries = store.backendComputed.driverEntries;
 
-      if (lapTiming && args.currentLap !== undefined) {
-        store.player.updateLapTiming({ ...lapTiming, lap: args.currentLap });
+      if (driverEntries && args.currentLap !== undefined) {
+        const lap = args.currentLap;
+
+        store.backendComputed.updateDriverEntries({
+          ...driverEntries,
+          entries: driverEntries.entries.map((entry) => ({ ...entry, lap })),
+        });
       }
 
       store.liveWidgets.updateUserSettings('timer', {

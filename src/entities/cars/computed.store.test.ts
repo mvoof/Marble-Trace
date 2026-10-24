@@ -138,3 +138,33 @@ describe('BackendComputedStore carClassCount', () => {
     expect(store.carClassCount).toBe(0);
   });
 });
+
+describe('BackendComputedStore leaderLap', () => {
+  let session: SessionStore;
+  let store: BackendComputedStore;
+
+  beforeEach(() => {
+    session = new SessionStore();
+    store = new BackendComputedStore(session);
+  });
+
+  it('is null with no field', () => {
+    expect(store.leaderLap).toBeNull();
+  });
+
+  it('is the highest lap in the field, a lapped car included', () => {
+    const laps = [12, 14, 13];
+
+    runInAction(() => {
+      session.updateSessionInfo(makeRoster([1, 1, 1]));
+      store.updateDriverEntries({
+        entries: laps.map(
+          (lap, carIdx) => ({ carIdx, lap }) as unknown as DriverEntry
+        ),
+        playerCarIdx: 0,
+      });
+    });
+
+    expect(store.leaderLap).toBe(14);
+  });
+});

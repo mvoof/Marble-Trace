@@ -93,6 +93,10 @@
   },
   "settingsPanels": {
     "common": {
+      "lapCounter": "圈数计数",
+      "lapCounterDesc": "“赛段”显示比赛本身的圈数，即领跑者的圈数；“自己”显示你当前所在的圈数，被套圈后会更小。",
+      "lapCounter_session": "赛段",
+      "lapCounter_player": "自己",
       "nameColumnWidth": "姓名列宽度",
       "nameColumnWidthDesc": "车手姓名列的宽度（以组件设计比例下的像素计）。表格宽度等于可见列宽度之和，因此缩窄姓名列会缩窄整个表格，而不是缩小文字。",
       "positions": "名次",

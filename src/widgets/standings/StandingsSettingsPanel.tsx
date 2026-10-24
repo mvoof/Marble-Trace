@@ -216,6 +216,7 @@ export const StandingsSettingsPanel = observer(() => {
         <Row setting="showColumnHeaders" />
         <Row setting="showSessionHeader" />
         <Row setting="showSessionTime" />
+        <Row setting="lapCounter" dependsOn="showSessionHeader" />
         <Row setting="showSOF" />
         <Row setting="abbreviateSof" dependsOn="showSOF" />
         <Row setting="showTotalDrivers" />

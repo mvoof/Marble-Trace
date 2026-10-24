@@ -1,4 +1,5 @@
 import {
+  LAP_COUNTER,
   LIC_BADGE_STYLE,
   ROW_PADDING,
   STANDINGS_VIEW_MODE,
@@ -97,6 +98,8 @@ export const STANDINGS_SETTINGS = defineSettings('standings', {
   showSessionHeader: bool(true),
   /** Session time remaining (or elapsed) in the header, same clock as the Timer widget. */
   showSessionTime: bool(true),
+  /** Whose lap the header counts: the race's (the leader's) or the player's. */
+  lapCounter: choice(LAP_COUNTER, 'session', { label: 'common.lapCounter' }),
   showWeather: bool(true),
   showSOF: bool(true),
   /**

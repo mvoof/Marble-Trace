@@ -93,6 +93,10 @@
   },
   "settingsPanels": {
     "common": {
+      "lapCounter": "Contador de Vueltas",
+      "lapCounterDesc": "Sesión cuenta la vuelta de la carrera, la del líder. Propia cuenta la vuelta en la que estás, que es menor si te han doblado.",
+      "lapCounter_session": "Sesión",
+      "lapCounter_player": "Propia",
       "nameColumnWidth": "Ancho de la Columna de Nombre",
       "nameColumnWidthDesc": "Ancho de la columna del nombre del piloto, en píxeles a la escala de diseño del widget. La tabla mide exactamente lo que suman sus columnas visibles, así que estrechar el nombre estrecha toda la tabla en lugar de reducir el texto.",
       "positions": "Posiciones",

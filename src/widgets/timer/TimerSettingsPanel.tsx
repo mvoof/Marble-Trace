@@ -23,6 +23,8 @@ export const TimerSettingsPanel = observer(() => {
         <Row setting="showLaps" />
       </div>
 
+      <Row setting="lapCounter" dependsOn="showLaps" />
+
       <div className={styles.fieldGroup}>
         <Row setting="showPosition" />
       </div>
