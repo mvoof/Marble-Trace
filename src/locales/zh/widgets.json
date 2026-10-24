@@ -277,7 +277,11 @@
       "colorMode": "颜色模式",
       "colorMode_mono": "单色",
       "colorMode_simple": "简单",
-      "colorMode_advanced": "高级"
+      "colorMode_advanced": "高级",
+      "showRings": "刻度环",
+      "showRingsDesc": "G 值圆环及其数字。",
+      "showAxes": "坐标轴",
+      "showAxesDesc": "穿过中心的十字线。"
     },
     "inputTrace": {
       "showThrottle": "油门",

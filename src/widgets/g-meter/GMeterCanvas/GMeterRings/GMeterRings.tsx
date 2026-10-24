@@ -31,7 +31,8 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
   const widgetId = useWidgetInstanceId('g-meter');
   const liveWidgets = useLiveWidgetsStore();
 
-  const { scale } = useWidgetSettings<GMeterWidgetSettings>('g-meter');
+  const { scale, showRings, showAxes } =
+    useWidgetSettings<GMeterWidgetSettings>('g-meter');
   const fontScale =
     liveWidgets.getWidget(widgetId)?.userSettings.fontScale ?? 1;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -67,45 +68,50 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
     // The rim track in CSS closes the dial, so every scale ring is dashed.
     ctx.setLineDash(GRID_DASH_PX);
 
-    for (let gValue = 1; gValue <= scale; gValue++) {
-      const ringRadius = gValue * pxPerG;
-      const label = String(gValue);
-      const labelWidth = ctx.measureText(label).width;
-      // The number stands in the ring rather than beside it, so the ring is cut
-      // where the glyphs sit instead of being drawn through them.
-      const halfGap = Math.min(
-        Math.PI / 3,
-        (labelWidth / 2 + RING_LABEL_GAP_PX) / ringRadius
-      );
+    if (showRings) {
+      for (let gValue = 1; gValue <= scale; gValue++) {
+        const ringRadius = gValue * pxPerG;
+        const label = String(gValue);
+        const labelWidth = ctx.measureText(label).width;
+        // The number stands in the ring rather than beside it, so the ring is cut
+        // where the glyphs sit instead of being drawn through them.
+        const halfGap = Math.min(
+          Math.PI / 3,
+          (labelWidth / 2 + RING_LABEL_GAP_PX) / ringRadius
+        );
 
-      ctx.beginPath();
-      ctx.arc(
-        cx,
-        cy,
-        ringRadius,
-        RING_LABEL_ANGLE + halfGap,
-        RING_LABEL_ANGLE - halfGap + Math.PI * 2
-      );
-      ctx.strokeStyle = GRID_RING_COLOR;
-      ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(
+          cx,
+          cy,
+          ringRadius,
+          RING_LABEL_ANGLE + halfGap,
+          RING_LABEL_ANGLE - halfGap + Math.PI * 2
+        );
+        ctx.strokeStyle = GRID_RING_COLOR;
+        ctx.stroke();
 
-      ctx.fillStyle = GRID_LABEL_COLOR;
-      ctx.fillText(
-        label,
-        cx + Math.cos(RING_LABEL_ANGLE) * ringRadius,
-        cy + Math.sin(RING_LABEL_ANGLE) * ringRadius
-      );
+        ctx.fillStyle = GRID_LABEL_COLOR;
+        ctx.fillText(
+          label,
+          cx + Math.cos(RING_LABEL_ANGLE) * ringRadius,
+          cy + Math.sin(RING_LABEL_ANGLE) * ringRadius
+        );
+      }
     }
 
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - radius);
-    ctx.lineTo(cx, cy + radius);
-    ctx.moveTo(cx - radius, cy);
-    ctx.lineTo(cx + radius, cy);
-    ctx.strokeStyle = GRID_AXIS_COLOR;
-    ctx.stroke();
+    if (showAxes) {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - radius);
+      ctx.lineTo(cx, cy + radius);
+      ctx.moveTo(cx - radius, cy);
+      ctx.lineTo(cx + radius, cy);
+      ctx.strokeStyle = GRID_AXIS_COLOR;
+      ctx.stroke();
+    }
+
     ctx.setLineDash([]);
-  }, [width, height, scale, fontScale]);
+  }, [width, height, scale, showRings, showAxes, fontScale]);
 
   return (
     <canvas

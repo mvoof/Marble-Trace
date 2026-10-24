@@ -277,7 +277,11 @@
       "colorMode": "Color Mode",
       "colorMode_mono": "Mono",
       "colorMode_simple": "Simple",
-      "colorMode_advanced": "Advanced"
+      "colorMode_advanced": "Advanced",
+      "showRings": "Scale rings",
+      "showRingsDesc": "The G rings and their numbers.",
+      "showAxes": "Axes",
+      "showAxesDesc": "The crosshair through the centre."
     },
     "inputTrace": {
       "showThrottle": "Throttle",

@@ -47,6 +47,8 @@ export const GMeterSettingsPanel = observer(() => {
       <Row setting="displayMode" stacked />
       <ScaleRow />
       <Row setting="colorMode" stacked />
+      <Row setting="showRings" />
+      <Row setting="showAxes" />
     </Card>
   );
 });
