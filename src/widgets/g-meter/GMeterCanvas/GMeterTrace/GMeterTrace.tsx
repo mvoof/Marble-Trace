@@ -1,22 +1,19 @@
 import { useRef, useCallback, useLayoutEffect } from 'react';
 
 import { useReactiveCanvasLoop } from '@shared/hooks/useReactiveCanvasLoop';
-import {
-  fillFixedDigits,
-  measureFixedDigits,
-  resizeCanvasToDpr,
-} from '@shared/lib/canvas';
+import { fillFixedDigits, resizeCanvasToDpr } from '@shared/lib/canvas';
 import {
   COLOR_TURN,
   ENVELOPE_SPREAD,
   G_CONSTANT,
   RADIUS_RATIO,
+  RIM_WIDTH_PX,
   TRACE_DURATION_MS,
   computeColor,
+  rimRadiusOf,
   decayOver,
   smoothingOver,
   ticksElapsed,
-  toRgba,
 } from '@widgets/g-meter/g-meter-utils';
 import type { EnvelopePoint, TrailPoint } from '@widgets/g-meter/types';
 import type { CarDynamicsFrame } from '@shared/contracts/generated/bindings';
@@ -30,21 +27,18 @@ import type { GMeterWidgetSettings } from '../../settings-schema';
 const BADGE_BASE_WIDTH_PX = 240;
 const BADGE_FONT_SIZE_PX = 18;
 
-/** Thickness of the band across the arc, as a share of the value's font size. */
-const BAND_HEIGHT_RATIO = 1;
-
-/** Clearance either side of the digits before the band starts fading, in px. */
-const BAND_PADDING_PX = 6;
+/** Below this load an axis reads as idle and shows its peak instead. */
+const AXIS_ACTIVE_G = 0.08;
 
 /**
- * How far the band may sweep along the rim, either side of its own axis. Past a
- * quarter turn it reaches the neighbouring axis, which is deliberate — by then
- * it is down to the transparent tail of its own gradient.
+ * How far the rim paint may sweep either side of its own axis, at full scale.
+ * An eighth of a turn, so neighbouring axes meet at the diagonal at most and
+ * never paint over each other.
  */
-const BAND_MAX_SWEEP = ((Math.PI / 2) * 4) / 3;
+const RIM_PAINT_MAX_SWEEP = Math.PI / 4;
 
-/** Peak alpha at the middle of the band, low enough to read digits through. */
-const BAND_ALPHA = 0.16;
+const ACTIVE_VALUE_COLOR = '#ffffff';
+const IDLE_VALUE_COLOR = 'rgba(160, 165, 178, 0.75)';
 
 interface AxisPeaks {
   top: number;
@@ -53,140 +47,68 @@ interface AxisPeaks {
   right: number;
 }
 
+interface AxisReading {
+  /** Where the axis meets the rim, in canvas radians. */
+  angle: number;
+  /** The digits turn to run along the rim on the side axes. */
+  rotation: number;
+  /** The load along the axis, positive when it pulls that way. */
+  liveG: number;
+  peakG: number;
+}
+
+interface RimGeometry {
+  cx: number;
+  cy: number;
+  rimRadius: number;
+  textRadius: number;
+  scale: number;
+  color: string;
+}
+
 /**
- * A curved band centred on an axis: an annulus wedge clipped out of the rim and
- * filled with a conic gradient, which is the one gradient that follows an arc —
- * a linear one across the chord collapses once the sweep grows past a quadrant.
- * Clipping means one fill rather than a run of segments blending into each other
- * at every seam.
- *
- * `digitHalfSweep` is the angle the digits themselves occupy — the band holds
- * full strength across it and fades only past it, so the number never sits on a
- * washed-out edge of its own plate.
+ * One axis's reading: a solid stretch of the rim track centred on the axis, lengthening
+ * with the load, and the number between the scale and the rim — live while the
+ * axis is loaded, its peak in grey while it is not.
  */
-const drawAxisBand = (
+const drawAxisReading = (
   ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  bandRadius: number,
-  centerAngle: number,
-  digitHalfSweep: number,
-  loadRatio: number,
-  bandWidth: number,
-  color: string
+  rim: RimGeometry,
+  { angle, rotation, liveG, peakG }: AxisReading
 ) => {
-  const halfSweep =
-    digitHalfSweep + loadRatio * Math.max(0, BAND_MAX_SWEEP - digitHalfSweep);
-  const innerRadius = bandRadius - bandWidth / 2;
-  const outerRadius = bandRadius + bandWidth / 2;
-  const from = centerAngle - halfSweep;
-  const to = centerAngle + halfSweep;
+  const isActive = liveG > AXIS_ACTIVE_G;
+  const displayG = isActive ? liveG : peakG;
 
-  ctx.save();
-
-  ctx.beginPath();
-  ctx.arc(cx, cy, outerRadius, from, to);
-  ctx.arc(cx, cy, innerRadius, to, from, true);
-  ctx.closePath();
-  ctx.clip();
-
-  // The conic gradient runs a full turn from `from`, so the band's own sweep is
-  // that fraction of it and every stop is placed inside that fraction.
-  const sweepFraction = halfSweep / Math.PI;
-  const plateau = digitHalfSweep / (2 * Math.PI);
-  const gradient = ctx.createConicGradient(from, cx, cy);
-
-  gradient.addColorStop(0, toRgba(color, 0));
-  gradient.addColorStop(
-    Math.max(0, sweepFraction / 2 - plateau),
-    toRgba(color, BAND_ALPHA)
-  );
-  gradient.addColorStop(
-    Math.min(1, sweepFraction / 2 + plateau),
-    toRgba(color, BAND_ALPHA)
-  );
-  gradient.addColorStop(sweepFraction, toRgba(color, 0));
-
-  ctx.fillStyle = gradient;
-  ctx.fillRect(
-    cx - outerRadius,
-    cy - outerRadius,
-    outerRadius * 2,
-    outerRadius * 2
-  );
-
-  ctx.restore();
-};
-
-const drawDynamicAxisIndicator = (
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  radius: number,
-  canvasWidth: number,
-  canvasHeight: number,
-  centerAngle: number,
-  isActive: boolean,
-  activeColor: string,
-  liveG: number,
-  peakG: number,
-  scale: number,
-  rotAngle: number,
-  fontSize: number,
-  scaleRatio: number
-) => {
-  const displayVal = isActive ? liveG : peakG;
-  const valStr = displayVal.toFixed(2);
-
-  // Outer rim radius running right along the circular widget perimeter
-  const rRim = Math.min(canvasWidth, canvasHeight) * 0.485;
-  // Position text exactly in the middle between outer ring and widget rim
-  const textR = (radius + rRim) / 2;
-
-  ctx.font = `700 ${fontSize}px 'Rajdhani', sans-serif`;
-  // Laid out on a fixed digit grid, so the block is the same width whatever
-  // the value reads — the band sized from it holds still too.
-  const textWidth = measureFixedDigits(ctx, valStr);
-
-  const gRatio = Math.min(1, Math.max(0, displayVal / scale));
-
-  // The band runs along the rim behind the digits: it always covers them, then
-  // lengthens along the arc as the load builds — the reading the arc used to
-  // give, now carrying the number instead of underlining it.
   if (isActive) {
-    drawAxisBand(
-      ctx,
-      cx,
-      cy,
-      textR,
-      centerAngle,
-      (textWidth / 2 + BAND_PADDING_PX * scaleRatio) / textR,
-      gRatio,
-      fontSize * BAND_HEIGHT_RATIO,
-      activeColor
+    const loadRatio = Math.min(1, displayG / rim.scale);
+    const halfSweep = loadRatio * RIM_PAINT_MAX_SWEEP;
+
+    ctx.beginPath();
+    ctx.arc(
+      rim.cx,
+      rim.cy,
+      rim.rimRadius,
+      angle - halfSweep,
+      angle + halfSweep
     );
+    ctx.lineWidth = RIM_WIDTH_PX;
+    ctx.lineCap = 'butt';
+    ctx.strokeStyle = rim.color;
+    ctx.stroke();
   }
-
-  // Floating numeric text
-  const tx = cx + Math.cos(centerAngle) * textR;
-  const ty = cy + Math.sin(centerAngle) * textR;
 
   ctx.save();
-  ctx.translate(tx, ty);
-  if (rotAngle !== 0) {
-    ctx.rotate(rotAngle);
+  ctx.translate(
+    rim.cx + Math.cos(angle) * rim.textRadius,
+    rim.cy + Math.sin(angle) * rim.textRadius
+  );
+
+  if (rotation !== 0) {
+    ctx.rotate(rotation);
   }
 
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-
-  if (isActive) {
-    ctx.fillStyle = '#ffffff';
-  } else {
-    ctx.fillStyle = 'rgba(160, 165, 178, 0.75)';
-  }
-
-  fillFixedDigits(ctx, valStr, 0, 0);
+  ctx.fillStyle = isActive ? ACTIVE_VALUE_COLOR : IDLE_VALUE_COLOR;
+  fillFixedDigits(ctx, displayG.toFixed(2), 0, 0);
   ctx.restore();
 };
 
@@ -204,88 +126,51 @@ const drawAxisBadges = (
   fontScale: number,
   color: string
 ) => {
-  const scaleRatio = (canvasWidth / BADGE_BASE_WIDTH_PX) * fontScale;
-  const fontSize = Math.max(8, Math.round(BADGE_FONT_SIZE_PX * scaleRatio));
-
-  // Top (Brake / Decel): active when lonG < -0.08
-  const isTopActive = lonG < -0.08;
-  drawDynamicAxisIndicator(
-    ctx,
+  const widthRatio = canvasWidth / BADGE_BASE_WIDTH_PX;
+  const fontSize = Math.max(
+    8,
+    Math.round(BADGE_FONT_SIZE_PX * widthRatio * fontScale)
+  );
+  const rimRadius = rimRadiusOf(canvasWidth, canvasHeight);
+  const rim: RimGeometry = {
     cx,
     cy,
-    radius,
-    canvasWidth,
-    canvasHeight,
-    -Math.PI / 2,
-    isTopActive,
-    color,
-    Math.abs(lonG),
-    peaks.top,
+    rimRadius,
+    // The numbers sit halfway between the outer scale ring and the rim.
+    textRadius: (radius + rimRadius) / 2,
     scale,
-    0,
-    fontSize,
-    scaleRatio
-  );
+    color,
+  };
 
-  // Bottom (Accel): active when lonG > 0.08
-  const isBottomActive = lonG > 0.08;
-  drawDynamicAxisIndicator(
-    ctx,
-    cx,
-    cy,
-    radius,
-    canvasWidth,
-    canvasHeight,
-    Math.PI / 2,
-    isBottomActive,
-    color,
-    lonG,
-    peaks.bottom,
-    scale,
-    0,
-    fontSize,
-    scaleRatio
-  );
+  ctx.font = `700 ${fontSize}px 'Rajdhani', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
 
-  // Left (Left Turn): active when latG < -0.08
-  const isLeftActive = latG < -0.08;
-  drawDynamicAxisIndicator(
-    ctx,
-    cx,
-    cy,
-    radius,
-    canvasWidth,
-    canvasHeight,
-    Math.PI,
-    isLeftActive,
-    color,
-    Math.abs(latG),
-    peaks.left,
-    scale,
-    -Math.PI / 2,
-    fontSize,
-    scaleRatio
-  );
-
-  // Right (Right Turn): active when latG > 0.08
-  const isRightActive = latG > 0.08;
-  drawDynamicAxisIndicator(
-    ctx,
-    cx,
-    cy,
-    radius,
-    canvasWidth,
-    canvasHeight,
-    0,
-    isRightActive,
-    color,
-    latG,
-    peaks.right,
-    scale,
-    Math.PI / 2,
-    fontSize,
-    scaleRatio
-  );
+  // Braking pulls the dot up, acceleration down; the side axes read vertically.
+  drawAxisReading(ctx, rim, {
+    angle: -Math.PI / 2,
+    rotation: 0,
+    liveG: -lonG,
+    peakG: peaks.top,
+  });
+  drawAxisReading(ctx, rim, {
+    angle: Math.PI / 2,
+    rotation: 0,
+    liveG: lonG,
+    peakG: peaks.bottom,
+  });
+  drawAxisReading(ctx, rim, {
+    angle: Math.PI,
+    rotation: -Math.PI / 2,
+    liveG: -latG,
+    peakG: peaks.left,
+  });
+  drawAxisReading(ctx, rim, {
+    angle: 0,
+    rotation: Math.PI / 2,
+    liveG: latG,
+    peakG: peaks.right,
+  });
 };
 
 interface GMeterTraceProps {

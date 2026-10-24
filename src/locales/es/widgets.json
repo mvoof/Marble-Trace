@@ -277,7 +277,11 @@
       "colorMode": "Modo de color",
       "colorMode_mono": "Mono",
       "colorMode_simple": "Simple",
-      "colorMode_advanced": "Avanzado"
+      "colorMode_advanced": "Avanzado",
+      "showRings": "Anillos de escala",
+      "showRingsDesc": "Los anillos de G y sus números.",
+      "showAxes": "Ejes",
+      "showAxesDesc": "La cruz que pasa por el centro."
     },
     "inputTrace": {
       "showThrottle": "Acelerador",

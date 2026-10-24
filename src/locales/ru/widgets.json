@@ -277,7 +277,11 @@
       "colorMode": "Цветовой режим",
       "colorMode_mono": "Моно",
       "colorMode_simple": "Простой",
-      "colorMode_advanced": "Детальный"
+      "colorMode_advanced": "Детальный",
+      "showRings": "Кольца шкалы",
+      "showRingsDesc": "Кольца перегрузки и их цифры.",
+      "showAxes": "Оси",
+      "showAxesDesc": "Перекрестие через центр."
     },
     "inputTrace": {
       "showThrottle": "Газ",

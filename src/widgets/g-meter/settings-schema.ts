@@ -1,4 +1,5 @@
 import {
+  bool,
   choice,
   defineSettings,
   type SettingsOf,
@@ -15,6 +16,9 @@ export const G_METER_SETTINGS = defineSettings('gMeter', {
   /** The G the outer ring stands for. */
   scale: choice([2, 3, 4, 5], 4),
   colorMode: choice(G_METER_COLOR_MODE, 'advanced'),
+  /** The scale rings and the numbers on them. */
+  showRings: bool(true),
+  showAxes: bool(true),
 });
 
 export type GMeterWidgetSettings = SettingsOf<typeof G_METER_SETTINGS.shape>;

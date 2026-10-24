@@ -3,7 +3,11 @@ import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
-  AXIS_OVERHANG,
+  GRID_AXIS_COLOR,
+  GRID_DASH_PX,
+  GRID_LABEL_COLOR,
+  GRID_LINE_WIDTH_PX,
+  GRID_RING_COLOR,
   RADIUS_RATIO,
   RING_LABEL_ANGLE,
   RING_LABEL_GAP_PX,
@@ -15,10 +19,6 @@ import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import type { GMeterWidgetSettings } from '../../settings-schema';
 
-const RING_COLOR = 'rgba(42,43,48,0.8)';
-const OUTER_RING_COLOR = 'rgba(72,74,82,1)';
-const AXIS_COLOR = 'rgba(64,66,74,0.85)';
-const RING_LABEL_COLOR = 'rgba(120,120,130,0.7)';
 const LABEL_BASE_WIDTH_PX = 240;
 const LABEL_BASE_SIZE_PX = 14;
 
@@ -31,7 +31,8 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
   const widgetId = useWidgetInstanceId('g-meter');
   const liveWidgets = useLiveWidgetsStore();
 
-  const { scale } = useWidgetSettings<GMeterWidgetSettings>('g-meter');
+  const { scale, showRings, showAxes } =
+    useWidgetSettings<GMeterWidgetSettings>('g-meter');
   const fontScale =
     liveWidgets.getWidget(widgetId)?.userSettings.fontScale ?? 1;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -63,48 +64,54 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
     ctx.font = `600 ${labelSize}px 'Rajdhani', sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = GRID_LINE_WIDTH_PX;
+    // The rim track in CSS closes the dial, so every scale ring is dashed.
+    ctx.setLineDash(GRID_DASH_PX);
 
-    for (let gValue = 1; gValue <= scale; gValue++) {
-      const ringRadius = gValue * pxPerG;
-      const label = String(gValue);
-      const labelWidth = ctx.measureText(label).width;
-      // The number stands in the ring rather than beside it, so the ring is cut
-      // where the glyphs sit instead of being drawn through them.
-      const halfGap = Math.min(
-        Math.PI / 3,
-        (labelWidth / 2 + RING_LABEL_GAP_PX) / ringRadius
-      );
+    if (showRings) {
+      for (let gValue = 1; gValue <= scale; gValue++) {
+        const ringRadius = gValue * pxPerG;
+        const label = String(gValue);
+        const labelWidth = ctx.measureText(label).width;
+        // The number stands in the ring rather than beside it, so the ring is cut
+        // where the glyphs sit instead of being drawn through them.
+        const halfGap = Math.min(
+          Math.PI / 3,
+          (labelWidth / 2 + RING_LABEL_GAP_PX) / ringRadius
+        );
 
-      ctx.beginPath();
-      ctx.arc(
-        cx,
-        cy,
-        ringRadius,
-        RING_LABEL_ANGLE + halfGap,
-        RING_LABEL_ANGLE - halfGap + Math.PI * 2
-      );
-      ctx.strokeStyle = gValue === scale ? OUTER_RING_COLOR : RING_COLOR;
-      ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(
+          cx,
+          cy,
+          ringRadius,
+          RING_LABEL_ANGLE + halfGap,
+          RING_LABEL_ANGLE - halfGap + Math.PI * 2
+        );
+        ctx.strokeStyle = GRID_RING_COLOR;
+        ctx.stroke();
 
-      ctx.fillStyle = RING_LABEL_COLOR;
-      ctx.fillText(
-        label,
-        cx + Math.cos(RING_LABEL_ANGLE) * ringRadius,
-        cy + Math.sin(RING_LABEL_ANGLE) * ringRadius
-      );
+        ctx.fillStyle = GRID_LABEL_COLOR;
+        ctx.fillText(
+          label,
+          cx + Math.cos(RING_LABEL_ANGLE) * ringRadius,
+          cy + Math.sin(RING_LABEL_ANGLE) * ringRadius
+        );
+      }
     }
 
-    const axisReach = radius * AXIS_OVERHANG;
+    if (showAxes) {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - radius);
+      ctx.lineTo(cx, cy + radius);
+      ctx.moveTo(cx - radius, cy);
+      ctx.lineTo(cx + radius, cy);
+      ctx.strokeStyle = GRID_AXIS_COLOR;
+      ctx.stroke();
+    }
 
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - axisReach);
-    ctx.lineTo(cx, cy + axisReach);
-    ctx.moveTo(cx - axisReach, cy);
-    ctx.lineTo(cx + axisReach, cy);
-    ctx.strokeStyle = AXIS_COLOR;
-    ctx.stroke();
-  }, [width, height, scale, fontScale]);
+    ctx.setLineDash([]);
+  }, [width, height, scale, showRings, showAxes, fontScale]);
 
   return (
     <canvas

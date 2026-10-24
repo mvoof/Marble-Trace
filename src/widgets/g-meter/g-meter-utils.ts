@@ -40,8 +40,24 @@ export const decayOver = (ticks: number): number => FADING_DECAY ** ticks;
 export const ENVELOPE_SPREAD = 10;
 export const RADIUS_RATIO = 0.78;
 
-/** The axes extend to the outer scale ring. */
-export const AXIS_OVERHANG = 1.0;
+/**
+ * Width of the rim track, in px. The track itself is CSS (`.root::before` in
+ * `GMeterWidget.module.scss`, the same number); the axis readings paint over
+ * it on the canvas, so the two must stay equal.
+ */
+export const RIM_WIDTH_PX = 3;
+
+/** The radius the rim track runs along, through the middle of its width. */
+export const rimRadiusOf = (width: number, height: number): number =>
+  Math.min(width, height) / 2 - RIM_WIDTH_PX / 2;
+
+// The grid is a reference, not a reading: faint dashed hairlines like the
+// radar scope's, so the trace and the rim paint are what the eye lands on.
+export const GRID_RING_COLOR = 'rgba(250,250,250,0.1)';
+export const GRID_AXIS_COLOR = 'rgba(250,250,250,0.08)';
+export const GRID_LABEL_COLOR = 'rgba(250,250,250,0.4)';
+export const GRID_LINE_WIDTH_PX = 0.75;
+export const GRID_DASH_PX = [2, 4];
 
 /**
  * Ring numbers sit on the 45° diagonal of the upper-right quadrant instead of
@@ -94,21 +110,4 @@ export const computeColor = (
 
     return `rgb(${r},${g},${b})`;
   }
-};
-
-/**
- * The same color at a given alpha. `computeColor` hands back either a palette
- * hex or an interpolated `rgb(...)`, and a gradient needs both ends spelled out
- * with an alpha of their own — a stop of `transparent` fades through black.
- */
-export const toRgba = (color: string, alpha: number): string => {
-  if (color.startsWith('#')) {
-    const red = parseInt(color.slice(1, 3), 16);
-    const green = parseInt(color.slice(3, 5), 16);
-    const blue = parseInt(color.slice(5, 7), 16);
-
-    return `rgba(${red},${green},${blue},${alpha})`;
-  }
-
-  return color.replace('rgb(', 'rgba(').replace(')', `,${alpha})`);
 };
