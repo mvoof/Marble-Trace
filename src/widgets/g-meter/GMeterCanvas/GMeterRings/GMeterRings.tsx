@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
-  AXIS_OVERHANG,
   RADIUS_RATIO,
+  RIM_RADIUS_RATIO,
   RING_LABEL_ANGLE,
   RING_LABEL_GAP_PX,
 } from '@widgets/g-meter/g-meter-utils';
@@ -15,10 +15,14 @@ import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import type { GMeterWidgetSettings } from '../../settings-schema';
 
-const RING_COLOR = 'rgba(42,43,48,0.8)';
-const OUTER_RING_COLOR = 'rgba(72,74,82,1)';
-const AXIS_COLOR = 'rgba(64,66,74,0.85)';
-const RING_LABEL_COLOR = 'rgba(120,120,130,0.7)';
+// The grid is a reference, not a reading: hairlines in the radar scope's ink,
+// so the trace and the rim paint are what the eye lands on.
+const RING_COLOR = 'rgba(250,250,250,0.08)';
+const OUTER_RING_COLOR = 'rgba(250,250,250,0.16)';
+const AXIS_COLOR = 'rgba(250,250,250,0.07)';
+const RIM_TRACK_COLOR = 'rgba(250,250,250,0.06)';
+const RING_LABEL_COLOR = 'rgba(250,250,250,0.4)';
+const HAIRLINE_WIDTH_PX = 0.75;
 const LABEL_BASE_WIDTH_PX = 240;
 const LABEL_BASE_SIZE_PX = 14;
 
@@ -63,7 +67,7 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
     ctx.font = `600 ${labelSize}px 'Rajdhani', sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = HAIRLINE_WIDTH_PX;
 
     for (let gValue = 1; gValue <= scale; gValue++) {
       const ringRadius = gValue * pxPerG;
@@ -95,14 +99,18 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
       );
     }
 
-    const axisReach = radius * AXIS_OVERHANG;
-
     ctx.beginPath();
-    ctx.moveTo(cx, cy - axisReach);
-    ctx.lineTo(cx, cy + axisReach);
-    ctx.moveTo(cx - axisReach, cy);
-    ctx.lineTo(cx + axisReach, cy);
+    ctx.moveTo(cx, cy - radius);
+    ctx.lineTo(cx, cy + radius);
+    ctx.moveTo(cx - radius, cy);
+    ctx.lineTo(cx + radius, cy);
     ctx.strokeStyle = AXIS_COLOR;
+    ctx.stroke();
+
+    // The track the axis readings are painted along.
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.min(width, height) * RIM_RADIUS_RATIO, 0, Math.PI * 2);
+    ctx.strokeStyle = RIM_TRACK_COLOR;
     ctx.stroke();
   }, [width, height, scale, fontScale]);
 

@@ -40,8 +40,11 @@ export const decayOver = (ticks: number): number => FADING_DECAY ** ticks;
 export const ENVELOPE_SPREAD = 10;
 export const RADIUS_RATIO = 0.78;
 
-/** The axes extend to the outer scale ring. */
-export const AXIS_OVERHANG = 1.0;
+/**
+ * The rim the axis readings are painted on, as a share of half the plate:
+ * just inside its edge, so the paint never reaches the clipped corner.
+ */
+export const RIM_RADIUS_RATIO = 0.485;
 
 /**
  * Ring numbers sit on the 45° diagonal of the upper-right quadrant instead of
@@ -94,21 +97,4 @@ export const computeColor = (
 
     return `rgb(${r},${g},${b})`;
   }
-};
-
-/**
- * The same color at a given alpha. `computeColor` hands back either a palette
- * hex or an interpolated `rgb(...)`, and a gradient needs both ends spelled out
- * with an alpha of their own — a stop of `transparent` fades through black.
- */
-export const toRgba = (color: string, alpha: number): string => {
-  if (color.startsWith('#')) {
-    const red = parseInt(color.slice(1, 3), 16);
-    const green = parseInt(color.slice(3, 5), 16);
-    const blue = parseInt(color.slice(5, 7), 16);
-
-    return `rgba(${red},${green},${blue},${alpha})`;
-  }
-
-  return color.replace('rgb(', 'rgba(').replace(')', `,${alpha})`);
 };
