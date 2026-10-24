@@ -54,7 +54,6 @@ export const rimRadiusOf = (width: number, height: number): number =>
 // The grid is a reference, not a reading: faint dashed hairlines like the
 // radar scope's, so the trace and the rim paint are what the eye lands on.
 export const GRID_RING_COLOR = 'rgba(250,250,250,0.1)';
-export const GRID_OUTER_RING_COLOR = 'rgba(250,250,250,0.14)';
 export const GRID_AXIS_COLOR = 'rgba(250,250,250,0.08)';
 export const GRID_LABEL_COLOR = 'rgba(250,250,250,0.4)';
 export const GRID_LINE_WIDTH_PX = 0.75;

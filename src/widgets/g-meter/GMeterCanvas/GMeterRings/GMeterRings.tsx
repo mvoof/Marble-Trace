@@ -7,7 +7,6 @@ import {
   GRID_DASH_PX,
   GRID_LABEL_COLOR,
   GRID_LINE_WIDTH_PX,
-  GRID_OUTER_RING_COLOR,
   GRID_RING_COLOR,
   RADIUS_RATIO,
   RING_LABEL_ANGLE,
@@ -65,6 +64,8 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineWidth = GRID_LINE_WIDTH_PX;
+    // The rim track in CSS closes the dial, so every scale ring is dashed.
+    ctx.setLineDash(GRID_DASH_PX);
 
     for (let gValue = 1; gValue <= scale; gValue++) {
       const ringRadius = gValue * pxPerG;
@@ -77,8 +78,6 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
         (labelWidth / 2 + RING_LABEL_GAP_PX) / ringRadius
       );
 
-      // The outer ring closes the scale, so it is the one solid line.
-      ctx.setLineDash(gValue === scale ? [] : GRID_DASH_PX);
       ctx.beginPath();
       ctx.arc(
         cx,
@@ -87,8 +86,7 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
         RING_LABEL_ANGLE + halfGap,
         RING_LABEL_ANGLE - halfGap + Math.PI * 2
       );
-      ctx.strokeStyle =
-        gValue === scale ? GRID_OUTER_RING_COLOR : GRID_RING_COLOR;
+      ctx.strokeStyle = GRID_RING_COLOR;
       ctx.stroke();
 
       ctx.fillStyle = GRID_LABEL_COLOR;
@@ -99,7 +97,6 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
       );
     }
 
-    ctx.setLineDash(GRID_DASH_PX);
     ctx.beginPath();
     ctx.moveTo(cx, cy - radius);
     ctx.lineTo(cx, cy + radius);
