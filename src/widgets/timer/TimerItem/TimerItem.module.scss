@@ -1,14 +1,7 @@
 .clockItem {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  font-family: $font-mono;
-}
-
-.clockItemRight {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   font-family: $font-mono;
 }
 

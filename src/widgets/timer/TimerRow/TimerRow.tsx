@@ -1,4 +1,4 @@
-﻿import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { useWallClock } from '../useWallClock';
@@ -30,38 +30,47 @@ export const TimerRow = observer(() => {
   const simDate =
     rawSimDate !== null ? formatSimDate(rawSimDate) : NO_DATE_DATA_PLACEHOLDER;
 
-  const showTimeRow = showWallClock || showSimTime;
-  const showDateRow = showPcDate || showSimDate;
+  const hasPcColumn = showWallClock || showPcDate;
+  const hasSimColumn = showSimTime || showSimDate;
 
-  if (!showTimeRow && !showDateRow) {
+  if (!hasPcColumn && !hasSimColumn) {
     return null;
   }
 
+  const hasTwoColumns = hasPcColumn && hasSimColumn;
+  const gridClassName = hasTwoColumns
+    ? `${styles.clockGrid} ${styles.twoColumns}`
+    : styles.clockGrid;
+  const dateRowClassName =
+    showWallClock || showSimTime ? styles.secondRow : styles.firstRow;
+  const pcCellClassName = `${styles.cell} ${styles.pcColumn}`;
+  const simCellClassName = `${styles.cell} ${styles.simColumn}`;
+
   return (
-    <>
-      {showTimeRow && (
-        <div className={styles.clockRow}>
-          {showWallClock && <TimerItem label="PC">{wallClock.time}</TimerItem>}
-
-          {showSimTime && (
-            <TimerItem label="SIM" align={showWallClock ? 'right' : 'left'}>
-              {simTime}
-            </TimerItem>
-          )}
-        </div>
+    <div className={gridClassName}>
+      {showWallClock && (
+        <span className={`${pcCellClassName} ${styles.firstRow}`}>
+          <TimerItem label="PC">{wallClock.time}</TimerItem>
+        </span>
       )}
 
-      {showDateRow && (
-        <div className={styles.clockRow}>
-          {showPcDate && <TimerItem label="DATE">{wallClock.date}</TimerItem>}
-
-          {showSimDate && (
-            <TimerItem label="SIM DATE" align={showPcDate ? 'right' : 'left'}>
-              {simDate}
-            </TimerItem>
-          )}
-        </div>
+      {showPcDate && (
+        <span className={`${pcCellClassName} ${dateRowClassName}`}>
+          <TimerItem label="DATE">{wallClock.date}</TimerItem>
+        </span>
       )}
-    </>
+
+      {showSimTime && (
+        <span className={`${simCellClassName} ${styles.firstRow}`}>
+          <TimerItem label="SIM">{simTime}</TimerItem>
+        </span>
+      )}
+
+      {showSimDate && (
+        <span className={`${simCellClassName} ${dateRowClassName}`}>
+          <TimerItem label="SIM DATE">{simDate}</TimerItem>
+        </span>
+      )}
+    </div>
   );
 });

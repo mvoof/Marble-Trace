@@ -1,7 +1,33 @@
-.clockRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 sp(sm) sp(xxxs);
-  gap: sp(sm);
+.clockGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  padding: sp(xxs) sp(sm) sp(xxxs);
+}
+
+.twoColumns {
+  grid-template-columns: 1fr 1fr;
+}
+
+.cell {
+  padding-bottom: sp(xs);
+}
+
+.pcColumn {
+  grid-column: 1;
+}
+
+.simColumn {
+  grid-column: -2;
+
+  .twoColumns & {
+    border-left: 1px solid $widget-border-subtle;
+  }
+}
+
+.firstRow {
+  grid-row: 1;
+}
+
+.secondRow {
+  grid-row: 2;
 }
