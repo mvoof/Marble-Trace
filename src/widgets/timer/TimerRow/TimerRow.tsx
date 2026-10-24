@@ -56,7 +56,9 @@ export const TimerRow = observer(() => {
 
       {showPcDate && (
         <span className={`${pcCellClassName} ${dateRowClassName}`}>
-          <TimerItem label="DATE">{wallClock.date}</TimerItem>
+          <TimerItem label="DATE" variant="date">
+            {wallClock.date}
+          </TimerItem>
         </span>
       )}
 
@@ -68,7 +70,9 @@ export const TimerRow = observer(() => {
 
       {showSimDate && (
         <span className={`${simCellClassName} ${dateRowClassName}`}>
-          <TimerItem label="SIM DATE">{simDate}</TimerItem>
+          <TimerItem label="SIM DATE" variant="date">
+            {simDate}
+          </TimerItem>
         </span>
       )}
     </div>

@@ -1,7 +1,7 @@
 .clockGrid {
   display: grid;
   grid-template-columns: 1fr;
-  padding: sp(xxs) sp(sm) sp(xxxs);
+  padding: sp(sm) sp(sm) sp(xxxs);
 }
 
 .twoColumns {
@@ -9,7 +9,7 @@
 }
 
 .cell {
-  padding-bottom: sp(xs);
+  padding-bottom: sp(md);
 }
 
 .pcColumn {
