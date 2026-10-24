@@ -7,9 +7,10 @@ import {
   ENVELOPE_SPREAD,
   G_CONSTANT,
   RADIUS_RATIO,
-  RIM_RADIUS_RATIO,
+  RIM_WIDTH_PX,
   TRACE_DURATION_MS,
   computeColor,
+  rimRadiusOf,
   decayOver,
   smoothingOver,
   ticksElapsed,
@@ -28,9 +29,6 @@ const BADGE_FONT_SIZE_PX = 18;
 
 /** Below this load an axis reads as idle and shows its peak instead. */
 const AXIS_ACTIVE_G = 0.08;
-
-/** Thickness of the rim paint at the design width, in px. */
-const RIM_PAINT_WIDTH_PX = 3;
 
 /**
  * How far the rim paint may sweep either side of its own axis, at full scale.
@@ -64,13 +62,12 @@ interface RimGeometry {
   cy: number;
   rimRadius: number;
   textRadius: number;
-  paintWidth: number;
   scale: number;
   color: string;
 }
 
 /**
- * One axis's reading: a solid stretch of rim centred on the axis, lengthening
+ * One axis's reading: a solid stretch of the rim track centred on the axis, lengthening
  * with the load, and the number between the scale and the rim — live while the
  * axis is loaded, its peak in grey while it is not.
  */
@@ -94,7 +91,7 @@ const drawAxisReading = (
       angle - halfSweep,
       angle + halfSweep
     );
-    ctx.lineWidth = rim.paintWidth;
+    ctx.lineWidth = RIM_WIDTH_PX;
     ctx.lineCap = 'butt';
     ctx.strokeStyle = rim.color;
     ctx.stroke();
@@ -134,14 +131,13 @@ const drawAxisBadges = (
     8,
     Math.round(BADGE_FONT_SIZE_PX * widthRatio * fontScale)
   );
-  const rimRadius = Math.min(canvasWidth, canvasHeight) * RIM_RADIUS_RATIO;
+  const rimRadius = rimRadiusOf(canvasWidth, canvasHeight);
   const rim: RimGeometry = {
     cx,
     cy,
     rimRadius,
     // The numbers sit halfway between the outer scale ring and the rim.
     textRadius: (radius + rimRadius) / 2,
-    paintWidth: RIM_PAINT_WIDTH_PX * widthRatio,
     scale,
     color,
   };

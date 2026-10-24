@@ -41,10 +41,24 @@ export const ENVELOPE_SPREAD = 10;
 export const RADIUS_RATIO = 0.78;
 
 /**
- * The rim the axis readings are painted on, as a share of half the plate:
- * just inside its edge, so the paint never reaches the clipped corner.
+ * Width of the rim track, in px. The track itself is CSS (`.root::before` in
+ * `GMeterWidget.module.scss`, the same number); the axis readings paint over
+ * it on the canvas, so the two must stay equal.
  */
-export const RIM_RADIUS_RATIO = 0.485;
+export const RIM_WIDTH_PX = 3;
+
+/** The radius the rim track runs along, through the middle of its width. */
+export const rimRadiusOf = (width: number, height: number): number =>
+  Math.min(width, height) / 2 - RIM_WIDTH_PX / 2;
+
+// The grid is a reference, not a reading: faint dashed hairlines like the
+// radar scope's, so the trace and the rim paint are what the eye lands on.
+export const GRID_RING_COLOR = 'rgba(250,250,250,0.1)';
+export const GRID_OUTER_RING_COLOR = 'rgba(250,250,250,0.14)';
+export const GRID_AXIS_COLOR = 'rgba(250,250,250,0.08)';
+export const GRID_LABEL_COLOR = 'rgba(250,250,250,0.4)';
+export const GRID_LINE_WIDTH_PX = 0.75;
+export const GRID_DASH_PX = [2, 4];
 
 /**
  * Ring numbers sit on the 45° diagonal of the upper-right quadrant instead of

@@ -3,8 +3,13 @@ import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
+  GRID_AXIS_COLOR,
+  GRID_DASH_PX,
+  GRID_LABEL_COLOR,
+  GRID_LINE_WIDTH_PX,
+  GRID_OUTER_RING_COLOR,
+  GRID_RING_COLOR,
   RADIUS_RATIO,
-  RIM_RADIUS_RATIO,
   RING_LABEL_ANGLE,
   RING_LABEL_GAP_PX,
 } from '@widgets/g-meter/g-meter-utils';
@@ -15,14 +20,6 @@ import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import type { GMeterWidgetSettings } from '../../settings-schema';
 
-// The grid is a reference, not a reading: hairlines in the radar scope's ink,
-// so the trace and the rim paint are what the eye lands on.
-const RING_COLOR = 'rgba(250,250,250,0.08)';
-const OUTER_RING_COLOR = 'rgba(250,250,250,0.16)';
-const AXIS_COLOR = 'rgba(250,250,250,0.07)';
-const RIM_TRACK_COLOR = 'rgba(250,250,250,0.06)';
-const RING_LABEL_COLOR = 'rgba(250,250,250,0.4)';
-const HAIRLINE_WIDTH_PX = 0.75;
 const LABEL_BASE_WIDTH_PX = 240;
 const LABEL_BASE_SIZE_PX = 14;
 
@@ -67,7 +64,7 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
     ctx.font = `600 ${labelSize}px 'Rajdhani', sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.lineWidth = HAIRLINE_WIDTH_PX;
+    ctx.lineWidth = GRID_LINE_WIDTH_PX;
 
     for (let gValue = 1; gValue <= scale; gValue++) {
       const ringRadius = gValue * pxPerG;
@@ -80,6 +77,8 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
         (labelWidth / 2 + RING_LABEL_GAP_PX) / ringRadius
       );
 
+      // The outer ring closes the scale, so it is the one solid line.
+      ctx.setLineDash(gValue === scale ? [] : GRID_DASH_PX);
       ctx.beginPath();
       ctx.arc(
         cx,
@@ -88,10 +87,11 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
         RING_LABEL_ANGLE + halfGap,
         RING_LABEL_ANGLE - halfGap + Math.PI * 2
       );
-      ctx.strokeStyle = gValue === scale ? OUTER_RING_COLOR : RING_COLOR;
+      ctx.strokeStyle =
+        gValue === scale ? GRID_OUTER_RING_COLOR : GRID_RING_COLOR;
       ctx.stroke();
 
-      ctx.fillStyle = RING_LABEL_COLOR;
+      ctx.fillStyle = GRID_LABEL_COLOR;
       ctx.fillText(
         label,
         cx + Math.cos(RING_LABEL_ANGLE) * ringRadius,
@@ -99,19 +99,15 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
       );
     }
 
+    ctx.setLineDash(GRID_DASH_PX);
     ctx.beginPath();
     ctx.moveTo(cx, cy - radius);
     ctx.lineTo(cx, cy + radius);
     ctx.moveTo(cx - radius, cy);
     ctx.lineTo(cx + radius, cy);
-    ctx.strokeStyle = AXIS_COLOR;
+    ctx.strokeStyle = GRID_AXIS_COLOR;
     ctx.stroke();
-
-    // The track the axis readings are painted along.
-    ctx.beginPath();
-    ctx.arc(cx, cy, Math.min(width, height) * RIM_RADIUS_RATIO, 0, Math.PI * 2);
-    ctx.strokeStyle = RIM_TRACK_COLOR;
-    ctx.stroke();
+    ctx.setLineDash([]);
   }, [width, height, scale, fontScale]);
 
   return (
