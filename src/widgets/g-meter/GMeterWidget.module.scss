@@ -13,8 +13,9 @@
     content: '';
     position: absolute;
     inset: 0;
-    // A shade lighter than the plate, whatever colour the user gives it.
-    border: 3px solid color-mix(in srgb, var(--widget-bg) 96%, white);
+    // The plate's own colour, a shade lighter: same hue and alpha, whatever
+    // background the user gives it.
+    border: 3px solid oklch(from var(--widget-bg) calc(l + 0.04) c h);
     border-radius: 50%;
     pointer-events: none;
   }
