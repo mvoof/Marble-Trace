@@ -29,7 +29,6 @@ export const LapRow = observer(
         <span
           className={`${styles.lapNum} ${isLive ? styles.lapNumLive : ''} ${isBest ? styles.lapNumBest : ''}`}
         >
-          {isLive && <span className={styles.liveIcon}>▶</span>}
           {lapLabel}
         </span>
 
