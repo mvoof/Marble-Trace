@@ -11,6 +11,9 @@ interface StoryArgs {
   level: number;
   /** A car with no ABS adjustment — the level reads `--`. */
   noAdjustment: boolean;
+  // Widget settings a story sets; the Controls for them come from the schema.
+  hideWhenCarHasNoAbs?: boolean;
+  showLevel?: boolean;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -56,10 +59,12 @@ export const TwoDigitLevel: Story = {
   },
 };
 
+/** A car with no ABS adjustment, the plate kept on screen: it reads `--`. */
 export const NoAdjustment: Story = {
   args: {
     absActive: false,
     noAdjustment: true,
+    hideWhenCarHasNoAbs: false,
   },
 };
 

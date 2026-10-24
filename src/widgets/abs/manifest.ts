@@ -25,6 +25,8 @@ export const ABS_MANIFEST: WidgetManifest = {
   description:
     'The ABS setting from the cockpit, with a badge that lights while ABS is working.',
   resolveLayoutChange: resolveAbsLayout,
+  deriveDesignWidth: (settings) =>
+    computeAbsDesignWidth(settings as unknown as AbsWidgetSettings),
   designWidth: ABS_DESIGN_WIDTH,
   designHeight: 52,
   userSettings: {
