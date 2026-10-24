@@ -102,3 +102,26 @@ describe('WidgetAutoHideStore — wheel to wheel', () => {
     expect(wheelToWheelStore({}).isVisible('wheel-to-wheel')).toBe(false);
   });
 });
+
+const absStore = (dcAbs: number | null, hideWhenCarHasNoAbs = true) =>
+  new WidgetAutoHideStore({
+    liveWidgets: {
+      getWidget: () => ({ id: 'abs', type: 'abs' }),
+      getSettings: () => ({ hideWhenCarHasNoAbs }),
+    },
+    player: observable({ carStatus: { dc_abs: dcAbs } }),
+  } as unknown as Deps);
+
+describe('WidgetAutoHideStore — ABS', () => {
+  it('takes the widget off a car with no ABS adjustment', () => {
+    expect(absStore(null).isVisible('abs')).toBe(false);
+  });
+
+  it('keeps it there when the driver asked for the plate', () => {
+    expect(absStore(null, false).isVisible('abs')).toBe(true);
+  });
+
+  it('shows it on a car with a level, even at zero', () => {
+    expect(absStore(0).isVisible('abs')).toBe(true);
+  });
+});

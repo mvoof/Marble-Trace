@@ -39,6 +39,10 @@ export interface DrsVisibilitySettings {
   hideWhenCarHasNoDrs: boolean;
 }
 
+export interface AbsVisibilitySettings {
+  hideWhenCarHasNoAbs: boolean;
+}
+
 interface PitServiceVisibilitySettings {
   alwaysVisible: boolean;
 }
@@ -114,6 +118,17 @@ export class WidgetAutoHideStore {
       return drs !== 'Unavailable' || !settings.hideWhenUnavailable;
     }
 
+    // The same question for ABS: a car without the cockpit adjustment never
+    // publishes a level, and the plate around an empty body is what to avoid.
+    if (widgetType === 'abs') {
+      const settings = this.settingsOf<AbsVisibilitySettings>(widgetId);
+
+      return (
+        this.root.player.carStatus?.dc_abs != null ||
+        settings.hideWhenCarHasNoAbs === false
+      );
+    }
+
     // Nobody inside the gap threshold means nothing to show, and the plate the
     // container draws around an empty body would say otherwise. Each plate has
     // its own threshold, so the answer is its own instance's store — which
@@ -154,6 +169,7 @@ export class WidgetAutoHideStore {
   private settingsOf = <
     SpecificSettings extends
       | DrsVisibilitySettings
+      | AbsVisibilitySettings
       | FlagDisplaySettings
       | PitServiceVisibilitySettings
       | PitLineVisibilitySettings,

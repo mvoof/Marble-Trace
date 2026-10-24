@@ -1,4 +1,14 @@
 {
+  "assets/widgets/abs.png": {
+    "width": 450,
+    "height": 156,
+    "variants": [
+      {
+        "width": 450,
+        "path": "assets/img/widgets/abs-450.webp"
+      }
+    ]
+  },
   "assets/widgets/battery.png": {
     "width": 840,
     "height": 360,

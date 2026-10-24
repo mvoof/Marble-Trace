@@ -81,6 +81,9 @@
     "battery": {
       "description": "Hybrid charge, what the MGU-K is doing, and the deploy mode where there is one."
     },
+    "abs": {
+      "description": "ABS setting from the cockpit; the badge lights while ABS is working."
+    },
     "drs": {
       "description": "DRS state: armed past the detection point, ready in the zone, open."
     },
@@ -848,6 +851,11 @@
       "showPowerDesc": "Show what the MGU-K is doing and how hard, in kilowatts.",
       "showLapDeploy": "Deploy this lap",
       "showLapDeployDesc": "Show the energy sent from the battery to the MGU-K on this lap, in megajoules."
+    },
+    "abs": {
+      "moduleParameters": "Module parameters",
+      "hideWhenCarHasNoAbs": "Hide on cars without ABS adjustment",
+      "hideWhenCarHasNoAbsDesc": "Take the widget off the screen on a car with no ABS setting in the cockpit. Off, the plate stays and reads --."
     },
     "drs": {
       "moduleParameters": "Module parameters",

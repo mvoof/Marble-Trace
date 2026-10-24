@@ -81,6 +81,9 @@
     "battery": {
       "description": "混合动力电池电量、MGU-K 的工作状态，以及具备选择器的赛车上的释放模式。"
     },
+    "abs": {
+      "description": "座舱中的 ABS 档位；ABS 介入时标牌亮起。"
+    },
     "drs": {
       "description": "DRS 状态：通过检测点后待命、进入区域后可用、已开启。"
     },
@@ -848,6 +851,11 @@
       "showPowerDesc": "以千瓦显示 MGU-K 正在做什么以及强度。",
       "showLapDeploy": "本圈释放量",
       "showLapDeployDesc": "以兆焦显示本圈从电池送往 MGU-K 的能量。"
+    },
+    "abs": {
+      "moduleParameters": "模块参数",
+      "hideWhenCarHasNoAbs": "在无 ABS 调节的车上隐藏",
+      "hideWhenCarHasNoAbsDesc": "在座舱内没有 ABS 设置的车上将小部件移出屏幕。关闭时，面板保留并显示 --。"
     },
     "drs": {
       "moduleParameters": "模块参数",
