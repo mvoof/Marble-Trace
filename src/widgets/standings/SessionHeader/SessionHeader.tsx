@@ -80,7 +80,9 @@ export const SessionHeader = observer(() => {
     currentSession?.sessionLaps,
     currentSession?.sessionType
   );
-  const lapProgress = buildLapProgress(shownLap, totalLaps, !isLapLimited);
+  const lapProgress = settings.showLapProgress
+    ? buildLapProgress(shownLap, totalLaps, !isLapLimited)
+    : null;
 
   // Whether anything precedes the SOF in the left group — a rule with nothing on
   // its left would read as the edge of a missing item.
