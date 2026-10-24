@@ -37,6 +37,10 @@ export const STEERING_WHEEL_STYLE = [
 ] as const;
 export type SteeringWheelStyle = (typeof STEERING_WHEEL_STYLE)[number];
 
+/** Which side of the trace graph the speed block sits on. */
+export const SPEED_BLOCK_SIDE = ['right', 'left'] as const;
+export type SpeedBlockSide = (typeof SPEED_BLOCK_SIDE)[number];
+
 export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
   showTrace: bool(true),
   showSteering: bool(true),
@@ -85,6 +89,11 @@ export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
   steeringZoom: num(1, { min: 1, max: 4, step: 0.5 }),
   /** The car's speed and gear, as a block of their own beside the wheel. */
   showSpeedGear: bool(false),
+  /**
+   * The speed and corner speeds on the right of the graph or on its left.
+   * Without the graph they keep their place beside the wheel.
+   */
+  speedBlockSide: choice(SPEED_BLOCK_SIDE, 'right'),
   /** Tint the gear with the zone colour at high revs. */
   colorizeGearByZone: bool(false, { label: 'common.colorizeGearByZone' }),
   rpmColorHigh: color('#ef4444', { label: 'common.rpmColorHigh' }),
