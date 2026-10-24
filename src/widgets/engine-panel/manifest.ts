@@ -38,6 +38,21 @@ const measure = (
   };
 };
 
+/** The column ceiling the settings ask for, in the mode they are in. */
+const columnCeiling = (settings: Record<string, unknown>): number =>
+  settings.horizontal === false
+    ? Number(settings.verticalColumns ?? 3)
+    : Math.max(1, Number(settings.horizontalColumns ?? 12));
+
+/**
+ * The design width the settings imply. The cells scale by `--wfs =
+ * currentWidth / designWidth` while the rows divide the frame by width units,
+ * so a stored width that disagrees with this one draws the values at a size
+ * their cells were never measured for — and they spill into the neighbours.
+ */
+const designWidthOf = (settings: Record<string, unknown>): number =>
+  measure(settings, columnCeiling(settings)).width;
+
 const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
   const prevHorizontal = 'horizontal' in prev ? !!prev.horizontal : true;
   const nextHorizontal =
@@ -104,6 +119,14 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
     nextWidth = savedSize.width;
     nextHeight = savedSize.height;
   } else if (cellsChanged) {
+    // The frame grows or shrinks with the cells rather than the cells with the
+    // frame: `--wfs` stays where the user left it, so turning a cell on does
+    // not shrink every value to make room for it.
+    const scale = current.designWidth
+      ? current.currentWidth / current.designWidth
+      : 1;
+
+    nextWidth = Math.round(after.width * scale);
     nextHeight = Math.round(current.currentHeight * (after.rows / before.rows));
   }
 
@@ -136,6 +159,7 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
   designWidth: 687.5,
   designHeight: 124,
   resolveLayoutChange: resolveEnginePanelLayout,
+  deriveDesignWidth: designWidthOf,
   userSettings: {
     enabled: false,
     x: 400,

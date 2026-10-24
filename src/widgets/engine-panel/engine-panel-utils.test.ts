@@ -121,6 +121,41 @@ describe('planEnginePanel', () => {
   });
 });
 
+describe('design width', () => {
+  const settingsWith = (patch: Partial<EnginePanelWidgetSettings>) =>
+    ({ ...ENGINE_PANEL_MANIFEST.userSettings, ...patch }) as Parameters<
+      NonNullable<typeof ENGINE_PANEL_MANIFEST.deriveDesignWidth>
+    >[0];
+
+  const derive = ENGINE_PANEL_MANIFEST.deriveDesignWidth!;
+  const resolve = ENGINE_PANEL_MANIFEST.resolveLayoutChange!;
+
+  it('derives the shipped width from the shipped settings', () => {
+    expect(derive(settingsWith({}))).toBe(ENGINE_PANEL_MANIFEST.designWidth);
+  });
+
+  it('measures the widest row under the column ceiling', () => {
+    // [brake 4] [traction 7] [diff 3, chassis 2, engine 3]
+    expect(derive(settingsWith({ horizontalColumns: 8 }))).toBe(8 * UNIT_WIDTH);
+  });
+
+  it('keeps the scale when a cell is turned off', () => {
+    const prev = settingsWith({});
+    const next = settingsWith({ showEngineMap: false });
+    const designWidth = derive(prev);
+
+    const result = resolve(prev, next, {
+      designWidth,
+      designHeight: ENGINE_PANEL_MANIFEST.designHeight,
+      currentWidth: designWidth * 2,
+      currentHeight: ENGINE_PANEL_MANIFEST.designHeight * 2,
+    });
+
+    expect(result?.designWidth).toBe(derive(next));
+    expect(result?.currentWidth).toBe(derive(next) * 2);
+  });
+});
+
 // The hybrid prototypes move the brake family in quarter points, and a click
 // the driver cannot read is a click they cannot trust.
 describe('formatAdjustment', () => {
