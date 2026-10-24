@@ -84,6 +84,15 @@ export class PlayerStore {
   }
 
   /**
+   * The lap the player is on, off the 10 Hz timing frame but changing once a
+   * lap. Read as a number of its own, it wakes a widget when the lap turns over
+   * rather than on every frame.
+   */
+  get currentLap(): number | null {
+    return this.lapTiming?.lap ?? null;
+  }
+
+  /**
    * Whether the sim has told us where the car is along the pit lane. The
    * progress itself moves while the car rolls; only its presence decides
    * whether there is a lane to draw at all.

@@ -98,13 +98,10 @@ const meta: Meta<StoryArgs> = {
         });
       }
 
-      const carIdx = store.cars.carIdx;
+      const lapTiming = store.player.lapTiming;
 
-      if (carIdx && args.currentLap !== undefined) {
-        const lapByCar = [...carIdx.car_idx_lap];
-
-        lapByCar[sessionInfo?.playerCarIdx ?? 0] = args.currentLap;
-        store.cars.updateCarIdx({ ...carIdx, car_idx_lap: lapByCar });
+      if (lapTiming && args.currentLap !== undefined) {
+        store.player.updateLapTiming({ ...lapTiming, lap: args.currentLap });
       }
 
       store.liveWidgets.updateUserSettings('timer', {
