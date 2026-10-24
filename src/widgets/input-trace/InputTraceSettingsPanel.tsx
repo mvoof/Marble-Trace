@@ -43,6 +43,11 @@ const hasCenterPlate = (settings: InputTraceSettings): boolean =>
   settings.steeringWheelStyle !== 'default' &&
   settings.steeringCenterDisplay !== 'none';
 
+// Left and right of the graph — with no graph, or nothing to place, there is
+// no side to pick.
+const hasSpeedBlockSide = (settings: InputTraceSettings): boolean =>
+  settings.showTrace && (settings.showSpeedGear || settings.showCornerSpeeds);
+
 const hasSpeedTargetColor = (settings: InputTraceSettings): boolean =>
   settings.showSpeedGear && settings.showSpeedTargetColor;
 
@@ -76,6 +81,8 @@ export const InputTraceSettingsPanel = observer(() => {
         <div className={styles.fieldGroup}>
           <Row setting="showTrace" />
         </div>
+
+        <Row setting="speedBlockSide" dependsOn={hasSpeedBlockSide} />
 
         <div className={styles.fieldGroup}>
           <Row setting="showBars" />
@@ -282,19 +289,9 @@ export const InputTraceSettingsPanel = observer(() => {
         <Row setting="showSpeedTargetColor" dependsOn="showSpeedGear" />
         <Row setting="speedOnTargetColor" dependsOn={hasSpeedTargetColor} />
         <Row setting="speedOverTargetColor" dependsOn={hasSpeedTargetColor} />
-      </Card>
 
-      <Card title={t('settingsPanels.common.cornerSpeedsCard')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="showCornerSpeeds" />
-        </div>
+        <Row setting="colorizeGearByZone" dependsOn="showSpeedGear" />
 
-        <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
-        <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
-        <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
-      </Card>
-
-      <Card title={t('settingsPanels.common.gearRpmCard')}>
         <DependentBlock dependsOn={hasGearZoneColor}>
           <RpmZoneColorGrid
             colors={{
@@ -306,9 +303,17 @@ export const InputTraceSettingsPanel = observer(() => {
           />
         </DependentBlock>
 
-        <Row setting="colorizeGearByZone" dependsOn="showSpeedGear" />
-
         <Row setting="blinkAtShift" dependsOn="showSpeedGear" />
+      </Card>
+
+      <Card title={t('settingsPanels.common.cornerSpeedsCard')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="showCornerSpeeds" />
+        </div>
+
+        <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
+        <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
       </Card>
 
       <Card title={t('settingsPanels.common.steeringCard')}>

@@ -1,8 +1,10 @@
-import type { WidgetManifest } from '@shared/contracts/widget-settings';
+import type {
+  ResolveLayoutChange,
+  WidgetManifest,
+} from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
-  makeColumnLayoutResolver,
 } from '@widgets/widget-manifest';
 import {
   INPUT_TRACE_SETTINGS,
@@ -72,19 +74,54 @@ const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {
   );
 };
 
-const resolveInputTraceLayout = makeColumnLayoutResolver<InputTraceSettings>(
-  [
-    'showTrace',
-    'showSteering',
-    'showThrottle',
-    'showBrake',
-    'showClutch',
-    'showCornerSpeeds',
-    'showSpeedGear',
-    'showBars',
-  ],
-  computeInputTraceDesignWidth
-);
+const INPUT_TRACE_LAYOUT_KEYS: (keyof InputTraceSettings)[] = [
+  'showTrace',
+  'showSteering',
+  'showThrottle',
+  'showBrake',
+  'showClutch',
+  'showCornerSpeeds',
+  'showSpeedGear',
+  'showBars',
+];
+
+/**
+ * The widget scales from its height, and the side handles widen only the
+ * graph. So the width it takes is its design width at the height scale, plus
+ * whatever the graph was stretched by — and that stretch goes with the graph:
+ * without it nothing can fill the extra width.
+ *
+ * Both design widths are computed from the settings rather than read from the
+ * stored one, so a width an older build left behind cannot survive a toggle.
+ */
+const resolveInputTraceLayout: ResolveLayoutChange = (prev, next, current) => {
+  const prevSettings = prev as unknown as InputTraceSettings;
+  const nextSettings = next as unknown as InputTraceSettings;
+
+  const changed = INPUT_TRACE_LAYOUT_KEYS.some(
+    (key) => prevSettings[key] !== nextSettings[key]
+  );
+
+  if (!changed) {
+    return null;
+  }
+
+  const heightScale = current.designHeight
+    ? current.currentHeight / current.designHeight
+    : 1;
+  const prevDesignWidth = computeInputTraceDesignWidth(prevSettings);
+  const nextDesignWidth = computeInputTraceDesignWidth(nextSettings);
+
+  const keepsTrace = prevSettings.showTrace && nextSettings.showTrace;
+  const traceStretch = keepsTrace
+    ? Math.max(0, current.currentWidth - prevDesignWidth * heightScale)
+    : 0;
+
+  return {
+    designWidth: nextDesignWidth,
+    currentWidth: Math.round(nextDesignWidth * heightScale + traceStretch),
+  };
+};
 
 const INPUT_TRACE_DESIGN_WIDTH = computeInputTraceDesignWidth(
   INPUT_TRACE_SETTINGS.defaults
@@ -96,6 +133,8 @@ export const INPUT_TRACE_MANIFEST: WidgetManifest = {
   label: 'Input Trace',
   description: 'Live throttle, brake, and clutch inputs.',
   resolveLayoutChange: resolveInputTraceLayout,
+  deriveDesignWidth: (settings) =>
+    computeInputTraceDesignWidth(settings as unknown as InputTraceSettings),
   requiredCapabilities: ['inputs'],
   designWidth: INPUT_TRACE_DESIGN_WIDTH,
   designHeight: 120,
