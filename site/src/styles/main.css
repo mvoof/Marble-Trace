@@ -98,7 +98,7 @@ button:focus-visible {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #4a525d;
-  margin-bottom: 1.25rem;
+  margin: 0 0 1.25rem;
 }
 
 .hero-heading {
