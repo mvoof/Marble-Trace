@@ -49,7 +49,7 @@ Beside the layers sit the runtimes that own their own commands: `chat/`
 
 ## Panics and unsafe
 
-_Held by: clippy (`[lints]` in `src-tauri/Cargo.toml`, `src-tauri/clippy.toml`); review for where the FFI lives._
+_Held by: clippy (crate-level `#![deny]` in `src-tauri/src/lib.rs`, `src-tauri/clippy.toml`); review for where the FFI lives._
 
 - **No `unwrap`/`expect`/`panic!` in production code** — `let … else`, `if let`, `?` or a logged fallback. An invariant that cannot fail goes into the type, not an assertion. Tests keep them: a panic is how a test fails.
 - **FFI sits behind safe types.** windows-rs marks every Win32 function and COM method `unsafe`, so the calls live in one wrapper per API (`input/dinput_ffi.rs`, `input/com_apartment.rs`, `companions/`) and the logic around them has no `unsafe`. A wrapper holds its invariants by construction — a `Joystick` exists only with its data format set, a buffer's size is a `const` assertion.

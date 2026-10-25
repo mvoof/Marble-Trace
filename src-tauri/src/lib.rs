@@ -1,3 +1,20 @@
+// Declared here rather than in `[lints]` of `Cargo.toml`: Even Better TOML
+// (taplo) cannot resolve the external `$ref`s SchemaStore's Cargo schema uses
+// for lint tables and flags every `[lints]` table as invalid. Tests may panic:
+// `clippy.toml` allows unwrap/expect/panic there. `unreachable` is left off:
+// `#[tauri::command]` expands every async command into a never-run
+// `let _check: T = unreachable!();` type check.
+#![deny(unsafe_op_in_unsafe_fn)]
+#![deny(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::undocumented_unsafe_blocks,
+    clippy::missing_safety_doc
+)]
+// A tight group of FFI calls may share a block, with one comment saying why.
+#![warn(clippy::multiple_unsafe_ops_per_block)]
+
 #[cfg(feature = "dev")]
 mod bindings;
 mod capabilities;

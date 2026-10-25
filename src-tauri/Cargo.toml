@@ -112,17 +112,3 @@ dev = [
     "dep:specta-serde",
     "dep:flate2",
 ]
-
-[lints.rust]
-unsafe_op_in_unsafe_fn = "deny"
-
-[lints.clippy]
-unwrap_used = "deny"
-expect_used = "deny"
-panic = "deny"
-# `unreachable` is left off: `#[tauri::command]` expands every async command
-# into a never-run `let _check: T = unreachable!();` type check.
-undocumented_unsafe_blocks = "deny"
-missing_safety_doc = "deny"
-# A tight group of FFI calls may share a block, with one comment saying why.
-multiple_unsafe_ops_per_block = "warn"
