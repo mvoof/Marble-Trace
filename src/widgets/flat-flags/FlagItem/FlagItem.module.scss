@@ -1,138 +1,159 @@
-.item {
-  padding: sp(md) sp(lg);
-  font-size: fs(md);
-  font-weight: 800;
-  font-family: $font-widget;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  letter-spacing: 1px;
+// How far the slanted edges lean across the row's height.
+$slant: ws(12);
+$slash-width: ws(4);
+$slash-gap: ws(4);
+$hazard-stripe: ws(12);
+// The right part of a hazard band that carries the stripes; the label sits
+// on the plain base to its left.
+$hazard-stripes-span: 60%;
 
-  &::before {
-    content: '■';
-    font-size: fs(xxs);
-    margin-right: sp(lg);
-    color: rgba(0, 0, 0, 0.7);
-  }
+// Stripes kept off the band's slanted edge: drawn there, they bleed through
+// its anti-aliased pixels as a dotted line.
+@mixin hazard-band($base, $stripe) {
+  background-color: $base;
+  background-image:
+    linear-gradient(to right, $base, transparent 40%),
+    repeating-linear-gradient(
+      45deg,
+      $stripe 0,
+      $stripe $hazard-stripe,
+      $base $hazard-stripe,
+      $base calc(#{$hazard-stripe} * 2)
+    );
+  background-size: $hazard-stripes-span 100%;
+  background-position: right;
+  background-repeat: no-repeat;
 }
 
-.itemGreen {
-  background-color: $led-green;
-  color: #000;
+// --flag-tone paints the slash and the icon, --flag-band the band behind
+// the label, --flag-ink the label.
+.item {
+  --flag-tone: #{$widget-text-primary};
+  --flag-band: var(--flag-tone);
+  --flag-icon: var(--flag-tone);
+  --flag-ink: #{$widget-text-on-accent};
+
+  display: flex;
+  align-items: stretch;
+  height: ws(40);
+  background: $flag-row-surface;
+  border-radius: radius(lg);
+  overflow: hidden;
+  font-family: $font-widget;
+  text-transform: uppercase;
+}
+
+.iconCell {
+  flex: none;
+  width: ws(48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--flag-icon);
+}
+
+.icon {
+  width: ws(22);
+  height: ws(22);
+}
+
+.slash {
+  flex: none;
+  width: calc(#{$slant} + #{$slash-width});
+  background: var(--flag-tone);
+  clip-path: polygon(#{$slant} 0, 100% 0, calc(100% - #{$slant}) 100%, 0 100%);
+}
+
+// Starts under the slash's far edge, so the gap between them runs parallel.
+.band {
+  flex: 1;
+  min-width: 0;
+  margin-left: calc(#{$slash-gap} - #{$slant});
+  display: flex;
+  align-items: center;
+  padding-left: calc(#{$slant} + #{sp(sm)});
+  background: var(--flag-band);
+  clip-path: polygon(#{$slant} 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.label {
+  font-size: fs(xl);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--flag-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .itemYellow {
-  background-color: $led-yellow;
-  color: #000;
+  --flag-tone: #{$flag-band-yellow};
+}
+
+.itemGreen {
+  --flag-tone: #{$flag-band-green};
 }
 
 .itemRed {
-  background-color: $led-red;
-  color: #fff;
-
-  &::before {
-    color: rgba(255, 255, 255, 0.5);
-  }
+  --flag-tone: #{$flag-band-red};
 }
 
 .itemBlue {
-  background-color: $led-blue;
-  color: #000;
+  --flag-tone: #{$flag-band-blue};
 }
 
 .itemWhite {
-  background-color: $led-white;
-  color: #000;
-}
-
-.itemBlack {
-  background-color: #222;
-  color: #fff;
-
-  &::before {
-    color: rgba(255, 255, 255, 0.6);
-  }
-}
-
-.itemFurled {
-  background-color: #222;
-  color: #fff;
-  border-left: 4px solid $led-yellow;
-
-  &::before {
-    color: $led-yellow;
-  }
-}
-
-.itemMeatball {
-  background-color: $led-orange;
-  color: #000;
+  --flag-tone: #{$flag-band-white};
 }
 
 .itemCheckered {
-  background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 50% / 20px 20px;
-  color: #fff;
-  text-shadow:
-    0 2px 4px #000,
-    0 0 10px #000;
+  --flag-tone: #{$flag-band-checkered};
+  --flag-icon: #{$flag-band-white};
+}
 
-  &::before {
-    color: #fff;
-    text-shadow: none;
-  }
+.itemBlack {
+  --flag-tone: #{$widget-border-default};
+  --flag-icon: #{$flag-band-white};
+  --flag-ink: #{$widget-text-primary};
+  --flag-band: #{$flag-band-black};
+}
+
+.itemMeatball {
+  --flag-tone: #{$flag-band-orange};
+  --flag-ink: #{$widget-text-primary};
+  --flag-band: #{$flag-band-black};
+}
+
+// The slowdown is a penalty, not a track state: a dark band, only the accent
+// in colour. It and DQ keep a band so they still read at background opacity 0.
+.itemFurled {
+  --flag-tone: #{$flag-band-yellow};
+  --flag-icon: #{$flag-band-white};
+  --flag-band: #{$flag-band-black};
+  --flag-ink: #{$widget-text-primary};
 }
 
 .itemDq {
-  background-color: #111;
-  color: $race-red;
+  --flag-tone: #{$flag-band-red};
+  --flag-band: #{$flag-band-black};
+  --flag-ink: #{$flag-band-red};
+}
 
-  &::before {
-    color: rgba($race-red, 0.6);
+.itemDebris {
+  --flag-tone: #{$flag-band-yellow};
+  --flag-icon: #{$flag-band-white};
+
+  .band {
+    @include hazard-band($flag-band-yellow, $flag-band-red);
   }
 }
 
 .itemSc {
-  background: repeating-linear-gradient(
-    45deg,
-    $led-yellow 0,
-    $led-yellow 20px,
-    #111 20px,
-    #111 40px
-  );
-  color: #fff;
-  text-shadow: 0 1px 3px #000;
+  --flag-tone: #{$flag-band-yellow};
+  --flag-icon: #{$flag-band-white};
+  --flag-ink: #{$widget-text-primary};
 
-  &::before {
-    color: #fff;
-    text-shadow: none;
-  }
-}
-
-// `FLAG_BLINK` writes the step on a yellow or a red.
-.item[data-blink-step='1'] {
-  background-color: #2a2a2a !important;
-  color: #555 !important;
-  text-shadow: none !important;
-
-  &::before {
-    color: #333 !important;
-    text-shadow: none !important;
-  }
-}
-
-.itemDebris {
-  background: repeating-linear-gradient(
-    45deg,
-    $led-yellow 0,
-    $led-yellow 20px,
-    $led-red 20px,
-    $led-red 40px
-  );
-  color: #fff;
-  text-shadow: 0 1px 3px #000;
-
-  &::before {
-    color: #fff;
-    text-shadow: none;
+  .band {
+    @include hazard-band($flag-band-hazard, $flag-band-yellow);
   }
 }
