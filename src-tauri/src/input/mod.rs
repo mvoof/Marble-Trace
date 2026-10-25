@@ -3,14 +3,21 @@
 //! A runtime layer like `telemetry/` — it may use `tauri` to emit events, but
 //! never `kerb`, `computations/`, `telemetry/` or `hotkeys/`: an edge reaches
 //! the dispatcher through the [`EdgeHandler`] `lib.rs` hands in. `identity` is pure logic and
-//! is the only part that is unit-tested; `dinput` is unsafe COM and is only
-//! exercised against real hardware.
+//! is the only part that is unit-tested; `dinput_ffi` holds every unsafe COM
+//! call behind safe types, and both it and `dinput` are only exercised
+//! against real hardware.
 
 pub mod commands;
 pub mod identity;
 
 #[cfg(windows)]
+mod com_apartment;
+
+#[cfg(windows)]
 pub mod dinput;
+
+#[cfg(windows)]
+mod dinput_ffi;
 
 #[cfg(windows)]
 mod runtime;

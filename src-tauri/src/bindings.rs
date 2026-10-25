@@ -21,7 +21,7 @@ use specta_typescript::Typescript;
 /// Where the generated files go.
 ///
 /// Anchored on `CARGO_MANIFEST_DIR` (baked in at compile time) rather than a
-/// path relative to the process's cwd: `export()` runs from `run()` whenever
+/// path relative to the process's cwd: `export()` runs at app setup whenever
 /// the `dev` feature is on, including in a `tauri:build:dev` binary launched
 /// from anywhere — a relative `../src/...` only resolved because `cargo
 /// run`/`tauri dev` happen to set cwd to `src-tauri/`, and panicked on
@@ -66,16 +66,29 @@ pub fn collect_types() -> TypeCollection {
     types
 }
 
+/// Prefixes an export error with the file it was writing.
+fn at_path<E: std::fmt::Display>(path: &'static str) -> impl FnOnce(E) -> String {
+    move |error| format!("{path}: {error}")
+}
+
 /// Writes every generated file.
-pub fn export() {
+///
+/// Fails with the path of the first file that could not be written (a locked
+/// or read-only file in `generated/`) instead of panicking: a stale contract
+/// still shows in the diff and in the `ts_values!` tests.
+pub fn export() -> Result<(), String> {
     Typescript::default()
         .export_to(BINDINGS_PATH, &collect_types())
-        .unwrap();
+        .map_err(at_path(BINDINGS_PATH))?;
 
-    crate::model::defaults::export_constants(CONSTANTS_PATH).unwrap();
-    crate::model::events::export_event_names(EVENTS_PATH).unwrap();
-    crate::model::telemetry_events::export_telemetry_event_bits(TELEMETRY_EVENT_BITS_PATH).unwrap();
-    crate::model::hotkeys::export_hotkey_actions(HOTKEY_ACTIONS_PATH).unwrap();
+    crate::model::defaults::export_constants(CONSTANTS_PATH).map_err(at_path(CONSTANTS_PATH))?;
+    crate::model::events::export_event_names(EVENTS_PATH).map_err(at_path(EVENTS_PATH))?;
+    crate::model::telemetry_events::export_telemetry_event_bits(TELEMETRY_EVENT_BITS_PATH)
+        .map_err(at_path(TELEMETRY_EVENT_BITS_PATH))?;
+    crate::model::hotkeys::export_hotkey_actions(HOTKEY_ACTIONS_PATH)
+        .map_err(at_path(HOTKEY_ACTIONS_PATH))?;
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -98,7 +111,7 @@ mod tests {
             return;
         }
 
-        export();
+        export().expect("contract export failed");
     }
 
     /// Cheap guard against an empty or half-built collection.

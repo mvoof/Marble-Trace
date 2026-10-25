@@ -100,6 +100,10 @@ pub const GENERATED_HEADER: &str = "\
 /// is, so an exact match would fail on whitespace. Formatting cannot move a
 /// string literal or rename an export, which is the whole of what matters here.
 #[cfg(all(test, feature = "dev"))]
+#[allow(
+    clippy::panic,
+    reason = "a test helper shared by several test modules; a panic is how it fails"
+)]
 pub fn assert_exported(path: &str, pairs: Vec<(&'static str, String)>) {
     // `oxfmt` rewrites the generated file's double quotes as single ones, so
     // the comparison is made quote-blind rather than pinning the formatter.

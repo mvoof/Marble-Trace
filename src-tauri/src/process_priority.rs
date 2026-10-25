@@ -17,9 +17,10 @@ pub fn lower_to_below_normal() {
         GetCurrentProcess, SetPriorityClass, BELOW_NORMAL_PRIORITY_CLASS,
     };
 
-    // SAFETY: `GetCurrentProcess` returns a pseudo-handle to this process that
-    // needs no closing, and `SetPriorityClass` only reads it.
-    let result = unsafe { SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS) };
+    // SAFETY: no arguments; the pseudo-handle it returns needs no closing.
+    let current_process = unsafe { GetCurrentProcess() };
+    // SAFETY: the pseudo-handle is always valid for the calling process.
+    let result = unsafe { SetPriorityClass(current_process, BELOW_NORMAL_PRIORITY_CLASS) };
 
     match result {
         Ok(()) => tracing::info!("Process priority set to below normal"),

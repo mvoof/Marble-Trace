@@ -155,7 +155,7 @@ impl LapLogState {
         }
 
         // --- Resolve the pending lap ---
-        if self.pending_lap_num.is_some() {
+        if let Some(completed_lap_num) = self.pending_lap_num {
             // Detect if `lap_current_lap_time` has reset to the start of the new lap.
             if lap_current_lap_time < 2.0
                 || lap_current_lap_time < prev_current_lap_time
@@ -179,8 +179,6 @@ impl LapLogState {
             ) {
                 return self.current_frame();
             }
-
-            let completed_lap_num = self.pending_lap_num.unwrap();
 
             // Negative → lap invalidated (pit, SC, penalty, reset).
             if lap_last_lap_time < 0.0 {
@@ -789,5 +787,28 @@ mod tests {
         assert_eq!(frame.history[1].lap_num, 1);
         assert_eq!(frame.history[1].lap_time, Some(90.0));
         assert!(frame.history[1].is_best);
+    }
+
+    #[test]
+    fn pending_lap_survives_unsettled_frames_then_resolves() {
+        let mut s = new_state();
+
+        p(&mut s, 0, -1.0, 0.0);
+        p(&mut s, 1, -1.0, 0.0);
+        p(&mut s, 2, 90.0, 90.0); // lap 1 = 90.0
+
+        // Lap 2 ends; the reading is still lap 1's inside the grace window.
+        let first_wait = push(&mut s, 3, 90.0, 90.0, 0.2, None);
+        let second_wait = push(&mut s, 3, 90.0, 90.0, 0.5, None);
+
+        assert_eq!(first_wait.history.len(), 1);
+        assert_eq!(second_wait.history.len(), 1);
+
+        let frame = push(&mut s, 3, 91.0, 90.0, 0.7, None);
+
+        assert_eq!(frame.history.len(), 2);
+        assert_eq!(frame.history[0].lap_num, 2);
+        assert_eq!(frame.history[0].lap_time, Some(91.0));
+        assert_eq!(frame.history[0].delta, Some(1.0));
     }
 }

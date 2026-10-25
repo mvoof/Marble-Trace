@@ -1,3 +1,20 @@
+// Declared here rather than in `[lints]` of `Cargo.toml`: Even Better TOML
+// (taplo) cannot resolve the external `$ref`s SchemaStore's Cargo schema uses
+// for lint tables and flags every `[lints]` table as invalid. Tests may panic:
+// `clippy.toml` allows unwrap/expect/panic there. `unreachable` is left off:
+// `#[tauri::command]` expands every async command into a never-run
+// `let _check: T = unreachable!();` type check.
+#![deny(unsafe_op_in_unsafe_fn)]
+#![deny(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::undocumented_unsafe_blocks,
+    clippy::missing_safety_doc
+)]
+// A tight group of FFI calls may share a block, with one comment saying why.
+#![warn(clippy::multiple_unsafe_ops_per_block)]
+
 #[cfg(feature = "dev")]
 mod bindings;
 mod capabilities;
@@ -58,9 +75,6 @@ use tauri_plugin_store::StoreExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    #[cfg(feature = "dev")]
-    bindings::export();
-
     let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
 
     let builder = Builder::default()
@@ -86,11 +100,17 @@ pub fn run() {
     #[cfg(feature = "dev")]
     let builder = builder.plugin(tauri_plugin_mcp_bridge::init());
 
-    builder
+    let result = builder
         .setup(|app| {
             let log_file_guard = logging::init(app);
             app.manage(log_file_guard);
+            logging::install_panic_hook();
             logging::log_startup_info(app);
+
+            #[cfg(feature = "dev")]
+            if let Err(error) = bindings::export() {
+                tracing::error!(%error, "contract export failed");
+            }
 
             process_priority::lower_to_below_normal();
 
@@ -276,6 +296,12 @@ pub fn run() {
             }
             _ => {}
         })
-        .run(generate_context!())
-        .expect("error while running tauri application");
+        .run(generate_context!());
+
+    // `run` fails only while building the app, before `setup` has set up
+    // logging, so stderr is the one place the error can still go.
+    if let Err(error) = result {
+        eprintln!("tauri application failed to start: {error}");
+        std::process::exit(1);
+    }
 }

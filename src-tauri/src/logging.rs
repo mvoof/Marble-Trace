@@ -84,6 +84,23 @@ pub fn init(app: &App) -> LogFileGuard {
     LogFileGuard(guard)
 }
 
+/// Routes every panic through `tracing` before the default hook prints it.
+///
+/// A panic in a worker thread (telemetry, input poll, perf run) otherwise only
+/// ends that thread: the overlay freezes and a release build, with no console,
+/// leaves nothing in the log to explain why.
+pub fn install_panic_hook() {
+    let default_hook = std::panic::take_hook();
+
+    std::panic::set_hook(Box::new(move |info| {
+        let thread = std::thread::current();
+        let thread_name = thread.name().unwrap_or("unnamed");
+
+        tracing::error!(thread = thread_name, panic = %info, "panic");
+        default_hook(info);
+    }));
+}
+
 pub fn log_startup_info(app: &App) {
     let version = app.package_info().version.to_string();
     let locale = sys_locale::get_locale().unwrap_or_else(|| "unknown".to_string());
