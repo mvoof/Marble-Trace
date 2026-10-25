@@ -782,6 +782,7 @@ too.
 | `process_priority.rs`                   | asks Windows to schedule the sim ahead of the overlay                                                                                                                                                                          |
 | `mt-model/src/contract/capabilities.rs` | per-sim feature reporting                                                                                                                                                                                                      |
 | `logging.rs`                            | tracing setup — every crate at `info` by default; `RUST_LOG=mt_telemetry=debug npm run tauri:dev`                                                                                                                              |
+| `settings_snapshot.rs`                  | a compact summary of the saved settings, to the log file only (`log_settings_snapshot`)                                                                                                                                        |
 
 ### Twitch: two sources, one owner per event
 

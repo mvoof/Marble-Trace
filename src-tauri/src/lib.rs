@@ -24,6 +24,7 @@ mod logging;
 mod perf_run;
 mod process_priority;
 mod remote_mirror;
+mod settings_snapshot;
 mod sim;
 mod sink;
 mod utils;
