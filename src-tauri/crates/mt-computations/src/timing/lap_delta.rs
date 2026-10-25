@@ -2,11 +2,11 @@ use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 
-use crate::utils::lock_or_recover;
 use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
 use mt_model::sim::player::{CarStatusFrame, LapTimingFrame};
 use mt_model::sim::session::SessionSnapshot;
+use mt_model::utils::lock_or_recover;
 
 const MAX_REASONABLE_SECTOR_TIME: f32 = 120.0;
 const MAX_REASONABLE_LAP_TIME: f32 = 600.0;

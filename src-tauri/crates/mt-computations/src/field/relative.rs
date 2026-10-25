@@ -1,7 +1,9 @@
+use std::sync::Mutex;
+
 use serde::{Deserialize, Serialize};
 
 use crate::field::car_speed::CarSpeedTracker;
-use crate::field::driver_entries::{self, DriverEntry};
+use crate::field::driver_entries::{self, DriverEntriesState, DriverEntry};
 use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
 
@@ -50,16 +52,14 @@ pub fn compute(entries: &[DriverEntry], player_car_idx: i32) -> RelativeFrame {
 /// Runs at 10 Hz — same cadence as standings so the data is always fresh.
 /// Required capability: `RELATIVE` (already set by `IracingSource`).
 pub struct RelativeProcessor {
-    state: std::sync::Mutex<crate::field::driver_entries::DriverEntriesState>,
+    state: Mutex<DriverEntriesState>,
     speeds: CarSpeedTracker,
 }
 
 impl Default for RelativeProcessor {
     fn default() -> Self {
         Self {
-            state: std::sync::Mutex::new(
-                crate::field::driver_entries::DriverEntriesState::default(),
-            ),
+            state: Mutex::new(DriverEntriesState::default()),
             speeds: CarSpeedTracker::default(),
         }
     }
@@ -109,7 +109,7 @@ impl Processor for RelativeProcessor {
 
     fn reset(&mut self) {
         if let Ok(mut locked) = self.state.lock() {
-            *locked = crate::field::driver_entries::DriverEntriesState::default();
+            *locked = DriverEntriesState::default();
         }
 
         self.speeds.reset();

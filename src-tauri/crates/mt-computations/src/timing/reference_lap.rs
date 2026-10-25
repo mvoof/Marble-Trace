@@ -15,6 +15,7 @@ use mt_model::computed::reference_lap::{
     REFERENCE_LAP_BUCKET_COUNT,
 };
 use mt_model::contract::capabilities::Capabilities;
+use mt_model::sim::player::ChassisFrame;
 use tracing::{debug, info, warn};
 
 /// Above this `lap_dist_pct` we consider the car "near the finish line".
@@ -109,7 +110,7 @@ struct PendingLap {
 }
 
 /// Average remaining tread (0.0-1.0, 1.0=fresh) across all sampled tire zones, when any are present.
-fn average_tire_wear(chassis: &mt_model::sim::player::ChassisFrame) -> Option<f32> {
+fn average_tire_wear(chassis: &ChassisFrame) -> Option<f32> {
     let readings = [
         chassis.lf_wear_l,
         chassis.lf_wear_m,
@@ -415,6 +416,8 @@ mod tests {
     use super::*;
     use crate::timing::lap_time_settle::SETTLE_GRACE_S;
     use mt_model::sim::cars::{CarIdxFrame, PaceFormation, PacingFrame};
+    use mt_model::sim::environment::EnvironmentFrame;
+    use mt_model::sim::flags::RaceFlags;
 
     static NO_PACING: PacingFrame = PacingFrame {
         formation: PaceFormation::NotPacing,
@@ -508,7 +511,7 @@ mod tests {
             engine_warnings: None,
             player_car_sl_shift_rpm: vec![],
             player_car_sl_blink_rpm: vec![],
-            flags: mt_model::sim::flags::RaceFlags::default(),
+            flags: RaceFlags::default(),
             dc_abs: None,
             dc_brake_bias: None,
             dc_traction_control: None,
@@ -577,7 +580,7 @@ mod tests {
             session,
             lap_dist_pct,
             last_lap_time,
-            &mt_model::sim::environment::EnvironmentFrame::default(),
+            &EnvironmentFrame::default(),
         )
     }
 
@@ -586,7 +589,7 @@ mod tests {
         session: &SessionSnapshot,
         lap_dist_pct: f32,
         last_lap_time: Option<f32>,
-        environment: &mt_model::sim::environment::EnvironmentFrame,
+        environment: &EnvironmentFrame,
     ) -> Option<ComputedOutput> {
         run_tick_at_speed(
             proc,
@@ -616,8 +619,8 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
-        let chassis = mt_model::sim::player::ChassisFrame::default();
-        let environment = mt_model::sim::environment::EnvironmentFrame::default();
+        let chassis = ChassisFrame::default();
+        let environment = EnvironmentFrame::default();
         let ctx = make_ctx(MakeCtxArgs {
             dynamics: &dynamics,
             inputs: &inputs,
@@ -638,7 +641,7 @@ mod tests {
         session: &SessionSnapshot,
         lap_dist_pct: f32,
         last_lap_time: Option<f32>,
-        environment: &mt_model::sim::environment::EnvironmentFrame,
+        environment: &EnvironmentFrame,
         speed: f32,
     ) -> Option<ComputedOutput> {
         let dynamics = make_dynamics(speed);
@@ -647,7 +650,7 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
-        let chassis = mt_model::sim::player::ChassisFrame::default();
+        let chassis = ChassisFrame::default();
         let ctx = make_ctx(MakeCtxArgs {
             dynamics: &dynamics,
             inputs: &inputs,
@@ -669,19 +672,14 @@ mod tests {
         session: &SessionSnapshot,
         lap_time: f32,
     ) -> Option<ComputedOutput> {
-        cross_line_in(
-            proc,
-            session,
-            lap_time,
-            &mt_model::sim::environment::EnvironmentFrame::default(),
-        )
+        cross_line_in(proc, session, lap_time, &EnvironmentFrame::default())
     }
 
     fn cross_line_in(
         proc: &mut ReferenceLapProcessor,
         session: &SessionSnapshot,
         lap_time: f32,
-        environment: &mt_model::sim::environment::EnvironmentFrame,
+        environment: &EnvironmentFrame,
     ) -> Option<ComputedOutput> {
         assert!(run_tick_in(proc, session, 0.05, None, environment).is_none());
 
@@ -711,8 +709,8 @@ mod tests {
         session: &'a SessionSnapshot,
         car_idx: &'a CarIdxFrame,
         start_positions: &'a HashMap<i32, (i32, i32)>,
-        chassis: &'a mt_model::sim::player::ChassisFrame,
-        environment: &'a mt_model::sim::environment::EnvironmentFrame,
+        chassis: &'a ChassisFrame,
+        environment: &'a EnvironmentFrame,
     }
 
     fn make_ctx(args: MakeCtxArgs) -> ComputeContext {
@@ -767,7 +765,7 @@ mod tests {
     fn the_wrapping_tick_does_not_leak_into_the_completed_lap() {
         let mut proc = ReferenceLapProcessor::default();
         let session = make_session(1);
-        let dry = mt_model::sim::environment::EnvironmentFrame::default();
+        let dry = EnvironmentFrame::default();
 
         drive_segment(&mut proc, &session, 0.005, 0.995);
 
@@ -810,12 +808,12 @@ mod tests {
         car_status.fuel_level = 42.0;
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
-        let chassis = mt_model::sim::player::ChassisFrame {
+        let chassis = ChassisFrame {
             lf_wear_l: Some(0.9),
             rf_wear_l: Some(0.7),
             ..Default::default()
         };
-        let environment = mt_model::sim::environment::EnvironmentFrame {
+        let environment = EnvironmentFrame {
             track_wetness: Some(3),
             ..Default::default()
         };
@@ -887,7 +885,7 @@ mod tests {
             },
         ));
         let session = make_session(1);
-        let wet = mt_model::sim::environment::EnvironmentFrame {
+        let wet = EnvironmentFrame {
             track_wetness: Some(5),
             ..Default::default()
         };
@@ -918,8 +916,8 @@ mod tests {
     fn a_lap_rained_on_part_way_through_counts_as_wet() {
         let mut proc = ReferenceLapProcessor::default();
         let session = make_session(1);
-        let dry = mt_model::sim::environment::EnvironmentFrame::default();
-        let wet = mt_model::sim::environment::EnvironmentFrame {
+        let dry = EnvironmentFrame::default();
+        let wet = EnvironmentFrame {
             track_wetness: Some(4),
             ..Default::default()
         };

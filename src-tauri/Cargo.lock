@@ -2832,6 +2832,7 @@ dependencies = [
 name = "mt-chat"
 version = "0.0.0"
 dependencies = [
+ "dotenvy",
  "futures",
  "keyring",
  "mt-model",

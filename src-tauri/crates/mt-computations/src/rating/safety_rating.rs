@@ -383,9 +383,8 @@ pub struct SafetyRatingState {
 }
 
 impl SafetyRatingState {
-    /// An event with nothing counted yet. Tests build one to follow where the
-    /// state goes; the processor starts its own from the session.
-    #[cfg(any(test, feature = "test-util"))]
+    /// An event with nothing counted yet. The processor starts its own from the
+    /// session; tests, here and in the crates that store the state, build one.
     pub fn empty_for(sub_session_id: i32) -> Self {
         Self {
             sub_session_id,

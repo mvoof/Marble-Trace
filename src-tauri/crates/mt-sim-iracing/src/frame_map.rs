@@ -26,67 +26,67 @@ use std::collections::HashSet;
 /// than `From`: both types are foreign here, and the orphan rule allows a
 /// `From` between them only in the crate that declares one of them.
 pub(crate) trait FromIracing {
-    fn from_iracing(f: &IracingFrame) -> Self;
+    fn from_iracing(frame: &IracingFrame) -> Self;
 }
 
 impl FromIracing for SourceFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
+    fn from_iracing(frame: &IracingFrame) -> Self {
         Self {
-            car_dynamics: CarDynamicsFrame::from_iracing(f),
-            car_inputs: CarInputsFrame::from_iracing(f),
-            car_positions: CarPositionsFrame::from_iracing(f),
-            car_idx: CarIdxFrame::from_iracing(f),
-            chassis: ChassisFrame::from_iracing(f),
-            lap_timing: LapTimingFrame::from_iracing(f),
-            car_status: CarStatusFrame::from_iracing(f),
-            pit_service: PitServiceFrame::from_iracing(f),
-            session: SessionFrame::from_iracing(f),
-            environment: EnvironmentFrame::from_iracing(f),
-            sim_perf: SimPerfFrame::from_iracing(f),
-            pacing: PacingFrame::from_iracing(f),
+            car_dynamics: CarDynamicsFrame::from_iracing(frame),
+            car_inputs: CarInputsFrame::from_iracing(frame),
+            car_positions: CarPositionsFrame::from_iracing(frame),
+            car_idx: CarIdxFrame::from_iracing(frame),
+            chassis: ChassisFrame::from_iracing(frame),
+            lap_timing: LapTimingFrame::from_iracing(frame),
+            car_status: CarStatusFrame::from_iracing(frame),
+            pit_service: PitServiceFrame::from_iracing(frame),
+            session: SessionFrame::from_iracing(frame),
+            environment: EnvironmentFrame::from_iracing(frame),
+            sim_perf: SimPerfFrame::from_iracing(frame),
+            pacing: PacingFrame::from_iracing(frame),
         }
     }
 }
 
 impl FromIracing for SimPerfFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
+    fn from_iracing(frame: &IracingFrame) -> Self {
         Self {
-            frame_rate: Some(f.frame_rate),
-            gpu_usage: Some(f.gpu_usage),
-            cpu_usage_fg: Some(f.cpu_usage_fg),
+            frame_rate: Some(frame.frame_rate),
+            gpu_usage: Some(frame.gpu_usage),
+            cpu_usage_fg: Some(frame.cpu_usage_fg),
         }
     }
 }
 
 impl FromIracing for CarDynamicsFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
+    fn from_iracing(frame: &IracingFrame) -> Self {
         Self {
-            speed: f.speed,
-            rpm: f.rpm,
-            gear: f.gear,
-            steering_wheel_angle: f.steering_wheel_angle,
-            velocity_x: Some(f.velocity_x),
-            velocity_y: Some(f.velocity_y),
-            velocity_z: Some(f.velocity_z),
-            lat_accel: Some(f.lat_accel),
-            long_accel: Some(f.long_accel),
-            yaw: Some(f.yaw),
-            yaw_rate: Some(f.yaw_rate),
-            pitch: Some(f.pitch),
-            roll: Some(f.roll),
-            shift_indicator_pct: Some(f.shift_indicator_pct),
-            shift_grind_rpm: Some(f.shift_grind_rpm),
+            speed: frame.speed,
+            rpm: frame.rpm,
+            gear: frame.gear,
+            steering_wheel_angle: frame.steering_wheel_angle,
+            velocity_x: Some(frame.velocity_x),
+            velocity_y: Some(frame.velocity_y),
+            velocity_z: Some(frame.velocity_z),
+            lat_accel: Some(frame.lat_accel),
+            long_accel: Some(frame.long_accel),
+            yaw: Some(frame.yaw),
+            yaw_rate: Some(frame.yaw_rate),
+            pitch: Some(frame.pitch),
+            roll: Some(frame.roll),
+            shift_indicator_pct: Some(frame.shift_indicator_pct),
+            shift_grind_rpm: Some(frame.shift_grind_rpm),
         }
     }
 }
 
 impl FromIracing for CarInputsFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
+    fn from_iracing(frame: &IracingFrame) -> Self {
         Self {
-            throttle: f.throttle,
-            brake: f.brake,
-            clutch: Some(f.clutch),
-            brake_abs_active: f.brake_abs_active,
+            throttle: frame.throttle,
+            brake: frame.brake,
+            clutch: Some(frame.clutch),
+            brake_abs_active: frame.brake_abs_active,
         }
     }
 }
@@ -102,50 +102,50 @@ fn sanitize_temp(v: f32) -> Option<f32> {
 }
 
 impl FromIracing for CarStatusFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
-        let session_bits = f.session_flags as u32;
-        let player_car_bits = f
+    fn from_iracing(frame: &IracingFrame) -> Self {
+        let session_bits = frame.session_flags as u32;
+        let player_car_bits = frame
             .car_idx_session_flags
-            .get(f.player_car_idx as usize)
+            .get(frame.player_car_idx as usize)
             .map(|&v| v as u32)
             .unwrap_or(0);
 
         Self {
-            fuel_level: f.fuel_level,
-            fuel_level_pct: Some(f.fuel_level_pct),
-            fuel_use_per_hour: Some(f.fuel_use_per_hour),
-            oil_temp: sanitize_temp(f.oil_temp),
-            oil_press: Some(f.oil_press),
-            water_temp: sanitize_temp(f.water_temp),
-            voltage: Some(f.voltage),
-            on_pit_road: Some(f.on_pit_road),
-            is_on_track: Some(f.is_on_track),
-            spotter: Some(spotter_from_iracing(f.car_left_right)),
-            engine_warnings: Some(f.engine_warnings as u32),
-            player_car_sl_shift_rpm: vec![f.player_car_sl_shift_rpm],
-            player_car_sl_blink_rpm: vec![f.player_car_sl_blink_rpm],
+            fuel_level: frame.fuel_level,
+            fuel_level_pct: Some(frame.fuel_level_pct),
+            fuel_use_per_hour: Some(frame.fuel_use_per_hour),
+            oil_temp: sanitize_temp(frame.oil_temp),
+            oil_press: Some(frame.oil_press),
+            water_temp: sanitize_temp(frame.water_temp),
+            voltage: Some(frame.voltage),
+            on_pit_road: Some(frame.on_pit_road),
+            is_on_track: Some(frame.is_on_track),
+            spotter: Some(spotter_from_iracing(frame.car_left_right)),
+            engine_warnings: Some(frame.engine_warnings as u32),
+            player_car_sl_shift_rpm: vec![frame.player_car_sl_shift_rpm],
+            player_car_sl_blink_rpm: vec![frame.player_car_sl_blink_rpm],
             flags: decode_race_flags(session_bits, player_car_bits),
-            dc_abs: Some(f.dc_abs),
-            dc_brake_bias: Some(f.dc_brake_bias),
-            dc_traction_control: Some(f.dc_traction_control),
-            dc_throttle_shape: Some(f.dc_throttle_shape),
-            dc_traction_control_2: Some(f.dc_traction_control2),
-            dc_engine_braking: Some(f.dc_engine_braking),
-            dc_brake_bias_fine: Some(f.dc_brake_bias_fine),
-            dc_peak_brake_bias: Some(f.dc_peak_brake_bias),
-            dc_anti_roll_front: Some(f.dc_anti_roll_front),
-            dc_anti_roll_rear: Some(f.dc_anti_roll_rear),
-            dc_brake_misc: Some(f.dc_brake_misc),
-            dc_diff_entry: Some(f.dc_diff_entry),
-            dc_diff_middle: Some(f.dc_diff_middle),
-            dc_diff_exit: Some(f.dc_diff_exit),
-            energy_ers_battery_pct: Some(f.energy_ers_battery_pct),
-            power_mgu_k: Some(f.power_mgu_k),
-            energy_battery_to_mgu_k_lap: Some(f.energy_battery_to_mgu_k_lap),
-            dc_mguk_deploy_mode: Some(f.dc_mguk_deploy_mode),
-            drs: Some(DrsState::from(f.drs_status)),
-            player_car_my_incident_count: Some(f.player_car_my_incident_count),
-            player_car_team_incident_count: Some(f.player_car_team_incident_count),
+            dc_abs: Some(frame.dc_abs),
+            dc_brake_bias: Some(frame.dc_brake_bias),
+            dc_traction_control: Some(frame.dc_traction_control),
+            dc_throttle_shape: Some(frame.dc_throttle_shape),
+            dc_traction_control_2: Some(frame.dc_traction_control2),
+            dc_engine_braking: Some(frame.dc_engine_braking),
+            dc_brake_bias_fine: Some(frame.dc_brake_bias_fine),
+            dc_peak_brake_bias: Some(frame.dc_peak_brake_bias),
+            dc_anti_roll_front: Some(frame.dc_anti_roll_front),
+            dc_anti_roll_rear: Some(frame.dc_anti_roll_rear),
+            dc_brake_misc: Some(frame.dc_brake_misc),
+            dc_diff_entry: Some(frame.dc_diff_entry),
+            dc_diff_middle: Some(frame.dc_diff_middle),
+            dc_diff_exit: Some(frame.dc_diff_exit),
+            energy_ers_battery_pct: Some(frame.energy_ers_battery_pct),
+            power_mgu_k: Some(frame.power_mgu_k),
+            energy_battery_to_mgu_k_lap: Some(frame.energy_battery_to_mgu_k_lap),
+            dc_mguk_deploy_mode: Some(frame.dc_mguk_deploy_mode),
+            drs: Some(DrsState::from(frame.drs_status)),
+            player_car_my_incident_count: Some(frame.player_car_my_incident_count),
+            player_car_team_incident_count: Some(frame.player_car_team_incident_count),
         }
     }
 }
@@ -217,8 +217,8 @@ impl DeclaredVars {
 }
 
 impl FromIracing for PitServiceFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
-        let flags = f.pit_sv_flags as u32;
+    fn from_iracing(frame: &IracingFrame) -> Self {
+        let flags = frame.pit_sv_flags as u32;
 
         Self {
             flags: Some(flags),
@@ -229,63 +229,63 @@ impl FromIracing for PitServiceFrame {
             add_fuel: flags & PIT_SV_FUEL_FILL != 0,
             clean_windshield: flags & PIT_SV_WINDSHIELD_TEAROFF != 0,
             fast_repair: flags & PIT_SV_FAST_REPAIR != 0,
-            fuel_amount: Some(f.pit_sv_fuel),
-            lf_pressure: Some(f.pit_sv_lfp),
-            rf_pressure: Some(f.pit_sv_rfp),
-            lr_pressure: Some(f.pit_sv_lrp),
-            rr_pressure: Some(f.pit_sv_rrp),
-            tire_compound: Some(f.pit_sv_tire_compound),
-            repair_left_s: Some(f.pit_repair_left),
-            opt_repair_left_s: Some(f.pit_opt_repair_left),
-            tow_time_s: Some(f.player_car_tow_time),
-            fast_repairs_available: Some(f.fast_repair_available),
-            fast_repairs_used: Some(f.player_fast_repairs_used),
-            service_status: Some(f.player_car_pit_sv_status),
-            in_pit_stall: f.player_car_in_pit_stall,
-            service_active: f.pitstop_active,
+            fuel_amount: Some(frame.pit_sv_fuel),
+            lf_pressure: Some(frame.pit_sv_lfp),
+            rf_pressure: Some(frame.pit_sv_rfp),
+            lr_pressure: Some(frame.pit_sv_lrp),
+            rr_pressure: Some(frame.pit_sv_rrp),
+            tire_compound: Some(frame.pit_sv_tire_compound),
+            repair_left_s: Some(frame.pit_repair_left),
+            opt_repair_left_s: Some(frame.pit_opt_repair_left),
+            tow_time_s: Some(frame.player_car_tow_time),
+            fast_repairs_available: Some(frame.fast_repair_available),
+            fast_repairs_used: Some(frame.player_fast_repairs_used),
+            service_status: Some(frame.player_car_pit_sv_status),
+            in_pit_stall: frame.player_car_in_pit_stall,
+            service_active: frame.pitstop_active,
         }
     }
 }
 
 impl FromIracing for ChassisFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
+    fn from_iracing(frame: &IracingFrame) -> Self {
         Self {
             lf_ride_height: None,
             rf_ride_height: None,
             lr_ride_height: None,
             rr_ride_height: None,
-            lf_shock_defl: Some(f.lf_shock_defl),
-            rf_shock_defl: Some(f.rf_shock_defl),
-            lr_shock_defl: Some(f.lr_shock_defl),
-            rr_shock_defl: Some(f.rr_shock_defl),
-            lf_temp_cl: Some(f.lf_temp_cl),
-            lf_temp_cm: Some(f.lf_temp_cm),
-            lf_temp_cr: Some(f.lf_temp_cr),
-            rf_temp_cl: Some(f.rf_temp_cl),
-            rf_temp_cm: Some(f.rf_temp_cm),
-            rf_temp_cr: Some(f.rf_temp_cr),
-            lr_temp_cl: Some(f.lr_temp_cl),
-            lr_temp_cm: Some(f.lr_temp_cm),
-            lr_temp_cr: Some(f.lr_temp_cr),
-            rr_temp_cl: Some(f.rr_temp_cl),
-            rr_temp_cm: Some(f.rr_temp_cm),
-            rr_temp_cr: Some(f.rr_temp_cr),
-            lf_pressure: Some(f.lf_cold_pressure),
-            rf_pressure: Some(f.rf_cold_pressure),
-            lr_pressure: Some(f.lr_cold_pressure),
-            rr_pressure: Some(f.rr_cold_pressure),
-            lf_wear_l: Some(f.lf_wear_l),
-            lf_wear_m: Some(f.lf_wear_m),
-            lf_wear_r: Some(f.lf_wear_r),
-            rf_wear_l: Some(f.rf_wear_l),
-            rf_wear_m: Some(f.rf_wear_m),
-            rf_wear_r: Some(f.rf_wear_r),
-            lr_wear_l: Some(f.lr_wear_l),
-            lr_wear_m: Some(f.lr_wear_m),
-            lr_wear_r: Some(f.lr_wear_r),
-            rr_wear_l: Some(f.rr_wear_l),
-            rr_wear_m: Some(f.rr_wear_m),
-            rr_wear_r: Some(f.rr_wear_r),
+            lf_shock_defl: Some(frame.lf_shock_defl),
+            rf_shock_defl: Some(frame.rf_shock_defl),
+            lr_shock_defl: Some(frame.lr_shock_defl),
+            rr_shock_defl: Some(frame.rr_shock_defl),
+            lf_temp_cl: Some(frame.lf_temp_cl),
+            lf_temp_cm: Some(frame.lf_temp_cm),
+            lf_temp_cr: Some(frame.lf_temp_cr),
+            rf_temp_cl: Some(frame.rf_temp_cl),
+            rf_temp_cm: Some(frame.rf_temp_cm),
+            rf_temp_cr: Some(frame.rf_temp_cr),
+            lr_temp_cl: Some(frame.lr_temp_cl),
+            lr_temp_cm: Some(frame.lr_temp_cm),
+            lr_temp_cr: Some(frame.lr_temp_cr),
+            rr_temp_cl: Some(frame.rr_temp_cl),
+            rr_temp_cm: Some(frame.rr_temp_cm),
+            rr_temp_cr: Some(frame.rr_temp_cr),
+            lf_pressure: Some(frame.lf_cold_pressure),
+            rf_pressure: Some(frame.rf_cold_pressure),
+            lr_pressure: Some(frame.lr_cold_pressure),
+            rr_pressure: Some(frame.rr_cold_pressure),
+            lf_wear_l: Some(frame.lf_wear_l),
+            lf_wear_m: Some(frame.lf_wear_m),
+            lf_wear_r: Some(frame.lf_wear_r),
+            rf_wear_l: Some(frame.rf_wear_l),
+            rf_wear_m: Some(frame.rf_wear_m),
+            rf_wear_r: Some(frame.rf_wear_r),
+            lr_wear_l: Some(frame.lr_wear_l),
+            lr_wear_m: Some(frame.lr_wear_m),
+            lr_wear_r: Some(frame.lr_wear_r),
+            rr_wear_l: Some(frame.rr_wear_l),
+            rr_wear_m: Some(frame.rr_wear_m),
+            rr_wear_r: Some(frame.rr_wear_r),
             lf_brake_temp: None,
             rf_brake_temp: None,
             lr_brake_temp: None,
@@ -295,118 +295,120 @@ impl FromIracing for ChassisFrame {
 }
 
 impl FromIracing for LapTimingFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
+    fn from_iracing(frame: &IracingFrame) -> Self {
         Self {
-            lap: Some(f.lap),
-            lap_dist: Some(f.lap_dist),
-            lap_dist_pct: Some(f.lap_dist_pct),
-            lap_current_lap_time: f.lap_current_lap_time,
-            lap_last_lap_time: Some(f.lap_last_lap_time),
-            lap_best_lap_time: Some(f.lap_best_lap_time),
-            player_car_position: Some(f.player_car_position),
-            player_car_class_position: Some(f.player_car_class_position),
+            lap: Some(frame.lap),
+            lap_dist: Some(frame.lap_dist),
+            lap_dist_pct: Some(frame.lap_dist_pct),
+            lap_current_lap_time: frame.lap_current_lap_time,
+            lap_last_lap_time: Some(frame.lap_last_lap_time),
+            lap_best_lap_time: Some(frame.lap_best_lap_time),
+            player_car_position: Some(frame.player_car_position),
+            player_car_class_position: Some(frame.player_car_class_position),
             lap_delta_to_session_best_live: None,
             lap_delta_to_session_optimal_live: None,
             lap_delta_to_driver_best_live: None,
-            lap_delta_to_best_lap: Some(f.lap_delta_to_best_lap),
-            lap_delta_to_best_lap_dd: Some(f.lap_delta_to_best_lap_dd != 0.0),
-            lap_delta_to_best_lap_ok: Some(f.lap_delta_to_best_lap_ok),
-            lap_delta_to_optimal_lap: Some(f.lap_delta_to_optimal_lap),
-            lap_delta_to_optimal_lap_dd: Some(f.lap_delta_to_optimal_lap_dd != 0.0),
-            lap_delta_to_optimal_lap_ok: Some(f.lap_delta_to_optimal_lap_ok),
-            lap_delta_to_session_best_lap: Some(f.lap_delta_to_session_best_lap),
-            lap_delta_to_session_best_lap_dd: Some(f.lap_delta_to_session_best_lap_dd != 0.0),
-            lap_delta_to_session_best_lap_ok: Some(f.lap_delta_to_session_best_lap_ok),
-            lap_delta_to_session_lastl_lap: Some(f.lap_delta_to_session_lastl_lap),
-            lap_delta_to_session_lastl_lap_dd: Some(f.lap_delta_to_session_lastl_lap_dd != 0.0),
-            lap_delta_to_session_lastl_lap_ok: Some(f.lap_delta_to_session_lastl_lap_ok),
-            lap_delta_to_session_optimal_lap: Some(f.lap_delta_to_session_optimal_lap),
-            lap_delta_to_session_optimal_lap_dd: Some(f.lap_delta_to_session_optimal_lap_dd != 0.0),
-            lap_delta_to_session_optimal_lap_ok: Some(f.lap_delta_to_session_optimal_lap_ok),
+            lap_delta_to_best_lap: Some(frame.lap_delta_to_best_lap),
+            lap_delta_to_best_lap_dd: Some(frame.lap_delta_to_best_lap_dd != 0.0),
+            lap_delta_to_best_lap_ok: Some(frame.lap_delta_to_best_lap_ok),
+            lap_delta_to_optimal_lap: Some(frame.lap_delta_to_optimal_lap),
+            lap_delta_to_optimal_lap_dd: Some(frame.lap_delta_to_optimal_lap_dd != 0.0),
+            lap_delta_to_optimal_lap_ok: Some(frame.lap_delta_to_optimal_lap_ok),
+            lap_delta_to_session_best_lap: Some(frame.lap_delta_to_session_best_lap),
+            lap_delta_to_session_best_lap_dd: Some(frame.lap_delta_to_session_best_lap_dd != 0.0),
+            lap_delta_to_session_best_lap_ok: Some(frame.lap_delta_to_session_best_lap_ok),
+            lap_delta_to_session_lastl_lap: Some(frame.lap_delta_to_session_lastl_lap),
+            lap_delta_to_session_lastl_lap_dd: Some(frame.lap_delta_to_session_lastl_lap_dd != 0.0),
+            lap_delta_to_session_lastl_lap_ok: Some(frame.lap_delta_to_session_lastl_lap_ok),
+            lap_delta_to_session_optimal_lap: Some(frame.lap_delta_to_session_optimal_lap),
+            lap_delta_to_session_optimal_lap_dd: Some(
+                frame.lap_delta_to_session_optimal_lap_dd != 0.0,
+            ),
+            lap_delta_to_session_optimal_lap_ok: Some(frame.lap_delta_to_session_optimal_lap_ok),
         }
     }
 }
 
 impl FromIracing for SessionFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
-        let player_car_flags = f
+    fn from_iracing(frame: &IracingFrame) -> Self {
+        let player_car_flags = frame
             .car_idx_session_flags
-            .get(f.player_car_idx as usize)
+            .get(frame.player_car_idx as usize)
             .map(|&flags| flags as u32);
 
         Self {
-            session_time: Some(f.session_time),
-            session_time_remain: Some(f.session_time_remain),
-            session_laps_remain_ex: Some(f.session_laps_remain_ex),
-            session_state: Some(SessionState::from(f.session_state)),
-            session_flags: Some(f.session_flags as u32),
-            session_num: Some(f.session_num),
-            session_time_of_day: Some(f.session_time_of_day),
-            player_car_idx: Some(f.player_car_idx),
+            session_time: Some(frame.session_time),
+            session_time_remain: Some(frame.session_time_remain),
+            session_laps_remain_ex: Some(frame.session_laps_remain_ex),
+            session_state: Some(SessionState::from(frame.session_state)),
+            session_flags: Some(frame.session_flags as u32),
+            session_num: Some(frame.session_num),
+            session_time_of_day: Some(frame.session_time_of_day),
+            player_car_idx: Some(frame.player_car_idx),
             player_car_flags,
         }
     }
 }
 
 impl FromIracing for EnvironmentFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
+    fn from_iracing(frame: &IracingFrame) -> Self {
         Self {
-            air_temp: Some(f.air_temp),
-            track_temp: Some(f.track_temp_crew),
-            wind_vel: Some(f.wind_vel),
-            wind_dir: Some(f.wind_dir),
-            relative_humidity: Some(f.relative_humidity),
-            skies: Some(Skies::from(f.skies)),
-            precipitation: Some(f.precipitation),
-            track_wetness: Some(f.track_wetness),
-            weather_declared_wet: Some(f.weather_declared_wet),
+            air_temp: Some(frame.air_temp),
+            track_temp: Some(frame.track_temp_crew),
+            wind_vel: Some(frame.wind_vel),
+            wind_dir: Some(frame.wind_dir),
+            relative_humidity: Some(frame.relative_humidity),
+            skies: Some(Skies::from(frame.skies)),
+            precipitation: Some(frame.precipitation),
+            track_wetness: Some(frame.track_wetness),
+            weather_declared_wet: Some(frame.weather_declared_wet),
         }
     }
 }
 
 impl FromIracing for CarIdxFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
+    fn from_iracing(frame: &IracingFrame) -> Self {
         Self {
-            car_idx_lap_dist_pct: f.car_idx_lap_dist_pct.clone(),
-            car_idx_on_pit_road: f.car_idx_on_pit_road.clone(),
-            car_idx_position: f.car_idx_position.clone(),
-            car_idx_class_position: f.car_idx_class_position.clone(),
-            car_idx_lap: f.car_idx_lap.clone(),
-            car_idx_laps_completed: f.car_idx_lap_completed.clone(),
-            car_idx_last_lap_time: f.car_idx_last_lap_time.clone(),
-            car_idx_best_lap_time: f.car_idx_best_lap_time.clone(),
-            car_idx_f2_time: f.car_idx_f2_time.clone(),
-            car_idx_est_time: f.car_idx_est_time.clone(),
-            car_idx_track_surface: f
+            car_idx_lap_dist_pct: frame.car_idx_lap_dist_pct.clone(),
+            car_idx_on_pit_road: frame.car_idx_on_pit_road.clone(),
+            car_idx_position: frame.car_idx_position.clone(),
+            car_idx_class_position: frame.car_idx_class_position.clone(),
+            car_idx_lap: frame.car_idx_lap.clone(),
+            car_idx_laps_completed: frame.car_idx_lap_completed.clone(),
+            car_idx_last_lap_time: frame.car_idx_last_lap_time.clone(),
+            car_idx_best_lap_time: frame.car_idx_best_lap_time.clone(),
+            car_idx_f2_time: frame.car_idx_f2_time.clone(),
+            car_idx_est_time: frame.car_idx_est_time.clone(),
+            car_idx_track_surface: frame
                 .car_idx_track_surface
                 .iter()
                 .map(|&v| TrackSurface::from(v))
                 .collect(),
-            car_idx_tire_compound: f.car_idx_tire_compound.clone(),
-            car_idx_session_flags: f
+            car_idx_tire_compound: frame.car_idx_tire_compound.clone(),
+            car_idx_session_flags: frame
                 .car_idx_session_flags
                 .iter()
                 .map(|&flags| flags as u32)
                 .collect(),
-            spotter: Some(spotter_from_iracing(f.car_left_right)),
+            spotter: Some(spotter_from_iracing(frame.car_left_right)),
         }
     }
 }
 
 impl FromIracing for CarPositionsFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
+    fn from_iracing(frame: &IracingFrame) -> Self {
         Self {
-            car_idx_lap_dist_pct: f.car_idx_lap_dist_pct.clone(),
-            car_idx_track_surface: f.car_idx_track_surface.clone(),
+            car_idx_lap_dist_pct: frame.car_idx_lap_dist_pct.clone(),
+            car_idx_track_surface: frame.car_idx_track_surface.clone(),
         }
     }
 }
 
 impl FromIracing for PacingFrame {
-    fn from_iracing(f: &IracingFrame) -> Self {
+    fn from_iracing(frame: &IracingFrame) -> Self {
         Self {
-            formation: pace_formation_from_iracing(f.pace_mode),
-            car_idx_pace_line: f.car_idx_pace_line.clone(),
+            formation: pace_formation_from_iracing(frame.pace_mode),
+            car_idx_pace_line: frame.car_idx_pace_line.clone(),
         }
     }
 }

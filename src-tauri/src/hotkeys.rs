@@ -7,13 +7,11 @@ use tauri::{AppHandle, Manager};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 use mt_hotkeys::runtime::{HotkeyHost, KeyEdge, KeyRegistrar};
+use mt_model::contract::windows::OVERLAY_LABEL_PREFIX;
 use mt_remote::hub::RemoteHub;
 use mt_telemetry::state::TelemetryState;
 
 use crate::sink::TauriSink;
-
-/// Overlay windows are created per monitor, labelled `overlay-<monitor>`.
-pub const OVERLAY_LABEL_PREFIX: &str = "overlay-";
 
 struct GlobalShortcutKeys(AppHandle);
 

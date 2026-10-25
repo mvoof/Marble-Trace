@@ -19,7 +19,6 @@ use crate::delivery::scheduler::DueGroups;
 use crate::io_worker::IoWorker;
 use crate::loop_state::LoopState;
 use crate::state::TelemetryServiceState;
-use crate::utils::lock_or_recover;
 use mt_computations::driving::input_sample::input_sample;
 use mt_computations::field::relative::RelativeFrame;
 use mt_computations::strategy::pit_actions::{self, PitActionInput};
@@ -48,6 +47,7 @@ use mt_model::sim::player::{
     PitServiceFrame, PitTargetFrame,
 };
 use mt_model::sim::session::{SessionFrame, SessionSnapshot};
+use mt_model::utils::lock_or_recover;
 use mt_source::{PitCommander, SourceFrame};
 
 // The names themselves live on the contract in `mt-model/src/contract/events.rs`, where the

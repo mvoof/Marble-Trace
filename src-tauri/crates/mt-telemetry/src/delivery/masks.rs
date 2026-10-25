@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Mutex;
 
-use crate::utils::lock_or_recover;
+use mt_model::utils::lock_or_recover;
 
 /// The remote screens' appetite, which belongs to no window.
 ///

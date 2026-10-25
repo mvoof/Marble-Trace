@@ -17,9 +17,9 @@ use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager};
 use tracing::{error, info, warn};
 
-use crate::hotkeys::OVERLAY_LABEL_PREFIX;
-use crate::utils::lock_or_recover;
 use mt_model::contract::events::{EVENT_PERF_BEGIN, EVENT_PERF_END};
+use mt_model::contract::windows::OVERLAY_LABEL_PREFIX;
+use mt_model::utils::lock_or_recover;
 use mt_source::replay::{REPLAY_ENV, REPLAY_FROM_ENV};
 use mt_telemetry::delivery::counters::DeliverySet;
 use mt_telemetry::state::TelemetryState;

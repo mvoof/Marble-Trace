@@ -1,0 +1,8 @@
+# Even Better TOML (taplo) cannot resolve the external `$ref`s SchemaStore's
+# Cargo schema uses for lint tables and flags every `[lints]` table as invalid,
+# so Cargo manifests are checked by cargo alone.
+[[rule]]
+include = ["**/Cargo.toml"]
+
+[rule.schema]
+enabled = false

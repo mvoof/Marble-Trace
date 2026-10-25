@@ -10,7 +10,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 #[cfg(feature = "dev")]
-use crate::utils::lock_or_recover;
+use mt_model::utils::lock_or_recover;
 use tracing::{debug, info, warn};
 
 use crate::control::{TelemetryCommand, TelemetryRun};

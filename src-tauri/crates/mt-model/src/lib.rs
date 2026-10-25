@@ -2,22 +2,12 @@
 //! Filled by sim sources, consumed by computations and the emitter.
 //! Must not import tauri, kerb or any sim-specific module.
 
-// The app's lint block (`src-tauri/src/lib.rs` says why it is not in `[lints]`).
-#![deny(unsafe_op_in_unsafe_fn)]
-#![deny(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::undocumented_unsafe_blocks,
-    clippy::missing_safety_doc
-)]
-#![warn(clippy::multiple_unsafe_ops_per_block)]
-
 pub mod app;
 pub mod computed;
 pub mod contract;
 pub mod pit;
 pub mod sim;
+pub mod utils;
 
 /// Registers every contract type this crate declares with specta.
 ///

@@ -3,7 +3,7 @@
 use tauri::State;
 
 use crate::perf_run::{OverlayPerfReport, PerfRunConfig, PerfRunState};
-use crate::utils::lock_or_recover;
+use mt_model::utils::lock_or_recover;
 
 /// The run in progress, or `None` when the app was not started for one. An
 /// overlay reads it once on load: in stores-only mode it mounts no widget.

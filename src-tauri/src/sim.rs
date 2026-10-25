@@ -21,7 +21,8 @@ pub fn connect_source() -> Option<Box<dyn TelemetrySource>> {
         return Some(replay);
     }
 
-    let live = IracingSource::try_connect().map(|src| Box::new(src) as Box<dyn TelemetrySource>);
+    let live =
+        IracingSource::try_connect().map(|source| Box::new(source) as Box<dyn TelemetrySource>);
 
     #[cfg(feature = "dev")]
     let live = live.map(record_if_requested);

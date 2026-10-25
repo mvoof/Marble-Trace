@@ -2,19 +2,7 @@
 //! event emission. Sim-specific acquisition lives in the source adapters;
 //! this layer only consumes normalized `model` types.
 
-// The app's lint block (`src-tauri/src/lib.rs` says why it is not in `[lints]`).
-#![deny(unsafe_op_in_unsafe_fn)]
-#![deny(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::undocumented_unsafe_blocks,
-    clippy::missing_safety_doc
-)]
-#![warn(clippy::multiple_unsafe_ops_per_block)]
-
 pub mod delivery;
-mod utils;
 
 pub mod control;
 pub mod emitter;

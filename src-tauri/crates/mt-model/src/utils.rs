@@ -5,5 +5,7 @@ use std::sync::{Mutex, MutexGuard};
 /// with potentially stale data rather than crashing or handling errors explicitly
 /// for every telemetry frame.
 pub fn lock_or_recover<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
-    mutex.lock().unwrap_or_else(|e| e.into_inner())
+    mutex
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
 }

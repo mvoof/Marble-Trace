@@ -26,6 +26,22 @@ license = "GPL-3.0-or-later"
 edition = "2021"
 publish = false
 
+# Every member opts in with `[lints] workspace = true`. Tests may panic:
+# `clippy.toml` allows unwrap/expect/panic there. `unreachable` is left off:
+# `#[tauri::command]` expands every async command into a never-run
+# `let _check: T = unreachable!();` type check.
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+undocumented_unsafe_blocks = "deny"
+missing_safety_doc = "deny"
+# A tight group of FFI calls may share a block, with one comment saying why.
+multiple_unsafe_ops_per_block = "warn"
+
 [workspace.dependencies]
 mt-model = { path = "crates/mt-model" }
 mt-source = { path = "crates/mt-source" }
@@ -39,6 +55,8 @@ mt-companions = { path = "crates/mt-companions" }
 mt-hotkeys = { path = "crates/mt-hotkeys" }
 
 serde_json = "1.0"
+# Build scripts read `src-tauri/.env` for the keys baked in at compile time.
+dotenvy = "0.15"
 serde = { version = "1.0", features = ["derive"] }
 kerb = { version = "0.4.0", default-features = false }
 tokio = { version = "1", features = ["full"] }
@@ -98,13 +116,16 @@ windows = { version = "0.62", features = [
     "Win32_UI_WindowsAndMessaging",
 ] }
 
+[lints]
+workspace = true
+
 [lib]
 name = "marble_trace_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2.5.3", features = [] }
-dotenvy = "0.15"
+dotenvy.workspace = true
 
 [dependencies]
 mt-model.workspace = true

@@ -14,9 +14,9 @@ use serde::Serialize;
 use tokio::sync::broadcast;
 use tracing::warn;
 
-use crate::utils::lock_or_recover;
 use mt_model::app::remote::RemoteDevice;
 use mt_model::contract::events::{RemoteControlKind, RemoteStreamKind, Replayed, WireName};
+use mt_model::utils::lock_or_recover;
 
 /// Browsers repaint at 60 Hz at best and usually less; anything above this is
 /// Wi-Fi traffic nobody sees. Overridable per server start.

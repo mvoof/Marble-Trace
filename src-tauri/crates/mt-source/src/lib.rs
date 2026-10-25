@@ -1,17 +1,6 @@
 //! The seam between a sim and the app: the `TelemetrySource` an adapter
 //! implements, the frame it fills, and tapes that stand in for a sim.
 
-// The app's lint block (`src-tauri/src/lib.rs` says why it is not in `[lints]`).
-#![deny(unsafe_op_in_unsafe_fn)]
-#![deny(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::undocumented_unsafe_blocks,
-    clippy::missing_safety_doc
-)]
-#![warn(clippy::multiple_unsafe_ops_per_block)]
-
 pub mod raw;
 #[cfg(feature = "dev")]
 pub mod replay;

@@ -5,17 +5,6 @@
 //! sim data, runs on its own connections, and must keep working while no sim is
 //! running at all.
 
-// The app's lint block (`src-tauri/src/lib.rs` says why it is not in `[lints]`).
-#![deny(unsafe_op_in_unsafe_fn)]
-#![deny(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::undocumented_unsafe_blocks,
-    clippy::missing_safety_doc
-)]
-#![warn(clippy::multiple_unsafe_ops_per_block)]
-
 pub mod eventsub;
 pub mod helix;
 pub mod runtime;

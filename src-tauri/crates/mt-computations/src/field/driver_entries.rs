@@ -6,7 +6,6 @@ use irating::{calculate as calculate_irating_changes, RaceResult};
 use serde::{Deserialize, Serialize};
 
 use crate::field::car_speed::CarSpeedTracker;
-use crate::utils::lock_or_recover;
 use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
 use mt_model::sim::cars::CarIdxFrame;
@@ -14,6 +13,7 @@ use mt_model::sim::enums::{PitState, SessionState, TrackSurface};
 use mt_model::sim::session::{
     CarEntry, QualifyResultEntry, ResultPosition, SessionSnapshot, SessionType,
 };
+use mt_model::utils::lock_or_recover;
 
 const FALLBACK_SORT_POSITION: i32 = 999;
 

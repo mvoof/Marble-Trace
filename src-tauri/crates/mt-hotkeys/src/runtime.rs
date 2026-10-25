@@ -19,7 +19,6 @@ use tracing::{debug, info, warn};
 
 use crate::dispatch::{fired_actions, keyboard_accelerators, BindingMap, Fired};
 use crate::modes::{interact_after_key, with_drag, with_interact};
-use crate::utils::lock_or_recover;
 use mt_computations::strategy::pit_auto::PitAutoCommand;
 use mt_model::app::hotkeys::{
     Binding, HotkeyContext, HotkeyEffect, HotkeySettingsAction, OverlayModes, ViewControl,
@@ -30,13 +29,12 @@ use mt_model::contract::events::{
     RemoteControlKind, WireName, EVENT_CLIENT_CONTROL, EVENT_HOTKEY_SETTINGS_ACTION,
     EVENT_OVERLAY_MODES,
 };
+use mt_model::contract::windows::MAIN_WINDOW_LABEL;
 use mt_model::pit::pit_action::PitAction;
+use mt_model::utils::lock_or_recover;
 use mt_remote::hub::RemoteHub;
 use mt_telemetry::control::TelemetryCommand;
 use mt_telemetry::state::TelemetryServiceState;
-
-/// The main window, which owns the settings a settings action writes.
-const MAIN_WINDOW_LABEL: &str = "main";
 
 const MS_PER_SECOND: f32 = 1000.0;
 
@@ -349,14 +347,19 @@ impl HotkeyRuntime {
         lock_or_recover(&self.inner).registered = now_registered;
     }
 
-    /// The dispatcher lives as long as the app, so the callback can hold it.
+    /// Weak, like the auto-off timer: the runtime holds the shortcut plugin
+    /// through `host.keys`, so a strong callback would keep both alive forever.
     fn key_edge(self: &Arc<Self>, accelerator: &str) -> KeyEdge {
-        let runtime = Arc::clone(self);
+        let runtime = Arc::downgrade(self);
         let binding = Binding::Keyboard {
             accelerator: accelerator.to_string(),
         };
 
-        Box::new(move |pressed| runtime.on_binding_edge(&binding, pressed))
+        Box::new(move |pressed| {
+            if let Some(runtime) = runtime.upgrade() {
+                runtime.on_binding_edge(&binding, pressed);
+            }
+        })
     }
 }
 

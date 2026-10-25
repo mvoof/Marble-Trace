@@ -19,13 +19,15 @@ mt-model  ←  mt-source  ←  mt-sim-iracing   (one mt-sim-* per sim)
    ↑            ↑
    ├── mt-computations
    ├── mt-telemetry → mt-source, mt-computations
-   ├── mt-chat · mt-input · mt-remote · mt-companions · mt-hotkeys
+   ├── mt-remote → mt-telemetry
+   ├── mt-hotkeys → mt-computations, mt-telemetry, mt-remote
+   ├── mt-chat · mt-input · mt-companions
    └──────────── the app (src-tauri/src): wiring, commands, hotkeys
 ```
 
 | Crate                                               | Rule                                                                                                                                                                                                                                                                                             |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `mt-model`                                          | serde + specta types and the `EventSink` trait. No kerb, no tauri. `sim/` what a sim reports, `computed/`, `pit/`, `app/` (chat, companions, hotkeys, input, install, remote), `contract/` (event names, mask, defaults).                                                                        |
+| `mt-model`                                          | serde + specta types and the `EventSink` trait. No kerb, no tauri. `sim/` what a sim reports, `computed/`, `pit/`, `app/` (chat, companions, hotkeys, input, install, remote), `contract/` (event names, mask, defaults), `utils` (`lock_or_recover`).                                           |
 | `mt-source`                                         | The seam to a sim: `TelemetrySource`, `SourceFrame`, `PitCommander`, the raw-data types, and tapes (dev). No kerb.                                                                                                                                                                               |
 | `mt-sim-iracing`                                    | **Only** crate that uses kerb (`kerb[iracing]`). Maps `IracingFrame` → `SourceFrame`, parses the session YAML, sends pit orders. A second sim is a sibling `mt-sim-*`.                                                                                                                           |
 | `mt-computations`                                   | Pure logic on the model. One processor per computed frame, grouped by subject: `timing/`, `field/`, `strategy/`, `driving/`, `rating/`.                                                                                                                                                          |
@@ -35,8 +37,9 @@ mt-model  ←  mt-source  ←  mt-sim-iracing   (one mt-sim-* per sim)
 | the app                                             | The only crate that sees tauri: `lib.rs` wiring, every `#[tauri::command]` in `commands/` (registered in its `mod.rs`), `hotkeys.rs` (the global-shortcut plugin behind `KeyRegistrar`), `sim.rs` (which sims this build connects), `sink.rs` (`EventSink` and `BundleAssets` over `AppHandle`). |
 
 Plain `cargo fmt`, `cargo clippy --all-targets` and `cargo test` in
-`src-tauri/` cover every crate (`default-members`). Each crate's `lib.rs`
-repeats the lint block of the app's `lib.rs`.
+`src-tauri/` cover every crate (`default-members`). The lints are declared
+once, in `[workspace.lints]` of `src-tauri/Cargo.toml`, and every crate opts in
+with `[lints] workspace = true`.
 
 - `specta` auto-generates `src/shared/contracts/generated/bindings.ts` on `npm run tauri dev` — **never edit manually**. Every `tauri:dev`, `perf --build` or `cargo test` regenerates it and the other generated contracts (below) unformatted, so the working tree shows them rewritten wholesale. **Leave them alone**: the `format` hook in `lefthook.yml` runs `oxfmt` on the staged files, so a commit takes them back to the checked-in form and only a real change to the contract remains. Do not format or revert them by hand.
 - The whole export lives in `src-tauri/src/bindings.rs`, and each crate registers
@@ -68,7 +71,7 @@ repeats the lint block of the app's `lib.rs`.
 
 ## Panics and unsafe
 
-_Held by: clippy (crate-level `#![deny]` in `src-tauri/src/lib.rs`, `src-tauri/clippy.toml`); review for where the FFI lives._
+_Held by: clippy (`[workspace.lints]` in `src-tauri/Cargo.toml`, `src-tauri/clippy.toml`); review for where the FFI lives._
 
 - **No `unwrap`/`expect`/`panic!` in production code** — `let … else`, `if let`, `?` or a logged fallback. An invariant that cannot fail goes into the type, not an assertion. Tests keep them: a panic is how a test fails.
 - **FFI sits behind safe types.** windows-rs marks every Win32 function and COM method `unsafe`, so the calls live in one wrapper per API (`mt-input/src/dinput_ffi.rs`, `mt-input/src/com_apartment.rs`, `companions/`) and the logic around them has no `unsafe`. A wrapper holds its invariants by construction — a `Joystick` exists only with its data format set, a buffer's size is a `const` assertion.

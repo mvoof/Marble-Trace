@@ -1,20 +1,3 @@
-// Declared here rather than in `[lints]` of `Cargo.toml`: Even Better TOML
-// (taplo) cannot resolve the external `$ref`s SchemaStore's Cargo schema uses
-// for lint tables and flags every `[lints]` table as invalid. Tests may panic:
-// `clippy.toml` allows unwrap/expect/panic there. `unreachable` is left off:
-// `#[tauri::command]` expands every async command into a never-run
-// `let _check: T = unreachable!();` type check.
-#![deny(unsafe_op_in_unsafe_fn)]
-#![deny(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::panic,
-    clippy::undocumented_unsafe_blocks,
-    clippy::missing_safety_doc
-)]
-// A tight group of FFI calls may share a block, with one comment saying why.
-#![warn(clippy::multiple_unsafe_ops_per_block)]
-
 #[cfg(feature = "dev")]
 mod bindings;
 mod commands;
@@ -27,14 +10,15 @@ mod remote_mirror;
 mod settings_snapshot;
 mod sim;
 mod sink;
-mod utils;
 
 use commands::input::InputState;
-use hotkeys::{hotkey_host, OVERLAY_LABEL_PREFIX};
+use hotkeys::hotkey_host;
 use mt_chat::state::{ChatServiceState, ChatState};
 use mt_companions::CompanionsState;
 use mt_hotkeys::runtime::HotkeyRuntime;
 use mt_input::{InputHost, InputRuntime};
+use mt_model::contract::windows::{MAIN_WINDOW_LABEL, OVERLAY_LABEL_PREFIX};
+use mt_model::utils::lock_or_recover;
 use mt_remote::control::RemoteState;
 use mt_remote::server::RemoteHost;
 use mt_telemetry::control::TelemetryCommand;
@@ -42,7 +26,6 @@ use mt_telemetry::state::TelemetryState;
 #[cfg(feature = "dev")]
 use perf_run::{spawn_if_requested, PerfRunConfig, PerfRunState};
 use sink::{TauriAssets, TauriSink};
-use utils::lock_or_recover;
 
 use std::error::Error;
 use std::sync::Arc;
@@ -52,9 +35,6 @@ use tauri::{
 use tauri_plugin_aptabase::EventTracker;
 use tauri_plugin_store::StoreExt;
 use tauri_plugin_window_state::StateFlags;
-
-/// The settings window, whose close ends the app.
-const MAIN_WINDOW_LABEL: &str = "main";
 
 /// A monitor's DPI at a scale factor of 1.
 const BASE_DPI: f64 = 96.0;
