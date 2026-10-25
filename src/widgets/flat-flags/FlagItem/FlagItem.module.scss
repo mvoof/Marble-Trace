@@ -124,17 +124,18 @@ $hazard-stripes-span: 60%;
   --flag-band: #{$flag-band-black};
 }
 
-// The slowdown is a penalty, not a track state: no band, only the accent.
+// The slowdown is a penalty, not a track state: a dark band, only the accent
+// in colour. It and DQ keep a band so they still read at background opacity 0.
 .itemFurled {
   --flag-tone: #{$flag-band-yellow};
   --flag-icon: #{$flag-band-white};
-  --flag-band: transparent;
+  --flag-band: #{$flag-band-black};
   --flag-ink: #{$widget-text-primary};
 }
 
 .itemDq {
   --flag-tone: #{$flag-band-red};
-  --flag-band: transparent;
+  --flag-band: #{$flag-band-black};
   --flag-ink: #{$flag-band-red};
 }
 
