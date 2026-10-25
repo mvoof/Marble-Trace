@@ -6,10 +6,10 @@
 ## Decision
 
 `src-tauri/` is a Cargo workspace. The app crate keeps the wiring, every Tauri
-command and the hotkey dispatcher; the rest lives in nine crates under
+command and the hotkey registration; the rest lives in ten crates under
 `src-tauri/crates/`: `mt-model`, `mt-source`, `mt-sim-iracing`,
 `mt-computations`, `mt-telemetry`, `mt-chat`, `mt-input`, `mt-remote`,
-`mt-companions`. Only `mt-sim-iracing` depends on kerb; only the app depends on
+`mt-companions`, `mt-hotkeys`. Only `mt-sim-iracing` depends on kerb; only the app depends on
 tauri. Each further sim is its own `mt-sim-*` crate.
 
 ## Why

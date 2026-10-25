@@ -36,6 +36,7 @@ mt-chat = { path = "crates/mt-chat" }
 mt-input = { path = "crates/mt-input" }
 mt-remote = { path = "crates/mt-remote" }
 mt-companions = { path = "crates/mt-companions" }
+mt-hotkeys = { path = "crates/mt-hotkeys" }
 
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
@@ -115,6 +116,7 @@ mt-chat.workspace = true
 mt-input.workspace = true
 mt-remote.workspace = true
 mt-companions.workspace = true
+mt-hotkeys.workspace = true
 
 serde_json.workspace = true
 serde.workspace = true

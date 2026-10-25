@@ -5,10 +5,10 @@
 
 use tauri::{AppHandle, State};
 
+use mt_hotkeys::dispatch::BindingMap;
 use mt_model::app::hotkeys::{HotkeyContext, OverlayModes};
 
-use crate::hotkeys::dispatch::BindingMap;
-use crate::hotkeys::runtime::{self, HotkeyState};
+use crate::hotkeys::{self as runtime, HotkeyState};
 
 /// The effective binding map — defaults with the user's overrides on top —
 /// pushed by the main window whenever it changes.

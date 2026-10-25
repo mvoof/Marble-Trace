@@ -1,4 +1,20 @@
-//! The dispatcher's state and the side effects of a fired action.
+//! Hotkey dispatch: every keyboard shortcut and controller button the user
+//! bound, caught and acted on here rather than in a webview.
+//!
+//! A runtime beside `mt-telemetry` and `mt-input`: what a key means is decided
+//! in `mt-hotkeys`, and this module carries it out. A sim action goes to the
+//! telemetry thread, a view action straight to the overlays and the remote
+//! screens, and only a settings action needs the main window — which owns the
+//! settings it writes. So acting on the car does not depend on any webview
+//! being alive, unpaused or fed the right frames.
+//!
+//! The overlay's drag and interact modes live here too: their keys are the most
+//! pressed of all, and the state is the dispatcher's to hold rather than one
+//! window's to broadcast.
+//!
+//! What it needs from the frontend arrives as commands: the binding map and the
+//! context (the layout gate, the interact key's settings), both pushed by the
+//! main window whenever they change.
 
 use std::collections::BTreeSet;
 use std::sync::Mutex;
@@ -12,6 +28,8 @@ use tracing::{debug, info, warn};
 
 use crate::utils::lock_or_recover;
 use mt_computations::strategy::pit_auto::PitAutoCommand;
+use mt_hotkeys::dispatch::{fired_actions, keyboard_accelerators, BindingMap, Fired};
+use mt_hotkeys::modes::{interact_after_key, with_drag, with_interact};
 use mt_model::app::hotkeys::{
     Binding, HotkeyContext, HotkeyEffect, HotkeySettingsAction, OverlayModes, ViewControl,
 };
@@ -24,9 +42,6 @@ use mt_model::pit::pit_action::PitAction;
 use mt_remote::control::RemoteState;
 use mt_telemetry::control::TelemetryCommand;
 use mt_telemetry::state::TelemetryState;
-
-use super::dispatch::{fired_actions, keyboard_accelerators, BindingMap, Fired};
-use super::modes::{interact_after_key, with_drag, with_interact};
 
 /// The main window, which owns the settings a settings action writes.
 const MAIN_WINDOW_LABEL: &str = "main";
