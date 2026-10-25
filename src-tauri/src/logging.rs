@@ -35,6 +35,12 @@ fn rotate_log_file(log_dir: &Path) -> (PathBuf, bool) {
 /// dev console, which should only show basic lifecycle lines.
 pub const SETTINGS_SNAPSHOT_TARGET: &str = "marble_trace_lib::settings_snapshot";
 
+/// Every crate of the workspace at `info`. A tracing target is the module path,
+/// so a crate left off this list is silent by default.
+const DEFAULT_DIRECTIVES: &str = "marble_trace_lib=info,mt_model=info,mt_source=info,\
+    mt_sim_iracing=info,mt_computations=info,mt_telemetry=info,mt_chat=info,mt_input=info,\
+    mt_remote=info,mt_companions=info";
+
 fn build_env_filter(default_directives: &str) -> EnvFilter {
     EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(default_directives))
 }
@@ -66,12 +72,12 @@ pub fn init(app: &App) -> LogFileGuard {
     };
 
     let stdout_layer = fmt::layer().with_filter(build_env_filter(&format!(
-        "marble_trace_lib=info,{SETTINGS_SNAPSHOT_TARGET}=off"
+        "{DEFAULT_DIRECTIVES},{SETTINGS_SNAPSHOT_TARGET}=off"
     )));
     let file_layer = fmt::layer()
         .with_ansi(false)
         .with_writer(non_blocking)
-        .with_filter(build_env_filter("marble_trace_lib=info"));
+        .with_filter(build_env_filter(DEFAULT_DIRECTIVES));
 
     let _ = tracing_subscriber::registry()
         .with(stdout_layer)
