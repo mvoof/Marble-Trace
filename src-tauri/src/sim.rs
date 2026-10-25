@@ -1,14 +1,16 @@
 //! The sims this build connects to. The telemetry runtime knows none of them:
 //! it is handed `connect_source` and calls it until a sim answers.
 
-use crate::sources::iracing::source::IracingSource;
 #[cfg(feature = "dev")]
-use crate::sources::iracing::SESSION_PARSERS as IRACING_SESSION_PARSERS;
+use mt_model::enums::SimType;
+use mt_sim_iracing::source::IracingSource;
 #[cfg(feature = "dev")]
-use crate::sources::replay::{record_if_requested, replay_from_env};
-use crate::sources::source::TelemetrySource;
+use mt_sim_iracing::SESSION_PARSERS as IRACING_SESSION_PARSERS;
 #[cfg(feature = "dev")]
-use crate::{model::enums::SimType, sources::source::SessionParsers};
+use mt_source::replay::{record_if_requested, replay_from_env};
+#[cfg(feature = "dev")]
+use mt_source::SessionParsers;
+use mt_source::TelemetrySource;
 
 /// The running sim's source, `None` while no sim is running. In a dev build a
 /// tape named by `MARBLE_TRACE_REPLAY` stands in for the sim, and

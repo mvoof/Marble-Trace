@@ -10,20 +10,20 @@ use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tracing::{debug, info, warn};
 
-use crate::computations::pit_auto::PitAutoCommand;
-use crate::model::events::{
+use crate::utils::lock_or_recover;
+use mt_computations::pit_auto::PitAutoCommand;
+use mt_model::events::{
     RemoteControlKind, WireName, EVENT_CLIENT_CONTROL, EVENT_HOTKEY_SETTINGS_ACTION,
     EVENT_OVERLAY_MODES,
 };
-use crate::model::hotkeys::{
+use mt_model::hotkeys::{
     Binding, HotkeyContext, HotkeyEffect, HotkeySettingsAction, OverlayModes, ViewControl,
 };
-use crate::model::input::InputButtonEvent;
-use crate::model::pit_action::PitAction;
-use crate::remote::control::RemoteState;
-use crate::telemetry::control::TelemetryCommand;
-use crate::telemetry::state::TelemetryState;
-use crate::utils::lock_or_recover;
+use mt_model::input::InputButtonEvent;
+use mt_model::pit_action::PitAction;
+use mt_remote::control::RemoteState;
+use mt_telemetry::control::TelemetryCommand;
+use mt_telemetry::state::TelemetryState;
 
 use super::dispatch::{fired_actions, keyboard_accelerators, BindingMap, Fired};
 use super::modes::{interact_after_key, with_drag, with_interact};

@@ -9,17 +9,17 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, State, Window};
 use tracing::{debug, info, warn};
 
-use crate::model::defaults::{MAX_FUEL_AVG_WINDOW, SOURCE_TICK_HZ};
-use crate::model::session::SessionSnapshot;
 use crate::sim::connect_source;
 use crate::sink::TauriSink;
-use crate::sources::raw::{RawSession, RawValues, RawVarMeta};
-use crate::sources::source::SourceFrame;
-use crate::telemetry::delivery::DeliverySet;
-use crate::telemetry::masks::REMOTE_LABEL;
-use crate::telemetry::runtime::{spawn_telemetry_thread, TelemetryHost};
-use crate::telemetry::state::TelemetryState;
 use crate::utils::lock_or_recover;
+use mt_model::defaults::{MAX_FUEL_AVG_WINDOW, SOURCE_TICK_HZ};
+use mt_model::session::SessionSnapshot;
+use mt_source::raw::{RawSession, RawValues, RawVarMeta};
+use mt_source::SourceFrame;
+use mt_telemetry::delivery::DeliverySet;
+use mt_telemetry::masks::REMOTE_LABEL;
+use mt_telemetry::runtime::{spawn_telemetry_thread, TelemetryHost};
+use mt_telemetry::state::TelemetryState;
 
 #[tauri::command]
 pub async fn get_connection_status(state: State<'_, TelemetryState>) -> Result<bool, String> {

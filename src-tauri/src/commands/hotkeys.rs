@@ -5,7 +5,7 @@
 
 use tauri::{AppHandle, State};
 
-use crate::model::hotkeys::{HotkeyContext, OverlayModes};
+use mt_model::hotkeys::{HotkeyContext, OverlayModes};
 
 use crate::hotkeys::dispatch::BindingMap;
 use crate::hotkeys::runtime::{self, HotkeyState};

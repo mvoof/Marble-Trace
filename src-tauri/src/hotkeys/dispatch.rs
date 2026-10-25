@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 
-use crate::model::hotkeys::{
+use mt_model::hotkeys::{
     find_action, visibility_action_owner, Binding, HotkeyActionDecl, HotkeyContext, HotkeyTrigger,
     APP_OWNER,
 };

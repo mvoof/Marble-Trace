@@ -5,12 +5,12 @@
 use tauri::{AppHandle, Emitter, Manager, State};
 use tracing::{info, warn};
 
-use crate::model::reference_lap::{ReferenceLapData, TrackCondition};
-use crate::model::track_shape::TrackShapePayload;
-use crate::telemetry::control::TelemetryCommand;
-use crate::telemetry::emitter::EVENT_TRACK_SHAPE;
-use crate::telemetry::state::TelemetryState;
-use crate::telemetry::storage::{
+use mt_model::reference_lap::{ReferenceLapData, TrackCondition};
+use mt_model::track_shape::TrackShapePayload;
+use mt_telemetry::control::TelemetryCommand;
+use mt_telemetry::emitter::EVENT_TRACK_SHAPE;
+use mt_telemetry::state::TelemetryState;
+use mt_telemetry::storage::{
     load_cached_track_shape, reference_lap_key, reference_lap_path, track_shape_path,
 };
 

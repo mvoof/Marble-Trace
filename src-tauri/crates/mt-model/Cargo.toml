@@ -1,0 +1,17 @@
+[package]
+name = "mt-model"
+description = "The frontend contract: telemetry frames, settings payloads, event names and the sink events go through."
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+bitflags.workspace = true
+specta = { workspace = true, optional = true }
+
+[features]
+dev = ["dep:specta"]

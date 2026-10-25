@@ -2,15 +2,15 @@
 
 use tauri::State;
 
-use crate::companions::{self, CompanionsState};
-use crate::model::companions::{CompanionApp, CompanionStatus, DetectedApp};
+use mt_companions::CompanionsState;
+use mt_model::companions::{CompanionApp, CompanionStatus, DetectedApp};
 
 /// Guards against a settings file that grew an implausible list by hand.
 const MAX_COMPANION_APPS: usize = 32;
 
 #[tauri::command]
 pub fn detect_companion_apps() -> Vec<DetectedApp> {
-    companions::detect()
+    mt_companions::detect()
 }
 
 #[tauri::command]
@@ -25,7 +25,7 @@ pub fn companion_app_statuses(
         ));
     }
 
-    Ok(companions::statuses(&apps, &state))
+    Ok(mt_companions::statuses(&apps, &state))
 }
 
 /// Starts the program. Returns false when it was already running, which is a
@@ -35,7 +35,7 @@ pub fn launch_companion_app(
     app: CompanionApp,
     state: State<'_, CompanionsState>,
 ) -> Result<bool, String> {
-    companions::launch(&app, &state)
+    mt_companions::launch(&app, &state)
 }
 
 /// Closes the program, if this app is the one that started it.
@@ -44,7 +44,7 @@ pub fn close_companion_app(
     app: CompanionApp,
     state: State<'_, CompanionsState>,
 ) -> Result<bool, String> {
-    companions::close(&app, &state)
+    mt_companions::close(&app, &state)
 }
 
 /// Closes everything marked to close with the app and waits for it to be gone.
@@ -62,11 +62,11 @@ pub fn close_companion_apps(
         ));
     }
 
-    Ok(companions::close_marked(&apps, &state))
+    Ok(mt_companions::close_marked(&apps, &state))
 }
 
 /// The executable's own icon as a PNG data URL, or null when it has none.
 #[tauri::command]
 pub fn companion_app_icon(path: String) -> Option<String> {
-    companions::icon::icon_data_url(&path)
+    mt_companions::icon::icon_data_url(&path)
 }

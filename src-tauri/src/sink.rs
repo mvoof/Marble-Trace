@@ -3,8 +3,8 @@
 
 use tauri::{AppHandle, Emitter};
 
-use crate::model::event_sink::EventSink;
-use crate::remote::server::{BundleAsset, BundleAssets};
+use mt_model::event_sink::EventSink;
+use mt_remote::server::{BundleAsset, BundleAssets};
 
 pub struct TauriSink(pub AppHandle);
 

@@ -5,10 +5,10 @@ use std::sync::Arc;
 
 use tauri::{AppHandle, State};
 
-use crate::model::remote::{RemoteDevice, RemoteServerConfig, RemoteServerInfo};
-use crate::remote::control::{self, RemoteState};
-use crate::remote::server::RemoteHost;
 use crate::sink::{TauriAssets, TauriSink};
+use mt_model::remote::{RemoteDevice, RemoteServerConfig, RemoteServerInfo};
+use mt_remote::control::{self, RemoteState};
+use mt_remote::server::RemoteHost;
 
 #[tauri::command]
 pub async fn start_remote_server(

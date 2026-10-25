@@ -2695,23 +2695,20 @@ checksum = "4050469837a6ff301cd14c1f8f24f88549e6d548f24f64e2148eb0f72cebc51f"
 name = "marble-trace"
 version = "0.27.0"
 dependencies = [
- "axum",
- "base64 0.23.1",
- "bitflags 2.13.2",
  "dotenvy",
- "flate2",
  "futures",
- "irating",
- "kerb",
- "keyring",
- "local-ip-address",
  "log",
- "png 0.18.1",
- "reqwest 0.13.5",
+ "mt-chat",
+ "mt-companions",
+ "mt-computations",
+ "mt-input",
+ "mt-model",
+ "mt-remote",
+ "mt-sim-iracing",
+ "mt-source",
+ "mt-telemetry",
  "serde",
  "serde_json",
- "serde_repr",
- "serde_yaml_ng",
  "specta",
  "specta-serde",
  "specta-typescript",
@@ -2729,7 +2726,6 @@ dependencies = [
  "tauri-plugin-updater",
  "tauri-plugin-window-state",
  "tokio",
- "tokio-tungstenite 0.30.0",
  "tracing",
  "tracing-appender",
  "tracing-subscriber",
@@ -2829,6 +2825,119 @@ checksum = "bb85c154ba489f01b25c0d36ae69a87e4a1c73a72631fc6c0eb6dde34a73e44b"
 dependencies = [
  "num-traits",
  "pxfm",
+]
+
+[[package]]
+name = "mt-chat"
+version = "0.0.0"
+dependencies = [
+ "futures",
+ "keyring",
+ "mt-model",
+ "reqwest 0.13.5",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-tungstenite 0.30.0",
+ "tracing",
+]
+
+[[package]]
+name = "mt-companions"
+version = "0.0.0"
+dependencies = [
+ "base64 0.23.1",
+ "mt-model",
+ "png 0.18.1",
+ "tracing",
+ "windows",
+ "winreg",
+]
+
+[[package]]
+name = "mt-computations"
+version = "0.0.0"
+dependencies = [
+ "irating",
+ "mt-model",
+ "serde",
+ "serde_json",
+ "specta",
+ "tracing",
+]
+
+[[package]]
+name = "mt-input"
+version = "0.0.0"
+dependencies = [
+ "mt-model",
+ "tracing",
+ "windows",
+]
+
+[[package]]
+name = "mt-model"
+version = "0.0.0"
+dependencies = [
+ "bitflags 2.13.2",
+ "serde",
+ "serde_json",
+ "specta",
+]
+
+[[package]]
+name = "mt-remote"
+version = "0.0.0"
+dependencies = [
+ "axum",
+ "futures",
+ "local-ip-address",
+ "mt-model",
+ "mt-telemetry",
+ "reqwest 0.13.5",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "mt-sim-iracing"
+version = "0.0.0"
+dependencies = [
+ "kerb",
+ "mt-model",
+ "mt-source",
+ "serde",
+ "serde_json",
+ "serde_yaml_ng",
+ "tracing",
+]
+
+[[package]]
+name = "mt-source"
+version = "0.0.0"
+dependencies = [
+ "flate2",
+ "mt-model",
+ "serde",
+ "serde_json",
+ "serde_yaml_ng",
+ "specta",
+ "tracing",
+]
+
+[[package]]
+name = "mt-telemetry"
+version = "0.0.0"
+dependencies = [
+ "mt-computations",
+ "mt-model",
+ "mt-source",
+ "serde",
+ "serde_json",
+ "specta",
+ "tracing",
 ]
 
 [[package]]

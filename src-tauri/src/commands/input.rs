@@ -2,10 +2,10 @@
 
 use tauri::State;
 
-use crate::model::input::{InputDevice, InputDeviceRemap, InputDeviceResolution};
+use mt_model::input::{InputDevice, InputDeviceRemap, InputDeviceResolution};
 
-use crate::input::identity::{merge_device_lists, resolve_remaps};
-use crate::input::InputRuntime;
+use mt_input::identity::{merge_device_lists, resolve_remaps};
+use mt_input::InputRuntime;
 
 /// The runtime is created in `setup`, so it is optional here — a machine where
 /// DirectInput failed to initialise still runs, just with keyboard bindings.

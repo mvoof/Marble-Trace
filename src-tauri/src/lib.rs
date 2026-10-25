@@ -17,26 +17,17 @@
 
 #[cfg(feature = "dev")]
 mod bindings;
-mod chat;
 mod commands;
-mod companions;
-mod computations;
 mod hotkeys;
-mod input;
 mod logging;
-mod model;
 #[cfg(feature = "dev")]
 mod perf_run;
 mod process_priority;
-mod remote;
 mod remote_mirror;
 mod sim;
 mod sink;
-mod sources;
-mod telemetry;
 mod utils;
 
-use chat::state::{ChatServiceState, ChatState};
 use commands::chat::{
     start_chat_stream, stop_chat_stream, twitch_account, twitch_has_client_id,
     twitch_poll_device_token, twitch_request_device_code, twitch_sign_out,
@@ -63,15 +54,16 @@ use commands::{
     set_pit_warning_laps, set_remote_active_events, settings_file_exists, start_telemetry_stream,
     stop_telemetry_stream, toggle_pit_auto,
 };
-use companions::CompanionsState;
 use hotkeys::{on_device_edge, HotkeyState};
-use input::{InputHost, InputRuntime};
+use mt_chat::state::{ChatServiceState, ChatState};
+use mt_companions::CompanionsState;
+use mt_input::{InputHost, InputRuntime};
+use mt_remote::control::RemoteState;
+use mt_telemetry::control::TelemetryCommand;
+use mt_telemetry::state::TelemetryState;
 #[cfg(feature = "dev")]
 use perf_run::{spawn_if_requested, PerfRunConfig, PerfRunState};
-use remote::control::RemoteState;
 use sink::TauriSink;
-use telemetry::control::TelemetryCommand;
-use telemetry::state::TelemetryState;
 use utils::lock_or_recover;
 
 use std::sync::Arc;
@@ -278,7 +270,7 @@ pub fn run() {
 
                     // Only the instances this app started, and only the ones
                     // still marked to close with it — see `companions::close`.
-                    companions::close_all_owned(&window.app_handle().state::<CompanionsState>());
+                    mt_companions::close_all_owned(&window.app_handle().state::<CompanionsState>());
                 }
             }
             WindowEvent::Resized(size) => {

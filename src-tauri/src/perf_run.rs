@@ -17,12 +17,12 @@ use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager};
 use tracing::{error, info, warn};
 
-use crate::model::events::{EVENT_PERF_BEGIN, EVENT_PERF_END};
-use crate::sources::replay::{REPLAY_ENV, REPLAY_FROM_ENV};
-use crate::telemetry::delivery::DeliverySet;
-use crate::telemetry::state::TelemetryState;
-use crate::telemetry::tick_timings::TickSummary;
 use crate::utils::lock_or_recover;
+use mt_model::events::{EVENT_PERF_BEGIN, EVENT_PERF_END};
+use mt_source::replay::{REPLAY_ENV, REPLAY_FROM_ENV};
+use mt_telemetry::delivery::DeliverySet;
+use mt_telemetry::state::TelemetryState;
+use mt_telemetry::tick_timings::TickSummary;
 
 /// Path the JSON report is written to; its presence starts a run.
 pub const PERF_ENV: &str = "MARBLE_TRACE_PERF";

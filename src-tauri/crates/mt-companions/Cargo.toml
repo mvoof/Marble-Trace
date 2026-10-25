@@ -1,0 +1,18 @@
+[package]
+name = "mt-companions"
+description = "Companion apps: detected, launched and closed beside the sim."
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+mt-model.workspace = true
+tracing.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+png.workspace = true
+base64.workspace = true
+winreg.workspace = true
+windows.workspace = true
