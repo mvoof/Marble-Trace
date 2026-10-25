@@ -33,10 +33,9 @@ fn rotate_log_file(log_dir: &Path) -> (PathBuf, bool) {
 }
 
 /// Every crate of the workspace at `info`. A tracing target is the module path,
-/// so a crate left off this list is silent by default.
-const DEFAULT_DIRECTIVES: &str = "marble_trace_lib=info,mt_model=info,mt_source=info,\
-    mt_sim_iracing=info,mt_computations=info,mt_telemetry=info,mt_chat=info,mt_input=info,\
-    mt_remote=info,mt_companions=info";
+/// and a directive matches every target that starts with it, so `mt_` covers
+/// each `mt-*` crate, a new one included.
+const DEFAULT_DIRECTIVES: &str = "marble_trace_lib=info,mt_=info";
 
 fn build_env_filter(default_directives: &str) -> EnvFilter {
     EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(default_directives))
