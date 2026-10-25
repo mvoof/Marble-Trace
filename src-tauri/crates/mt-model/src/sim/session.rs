@@ -85,7 +85,7 @@ pub struct SessionSnapshot {
     pub incident_penalty_subsequent: Option<i32>,
     /// Corners on this layout (`WeekendInfo.TrackNumTurns`) — the count iRacing
     /// scores Safety Rating by, but for the layouts in `SCORED_CORNERS`
-    /// (`computations/safety_rating.rs`). `None` when the sim does not report it.
+    /// (`mt-computations/src/rating/safety_rating.rs`). `None` when the sim does not report it.
     pub track_num_turns: Option<i32>,
     /// A team event (`WeekendInfo.TeamRacing`): the incident limit and the
     /// penalties count the crew's points, not one driver's.
@@ -170,10 +170,10 @@ pub struct CarEntry {
     pub user_name: String,
     pub car_number: String,
     /// iRacing's `CarID` — the car model. Keys the class badge map
-    /// (`sources/iracing/car_badges.rs`).
+    /// (`mt-sim-iracing/src/car_badges.rs`).
     pub car_id: i32,
     pub car_class_id: i32,
-    /// The class badge, resolved by `sources/iracing/car_classes.rs` — not the
+    /// The class badge, resolved by `mt-sim-iracing/src/car_classes.rs` — not the
     /// sim's `CarClassShortName`, which is empty in AI and hosted sessions.
     pub car_class_short_name: String,
     /// Raw iRacing color string (e.g. "0xffda59").

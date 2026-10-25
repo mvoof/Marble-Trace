@@ -6,7 +6,7 @@ import * as TELEMETRY_EVENT_BITS_MODULE from '@shared/contracts/generated/teleme
  * The backend assembles one `TelemetryBundle` per tick and fills these fields
  * only while at least one widget in the active layout wants them — the mask is
  * `set_active_events`. Names and bits are declared once in Rust
- * (`src-tauri/src/model/telemetry_events.rs`) and generated into
+ * (`src-tauri/crates/mt-model/src/contract/telemetry_events.rs`) and generated into
  * `telemetry-event-bits.ts`, whose export names are the names below.
  *
  * What this saves is the *publication*, not the computation: the processor

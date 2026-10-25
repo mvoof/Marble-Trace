@@ -10,7 +10,7 @@ export const countedLaps = (history: FuelLapRecord[]): FuelLapRecord[] =>
   history.filter((record) => record.rejected === null);
 
 /**
- * Read off `FuelComputedFrame.historyStats`, which `computations/fuel.rs`
+ * Read off `FuelComputedFrame.historyStats`, which `mt-computations/src/strategy/fuel.rs`
  * fills. The shape is kept here as the widget's own name for it, and this is
  * what a frame with no history yet reads as.
  */

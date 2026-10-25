@@ -2,7 +2,7 @@
 //!
 //! `RaceFlags` is the backend→frontend contract for flag state.
 //! The raw bit masks live here too, since `computations/` reads them as well;
-//! the decoding into `RaceFlags` lives in `sources/iracing/flags.rs` (kerb-only zone).
+//! the decoding into `RaceFlags` lives in `mt-sim-iracing/src/flags.rs` (kerb-only zone).
 
 use serde::{Deserialize, Serialize};
 

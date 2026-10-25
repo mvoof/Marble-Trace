@@ -229,7 +229,7 @@ export const HOTKEY_ACTIONS: readonly HotkeyActionSpec[] = [
   },
 ];
 
-/** `widget:<type>:toggle-visibility` — see `model/hotkeys.rs`. */
+/** `widget:<type>:toggle-visibility` — see `mt-model/src/app/hotkeys.rs`. */
 export const WIDGET_VISIBILITY_ACTION_PREFIX = 'widget:';
 
 export const WIDGET_VISIBILITY_ACTION_SUFFIX = ':toggle-visibility';

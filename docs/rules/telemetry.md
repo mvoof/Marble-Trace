@@ -1,10 +1,10 @@
 # Telemetry rules
 
-Bundle rates, the slow slice, demand gating, quantization and the inspector. Background: `docs/architecture.md` → `telemetry/`, ADR-0009.
+Bundle rates, the slow slice, demand gating, quantization and the inspector. Background: `docs/architecture.md` → `mt-telemetry`, ADR-0009.
 
 ## Telemetry Bundle rates
 
-_Held by: test (the scheduler's rates and that a timed tier is never due off a published tick — `telemetry/scheduler.rs`); review (the rest)._
+_Held by: test (the scheduler's rates and that a timed tier is never due off a published tick — `mt-telemetry/src/delivery/scheduler.rs`); review (the rest)._
 
 The processors run on every source tick (~60 Hz). A bundle is **published** on
 every Nth tick — the overlay clock, `appSettings.overlayUpdateHz` (60 / 30 / 20 /
@@ -20,7 +20,7 @@ every change costs the game a composed frame: never publish off the clock.
 | 1     | `session`, `environment`                                                                                                                                       |
 | async | `sim://session`, `sim://weather`, `sim://status`, `sim://disconnected`, `sim://capabilities`, `sim://perf`, `sim://track-shape`, `sim://reference-lap/updated` |
 
-Event names are declared in `src-tauri/src/model/events.rs` and generated into
+Event names are declared in `src-tauri/crates/mt-model/src/contract/events.rs` and generated into
 `src/shared/contracts/generated/backend-events.ts`; `src/shared/api/sim-events.ts` re-exports them
 and adds the few that never cross the boundary. Never use telemetry
 `sessionTime` for 60 Hz integration — use `performance.now()`.
@@ -41,10 +41,10 @@ frame to `TelemetrySlowBundle` in `emitter.rs` and to
 `SimStore.subscribeSlowBundle`, not a subscription to the bundle.
 
 **Every pit order goes out from the telemetry thread.** Auto mode decides there
-(`computations/pit_auto.rs`, stepped at 4 Hz in `emitter.rs`); a manual one —
+(`mt-computations/src/strategy/pit_auto.rs`, stepped at 4 Hz in `emitter.rs`); a manual one —
 a key, or a click through `run_pit_action` — is a `PitAction` the thread
 resolves against the frame of the tick that drains it
-(`computations/pit_actions.rs`), claiming its half of the stop from auto mode
+(`mt-computations/src/strategy/pit_actions.rs`), claiming its half of the stop from auto mode
 before the broadcast leaves. Main pushes the rules — `appSettings.pitAuto*`,
 the fuel key step in liters, whether the widget is in the active layout — with
 `set_pit_strategy`; the auto mode plate is `toggle_pit_auto`. The widget learns
@@ -76,7 +76,7 @@ export const G_METER_MANIFEST: WidgetManifest = {
 in the active layout and sends the mask to the backend
 (`set_active_events`); `emitter.rs` leaves an unrequested field out of the
 bundle. The names and their bit values are declared once, in
-`src-tauri/src/model/telemetry_events.rs` (`ts_values!`), and generated into
+`src-tauri/crates/mt-model/src/contract/telemetry_events.rs` (`ts_values!`), and generated into
 `src/shared/contracts/generated/telemetry-event-bits.ts`; `src/shared/contracts/telemetry-events.ts` derives
 `TelemetryEventName` from it. A new gated field is one line there.
 
@@ -96,13 +96,13 @@ why the declaration sits next to the widget instead of in a list elsewhere.
 
 _Held by: review (the precision chosen, the `PartialEq` on a suppressed frame)._
 
-`telemetry/quantize.rs` rounds the per-car frames to the precision a widget draws
+`mt-telemetry/src/delivery/quantize.rs` rounds the per-car frames to the precision a widget draws
 (positions 4 dp, gaps 2 dp, lap times 3 dp, distances and speeds 2 dp; the coach's call to the step it is drawn at), and
-`telemetry/publications.rs` then drops any frame identical to the last one
+`mt-telemetry/src/delivery/publications.rs` then drops any frame identical to the last one
 published. The order is load-bearing: raw floats are never bit-identical two
 ticks running, so without rounding first nothing would ever compare equal.
 
-- **Round at publication, never on the way in.** `computations/` always sees raw
+- **Round at publication, never on the way in.** `mt-computations` always sees raw
   values — a processor that integrates or compares against a threshold would
   accumulate the error.
 - Both run **after** the mask, so a gated-away field is never recorded as sent.
@@ -124,7 +124,7 @@ and `tauri:build:dev`, whose frontend is built in the `devtools` mode
 snapshot export. Shows four streams as a lazy
 tree. Two are the sim's own data, untouched: every iRacing variable under its
 own name with the sim's type, unit and description (kerb's `telemetry_snapshot` /
-`var_list_snapshot`, copied one to one in `sources/raw.rs`), and the session
+`var_list_snapshot`, copied one to one in `mt-source/src/raw.rs`), and the session
 YAML as written — as text, and as a tree in the document's order. Two are ours,
 and the panel says so: the live `SourceFrame` (a superset of the bundle — every
 field the adapter produced, including ones no widget receives) and the parsed
@@ -145,11 +145,11 @@ connection, the YAML (`get_raw_session`) once per session change. The snapshot
 export uses the same feed for one frame and writes the raw data beside the
 adapted frames (`raw` in `TelemetrySnapshot`).
 
-| Layer                                 | File                                                                                           |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| feed state, one-shot capture          | `features/telemetry-inspector/telemetry-inspector.store.ts`                                    |
-| row building, filtering, array paging | `features/telemetry-inspector/inspector-tree.ts`                                               |
-| commands                              | `src-tauri/src/commands/telemetry.rs`, frame stored in `telemetry/emitter.rs` on the 4 Hz tier |
-| UI                                    | `features/telemetry-inspector/TelemetryInspectorSection/`                                      |
+| Layer                                 | File                                                                                                  |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| feed state, one-shot capture          | `features/telemetry-inspector/telemetry-inspector.store.ts`                                           |
+| row building, filtering, array paging | `features/telemetry-inspector/inspector-tree.ts`                                                      |
+| commands                              | `src-tauri/src/commands/telemetry.rs`, frame stored in `mt-telemetry/src/emitter.rs` on the 4 Hz tier |
+| UI                                    | `features/telemetry-inspector/TelemetryInspectorSection/`                                             |
 
 ---

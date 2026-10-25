@@ -251,7 +251,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
 /// Every host an emote or badge URL handed to the frontend points at — the
 /// widget loads them straight into an `<img>`, so each one must be allowed by
 /// the `img-src` of both Content Security Policies: the app windows'
-/// (`tauri.conf.json`, pinned by a test in `remote/csp.rs`) and the remote
+/// (`tauri.conf.json`, pinned by a test in `mt-remote/src/csp.rs`) and the remote
 /// page's. A host missing here renders as a broken image, not an error.
 pub const CHAT_IMAGE_SOURCES: [&str; 5] = [
     // Twitch emotes (`chat::twitch::EMOTE_CDN`) and the Helix badge artwork.

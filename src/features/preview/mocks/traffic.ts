@@ -12,7 +12,7 @@ import type {
 // silently into every fixture. Nothing here touches a store.
 //
 // Every value a scenario does not state is derived here the way
-// `computations/proximity.rs` derives it from a real tick — the clearance, the
+// `mt-computations/src/field/proximity.rs` derives it from a real tick — the clearance, the
 // bumper gap, the order the cars arrive in, the four radar distances and the
 // two spotter flags. Hand-setting them is how a fixture ends up showing a
 // radar bar a side distance the car list does not contain.

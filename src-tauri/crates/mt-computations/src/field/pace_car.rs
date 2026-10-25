@@ -22,7 +22,7 @@ use mt_model::sim::enums::TrackSurface;
 const PARKED_AFTER_S: f64 = 2.0;
 
 /// Lap distance is compared at the precision the windows receive it (4 dp,
-/// `telemetry/quantize.rs`): the raw float of a car sitting still can still
+/// `mt-telemetry/src/delivery/quantize.rs`): the raw float of a car sitting still can still
 /// jitter in its last bits, and that must not read as movement.
 const LAP_DIST_STEPS: f32 = 10_000.0;
 

@@ -33,7 +33,7 @@ export const LINEAR_MAP_SETTINGS = defineSettings('linearMap', {
    * Paints a warning stretch of the lap around every car the backend found
    * stopped on track or off it. iRacing gives no position for a yellow or a
    * debris flag, so the incident itself is what gets located — see
-   * `computations/incidents.rs`.
+   * `mt-computations/src/rating/incidents.rs`.
    */
   showIncidentZones: bool(true),
   /** Blinks an active incident zone instead of holding it steady. */

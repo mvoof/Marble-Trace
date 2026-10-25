@@ -407,7 +407,7 @@ pub fn export_hotkey_actions(path: &str) -> std::io::Result<()> {
          import type {{ HotkeyActionSpec }} from '@shared/contracts/generated/bindings';\n\n\
          /** Every bindable action but the generated per-widget visibility ones. */\n\
          export const HOTKEY_ACTIONS: readonly HotkeyActionSpec[] = {list};\n\n\
-         /** `widget:<type>:toggle-visibility` — see `model/hotkeys.rs`. */\n\
+         /** `widget:<type>:toggle-visibility` — see `mt-model/src/app/hotkeys.rs`. */\n\
          export const WIDGET_VISIBILITY_ACTION_PREFIX = {WIDGET_VISIBILITY_ACTION_PREFIX:?};\n\n\
          export const WIDGET_VISIBILITY_ACTION_SUFFIX = {WIDGET_VISIBILITY_ACTION_SUFFIX:?};\n"
     );

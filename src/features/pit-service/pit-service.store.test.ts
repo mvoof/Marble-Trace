@@ -102,7 +102,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
   };
 
   // The arithmetic of an order — rounding, the cap, the corner dance, the
-  // claim — is the telemetry thread's (`computations/pit_actions.rs`). What the
+  // claim — is the telemetry thread's (`mt-computations/src/strategy/pit_actions.rs`). What the
   // widget owns is which intent a click sends.
   const sentActions = () =>
     runPitActionMock.mock.calls.map(([action]) => action as unknown);
@@ -315,7 +315,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
   };
 
   describe('auto mode', () => {
-    // The decisions are the telemetry thread's (`computations/pit_auto.rs`);
+    // The decisions are the telemetry thread's (`mt-computations/src/strategy/pit_auto.rs`);
     // the widget reports what it publishes.
     it('names the halves auto mode still owns', () => {
       setPitAuto({ mode: 'auto' });

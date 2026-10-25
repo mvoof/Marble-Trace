@@ -1,6 +1,6 @@
 //! Decode iRacing session flag bit fields into a normalized `RaceFlags` struct.
 //!
-//! The bit masks live in `model/flags.rs`, so `computations/` can read the same
+//! The bit masks live in `mt-model/src/sim/flags.rs`, so `computations/` can read the same
 //! numbers without reaching into this layer. This module owns the decoding.
 
 use mt_model::sim::flags::{

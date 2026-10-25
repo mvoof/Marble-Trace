@@ -14,7 +14,7 @@ export const PitWarningFill = observer(() => {
 
   const fuelToAdd = fuel?.fuelToAddWithBuffer ?? null;
 
-  // The split across remaining stops is `computations/fuel.rs`'s: it already
+  // The split across remaining stops is `mt-computations/src/strategy/fuel.rs`'s: it already
   // holds the amount and the tank capacity, and the pit order has to dial in
   // the very same number from the main window, which is off the bundle.
   const plan = fuel?.refuelPlan ?? null;

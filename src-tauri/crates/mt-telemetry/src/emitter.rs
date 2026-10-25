@@ -49,7 +49,7 @@ use mt_model::sim::player::{
 use mt_model::sim::session::{SessionFrame, SessionSnapshot};
 use mt_source::{PitCommander, SourceFrame};
 
-// The names themselves live on the contract in `model/events.rs`, where the
+// The names themselves live on the contract in `mt-model/src/contract/events.rs`, where the
 // remote hub and the generated TypeScript read them too. Re-exported here
 // because this is the module that emits them.
 pub use mt_model::contract::events::{
@@ -620,7 +620,7 @@ fn deliver(
                 Recipient::Window(label) => sink.to_window(label, &bundle),
                 Recipient::Broadcast => sink.broadcast(&bundle),
                 // Reached by the mirror re-emit below, which is the only path
-                // `remote/mirror.rs` can still see.
+                // `src-tauri/src/remote_mirror.rs` can still see.
                 Recipient::Mirror => {}
             }
         }

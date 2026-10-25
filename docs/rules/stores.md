@@ -90,7 +90,7 @@ _Held by: review._
 
 ### Main owns the settings; every other window is a client
 
-_Held by: compiler (a `RemoteControlKind` with no case in `applyControl`); test (`client-sync.test.ts`, one case per kind for both transports; `remote/server.rs`, a settings command from a browser refused); review (state in the snapshot, events in signals)._
+_Held by: compiler (a `RemoteControlKind` with no case in `applyControl`); test (`client-sync.test.ts`, one case per kind for both transports; `mt-remote/src/server.rs`, a settings command from a browser refused); review (state in the snapshot, events in signals)._
 
 Each Tauri window has its own JS context and its own MobX stores. **Main is the
 only window that holds and writes the settings** (ADR-0007); an overlay and a
@@ -108,7 +108,7 @@ and the full payloads: `docs/adr/0007-main-owns-settings.md`.
   still show after a reload is a field of `ClientSnapshot`
   (`src/shared/contracts/client-protocol.ts`), added in `clientSnapshotFor` and in
   `snapshotAppInputs`, which republishes on it. A one-off happening is a
-  `RemoteControlKind` variant in `src-tauri/src/model/events.rs`; its case in
+  `RemoteControlKind` variant in `src-tauri/crates/mt-model/src/contract/events.rs`; its case in
   `applyControl` is enforced by the compiler, and `client-sync.test.ts` gets
   one case for both transports. `reaches_remote_screens()` keeps a kind on the
   driver's screens; `Replayed::replayed()` replays one to a socket that
@@ -133,12 +133,12 @@ A remote screen is a layout monitor rendered by a browser on the LAN. Same widge
 components, same coordinates, the client protocol above over a WebSocket. Full
 picture: `docs/architecture.md` → Cross-window synchronization.
 
-| Layer            | File                                                     |
-| ---------------- | -------------------------------------------------------- |
-| server / fan-out | `src-tauri/src/remote/{server,hub,mirror,pages}.rs`      |
-| main-window half | `app/sync/remote-publish.ts`                             |
-| browser half     | `app/sync/remote-sync.ts` → `client-sync.ts`             |
-| page entry       | `remote.html` → `src/remote.tsx` → `app/windows/remote/` |
+| Layer            | File                                                          |
+| ---------------- | ------------------------------------------------------------- |
+| server / fan-out | `src-tauri/crates/mt-remote/src/{server,hub,mirror,pages}.rs` |
+| main-window half | `app/sync/remote-publish.ts`                                  |
+| browser half     | `app/sync/remote-sync.ts` → `client-sync.ts`                  |
+| page entry       | `remote.html` → `src/remote.tsx` → `app/windows/remote/`      |
 
 - **Read-only.** A device reports only its viewport, applied once to fit a newly
   created screen.

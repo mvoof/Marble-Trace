@@ -2,7 +2,7 @@
 //! message kind the remote hub pushes over its socket.
 //!
 //! These used to be plain strings declared once in Rust and once again in
-//! TypeScript — three times for the chat events, which `remote/mirror.rs` also
+//! TypeScript — three times for the chat events, which `src-tauri/src/remote_mirror.rs` also
 //! kept a copy of. A name that drifts on one side does not fail a build: the
 //! listener simply never fires, which is how a missing `case` in
 //! `remote-sync.ts` came to be documented as a known hazard rather than a bug.
@@ -121,7 +121,7 @@ ts_values! {
 
 /// The same bundle again, for the remote screens only.
 ///
-/// **Temporary — the second half of spec decision 6.** `remote/mirror.rs` taps
+/// **Temporary — the second half of spec decision 6.** `src-tauri/src/remote_mirror.rs` taps
 /// the event stream with `app.listen`, and `emit_to` does not feed a Rust
 /// listener, so the bundle built for the remote screens' own mask is re-emitted
 /// under this name for the tap to pick up. The follow-up — moving the mirror to

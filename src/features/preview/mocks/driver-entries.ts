@@ -123,7 +123,7 @@ export const computeDriverEntries = (
       carNumber: car.carNumber || String(idx),
       carClassId: car.carClassId,
       // Already the resolved badge: the snapshot records the session as the
-      // backend published it, after `sources/iracing/car_classes.rs`.
+      // backend published it, after `mt-sim-iracing/src/car_classes.rs`.
       carClassShortName: car.carClassShortName,
       carClassColor: parseClassColor(car.carClassColor),
       flairId: previewFlairId(car.flairId, idx),

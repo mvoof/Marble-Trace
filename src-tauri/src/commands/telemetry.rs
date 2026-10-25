@@ -93,7 +93,7 @@ pub async fn set_active_events(
 
 /// Records what the remote screens are asking for.
 ///
-/// They have no webview of their own here — `remote/mirror.rs` taps the global
+/// They have no webview of their own here — `src-tauri/src/remote_mirror.rs` taps the global
 /// event stream — so their appetite is registered under a reserved pseudo-label
 /// instead of a window's. Keeping it in the registry rather than implied by the
 /// broadcast is what lets the later move to `emit_to` be a transport swap.

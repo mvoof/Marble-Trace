@@ -9,8 +9,8 @@ const LITERS_PER_GALLON = 3.785412;
 
 /**
  * The rules the telemetry thread runs the pit service by. Auto mode decides
- * there (`computations/pit_auto.rs`), and the pit keys are resolved there too
- * (`computations/pit_actions.rs`). Whether the widget is on screen goes with
+ * there (`mt-computations/src/strategy/pit_auto.rs`), and the pit keys are resolved there too
+ * (`mt-computations/src/strategy/pit_actions.rs`). Whether the widget is on screen goes with
  * them: auto mode never orders for a widget the driver removed from the layout.
  */
 export const pitAutoConfigOf = (

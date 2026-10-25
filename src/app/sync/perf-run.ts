@@ -18,7 +18,7 @@ import type { RendererCore } from '@app/roots/renderer-core';
 import { coldStartSample } from './perf-cold-start';
 
 /**
- * The overlay's half of a perf run (see `telemetry/perf_run.rs`).
+ * The overlay's half of a perf run (see `src-tauri/src/perf_run.rs`).
  *
  * The backend keeps the clock; this window starts collecting on `perf://begin`
  * and answers `perf://end` with what it saw. Nothing here runs unless the app

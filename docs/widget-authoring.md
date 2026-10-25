@@ -77,7 +77,7 @@ beside it. If a field is in the inspector but not in the bundle, it exists and
 is not published; that is a backend ticket, not a widget one.
 
 If the field does not exist at all, you are on a different route: adding a field
-to the contract is the backend half — `sources/`, `computations/`, a specta
+to the contract is the backend half — `mt-sim-iracing`, `mt-computations`, a specta
 type, a bundle tier — and lives in
 [architecture.md → Part I](architecture.md). Come back here when the field
 lands.
@@ -94,7 +94,7 @@ budget test (step 9).
 
 **Is it demand-gated?** The gated fields are the
 exports of `src/shared/contracts/generated/telemetry-event-bits.ts` (generated from
-`src-tauri/src/model/telemetry_events.rs`) — **read that file, it is the list**,
+`src-tauri/crates/mt-model/src/contract/telemetry_events.rs`) — **read that file, it is the list**,
 and it grows. At the time of writing it holds eleven:
 `carDynamics`, `carInputs`, `carPositions`, `lapDelta` (the 60 Hz four, the
 **hot** ones), then `driverEntries`, `relative`, `proximity`, `incidents`, `coach`, `safetyRating`, `inputSamples`.

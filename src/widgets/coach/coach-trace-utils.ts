@@ -328,7 +328,7 @@ export const traceValueRange = (
 /**
  * Linearly interpolated reference sample at `lapDistPct`, wrapping across the
  * lap boundary — for the readouts beside the call; the call itself is the
- * telemetry thread's (`computations/coach.rs`, which interpolates the same way). Buckets store the value for the *interval* `[i/N, (i+1)/N)`,
+ * telemetry thread's (`mt-computations/src/driving/coach.rs`, which interpolates the same way). Buckets store the value for the *interval* `[i/N, (i+1)/N)`,
  * so each bucket's value is treated as located at the interval center
  * `(i + 0.5)/N`; the continuous position between two centers is
  *

@@ -27,7 +27,7 @@ pub const EVENTS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../../src/shared/contracts/generated/backend-events.ts"
 );
-/// The bindable actions, declared in `model/hotkeys.rs`.
+/// The bindable actions, declared in `mt-model/src/app/hotkeys.rs`.
 pub const HOTKEY_ACTIONS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../../src/shared/contracts/generated/hotkey-actions.ts"

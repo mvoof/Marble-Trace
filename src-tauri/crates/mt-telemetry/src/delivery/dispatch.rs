@@ -30,7 +30,7 @@ pub enum Recipient {
     /// bootstrap entry away (`MaskRegistry::register`), so a broadcast group
     /// and a window group do not coexist.
     Broadcast,
-    /// The remote screens. They hold no webview here — `remote/mirror.rs` taps
+    /// The remote screens. They hold no webview here — `src-tauri/src/remote_mirror.rs` taps
     /// the event stream — so their bundle goes out on an internal event the tap
     /// listens for.
     Mirror,
@@ -90,7 +90,7 @@ pub fn plan(entries: Vec<(String, u32)>) -> Vec<DeliveryGroup> {
 /// Whether this group's bundle must also go out on the internal mirror event.
 ///
 /// **Temporary — the second half of spec decision 6.** The remote screens still
-/// arrive through `app.listen` in `remote/mirror.rs`, which `emit_to` does not
+/// arrive through `app.listen` in `src-tauri/src/remote_mirror.rs`, which `emit_to` does not
 /// feed, so the group holding their appetite is re-emitted on an event the tap
 /// can see. The follow-up is "move the mirror to `emit_to`", named as out of
 /// scope in `.scratch/per-window-telemetry-mask/spec.md`; when it lands this
@@ -137,7 +137,7 @@ pub fn mirrors(groups: &[DeliveryGroup], group: &DeliveryGroup) -> bool {
 ///
 /// A seam rather than a call to `AppHandle` in place, because the one failure
 /// this design can produce silently is a bundle that reaches no mirror: nothing
-/// logs when `remote/mirror.rs` stops receiving, the remote screens simply go
+/// logs when `src-tauri/src/remote_mirror.rs` stops receiving, the remote screens simply go
 /// stale. With the transport behind this trait, the grouping can be driven in a
 /// unit test and the mirror asserted on.
 pub trait BundleSink {

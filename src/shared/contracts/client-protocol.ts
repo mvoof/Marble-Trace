@@ -14,7 +14,7 @@ import type {
 
 /**
  * The payloads of the client protocol (ADR-0007). The envelope around them is
- * declared in Rust (`model/client_protocol.rs`) and generated into
+ * declared in Rust (`mt-model/src/contract/client_protocol.rs`) and generated into
  * `bindings.ts`; what it carries is the frontend's own business, so it is
  * declared here and forwarded by the backend unread.
  */
