@@ -2,6 +2,28 @@
 $slant: ws(12);
 $slash-width: ws(4);
 $slash-gap: ws(4);
+$hazard-stripe: ws(12);
+// The right part of a hazard band that carries the stripes; the label sits
+// on the plain base to its left.
+$hazard-stripes-span: 60%;
+
+// Stripes kept off the band's slanted edge: drawn there, they bleed through
+// its anti-aliased pixels as a dotted line.
+@mixin hazard-band($base, $stripe) {
+  background-color: $base;
+  background-image:
+    linear-gradient(to right, $base, transparent 40%),
+    repeating-linear-gradient(
+      45deg,
+      $stripe 0,
+      $stripe $hazard-stripe,
+      $base $hazard-stripe,
+      $base calc(#{$hazard-stripe} * 2)
+    );
+  background-size: $hazard-stripes-span 100%;
+  background-position: right;
+  background-repeat: no-repeat;
+}
 
 // --flag-tone paints the slash and the icon, --flag-ink the label.
 .item {
@@ -142,20 +164,11 @@ $slash-gap: ws(4);
 }
 
 .itemDebris {
-  --flag-tone: #{$flag-band-orange};
+  --flag-tone: #{$flag-band-yellow};
   --flag-icon: #{$flag-band-white};
 
   .band {
-    background:
-      linear-gradient(to right, $flag-band-orange 40%, transparent 65%),
-      repeating-linear-gradient(
-        45deg,
-        $flag-band-hazard-shade 0,
-        $flag-band-hazard-shade ws(12),
-        transparent ws(12),
-        transparent ws(24)
-      ),
-      $flag-band-orange;
+    @include hazard-band($flag-band-yellow, $flag-band-red);
   }
 }
 
@@ -165,14 +178,6 @@ $slash-gap: ws(4);
   --flag-ink: #{$widget-text-primary};
 
   .band {
-    background:
-      linear-gradient(to right, $flag-band-hazard 35%, transparent 60%),
-      repeating-linear-gradient(
-        45deg,
-        $flag-band-yellow 0,
-        $flag-band-yellow ws(12),
-        $flag-band-hazard ws(12),
-        $flag-band-hazard ws(24)
-      );
+    @include hazard-band($flag-band-hazard, $flag-band-yellow);
   }
 }
