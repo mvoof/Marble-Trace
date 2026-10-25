@@ -19,7 +19,7 @@
 //! in all four locales. The test at the bottom fails once `REMOVE_AT` is
 //! reached, so nobody has to remember on their own.
 
-use crate::model::install::InstallMismatch;
+use mt_model::app::install::InstallMismatch;
 
 #[cfg(windows)]
 const UNINSTALL_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\Marble Trace";

@@ -33,7 +33,7 @@ export const FuelStatsRow = observer(() => {
 
   const fuelLevel = carStatus?.fuel_level ?? null;
 
-  // Computed in `computations/fuel.rs` alongside the average it is read
+  // Computed in `mt-computations/src/strategy/fuel.rs` alongside the average it is read
   // against, so the same history is not walked a second time here on every
   // frame — and so a remote screen gets the figures instead of recomputing
   // them per device.

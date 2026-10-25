@@ -1,5 +1,5 @@
 /**
- * The wire shape of an input binding — declared in Rust (`model/hotkeys.rs`),
+ * The wire shape of an input binding — declared in Rust (`mt-model/src/app/hotkeys.rs`),
  * which dispatches them, and generated into `bindings.ts`. Re-exported here
  * with the helpers every layer compares bindings by.
  */

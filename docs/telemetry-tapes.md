@@ -167,6 +167,6 @@ without the script. All of them are listed in
 | `MARBLE_TRACE_PERF_MODE`    | `widgets` or `stores-only`                                      |
 | `MARBLE_TRACE_PERF_HEAP`    | `1`: overlays hold their report until the heap profile is taken |
 
-Code: `src-tauri/src/sources/tape.rs` (format, writer, reader),
-`src-tauri/src/sources/replay.rs` (the source and the env vars),
+Code: `src-tauri/crates/mt-source/src/tape.rs` (format, writer, reader),
+`src-tauri/crates/mt-source/src/replay.rs` (the source and the env vars),
 `scripts/perf-run.mjs` and `scripts/perf-heap.mjs` (the harness).

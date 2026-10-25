@@ -42,7 +42,7 @@ const NEUTRAL_CALL: CoachCall = {
 
 /**
  * The coach's call — BRAKE / GAS / GRIP and the countdowns beside it — as the
- * telemetry thread computes it (`computations/coach.rs`). Built per instance
+ * telemetry thread computes it (`mt-computations/src/driving/coach.rs`). Built per instance
  * (`mount.ts`): each coach reads the variant its own corner-exit setting asks
  * for, and debounces what it shows.
  */

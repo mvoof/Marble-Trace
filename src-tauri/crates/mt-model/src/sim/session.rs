@@ -1,0 +1,235 @@
+/// Session telemetry — real-time session state from the telemetry stream.
+///
+/// Contains session time, remaining time, session state flags,
+/// and current session index. Changes infrequently compared to car data.
+///
+/// For static session YAML data (driver info, weekend info), see
+/// `SessionSnapshot` emitted via `sim://session`.
+///
+/// @see https://sajax.github.io/irsdkdocs/telemetry/
+use serde::{Deserialize, Serialize};
+
+use crate::sim::enums::SessionState;
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+pub struct SessionFrame {
+    /// Seconds since the session started
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/sessiontime/
+    pub session_time: Option<f64>,
+
+    /// Seconds remaining in the session
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeremain/
+    pub session_time_remain: Option<f64>,
+
+    /// Session state enum value (invalid, warmup, racing, etc.)
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionstate/
+    pub session_state: Option<SessionState>,
+
+    /// Session flags bit field (green, yellow, red, etc.)
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionflags/
+    pub session_flags: Option<u32>,
+
+    /// Index of the current session (practice=0, qualifying=1, race=2, etc.)
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionnum/
+    pub session_num: Option<i32>,
+
+    /// In-simulator time of day in seconds since midnight
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeofday/
+    pub session_time_of_day: Option<f32>,
+
+    /// Laps remaining in the session (leader-based, preferred over SessionLapsRemain)
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionlapsremainex/
+    pub session_laps_remain_ex: Option<i32>,
+
+    /// Index of the player's car in CarIdx arrays
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/playercaridx/
+    pub player_car_idx: Option<i32>,
+
+    /// Per-car session flags for the player's car (black flag, DQ, meatball, etc.)
+    /// Extracted from CarIdxSessionFlags[player_car_idx]
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
+    pub player_car_flags: Option<u32>,
+}
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionSnapshot {
+    pub track_id: i32,
+    /// Directory-style track name (e.g. "okayama full").
+    pub track_name: String,
+    pub track_display_name: String,
+    pub track_config_name: String,
+    pub driver_pit_trk_pct: Option<f32>,
+    /// Track length in meters, parsed from iRacing's "3.70 km" / "2.30 mi".
+    pub track_length_m: f32,
+    /// Raw iRacing display strings with units (e.g. "56.33 kph", "25.55 C").
+    pub track_pit_speed_limit: String,
+    pub track_weather_type: String,
+    pub track_air_temp: String,
+    pub track_surface_temp: String,
+    pub track_wind_vel: String,
+    pub track_wind_dir: String,
+    pub track_relative_humidity: String,
+    /// Simulated session date from WeekendOptions (e.g. "2026-06-11").
+    pub weekend_date: String,
+    /// Incident count that disqualifies a driver. `None` when the sim reports
+    /// "unlimited" — the usual value in practice and hosted sessions.
+    pub incident_limit: Option<i32>,
+    /// Incident count that earns the first penalty (a drive-through or a
+    /// stop-and-go). `None` when the session hands out none.
+    pub incident_penalty_initial: Option<i32>,
+    /// Incidents between each further penalty after the first. `None` when only
+    /// the first one is given.
+    pub incident_penalty_subsequent: Option<i32>,
+    /// Corners on this layout (`WeekendInfo.TrackNumTurns`) — the count iRacing
+    /// scores Safety Rating by, but for the layouts in `SCORED_CORNERS`
+    /// (`mt-computations/src/rating/safety_rating.rs`). `None` when the sim does not report it.
+    pub track_num_turns: Option<i32>,
+    /// A team event (`WeekendInfo.TeamRacing`): the incident limit and the
+    /// penalties count the crew's points, not one driver's.
+    pub team_racing: bool,
+    /// The league the session runs in (`WeekendInfo.LeagueID`); `None` outside
+    /// a league. A league session never changes Safety Rating.
+    pub league_id: Option<i32>,
+    /// The event this server runs (`WeekendInfo.SubSessionID`): practice,
+    /// qualifying and race share it. `None` offline, where the sim sends none.
+    pub sub_session_id: Option<i32>,
+    /// What the server is for (`WeekendInfo.EventType`): `Race` for an event
+    /// with practice, qualifying and a race; `Practice`, `Test` or
+    /// `Time Trial` for a server that is only that. Empty when not reported.
+    pub event_type: String,
+    pub current_session_num: i32,
+    pub sessions: Vec<SessionEntry>,
+    pub player_car_idx: i32,
+    /// Fuel the player may carry in this session, in litres: the physical tank
+    /// (`DriverCarFuelMaxLtr`) scaled by the series/BoP limit
+    /// (`DriverCarMaxFuelPct`). Not the tank size — a car with an 83 L tank
+    /// capped at 60 % reports 50 here.
+    pub fuel_capacity_ltr: Option<f32>,
+    /// Player car constants from DriverInfo (None when absent in YAML).
+    pub driver_car_red_line: Option<f32>,
+    pub driver_car_sl_shift_rpm: Option<f32>,
+    pub driver_car_sl_blink_rpm: Option<f32>,
+    pub cars: Vec<CarEntry>,
+    pub driver_tires: Vec<TireCompoundEntry>,
+    pub sectors: Vec<SectorEntry>,
+    pub qualify_results: Vec<QualifyResultEntry>,
+}
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+pub enum SessionType {
+    Practice,
+    Qualify,
+    Race,
+    #[default]
+    Unknown,
+}
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionEntry {
+    pub session_type: SessionType,
+    /// Original label from the sim ("Lone Qualify", "Race", etc.) — use for display.
+    pub session_type_label: String,
+    /// "unlimited" or a lap count as string (iRacing emits both forms).
+    pub session_laps: String,
+    pub results_positions: Vec<ResultPosition>,
+}
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+/// A finishing/running position from the session results.
+///
+/// `position` and `class_position` are both **1-indexed** — the source layer
+/// normalises whatever convention the sim's own format uses.
+pub struct ResultPosition {
+    pub car_idx: i32,
+    pub position: i32,
+    pub class_position: Option<i32>,
+    pub lap: Option<i32>,
+    pub time: Option<f32>,
+    /// Best lap of the session, kept by the sim after the car leaves the world.
+    pub fastest_time: Option<f32>,
+    /// Last completed lap, kept by the sim after the car leaves the world.
+    pub last_time: Option<f32>,
+    pub laps_complete: Option<i32>,
+    /// 0 while the car is still running; non-zero once the sim marks it retired/DQ'd.
+    pub reason_out_id: Option<i32>,
+}
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct CarEntry {
+    pub car_idx: i32,
+    pub user_name: String,
+    pub car_number: String,
+    /// iRacing's `CarID` — the car model. Keys the class badge map
+    /// (`mt-sim-iracing/src/car_badges.rs`).
+    pub car_id: i32,
+    pub car_class_id: i32,
+    /// The class badge, resolved by `mt-sim-iracing/src/car_classes.rs` — not the
+    /// sim's `CarClassShortName`, which is empty in AI and hosted sessions.
+    pub car_class_short_name: String,
+    /// Raw iRacing color string (e.g. "0xffda59").
+    pub car_class_color: String,
+    pub car_screen_name: String,
+    pub car_screen_name_short: String,
+    /// iRacing's `FlairID` — the country flag the driver picked for their profile.
+    /// `0` is "no flag chosen"; the id → ISO code table lives on the frontend.
+    pub flair_id: i32,
+    pub i_rating: i32,
+    pub lic_string: String,
+    pub lic_color: String,
+    /// iRacing's `LicLevel`, 1..24: the licence class and the whole-number
+    /// Safety Rating band in one — level 13 is class B band 1. `None` until
+    /// the sim has sent it.
+    pub lic_level: Option<i32>,
+    /// iRacing's `LicSubLevel`: the Safety Rating × 100 (`347` is 3.47).
+    /// `None` until the sim has sent it; never a default, a made-up rating
+    /// would give a confidently wrong estimate.
+    pub lic_sub_level: Option<i32>,
+    pub incident_count: i32,
+    pub is_pace_car: bool,
+    /// The sim is driving this car. AI drivers carry no `flair_id`, so this is
+    /// what the country-flag column falls back on.
+    pub is_ai: bool,
+    pub is_spectator: bool,
+    pub car_class_est_lap_time: f32,
+}
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct TireCompoundEntry {
+    pub tire_index: i32,
+    pub tire_compound_type: String,
+}
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct SectorEntry {
+    pub sector_num: i32,
+    pub sector_start_pct: f64,
+}
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+/// A qualifying result. `position` and `class_position` are both
+/// **1-indexed**, normalised by the source layer.
+pub struct QualifyResultEntry {
+    pub car_idx: i32,
+    pub position: i32,
+    pub class_position: Option<i32>,
+    /// Lap time that earned the grid slot. `None` when the car set no time.
+    pub fastest_time: Option<f32>,
+    /// Lap number the qualifying time was set on.
+    pub fastest_lap: Option<i32>,
+}

@@ -18,50 +18,20 @@
 use specta::TypeCollection;
 use specta_typescript::Typescript;
 
-/// Where the generated files go.
-///
-/// Anchored on `CARGO_MANIFEST_DIR` (baked in at compile time) rather than a
-/// path relative to the process's cwd: `export()` runs at app setup whenever
-/// the `dev` feature is on, including in a `tauri:build:dev` binary launched
-/// from anywhere — a relative `../src/...` only resolved because `cargo
-/// run`/`tauri dev` happen to set cwd to `src-tauri/`, and panicked on
-/// `NotFound` the moment that stopped being true.
-///
-/// Everything generated lands in `src/shared/contracts/generated/`, inside the
-/// contract layer every other layer may import: the specta types and the
-/// `ts_values!` value files alike — a default, an event name and a mask bit
-/// are compile-time literals the widget manifests read at import time.
-pub const BINDINGS_PATH: &str = concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../src/shared/contracts/generated/bindings.ts"
-);
-pub const CONSTANTS_PATH: &str = concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../src/shared/contracts/generated/backend-constants.ts"
-);
-pub const EVENTS_PATH: &str = concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../src/shared/contracts/generated/backend-events.ts"
-);
-/// The bindable actions, declared in `model/hotkeys.rs`.
-pub const HOTKEY_ACTIONS_PATH: &str = concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../src/shared/contracts/generated/hotkey-actions.ts"
-);
-pub const TELEMETRY_EVENT_BITS_PATH: &str = concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/../src/shared/contracts/generated/telemetry-event-bits.ts"
-);
+use mt_model::contract::generated_paths::{
+    BINDINGS_PATH, CONSTANTS_PATH, EVENTS_PATH, HOTKEY_ACTIONS_PATH, TELEMETRY_EVENT_BITS_PATH,
+};
 
 /// Every type the frontend may name, collected from the modules that declare
 /// them.
 pub fn collect_types() -> TypeCollection {
     let mut types = TypeCollection::default();
 
-    crate::model::register_types(&mut types);
-    crate::computations::register_types(&mut types);
-    crate::sources::register_types(&mut types);
-    crate::telemetry::register_types(&mut types);
+    mt_model::register_types(&mut types);
+    mt_computations::register_types(&mut types);
+    mt_source::register_types(&mut types);
+    mt_telemetry::register_types(&mut types);
+    crate::perf_run::register_types(&mut types);
 
     types
 }
@@ -81,11 +51,12 @@ pub fn export() -> Result<(), String> {
         .export_to(BINDINGS_PATH, &collect_types())
         .map_err(at_path(BINDINGS_PATH))?;
 
-    crate::model::defaults::export_constants(CONSTANTS_PATH).map_err(at_path(CONSTANTS_PATH))?;
-    crate::model::events::export_event_names(EVENTS_PATH).map_err(at_path(EVENTS_PATH))?;
-    crate::model::telemetry_events::export_telemetry_event_bits(TELEMETRY_EVENT_BITS_PATH)
+    mt_model::contract::defaults::export_constants(CONSTANTS_PATH)
+        .map_err(at_path(CONSTANTS_PATH))?;
+    mt_model::contract::events::export_event_names(EVENTS_PATH).map_err(at_path(EVENTS_PATH))?;
+    mt_model::contract::telemetry_events::export_telemetry_event_bits(TELEMETRY_EVENT_BITS_PATH)
         .map_err(at_path(TELEMETRY_EVENT_BITS_PATH))?;
-    crate::model::hotkeys::export_hotkey_actions(HOTKEY_ACTIONS_PATH)
+    mt_model::app::hotkeys::export_hotkey_actions(HOTKEY_ACTIONS_PATH)
         .map_err(at_path(HOTKEY_ACTIONS_PATH))?;
 
     Ok(())

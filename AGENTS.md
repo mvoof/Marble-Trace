@@ -21,7 +21,7 @@ npm run storybook          # isolated widget stories on :6006
 
 cd src-tauri && cargo fmt
 cd src-tauri && cargo clippy --all-targets   # --all-targets or test modules go unlinted
-RUST_LOG=marble_trace_lib=debug npm run tauri:dev   # verbose backend logs
+RUST_LOG=marble_trace_lib=debug,mt_telemetry=debug npm run tauri:dev   # verbose logs: app + named crates
 MARBLE_TRACE_RECORD=<dir> npm run tauri:dev         # record live sessions as tapes (dev feature)
 MARBLE_TRACE_REPLAY=<tape> npm run tauri:dev        # play a tape instead of the sim (dev feature)
 npm run perf:build                                     # the release binary perf and perf:game measure
@@ -51,7 +51,7 @@ compiler, test, or review). Read the file for the area before editing it.
 | touching                                                                     | read                                                                 |
 | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | imports between layers or slices, a new file's place                         | `docs/rules/layers.md`, `docs/rules/widgets.md` → Where a file lives |
-| `src-tauri/`: layers, contract, car badges, hotkeys, packaging               | `docs/rules/backend.md`                                              |
+| `src-tauri/`: crates, contract, car badges, hotkeys, packaging               | `docs/rules/backend.md`                                              |
 | the bundle: rates, gated fields, rounding, slow slice, inspector, pit orders | `docs/rules/telemetry.md`                                            |
 | stores, window roots, main↔overlay/remote sync, layout editor, settings file | `docs/rules/stores.md`, `docs/settings-schema.md`                    |
 | any widget: system, instances, appearance, panel, story, checklist           | `docs/rules/widgets.md`; building one: `docs/widget-authoring.md`    |
@@ -61,8 +61,9 @@ compiler, test, or review). Read the file for the area before editing it.
 
 ## Rules that apply everywhere
 
-- **Layers, one way.** Backend `model/ → sources/ → computations/ → telemetry/`;
-  `kerb` only in `sources/`, `computations/` free of kerb and tauri. Frontend
+- **Layers, one way.** Backend: a Cargo workspace, one crate per layer or
+  domain under `src-tauri/crates/`; kerb lives in `mt-sim-*` alone, tauri in
+  the app alone (`docs/rules/backend.md` has the graph). Frontend
   `app → pages → widgets → features → entities → shared`; a slice never imports
   a sibling slice (named exceptions: `allowedSiblings` in `.oxlintrc.json`).
   Direct file paths; no `index.ts`, no barrels.

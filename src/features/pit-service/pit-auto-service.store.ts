@@ -19,7 +19,7 @@ const AUTO_MODE_LABELS: Record<PitAutoMode, AutoModeLabel | null> = {
  *
  * The decisions — what to order on pit entry and in the box, which halves the
  * driver has taken over, when to stand down — are made on the telemetry thread
- * (`computations/pit_auto.rs`), so an order goes out whether or not any window
+ * (`mt-computations/src/strategy/pit_auto.rs`), so an order goes out whether or not any window
  * is alive to watch. This reads back the state it publishes and sends the auto
  * mode key; a manual order claims its half through `PitOrder.send`.
  */

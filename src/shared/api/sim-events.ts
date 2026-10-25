@@ -1,7 +1,7 @@
 /**
  * Event names the backend emits, re-exported from the generated contract.
  *
- * The names themselves are declared in `src-tauri/src/model/events.rs` and
+ * The names themselves are declared in `src-tauri/crates/mt-model/src/contract/events.rs` and
  * written out to `@shared/contracts/generated/backend-events` — this module is the frontend's door
  * onto them, plus the handful of names that never cross the boundary.
  */

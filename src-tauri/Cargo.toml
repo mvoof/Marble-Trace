@@ -9,51 +9,71 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[lib]
-name = "marble_trace_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+# The backend is this app crate plus the crates under `crates/`, one per layer
+# or domain (docs/rules/backend.md). The app is the only one that sees Tauri;
+# a `mt-sim-*` crate is the only one that sees kerb.
+[workspace]
+members = [".", "crates/*"]
+# Every member, so a plain `cargo clippy` or `cargo test` in this directory
+# covers the crates too rather than the app alone.
+default-members = [".", "crates/*"]
+resolver = "2"
 
-[build-dependencies]
-tauri-build = { version = "2.5.3", features = [] }
-dotenvy = "0.15"
+[workspace.package]
+version = "0.0.0"
+authors = ["mvoof"]
+license = "GPL-3.0-or-later"
+edition = "2021"
+publish = false
 
-[dependencies]
+# Every member opts in with `[lints] workspace = true`. Tests may panic:
+# `clippy.toml` allows unwrap/expect/panic there. `unreachable` is left off:
+# `#[tauri::command]` expands every async command into a never-run
+# `let _check: T = unreachable!();` type check.
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+undocumented_unsafe_blocks = "deny"
+missing_safety_doc = "deny"
+# A tight group of FFI calls may share a block, with one comment saying why.
+multiple_unsafe_ops_per_block = "warn"
+
+[workspace.dependencies]
+mt-model = { path = "crates/mt-model" }
+mt-source = { path = "crates/mt-source" }
+mt-sim-iracing = { path = "crates/mt-sim-iracing" }
+mt-computations = { path = "crates/mt-computations" }
+mt-telemetry = { path = "crates/mt-telemetry" }
+mt-chat = { path = "crates/mt-chat" }
+mt-input = { path = "crates/mt-input" }
+mt-remote = { path = "crates/mt-remote" }
+mt-companions = { path = "crates/mt-companions" }
+mt-hotkeys = { path = "crates/mt-hotkeys" }
+
 serde_json = "1.0"
+# Build scripts read `src-tauri/.env` for the keys baked in at compile time.
+dotenvy = "0.15"
 serde = { version = "1.0", features = ["derive"] }
-serde_repr = "0.1"
-tauri = { version = "2.10", features = ["protocol-asset"] }
-kerb = { version = "0.4.0", default-features = false, features = ["iracing"] }
+kerb = { version = "0.4.0", default-features = false }
 tokio = { version = "1", features = ["full"] }
 futures = "0.3"
-log = "0.4"
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-tracing-appender = "0.2"
-tauri-plugin-store = "2"
-tauri-plugin-fs = "2"
-tauri-plugin-window-state = "2"
-tauri-plugin-global-shortcut = "2"
-tauri-plugin-updater = "2"
-tauri-plugin-process = "2"
-tauri-plugin-mcp-bridge = "0.13"
-tauri-plugin-opener = "2"
-tauri-plugin-dialog = "2"
-tauri-plugin-aptabase = "1.0.0"
-sys-locale = "0.3"
 # Held at rc.22 until specta 2.0 is stable. rc.25 splits types whose serde
 # shape differs by direction (skip_serializing_if, default, alias) into
 # `*_Serialize | *_Deserialize` pairs, refuses serde_json::Value (it holds
 # i64) and types every float as `number | null` unless lossless floats are
 # enabled — a contract migration, not a bump, and the API still moves
 # between release candidates.
-specta = { version = "2.0.0-rc.22", features = ["derive", "serde_json"], optional = true }
-specta-typescript = { version = "0.0.9", optional = true }
-specta-serde = { version = "0.0.9", optional = true }
+specta = { version = "2.0.0-rc.22", features = ["derive", "serde_json"] }
 serde_yaml_ng = "0.10"
 # The live iRating estimate in the standings: the community formula, not iRacing's.
 irating = "0.1"
 # Recorded telemetry tapes (dev feature): gzipped JSON lines.
-flate2 = { version = "1", optional = true }
+flate2 = "1"
 bitflags = "2"
 # Companion-app icons: the executable's icon is read through GDI and handed to
 # the UI as a PNG data URL, which needs an encoder and base64 and nothing else.
@@ -70,21 +90,18 @@ reqwest = { version = "0.13", default-features = false, features = [
     "query",
     "rustls",
 ] }
-
 # Remote widgets: the same overlay bundle served over the LAN so a tablet can
 # render a layout screen in a browser. axum rides the tokio runtime the
 # telemetry thread already needs, so no second runtime is started.
 axum = { version = "0.8", features = ["ws"] }
 local-ip-address = "0.6"
-
+# Automatic discovery reads the uninstall registry, which is a plain key walk
+# the windows crate would spell out in three screens of unsafe.
+winreg = "0.56"
 # Global button bindings read wheels and button boxes through DirectInput8 —
 # the only Windows API that still reports device input while the sim holds
 # foreground focus. DirectInput lives under Devices::HumanInterfaceDevice in
 # windows-rs, not under a DirectInput-named feature.
-[target.'cfg(windows)'.dependencies]
-# Automatic discovery reads the uninstall registry, which is a plain key walk
-# the windows crate would spell out in three screens of unsafe.
-winreg = "0.56"
 windows = { version = "0.62", features = [
     "Win32_Devices_HumanInterfaceDevice",
     "Win32_Foundation",
@@ -99,10 +116,56 @@ windows = { version = "0.62", features = [
     "Win32_UI_WindowsAndMessaging",
 ] }
 
-[dev-dependencies]
-# The Safety Rating reference vectors sit on band floors, where one ulp decides
-# the band: the default parser rounds some of their numbers off by one.
-serde_json = { version = "1.0", features = ["float_roundtrip"] }
+[lints]
+workspace = true
+
+[lib]
+name = "marble_trace_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.5.3", features = [] }
+dotenvy.workspace = true
+
+[dependencies]
+mt-model.workspace = true
+mt-source.workspace = true
+mt-sim-iracing.workspace = true
+mt-computations.workspace = true
+mt-telemetry.workspace = true
+mt-chat.workspace = true
+mt-input.workspace = true
+mt-remote.workspace = true
+mt-companions.workspace = true
+mt-hotkeys.workspace = true
+
+serde_json.workspace = true
+serde.workspace = true
+tauri = { version = "2.10", features = ["protocol-asset"] }
+tokio.workspace = true
+futures.workspace = true
+log = "0.4"
+tracing.workspace = true
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+tauri-plugin-store = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-window-state = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+tauri-plugin-mcp-bridge = "0.13"
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-aptabase = "1.0.0"
+sys-locale = "0.3"
+specta = { workspace = true, optional = true }
+specta-typescript = { version = "0.0.9", optional = true }
+specta-serde = { version = "0.0.9", optional = true }
+
+[target.'cfg(windows)'.dependencies]
+winreg.workspace = true
+windows.workspace = true
 
 [features]
 default = []
@@ -110,5 +173,9 @@ dev = [
     "dep:specta",
     "dep:specta-typescript",
     "dep:specta-serde",
-    "dep:flate2",
+    "mt-model/dev",
+    "mt-source/dev",
+    "mt-sim-iracing/dev",
+    "mt-computations/dev",
+    "mt-telemetry/dev",
 ]

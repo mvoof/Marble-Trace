@@ -4,44 +4,66 @@ The Rust layers, the generated contract, car badges, input bindings and packagin
 
 ## Layers and the contract
 
-Four layers with strict one-way imports:
+`src-tauri/` is a Cargo workspace: the app crate (`src-tauri/src/`) and one
+crate per layer or domain under `src-tauri/crates/`, with strict one-way
+dependencies:
 
-_Held by: review for the layer imports — Rust has no import lint, and `computations/` staying free of `kerb` and `tauri` is checked by reading; test for the `ts_values!` files and `SLOW_FIELD_KEYS` (both pinned). `bindings.ts` is not pinned: it is regenerated, never edited, and a stale copy shows only in the diff._
+_Held by: the compiler for the layer imports — a crate can only `use` what its
+`Cargo.toml` lists, so kerb outside `mt-sim-*` or tauri outside the app does
+not build; review for what goes into which crate; test for the `ts_values!`
+files and `SLOW_FIELD_KEYS` (both pinned). `bindings.ts` is not pinned: it is
+regenerated, never edited, and a stale copy shows only in the diff._
 
-| Layer           | Rule                                                                                                                                              |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `model/`        | serde + specta types only. No `kerb` or `tauri`.                                                                                                  |
-| `sources/`      | **Only** layer allowed to `use kerb`. Maps `IracingFrame` → `SourceFrame`.                                                                        |
-| `computations/` | Pure logic. No kerb, no tauri. One processor per computed frame (`fuel`, `lap_delta`, `pace_car`, `pit_stops`, `proximity`, `driver_entries`, …). |
-| `commands/`     | The Tauri command surface, split by what it touches: `settings`, `telemetry`, `track`, `pit`, `companions`, `perf`, `install`.                    |
-| `telemetry/`    | Runtime: assembles `TelemetryBundle`, emits `sim://telemetry/bundle`.                                                                             |
+```
+mt-model  ←  mt-source  ←  mt-sim-iracing   (one mt-sim-* per sim)
+   ↑            ↑
+   ├── mt-computations
+   ├── mt-telemetry → mt-source, mt-computations
+   ├── mt-remote → mt-telemetry
+   ├── mt-hotkeys → mt-computations, mt-telemetry, mt-remote
+   ├── mt-chat · mt-input · mt-companions
+   └──────────── the app (src-tauri/src): wiring, commands, hotkeys
+```
 
-Beside the layers sit the runtimes that own their own commands: `chat/`
-(Twitch, YouTube), `companions/`, `hotkeys/`, `input/`, `remote/`.
+| Crate                                               | Rule                                                                                                                                                                                                                                                                                             |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mt-model`                                          | serde + specta types and the `EventSink` trait. No kerb, no tauri. `sim/` what a sim reports, `computed/`, `pit/`, `app/` (chat, companions, hotkeys, input, install, remote), `contract/` (event names, mask, defaults), `utils` (`lock_or_recover`).                                           |
+| `mt-source`                                         | The seam to a sim: `TelemetrySource`, `SourceFrame`, `PitCommander`, the raw-data types, and tapes (dev). No kerb.                                                                                                                                                                               |
+| `mt-sim-iracing`                                    | **Only** crate that uses kerb (`kerb[iracing]`). Maps `IracingFrame` → `SourceFrame`, parses the session YAML, sends pit orders. A second sim is a sibling `mt-sim-*`.                                                                                                                           |
+| `mt-computations`                                   | Pure logic on the model. One processor per computed frame, grouped by subject: `timing/`, `field/`, `strategy/`, `driving/`, `rating/`.                                                                                                                                                          |
+| `mt-telemetry`                                      | The runtime: the loop, `TelemetryBundle`, `delivery/` (masks, schedule, dispatch, dedup, rounding, counters). Takes a `TelemetryHost` — sink, data dir, source factory — and names no sim.                                                                                                       |
+| `mt-chat`, `mt-input`, `mt-remote`, `mt-companions` | Their runtimes. Emit through `EventSink`; what else they need from the app comes in a `*Host` (`InputHost`, `RemoteHost`).                                                                                                                                                                       |
+| `mt-hotkeys`                                        | The hotkey dispatcher: what a press fires in the current context (`dispatch`, `modes`) and carrying it out (`runtime`). Takes a `HotkeyHost` — sink, telemetry service, remote hub, overlay labels, and the OS's shortcuts behind `KeyRegistrar`.                                                |
+| the app                                             | The only crate that sees tauri: `lib.rs` wiring, every `#[tauri::command]` in `commands/` (registered in its `mod.rs`), `hotkeys.rs` (the global-shortcut plugin behind `KeyRegistrar`), `sim.rs` (which sims this build connects), `sink.rs` (`EventSink` and `BundleAssets` over `AppHandle`). |
+
+Plain `cargo fmt`, `cargo clippy --all-targets` and `cargo test` in
+`src-tauri/` cover every crate (`default-members`). The lints are declared
+once, in `[workspace.lints]` of `src-tauri/Cargo.toml`, and every crate opts in
+with `[lints] workspace = true`.
 
 - `specta` auto-generates `src/shared/contracts/generated/bindings.ts` on `npm run tauri dev` — **never edit manually**. Every `tauri:dev`, `perf --build` or `cargo test` regenerates it and the other generated contracts (below) unformatted, so the working tree shows them rewritten wholesale. **Leave them alone**: the `format` hook in `lefthook.yml` runs `oxfmt` on the staged files, so a commit takes them back to the checked-in form and only a real change to the contract remains. Do not format or revert them by hand.
-- The whole export lives in `src-tauri/src/bindings.rs`, and each module registers
-  its own types in a `register_types` beside them (`model/`, `computations/`,
-  `sources/`, `telemetry/`) — a new type is declared and registered in one file.
+- The whole export lives in `src-tauri/src/bindings.rs`, and each crate registers
+  its own types in a `register_types` of its own (`mt-model`, `mt-computations`,
+  `mt-source`, `mt-telemetry`) — a new type is declared and registered in one crate.
   Regenerate without launching the app:
   `UPDATE_BINDINGS=1 cargo test --features dev regenerates_the_contract`.
 - **Values do not go through specta** — it exports types, and a default or an
   event name is a value the frontend needs as a compile-time literal (widget
   manifests are read at import time, long before anything could `await` a
   command). Those are declared once via the `ts_values!` macro
-  (`model/ts_values.rs`) and generated into `src/shared/contracts/generated/backend-constants.ts`,
+  (`mt-model/src/contract/ts_values.rs`) and generated into `src/shared/contracts/generated/backend-constants.ts`,
   `src/shared/contracts/generated/backend-events.ts`, `src/shared/contracts/generated/telemetry-event-bits.ts` (the
   demand mask) and `src/shared/contracts/generated/hotkey-actions.ts` (the action list). All are checked in and pinned by a test, so a Rust constant
   changed without regenerating fails `cargo test`.
 - **The envelope and computed frames are camelCase; raw frames carry kerb's
   names.** `TelemetryBundle`, `TelemetrySlowBundle` and `SourceFrame` carry
   `#[serde(rename_all = "camelCase")]`, and so does every frame the project
-  produces (`computations/`, the parsed session snapshot). The raw sim frames —
+  produces (`mt-computations`, the parsed session snapshot). The raw sim frames —
   `carDynamics`, `carInputs`, `carStatus`, `chassis`, `lapTiming`, `carIdx`,
   `carPositions` — keep kerb's snake*case names and the sim's own `-1`/`0`
   markers; that is a decision, not a backlog. A computed frame says "no value"
   with `Option`, never a marker. Check `bindings.ts` for the frame you read. If
-  you add a rename, check `SLOW_FIELD_KEYS` in `remote/hub.rs`: it matches field
+  you add a rename, check `SLOW_FIELD_KEYS` in `mt-remote/src/hub.rs`: it matches field
   names against the \_encoded* bundle, and a stale entry there silently strips
   the slow tiers off every remote screen rather than failing.
 - Never use `f32::INFINITY`/`f32::NAN` in payloads — use finite placeholders or `Option<f32>`.
@@ -49,10 +71,10 @@ Beside the layers sit the runtimes that own their own commands: `chat/`
 
 ## Panics and unsafe
 
-_Held by: clippy (crate-level `#![deny]` in `src-tauri/src/lib.rs`, `src-tauri/clippy.toml`); review for where the FFI lives._
+_Held by: clippy (`[workspace.lints]` in `src-tauri/Cargo.toml`, `src-tauri/clippy.toml`); review for where the FFI lives._
 
 - **No `unwrap`/`expect`/`panic!` in production code** — `let … else`, `if let`, `?` or a logged fallback. An invariant that cannot fail goes into the type, not an assertion. Tests keep them: a panic is how a test fails.
-- **FFI sits behind safe types.** windows-rs marks every Win32 function and COM method `unsafe`, so the calls live in one wrapper per API (`input/dinput_ffi.rs`, `input/com_apartment.rs`, `companions/`) and the logic around them has no `unsafe`. A wrapper holds its invariants by construction — a `Joystick` exists only with its data format set, a buffer's size is a `const` assertion.
+- **FFI sits behind safe types.** windows-rs marks every Win32 function and COM method `unsafe`, so the calls live in one wrapper per API (`mt-input/src/dinput_ffi.rs`, `mt-input/src/com_apartment.rs`, `companions/`) and the logic around them has no `unsafe`. A wrapper holds its invariants by construction — a `Joystick` exists only with its data format set, a buffer's size is a `const` assertion.
 - **Every `unsafe {}` wraps one call and carries a `// SAFETY:` line** naming the precondition that holds. `unsafe fn` bodies still need inner `unsafe {}` blocks.
 - **Win32 handles are owned by guards**: `windows::core::Owned<T>` for `HANDLE`/`HICON`/`HBITMAP`, a local guard with `Drop` for anything else (`ScreenDc`, `ComApartment`). No hand-written `CloseHandle`/`DeleteObject` on a return path.
 - **Nothing unwinds out of an `extern "system"` callback** — it aborts the process. Check the pointers, stop the enumeration on anything unexpected.
@@ -62,7 +84,7 @@ _Held by: clippy (crate-level `#![deny]` in `src-tauri/src/lib.rs`, `src-tauri/c
 
 _Held by: test (a badge longer than `MAX_BADGE_LENGTH`); review (what goes in the map, and when an id is `verified`)._
 
-Two files in `sources/iracing/`: `car_badges.rs` is the **map** — `CarID → badge`,
+Two files in `mt-sim-iracing/src/`: `car_badges.rs` is the **map** — `CarID → badge`,
 the only hand-maintained list — and `car_classes.rs` holds the resolution and
 the colors. `session_parse.rs` only calls `apply_class_badges()` /
 `normalize_class_color()`; nothing on the frontend derives a class name, every
@@ -112,9 +134,9 @@ and **dispatched in Rust** — a key acts on the car with every webview paused.
 
 | Layer                                           | File                                                                   |
 | ----------------------------------------------- | ---------------------------------------------------------------------- |
-| action list (id, owner, label, default, effect) | `src-tauri/src/model/hotkeys.rs`                                       |
-| dispatch, OS registration, drag/interact modes  | `src-tauri/src/hotkeys/`                                               |
-| device polling (DirectInput8)                   | `src-tauri/src/input/`                                                 |
+| action list (id, owner, label, default, effect) | `src-tauri/crates/mt-model/src/app/hotkeys.rs`                         |
+| dispatch, OS registration, drag/interact modes  | `mt-hotkeys`; the plugin behind it in `src-tauri/src/hotkeys.rs`       |
+| device polling (DirectInput8)                   | `src-tauri/crates/mt-input/src/`                                       |
 | binding wire types (`Binding`, `BindingMap`)    | `bindings.ts`, re-exported by `src/shared/contracts/input-bindings.ts` |
 | settings-UI registry (+ visibility actions)     | `src/features/hotkey-bindings/actions.ts`                              |
 | persisted map (`actionId -> Binding[]`)         | `src/features/hotkey-bindings/bindings.store.ts`                       |
@@ -127,7 +149,7 @@ it does, and decides the kind the frontend sees:
 
 - **sim** (`Pit(PitAction)`, `PitAutoMode`) — a command to the telemetry
   thread, resolved there against the frame it holds
-  (`computations/pit_actions.rs`). A new pit action is a `PitAction` variant.
+  (`mt-computations/src/strategy/pit_actions.rs`). A new pit action is a `PitAction` variant.
 - **view** (`View(ViewControl)`, drag, interact) — a control message to the
   overlays and remote screens, or the overlay modes the dispatcher owns. Each
   client picks its instances under the hotkeys itself.
@@ -150,7 +172,7 @@ it does, and decides the kind the frontend sees:
   `setInteractMode` only ask (`set_drag_mode`, `set_interact_mode`).
 - Device ids are DirectInput `guidInstance`, so replug and port changes keep
   bindings. A driver reinstall that regenerates the GUID is re-matched by
-  vendor/product (`src-tauri/src/input/identity.rs`) and the stored id rewritten
+  vendor/product (`src-tauri/crates/mt-input/src/identity.rs`) and the stored id rewritten
   once. Two identical devices are never auto-matched.
 - Conflicts (one key on two actions) are allowed and only warned about.
 

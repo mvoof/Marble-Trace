@@ -5,12 +5,15 @@
 //! whether a file is absent or merely unreadable, and to move one aside before
 //! it rewrites it.
 
+use serde_json::Value;
 use tauri::{AppHandle, Manager};
 use tracing::info;
 
+use crate::settings_snapshot;
+
 #[tauri::command]
-pub async fn log_settings_snapshot(settings: serde_json::Value) -> Result<(), String> {
-    crate::logging::log_settings_snapshot(&settings);
+pub async fn log_settings_snapshot(settings: Value) -> Result<(), String> {
+    settings_snapshot::log_settings_snapshot(&settings);
 
     Ok(())
 }

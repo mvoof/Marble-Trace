@@ -1,0 +1,25 @@
+[package]
+name = "mt-chat"
+description = "Stream chat: Twitch and YouTube live chat, normalized and emitted."
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[build-dependencies]
+dotenvy.workspace = true
+
+[dependencies]
+mt-model.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+futures.workspace = true
+tracing.workspace = true
+tokio-tungstenite.workspace = true
+keyring.workspace = true
+reqwest.workspace = true

@@ -1,0 +1,23 @@
+[package]
+name = "mt-source"
+description = "The seam between a sim and the app: TelemetrySource, the frame it fills, and tapes."
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+mt-model.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml_ng.workspace = true
+tracing.workspace = true
+specta = { workspace = true, optional = true }
+flate2 = { workspace = true, optional = true }
+
+[features]
+dev = ["dep:specta", "dep:flate2", "mt-model/dev"]

@@ -11,7 +11,7 @@ interface PitServiceAutoSwitches {
 
 /**
  * A bindable action as the settings window shows it. What it does is the
- * backend's: the dispatcher in `src-tauri/src/hotkeys/` catches the key and
+ * backend's: the dispatcher in `mt-hotkeys` catches the key and
  * runs it, and only a `settings` action comes back here to be applied
  * (`settings-actions.ts`).
  */

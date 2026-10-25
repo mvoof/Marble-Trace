@@ -4,18 +4,22 @@
 
 use std::sync::atomic::Ordering;
 
-use tauri::{AppHandle, State, Window};
-use tracing::{debug, info};
+use std::sync::Arc;
 
-use crate::model::defaults::{MAX_FUEL_AVG_WINDOW, SOURCE_TICK_HZ};
-use crate::model::session::SessionSnapshot;
-use crate::sources::raw::{RawSession, RawValues, RawVarMeta};
-use crate::sources::source::SourceFrame;
-use crate::telemetry::delivery::DeliverySet;
-use crate::telemetry::masks::REMOTE_LABEL;
-use crate::telemetry::runtime::spawn_telemetry_thread;
-use crate::telemetry::state::TelemetryState;
-use crate::utils::lock_or_recover;
+use tauri::{AppHandle, Manager, State, Window};
+use tracing::{debug, info, warn};
+
+use crate::sim::connect_source;
+use crate::sink::TauriSink;
+use mt_model::contract::defaults::{MAX_FUEL_AVG_WINDOW, SOURCE_TICK_HZ};
+use mt_model::sim::session::SessionSnapshot;
+use mt_model::utils::lock_or_recover;
+use mt_source::raw::{RawSession, RawValues, RawVarMeta};
+use mt_source::SourceFrame;
+use mt_telemetry::delivery::counters::DeliverySet;
+use mt_telemetry::delivery::masks::REMOTE_LABEL;
+use mt_telemetry::runtime::{spawn_telemetry_thread, TelemetryHost};
+use mt_telemetry::state::TelemetryState;
 
 #[tauri::command]
 pub async fn get_connection_status(state: State<'_, TelemetryState>) -> Result<bool, String> {
@@ -40,7 +44,18 @@ pub async fn start_telemetry_stream(
     // its own, without announcing a disconnect over this one.
     let run = state.service.begin_run();
 
-    spawn_telemetry_thread(app, state.service.clone(), run)
+    let data_dir = app
+        .path()
+        .app_data_dir()
+        .inspect_err(|error| warn!("No app data dir, tracks and laps are not stored: {error}"))
+        .ok();
+    let host = TelemetryHost {
+        sink: Arc::new(TauriSink(app)),
+        data_dir,
+        connect: connect_source,
+    };
+
+    spawn_telemetry_thread(host, state.service.clone(), run)
 }
 
 #[tauri::command]
@@ -78,7 +93,7 @@ pub async fn set_active_events(
 
 /// Records what the remote screens are asking for.
 ///
-/// They have no webview of their own here — `remote/mirror.rs` taps the global
+/// They have no webview of their own here — `src-tauri/src/remote_mirror.rs` taps the global
 /// event stream — so their appetite is registered under a reserved pseudo-label
 /// instead of a window's. Keeping it in the registry rather than implied by the
 /// broadcast is what lets the later move to `emit_to` be a transport swap.

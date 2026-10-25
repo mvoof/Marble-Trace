@@ -3,7 +3,7 @@
  * an overlay's widgets reaches a remote screen the same way. The snapshot a
  * screen paints from is `ClientSnapshot` (`@shared/contracts/client-protocol`).
  *
- * Declared in `src-tauri/src/model/events.rs` and generated into `bindings.ts`,
+ * Declared in `src-tauri/crates/mt-model/src/contract/events.rs` and generated into `bindings.ts`,
  * so the whitelist cannot drift: the hub resolves the same enum, and a kind
  * added on one side no longer compiles on the other.
  */

@@ -7,7 +7,7 @@ import type {
 import type { BindingMap } from '@shared/contracts/input-bindings';
 
 /**
- * The hotkey dispatcher lives in the backend (`src-tauri/src/hotkeys/`). These
+ * The hotkey dispatcher lives in the backend (`mt-hotkeys`). These
  * tell it what to dispatch and own nothing themselves.
  */
 

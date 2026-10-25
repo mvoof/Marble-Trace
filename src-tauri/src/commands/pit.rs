@@ -6,11 +6,11 @@ use std::time::Instant;
 use tauri::State;
 use tracing::{debug, info};
 
-use crate::computations::pit_auto::PitAutoCommand;
-use crate::model::pit_action::PitAction;
-use crate::model::pit_auto::PitAutoConfig;
-use crate::telemetry::control::TelemetryCommand;
-use crate::telemetry::state::TelemetryState;
+use mt_computations::strategy::pit_auto::PitAutoCommand;
+use mt_model::pit::pit_action::PitAction;
+use mt_model::pit::pit_auto::PitAutoConfig;
+use mt_telemetry::control::TelemetryCommand;
+use mt_telemetry::state::TelemetryState;
 
 const MAX_TIRE_WEAR_THRESHOLD_PCT: f32 = 100.0;
 

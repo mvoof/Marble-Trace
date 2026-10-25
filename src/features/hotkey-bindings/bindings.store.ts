@@ -104,7 +104,7 @@ export class BindingsStore {
   /**
    * Rewrites every binding of one device to a new device id. Used when a driver
    * reinstall regenerates the DirectInput GUID and the device is re-matched by
-   * vendor/product — see input/identity.rs.
+   * vendor/product — see mt-input/src/identity.rs.
    */
   rewriteDeviceId(previousId: string, nextId: string) {
     if (previousId === nextId) return;

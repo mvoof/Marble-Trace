@@ -19,7 +19,7 @@ const ORDER_FEEDBACK_MS = 2500;
  *
  * A click sends an intent (`PitAction`), not broadcasts: the telemetry thread
  * resolves it against the order the sim reports and sends it, the same path a
- * key takes (`computations/pit_actions.rs`). The claim on auto mode's half of
+ * key takes (`mt-computations/src/strategy/pit_actions.rs`). The claim on auto mode's half of
  * the stop is worked out there too.
  */
 export class PitOrder {
