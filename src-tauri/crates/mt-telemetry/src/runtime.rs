@@ -24,6 +24,7 @@ use crate::loop_state::LoopState;
 use crate::state::TelemetryServiceState;
 use mt_computations::ProcessorCommand;
 use mt_model::computed::track_shape::TrackShapePayload;
+use mt_model::contract::capabilities::Capabilities;
 use mt_model::contract::capabilities::CapabilitiesPayload;
 use mt_model::contract::defaults::SOURCE_TICK_HZ;
 use mt_model::contract::event_sink::EventSink;
@@ -163,7 +164,7 @@ fn wait_for_connection(
 struct LoopSession<'a> {
     run: u64,
     commands: &'a Receiver<TelemetryCommand>,
-    capabilities: mt_model::contract::capabilities::Capabilities,
+    capabilities: Capabilities,
     data_dir: Option<PathBuf>,
 }
 

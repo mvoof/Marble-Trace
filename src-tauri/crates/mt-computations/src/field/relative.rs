@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::field::car_speed::CarSpeedTracker;
-use crate::field::driver_entries::DriverEntry;
+use crate::field::driver_entries::{self, DriverEntry};
 use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
 
@@ -86,7 +86,7 @@ impl Processor for RelativeProcessor {
             return None;
         }
 
-        let mut standings_frame = crate::field::driver_entries::compute(
+        let mut standings_frame = driver_entries::compute(
             ctx.car_idx,
             ctx.session,
             ctx.start_positions,

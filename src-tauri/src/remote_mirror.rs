@@ -1,7 +1,7 @@
 //! Mirrors the sim events the overlay windows already receive into the remote
 //! hub.
 //!
-//! Tapping Tauri's own event stream instead of the emitter keeps `telemetry/`
+//! Tapping Tauri's own event stream instead of the emitter keeps `mt-telemetry`
 //! free of any knowledge that remote clients exist, and the payload arrives
 //! here already serialized — the hub forwards the same string rather than
 //! encoding the bundle a second time.

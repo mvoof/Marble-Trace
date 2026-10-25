@@ -24,6 +24,7 @@ use mt_computations::driving::input_sample::input_sample;
 use mt_computations::field::relative::RelativeFrame;
 use mt_computations::strategy::pit_actions::{self, PitActionInput};
 use mt_computations::strategy::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
+use mt_computations::strategy::pit_target::resolve_pit_target;
 use mt_computations::{
     driving::coach, driving::corner_speeds, field::driver_entries, field::pace_car,
     field::proximity, rating::incidents, rating::safety_rating, strategy::fuel,
@@ -296,7 +297,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         if let (Some(lap_dist), Some(pit_in), Some(pit_exit)) =
             (lap_dist_pct, pit_in_pct, pit_exit_pct)
         {
-            if let Some(pit_target) = mt_computations::strategy::pit_target::resolve_pit_target(
+            if let Some(pit_target) = resolve_pit_target(
                 lap_dist,
                 pit_in,
                 pit_exit,

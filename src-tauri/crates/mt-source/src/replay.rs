@@ -430,6 +430,35 @@ mod tests {
         assert!(!changed_after_poll);
     }
 
+    fn marked_tree(_text: &str) -> serde_yaml_ng::Value {
+        serde_yaml_ng::Value::String("iracing".into())
+    }
+
+    /// Only the sim the tape names gets parsers that mark their output.
+    fn iracing_parsers(sim: SimType) -> SessionParsers {
+        if matches!(sim, SimType::IRacing) {
+            SessionParsers {
+                session: no_session,
+                tree: marked_tree,
+            }
+        } else {
+            no_parsers(sim)
+        }
+    }
+
+    #[test]
+    fn a_tape_parses_its_session_with_the_parsers_of_the_sim_it_names() {
+        let path = temp_tape("parsers");
+        record(&path, vec![frame_with_speed(1.0)]);
+
+        let replay = ReplaySource::open(&path, 0, iracing_parsers).expect("tape replays");
+        let tree = (replay.session_tree_parser())(SESSION_YAML);
+
+        std::fs::remove_file(&path).ok();
+
+        assert_eq!(tree, serde_yaml_ng::Value::String("iracing".into()));
+    }
+
     #[test]
     fn a_frame_further_off_than_the_timeout_is_not_ready_yet() {
         let path = temp_tape("pacing");

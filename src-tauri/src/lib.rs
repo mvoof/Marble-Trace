@@ -36,11 +36,12 @@ use mt_companions::CompanionsState;
 use mt_hotkeys::runtime::HotkeyRuntime;
 use mt_input::{InputHost, InputRuntime};
 use mt_remote::control::RemoteState;
+use mt_remote::server::RemoteHost;
 use mt_telemetry::control::TelemetryCommand;
 use mt_telemetry::state::TelemetryState;
 #[cfg(feature = "dev")]
 use perf_run::{spawn_if_requested, PerfRunConfig, PerfRunState};
-use sink::TauriSink;
+use sink::{TauriAssets, TauriSink};
 use utils::lock_or_recover;
 
 use std::error::Error;
@@ -123,6 +124,12 @@ fn setup(app: &mut App) -> Result<(), Box<dyn Error>> {
     remote_mirror::attach(app.handle(), Arc::clone(&remote_state.hub));
     let hotkeys = HotkeyRuntime::new(hotkey_host(app.handle(), Arc::clone(&remote_state.hub)));
     app.manage(remote_state);
+    // Built here, on the main thread: an `AppHandle` must not be cloned on a
+    // worker (`RemoteHost`), and the server starts from an async command.
+    app.manage(RemoteHost {
+        sink: Arc::new(TauriSink(app.handle().clone())),
+        assets: Arc::new(TauriAssets(app.handle().clone())),
+    });
     app.manage(Arc::clone(&hotkeys));
 
     #[cfg(feature = "dev")]

@@ -10,7 +10,7 @@
 //! window's to broadcast.
 
 use std::collections::BTreeSet;
-use std::sync::{Arc, Mutex, Weak};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -349,19 +349,14 @@ impl HotkeyRuntime {
         lock_or_recover(&self.inner).registered = now_registered;
     }
 
-    /// Weak: the OS keeps the callback for as long as the key is registered,
-    /// which must not keep the dispatcher alive with it.
+    /// The dispatcher lives as long as the app, so the callback can hold it.
     fn key_edge(self: &Arc<Self>, accelerator: &str) -> KeyEdge {
-        let runtime: Weak<Self> = Arc::downgrade(self);
+        let runtime = Arc::clone(self);
         let binding = Binding::Keyboard {
             accelerator: accelerator.to_string(),
         };
 
-        Box::new(move |pressed| {
-            if let Some(runtime) = runtime.upgrade() {
-                runtime.on_binding_edge(&binding, pressed);
-            }
-        })
+        Box::new(move |pressed| runtime.on_binding_edge(&binding, pressed))
     }
 }
 

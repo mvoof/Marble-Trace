@@ -1,7 +1,7 @@
 //! Pit service orders sent back into the sim — the frontend half of the
 //! contract, named rather than numbered.
 //!
-//! The wire codes live in `kerb::iracing::broadcast`; `sources/iracing` maps
+//! The wire codes live in `kerb::iracing::broadcast`; `mt-sim-iracing` maps
 //! these variants onto them. The sim only accepts orders while the driver is
 //! sitting in the car.
 

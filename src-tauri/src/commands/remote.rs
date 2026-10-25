@@ -1,27 +1,20 @@
 //! The remote-widgets server's commands. Thin wrappers: the server's lifetime
 //! is `remote::control`'s, everything it broadcasts comes from the hub.
 
-use std::sync::Arc;
+use tauri::State;
 
-use tauri::{AppHandle, State};
-
-use crate::sink::{TauriAssets, TauriSink};
 use mt_model::app::remote::{RemoteDevice, RemoteServerConfig, RemoteServerInfo};
 use mt_remote::control::{self, RemoteState};
 use mt_remote::server::RemoteHost;
 
 #[tauri::command]
 pub async fn start_remote_server(
-    app: AppHandle,
+    host: State<'_, RemoteHost>,
     state: State<'_, RemoteState>,
     config: RemoteServerConfig,
 ) -> Result<RemoteServerInfo, String> {
-    let host = RemoteHost {
-        sink: Arc::new(TauriSink(app.clone())),
-        assets: Arc::new(TauriAssets(app)),
-    };
-
-    control::start(host, &state, config).await
+    // Cloning the host clones its `Arc`s, never the `AppHandle` inside them.
+    control::start(host.inner().clone(), &state, config).await
 }
 
 #[tauri::command]

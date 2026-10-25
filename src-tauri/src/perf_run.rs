@@ -17,6 +17,7 @@ use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager};
 use tracing::{error, info, warn};
 
+use crate::hotkeys::OVERLAY_LABEL_PREFIX;
 use crate::utils::lock_or_recover;
 use mt_model::contract::events::{EVENT_PERF_BEGIN, EVENT_PERF_END};
 use mt_source::replay::{REPLAY_ENV, REPLAY_FROM_ENV};
@@ -40,7 +41,6 @@ const DEFAULT_SECONDS: u32 = 60;
 const DEFAULT_WARMUP_SECONDS: u32 = 10;
 const MILLIS_PER_SECOND: u32 = 1000;
 const STORES_ONLY_MODE: &str = "stores-only";
-const OVERLAY_LABEL_PREFIX: &str = "overlay-";
 
 /// Longest wait for the tape to connect before the run is given up.
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(120);
@@ -50,8 +50,7 @@ const REPORT_TIMEOUT: Duration = Duration::from_secs(60);
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
 
 /// What an overlay needs to know about the run, read once when it loads.
-#[derive(Debug, Clone, serde::Serialize)]
-#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Debug, Clone, serde::Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct PerfRunConfig {
     pub duration_ms: u32,
@@ -66,8 +65,7 @@ pub struct PerfRunConfig {
 }
 
 /// Percentiles of one timed operation, in milliseconds.
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct TimingSummary {
     pub count: u32,
@@ -77,8 +75,7 @@ pub struct TimingSummary {
 }
 
 /// One overlay window's measurements over the run.
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct OverlayPerfReport {
     pub label: String,

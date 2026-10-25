@@ -81,7 +81,7 @@ _Held by: clippy (crate-level `#![deny]` in `src-tauri/src/lib.rs`, `src-tauri/c
 
 _Held by: test (a badge longer than `MAX_BADGE_LENGTH`); review (what goes in the map, and when an id is `verified`)._
 
-Two files in `sources/iracing/`: `car_badges.rs` is the **map** — `CarID → badge`,
+Two files in `mt-sim-iracing/src/`: `car_badges.rs` is the **map** — `CarID → badge`,
 the only hand-maintained list — and `car_classes.rs` holds the resolution and
 the colors. `session_parse.rs` only calls `apply_class_badges()` /
 `normalize_class_color()`; nothing on the frontend derives a class name, every

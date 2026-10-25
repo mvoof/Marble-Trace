@@ -22,3 +22,5 @@ serde_json = { workspace = true, features = ["float_roundtrip"] }
 
 [features]
 dev = ["dep:specta", "mt-model/dev"]
+# Constructors other crates' tests build state with; never in a release build.
+test-util = []
