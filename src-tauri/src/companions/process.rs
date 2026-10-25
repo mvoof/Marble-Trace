@@ -99,7 +99,7 @@ mod platform {
     use std::os::windows::process::CommandExt;
     use std::process::Command;
 
-    use windows::Win32::Foundation::CloseHandle;
+    use windows::core::Owned;
     use windows::Win32::System::Diagnostics::ToolHelp::{
         CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
         TH32CS_SNAPPROCESS,
@@ -124,55 +124,54 @@ mod platform {
     pub fn running_processes() -> Vec<(String, u32)> {
         let mut found = Vec::new();
 
-        // SAFETY: the snapshot handle is closed on every path out, and the
-        // entry is fully initialized with its required `dwSize` before use.
-        unsafe {
-            let Ok(snapshot) = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) else {
-                return found;
-            };
+        // SAFETY: value arguments only.
+        let Ok(snapshot) = (unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) }) else {
+            return found;
+        };
 
-            let mut entry = PROCESSENTRY32W {
-                dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32,
-                ..Default::default()
-            };
+        // SAFETY: the snapshot was just created for us and nothing else holds it.
+        let snapshot = unsafe { Owned::new(snapshot) };
 
-            if Process32FirstW(snapshot, &mut entry).is_ok() {
-                loop {
-                    let length = entry
-                        .szExeFile
-                        .iter()
-                        .position(|character| *character == 0)
-                        .unwrap_or(entry.szExeFile.len());
+        let mut entry = PROCESSENTRY32W {
+            dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32,
+            ..Default::default()
+        };
 
-                    let name = String::from_utf16_lossy(&entry.szExeFile[..length]);
+        // SAFETY: the snapshot is live (owned above); `entry` is a local with
+        // its required `dwSize` set.
+        let mut has_entry = unsafe { Process32FirstW(*snapshot, &mut entry) }.is_ok();
 
-                    found.push((name.to_ascii_lowercase(), entry.th32ProcessID));
+        while has_entry {
+            let length = entry
+                .szExeFile
+                .iter()
+                .position(|character| *character == 0)
+                .unwrap_or(entry.szExeFile.len());
 
-                    if Process32NextW(snapshot, &mut entry).is_err() {
-                        break;
-                    }
-                }
-            }
+            let name = String::from_utf16_lossy(&entry.szExeFile[..length]);
 
-            let _ = CloseHandle(snapshot);
+            found.push((name.to_ascii_lowercase(), entry.th32ProcessID));
+
+            // SAFETY: as for `Process32FirstW` above.
+            has_entry = unsafe { Process32NextW(*snapshot, &mut entry) }.is_ok();
         }
 
         found
     }
 
+    /// A failed open means the process is gone or unreachable, which reads the
+    /// same to the caller.
     pub fn is_alive(pid: u32) -> bool {
-        // SAFETY: the handle is closed immediately; a failed open means the
-        // process is gone or unreachable, which reads the same to the caller.
-        unsafe {
-            match OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) {
-                Ok(handle) => {
-                    let _ = CloseHandle(handle);
+        // SAFETY: value arguments only.
+        let Ok(handle) = (unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) })
+        else {
+            return false;
+        };
 
-                    true
-                }
-                Err(_) => false,
-            }
-        }
+        // SAFETY: the handle was just opened for us; dropping the guard closes it.
+        let _process = unsafe { Owned::new(handle) };
+
+        true
     }
 
     pub fn spawn(path: &str, args: &[String]) -> Result<u32, String> {
@@ -210,7 +209,6 @@ mod platform {
         use std::os::windows::ffi::OsStrExt;
 
         use windows::core::PCWSTR;
-        use windows::Win32::Foundation::CloseHandle;
         use windows::Win32::System::Threading::GetProcessId;
         use windows::Win32::UI::Shell::{
             ShellExecuteExW, SEE_MASK_NOCLOSEPROCESS, SHELLEXECUTEINFOW,
@@ -252,26 +250,28 @@ mod platform {
             ..Default::default()
         };
 
-        // SAFETY: every pointer outlives the call, and the process handle the
-        // mask asks for is closed as soon as the pid has been read off it.
-        unsafe {
-            ShellExecuteExW(&mut info).map_err(|error| {
-                if error.code().0 as u32 & 0xFFFF == ERROR_CANCELLED as u32 {
-                    "the elevation prompt was dismissed".to_string()
-                } else {
-                    error.to_string()
-                }
-            })?;
-
-            if info.hProcess.is_invalid() {
-                return Err("the program started without reporting a process".to_string());
+        // SAFETY: `info` and the wide strings it points into are locals that
+        // outlive the call.
+        unsafe { ShellExecuteExW(&mut info) }.map_err(|error| {
+            if error.code().0 as u32 & 0xFFFF == ERROR_CANCELLED as u32 {
+                "the elevation prompt was dismissed".to_string()
+            } else {
+                error.to_string()
             }
+        })?;
 
-            let pid = GetProcessId(info.hProcess);
-            let _ = CloseHandle(info.hProcess);
+        // SAFETY: `SEE_MASK_NOCLOSEPROCESS` hands the process handle to the
+        // caller, who must close it; `Free` skips a null one.
+        let process = unsafe { Owned::new(info.hProcess) };
 
-            Ok(pid)
+        if process.is_invalid() {
+            return Err("the program started without reporting a process".to_string());
         }
+
+        // SAFETY: the handle is live (owned above).
+        let pid = unsafe { GetProcessId(*process) };
+
+        Ok(pid)
     }
 
     /// Wraps one argument the way `CommandLineToArgvW` reads it back: a quote
@@ -310,26 +310,23 @@ mod platform {
     }
 
     pub fn terminate(pid: u32) -> Result<(), String> {
-        // SAFETY: the handle is opened for termination only and closed right
-        // after; a pid that has already exited fails the open, and only that
-        // failure is success.
-        unsafe {
-            let handle = match OpenProcess(PROCESS_TERMINATE, false, pid) {
-                Ok(handle) => handle,
-                // The pid is gone — nothing left to close, which is what the
-                // caller asked for. Every other failure, an elevated program
-                // above all, refused us and must not read as closed.
-                Err(error) if error.code().0 as u32 & 0xFFFF == ERROR_INVALID_PARAMETER as u32 => {
-                    return Ok(())
-                }
-                Err(error) => return Err(error.to_string()),
-            };
+        // SAFETY: value arguments only.
+        let handle = match unsafe { OpenProcess(PROCESS_TERMINATE, false, pid) } {
+            Ok(handle) => handle,
+            // The pid is gone — nothing left to close, which is what the
+            // caller asked for. Every other failure, an elevated program
+            // above all, refused us and must not read as closed.
+            Err(error) if error.code().0 as u32 & 0xFFFF == ERROR_INVALID_PARAMETER as u32 => {
+                return Ok(())
+            }
+            Err(error) => return Err(error.to_string()),
+        };
 
-            let result = TerminateProcess(handle, 0);
-            let _ = CloseHandle(handle);
+        // SAFETY: the handle was just opened for us and nothing else holds it.
+        let process = unsafe { Owned::new(handle) };
 
-            result.map_err(|error| error.to_string())
-        }
+        // SAFETY: the handle is live (owned above) and opened for termination.
+        unsafe { TerminateProcess(*process, 0) }.map_err(|error| error.to_string())
     }
 }
 

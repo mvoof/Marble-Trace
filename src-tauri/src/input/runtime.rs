@@ -11,10 +11,10 @@ use std::thread;
 
 use tauri::{AppHandle, Emitter, Manager};
 use windows::Win32::Foundation::HWND;
-use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
 
 use crate::model::input::{InputButtonEvent, InputDevice};
 
+use super::com_apartment::ComApartment;
 use super::dinput::{DirectInputSession, POLL_INTERVAL};
 use super::identity::DeviceIdentity;
 use super::{EdgeHandler, INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT};
@@ -94,11 +94,16 @@ fn poll_loop(
         return;
     };
 
-    // SAFETY: paired with CoUninitialize below; this thread owns the apartment
-    // for as long as the session lives.
-    unsafe {
-        let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
-    }
+    // Bound before the session: the DirectInput objects drop first, the
+    // apartment last.
+    let _apartment = match ComApartment::enter() {
+        Ok(apartment) => apartment,
+        Err(error) => {
+            tracing::warn!("COM unavailable, device bindings disabled: {error}");
+
+            return;
+        }
+    };
 
     let session = DirectInputSession::new(hwnd);
 
@@ -106,8 +111,6 @@ fn poll_loop(
         Ok(session) => session,
         Err(error) => {
             tracing::warn!("DirectInput unavailable, device bindings disabled: {error}");
-
-            unsafe { CoUninitialize() };
 
             return;
         }
@@ -149,6 +152,4 @@ fn poll_loop(
 
         thread::sleep(POLL_INTERVAL);
     }
-
-    unsafe { CoUninitialize() };
 }

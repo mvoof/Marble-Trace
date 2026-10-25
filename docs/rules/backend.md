@@ -47,6 +47,17 @@ Beside the layers sit the runtimes that own their own commands: `chat/`
 - Never use `f32::INFINITY`/`f32::NAN` in payloads — use finite placeholders or `Option<f32>`.
 - All imports at top of file; no fully-qualified paths in logic.
 
+## Panics and unsafe
+
+_Held by: clippy (`[lints]` in `src-tauri/Cargo.toml`, `src-tauri/clippy.toml`); review for where the FFI lives._
+
+- **No `unwrap`/`expect`/`panic!` in production code** — `let … else`, `if let`, `?` or a logged fallback. An invariant that cannot fail goes into the type, not an assertion. Tests keep them: a panic is how a test fails.
+- **FFI sits behind safe types.** windows-rs marks every Win32 function and COM method `unsafe`, so the calls live in one wrapper per API (`input/dinput_ffi.rs`, `input/com_apartment.rs`, `companions/`) and the logic around them has no `unsafe`. A wrapper holds its invariants by construction — a `Joystick` exists only with its data format set, a buffer's size is a `const` assertion.
+- **Every `unsafe {}` wraps one call and carries a `// SAFETY:` line** naming the precondition that holds. `unsafe fn` bodies still need inner `unsafe {}` blocks.
+- **Win32 handles are owned by guards**: `windows::core::Owned<T>` for `HANDLE`/`HICON`/`HBITMAP`, a local guard with `Drop` for anything else (`ScreenDc`, `ComApartment`). No hand-written `CloseHandle`/`DeleteObject` on a return path.
+- **Nothing unwinds out of an `extern "system"` callback** — it aborts the process. Check the pointers, stop the enumeration on anything unexpected.
+- A panic that still happens is logged with its thread name (`logging::install_panic_hook`).
+
 ## Car class badges and colors
 
 _Held by: test (a badge longer than `MAX_BADGE_LENGTH`); review (what goes in the map, and when an id is `verified`)._
