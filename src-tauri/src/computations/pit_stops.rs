@@ -6,8 +6,8 @@
 //! and an overlay and a remote screen could show different numbers; it is kept
 //! here once.
 
-use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::capabilities::Capabilities;
 use serde::{Deserialize, Serialize};
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]

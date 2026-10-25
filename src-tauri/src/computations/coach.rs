@@ -20,10 +20,10 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
-use crate::capabilities::Capabilities;
 use crate::computations::{
     ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate,
 };
+use crate::model::capabilities::Capabilities;
 use crate::model::reference_lap::{ReferenceLapData, ReferenceLapSample};
 
 /// Minimum separation between two detected corner targets, as a fraction of lap distance.

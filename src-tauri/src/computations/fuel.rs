@@ -3,8 +3,8 @@ use std::time::Instant;
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 
-use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::capabilities::Capabilities;
 use crate::model::player::{CarStatusFrame, LapTimingFrame};
 use crate::model::session::SessionSnapshot;
 

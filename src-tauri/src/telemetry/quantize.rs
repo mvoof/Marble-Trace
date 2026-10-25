@@ -31,10 +31,10 @@ use crate::computations::coach::{CoachCall, CoachFrame};
 use crate::computations::corner_speeds::CornerSpeedsFrame;
 use crate::computations::driver_entries::{DriverEntriesFrame, DriverEntry};
 use crate::computations::proximity::ProximityFrame;
+use crate::computations::relative::RelativeFrame;
 use crate::computations::safety_rating::SafetyRatingFrame;
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::player::PitTargetFrame;
-use crate::model::relative::RelativeFrame;
 
 /// Position around the lap, 0..1. 4 dp is 0.01 % of a lap — about 0.5 m on a
 /// 5 km track, well under a pixel on any rendered map.

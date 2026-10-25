@@ -2,6 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::model::capabilities::Capabilities;
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame, PacingFrame};
 use crate::model::enums::SimType;
 use crate::model::environment::{EnvironmentFrame, WeatherForecastEntry};
@@ -11,7 +12,6 @@ use crate::model::player::{
 use crate::model::session::{SessionFrame, SessionSnapshot};
 use crate::model::sim_perf::SimPerfFrame;
 use crate::sources::raw::{RawValues, RawVarMeta, SessionTreeParser};
-use crate::telemetry::capabilities::Capabilities;
 
 /// One adapted telemetry tick: the domain model frames consumed by the
 /// telemetry emitter, filled by whichever sim adapter is connected.

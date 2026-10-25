@@ -13,8 +13,8 @@
 
 use std::collections::{HashMap, VecDeque};
 
-use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::capabilities::Capabilities;
 use crate::model::cars::CarIdxFrame;
 use crate::model::enums::TrackSurface;
 use serde::{Deserialize, Serialize};

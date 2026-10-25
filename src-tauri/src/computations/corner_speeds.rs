@@ -21,7 +21,7 @@ use std::sync::Arc;
 use serde::Serialize;
 
 use super::{ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate};
-use crate::capabilities::Capabilities;
+use crate::model::capabilities::Capabilities;
 use crate::model::reference_lap::ReferenceLapData;
 
 /// How far the speed must fall from a peak, or climb from a low, to count —

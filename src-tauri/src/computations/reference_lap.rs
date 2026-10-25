@@ -8,11 +8,11 @@
 //! best would leave the driver without a reference the moment it rained.
 //! Comparing per condition also keeps a fresh session's best from degrading a
 //! faster stored reference.
-use crate::capabilities::Capabilities;
 use crate::computations::lap_time_settle::is_settled_for_reference;
 use crate::computations::{
     ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate,
 };
+use crate::model::capabilities::Capabilities;
 use crate::model::reference_lap::{
     ReferenceLapData, ReferenceLapSample, StoredReferenceTimes, TrackCondition,
     REFERENCE_LAP_BUCKET_COUNT,

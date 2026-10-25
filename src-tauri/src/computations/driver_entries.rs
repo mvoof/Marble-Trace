@@ -5,9 +5,9 @@ use std::sync::Mutex;
 use irating::{calculate as calculate_irating_changes, RaceResult};
 use serde::{Deserialize, Serialize};
 
-use crate::capabilities::Capabilities;
 use crate::computations::car_speed::CarSpeedTracker;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::capabilities::Capabilities;
 use crate::model::cars::CarIdxFrame;
 use crate::model::enums::{PitState, SessionState, TrackSurface};
 use crate::model::session::{

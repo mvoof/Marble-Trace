@@ -2,8 +2,8 @@ use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 
-use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::capabilities::Capabilities;
 use crate::model::player::{CarStatusFrame, LapTimingFrame};
 use crate::model::session::SessionSnapshot;
 use crate::utils::lock_or_recover;

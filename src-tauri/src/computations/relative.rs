@@ -1,8 +1,24 @@
-use crate::capabilities::Capabilities;
+use serde::{Deserialize, Serialize};
+
 use crate::computations::car_speed::CarSpeedTracker;
 use crate::computations::driver_entries::DriverEntry;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
-use crate::model::relative::RelativeFrame;
+use crate::model::capabilities::Capabilities;
+
+/// Relative frame — emitted at 10 Hz in `TelemetryBundle.relative`.
+///
+/// Entries are sorted by `relative_lap_dist` descending so that cars ahead
+/// of the player appear first (positive values), the player is in the middle,
+/// and cars behind (negative values) appear last.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
+pub struct RelativeFrame {
+    /// Entries sorted by `relative_lap_dist` descending.
+    pub entries: Vec<DriverEntry>,
+    /// The `car_idx` of the player's car.
+    pub player_car_idx: i32,
+}
 
 /// Computes the relative entry list from already-computed standings entries.
 ///

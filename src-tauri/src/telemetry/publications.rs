@@ -30,9 +30,9 @@ use crate::computations::corner_speeds::CornerSpeedsFrame;
 use crate::computations::driver_entries::DriverEntriesFrame;
 use crate::computations::pace_car::PaceCarFrame;
 use crate::computations::proximity::ProximityFrame;
+use crate::computations::relative::RelativeFrame;
 use crate::computations::safety_rating::SafetyRatingFrame;
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
-use crate::model::relative::RelativeFrame;
 use crate::telemetry::emitter::TelemetryBundle;
 
 /// The last published copy of every frame that may be held back.

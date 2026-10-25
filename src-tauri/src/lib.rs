@@ -17,7 +17,6 @@
 
 #[cfg(feature = "dev")]
 mod bindings;
-mod capabilities;
 mod chat;
 mod commands;
 mod companions;

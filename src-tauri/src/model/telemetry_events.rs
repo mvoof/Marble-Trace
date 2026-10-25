@@ -70,7 +70,7 @@ mod tests {
     #[test]
     fn the_checked_in_file_carries_every_bit() {
         crate::model::ts_values::assert_exported(
-            crate::bindings::TELEMETRY_EVENT_BITS_PATH,
+            crate::model::generated_paths::TELEMETRY_EVENT_BITS_PATH,
             exported_pairs(),
         );
     }

@@ -10,7 +10,6 @@ use serde::Deserialize;
 
 use super::car_classes::{apply_class_badges, normalize_class_color};
 use super::weather::parse_weather_forecast;
-use crate::computations::proximity::parse_track_length;
 use crate::model::session::{
     CarEntry, QualifyResultEntry, ResultPosition, SectorEntry, SessionEntry, SessionSnapshot,
     SessionType, TireCompoundEntry,
@@ -545,6 +544,27 @@ struct RawQualifyResult {
     class_position: Option<i32>,
     fastest_time: Option<f32>,
     fastest_lap: Option<i32>,
+}
+
+/// Reads `WeekendInfo.TrackLength` ("3.70 km", "2.24 mi") as metres, `0.0`
+/// when it does not parse.
+fn parse_track_length(s: &str) -> f32 {
+    let s = s.trim().to_lowercase();
+    let s = s.as_str();
+
+    if let Some(km_idx) = s.find("km") {
+        let num_str = s[..km_idx].trim();
+
+        return num_str.parse::<f32>().unwrap_or(0.0) * 1000.0;
+    }
+
+    if let Some(mi_idx) = s.find("mi") {
+        let num_str = s[..mi_idx].trim();
+
+        return num_str.parse::<f32>().unwrap_or(0.0) * 1609.34;
+    }
+
+    0.0
 }
 
 #[cfg(test)]

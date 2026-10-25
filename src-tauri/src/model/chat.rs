@@ -247,3 +247,19 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<TwitchTokenResult>()
         .register::<TwitchAccount>();
 }
+
+/// Every host an emote or badge URL handed to the frontend points at — the
+/// widget loads them straight into an `<img>`, so each one must be allowed by
+/// the `img-src` of both Content Security Policies: the app windows'
+/// (`tauri.conf.json`, pinned by a test in `remote/csp.rs`) and the remote
+/// page's. A host missing here renders as a broken image, not an error.
+pub const CHAT_IMAGE_SOURCES: [&str; 5] = [
+    // Twitch emotes (`chat::twitch::EMOTE_CDN`) and the Helix badge artwork.
+    "https://static-cdn.jtvnw.net",
+    // YouTube channel emoji and member badges.
+    "https://*.ggpht.com",
+    "https://*.googleusercontent.com",
+    // YouTube's standard emoji: Noto images, and SVGs under `/s/gaming/emoji/`.
+    "https://fonts.gstatic.com",
+    "https://www.youtube.com",
+];

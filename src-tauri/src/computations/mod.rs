@@ -23,7 +23,7 @@ pub mod track_shape;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::capabilities::Capabilities;
+use crate::model::capabilities::Capabilities;
 use crate::model::cars::{CarIdxFrame, PacingFrame};
 use crate::model::enums::SessionState;
 use crate::model::environment::EnvironmentFrame;
@@ -33,9 +33,9 @@ use crate::model::player::{
 use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
 
+use crate::computations::relative::RelativeFrame;
 use crate::model::lap_log::LapLogFrame;
 use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes};
-use crate::model::relative::RelativeFrame;
 use coach::{CoachFrame, CoachProcessor};
 use corner_speeds::{CornerSpeedsFrame, CornerSpeedsProcessor};
 use driver_entries::{DriverEntriesFrame, DriverEntriesProcessor};
@@ -275,5 +275,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<proximity::NearbyCar>()
         .register::<proximity::ProximityFrame>()
         .register::<proximity::RadarDistances>()
+        .register::<relative::RelativeFrame>()
         .register::<safety_rating::SafetyRatingFrame>();
 }

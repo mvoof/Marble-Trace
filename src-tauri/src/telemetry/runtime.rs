@@ -142,7 +142,7 @@ fn wait_for_connection(
 struct LoopSession<'a> {
     run: u64,
     commands: &'a Receiver<TelemetryCommand>,
-    capabilities: crate::capabilities::Capabilities,
+    capabilities: crate::model::capabilities::Capabilities,
 }
 
 fn run_telemetry_loop(

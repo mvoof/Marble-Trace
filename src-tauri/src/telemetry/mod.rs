@@ -2,7 +2,6 @@
 //! event emission. Sim-specific acquisition lives in the source adapters;
 //! this layer only consumes normalized `model` types.
 
-pub mod capabilities;
 pub mod control;
 pub mod delivery;
 pub mod dispatch;

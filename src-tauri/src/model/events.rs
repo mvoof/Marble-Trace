@@ -378,7 +378,10 @@ mod tests {
     #[cfg(feature = "dev")]
     #[test]
     fn the_checked_in_file_carries_every_event_name() {
-        crate::model::ts_values::assert_exported(crate::bindings::EVENTS_PATH, exported_pairs());
+        crate::model::ts_values::assert_exported(
+            crate::model::generated_paths::EVENTS_PATH,
+            exported_pairs(),
+        );
     }
 
     #[test]

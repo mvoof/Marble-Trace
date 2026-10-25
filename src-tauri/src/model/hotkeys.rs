@@ -480,9 +480,10 @@ mod tests {
     #[cfg(feature = "dev")]
     #[test]
     fn the_checked_in_action_list_is_current() {
-        let checked_in = std::fs::read_to_string(crate::bindings::HOTKEY_ACTIONS_PATH)
-            .expect("hotkey-actions.ts is missing — regenerate with UPDATE_BINDINGS=1")
-            .replace('\'', "\"");
+        let checked_in =
+            std::fs::read_to_string(crate::model::generated_paths::HOTKEY_ACTIONS_PATH)
+                .expect("hotkey-actions.ts is missing — regenerate with UPDATE_BINDINGS=1")
+                .replace('\'', "\"");
 
         for decl in HOTKEY_ACTIONS {
             for value in [Some(decl.id), Some(decl.label_key), decl.default_key]

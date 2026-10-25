@@ -12,6 +12,8 @@ pub mod enums;
 pub mod environment;
 pub mod events;
 pub mod flags;
+#[cfg(feature = "dev")]
+pub mod generated_paths;
 pub mod hotkeys;
 pub mod input;
 pub mod install;
@@ -21,7 +23,6 @@ pub mod pit_auto;
 pub mod pit_command;
 pub mod player;
 pub mod reference_lap;
-pub mod relative;
 pub mod remote;
 pub mod session;
 pub mod sim_perf;
@@ -88,7 +89,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<reference_lap::ReferenceLapData>()
         .register::<reference_lap::ReferenceLapSample>()
         .register::<reference_lap::TrackCondition>()
-        .register::<relative::RelativeFrame>()
         .register::<remote::RemoteDevice>()
         .register::<remote::RemoteServerConfig>()
         .register::<remote::RemoteServerInfo>()

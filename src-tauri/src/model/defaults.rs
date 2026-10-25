@@ -62,6 +62,9 @@ mod tests {
 
     #[test]
     fn the_checked_in_file_carries_every_constant() {
-        crate::model::ts_values::assert_exported(crate::bindings::CONSTANTS_PATH, exported_pairs());
+        crate::model::ts_values::assert_exported(
+            crate::model::generated_paths::CONSTANTS_PATH,
+            exported_pairs(),
+        );
     }
 }

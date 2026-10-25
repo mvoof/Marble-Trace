@@ -12,8 +12,8 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::capabilities::Capabilities;
 use crate::model::enums::TrackSurface;
 
 /// How long the lap distance may stand still before a car on pit road counts as

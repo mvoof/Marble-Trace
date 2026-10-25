@@ -6,10 +6,10 @@ use tracing::{debug, warn};
 
 use super::frame_map::DeclaredVars;
 use super::session_parse;
+use crate::model::capabilities::Capabilities;
 use crate::model::enums::SimType;
 use crate::sources::raw::{RawValue, RawValues, RawVarMeta, SessionTreeParser};
 use crate::sources::source::{SessionParser, SourceFrame, SourceReadResult, TelemetrySource};
-use crate::telemetry::capabilities::Capabilities;
 
 pub struct IracingSource {
     connection: Box<IRsdkConnection>,

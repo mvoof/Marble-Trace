@@ -1,5 +1,5 @@
-use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::capabilities::Capabilities;
 use crate::model::cars::{CarIdxFrame, PaceFormation, PacingFrame, SpotterState};
 use crate::model::session::SessionSnapshot;
 use serde::{Deserialize, Serialize};
@@ -98,25 +98,6 @@ impl Processor for ProximityProcessor {
     }
 
     fn reset(&mut self) {}
-}
-
-pub fn parse_track_length(s: &str) -> f32 {
-    let s = s.trim().to_lowercase();
-    let s = s.as_str();
-
-    if let Some(km_idx) = s.find("km") {
-        let num_str = s[..km_idx].trim();
-
-        return num_str.parse::<f32>().unwrap_or(0.0) * 1000.0;
-    }
-
-    if let Some(mi_idx) = s.find("mi") {
-        let num_str = s[..mi_idx].trim();
-
-        return num_str.parse::<f32>().unwrap_or(0.0) * 1609.34;
-    }
-
-    0.0
 }
 
 fn spotter_flags(spotter: SpotterState) -> (bool, bool) {

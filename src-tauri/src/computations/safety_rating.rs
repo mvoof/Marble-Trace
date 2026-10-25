@@ -32,10 +32,10 @@
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
-use crate::capabilities::Capabilities;
 use crate::computations::{
     ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate,
 };
+use crate::model::capabilities::Capabilities;
 use crate::model::enums::TrackSurface;
 use crate::model::session::SessionSnapshot;
 

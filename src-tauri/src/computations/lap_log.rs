@@ -1,3 +1,5 @@
+use crate::computations::lap_time_settle::is_settled;
+use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 /// Lap log processor — tracks lap completion events, handles iRacing SDK quirks
 /// around `lap_last_lap_time` delivery timing, and maintains a capped history of
 /// completed laps for the player.
@@ -6,9 +8,7 @@
 /// reads it off the `lap_dist_pct` wrap instead, because it has to cut its
 /// sample buffer at the line tick-exact. The two share only when the published
 /// time may be believed — `lap_time_settle`.
-use crate::capabilities::Capabilities;
-use crate::computations::lap_time_settle::is_settled;
-use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::capabilities::Capabilities;
 use crate::model::lap_log::{LapHistoryEntry, LapLogFrame, LastCompletedLap};
 
 const HISTORY_SIZE: usize = 12;

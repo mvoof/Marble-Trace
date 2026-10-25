@@ -12,12 +12,12 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use tracing::{info, warn};
 
+use crate::model::capabilities::Capabilities;
 use crate::model::enums::SimType;
 use crate::sources::iracing::session_parse::{parse_session, session_tree};
 use crate::sources::raw::{RawValues, RawVarMeta, SessionTreeParser};
 use crate::sources::source::{SessionParser, SourceFrame, SourceReadResult, TelemetrySource};
 use crate::sources::tape::{TapeHeader, TapeReader, TapeRecord, TapeWriter};
-use crate::telemetry::capabilities::Capabilities;
 
 /// Path of a tape to play instead of connecting to the sim.
 pub const REPLAY_ENV: &str = "MARBLE_TRACE_REPLAY";
