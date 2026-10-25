@@ -2871,7 +2871,12 @@ dependencies = [
 name = "mt-hotkeys"
 version = "0.0.0"
 dependencies = [
+ "mt-computations",
  "mt-model",
+ "mt-remote",
+ "mt-telemetry",
+ "serde_json",
+ "tracing",
 ]
 
 [[package]]

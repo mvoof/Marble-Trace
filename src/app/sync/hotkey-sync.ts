@@ -15,7 +15,7 @@ const reportFailure = (what: string) => (error: unknown) =>
 
 /**
  * The main window's half of the hotkeys. The dispatcher runs in the backend
- * (`src-tauri/src/hotkeys.rs`); main tells it what is bound and what the layout
+ * (`mt-hotkeys`); main tells it what is bound and what the layout
  * gate reads, and applies the settings actions it hands back — the settings
  * are main's to write.
  *

@@ -147,7 +147,7 @@ full.
 - **main** — the settings application: layout editor, widget settings panels, key
   bindings, Twitch connection. Ant Design. Owns persistence and overlay window
   management, and applies the hotkeys that write settings — the keys themselves
-  are caught and dispatched in Rust (`src-tauri/src/hotkeys.rs`). Renders no
+  are caught and dispatched in Rust (`mt-hotkeys`). Renders no
   widgets, so it is **off the telemetry bundle** and takes
   [the slow slice](#the-slow-slice) instead — the car status, for the layout
   auto-switch.
@@ -265,7 +265,7 @@ flowchart LR
 ```
 
 Beside them, `mt-chat`, `mt-input`, `mt-remote` and `mt-companions` hold the
-other runtimes, and `mt-hotkeys` what a pressed key means; each depends on `mt-model` and reaches the app only through
+other runtimes, with `mt-hotkeys` the hotkey dispatcher; each depends on `mt-model` and reaches the app only through
 what the app hands it.
 
 | Crate             | Owns                                  | Must not                           |
@@ -776,8 +776,8 @@ too.
 | `src-tauri/src/commands/input.rs`       | `resolve_input_devices`, `set_input_polling_enabled`                                                                                                                                                                           |
 | `mt-chat`                               | Twitch chat (IRC, `eventsub.rs`, `helix.rs`, `secrets.rs`) and YouTube — independent of any sim connection                                                                                                                     |
 | `src-tauri/src/commands/`               | every Tauri command, split by what it touches — `settings`, `telemetry`, `track`, `pit`, `chat`, `input`, `hotkeys`, `remote`, `companions`, `install`, `perf` (see [Command catalogue](#command-catalogue-frontend--backend)) |
-| `mt-hotkeys`                            | what a key fires: the binding map (`dispatch.rs`), drag / interact modes (`modes.rs`)                                                                                                                                          |
-| `src-tauri/src/hotkeys.rs`              | global key registration and the effects of a fired action                                                                                                                                                                      |
+| `mt-hotkeys`                            | the hotkey dispatcher: what a key fires (`dispatch.rs`), drag / interact modes (`modes.rs`), the effects (`runtime.rs`)                                                                                                        |
+| `src-tauri/src/hotkeys.rs`              | the global-shortcut plugin behind `KeyRegistrar`, and the dispatcher's `HotkeyHost`                                                                                                                                            |
 | `mt-remote`                             | the LAN server for remote screens: `server`, `hub` (fan-out), `pages`, `csp`, `control` (start/stop); the app's `remote_mirror.rs` feeds the hub                                                                               |
 | `mt-companions`                         | companion apps — catalog, process detection, registry, icons                                                                                                                                                                   |
 | `process_priority.rs`                   | asks Windows to schedule the sim ahead of the overlay                                                                                                                                                                          |
@@ -1073,7 +1073,7 @@ paused main window costs only the actions that write settings.
 | Concern                                         | Location                                                    |
 | ----------------------------------------------- | ----------------------------------------------------------- |
 | action list — id, owner, label, default, effect | `src-tauri/crates/mt-model/src/app/hotkeys.rs`              |
-| dispatch, OS registration, drag/interact modes  | `mt-hotkeys`, `src-tauri/src/hotkeys.rs`                    |
+| dispatch, OS registration, drag/interact modes  | `mt-hotkeys`; the plugin in `src-tauri/src/hotkeys.rs`      |
 | device polling                                  | `src-tauri/crates/mt-input/src/`                            |
 | wire types                                      | `bindings.ts`, via `src/shared/contracts/input-bindings.ts` |
 | settings-UI registry, visibility actions        | `src/features/hotkey-bindings/actions.ts`                   |
@@ -1617,9 +1617,9 @@ Names come from `src-tauri/crates/mt-model/src/contract/events.rs` through the g
 | `sim://telemetry/slow`                                   | `mt-telemetry/src/emitter.rs`                          | 4 Hz                          | `player.store.ts` (`updateCarStatus`), via `sim.store.ts` — **windows off the bundle only** |
 | `perf://begin` · `perf://end`                            | `src-tauri/src/perf_run.rs` (dev, `MARBLE_TRACE_PERF`) | once per run                  | `app/sync/perf-run.ts`, every overlay                                                       |
 | `remote://device`                                        | `mt-remote/src/server.rs`                              | a device comes, goes, reports | `listenRemoteDevice` in `remote-publish.ts`                                                 |
-| `app://overlay-modes`                                    | `hotkeys.rs`                                           | on change                     | `app-settings.store.ts`, every window                                                       |
-| `hotkey://settings-action`                               | `hotkeys.rs`                                           | on a settings key             | `settings-actions.ts`, main only                                                            |
-| `client://control`                                       | `hotkeys.rs`, main                                     | on a view key or signal       | `applyControl` in every overlay, plus the remote hub                                        |
+| `app://overlay-modes`                                    | `mt-hotkeys`                                           | on change                     | `app-settings.store.ts`, every window                                                       |
+| `hotkey://settings-action`                               | `mt-hotkeys`                                           | on a settings key             | `settings-actions.ts`, main only                                                            |
+| `client://control`                                       | `mt-hotkeys`, main                                     | on a view key or signal       | `applyControl` in every overlay, plus the remote hub                                        |
 | `sim://perf`                                             | `mt-telemetry/src/emitter.rs`                          | with the sim's counters       | `sim-perf.store.ts`, via `sim.store.ts`                                                     |
 | `input://devices`                                        | `mt-input/src/runtime.rs`                              | on device change              | `device-input.store.ts`                                                                     |
 | `input://button`                                         | `mt-input/src/runtime.rs`                              | on press/release              | `device-input.store.ts`, for binding capture                                                |

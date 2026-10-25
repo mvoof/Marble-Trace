@@ -30,9 +30,10 @@ mod sink;
 mod utils;
 
 use commands::input::InputState;
-use hotkeys::{on_device_edge, HotkeyState};
+use hotkeys::{hotkey_host, OVERLAY_LABEL_PREFIX};
 use mt_chat::state::{ChatServiceState, ChatState};
 use mt_companions::CompanionsState;
+use mt_hotkeys::runtime::HotkeyRuntime;
 use mt_input::{InputHost, InputRuntime};
 use mt_remote::control::RemoteState;
 use mt_telemetry::control::TelemetryCommand;
@@ -54,10 +55,6 @@ use tauri_plugin_window_state::StateFlags;
 /// The settings window, whose close ends the app.
 const MAIN_WINDOW_LABEL: &str = "main";
 
-/// Overlay windows are created per monitor at runtime, labelled
-/// `overlay-<monitor>`.
-const OVERLAY_LABEL_PREFIX: &str = "overlay-";
-
 /// A monitor's DPI at a scale factor of 1.
 const BASE_DPI: f64 = 96.0;
 
@@ -71,7 +68,6 @@ pub fn run() {
             service: Arc::new(ChatServiceState::new()),
         })
         .manage(TelemetryState::default())
-        .manage(HotkeyState::default())
         .on_window_event(on_window_event)
         .run(generate_context!());
 
@@ -125,7 +121,9 @@ fn setup(app: &mut App) -> Result<(), Box<dyn Error>> {
     // everything while no browser is connected.
     let remote_state = RemoteState::default();
     remote_mirror::attach(app.handle(), Arc::clone(&remote_state.hub));
+    let hotkeys = HotkeyRuntime::new(hotkey_host(app.handle(), Arc::clone(&remote_state.hub)));
     app.manage(remote_state);
+    app.manage(Arc::clone(&hotkeys));
 
     #[cfg(feature = "dev")]
     {
@@ -153,7 +151,7 @@ fn setup(app: &mut App) -> Result<(), Box<dyn Error>> {
     // cooperative level, and that only exists once the windows have been
     // created.
     app.manage(InputState {
-        runtime: Some(InputRuntime::start(input_host(app.handle()))),
+        runtime: Some(InputRuntime::start(input_host(app.handle(), hotkeys))),
     });
 
     Ok(())
@@ -244,9 +242,8 @@ fn on_window_destroyed(window: &Window) {
 
 /// The input runtime's link to the app: its events, the main window's handle,
 /// and the hotkey dispatcher its edges go to.
-fn input_host(app: &AppHandle) -> InputHost {
+fn input_host(app: &AppHandle, hotkeys: Arc<HotkeyRuntime>) -> InputHost {
     let window_app = app.clone();
-    let edge_app = app.clone();
 
     InputHost {
         sink: Arc::new(TauriSink(app.clone())),
@@ -259,6 +256,6 @@ fn input_host(app: &AppHandle) -> InputHost {
                 .inspect_err(|error| tracing::warn!("no window handle for input capture: {error}"))
                 .ok()
         }),
-        on_edge: Box::new(move |event| on_device_edge(&edge_app, event)),
+        on_edge: Box::new(move |event| hotkeys.on_device_edge(event)),
     }
 }

@@ -23,16 +23,16 @@ mt-model  ←  mt-source  ←  mt-sim-iracing   (one mt-sim-* per sim)
    └──────────── the app (src-tauri/src): wiring, commands, hotkeys
 ```
 
-| Crate                                               | Rule                                                                                                                                                                                                                                                                                      |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mt-model`                                          | serde + specta types and the `EventSink` trait. No kerb, no tauri. `sim/` what a sim reports, `computed/`, `pit/`, `app/` (chat, companions, hotkeys, input, install, remote), `contract/` (event names, mask, defaults).                                                                 |
-| `mt-source`                                         | The seam to a sim: `TelemetrySource`, `SourceFrame`, `PitCommander`, the raw-data types, and tapes (dev). No kerb.                                                                                                                                                                        |
-| `mt-sim-iracing`                                    | **Only** crate that uses kerb (`kerb[iracing]`). Maps `IracingFrame` → `SourceFrame`, parses the session YAML, sends pit orders. A second sim is a sibling `mt-sim-*`.                                                                                                                    |
-| `mt-computations`                                   | Pure logic on the model. One processor per computed frame, grouped by subject: `timing/`, `field/`, `strategy/`, `driving/`, `rating/`.                                                                                                                                                   |
-| `mt-telemetry`                                      | The runtime: the loop, `TelemetryBundle`, `delivery/` (masks, schedule, dispatch, dedup, rounding, counters). Takes a `TelemetryHost` — sink, data dir, source factory — and names no sim.                                                                                                |
-| `mt-chat`, `mt-input`, `mt-remote`, `mt-companions` | Their runtimes. Emit through `EventSink`; what else they need from the app comes in a `*Host` (`InputHost`, `RemoteHost`).                                                                                                                                                                |
-| `mt-hotkeys`                                        | What a pressed key means: the binding map, the actions a press fires in the current context, the drag and interact modes. Pure; the app registers the keys and carries the actions out.                                                                                                   |
-| the app                                             | The only crate that sees tauri: `lib.rs` wiring, every `#[tauri::command]` in `commands/` (registered in its `mod.rs`), `hotkeys.rs` (key registration, carrying out what fired), `sim.rs` (which sims this build connects), `sink.rs` (`EventSink` and `BundleAssets` over `AppHandle`). |
+| Crate                                               | Rule                                                                                                                                                                                                                                                                                             |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mt-model`                                          | serde + specta types and the `EventSink` trait. No kerb, no tauri. `sim/` what a sim reports, `computed/`, `pit/`, `app/` (chat, companions, hotkeys, input, install, remote), `contract/` (event names, mask, defaults).                                                                        |
+| `mt-source`                                         | The seam to a sim: `TelemetrySource`, `SourceFrame`, `PitCommander`, the raw-data types, and tapes (dev). No kerb.                                                                                                                                                                               |
+| `mt-sim-iracing`                                    | **Only** crate that uses kerb (`kerb[iracing]`). Maps `IracingFrame` → `SourceFrame`, parses the session YAML, sends pit orders. A second sim is a sibling `mt-sim-*`.                                                                                                                           |
+| `mt-computations`                                   | Pure logic on the model. One processor per computed frame, grouped by subject: `timing/`, `field/`, `strategy/`, `driving/`, `rating/`.                                                                                                                                                          |
+| `mt-telemetry`                                      | The runtime: the loop, `TelemetryBundle`, `delivery/` (masks, schedule, dispatch, dedup, rounding, counters). Takes a `TelemetryHost` — sink, data dir, source factory — and names no sim.                                                                                                       |
+| `mt-chat`, `mt-input`, `mt-remote`, `mt-companions` | Their runtimes. Emit through `EventSink`; what else they need from the app comes in a `*Host` (`InputHost`, `RemoteHost`).                                                                                                                                                                       |
+| `mt-hotkeys`                                        | The hotkey dispatcher: what a press fires in the current context (`dispatch`, `modes`) and carrying it out (`runtime`). Takes a `HotkeyHost` — sink, telemetry service, remote hub, overlay labels, and the OS's shortcuts behind `KeyRegistrar`.                                                |
+| the app                                             | The only crate that sees tauri: `lib.rs` wiring, every `#[tauri::command]` in `commands/` (registered in its `mod.rs`), `hotkeys.rs` (the global-shortcut plugin behind `KeyRegistrar`), `sim.rs` (which sims this build connects), `sink.rs` (`EventSink` and `BundleAssets` over `AppHandle`). |
 
 Plain `cargo fmt`, `cargo clippy --all-targets` and `cargo test` in
 `src-tauri/` cover every crate (`default-members`). Each crate's `lib.rs`
@@ -129,16 +129,16 @@ _Held by: test (a settings action with no handler in `settings-actions.ts`); rev
 Keyboard shortcuts and controller buttons are **app-level**, not per layout,
 and **dispatched in Rust** — a key acts on the car with every webview paused.
 
-| Layer                                           | File                                                                              |
-| ----------------------------------------------- | --------------------------------------------------------------------------------- |
-| action list (id, owner, label, default, effect) | `src-tauri/crates/mt-model/src/app/hotkeys.rs`                                    |
-| dispatch, OS registration, drag/interact modes  | `mt-hotkeys` (what fires), `src-tauri/src/hotkeys.rs` (registration, the effects) |
-| device polling (DirectInput8)                   | `src-tauri/crates/mt-input/src/`                                                  |
-| binding wire types (`Binding`, `BindingMap`)    | `bindings.ts`, re-exported by `src/shared/contracts/input-bindings.ts`            |
-| settings-UI registry (+ visibility actions)     | `src/features/hotkey-bindings/actions.ts`                                         |
-| persisted map (`actionId -> Binding[]`)         | `src/features/hotkey-bindings/bindings.store.ts`                                  |
-| settings actions, applied in main               | `src/features/hotkey-bindings/settings-actions.ts`                                |
-| main's half: push map + context, apply          | `src/app/sync/hotkey-sync.ts`                                                     |
+| Layer                                           | File                                                                   |
+| ----------------------------------------------- | ---------------------------------------------------------------------- |
+| action list (id, owner, label, default, effect) | `src-tauri/crates/mt-model/src/app/hotkeys.rs`                         |
+| dispatch, OS registration, drag/interact modes  | `mt-hotkeys`; the plugin behind it in `src-tauri/src/hotkeys.rs`       |
+| device polling (DirectInput8)                   | `src-tauri/crates/mt-input/src/`                                       |
+| binding wire types (`Binding`, `BindingMap`)    | `bindings.ts`, re-exported by `src/shared/contracts/input-bindings.ts` |
+| settings-UI registry (+ visibility actions)     | `src/features/hotkey-bindings/actions.ts`                              |
+| persisted map (`actionId -> Binding[]`)         | `src/features/hotkey-bindings/bindings.store.ts`                       |
+| settings actions, applied in main               | `src/features/hotkey-bindings/settings-actions.ts`                     |
+| main's half: push map + context, apply          | `src/app/sync/hotkey-sync.ts`                                          |
 
 **Adding a bindable action = one entry in `HOTKEY_ACTIONS` + one key under
 `bindings.actions` in `main-app.json`.** The entry's `HotkeyEffect` says what

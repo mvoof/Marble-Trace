@@ -1,6 +1,6 @@
 [package]
 name = "mt-hotkeys"
-description = "What a pressed key means: the binding map, the actions a press fires, the overlay modes."
+description = "The hotkey dispatcher: what a pressed key fires, and carrying it out."
 version.workspace = true
 authors.workspace = true
 license.workspace = true
@@ -9,3 +9,8 @@ publish.workspace = true
 
 [dependencies]
 mt-model.workspace = true
+mt-computations.workspace = true
+mt-telemetry.workspace = true
+mt-remote.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
