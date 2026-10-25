@@ -15,5 +15,3 @@ export const FLAG_LABEL: Record<FlagType, string> = {
   dq: 'DISQUALIFIED',
   furled: 'SLOW DOWN',
 };
-
-export const BLINK_FLAGS = new Set<FlagType>(['yellow', 'red']);

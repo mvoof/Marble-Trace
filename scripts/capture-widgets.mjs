@@ -55,7 +55,7 @@ const SHOTS = {
   'delta-best': ['DeltaWidget', 'best-lap'],
   drs: ['DrsWidget', 'open'],
   engine: ['EnginePanelWidget', 'default'],
-  'flat-flag': ['FlatFlagsWidget', 'yellow'],
+  'flat-flag': ['FlatFlagsWidget', 'showcase', { ground: false }],
   fuel: ['FuelWidget', 'full-preview'],
   'fuel-pit-stop': ['FuelWidget', 'pit-window-open'],
   'g-metr': ['GMeter', 'showcase'],

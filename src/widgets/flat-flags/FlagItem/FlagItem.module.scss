@@ -176,13 +176,3 @@ $slash-gap: ws(4);
       );
   }
 }
-
-// `FLAG_BLINK` writes the step on a yellow or a red.
-.item[data-blink-step='1'] {
-  --flag-tone: #{$flag-band-dimmed};
-  --flag-ink: #{$flag-text-dimmed};
-
-  .band {
-    background: $flag-band-dimmed;
-  }
-}

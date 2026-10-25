@@ -64,3 +64,6 @@ export const FurledFlag: Story = {
 // and every flag at once — the row the widget has to stay readable at.
 export const MultipleFlags: Story = { args: { flags: ['yellow', 'debris'] } };
 export const AllFlags: Story = { args: { flags: ALL_FLAGS } };
+
+// The site and README picture: a caution, a hazard stripe and a plain colour.
+export const Showcase: Story = { args: { flags: ['yellow', 'sc', 'blue'] } };
