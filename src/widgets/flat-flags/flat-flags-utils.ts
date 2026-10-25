@@ -2,13 +2,13 @@ import type { FlagType } from '@shared/contracts/domain';
 
 export const FLAG_LABEL: Record<FlagType, string> = {
   none: '',
-  green: 'GREEN FLAG',
-  yellow: 'YELLOW FLAG',
-  red: 'RED FLAG',
-  blue: 'BLUE FLAG',
+  green: 'GREEN',
+  yellow: 'YELLOW',
+  red: 'RED',
+  blue: 'BLUE',
   white: 'LAST LAP',
   checkered: 'CHECKERED',
-  black: 'BLACK FLAG',
+  black: 'BLACK',
   meatball: 'MEATBALL',
   debris: 'DEBRIS',
   sc: 'PACE CAR',

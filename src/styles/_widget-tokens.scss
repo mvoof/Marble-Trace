@@ -126,6 +126,22 @@ $led-blue: #33aaff;
 $led-white: #ffffff;
 $led-orange: #ff5500;
 
+// Flat flags — banner bands: saturated like the LEDs, but tuned to carry
+// dark text, so green and blue sit a step below the LED glare.
+$flag-band-green: #16e86a;
+$flag-band-yellow: #ffe62e;
+$flag-band-red: #ff2233;
+$flag-band-blue: #0a8cff;
+$flag-band-white: #f5f5f5;
+$flag-band-checkered: #c4c4c4;
+$flag-band-black: #26272b;
+$flag-band-orange: #ff8a0f;
+$flag-band-hazard: #111113;
+$flag-band-hazard-shade: rgba(0, 0, 0, 0.6);
+$flag-row-surface: plate(#141416);
+$flag-band-dimmed: #2a2a2a;
+$flag-text-dimmed: #555555;
+
 // LED widget surfaces (off-state — not related to widget background)
 $led-surface-off: #030304;
 $led-surface-panel: #16161a;

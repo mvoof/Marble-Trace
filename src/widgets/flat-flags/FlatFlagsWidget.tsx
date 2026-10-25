@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { FlagList } from './FlagList/FlagList';
 
-import styles from './FlatFlagsWidget.module.scss';
 import { useFlagsStore } from '@entities/flags/flags-context';
 import type { FlagDisplaySettings } from '@entities/flags/flag-display.settings-schema';
 
@@ -20,9 +19,7 @@ export const FlatFlagsWidget = observer(() => {
   }
 
   return (
-    <WidgetPanel direction="column" gap={0} className={styles.widgetBackground}>
-      <div className={styles.header}>FLAGS</div>
-
+    <WidgetPanel direction="column" gap={0}>
       <FlagList />
     </WidgetPanel>
   );

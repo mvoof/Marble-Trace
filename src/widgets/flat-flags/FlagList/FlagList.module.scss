@@ -1,15 +1,19 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  background-color: #111;
-  padding-bottom: 2px;
+  gap: sp(xxs);
 }
 
 .empty {
-  padding: sp(md) sp(lg);
-  font-family: $font-mono;
-  font-size: fs(xs);
+  display: flex;
+  align-items: center;
+  height: ws(40);
+  padding: 0 sp(lg);
+  background: $flag-row-surface;
+  border-radius: radius(lg);
+  font-family: $font-widget;
+  font-size: fs(sm);
+  font-weight: 700;
   color: $widget-text-muted;
   letter-spacing: 1px;
 }

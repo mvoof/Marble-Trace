@@ -16,6 +16,7 @@ const ALL_FLAGS: FlagType[] = [
   'checkered',
   'black',
   'furled',
+  'meatball',
   'debris',
   'sc',
   'dq',
