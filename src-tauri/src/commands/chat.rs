@@ -3,12 +3,15 @@
 //! No command accepts or returns an OAuth token: they live in the OS credential
 //! store and are read there by the runtime.
 
+use std::sync::Arc;
+
 use tauri::{AppHandle, State};
 use tracing::info;
 
-use super::state::ChatState;
-use super::{has_baked_client_id, helix, resolve_client_id, runtime, secrets};
+use crate::chat::state::ChatState;
+use crate::chat::{has_baked_client_id, helix, resolve_client_id, runtime, secrets};
 use crate::model::chat::{ChatConfig, TwitchAccount, TwitchDeviceCode, TwitchTokenResult};
+use crate::sink::TauriSink;
 
 const NO_CLIENT_ID: &str = "no twitch client id available";
 
@@ -20,7 +23,7 @@ pub async fn start_chat_stream(
     state: State<'_, ChatState>,
     config: ChatConfig,
 ) -> Result<(), String> {
-    runtime::start(app, state.service.clone(), config);
+    runtime::start(Arc::new(TauriSink(app)), state.service.clone(), config);
 
     Ok(())
 }

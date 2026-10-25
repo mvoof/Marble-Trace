@@ -1,5 +1,5 @@
 //! Owns the DirectInput poll thread: its edges go to the hotkey dispatcher
-//! and, as Tauri events, to the settings screen that captures a binding.
+//! and, as events, to the settings screen that captures a binding.
 //!
 //! The COM objects are apartment-affine, so the session is created on the poll
 //! thread and never leaves it. Everything the rest of the app needs — the
@@ -9,7 +9,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-use tauri::{AppHandle, Emitter, Manager};
 use windows::Win32::Foundation::HWND;
 
 use crate::model::input::{InputButtonEvent, InputDevice};
@@ -17,7 +16,7 @@ use crate::model::input::{InputButtonEvent, InputDevice};
 use super::com_apartment::ComApartment;
 use super::dinput::{DirectInputSession, POLL_INTERVAL};
 use super::identity::DeviceIdentity;
-use super::{EdgeHandler, INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT};
+use super::{InputHost, INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT};
 
 pub struct InputRuntime {
     /// Off while nothing is listening — the overlay is hidden and no capture
@@ -28,7 +27,7 @@ pub struct InputRuntime {
 }
 
 impl InputRuntime {
-    pub fn start(app: AppHandle, on_edge: EdgeHandler) -> Self {
+    pub fn start(host: InputHost) -> Self {
         let enabled = Arc::new(AtomicBool::new(true));
         let running = Arc::new(AtomicBool::new(true));
         let devices = Arc::new(Mutex::new(Vec::new()));
@@ -41,7 +40,7 @@ impl InputRuntime {
 
         thread::Builder::new()
             .name("input-poll".to_string())
-            .spawn(move || poll_loop(app, on_edge, enabled, running, devices))
+            .spawn(move || poll_loop(host, enabled, running, devices))
             .map_err(|error| tracing::error!("failed to start input poll thread: {error}"))
             .ok();
 
@@ -67,30 +66,22 @@ impl Drop for InputRuntime {
     }
 }
 
-/// DirectInput needs a real top-level window for background cooperative level.
-fn main_window_handle(app: &AppHandle) -> Option<HWND> {
-    let window = app.get_webview_window("main")?;
-
-    match window.hwnd() {
-        // Tauri hands back an HWND from its own windows-rs version; the handle
-        // itself is just a pointer, so it is re-wrapped rather than converted.
-        Ok(handle) => Some(HWND(handle.0)),
-        Err(error) => {
-            tracing::warn!("no window handle for input capture: {error}");
-
-            None
-        }
-    }
-}
-
 fn poll_loop(
-    app: AppHandle,
-    on_edge: EdgeHandler,
+    host: InputHost,
     enabled: Arc<AtomicBool>,
     running: Arc<AtomicBool>,
     devices: Arc<Mutex<Vec<DeviceIdentity>>>,
 ) {
-    let Some(hwnd) = main_window_handle(&app) else {
+    let InputHost {
+        sink,
+        window,
+        on_edge,
+    } = host;
+
+    // DirectInput needs a real top-level window for background cooperative
+    // level. The handle is just a pointer, so it is wrapped here rather than
+    // converted from another windows-rs version's type.
+    let Some(hwnd) = window().map(HWND) else {
         return;
     };
 
@@ -132,7 +123,7 @@ fn poll_loop(
                 .map(|identity| identity.to_device(true))
                 .collect();
 
-            let _ = app.emit(INPUT_DEVICES_EVENT, payload);
+            let _ = sink.emit(INPUT_DEVICES_EVENT, &payload);
         }
 
         // Reading button state is what the on/off switch actually gates.
@@ -144,9 +135,9 @@ fn poll_loop(
                     pressed: edge.pressed,
                 };
 
-                on_edge(&app, &event);
+                on_edge(&event);
 
-                let _ = app.emit(INPUT_BUTTON_EVENT, event);
+                let _ = sink.emit(INPUT_BUTTON_EVENT, &event);
             }
         }
 

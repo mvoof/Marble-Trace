@@ -17,11 +17,11 @@ use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager};
 use tracing::{error, info, warn};
 
-use super::delivery::DeliverySet;
-use super::state::TelemetryState;
-use super::tick_timings::TickSummary;
 use crate::model::events::{EVENT_PERF_BEGIN, EVENT_PERF_END};
 use crate::sources::replay::{REPLAY_ENV, REPLAY_FROM_ENV};
+use crate::telemetry::delivery::DeliverySet;
+use crate::telemetry::state::TelemetryState;
+use crate::telemetry::tick_timings::TickSummary;
 use crate::utils::lock_or_recover;
 
 /// Path the JSON report is written to; its presence starts a run.
@@ -254,4 +254,11 @@ fn wait_until(timeout: Duration, mut condition: impl FnMut() -> bool) -> bool {
     }
 
     true
+}
+
+/// The run's config and the overlays' reports, which the frontend names.
+pub fn register_types(types: &mut specta::TypeCollection) {
+    types
+        .register::<PerfRunConfig>()
+        .register::<OverlayPerfReport>();
 }

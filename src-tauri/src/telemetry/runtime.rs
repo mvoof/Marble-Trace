@@ -1,14 +1,13 @@
 /// Telemetry thread lifecycle: connect, main loop, reconnect, state reset.
 ///
-/// Runs on a dedicated OS thread — kerb's `IRsdkConnection` is `!Send`
-/// (RefCell + raw shared-memory pointers). All kerb usage is encapsulated
-/// inside `IracingSource`.
+/// Runs on a dedicated OS thread: a sim connection may be `!Send` (kerb's
+/// iRacing one holds a RefCell and raw shared-memory pointers), so the source
+/// is opened, read and dropped on this thread alone.
+use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::mpsc::Receiver;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-
-use tauri::{AppHandle, Emitter, Manager};
 
 #[cfg(feature = "dev")]
 use crate::utils::lock_or_recover;
@@ -26,9 +25,9 @@ use super::state::TelemetryServiceState;
 use crate::computations::ProcessorCommand;
 use crate::model::capabilities::CapabilitiesPayload;
 use crate::model::defaults::SOURCE_TICK_HZ;
-use crate::model::enums::{SimStatus, SimType};
+use crate::model::enums::SimStatus;
+use crate::model::event_sink::EventSink;
 use crate::model::track_shape::TrackShapePayload;
-use crate::sources::create_source;
 use crate::sources::source::{SourceReadResult, TelemetrySource};
 
 const CONNECT_RETRY_DELAY: Duration = Duration::from_secs(1);
@@ -38,9 +37,24 @@ const WAIT_FOR_DATA_TIMEOUT_MS: u32 = 1000;
 const MISSED_WAITS_BEFORE_WAITING_STATUS: u32 = 3;
 /// Check the session version counter every N frames (~0.5s at 60 Hz).
 const SESSION_POLL_TICKS: u64 = 30;
+
+/// Opens a connection to whichever sim is running, `None` while none is. Called
+/// on the telemetry thread, which is the only one the source ever lives on.
+pub type SourceFactory = fn() -> Option<Box<dyn TelemetrySource>>;
+
+/// What the app hands the runtime: where events go, where files are kept,
+/// and how a sim is connected.
+pub struct TelemetryHost {
+    pub sink: Arc<dyn EventSink>,
+    /// `None` when the app has no data directory: tracks and laps are then
+    /// not stored.
+    pub data_dir: Option<PathBuf>,
+    pub connect: SourceFactory,
+}
+
 /// Spawn the dedicated telemetry thread; returns an error if the OS refuses.
 pub fn spawn_telemetry_thread(
-    app: AppHandle,
+    host: TelemetryHost,
     service: Arc<TelemetryServiceState>,
     run: TelemetryRun,
 ) -> Result<(), String> {
@@ -55,6 +69,11 @@ pub fn spawn_telemetry_thread(
                 config,
             } = run;
             let mut state = LoopState::new(config);
+            let TelemetryHost {
+                sink,
+                data_dir,
+                connect,
+            } = host;
 
             loop {
                 if !service.is_current(run) {
@@ -62,7 +81,7 @@ pub fn spawn_telemetry_thread(
                     break;
                 }
 
-                app.emit(
+                sink.emit(
                     EVENT_STATUS,
                     &SimStatus {
                         status: "waiting".into(),
@@ -73,7 +92,7 @@ pub fn spawn_telemetry_thread(
                 .ok();
                 info!("Waiting for telemetry connection...");
 
-                let Some(mut source) = wait_for_connection(&service, run) else {
+                let Some(mut source) = wait_for_connection(connect, &service, run) else {
                     return;
                 };
 
@@ -82,7 +101,7 @@ pub fn spawn_telemetry_thread(
 
                 info!("Connected to {:?} shared memory", source.sim_type());
 
-                if let Err(e) = app.emit(EVENT_CAPABILITIES, &caps_payload) {
+                if let Err(e) = sink.emit(EVENT_CAPABILITIES, &caps_payload) {
                     warn!("Failed to emit capabilities: {e}");
                 }
 
@@ -90,9 +109,10 @@ pub fn spawn_telemetry_thread(
                     run,
                     commands: &commands,
                     capabilities,
+                    data_dir: data_dir.clone(),
                 };
 
-                run_telemetry_loop(&app, source.as_mut(), &service, &mut state, session);
+                run_telemetry_loop(&sink, source.as_mut(), &service, &mut state, session);
 
                 if service.is_superseded(run) {
                     info!("Telemetry thread stopping (a newer run took over)");
@@ -100,7 +120,7 @@ pub fn spawn_telemetry_thread(
                 }
 
                 info!("Telemetry loop ended, will retry connection...");
-                reset_telemetry_state(&app, &service, &mut state);
+                reset_telemetry_state(sink.as_ref(), &service, &mut state);
 
                 if !service.is_current(run) {
                     break;
@@ -111,7 +131,7 @@ pub fn spawn_telemetry_thread(
                 // loop above returns immediately without ever reading a frame.
                 // Without this delay, that produces a tight reconnect spin that
                 // floods the logs — wait_for_connection only backs off when
-                // `create_source` itself fails, which doesn't happen here.
+                // `connect` itself fails, which doesn't happen here.
                 std::thread::sleep(CONNECT_RETRY_DELAY);
             }
         });
@@ -122,6 +142,7 @@ pub fn spawn_telemetry_thread(
 }
 
 fn wait_for_connection(
+    connect: SourceFactory,
     service: &TelemetryServiceState,
     run: u64,
 ) -> Option<Box<dyn TelemetrySource>> {
@@ -130,7 +151,7 @@ fn wait_for_connection(
             return None;
         }
 
-        if let Some(src) = create_source(SimType::IRacing) {
+        if let Some(src) = connect() {
             return Some(src);
         }
 
@@ -143,10 +164,11 @@ struct LoopSession<'a> {
     run: u64,
     commands: &'a Receiver<TelemetryCommand>,
     capabilities: crate::model::capabilities::Capabilities,
+    data_dir: Option<PathBuf>,
 }
 
 fn run_telemetry_loop(
-    app: &AppHandle,
+    sink: &Arc<dyn EventSink>,
     source: &mut dyn TelemetrySource,
     service: &TelemetryServiceState,
     state: &mut LoopState,
@@ -156,8 +178,8 @@ fn run_telemetry_loop(
     let mut is_waiting = false;
     let mut missed_waits: u32 = 0;
     let mut scheduler = EmitScheduler::new();
-    let io = spawn_io_worker(app, source);
-    let sends_pit_orders = source.replay_name().is_none();
+    let io = spawn_io_worker(sink, session.data_dir.clone(), source);
+    let pit = source.pit_commander();
 
     loop {
         if !service.is_current(session.run) {
@@ -174,7 +196,7 @@ fn run_telemetry_loop(
                 if missed_waits >= MISSED_WAITS_BEFORE_WAITING_STATUS && !is_waiting {
                     is_waiting = true;
                     debug!("No telemetry for 3s, waiting...");
-                    app.emit(
+                    sink.emit(
                         EVENT_STATUS,
                         &SimStatus {
                             status: "waiting".into(),
@@ -200,7 +222,7 @@ fn run_telemetry_loop(
         if is_waiting {
             is_waiting = false;
             info!("Telemetry resumed after timeout");
-            app.emit(
+            sink.emit(
                 EVENT_STATUS,
                 &SimStatus {
                     status: "connected".into(),
@@ -223,7 +245,7 @@ fn run_telemetry_loop(
         // Applied before the processors run, so a session that is parsed by
         // now is the one this tick computes on.
         for update in io.parsed_sessions() {
-            apply_session_update(app, update, service, state);
+            apply_session_update(sink.as_ref(), update, service, state);
         }
 
         if (tick == 1 || tick.is_multiple_of(SESSION_POLL_TICKS)) && source.session_changed() {
@@ -243,7 +265,7 @@ fn run_telemetry_loop(
             );
             service.is_connected.store(true, Ordering::Relaxed);
             service.publish_raw_var_meta(source.raw_var_meta());
-            app.emit(
+            sink.emit(
                 EVENT_STATUS,
                 &SimStatus {
                     status: "connected".into(),
@@ -264,14 +286,14 @@ fn run_telemetry_loop(
         }
 
         let ctx = EmitContext {
-            app,
+            sink: sink.as_ref(),
             io: &io,
             frame: &frame,
             due,
             service,
             state,
             capabilities: session.capabilities,
-            sends_pit_orders,
+            pit: pit.as_deref(),
         };
 
         #[cfg(feature = "dev")]
@@ -288,19 +310,18 @@ fn run_telemetry_loop(
 }
 
 /// The worker answering this connection's sessions and writing its files.
-fn spawn_io_worker(app: &AppHandle, source: &dyn TelemetrySource) -> IoWorker {
-    let data_dir = app
-        .path()
-        .app_data_dir()
-        .inspect_err(|e| warn!("No app data dir, tracks and laps are not stored: {e}"))
-        .ok();
-    let emitting_app = app.clone();
+fn spawn_io_worker(
+    sink: &Arc<dyn EventSink>,
+    data_dir: Option<PathBuf>,
+    source: &dyn TelemetrySource,
+) -> IoWorker {
+    let emitting_sink = Arc::clone(sink);
 
     IoWorker::spawn(
         data_dir,
         source.session_parser(),
         Box::new(move |payload: &TrackShapePayload| {
-            if let Err(e) = emitting_app.emit(EVENT_TRACK_SHAPE, payload) {
+            if let Err(e) = emitting_sink.emit(EVENT_TRACK_SHAPE, payload) {
                 warn!("Failed to re-emit track shape after pit pct patch: {}", e);
             }
         }),
@@ -308,7 +329,7 @@ fn spawn_io_worker(app: &AppHandle, source: &dyn TelemetrySource) -> IoWorker {
 }
 
 fn apply_session_update(
-    app: &AppHandle,
+    sink: &dyn EventSink,
     update: SessionUpdate,
     service: &TelemetryServiceState,
     state: &mut LoopState,
@@ -339,7 +360,7 @@ fn apply_session_update(
     state.update_start_positions(&snapshot);
     state.track_length_m = Some(snapshot.track_length_m);
 
-    if let Err(e) = app.emit(EVENT_SESSION_INFO, &snapshot) {
+    if let Err(e) = sink.emit(EVENT_SESSION_INFO, &snapshot) {
         warn!("Failed to emit session info: {}", e);
     }
 
@@ -351,7 +372,7 @@ fn apply_session_update(
     // The worker reads the shape only on a track change, judged against the
     // session it parsed before — the same one applied here before this.
     if let Some(payload) = cached_track {
-        apply_cached_track(app, payload, state);
+        apply_cached_track(sink, payload, state);
     }
 
     // Reaches the processor before its first tick on this session; one that
@@ -388,13 +409,17 @@ fn apply_session_update(
             parsed.weather_forecast.len()
         );
 
-        if let Err(e) = app.emit(EVENT_WEATHER_FORECAST, &parsed.weather_forecast) {
+        if let Err(e) = sink.emit(EVENT_WEATHER_FORECAST, &parsed.weather_forecast) {
             warn!("Failed to emit weather forecast: {}", e);
         }
     }
 }
 
-fn reset_telemetry_state(app: &AppHandle, service: &TelemetryServiceState, state: &mut LoopState) {
+fn reset_telemetry_state(
+    sink: &dyn EventSink,
+    service: &TelemetryServiceState,
+    state: &mut LoopState,
+) {
     service.is_connected.store(false, Ordering::Relaxed);
     service.publish_session(None);
     service.publish_active_reference(None);
@@ -403,7 +428,7 @@ fn reset_telemetry_state(app: &AppHandle, service: &TelemetryServiceState, state
     service.clear_inspector_frame();
     state.reset_connection();
 
-    app.emit(
+    sink.emit(
         EVENT_STATUS,
         &SimStatus {
             status: "disconnected".into(),
@@ -412,14 +437,14 @@ fn reset_telemetry_state(app: &AppHandle, service: &TelemetryServiceState, state
         },
     )
     .ok();
-    app.emit(EVENT_DISCONNECTED, &()).ok();
+    sink.emit(EVENT_DISCONNECTED, &()).ok();
 }
 
-fn apply_cached_track(app: &AppHandle, payload: TrackShapePayload, state: &mut LoopState) {
+fn apply_cached_track(sink: &dyn EventSink, payload: TrackShapePayload, state: &mut LoopState) {
     state.pit_in_pct = payload.pit_in_pct;
     state.pit_exit_pct = payload.pit_exit_pct;
 
-    if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &payload) {
+    if let Err(e) = sink.emit(EVENT_TRACK_SHAPE, &payload) {
         warn!("Failed to emit cached track shape: {}", e);
     }
 

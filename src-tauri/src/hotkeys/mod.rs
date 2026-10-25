@@ -15,9 +15,8 @@
 //! context (the layout gate, the interact key's settings), both pushed by the
 //! main window whenever they change.
 
-pub mod commands;
-mod dispatch;
+pub mod dispatch;
 mod modes;
-mod runtime;
+pub mod runtime;
 
 pub use runtime::{on_device_edge, HotkeyState};

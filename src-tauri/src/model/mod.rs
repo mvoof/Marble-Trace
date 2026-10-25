@@ -10,6 +10,7 @@ pub mod companions;
 pub mod defaults;
 pub mod enums;
 pub mod environment;
+pub mod event_sink;
 pub mod events;
 pub mod flags;
 #[cfg(feature = "dev")]

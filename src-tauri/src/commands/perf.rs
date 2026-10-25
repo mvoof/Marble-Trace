@@ -1,8 +1,8 @@
-//! The perf run's two commands, `dev` builds only. See `telemetry::perf_run`.
+//! The perf run's two commands, `dev` builds only. See `perf_run`.
 
 use tauri::State;
 
-use crate::telemetry::perf_run::{OverlayPerfReport, PerfRunConfig, PerfRunState};
+use crate::perf_run::{OverlayPerfReport, PerfRunConfig, PerfRunState};
 use crate::utils::lock_or_recover;
 
 /// The run in progress, or `None` when the app was not started for one. An

@@ -9,7 +9,6 @@ use std::time::Duration;
 #[cfg(feature = "dev")]
 use std::time::Instant;
 
-use tauri::{AppHandle, Emitter};
 use tracing::{info, warn};
 
 use super::delivery::DeliveryCounters;
@@ -31,6 +30,7 @@ use crate::computations::{
 use crate::model::capabilities::Capabilities;
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::environment::EnvironmentFrame;
+use crate::model::event_sink::EventSink;
 use crate::model::lap_log::LapLogFrame;
 use crate::model::pit_auto::PitAutoFrame;
 use crate::model::player::{
@@ -44,8 +44,7 @@ use crate::model::telemetry_events::{
     EVENT_RELATIVE, EVENT_SAFETY_RATING,
 };
 use crate::model::track_shape::TrackRecordingFrame;
-use crate::sources::iracing::pit_command::send_pit_order;
-use crate::sources::source::SourceFrame;
+use crate::sources::source::{PitCommander, SourceFrame};
 use crate::utils::lock_or_recover;
 
 // The names themselves live on the contract in `model/events.rs`, where the
@@ -58,7 +57,7 @@ pub use crate::model::events::{
 };
 
 pub struct EmitContext<'a> {
-    pub app: &'a AppHandle,
+    pub sink: &'a dyn EventSink,
     /// Where the files a processor produces are written, off this thread.
     pub io: &'a IoWorker,
     pub frame: &'a SourceFrame,
@@ -67,9 +66,9 @@ pub struct EmitContext<'a> {
     /// What the loop owns: the session, the processors, the pit lane markers.
     pub state: &'a mut LoopState,
     pub capabilities: Capabilities,
-    /// Whether auto mode's orders reach the sim. False on a replayed tape: a
-    /// recording with a pit stop in it must not order one in a live sim.
-    pub sends_pit_orders: bool,
+    /// How orders reach the sim; `None` where they cannot, a replayed tape
+    /// among them (`TelemetrySource::pit_commander`).
+    pub pit: Option<&'a dyn PitCommander>,
 }
 
 #[derive(Debug, serde::Serialize, Clone, Default)]
@@ -148,14 +147,14 @@ pub struct TelemetrySlowBundle {
 /// sizing of each bundle — so the tick timing can leave it out.
 pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     let EmitContext {
-        app,
+        sink,
         io,
         frame,
         due,
         service,
         state,
         capabilities,
-        sends_pit_orders,
+        pit,
     } = ctx;
 
     let active_mask = service.masks.effective_mask();
@@ -166,7 +165,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     state.track_wetness = frame.environment.track_wetness;
     let change = state.references.observe_wetness(state.track_wetness);
     state.note_reference(change);
-    publish_reference(app, service, state);
+    publish_reference(sink, service, state);
 
     // Every field is an `Option` the tiers below fill in, so the empty bundle
     // is the derived default rather than twenty-two `None`s written out.
@@ -239,7 +238,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         {
             match output {
                 ComputedOutput::TrackShape(payload) => {
-                    if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &payload) {
+                    if let Err(e) = sink.emit(EVENT_TRACK_SHAPE, &payload) {
                         warn!("Failed to emit track shape: {}", e);
                     }
 
@@ -341,7 +340,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
 
     // Every tick, not on a tier: a key pressed is answered within the tick
     // that drains it, against the order the sim reports on that same frame.
-    run_pit_actions(frame, session_info, state, sends_pit_orders);
+    run_pit_actions(frame, session_info, state, pit);
 
     if due.hz10 {
         bundle.chassis = Some(frame.chassis.clone());
@@ -352,13 +351,13 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     if due.hz4 {
         bundle.car_status = Some(frame.car_status.clone());
         bundle.pit_service = Some(frame.pit_service.clone());
-        bundle.pit_auto = Some(run_pit_auto(frame, &bundle, state, sends_pit_orders));
+        bundle.pit_auto = Some(run_pit_auto(frame, &bundle, state, pit));
 
         let slow = TelemetrySlowBundle {
             car_status: frame.car_status.clone(),
         };
 
-        if let Err(e) = app.emit(EVENT_TELEMETRY_SLOW, &slow) {
+        if let Err(e) = sink.emit(EVENT_TELEMETRY_SLOW, &slow) {
             warn!("Failed to emit slow telemetry bundle: {}", e);
         }
 
@@ -374,7 +373,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         bundle.session = Some(frame.session.clone());
         bundle.environment = Some(frame.environment.clone());
 
-        if let Err(e) = app.emit(EVENT_SIM_PERF, &frame.sim_perf) {
+        if let Err(e) = sink.emit(EVENT_SIM_PERF, &frame.sim_perf) {
             warn!("Failed to emit sim perf: {}", e);
         }
     }
@@ -407,13 +406,13 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         due,
         bundle,
         groups,
-        &mut TauriSink { app },
+        &mut EventBundleSink { sink },
     )
 }
 
 /// Hands a changed active reference to the coach, to commands asking for it,
 /// and to every window. A lap recorded this tick is announced on the next.
-fn publish_reference(app: &AppHandle, service: &TelemetryServiceState, state: &mut LoopState) {
+fn publish_reference(sink: &dyn EventSink, service: &TelemetryServiceState, state: &mut LoopState) {
     let Some(reference) = state.pending_reference.take() else {
         return;
     };
@@ -423,7 +422,7 @@ fn publish_reference(app: &AppHandle, service: &TelemetryServiceState, state: &m
         .command(ProcessorCommand::ActiveReference(reference.clone()));
     service.publish_active_reference(reference.clone());
 
-    if let Err(e) = app.emit(EVENT_REFERENCE_LAP_UPDATED, reference.as_deref()) {
+    if let Err(e) = sink.emit(EVENT_REFERENCE_LAP_UPDATED, &reference.as_deref()) {
         warn!("Failed to emit the active reference lap: {}", e);
     }
 }
@@ -435,7 +434,7 @@ fn run_pit_auto(
     frame: &SourceFrame,
     bundle: &TelemetryBundle,
     state: &mut LoopState,
-    sends_pit_orders: bool,
+    pit: Option<&dyn PitCommander>,
 ) -> PitAutoFrame {
     state.planned_fuel_l = bundle
         .fuel
@@ -455,11 +454,11 @@ fn run_pit_auto(
     let config = state.config.pit_auto;
 
     for order in state.pit_auto.step(&input, &config) {
-        if !sends_pit_orders {
+        let Some(pit) = pit else {
             continue;
-        }
+        };
 
-        let result = send_pit_order(&order);
+        let result = pit.send_pit_order(&order);
 
         info!(?order, ok = result.is_ok(), "auto pit order");
         state.pit_auto.record_send(result.is_ok());
@@ -476,7 +475,7 @@ fn run_pit_actions(
     frame: &SourceFrame,
     session: Option<&SessionSnapshot>,
     state: &mut LoopState,
-    sends_pit_orders: bool,
+    pit: Option<&dyn PitCommander>,
 ) {
     if state.pending_pit_actions.is_empty() {
         return;
@@ -511,40 +510,40 @@ fn run_pit_actions(
                 .command(PitAutoCommand::Claim(claim), &state.config.pit_auto);
         }
 
-        if !sends_pit_orders {
-            info!(?action, "pit action not sent: replaying a tape");
+        let Some(pit) = pit else {
+            info!(?action, "pit action not sent: the source takes no orders");
 
             continue;
-        }
+        };
 
-        let result = send_pit_order(&order.requests);
+        let result = pit.send_pit_order(&order.requests);
 
         info!(?action, ok = result.is_ok(), "manual pit order");
         state.pit_auto.record_send(result.is_ok());
     }
 }
 
-/// The real transport: `emit_to` per window, `app.emit` for the broadcast and
-/// for the mirror's internal event.
-struct TauriSink<'a> {
-    app: &'a AppHandle,
+/// The real transport: `emit_to` per window, `emit` for the broadcast and for
+/// the mirror's internal event.
+struct EventBundleSink<'a> {
+    sink: &'a dyn EventSink,
 }
 
-impl BundleSink for TauriSink<'_> {
+impl BundleSink for EventBundleSink<'_> {
     fn to_window(&mut self, label: &str, bundle: &TelemetryBundle) {
-        if let Err(e) = self.app.emit_to(label, EVENT_TELEMETRY_BUNDLE, bundle) {
+        if let Err(e) = self.sink.emit_to(label, EVENT_TELEMETRY_BUNDLE, bundle) {
             warn!("Failed to emit telemetry bundle to {}: {}", label, e);
         }
     }
 
     fn broadcast(&mut self, bundle: &TelemetryBundle) {
-        if let Err(e) = self.app.emit(EVENT_TELEMETRY_BUNDLE, bundle) {
+        if let Err(e) = self.sink.emit(EVENT_TELEMETRY_BUNDLE, bundle) {
             warn!("Failed to emit telemetry bundle: {}", e);
         }
     }
 
     fn to_mirror(&mut self, bundle: &TelemetryBundle) {
-        if let Err(e) = self.app.emit(EVENT_TELEMETRY_BUNDLE_MIRROR, bundle) {
+        if let Err(e) = self.sink.emit(EVENT_TELEMETRY_BUNDLE_MIRROR, bundle) {
             warn!(
                 "Failed to emit telemetry bundle to the remote mirror: {}",
                 e
@@ -793,7 +792,7 @@ mod tests {
         bundle: TelemetryBundle,
     }
 
-    /// Stands in for `TauriSink`. What the real transport can do silently —
+    /// Stands in for `EventBundleSink`. What the real transport can do silently —
     /// above all leaving the mirror unfed — is a missing row here.
     #[derive(Default)]
     struct RecordingSink {

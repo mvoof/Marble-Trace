@@ -5,11 +5,15 @@
 //! broadcast makes every one of them harder to find, and hides that they need
 //! entirely different state.
 
+pub mod chat;
 pub mod companions;
+pub mod hotkeys;
+pub mod input;
 pub mod install;
 #[cfg(feature = "dev")]
 pub mod perf;
 pub mod pit;
+pub mod remote;
 pub mod settings;
 pub mod telemetry;
 pub mod track;

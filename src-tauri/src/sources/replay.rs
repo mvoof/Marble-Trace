@@ -5,7 +5,8 @@
 //! the reset path as well. `RecordingSource` wraps a live source and writes
 //! what passes through it.
 //!
-//! Both are chosen by environment variable in `create_source`, dev builds only.
+//! Both are chosen by environment variable when the app connects a source,
+//! dev builds only.
 
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -14,9 +15,10 @@ use tracing::{info, warn};
 
 use crate::model::capabilities::Capabilities;
 use crate::model::enums::SimType;
-use crate::sources::iracing::session_parse::{parse_session, session_tree};
 use crate::sources::raw::{RawValues, RawVarMeta, SessionTreeParser};
-use crate::sources::source::{SessionParser, SourceFrame, SourceReadResult, TelemetrySource};
+use crate::sources::source::{
+    PitCommander, SessionParser, SessionParsers, SourceFrame, SourceReadResult, TelemetrySource,
+};
 use crate::sources::tape::{TapeHeader, TapeReader, TapeRecord, TapeWriter};
 
 /// Path of a tape to play instead of connecting to the sim.
@@ -39,14 +41,22 @@ pub struct ReplaySource {
     offset_ms: u64,
     /// The tape's file name, shown in the main window in place of the sim's.
     name: String,
+    /// Those of the sim the tape was recorded from.
+    parsers: SessionParsers,
 }
 
 impl ReplaySource {
     /// Opens a tape, skipping everything recorded before `from_ms`. The last
     /// session seen on the way is kept, so the first tick played still has
-    /// the session it had live.
-    pub fn open(path: &Path, from_ms: u64) -> std::io::Result<Self> {
+    /// the session it had live. `parsers_for` names the session parsers of the
+    /// sim in the tape's header.
+    pub fn open(
+        path: &Path,
+        from_ms: u64,
+        parsers_for: fn(SimType) -> SessionParsers,
+    ) -> std::io::Result<Self> {
         let reader = TapeReader::open(path)?;
+        let parsers = parsers_for(reader.header().sim);
         let mut source = Self {
             reader,
             upcoming: None,
@@ -57,6 +67,7 @@ impl ReplaySource {
                 || path.display().to_string(),
                 |name| name.to_string_lossy().into_owned(),
             ),
+            parsers,
         };
 
         source.read_ahead();
@@ -143,14 +154,12 @@ impl TelemetrySource for ReplaySource {
         self.pending_session.take()
     }
 
-    // Tapes are recorded from iRacing only; the header's sim is not consulted
-    // until a second sim exists to record.
     fn session_parser(&self) -> SessionParser {
-        parse_session
+        self.parsers.session
     }
 
     fn session_tree_parser(&self) -> SessionTreeParser {
-        session_tree
+        self.parsers.tree
     }
 }
 
@@ -222,15 +231,21 @@ impl TelemetrySource for RecordingSource {
     fn raw_values(&self) -> Option<RawValues> {
         self.inner.raw_values()
     }
+
+    fn pit_commander(&self) -> Option<Box<dyn PitCommander>> {
+        self.inner.pit_commander()
+    }
 }
 
 /// The tape named by `MARBLE_TRACE_REPLAY`, if one is set. A tape that cannot
 /// be opened is reported once per attempt and the live sim is used instead.
-pub fn replay_from_env() -> Option<Box<dyn TelemetrySource>> {
+pub fn replay_from_env(
+    parsers_for: fn(SimType) -> SessionParsers,
+) -> Option<Box<dyn TelemetrySource>> {
     let path = PathBuf::from(std::env::var_os(REPLAY_ENV)?);
     let from_ms = replay_offset_ms();
 
-    match ReplaySource::open(&path, from_ms) {
+    match ReplaySource::open(&path, from_ms, parsers_for) {
         Ok(source) => {
             info!("Replaying tape {} from {} ms", path.display(), from_ms);
 
@@ -296,6 +311,21 @@ mod tests {
         ))
     }
 
+    fn no_session(_text: &str) -> Option<crate::sources::source::ParsedSession> {
+        None
+    }
+
+    fn no_tree(_text: &str) -> serde_yaml_ng::Value {
+        serde_yaml_ng::Value::Null
+    }
+
+    fn no_parsers(_sim: SimType) -> SessionParsers {
+        SessionParsers {
+            session: no_session,
+            tree: no_tree,
+        }
+    }
+
     fn frame_with_speed(speed: f32) -> SourceFrame {
         let mut frame = SourceFrame::default();
         frame.car_dynamics.speed = speed;
@@ -337,11 +367,11 @@ mod tests {
         }
 
         fn session_parser(&self) -> SessionParser {
-            parse_session
+            no_session
         }
 
         fn session_tree_parser(&self) -> SessionTreeParser {
-            session_tree
+            no_tree
         }
     }
 
@@ -369,7 +399,7 @@ mod tests {
         let path = temp_tape("frames");
         record(&path, vec![frame_with_speed(1.0), frame_with_speed(2.0)]);
 
-        let mut replay = ReplaySource::open(&path, 0).expect("tape replays");
+        let mut replay = ReplaySource::open(&path, 0, no_parsers).expect("tape replays");
         let mut speeds = Vec::new();
 
         while let SourceReadResult::Frame(frame) = replay.read_frame(1000) {
@@ -386,18 +416,17 @@ mod tests {
         let path = temp_tape("session");
         record(&path, vec![frame_with_speed(1.0), frame_with_speed(2.0)]);
 
-        let mut replay = ReplaySource::open(&path, 0).expect("tape replays");
+        let mut replay = ReplaySource::open(&path, 0, no_parsers).expect("tape replays");
         let first = replay.read_frame(1000);
         let changed = replay.session_changed();
-        let parser = replay.session_parser();
-        let parsed = replay.poll_session().and_then(|yaml| parser(&yaml));
+        let session = replay.poll_session();
         let changed_after_poll = replay.session_changed();
 
         std::fs::remove_file(&path).ok();
 
         assert!(matches!(first, SourceReadResult::Frame(_)));
         assert!(changed, "the first tick sees the session recorded with it");
-        assert_eq!(parsed.expect("YAML parses").snapshot.track_id, 42);
+        assert_eq!(session.as_deref(), Some(SESSION_YAML));
         assert!(!changed_after_poll);
     }
 
@@ -418,7 +447,7 @@ mod tests {
             });
         }
 
-        let mut replay = ReplaySource::open(&path, 0).expect("tape replays");
+        let mut replay = ReplaySource::open(&path, 0, no_parsers).expect("tape replays");
         let first = replay.read_frame(1);
         let second = replay.read_frame(1);
 
@@ -435,7 +464,7 @@ mod tests {
         let path = temp_tape("named");
         record(&path, vec![frame_with_speed(1.0)]);
 
-        let replay = ReplaySource::open(&path, 0).expect("tape replays");
+        let replay = ReplaySource::open(&path, 0, no_parsers).expect("tape replays");
         let expected = path
             .file_name()
             .map(|name| name.to_string_lossy().into_owned());
@@ -468,7 +497,7 @@ mod tests {
             });
         }
 
-        let mut replay = ReplaySource::open(&path, 30_000).expect("tape replays");
+        let mut replay = ReplaySource::open(&path, 30_000, no_parsers).expect("tape replays");
         let first = replay.read_frame(1);
         let changed = replay.session_changed();
 

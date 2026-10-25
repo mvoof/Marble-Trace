@@ -6,6 +6,7 @@ use crate::model::capabilities::Capabilities;
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame, PacingFrame};
 use crate::model::enums::SimType;
 use crate::model::environment::{EnvironmentFrame, WeatherForecastEntry};
+use crate::model::pit_command::PitCommandRequest;
 use crate::model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
@@ -54,6 +55,16 @@ pub struct ParsedSession {
 /// source, whose connection may not leave the telemetry thread.
 pub type SessionParser = fn(&str) -> Option<ParsedSession>;
 
+/// How one sim's session text is read: into the model, and into a tree for
+/// the inspector. A replayed tape takes the pair of the sim it was recorded
+/// from.
+#[cfg(feature = "dev")]
+#[derive(Clone, Copy)]
+pub struct SessionParsers {
+    pub session: SessionParser,
+    pub tree: SessionTreeParser,
+}
+
 /// Result of a single telemetry read attempt from a source.
 #[derive(Debug)]
 pub enum SourceReadResult<F> {
@@ -63,6 +74,13 @@ pub enum SourceReadResult<F> {
     NotReady,
     /// The source has disconnected (game closed).
     Disconnected,
+}
+
+/// Orders pit service from the sim. iRacing's broadcast channel is
+/// fire-and-forget: `Ok` means the order went out, not that the sim took it.
+pub trait PitCommander {
+    /// Sends a whole order, its requests applied in the order given.
+    fn send_pit_order(&self, requests: &[PitCommandRequest]) -> Result<(), String>;
 }
 
 /// Abstracts over a connected simulator; implementors live in `sources/`.
@@ -102,6 +120,13 @@ pub trait TelemetrySource {
     /// Every telemetry variable's value at the latest tick, under the sim's
     /// names. `None` where `raw_var_meta` is empty.
     fn raw_values(&self) -> Option<RawValues> {
+        None
+    }
+
+    /// How pit orders reach this sim. `None` where they cannot: a sim without
+    /// a channel for them, or a replayed tape — a recording with a pit stop in
+    /// it must not order one in a live sim.
+    fn pit_commander(&self) -> Option<Box<dyn PitCommander>> {
         None
     }
 

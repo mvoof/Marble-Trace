@@ -2,8 +2,9 @@
 //! LAN.
 //!
 //! The page a browser gets is the same frontend build the overlay windows run;
-//! only the transport differs. Assets come from the Tauri asset resolver in a
-//! packaged build and are proxied to the Vite dev server in development, so
+//! only the transport differs. Assets come from the bundle the app embeds
+//! (`BundleAssets`) in a packaged build and are proxied to the Vite dev server
+//! in development, so
 //! `npm run tauri:dev` serves a remote screen without a separate build step.
 use std::net::{Ipv4Addr, SocketAddr};
 use std::sync::atomic::Ordering;
@@ -18,7 +19,6 @@ use axum::routing::get;
 use axum::Router;
 use futures::{SinkExt, StreamExt};
 use serde::Deserialize;
-use tauri::{AppHandle, Emitter};
 use tokio::net::TcpListener;
 use tokio::sync::broadcast::error::RecvError;
 use tracing::{info, warn};
@@ -27,6 +27,7 @@ use super::csp;
 use super::hub::RemoteHub;
 use super::pages::{index_page, unauthorized_page};
 use crate::model::client_protocol::ClientEnvelope;
+use crate::model::event_sink::EventSink;
 use crate::model::remote::RemoteDevice;
 use crate::utils::lock_or_recover;
 
@@ -42,13 +43,34 @@ const CLOSE_UNAUTHORIZED: u16 = 1008;
 /// Where the Vite dev server lives while `tauri:dev` runs.
 const DEV_ORIGIN: &str = "http://localhost:1420";
 
+/// One file of the frontend bundle.
+pub struct BundleAsset {
+    pub bytes: Vec<u8>,
+    pub mime_type: String,
+}
+
+/// The frontend bundle the app embeds, keyed by path relative to its root
+/// (`assets/...`, `fonts/...`, `remote.html`).
+pub trait BundleAssets: Send + Sync {
+    fn get(&self, path: String) -> Option<BundleAsset>;
+}
+
+/// What the app hands the server: where device reports go, and the bundle.
+///
+/// Both behind an `Arc` because axum clones the state on every request, on
+/// any worker thread. The app's implementations hold an `AppHandle`, whose
+/// clone bumps a non-atomic `Rc` inside tao's Windows event loop: a page
+/// reload's burst of parallel requests raced that count until the process
+/// aborted with ILLEGAL_INSTRUCTION. Cloning the `Arc` never clones the handle.
+#[derive(Clone)]
+pub struct RemoteHost {
+    pub sink: Arc<dyn EventSink>,
+    pub assets: Arc<dyn BundleAssets>,
+}
+
 #[derive(Clone)]
 struct ServerState {
-    // Behind an `Arc` because axum clones the state on every request, on any
-    // worker thread, and an `AppHandle` clone bumps a non-atomic `Rc` inside
-    // tao's Windows event loop. A page reload's burst of parallel requests
-    // raced that count until the process aborted with ILLEGAL_INSTRUCTION.
-    app: Arc<AppHandle>,
+    host: RemoteHost,
     hub: Arc<RemoteHub>,
     dev: bool,
 }
@@ -121,7 +143,7 @@ pub async fn bind(port: u16, lan: bool) -> Result<TcpListener, String> {
 /// `generation` is the caller's claim on the hub: the flags are cleared on the
 /// way out only while this is still the server that owns them.
 pub async fn serve(
-    app: AppHandle,
+    host: RemoteHost,
     hub: Arc<RemoteHub>,
     listener: TcpListener,
     lan: bool,
@@ -136,7 +158,7 @@ pub async fn serve(
     let dev = cfg!(debug_assertions);
 
     let state = ServerState {
-        app: Arc::new(app),
+        host,
         hub: Arc::clone(&hub),
         dev,
     };
@@ -275,10 +297,7 @@ async fn serve_asset_with_query(state: &ServerState, path: &str, query: Option<&
     // lookup, not after a miss: a prefixed path names no asset, and the
     // resolver's own fallback (`index.html`, which no entry is called any
     // more) would never find the file behind it.
-    let asset = state
-        .app
-        .asset_resolver()
-        .get(strip_screen_path(path).to_string());
+    let asset = state.host.assets.get(strip_screen_path(path).to_string());
 
     let Some(asset) = asset else {
         return (StatusCode::NOT_FOUND, "asset not found").into_response();
@@ -358,13 +377,18 @@ async fn websocket(
 
     let screen = query.screen.unwrap_or_default();
 
-    upgrade.on_upgrade(move |socket| client_loop(socket, state.app, state.hub, screen))
+    upgrade.on_upgrade(move |socket| client_loop(socket, state.host.sink, state.hub, screen))
 }
 
 /// One connected browser. Reads nothing but keepalives: the remote screens are
 /// read-only by protocol, so a compromised client on the network cannot write
 /// into the user's settings.
-async fn client_loop(socket: WebSocket, app: Arc<AppHandle>, hub: Arc<RemoteHub>, screen: String) {
+async fn client_loop(
+    socket: WebSocket,
+    events: Arc<dyn EventSink>,
+    hub: Arc<RemoteHub>,
+    screen: String,
+) {
     let (mut sink, mut stream) = socket.split();
     let mut rx = hub.subscribe();
 
@@ -401,7 +425,7 @@ async fn client_loop(socket: WebSocket, app: Arc<AppHandle>, hub: Arc<RemoteHub>
             incoming = stream.next() => {
                 match incoming {
                     Some(Ok(Message::Text(text))) => {
-                        record_client_message(&app, &hub, &screen, text.as_str());
+                        record_client_message(events.as_ref(), &hub, &screen, text.as_str());
                     }
                     // Any other frame is ignored by design; only the close
                     // frame ends the loop.
@@ -433,7 +457,7 @@ async fn client_loop(socket: WebSocket, app: Arc<AppHandle>, hub: Arc<RemoteHub>
     hub.mark_device_disconnected(&screen);
 
     if let Some(device) = hub.device_for(&screen) {
-        emit_device(&app, device);
+        emit_device(events.as_ref(), device);
     }
 
     info!("remote: client for screen '{}' disconnected", screen);
@@ -470,7 +494,7 @@ fn classify_client_frame(text: &str) -> ClientFrame {
 /// dropped: a malformed frame from a device on the network must not be able
 /// to disturb the server, and a settings command from one is refused — remote
 /// screens are read-only by protocol.
-fn record_client_message(app: &AppHandle, hub: &RemoteHub, screen: &str, text: &str) {
+fn record_client_message(sink: &dyn EventSink, hub: &RemoteHub, screen: &str, text: &str) {
     match classify_client_frame(text) {
         ClientFrame::Device => {}
         ClientFrame::Command => {
@@ -508,13 +532,13 @@ fn record_client_message(app: &AppHandle, hub: &RemoteHub, screen: &str, text: &
     };
 
     hub.set_device(device.clone());
-    emit_device(app, device);
+    emit_device(sink, device);
 }
 
 /// Tells the main window a device reported itself, so the settings UI reflects
 /// it without polling and a brand-new screen can be fitted to it once.
-fn emit_device(app: &AppHandle, device: RemoteDevice) {
-    if let Err(error) = app.emit(EVENT_REMOTE_DEVICE, device) {
+fn emit_device(sink: &dyn EventSink, device: RemoteDevice) {
+    if let Err(error) = sink.emit(EVENT_REMOTE_DEVICE, &device) {
         warn!("remote: failed to emit device event: {}", error);
     }
 }

@@ -20,7 +20,7 @@ use crate::model::hotkeys::{
 };
 use crate::model::input::InputButtonEvent;
 use crate::model::pit_action::PitAction;
-use crate::remote::commands::RemoteState;
+use crate::remote::control::RemoteState;
 use crate::telemetry::control::TelemetryCommand;
 use crate::telemetry::state::TelemetryState;
 use crate::utils::lock_or_recover;

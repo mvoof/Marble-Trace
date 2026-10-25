@@ -25,19 +25,32 @@ mod hotkeys;
 mod input;
 mod logging;
 mod model;
+#[cfg(feature = "dev")]
+mod perf_run;
 mod process_priority;
 mod remote;
+mod remote_mirror;
+mod sim;
+mod sink;
 mod sources;
 mod telemetry;
 mod utils;
 
-use chat::commands::{
+use chat::state::{ChatServiceState, ChatState};
+use commands::chat::{
     start_chat_stream, stop_chat_stream, twitch_account, twitch_has_client_id,
     twitch_poll_device_token, twitch_request_device_code, twitch_sign_out,
 };
-use chat::state::{ChatServiceState, ChatState};
+use commands::hotkeys::{
+    get_overlay_modes, set_drag_mode, set_hotkey_bindings, set_hotkey_context, set_interact_mode,
+};
+use commands::input::{resolve_input_devices, set_input_polling_enabled, InputState};
 #[cfg(feature = "dev")]
 use commands::perf::{get_perf_run, submit_overlay_perf};
+use commands::remote::{
+    get_remote_devices, get_remote_server_info, publish_remote_control, publish_remote_snapshot,
+    remote_screen_url, start_remote_server, stop_remote_server,
+};
 use commands::{
     backup_settings_file, check_install_integrity, clear_active_events, clear_remote_active_events,
     close_companion_app, close_companion_apps, companion_app_icon, companion_app_statuses,
@@ -51,19 +64,13 @@ use commands::{
     stop_telemetry_stream, toggle_pit_auto,
 };
 use companions::CompanionsState;
-use hotkeys::commands::{
-    get_overlay_modes, set_drag_mode, set_hotkey_bindings, set_hotkey_context, set_interact_mode,
-};
 use hotkeys::{on_device_edge, HotkeyState};
-use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
-use input::InputRuntime;
-use remote::commands::{
-    get_remote_devices, get_remote_server_info, publish_remote_control, publish_remote_snapshot,
-    remote_screen_url, start_remote_server, stop_remote_server, RemoteState,
-};
-use telemetry::control::TelemetryCommand;
+use input::{InputHost, InputRuntime};
 #[cfg(feature = "dev")]
-use telemetry::perf_run::{spawn_if_requested, PerfRunConfig, PerfRunState};
+use perf_run::{spawn_if_requested, PerfRunConfig, PerfRunState};
+use remote::control::RemoteState;
+use sink::TauriSink;
+use telemetry::control::TelemetryCommand;
 use telemetry::state::TelemetryState;
 use utils::lock_or_recover;
 
@@ -116,7 +123,7 @@ pub fn run() {
             // Registered before any server can start: the hub simply drops
             // everything while no browser is connected.
             let remote_state = RemoteState::default();
-            remote::mirror::attach(app.handle(), std::sync::Arc::clone(&remote_state.hub));
+            remote_mirror::attach(app.handle(), std::sync::Arc::clone(&remote_state.hub));
             app.manage(remote_state);
 
             #[cfg(feature = "dev")]
@@ -171,7 +178,7 @@ pub fn run() {
             // main window's HWND for background cooperative level, and that
             // only exists once the windows have been created.
             app.manage(InputState {
-                runtime: Some(InputRuntime::start(app.handle().clone(), on_device_edge)),
+                runtime: Some(InputRuntime::start(input_host(app.handle()))),
             });
 
             Ok(())
@@ -302,5 +309,26 @@ pub fn run() {
     if let Err(error) = result {
         eprintln!("tauri application failed to start: {error}");
         std::process::exit(1);
+    }
+}
+
+/// The input runtime's link to the app: its events, the main window's handle,
+/// and the hotkey dispatcher its edges go to.
+fn input_host(app: &tauri::AppHandle) -> InputHost {
+    let window_app = app.clone();
+    let edge_app = app.clone();
+
+    InputHost {
+        sink: Arc::new(TauriSink(app.clone())),
+        window: Box::new(move || {
+            let window = window_app.get_webview_window("main")?;
+
+            window
+                .hwnd()
+                .map(|handle| handle.0)
+                .inspect_err(|error| tracing::warn!("no window handle for input capture: {error}"))
+                .ok()
+        }),
+        on_edge: Box::new(move |event| on_device_edge(&edge_app, event)),
     }
 }

@@ -11,7 +11,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, OnceLock};
 
-use tauri::{AppHandle, Emitter};
+use crate::model::event_sink::EventSink;
 use tracing::{debug, info, warn};
 
 use super::state::ChatServiceState;
@@ -573,7 +573,7 @@ fn days_from_civil(year: i64, month: i64, day: i64) -> i64 {
 /// into a presence update. Failures downgrade to "no number" rather than
 /// tearing anything down — chat keeps working without a viewer count.
 pub async fn run_presence_poll(
-    app: AppHandle,
+    sink: Arc<dyn EventSink>,
     service: Arc<ChatServiceState>,
     generation: u64,
     channel: String,
@@ -624,7 +624,7 @@ pub async fn run_presence_poll(
                 presence.viewers = Some(info.viewers);
                 presence.uptime_seconds = info.uptime_seconds;
 
-                if let Err(error) = app.emit(EVENT_CHAT_PRESENCE, &presence) {
+                if let Err(error) = sink.emit(EVENT_CHAT_PRESENCE, &presence) {
                     warn!("failed to emit twitch presence: {error}");
                 }
             }

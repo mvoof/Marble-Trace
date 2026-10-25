@@ -229,11 +229,37 @@ impl Worker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::sources::iracing::session_parse::parse_session;
+    use crate::model::session::SessionSnapshot;
     use std::sync::{Arc, Mutex};
     use std::time::Duration;
 
     const RESULT_TIMEOUT: Duration = Duration::from_secs(5);
+
+    /// Stands in for a sim's parser: reads `TrackID` and `SubSessionID` off
+    /// `key: value` lines and gives up without a `TrackID`, so the worker is
+    /// tested without any one sim's session format.
+    fn parse_session(text: &str) -> Option<ParsedSession> {
+        let field = |key: &str| {
+            text.lines().find_map(|line| {
+                line.trim()
+                    .strip_prefix(key)?
+                    .strip_prefix(':')?
+                    .trim()
+                    .parse::<i32>()
+                    .ok()
+            })
+        };
+        let snapshot = SessionSnapshot {
+            track_id: field("TrackID")?,
+            sub_session_id: field("SubSessionID"),
+            ..SessionSnapshot::default()
+        };
+
+        Some(ParsedSession {
+            snapshot,
+            weather_forecast: Vec::new(),
+        })
+    }
 
     fn session_yaml(track_id: i32) -> String {
         format!("WeekendInfo:\n TrackID: {track_id}\n TrackDisplayName: Test Ring\n")

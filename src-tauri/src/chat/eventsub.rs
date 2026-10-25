@@ -15,8 +15,8 @@
 
 use std::sync::Arc;
 
+use crate::model::event_sink::EventSink;
 use futures::{SinkExt, StreamExt};
-use tauri::{AppHandle, Emitter};
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tracing::{debug, info, warn};
 
@@ -204,7 +204,7 @@ async fn create_subscription(
 /// One socket, from connect to close. `url` is the welcome URL on the first
 /// attempt and the handover URL afterwards.
 async fn connect_once(
-    app: &AppHandle,
+    sink: &dyn EventSink,
     service: &Arc<ChatServiceState>,
     generation: u64,
     url: &str,
@@ -281,7 +281,7 @@ async fn connect_once(
 
                 if let Some(message) = message_from_notification(topic, &parsed["payload"]["event"])
                 {
-                    if let Err(error) = app.emit(EVENT_CHAT_MESSAGE, &message) {
+                    if let Err(error) = sink.emit(EVENT_CHAT_MESSAGE, &message) {
                         warn!("failed to emit eventsub message: {error}");
                     }
                 }
@@ -339,7 +339,7 @@ async fn authorize(channel: &str) -> Option<(String, String)> {
 /// Connects, reads until the socket ends, then backs off and reconnects.
 /// Returns only when the generation is retired.
 pub async fn run(
-    app: AppHandle,
+    sink: Arc<dyn EventSink>,
     service: Arc<ChatServiceState>,
     generation: u64,
     channel: String,
@@ -370,7 +370,13 @@ pub async fn run(
         };
 
         match connect_once(
-            &app, &service, generation, &url, &client_id, &token, &user_id,
+            sink.as_ref(),
+            &service,
+            generation,
+            &url,
+            &client_id,
+            &token,
+            &user_id,
         )
         .await
         {

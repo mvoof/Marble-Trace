@@ -5,11 +5,14 @@ use kerb::{Connection, SimConnection, SimType as KerbSimType, TelemetryValue};
 use tracing::{debug, warn};
 
 use super::frame_map::DeclaredVars;
+use super::pit_command::IracingPitCommander;
 use super::session_parse;
 use crate::model::capabilities::Capabilities;
 use crate::model::enums::SimType;
 use crate::sources::raw::{RawValue, RawValues, RawVarMeta, SessionTreeParser};
-use crate::sources::source::{SessionParser, SourceFrame, SourceReadResult, TelemetrySource};
+use crate::sources::source::{
+    PitCommander, SessionParser, SourceFrame, SourceReadResult, TelemetrySource,
+};
 
 pub struct IracingSource {
     connection: Box<IRsdkConnection>,
@@ -107,6 +110,10 @@ impl IracingSource {
 impl TelemetrySource for IracingSource {
     fn sim_type(&self) -> SimType {
         SimType::IRacing
+    }
+
+    fn pit_commander(&self) -> Option<Box<dyn PitCommander>> {
+        Some(Box::new(IracingPitCommander))
     }
 
     fn capabilities(&self) -> Capabilities {

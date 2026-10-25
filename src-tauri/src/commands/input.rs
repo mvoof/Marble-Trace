@@ -4,8 +4,8 @@ use tauri::State;
 
 use crate::model::input::{InputDevice, InputDeviceRemap, InputDeviceResolution};
 
-use super::identity::resolve_remaps;
-use super::InputRuntime;
+use crate::input::identity::{merge_device_lists, resolve_remaps};
+use crate::input::InputRuntime;
 
 /// The runtime is created in `setup`, so it is optional here — a machine where
 /// DirectInput failed to initialise still runs, just with keyboard bindings.
@@ -45,7 +45,7 @@ pub fn resolve_input_devices(
         .collect();
 
     InputDeviceResolution {
-        devices: super::identity::merge_device_lists(&known, &attached),
+        devices: merge_device_lists(&known, &attached),
         remaps,
     }
 }

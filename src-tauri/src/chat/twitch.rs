@@ -9,8 +9,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use crate::model::event_sink::EventSink;
 use futures::{SinkExt, StreamExt};
-use tauri::{AppHandle, Emitter};
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tracing::{debug, info, warn};
 
@@ -360,8 +360,8 @@ fn message_from_usernotice(line: &IrcLine, service: &Arc<ChatServiceState>) -> O
     })
 }
 
-fn emit_presence(app: &AppHandle, presence: ChatPresence) {
-    if let Err(error) = app.emit(EVENT_CHAT_PRESENCE, &presence) {
+fn emit_presence(sink: &dyn EventSink, presence: ChatPresence) {
+    if let Err(error) = sink.emit(EVENT_CHAT_PRESENCE, &presence) {
         warn!("failed to emit twitch presence: {error}");
     }
 }
@@ -369,7 +369,7 @@ fn emit_presence(app: &AppHandle, presence: ChatPresence) {
 /// Connects, reads until the connection drops or the generation is retired,
 /// then backs off and reconnects. Returns only when the generation is retired.
 pub async fn run(
-    app: AppHandle,
+    sink: Arc<dyn EventSink>,
     service: Arc<ChatServiceState>,
     generation: u64,
     channel: String,
@@ -386,12 +386,12 @@ pub async fn run(
     while service.is_current(generation) {
         if attempt == 0 {
             emit_presence(
-                &app,
+                sink.as_ref(),
                 ChatPresence::new(ChatPlatform::Twitch, ChatConnectionStatus::Connecting),
             );
         } else {
             emit_presence(
-                &app,
+                sink.as_ref(),
                 ChatPresence::new(ChatPlatform::Twitch, ChatConnectionStatus::Reconnecting)
                     .with_retry(attempt),
             );
@@ -402,7 +402,15 @@ pub async fn run(
             }
         }
 
-        match connect_once(&app, &service, generation, &channel, credentials.as_ref()).await {
+        match connect_once(
+            sink.as_ref(),
+            &service,
+            generation,
+            &channel,
+            credentials.as_ref(),
+        )
+        .await
+        {
             Ok(()) => attempt = attempt.saturating_add(1),
             Err(error) => {
                 warn!("twitch chat connection failed: {error}");
@@ -412,13 +420,13 @@ pub async fn run(
     }
 
     emit_presence(
-        &app,
+        sink.as_ref(),
         ChatPresence::new(ChatPlatform::Twitch, ChatConnectionStatus::Offline),
     );
 }
 
 async fn connect_once(
-    app: &AppHandle,
+    sink: &dyn EventSink,
     service: &Arc<ChatServiceState>,
     generation: u64,
     channel: &str,
@@ -490,7 +498,7 @@ async fn connect_once(
                 "001" => {
                     info!(channel, "twitch chat login accepted");
                     emit_presence(
-                        app,
+                        sink,
                         ChatPresence::new(ChatPlatform::Twitch, ChatConnectionStatus::Live),
                     );
                 }
@@ -510,14 +518,14 @@ async fn connect_once(
                 }
                 "PRIVMSG" => {
                     if let Some(message) = message_from_privmsg(&line, service) {
-                        if let Err(error) = app.emit(EVENT_CHAT_MESSAGE, &message) {
+                        if let Err(error) = sink.emit(EVENT_CHAT_MESSAGE, &message) {
                             warn!("failed to emit twitch message: {error}");
                         }
                     }
                 }
                 "USERNOTICE" => {
                     if let Some(message) = message_from_usernotice(&line, service) {
-                        let _ = app.emit(EVENT_CHAT_MESSAGE, &message);
+                        let _ = sink.emit(EVENT_CHAT_MESSAGE, &message);
                     }
                 }
                 "CLEARMSG" => {
@@ -526,7 +534,7 @@ async fn connect_once(
                         message_id: line.tags.get("target-msg-id").cloned(),
                         author_name: None,
                     };
-                    let _ = app.emit(EVENT_CHAT_DELETION, &deletion);
+                    let _ = sink.emit(EVENT_CHAT_DELETION, &deletion);
                 }
                 "CLEARCHAT" => {
                     let deletion = ChatDeletion {
@@ -534,13 +542,13 @@ async fn connect_once(
                         message_id: None,
                         author_name: line.trailing.clone(),
                     };
-                    let _ = app.emit(EVENT_CHAT_DELETION, &deletion);
+                    let _ = sink.emit(EVENT_CHAT_DELETION, &deletion);
                 }
                 "ROOMSTATE" => {
                     let mut presence =
                         ChatPresence::new(ChatPlatform::Twitch, ChatConnectionStatus::Live);
                     presence.room_mode = room_mode_from_tags(&line.tags);
-                    emit_presence(app, presence);
+                    emit_presence(sink, presence);
                 }
                 "NOTICE" => {
                     if let Some(text) = &line.trailing {
@@ -552,7 +560,7 @@ async fn connect_once(
                             || text.to_lowercase().contains("improperly formatted auth")
                         {
                             emit_presence(
-                                app,
+                                sink,
                                 ChatPresence::new(
                                     ChatPlatform::Twitch,
                                     ChatConnectionStatus::Error,

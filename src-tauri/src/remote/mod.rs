@@ -6,9 +6,8 @@
 //! and the assembled bundle, and never reaches into `sources/` or
 //! `computations/`. Widget layout stays a frontend concern — the main window
 //! publishes an opaque snapshot the server only caches and forwards.
-pub mod commands;
+pub mod control;
 pub mod csp;
 pub mod hub;
-pub mod mirror;
 pub mod pages;
 pub mod server;

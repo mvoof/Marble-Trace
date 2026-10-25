@@ -8,7 +8,7 @@
 
 use std::sync::Arc;
 
-use tauri::{AppHandle, Emitter};
+use crate::model::event_sink::EventSink;
 use tracing::{debug, info, warn};
 
 use super::state::ChatServiceState;
@@ -343,7 +343,7 @@ fn message_from_renderer(
 }
 
 /// Returns the next continuation token and how long to wait before using it.
-fn handle_actions(app: &AppHandle, payload: &serde_json::Value) -> (Option<String>, u64) {
+fn handle_actions(sink: &dyn EventSink, payload: &serde_json::Value) -> (Option<String>, u64) {
     let live_chat = &payload["continuationContents"]["liveChatContinuation"];
 
     if let Some(actions) = live_chat["actions"].as_array() {
@@ -354,7 +354,7 @@ fn handle_actions(app: &AppHandle, payload: &serde_json::Value) -> (Option<Strin
                     message_id: Some(target.to_string()),
                     author_name: None,
                 };
-                let _ = app.emit(EVENT_CHAT_DELETION, &deletion);
+                let _ = sink.emit(EVENT_CHAT_DELETION, &deletion);
 
                 continue;
             }
@@ -409,7 +409,7 @@ fn handle_actions(app: &AppHandle, payload: &serde_json::Value) -> (Option<Strin
             };
 
             if let Some(message) = message {
-                if let Err(error) = app.emit(EVENT_CHAT_MESSAGE, &message) {
+                if let Err(error) = sink.emit(EVENT_CHAT_MESSAGE, &message) {
                     warn!("failed to emit youtube message: {error}");
                 }
             }
@@ -456,7 +456,7 @@ async fn fetch_viewers(video_id: &str) -> Option<u32> {
 }
 
 async fn run_viewer_poll(
-    app: AppHandle,
+    sink: Arc<dyn EventSink>,
     service: Arc<ChatServiceState>,
     generation: u64,
     video_id: String,
@@ -465,7 +465,7 @@ async fn run_viewer_poll(
         if let Some(viewers) = fetch_viewers(&video_id).await {
             let mut presence = ChatPresence::new(ChatPlatform::Youtube, ChatConnectionStatus::Live);
             presence.viewers = Some(viewers);
-            let _ = app.emit(EVENT_CHAT_PRESENCE, &presence);
+            let _ = sink.emit(EVENT_CHAT_PRESENCE, &presence);
         }
 
         for _ in 0..VIEWER_POLL_SECONDS {
@@ -478,25 +478,30 @@ async fn run_viewer_poll(
     }
 }
 
-fn emit_presence(app: &AppHandle, presence: ChatPresence) {
-    if let Err(error) = app.emit(EVENT_CHAT_PRESENCE, &presence) {
+fn emit_presence(sink: &dyn EventSink, presence: ChatPresence) {
+    if let Err(error) = sink.emit(EVENT_CHAT_PRESENCE, &presence) {
         warn!("failed to emit youtube presence: {error}");
     }
 }
 
-pub async fn run(app: AppHandle, service: Arc<ChatServiceState>, generation: u64, target: String) {
+pub async fn run(
+    sink: Arc<dyn EventSink>,
+    service: Arc<ChatServiceState>,
+    generation: u64,
+    target: String,
+) {
     let mut attempt: u32 = 0;
     let mut viewer_task: Option<tokio::task::JoinHandle<()>> = None;
 
     while service.is_current(generation) {
         if attempt == 0 {
             emit_presence(
-                &app,
+                sink.as_ref(),
                 ChatPresence::new(ChatPlatform::Youtube, ChatConnectionStatus::Connecting),
             );
         } else {
             emit_presence(
-                &app,
+                sink.as_ref(),
                 ChatPresence::new(ChatPlatform::Youtube, ChatConnectionStatus::Reconnecting)
                     .with_retry(attempt),
             );
@@ -512,7 +517,7 @@ pub async fn run(app: AppHandle, service: Arc<ChatServiceState>, generation: u64
             Err(error) => {
                 warn!("youtube resolve failed: {error}");
                 emit_presence(
-                    &app,
+                    sink.as_ref(),
                     ChatPresence::new(ChatPlatform::Youtube, ChatConnectionStatus::Error)
                         .with_detail(error),
                 );
@@ -527,7 +532,7 @@ pub async fn run(app: AppHandle, service: Arc<ChatServiceState>, generation: u64
             Err(error) => {
                 warn!("youtube session failed: {error}");
                 emit_presence(
-                    &app,
+                    sink.as_ref(),
                     ChatPresence::new(ChatPlatform::Youtube, ChatConnectionStatus::Error)
                         .with_detail(error),
                 );
@@ -539,13 +544,13 @@ pub async fn run(app: AppHandle, service: Arc<ChatServiceState>, generation: u64
 
         info!(video_id, "youtube chat connected");
         emit_presence(
-            &app,
+            sink.as_ref(),
             ChatPresence::new(ChatPlatform::Youtube, ChatConnectionStatus::Live),
         );
 
         if viewer_task.is_none() {
             viewer_task = Some(tokio::spawn(run_viewer_poll(
-                app.clone(),
+                sink.clone(),
                 Arc::clone(&service),
                 generation,
                 video_id.clone(),
@@ -596,7 +601,7 @@ pub async fn run(app: AppHandle, service: Arc<ChatServiceState>, generation: u64
                 }
             };
 
-            let (next, timeout) = handle_actions(&app, &payload);
+            let (next, timeout) = handle_actions(sink.as_ref(), &payload);
 
             let Some(next) = next else {
                 debug!("youtube stopped issuing continuations — stream likely ended");
@@ -616,7 +621,7 @@ pub async fn run(app: AppHandle, service: Arc<ChatServiceState>, generation: u64
     }
 
     emit_presence(
-        &app,
+        sink.as_ref(),
         ChatPresence::new(ChatPlatform::Youtube, ChatConnectionStatus::Offline),
     );
 }

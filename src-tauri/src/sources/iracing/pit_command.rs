@@ -7,6 +7,7 @@ use kerb::iracing::{send_pit_command, PitCommand};
 use tracing::{debug, warn};
 
 use crate::model::pit_command::{PitCommandKind, PitCommandRequest};
+use crate::sources::source::PitCommander;
 
 fn to_kerb(kind: PitCommandKind) -> PitCommand {
     match kind {
@@ -26,9 +27,18 @@ fn to_kerb(kind: PitCommandKind) -> PitCommand {
     }
 }
 
+/// iRacing's pit orders, over the SDK broadcast channel. Needs no connection.
+pub struct IracingPitCommander;
+
+impl PitCommander for IracingPitCommander {
+    fn send_pit_order(&self, requests: &[PitCommandRequest]) -> Result<(), String> {
+        send_pit_order(requests)
+    }
+}
+
 /// Sends a whole pit order. The SDK has no batch form, so each checkbox is its
 /// own message and they are applied in the order given.
-pub fn send_pit_order(requests: &[PitCommandRequest]) -> Result<(), String> {
+fn send_pit_order(requests: &[PitCommandRequest]) -> Result<(), String> {
     if requests.is_empty() {
         return Ok(());
     }

@@ -8,7 +8,7 @@
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use tauri::AppHandle;
+use crate::model::event_sink::EventSink;
 use tracing::{info, warn};
 
 use super::state::ChatServiceState;
@@ -22,7 +22,7 @@ fn non_empty(value: &Option<String>) -> Option<String> {
         .filter(|trimmed| !trimmed.is_empty())
 }
 
-pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig) {
+pub fn start(sink: Arc<dyn EventSink>, service: Arc<ChatServiceState>, config: ChatConfig) {
     service.running.store(true, Ordering::SeqCst);
 
     let generation = service.next_generation();
@@ -88,7 +88,7 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
             }
         }
 
-        let app_for_irc = app.clone();
+        let sink_for_irc = sink.clone();
         let service_for_irc = Arc::clone(&service);
         let channel_for_irc = channel.clone();
 
@@ -105,7 +105,7 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
             };
 
             twitch::run(
-                app_for_irc,
+                sink_for_irc,
                 service_for_irc,
                 generation,
                 channel_for_irc,
@@ -121,7 +121,7 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
         if has_credentials {
             if let Some(client_id) = client_id.clone() {
                 tokio::spawn(eventsub::run(
-                    app.clone(),
+                    sink.clone(),
                     Arc::clone(&service),
                     generation,
                     channel.clone(),
@@ -135,7 +135,7 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
         if has_credentials {
             if let Some(client_id) = client_id {
                 tokio::spawn(helix::run_presence_poll(
-                    app.clone(),
+                    sink.clone(),
                     Arc::clone(&service),
                     generation,
                     channel,
@@ -146,7 +146,7 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
     }
 
     if let Some(target) = youtube_target {
-        tokio::spawn(youtube::run(app, Arc::clone(&service), generation, target));
+        tokio::spawn(youtube::run(sink, Arc::clone(&service), generation, target));
     }
 }
 

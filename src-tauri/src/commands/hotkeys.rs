@@ -7,8 +7,8 @@ use tauri::{AppHandle, State};
 
 use crate::model::hotkeys::{HotkeyContext, OverlayModes};
 
-use super::dispatch::BindingMap;
-use super::runtime::{self, HotkeyState};
+use crate::hotkeys::dispatch::BindingMap;
+use crate::hotkeys::runtime::{self, HotkeyState};
 
 /// The effective binding map — defaults with the user's overrides on top —
 /// pushed by the main window whenever it changes.
