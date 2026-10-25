@@ -25,9 +25,11 @@ $hazard-stripes-span: 60%;
   background-repeat: no-repeat;
 }
 
-// --flag-tone paints the slash and the icon, --flag-ink the label.
+// --flag-tone paints the slash and the icon, --flag-band the band behind
+// the label, --flag-ink the label.
 .item {
   --flag-tone: #{$widget-text-primary};
+  --flag-band: var(--flag-tone);
   --flag-icon: var(--flag-tone);
   --flag-ink: #{$widget-text-on-accent};
 
@@ -70,6 +72,7 @@ $hazard-stripes-span: 60%;
   display: flex;
   align-items: center;
   padding-left: calc(#{$slant} + #{sp(sm)});
+  background: var(--flag-band);
   clip-path: polygon(#{$slant} 0, 100% 0, 100% 100%, 0 100%);
 }
 
@@ -85,81 +88,53 @@ $hazard-stripes-span: 60%;
 
 .itemYellow {
   --flag-tone: #{$flag-band-yellow};
-
-  .band {
-    background: $flag-band-yellow;
-  }
 }
 
 .itemGreen {
   --flag-tone: #{$flag-band-green};
-
-  .band {
-    background: $flag-band-green;
-  }
 }
 
 .itemRed {
   --flag-tone: #{$flag-band-red};
-
-  .band {
-    background: $flag-band-red;
-  }
 }
 
 .itemBlue {
   --flag-tone: #{$flag-band-blue};
-
-  .band {
-    background: $flag-band-blue;
-  }
 }
 
 .itemWhite {
   --flag-tone: #{$flag-band-white};
-
-  .band {
-    background: $flag-band-white;
-  }
 }
 
 .itemCheckered {
   --flag-tone: #{$flag-band-checkered};
   --flag-icon: #{$flag-band-white};
-
-  .band {
-    background: $flag-band-checkered;
-  }
 }
 
 .itemBlack {
   --flag-tone: #{$widget-border-default};
   --flag-icon: #{$flag-band-white};
   --flag-ink: #{$widget-text-primary};
-
-  .band {
-    background: $flag-band-black;
-  }
+  --flag-band: #{$flag-band-black};
 }
 
 .itemMeatball {
   --flag-tone: #{$flag-band-orange};
   --flag-ink: #{$widget-text-primary};
-
-  .band {
-    background: $flag-band-black;
-  }
+  --flag-band: #{$flag-band-black};
 }
 
 // The slowdown is a penalty, not a track state: no band, only the accent.
 .itemFurled {
   --flag-tone: #{$flag-band-yellow};
   --flag-icon: #{$flag-band-white};
+  --flag-band: transparent;
   --flag-ink: #{$widget-text-primary};
 }
 
 .itemDq {
   --flag-tone: #{$flag-band-red};
+  --flag-band: transparent;
   --flag-ink: #{$flag-band-red};
 }
 

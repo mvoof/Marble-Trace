@@ -19,7 +19,7 @@ export const FlatFlagsWidget = observer(() => {
   }
 
   return (
-    <WidgetPanel direction="column" gap={0}>
+    <WidgetPanel>
       <FlagList />
     </WidgetPanel>
   );
