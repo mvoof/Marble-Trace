@@ -1,7 +1,7 @@
 //! The overlay's drag and interact modes — the pure rules; the runtime keeps
 //! the state, the timer and the broadcast.
 
-use mt_model::hotkeys::{InteractHotkeyMode, OverlayModes};
+use mt_model::app::hotkeys::{InteractHotkeyMode, OverlayModes};
 
 /// Drag and interact both take the mouse but want it for opposite things, so
 /// switching one on switches the other off.

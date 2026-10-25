@@ -2,7 +2,7 @@
 
 use tauri::State;
 
-use mt_model::input::{InputDevice, InputDeviceRemap, InputDeviceResolution};
+use mt_model::app::input::{InputDevice, InputDeviceRemap, InputDeviceResolution};
 
 use mt_input::identity::{merge_device_lists, resolve_remaps};
 use mt_input::InputRuntime;

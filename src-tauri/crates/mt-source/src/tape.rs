@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use crate::SourceFrame;
-use mt_model::enums::SimType;
+use mt_model::sim::enums::SimType;
 
 /// Identifies the file as a tape, so a stray JSON-lines file is refused.
 pub const TAPE_FORMAT: &str = "marble-trace-tape";

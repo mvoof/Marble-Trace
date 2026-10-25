@@ -13,103 +13,80 @@
 )]
 #![warn(clippy::multiple_unsafe_ops_per_block)]
 
-pub mod capabilities;
-pub mod cars;
-pub mod chat;
-pub mod client_protocol;
-pub mod companions;
-pub mod defaults;
-pub mod enums;
-pub mod environment;
-pub mod event_sink;
-pub mod events;
-pub mod flags;
-#[cfg(feature = "dev")]
-pub mod generated_paths;
-pub mod hotkeys;
-pub mod input;
-pub mod install;
-pub mod lap_log;
-pub mod pit_action;
-pub mod pit_auto;
-pub mod pit_command;
-pub mod player;
-pub mod reference_lap;
-pub mod remote;
-pub mod session;
-pub mod sim_perf;
-pub mod telemetry_events;
-pub mod track_shape;
-pub mod ts_values;
+pub mod app;
+pub mod computed;
+pub mod contract;
+pub mod pit;
+pub mod sim;
 
-/// Registers every contract type this module declares with specta.
+/// Registers every contract type this crate declares with specta.
 ///
-/// Lives here rather than in `lib.rs` so a new type is declared and registered
-/// in the same place — a type registered nowhere simply vanishes from
+/// Lives here rather than in the app's `bindings.rs` so a new type is declared
+/// and registered in the same crate — a type registered nowhere simply vanishes from
 /// `bindings.ts`, which fails at the frontend rather than at the build.
 #[cfg(feature = "dev")]
 pub fn register_types(types: &mut specta::TypeCollection) {
     types
-        .register::<capabilities::CapabilitiesPayload>()
-        .register::<cars::CarIdxFrame>()
-        .register::<cars::CarPositionsFrame>()
-        .register::<cars::PacingFrame>()
-        .register::<client_protocol::ClientEnvelope>()
-        .register::<client_protocol::RejectedCommand>()
-        .register::<companions::CompanionApp>()
-        .register::<companions::CompanionStatus>()
-        .register::<companions::DetectedApp>()
-        .register::<enums::SimStatus>()
-        .register::<enums::SimType>()
-        .register::<enums::PitTargetType>()
-        .register::<enums::DrsState>()
-        .register::<events::RemoteControlKind>()
-        .register::<events::RemoteStreamKind>()
-        .register::<environment::EnvironmentFrame>()
-        .register::<environment::WeatherForecastEntry>()
-        .register::<flags::RaceFlags>()
-        .register::<hotkeys::Binding>()
-        .register::<hotkeys::HotkeyActionSpec>()
-        .register::<hotkeys::HotkeyContext>()
-        .register::<hotkeys::HotkeyKind>()
-        .register::<hotkeys::HotkeySettingsAction>()
-        .register::<hotkeys::HotkeyTrigger>()
-        .register::<hotkeys::InteractHotkeyMode>()
-        .register::<hotkeys::OverlayModes>()
-        .register::<input::InputDevice>()
-        .register::<input::InputButtonEvent>()
-        .register::<input::InputDeviceRemap>()
-        .register::<input::InputDeviceResolution>()
-        .register::<install::InstallMismatch>()
-        .register::<lap_log::LapLogFrame>()
-        .register::<pit_action::PitAction>()
-        .register::<pit_action::TireCorner>()
-        .register::<pit_auto::PitAutoConfig>()
-        .register::<pit_auto::PitAutoFrame>()
-        .register::<pit_auto::PitAutoMode>()
-        .register::<pit_auto::PitClaim>()
-        .register::<pit_command::PitCommandKind>()
-        .register::<pit_command::PitCommandRequest>()
-        .register::<player::CarDynamicsFrame>()
-        .register::<player::CarInputsFrame>()
-        .register::<player::InputSample>()
-        .register::<player::CarStatusFrame>()
-        .register::<player::ChassisFrame>()
-        .register::<player::LapTimingFrame>()
-        .register::<player::PitServiceFrame>()
-        .register::<player::PitTargetFrame>()
-        .register::<reference_lap::ReferenceLapData>()
-        .register::<reference_lap::ReferenceLapSample>()
-        .register::<reference_lap::TrackCondition>()
-        .register::<remote::RemoteDevice>()
-        .register::<remote::RemoteServerConfig>()
-        .register::<remote::RemoteServerInfo>()
-        .register::<session::SessionFrame>()
-        .register::<session::SessionSnapshot>()
-        .register::<sim_perf::SimPerfFrame>()
-        .register::<track_shape::TrackPoint>()
-        .register::<track_shape::TrackRecordingFrame>()
-        .register::<track_shape::TrackShapePayload>();
+        .register::<contract::capabilities::CapabilitiesPayload>()
+        .register::<sim::cars::CarIdxFrame>()
+        .register::<sim::cars::CarPositionsFrame>()
+        .register::<sim::cars::PacingFrame>()
+        .register::<contract::client_protocol::ClientEnvelope>()
+        .register::<contract::client_protocol::RejectedCommand>()
+        .register::<app::companions::CompanionApp>()
+        .register::<app::companions::CompanionStatus>()
+        .register::<app::companions::DetectedApp>()
+        .register::<sim::enums::SimStatus>()
+        .register::<sim::enums::SimType>()
+        .register::<sim::enums::PitTargetType>()
+        .register::<sim::enums::DrsState>()
+        .register::<contract::events::RemoteControlKind>()
+        .register::<contract::events::RemoteStreamKind>()
+        .register::<sim::environment::EnvironmentFrame>()
+        .register::<sim::environment::WeatherForecastEntry>()
+        .register::<sim::flags::RaceFlags>()
+        .register::<app::hotkeys::Binding>()
+        .register::<app::hotkeys::HotkeyActionSpec>()
+        .register::<app::hotkeys::HotkeyContext>()
+        .register::<app::hotkeys::HotkeyKind>()
+        .register::<app::hotkeys::HotkeySettingsAction>()
+        .register::<app::hotkeys::HotkeyTrigger>()
+        .register::<app::hotkeys::InteractHotkeyMode>()
+        .register::<app::hotkeys::OverlayModes>()
+        .register::<app::input::InputDevice>()
+        .register::<app::input::InputButtonEvent>()
+        .register::<app::input::InputDeviceRemap>()
+        .register::<app::input::InputDeviceResolution>()
+        .register::<app::install::InstallMismatch>()
+        .register::<computed::lap_log::LapLogFrame>()
+        .register::<pit::pit_action::PitAction>()
+        .register::<pit::pit_action::TireCorner>()
+        .register::<pit::pit_auto::PitAutoConfig>()
+        .register::<pit::pit_auto::PitAutoFrame>()
+        .register::<pit::pit_auto::PitAutoMode>()
+        .register::<pit::pit_auto::PitClaim>()
+        .register::<pit::pit_command::PitCommandKind>()
+        .register::<pit::pit_command::PitCommandRequest>()
+        .register::<sim::player::CarDynamicsFrame>()
+        .register::<sim::player::CarInputsFrame>()
+        .register::<sim::player::InputSample>()
+        .register::<sim::player::CarStatusFrame>()
+        .register::<sim::player::ChassisFrame>()
+        .register::<sim::player::LapTimingFrame>()
+        .register::<sim::player::PitServiceFrame>()
+        .register::<sim::player::PitTargetFrame>()
+        .register::<computed::reference_lap::ReferenceLapData>()
+        .register::<computed::reference_lap::ReferenceLapSample>()
+        .register::<computed::reference_lap::TrackCondition>()
+        .register::<app::remote::RemoteDevice>()
+        .register::<app::remote::RemoteServerConfig>()
+        .register::<app::remote::RemoteServerInfo>()
+        .register::<sim::session::SessionFrame>()
+        .register::<sim::session::SessionSnapshot>()
+        .register::<sim::sim_perf::SimPerfFrame>()
+        .register::<computed::track_shape::TrackPoint>()
+        .register::<computed::track_shape::TrackRecordingFrame>()
+        .register::<computed::track_shape::TrackShapePayload>();
 
-    chat::register_types(types);
+    app::chat::register_types(types);
 }

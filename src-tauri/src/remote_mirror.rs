@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use tauri::{AppHandle, Listener};
 
-use mt_model::events::{RemoteStreamKind, EVENT_TELEMETRY_BUNDLE_MIRROR};
+use mt_model::contract::events::{RemoteStreamKind, EVENT_TELEMETRY_BUNDLE_MIRROR};
 use mt_remote::hub::RemoteHub;
 
 /// Subscribes the hub to the sim event stream for the lifetime of the app.

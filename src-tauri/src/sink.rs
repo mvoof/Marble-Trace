@@ -3,7 +3,7 @@
 
 use tauri::{AppHandle, Emitter};
 
-use mt_model::event_sink::EventSink;
+use mt_model::contract::event_sink::EventSink;
 use mt_remote::server::{BundleAsset, BundleAssets};
 
 pub struct TauriSink(pub AppHandle);

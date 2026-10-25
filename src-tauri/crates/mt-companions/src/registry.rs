@@ -12,7 +12,7 @@
 
 use std::path::{Path, PathBuf};
 
-use mt_model::companions::DetectedApp;
+use mt_model::app::companions::DetectedApp;
 
 /// Lowercase fragments matched against the installed program's display name.
 ///

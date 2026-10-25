@@ -14,11 +14,11 @@ use std::sync::mpsc::{self, Receiver, Sender};
 
 use tracing::{error, warn};
 
-use super::storage;
-use mt_computations::reference_selection::StoredReferences;
-use mt_computations::safety_rating::SafetyRatingState;
-use mt_model::reference_lap::ReferenceLapData;
-use mt_model::track_shape::TrackShapePayload;
+use crate::storage;
+use mt_computations::rating::safety_rating::SafetyRatingState;
+use mt_computations::timing::reference_selection::StoredReferences;
+use mt_model::computed::reference_lap::ReferenceLapData;
+use mt_model::computed::track_shape::TrackShapePayload;
 use mt_source::{ParsedSession, SessionParser};
 
 /// Re-publishes a track shape the worker changed on disk.
@@ -229,7 +229,7 @@ impl Worker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mt_model::session::SessionSnapshot;
+    use mt_model::sim::session::SessionSnapshot;
     use std::sync::{Arc, Mutex};
     use std::time::Duration;
 

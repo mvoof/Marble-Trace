@@ -18,8 +18,8 @@ use crate::tape::{TapeHeader, TapeReader, TapeRecord, TapeWriter};
 use crate::{
     PitCommander, SessionParser, SessionParsers, SourceFrame, SourceReadResult, TelemetrySource,
 };
-use mt_model::capabilities::Capabilities;
-use mt_model::enums::SimType;
+use mt_model::contract::capabilities::Capabilities;
+use mt_model::sim::enums::SimType;
 
 /// Path of a tape to play instead of connecting to the sim.
 pub const REPLAY_ENV: &str = "MARBLE_TRACE_REPLAY";

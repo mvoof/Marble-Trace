@@ -10,7 +10,7 @@
 //! A minority of drivers regenerate that GUID on reinstall, hence the
 //! vendor/product fallback below. Pure logic, no COM — kept testable.
 
-use mt_model::input::InputDevice;
+use mt_model::app::input::InputDevice;
 
 /// A device as DirectInput currently reports it.
 #[derive(Debug, Clone, PartialEq, Eq)]

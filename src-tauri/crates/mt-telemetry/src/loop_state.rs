@@ -8,14 +8,14 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use crate::control::{TelemetryCommand, TelemetryConfig};
-use crate::publications::PublicationRegistry;
+use crate::delivery::publications::PublicationRegistry;
 use crate::state::TelemetryServiceState;
-use mt_computations::pit_auto::PitAuto;
-use mt_computations::reference_selection::{ReferenceChange, ReferenceSelection};
-use mt_computations::{driver_entries, ProcessorCommand, ProcessorRegistry};
-use mt_model::pit_action::PitAction;
-use mt_model::player::InputSample;
-use mt_model::session::SessionSnapshot;
+use mt_computations::strategy::pit_auto::PitAuto;
+use mt_computations::timing::reference_selection::{ReferenceChange, ReferenceSelection};
+use mt_computations::{field::driver_entries, ProcessorCommand, ProcessorRegistry};
+use mt_model::pit::pit_action::PitAction;
+use mt_model::sim::player::InputSample;
+use mt_model::sim::session::SessionSnapshot;
 
 /// Start grid positions keyed by carIdx: (overall_pos, class_pos), 1-indexed.
 pub type StartPositions = HashMap<i32, (i32, i32)>;

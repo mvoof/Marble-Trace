@@ -9,59 +9,43 @@
 )]
 #![warn(clippy::multiple_unsafe_ops_per_block)]
 
-mod utils;
-
-pub mod car_speed;
-pub mod coach;
-pub mod corner_speeds;
-pub mod driver_entries;
-pub mod fuel;
-pub mod incidents;
-pub mod input_sample;
-pub mod lap_delta;
-pub mod lap_log;
-pub mod lap_time_settle;
-pub mod pace_car;
-pub mod pit_actions;
-pub mod pit_auto;
-pub mod pit_stops;
-pub mod pit_target;
-pub mod proximity;
-pub mod reference_lap;
-pub mod reference_selection;
-pub mod relative;
-pub mod safety_rating;
+pub mod driving;
+pub mod field;
+pub mod rating;
+pub mod strategy;
+pub mod timing;
 pub mod track_shape;
+mod utils;
 
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use mt_model::capabilities::Capabilities;
-use mt_model::cars::{CarIdxFrame, PacingFrame};
-use mt_model::enums::SessionState;
-use mt_model::environment::EnvironmentFrame;
-use mt_model::player::{
+use mt_model::computed::track_shape::{TrackRecordingFrame, TrackShapePayload};
+use mt_model::contract::capabilities::Capabilities;
+use mt_model::sim::cars::{CarIdxFrame, PacingFrame};
+use mt_model::sim::enums::SessionState;
+use mt_model::sim::environment::EnvironmentFrame;
+use mt_model::sim::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
-use mt_model::session::SessionSnapshot;
-use mt_model::track_shape::{TrackRecordingFrame, TrackShapePayload};
+use mt_model::sim::session::SessionSnapshot;
 
-use crate::relative::RelativeFrame;
-use coach::{CoachFrame, CoachProcessor};
-use corner_speeds::{CornerSpeedsFrame, CornerSpeedsProcessor};
-use driver_entries::{DriverEntriesFrame, DriverEntriesProcessor};
-use fuel::{FuelComputedFrame, FuelProcessor};
-use incidents::{IncidentsFrame, IncidentsProcessor};
-use lap_delta::{LapDeltaFrame, LapDeltaProcessor};
-use lap_log::LapLogProcessor;
-use mt_model::lap_log::LapLogFrame;
-use mt_model::reference_lap::{ReferenceLapData, StoredReferenceTimes};
-use pace_car::{PaceCarFrame, PaceCarProcessor};
-use pit_stops::{PitStopsFrame, PitStopsProcessor};
-use proximity::{ProximityFrame, ProximityProcessor};
-use reference_lap::ReferenceLapProcessor;
-use relative::RelativeProcessor;
-use safety_rating::{SafetyRatingFrame, SafetyRatingProcessor, SafetyRatingState};
+use crate::field::relative::RelativeFrame;
+use driving::coach::{CoachFrame, CoachProcessor};
+use driving::corner_speeds::{CornerSpeedsFrame, CornerSpeedsProcessor};
+use field::driver_entries::{DriverEntriesFrame, DriverEntriesProcessor};
+use field::pace_car::{PaceCarFrame, PaceCarProcessor};
+use field::proximity::{ProximityFrame, ProximityProcessor};
+use field::relative::RelativeProcessor;
+use mt_model::computed::lap_log::LapLogFrame;
+use mt_model::computed::reference_lap::{ReferenceLapData, StoredReferenceTimes};
+use rating::incidents::{IncidentsFrame, IncidentsProcessor};
+use rating::safety_rating::{SafetyRatingFrame, SafetyRatingProcessor, SafetyRatingState};
+use strategy::fuel::{FuelComputedFrame, FuelProcessor};
+use strategy::pit_stops::{PitStopsFrame, PitStopsProcessor};
+use timing::lap_delta::{LapDeltaFrame, LapDeltaProcessor};
+use timing::lap_log::LapLogProcessor;
+use timing::reference_lap::ReferenceLapProcessor;
 use track_shape::TrackShapeProcessor;
 
 /// Processor identity — reserved for diagnostics and per-processor gating (Этап 3+).
@@ -110,7 +94,7 @@ pub struct ComputeContext<'a> {
     pub track_length_m: f32,
     pub car_length_m: f32,
     pub start_positions: &'a HashMap<i32, (i32, i32)>,
-    pub fuel_settings: fuel::FuelSettings,
+    pub fuel_settings: strategy::fuel::FuelSettings,
     /// `false` suppresses LapDelta output (EVENT_LAP_DELTA gate).
     pub lap_delta_active: bool,
     /// Current session number from the telemetry frame (used by fuel + pit_stops).
@@ -255,7 +239,7 @@ impl ProcessorRegistry {
 }
 
 /// Temporary shim so existing tests in sub-modules that call
-/// `lap_delta::compute(..., &Mutex<LapDeltaState>)` continue to compile.
+/// `timing::lap_delta::compute(..., &Mutex<LapDeltaState>)` continue to compile.
 /// The free functions remain unchanged; processors wrap them.
 #[allow(dead_code)]
 fn _assert_send()
@@ -268,26 +252,26 @@ where
 #[cfg(feature = "dev")]
 pub fn register_types(types: &mut specta::TypeCollection) {
     types
-        .register::<coach::CoachCall>()
-        .register::<coach::CoachFrame>()
-        .register::<coach::CoachInactiveReason>()
-        .register::<coach::DrivingAdvisory>()
-        .register::<corner_speeds::CornerSpeedsFrame>()
-        .register::<driver_entries::DriverEntriesFrame>()
-        .register::<driver_entries::DriverEntry>()
-        .register::<fuel::FuelComputedFrame>()
-        .register::<incidents::IncidentKind>()
-        .register::<incidents::IncidentPoint>()
-        .register::<incidents::IncidentsFrame>()
-        .register::<lap_delta::LapDeltaFrame>()
-        .register::<pace_car::PaceCarFrame>()
-        .register::<pace_car::PaceCarPitPhase>()
-        .register::<pace_car::PaceCarState>()
-        .register::<pit_stops::PitStopsFrame>()
-        .register::<proximity::LateralSide>()
-        .register::<proximity::NearbyCar>()
-        .register::<proximity::ProximityFrame>()
-        .register::<proximity::RadarDistances>()
-        .register::<relative::RelativeFrame>()
-        .register::<safety_rating::SafetyRatingFrame>();
+        .register::<driving::coach::CoachCall>()
+        .register::<driving::coach::CoachFrame>()
+        .register::<driving::coach::CoachInactiveReason>()
+        .register::<driving::coach::DrivingAdvisory>()
+        .register::<driving::corner_speeds::CornerSpeedsFrame>()
+        .register::<field::driver_entries::DriverEntriesFrame>()
+        .register::<field::driver_entries::DriverEntry>()
+        .register::<strategy::fuel::FuelComputedFrame>()
+        .register::<rating::incidents::IncidentKind>()
+        .register::<rating::incidents::IncidentPoint>()
+        .register::<rating::incidents::IncidentsFrame>()
+        .register::<timing::lap_delta::LapDeltaFrame>()
+        .register::<field::pace_car::PaceCarFrame>()
+        .register::<field::pace_car::PaceCarPitPhase>()
+        .register::<field::pace_car::PaceCarState>()
+        .register::<strategy::pit_stops::PitStopsFrame>()
+        .register::<field::proximity::LateralSide>()
+        .register::<field::proximity::NearbyCar>()
+        .register::<field::proximity::ProximityFrame>()
+        .register::<field::proximity::RadarDistances>()
+        .register::<field::relative::RelativeFrame>()
+        .register::<rating::safety_rating::SafetyRatingFrame>();
 }

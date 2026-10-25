@@ -11,11 +11,11 @@ use std::sync::Arc;
 
 use tracing::{info, warn};
 
-use mt_computations::reference_selection::StoredReferences;
-use mt_computations::safety_rating::SafetyRatingState;
-use mt_model::reference_lap::{ReferenceLapData, TrackCondition};
-use mt_model::session::SessionSnapshot;
-use mt_model::track_shape::TrackShapePayload;
+use mt_computations::rating::safety_rating::SafetyRatingState;
+use mt_computations::timing::reference_selection::StoredReferences;
+use mt_model::computed::reference_lap::{ReferenceLapData, TrackCondition};
+use mt_model::computed::track_shape::TrackShapePayload;
+use mt_model::sim::session::SessionSnapshot;
 
 const TRACKS_DIR: &str = "tracks";
 const REFERENCE_LAPS_DIR: &str = "reference_laps";

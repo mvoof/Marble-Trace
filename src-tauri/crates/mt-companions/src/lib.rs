@@ -23,7 +23,7 @@ pub mod registry;
 
 use std::collections::HashSet;
 
-use mt_model::companions::{CompanionApp, CompanionStatus, DetectedApp};
+use mt_model::app::companions::{CompanionApp, CompanionStatus, DetectedApp};
 
 /// Managed state: which instances this app owns.
 #[derive(Default)]

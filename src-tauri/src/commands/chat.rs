@@ -11,7 +11,7 @@ use tracing::info;
 use crate::sink::TauriSink;
 use mt_chat::state::ChatState;
 use mt_chat::{has_baked_client_id, helix, resolve_client_id, runtime, secrets};
-use mt_model::chat::{ChatConfig, TwitchAccount, TwitchDeviceCode, TwitchTokenResult};
+use mt_model::app::chat::{ChatConfig, TwitchAccount, TwitchDeviceCode, TwitchTokenResult};
 
 const NO_CLIENT_ID: &str = "no twitch client id available";
 

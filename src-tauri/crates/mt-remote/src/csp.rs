@@ -19,7 +19,7 @@ use axum::http::{header, HeaderValue};
 use axum::middleware::Next;
 use axum::response::Response;
 
-use mt_model::chat::CHAT_IMAGE_SOURCES;
+use mt_model::app::chat::CHAT_IMAGE_SOURCES;
 
 /// The server's own pages: an inline `<style>`, a GET form back to this server.
 pub const SERVER_PAGE_POLICY: &str =

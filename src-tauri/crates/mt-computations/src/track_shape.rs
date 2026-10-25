@@ -4,9 +4,9 @@ use std::collections::HashMap;
 use std::time::Instant;
 
 use crate::{ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate};
-use mt_model::capabilities::Capabilities;
-use mt_model::enums::TrackSurface;
-use mt_model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
+use mt_model::computed::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
+use mt_model::contract::capabilities::Capabilities;
+use mt_model::sim::enums::TrackSurface;
 
 const DT_CAP_SECONDS: f32 = 0.1;
 const DT_FALLBACK_SECONDS: f32 = 0.016;
@@ -626,14 +626,14 @@ mod tests {
     use super::*;
     use std::collections::HashMap;
 
-    use mt_model::cars::{CarIdxFrame, PaceFormation, PacingFrame};
+    use mt_model::sim::cars::{CarIdxFrame, PaceFormation, PacingFrame};
 
     static NO_PACING: PacingFrame = PacingFrame {
         formation: PaceFormation::NotPacing,
         car_idx_pace_line: Vec::new(),
     };
-    use mt_model::player::{CarDynamicsFrame, CarInputsFrame, CarStatusFrame, LapTimingFrame};
-    use mt_model::session::SessionSnapshot;
+    use mt_model::sim::player::{CarDynamicsFrame, CarInputsFrame, CarStatusFrame, LapTimingFrame};
+    use mt_model::sim::session::SessionSnapshot;
 
     fn make_processor() -> TrackShapeProcessor {
         TrackShapeProcessor::default()
@@ -714,7 +714,7 @@ mod tests {
             engine_warnings: None,
             player_car_sl_shift_rpm: vec![],
             player_car_sl_blink_rpm: vec![],
-            flags: mt_model::flags::RaceFlags::default(),
+            flags: mt_model::sim::flags::RaceFlags::default(),
             dc_abs: None,
             dc_brake_bias: None,
             dc_traction_control: None,
@@ -773,8 +773,8 @@ mod tests {
         car_idx: &'a CarIdxFrame,
         start_positions: &'a HashMap<i32, (i32, i32)>,
         car_inputs: &'a CarInputsFrame,
-        chassis: &'a mt_model::player::ChassisFrame,
-        environment: &'a mt_model::environment::EnvironmentFrame,
+        chassis: &'a mt_model::sim::player::ChassisFrame,
+        environment: &'a mt_model::sim::environment::EnvironmentFrame,
     }
 
     fn make_ctx(args: MakeCtxArgs) -> ComputeContext {
@@ -792,7 +792,7 @@ mod tests {
             track_length_m: 3700.0,
             car_length_m: 4.4,
             start_positions: args.start_positions,
-            fuel_settings: crate::fuel::FuelSettings::default(),
+            fuel_settings: crate::strategy::fuel::FuelSettings::default(),
             lap_delta_active: false,
             session_num: Some(0),
             session_time: None,
@@ -820,8 +820,8 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
-        let chassis = mt_model::player::ChassisFrame::default();
-        let environment = mt_model::environment::EnvironmentFrame::default();
+        let chassis = mt_model::sim::player::ChassisFrame::default();
+        let environment = mt_model::sim::environment::EnvironmentFrame::default();
         let car_inputs = make_car_inputs();
 
         let ctx = make_ctx(MakeCtxArgs {
@@ -860,8 +860,8 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
-        let chassis = mt_model::player::ChassisFrame::default();
-        let environment = mt_model::environment::EnvironmentFrame::default();
+        let chassis = mt_model::sim::player::ChassisFrame::default();
+        let environment = mt_model::sim::environment::EnvironmentFrame::default();
         let car_inputs = make_car_inputs();
 
         proc.state.recording = true;
@@ -896,8 +896,8 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
-        let chassis = mt_model::player::ChassisFrame::default();
-        let environment = mt_model::environment::EnvironmentFrame::default();
+        let chassis = mt_model::sim::player::ChassisFrame::default();
+        let environment = mt_model::sim::environment::EnvironmentFrame::default();
         let car_inputs = make_car_inputs();
 
         let ctx = make_ctx(MakeCtxArgs {
@@ -925,8 +925,8 @@ mod tests {
         let dynamics = make_dynamics(30.0, 0.0);
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
-        let chassis = mt_model::player::ChassisFrame::default();
-        let environment = mt_model::environment::EnvironmentFrame::default();
+        let chassis = mt_model::sim::player::ChassisFrame::default();
+        let environment = mt_model::sim::environment::EnvironmentFrame::default();
         let car_inputs = make_car_inputs();
 
         let tick = |proc: &mut TrackShapeProcessor, pct: f32, on_pit_road: bool| {
@@ -977,8 +977,8 @@ mod tests {
             let session = make_session(1);
             let dynamics = make_dynamics(30.0, 0.0);
             let start_pos = HashMap::new();
-            let chassis = mt_model::player::ChassisFrame::default();
-            let environment = mt_model::environment::EnvironmentFrame::default();
+            let chassis = mt_model::sim::player::ChassisFrame::default();
+            let environment = mt_model::sim::environment::EnvironmentFrame::default();
             let car_inputs = make_car_inputs();
 
             let tick = |proc: &mut TrackShapeProcessor, pct: f32, player_surface: TrackSurface| {
@@ -1040,8 +1040,8 @@ mod tests {
         let dynamics = make_dynamics(30.0, 0.0);
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
-        let chassis = mt_model::player::ChassisFrame::default();
-        let environment = mt_model::environment::EnvironmentFrame::default();
+        let chassis = mt_model::sim::player::ChassisFrame::default();
+        let environment = mt_model::sim::environment::EnvironmentFrame::default();
         let car_inputs = make_car_inputs();
 
         let tick = |proc: &mut TrackShapeProcessor, pct: f32, on_pit_road: bool| {

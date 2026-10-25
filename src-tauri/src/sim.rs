@@ -2,7 +2,7 @@
 //! it is handed `connect_source` and calls it until a sim answers.
 
 #[cfg(feature = "dev")]
-use mt_model::enums::SimType;
+use mt_model::sim::enums::SimType;
 use mt_sim_iracing::source::IracingSource;
 #[cfg(feature = "dev")]
 use mt_sim_iracing::SESSION_PARSERS as IRACING_SESSION_PARSERS;

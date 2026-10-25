@@ -7,11 +7,11 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::time::Instant;
 
-use mt_computations::fuel::FuelSettings;
-use mt_computations::pit_auto::PitAutoCommand;
-use mt_model::defaults::{DEFAULT_CAR_LENGTH_M, DEFAULT_OVERLAY_UPDATE_HZ};
-use mt_model::pit_action::PitAction;
-use mt_model::pit_auto::PitAutoConfig;
+use mt_computations::strategy::fuel::FuelSettings;
+use mt_computations::strategy::pit_auto::PitAutoCommand;
+use mt_model::contract::defaults::{DEFAULT_CAR_LENGTH_M, DEFAULT_OVERLAY_UPDATE_HZ};
+use mt_model::pit::pit_action::PitAction;
+use mt_model::pit::pit_auto::PitAutoConfig;
 
 /// The values a command sets that must outlive a run: they are kept beside the
 /// channel and handed to the next thread, so a value set while the stream is

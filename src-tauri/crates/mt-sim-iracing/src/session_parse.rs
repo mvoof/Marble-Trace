@@ -10,7 +10,7 @@ use serde::Deserialize;
 
 use super::car_classes::{apply_class_badges, normalize_class_color};
 use super::weather::parse_weather_forecast;
-use mt_model::session::{
+use mt_model::sim::session::{
     CarEntry, QualifyResultEntry, ResultPosition, SectorEntry, SessionEntry, SessionSnapshot,
     SessionType, TireCompoundEntry,
 };

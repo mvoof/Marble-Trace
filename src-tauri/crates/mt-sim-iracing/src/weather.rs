@@ -1,4 +1,4 @@
-use mt_model::environment::WeatherForecastEntry;
+use mt_model::sim::environment::WeatherForecastEntry;
 use std::collections::HashMap;
 
 pub fn parse_weather_forecast(

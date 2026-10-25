@@ -21,16 +21,16 @@ pub mod tape;
 use serde::{Deserialize, Serialize};
 
 use crate::raw::{RawValues, RawVarMeta, SessionTreeParser};
-use mt_model::capabilities::Capabilities;
-use mt_model::cars::{CarIdxFrame, CarPositionsFrame, PacingFrame};
-use mt_model::enums::SimType;
-use mt_model::environment::{EnvironmentFrame, WeatherForecastEntry};
-use mt_model::pit_command::PitCommandRequest;
-use mt_model::player::{
+use mt_model::contract::capabilities::Capabilities;
+use mt_model::pit::pit_command::PitCommandRequest;
+use mt_model::sim::cars::{CarIdxFrame, CarPositionsFrame, PacingFrame};
+use mt_model::sim::enums::SimType;
+use mt_model::sim::environment::{EnvironmentFrame, WeatherForecastEntry};
+use mt_model::sim::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
-use mt_model::session::{SessionFrame, SessionSnapshot};
-use mt_model::sim_perf::SimPerfFrame;
+use mt_model::sim::session::{SessionFrame, SessionSnapshot};
+use mt_model::sim::sim_perf::SimPerfFrame;
 
 /// One adapted telemetry tick: the domain model frames consumed by the
 /// telemetry emitter, filled by whichever sim adapter is connected.

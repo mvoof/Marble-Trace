@@ -36,12 +36,12 @@ mod runtime;
 #[cfg(windows)]
 pub use runtime::InputRuntime;
 
-pub use mt_model::events::{INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT};
+pub use mt_model::contract::events::{INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT};
 
 use std::sync::Arc;
 
-use mt_model::event_sink::EventSink;
-use mt_model::input::InputButtonEvent;
+use mt_model::app::input::InputButtonEvent;
+use mt_model::contract::event_sink::EventSink;
 
 /// Called on the poll thread for every button edge.
 pub type EdgeHandler = Box<dyn Fn(&InputButtonEvent) + Send>;

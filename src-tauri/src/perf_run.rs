@@ -18,9 +18,9 @@ use tauri::{AppHandle, Emitter, Manager};
 use tracing::{error, info, warn};
 
 use crate::utils::lock_or_recover;
-use mt_model::events::{EVENT_PERF_BEGIN, EVENT_PERF_END};
+use mt_model::contract::events::{EVENT_PERF_BEGIN, EVENT_PERF_END};
 use mt_source::replay::{REPLAY_ENV, REPLAY_FROM_ENV};
-use mt_telemetry::delivery::DeliverySet;
+use mt_telemetry::delivery::counters::DeliverySet;
 use mt_telemetry::state::TelemetryState;
 use mt_telemetry::tick_timings::TickSummary;
 

@@ -9,7 +9,7 @@ use tracing::{info, warn};
 use super::hub::RemoteHub;
 use super::server::{bind, local_ip, screen_url, serve, token_of, RemoteHost};
 use crate::utils::lock_or_recover;
-use mt_model::remote::{RemoteServerConfig, RemoteServerInfo};
+use mt_model::app::remote::{RemoteServerConfig, RemoteServerInfo};
 
 #[derive(Default)]
 pub struct RemoteState {

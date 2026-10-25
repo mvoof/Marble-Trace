@@ -6,9 +6,9 @@ use std::time::Instant;
 use tauri::State;
 use tracing::{debug, info};
 
-use mt_computations::pit_auto::PitAutoCommand;
-use mt_model::pit_action::PitAction;
-use mt_model::pit_auto::PitAutoConfig;
+use mt_computations::strategy::pit_auto::PitAutoCommand;
+use mt_model::pit::pit_action::PitAction;
+use mt_model::pit::pit_auto::PitAutoConfig;
 use mt_telemetry::control::TelemetryCommand;
 use mt_telemetry::state::TelemetryState;
 

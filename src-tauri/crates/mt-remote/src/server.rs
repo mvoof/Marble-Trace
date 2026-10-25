@@ -27,15 +27,15 @@ use super::csp;
 use super::hub::RemoteHub;
 use super::pages::{index_page, unauthorized_page};
 use crate::utils::lock_or_recover;
-use mt_model::client_protocol::ClientEnvelope;
-use mt_model::event_sink::EventSink;
-use mt_model::remote::RemoteDevice;
+use mt_model::app::remote::RemoteDevice;
+use mt_model::contract::client_protocol::ClientEnvelope;
+use mt_model::contract::event_sink::EventSink;
 
 /// The page every remote screen loads. A separate entry from the app windows': it
 /// pulls no Tauri API, so it also runs in a plain browser.
 const REMOTE_ENTRY: &str = "remote.html";
 
-pub use mt_model::events::EVENT_REMOTE_DEVICE;
+pub use mt_model::contract::events::EVENT_REMOTE_DEVICE;
 
 /// Policy violation — the close code the remote page reads as "wrong token".
 const CLOSE_UNAUTHORIZED: u16 = 1008;

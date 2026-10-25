@@ -11,16 +11,16 @@ use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 use tracing::{debug, info, warn};
 
 use crate::utils::lock_or_recover;
-use mt_computations::pit_auto::PitAutoCommand;
-use mt_model::events::{
+use mt_computations::strategy::pit_auto::PitAutoCommand;
+use mt_model::app::hotkeys::{
+    Binding, HotkeyContext, HotkeyEffect, HotkeySettingsAction, OverlayModes, ViewControl,
+};
+use mt_model::app::input::InputButtonEvent;
+use mt_model::contract::events::{
     RemoteControlKind, WireName, EVENT_CLIENT_CONTROL, EVENT_HOTKEY_SETTINGS_ACTION,
     EVENT_OVERLAY_MODES,
 };
-use mt_model::hotkeys::{
-    Binding, HotkeyContext, HotkeyEffect, HotkeySettingsAction, OverlayModes, ViewControl,
-};
-use mt_model::input::InputButtonEvent;
-use mt_model::pit_action::PitAction;
+use mt_model::pit::pit_action::PitAction;
 use mt_remote::control::RemoteState;
 use mt_telemetry::control::TelemetryCommand;
 use mt_telemetry::state::TelemetryState;

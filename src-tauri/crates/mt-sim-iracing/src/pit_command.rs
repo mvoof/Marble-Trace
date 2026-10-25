@@ -6,7 +6,7 @@
 use kerb::iracing::{send_pit_command, PitCommand};
 use tracing::{debug, warn};
 
-use mt_model::pit_command::{PitCommandKind, PitCommandRequest};
+use mt_model::pit::pit_command::{PitCommandKind, PitCommandRequest};
 use mt_source::PitCommander;
 
 fn to_kerb(kind: PitCommandKind) -> PitCommand {

@@ -3,7 +3,7 @@
 //! The bit masks live in `model/flags.rs`, so `computations/` can read the same
 //! numbers without reaching into this layer. This module owns the decoding.
 
-use mt_model::flags::{
+use mt_model::sim::flags::{
     RaceFlags, BLACK, BLUE, CAUTION, CAUTION_WAVING, CHECKERED, DEBRIS, DISQUALIFY, FURLED, GREEN,
     MEATBALL_MASK, RED, REPAIR, WHITE, YELLOW, YELLOW_WAVING,
 };
@@ -45,7 +45,7 @@ pub fn decode_race_flags(session_bits: u32, player_car_bits: u32) -> RaceFlags {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mt_model::flags::SERVICIBLE;
+    use mt_model::sim::flags::SERVICIBLE;
 
     #[test]
     fn no_bits_gives_empty_flags() {

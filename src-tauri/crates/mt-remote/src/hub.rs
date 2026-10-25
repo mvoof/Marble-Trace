@@ -15,8 +15,8 @@ use tokio::sync::broadcast;
 use tracing::warn;
 
 use crate::utils::lock_or_recover;
-use mt_model::events::{RemoteControlKind, RemoteStreamKind, Replayed, WireName};
-use mt_model::remote::RemoteDevice;
+use mt_model::app::remote::RemoteDevice;
+use mt_model::contract::events::{RemoteControlKind, RemoteStreamKind, Replayed, WireName};
 
 /// Browsers repaint at 60 Hz at best and usually less; anything above this is
 /// Wi-Fi traffic nobody sees. Overridable per server start.
@@ -385,7 +385,7 @@ struct SnapshotPayload {
 mod tests {
     use super::tokens_match;
     use super::{carries_slow_fields, RemoteHub, SLOW_FIELD_KEYS};
-    use mt_model::events::{RemoteControlKind, RemoteStreamKind, WireName};
+    use mt_model::contract::events::{RemoteControlKind, RemoteStreamKind, WireName};
 
     #[test]
     fn a_cleared_track_is_not_replayed_to_a_screen_that_connects_later() {

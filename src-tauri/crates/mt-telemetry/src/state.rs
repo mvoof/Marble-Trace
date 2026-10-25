@@ -8,13 +8,13 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use crate::control::{Control, TelemetryCommand, TelemetryConfig, TelemetryRun};
-use crate::delivery::DeliveryCounters;
-use crate::masks::MaskRegistry;
+use crate::delivery::counters::DeliveryCounters;
+use crate::delivery::masks::MaskRegistry;
 #[cfg(feature = "dev")]
 use crate::tick_timings::TickTimings;
 use crate::utils::lock_or_recover;
-use mt_model::reference_lap::ReferenceLapData;
-use mt_model::session::SessionSnapshot;
+use mt_model::computed::reference_lap::ReferenceLapData;
+use mt_model::sim::session::SessionSnapshot;
 use mt_source::raw::{RawSession, RawValues, RawVarMeta, SessionTreeParser};
 use mt_source::SourceFrame;
 

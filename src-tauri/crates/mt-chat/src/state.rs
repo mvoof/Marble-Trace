@@ -3,7 +3,7 @@
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 
-use mt_model::chat::ChatConfig;
+use mt_model::app::chat::ChatConfig;
 
 /// Managed Tauri state. `generation` is the cooperative stop signal: every
 /// connector loop captures the value it started with and exits as soon as the

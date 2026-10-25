@@ -12,12 +12,12 @@ use tracing::{debug, info, warn};
 use crate::sim::connect_source;
 use crate::sink::TauriSink;
 use crate::utils::lock_or_recover;
-use mt_model::defaults::{MAX_FUEL_AVG_WINDOW, SOURCE_TICK_HZ};
-use mt_model::session::SessionSnapshot;
+use mt_model::contract::defaults::{MAX_FUEL_AVG_WINDOW, SOURCE_TICK_HZ};
+use mt_model::sim::session::SessionSnapshot;
 use mt_source::raw::{RawSession, RawValues, RawVarMeta};
 use mt_source::SourceFrame;
-use mt_telemetry::delivery::DeliverySet;
-use mt_telemetry::masks::REMOTE_LABEL;
+use mt_telemetry::delivery::counters::DeliverySet;
+use mt_telemetry::delivery::masks::REMOTE_LABEL;
 use mt_telemetry::runtime::{spawn_telemetry_thread, TelemetryHost};
 use mt_telemetry::state::TelemetryState;
 

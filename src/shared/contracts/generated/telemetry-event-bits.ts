@@ -1,4 +1,4 @@
-// Generated from Rust by `ts_values!` (src-tauri/crates/mt-model/src/ts_values.rs), the
+// Generated from Rust by `ts_values!` (src-tauri/crates/mt-model/src/contract/ts_values.rs), the
 // value generator that runs alongside specta's type export. Specta writes
 // `bindings.ts` and only handles types; these are values, so they come from
 // here. Edit the Rust declaration, not this file.

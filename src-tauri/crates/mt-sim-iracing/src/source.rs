@@ -7,8 +7,8 @@ use tracing::{debug, warn};
 use super::frame_map::{DeclaredVars, FromIracing};
 use super::pit_command::IracingPitCommander;
 use super::session_parse;
-use mt_model::capabilities::Capabilities;
-use mt_model::enums::SimType;
+use mt_model::contract::capabilities::Capabilities;
+use mt_model::sim::enums::SimType;
 use mt_source::raw::{RawValue, RawValues, RawVarMeta, SessionTreeParser};
 use mt_source::{PitCommander, SessionParser, SourceFrame, SourceReadResult, TelemetrySource};
 

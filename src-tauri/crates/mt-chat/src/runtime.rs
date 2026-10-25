@@ -8,12 +8,12 @@
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use mt_model::event_sink::EventSink;
+use mt_model::contract::event_sink::EventSink;
 use tracing::{info, warn};
 
 use super::state::ChatServiceState;
 use super::{eventsub, helix, resolve_client_id, secrets, twitch, youtube};
-use mt_model::chat::ChatConfig;
+use mt_model::app::chat::ChatConfig;
 
 fn non_empty(value: &Option<String>) -> Option<String> {
     value

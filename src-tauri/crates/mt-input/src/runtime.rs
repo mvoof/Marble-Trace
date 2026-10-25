@@ -11,7 +11,7 @@ use std::thread;
 
 use windows::Win32::Foundation::HWND;
 
-use mt_model::input::{InputButtonEvent, InputDevice};
+use mt_model::app::input::{InputButtonEvent, InputDevice};
 
 use super::com_apartment::ComApartment;
 use super::dinput::{DirectInputSession, POLL_INTERVAL};

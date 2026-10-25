@@ -16,13 +16,13 @@
 use std::sync::Arc;
 
 use futures::{SinkExt, StreamExt};
-use mt_model::event_sink::EventSink;
+use mt_model::contract::event_sink::EventSink;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tracing::{debug, info, warn};
 
 use super::state::ChatServiceState;
 use super::{backoff_delay, color_for_author, helix, now_ms, secrets, EVENT_CHAT_MESSAGE};
-use mt_model::chat::{ChatHighlight, ChatHighlightKind, ChatMessage, ChatPlatform};
+use mt_model::app::chat::{ChatHighlight, ChatHighlightKind, ChatMessage, ChatPlatform};
 
 const WS_URL: &str = "wss://eventsub.wss.twitch.tv/ws";
 const SUBSCRIPTIONS_URL: &str = "https://api.twitch.tv/helix/eventsub/subscriptions";

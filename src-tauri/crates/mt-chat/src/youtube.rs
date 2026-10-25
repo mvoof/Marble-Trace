@@ -8,7 +8,7 @@
 
 use std::sync::Arc;
 
-use mt_model::event_sink::EventSink;
+use mt_model::contract::event_sink::EventSink;
 use tracing::{debug, info, warn};
 
 use super::state::ChatServiceState;
@@ -16,7 +16,7 @@ use super::{
     backoff_delay, color_for_author, now_ms, EVENT_CHAT_DELETION, EVENT_CHAT_MESSAGE,
     EVENT_CHAT_PRESENCE,
 };
-use mt_model::chat::{
+use mt_model::app::chat::{
     ChatBadge, ChatConnectionStatus, ChatDeletion, ChatFragment, ChatHighlight, ChatHighlightKind,
     ChatMessage, ChatPlatform, ChatPresence,
 };

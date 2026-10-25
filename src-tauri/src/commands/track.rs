@@ -5,8 +5,8 @@
 use tauri::{AppHandle, Emitter, Manager, State};
 use tracing::{info, warn};
 
-use mt_model::reference_lap::{ReferenceLapData, TrackCondition};
-use mt_model::track_shape::TrackShapePayload;
+use mt_model::computed::reference_lap::{ReferenceLapData, TrackCondition};
+use mt_model::computed::track_shape::TrackShapePayload;
 use mt_telemetry::control::TelemetryCommand;
 use mt_telemetry::emitter::EVENT_TRACK_SHAPE;
 use mt_telemetry::state::TelemetryState;

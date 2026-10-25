@@ -7,16 +7,18 @@
 
 use crate::flags::decode_race_flags;
 use kerb::iracing::IracingFrame;
-use mt_model::cars::{CarIdxFrame, CarPositionsFrame, PaceFormation, PacingFrame, SpotterState};
-use mt_model::enums::{DrsState, SessionState, Skies, TrackSurface};
-use mt_model::environment::EnvironmentFrame;
-use mt_model::player::{
+use mt_model::sim::cars::{
+    CarIdxFrame, CarPositionsFrame, PaceFormation, PacingFrame, SpotterState,
+};
+use mt_model::sim::enums::{DrsState, SessionState, Skies, TrackSurface};
+use mt_model::sim::environment::EnvironmentFrame;
+use mt_model::sim::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
     PitServiceFrame, PIT_SV_FAST_REPAIR, PIT_SV_FUEL_FILL, PIT_SV_LF_TIRE_CHANGE,
     PIT_SV_LR_TIRE_CHANGE, PIT_SV_RF_TIRE_CHANGE, PIT_SV_RR_TIRE_CHANGE, PIT_SV_WINDSHIELD_TEAROFF,
 };
-use mt_model::session::SessionFrame;
-use mt_model::sim_perf::SimPerfFrame;
+use mt_model::sim::session::SessionFrame;
+use mt_model::sim::sim_perf::SimPerfFrame;
 use mt_source::SourceFrame;
 use std::collections::HashSet;
 

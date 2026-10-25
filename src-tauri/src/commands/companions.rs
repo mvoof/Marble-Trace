@@ -3,7 +3,7 @@
 use tauri::State;
 
 use mt_companions::CompanionsState;
-use mt_model::companions::{CompanionApp, CompanionStatus, DetectedApp};
+use mt_model::app::companions::{CompanionApp, CompanionStatus, DetectedApp};
 
 /// Guards against a settings file that grew an implausible list by hand.
 const MAX_COMPANION_APPS: usize = 32;

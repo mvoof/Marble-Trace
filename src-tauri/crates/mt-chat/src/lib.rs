@@ -24,7 +24,9 @@ pub mod state;
 pub mod twitch;
 pub mod youtube;
 
-pub use mt_model::events::{EVENT_CHAT_DELETION, EVENT_CHAT_MESSAGE, EVENT_CHAT_PRESENCE};
+pub use mt_model::contract::events::{
+    EVENT_CHAT_DELETION, EVENT_CHAT_MESSAGE, EVENT_CHAT_PRESENCE,
+};
 
 /// Palette mirrored from `_widget-tokens.scss` ($race-*). YouTube gives authors
 /// no colour, so one is derived from the name — a grey wall of identical nicks

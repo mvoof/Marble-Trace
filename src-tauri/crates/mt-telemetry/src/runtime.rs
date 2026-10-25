@@ -13,21 +13,21 @@ use std::time::{Duration, Instant};
 use crate::utils::lock_or_recover;
 use tracing::{debug, info, warn};
 
-use super::control::{TelemetryCommand, TelemetryRun};
-use super::emitter::{
+use crate::control::{TelemetryCommand, TelemetryRun};
+use crate::delivery::scheduler::EmitScheduler;
+use crate::emitter::{
     emit_domain_frames, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_SESSION_INFO,
     EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
 };
-use super::io_worker::{IoWorker, SessionUpdate};
-use super::loop_state::LoopState;
-use super::scheduler::EmitScheduler;
-use super::state::TelemetryServiceState;
+use crate::io_worker::{IoWorker, SessionUpdate};
+use crate::loop_state::LoopState;
+use crate::state::TelemetryServiceState;
 use mt_computations::ProcessorCommand;
-use mt_model::capabilities::CapabilitiesPayload;
-use mt_model::defaults::SOURCE_TICK_HZ;
-use mt_model::enums::SimStatus;
-use mt_model::event_sink::EventSink;
-use mt_model::track_shape::TrackShapePayload;
+use mt_model::computed::track_shape::TrackShapePayload;
+use mt_model::contract::capabilities::CapabilitiesPayload;
+use mt_model::contract::defaults::SOURCE_TICK_HZ;
+use mt_model::contract::event_sink::EventSink;
+use mt_model::sim::enums::SimStatus;
 use mt_source::{SourceReadResult, TelemetrySource};
 
 const CONNECT_RETRY_DELAY: Duration = Duration::from_secs(1);
@@ -163,7 +163,7 @@ fn wait_for_connection(
 struct LoopSession<'a> {
     run: u64,
     commands: &'a Receiver<TelemetryCommand>,
-    capabilities: mt_model::capabilities::Capabilities,
+    capabilities: mt_model::contract::capabilities::Capabilities,
     data_dir: Option<PathBuf>,
 }
 

@@ -30,10 +30,10 @@
 //! ```
 
 use super::car_badges::badge_for_car;
-use mt_model::session::CarEntry;
+use mt_model::sim::session::CarEntry;
 
 /// Fallback color for cars with no class color reported.
-pub use mt_model::defaults::DEFAULT_CLASS_COLOR;
+pub use mt_model::contract::defaults::DEFAULT_CLASS_COLOR;
 
 /// iRacing session YAML reports class colors as "0xRRGGBB" strings.
 /// Some telemetry colors don't match what iRacing displays in-game.

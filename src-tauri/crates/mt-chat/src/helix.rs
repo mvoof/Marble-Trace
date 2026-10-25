@@ -11,12 +11,12 @@
 use std::collections::HashMap;
 use std::sync::{Arc, OnceLock};
 
-use mt_model::event_sink::EventSink;
+use mt_model::contract::event_sink::EventSink;
 use tracing::{debug, info, warn};
 
 use super::state::ChatServiceState;
 use super::{secrets, EVENT_CHAT_PRESENCE};
-use mt_model::chat::{
+use mt_model::app::chat::{
     ChatConnectionStatus, ChatPlatform, ChatPresence, TwitchDeviceCode, TwitchTokenResult,
 };
 

@@ -6,7 +6,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, State};
 
 use crate::sink::{TauriAssets, TauriSink};
-use mt_model::remote::{RemoteDevice, RemoteServerConfig, RemoteServerInfo};
+use mt_model::app::remote::{RemoteDevice, RemoteServerConfig, RemoteServerInfo};
 use mt_remote::control::{self, RemoteState};
 use mt_remote::server::RemoteHost;
 

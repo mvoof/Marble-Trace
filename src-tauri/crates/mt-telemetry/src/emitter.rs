@@ -11,46 +11,48 @@ use std::time::Instant;
 
 use tracing::{info, warn};
 
-use super::delivery::DeliveryCounters;
-use super::dispatch::{mirrors, plan, BundleSink, DeliveryGroup, Recipient};
-use super::io_worker::IoWorker;
-use super::loop_state::LoopState;
-use super::publications::PublicationRegistry;
-use super::quantize;
-use super::scheduler::DueGroups;
-use super::state::TelemetryServiceState;
+use crate::delivery::counters::DeliveryCounters;
+use crate::delivery::dispatch::{mirrors, plan, BundleSink, DeliveryGroup, Recipient};
+use crate::delivery::publications::PublicationRegistry;
+use crate::delivery::quantize;
+use crate::delivery::scheduler::DueGroups;
+use crate::io_worker::IoWorker;
+use crate::loop_state::LoopState;
+use crate::state::TelemetryServiceState;
 use crate::utils::lock_or_recover;
-use mt_computations::input_sample::input_sample;
-use mt_computations::pit_actions::{self, PitActionInput};
-use mt_computations::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
-use mt_computations::relative::RelativeFrame;
+use mt_computations::driving::input_sample::input_sample;
+use mt_computations::field::relative::RelativeFrame;
+use mt_computations::strategy::pit_actions::{self, PitActionInput};
+use mt_computations::strategy::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
 use mt_computations::{
-    coach, corner_speeds, driver_entries, fuel, incidents, lap_delta, pace_car, pit_stops,
-    proximity, safety_rating, ComputeContext, ComputedOutput, ProcessorCommand, TickRate,
+    driving::coach, driving::corner_speeds, field::driver_entries, field::pace_car,
+    field::proximity, rating::incidents, rating::safety_rating, strategy::fuel,
+    strategy::pit_stops, timing::lap_delta, ComputeContext, ComputedOutput, ProcessorCommand,
+    TickRate,
 };
-use mt_model::capabilities::Capabilities;
-use mt_model::cars::{CarIdxFrame, CarPositionsFrame};
-use mt_model::environment::EnvironmentFrame;
-use mt_model::event_sink::EventSink;
-use mt_model::lap_log::LapLogFrame;
-use mt_model::pit_auto::PitAutoFrame;
-use mt_model::player::{
-    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, InputSample, LapTimingFrame,
-    PitServiceFrame, PitTargetFrame,
-};
-use mt_model::session::{SessionFrame, SessionSnapshot};
-use mt_model::telemetry_events::{
+use mt_model::computed::lap_log::LapLogFrame;
+use mt_model::computed::track_shape::TrackRecordingFrame;
+use mt_model::contract::capabilities::Capabilities;
+use mt_model::contract::event_sink::EventSink;
+use mt_model::contract::telemetry_events::{
     EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS, EVENT_COACH, EVENT_CORNER_SPEEDS,
     EVENT_DRIVER_ENTRIES, EVENT_INCIDENTS, EVENT_INPUT_SAMPLES, EVENT_LAP_DELTA, EVENT_PROXIMITY,
     EVENT_RELATIVE, EVENT_SAFETY_RATING,
 };
-use mt_model::track_shape::TrackRecordingFrame;
+use mt_model::pit::pit_auto::PitAutoFrame;
+use mt_model::sim::cars::{CarIdxFrame, CarPositionsFrame};
+use mt_model::sim::environment::EnvironmentFrame;
+use mt_model::sim::player::{
+    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, InputSample, LapTimingFrame,
+    PitServiceFrame, PitTargetFrame,
+};
+use mt_model::sim::session::{SessionFrame, SessionSnapshot};
 use mt_source::{PitCommander, SourceFrame};
 
 // The names themselves live on the contract in `model/events.rs`, where the
 // remote hub and the generated TypeScript read them too. Re-exported here
 // because this is the module that emits them.
-pub use mt_model::events::{
+pub use mt_model::contract::events::{
     EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_REFERENCE_LAP_UPDATED, EVENT_SESSION_INFO,
     EVENT_SIM_PERF, EVENT_STATUS, EVENT_TELEMETRY_BUNDLE, EVENT_TELEMETRY_BUNDLE_MIRROR,
     EVENT_TELEMETRY_SLOW, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
@@ -294,7 +296,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         if let (Some(lap_dist), Some(pit_in), Some(pit_exit)) =
             (lap_dist_pct, pit_in_pct, pit_exit_pct)
         {
-            if let Some(pit_target) = mt_computations::pit_target::resolve_pit_target(
+            if let Some(pit_target) = mt_computations::strategy::pit_target::resolve_pit_target(
                 lap_dist,
                 pit_in,
                 pit_exit,
@@ -779,11 +781,11 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::delivery::BROADCAST_LABEL;
-    use crate::masks::{BOOTSTRAP_LABEL, REMOTE_LABEL};
-    use mt_computations::driver_entries::DriverEntriesFrame;
-    use mt_model::cars::CarPositionsFrame;
-    use mt_model::telemetry_events::{EVENT_CAR_POSITIONS, EVENT_DRIVER_ENTRIES};
+    use crate::delivery::counters::BROADCAST_LABEL;
+    use crate::delivery::masks::{BOOTSTRAP_LABEL, REMOTE_LABEL};
+    use mt_computations::field::driver_entries::DriverEntriesFrame;
+    use mt_model::contract::telemetry_events::{EVENT_CAR_POSITIONS, EVENT_DRIVER_ENTRIES};
+    use mt_model::sim::cars::CarPositionsFrame;
 
     /// One bundle as it was delivered, and who it went to.
     #[derive(Debug)]
