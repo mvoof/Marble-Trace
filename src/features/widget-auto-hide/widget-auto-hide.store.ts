@@ -18,7 +18,13 @@ interface PitServiceVisibility {
   readonly panel: { readonly isVisible: boolean; readonly lingering: boolean };
 }
 
+/** Who is on the radio; the cars entity answers it. */
+interface RadioVisibility {
+  readonly radioTransmission: unknown;
+}
+
 interface WidgetAutoHideDeps {
+  cars: RadioVisibility;
   liveWidgets: LiveWidgetsView;
   radar: RadarWidgetStore;
   flags: FlagsStore;
@@ -138,6 +144,11 @@ export class WidgetAutoHideStore {
         this.root.widgetInstances.storeOf<SelfHidingWidgetStore>(widgetId)
           ?.isVisible ?? false
       );
+    }
+
+    // The plate is the transmission: nobody talking, nothing to show.
+    if (widgetType === 'radio') {
+      return this.root.cars.radioTransmission !== null;
     }
 
     if (widgetType === 'pit-service') {

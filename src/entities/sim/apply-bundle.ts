@@ -34,6 +34,7 @@ export const applyTelemetryBundle = (
     }
 
     if (bundle.carIdx) root.cars.updateCarIdx(bundle.carIdx);
+    if (bundle.radio) root.cars.updateRadio(bundle.radio);
 
     if (bundle.carInputs) {
       root.player.updateCarInputs(

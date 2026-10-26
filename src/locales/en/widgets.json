@@ -89,6 +89,9 @@
     },
     "incident-tracker": {
       "description": "Incidents, penalties and an estimated Safety Rating at the flag."
+    },
+    "radio": {
+      "description": "Who is talking on the radio: car number, name and channel."
     }
   },
   "settingsPanels": {
@@ -892,6 +895,14 @@
       "showPenaltiesDesc": "Drive-throughs served and, in brackets, the incidents left before the next one. DQ once over the limit. Hidden in a session that hands out no penalties.",
       "showCleanCorners": "Clean corners",
       "showCleanCornersDesc": "Corners to drive without an incident before this session stops costing Safety Rating. Zero means it is level or better already."
+    },
+    "radio": {
+      "moduleParameters": "Module parameters",
+      "nameFormat": "Name",
+      "nameFormat_full": "Full",
+      "nameFormat_short": "First name, initial",
+      "showChannel": "Show channel",
+      "showChannelDesc": "Under the name: who the transmission reaches — all, team, race control."
     }
   },
   "streamChat": {

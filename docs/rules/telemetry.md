@@ -15,7 +15,7 @@ every change costs the game a composed frame: never publish off the clock.
 | Hz    | Fields                                                                                                                                                         |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | clock | `carDynamics`, `carInputs`, `inputSamples`, `carPositions`, `lapDelta`, `pitTarget`, `coach`, `trackRecording`, `proximity`                                    |
-| 10    | `carIdx`, `chassis`, `lapTiming`, `driverEntries`, `relative`, `incidents`, `paceCar`                                                                          |
+| 10    | `carIdx`, `chassis`, `lapTiming`, `driverEntries`, `relative`, `incidents`, `paceCar`, `radio`                                                                 |
 | 4     | `carStatus`, `fuel`, `pitStops`, `lapLog`, `pitService`, `pitAuto`, `safetyRating`                                                                             |
 | 1     | `session`, `environment`                                                                                                                                       |
 | async | `sim://session`, `sim://weather`, `sim://status`, `sim://disconnected`, `sim://capabilities`, `sim://perf`, `sim://track-shape`, `sim://reference-lap/updated` |

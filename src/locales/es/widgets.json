@@ -89,6 +89,9 @@
     },
     "incident-tracker": {
       "description": "Incidentes, penalizaciones y una estimación del Safety Rating al final."
+    },
+    "radio": {
+      "description": "Quién habla por radio: número del coche, nombre y canal."
     }
   },
   "settingsPanels": {
@@ -892,6 +895,14 @@
       "showPenaltiesDesc": "Drive-through cumplidos y, entre paréntesis, los incidentes que faltan para el siguiente. DQ al superar el límite. Oculto en una sesión sin penalizaciones.",
       "showCleanCorners": "Curvas limpias",
       "showCleanCornersDesc": "Curvas sin incidentes necesarias para que la sesión deje de restar Safety Rating. Cero significa que ya estás igual o mejor."
+    },
+    "radio": {
+      "moduleParameters": "Parámetros del módulo",
+      "nameFormat": "Nombre",
+      "nameFormat_full": "Completo",
+      "nameFormat_short": "Nombre e inicial",
+      "showChannel": "Mostrar canal",
+      "showChannelDesc": "Bajo el nombre: a quién llega la transmisión — todos, equipo, dirección de carrera."
     }
   },
   "streamChat": {

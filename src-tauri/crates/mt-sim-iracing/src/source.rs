@@ -124,6 +124,7 @@ impl TelemetrySource for IracingSource {
             kerb::ReadResult::Frame(raw_frame) => {
                 let mut frame = SourceFrame::from_iracing(&raw_frame);
                 self.declared.mask_car_status(&mut frame.car_status);
+                self.declared.mask_radio(&mut frame.radio);
 
                 SourceReadResult::Frame(frame)
             }

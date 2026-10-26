@@ -89,6 +89,9 @@
     },
     "incident-tracker": {
       "description": "Инциденты, штрафы и оценка Safety Rating на финише."
+    },
+    "radio": {
+      "description": "Кто говорит по радио: номер машины, имя и канал."
     }
   },
   "settingsPanels": {
@@ -892,6 +895,14 @@
       "showPenaltiesDesc": "Полученные drive-through и в скобках — сколько инцидентов осталось до следующего. DQ после лимита. Скрыто в сессии без штрафов.",
       "showCleanCorners": "Чистые повороты",
       "showCleanCornersDesc": "Сколько поворотов проехать без инцидентов, чтобы сессия перестала снижать Safety Rating. Ноль — уже в нуле или в плюсе."
+    },
+    "radio": {
+      "moduleParameters": "Параметры модуля",
+      "nameFormat": "Имя",
+      "nameFormat_full": "Полностью",
+      "nameFormat_short": "Имя и инициал",
+      "showChannel": "Показывать канал",
+      "showChannelDesc": "Под именем: кому адресована передача — всем, команде, race control."
     }
   },
   "streamChat": {

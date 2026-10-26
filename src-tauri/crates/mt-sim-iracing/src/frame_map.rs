@@ -17,6 +17,7 @@ use mt_model::sim::player::{
     PitServiceFrame, PIT_SV_FAST_REPAIR, PIT_SV_FUEL_FILL, PIT_SV_LF_TIRE_CHANGE,
     PIT_SV_LR_TIRE_CHANGE, PIT_SV_RF_TIRE_CHANGE, PIT_SV_RR_TIRE_CHANGE, PIT_SV_WINDSHIELD_TEAROFF,
 };
+use mt_model::sim::radio::{RadioFrame, RadioTransmission};
 use mt_model::sim::session::SessionFrame;
 use mt_model::sim::sim_perf::SimPerfFrame;
 use mt_source::SourceFrame;
@@ -44,6 +45,7 @@ impl FromIracing for SourceFrame {
             environment: EnvironmentFrame::from_iracing(frame),
             sim_perf: SimPerfFrame::from_iracing(frame),
             pacing: PacingFrame::from_iracing(frame),
+            radio: RadioFrame::from_iracing(frame),
         }
     }
 }
@@ -191,6 +193,8 @@ const CAR_STATUS_OPTIONAL_VARS: &[(&str, ClearCarStatusField)] = &[
     ("DRS_Status", |s| s.drs = None),
 ];
 
+const RADIO_TRANSMIT_CAR_IDX_VAR: &str = "RadioTransmitCarIdx";
+
 impl DeclaredVars {
     pub fn new(names: impl IntoIterator<Item = String>) -> Self {
         Self(names.into_iter().collect())
@@ -201,6 +205,14 @@ impl DeclaredVars {
     /// blanking every adjustment on the car.
     fn is_empty(&self) -> bool {
         self.0.is_empty()
+    }
+
+    /// kerb reads a variable the sim did not declare as 0 — a real car index —
+    /// so without the variable nobody is talking rather than car 0 for ever.
+    pub fn mask_radio(&self, radio: &mut RadioFrame) {
+        if !self.is_empty() && !self.0.contains(RADIO_TRANSMIT_CAR_IDX_VAR) {
+            radio.transmission = None;
+        }
     }
 
     pub fn mask_car_status(&self, status: &mut CarStatusFrame) {
@@ -413,6 +425,35 @@ impl FromIracing for PacingFrame {
     }
 }
 
+impl FromIracing for RadioFrame {
+    fn from_iracing(frame: &IracingFrame) -> Self {
+        Self {
+            transmission: radio_transmission_from_iracing(
+                frame.radio_transmit_car_idx,
+                frame.radio_transmit_radio_idx,
+                frame.radio_transmit_frequency_idx,
+            ),
+        }
+    }
+}
+
+/// `RadioTransmitCarIdx` is -1 while nobody is talking.
+fn radio_transmission_from_iracing(
+    car_idx: i32,
+    radio_num: i32,
+    frequency_num: i32,
+) -> Option<RadioTransmission> {
+    if car_idx < 0 {
+        return None;
+    }
+
+    Some(RadioTransmission {
+        car_idx,
+        radio_num,
+        frequency_num,
+    })
+}
+
 /// `PaceMode` is an iRacing enum sent as a plain integer; this is the only
 /// place that knows what those numbers mean.
 ///
@@ -472,6 +513,31 @@ mod spotter_tests {
 
     // An unmapped value must not read as "spotter off": the spotter is
     // talking, this build just does not know the word.
+    #[test]
+    fn nobody_talks_while_the_transmitter_is_minus_one() {
+        assert_eq!(radio_transmission_from_iracing(-1, 0, 3), None);
+        assert_eq!(
+            radio_transmission_from_iracing(0, 0, 3),
+            Some(RadioTransmission {
+                car_idx: 0,
+                radio_num: 0,
+                frequency_num: 3,
+            })
+        );
+    }
+
+    #[test]
+    fn a_sim_without_the_radio_variable_reads_as_silence() {
+        let declared = DeclaredVars::new(["Speed".to_string()]);
+        let mut radio = RadioFrame {
+            transmission: radio_transmission_from_iracing(0, 0, 0),
+        };
+
+        declared.mask_radio(&mut radio);
+
+        assert_eq!(radio.transmission, None);
+    }
+
     #[test]
     fn unknown_values_read_as_clear() {
         assert_eq!(spotter_from_iracing(-1), SpotterState::Clear);

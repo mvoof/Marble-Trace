@@ -1851,6 +1851,59 @@ export type RadarDistances = {
 };
 
 /**
+ * Who a frequency reaches. Sim-neutral: the source maps its own channel
+ * names onto these.
+ */
+export type RadioChannel =
+  /**
+   * Everyone in the session.
+   */
+  | 'all'
+  /**
+   * The player's own team.
+   */
+  | 'team'
+  | 'raceControl'
+  | 'club'
+  /**
+   * A frequency the player or a league created.
+   */
+  | 'other';
+
+/**
+ * Who is talking on the radio this tick, if anyone. The sim reports one
+ * transmission at a time — the one the player hears.
+ *
+ * @see https://sajax.github.io/irsdkdocs/telemetry/radiotransmitcaridx/
+ */
+export type RadioFrame = { transmission: RadioTransmission | null };
+
+/**
+ * One frequency a radio can be tuned to, from the session.
+ */
+export type RadioFrequencyEntry = {
+  radioNum: number;
+  frequencyNum: number;
+  channel: RadioChannel;
+  /**
+   * The sim's own name for the frequency, as written.
+   */
+  name: string;
+};
+
+export type RadioTransmission = {
+  carIdx: number;
+  /**
+   * Matches `RadioFrequencyEntry::radio_num` in the session.
+   */
+  radioNum: number;
+  /**
+   * Matches `RadioFrequencyEntry::frequency_num` in the session.
+   */
+  frequencyNum: number;
+};
+
+/**
  * The session text as the sim wrote it, and the same text as a tree.
  *
  * The tree keeps the document's own key order. It is `null` when the text
@@ -2339,6 +2392,11 @@ export type SessionSnapshot = {
   driverTires: TireCompoundEntry[];
   sectors: SectorEntry[];
   qualifyResults: QualifyResultEntry[];
+  /**
+   * Every frequency of every radio the player has, to name the one a
+   * `RadioTransmission` is on.
+   */
+  radioFrequencies?: RadioFrequencyEntry[];
 };
 
 export type SessionState =
@@ -2418,6 +2476,11 @@ export type SourceFrame = {
    * formation.
    */
   pacing?: PacingFrame;
+  /**
+   * Absent from tapes recorded before it existed, which then read as
+   * nobody talking.
+   */
+  radio?: RadioFrame;
 };
 
 /**
@@ -2452,6 +2515,7 @@ export type TelemetryBundle = {
   proximity?: ProximityFrame | null;
   incidents?: IncidentsFrame | null;
   paceCar?: PaceCarFrame | null;
+  radio?: RadioFrame | null;
   relative?: RelativeFrame | null;
   driverEntries?: DriverEntriesFrame | null;
   carStatus?: CarStatusFrame | null;

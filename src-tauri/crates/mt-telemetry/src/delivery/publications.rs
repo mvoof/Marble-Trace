@@ -34,6 +34,7 @@ use mt_computations::field::proximity::ProximityFrame;
 use mt_computations::field::relative::RelativeFrame;
 use mt_computations::rating::safety_rating::SafetyRatingFrame;
 use mt_model::sim::cars::{CarIdxFrame, CarPositionsFrame};
+use mt_model::sim::radio::RadioFrame;
 
 /// The last published copy of every frame that may be held back.
 #[derive(Default)]
@@ -44,6 +45,7 @@ pub struct Publications {
     relative: Option<RelativeFrame>,
     proximity: Option<ProximityFrame>,
     pace_car: Option<PaceCarFrame>,
+    radio: Option<RadioFrame>,
     coach: Option<CoachFrame>,
     safety_rating: Option<SafetyRatingFrame>,
     corner_speeds: Option<CornerSpeedsFrame>,
@@ -79,6 +81,7 @@ impl Publications {
         take_if_changed(&mut bundle.relative, &mut self.relative, force);
         take_if_changed(&mut bundle.proximity, &mut self.proximity, force);
         take_if_changed(&mut bundle.pace_car, &mut self.pace_car, force);
+        take_if_changed(&mut bundle.radio, &mut self.radio, force);
         take_if_changed(&mut bundle.coach, &mut self.coach, force);
         take_if_changed(&mut bundle.safety_rating, &mut self.safety_rating, force);
         take_if_changed(&mut bundle.corner_speeds, &mut self.corner_speeds, force);

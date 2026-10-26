@@ -16,6 +16,7 @@ import { mockLapDelta, mockLapLog, mockLapTiming } from './mocks/delta';
 import { mockPitService } from './mocks/pit';
 import { sampleTrack, SAMPLE_TRACK_ID } from './sample-track';
 import { seedCoachAdvisory } from './coach-advisory-seed';
+import { mockRadioFrequencies, mockRadioTransmission } from './mocks/radio';
 
 // Mirror the active race flags into the FlagsStore's display state. The hold /
 // blink reactions that normally do this only run via FlagsStore.init(), which is
@@ -139,7 +140,15 @@ export const seedSampleTelemetry = action((store: PreviewTarget) => {
     store.session.updateSessionInfo({
       ...sampleSnapshot.sessionInfo,
       trackId: SAMPLE_TRACK_ID,
+      // The recording predates the radio section; the session's frequencies
+      // name the channel of the transmission seeded below.
+      radioFrequencies: mockRadioFrequencies(),
     });
+
+  // Someone on the radio, so the Radio widget is on screen in the preview.
+  store.cars.updateRadio({
+    transmission: mockRadioTransmission(store.session.sessionInfo),
+  });
 
   // No incident markers in the baseline: they are laid down by a scenario, and
   // re-seeding the same store has to take them back off the map again.

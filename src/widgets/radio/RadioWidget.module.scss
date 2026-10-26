@@ -1,0 +1,177 @@
+// One accent per channel, set once on the root and read by the wave and the
+// mic alike. The class colour belongs to the number tab alone, so the two say
+// different things: what car, and who it is talking to.
+.root {
+  --radio-accent: #{$widget-text-muted};
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  font-family: $font-widget;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: sp(lg) sp(xl) sp(lg);
+}
+
+.channelAll {
+  --radio-accent: #{$race-green};
+}
+
+.channelTeam {
+  --radio-accent: #{$race-blue};
+}
+
+.channelRaceControl {
+  --radio-accent: #{$race-amber};
+}
+
+.channelClub {
+  --radio-accent: #{$race-lilac};
+}
+
+.channelOther {
+  --radio-accent: #{$race-neutral};
+}
+
+// The tab in the top-left corner, flush with the plate's edges and rounded
+// only where it meets the plate's middle. Its colours are the car's class,
+// written inline.
+.number {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: ws(56);
+  padding: sp(xxs) sp(md);
+  border-bottom-right-radius: radius(lg);
+  font-size: fs(xl);
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.wave {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 0;
+  padding-top: sp(sm);
+}
+
+.bars {
+  display: flex;
+  align-items: center;
+  height: ws(64);
+}
+
+.bars > * + * {
+  margin-left: ws(4);
+}
+
+// Every bar is drawn full height and scaled down: a transform, so a step of
+// the wave repaints only the bars, never the layout around them.
+.bar {
+  width: ws(4);
+  height: 100%;
+  border-radius: ws(2);
+  background: var(--radio-accent);
+}
+
+// The shape of the wave, tallest in the middle and fading at both ends. Keep
+// its length in step with `BAR_COUNT` in `RadioWave.tsx`.
+$wave-envelope:
+  0.2, 0.3, 0.42, 0.55, 0.68, 0.8, 0.92, 1, 0.92, 0.8, 0.68, 0.55, 0.42, 0.3,
+  0.2;
+
+// What each of the four frames does to every fifth bar. Off the air there is no
+// step, and the wave lies flat at its quiet height.
+$wave-frames: (
+  0: (
+    0.55,
+    1,
+    0.7,
+    0.9,
+    0.45,
+  ),
+  1: (
+    1,
+    0.6,
+    0.9,
+    0.5,
+    0.8,
+  ),
+  2: (
+    0.7,
+    0.85,
+    0.5,
+    1,
+    0.6,
+  ),
+  3: (
+    0.9,
+    0.5,
+    1,
+    0.65,
+    0.95,
+  ),
+);
+$wave-quiet: 0.25;
+
+@for $bar from 1 through length($wave-envelope) {
+  $height: nth($wave-envelope, $bar);
+
+  .bar:nth-child(#{$bar}) {
+    opacity: 0.35 + 0.65 * $height;
+    transform: scaleY($height * $wave-quiet);
+  }
+
+  @each $step, $pattern in $wave-frames {
+    .bars[data-blink-step='#{$step}'] .bar:nth-child(#{$bar}) {
+      transform: scaleY(
+        $height * nth($pattern, ($bar - 1) % length($pattern) + 1)
+      );
+    }
+  }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding-top: sp(sm);
+}
+
+.footer > * + * {
+  margin-left: sp(md);
+}
+
+.mic {
+  flex: 0 0 auto;
+  width: ws(28);
+  height: ws(28);
+  color: var(--radio-accent);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  font-size: fs(xl);
+  font-weight: 700;
+  line-height: 1.1;
+  color: $widget-text-primary;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.channel {
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  color: $widget-label;
+  text-transform: uppercase;
+}

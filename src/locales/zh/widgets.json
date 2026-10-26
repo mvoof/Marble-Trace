@@ -89,6 +89,9 @@
     },
     "incident-tracker": {
       "description": "事故点、处罚，以及到终点时的安全评级估算。"
+    },
+    "radio": {
+      "description": "谁在无线电中讲话：车号、姓名和频道。"
     }
   },
   "settingsPanels": {
@@ -892,6 +895,14 @@
       "showPenaltiesDesc": "已执行的 drive-through，括号内为距下一次处罚剩余的事故点。超过上限显示 DQ。 在不设处罚的赛事中隐藏。",
       "showCleanCorners": "干净弯道",
       "showCleanCornersDesc": "本节不再降低安全评级之前需要无事故跑完的弯道数。为零表示已持平或上升。"
+    },
+    "radio": {
+      "moduleParameters": "模块参数",
+      "nameFormat": "姓名",
+      "nameFormat_full": "全名",
+      "nameFormat_short": "名字和姓氏首字母",
+      "showChannel": "显示频道",
+      "showChannelDesc": "姓名下方：通话发给谁——全体、车队、赛事控制。"
     }
   },
   "streamChat": {

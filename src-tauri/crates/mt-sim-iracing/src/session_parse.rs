@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use serde::Deserialize;
 
 use super::car_classes::{apply_class_badges, normalize_class_color};
+use super::radio::{parse_radio_frequencies, RawRadioInfo};
 use super::weather::parse_weather_forecast;
 use mt_model::sim::session::{
     CarEntry, QualifyResultEntry, ResultPosition, SectorEntry, SessionEntry, SessionSnapshot,
@@ -339,6 +340,7 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         driver_tires,
         sectors,
         qualify_results,
+        radio_frequencies: parse_radio_frequencies(raw.radio_info),
     };
 
     Some(ParsedSession {
@@ -360,6 +362,7 @@ struct RawSession {
     driver_info: Option<RawDriverInfo>,
     split_time_info: Option<RawSplitTimeInfo>,
     qualify_results_info: Option<RawQualifyResultsInfo>,
+    radio_info: Option<RawRadioInfo>,
 }
 
 #[derive(Deserialize, Default)]
