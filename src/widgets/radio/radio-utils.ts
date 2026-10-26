@@ -1,16 +1,13 @@
 import type {
-  RadioChannel,
   RadioTransmission,
   SessionSnapshot,
 } from '@shared/contracts/generated/bindings';
+import {
+  channelOfTransmission,
+  type RadioChannelView,
+} from '@entities/cars/radio-channel';
 
 export type RadioNameFormat = 'full' | 'short';
-
-export interface RadioChannelView {
-  channel: RadioChannel;
-  /** The frequency's name as the plate shows it. */
-  channelLabel: string;
-}
 
 export interface RadioSpeaker extends RadioChannelView {
   carNumber: string;
@@ -21,9 +18,6 @@ export interface RadioSpeaker extends RadioChannelView {
   /** The class colour as the session gives it, a `#rrggbb`. */
   classColor: string;
 }
-
-/** What the plate says for a frequency the session does not list. */
-const UNKNOWN_CHANNEL_LABEL = 'RADIO';
 
 interface NameLines {
   firstLine: string;
@@ -84,24 +78,7 @@ export const resolveSpeaker = (
     carNumber: car.carNumber,
     ...splitName(car.userName, nameFormat),
     classColor: car.carClassColor,
-    ...channelOf(transmission, session),
-  };
-};
-
-/** The channel a transmission is on, named as the session lists it. */
-const channelOf = (
-  transmission: RadioTransmission,
-  session: SessionSnapshot
-): RadioChannelView => {
-  const frequency = (session.radioFrequencies ?? []).find(
-    (entry) =>
-      entry.radioNum === transmission.radioNum &&
-      entry.frequencyNum === transmission.frequencyNum
-  );
-
-  return {
-    channel: frequency?.channel ?? 'other',
-    channelLabel: frequency?.label ?? UNKNOWN_CHANNEL_LABEL,
+    ...channelOfTransmission(transmission, session),
   };
 };
 
@@ -136,5 +113,5 @@ export const resolveTunedChannel = (
     return null;
   }
 
-  return channelOf(tuned, session);
+  return channelOfTransmission(tuned, session);
 };

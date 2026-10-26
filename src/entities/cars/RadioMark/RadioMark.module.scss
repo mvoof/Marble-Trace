@@ -1,0 +1,28 @@
+// Sized to the name it stands beside, and kept whole when the name is cut.
+.mark {
+  flex: 0 0 auto;
+  width: ws(14);
+  height: ws(14);
+}
+
+// The channel colours the Radio widget uses, so a mic here and the plate
+// there say the same thing.
+.channelAll {
+  color: $race-green;
+}
+
+.channelTeam {
+  color: $race-blue;
+}
+
+.channelRaceControl {
+  color: $race-amber;
+}
+
+.channelClub {
+  color: $race-lilac;
+}
+
+.channelOther {
+  color: $race-neutral;
+}
