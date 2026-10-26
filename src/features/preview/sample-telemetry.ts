@@ -143,6 +143,7 @@ export const seedSampleTelemetry = action((store: PreviewTarget) => {
       // The recording predates the radio section; the session's frequencies
       // name the channel of the transmission seeded below.
       radioFrequencies: mockRadioFrequencies(),
+      playerRadio: { radioNum: 0, frequencyNum: 0 },
     });
 
   // Someone on the radio, so the Radio widget is on screen in the preview.

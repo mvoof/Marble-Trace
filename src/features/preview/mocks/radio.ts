@@ -42,7 +42,7 @@ export const mockRadioFrequencies = (): RadioFrequencyEntry[] => [
     frequencyNum: 4,
     channel: 'raceControl',
     name: '@RACECONTROL',
-    label: 'RACE CONTROL',
+    label: 'RACE CTRL',
   },
   {
     radioNum: RADIO_NUM,

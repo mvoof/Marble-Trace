@@ -95,7 +95,8 @@ fn label_of(name: &str) -> String {
 
     match built_in.to_ascii_uppercase().as_str() {
         "ALLTEAMS" => "ALL".to_string(),
-        "RACECONTROL" => "RACE CONTROL".to_string(),
+        // "RACE CONTROL" overflows the corner tab.
+        "RACECONTROL" => "RACE CTRL".to_string(),
         other => other.to_string(),
     }
 }
@@ -150,7 +151,7 @@ Radios:
     fn labels_read_as_words() {
         assert_eq!(label_of("@ALLTEAMS"), "ALL");
         assert_eq!(label_of("@DRIVERS"), "DRIVERS");
-        assert_eq!(label_of("@RACECONTROL"), "RACE CONTROL");
+        assert_eq!(label_of("@RACECONTROL"), "RACE CTRL");
         assert_eq!(label_of("@admin"), "ADMIN");
         assert_eq!(label_of("Spotters"), "Spotters");
     }

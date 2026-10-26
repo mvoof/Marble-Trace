@@ -904,7 +904,9 @@
       "showChannel": "Show channel",
       "showChannelDesc": "A tab in the top-right corner naming who the transmission reaches — all, team, race control.",
       "showOnRetune": "Show on channel change",
-      "showOnRetuneDesc": "Show your own plate for three seconds after you switch channel, to read where you will be heard."
+      "showOnRetuneDesc": "Show the new channel for three seconds after you switch, to read where you will be heard.",
+      "idleShowsChannel": "Show the channel when idle",
+      "idleShowsChannelDesc": "Keep the widget on screen while nobody talks, showing the channel your radio is tuned to."
     }
   },
   "streamChat": {

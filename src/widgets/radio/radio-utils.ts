@@ -6,7 +6,13 @@ import type {
 
 export type RadioNameFormat = 'full' | 'short';
 
-export interface RadioSpeaker {
+export interface RadioChannelView {
+  channel: RadioChannel;
+  /** The frequency's name as the plate shows it. */
+  channelLabel: string;
+}
+
+export interface RadioSpeaker extends RadioChannelView {
   carNumber: string;
   /** The first line: the first name, or the whole short form ("Max V."). */
   firstLine: string;
@@ -14,9 +20,6 @@ export interface RadioSpeaker {
   secondLine: string;
   /** The class colour as the session gives it, a `#rrggbb`. */
   classColor: string;
-  channel: RadioChannel;
-  /** The frequency's name as the plate shows it. */
-  channelLabel: string;
 }
 
 /** What the plate says for a frequency the session does not list. */
@@ -77,6 +80,19 @@ export const resolveSpeaker = (
     return null;
   }
 
+  return {
+    carNumber: car.carNumber,
+    ...splitName(car.userName, nameFormat),
+    classColor: car.carClassColor,
+    ...channelOf(transmission, session),
+  };
+};
+
+/** The channel a transmission is on, named as the session lists it. */
+const channelOf = (
+  transmission: RadioTransmission,
+  session: SessionSnapshot
+): RadioChannelView => {
   const frequency = (session.radioFrequencies ?? []).find(
     (entry) =>
       entry.radioNum === transmission.radioNum &&
@@ -84,9 +100,6 @@ export const resolveSpeaker = (
   );
 
   return {
-    carNumber: car.carNumber,
-    ...splitName(car.userName, nameFormat),
-    classColor: car.carClassColor,
     channel: frequency?.channel ?? 'other',
     channelLabel: frequency?.label ?? UNKNOWN_CHANNEL_LABEL,
   };
@@ -111,4 +124,17 @@ export const playerOnTunedFrequency = (
     radioNum: tune.radioNum,
     frequencyNum: tune.frequencyNum,
   };
+};
+
+/** The channel the player's radio is tuned to, or null with no radio. */
+export const resolveTunedChannel = (
+  session: SessionSnapshot | null
+): RadioChannelView | null => {
+  const tuned = playerOnTunedFrequency(session);
+
+  if (!tuned || !session) {
+    return null;
+  }
+
+  return channelOf(tuned, session);
 };

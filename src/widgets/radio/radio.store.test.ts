@@ -29,7 +29,7 @@ const sessionTunedTo = (frequencyNum: number): SessionSnapshot =>
     radioFrequencies: mockRadioFrequencies(),
   }) as SessionSnapshot;
 
-const makeStore = (showOnRetune = true) => {
+const makeStore = (showOnRetune = true, idleShowsChannel = false) => {
   const session = observable(
     { sessionInfo: null as SessionSnapshot | null },
     { sessionInfo: observableRef }
@@ -43,6 +43,7 @@ const makeStore = (showOnRetune = true) => {
           nameFormat: 'full',
           showChannel: true,
           showOnRetune,
+          idleShowsChannel,
         }),
       },
       startsWidgetStores: true,
@@ -68,15 +69,15 @@ describe('RadioWidgetStore — change of channel', () => {
     vi.useRealTimers();
   });
 
-  it('shows the player on the new channel for a moment', () => {
+  it('shows the new channel for a moment', () => {
     const { store, tuneTo } = makeStore();
 
     tuneTo(0);
     tuneTo(2);
 
     expect(store.isVisible).toBe(true);
-    expect(store.speaker?.channelLabel).toBe('TEAM');
-    expect(store.isTalking).toBe(false);
+    expect(store.speaker).toBeNull();
+    expect(store.idleChannel?.channelLabel).toBe('TEAM');
 
     vi.advanceTimersByTime(RETUNE_SHOWN_MS);
 
@@ -97,6 +98,31 @@ describe('RadioWidgetStore — change of channel', () => {
     const { store, tuneTo } = makeStore(false);
 
     tuneTo(0);
+    tuneTo(2);
+
+    expect(store.isVisible).toBe(false);
+    store.dispose();
+  });
+});
+
+describe('RadioWidgetStore — channel when idle', () => {
+  it('keeps the plate up with the tuned channel', () => {
+    const { store, tuneTo } = makeStore(true, true);
+
+    tuneTo(2);
+
+    expect(store.isVisible).toBe(true);
+    expect(store.speaker).toBeNull();
+    expect(store.idleChannel).toEqual({
+      channel: 'team',
+      channelLabel: 'TEAM',
+    });
+    store.dispose();
+  });
+
+  it('hides the plate with the setting off', () => {
+    const { store, tuneTo } = makeStore();
+
     tuneTo(2);
 
     expect(store.isVisible).toBe(false);

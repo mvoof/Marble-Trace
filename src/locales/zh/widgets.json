@@ -904,7 +904,9 @@
       "showChannel": "显示频道",
       "showChannelDesc": "右上角的标签：通话发给谁——全体、车队、赛事控制。",
       "showOnRetune": "切换频道时显示",
-      "showOnRetuneDesc": "切换频道后显示你自己的面板三秒，以便看清你的声音会传到哪里。"
+      "showOnRetuneDesc": "切换后显示新频道三秒，以便看清你的声音会传到哪里。",
+      "idleShowsChannel": "空闲时显示频道",
+      "idleShowsChannelDesc": "无人讲话时也保留小部件，显示你的无线电所调到的频道。"
     }
   },
   "streamChat": {

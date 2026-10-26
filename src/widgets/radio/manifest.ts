@@ -15,9 +15,14 @@ export const RADIO_MANIFEST: WidgetManifest = {
     'Who is talking on the radio: car number in its class colour, name and channel.',
   // The number and the channel tabs across the top, the name below them in
   // two lines over the wave.
+  // The plate follows what it holds — the tile while someone talks, the
+  // channel tab alone otherwise — so the widget paints its own background and
+  // border, the container stays transparent and hugs it, and a drag can only
+  // scale it.
+  transparentContainer: true,
+  contentSized: true,
   designWidth: 180,
   designHeight: 112,
-  lockAspectRatio: true,
   userSettings: {
     enabled: false,
     x: 200,

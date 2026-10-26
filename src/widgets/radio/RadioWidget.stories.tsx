@@ -14,13 +14,22 @@ interface StoryArgs {
   player: boolean;
   /** The player just switched channel, nobody talking. */
   retuned: boolean;
+  idleShowsChannel: boolean;
 }
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/RadioWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: RadioWidget,
-    size: { width: 180, height: 112 },
+    // The plate paints its own ground from --widget-bg and is as big as what
+    // it holds; the frame around it stays empty, as the transparent container
+    // does on the overlay.
+    size: {
+      width: 180,
+      background: 'transparent',
+      widgetBg: 'rgba(21, 22, 26, 0.8)',
+      border: 'none',
+    },
     seedSnapshot: true,
     seed: (store, args) => {
       store.cars.updateRadio({
@@ -34,6 +43,10 @@ const meta: Meta<StoryArgs> = {
         pushToTalk: args.player,
       });
 
+      store.liveWidgets.updateUserSettings('radio', {
+        idleShowsChannel: args.idleShowsChannel,
+      });
+
       store.widgetInstances.seed<RadioWidgetStore>('radio', (radio) => {
         radio.retuneShown = args.retuned;
       });
@@ -43,6 +56,7 @@ const meta: Meta<StoryArgs> = {
       silent: false,
       player: false,
       retuned: false,
+      idleShowsChannel: false,
     },
     argTypes: {
       channel: {
@@ -79,11 +93,19 @@ export const Player: Story = {
   },
 };
 
-/** A moment after the player switches channel: the plate, the wave still. */
+/** A moment after the player switches channel: the new channel alone. */
 export const Retuned: Story = {
   args: {
     silent: true,
     retuned: true,
+  },
+};
+
+/** Nobody talking, the widget kept up with the player's channel. */
+export const IdleChannel: Story = {
+  args: {
+    silent: true,
+    idleShowsChannel: true,
   },
 };
 

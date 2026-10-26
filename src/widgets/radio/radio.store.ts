@@ -12,8 +12,9 @@ import type { WidgetInstanceContext } from '@entities/widget/widget-instances.st
 import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
 import type { SelfHidingWidgetStore } from '@features/widget-auto-hide/widget-auto-hide.store';
 import {
-  playerOnTunedFrequency,
   resolveSpeaker,
+  resolveTunedChannel,
+  type RadioChannelView,
   type RadioSpeaker,
 } from './radio-utils';
 import type { RadioWidgetSettings } from './settings-schema';
@@ -37,8 +38,8 @@ const tuneKeyOf = (session: SessionStore): string | null => {
 
 /**
  * One Radio plate: who is on the air, or — for a moment after the player
- * changes channel — the player on the new one. Per instance, so the timer
- * lives and dies with the plate that shows it.
+ * changes channel — the new channel. Per instance, so the timer lives and
+ * dies with the plate that shows it.
  */
 export class RadioWidgetStore implements SelfHidingWidgetStore {
   /** The player just changed channel and the plate is showing it. */
@@ -117,23 +118,29 @@ export class RadioWidgetStore implements SelfHidingWidgetStore {
     return this.root.cars.radioTransmission !== null;
   }
 
-  /** Who the plate names: the voice on the air, else the player just retuned. */
+  /** Who is on the air, named from the session. */
   get speaker(): RadioSpeaker | null {
-    const transmission =
-      this.root.cars.radioTransmission ??
-      (this.retuneShown
-        ? playerOnTunedFrequency(this.root.session.sessionInfo)
-        : null);
-
     return resolveSpeaker(
-      transmission,
+      this.root.cars.radioTransmission,
       this.root.session.sessionInfo,
       this.settings.nameFormat
     );
   }
 
+  /**
+   * The player's channel, shown while nobody is on the air — for a moment
+   * after the player changes it, or all the time when the settings ask.
+   */
+  get idleChannel(): RadioChannelView | null {
+    if (!this.retuneShown && !this.settings.idleShowsChannel) {
+      return null;
+    }
+
+    return resolveTunedChannel(this.root.session.sessionInfo);
+  }
+
   get isVisible(): boolean {
-    return this.speaker !== null;
+    return this.speaker !== null || this.idleChannel !== null;
   }
 
   private clearRetuneTimer() {

@@ -1900,7 +1900,7 @@ export type RadioFrequencyEntry = {
   name: string;
   /**
    * The name as a plate shows it: the sim's markup taken off, words
-   * spaced ("RACE CONTROL", "DRIVERS"); a frequency someone created keeps
+   * shortened to fit a tab ("RACE CTRL", "DRIVERS"); a frequency someone created keeps
    * its own name.
    */
   label: string;

@@ -14,10 +14,15 @@ export const RADIO_SETTINGS = defineSettings('radio', {
   /** The tab in the top-right corner naming who the transmission reaches. */
   showChannel: bool(true),
   /**
-   * Show the player's own plate for a moment after the player switches
-   * channel, so the new channel can be read before talking on it.
+   * Show the new channel for a moment after the player switches, so it can
+   * be read before talking on it.
    */
   showOnRetune: bool(true),
+  /**
+   * Keep the widget on screen while nobody talks, showing the channel the
+   * player's radio is tuned to. Off, the widget appears only for a voice.
+   */
+  idleShowsChannel: bool(false),
 });
 
 export type RadioWidgetSettings = SettingsOf<typeof RADIO_SETTINGS.shape>;

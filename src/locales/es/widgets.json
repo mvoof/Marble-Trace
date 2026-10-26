@@ -904,7 +904,9 @@
       "showChannel": "Mostrar canal",
       "showChannelDesc": "Una pestaña en la esquina superior derecha: a quién llega la transmisión — todos, equipo, dirección de carrera.",
       "showOnRetune": "Mostrar al cambiar de canal",
-      "showOnRetuneDesc": "Muestra tu propia placa tres segundos tras cambiar de canal, para leer dónde se te oirá."
+      "showOnRetuneDesc": "Muestra el nuevo canal tres segundos tras cambiarlo, para leer dónde se te oirá.",
+      "idleShowsChannel": "Mostrar el canal en reposo",
+      "idleShowsChannelDesc": "Mantener el widget en pantalla cuando nadie habla, con el canal en el que está tu radio."
     }
   },
   "streamChat": {
