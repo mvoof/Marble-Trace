@@ -1,14 +1,10 @@
 import { observer } from 'mobx-react-lite';
 import { Mic } from 'lucide-react';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
-import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import { useCarsStore } from '@entities/cars/cars-context';
-import { useSessionStore } from '@entities/session/session-context';
 import { getContrastTextColor } from '@shared/lib/colors';
 import type { RadioChannel } from '@shared/contracts/generated/bindings';
 import { RadioWave } from './RadioWave';
-import { CHANNEL_LABEL, resolveSpeaker } from './radio-utils';
-import type { RadioWidgetSettings } from './settings-schema';
+import { useRadioWidgetStore } from './radio.store';
 import styles from './RadioWidget.module.scss';
 
 const CHANNEL_CLASS: Record<RadioChannel, string> = {
@@ -23,33 +19,27 @@ const CHANNEL_CLASS: Record<RadioChannel, string> = {
 const IDLE_LABEL = 'RADIO';
 
 /**
- * Who is talking on the radio. The sim reports one transmission at a time and
- * no level, so the wave is a loop that runs while somebody talks, not a meter.
+ * Who is talking on the radio, or — for a moment after the player changes
+ * channel — the player on the new one. The sim reports one transmission at a
+ * time and no level, so the wave behind the name is a loop that runs while
+ * somebody talks, not a meter.
  *
  * Off the air the widget is taken off screen by WidgetAutoHideStore; what is
  * drawn here then is the quiet plate the layout editor shows.
  */
 export const RadioWidget = observer(() => {
-  const { radioTransmission } = useCarsStore();
-  const { sessionInfo } = useSessionStore();
-  const settings = useWidgetSettings<RadioWidgetSettings>('radio');
-
-  const speaker = resolveSpeaker(
-    radioTransmission,
-    sessionInfo,
-    settings.nameFormat
-  );
+  const store = useRadioWidgetStore();
+  const { speaker, isTalking, settings } = store;
 
   if (!speaker) {
     return (
       <WidgetPanel minWidth={0} gap={0} className={styles.root}>
-        <div className={styles.wave}>
+        <div className={styles.body}>
           <RadioWave isTalking={false} />
-        </div>
 
-        <div className={styles.footer}>
-          <Mic className={styles.mic} aria-hidden="true" />
-          <div className={styles.name}>{IDLE_LABEL}</div>
+          <div className={styles.name}>
+            <div className={styles.nameLine}>{IDLE_LABEL}</div>
+          </div>
         </div>
       </WidgetPanel>
     );
@@ -72,17 +62,22 @@ export const RadioWidget = observer(() => {
       </div>
 
       {settings.showChannel && (
-        <div className={styles.channel}>{CHANNEL_LABEL[speaker.channel]}</div>
+        <div className={styles.channel}>
+          <Mic className={styles.mic} aria-hidden="true" />
+          <span className={styles.channelLabel}>{speaker.channelLabel}</span>
+        </div>
       )}
 
-      <div className={styles.wave}>
-        <RadioWave isTalking />
-      </div>
+      <div className={styles.body}>
+        <RadioWave isTalking={isTalking} />
 
-      <div className={styles.footer}>
-        <Mic className={styles.mic} aria-hidden="true" />
+        <div className={styles.name}>
+          <div className={styles.nameLine}>{speaker.firstLine}</div>
 
-        <div className={styles.name}>{speaker.name}</div>
+          {speaker.secondLine && (
+            <div className={styles.nameLine}>{speaker.secondLine}</div>
+          )}
+        </div>
       </div>
     </WidgetPanel>
   );

@@ -9,17 +9,48 @@ const RADIO_NUM = 0;
 
 /** The built-in frequencies of an iRacing session, in the sim's own order. */
 export const mockRadioFrequencies = (): RadioFrequencyEntry[] => [
-  { radioNum: RADIO_NUM, frequencyNum: 0, channel: 'all', name: '@ALLTEAMS' },
-  { radioNum: RADIO_NUM, frequencyNum: 1, channel: 'all', name: '@DRIVERS' },
-  { radioNum: RADIO_NUM, frequencyNum: 2, channel: 'team', name: '@TEAM' },
-  { radioNum: RADIO_NUM, frequencyNum: 3, channel: 'club', name: '@CLUB' },
+  {
+    radioNum: RADIO_NUM,
+    frequencyNum: 0,
+    channel: 'all',
+    name: '@ALLTEAMS',
+    label: 'ALL',
+  },
+  {
+    radioNum: RADIO_NUM,
+    frequencyNum: 1,
+    channel: 'all',
+    name: '@DRIVERS',
+    label: 'DRIVERS',
+  },
+  {
+    radioNum: RADIO_NUM,
+    frequencyNum: 2,
+    channel: 'team',
+    name: '@TEAM',
+    label: 'TEAM',
+  },
+  {
+    radioNum: RADIO_NUM,
+    frequencyNum: 3,
+    channel: 'club',
+    name: '@CLUB',
+    label: 'CLUB',
+  },
   {
     radioNum: RADIO_NUM,
     frequencyNum: 4,
     channel: 'raceControl',
     name: '@RACECONTROL',
+    label: 'RACE CONTROL',
   },
-  { radioNum: RADIO_NUM, frequencyNum: 5, channel: 'other', name: 'Spotters' },
+  {
+    radioNum: RADIO_NUM,
+    frequencyNum: 5,
+    channel: 'other',
+    name: 'Spotters',
+    label: 'Spotters',
+  },
 ];
 
 /**

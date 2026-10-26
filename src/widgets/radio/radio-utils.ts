@@ -8,35 +8,51 @@ export type RadioNameFormat = 'full' | 'short';
 
 export interface RadioSpeaker {
   carNumber: string;
-  name: string;
+  /** The first line: the first name, or the whole short form ("Max V."). */
+  firstLine: string;
+  /** The rest of the full name, drawn below; empty for the short form. */
+  secondLine: string;
   /** The class colour as the session gives it, a `#rrggbb`. */
   classColor: string;
   channel: RadioChannel;
+  /** The frequency's name as the plate shows it. */
+  channelLabel: string;
 }
 
-/** What the plate says under the name, per channel. */
-export const CHANNEL_LABEL: Record<RadioChannel, string> = {
-  all: 'ALL',
-  team: 'TEAM',
-  raceControl: 'RACE CONTROL',
-  club: 'CLUB',
-  other: 'PRIVATE',
-};
+/** What the plate says for a frequency the session does not list. */
+const UNKNOWN_CHANNEL_LABEL = 'RADIO';
+
+interface NameLines {
+  firstLine: string;
+  secondLine: string;
+}
 
 /**
- * "Max Verstappen" → "Max V.": the first word and the initial of the last. A
- * name of one word is left as it is.
+ * "Max Verstappen" → "Max" over "Verstappen", or "Max V." on one line. A name
+ * of one word is one line either way.
  */
-export const shortenName = (fullName: string): string => {
+export const splitName = (
+  fullName: string,
+  nameFormat: RadioNameFormat
+): NameLines => {
   const words = fullName.trim().split(/\s+/);
 
   if (words.length < 2) {
-    return fullName.trim();
+    return { firstLine: fullName.trim(), secondLine: '' };
   }
 
-  const lastName = words[words.length - 1];
+  const [firstName, ...rest] = words;
 
-  return `${words[0]} ${lastName.charAt(0).toUpperCase()}.`;
+  if (nameFormat === 'short') {
+    const lastName = rest[rest.length - 1];
+
+    return {
+      firstLine: `${firstName} ${lastName.charAt(0).toUpperCase()}.`,
+      secondLine: '',
+    };
+  }
+
+  return { firstLine: firstName, secondLine: rest.join(' ') };
 };
 
 /**
@@ -69,8 +85,30 @@ export const resolveSpeaker = (
 
   return {
     carNumber: car.carNumber,
-    name: nameFormat === 'short' ? shortenName(car.userName) : car.userName,
+    ...splitName(car.userName, nameFormat),
     classColor: car.carClassColor,
     channel: frequency?.channel ?? 'other',
+    channelLabel: frequency?.label ?? UNKNOWN_CHANNEL_LABEL,
+  };
+};
+
+/**
+ * The player on the frequency their radio is tuned to — what the plate shows
+ * for a moment after the player changes channel. Null while the session names
+ * no radio.
+ */
+export const playerOnTunedFrequency = (
+  session: SessionSnapshot | null
+): RadioTransmission | null => {
+  const tune = session?.playerRadio;
+
+  if (!session || !tune || session.playerCarIdx < 0) {
+    return null;
+  }
+
+  return {
+    carIdx: session.playerCarIdx,
+    radioNum: tune.radioNum,
+    frequencyNum: tune.frequencyNum,
   };
 };

@@ -902,7 +902,9 @@
       "nameFormat_full": "Completo",
       "nameFormat_short": "Nombre e inicial",
       "showChannel": "Mostrar canal",
-      "showChannelDesc": "Una pestaña en la esquina superior derecha: a quién llega la transmisión — todos, equipo, dirección de carrera."
+      "showChannelDesc": "Una pestaña en la esquina superior derecha: a quién llega la transmisión — todos, equipo, dirección de carrera.",
+      "showOnRetune": "Mostrar al cambiar de canal",
+      "showOnRetuneDesc": "Muestra tu propia placa tres segundos tras cambiar de canal, para leer dónde se te oirá."
     }
   },
   "streamChat": {

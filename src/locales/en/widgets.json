@@ -902,7 +902,9 @@
       "nameFormat_full": "Full",
       "nameFormat_short": "First name, initial",
       "showChannel": "Show channel",
-      "showChannelDesc": "A tab in the top-right corner naming who the transmission reaches — all, team, race control."
+      "showChannelDesc": "A tab in the top-right corner naming who the transmission reaches — all, team, race control.",
+      "showOnRetune": "Show on channel change",
+      "showOnRetuneDesc": "Show your own plate for three seconds after you switch channel, to read where you will be heard."
     }
   },
   "streamChat": {

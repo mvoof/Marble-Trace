@@ -64,4 +64,8 @@ pub struct RadioFrequencyEntry {
     pub channel: RadioChannel,
     /// The sim's own name for the frequency, as written.
     pub name: String,
+    /// The name as a plate shows it: the sim's markup taken off, words
+    /// spaced ("RACE CONTROL", "DRIVERS"); a frequency someone created keeps
+    /// its own name.
+    pub label: String,
 }

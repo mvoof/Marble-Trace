@@ -10,9 +10,9 @@
   width: 100%;
   height: 100%;
   font-family: $font-widget;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  padding: sp(lg) sp(xl) sp(lg);
+  display: flex;
+  flex-direction: column;
+  padding: ws(32) sp(lg) sp(md);
 }
 
 .channelAll {
@@ -63,32 +63,53 @@
   right: 0;
   display: flex;
   align-items: center;
+  max-width: 60%;
   height: ws(32);
   padding: 0 sp(md);
   border-bottom-left-radius: radius(lg);
   background: color-mix(in srgb, var(--radio-accent) 18%, transparent);
   color: var(--radio-accent);
+}
+
+.channel > * + * {
+  margin-left: sp(xxs);
+}
+
+.mic {
+  flex: 0 0 auto;
+  width: ws(14);
+  height: ws(14);
+}
+
+.channelLabel {
+  overflow: hidden;
   font-size: fs(sm);
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1;
+  text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
-// Below the two tabs, centred between them.
-.wave {
+// The name over the wave: the wave is the ground the name stands on, faded so
+// the name stays the thing read.
+.body {
+  position: relative;
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
   min-height: 0;
-  padding-top: ws(24);
 }
 
 .bars {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
-  height: ws(48);
+  justify-content: center;
+  opacity: 0.45;
 }
 
 .bars > * + * {
@@ -161,30 +182,18 @@ $wave-quiet: 0.25;
   }
 }
 
-.footer {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  padding-top: sp(sm);
-}
-
-.footer > * + * {
-  margin-left: sp(md);
-}
-
-.mic {
-  flex: 0 0 auto;
-  width: ws(28);
-  height: ws(28);
-  color: var(--radio-accent);
-}
-
 .name {
+  position: relative;
   min-width: 0;
+  max-width: 100%;
+  text-align: center;
+}
+
+.nameLine {
   overflow: hidden;
-  font-size: fs(xl);
+  font-size: fs(xxl);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.05;
   color: $widget-text-primary;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -18,13 +18,7 @@ interface PitServiceVisibility {
   readonly panel: { readonly isVisible: boolean; readonly lingering: boolean };
 }
 
-/** Who is on the radio; the cars entity answers it. */
-interface RadioVisibility {
-  readonly radioTransmission: unknown;
-}
-
 interface WidgetAutoHideDeps {
-  cars: RadioVisibility;
   liveWidgets: LiveWidgetsView;
   radar: RadarWidgetStore;
   flags: FlagsStore;
@@ -135,20 +129,16 @@ export class WidgetAutoHideStore {
       );
     }
 
-    // Nobody inside the gap threshold means nothing to show, and the plate the
-    // container draws around an empty body would say otherwise. Each plate has
-    // its own threshold, so the answer is its own instance's store — which
-    // exists for as long as the instance is mounted, hidden or not.
-    if (widgetType === 'wheel-to-wheel') {
+    // Nobody inside the gap threshold — or, for the radio, nobody on the air
+    // and no change of channel being shown — means nothing to show, and the
+    // plate the container draws around an empty body would say otherwise. Each
+    // plate keeps its own state, so the answer is its own instance's store —
+    // which exists for as long as the instance is mounted, hidden or not.
+    if (widgetType === 'wheel-to-wheel' || widgetType === 'radio') {
       return (
         this.root.widgetInstances.storeOf<SelfHidingWidgetStore>(widgetId)
           ?.isVisible ?? false
       );
-    }
-
-    // The plate is the transmission: nobody talking, nothing to show.
-    if (widgetType === 'radio') {
-      return this.root.cars.radioTransmission !== null;
     }
 
     if (widgetType === 'pit-service') {

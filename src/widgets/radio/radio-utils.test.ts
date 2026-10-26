@@ -5,13 +5,18 @@ import type {
   SessionSnapshot,
 } from '@shared/contracts/generated/bindings';
 import { mockRadioFrequencies } from '@features/preview/mocks/radio';
-import { resolveSpeaker, shortenName } from './radio-utils';
+import {
+  playerOnTunedFrequency,
+  resolveSpeaker,
+  splitName,
+} from './radio-utils';
 
 const SPEAKER_IDX = 4;
 
 const session = (): SessionSnapshot =>
   ({
-    playerCarIdx: 0,
+    playerCarIdx: SPEAKER_IDX,
+    playerRadio: { radioNum: 0, frequencyNum: 1 },
     cars: [
       {
         carIdx: SPEAKER_IDX,
@@ -23,29 +28,44 @@ const session = (): SessionSnapshot =>
     radioFrequencies: mockRadioFrequencies(),
   }) as SessionSnapshot;
 
-describe('shortenName', () => {
-  it('keeps the first name and the initial of the last', () => {
-    expect(shortenName('Juan Pablo Montoya')).toBe('Juan M.');
+describe('splitName', () => {
+  it('puts the rest of a full name on the second line', () => {
+    expect(splitName('Juan Pablo Montoya', 'full')).toEqual({
+      firstLine: 'Juan',
+      secondLine: 'Pablo Montoya',
+    });
   });
 
-  it('leaves a single word alone', () => {
-    expect(shortenName('SkyRaven')).toBe('SkyRaven');
+  it('keeps the short form on one line', () => {
+    expect(splitName('Juan Pablo Montoya', 'short')).toEqual({
+      firstLine: 'Juan M.',
+      secondLine: '',
+    });
+  });
+
+  it('leaves a single word on one line', () => {
+    expect(splitName('SkyRaven', 'full')).toEqual({
+      firstLine: 'SkyRaven',
+      secondLine: '',
+    });
   });
 });
 
 describe('resolveSpeaker', () => {
-  it('names the car and the channel of the transmission', () => {
+  it('names the car and the frequency of the transmission', () => {
     expect(
       resolveSpeaker(
-        { carIdx: SPEAKER_IDX, radioNum: 0, frequencyNum: 2 },
+        { carIdx: SPEAKER_IDX, radioNum: 0, frequencyNum: 1 },
         session(),
-        'short'
+        'full'
       )
     ).toEqual({
       carNumber: '27',
-      name: 'Max V.',
+      firstLine: 'Max',
+      secondLine: 'Verstappen',
       classColor: '#ffda59',
-      channel: 'team',
+      channel: 'all',
+      channelLabel: 'DRIVERS',
     });
   });
 
@@ -66,6 +86,22 @@ describe('resolveSpeaker', () => {
         session(),
         'full'
       )
+    ).toBeNull();
+  });
+});
+
+describe('playerOnTunedFrequency', () => {
+  it('puts the player on the frequency the radio is tuned to', () => {
+    expect(playerOnTunedFrequency(session())).toEqual({
+      carIdx: SPEAKER_IDX,
+      radioNum: 0,
+      frequencyNum: 1,
+    });
+  });
+
+  it('places nobody without a tuned radio', () => {
+    expect(
+      playerOnTunedFrequency({ ...session(), playerRadio: null })
     ).toBeNull();
   });
 });

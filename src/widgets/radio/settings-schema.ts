@@ -13,6 +13,11 @@ export const RADIO_SETTINGS = defineSettings('radio', {
   nameFormat: choice(['full', 'short'], 'full'),
   /** The tab in the top-right corner naming who the transmission reaches. */
   showChannel: bool(true),
+  /**
+   * Show the player's own plate for a moment after the player switches
+   * channel, so the new channel can be read before talking on it.
+   */
+  showOnRetune: bool(true),
 });
 
 export type RadioWidgetSettings = SettingsOf<typeof RADIO_SETTINGS.shape>;

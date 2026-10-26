@@ -414,16 +414,16 @@
     ]
   },
   "assets/widgets/radio.png": {
-    "width": 600,
-    "height": 450,
+    "width": 540,
+    "height": 336,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/radio-480.webp"
       },
       {
-        "width": 600,
-        "path": "assets/img/widgets/radio-600.webp"
+        "width": 540,
+        "path": "assets/img/widgets/radio-540.webp"
       }
     ]
   },

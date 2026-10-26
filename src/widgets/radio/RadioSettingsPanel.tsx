@@ -22,6 +22,10 @@ export const RadioSettingsPanel = observer(() => {
       <div className={styles.fieldGroup}>
         <Row setting="showChannel" />
       </div>
+
+      <div className={styles.fieldGroup}>
+        <Row setting="showOnRetune" />
+      </div>
     </Card>
   );
 });

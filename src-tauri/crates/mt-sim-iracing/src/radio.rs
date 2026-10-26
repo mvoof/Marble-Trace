@@ -61,6 +61,7 @@ pub(crate) fn parse_radio_info(raw: Option<RawRadioInfo>) -> ParsedRadio {
                     radio_num,
                     frequency_num: frequency.frequency_num?,
                     channel: channel_of(&name),
+                    label: label_of(&name),
                     name,
                 })
             })
@@ -82,6 +83,20 @@ fn channel_of(name: &str) -> RadioChannel {
         "@RACECONTROL" | "@ADMIN" => RadioChannel::RaceControl,
         "@CLUB" => RadioChannel::Club,
         _ => RadioChannel::Other,
+    }
+}
+
+/// The built-in names written as words; any other `@` name loses only the
+/// marker, and a frequency someone created keeps the name they gave it.
+fn label_of(name: &str) -> String {
+    let Some(built_in) = name.strip_prefix('@') else {
+        return name.to_string();
+    };
+
+    match built_in.to_ascii_uppercase().as_str() {
+        "ALLTEAMS" => "ALL".to_string(),
+        "RACECONTROL" => "RACE CONTROL".to_string(),
+        other => other.to_string(),
     }
 }
 
@@ -129,6 +144,15 @@ Radios:
                 (5, RadioChannel::Other),
             ]
         );
+    }
+
+    #[test]
+    fn labels_read_as_words() {
+        assert_eq!(label_of("@ALLTEAMS"), "ALL");
+        assert_eq!(label_of("@DRIVERS"), "DRIVERS");
+        assert_eq!(label_of("@RACECONTROL"), "RACE CONTROL");
+        assert_eq!(label_of("@admin"), "ADMIN");
+        assert_eq!(label_of("Spotters"), "Spotters");
     }
 
     #[test]

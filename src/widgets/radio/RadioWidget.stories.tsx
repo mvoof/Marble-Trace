@@ -4,6 +4,7 @@ import { mockRadioTransmission } from '@features/preview/mocks/radio';
 import type { RadioChannel } from '@shared/contracts/generated/bindings';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 import { RadioWidget } from './RadioWidget';
+import type { RadioWidgetStore } from './radio.store';
 
 interface StoryArgs {
   channel: RadioChannel;
@@ -11,13 +12,15 @@ interface StoryArgs {
   silent: boolean;
   /** The player holding push-to-talk, placed on the air by the backend. */
   player: boolean;
+  /** The player just switched channel, nobody talking. */
+  retuned: boolean;
 }
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/RadioWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: RadioWidget,
-    size: { width: 200, height: 150 },
+    size: { width: 180, height: 112 },
     seedSnapshot: true,
     seed: (store, args) => {
       store.cars.updateRadio({
@@ -30,11 +33,16 @@ const meta: Meta<StoryArgs> = {
             ),
         pushToTalk: args.player,
       });
+
+      store.widgetInstances.seed<RadioWidgetStore>('radio', (radio) => {
+        radio.retuneShown = args.retuned;
+      });
     },
     args: {
       channel: 'all',
       silent: false,
       player: false,
+      retuned: false,
     },
     argTypes: {
       channel: {
@@ -68,6 +76,14 @@ export const Player: Story = {
   args: {
     channel: 'team',
     player: true,
+  },
+};
+
+/** A moment after the player switches channel: the plate, the wave still. */
+export const Retuned: Story = {
+  args: {
+    silent: true,
+    retuned: true,
   },
 };
 

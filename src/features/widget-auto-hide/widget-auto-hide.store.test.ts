@@ -125,23 +125,3 @@ describe('WidgetAutoHideStore — ABS', () => {
     expect(absStore(0).isVisible('abs')).toBe(true);
   });
 });
-
-const radioStore = (radioTransmission: object | null) =>
-  new WidgetAutoHideStore({
-    liveWidgets: {
-      getWidget: () => ({ id: 'radio', type: 'radio' }),
-    },
-    cars: observable({ radioTransmission }),
-  } as unknown as Deps);
-
-describe('WidgetAutoHideStore — radio', () => {
-  it('takes the widget off while nobody is talking', () => {
-    expect(radioStore(null).isVisible('radio')).toBe(false);
-  });
-
-  it('shows it for a transmission', () => {
-    expect(
-      radioStore({ carIdx: 4, radioNum: 0, frequencyNum: 2 }).isVisible('radio')
-    ).toBe(true);
-  });
-});

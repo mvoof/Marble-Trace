@@ -1898,6 +1898,12 @@ export type RadioFrequencyEntry = {
    * The sim's own name for the frequency, as written.
    */
   name: string;
+  /**
+   * The name as a plate shows it: the sim's markup taken off, words
+   * spaced ("RACE CONTROL", "DRIVERS"); a frequency someone created keeps
+   * its own name.
+   */
+  label: string;
 };
 
 export type RadioTransmission = {
