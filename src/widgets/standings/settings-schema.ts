@@ -114,6 +114,8 @@ export const STANDINGS_SETTINGS = defineSettings('standings', {
   showTotalDrivers: bool(true),
   /** Badge marking a car that is on pit road or in its stall. */
   showPitIndicator: bool(true, { label: 'common.showPitIndicator' }),
+  /** Mic beside the driver on the radio, in the channel's colour. */
+  showRadioMark: bool(true, { label: 'common.showRadioMark' }),
   /** Player-only pit stop counter (counted on the frontend). */
   showPitStops: bool(true),
   showIncidentsBadge: bool(true),

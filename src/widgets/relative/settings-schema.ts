@@ -67,6 +67,8 @@ export const RELATIVE_SETTINGS = defineSettings('relative', {
   rowPadding: choice(ROW_PADDING, 'narrow', { label: 'common.rowPadding' }),
   ...COLUMNS,
   showPitIndicator: bool(true, { label: 'common.showPitIndicator' }),
+  /** Mic beside the driver on the radio, in the channel's colour. */
+  showRadioMark: bool(true, { label: 'common.showRadioMark' }),
   abbreviateNames: bool(true),
   showDriverFlags: bool(true),
   /** Highlight color for the player's own row. */

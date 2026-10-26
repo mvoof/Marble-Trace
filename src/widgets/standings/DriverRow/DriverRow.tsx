@@ -224,7 +224,7 @@ export const DriverRow = observer(
               : driver.userName}
           </span>
 
-          <RadioMark carIdx={driver.carIdx} />
+          {settings.showRadioMark && <RadioMark carIdx={driver.carIdx} />}
 
           <DriverStatusBadges
             flagType={flagType}

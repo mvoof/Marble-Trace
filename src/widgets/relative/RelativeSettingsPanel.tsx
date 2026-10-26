@@ -80,6 +80,7 @@ export const RelativeSettingsPanel = observer(() => {
         <Row setting="showIRating" />
         <Row setting="abbreviateIRating" dependsOn="showIRating" />
         <Row setting="showPitIndicator" />
+        <Row setting="showRadioMark" />
         <Row setting="abbreviateNames" />
         <Row setting="showCountryFlag" />
         <Row setting="showDriverFlags" />
