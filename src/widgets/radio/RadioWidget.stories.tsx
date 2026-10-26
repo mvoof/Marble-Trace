@@ -9,6 +9,8 @@ interface StoryArgs {
   channel: RadioChannel;
   /** Nobody on the air — the quiet plate the layout editor shows. */
   silent: boolean;
+  /** The player holding push-to-talk, placed on the air by the backend. */
+  player: boolean;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -21,12 +23,18 @@ const meta: Meta<StoryArgs> = {
       store.cars.updateRadio({
         transmission: args.silent
           ? null
-          : mockRadioTransmission(store.session.sessionInfo, args.channel),
+          : mockRadioTransmission(
+              store.session.sessionInfo,
+              args.channel,
+              args.player ? store.session.sessionInfo?.playerCarIdx : undefined
+            ),
+        pushToTalk: args.player,
       });
     },
     args: {
       channel: 'all',
       silent: false,
+      player: false,
     },
     argTypes: {
       channel: {
@@ -52,6 +60,14 @@ export const Team: Story = {
 export const RaceControl: Story = {
   args: {
     channel: 'raceControl',
+  },
+};
+
+/** The player talking to the team. */
+export const Player: Story = {
+  args: {
+    channel: 'team',
+    player: true,
   },
 };
 

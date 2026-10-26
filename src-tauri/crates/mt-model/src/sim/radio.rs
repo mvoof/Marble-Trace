@@ -9,6 +9,12 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct RadioFrame {
     pub transmission: Option<RadioTransmission>,
+    /// The player holds the push-to-talk button. The sim leaves the player's
+    /// own transmission out of `transmission`, so this is the only sign of it.
+    ///
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/pushtotalk/
+    #[serde(default)]
+    pub push_to_talk: bool,
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -19,6 +25,15 @@ pub struct RadioTransmission {
     /// Matches `RadioFrequencyEntry::radio_num` in the session.
     pub radio_num: i32,
     /// Matches `RadioFrequencyEntry::frequency_num` in the session.
+    pub frequency_num: i32,
+}
+
+/// The frequency a radio is tuned to — what the player transmits on.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct RadioTune {
+    pub radio_num: i32,
     pub frequency_num: i32,
 }
 

@@ -1876,7 +1876,16 @@ export type RadioChannel =
  *
  * @see https://sajax.github.io/irsdkdocs/telemetry/radiotransmitcaridx/
  */
-export type RadioFrame = { transmission: RadioTransmission | null };
+export type RadioFrame = {
+  transmission: RadioTransmission | null;
+  /**
+   * The player holds the push-to-talk button. The sim leaves the player's
+   * own transmission out of `transmission`, so this is the only sign of it.
+   *
+   * @see https://sajax.github.io/irsdkdocs/telemetry/pushtotalk/
+   */
+  pushToTalk?: boolean;
+};
 
 /**
  * One frequency a radio can be tuned to, from the session.
@@ -1902,6 +1911,11 @@ export type RadioTransmission = {
    */
   frequencyNum: number;
 };
+
+/**
+ * The frequency a radio is tuned to — what the player transmits on.
+ */
+export type RadioTune = { radioNum: number; frequencyNum: number };
 
 /**
  * The session text as the sim wrote it, and the same text as a tree.
@@ -2397,6 +2411,11 @@ export type SessionSnapshot = {
    * `RadioTransmission` is on.
    */
   radioFrequencies?: RadioFrequencyEntry[];
+  /**
+   * The frequency the player's selected radio is tuned to: where the
+   * player's own voice goes. `None` when the session names no radio.
+   */
+  playerRadio?: RadioTune | null;
 };
 
 export type SessionState =

@@ -902,7 +902,7 @@
       "nameFormat_full": "全名",
       "nameFormat_short": "名字和姓氏首字母",
       "showChannel": "显示频道",
-      "showChannelDesc": "姓名下方：通话发给谁——全体、车队、赛事控制。"
+      "showChannelDesc": "右上角的标签：通话发给谁——全体、车队、赛事控制。"
     }
   },
   "streamChat": {

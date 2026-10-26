@@ -11,7 +11,7 @@ export const RADIO_SETTINGS = defineSettings('radio', {
    * initial of the last ("Max V."), which fits a narrow plate.
    */
   nameFormat: choice(['full', 'short'], 'full'),
-  /** The caption under the name saying who the transmission reaches. */
+  /** The tab in the top-right corner naming who the transmission reaches. */
   showChannel: bool(true),
 });
 

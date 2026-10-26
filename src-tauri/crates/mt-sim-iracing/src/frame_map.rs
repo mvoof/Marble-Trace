@@ -433,6 +433,7 @@ impl FromIracing for RadioFrame {
                 frame.radio_transmit_radio_idx,
                 frame.radio_transmit_frequency_idx,
             ),
+            push_to_talk: frame.push_to_talk,
         }
     }
 }
@@ -531,6 +532,7 @@ mod spotter_tests {
         let declared = DeclaredVars::new(["Speed".to_string()]);
         let mut radio = RadioFrame {
             transmission: radio_transmission_from_iracing(0, 0, 0),
+            push_to_talk: false,
         };
 
         declared.mask_radio(&mut radio);

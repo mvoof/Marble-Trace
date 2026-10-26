@@ -25,6 +25,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<sim::radio::RadioTransmission>()
         .register::<sim::radio::RadioChannel>()
         .register::<sim::radio::RadioFrequencyEntry>()
+        .register::<sim::radio::RadioTune>()
         .register::<contract::client_protocol::ClientEnvelope>()
         .register::<contract::client_protocol::RejectedCommand>()
         .register::<app::companions::CompanionApp>()

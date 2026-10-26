@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use serde::Deserialize;
 
 use super::car_classes::{apply_class_badges, normalize_class_color};
-use super::radio::{parse_radio_frequencies, RawRadioInfo};
+use super::radio::{parse_radio_info, RawRadioInfo};
 use super::weather::parse_weather_forecast;
 use mt_model::sim::session::{
     CarEntry, QualifyResultEntry, ResultPosition, SectorEntry, SessionEntry, SessionSnapshot,
@@ -284,6 +284,8 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         })
         .collect();
 
+    let radio = parse_radio_info(raw.radio_info);
+
     let snapshot = SessionSnapshot {
         track_id: weekend.track_id.unwrap_or(-1),
         track_name: weekend.track_name.unwrap_or_default(),
@@ -340,7 +342,8 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         driver_tires,
         sectors,
         qualify_results,
-        radio_frequencies: parse_radio_frequencies(raw.radio_info),
+        radio_frequencies: radio.frequencies,
+        player_radio: radio.player_radio,
     };
 
     Some(ParsedSession {

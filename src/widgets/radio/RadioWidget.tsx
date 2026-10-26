@@ -71,6 +71,10 @@ export const RadioWidget = observer(() => {
         {speaker.carNumber}
       </div>
 
+      {settings.showChannel && (
+        <div className={styles.channel}>{CHANNEL_LABEL[speaker.channel]}</div>
+      )}
+
       <div className={styles.wave}>
         <RadioWave isTalking />
       </div>
@@ -78,15 +82,7 @@ export const RadioWidget = observer(() => {
       <div className={styles.footer}>
         <Mic className={styles.mic} aria-hidden="true" />
 
-        <div className={styles.text}>
-          <div className={styles.name}>{speaker.name}</div>
-
-          {settings.showChannel && (
-            <div className={styles.channel}>
-              {CHANNEL_LABEL[speaker.channel]}
-            </div>
-          )}
-        </div>
+        <div className={styles.name}>{speaker.name}</div>
       </div>
     </WidgetPanel>
   );

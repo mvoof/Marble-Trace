@@ -226,7 +226,7 @@ Full-width edge indicators for side-by-side situations — a quick-glance signal
 
 ### Radio
 
-Who is talking on the radio, in place of the sim's own indicator: the car number in its class colour, the driver's name in full or as "First L.", and the channel — everyone, team or race control — which also colours the wave. It appears only while somebody is on the air.
+Who is talking on the radio, in place of the sim's own indicator: the car number in its class colour, the driver's name in full or as "First L.", and the channel — everyone, team or race control — in the opposite corner, in the colour the wave takes. Your own voice shows too, while you hold push-to-talk. It appears only while somebody is on the air.
 
 <img src="site/assets/widgets/radio.png" alt="Radio" width="200">
 

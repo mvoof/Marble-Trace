@@ -4,11 +4,12 @@
 
 use serde::Deserialize;
 
-use mt_model::sim::radio::{RadioChannel, RadioFrequencyEntry};
+use mt_model::sim::radio::{RadioChannel, RadioFrequencyEntry, RadioTune};
 
 #[derive(Deserialize, Default)]
 #[serde(rename_all = "PascalCase")]
 pub(crate) struct RawRadioInfo {
+    selected_radio_num: Option<i32>,
     radios: Option<Vec<RawRadio>>,
 }
 
@@ -16,6 +17,7 @@ pub(crate) struct RawRadioInfo {
 #[serde(rename_all = "PascalCase")]
 struct RawRadio {
     radio_num: Option<i32>,
+    tuned_to_frequency_num: Option<i32>,
     frequencies: Option<Vec<RawFrequency>>,
 }
 
@@ -26,10 +28,29 @@ struct RawFrequency {
     frequency_name: Option<String>,
 }
 
-pub(crate) fn parse_radio_frequencies(raw: Option<RawRadioInfo>) -> Vec<RadioFrequencyEntry> {
-    raw.unwrap_or_default()
-        .radios
-        .unwrap_or_default()
+/// The session's radios: every frequency on them, and the one the player's
+/// selected radio is tuned to.
+pub(crate) struct ParsedRadio {
+    pub frequencies: Vec<RadioFrequencyEntry>,
+    pub player_radio: Option<RadioTune>,
+}
+
+pub(crate) fn parse_radio_info(raw: Option<RawRadioInfo>) -> ParsedRadio {
+    let raw = raw.unwrap_or_default();
+    let radios = raw.radios.unwrap_or_default();
+
+    let player_radio = raw.selected_radio_num.and_then(|selected| {
+        let radio = radios
+            .iter()
+            .find(|radio| radio.radio_num == Some(selected))?;
+
+        Some(RadioTune {
+            radio_num: selected,
+            frequency_num: radio.tuned_to_frequency_num?,
+        })
+    });
+
+    let frequencies = radios
         .into_iter()
         .filter_map(|radio| Some((radio.radio_num?, radio.frequencies.unwrap_or_default())))
         .flat_map(|(radio_num, frequencies)| {
@@ -44,7 +65,12 @@ pub(crate) fn parse_radio_frequencies(raw: Option<RawRadioInfo>) -> Vec<RadioFre
                 })
             })
         })
-        .collect()
+        .collect();
+
+    ParsedRadio {
+        frequencies,
+        player_radio,
+    }
 }
 
 /// iRacing names its built-in frequencies with an `@` prefix; anything else
@@ -64,8 +90,10 @@ mod tests {
     use super::*;
 
     const RADIO_INFO: &str = r#"
+SelectedRadioNum: 0
 Radios:
  - RadioNum: 0
+   TunedToFrequencyNum: 2
    Frequencies:
    - FrequencyNum: 0
      FrequencyName: "@ALLTEAMS"
@@ -84,7 +112,8 @@ Radios:
     #[test]
     fn names_every_built_in_frequency() {
         let raw: RawRadioInfo = serde_yaml_ng::from_str(RADIO_INFO).unwrap();
-        let channels: Vec<_> = parse_radio_frequencies(Some(raw))
+        let channels: Vec<_> = parse_radio_info(Some(raw))
+            .frequencies
             .into_iter()
             .map(|entry| (entry.frequency_num, entry.channel))
             .collect();
@@ -103,7 +132,23 @@ Radios:
     }
 
     #[test]
+    fn the_player_transmits_on_the_frequency_the_selected_radio_is_tuned_to() {
+        let raw: RawRadioInfo = serde_yaml_ng::from_str(RADIO_INFO).unwrap();
+
+        assert_eq!(
+            parse_radio_info(Some(raw)).player_radio,
+            Some(RadioTune {
+                radio_num: 0,
+                frequency_num: 2,
+            })
+        );
+    }
+
+    #[test]
     fn no_radio_section_is_no_frequencies() {
-        assert!(parse_radio_frequencies(None).is_empty());
+        let parsed = parse_radio_info(None);
+
+        assert!(parsed.frequencies.is_empty());
+        assert_eq!(parsed.player_radio, None);
     }
 }

@@ -902,7 +902,7 @@
       "nameFormat_full": "Completo",
       "nameFormat_short": "Nombre e inicial",
       "showChannel": "Mostrar canal",
-      "showChannelDesc": "Bajo el nombre: a quién llega la transmisión — todos, equipo, dirección de carrera."
+      "showChannelDesc": "Una pestaña en la esquina superior derecha: a quién llega la transmisión — todos, equipo, dirección de carrera."
     }
   },
   "streamChat": {

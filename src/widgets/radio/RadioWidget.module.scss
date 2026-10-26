@@ -42,27 +42,53 @@
   position: absolute;
   top: 0;
   left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: ws(56);
-  padding: sp(xxs) sp(md);
+  height: ws(32);
+  padding: 0 sp(md);
   border-bottom-right-radius: radius(lg);
   font-size: fs(xl);
   font-weight: 700;
-  line-height: 1.1;
-  text-align: center;
+  line-height: 1;
 }
 
+// The channel, mirroring the number tab in the opposite corner: the same
+// height, rounded where it meets the middle. It names in words what the
+// accent says in colour, so the channel reads without telling hues apart.
+.channel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  height: ws(32);
+  padding: 0 sp(md);
+  border-bottom-left-radius: radius(lg);
+  background: color-mix(in srgb, var(--radio-accent) 18%, transparent);
+  color: var(--radio-accent);
+  font-size: fs(sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+// Below the two tabs, centred between them.
 .wave {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   min-height: 0;
-  padding-top: sp(sm);
+  padding-top: ws(24);
 }
 
 .bars {
   display: flex;
   align-items: center;
-  height: ws(64);
+  height: ws(48);
 }
 
 .bars > * + * {
@@ -153,13 +179,8 @@ $wave-quiet: 0.25;
   color: var(--radio-accent);
 }
 
-.text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
 .name {
+  min-width: 0;
   overflow: hidden;
   font-size: fs(xl);
   font-weight: 700;
@@ -167,13 +188,4 @@ $wave-quiet: 0.25;
   color: $widget-text-primary;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.channel {
-  font-size: fs(xs);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
-  color: $widget-label;
-  text-transform: uppercase;
 }

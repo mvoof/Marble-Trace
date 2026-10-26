@@ -26,7 +26,7 @@ use mt_computations::strategy::pit_auto::{worst_tire_wear, PitAutoCommand, PitAu
 use mt_computations::strategy::pit_target::resolve_pit_target;
 use mt_computations::{
     driving::coach, driving::corner_speeds, field::driver_entries, field::pace_car,
-    field::proximity, rating::incidents, rating::safety_rating, strategy::fuel,
+    field::proximity, field::radio, rating::incidents, rating::safety_rating, strategy::fuel,
     strategy::pit_stops, timing::lap_delta, ComputeContext, ComputedOutput, ProcessorCommand,
     TickRate,
 };
@@ -352,7 +352,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         bundle.chassis = Some(frame.chassis.clone());
         bundle.car_idx = Some(frame.car_idx.clone());
         bundle.lap_timing = Some(frame.lap_timing.clone());
-        bundle.radio = Some(frame.radio.clone());
+        bundle.radio = Some(radio::on_air(&frame.radio, session_info));
     }
 
     if due.hz4 {

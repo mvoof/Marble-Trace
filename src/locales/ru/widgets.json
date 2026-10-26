@@ -902,7 +902,7 @@
       "nameFormat_full": "Полностью",
       "nameFormat_short": "Имя и инициал",
       "showChannel": "Показывать канал",
-      "showChannelDesc": "Под именем: кому адресована передача — всем, команде, race control."
+      "showChannelDesc": "Плашка в правом верхнем углу: кому адресована передача — всем, команде, race control."
     }
   },
   "streamChat": {
