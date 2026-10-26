@@ -1874,7 +1874,7 @@ export type RadioChannel =
  * Who is talking on the radio this tick, if anyone. The sim reports one
  * transmission at a time — the one the player hears.
  *
- * @see https://sajax.github.io/irsdkdocs/telemetry/radiotransmitcaridx/
+ * @see https://sajax.github.io/irsdkdocs/telemetry/radiotransmitcaridx.html
  */
 export type RadioFrame = {
   transmission: RadioTransmission | null;
@@ -1882,7 +1882,7 @@ export type RadioFrame = {
    * The player holds the push-to-talk button. The sim leaves the player's
    * own transmission out of `transmission`, so this is the only sign of it.
    *
-   * @see https://sajax.github.io/irsdkdocs/telemetry/pushtotalk/
+   * @see https://sajax.github.io/irsdkdocs/telemetry/pushtotalk.html
    */
   pushToTalk?: boolean;
 };

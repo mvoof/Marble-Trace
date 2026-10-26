@@ -1,6 +1,6 @@
 //! The session's `RadioInfo` section: the frequencies a transmission is on.
 //!
-//! @see https://sajax.github.io/irsdkdocs/yaml/radioinfo/
+//! @see https://sajax.github.io/irsdkdocs/yaml/radioinfo.html
 
 use serde::Deserialize;
 
