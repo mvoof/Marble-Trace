@@ -13,6 +13,8 @@ import {
   previewScenario,
 } from '@/storybook/define-widget-stories';
 import type { StandingsWidgetSettings } from './settings-schema';
+import { mockRadioTransmission } from '@features/preview/mocks/radio';
+import type { RadioChannel } from '@shared/contracts/generated/bindings';
 
 /** The spacing the table is read at by default — a couple of seconds a place. */
 const DEFAULT_GAP_S = 1.8;
@@ -30,6 +32,8 @@ interface StoryArgs {
   gapS?: number;
   /** Rows around the player to state something extra about. */
   rows?: MockFieldRows;
+  /** The player on the radio, on this channel. */
+  playerOnRadio?: RadioChannel;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -55,6 +59,19 @@ const meta: Meta<StoryArgs> = {
 
       if (args.settings) {
         store.liveWidgets.updateUserSettings('standings', args.settings);
+      }
+
+      if (args.playerOnRadio) {
+        const session = store.session.sessionInfo;
+
+        store.cars.updateRadio({
+          transmission: mockRadioTransmission(
+            session,
+            args.playerOnRadio,
+            session?.playerCarIdx
+          ),
+          pushToTalk: true,
+        });
       }
 
       if (args.activeClassIndex !== undefined) {
@@ -137,4 +154,15 @@ export const WithPitBadges: Story = {
 
 export const WithDriverFlags: Story = {
   args: { rows: MOCK_DRIVER_FLAG_ROWS },
+};
+
+/**
+ * The player talking on a row painted the channel's own green: the mic keeps
+ * a dark square so the row does not swallow it.
+ */
+export const PlayerOnRadio: Story = {
+  args: {
+    playerOnRadio: 'all',
+    settings: { playerRowColor: '#10b981' },
+  },
 };

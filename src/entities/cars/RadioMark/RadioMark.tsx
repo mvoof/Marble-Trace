@@ -16,6 +16,11 @@ const CHANNEL_CLASS: Record<RadioChannel, string> = {
 
 interface RadioMarkProps {
   carIdx: number;
+  /**
+   * The player's row, filled with a colour the user picks — one that may be
+   * the channel's own. The mic then sits on a dark square of its own.
+   */
+  onPlayerRow?: boolean;
 }
 
 /**
@@ -24,20 +29,30 @@ interface RadioMarkProps {
  * transmission itself, so a new voice redraws the marks and not the rows
  * they sit in.
  */
-export const RadioMark = observer(({ carIdx }: RadioMarkProps) => {
-  const { radioTransmission } = useCarsStore();
-  const { sessionInfo } = useSessionStore();
+export const RadioMark = observer(
+  ({ carIdx, onPlayerRow = false }: RadioMarkProps) => {
+    const { radioTransmission } = useCarsStore();
+    const { sessionInfo } = useSessionStore();
 
-  if (radioTransmission?.carIdx !== carIdx) {
-    return null;
+    if (radioTransmission?.carIdx !== carIdx) {
+      return null;
+    }
+
+    const { channel } = channelOfTransmission(radioTransmission, sessionInfo);
+
+    return (
+      <span
+        className={[
+          styles.mark,
+          CHANNEL_CLASS[channel],
+          onPlayerRow ? styles.markOnPlayerRow : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        aria-label="On the radio"
+      >
+        <Mic className={styles.icon} aria-hidden="true" />
+      </span>
+    );
   }
-
-  const { channel } = channelOfTransmission(radioTransmission, sessionInfo);
-
-  return (
-    <Mic
-      className={`${styles.mark} ${CHANNEL_CLASS[channel]}`}
-      aria-label="On the radio"
-    />
-  );
-});
+);

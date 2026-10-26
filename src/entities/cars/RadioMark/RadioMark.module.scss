@@ -1,8 +1,27 @@
 // Sized to the name it stands beside, and kept whole when the name is cut.
 .mark {
+  display: flex;
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: ws(18);
+  height: ws(18);
+  border-radius: radius(sm);
+}
+
+// A block, so the glyph sits in the middle of its square rather than on the
+// text baseline.
+.icon {
+  display: block;
   width: ws(14);
   height: ws(14);
+}
+
+// The player's row is filled with a colour the user picks, which may be the
+// channel's own: a green row would swallow a green mic. A dark square keeps
+// the mic in the channel's colour readable on any fill.
+.markOnPlayerRow {
+  background: rgba($widget-text-on-accent, 0.75);
 }
 
 // The channel colours the Radio widget uses, so a mic here and the plate
