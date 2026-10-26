@@ -10,6 +10,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::sim::enums::SessionState;
+use crate::sim::radio::{RadioFrequencyEntry, RadioTune};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -116,6 +117,14 @@ pub struct SessionSnapshot {
     pub driver_tires: Vec<TireCompoundEntry>,
     pub sectors: Vec<SectorEntry>,
     pub qualify_results: Vec<QualifyResultEntry>,
+    /// Every frequency of every radio the player has, to name the one a
+    /// `RadioTransmission` is on.
+    #[serde(default)]
+    pub radio_frequencies: Vec<RadioFrequencyEntry>,
+    /// The frequency the player's selected radio is tuned to: where the
+    /// player's own voice goes. `None` when the session names no radio.
+    #[serde(default)]
+    pub player_radio: Option<RadioTune>,
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]

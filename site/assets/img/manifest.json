@@ -413,6 +413,20 @@
       }
     ]
   },
+  "assets/widgets/radio.png": {
+    "width": 540,
+    "height": 336,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/radio-480.webp"
+      },
+      {
+        "width": 540,
+        "path": "assets/img/widgets/radio-540.webp"
+      }
+    ]
+  },
   "assets/widgets/relative-map.png": {
     "width": 1218,
     "height": 120,

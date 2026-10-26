@@ -72,6 +72,7 @@ const SHOTS = {
   'proximity-radar': ['ProximityRadarWidget', 'surrounded'],
   'race-dash': ['RaceDashWidget', 'on-pace'],
   'radar-bar': ['RadarBarWidget', 'both-sides'],
+  radio: ['RadioWidget', 'all-drivers'],
   relative: ['RelativeWidget', 'default'],
   'relative-map': ['RelativeMapWidget', 'horizontal'],
   'rpm-lights': ['RpmLightsWidget', 'mid-rpm'],

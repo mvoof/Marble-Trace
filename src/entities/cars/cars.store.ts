@@ -3,6 +3,8 @@ import { makeAutoObservable, observableRef } from 'mobx';
 import type {
   CarIdxFrame,
   CarPositionsFrame,
+  RadioFrame,
+  RadioTransmission,
 } from '@shared/contracts/generated/bindings';
 
 export class CarsStore {
@@ -14,6 +16,8 @@ export class CarsStore {
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   carPositions: CarPositionsFrame | null = null;
+  /** Who is talking on the radio, or null while nobody is. */
+  radioTransmission: RadioTransmission | null = null;
 
   // Every telemetry frame is replaced wholesale — nothing ever mutates one in
   // place — so `observableRef` is all the reactivity these need. Deep
@@ -24,6 +28,7 @@ export class CarsStore {
     makeAutoObservable(this, {
       carIdx: observableRef,
       carPositions: observableRef,
+      radioTransmission: observableRef,
     });
   }
 
@@ -51,8 +56,13 @@ export class CarsStore {
     this.carPositions = frame;
   }
 
+  updateRadio(frame: RadioFrame) {
+    this.radioTransmission = frame.transmission;
+  }
+
   reset() {
     this.carIdx = null;
     this.carPositions = null;
+    this.radioTransmission = null;
   }
 }

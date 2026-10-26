@@ -48,7 +48,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 - **Driving HUD** — [Race Dash](#race-dash) · [Invisible Dash](#invisible-dash) · [RPM Lights](#rpm-lights) · [Engine Panel](#engine-panel) · [Battery](#battery) · [DRS](#drs) · [ABS](#abs) · [Input Trace](#input-trace) · [G-Meter](#g-meter) · [Coach](#coach)
 - **Timing & Standings** — [Standings](#standings) · [Relative](#relative) · [Relative Map](#relative-map) · [Delta](#delta) · [Sector Matrix](#sector-matrix) · [Lap Log](#lap-log) · [Timer](#timer)
-- **Awareness** — [Track Map](#track-map) · [Proximity Radar](#proximity-radar) · [Radar Bar](#radar-bar) · [Close Battle](#close-battle) · [Wheel to Wheel](#wheel-to-wheel) · [Flags (LED/Flat)](#flags-led--flat)
+- **Awareness** — [Track Map](#track-map) · [Proximity Radar](#proximity-radar) · [Radar Bar](#radar-bar) · [Radio](#radio) · [Close Battle](#close-battle) · [Wheel to Wheel](#wheel-to-wheel) · [Flags (LED/Flat)](#flags-led--flat)
 - **Car & Session** — [Pit Service](#pit-service) · [Pit Line](#pit-line) · [Fuel](#fuel) · [Weather](#weather) · [Incident Tracker](#incident-tracker)
 - **Streaming** — [Stream Chat](#stream-chat)
 
@@ -221,6 +221,14 @@ Circular radar centred on your car with a configurable render range, bumper-to-b
 Full-width edge indicators for side-by-side situations — a quick-glance signal for cars in your blind spot.
 
 <img src="site/assets/widgets/radar-bar.png" alt="Radar Bar" width="800">
+
+---
+
+### Radio
+
+Who is talking on the radio, in place of the sim's own indicator: the car number in its class colour, the channel the sim names — all, drivers, team, race control, admin, private or one of your own — in the opposite corner, and the driver's name large over a wave in the channel's colour, the surname on its own line or shortened to "First L.". Your own voice shows too, while you hold push-to-talk. With nobody on the air the plate shows your channel alone — for a moment after you switch, or all the time if you want it on screen.
+
+<img src="site/assets/widgets/radio.png" alt="Radio" width="180">
 
 ---
 

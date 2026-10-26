@@ -26,7 +26,7 @@ use mt_computations::strategy::pit_auto::{worst_tire_wear, PitAutoCommand, PitAu
 use mt_computations::strategy::pit_target::resolve_pit_target;
 use mt_computations::{
     driving::coach, driving::corner_speeds, field::driver_entries, field::pace_car,
-    field::proximity, rating::incidents, rating::safety_rating, strategy::fuel,
+    field::proximity, field::radio, rating::incidents, rating::safety_rating, strategy::fuel,
     strategy::pit_stops, timing::lap_delta, ComputeContext, ComputedOutput, ProcessorCommand,
     TickRate,
 };
@@ -46,6 +46,7 @@ use mt_model::sim::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, InputSample, LapTimingFrame,
     PitServiceFrame, PitTargetFrame,
 };
+use mt_model::sim::radio::RadioFrame;
 use mt_model::sim::session::{SessionFrame, SessionSnapshot};
 use mt_model::utils::lock_or_recover;
 use mt_source::{PitCommander, SourceFrame};
@@ -104,6 +105,8 @@ pub struct TelemetryBundle {
     pub incidents: Option<incidents::IncidentsFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pace_car: Option<pace_car::PaceCarFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub radio: Option<RadioFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relative: Option<RelativeFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -349,6 +352,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         bundle.chassis = Some(frame.chassis.clone());
         bundle.car_idx = Some(frame.car_idx.clone());
         bundle.lap_timing = Some(frame.lap_timing.clone());
+        bundle.radio = Some(radio::on_air(&frame.radio, session_info));
     }
 
     if due.hz4 {

@@ -89,6 +89,9 @@
     },
     "incident-tracker": {
       "description": "Incidents, penalties and an estimated Safety Rating at the flag."
+    },
+    "radio": {
+      "description": "Who is talking on the radio: car number, name and channel."
     }
   },
   "settingsPanels": {
@@ -892,6 +895,18 @@
       "showPenaltiesDesc": "Drive-throughs served and, in brackets, the incidents left before the next one. DQ once over the limit. Hidden in a session that hands out no penalties.",
       "showCleanCorners": "Clean corners",
       "showCleanCornersDesc": "Corners to drive without an incident before this session stops costing Safety Rating. Zero means it is level or better already."
+    },
+    "radio": {
+      "moduleParameters": "Module parameters",
+      "nameFormat": "Name",
+      "nameFormat_full": "Full",
+      "nameFormat_short": "First name, initial",
+      "showChannel": "Show channel",
+      "showChannelDesc": "A tab in the top-right corner naming who the transmission reaches — all, team, race control.",
+      "showOnRetune": "Show on channel change",
+      "showOnRetuneDesc": "Show the new channel for three seconds after you switch, to read where you will be heard.",
+      "idleShowsChannel": "Show the channel when idle",
+      "idleShowsChannelDesc": "Keep the widget on screen while nobody talks, showing the channel your radio is tuned to."
     }
   },
   "streamChat": {

@@ -18,6 +18,7 @@ use mt_model::sim::environment::{EnvironmentFrame, WeatherForecastEntry};
 use mt_model::sim::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
+use mt_model::sim::radio::RadioFrame;
 use mt_model::sim::session::{SessionFrame, SessionSnapshot};
 use mt_model::sim::sim_perf::SimPerfFrame;
 
@@ -48,6 +49,10 @@ pub struct SourceFrame {
     /// formation.
     #[serde(default)]
     pub pacing: PacingFrame,
+    /// Absent from tapes recorded before it existed, which then read as
+    /// nobody talking.
+    #[serde(default)]
+    pub radio: RadioFrame,
 }
 
 /// Result of one session parse: the normalized snapshot plus the
