@@ -1,3 +1,5 @@
+@use 'sass:list';
+
 // One accent per channel, set once on the root and read by the wave and the
 // mic alike. The class colour belongs to the number tab alone, so the two say
 // different things: what car, and who it is talking to.
@@ -116,8 +118,8 @@ $wave-frames: (
 );
 $wave-quiet: 0.25;
 
-@for $bar from 1 through length($wave-envelope) {
-  $height: nth($wave-envelope, $bar);
+@for $bar from 1 through list.length($wave-envelope) {
+  $height: list.nth($wave-envelope, $bar);
 
   .bar:nth-child(#{$bar}) {
     opacity: 0.35 + 0.65 * $height;
@@ -127,7 +129,7 @@ $wave-quiet: 0.25;
   @each $step, $pattern in $wave-frames {
     .bars[data-blink-step='#{$step}'] .bar:nth-child(#{$bar}) {
       transform: scaleY(
-        $height * nth($pattern, ($bar - 1) % length($pattern) + 1)
+        $height * list.nth($pattern, ($bar - 1) % list.length($pattern) + 1)
       );
     }
   }
