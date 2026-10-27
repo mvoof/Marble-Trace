@@ -167,7 +167,9 @@
       "blinkAtShiftDesc": "Blink the gear and the revs once they reach the shift point.",
       "speedCard": "Speed",
       "gearRpmCard": "Gear and RPM",
-      "steeringCard": "Steering"
+      "steeringCard": "Steering",
+      "showRadioMark": "Radio Indicator",
+      "showRadioMarkDesc": "Show a mic beside the driver who is talking on the radio, you included."
     },
     "delta": {
       "deltaReference": "Delta Reference",

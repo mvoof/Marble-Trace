@@ -167,7 +167,9 @@
       "blinkAtShiftDesc": "La marcha y las revoluciones parpadean al llegar al punto de cambio.",
       "speedCard": "Velocidad",
       "gearRpmCard": "Marcha y RPM",
-      "steeringCard": "Volante"
+      "steeringCard": "Volante",
+      "showRadioMark": "Indicador de radio",
+      "showRadioMarkDesc": "Muestra un micrófono junto al piloto que habla por radio, tú incluido."
     },
     "delta": {
       "deltaReference": "Referencia del delta",

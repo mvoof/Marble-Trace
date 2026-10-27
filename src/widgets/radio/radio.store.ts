@@ -6,6 +6,7 @@ import {
 } from 'mobx';
 
 import type { CarsStore } from '@entities/cars/cars.store';
+import type { RadioChannelView } from '@entities/cars/radio-channel';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { SessionStore } from '@entities/session/session.store';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
@@ -14,7 +15,6 @@ import type { SelfHidingWidgetStore } from '@features/widget-auto-hide/widget-au
 import {
   resolveSpeaker,
   resolveTunedChannel,
-  type RadioChannelView,
   type RadioSpeaker,
 } from './radio-utils';
 import type { RadioWidgetSettings } from './settings-schema';

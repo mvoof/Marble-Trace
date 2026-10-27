@@ -12,6 +12,7 @@ import {
 import { parseDriverFlags } from '@shared/lib/driver';
 import { isSessionEnded } from '@shared/lib/timer-utils';
 import { DriverStatusBadges } from '@shared/ui/DriverStatusBadge/DriverStatusBadges';
+import { RadioMark } from '@entities/cars/RadioMark/RadioMark';
 import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
@@ -222,6 +223,10 @@ export const DriverRow = observer(
               ? abbreviateName(driver.userName)
               : driver.userName}
           </span>
+
+          {settings.showRadioMark && (
+            <RadioMark carIdx={driver.carIdx} onPlayerRow={driver.isPlayer} />
+          )}
 
           <DriverStatusBadges
             flagType={flagType}

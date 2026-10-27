@@ -167,7 +167,9 @@
       "blinkAtShiftDesc": "转速达到换挡点时，挡位和转速闪烁。",
       "speedCard": "速度",
       "gearRpmCard": "挡位与转速",
-      "steeringCard": "方向盘"
+      "steeringCard": "方向盘",
+      "showRadioMark": "无线电指示",
+      "showRadioMarkDesc": "在正在无线电通话的车手旁显示麦克风，包括你自己。"
     },
     "delta": {
       "deltaReference": "差值参考",
