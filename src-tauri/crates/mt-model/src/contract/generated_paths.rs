@@ -36,3 +36,9 @@ pub const TELEMETRY_EVENT_BITS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../../src/shared/contracts/generated/telemetry-event-bits.ts"
 );
+/// The iRacing variables the overlay reads, for the voice crew's question
+/// editor; written by `mt-sim-iracing/src/overlay_variables.rs`.
+pub const IRACING_VARIABLES_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../../src/shared/contracts/generated/iracing-variables.json"
+);

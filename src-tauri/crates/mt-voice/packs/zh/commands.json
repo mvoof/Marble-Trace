@@ -1,0 +1,53 @@
+{
+  "format": 3,
+  "intents": {
+    "pit.fuel": ["(加油|加) {number} 升", "{number} 升 [油]"],
+    "pit.fuelToFinish": ["加油 到 终点", "加 够 油", "加油"],
+    "pit.clearFuel": ["不 加油", "(取消|不要) 加油"],
+    "pit.tires": ["(换|更换) {tires} [轮胎]", "(换|更换) 轮胎"],
+    "pit.clearTires": ["不 换 轮胎", "(取消|不要) 换 轮胎"],
+    "pit.compound": ["(换|上) {compound} 胎", "(换|更换) 配方"],
+    "pit.fastRepair": ["快速 修理", "修 车"],
+    "pit.clearFastRepair": ["(不要|取消) 快速 修理"],
+    "pit.windshield": ["(清洁|擦) [挡风] 玻璃", "挡风 玻璃"],
+    "pit.clearWindshield": ["不 擦 玻璃", "取消 清洁 玻璃"],
+    "pit.clearAll": ["(取消|清空) (全部|进站 计划)", "这次 什么 都 不 做"],
+    "pit.applyPlanned": ["(按 计划|正常) 进站", "按 计划"],
+    "query.fuel": ["还 有 多少 油", "油 够 几 圈"],
+    "query.gapAhead": ["(和|跟) 前面 的 车 差 多少", "前面 是 谁"],
+    "query.gapBehind": ["(和|跟) 后面 的 车 差 多少", "后面 是 谁"],
+    "query.position": ["我 第几", "我 的 位置"],
+    "query.lapsLeft": ["还 剩 几 圈", "还 剩 多少 时间"],
+    "query.lastLap": ["上 一 圈 [时间]"],
+    "query.bestLap": ["最快 圈 [时间]", "最好 成绩"],
+    "query.pitOrder": ["进站 计划 是 什么", "进站 做 什么"],
+    "query.weather": ["天气 怎么样", "温度 多少"],
+    "query.carPosition": ["{number} 号 车 (在 哪|第几)"],
+    "query.carLastLap": ["{number} 号 车 上 一 圈"],
+    "query.carBestLap": ["{number} 号 车 最快 圈"],
+    "control.repeat": ["(再 说 一 遍|重复|什么)"]
+  },
+  "defaults": {
+    "pit.tires": "all"
+  },
+  "slots": {
+    "tires": {
+      "all": ["四个", "全部"],
+      "front": ["前轮", "前面"],
+      "rear": ["后轮", "后面"],
+      "left": ["左边"],
+      "right": ["右边"],
+      "lf": ["左 前", "左 前轮"],
+      "rf": ["右 前", "右 前轮"],
+      "lr": ["左 后", "左 后轮"],
+      "rr": ["右 后", "右 后轮"]
+    },
+    "compound": {
+      "dry": ["干", "光头"],
+      "wet": ["雨"],
+      "soft": ["软"],
+      "medium": ["中"],
+      "hard": ["硬"]
+    }
+  }
+}

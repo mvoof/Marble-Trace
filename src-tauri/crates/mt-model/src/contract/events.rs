@@ -81,6 +81,14 @@ ts_values! {
     /// author.
     pub const EVENT_CHAT_DELETION: &str = "chat://deletion" => CHAT_DELETION;
 
+    /// The voice crew's radio: push-to-talk, what the driver said, the reply
+    /// on air and a pit command's result. A few per press, never batched into
+    /// the telemetry bundle.
+    pub const EVENT_CREW_RADIO: &str = "crew://radio" => CREW_RADIO_EVENT;
+
+    /// A voice download's progress, for the Crew tab.
+    pub const EVENT_CREW_DOWNLOAD: &str = "crew://download" => CREW_DOWNLOAD_EVENT;
+
     /// The set of attached game controllers changed.
     pub const INPUT_DEVICES_EVENT: &str = "input://devices" => INPUT_DEVICES_EVENT;
 

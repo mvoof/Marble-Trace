@@ -10,9 +10,11 @@ use std::time::Duration;
 use crate::control::{TelemetryCommand, TelemetryConfig};
 use crate::delivery::publications::PublicationRegistry;
 use crate::state::TelemetryServiceState;
+use mt_computations::crew::engineer::EngineerView;
 use mt_computations::strategy::pit_auto::PitAuto;
 use mt_computations::timing::reference_selection::{ReferenceChange, ReferenceSelection};
 use mt_computations::{field::driver_entries, ProcessorCommand, ProcessorRegistry};
+use mt_model::app::crew::CrewIntent;
 use mt_model::pit::pit_action::PitAction;
 use mt_model::sim::player::InputSample;
 use mt_model::sim::session::SessionSnapshot;
@@ -55,6 +57,10 @@ pub struct LoopState {
     /// Manual pit actions applied this tick, resolved by the emitter against
     /// the frame it holds.
     pub pending_pit_actions: Vec<PitAction>,
+    /// Voice requests waiting for this tick's frame.
+    pub pending_crew: Vec<CrewIntent>,
+    /// What the engineer answers from, held across the slower tiers.
+    pub engineer: EngineerView,
     /// The fuel calculation's last `fill_now`. Computed on the 4 Hz tier, read
     /// by a pit action on any tick.
     pub planned_fuel_l: Option<f32>,
@@ -85,6 +91,8 @@ impl LoopState {
             live_pit_in_pct: None,
             pit_auto: PitAuto::default(),
             pending_pit_actions: Vec::new(),
+            pending_crew: Vec::new(),
+            engineer: EngineerView::default(),
             planned_fuel_l: None,
             references: ReferenceSelection::default(),
             pending_reference: None,
@@ -128,6 +136,11 @@ impl LoopState {
                     self.pending_pit_actions.push(action);
                 }
             }
+            TelemetryCommand::Crew { intent, issued_at } => {
+                if issued_at.elapsed() <= MAX_PIT_ACTION_AGE {
+                    self.pending_crew.push(intent);
+                }
+            }
         }
     }
 
@@ -146,6 +159,8 @@ impl LoopState {
         self.publications.reset();
         self.pit_auto.reset();
         self.pending_pit_actions.clear();
+        self.pending_crew.clear();
+        self.engineer = EngineerView::default();
         self.planned_fuel_l = None;
         self.references = ReferenceSelection::default();
         self.pending_reference = None;

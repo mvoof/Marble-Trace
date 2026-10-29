@@ -1,0 +1,95 @@
+// The plate is a fixed width and as tall as its lines, so it paints the
+// user's background and border itself; the container around it is
+// transparent (`transparentContainer`).
+//
+// One accent per speaker, read by the header, the mic and the bar beside the
+// line on the air: the engineer in the radio's green, the driver in blue.
+.root {
+  width: ws(320);
+  overflow: hidden;
+  border: 1px solid var(--widget-border);
+  border-radius: radius(lg);
+  background: var(--widget-bg);
+  font-family: $font-widget;
+}
+
+.engineer {
+  --crew-accent: #{$race-green};
+}
+
+.driver {
+  --crew-accent: #{$race-blue};
+}
+
+.line {
+  display: flex;
+  flex-direction: column;
+  padding: sp(sm) sp(lg);
+  border-left: ws(3) solid transparent;
+}
+
+.line + .line {
+  border-top: 1px solid var(--widget-border);
+}
+
+// Being said right now: the bar marks it, the earlier lines step back.
+.line[data-on-air='true'] {
+  border-left-color: var(--crew-accent);
+}
+
+.line[data-on-air='false'] .text {
+  color: $widget-text-secondary;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  color: var(--crew-accent);
+}
+
+.header > * + * {
+  margin-left: sp(xs);
+}
+
+.mic {
+  flex: 0 0 auto;
+  width: ws(14);
+  height: ws(14);
+}
+
+.speaker {
+  font-size: fs(sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.resultOk,
+.resultFailed {
+  flex: 0 0 auto;
+  width: ws(16);
+  height: ws(16);
+  margin-left: auto;
+}
+
+.resultOk {
+  color: $race-green;
+}
+
+.resultFailed {
+  color: $race-red;
+}
+
+.text {
+  margin-top: sp(xxs);
+  font-size: fs(lg);
+  font-weight: 500;
+  line-height: 1.3;
+  color: $widget-text-primary;
+  overflow-wrap: anywhere;
+}
+
+.line .quietText {
+  color: $widget-text-muted;
+}

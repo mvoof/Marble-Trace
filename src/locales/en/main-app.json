@@ -6,6 +6,7 @@
     "sections": {
       "layouts": "Layouts",
       "widgets": "Widgets",
+      "crew": "Crew",
       "settings": "Settings"
     }
   },
@@ -624,6 +625,7 @@
     "actions": {
       "toggleDragMode": "Drag mode",
       "toggleInteractMode": "Interact mode",
+      "pushToTalk": "Push to talk (voice crew)",
       "toggleHideAllWidgets": "Hide all widgets",
       "standingsCycleViewMode": "Cycle view mode (All → Grouped → Cycling)",
       "standingsClassPrev": "Previous class (cycling mode)",
@@ -661,5 +663,481 @@
     "searchByKeyHint": "Press a key or a device button and the list shows what it is bound to.",
     "searchPressKey": "Press a key or a device button…",
     "keyIsFree": "{{key}} is not bound to anything."
+  },
+  "crewPage": {
+    "title": "Crew",
+    "sections": {
+      "commands": "Commands",
+      "voice": "Voice",
+      "downloads": "Downloads",
+      "pack": "Pack"
+    },
+    "notReady": "The voice needs its engines, a voice and a recognition model — see Downloads.",
+    "openDownloads": "Open Downloads",
+    "packOutdated": "The unsaved edits belong to the “{{pack}}” pack, but the crew now speaks “{{language}}”. Save or discard them to open the “{{language}}” pack.",
+    "save": "Save",
+    "saveBar": {
+      "changes": "Unsaved changes",
+      "errors_one": "{{count}} error",
+      "errors_other": "{{count}} errors",
+      "discard": "Discard",
+      "unvoiced": "Replies not voiced yet: {{count}}",
+      "generate": "Voice them"
+    },
+    "leave": {
+      "title": "Unsaved changes",
+      "desc": "The crew’s commands have unsaved changes. Save them before you leave?",
+      "stay": "Stay",
+      "discard": "Don’t save"
+    },
+    "check": {
+      "idle": "Hold and say a sentence, or type one in the list",
+      "listening": "Listening…",
+      "draftNote": "listening for the unsaved changes too",
+      "voiceOff": "The voice is off — turn it on under Voice",
+      "silence": "Nothing heard — check the microphone under Voice",
+      "unknown": "“{{sentence}}” — no command takes it",
+      "heard": "“{{sentence}}” → {{action}}{{slots}}",
+      "sure": "{{percent}}%",
+      "unsure": "unsure, {{percent}}% — pit orders and question steps will not run"
+    },
+    "openFolder": "Open folder",
+    "downloads": {
+      "tabs": {
+        "recognition": "Recognition",
+        "voices": "Voices",
+        "custom": "Your voices"
+      },
+      "voicesTitle": "Voices · {{count}}",
+      "languageFilter": {
+        "all": "All"
+      },
+      "recommendedTag": "recommended",
+      "sample": "Listen to a sample",
+      "importFolder": "Import folder",
+      "noCustomVoices": "No voices of your own yet",
+      "banner": "The voice needs an engine and a voice — about {{size}} MB.",
+      "recommended": "Download recommended for your language",
+      "download": "Download",
+      "cancel": "Cancel",
+      "remove": "Remove",
+      "importFiles": "Import from files",
+      "customVoice": "Your own Piper voice",
+      "customVoiceDesc": "A Piper .onnx voice with its .onnx.json beside it — one file, or every voice in a folder and the folders under it.",
+      "importVoice": "Import voice",
+      "folder": "Voice folder",
+      "state": {
+        "installed": "installed",
+        "outdated": "outdated",
+        "missing": "not installed"
+      },
+      "kind": {
+        "ttsEngine": "Speech engine",
+        "sttEngine": "Recognition engine",
+        "ttsVoice": "Voice",
+        "sttModel": "Recognition model"
+      },
+      "changeFolder": "Change folder…",
+      "defaultFolder": "Back to the default folder",
+      "folderDesc": "Downloads, packs and the cache move to the chosen folder as a whole — onto a drive with more room, say. The new folder must be empty; the voice is off while they move."
+    },
+    "voice": {
+      "title": "Voice",
+      "enabled": "Voice engineer",
+      "enabledDesc": "Hold push-to-talk (Settings → Bindings) and ask, or give a pit command.",
+      "language": "Language",
+      "experimental": "experimental",
+      "languages": {
+        "app": "Same as the app",
+        "ru": "Russian",
+        "en": "English",
+        "es": "Spanish",
+        "zh": "Chinese"
+      },
+      "voice": "Voice",
+      "recommendedVoice": "Recommended",
+      "output": "Output device",
+      "input": "Microphone",
+      "systemDefault": "System default",
+      "volume": "Volume {{percent}}%",
+      "speed": "Speech rate ×{{speed}}",
+      "confidence": "Confidence threshold {{percent}}%",
+      "confidenceDesc": "A pit command heard less surely than this is not carried out.",
+      "test": "Test the microphone",
+      "testDesc": "Hold and speak: shows what was heard and what it would do, without doing it.",
+      "hold": "Hold to test",
+      "testIdle": "Nothing tested yet",
+      "testResult": "Heard \"{{text}}\" → {{intent}} ({{percent}}%)",
+      "testNotUnderstood": "not understood"
+    },
+    "phrases": {
+      "desc": "What the engineer says when a sentence is not understood or a value has no data.",
+      "play": "Play",
+      "addVariant": "Variant",
+      "removeVariant": "Remove variant",
+      "status": {
+        "generated": "generated",
+        "missing": "not generated",
+        "dynamic": "on the fly"
+      },
+      "shared": "Shared answers",
+      "mistake": "Mistake: {{message}}",
+      "sounds": "Sounds like: {{samples}}",
+      "playSaveFirst": "Save the changes to listen",
+      "soundsWays_one": "{{count}} way: {{samples}}",
+      "soundsWays_other": "{{count}} ways, such as: {{samples}}"
+    },
+    "commands": {
+      "counts": "{{intents}} intents, {{sentences}} phrases",
+      "sentences": "{{count}} phrases",
+      "conflict": "\"{{sentence}}\" belongs to {{intents}}",
+      "tryShort": "Try a sentence…",
+      "tryPlaceholder": "Type it as you would say it, e.g. \"fuel forty\"",
+      "tryButton": "Try",
+      "groups": {
+        "pit": "Pit order",
+        "query": "Questions",
+        "control": "Engineer control"
+      },
+      "broken": "mistake",
+      "says": "You say",
+      "answers": "The engineer answers",
+      "addTemplate": "Sentence",
+      "removeTemplate": "Remove sentence",
+      "unsaidTitle": "When {{slot}} is not said",
+      "unsaidDesc": "A sentence may leave the value out: tick \"may be left out\" on its value block. Then the engineer asks for it, or takes the value chosen here.",
+      "unsaidAsk": "Engineer asks",
+      "unsaidNumber": "This number",
+      "sharedAnswers": "Out of the car, or when the command fails, the shared answers play — they are at the end of the list.",
+      "mistake": "Mistake: {{message}}",
+      "more": "and {{count}} more",
+      "missingWords": "Not in the speech model's vocabulary: {{words}} — a sentence with them is never heard",
+      "vocabularyUnchecked": "Words are not checked against the speech model: the crew is off, or this language's model is not installed",
+      "slotTitle": "Value {{slot}}",
+      "slots": {
+        "number": "A number from 0 to 200, said in words: \"forty\", \"one twenty\". The number words are built in.",
+        "tires": "Which tyres. For each, the words you call it by; Enter adds a word.",
+        "compound": "The tyre compound. For each, the words you call it by; Enter adds a word."
+      },
+      "slotValues": {
+        "tires": {
+          "all": "All",
+          "front": "Front",
+          "rear": "Rear",
+          "left": "Left",
+          "right": "Right",
+          "lf": "Front left",
+          "rf": "Front right",
+          "lr": "Rear left",
+          "rr": "Rear right"
+        },
+        "compound": {
+          "dry": "Dry",
+          "wet": "Wet",
+          "soft": "Soft",
+          "medium": "Medium",
+          "hard": "Hard"
+        }
+      },
+      "search": "Find a command",
+      "conflicted": "conflict",
+      "slotsTitle": "Values:"
+    },
+    "pack": {
+      "title": "Pack files",
+      "folder": "Pack folder",
+      "folderDesc": "phrases.json and commands.json, with JSON schemas beside them.",
+      "share": "Share",
+      "shareDesc": "The pack with its recordings as one archive.",
+      "export": "Export",
+      "import": "Import",
+      "reload": "Reload",
+      "reloadDesc": "Read the pack again after editing its files by hand.",
+      "reloadButton": "Reload"
+    },
+    "questions": {
+      "title": "Your questions",
+      "desc": "Ask the engineer something of your own, or build a routine: the sentences that call it, what to carry out (pit actions, chat macros) and the answer with values — weather, fuel, position, gaps, laps, time.",
+      "add": "Add a question",
+      "newName": "New question",
+      "name": "Name",
+      "remove": "Delete the question",
+      "untitled": "Untitled question",
+      "answers": "The answer",
+      "noData": "A value the sim does not have right now (no rain data, no car ahead) makes the engineer say there is no data instead.",
+      "steps": "Carry out first",
+      "stepsDesc": "In order, before the answer. If one fails, the rest are skipped and the engineer reports it could not be done. Pit actions need you in the car; like a pit command, a routine is not carried out when the sentence was heard unsure.",
+      "addStep": "Add action",
+      "removeStep": "Remove action",
+      "macroSlot": "#"
+    },
+    "values": {
+      "simVariable": "iRacing variable…",
+      "simTitle": "An iRacing value",
+      "cancel": "Cancel",
+      "simWithWord": "Number with a word…",
+      "simList_one": "The overlay reads {{count}} iRacing variable.",
+      "simList_other": "The overlay reads {{count}} iRacing variables.",
+      "simMissingNote": "Those the running car does not have are marked.",
+      "simMissing": "not in this car",
+      "simReady": "ready: {{value}}",
+      "simReadyDesc": "The engineer already reads this as {{value}} — the ready value is better.",
+      "simReadyInsert": "Insert {{value}}",
+      "simSearch": "Search by name or description: incident, speed, fuel",
+      "simNothing": "No variable like that",
+      "simRead": "Read as",
+      "simScales": {
+        "whole": "whole",
+        "tenths": "tenths",
+        "kmh": "×3.6 (m/s → km/h)",
+        "percent": "×100 (share → %)"
+      },
+      "insert": "Insert",
+      "insertPlain": "{{value}} — the number alone",
+      "insertWithWord": "{{value}} — the number with a word",
+      "pluralTitle": "Number with a word: {{value}}",
+      "pluralDesc": "The word after a number changes: 1 litre, 5 litres. Write the word for each number and the right one is picked.",
+      "pluralPlaceholder": "the word after \"{{sample}}\"",
+      "names": {
+        "liters": "litres",
+        "laps": "laps",
+        "gap": "gap",
+        "position": "position",
+        "minutes": "minutes",
+        "seconds": "seconds",
+        "compound": "compound",
+        "tires": "tyres",
+        "corners": "which tyres",
+        "airTemp": "air temperature",
+        "trackTemp": "track temperature",
+        "rain": "rain",
+        "wetness": "track wetness",
+        "wind": "wind",
+        "fuel": "fuel",
+        "fuelLaps": "laps of fuel",
+        "gapAhead": "gap ahead",
+        "gapBehind": "gap behind",
+        "lap": "lap",
+        "lapsLeft": "laps left",
+        "minutesLeft": "minutes left",
+        "car": "car number"
+      }
+    },
+    "syntax": {
+      "title": "How to write sentences",
+      "intro": "One line stands for many ways of saying it. Only what is written out is recognised, so every way must be in there.",
+      "choice": {
+        "example": "(fuel|fill) forty",
+        "title": "(a|b) — one of",
+        "desc": "Say either word: \"fuel forty\" or \"fill forty\"."
+      },
+      "optional": {
+        "example": "fuel forty [litres]",
+        "title": "[x] — may be left out",
+        "desc": "Both \"fuel forty\" and \"fuel forty litres\" are recognised."
+      },
+      "slot": {
+        "example": "fuel {number}",
+        "title": "{value} — something named",
+        "desc": "A number or one of the words listed below goes here; the command gets its value."
+      },
+      "nested": {
+        "example": "[(litres|liters)]",
+        "title": "Nesting",
+        "desc": "Brackets nest: an optional choice of several words."
+      },
+      "replies": "In the engineer's replies the values go in from the \"+\" menu: a number with a word picks its form itself — \"1 litre\", \"5 litres\". (a|b) and [a] work as in the driver's sentences: the engineer says one of the ways each time."
+    },
+    "actions": {
+      "pit": {
+        "fuel": {
+          "title": "Fuel",
+          "desc": "Sets the pit order to the litres you name."
+        },
+        "fuelToFinish": {
+          "title": "Fuel to the finish",
+          "desc": "Sets the fuel the race still needs."
+        },
+        "clearFuel": {
+          "title": "No fuel",
+          "desc": "Takes fuel out of the pit order."
+        },
+        "tires": {
+          "title": "Change tyres",
+          "desc": "Marks the tyres you name for a change: all, front, rear, left, right or one corner."
+        },
+        "clearTires": {
+          "title": "No tyres",
+          "desc": "Takes the tyre change out of the pit order."
+        },
+        "compound": {
+          "title": "Tyre compound",
+          "desc": "Picks the compound, if this session has it."
+        },
+        "fastRepair": {
+          "title": "Fast repair",
+          "desc": "Turns fast repair on in the pit order."
+        },
+        "clearFastRepair": {
+          "title": "No fast repair",
+          "desc": "Turns fast repair off."
+        },
+        "windshield": {
+          "title": "Clean the windscreen",
+          "desc": "Turns the windscreen tear-off on."
+        },
+        "clearWindshield": {
+          "title": "Leave the windscreen",
+          "desc": "Turns the windscreen tear-off off."
+        },
+        "clearAll": {
+          "title": "Clear the order",
+          "desc": "Empties the whole pit order."
+        },
+        "applyPlanned": {
+          "title": "Planned stop",
+          "desc": "Sets the fuel the race needs and four tyres."
+        }
+      },
+      "query": {
+        "fuel": {
+          "title": "Fuel left",
+          "desc": "The engineer reads the litres in the tank and the laps they last."
+        },
+        "gapAhead": {
+          "title": "Gap ahead",
+          "desc": "Seconds to the car ahead in your class."
+        },
+        "gapBehind": {
+          "title": "Gap behind",
+          "desc": "Seconds to the car behind in your class."
+        },
+        "position": {
+          "title": "Position",
+          "desc": "Your place in class."
+        },
+        "lapsLeft": {
+          "title": "Laps left",
+          "desc": "Laps to the finish, or minutes in a timed race."
+        },
+        "lastLap": {
+          "title": "Last lap",
+          "desc": "Your last lap time."
+        },
+        "bestLap": {
+          "title": "Best lap",
+          "desc": "Your best lap time."
+        },
+        "pitOrder": {
+          "title": "Pit order",
+          "desc": "The engineer reads the current pit order."
+        },
+        "weather": {
+          "title": "Weather",
+          "desc": "Air and track temperature, and how hard it rains when it does."
+        },
+        "carPosition": {
+          "title": "Car position",
+          "desc": "Where the car with this number runs in its class."
+        },
+        "carLastLap": {
+          "title": "Car last lap",
+          "desc": "The last lap of the car with this number."
+        },
+        "carBestLap": {
+          "title": "Car best lap",
+          "desc": "The best lap of the car with this number."
+        }
+      },
+      "control": {
+        "repeat": {
+          "title": "Repeat",
+          "desc": "The engineer says the last line again."
+        }
+      },
+      "chat": {
+        "macro": {
+          "title": "Chat macro",
+          "desc": "Sends an iRacing chat macro by its number (1–15); the macro's text is set in iRacing's options."
+        }
+      }
+    },
+    "replies": {
+      "engineer": {
+        "ack": {
+          "fuel": "Fuel confirmed",
+          "fuelToFinish": "Fuel to the finish confirmed",
+          "clearFuel": "Fuel removed",
+          "tires": "Tyres confirmed",
+          "clearTires": "Tyres removed",
+          "compound": "Compound confirmed",
+          "fastRepair": "Fast repair confirmed",
+          "clearFastRepair": "Fast repair removed",
+          "windshield": "Windscreen confirmed",
+          "clearWindshield": "Windscreen removed",
+          "clearAll": "Order cleared",
+          "applyPlanned": "Planned stop confirmed"
+        },
+        "answer": {
+          "fuel": "Answer",
+          "gapAhead": "Answer",
+          "gapBehind": "Answer",
+          "noCarAhead": "Nobody ahead (you lead the class)",
+          "noCarBehind": "Nobody behind",
+          "position": "Answer",
+          "lapsLeft": "Race over laps",
+          "timeLeft": "Timed race",
+          "lastLap": "Answer",
+          "bestLap": "Answer",
+          "noLapTime": "No lap time yet",
+          "pitOrder": "Answer",
+          "pitOrderEmpty": "The order is empty",
+          "weather": "Dry",
+          "weatherRain": "Raining",
+          "carPosition": "Answer",
+          "carLastLap": "Answer",
+          "carBestLap": "Answer",
+          "carNoLapTime": "When the car has no lap time yet",
+          "noSuchCar": "When there is no such number"
+        },
+        "ask": {
+          "fuel": "When the value is not said",
+          "tires": "When the value is not said",
+          "compound": "When the value is not said",
+          "car": "When the value is not said"
+        },
+        "notUnderstood": "Not understood",
+        "notInCar": "A pit command while out of the car",
+        "noData": "No data to answer with",
+        "cannot": "The command could not be carried out",
+        "nothingToRepeat": "Nothing to repeat"
+      }
+    },
+    "blocks": {
+      "blocks": "Blocks",
+      "text": "Text",
+      "modeDesc": "Blocks put a sentence together from words, choices and values, no marks to type. A sentence whose brackets do not pair up opens as text.",
+      "newWord": "word",
+      "words": "Words",
+      "choice": "One of",
+      "optional": "May be left out",
+      "slot": "Value {{slot}}",
+      "add": "Add block",
+      "remove": "Remove block",
+      "move": "Drag to move",
+      "apply": "Apply",
+      "reply": {
+        "text": "Text"
+      },
+      "emptySentence": "Type a sentence — Enter or a click away makes the blocks",
+      "slotOptional": "may be left out",
+      "emptyReply": "Type a reply — Enter or a click away makes the blocks",
+      "choiceHint": "Enter adds an option. A single option becomes a plain word.",
+      "change": "Change the block",
+      "makeOptional": "May be left out",
+      "makeRequired": "Always said",
+      "makeChoice": "Make it \"one of\"",
+      "makeWords": "Make it plain words"
+    }
   }
 }

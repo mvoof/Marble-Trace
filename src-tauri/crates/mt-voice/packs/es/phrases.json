@@ -1,0 +1,127 @@
+{
+  "format": 1,
+  "language": "es",
+  "phrases": {
+    "engineer.ack.fuel": [
+      { "text": "Recibido, {liters, plural, one {# litro} other {# litros}}" },
+      { "text": "{liters, plural, one {# litro} other {# litros}}, entendido" }
+    ],
+    "engineer.ack.fuelToFinish": [
+      {
+        "text": "Combustible hasta el final, {liters, plural, one {# litro} other {# litros}}"
+      }
+    ],
+    "engineer.ack.clearFuel": [{ "text": "Recibido, sin combustible" }],
+    "engineer.ack.tires": [
+      { "text": "Recibido, cambiamos {corners}" },
+      { "text": "Cambiamos {corners}" }
+    ],
+    "engineer.ack.clearTires": [{ "text": "Recibido, sin ruedas" }],
+    "engineer.ack.compound": [{ "text": "Recibido, neumáticos {compound}" }],
+    "engineer.ack.fastRepair": [{ "text": "Reparación rápida, recibido" }],
+    "engineer.ack.clearFastRepair": [{ "text": "Sin reparación rápida" }],
+    "engineer.ack.windshield": [{ "text": "Limpiamos el parabrisas" }],
+    "engineer.ack.clearWindshield": [{ "text": "No tocamos el parabrisas" }],
+    "engineer.ack.clearAll": [
+      { "text": "Pedido borrado" },
+      { "text": "Recibido, todo cancelado" }
+    ],
+    "engineer.ack.applyPlanned": [
+      {
+        "text": "Según el plan: {liters, plural, one {# litro} other {# litros}} y cuatro ruedas"
+      }
+    ],
+    "engineer.answer.fuel": [
+      {
+        "text": "{liters, plural, one {# litro} other {# litros}} de combustible, para {laps, plural, one {# vuelta} other {# vueltas}}"
+      },
+      {
+        "text": "Combustible para {laps, plural, one {# vuelta} other {# vueltas}}"
+      }
+    ],
+    "engineer.answer.gapAhead": [
+      {
+        "text": "El de delante a {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.gapBehind": [
+      {
+        "text": "El de atrás a {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.noCarAhead": [{ "text": "No hay nadie delante" }],
+    "engineer.answer.noCarBehind": [{ "text": "No hay nadie detrás" }],
+    "engineer.answer.position": [
+      { "text": "Vas P{position}" },
+      { "text": "Posición {position}" }
+    ],
+    "engineer.answer.lapsLeft": [
+      {
+        "text": "{laps, plural, one {Queda # vuelta} other {Quedan # vueltas}}"
+      }
+    ],
+    "engineer.answer.timeLeft": [
+      {
+        "text": "{minutes, plural, one {Queda # minuto} other {Quedan # minutos}}"
+      }
+    ],
+    "engineer.answer.lastLap": [
+      { "text": "Última vuelta {minutes} {seconds}" }
+    ],
+    "engineer.answer.bestLap": [{ "text": "Mejor vuelta {minutes} {seconds}" }],
+    "engineer.answer.noLapTime": [
+      { "text": "Todavía no hay tiempo de vuelta" }
+    ],
+    "engineer.answer.pitOrder": [
+      {
+        "text": "En esta parada: {liters, plural, =0 {sin combustible} one {# litro} other {# litros}}, {tires, plural, =0 {sin ruedas} one {# rueda} other {# ruedas}}"
+      }
+    ],
+    "engineer.answer.pitOrderEmpty": [{ "text": "No hay nada pedido" }],
+    "engineer.answer.weather": [
+      {
+        "text": "Aire {airTemp, plural, one {# grado} other {# grados}}, pista {trackTemp, plural, one {# grado} other {# grados}}"
+      },
+      { "text": "Seco. Aire {airTemp}, pista {trackTemp}" }
+    ],
+    "engineer.answer.weatherRain": [
+      {
+        "text": "Lluvia al {rain} por ciento. Aire {airTemp}, pista {trackTemp}"
+      }
+    ],
+    "engineer.answer.carPosition": [
+      { "text": "El coche {car} va P{position} en su clase" }
+    ],
+    "engineer.answer.carLastLap": [
+      { "text": "Coche {car}, última vuelta {minutes} {seconds}" }
+    ],
+    "engineer.answer.carBestLap": [
+      { "text": "Coche {car}, mejor vuelta {minutes} {seconds}" }
+    ],
+    "engineer.answer.carNoLapTime": [
+      { "text": "El coche {car} todavía no tiene tiempo de vuelta" }
+    ],
+    "engineer.answer.noSuchCar": [
+      { "text": "No hay ningún coche {car} en la sesión" }
+    ],
+    "engineer.ask.fuel": [{ "text": "¿Cuántos litros?" }],
+    "engineer.ask.tires": [
+      { "text": "¿Qué ruedas?" },
+      { "text": "¿Qué ruedas cambiamos?" }
+    ],
+    "engineer.ask.compound": [{ "text": "¿Qué compuesto?" }],
+    "engineer.ask.car": [{ "text": "¿Qué número de coche?" }],
+    "engineer.notUnderstood": [
+      { "text": "¿Repite?" },
+      { "text": "No te he entendido" },
+      { "text": "¿Cómo?" }
+    ],
+    "engineer.notInCar": [{ "text": "No estás en el coche" }],
+    "engineer.noData": [
+      { "text": "Todavía no lo sé" },
+      { "text": "Sin datos" }
+    ],
+    "engineer.cannot": [{ "text": "No puedo hacerlo" }],
+    "engineer.nothingToRepeat": [{ "text": "Todavía no he dicho nada" }]
+  }
+}

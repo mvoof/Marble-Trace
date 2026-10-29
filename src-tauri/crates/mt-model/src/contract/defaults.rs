@@ -49,6 +49,34 @@ ts_values! {
     /// Shown for a car whose class the sim reported without a colour.
     pub const DEFAULT_CLASS_COLOR: &str = "#888888" => DEFAULT_CLASS_COLOR;
 
+    /// The intent and reply key of a question the driver wrote into the voice
+    /// pack: `question.<id>`.
+    pub const QUESTION_PREFIX: &str = "question." => VOICE_QUESTION_PREFIX;
+
+    /// What a pack's `defaults` names for an intent the engineer asks to say
+    /// again with its value, rather than taking one.
+    pub const ASK_WHEN_UNSAID: &str = "ask" => VOICE_ASK_WHEN_UNSAID;
+
+    /// A question's reply value read from the sim by the sim's own variable
+    /// name: `{sim.PlayerCarMyIncidentCount}`, a whole number.
+    pub const SIM_VALUE_PREFIX: &str = "sim." => VOICE_SIM_VALUE_PREFIX;
+
+    /// After a sim value's name: the number to a tenth.
+    pub const SIM_SCALE_TENTHS: &str = "tenths" => VOICE_SIM_SCALE_TENTHS;
+
+    /// After a sim value's name: metres per second read as km/h.
+    pub const SIM_SCALE_KMH: &str = "kmh" => VOICE_SIM_SCALE_KMH;
+
+    /// After a sim value's name: a share of one read as a percentage.
+    pub const SIM_SCALE_PERCENT: &str = "percent" => VOICE_SIM_SCALE_PERCENT;
+
+    /// A step of a question that sends one of the sim's chat macros; its
+    /// value is the macro's slot.
+    pub const CHAT_MACRO_ACTION: &str = "chat.macro" => VOICE_CHAT_MACRO_ACTION;
+
+    /// The sim's chat macro slots run from 1 to this.
+    pub const CHAT_MACRO_COUNT: u32 = 15 => VOICE_CHAT_MACRO_COUNT;
+
     /// Distance buckets a reference lap is recorded into: index `i` covers
     /// `lap_dist_pct` in `[i / count, (i+1) / count)`. The coach records the lap
     /// in progress on the same grid to compare the two traces bucket for

@@ -43,6 +43,7 @@
           "https://www.youtube.com"
         ],
         "font-src": "'self'",
+        "media-src": ["'self'", "https://rhasspy.github.io"],
         "connect-src": ["'self'", "http://ipc.localhost"],
         "object-src": "'none'",
         "base-uri": "'self'",
@@ -63,6 +64,7 @@
           "https://www.youtube.com"
         ],
         "font-src": "'self'",
+        "media-src": ["'self'", "https://rhasspy.github.io"],
         "connect-src": [
           "'self'",
           "http://ipc.localhost",

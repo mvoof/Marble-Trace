@@ -190,6 +190,7 @@ npm run perf:build                                         # the measured binary
 npm run perf:game -- mark                                  # remember where the replay stands
 npm run perf:game -- run --name s0 --no-app --rewind --elevate      # game alone
 npm run perf:game -- run --name all-30 --layout perf-all --rate 30 --rewind --elevate
+npm run perf:game -- run --name speak1 --layout race --voice speak --rewind   # voice crew off | idle | speak (a line every 5 s)
 npm run perf:game -- report <capture.csv>...               # summarize saved captures side by side
 npm run perf:game -- changes --tape <your tape> --from 600 --layout perf-all
 npm run perf:game -- heap --seconds 120 --tape <your tape> --from 600

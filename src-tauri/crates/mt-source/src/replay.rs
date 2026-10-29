@@ -232,6 +232,10 @@ impl TelemetrySource for RecordingSource {
         self.inner.raw_values()
     }
 
+    fn read_number(&self, name: &str) -> Option<f64> {
+        self.inner.read_number(name)
+    }
+
     fn pit_commander(&self) -> Option<Box<dyn PitCommander>> {
         self.inner.pit_commander()
     }

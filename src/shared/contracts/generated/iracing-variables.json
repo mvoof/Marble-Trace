@@ -1,0 +1,1290 @@
+[
+  {
+    "name": "AirTemp",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "Temperature of air at start/finish line",
+    "count": 1,
+    "ready": "airTemp"
+  },
+  {
+    "name": "Brake",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "0=brake released to 1=max pedal force",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "BrakeABSactive",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "true if abs is currently reducing brake force pressure",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "CarIdxBestLapTime",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Cars best lap time",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxClassPosition",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Cars class position in race by car index",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxEstTime",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Estimated time to reach current location on track",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxF2Time",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Race time behind leader or fastest lap time otherwise",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxLap",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Laps started by car index",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxLapCompleted",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Laps completed by car index",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxLapDistPct",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "Percentage distance around lap by car index",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxLastLapTime",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Cars last lap time",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxOnPitRoad",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "On pit road between the cones by car index",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxPaceLine",
+    "typeName": "int",
+    "unit": "",
+    "desc": "What line cars are pacing in  or -1 if not pacing",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxPosition",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Cars position in race by car index",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxTireCompound",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Cars current tire compound",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarIdxTrackSurface",
+    "typeName": "int",
+    "unit": "irsdk_TrkLoc",
+    "desc": "Track surface type by car index",
+    "count": 64,
+    "ready": null
+  },
+  {
+    "name": "CarLeftRight",
+    "typeName": "int",
+    "unit": "irsdk_CarLeftRight",
+    "desc": "Notify if car is to the left or right of driver",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "Clutch",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "0=disengaged to 1=fully engaged",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "CpuUsageFG",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "Percent of available time fg thread took with a 1 sec avg",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "DRS_Status",
+    "typeName": "int",
+    "unit": " ",
+    "desc": "Drag Reduction System Status",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "EnergyBatteryToMGU_KLap",
+    "typeName": "float",
+    "unit": "J",
+    "desc": "Electrical energy from battery to MGU-K per lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "EnergyERSBatteryPct",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "Engine ERS battery charge as a percent",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "EngineWarnings",
+    "typeName": "int",
+    "unit": "irsdk_EngineWarnings",
+    "desc": "Bitfield for warning lights",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "FastRepairAvailable",
+    "typeName": "int",
+    "unit": "",
+    "desc": "How many fast repairs left  255 is unlimited",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "FrameRate",
+    "typeName": "float",
+    "unit": "fps",
+    "desc": "Average frames per second",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "FuelLevel",
+    "typeName": "float",
+    "unit": "l",
+    "desc": "Liters of fuel remaining",
+    "count": 1,
+    "ready": "fuel"
+  },
+  {
+    "name": "FuelLevelPct",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "Percent fuel remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "FuelUsePerHour",
+    "typeName": "float",
+    "unit": "kg/h",
+    "desc": "Engine fuel used instantaneous",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "Gear",
+    "typeName": "int",
+    "unit": "",
+    "desc": "-1=reverse  0=neutral  1..n=current gear",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "GpuUsage",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "Percent of available time gpu took with a 1 sec avg",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "IsOnTrack",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "1=Car on track physics running with player in car",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LFcoldPressure",
+    "typeName": "float",
+    "unit": "kPa",
+    "desc": "LF tire cold pressure  as set in the garage",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LFshockDefl",
+    "typeName": "float",
+    "unit": "m",
+    "desc": "LF shock deflection",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LFtempCL",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "LF tire left carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LFtempCM",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "LF tire middle carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LFtempCR",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "LF tire right carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LFwearL",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "LF tire left percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LFwearM",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "LF tire middle percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LFwearR",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "LF tire right percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LRcoldPressure",
+    "typeName": "float",
+    "unit": "kPa",
+    "desc": "LR tire cold pressure  as set in the garage",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LRshockDefl",
+    "typeName": "float",
+    "unit": "m",
+    "desc": "LR shock deflection",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LRtempCL",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "LR tire left carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LRtempCM",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "LR tire middle carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LRtempCR",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "LR tire right carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LRwearL",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "LR tire left percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LRwearM",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "LR tire middle percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LRwearR",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "LR tire right percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "Lap",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Laps started count",
+    "count": 1,
+    "ready": "lap"
+  },
+  {
+    "name": "LapBestLapTime",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Players best lap time",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapCurrentLapTime",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Estimate of players current lap time as shown in F3 box",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToBestLap",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Delta time for best lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToBestLap_DD",
+    "typeName": "float",
+    "unit": "s/s",
+    "desc": "Rate of change of delta time for best lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToBestLap_OK",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "Delta time for best lap is valid",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToOptimalLap",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Delta time for optimal lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToOptimalLap_DD",
+    "typeName": "float",
+    "unit": "s/s",
+    "desc": "Rate of change of delta time for optimal lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToOptimalLap_OK",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "Delta time for optimal lap is valid",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToSessionBestLap",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Delta time for session best lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToSessionBestLap_DD",
+    "typeName": "float",
+    "unit": "s/s",
+    "desc": "Rate of change of delta time for session best lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToSessionBestLap_OK",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "Delta time for session best lap is valid",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToSessionLastlLap",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Delta time for session last lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToSessionLastlLap_DD",
+    "typeName": "float",
+    "unit": "s/s",
+    "desc": "Rate of change of delta time for session last lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToSessionLastlLap_OK",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "Delta time for session last lap is valid",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToSessionOptimalLap",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Delta time for session optimal lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToSessionOptimalLap_DD",
+    "typeName": "float",
+    "unit": "s/s",
+    "desc": "Rate of change of delta time for session optimal lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDeltaToSessionOptimalLap_OK",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "Delta time for session optimal lap is valid",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDist",
+    "typeName": "float",
+    "unit": "m",
+    "desc": "Meters traveled from S/F this lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapDistPct",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "Percentage distance around lap",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LapLastLapTime",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Players last lap time",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LatAccel",
+    "typeName": "float",
+    "unit": "m/s^2",
+    "desc": "Lateral acceleration (including gravity)",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "LongAccel",
+    "typeName": "float",
+    "unit": "m/s^2",
+    "desc": "Longitudinal acceleration (including gravity)",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "OilPress",
+    "typeName": "float",
+    "unit": "bar",
+    "desc": "Engine oil pressure",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "OilTemp",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "Engine oil temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "OnPitRoad",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "Is the player car on pit road between the cones",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PaceMode",
+    "typeName": "int",
+    "unit": "irsdk_PaceMode",
+    "desc": "Are we pacing or not",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PitOptRepairLeft",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Time left for optional repairs if repairs are active",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PitRepairLeft",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Time left for mandatory pit repairs if repairs are active",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PitSvFlags",
+    "typeName": "int",
+    "unit": "irsdk_PitSvFlags",
+    "desc": "Bitfield of pit service checkboxes",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PitSvFuel",
+    "typeName": "float",
+    "unit": "l or kWh",
+    "desc": "Pit service fuel add amount",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PitSvLFP",
+    "typeName": "float",
+    "unit": "kPa",
+    "desc": "Pit service left front tire pressure",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PitSvLRP",
+    "typeName": "float",
+    "unit": "kPa",
+    "desc": "Pit service left rear tire pressure",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PitSvRFP",
+    "typeName": "float",
+    "unit": "kPa",
+    "desc": "Pit service right front tire pressure",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PitSvRRP",
+    "typeName": "float",
+    "unit": "kPa",
+    "desc": "Pit service right rear tire pressure",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PitSvTireCompound",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Pit service pending tire compound",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "Pitch",
+    "typeName": "float",
+    "unit": "rad",
+    "desc": "Pitch orientation",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PitstopActive",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "Is the player getting pit stop service",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PlayerCarClassPosition",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Players class position in race",
+    "count": 1,
+    "ready": "position"
+  },
+  {
+    "name": "PlayerCarIdx",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Players carIdx",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PlayerCarInPitStall",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "Players car is properly in their pitstall",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PlayerCarMyIncidentCount",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Players own incident count for this session",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PlayerCarPitSvStatus",
+    "typeName": "int",
+    "unit": "irsdk_PitSvStatus",
+    "desc": "Players car pit service status bits",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PlayerCarPosition",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Players position in race",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PlayerCarSLBlinkRPM",
+    "typeName": "float",
+    "unit": "revs/min",
+    "desc": "Shift light blink rpm",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PlayerCarSLShiftRPM",
+    "typeName": "float",
+    "unit": "revs/min",
+    "desc": "Shift light shift rpm",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PlayerCarTeamIncidentCount",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Players team incident count for this session",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PlayerCarTowTime",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Players car is being towed if time is greater than zero",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PlayerFastRepairsUsed",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Players car number of fast repairs used",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "PowerMGU_K",
+    "typeName": "float",
+    "unit": "W",
+    "desc": "Engine MGU-K mechanical power",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "Precipitation",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "Precipitation at start/finish line",
+    "count": 1,
+    "ready": "rain"
+  },
+  {
+    "name": "PushToTalk",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "Push to talk button state",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RFcoldPressure",
+    "typeName": "float",
+    "unit": "kPa",
+    "desc": "RF tire cold pressure  as set in the garage",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RFshockDefl",
+    "typeName": "float",
+    "unit": "m",
+    "desc": "RF shock deflection",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RFtempCL",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "RF tire left carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RFtempCM",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "RF tire middle carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RFtempCR",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "RF tire right carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RFwearL",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "RF tire left percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RFwearM",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "RF tire middle percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RFwearR",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "RF tire right percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RPM",
+    "typeName": "float",
+    "unit": "revs/min",
+    "desc": "Engine rpm",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RRcoldPressure",
+    "typeName": "float",
+    "unit": "kPa",
+    "desc": "RR tire cold pressure  as set in the garage",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RRshockDefl",
+    "typeName": "float",
+    "unit": "m",
+    "desc": "RR shock deflection",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RRtempCL",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "RR tire left carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RRtempCM",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "RR tire middle carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RRtempCR",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "RR tire right carcass temperature",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RRwearL",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "RR tire left percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RRwearM",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "RR tire middle percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RRwearR",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "RR tire right percent tread remaining",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RadioTransmitCarIdx",
+    "typeName": "int",
+    "unit": "",
+    "desc": "The car index of the current person speaking on the radio",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RadioTransmitFrequencyIdx",
+    "typeName": "int",
+    "unit": "",
+    "desc": "The frequency index of the current person speaking on the radio",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RadioTransmitRadioIdx",
+    "typeName": "int",
+    "unit": "",
+    "desc": "The radio index of the current person speaking on the radio",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "RelativeHumidity",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "Relative Humidity at start/finish line",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "Roll",
+    "typeName": "float",
+    "unit": "rad",
+    "desc": "Roll orientation",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "SessionFlags",
+    "typeName": "int",
+    "unit": "irsdk_Flags",
+    "desc": "Session flags",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "SessionLapsRemainEx",
+    "typeName": "int",
+    "unit": "",
+    "desc": "New improved laps left till session ends",
+    "count": 1,
+    "ready": "lapsLeft"
+  },
+  {
+    "name": "SessionNum",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Session number",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "SessionState",
+    "typeName": "int",
+    "unit": "irsdk_SessionState",
+    "desc": "Session state",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "SessionTime",
+    "typeName": "double",
+    "unit": "s",
+    "desc": "Seconds since session start",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "SessionTimeOfDay",
+    "typeName": "float",
+    "unit": "s",
+    "desc": "Time of day in seconds",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "SessionTimeRemain",
+    "typeName": "double",
+    "unit": "s",
+    "desc": "Seconds left till session ends",
+    "count": 1,
+    "ready": "minutesLeft"
+  },
+  {
+    "name": "ShiftGrindRPM",
+    "typeName": "float",
+    "unit": "RPM",
+    "desc": "RPM of shifter grinding noise",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "ShiftIndicatorPct",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "DEPRECATED use DriverCarSLBlinkRPM instead",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "Skies",
+    "typeName": "int",
+    "unit": "",
+    "desc": "Skies (0=clear/1=p cloudy/2=m cloudy/3=overcast)",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "Speed",
+    "typeName": "float",
+    "unit": "m/s",
+    "desc": "GPS vehicle speed",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "SteeringWheelAngle",
+    "typeName": "float",
+    "unit": "rad",
+    "desc": "Steering wheel angle",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "Throttle",
+    "typeName": "float",
+    "unit": "%",
+    "desc": "0=off throttle to 1=full throttle",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "TrackTempCrew",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "Temperature of track measured by crew around track",
+    "count": 1,
+    "ready": "trackTemp"
+  },
+  {
+    "name": "TrackWetness",
+    "typeName": "int",
+    "unit": "irsdk_TrackWetness",
+    "desc": "How wet is the average track surface",
+    "count": 1,
+    "ready": "wetness"
+  },
+  {
+    "name": "VelocityX",
+    "typeName": "float",
+    "unit": "m/s",
+    "desc": "X velocity",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "VelocityY",
+    "typeName": "float",
+    "unit": "m/s",
+    "desc": "Y velocity",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "VelocityZ",
+    "typeName": "float",
+    "unit": "m/s",
+    "desc": "Z velocity",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "Voltage",
+    "typeName": "float",
+    "unit": "V",
+    "desc": "Engine voltage",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "WaterTemp",
+    "typeName": "float",
+    "unit": "C",
+    "desc": "Engine coolant temp",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "WeatherDeclaredWet",
+    "typeName": "bool",
+    "unit": "",
+    "desc": "The steward says rain tires can be used",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "WindDir",
+    "typeName": "float",
+    "unit": "rad",
+    "desc": "Wind direction at start/finish line",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "WindVel",
+    "typeName": "float",
+    "unit": "m/s",
+    "desc": "Wind velocity at start/finish line",
+    "count": 1,
+    "ready": "wind"
+  },
+  {
+    "name": "Yaw",
+    "typeName": "float",
+    "unit": "rad",
+    "desc": "Yaw orientation",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "YawRate",
+    "typeName": "float",
+    "unit": "rad/s",
+    "desc": "Yaw rate",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcABS",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car abs adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcAntiRollFront",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car front anti roll bar adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcAntiRollRear",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car rear anti roll bar adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcBrakeBias",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car brake bias adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcBrakeBiasFine",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car brake bias fine adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcBrakeMisc",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car brake misc adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcDiffEntry",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car diff entry adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcDiffExit",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car diff exit adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcDiffMiddle",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car diff middle adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcEngineBraking",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car engine braking adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcMGUKDeployMode",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car MGU-K deployment mode level adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcPeakBrakeBias",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car peak brake bias adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcThrottleShape",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car throttle shape adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcTractionControl",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car traction control adjustment",
+    "count": 1,
+    "ready": null
+  },
+  {
+    "name": "dcTractionControl2",
+    "typeName": "float",
+    "unit": "",
+    "desc": "In car traction control 2 adjustment",
+    "count": 1,
+    "ready": null
+  }
+]

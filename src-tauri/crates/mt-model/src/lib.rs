@@ -84,4 +84,12 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<computed::track_shape::TrackShapePayload>();
 
     app::chat::register_types(types);
+    types
+        .register::<app::crew::CrewRadioEvent>()
+        .register::<app::crew::VoiceCrewSettings>()
+        .register::<app::voice::VoiceStatus>()
+        .register::<app::voice::VoiceDownloadProgress>()
+        .register::<app::voice::VoicePackView>()
+        .register::<app::voice::VoiceDraftCheck>()
+        .register::<app::voice::VoiceRecognisedView>();
 }

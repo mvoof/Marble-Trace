@@ -2,10 +2,18 @@
   margin-bottom: rem(24);
 }
 
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(12);
+  margin-bottom: rem(12);
+}
+
 .cardTitle {
   color: $sys-text-secondary;
   font-weight: 500;
-  margin-bottom: rem(12);
+  margin: 0;
   font-size: rem(11);
   text-transform: uppercase;
   letter-spacing: 0.1em;
