@@ -4,7 +4,7 @@
 
 import path from 'node:path';
 import process from 'node:process';
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 
 import { processIdsOf } from './powershell.mjs';
@@ -65,17 +65,22 @@ export const capture = async ({ csvPath, seconds, elevate }) => {
     '--stop_existing_session',
     '--v2_metrics',
   ];
-  const result = spawnSync(
-    findPresentMon(),
-    elevate ? ['--restart_as_admin', ...args] : args,
-    {
-      stdio: 'ignore',
-    }
-  );
+  // Awaited, not run synchronously: what runs beside the capture — a voice
+  // speaking on a timer — must keep running during it.
+  const status = await new Promise((resolve, reject) => {
+    const child = spawn(
+      findPresentMon(),
+      elevate ? ['--restart_as_admin', ...args] : args,
+      { stdio: 'ignore' }
+    );
 
-  if (!elevate && result.status !== 0) {
+    child.on('error', reject);
+    child.on('exit', resolve);
+  });
+
+  if (!elevate && status !== 0) {
     throw new Error(
-      `PresentMon exited with ${result.status} — run with --elevate, or join "Performance Log Users"`
+      `PresentMon exited with ${status} — run with --elevate, or join "Performance Log Users"`
     );
   }
 

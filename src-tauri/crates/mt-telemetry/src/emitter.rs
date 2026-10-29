@@ -11,6 +11,7 @@ use std::time::Instant;
 
 use tracing::{info, warn};
 
+use crate::crew::run_crew;
 use crate::delivery::counters::DeliveryCounters;
 use crate::delivery::dispatch::{mirrors, plan, BundleSink, DeliveryGroup, Recipient};
 use crate::delivery::publications::PublicationRegistry;
@@ -21,7 +22,7 @@ use crate::loop_state::LoopState;
 use crate::state::TelemetryServiceState;
 use mt_computations::driving::input_sample::input_sample;
 use mt_computations::field::relative::RelativeFrame;
-use mt_computations::strategy::pit_actions::{self, PitActionInput};
+use mt_computations::strategy::pit_actions::{self, ManualOrder, PitActionInput};
 use mt_computations::strategy::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
 use mt_computations::strategy::pit_target::resolve_pit_target;
 use mt_computations::{
@@ -30,6 +31,7 @@ use mt_computations::{
     strategy::pit_stops, timing::lap_delta, ComputeContext, ComputedOutput, ProcessorCommand,
     TickRate,
 };
+use mt_model::app::crew::CrewSink;
 use mt_model::computed::lap_log::LapLogFrame;
 use mt_model::computed::track_shape::TrackRecordingFrame;
 use mt_model::contract::capabilities::Capabilities;
@@ -39,6 +41,7 @@ use mt_model::contract::telemetry_events::{
     EVENT_DRIVER_ENTRIES, EVENT_INCIDENTS, EVENT_INPUT_SAMPLES, EVENT_LAP_DELTA, EVENT_PROXIMITY,
     EVENT_RELATIVE, EVENT_SAFETY_RATING,
 };
+use mt_model::pit::pit_action::PitAction;
 use mt_model::pit::pit_auto::PitAutoFrame;
 use mt_model::sim::cars::{CarIdxFrame, CarPositionsFrame};
 use mt_model::sim::environment::EnvironmentFrame;
@@ -73,6 +76,8 @@ pub struct EmitContext<'a> {
     /// How orders reach the sim; `None` where they cannot, a replayed tape
     /// among them (`TelemetrySource::pit_commander`).
     pub pit: Option<&'a dyn PitCommander>,
+    /// The voice crew, when the app runs one.
+    pub crew: Option<&'a dyn CrewSink>,
 }
 
 #[derive(Debug, serde::Serialize, Clone, Default)]
@@ -161,6 +166,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         state,
         capabilities,
         pit,
+        crew,
     } = ctx;
 
     let active_mask = service.masks.effective_mask();
@@ -347,6 +353,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     // Every tick, not on a tier: a key pressed is answered within the tick
     // that drains it, against the order the sim reports on that same frame.
     run_pit_actions(frame, session_info, state, pit);
+    run_crew(frame, &bundle, session_info, state, pit, crew);
 
     if due.hz10 {
         bundle.chassis = Some(frame.chassis.clone());
@@ -488,7 +495,16 @@ fn run_pit_actions(
         return;
     }
 
-    let compounds: Vec<i32> = session
+    let compounds = compound_indexes(session);
+
+    for action in std::mem::take(&mut state.pending_pit_actions) {
+        send_manual_action(action, frame, session, &compounds, state, pit);
+    }
+}
+
+/// The session's compound indexes, in the order it lists them.
+pub(crate) fn compound_indexes(session: Option<&SessionSnapshot>) -> Vec<i32> {
+    session
         .map(|session| {
             session
                 .driver_tires
@@ -496,38 +512,49 @@ fn run_pit_actions(
                 .map(|tire| tire.tire_index)
                 .collect()
         })
-        .unwrap_or_default();
+        .unwrap_or_default()
+}
+
+/// Resolves one manual action against this frame and sends it — a key, a
+/// click and a voice command alike. Returns the order and whether it went out.
+pub(crate) fn send_manual_action(
+    action: PitAction,
+    frame: &SourceFrame,
+    session: Option<&SessionSnapshot>,
+    compounds: &[i32],
+    state: &mut LoopState,
+    pit: Option<&dyn PitCommander>,
+) -> (Option<ManualOrder>, bool) {
     let input = PitActionInput {
         service: &frame.pit_service,
         fuel_in_tank_l: frame.car_status.fuel_level,
         fuel_capacity_l: session.and_then(|session| session.fuel_capacity_ltr),
         planned_fuel_l: state.planned_fuel_l,
-        compounds: &compounds,
+        compounds,
         fuel_step_l: state.config.pit_auto.fuel_step_liters,
     };
+    let Some(order) = pit_actions::resolve(action, &input) else {
+        return (None, false);
+    };
 
-    for action in std::mem::take(&mut state.pending_pit_actions) {
-        let Some(order) = pit_actions::resolve(action, &input) else {
-            continue;
-        };
-
-        if let Some(claim) = order.claim {
-            state
-                .pit_auto
-                .command(PitAutoCommand::Claim(claim), &state.config.pit_auto);
-        }
-
-        let Some(pit) = pit else {
-            info!(?action, "pit action not sent: the source takes no orders");
-
-            continue;
-        };
-
-        let result = pit.send_pit_order(&order.requests);
-
-        info!(?action, ok = result.is_ok(), "manual pit order");
-        state.pit_auto.record_send(result.is_ok());
+    if let Some(claim) = order.claim {
+        state
+            .pit_auto
+            .command(PitAutoCommand::Claim(claim), &state.config.pit_auto);
     }
+
+    let Some(pit) = pit else {
+        info!(?action, "pit action not sent: the source takes no orders");
+
+        return (Some(order), false);
+    };
+
+    let result = pit.send_pit_order(&order.requests);
+
+    info!(?action, ok = result.is_ok(), "manual pit order");
+    state.pit_auto.record_send(result.is_ok());
+
+    (Some(order), result.is_ok())
 }
 
 /// The real transport: `emit_to` per window, `emit` for the broadcast and for

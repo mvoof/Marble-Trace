@@ -1,0 +1,554 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(16);
+  margin-bottom: rem(16);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+}
+
+.bodyScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.column {
+  max-width: rem(1120);
+  margin: 0 auto;
+}
+
+.title {
+  font-size: rem(20);
+  font-weight: 600;
+  color: $sys-text-primary;
+  margin: 0;
+}
+
+.alert {
+  margin-bottom: rem(16);
+}
+
+.fieldGroup {
+  padding-bottom: rem(20);
+  margin-bottom: rem(20);
+  border-bottom: 1px solid $sys-border-sub;
+
+  &:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(16);
+}
+
+.fieldTexts {
+  flex: 1;
+  min-width: 0;
+}
+
+.fieldTitle {
+  font-size: rem(14);
+  font-weight: 500;
+  color: $sys-text-primary;
+  margin-bottom: rem(4);
+}
+
+.fieldDesc {
+  font-size: rem(12);
+  color: $sys-text-secondary;
+}
+
+.fieldHint {
+  margin-top: rem(6);
+  font-family: $font-mono;
+  font-size: rem(11);
+  color: $sys-text-muted;
+}
+
+.control {
+  width: rem(260);
+  flex-shrink: 0;
+}
+
+.saveBar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(16);
+  margin-top: rem(16);
+  padding: rem(12) rem(16);
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(8);
+  background: $sys-bg-card;
+  box-shadow: 0 rem(4) rem(16) rgb(0 0 0 / 35%);
+}
+
+.saveBarText {
+  display: flex;
+  align-items: baseline;
+  gap: rem(12);
+  font-size: rem(13);
+  color: $sys-text-primary;
+}
+
+.saveBarEnd {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.radioCheck {
+  display: flex;
+  align-items: center;
+  gap: rem(12);
+  min-width: 0;
+}
+
+.radioCheckResult {
+  display: flex;
+  flex-direction: column;
+  gap: rem(2);
+  min-width: 0;
+  font-size: rem(13);
+}
+
+.radioCheckNote {
+  font-size: rem(11);
+  color: $sys-text-muted;
+}
+
+.radioCheckLine {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(6);
+}
+
+.radioCheckHeard {
+  display: flex;
+  align-items: baseline;
+  gap: rem(8);
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.radioCheckPercent {
+  font-family: $font-mono;
+  font-size: rem(11);
+  color: $sys-text-muted;
+}
+
+.saveBarErrors {
+  font-family: $font-mono;
+  font-size: rem(12);
+  color: $sys-danger;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  flex-wrap: wrap;
+}
+
+.downloadsTabs {
+  margin-bottom: rem(16);
+}
+
+.inlineLink {
+  height: auto;
+  padding: 0;
+  font-size: inherit;
+}
+
+.variableSearch {
+  margin: rem(12) 0 rem(8);
+}
+
+.variableList {
+  display: flex;
+  flex-direction: column;
+  gap: rem(2);
+  max-height: rem(320);
+  overflow-y: auto;
+}
+
+.variableRow {
+  display: flex;
+  flex-direction: column;
+  gap: rem(2);
+  padding: rem(6) rem(8);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: $sys-bg-sidebar;
+  }
+}
+
+.variableRowActive {
+  border-color: $sys-accent;
+}
+
+.variableName {
+  font-family: $font-mono;
+  font-size: rem(12);
+  color: $sys-text-primary;
+}
+
+.variableUnit {
+  color: $sys-text-muted;
+}
+
+.variableReady {
+  color: $sys-accent;
+}
+
+.variableDesc {
+  font-size: rem(11);
+  color: $sys-text-secondary;
+}
+
+.variableRead {
+  margin-top: rem(16);
+}
+
+.componentRow {
+  display: flex;
+  align-items: center;
+  gap: rem(12);
+}
+
+.componentProgress {
+  width: rem(160);
+}
+
+.mono {
+  font-family: $font-mono;
+}
+
+.phraseKey {
+  font-family: $font-mono;
+  font-size: rem(12);
+  color: $sys-text-secondary;
+  margin-bottom: rem(8);
+}
+
+.variantRow {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  margin-bottom: rem(6);
+}
+
+.variantText {
+  flex: 1;
+}
+
+.templates {
+  font-family: $font-mono;
+}
+
+.testResult {
+  margin-top: rem(8);
+  font-family: $font-mono;
+  font-size: rem(12);
+  color: $sys-text-primary;
+}
+
+.testIdle {
+  color: $sys-text-muted;
+}
+
+.phrase {
+  margin-top: rem(16);
+}
+
+.phraseTitle {
+  display: flex;
+  align-items: baseline;
+  gap: rem(8);
+  margin-bottom: rem(6);
+  font-size: rem(13);
+  font-weight: 500;
+  color: $sys-text-primary;
+
+  .phraseKey {
+    margin-bottom: 0;
+    font-size: rem(11);
+    color: $sys-text-muted;
+  }
+}
+
+.variant {
+  margin-bottom: rem(10);
+
+  .variantRow {
+    margin-bottom: rem(2);
+  }
+}
+
+.checkError {
+  margin-top: rem(4);
+  font-family: $font-mono;
+  font-size: rem(11);
+  color: $sys-danger;
+}
+
+.actionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(8);
+}
+
+.actionCard {
+  display: flex;
+  flex-direction: column;
+  gap: rem(20);
+}
+
+.actionSection {
+  padding-top: rem(16);
+  border-top: 1px solid $sys-border-sub;
+
+  > .fieldTitle {
+    margin-bottom: rem(8);
+  }
+}
+
+.slotRow {
+  display: flex;
+  align-items: center;
+  gap: rem(12);
+  margin-top: rem(8);
+}
+
+.slotValue {
+  width: rem(120);
+  flex-shrink: 0;
+  font-size: rem(12);
+  color: $sys-text-secondary;
+}
+
+.blocks {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: rem(4);
+  min-width: 0;
+}
+
+.block {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(2);
+  min-height: rem(26);
+  padding: 0 rem(2);
+  border: 1px solid $sys-border-sub;
+  border-radius: 4px;
+  background: $sys-bg-card;
+
+  &:hover,
+  &:focus-within {
+    border-color: $sys-border-main;
+
+    .blockHandle,
+    .blockTool {
+      opacity: 1;
+    }
+  }
+}
+
+.blockValue {
+  border-color: $sys-accent;
+  color: $sys-accent;
+
+  &:hover,
+  &:focus-within {
+    border-color: $sys-accent;
+  }
+}
+
+.blockChoice {
+  border-color: $sys-border-main;
+}
+
+.blockOptional {
+  border-style: dashed;
+}
+
+.blockDragged {
+  opacity: 0.4;
+}
+
+.blockDropBefore {
+  box-shadow: rem(-3) 0 0 $sys-accent;
+}
+
+.blockDropAfter {
+  box-shadow: rem(3) 0 0 $sys-accent;
+}
+
+.blockHandle {
+  display: flex;
+  align-items: center;
+  color: $sys-text-muted;
+  cursor: grab;
+  opacity: 0;
+  touch-action: none;
+  user-select: none;
+  transition: opacity 0.15s;
+}
+
+.blockTool {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: $sys-text-muted;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+
+  &:hover {
+    color: $sys-text-primary;
+  }
+}
+
+.blockInput {
+  field-sizing: content;
+  min-width: rem(32);
+  padding-inline: rem(2);
+}
+
+.blockInputWide {
+  flex: 1;
+}
+
+.blockChip {
+  padding: 0 rem(4);
+  border: none;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: rem(13);
+  white-space: pre;
+  cursor: pointer;
+}
+
+.slotPopover {
+  display: flex;
+  flex-direction: column;
+  gap: rem(12);
+  width: rem(380);
+}
+
+.slotSettings {
+  display: flex;
+  flex-direction: column;
+  gap: rem(16);
+}
+
+.slotControls {
+  margin-top: rem(8);
+}
+
+.slotsLabel {
+  margin-left: rem(8);
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.choiceOptions {
+  width: 100%;
+}
+
+.variantStatus {
+  padding: 0 rem(4);
+}
+
+.languagePicker {
+  min-width: rem(180);
+}
+
+.stepNumber {
+  width: rem(16);
+  flex-shrink: 0;
+  font-size: rem(12);
+  color: $sys-text-secondary;
+}
+
+.stepValue {
+  width: rem(160);
+  flex-shrink: 0;
+}
+
+.syntaxHelp {
+  display: flex;
+  flex-direction: column;
+  gap: rem(12);
+}
+
+.syntaxRow {
+  display: grid;
+  grid-template-columns: rem(240) 1fr;
+  gap: rem(16);
+  align-items: start;
+}
+
+.syntaxExample {
+  font-family: $font-mono;
+  font-size: rem(12);
+  color: $sys-accent;
+}
+
+.pluralRow {
+  display: flex;
+  align-items: center;
+  gap: rem(12);
+  margin-top: rem(10);
+}
+
+.pluralSample {
+  width: rem(32);
+  flex-shrink: 0;
+  text-align: right;
+  font-family: $font-mono;
+  color: $sys-text-secondary;
+}

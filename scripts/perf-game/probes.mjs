@@ -62,19 +62,19 @@ const connect = (url) =>
     );
   });
 
-const connectToOverlay = async () => {
+const connectToPage = async (urlPart) => {
   for (let attempt = 0; attempt < TARGET_ATTEMPTS; attempt += 1) {
     try {
       const response = await fetch(
         `http://127.0.0.1:${DEBUGGING_PORT}/json/list`
       );
       const targets = await response.json();
-      const overlay = targets.find(
-        (target) => target.type === 'page' && target.url.includes('/overlay')
+      const page = targets.find(
+        (target) => target.type === 'page' && target.url.includes(urlPart)
       );
 
-      if (overlay) {
-        return connect(overlay.webSocketDebuggerUrl);
+      if (page) {
+        return connect(page.webSocketDebuggerUrl);
       }
     } catch {
       // The browser is not listening yet.
@@ -84,9 +84,11 @@ const connectToOverlay = async () => {
   }
 
   throw new Error(
-    'no overlay page on the debugging port — is a widget switched on?'
+    `no ${urlPart} page on the debugging port — is a widget switched on?`
   );
 };
+
+const connectToOverlay = () => connectToPage('/overlay');
 
 const evaluate = async (session, expression) => {
   const result = await session.send('Runtime.evaluate', {
@@ -403,4 +405,47 @@ $rows | ConvertTo-Json -Compress`);
     `app total: ${total('cpuPercentOfCore')} % of one core, ${total('privateMiB')} MiB private, ${total('gpu3dPercent')} % GPU 3D` +
       ' (DWM CPU reads 0 without administrator rights)'
   );
+};
+
+// --- The voice crew speaking -------------------------------------------------
+
+/** A reply the engineer says, read with sample values — synthesis and playback. */
+const SPOKEN_LINE = {
+  language: 'ru',
+  key: 'engineer.answer.fuel',
+  index: 0,
+};
+
+/**
+ * Has the crew say a line every `intervalSeconds` through the settings
+ * window, as a driver asking often would, until the returned function is
+ * called. The voice must be on (`run --voice speak`).
+ */
+export const speakEvery = async (intervalSeconds) => {
+  const session = await connectToPage('/main');
+  let spoken = 0;
+  let failed = 0;
+  const speak = async () => {
+    try {
+      await evaluate(
+        session,
+        `window.__TAURI_INTERNALS__.invoke('preview_voice_line', ${JSON.stringify(SPOKEN_LINE)})`
+      );
+      spoken += 1;
+    } catch {
+      failed += 1;
+    }
+  };
+  const timer = setInterval(
+    () => void speak(),
+    intervalSeconds * MS_PER_SECOND
+  );
+
+  void speak();
+
+  return () => {
+    clearInterval(timer);
+    session.close();
+    console.error(`voice: ${spoken} lines asked, ${failed} failed`);
+  };
 };

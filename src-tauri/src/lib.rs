@@ -10,6 +10,7 @@ mod remote_mirror;
 mod settings_snapshot;
 mod sim;
 mod sink;
+mod voice;
 
 use commands::input::InputState;
 use hotkeys::hotkey_host;
@@ -26,6 +27,7 @@ use mt_telemetry::state::TelemetryState;
 #[cfg(feature = "dev")]
 use perf_run::{spawn_if_requested, PerfRunConfig, PerfRunState};
 use sink::{TauriAssets, TauriSink};
+use voice::VoiceCrewState;
 
 use std::error::Error;
 use std::sync::Arc;
@@ -102,6 +104,9 @@ fn setup(app: &mut App) -> Result<(), Box<dyn Error>> {
     // everything while no browser is connected.
     let remote_state = RemoteState::default();
     remote_mirror::attach(app.handle(), Arc::clone(&remote_state.hub));
+    // Before the hotkeys, whose push-to-talk reaches it; idle until the main
+    // window pushes the crew's settings.
+    app.manage(VoiceCrewState::new(app.handle()));
     let hotkeys = HotkeyRuntime::new(hotkey_host(app.handle(), Arc::clone(&remote_state.hub)));
     app.manage(remote_state);
     // Built here, on the main thread: an `AppHandle` must not be cloned on a

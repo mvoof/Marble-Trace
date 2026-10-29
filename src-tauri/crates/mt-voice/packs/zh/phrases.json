@@ -1,0 +1,82 @@
+{
+  "format": 1,
+  "language": "zh",
+  "phrases": {
+    "engineer.ack.fuel": [
+      { "text": "收到，加{liters}升" },
+      { "text": "{liters}升，明白" }
+    ],
+    "engineer.ack.fuelToFinish": [{ "text": "加油到终点，{liters}升" }],
+    "engineer.ack.clearFuel": [{ "text": "收到，不加油" }],
+    "engineer.ack.tires": [
+      { "text": "收到，换{corners}" },
+      { "text": "换{corners}" }
+    ],
+    "engineer.ack.clearTires": [{ "text": "收到，不换轮胎" }],
+    "engineer.ack.compound": [{ "text": "收到，换{compound}胎" }],
+    "engineer.ack.fastRepair": [{ "text": "快速修理，收到" }],
+    "engineer.ack.clearFastRepair": [{ "text": "不做快速修理" }],
+    "engineer.ack.windshield": [{ "text": "收到，清洁挡风玻璃" }],
+    "engineer.ack.clearWindshield": [{ "text": "不擦玻璃" }],
+    "engineer.ack.clearAll": [
+      { "text": "进站计划已清空" },
+      { "text": "收到，全部取消" }
+    ],
+    "engineer.ack.applyPlanned": [
+      { "text": "按计划：加{liters}升，换四个轮胎" }
+    ],
+    "engineer.answer.fuel": [
+      { "text": "还有{liters}升油，够跑{laps}圈" },
+      { "text": "油够跑{laps}圈" }
+    ],
+    "engineer.answer.gapAhead": [{ "text": "和前车差{gap}秒" }],
+    "engineer.answer.gapBehind": [{ "text": "和后车差{gap}秒" }],
+    "engineer.answer.noCarAhead": [{ "text": "前面没有车" }],
+    "engineer.answer.noCarBehind": [{ "text": "后面没有车" }],
+    "engineer.answer.position": [
+      { "text": "你现在第{position}名" },
+      { "text": "排第{position}名" }
+    ],
+    "engineer.answer.lapsLeft": [{ "text": "还剩{laps}圈" }],
+    "engineer.answer.timeLeft": [{ "text": "还剩{minutes}分钟" }],
+    "engineer.answer.lastLap": [{ "text": "上一圈{minutes}分{seconds}秒" }],
+    "engineer.answer.bestLap": [{ "text": "最快圈{minutes}分{seconds}秒" }],
+    "engineer.answer.noLapTime": [{ "text": "还没有圈速" }],
+    "engineer.answer.pitOrder": [
+      {
+        "text": "这次进站：{liters, plural, =0 {不加油} other {加#升}}，{tires, plural, =0 {不换轮胎} other {换#个轮胎}}"
+      }
+    ],
+    "engineer.answer.pitOrderEmpty": [{ "text": "没有进站计划" }],
+    "engineer.answer.weather": [
+      { "text": "气温{airTemp}度，赛道{trackTemp}度" },
+      { "text": "干燥。气温{airTemp}度，赛道{trackTemp}度" }
+    ],
+    "engineer.answer.weatherRain": [
+      { "text": "雨量百分之{rain}。气温{airTemp}度，赛道{trackTemp}度" }
+    ],
+    "engineer.answer.carPosition": [
+      { "text": "{car}号车在组别里排第{position}名" }
+    ],
+    "engineer.answer.carLastLap": [
+      { "text": "{car}号车，上一圈{minutes}分{seconds}秒" }
+    ],
+    "engineer.answer.carBestLap": [
+      { "text": "{car}号车，最快圈{minutes}分{seconds}秒" }
+    ],
+    "engineer.answer.carNoLapTime": [{ "text": "{car}号车还没有圈速" }],
+    "engineer.answer.noSuchCar": [{ "text": "本场没有{car}号车" }],
+    "engineer.ask.fuel": [{ "text": "加多少升？" }],
+    "engineer.ask.tires": [
+      { "text": "换哪几个轮胎？" },
+      { "text": "哪些轮胎？" }
+    ],
+    "engineer.ask.compound": [{ "text": "换什么胎？" }],
+    "engineer.ask.car": [{ "text": "几号车？" }],
+    "engineer.notUnderstood": [{ "text": "再说一遍？" }, { "text": "没听清" }],
+    "engineer.notInCar": [{ "text": "你不在车里" }],
+    "engineer.noData": [{ "text": "还不知道" }, { "text": "没有数据" }],
+    "engineer.cannot": [{ "text": "做不到" }],
+    "engineer.nothingToRepeat": [{ "text": "我还什么都没说" }]
+  }
+}

@@ -50,6 +50,9 @@ pub trait KeyRegistrar: Send + Sync {
 /// The labels of the overlay windows open right now.
 pub type OverlayLabels = Box<dyn Fn() -> Vec<String> + Send + Sync>;
 
+/// The voice crew's push-to-talk, with whether the key is down.
+pub type PushToTalk = Box<dyn Fn(bool) + Send + Sync>;
+
 /// What the dispatcher needs from the app.
 pub struct HotkeyHost {
     pub sink: Arc<dyn EventSink>,
@@ -57,6 +60,7 @@ pub struct HotkeyHost {
     pub remote: Arc<RemoteHub>,
     pub overlay_labels: OverlayLabels,
     pub keys: Box<dyn KeyRegistrar>,
+    pub push_to_talk: PushToTalk,
 }
 
 #[derive(Default)]
@@ -150,6 +154,7 @@ impl HotkeyRuntime {
                 }
             }
             HotkeyEffect::Settings => self.send_to_main(decl.id.to_string()),
+            HotkeyEffect::PushToTalk => (self.host.push_to_talk)(pressed),
         }
     }
 
@@ -408,12 +413,21 @@ mod tests {
     }
 
     fn runtime(sink: Arc<RecordingSink>, keys: RecordingKeys) -> Arc<HotkeyRuntime> {
+        runtime_with_ptt(sink, keys, Box::new(|_| {}))
+    }
+
+    fn runtime_with_ptt(
+        sink: Arc<RecordingSink>,
+        keys: RecordingKeys,
+        push_to_talk: PushToTalk,
+    ) -> Arc<HotkeyRuntime> {
         HotkeyRuntime::new(HotkeyHost {
             sink,
             telemetry: Arc::default(),
             remote: Arc::default(),
             overlay_labels: Box::new(|| vec!["overlay-1".to_string()]),
             keys: Box::new(keys),
+            push_to_talk,
         })
     }
 
@@ -442,6 +456,30 @@ mod tests {
             *lock_or_recover(&registered),
             BTreeSet::from(["F7".to_string()])
         );
+    }
+
+    #[test]
+    fn push_to_talk_follows_both_edges_of_its_button() {
+        let edges = Arc::new(Mutex::new(Vec::new()));
+        let recorded = Arc::clone(&edges);
+        let hotkeys = runtime_with_ptt(
+            Arc::default(),
+            RecordingKeys::default(),
+            Box::new(move |held| lock_or_recover(&recorded).push(held)),
+        );
+        let button = Binding::Device {
+            device_id: "wheel".to_string(),
+            button: 7,
+        };
+
+        hotkeys.set_bindings(BindingMap::from([(
+            "app:push-to-talk".to_string(),
+            vec![button.clone()],
+        )]));
+        hotkeys.on_binding_edge(&button, true);
+        hotkeys.on_binding_edge(&button, false);
+
+        assert_eq!(*lock_or_recover(&edges), vec![true, false]);
     }
 
     #[test]

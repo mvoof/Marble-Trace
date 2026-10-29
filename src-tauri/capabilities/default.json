@@ -34,6 +34,7 @@
     "opener:allow-open-url",
     "opener:allow-reveal-item-in-dir",
     "dialog:allow-open",
+    "dialog:allow-save",
     "aptabase:allow-track-event"
   ]
 }

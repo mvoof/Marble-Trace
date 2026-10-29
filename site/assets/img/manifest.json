@@ -55,6 +55,20 @@
       }
     ]
   },
+  "assets/widgets/crew-radio.png": {
+    "width": 960,
+    "height": 366,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/crew-radio-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/crew-radio-960.webp"
+      }
+    ]
+  },
   "assets/widgets/delta-best.png": {
     "width": 600,
     "height": 300,

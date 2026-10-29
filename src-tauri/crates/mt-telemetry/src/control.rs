@@ -9,6 +9,7 @@ use std::time::Instant;
 
 use mt_computations::strategy::fuel::FuelSettings;
 use mt_computations::strategy::pit_auto::PitAutoCommand;
+use mt_model::app::crew::CrewIntent;
 use mt_model::contract::defaults::{DEFAULT_CAR_LENGTH_M, DEFAULT_OVERLAY_UPDATE_HZ};
 use mt_model::pit::pit_action::PitAction;
 use mt_model::pit::pit_auto::PitAutoConfig;
@@ -46,7 +47,7 @@ impl Default for TelemetryConfig {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum TelemetryCommand {
     /// The whole config, not the one value that changed: the thread's copy is
     /// then always exactly the one the next run would be started with.
@@ -66,6 +67,12 @@ pub enum TelemetryCommand {
     /// that waited out a stall in the stream be dropped rather than sent late.
     PitAction {
         action: PitAction,
+        issued_at: Instant,
+    },
+    /// What the driver asked the engineer by voice. Answered against the frame
+    /// of the tick that drains it, with the same age limit as a key.
+    Crew {
+        intent: CrewIntent,
         issued_at: Instant,
     },
 }

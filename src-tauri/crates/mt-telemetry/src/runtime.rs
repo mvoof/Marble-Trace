@@ -23,6 +23,7 @@ use crate::io_worker::{IoWorker, SessionUpdate};
 use crate::loop_state::LoopState;
 use crate::state::TelemetryServiceState;
 use mt_computations::ProcessorCommand;
+use mt_model::app::crew::{CrewIntent, CrewSink, SimValue};
 use mt_model::computed::track_shape::TrackShapePayload;
 use mt_model::contract::capabilities::Capabilities;
 use mt_model::contract::capabilities::CapabilitiesPayload;
@@ -51,6 +52,8 @@ pub struct TelemetryHost {
     /// not stored.
     pub data_dir: Option<PathBuf>,
     pub connect: SourceFactory,
+    /// The voice crew's ear on the telemetry thread; `None` runs without one.
+    pub crew: Option<Arc<dyn CrewSink>>,
 }
 
 /// Spawn the dedicated telemetry thread; returns an error if the OS refuses.
@@ -74,6 +77,7 @@ pub fn spawn_telemetry_thread(
                 sink,
                 data_dir,
                 connect,
+                crew,
             } = host;
 
             loop {
@@ -111,6 +115,7 @@ pub fn spawn_telemetry_thread(
                     commands: &commands,
                     capabilities,
                     data_dir: data_dir.clone(),
+                    crew: crew.clone(),
                 };
 
                 run_telemetry_loop(&sink, source.as_mut(), &service, &mut state, session);
@@ -166,6 +171,7 @@ struct LoopSession<'a> {
     commands: &'a Receiver<TelemetryCommand>,
     capabilities: Capabilities,
     data_dir: Option<PathBuf>,
+    crew: Option<Arc<dyn CrewSink>>,
 }
 
 fn run_telemetry_loop(
@@ -286,6 +292,8 @@ fn run_telemetry_loop(
             service.publish_inspector_raw_values(source.raw_values());
         }
 
+        read_sim_values(source, &mut state.pending_crew);
+
         let ctx = EmitContext {
             sink: sink.as_ref(),
             io: &io,
@@ -295,6 +303,7 @@ fn run_telemetry_loop(
             state,
             capabilities: session.capabilities,
             pit: pit.as_deref(),
+            crew: session.crew.as_deref(),
         };
 
         #[cfg(feature = "dev")]
@@ -307,6 +316,24 @@ fn run_telemetry_loop(
 
         #[cfg(not(feature = "dev"))]
         emit_domain_frames(ctx);
+    }
+}
+
+/// The sim's own variables a pending question's replies name, read now: only
+/// the source can reach them, and only when the driver asked.
+fn read_sim_values(source: &dyn TelemetrySource, pending: &mut [CrewIntent]) {
+    for intent in pending {
+        let CrewIntent::Question { sim, .. } = intent else {
+            continue;
+        };
+
+        for read in sim {
+            read.value = SimValue::parse(&read.name).and_then(|value| {
+                source
+                    .read_number(&value.variable)
+                    .map(|raw| value.read(raw))
+            });
+        }
     }
 }
 

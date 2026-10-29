@@ -1,0 +1,1287 @@
+{
+  "format": 1,
+  "components": [
+    {
+      "id": "piper-engine",
+      "kind": "ttsEngine",
+      "title": "Piper 2023.11.14-2",
+      "license": "MIT; espeak-ng GPL-3.0",
+      "licenseUrl": "https://github.com/rhasspy/piper/blob/master/LICENSE.md",
+      "recommended": true,
+      "files": [
+        {
+          "name": "piper_windows_amd64.zip",
+          "url": "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip",
+          "sha256": "f3c58906402b24f3a96d92145f58acba6d86c9b5db896d207f78dc80811efcea",
+          "size": 22477236,
+          "unpack": "zip"
+        }
+      ]
+    },
+    {
+      "id": "vosk-engine",
+      "kind": "sttEngine",
+      "title": "Vosk 0.3.45",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://github.com/alphacep/vosk-api/blob/master/COPYING",
+      "recommended": true,
+      "files": [
+        {
+          "name": "vosk-win64-0.3.45.zip",
+          "url": "https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-win64-0.3.45.zip",
+          "sha256": "f1dcc9cca460630f81ea8f71794f69c80bed6556d2a4e6237b5785e1d2dff34b",
+          "size": 14882445,
+          "unpack": "zip"
+        }
+      ]
+    },
+    {
+      "id": "vosk-model-small-ru",
+      "kind": "sttModel",
+      "language": "ru",
+      "title": "Vosk small ru 0.22",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://alphacephei.com/vosk/models",
+      "recommended": true,
+      "files": [
+        {
+          "name": "vosk-model-small-ru-0.22.zip",
+          "url": "https://alphacephei.com/vosk/models/vosk-model-small-ru-0.22.zip",
+          "sha256": "961d5ff98a17f4aa6de69864d0aa71fa5bac682301d2b5d17a3f24c5c99a46d4",
+          "size": 46236750,
+          "unpack": "zip"
+        }
+      ]
+    },
+    {
+      "id": "vosk-model-small-en",
+      "kind": "sttModel",
+      "language": "en",
+      "title": "Vosk small en-us 0.15",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://alphacephei.com/vosk/models",
+      "recommended": true,
+      "files": [
+        {
+          "name": "vosk-model-small-en-us-0.15.zip",
+          "url": "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip",
+          "sha256": "30f26242c4eb449f948e42cb302dd7a686cb29a3423a8367f99ff41780942498",
+          "size": 41205931,
+          "unpack": "zip"
+        }
+      ]
+    },
+    {
+      "id": "vosk-model-small-es",
+      "kind": "sttModel",
+      "language": "es",
+      "title": "Vosk small es 0.42",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://alphacephei.com/vosk/models",
+      "recommended": true,
+      "files": [
+        {
+          "name": "vosk-model-small-es-0.42.zip",
+          "url": "https://alphacephei.com/vosk/models/vosk-model-small-es-0.42.zip",
+          "sha256": "09b239888f633ef2f0b4e09736e3d9936acfd810bc65d53fad45261762c6511f",
+          "size": 39817833,
+          "unpack": "zip"
+        }
+      ]
+    },
+    {
+      "id": "vosk-model-small-zh",
+      "kind": "sttModel",
+      "language": "zh",
+      "title": "Vosk small cn 0.22",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://alphacephei.com/vosk/models",
+      "recommended": true,
+      "files": [
+        {
+          "name": "vosk-model-small-cn-0.22.zip",
+          "url": "https://alphacephei.com/vosk/models/vosk-model-small-cn-0.22.zip",
+          "sha256": "3af8b0e7e0f835ae9d414ce5df580237a3cfb08d586c9fbbb0f7ff29ad5b14ba",
+          "size": 43898754,
+          "unpack": "zip"
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-ru-denis",
+      "kind": "ttsVoice",
+      "language": "ru",
+      "title": "Denis (ru_RU, medium)",
+      "license": "CC0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/denis/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/ru/ru_RU/denis/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "ru_RU-denis-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/denis/medium/ru_RU-denis-medium.onnx",
+          "sha256": "15fab56e11a097858ee115545d0f697fc2a316c41a291a5362349fb870411b0a",
+          "size": 63201294
+        },
+        {
+          "name": "ru_RU-denis-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/denis/medium/ru_RU-denis-medium.onnx.json",
+          "sha256": "831c860dac0b5073eaa81610a0a638ec23d90a6cf8e5f871b4485c2cec3767c8",
+          "size": 4823
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-ru-dmitri",
+      "kind": "ttsVoice",
+      "language": "ru",
+      "title": "Dmitri (ru_RU, medium)",
+      "license": "CC0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/dmitri/medium/MODEL_CARD",
+      "recommended": true,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/ru/ru_RU/dmitri/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "ru_RU-dmitri-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/dmitri/medium/ru_RU-dmitri-medium.onnx",
+          "sha256": "f073356ebc4bd0f80c5af58df2953a5988bd5bdab1eb38635ce960b071fbefcb",
+          "size": 63201294
+        },
+        {
+          "name": "ru_RU-dmitri-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/dmitri/medium/ru_RU-dmitri-medium.onnx.json",
+          "sha256": "667ef3117bc642c2892dff7690d8bdc8ca4228aeaa783b2dc1416df632855e0d",
+          "size": 4824
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-ru-ru-irina-medium",
+      "kind": "ttsVoice",
+      "language": "ru",
+      "title": "Irina (ru_RU, medium)",
+      "license": "Unknown",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/irina/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/ru/ru_RU/irina/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "ru_RU-irina-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/irina/medium/ru_RU-irina-medium.onnx",
+          "sha256": "8ff38212d23da300bbe3705c645e6e5b9475f0bfde01558eb17813e22acaaaaa",
+          "size": 63201294
+        },
+        {
+          "name": "ru_RU-irina-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/irina/medium/ru_RU-irina-medium.onnx.json",
+          "sha256": "c2ec28bb38e2b59e93b959b3e40348c1afebbd272f30fed5d41205d08e98a9d7",
+          "size": 4765
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-ru-ru-ruslan-medium",
+      "kind": "ttsVoice",
+      "language": "ru",
+      "title": "Ruslan (ru_RU, medium)",
+      "license": "CC BY-NC-SA 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/ruslan/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/ru/ru_RU/ruslan/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "ru_RU-ruslan-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/ruslan/medium/ru_RU-ruslan-medium.onnx",
+          "sha256": "72a5f88e0b20928064eb45d88e1daa21f8af62d18613580d32cbb4aed48dcf7f",
+          "size": 63201294
+        },
+        {
+          "name": "ru_RU-ruslan-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/ru/ru_RU/ruslan/medium/ru_RU-ruslan-medium.onnx.json",
+          "sha256": "706a4fb17bc304abd07809b552deae615e64dcbffbfbd09854ba37ca59e88117",
+          "size": 4882
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-alan-low",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Alan (en_GB, low)",
+      "license": "See model card",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/alan/low/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/alan/low/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-alan-low.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/alan/low/en_GB-alan-low.onnx",
+          "sha256": "a1f60584620a2bed203de823d08f5abb336fb15f3d6f33f8c341e3e2cabf5dde",
+          "size": 63104526
+        },
+        {
+          "name": "en_GB-alan-low.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/alan/low/en_GB-alan-low.onnx.json",
+          "sha256": "c8164cc04b6ce102c651ce4a1e788e8429fa638501fca0723860718d4b44637e",
+          "size": 4170
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-alan-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Alan (en_GB, medium)",
+      "license": "See model card",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/alan/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/alan/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-alan-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/alan/medium/en_GB-alan-medium.onnx",
+          "sha256": "0a309668932205e762801f1efc2736cd4b0120329622adf62be09e56339d3330",
+          "size": 63201294
+        },
+        {
+          "name": "en_GB-alan-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/alan/medium/en_GB-alan-medium.onnx.json",
+          "sha256": "c0f0d124e5895c00e7c03b35dcc8287f319a6998a365b182deb5c8e752ee8c1e",
+          "size": 4888
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-alba-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Alba (en_GB, medium)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/alba/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/alba/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-alba-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/alba/medium/en_GB-alba-medium.onnx",
+          "sha256": "401369c4a81d09fdd86c32c5c864440811dbdcc66466cde2d64f7133a66ad03b",
+          "size": 63201294
+        },
+        {
+          "name": "en_GB-alba-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/alba/medium/en_GB-alba-medium.onnx.json",
+          "sha256": "aa965a2f02ecced632c2694e1fc72bbff6d65f265fab567ca945918c73dd89f4",
+          "size": 4888
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-aru-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Aru (en_GB, medium)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/aru/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/aru/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-aru-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/aru/medium/en_GB-aru-medium.onnx",
+          "sha256": "9e74d089a8563f8b2446426d01becb046cd3c3bfbafe1a20fd03a9a79bd82619",
+          "size": 76754097
+        },
+        {
+          "name": "en_GB-aru-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/aru/medium/en_GB-aru-medium.onnx.json",
+          "sha256": "00529fabf0e79f29a9cb10fda5b60f9b7cf80671faac2b316e13af20e7816d5e",
+          "size": 5048
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-cori-high",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Cori (en_GB, high)",
+      "license": "Public domain",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/cori/high/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/cori/high/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-cori-high.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/cori/high/en_GB-cori-high.onnx",
+          "sha256": "470b4dd634c98f8a4850d7626ffc3dfc90774628eeef6605a6dd8f88f30a5903",
+          "size": 114219352
+        },
+        {
+          "name": "en_GB-cori-high.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/cori/high/en_GB-cori-high.onnx.json",
+          "sha256": "9e7fb5b5671612c22f3c81cbe46c1ae87b031a4632bcb509e499dad6f1e2adec",
+          "size": 4963
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-cori-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Cori (en_GB, medium)",
+      "license": "Public domain",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/cori/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/cori/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-cori-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/cori/medium/en_GB-cori-medium.onnx",
+          "sha256": "1899f98e5fb8310154f3c2973f4b8a929ba7245e722b3d3a85680b833d95f10d",
+          "size": 63531379
+        },
+        {
+          "name": "en_GB-cori-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/cori/medium/en_GB-cori-medium.onnx.json",
+          "sha256": "e262c16d7f192f69d4edd6b4ef8a5915379e67495fcc402f1ab15eeb33da3d36",
+          "size": 4966
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-jenny-dioco-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Jenny Dioco (en_GB, medium)",
+      "license": "See model card",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/jenny_dioco/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/jenny_dioco/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-jenny_dioco-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/jenny_dioco/medium/en_GB-jenny_dioco-medium.onnx",
+          "sha256": "469c630d209e139dd392a66bf4abde4ab86390a0269c1e47b4e5d7ce81526b01",
+          "size": 63201294
+        },
+        {
+          "name": "en_GB-jenny_dioco-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/jenny_dioco/medium/en_GB-jenny_dioco-medium.onnx.json",
+          "sha256": "a9a7a93a317c9a3cb6563e37eb057df9ef09c06188a8a4341b0fcb58cba54dd4",
+          "size": 4895
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-northern-english-male-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Northern English Male (en_GB, medium)",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/northern_english_male/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/northern_english_male/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-northern_english_male-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/northern_english_male/medium/en_GB-northern_english_male-medium.onnx",
+          "sha256": "57a219ae8e638873db7d18893304be5069c42868f392bb95c3ff17f0690d0689",
+          "size": 63201294
+        },
+        {
+          "name": "en_GB-northern_english_male-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/northern_english_male/medium/en_GB-northern_english_male-medium.onnx.json",
+          "sha256": "69557ed3d974463453e9b0c09dd99a7ed0e52b8b87b64b357dbeeb2540a97d47",
+          "size": 4847
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-semaine-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Semaine (en_GB, medium)",
+      "license": "CC BY-NC-SA 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/semaine/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/semaine/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-semaine-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/semaine/medium/en_GB-semaine-medium.onnx",
+          "sha256": "d6dab6f3b92db43ea3f78c7f20dc8eadb47a1f15d8a1c9d451cf3ccd201a2f66",
+          "size": 76737711
+        },
+        {
+          "name": "en_GB-semaine-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/semaine/medium/en_GB-semaine-medium.onnx.json",
+          "sha256": "6425dcb878684043b77d772b173ae006d86a583b110303edda48b8438ecee5ee",
+          "size": 5076
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-southern-english-female-low",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Southern English Female (en_GB, low)",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/southern_english_female/low/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/southern_english_female/low/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-southern_english_female-low.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/southern_english_female/low/en_GB-southern_english_female-low.onnx",
+          "sha256": "f2f37aed1b3a093476f719d1379ba0c0b1b1cf6f1ef99288e2ebf502971a07c3",
+          "size": 63104526
+        },
+        {
+          "name": "en_GB-southern_english_female-low.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/southern_english_female/low/en_GB-southern_english_female-low.onnx.json",
+          "sha256": "a1af43310f8756161506e849a2863d342a98b0853af9e2437581d39e9922d0e5",
+          "size": 4189
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-gb-vctk-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Vctk (en_GB, medium)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/vctk/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_GB/vctk/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_GB-vctk-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/vctk/medium/en_GB-vctk-medium.onnx",
+          "sha256": "4e9fc85ab9009385319fc6bae7f55577f8a2d7ee77fd9159a5500eb6531f41e6",
+          "size": 76952753
+        },
+        {
+          "name": "en_GB-vctk-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_GB/vctk/medium/en_GB-vctk-medium.onnx.json",
+          "sha256": "7f85e6391ed0f7f46e4abd19345929a16be931a0c9945086f96692dce2087fa8",
+          "size": 6637
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-amy-low",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Amy (en_US, low)",
+      "license": "See model card",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/amy/low/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/amy/low/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-amy-low.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/amy/low/en_US-amy-low.onnx",
+          "sha256": "a5a91abb7de0f104358a25aded480ddacf1ff0762886325886ec406a2e86aab3",
+          "size": 63104526
+        },
+        {
+          "name": "en_US-amy-low.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/amy/low/en_US-amy-low.onnx.json",
+          "sha256": "2250a9a605b8dc35a116717fadc5056695dd809e34a15d02f72a0f52d53d3ebb",
+          "size": 4164
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-amy-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Amy (en_US, medium)",
+      "license": "See model card",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/amy/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/amy/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-amy-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/amy/medium/en_US-amy-medium.onnx",
+          "sha256": "b3a6e47b57b8c7fbe6a0ce2518161a50f59a9cdd8a50835c02cb02bdd6206c18",
+          "size": 63201294
+        },
+        {
+          "name": "en_US-amy-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/amy/medium/en_US-amy-medium.onnx.json",
+          "sha256": "95a23eb4d42909d38df73bb9ac7f45f597dbfcde2d1bf9526fdeaf5466977d77",
+          "size": 4882
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-arctic-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Arctic (en_US, medium)",
+      "license": "See model card",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/arctic/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/arctic/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-arctic-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/arctic/medium/en_US-arctic-medium.onnx",
+          "sha256": "483303e294947a3ec2f910ea96093d876e1640f5772e9d89e511d6c82c667286",
+          "size": 76766385
+        },
+        {
+          "name": "en_US-arctic-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/arctic/medium/en_US-arctic-medium.onnx.json",
+          "sha256": "db2ca1a55db01cdd3ce28ae63037ac525133e9e00ca557430dec572643235efe",
+          "size": 5148
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-bryce-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Bryce (en_US, medium)",
+      "license": "Public domain",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/bryce/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/bryce/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-bryce-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/bryce/medium/en_US-bryce-medium.onnx",
+          "sha256": "dc9caa6c313199ffb5ac698b6e542fa6cba388aeaf2731e25262e33b9810aef1",
+          "size": 63531379
+        },
+        {
+          "name": "en_US-bryce-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/bryce/medium/en_US-bryce-medium.onnx.json",
+          "sha256": "7ceb1bc4af6d4e41b6d1edbb86c67e91e01eaa71f66db4cd0ae92ac704d415be",
+          "size": 4966
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-danny-low",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Danny (en_US, low)",
+      "license": "See model card",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/danny/low/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/danny/low/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-danny-low.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/danny/low/en_US-danny-low.onnx",
+          "sha256": "56a9ae9499e961514f060aac2866cb323a21e5989592fc4f208e56fdc323ab64",
+          "size": 63104526
+        },
+        {
+          "name": "en_US-danny-low.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/danny/low/en_US-danny-low.onnx.json",
+          "sha256": "191dea1ba9863199d8ca2e9048f83b219219fb450f62767ee02f1bc4568ce4f4",
+          "size": 4166
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-hfc-female-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Hfc Female (en_US, medium)",
+      "license": "CC BY-NC-SA 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/hfc_female/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/hfc_female/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-hfc_female-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx",
+          "sha256": "914c473788fc1fa8b63ace1cdcdb44588f4ae523d3ab37df1536616835a140b7",
+          "size": 63201294
+        },
+        {
+          "name": "en_US-hfc_female-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json",
+          "sha256": "03f1fa0622b80463283592d97aca9f6e89aec345a5c56b7257723e0093c58b6c",
+          "size": 5033
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-hfc-male-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Hfc Male (en_US, medium)",
+      "license": "CC BY-NC-SA 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/hfc_male/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/hfc_male/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-hfc_male-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx",
+          "sha256": "d11e403a02bdf5a670c877b3dc56e0e1c8cece6fb30289586314dffdc0a78cb0",
+          "size": 63201294
+        },
+        {
+          "name": "en_US-hfc_male-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx.json",
+          "sha256": "f66847424aed0bf99ecbb5d7cfde47c0a906f426a0daf7c46f305e7d21afd886",
+          "size": 5033
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-joe",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Joe (en_US, medium)",
+      "license": "CC0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/joe/medium/MODEL_CARD",
+      "recommended": true,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/joe/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-joe-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/joe/medium/en_US-joe-medium.onnx",
+          "sha256": "58afce0321b8d9c46d7cdf9c16500cc55a793b4220212dba6b70fb788b3baf06",
+          "size": 63201294
+        },
+        {
+          "name": "en_US-joe-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/joe/medium/en_US-joe-medium.onnx.json",
+          "sha256": "3d6d5410b3795cb1950595247ef8f06190719e6fdbfa3a2356d8ec368e1aad33",
+          "size": 4794
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-john",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "John (en_US, medium)",
+      "license": "Public domain",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/john/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/john/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-john-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/john/medium/en_US-john-medium.onnx",
+          "sha256": "789c6c875726e627ddee93d51d8727859abe9c091c3d141591f4b83c2072e988",
+          "size": 63531379
+        },
+        {
+          "name": "en_US-john-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/john/medium/en_US-john-medium.onnx.json",
+          "sha256": "af60f177b6b550f3d7a302720c0fb89e7f94a82b5dca464775ef63b1c69ba09a",
+          "size": 4965
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-kathleen-low",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Kathleen (en_US, low)",
+      "license": "CC0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/kathleen/low/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/kathleen/low/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-kathleen-low.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/kathleen/low/en_US-kathleen-low.onnx",
+          "sha256": "87adf17f5326bc0782282147a8b9788406236245f0f9b0e68dacb651bc1de8b6",
+          "size": 63104526
+        },
+        {
+          "name": "en_US-kathleen-low.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/kathleen/low/en_US-kathleen-low.onnx.json",
+          "sha256": "39ebab88416edce0f63781754651788620cb97b9bb73ddf3c01f28e29a648feb",
+          "size": 4169
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-kristin",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Kristin (en_US, medium)",
+      "license": "Public domain",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/kristin/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/kristin/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-kristin-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/kristin/medium/en_US-kristin-medium.onnx",
+          "sha256": "5849957f929cbf720c258f8458692d6103fff2f0e3d3b19c8259474bb06a18d4",
+          "size": 63531379
+        },
+        {
+          "name": "en_US-kristin-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/kristin/medium/en_US-kristin-medium.onnx.json",
+          "sha256": "5681426d4aead22195de70531eeeeddb46493cfaffc5764b2ea3db73428b651c",
+          "size": 4968
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-kusal-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Kusal (en_US, medium)",
+      "license": "See model card",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/kusal/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/kusal/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-kusal-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/kusal/medium/en_US-kusal-medium.onnx",
+          "sha256": "438ae25bb305b2a7f6d632327d6102df25011f793e8222fa9db876e7321df8f3",
+          "size": 63201294
+        },
+        {
+          "name": "en_US-kusal-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/kusal/medium/en_US-kusal-medium.onnx.json",
+          "sha256": "ddd3c4dfd8b4f568150c934fb94912dd788d44db87f4f0a328c469d7a6761f41",
+          "size": 4884
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-l2arctic-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "L2Arctic (en_US, medium)",
+      "license": "CC BY-NC 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/l2arctic/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/l2arctic/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-l2arctic-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/l2arctic/medium/en_US-l2arctic-medium.onnx",
+          "sha256": "d89f6f124bf1e7735b2179d2141b8001c3e19169d5e743ed6e35624f4c76f044",
+          "size": 76778673
+        },
+        {
+          "name": "en_US-l2arctic-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/l2arctic/medium/en_US-l2arctic-medium.onnx.json",
+          "sha256": "a97e2ba653e9efcdc1bdcec64a398c8beb19ae5e8dfdbfe4ad6841983e56c07c",
+          "size": 5252
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-lessac-high",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Lessac (en_US, high)",
+      "license": "Blizzard 2013 Lessac",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/lessac/high/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/lessac/high/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-lessac-high.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/lessac/high/en_US-lessac-high.onnx",
+          "sha256": "4cabf7c3a638017137f34a1516522032d4fe3f38228a843cc9b764ddcbcd9e09",
+          "size": 113895201
+        },
+        {
+          "name": "en_US-lessac-high.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/lessac/high/en_US-lessac-high.onnx.json",
+          "sha256": "db42b97d9859f257bc1561b8ed980e7fb2398402050a74ddd6cbec931a92412f",
+          "size": 4883
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-lessac-low",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Lessac (en_US, low)",
+      "license": "Blizzard 2013 Lessac",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/lessac/low/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/lessac/low/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-lessac-low.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/lessac/low/en_US-lessac-low.onnx",
+          "sha256": "f7d01dde371555732c4c314111ac79672b1a5ce2fc19266ab42178fd8df7f375",
+          "size": 63201294
+        },
+        {
+          "name": "en_US-lessac-low.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/lessac/low/en_US-lessac-low.onnx.json",
+          "sha256": "45754dfdebb3b8661c3fc564713772deec6e064feeb5b4e9594857dc7305193a",
+          "size": 4882
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-lessac-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Lessac (en_US, medium)",
+      "license": "Blizzard 2013 Lessac",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/lessac/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/lessac/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-lessac-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/lessac/medium/en_US-lessac-medium.onnx",
+          "sha256": "5efe09e69902187827af646e1a6e9d269dee769f9877d17b16b1b46eeaaf019f",
+          "size": 63201294
+        },
+        {
+          "name": "en_US-lessac-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json",
+          "sha256": "efe19c417bed055f2d69908248c6ba650fa135bc868b0e6abb3da181dab690a0",
+          "size": 4885
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-libritts-high",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Libritts (en_US, high)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/libritts/high/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/libritts/high/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-libritts-high.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/libritts/high/en_US-libritts-high.onnx",
+          "sha256": "9127a559e11603f10b366d1a20ac7426826081dbc521de4c2420c57728d73f0f",
+          "size": 136673811
+        },
+        {
+          "name": "en_US-libritts-high.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/libritts/high/en_US-libritts-high.onnx.json",
+          "sha256": "2efdc6d7f954588b8180132cbd9b8001933fdd00932c92bc92fd0d2028a9eb3d",
+          "size": 20163
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-libritts-r-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Libritts R (en_US, medium)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/libritts_r/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/libritts_r/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-libritts_r-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/libritts_r/medium/en_US-libritts_r-medium.onnx",
+          "sha256": "10bb85e071d616fcf4071f369f1799d0491492ab3c5d552ec19fb548fac13195",
+          "size": 78580914
+        },
+        {
+          "name": "en_US-libritts_r-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/libritts_r/medium/en_US-libritts_r-medium.onnx.json",
+          "sha256": "b471dc60d2d8335e819c393d196d6fbf792817f40051257b269878505bc9afb3",
+          "size": 20123
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-ljspeech-high",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Ljspeech (en_US, high)",
+      "license": "Public domain",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ljspeech/high/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/ljspeech/high/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-ljspeech-high.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ljspeech/high/en_US-ljspeech-high.onnx",
+          "sha256": "5d4f08ba6a2a48c44592eed3ce56bf85e9de3dd4e20df90541ae68a8310c029a",
+          "size": 114199011
+        },
+        {
+          "name": "en_US-ljspeech-high.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ljspeech/high/en_US-ljspeech-high.onnx.json",
+          "sha256": "7e1f4634af596d83cca997fb7a931ba80b70f8a316a2655ee69c55365e0ace14",
+          "size": 4970
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-ljspeech-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Ljspeech (en_US, medium)",
+      "license": "Public domain",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ljspeech/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/ljspeech/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-ljspeech-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ljspeech/medium/en_US-ljspeech-medium.onnx",
+          "sha256": "6f52a751e2349abe7a76735eb09dc1875298c77ea2342ffd2fef79ff81b87f22",
+          "size": 63531379
+        },
+        {
+          "name": "en_US-ljspeech-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ljspeech/medium/en_US-ljspeech-medium.onnx.json",
+          "sha256": "141d612cc0a95ed7efc1ca936b845c2364967f2e9217c5dbfcf69fc4d6c65860",
+          "size": 4972
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-mike-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Mike (en_US, medium)",
+      "license": "CC0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/mike/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/mike/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-mike-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/mike/medium/en_US-mike-medium.onnx",
+          "sha256": "3157e69e2c580cab297483f4b301ee975a4590c17d35a9757e33347d0e90fae2",
+          "size": 63221984
+        },
+        {
+          "name": "en_US-mike-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/mike/medium/en_US-mike-medium.onnx.json",
+          "sha256": "0a2538c0b1e06a6cab7c46b97c79abd5e6a34a6c05b74b9376874c7099d81dad",
+          "size": 5439
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-norman-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Norman (en_US, medium)",
+      "license": "Public domain",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/norman/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/norman/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-norman-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/norman/medium/en_US-norman-medium.onnx",
+          "sha256": "b9739443232a80a59c7d18810dd856899bf16a7964725f5ab81ea49b1351cb71",
+          "size": 63531379
+        },
+        {
+          "name": "en_US-norman-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/norman/medium/en_US-norman-medium.onnx.json",
+          "sha256": "6c2db7f558a4a8deb9fe822583c1c5105f6c4e834dd0f9de8ad17a888ee9fe1d",
+          "size": 4968
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-reza-ibrahim-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Reza Ibrahim (en_US, medium)",
+      "license": "CC0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/reza_ibrahim/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/reza_ibrahim/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-reza_ibrahim-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/reza_ibrahim/medium/en_US-reza_ibrahim-medium.onnx",
+          "sha256": "99f0c31464a2120831ca87d079e10a9a2b3e426cc1ee662d80ff9042df15cd3c",
+          "size": 63511038
+        },
+        {
+          "name": "en_US-reza_ibrahim-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/reza_ibrahim/medium/en_US-reza_ibrahim-medium.onnx.json",
+          "sha256": "465ddf1702917fe617b7d69ed81301d6a2f39f083a754bd1cf6db8955d09a381",
+          "size": 4976
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-ryan-high",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Ryan (en_US, high)",
+      "license": "CC BY-NC-SA 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ryan/high/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/ryan/high/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-ryan-high.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ryan/high/en_US-ryan-high.onnx",
+          "sha256": "b3990d7606e183ec8dbfba70a4607074f162de1a0c412e0180d1ff60bb154eca",
+          "size": 120786792
+        },
+        {
+          "name": "en_US-ryan-high.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ryan/high/en_US-ryan-high.onnx.json",
+          "sha256": "c6d3b98f08315cb4bebf0d49d50fc4ff491b503c64b940cd3d5ca28543b48011",
+          "size": 4166
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-ryan-low",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Ryan (en_US, low)",
+      "license": "CC BY-NC-SA 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ryan/low/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/ryan/low/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-ryan-low.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ryan/low/en_US-ryan-low.onnx",
+          "sha256": "8d21a085cc4c0010f1f3e91d5008c8691277ccfa744eb0d747becd33a3444baf",
+          "size": 63104526
+        },
+        {
+          "name": "en_US-ryan-low.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ryan/low/en_US-ryan-low.onnx.json",
+          "sha256": "b27147e56b0525962609f82f58171f4618cbf17c6fb043d7d724ff28cc4aed60",
+          "size": 4165
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-ryan-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Ryan (en_US, medium)",
+      "license": "CC BY-NC-SA 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ryan/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/ryan/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-ryan-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ryan/medium/en_US-ryan-medium.onnx",
+          "sha256": "abf4c274862564ed647ba0d2c47f8ee7c9b717d27bdad9219100eb310db4047a",
+          "size": 63201294
+        },
+        {
+          "name": "en_US-ryan-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/ryan/medium/en_US-ryan-medium.onnx.json",
+          "sha256": "44034c056cb15681b2ad494307c7f3f2e4499d1253c700c711fa0a4607ffe78d",
+          "size": 4883
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-en-us-sam-medium",
+      "kind": "ttsVoice",
+      "language": "en",
+      "title": "Sam (en_US, medium)",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/sam/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/en/en_US/sam/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "en_US-sam-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/sam/medium/en_US-sam-medium.onnx",
+          "sha256": "56417b3b4afe8ec6bb4cabf06e17d67261fdd5bf334592abcfc80052fba11163",
+          "size": 62950044
+        },
+        {
+          "name": "en_US-sam-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/en/en_US/sam/medium/en_US-sam-medium.onnx.json",
+          "sha256": "8c7fb47f19683b0b81037c5564f9a5ad4699a9da685e0e5da0a72fd3c3f5c1c4",
+          "size": 5040
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-es-es-davefx-medium",
+      "kind": "ttsVoice",
+      "language": "es",
+      "title": "Davefx (es_ES, medium)",
+      "license": "CC0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_ES/davefx/medium/MODEL_CARD",
+      "recommended": true,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/es/es_ES/davefx/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "es_ES-davefx-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx",
+          "sha256": "6658b03b1a6c316ee4c265a9896abc1393353c2d9e1bca7d66c2c442e222a917",
+          "size": 63201294
+        },
+        {
+          "name": "es_ES-davefx-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx.json",
+          "sha256": "0e0dda87c732f6f38771ff274a6380d9252f327dca77aa2963d5fbdf9ec54842",
+          "size": 4817
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-es-es-sharvard-medium",
+      "kind": "ttsVoice",
+      "language": "es",
+      "title": "Sharvard (es_ES, medium)",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_ES/sharvard/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/es/es_ES/sharvard/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "es_ES-sharvard-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx",
+          "sha256": "40febfb1679c69a4505ff311dc136e121e3419a13a290ef264fdf43ddedd0fb1",
+          "size": 76733615
+        },
+        {
+          "name": "es_ES-sharvard-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx.json",
+          "sha256": "7438c9b699c72b0c3388dae1b68d3f364dc66a2150fe554a1c11f03372957b2c",
+          "size": 4903
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-es-es-carlfm-x-low",
+      "kind": "ttsVoice",
+      "language": "es",
+      "title": "Carlfm (es_ES, x_low)",
+      "license": "Public domain",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_ES/carlfm/x_low/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/es/es_ES/carlfm/x_low/speaker_0.mp3",
+      "files": [
+        {
+          "name": "es_ES-carlfm-x_low.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_ES/carlfm/x_low/es_ES-carlfm-x_low.onnx",
+          "sha256": "d69677323a907cd4963f42b29c20a98b5d6bfa7f3e64df339915e4650c00d125",
+          "size": 28130791
+        },
+        {
+          "name": "es_ES-carlfm-x_low.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_ES/carlfm/x_low/es_ES-carlfm-x_low.onnx.json",
+          "sha256": "d9bdfa9ff01eb2bc9e62e7d2593939d1e4c4d8eb7cf75f972731539d12399966",
+          "size": 4159
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-es-mx-ald-medium",
+      "kind": "ttsVoice",
+      "language": "es",
+      "title": "Ald (es_MX, medium)",
+      "license": "Unlicense",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_MX/ald/medium/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/es/es_MX/ald/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "es_MX-ald-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_MX/ald/medium/es_MX-ald-medium.onnx",
+          "sha256": "019b3803293c93e34a206dd2e53a3889209a514e786fd7144f7b70196c579b63",
+          "size": 63201294
+        },
+        {
+          "name": "es_MX-ald-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_MX/ald/medium/es_MX-ald-medium.onnx.json",
+          "sha256": "5a71498158e04afc8099bfd019c7e87c68eb9d042505a2b1a87e5c1ac2b1a61d",
+          "size": 4878
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-es-mx-claude-high",
+      "kind": "ttsVoice",
+      "language": "es",
+      "title": "Claude (es_MX, high)",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_MX/claude/high/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/es/es_MX/claude/high/speaker_0.mp3",
+      "files": [
+        {
+          "name": "es_MX-claude-high.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_MX/claude/high/es_MX-claude-high.onnx",
+          "sha256": "3ef40a71ea63852cd8ab7e6fa7d2ecdcfa67a0b47c9c48e3f10e02ee02083ea0",
+          "size": 63122309
+        },
+        {
+          "name": "es_MX-claude-high.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/es/es_MX/claude/high/es_MX-claude-high.onnx.json",
+          "sha256": "1afc81f703c0e4cb3b4d7c0dca096b8b54a98806807f0170cf5eb5557723c12d",
+          "size": 4963
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-zh-cn-huayan-medium",
+      "kind": "ttsVoice",
+      "language": "zh",
+      "title": "Huayan (zh_CN, medium)",
+      "license": "Unknown",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/zh/zh_CN/huayan/medium/MODEL_CARD",
+      "recommended": true,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/zh/zh_CN/huayan/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "zh_CN-huayan-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/zh/zh_CN/huayan/medium/zh_CN-huayan-medium.onnx",
+          "sha256": "9929917bf8cabb26fd528ea44d3a6699c11e87317a14765312420be230be0f3d",
+          "size": 63201294
+        },
+        {
+          "name": "zh_CN-huayan-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/zh/zh_CN/huayan/medium/zh_CN-huayan-medium.onnx.json",
+          "sha256": "d521dc45504a8ccc99e325822b35946dd701840bfb07e3dbb31a40929ed6a82b",
+          "size": 4822
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-zh-cn-huayan-x-low",
+      "kind": "ttsVoice",
+      "language": "zh",
+      "title": "Huayan (zh_CN, x_low)",
+      "license": "Unknown",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/zh/zh_CN/huayan/x_low/MODEL_CARD",
+      "recommended": false,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/zh/zh_CN/huayan/x_low/speaker_0.mp3",
+      "files": [
+        {
+          "name": "zh_CN-huayan-x_low.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/zh/zh_CN/huayan/x_low/zh_CN-huayan-x_low.onnx",
+          "sha256": "d30b143fac66d821a1285aa013295adf5cd129d3cc11d70334e51c7b20662c37",
+          "size": 20628813
+        },
+        {
+          "name": "zh_CN-huayan-x_low.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/5041a7a49ae5b3a0f30e6837769eb03fdbb231bd/zh/zh_CN/huayan/x_low/zh_CN-huayan-x_low.onnx.json",
+          "sha256": "5521dcb09adf68a9bee289032f7f5af18d29bff020953429b5d223ec1f881816",
+          "size": 4164
+        }
+      ]
+    }
+  ]
+}

@@ -17,6 +17,7 @@ pub mod remote;
 pub mod settings;
 pub mod telemetry;
 pub mod track;
+pub mod voice;
 
 use tauri::ipc::Invoke;
 use tauri::{generate_handler, Wry};
@@ -25,6 +26,25 @@ use tauri::{generate_handler, Wry};
 /// and to this list, nowhere else.
 pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static {
     generate_handler![
+        voice::configure_voice_crew,
+        voice::voice_status,
+        voice::move_voice_folder,
+        voice::install_voice_component,
+        voice::cancel_voice_download,
+        voice::import_voice_files,
+        voice::import_custom_voice,
+        voice::import_custom_voice_folder,
+        voice::remove_custom_voice,
+        voice::remove_voice_component,
+        voice::voice_pack,
+        voice::save_voice_pack,
+        voice::check_voice_draft,
+        voice::recognise_voice_sentence,
+        voice::generate_voice_lines,
+        voice::preview_voice_line,
+        voice::voice_test_ptt,
+        voice::export_voice_pack,
+        voice::import_voice_pack,
         remote::start_remote_server,
         remote::stop_remote_server,
         remote::get_remote_server_info,

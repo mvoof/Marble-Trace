@@ -92,6 +92,9 @@
     },
     "radio": {
       "description": "Who is talking on the radio: car number, name and channel."
+    },
+    "crew-radio": {
+      "description": "The voice engineer on the radio: what you asked, the reply, ✓ or ✗."
     }
   },
   "settingsPanels": {
@@ -909,6 +912,16 @@
       "showOnRetuneDesc": "Show the new channel for three seconds after you switch, to read where you will be heard.",
       "idleShowsChannel": "Show the channel when idle",
       "idleShowsChannelDesc": "Keep the widget on screen while nobody talks, showing the channel your radio is tuned to."
+    },
+    "crewRadio": {
+      "moduleParameters": "Module parameters",
+      "history": "Lines shown",
+      "history_current": "Current only",
+      "history_recent": "Recent",
+      "historyDesc": "The line being said alone, or the last few, so your question stays above its answer.",
+      "recentCount": "Recent lines",
+      "hideDriverLines": "Hide your lines",
+      "hideDriverLinesDesc": "Show only the engineer. What you said, and the ✓ or ✗ of a command, are left out."
     }
   },
   "streamChat": {

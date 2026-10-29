@@ -12,6 +12,7 @@ use mt_remote::hub::RemoteHub;
 use mt_telemetry::state::TelemetryState;
 
 use crate::sink::TauriSink;
+use crate::voice::VoiceCrewState;
 
 struct GlobalShortcutKeys(AppHandle);
 
@@ -35,6 +36,7 @@ impl KeyRegistrar for GlobalShortcutKeys {
 
 pub fn hotkey_host(app: &AppHandle, remote: Arc<RemoteHub>) -> HotkeyHost {
     let windows_app = app.clone();
+    let crew_app = app.clone();
 
     HotkeyHost {
         sink: Arc::new(TauriSink(app.clone())),
@@ -48,5 +50,10 @@ pub fn hotkey_host(app: &AppHandle, remote: Arc<RemoteHub>) -> HotkeyHost {
                 .collect()
         }),
         keys: Box::new(GlobalShortcutKeys(app.clone())),
+        push_to_talk: Box::new(move |held| {
+            if let Some(crew) = crew_app.try_state::<Arc<VoiceCrewState>>() {
+                crew.set_ptt(held);
+            }
+        }),
     }
 }

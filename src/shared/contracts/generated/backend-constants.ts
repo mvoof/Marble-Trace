@@ -53,6 +53,50 @@ export const SOURCE_TICK_HZ = 60;
 export const DEFAULT_CLASS_COLOR = '#888888';
 
 /**
+ * The intent and reply key of a question the driver wrote into the voice
+ * pack: `question.<id>`.
+ */
+export const VOICE_QUESTION_PREFIX = 'question.';
+
+/**
+ * What a pack's `defaults` names for an intent the engineer asks to say
+ * again with its value, rather than taking one.
+ */
+export const VOICE_ASK_WHEN_UNSAID = 'ask';
+
+/**
+ * A question's reply value read from the sim by the sim's own variable
+ * name: `{sim.PlayerCarMyIncidentCount}`, a whole number.
+ */
+export const VOICE_SIM_VALUE_PREFIX = 'sim.';
+
+/**
+ * After a sim value's name: the number to a tenth.
+ */
+export const VOICE_SIM_SCALE_TENTHS = 'tenths';
+
+/**
+ * After a sim value's name: metres per second read as km/h.
+ */
+export const VOICE_SIM_SCALE_KMH = 'kmh';
+
+/**
+ * After a sim value's name: a share of one read as a percentage.
+ */
+export const VOICE_SIM_SCALE_PERCENT = 'percent';
+
+/**
+ * A step of a question that sends one of the sim's chat macros; its
+ * value is the macro's slot.
+ */
+export const VOICE_CHAT_MACRO_ACTION = 'chat.macro';
+
+/**
+ * The sim's chat macro slots run from 1 to this.
+ */
+export const VOICE_CHAT_MACRO_COUNT = 15;
+
+/**
  * Distance buckets a reference lap is recorded into: index `i` covers
  * `lap_dist_pct` in `[i / count, (i+1) / count)`. The coach records the lap
  * in progress on the same grid to compare the two traces bucket for

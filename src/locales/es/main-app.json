@@ -6,6 +6,7 @@
     "sections": {
       "layouts": "Diseños",
       "widgets": "Widgets",
+      "crew": "Equipo",
       "settings": "Ajustes"
     }
   },
@@ -624,6 +625,7 @@
     "actions": {
       "toggleDragMode": "Modo de arrastre",
       "toggleInteractMode": "Modo interacción",
+      "pushToTalk": "Pulsar para hablar (equipo)",
       "toggleHideAllWidgets": "Ocultar todos los widgets",
       "standingsCycleViewMode": "Cambiar el modo de vista (Todos → Agrupado → Cíclico)",
       "standingsClassPrev": "Clase anterior (modo cíclico)",
@@ -661,5 +663,481 @@
     "searchByKeyHint": "Pulsa una tecla o un botón del dispositivo y la lista mostrará a qué está asignado.",
     "searchPressKey": "Pulsa una tecla o un botón del dispositivo…",
     "keyIsFree": "{{key}} no está asignado a nada."
+  },
+  "crewPage": {
+    "title": "Equipo",
+    "sections": {
+      "commands": "Comandos",
+      "voice": "Voz",
+      "downloads": "Descargas",
+      "pack": "Paquete"
+    },
+    "notReady": "La voz necesita sus motores, una voz y un modelo de reconocimiento: ve a Descargas.",
+    "openDownloads": "Abrir Descargas",
+    "packOutdated": "Los cambios sin guardar son del paquete «{{pack}}», pero el equipo ahora habla «{{language}}». Guárdalos o descártalos para abrir el paquete «{{language}}».",
+    "save": "Guardar",
+    "saveBar": {
+      "changes": "Cambios sin guardar",
+      "errors_one": "{{count}} error",
+      "errors_other": "{{count}} errores",
+      "discard": "Descartar",
+      "unvoiced": "Respuestas aún sin voz: {{count}}",
+      "generate": "Generar voz"
+    },
+    "leave": {
+      "title": "Cambios sin guardar",
+      "desc": "Los comandos del equipo tienen cambios sin guardar. ¿Guardarlos antes de salir?",
+      "stay": "Quedarse",
+      "discard": "No guardar"
+    },
+    "check": {
+      "idle": "Mantén pulsado y di una frase, o escríbela en la lista",
+      "listening": "Escuchando…",
+      "draftNote": "también escucha los cambios sin guardar",
+      "voiceOff": "La voz está apagada: actívala en Voz",
+      "silence": "No se oyó nada: revisa el micrófono en Voz",
+      "unknown": "«{{sentence}}»: ningún comando la acepta",
+      "heard": "«{{sentence}}» → {{action}}{{slots}}",
+      "sure": "{{percent}} %",
+      "unsure": "inseguro, {{percent}} %: las órdenes de boxes y los pasos de preguntas no se ejecutarán"
+    },
+    "openFolder": "Abrir carpeta",
+    "downloads": {
+      "tabs": {
+        "recognition": "Reconocimiento",
+        "voices": "Voces",
+        "custom": "Tus voces"
+      },
+      "voicesTitle": "Voces · {{count}}",
+      "languageFilter": {
+        "all": "Todos"
+      },
+      "recommendedTag": "recomendada",
+      "sample": "Escuchar una muestra",
+      "importFolder": "Importar carpeta",
+      "noCustomVoices": "Aún no tienes voces propias",
+      "banner": "La voz necesita un motor y una voz: unos {{size}} MB.",
+      "recommended": "Descargar lo recomendado para tu idioma",
+      "download": "Descargar",
+      "cancel": "Cancelar",
+      "remove": "Eliminar",
+      "importFiles": "Importar desde archivos",
+      "customVoice": "Tu propia voz de Piper",
+      "customVoiceDesc": "Una voz .onnx de Piper con su .onnx.json al lado: un archivo, o todas las voces de una carpeta y sus subcarpetas.",
+      "importVoice": "Importar voz",
+      "folder": "Carpeta de voces",
+      "state": {
+        "installed": "instalado",
+        "outdated": "desactualizado",
+        "missing": "no instalado"
+      },
+      "kind": {
+        "ttsEngine": "Motor de voz",
+        "sttEngine": "Motor de reconocimiento",
+        "ttsVoice": "Voz",
+        "sttModel": "Modelo de reconocimiento"
+      },
+      "changeFolder": "Cambiar carpeta…",
+      "defaultFolder": "Volver a la carpeta predeterminada",
+      "folderDesc": "Las descargas, los paquetes y la caché se mueven juntos a la carpeta elegida, por ejemplo a un disco con más espacio. La nueva carpeta debe estar vacía; la voz se apaga mientras se mueven."
+    },
+    "voice": {
+      "title": "Voz",
+      "enabled": "Ingeniero por voz",
+      "enabledDesc": "Mantén pulsado el botón para hablar (Ajustes → Asignaciones) y pregunta, o da una orden de boxes.",
+      "language": "Idioma",
+      "experimental": "experimental",
+      "languages": {
+        "app": "Igual que la aplicación",
+        "ru": "Ruso",
+        "en": "Inglés",
+        "es": "Español",
+        "zh": "Chino"
+      },
+      "voice": "Voz",
+      "recommendedVoice": "Recomendada",
+      "output": "Dispositivo de salida",
+      "input": "Micrófono",
+      "systemDefault": "Predeterminado del sistema",
+      "volume": "Volumen {{percent}} %",
+      "speed": "Velocidad del habla ×{{speed}}",
+      "confidence": "Umbral de confianza {{percent}} %",
+      "confidenceDesc": "Una orden de boxes oída con menos seguridad que esto no se ejecuta.",
+      "test": "Probar el micrófono",
+      "testDesc": "Mantén pulsado y habla: muestra lo que se oyó y lo que haría, sin hacerlo.",
+      "hold": "Mantén para probar",
+      "testIdle": "Aún no se ha probado nada",
+      "testResult": "Oído «{{text}}» → {{intent}} ({{percent}} %)",
+      "testNotUnderstood": "no entendido"
+    },
+    "phrases": {
+      "desc": "Lo que dice el ingeniero cuando no entiende una frase o un valor no tiene datos.",
+      "play": "Reproducir",
+      "addVariant": "Variante",
+      "removeVariant": "Eliminar variante",
+      "status": {
+        "generated": "generada",
+        "missing": "sin generar",
+        "dynamic": "al responder"
+      },
+      "shared": "Respuestas comunes",
+      "mistake": "Error: {{message}}",
+      "sounds": "Sonará: {{samples}}",
+      "playSaveFirst": "Guarda los cambios para escucharla",
+      "soundsWays_one": "{{count}} forma: {{samples}}",
+      "soundsWays_other": "{{count}} formas, por ejemplo: {{samples}}"
+    },
+    "commands": {
+      "counts": "{{intents}} comandos, {{sentences}} frases",
+      "sentences": "{{count}} frases",
+      "conflict": "«{{sentence}}» pertenece a {{intents}}",
+      "tryShort": "Prueba una frase…",
+      "tryPlaceholder": "Escríbela como la dirías, p. ej. «combustible cuarenta»",
+      "tryButton": "Probar",
+      "groups": {
+        "pit": "Orden de boxes",
+        "query": "Preguntas",
+        "control": "Control del ingeniero"
+      },
+      "broken": "error",
+      "says": "Tú dices",
+      "answers": "El ingeniero responde",
+      "addTemplate": "Frase",
+      "removeTemplate": "Eliminar frase",
+      "unsaidTitle": "Cuando no se dice {{slot}}",
+      "unsaidDesc": "Una frase puede omitir el valor: marca «se puede omitir» en su bloque de valor. Entonces el ingeniero lo pregunta, o toma el valor elegido aquí.",
+      "unsaidAsk": "El ingeniero pregunta",
+      "unsaidNumber": "Este número",
+      "sharedAnswers": "Fuera del coche, o cuando el comando falla, suenan las respuestas comunes: están al final de la lista.",
+      "mistake": "Error: {{message}}",
+      "more": "y {{count}} más",
+      "missingWords": "No están en el vocabulario del modelo de voz: {{words}}. Una frase con ellas nunca se oirá",
+      "vocabularyUnchecked": "Las palabras no se comprueban con el modelo de voz: el equipo está apagado o el modelo de este idioma no está instalado",
+      "slotTitle": "Valor {{slot}}",
+      "slots": {
+        "number": "Un número de 0 a 200, dicho con palabras: «cuarenta», «ciento veinte». Las palabras de los números vienen incluidas.",
+        "tires": "Qué neumáticos. Para cada uno, las palabras con que lo llamas; Enter añade una palabra.",
+        "compound": "El compuesto del neumático. Para cada uno, las palabras con que lo llamas; Enter añade una palabra."
+      },
+      "slotValues": {
+        "tires": {
+          "all": "Todos",
+          "front": "Delanteros",
+          "rear": "Traseros",
+          "left": "Izquierdos",
+          "right": "Derechos",
+          "lf": "Delantero izquierdo",
+          "rf": "Delantero derecho",
+          "lr": "Trasero izquierdo",
+          "rr": "Trasero derecho"
+        },
+        "compound": {
+          "dry": "Seco",
+          "wet": "Lluvia",
+          "soft": "Blando",
+          "medium": "Medio",
+          "hard": "Duro"
+        }
+      },
+      "search": "Buscar un comando",
+      "conflicted": "conflicto",
+      "slotsTitle": "Valores:"
+    },
+    "pack": {
+      "title": "Archivos del paquete",
+      "folder": "Carpeta del paquete",
+      "folderDesc": "phrases.json y commands.json, con sus esquemas JSON al lado.",
+      "share": "Compartir",
+      "shareDesc": "El paquete con sus grabaciones en un solo archivo.",
+      "export": "Exportar",
+      "import": "Importar",
+      "reload": "Recargar",
+      "reloadDesc": "Vuelve a leer el paquete tras editar sus archivos a mano.",
+      "reloadButton": "Recargar"
+    },
+    "questions": {
+      "title": "Tus preguntas",
+      "desc": "Pregunta al ingeniero algo propio o crea una rutina: las frases que la activan, qué ejecutar (acciones de boxes, macros de chat) y la respuesta con valores: clima, combustible, posición, diferencias, vueltas, tiempo.",
+      "add": "Añadir pregunta",
+      "newName": "Nueva pregunta",
+      "name": "Nombre",
+      "remove": "Eliminar la pregunta",
+      "untitled": "Pregunta sin nombre",
+      "answers": "La respuesta",
+      "noData": "Si el simulador no tiene un valor en este momento (sin datos de lluvia, sin coche delante), el ingeniero dice que no hay datos.",
+      "steps": "Ejecutar primero",
+      "stepsDesc": "En orden, antes de la respuesta. Si una falla, se omiten las demás y el ingeniero avisa de que no se pudo hacer. Las acciones de boxes requieren que estés en el coche; como una orden de boxes, una rutina no se ejecuta si la frase se oyó con poca seguridad.",
+      "addStep": "Añadir acción",
+      "removeStep": "Eliminar acción",
+      "macroSlot": "#"
+    },
+    "values": {
+      "simVariable": "Variable de iRacing…",
+      "simTitle": "Un valor de iRacing",
+      "cancel": "Cancelar",
+      "simWithWord": "Número con palabra…",
+      "simList_one": "El overlay lee {{count}} variable de iRacing.",
+      "simList_other": "El overlay lee {{count}} variables de iRacing.",
+      "simMissingNote": "Se marcan las que el coche actual no tiene.",
+      "simMissing": "no en este coche",
+      "simReady": "listo: {{value}}",
+      "simReadyDesc": "El ingeniero ya lee esto como {{value}}: el valor listo es mejor.",
+      "simReadyInsert": "Insertar {{value}}",
+      "simSearch": "Busca por nombre o descripción: incident, speed, fuel",
+      "simNothing": "No hay ninguna variable así",
+      "simRead": "Leer como",
+      "simScales": {
+        "whole": "entero",
+        "tenths": "décimas",
+        "kmh": "×3,6 (m/s → km/h)",
+        "percent": "×100 (fracción → %)"
+      },
+      "insert": "Insertar",
+      "insertPlain": "{{value}}: solo el número",
+      "insertWithWord": "{{value}}: el número con palabra",
+      "pluralTitle": "Número con palabra: {{value}}",
+      "pluralDesc": "La palabra tras un número cambia: 1 litro, 5 litros. Escribe la palabra para cada número y se elige la correcta.",
+      "pluralPlaceholder": "la palabra tras «{{sample}}»",
+      "names": {
+        "liters": "litros",
+        "laps": "vueltas",
+        "gap": "diferencia",
+        "position": "posición",
+        "minutes": "minutos",
+        "seconds": "segundos",
+        "compound": "compuesto",
+        "tires": "neumáticos",
+        "corners": "qué neumáticos",
+        "airTemp": "temperatura del aire",
+        "trackTemp": "temperatura de la pista",
+        "rain": "lluvia",
+        "wetness": "humedad de la pista",
+        "wind": "viento",
+        "fuel": "combustible",
+        "fuelLaps": "vueltas de combustible",
+        "gapAhead": "diferencia con el de delante",
+        "gapBehind": "diferencia con el de atrás",
+        "lap": "vuelta",
+        "lapsLeft": "vueltas restantes",
+        "minutesLeft": "minutos restantes",
+        "car": "número de coche"
+      }
+    },
+    "syntax": {
+      "title": "Cómo escribir frases",
+      "intro": "Una línea representa muchas formas de decir algo. Solo se reconoce lo que está escrito, así que todas las formas deben estar ahí.",
+      "choice": {
+        "example": "(combustible|carga) cuarenta",
+        "title": "(a|b): una de",
+        "desc": "Di cualquiera de las palabras: «combustible cuarenta» o «carga cuarenta»."
+      },
+      "optional": {
+        "example": "combustible cuarenta [litros]",
+        "title": "[x]: se puede omitir",
+        "desc": "Se reconocen tanto «combustible cuarenta» como «combustible cuarenta litros»."
+      },
+      "slot": {
+        "example": "combustible {number}",
+        "title": "{valor}: algo con nombre",
+        "desc": "Aquí va un número o una de las palabras de la lista de abajo; el comando recibe su valor."
+      },
+      "nested": {
+        "example": "[(litros|litro)]",
+        "title": "Anidamiento",
+        "desc": "Los corchetes se anidan: una elección opcional entre varias palabras."
+      },
+      "replies": "En las respuestas del ingeniero los valores se insertan desde el menú «+»: un número con palabra elige su forma solo: «1 litro», «5 litros». (a|b) y [a] funcionan como en las frases del piloto: el ingeniero dice una de las formas cada vez."
+    },
+    "actions": {
+      "pit": {
+        "fuel": {
+          "title": "Combustible",
+          "desc": "Pone en la orden de boxes los litros que digas."
+        },
+        "fuelToFinish": {
+          "title": "Combustible hasta el final",
+          "desc": "Pone el combustible que aún necesita la carrera."
+        },
+        "clearFuel": {
+          "title": "Sin combustible",
+          "desc": "Quita el combustible de la orden de boxes."
+        },
+        "tires": {
+          "title": "Cambiar neumáticos",
+          "desc": "Marca para cambio los neumáticos que digas: todos, delanteros, traseros, izquierdos, derechos o uno solo."
+        },
+        "clearTires": {
+          "title": "Sin neumáticos",
+          "desc": "Quita el cambio de neumáticos de la orden de boxes."
+        },
+        "compound": {
+          "title": "Compuesto",
+          "desc": "Elige el compuesto, si esta sesión lo tiene."
+        },
+        "fastRepair": {
+          "title": "Reparación rápida",
+          "desc": "Activa la reparación rápida en la orden de boxes."
+        },
+        "clearFastRepair": {
+          "title": "Sin reparación rápida",
+          "desc": "Desactiva la reparación rápida."
+        },
+        "windshield": {
+          "title": "Limpiar el parabrisas",
+          "desc": "Activa el tear-off del parabrisas."
+        },
+        "clearWindshield": {
+          "title": "Dejar el parabrisas",
+          "desc": "Desactiva el tear-off del parabrisas."
+        },
+        "clearAll": {
+          "title": "Borrar la orden",
+          "desc": "Vacía toda la orden de boxes."
+        },
+        "applyPlanned": {
+          "title": "Parada planificada",
+          "desc": "Pone el combustible que necesita la carrera y cuatro neumáticos."
+        }
+      },
+      "query": {
+        "fuel": {
+          "title": "Combustible restante",
+          "desc": "El ingeniero dice los litros en el depósito y las vueltas que dan."
+        },
+        "gapAhead": {
+          "title": "Diferencia con el de delante",
+          "desc": "Segundos al coche de delante en tu clase."
+        },
+        "gapBehind": {
+          "title": "Diferencia con el de atrás",
+          "desc": "Segundos al coche de atrás en tu clase."
+        },
+        "position": {
+          "title": "Posición",
+          "desc": "Tu puesto en la clase."
+        },
+        "lapsLeft": {
+          "title": "Vueltas restantes",
+          "desc": "Vueltas hasta el final, o minutos en una carrera por tiempo."
+        },
+        "lastLap": {
+          "title": "Última vuelta",
+          "desc": "Tu tiempo de la última vuelta."
+        },
+        "bestLap": {
+          "title": "Mejor vuelta",
+          "desc": "Tu mejor tiempo de vuelta."
+        },
+        "pitOrder": {
+          "title": "Orden de boxes",
+          "desc": "El ingeniero lee la orden de boxes actual."
+        },
+        "weather": {
+          "title": "Tiempo",
+          "desc": "Temperatura del aire y de la pista, y cuánto llueve cuando llueve."
+        },
+        "carPosition": {
+          "title": "Posición de un coche",
+          "desc": "En qué puesto de su clase va el coche con este número."
+        },
+        "carLastLap": {
+          "title": "Última vuelta de un coche",
+          "desc": "La última vuelta del coche con este número."
+        },
+        "carBestLap": {
+          "title": "Mejor vuelta de un coche",
+          "desc": "La mejor vuelta del coche con este número."
+        }
+      },
+      "control": {
+        "repeat": {
+          "title": "Repetir",
+          "desc": "El ingeniero repite lo último que dijo."
+        }
+      },
+      "chat": {
+        "macro": {
+          "title": "Macro de chat",
+          "desc": "Envía una macro de chat de iRacing por su número (1–15); el texto de la macro se define en las opciones de iRacing."
+        }
+      }
+    },
+    "replies": {
+      "engineer": {
+        "ack": {
+          "fuel": "Combustible confirmado",
+          "fuelToFinish": "Combustible hasta el final confirmado",
+          "clearFuel": "Combustible quitado",
+          "tires": "Neumáticos confirmados",
+          "clearTires": "Neumáticos quitados",
+          "compound": "Compuesto confirmado",
+          "fastRepair": "Reparación rápida confirmada",
+          "clearFastRepair": "Reparación rápida quitada",
+          "windshield": "Parabrisas confirmado",
+          "clearWindshield": "Parabrisas quitado",
+          "clearAll": "Orden borrada",
+          "applyPlanned": "Parada planificada confirmada"
+        },
+        "answer": {
+          "fuel": "Respuesta",
+          "gapAhead": "Respuesta",
+          "gapBehind": "Respuesta",
+          "noCarAhead": "Nadie delante (lideras la clase)",
+          "noCarBehind": "Nadie detrás",
+          "position": "Respuesta",
+          "lapsLeft": "Carrera por vueltas",
+          "timeLeft": "Carrera por tiempo",
+          "lastLap": "Respuesta",
+          "bestLap": "Respuesta",
+          "noLapTime": "Aún sin tiempo de vuelta",
+          "pitOrder": "Respuesta",
+          "pitOrderEmpty": "La orden está vacía",
+          "weather": "Seco",
+          "weatherRain": "Lloviendo",
+          "carPosition": "Respuesta",
+          "carLastLap": "Respuesta",
+          "carBestLap": "Respuesta",
+          "carNoLapTime": "Cuando el coche aún no tiene tiempo de vuelta",
+          "noSuchCar": "Cuando no existe ese número"
+        },
+        "ask": {
+          "fuel": "Cuando no se dice el valor",
+          "tires": "Cuando no se dice el valor",
+          "compound": "Cuando no se dice el valor",
+          "car": "Cuando no se dice el valor"
+        },
+        "notUnderstood": "No entendido",
+        "notInCar": "Orden de boxes fuera del coche",
+        "noData": "Sin datos para responder",
+        "cannot": "No se pudo ejecutar el comando",
+        "nothingToRepeat": "Nada que repetir"
+      }
+    },
+    "blocks": {
+      "blocks": "Bloques",
+      "text": "Texto",
+      "modeDesc": "Los bloques arman una frase con palabras, opciones y valores, sin escribir símbolos. Una frase con corchetes sin pareja se abre como texto.",
+      "newWord": "palabra",
+      "words": "Palabras",
+      "choice": "Una de",
+      "optional": "Se puede omitir",
+      "slot": "Valor {{slot}}",
+      "add": "Añadir bloque",
+      "remove": "Eliminar bloque",
+      "move": "Arrastra para mover",
+      "apply": "Aplicar",
+      "reply": {
+        "text": "Texto"
+      },
+      "emptySentence": "Escribe una frase: Enter o un clic fuera crea los bloques",
+      "slotOptional": "se puede omitir",
+      "emptyReply": "Escribe una respuesta: Enter o un clic fuera crea los bloques",
+      "choiceHint": "Enter añade una opción. Una sola opción se convierte en palabra simple.",
+      "change": "Cambiar el bloque",
+      "makeOptional": "Se puede omitir",
+      "makeRequired": "Siempre se dice",
+      "makeChoice": "Convertir en «una de»",
+      "makeWords": "Convertir en palabras simples"
+    }
   }
 }

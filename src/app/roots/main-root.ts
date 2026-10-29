@@ -8,6 +8,7 @@ import type { BindingsStore } from '@features/hotkey-bindings/bindings.store';
 import type { SettingsPanelUiStore } from '@entities/widget/settings-panel-ui.store';
 import { LayoutEditorStore } from '@features/layout-editor/layout-editor.store';
 import { CompanionAppsStore } from '@features/companion-apps/companion-apps.store';
+import { VoiceCrewStore } from '@features/voice-crew/voice-crew.store';
 import { TwitchAuthStore } from '@features/twitch-auth/twitch-auth.store';
 import { DeviceInputStore } from '@features/hotkey-bindings/device-input.store';
 import { BindingsUiStore } from '@features/hotkey-bindings/bindings-ui.store';
@@ -38,6 +39,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
   diagnosticsExport: DiagnosticsExportStore;
   telemetryInspector: TelemetryInspectorStore;
   trackRotation: TrackRotationStore;
+  voiceCrew: VoiceCrewStore;
 
   constructor(options?: { skipInit?: boolean }) {
     super(options);
@@ -56,6 +58,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     this.telemetryInspector = new TelemetryInspectorStore(this);
     this.diagnosticsExport = new DiagnosticsExportStore(this);
     this.trackRotation = new TrackRotationStore();
+    this.voiceCrew = new VoiceCrewStore(this);
 
     if (!options?.skipInit) {
       void this.twitchAuth.init();
@@ -66,6 +69,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     this.fpsDiagnostics.dispose();
     this.twitchAuth.dispose();
     this.companionApps.dispose();
+    this.voiceCrew.dispose();
     super.dispose();
   }
 }

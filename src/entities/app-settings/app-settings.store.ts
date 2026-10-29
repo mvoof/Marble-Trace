@@ -23,6 +23,7 @@ import type {
   InstallMismatch,
   InteractHotkeyMode,
   OverlayModes,
+  VoiceCrewSettings,
 } from '@shared/contracts/generated/bindings';
 import type {
   FuelAdjustStep,
@@ -32,6 +33,9 @@ import type { SettingsLockReason } from '@shared/settings-schema/types';
 
 export const resolveAppLanguage = (language: AppLanguage) =>
   language === 'system' ? detectSystemLanguage() : language;
+
+/** The language the crew speaks; `app` follows the interface. */
+export type VoiceLanguage = 'app' | 'ru' | 'en' | 'es' | 'zh';
 
 const DEFAULT_APP_SETTINGS = {
   // Interact mode: mouse events reach the overlay without unlocking widget
@@ -106,9 +110,39 @@ const DEFAULT_APP_SETTINGS = {
    *  App-level for the same reason the wheel range is: a rig runs one set of
    *  them, whichever layout is on screen. */
   companionApps: [] as CompanionApp[],
+  /** The voice crew. Off until the user turns it on: it needs downloads. */
+  voiceEnabled: false,
+  voiceLanguage: 'app' as VoiceLanguage,
+  /** A catalog voice id or `custom:<name>`; empty is the language's recommended one. */
+  voiceName: '',
+  /** cpal device ids; empty is the system default. */
+  voiceInputDevice: '',
+  voiceOutputDevice: '',
+  voiceVolume: 0.8,
+  /** Speech rate, 1 = the voice's own pace. */
+  voiceSpeed: 1,
+  /** Below it a pit command heard by voice is not carried out. */
+  voiceConfidence: 0.6,
+  /** Where the voice downloads, packs and cache live; empty is the app's own. */
+  voiceFolder: '',
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
+
+export type VoiceSettingsPatch = Partial<
+  Pick<
+    AppSettings,
+    | 'voiceEnabled'
+    | 'voiceLanguage'
+    | 'voiceName'
+    | 'voiceInputDevice'
+    | 'voiceOutputDevice'
+    | 'voiceVolume'
+    | 'voiceSpeed'
+    | 'voiceConfidence'
+    | 'voiceFolder'
+  >
+>;
 
 export const pitStrategyOf = (settings: AppSettings): PitStrategy => ({
   pitAutoFuel: settings.pitAutoFuel,
@@ -116,6 +150,28 @@ export const pitStrategyOf = (settings: AppSettings): PitStrategy => ({
   pitAutoTireWearThreshold: settings.pitAutoTireWearThreshold,
   pitFuelAdjustStep: settings.pitFuelAdjustStep,
 });
+
+/** What the backend's voice crew runs with (`configure_voice_crew`). */
+export const voiceCrewSettingsOf = (
+  settings: AppSettings
+): VoiceCrewSettings => {
+  const language =
+    settings.voiceLanguage === 'app'
+      ? resolveAppLanguage(settings.language)
+      : settings.voiceLanguage;
+
+  return {
+    enabled: settings.voiceEnabled,
+    language,
+    voice: settings.voiceName,
+    inputDevice: settings.voiceInputDevice || null,
+    outputDevice: settings.voiceOutputDevice || null,
+    volume: settings.voiceVolume,
+    speed: settings.voiceSpeed,
+    confidenceThreshold: settings.voiceConfidence,
+    folder: settings.voiceFolder,
+  };
+};
 
 export type UpdateStatus =
   | 'idle'
@@ -425,6 +481,11 @@ export class AppSettingsStore {
 
   setPitFuelAdjustStep(value: FuelAdjustStep) {
     this.appSettings.pitFuelAdjustStep = value;
+  }
+
+  /** Any of the voice crew's settings, from the Crew tab. */
+  setVoiceSettings(patch: VoiceSettingsPatch) {
+    Object.assign(this.appSettings, patch);
   }
 
   /** Applies a strategy mirrored from another window. */

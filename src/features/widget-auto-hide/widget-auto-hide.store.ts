@@ -130,11 +130,16 @@ export class WidgetAutoHideStore {
     }
 
     // Nobody inside the gap threshold — or, for the radio, nobody on the air
-    // and no change of channel being shown — means nothing to show, and the
+    // and no change of channel being shown, for the crew radio nothing said
+    // a moment ago — means nothing to show, and the
     // plate the container draws around an empty body would say otherwise. Each
     // plate keeps its own state, so the answer is its own instance's store —
     // which exists for as long as the instance is mounted, hidden or not.
-    if (widgetType === 'wheel-to-wheel' || widgetType === 'radio') {
+    if (
+      widgetType === 'wheel-to-wheel' ||
+      widgetType === 'radio' ||
+      widgetType === 'crew-radio'
+    ) {
       return (
         this.root.widgetInstances.storeOf<SelfHidingWidgetStore>(widgetId)
           ?.isVisible ?? false

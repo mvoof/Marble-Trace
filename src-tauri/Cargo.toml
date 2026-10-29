@@ -53,6 +53,7 @@ mt-input = { path = "crates/mt-input" }
 mt-remote = { path = "crates/mt-remote" }
 mt-companions = { path = "crates/mt-companions" }
 mt-hotkeys = { path = "crates/mt-hotkeys" }
+mt-voice = { path = "crates/mt-voice" }
 
 serde_json = "1.0"
 # Build scripts read `src-tauri/.env` for the keys baked in at compile time.
@@ -62,6 +63,10 @@ kerb = { version = "0.4.0", default-features = false }
 tokio = { version = "1", features = ["full"] }
 futures = "0.3"
 tracing = "0.1"
+fastrand = "2"
+# Voice downloads: the versions the updater already pulls in.
+sha2 = "0.10"
+zip = { version = "4", default-features = false, features = ["deflate"] }
 # Held at rc.22 until specta 2.0 is stable. rc.25 splits types whose serde
 # shape differs by direction (skip_serializing_if, default, alias) into
 # `*_Serialize | *_Deserialize` pairs, refuses serde_json::Value (it holds
@@ -138,6 +143,8 @@ mt-input.workspace = true
 mt-remote.workspace = true
 mt-companions.workspace = true
 mt-hotkeys.workspace = true
+mt-voice.workspace = true
+reqwest.workspace = true
 
 serde_json.workspace = true
 serde.workspace = true

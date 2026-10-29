@@ -11,6 +11,8 @@ use tracing::{debug, info, warn};
 
 use crate::sim::connect_source;
 use crate::sink::TauriSink;
+use crate::voice::VoiceCrewState;
+use mt_model::app::crew::CrewSink;
 use mt_model::contract::defaults::{MAX_FUEL_AVG_WINDOW, SOURCE_TICK_HZ};
 use mt_model::sim::session::SessionSnapshot;
 use mt_model::utils::lock_or_recover;
@@ -49,10 +51,12 @@ pub async fn start_telemetry_stream(
         .app_data_dir()
         .inspect_err(|error| warn!("No app data dir, tracks and laps are not stored: {error}"))
         .ok();
+    let crew: Arc<dyn CrewSink> = app.state::<Arc<VoiceCrewState>>().inner().clone();
     let host = TelemetryHost {
         sink: Arc::new(TauriSink(app)),
         data_dir,
         connect: connect_source,
+        crew: Some(crew),
     };
 
     spawn_telemetry_thread(host, state.service.clone(), run)

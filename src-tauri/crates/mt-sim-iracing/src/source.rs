@@ -173,6 +173,17 @@ impl TelemetrySource for IracingSource {
         self.var_meta.clone()
     }
 
+    fn read_number(&self, name: &str) -> Option<f64> {
+        let value = self.connection.read_variable(name)?;
+        let index = if name.starts_with(PER_CAR_PREFIX) {
+            Some(self.player_car_index()?)
+        } else {
+            None
+        };
+
+        number_of(value, index)
+    }
+
     fn raw_values(&self) -> Option<RawValues> {
         Some(
             self.connection
@@ -182,6 +193,38 @@ impl TelemetrySource for IracingSource {
                 .collect(),
         )
     }
+}
+
+/// A per-car array: one entry per car index, the player's at `PlayerCarIdx`.
+const PER_CAR_PREFIX: &str = "CarIdx";
+const PLAYER_CAR_INDEX: &str = "PlayerCarIdx";
+
+impl IracingSource {
+    fn player_car_index(&self) -> Option<usize> {
+        match self.connection.read_variable(PLAYER_CAR_INDEX)? {
+            TelemetryValue::Int(index) => usize::try_from(index).ok(),
+            _ => None,
+        }
+    }
+}
+
+/// A scalar as a number; an array's entry at `index`, when one is given.
+fn number_of(value: TelemetryValue, index: Option<usize>) -> Option<f64> {
+    let number = match (value, index) {
+        (TelemetryValue::Bool(flag), None) => f64::from(u8::from(flag)),
+        (TelemetryValue::Char(byte), None) => f64::from(byte),
+        (TelemetryValue::Int(number), None) => f64::from(number),
+        (TelemetryValue::BitField(bits), None) => f64::from(bits),
+        (TelemetryValue::Float(number), None) => f64::from(number),
+        (TelemetryValue::Double(number), None) => number,
+        (TelemetryValue::BoolArray(items), Some(index)) => f64::from(u8::from(*items.get(index)?)),
+        (TelemetryValue::IntArray(items), Some(index)) => f64::from(*items.get(index)?),
+        (TelemetryValue::FloatArray(items), Some(index)) => f64::from(*items.get(index)?),
+        (TelemetryValue::DoubleArray(items), Some(index)) => *items.get(index)?,
+        _ => return None,
+    };
+
+    number.is_finite().then_some(number)
 }
 
 /// A one-to-one copy of kerb's value, which does not serialize itself. A single

@@ -27,6 +27,7 @@ import { EnvironmentStore } from '@entities/environment/environment.store';
 import { SimPerfStore } from '@entities/sim-perf/sim-perf.store';
 import { ReferenceLapStore } from '@entities/player/reference-lap.store';
 import { ChatStore } from '@entities/chat/chat.store';
+import { CrewRadioStore } from '@entities/crew-radio/crew-radio.store';
 
 interface RendererCoreOptions {
   /** A preview: no Tauri channels, nothing persisted, no store started. */
@@ -63,6 +64,7 @@ export class RendererCore {
   simPerf: SimPerfStore;
   referenceLap: ReferenceLapStore;
   chat: ChatStore;
+  crewRadio: CrewRadioStore;
   backendComputed: BackendComputedStore;
   sim: SimStore;
   flags: FlagsStore;
@@ -106,6 +108,7 @@ export class RendererCore {
     this.simPerf = new SimPerfStore();
     this.referenceLap = new ReferenceLapStore();
     this.chat = new ChatStore();
+    this.crewRadio = new CrewRadioStore();
     this.backendComputed = new BackendComputedStore(this.session);
     this.widgetDefaults = new WidgetDefaultsStore(this);
     this.settingsMutations = new SettingsMutationLog();
@@ -147,6 +150,7 @@ export class RendererCore {
       this.appSettings.init();
       this.pitServiceWidget.init();
       void this.chat.init();
+      void this.crewRadio.init();
     }
   }
 
@@ -155,6 +159,7 @@ export class RendererCore {
   dispose() {
     this.pitServiceWidget.dispose();
     this.chat.dispose();
+    this.crewRadio.dispose();
     this.widgetInstances.disposeAll();
     this.flags.dispose();
     this.sim.dispose();

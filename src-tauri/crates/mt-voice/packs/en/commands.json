@@ -1,0 +1,131 @@
+{
+  "format": 3,
+  "intents": {
+    "pit.fuel": [
+      "(fuel|add|refuel|give me) {number} [(liters|litres)]",
+      "{number} (liters|litres) [of fuel]"
+    ],
+    "pit.fuelToFinish": [
+      "(fuel|fill) to (the end|the finish|finish)",
+      "enough fuel to finish",
+      "(add|top up) [the] fuel"
+    ],
+    "pit.clearFuel": [
+      "no fuel",
+      "(clear|cancel) [the] fuel",
+      "don't (fuel|refuel)"
+    ],
+    "pit.tires": [
+      "(change|take) [the] {tires} [(tires|tyres|tire|tyre)]",
+      "{tires} (tires|tyres)",
+      "(change|new) [the] (tires|tyres)"
+    ],
+    "pit.clearTires": [
+      "no (tires|tyres)",
+      "(clear|cancel) [the] (tires|tyres)",
+      "don't change [the] (tires|tyres)"
+    ],
+    "pit.compound": [
+      "(put on|fit|switch to) [the] {compound} [(tires|tyres)]",
+      "{compound} (tires|tyres)",
+      "(change|switch) [the] compound"
+    ],
+    "pit.fastRepair": [
+      "[(take|use|give me)] [the] fast repair",
+      "repair the car"
+    ],
+    "pit.clearFastRepair": [
+      "no fast repair",
+      "(cancel|clear) [the] fast repair"
+    ],
+    "pit.windshield": [
+      "(clean|tear off) [the] (windshield|screen|visor)",
+      "windshield"
+    ],
+    "pit.clearWindshield": [
+      "no (windshield|screen)",
+      "don't clean [the] (windshield|screen)"
+    ],
+    "pit.clearAll": [
+      "(clear|cancel|reset) [the] (stop|pit stop|order|pit order|everything)",
+      "nothing this stop"
+    ],
+    "pit.applyPlanned": [
+      "(standard|normal|full|usual) [pit] stop",
+      "(stop|pit) as planned",
+      "do the plan"
+    ],
+    "query.fuel": [
+      "how much fuel [(do i have|is left|left)]",
+      "fuel (status|check)",
+      "how many laps of fuel"
+    ],
+    "query.gapAhead": [
+      "gap (ahead|to the car ahead|in front)",
+      "how far (ahead|to the car ahead)",
+      "who is ahead"
+    ],
+    "query.gapBehind": [
+      "gap (behind|to the car behind)",
+      "how far (behind|to the car behind)",
+      "who is behind"
+    ],
+    "query.position": [
+      "what position [am i]",
+      "(what's|what is) my position",
+      "where am i",
+      "position check"
+    ],
+    "query.lapsLeft": [
+      "how many laps [(left|to go)]",
+      "laps (left|to go|remaining)",
+      "how much time [(left|is left)]",
+      "time (left|remaining)"
+    ],
+    "query.lastLap": ["(last|previous) lap [time]", "what was my last lap"],
+    "query.bestLap": ["best lap [time]", "(what's|what is) my best lap"],
+    "query.pitOrder": [
+      "what is the (pit order|plan for the stop)",
+      "pit order",
+      "what are we doing [(this|at the)] stop"
+    ],
+    "query.weather": [
+      "(how is|what is|what's) the weather [like]",
+      "weather [(report|check)]",
+      "what are the temps"
+    ],
+    "query.carPosition": [
+      "where is [car] [number] {number}",
+      "position of [car] [number] {number}"
+    ],
+    "query.carLastLap": [
+      "last lap [time] of [car] [number] {number}",
+      "lap time of [car] [number] {number}"
+    ],
+    "query.carBestLap": ["best lap [time] of [car] [number] {number}"],
+    "control.repeat": ["(repeat|say again|come again|pardon)", "say that again"]
+  },
+  "defaults": {
+    "pit.tires": "all"
+  },
+  "slots": {
+    "tires": {
+      "all": ["all four", "all", "four"],
+      "front": ["fronts", "front"],
+      "rear": ["rears", "rear"],
+      "left": ["lefts", "left"],
+      "right": ["rights", "right"],
+      "lf": ["front left", "left front"],
+      "rf": ["front right", "right front"],
+      "lr": ["rear left", "left rear"],
+      "rr": ["rear right", "right rear"]
+    },
+    "compound": {
+      "dry": ["dry", "slick", "slicks"],
+      "wet": ["wet", "wets", "rain"],
+      "soft": ["soft"],
+      "medium": ["medium", "mediums"],
+      "hard": ["hard", "hards"]
+    }
+  }
+}
