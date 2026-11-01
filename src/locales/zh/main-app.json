@@ -850,7 +850,8 @@
       "import": "导入",
       "reload": "重新加载",
       "reloadDesc": "手动编辑文件后重新读取语言包。",
-      "reloadButton": "重新加载"
+      "reloadButton": "重新加载",
+      "switchedOff": "带有操作的问题已以关闭状态导入。请检查后自行开启："
     },
     "questions": {
       "title": "我的问题",

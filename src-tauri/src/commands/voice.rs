@@ -670,11 +670,10 @@ pub async fn import_voice_pack(
     state: State<'_, Arc<VoiceCrewState>>,
     language: String,
     path: String,
-) -> Result<(), String> {
+) -> Result<Vec<String>, String> {
     let folder = pack_folder(&voice_root(&app)?, &known_language(&language));
-
-    import_pack(Path::new(&path), &folder).map_err(|error| error.to_string())?;
+    let switched_off = import_pack(Path::new(&path), &folder).map_err(|error| error.to_string())?;
     state.crew().reload();
 
-    Ok(())
+    Ok(switched_off)
 }

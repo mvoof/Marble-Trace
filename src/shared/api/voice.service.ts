@@ -112,7 +112,7 @@ export const exportVoicePack = (
 export const importVoicePack = (
   language: string,
   path: string
-): Promise<void> => invoke('import_voice_pack', { language, path });
+): Promise<string[]> => invoke('import_voice_pack', { language, path });
 
 export const listenCrewRadio = (
   onEvent: (event: CrewRadioEvent) => void

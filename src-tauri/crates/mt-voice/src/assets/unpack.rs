@@ -1,9 +1,9 @@
-//! Zip extraction for the downloaded archives. Every entry's path is checked
-//! before it is written: an archive is data from the network, and one entry
+//! Zip extraction for the downloaded archives and imported packs. Every entry's
+//! path is checked before it is written: an archive is someone else's data, and one entry
 //! named `../../x.dll` must not land outside the component's folder.
 
 use std::fs::{self, File};
-use std::io;
+use std::io::{self, Read};
 use std::path::{Component as PathPart, Path, PathBuf};
 
 use zip::ZipArchive;
@@ -12,6 +12,13 @@ use zip::ZipArchive;
 /// how the engines and models are packed — that folder is dropped, so a
 /// component's files are found at the same place whatever its version.
 pub fn unpack_zip(archive: &Path, target: &Path) -> io::Result<()> {
+    unpack_zip_within(archive, target, u64::MAX)
+}
+
+/// `unpack_zip` that stops once the files written pass `max_bytes`. The bytes
+/// are counted as they are written: the sizes an archive declares can lie.
+pub fn unpack_zip_within(archive: &Path, target: &Path, max_bytes: u64) -> io::Result<()> {
+    let mut budget = max_bytes;
     let mut zip = ZipArchive::new(File::open(archive)?).map_err(io::Error::other)?;
     let mut names = Vec::with_capacity(zip.len());
 
@@ -53,7 +60,17 @@ pub fn unpack_zip(archive: &Path, target: &Path) -> io::Result<()> {
             fs::create_dir_all(parent)?;
         }
 
-        io::copy(&mut entry, &mut File::create(&destination)?)?;
+        let mut limited = (&mut entry).take(budget.saturating_add(1));
+        let written = io::copy(&mut limited, &mut File::create(&destination)?)?;
+
+        if written > budget {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("the archive unpacks to more than {max_bytes} bytes"),
+            ));
+        }
+
+        budget -= written;
     }
 
     Ok(())
@@ -171,6 +188,25 @@ mod tests {
 
         assert_eq!(result.unwrap_err().kind(), io::ErrorKind::InvalidData);
         assert!(!folder.join("escaped.txt").exists());
+
+        let _ = fs::remove_dir_all(folder);
+    }
+
+    #[test]
+    fn stops_an_archive_that_unpacks_past_its_limit() {
+        let folder = scratch("bomb");
+        let archive = folder.join("bomb.zip");
+        let large = "x".repeat(1_000);
+
+        write_zip(
+            &archive,
+            &[("a.txt", Some(&large)), ("b.txt", Some(&large))],
+        );
+
+        let result = unpack_zip_within(&archive, &folder.join("out"), 1_500);
+
+        assert_eq!(result.unwrap_err().kind(), io::ErrorKind::InvalidData);
+        unpack_zip_within(&archive, &folder.join("whole"), 2_000).unwrap();
 
         let _ = fs::remove_dir_all(folder);
     }

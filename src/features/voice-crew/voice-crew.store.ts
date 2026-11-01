@@ -135,6 +135,8 @@ export class VoiceCrewStore {
   dirty = false;
   busy = false;
   lastError: string | null = null;
+  /** Questions with steps the last import switched off, for the driver to look over. */
+  importedSwitchedOff: string[] = [];
   lastTest: VoiceTestResult | null = null;
   testing = false;
   /** The test press under way listens for the unsaved edits. */
@@ -1140,7 +1142,17 @@ export class VoiceCrewStore {
       return;
     }
 
-    await this.run(() => importVoicePack(this.language, path));
+    const switchedOff = await this.run(() =>
+      importVoicePack(this.language, path)
+    );
+
+    runInAction(() => {
+      this.importedSwitchedOff = switchedOff ?? [];
+    });
     await this.loadPack();
+  }
+
+  dismissImportedSwitchedOff() {
+    this.importedSwitchedOff = [];
   }
 }

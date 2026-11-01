@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Button } from 'antd';
+import { Alert, Button } from 'antd';
 import { Download, FolderOpen, Upload } from 'lucide-react';
 import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
@@ -62,6 +62,16 @@ export const CrewPackFiles = observer(() => {
             </Button>
           </div>
         </div>
+
+        {crew.importedSwitchedOff.length > 0 && (
+          <Alert
+            type="warning"
+            showIcon
+            closable={{ onClose: () => crew.dismissImportedSwitchedOff() }}
+            title={t('crewPage.pack.switchedOff')}
+            description={crew.importedSwitchedOff.join(', ')}
+          />
+        )}
       </div>
 
       <div className={styles.fieldGroup}>

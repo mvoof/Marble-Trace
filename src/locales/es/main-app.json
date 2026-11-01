@@ -854,7 +854,8 @@
       "import": "Importar",
       "reload": "Recargar",
       "reloadDesc": "Vuelve a leer el paquete tras editar sus archivos a mano.",
-      "reloadButton": "Recargar"
+      "reloadButton": "Recargar",
+      "switchedOff": "Las preguntas que ejecutan acciones se importaron desactivadas. Revísalas y actívalas tú mismo:"
     },
     "questions": {
       "title": "Tus preguntas",

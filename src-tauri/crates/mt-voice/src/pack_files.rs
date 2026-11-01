@@ -9,9 +9,14 @@ use std::path::{Path, PathBuf};
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipWriter};
 
-use crate::assets::unpack::unpack_zip;
+use serde_json::Value;
+
+use crate::assets::unpack::unpack_zip_within;
 use crate::pack::{COMMANDS_FILE, PHRASES_FILE};
+
 const IMPORT_STAGING_SUFFIX: &str = ".importing";
+/// A pack is two JSON files of text; anything near this is not one.
+const PACK_ARCHIVE_MAX_BYTES: u64 = 16 * 1024 * 1024;
 
 /// The pack folder as one zip to hand to someone else.
 pub fn export_pack(pack_folder: &Path, archive: &Path) -> io::Result<()> {
@@ -45,12 +50,14 @@ pub fn export_pack(pack_folder: &Path, archive: &Path) -> io::Result<()> {
 }
 
 /// Replaces the pack folder with an archive's contents — only once the
-/// archive has unpacked whole and holds a pack at all.
-pub fn import_pack(archive: &Path, pack_folder: &Path) -> io::Result<()> {
+/// archive has unpacked whole and holds a pack at all. Someone else's
+/// questions that carry out steps (pit orders, chat macros) come in switched
+/// off; their names are returned for the driver to look over.
+pub fn import_pack(archive: &Path, pack_folder: &Path) -> io::Result<Vec<String>> {
     let staging = PathBuf::from(format!("{}{IMPORT_STAGING_SUFFIX}", pack_folder.display()));
     let _ = fs::remove_dir_all(&staging);
     let result = (|| {
-        unpack_zip(archive, &staging)?;
+        unpack_zip_within(archive, &staging, PACK_ARCHIVE_MAX_BYTES)?;
 
         if !staging.join(PHRASES_FILE).is_file() && !staging.join(COMMANDS_FILE).is_file() {
             return Err(io::Error::new(
@@ -58,6 +65,8 @@ pub fn import_pack(archive: &Path, pack_folder: &Path) -> io::Result<()> {
                 "the archive holds no phrases.json or commands.json",
             ));
         }
+
+        let switched_off = switch_off_questions_with_steps(&staging.join(COMMANDS_FILE))?;
 
         match fs::remove_dir_all(pack_folder) {
             Err(error) if error.kind() != io::ErrorKind::NotFound => return Err(error),
@@ -68,7 +77,9 @@ pub fn import_pack(archive: &Path, pack_folder: &Path) -> io::Result<()> {
             fs::create_dir_all(parent)?;
         }
 
-        fs::rename(&staging, pack_folder)
+        fs::rename(&staging, pack_folder)?;
+
+        Ok(switched_off)
     })();
 
     if result.is_err() {
@@ -76,6 +87,58 @@ pub fn import_pack(archive: &Path, pack_folder: &Path) -> io::Result<()> {
     }
 
     result
+}
+
+/// Sets `enabled: false` on every question in `commands.json` that has steps
+/// and returns their names. A file that does not parse is left as it is: the
+/// pack loader refuses it whole, so none of its steps can run.
+fn switch_off_questions_with_steps(commands: &Path) -> io::Result<Vec<String>> {
+    let Ok(text) = fs::read_to_string(commands) else {
+        return Ok(Vec::new());
+    };
+    let Ok(mut file) = serde_json::from_str::<Value>(&text) else {
+        return Ok(Vec::new());
+    };
+    let Some(questions) = file
+        .pointer_mut("/custom/questions")
+        .and_then(Value::as_array_mut)
+    else {
+        return Ok(Vec::new());
+    };
+    let mut switched_off = Vec::new();
+
+    for question in questions.iter_mut().filter_map(Value::as_object_mut) {
+        let has_steps = question
+            .get("steps")
+            .and_then(Value::as_array)
+            .is_some_and(|steps| !steps.is_empty());
+        let enabled = question.get("enabled").and_then(Value::as_bool) != Some(false);
+
+        if !has_steps || !enabled {
+            continue;
+        }
+
+        question.insert("enabled".to_string(), Value::Bool(false));
+
+        let name = question
+            .get("name")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        let id = question
+            .get("id")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+
+        switched_off.push(if name.is_empty() { id } else { name }.to_string());
+    }
+
+    if !switched_off.is_empty() {
+        let text = serde_json::to_string_pretty(&file).map_err(io::Error::other)?;
+
+        fs::write(commands, text + "\n")?;
+    }
+
+    Ok(switched_off)
 }
 
 #[cfg(test)]
@@ -132,6 +195,42 @@ mod tests {
 
         assert!(import_pack(&archive, &target).is_err());
         assert!(target.join(PHRASES_FILE).is_file());
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn imports_someone_elses_questions_with_steps_switched_off() {
+        let root = scratch("steps");
+        let source = root.join("en");
+        let archive = root.join("en.zip");
+        let target = root.join("packs/en");
+        let commands = r#"{
+          "format": 1,
+          "custom": { "questions": [
+            { "id": "box", "name": "Box now", "steps": [{ "kind": "chat", "text": "/box" }] },
+            { "id": "gap", "name": "", "replies": ["{gap}"] },
+            { "id": "fuel", "steps": [{ "kind": "chat", "text": "/fuel" }] }
+          ] }
+        }"#;
+
+        fs::create_dir_all(&source).unwrap();
+        fs::write(source.join(COMMANDS_FILE), commands).unwrap();
+        export_pack(&source, &archive).unwrap();
+
+        let switched_off = import_pack(&archive, &target).unwrap();
+        let imported: Value =
+            serde_json::from_str(&fs::read_to_string(target.join(COMMANDS_FILE)).unwrap()).unwrap();
+        let enabled = |index: usize| {
+            imported["custom"]["questions"][index]
+                .get("enabled")
+                .and_then(Value::as_bool)
+        };
+
+        assert_eq!(switched_off, vec!["Box now", "fuel"]);
+        assert_eq!(enabled(0), Some(false));
+        assert_eq!(enabled(1), None);
+        assert_eq!(enabled(2), Some(false));
 
         let _ = fs::remove_dir_all(root);
     }

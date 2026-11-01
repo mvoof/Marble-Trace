@@ -854,7 +854,8 @@
       "import": "Import",
       "reload": "Reload",
       "reloadDesc": "Read the pack again after editing its files by hand.",
-      "reloadButton": "Reload"
+      "reloadButton": "Reload",
+      "switchedOff": "Questions that carry out actions came in switched off. Look them over and switch them on yourself:"
     },
     "questions": {
       "title": "Your questions",
