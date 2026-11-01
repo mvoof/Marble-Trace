@@ -15,9 +15,7 @@ import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import type { VoiceComponentView } from '@shared/contracts/generated/bindings';
 import styles from './CrewPage.module.scss';
-
-const BYTES_PER_MEGABYTE = 1024 * 1024;
-const PERCENT = 100;
+import { toMegabytes, toPercent } from './crew-format';
 
 type DownloadsTab = 'recognition' | 'voices' | 'custom';
 /** A language's voices, or every voice. */
@@ -26,8 +24,6 @@ type VoiceLanguageFilter = string;
 const DOWNLOADS_TABS: DownloadsTab[] = ['recognition', 'voices', 'custom'];
 const ALL_LANGUAGES = 'all';
 const RECOGNITION_KINDS = ['sttEngine', 'sttModel'];
-
-const megabytes = (bytes: number) => Math.round(bytes / BYTES_PER_MEGABYTE);
 
 /** The engines, voices and models: what is installed, and getting the rest. */
 export const CrewDownloads = observer(() => {
@@ -43,7 +39,7 @@ export const CrewDownloads = observer(() => {
           type="info"
           showIcon
           title={t('crewPage.downloads.banner', {
-            size: megabytes(crew.recommendedMissingBytes),
+            size: toMegabytes(crew.recommendedMissingBytes),
           })}
           action={
             <Button
@@ -267,7 +263,7 @@ const ComponentRow = observer(
     const running = progress !== undefined && !progress.finished;
     const percent =
       running && progress.totalBytes > 0
-        ? Math.round((progress.doneBytes / progress.totalBytes) * PERCENT)
+        ? toPercent(progress.doneBytes / progress.totalBytes)
         : 0;
     const stateColor =
       component.state === 'installed'
@@ -293,7 +289,7 @@ const ComponentRow = observer(
 
             <div className={styles.fieldDesc}>
               {t(`crewPage.downloads.kind.${component.kind}`)} ·{' '}
-              {megabytes(component.sizeBytes)} MB ·{' '}
+              {toMegabytes(component.sizeBytes)} MB ·{' '}
               <Button
                 className={styles.inlineLink}
                 type="link"

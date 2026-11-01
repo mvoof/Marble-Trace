@@ -8,8 +8,8 @@ import type {
   VoiceRecognisedView,
 } from '@shared/contracts/generated/bindings';
 import styles from './CrewPage.module.scss';
+import { toPercent } from './crew-format';
 
-const PERCENT = 100;
 const ICON_SIZE = 14;
 
 interface RadioCheckProps {
@@ -111,7 +111,7 @@ const TrialResult = observer(({ actionTitle, onOpen }: RadioCheckProps) => {
   const unsure =
     trial.confidence !== null && trial.confidence < crew.confidenceThreshold;
   const percent =
-    trial.confidence === null ? null : Math.round(trial.confidence * PERCENT);
+    trial.confidence === null ? null : toPercent(trial.confidence);
 
   return (
     <>

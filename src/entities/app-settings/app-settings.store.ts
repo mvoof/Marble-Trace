@@ -129,20 +129,10 @@ const DEFAULT_APP_SETTINGS = {
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
 
-export type VoiceSettingsPatch = Partial<
-  Pick<
-    AppSettings,
-    | 'voiceEnabled'
-    | 'voiceLanguage'
-    | 'voiceName'
-    | 'voiceInputDevice'
-    | 'voiceOutputDevice'
-    | 'voiceVolume'
-    | 'voiceSpeed'
-    | 'voiceConfidence'
-    | 'voiceFolder'
-  >
->;
+/** Every `voice*` setting; a new one joins by its name alone. */
+type VoiceSettingKey = Extract<keyof AppSettings, `voice${string}`>;
+
+export type VoiceSettingsPatch = Partial<Pick<AppSettings, VoiceSettingKey>>;
 
 export const pitStrategyOf = (settings: AppSettings): PitStrategy => ({
   pitAutoFuel: settings.pitAutoFuel,

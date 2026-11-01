@@ -7,13 +7,13 @@ import { useAppSettingsStore } from '@entities/app-settings/app-settings-context
 import type { VoiceLanguage } from '@entities/app-settings/app-settings.store';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from './CrewPage.module.scss';
+import { toPercent } from './crew-format';
 
 const VOLUME_STEP = 0.05;
 const SPEED_MIN = 0.7;
 const SPEED_MAX = 1.5;
 const SPEED_STEP = 0.05;
 const CONFIDENCE_STEP = 0.05;
-const PERCENT = 100;
 const LANGUAGES: VoiceLanguage[] = ['app', 'ru', 'en', 'es', 'zh'];
 /** Packs nobody who speaks the language has tried with a microphone yet. */
 const EXPERIMENTAL_LANGUAGES: VoiceLanguage[] = ['zh'];
@@ -143,7 +143,7 @@ export const CrewVoice = observer(() => {
         <div className={styles.fieldRow}>
           <div className={styles.fieldTitle}>
             {t('crewPage.voice.volume', {
-              percent: Math.round(settings.voiceVolume * PERCENT),
+              percent: toPercent(settings.voiceVolume),
             })}
           </div>
 
@@ -184,7 +184,7 @@ export const CrewVoice = observer(() => {
           <div className={styles.fieldTexts}>
             <div className={styles.fieldTitle}>
               {t('crewPage.voice.confidence', {
-                percent: Math.round(settings.voiceConfidence * PERCENT),
+                percent: toPercent(settings.voiceConfidence),
               })}
             </div>
 
@@ -225,7 +225,7 @@ export const CrewVoice = observer(() => {
                       crew.lastTest.intents.length > 0
                         ? crew.lastTest.intents.join(', ')
                         : t('crewPage.voice.testNotUnderstood'),
-                    percent: Math.round(crew.lastTest.confidence * PERCENT),
+                    percent: toPercent(crew.lastTest.confidence),
                   })
                 : t('crewPage.voice.testIdle')}
             </div>
