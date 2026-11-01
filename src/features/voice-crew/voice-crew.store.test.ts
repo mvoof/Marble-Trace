@@ -5,7 +5,6 @@ import { VoiceCrewStore } from './voice-crew.store';
 
 vi.mock('@shared/api/voice.service', () => ({}));
 vi.mock('@shared/api/external-link', () => ({}));
-vi.mock('@shared/api/telemetry.service', () => ({}));
 
 const SOURCE_ID = 'car';
 const SOURCE_KEY = `question.${SOURCE_ID}`;
@@ -43,7 +42,15 @@ const packWithQuestion = (): VoicePackView => ({
       steps: [{ action: 'chat.macro', value: '2' }],
     },
   ],
-  questionValues: ['number'],
+  questionFields: [
+    { name: 'number', car: true },
+    { name: 'fuel', car: false },
+  ],
+  carTargets: [
+    { target: 'me', slot: null },
+    { target: 'byCarNumber', slot: 'number' },
+    { target: 'byPosition', slot: 'position' },
+  ],
   sentenceCount: 0,
   conflicts: [],
   issues: [],
@@ -99,5 +106,57 @@ describe('voice crew questions', () => {
     expect(store.pack?.phrases).toEqual([]);
 
     vi.useRealTimers();
+  });
+
+  it('adds a question with every answer list', () => {
+    vi.useFakeTimers();
+
+    const store = storeWith(packWithQuestion());
+    const key = store.addQuestion('Fuel');
+    const intent = store.pack?.intents.find((entry) => entry.id === key);
+    const lists = store.pack?.phrases.filter((phrase) =>
+      intent?.replies.includes(phrase.key)
+    );
+
+    expect(intent?.replies).toEqual([key, `${key}.noCar`, `${key}.noValue`]);
+    expect(lists?.map((phrase) => phrase.values)).toEqual([
+      ['number', 'fuel'],
+      ['number', 'fuel'],
+      ['number', 'fuel'],
+    ]);
+    expect(lists?.map((phrase) => phrase.variants.length)).toEqual([1, 0, 0]);
+
+    vi.useRealTimers();
+  });
+
+  it("gives a question's phrases the slot its car is picked by", () => {
+    vi.useFakeTimers();
+
+    const store = storeWith(packWithQuestion());
+    const intent = () =>
+      store.pack?.intents.find((entry) => entry.id === SOURCE_KEY);
+
+    store.setQuestionTarget(SOURCE_ID, 'byPosition');
+
+    expect(intent()?.slots).toEqual(['position']);
+    expect(intent()?.templates).toEqual(['tell me about car {position}']);
+
+    store.setQuestionTarget(SOURCE_ID, 'me');
+
+    expect(store.findQuestion(SOURCE_ID)?.target).toBe('me');
+    expect(intent()?.slots).toEqual([]);
+
+    store.setQuestionTarget(SOURCE_ID, null);
+
+    expect(store.findQuestion(SOURCE_ID)?.target).toBeNull();
+
+    vi.useRealTimers();
+  });
+
+  it('splits the answer fields into the car and the session', () => {
+    expect(storeWith(packWithQuestion()).questionFields).toEqual({
+      car: ['number'],
+      session: ['fuel'],
+    });
   });
 });

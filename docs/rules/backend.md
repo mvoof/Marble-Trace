@@ -56,12 +56,6 @@ with `[lints] workspace = true`.
   `src/shared/contracts/generated/backend-events.ts`, `src/shared/contracts/generated/telemetry-event-bits.ts` (the
   demand mask) and `src/shared/contracts/generated/hotkey-actions.ts` (the action list). All are checked in and pinned by a test, so a Rust constant
   changed without regenerating fails `cargo test`.
-- **The voice crew's variable list is generated from the adapter.**
-  `src/shared/contracts/generated/iracing-variables.json` holds every kerb
-  `IracingFrame` field `mt-sim-iracing` reads, with kerb's name, type, unit and
-  description (`mt-sim-iracing/src/overlay_variables.rs`). Reading a new field
-  changes it: `UPDATE_BINDINGS=1 cargo test -p mt-sim-iracing --features dev
-  overlay_variables`, else the dev test fails.
 - **The envelope and computed frames are camelCase; raw frames carry kerb's
   names.** `TelemetryBundle`, `TelemetrySlowBundle` and `SourceFrame` carry
   `#[serde(rename_all = "camelCase")]`, and so does every frame the project

@@ -17,7 +17,7 @@ use mt_model::app::crew::{
 };
 use mt_model::app::crew_questions::{
     question_field_named, question_no_value_key, question_reply_key, question_reply_kind, AskedCar,
-    CarTarget, QuestionField, QuestionReplyKind, VoiceQuestionDef, CLASS_POSITION_FIELD,
+    CarTarget, QuestionField, QuestionReplyKind, SayFormat, VoiceQuestionDef, CLASS_POSITION_FIELD,
     NUMBER_FIELD, POSITION_FIELD,
 };
 use mt_model::pit::pit_action::TireSet;
@@ -42,6 +42,8 @@ use crate::vosk::Heard;
 const ANSWER_TTL: Duration = Duration::from_secs(8);
 const PACKS_DIR: &str = "packs";
 const CUSTOM_VOICE_PREFIX: &str = "custom:";
+/// A built-in reply's car number, read out digit by digit as a question's is.
+const CAR_NUMBER_ARG: &str = "car";
 
 /// What the app takes from the crew: requests for the telemetry thread and
 /// what the windows show.
@@ -501,6 +503,7 @@ fn utterance(
         .filter_map(|(name, value)| {
             let arg = match question_field_named(name).filter(|_| question) {
                 Some(spec) => said(pack, units, spec.say, value)?,
+                None if name == CAR_NUMBER_ARG => said(pack, units, SayFormat::Digits, value)?,
                 None => plain_arg(pack, value)?,
             };
 
@@ -631,6 +634,10 @@ pub fn crew_intent(command: &Recognised) -> Option<CrewIntent> {
         Some(SlotValue::Number(number)) => Some(*number),
         _ => None,
     };
+    let car = || match command.slot(NUMBER_SLOT) {
+        Some(SlotValue::Digits(digits)) => Some(digits.clone()),
+        _ => None,
+    };
 
     Some(match command.intent.as_str() {
         "pit.fuel" => match command.slot(NUMBER_SLOT) {
@@ -661,9 +668,9 @@ pub fn crew_intent(command: &Recognised) -> Option<CrewIntent> {
         "query.bestLap" => CrewIntent::QueryBestLap,
         "query.pitOrder" => CrewIntent::QueryPitOrder,
         "query.weather" => CrewIntent::QueryWeather,
-        "query.carPosition" => CrewIntent::QueryCarPosition { car: number()? },
-        "query.carLastLap" => CrewIntent::QueryCarLastLap { car: number()? },
-        "query.carBestLap" => CrewIntent::QueryCarBestLap { car: number()? },
+        "query.carPosition" => CrewIntent::QueryCarPosition { car: car()? },
+        "query.carLastLap" => CrewIntent::QueryCarLastLap { car: car()? },
+        "query.carBestLap" => CrewIntent::QueryCarBestLap { car: car()? },
         CHAT_MACRO_ACTION => CrewIntent::ChatMacro { slot: number()? },
         other => CrewIntent::Question {
             id: other.strip_prefix(QUESTION_PREFIX)?.to_string(),

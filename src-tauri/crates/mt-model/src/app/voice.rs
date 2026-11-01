@@ -162,6 +162,26 @@ pub struct VoiceStep {
     pub value: Option<String>,
 }
 
+/// A field a question's answer may name: `{name}`. A car field needs the
+/// question to ask about a car.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct VoiceQuestionFieldView {
+    pub name: String,
+    pub car: bool,
+}
+
+/// A car a question may ask about, and the slot its phrases must carry —
+/// `None` for a car the phrase does not name.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct VoiceCarTargetView {
+    pub target: CarTarget,
+    pub slot: Option<String>,
+}
+
 /// A language pack as the editor shows it: the built-in one with the user's
 /// overrides, every key and intent listed.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -174,8 +194,9 @@ pub struct VoicePackView {
     pub intents: Vec<VoiceIntentView>,
     pub slots: Vec<VoiceSlotView>,
     pub questions: Vec<VoiceQuestionView>,
-    /// What a question's answer may name.
-    pub question_values: Vec<String>,
+    /// What a question's answer may name, the car's fields first.
+    pub question_fields: Vec<VoiceQuestionFieldView>,
+    pub car_targets: Vec<VoiceCarTargetView>,
     pub sentence_count: u32,
     pub conflicts: Vec<VoiceConflictView>,
     pub issues: Vec<VoiceIssueView>,

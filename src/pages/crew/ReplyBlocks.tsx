@@ -20,8 +20,6 @@ interface ReplyBlocksProps {
   blocks: ReplyBlock[];
   /** The values the reply may name. */
   values: string[];
-  /** A question's reply, which may also read any of the sim's variables. */
-  simValues: boolean;
   onChange: (text: string) => void;
 }
 
@@ -46,7 +44,7 @@ const TONES: Record<ReplyBlock['kind'], BlockTone> = {
  * menu adds any of them.
  */
 export const ReplyBlocks = observer(
-  ({ language, blocks, values, simValues, onChange }: ReplyBlocksProps) => {
+  ({ language, blocks, values, onChange }: ReplyBlocksProps) => {
     const { t } = useTranslation('main-app');
     const [editing, setEditing] = useState<number | null>(null);
     const [pending, setPending] = useState<PendingBlock | null>(null);
@@ -263,7 +261,6 @@ export const ReplyBlocks = observer(
         <ValueInsert
           language={language}
           values={values}
-          simValues={simValues}
           leadingItems={[
             {
               key: 'text',

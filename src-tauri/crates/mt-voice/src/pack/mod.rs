@@ -871,6 +871,15 @@ mod tests {
     }
 
     #[test]
+    fn a_built_in_car_query_hears_the_number_with_its_zeros() {
+        let pack = load("en", None);
+        let heard = pack.grammar.recognise("where is car zero seven").unwrap();
+
+        assert_eq!(heard.intent, "query.carPosition");
+        assert_eq!(heard.slot("number"), Some(&SlotValue::Digits("07".into())));
+    }
+
+    #[test]
     fn a_user_pack_overrides_one_key_and_keeps_the_rest() {
         let folder = scratch_folder("override");
 

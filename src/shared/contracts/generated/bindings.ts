@@ -2897,6 +2897,12 @@ export type TwitchTokenResult = {
   error: string | null;
 };
 
+/**
+ * A car a question may ask about, and the slot its phrases must carry —
+ * `None` for a car the phrase does not name.
+ */
+export type VoiceCarTargetView = { target: CarTarget; slot: string | null };
+
 export type VoiceComponentState =
   | 'installed'
   /**
@@ -3026,9 +3032,10 @@ export type VoicePackView = {
   slots: VoiceSlotView[];
   questions: VoiceQuestionView[];
   /**
-   * What a question's answer may name.
+   * What a question's answer may name, the car's fields first.
    */
-  questionValues: string[];
+  questionFields: VoiceQuestionFieldView[];
+  carTargets: VoiceCarTargetView[];
   sentenceCount: number;
   conflicts: VoiceConflictView[];
   issues: VoiceIssueView[];
@@ -3070,6 +3077,12 @@ export type VoiceQuestionDef = {
   noValue?: string[];
   steps: VoiceStep[];
 };
+
+/**
+ * A field a question's answer may name: `{name}`. A car field needs the
+ * question to ask about a car.
+ */
+export type VoiceQuestionFieldView = { name: string; car: boolean };
 
 /**
  * What a question of the draft would answer now, read against the session

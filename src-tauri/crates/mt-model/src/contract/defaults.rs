@@ -57,19 +57,6 @@ ts_values! {
     /// again with its value, rather than taking one.
     pub const ASK_WHEN_UNSAID: &str = "ask" => VOICE_ASK_WHEN_UNSAID;
 
-    /// A question's reply value read from the sim by the sim's own variable
-    /// name: `{sim.PlayerCarMyIncidentCount}`, a whole number.
-    pub const SIM_VALUE_PREFIX: &str = "sim." => VOICE_SIM_VALUE_PREFIX;
-
-    /// After a sim value's name: the number to a tenth.
-    pub const SIM_SCALE_TENTHS: &str = "tenths" => VOICE_SIM_SCALE_TENTHS;
-
-    /// After a sim value's name: metres per second read as km/h.
-    pub const SIM_SCALE_KMH: &str = "kmh" => VOICE_SIM_SCALE_KMH;
-
-    /// After a sim value's name: a share of one read as a percentage.
-    pub const SIM_SCALE_PERCENT: &str = "percent" => VOICE_SIM_SCALE_PERCENT;
-
     /// A step of a question that sends one of the sim's chat macros; its
     /// value is the macro's slot.
     pub const CHAT_MACRO_ACTION: &str = "chat.macro" => VOICE_CHAT_MACRO_ACTION;

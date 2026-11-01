@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Button, Input, Popover, Switch } from 'antd';
+import { Button, Input, Popover, Select, Switch } from 'antd';
 import { Copy, Plus, Settings2, Trash2 } from 'lucide-react';
 import { parseTemplateBlocks } from '@features/voice-crew/template-blocks';
 import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import { VOICE_QUESTION_PREFIX } from '@shared/contracts/generated/backend-constants';
-import type { VoiceIntentView } from '@shared/contracts/generated/bindings';
+import type {
+  CarTarget,
+  VoiceIntentView,
+} from '@shared/contracts/generated/bindings';
 import { PhraseEditor } from './PhraseEditor';
+import { QuestionAnswers } from './QuestionAnswers';
 import { QuestionPreview } from './QuestionPreview';
 import { QuestionSteps } from './QuestionSteps';
 import { SlotSettings } from './SlotSettings';
@@ -57,6 +61,7 @@ export const ActionCard = observer(({ intent, onOpen }: ActionCardProps) => {
             intent={intent}
             index={index}
             template={template}
+            asText={questionName !== null}
           />
         ))}
 
@@ -96,27 +101,25 @@ export const ActionCard = observer(({ intent, onOpen }: ActionCardProps) => {
 
       {questionName !== null && <QuestionSteps questionId={questionId} />}
 
-      <div className={styles.actionSection}>
-        <div className={styles.fieldTitle}>
-          {t('crewPage.commands.answers')}
+      {questionName === null ? (
+        <div className={styles.actionSection}>
+          <div className={styles.fieldTitle}>
+            {t('crewPage.commands.answers')}
+          </div>
+
+          {intent.id.startsWith('pit.') && (
+            <div className={styles.fieldHint}>
+              {t('crewPage.commands.sharedAnswers')}
+            </div>
+          )}
+
+          {phrases.map((phrase) => (
+            <PhraseEditor key={phrase.key} phrase={phrase} />
+          ))}
         </div>
-
-        {intent.id.startsWith('pit.') && (
-          <div className={styles.fieldHint}>
-            {t('crewPage.commands.sharedAnswers')}
-          </div>
-        )}
-
-        {questionName !== null && (
-          <div className={styles.fieldHint}>
-            {t('crewPage.questions.noData')}
-          </div>
-        )}
-
-        {phrases.map((phrase) => (
-          <PhraseEditor key={phrase.key} phrase={phrase} />
-        ))}
-      </div>
+      ) : (
+        <QuestionAnswers intent={intent} questionId={questionId} />
+      )}
 
       {questionName !== null && (
         <QuestionPreview
@@ -134,9 +137,12 @@ interface QuestionHeaderProps {
   onOpen: (intentId: string) => void;
 }
 
+/** The target select's value for a question that asks about no car. */
+const NO_CAR = 'none';
+
 /**
- * A question's own name, whether it is heard, and the ways to duplicate and
- * delete it.
+ * A question's own name, whether it is heard, the car it asks about, and the
+ * ways to duplicate and delete it.
  */
 const QuestionHeader = observer(
   ({ questionId: id, name, onOpen }: QuestionHeaderProps) => {
@@ -171,6 +177,22 @@ const QuestionHeader = observer(
           onChange={(event) => crew.renameQuestion(id, event.target.value)}
         />
 
+        <Select
+          className={styles.targetSelect}
+          value={crew.findQuestion(id)?.target ?? NO_CAR}
+          title={t('crewPage.questions.target.title')}
+          options={[
+            { value: NO_CAR, label: t('crewPage.questions.target.none') },
+            ...(crew.pack?.carTargets ?? []).map(({ target }) => ({
+              value: target,
+              label: t(`crewPage.questions.target.${target}`),
+            })),
+          ]}
+          onChange={(target: CarTarget | typeof NO_CAR) =>
+            crew.setQuestionTarget(id, target === NO_CAR ? null : target)
+          }
+        />
+
         <Button icon={<Copy size={14} />} onClick={duplicate}>
           {t('crewPage.questions.duplicate')}
         </Button>
@@ -191,10 +213,12 @@ interface TemplateRowProps {
   intent: VoiceIntentView;
   index: number;
   template: string;
+  /** A question's phrase, edited as text alone. */
+  asText: boolean;
 }
 
 const TemplateRow = observer(
-  ({ intent, index, template }: TemplateRowProps) => {
+  ({ intent, index, template, asText }: TemplateRowProps) => {
     const intentId = intent.id;
     const crew = useVoiceCrewStore();
     const { t } = useTranslation('main-app');
@@ -204,7 +228,9 @@ const TemplateRow = observer(
     // into blocks under the cursor and drop the focus.
     const [typing, setTyping] = useState(false);
     const blocks =
-      crew.blockEditing && !typing ? parseTemplateBlocks(template) : null;
+      crew.blockEditing && !asText && !typing
+        ? parseTemplateBlocks(template)
+        : null;
 
     return (
       <div className={styles.variant}>

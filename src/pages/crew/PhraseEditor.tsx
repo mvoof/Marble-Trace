@@ -6,7 +6,6 @@ import type { BadgeProps } from 'antd';
 import { Play, Plus, Trash2 } from 'lucide-react';
 import { parseReplyBlocks } from '@features/voice-crew/reply-blocks';
 import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
-import { VOICE_QUESTION_PREFIX } from '@shared/contracts/generated/backend-constants';
 import type { VoicePhraseView } from '@shared/contracts/generated/bindings';
 import { ReplyBlocks } from './ReplyBlocks';
 import { ValueInsert } from './ValueInsert';
@@ -27,14 +26,11 @@ export const PhraseEditor = observer(
   ({ phrase }: { phrase: VoicePhraseView }) => {
     const crew = useVoiceCrewStore();
     const { t } = useTranslation('main-app');
-    const isQuestion = crew.questionName(phrase.key) !== null;
 
     return (
       <div className={styles.phrase}>
         <div className={styles.phraseTitle}>
-          {isQuestion
-            ? t('crewPage.questions.answers')
-            : t(`crewPage.replies.${phrase.key}`, { defaultValue: phrase.key })}
+          {t(`crewPage.replies.${phrase.key}`, { defaultValue: phrase.key })}
         </div>
 
         {phrase.variants.map((variant, index) => (
@@ -71,7 +67,6 @@ const VariantRow = observer(
     const crew = useVoiceCrewStore();
     const { t } = useTranslation('main-app');
     const check = crew.variantChecks.get(`${phrase.key}#${index}`);
-    const simValues = phrase.key.startsWith(VOICE_QUESTION_PREFIX);
     // A line typed as text stays text until it is left, or it would turn
     // into blocks under the cursor and drop the focus.
     const [typing, setTyping] = useState(false);
@@ -87,7 +82,6 @@ const VariantRow = observer(
               language={crew.packLanguage}
               blocks={blocks}
               values={phrase.values}
-              simValues={simValues}
               onChange={setText}
             />
           ) : (
@@ -104,7 +98,6 @@ const VariantRow = observer(
               <ValueInsert
                 language={crew.packLanguage}
                 values={phrase.values}
-                simValues={simValues}
                 onInsert={(inserted) =>
                   setText(`${text.trimEnd()} ${inserted}`.trim())
                 }

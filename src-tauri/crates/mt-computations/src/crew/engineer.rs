@@ -5,12 +5,12 @@
 //! pack's. A pit command is confirmed only once it went out, so the driver
 //! never hears "copy" for an order the sim did not take.
 
-use mt_model::app::crew::{CompoundKind, CrewIntent, CrewReply};
+use mt_model::app::crew::{CompoundKind, CrewArg, CrewIntent, CrewReply};
 use mt_model::pit::pit_action::{PitAction, TireSet};
 use mt_model::pit::pit_command::PitCommandKind;
 use mt_model::sim::session::{SessionSnapshot, TireCompoundEntry};
 
-use crate::crew::questions::{QuestionSource, QuestionView};
+use crate::crew::questions::{number_matches, QuestionSource, QuestionView};
 use crate::field::driver_entries::DriverEntry;
 use crate::strategy::pit_actions::ManualOrder;
 
@@ -22,12 +22,13 @@ const UNLIMITED_LAPS: i32 = 32_767;
 const PERCENT: f32 = 100.0;
 /// Below this share of precipitation the weather is told as dry.
 const RAIN_SHARE: f32 = 0.01;
+const NO_DATA_KEY: &str = "engineer.noData";
 
 /// Another car as the engineer can answer about it.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct CarView {
-    /// The number on the car, as a number: "007" is 7.
-    pub number: u32,
+    /// The number on the car as the sim writes it: "007" keeps its zeros.
+    pub number: String,
     pub class_position: Option<i32>,
     pub last_lap_s: Option<f32>,
     pub best_lap_s: Option<f32>,
@@ -194,12 +195,26 @@ pub fn plan(
             }
             .answer(&id, asked.as_ref(), &fields),
         ),
+        CrewIntent::QueryCarPosition { car } => {
+            about_cars(view, &car, |found| match found.class_position {
+                Some(position) => CrewReply::plain("engineer.answer.carPosition")
+                    .arg("car", car_number(found))
+                    .number("position", f64::from(position)),
+                None => CrewReply::plain(NO_DATA_KEY),
+            })
+        }
+        CrewIntent::QueryCarLastLap { car } => about_cars(view, &car, |found| {
+            car_lap_reply("engineer.answer.carLastLap", found, found.last_lap_s)
+        }),
+        CrewIntent::QueryCarBestLap { car } => about_cars(view, &car, |found| {
+            car_lap_reply("engineer.answer.carBestLap", found, found.best_lap_s)
+        }),
         query => EngineerStep::Reply(answer(query, view)),
     }
 }
 
 fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
-    let no_data = || CrewReply::plain("engineer.noData");
+    let no_data = || CrewReply::plain(NO_DATA_KEY);
 
     match query {
         CrewIntent::QueryFuel => match (view.fuel_l, view.fuel_laps) {
@@ -240,24 +255,6 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
             }
             _ => no_data(),
         },
-        CrewIntent::QueryCarPosition { car } => match car_named(view, car) {
-            Some(CarView {
-                class_position: Some(position),
-                ..
-            }) => CrewReply::plain("engineer.answer.carPosition")
-                .number("car", f64::from(car))
-                .number("position", f64::from(*position)),
-            Some(_) => no_data(),
-            None => no_such_car(car),
-        },
-        CrewIntent::QueryCarLastLap { car } => match car_named(view, car) {
-            Some(found) => car_lap_reply("engineer.answer.carLastLap", car, found.last_lap_s),
-            None => no_such_car(car),
-        },
-        CrewIntent::QueryCarBestLap { car } => match car_named(view, car) {
-            Some(found) => car_lap_reply("engineer.answer.carBestLap", car, found.best_lap_s),
-            None => no_such_car(car),
-        },
         CrewIntent::QueryPitOrder => {
             if view.ordered_fuel_l.is_none() && view.ordered_tires == 0 {
                 CrewReply::plain("engineer.answer.pitOrderEmpty")
@@ -274,20 +271,42 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
     }
 }
 
-fn car_named(view: &EngineerView, number: u32) -> Option<&CarView> {
-    view.cars.iter().find(|car| car.number == number)
+/// A reply about each car the heard number names — two cars may wear the
+/// same number — or that there is none.
+fn about_cars(
+    view: &EngineerView,
+    heard: &str,
+    reply: impl Fn(&CarView) -> CrewReply,
+) -> EngineerStep {
+    let replies: Vec<CrewReply> = view
+        .cars
+        .iter()
+        .filter(|car| number_matches(heard, &car.number))
+        .map(reply)
+        .collect();
+
+    if replies.is_empty() {
+        return EngineerStep::Reply(CrewReply::plain("engineer.answer.noSuchCar").arg(
+            "car",
+            CrewArg::Text {
+                value: heard.to_string(),
+            },
+        ));
+    }
+
+    EngineerStep::Answers(replies)
 }
 
-fn no_such_car(car: u32) -> CrewReply {
-    CrewReply::plain("engineer.answer.noSuchCar").number("car", f64::from(car))
+fn car_number(car: &CarView) -> CrewArg {
+    CrewArg::Text {
+        value: car.number.clone(),
+    }
 }
 
-fn car_lap_reply(key: &str, car: u32, lap_s: Option<f32>) -> CrewReply {
-    let car_number = f64::from(car);
-
+fn car_lap_reply(key: &str, car: &CarView, lap_s: Option<f32>) -> CrewReply {
     match lap_s.filter(|lap| *lap > 0.0) {
-        Some(lap) => with_lap_time(CrewReply::plain(key).number("car", car_number), lap),
-        None => CrewReply::plain("engineer.answer.carNoLapTime").number("car", car_number),
+        Some(lap) => with_lap_time(CrewReply::plain(key).arg("car", car_number(car)), lap),
+        None => CrewReply::plain("engineer.answer.carNoLapTime").arg("car", car_number(car)),
     }
 }
 
@@ -648,38 +667,50 @@ mod tests {
 
     #[test]
     fn answers_about_another_car_by_its_number() {
+        let car = |number: &str, class_position| CarView {
+            number: number.into(),
+            class_position,
+            last_lap_s: Some(95.27),
+            best_lap_s: None,
+        };
         let view = EngineerView {
-            cars: vec![CarView {
-                number: 12,
-                class_position: Some(3),
-                last_lap_s: Some(95.27),
-                best_lap_s: None,
-            }],
+            cars: vec![car("12", Some(3)), car("012", Some(5))],
             ..EngineerView::default()
         };
-        let reply = |intent| match plan(intent, &view, None) {
-            EngineerStep::Reply(reply) => reply,
+        let replies = |intent| match plan(intent, &view, None) {
+            EngineerStep::Answers(replies) => replies,
+            EngineerStep::Reply(reply) => vec![reply],
             _ => panic!("a reply"),
         };
+        let text = |reply: &CrewReply, name: &str| {
+            reply.args.iter().find_map(|(arg, value)| match value {
+                CrewArg::Text { value } if arg == name => Some(value.clone()),
+                _ => None,
+            })
+        };
 
-        let position = reply(CrewIntent::QueryCarPosition { car: 12 });
-        let last = reply(CrewIntent::QueryCarLastLap { car: 12 });
-        let best = reply(CrewIntent::QueryCarBestLap { car: 12 });
-        let missing = reply(CrewIntent::QueryCarPosition { car: 7 });
+        let both = replies(CrewIntent::QueryCarPosition { car: "12".into() });
+        let zeros = replies(CrewIntent::QueryCarPosition { car: "012".into() });
+        let last = replies(CrewIntent::QueryCarLastLap { car: "012".into() });
+        let best = replies(CrewIntent::QueryCarBestLap { car: "012".into() });
+        let missing = replies(CrewIntent::QueryCarPosition { car: "7".into() });
 
-        assert_eq!(number(&position, "position"), Some(3.0));
-        assert_eq!(last.key, "engineer.answer.carLastLap");
         assert_eq!(
-            (
-                number(&last, "car"),
-                number(&last, "minutes"),
-                number(&last, "seconds")
-            ),
-            (Some(12.0), Some(1.0), Some(35.3))
+            both.iter()
+                .map(|reply| number(reply, "position"))
+                .collect::<Vec<_>>(),
+            [Some(3.0), Some(5.0)]
         );
-        assert_eq!(best.key, "engineer.answer.carNoLapTime");
-        assert_eq!(missing.key, "engineer.answer.noSuchCar");
-        assert_eq!(number(&missing, "car"), Some(7.0));
+        assert_eq!(zeros.len(), 1);
+        assert_eq!(text(&zeros[0], "car").as_deref(), Some("012"));
+        assert_eq!(last[0].key, "engineer.answer.carLastLap");
+        assert_eq!(
+            (number(&last[0], "minutes"), number(&last[0], "seconds")),
+            (Some(1.0), Some(35.3))
+        );
+        assert_eq!(best[0].key, "engineer.answer.carNoLapTime");
+        assert_eq!(missing[0].key, "engineer.answer.noSuchCar");
+        assert_eq!(text(&missing[0], "car").as_deref(), Some("7"));
     }
 
     #[test]

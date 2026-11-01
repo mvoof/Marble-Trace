@@ -75,15 +75,15 @@ pub enum CrewIntent {
     QueryBestLap,
     QueryPitOrder,
     QueryWeather,
-    /// Another car, by the number on it.
+    /// Another car, by the number on it as said: leading zeros kept.
     QueryCarPosition {
-        car: u32,
+        car: String,
     },
     QueryCarLastLap {
-        car: u32,
+        car: String,
     },
     QueryCarBestLap {
-        car: u32,
+        car: String,
     },
     /// One of the sim's chat macros, by its slot; only ever a question's step.
     ChatMacro {

@@ -206,60 +206,39 @@
   font-size: inherit;
 }
 
-.variableSearch {
-  margin: rem(12) 0 rem(8);
-}
-
-.variableList {
+.fieldSheet {
   display: flex;
   flex-direction: column;
-  gap: rem(2);
-  max-height: rem(320);
-  overflow-y: auto;
+  gap: rem(6);
+  margin-top: rem(8);
 }
 
-.variableRow {
+.fieldSheetGroup {
   display: flex;
-  flex-direction: column;
-  gap: rem(2);
-  padding: rem(6) rem(8);
-  border: 1px solid transparent;
-  border-radius: 4px;
-  background: none;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-
-  &:hover {
-    background: $sys-bg-sidebar;
-  }
+  align-items: baseline;
+  gap: rem(4);
+  flex-wrap: wrap;
 }
 
-.variableRowActive {
-  border-color: $sys-accent;
-}
-
-.variableName {
-  font-family: $font-mono;
+.fieldSheetGroupTitle {
+  min-width: rem(64);
   font-size: rem(12);
-  color: $sys-text-primary;
-}
-
-.variableUnit {
-  color: $sys-text-muted;
-}
-
-.variableReady {
-  color: $sys-accent;
-}
-
-.variableDesc {
-  font-size: rem(11);
   color: $sys-text-secondary;
 }
 
-.variableRead {
-  margin-top: rem(16);
+.fieldTag {
+  padding: rem(1) rem(6);
+  border: 1px solid $sys-border-sub;
+  border-radius: 4px;
+  background: none;
+  font-family: $font-mono;
+  font-size: rem(12);
+  color: $sys-text-primary;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $sys-accent;
+  }
 }
 
 .componentRow {
@@ -527,6 +506,11 @@
   flex-shrink: 0;
   font-size: rem(12);
   color: $sys-text-secondary;
+}
+
+.targetSelect {
+  width: rem(240);
+  flex-shrink: 0;
 }
 
 .stepValue {

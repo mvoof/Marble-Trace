@@ -42,7 +42,7 @@ export const CrewDownloads = observer(() => {
           className={styles.alert}
           type="info"
           showIcon
-          message={t('crewPage.downloads.banner', {
+          title={t('crewPage.downloads.banner', {
             size: megabytes(crew.recommendedMissingBytes),
           })}
           action={

@@ -182,8 +182,7 @@ fn update_question_view(view: &mut QuestionView, frame: &SourceFrame, bundle: &T
     }
 }
 
-/// The other cars by the numbers on them; a car whose number is not a number
-/// cannot be asked about by voice and is left out.
+/// The other cars by the numbers on them, as the sim writes them.
 fn car_views(entries: &[DriverEntry], session: Option<&SessionSnapshot>) -> Vec<CarView> {
     let Some(session) = session else {
         return Vec::new();
@@ -199,7 +198,7 @@ fn car_views(entries: &[DriverEntry], session: Option<&SessionSnapshot>) -> Vec<
                 .find(|car| car.car_idx == entry.car_idx)?;
 
             Some(CarView {
-                number: car.car_number.trim().parse().ok()?,
+                number: car.car_number.trim().to_string(),
                 class_position: (entry.live_class_position > 0)
                     .then_some(entry.live_class_position),
                 last_lap_s: entry.last_lap_time,

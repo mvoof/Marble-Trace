@@ -170,7 +170,7 @@ export const CrewCommands = observer(() => {
               className={styles.alert}
               type={issue.severity === 'error' ? 'error' : 'warning'}
               showIcon
-              message={`${issue.location}: ${issue.message}`}
+              title={`${issue.location}: ${issue.message}`}
             />
           ))}
 
@@ -191,7 +191,7 @@ export const CrewCommands = observer(() => {
                   className={styles.alert}
                   type="warning"
                   showIcon
-                  message={t('crewPage.commands.conflict', {
+                  title={t('crewPage.commands.conflict', {
                     sentence: conflict.sentence,
                     intents: conflict.intents.map(actionTitle).join(', '),
                   })}

@@ -30,11 +30,11 @@ export const SourceNote = observer(() => {
         type="warning"
         showIcon
         className={styles.alert}
-        message={t('settingsPage.telemetryInspector.noteProcessedTitle')}
+        title={t('settingsPage.telemetryInspector.noteProcessedTitle')}
         description={note}
       />
     );
   }
 
-  return <Alert type="info" showIcon className={styles.alert} message={note} />;
+  return <Alert type="info" showIcon className={styles.alert} title={note} />;
 });

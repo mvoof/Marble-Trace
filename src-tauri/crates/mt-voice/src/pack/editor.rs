@@ -16,9 +16,10 @@ use mt_model::app::crew_questions::{
     question_reply_key, CarTarget, VoiceQuestionDef, QUESTION_FIELDS,
 };
 use mt_model::app::voice::{
-    VoiceConflictView, VoiceDraftCheck, VoiceIntentView, VoiceIssueView, VoicePackView,
-    VoicePhraseView, VoiceQuestionView, VoiceRecognisedView, VoiceSlotHeard, VoiceSlotValueView,
-    VoiceSlotView, VoiceTemplateCheck, VoiceVariantCheck, VoiceVariantView,
+    VoiceCarTargetView, VoiceConflictView, VoiceDraftCheck, VoiceIntentView, VoiceIssueView,
+    VoicePackView, VoicePhraseView, VoiceQuestionFieldView, VoiceQuestionView, VoiceRecognisedView,
+    VoiceSlotHeard, VoiceSlotValueView, VoiceSlotView, VoiceTemplateCheck, VoiceVariantCheck,
+    VoiceVariantView,
 };
 
 use crate::cache::{variant_status, VariantStatus};
@@ -48,6 +49,13 @@ pub fn pack_view(pack: &LanguagePack, folder: &Path, config: &OutputConfig) -> V
     let question_values: Vec<String> = QUESTION_FIELDS
         .iter()
         .map(|spec| spec.name.to_string())
+        .collect();
+    let question_fields = QUESTION_FIELDS
+        .iter()
+        .map(|spec| VoiceQuestionFieldView {
+            name: spec.name.to_string(),
+            car: spec.of_car(),
+        })
         .collect();
     let phrases = PHRASE_KEYS
         .iter()
@@ -146,7 +154,14 @@ pub fn pack_view(pack: &LanguagePack, folder: &Path, config: &OutputConfig) -> V
                 steps: question.steps.clone(),
             })
             .collect(),
-        question_values,
+        question_fields,
+        car_targets: CarTarget::ALL
+            .iter()
+            .map(|target| VoiceCarTargetView {
+                target: *target,
+                slot: target.phrase_slot().map(str::to_string),
+            })
+            .collect(),
         sentence_count: pack.grammar.sentence_count() as u32,
         conflicts: conflict_views(&pack.grammar.conflicts),
         issues: pack
@@ -812,6 +827,13 @@ mod tests {
         let _ = fs::remove_dir_all(root);
     }
 
+    fn question_value_names(view: &VoicePackView) -> Vec<String> {
+        view.question_fields
+            .iter()
+            .map(|field| field.name.clone())
+            .collect()
+    }
+
     fn with_weather_question(view: &mut VoicePackView, template: &str, reply: &str) {
         view.questions.push(VoiceQuestionView {
             id: "weather".into(),
@@ -833,7 +855,7 @@ mod tests {
         });
         view.phrases.push(VoicePhraseView {
             key: "question.weather".into(),
-            values: view.question_values.clone(),
+            values: question_value_names(view),
             variants: vec![VoiceVariantView {
                 text: reply.into(),
                 status: "dynamic".into(),
@@ -877,7 +899,7 @@ mod tests {
         ] {
             view.phrases.push(VoicePhraseView {
                 key: key.into(),
-                values: view.question_values.clone(),
+                values: question_value_names(&view),
                 variants: vec![VoiceVariantView {
                     text: text.into(),
                     status: "dynamic".into(),

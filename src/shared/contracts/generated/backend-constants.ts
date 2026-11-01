@@ -65,27 +65,6 @@ export const VOICE_QUESTION_PREFIX = 'question.';
 export const VOICE_ASK_WHEN_UNSAID = 'ask';
 
 /**
- * A question's reply value read from the sim by the sim's own variable
- * name: `{sim.PlayerCarMyIncidentCount}`, a whole number.
- */
-export const VOICE_SIM_VALUE_PREFIX = 'sim.';
-
-/**
- * After a sim value's name: the number to a tenth.
- */
-export const VOICE_SIM_SCALE_TENTHS = 'tenths';
-
-/**
- * After a sim value's name: metres per second read as km/h.
- */
-export const VOICE_SIM_SCALE_KMH = 'kmh';
-
-/**
- * After a sim value's name: a share of one read as a percentage.
- */
-export const VOICE_SIM_SCALE_PERCENT = 'percent';
-
-/**
  * A step of a question that sends one of the sim's chat macros; its
  * value is the macro's slot.
  */

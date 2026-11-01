@@ -59,7 +59,7 @@ export const CrewPage = observer(() => {
           className={styles.alert}
           type="info"
           showIcon
-          message={t('crewPage.notReady')}
+          title={t('crewPage.notReady')}
           action={
             <Button size="small" onClick={() => setSection('downloads')}>
               {t('crewPage.openDownloads')}
@@ -73,7 +73,7 @@ export const CrewPage = observer(() => {
           className={styles.alert}
           type="warning"
           showIcon
-          message={t('crewPage.packOutdated', {
+          title={t('crewPage.packOutdated', {
             pack: crew.packLanguage,
             language: crew.language,
           })}
@@ -85,7 +85,7 @@ export const CrewPage = observer(() => {
           className={styles.alert}
           type="error"
           showIcon
-          message={crew.lastError}
+          title={crew.lastError}
         />
       )}
 

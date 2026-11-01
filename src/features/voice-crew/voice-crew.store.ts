@@ -31,14 +31,13 @@ import {
   voiceTestPtt,
 } from '@shared/api/voice.service';
 import { openExternalLink } from '@shared/api/external-link';
-import { getRawVarMeta } from '@shared/api/telemetry.service';
 import {
   VOICE_CHAT_MACRO_ACTION,
   VOICE_QUESTION_PREFIX,
 } from '@shared/contracts/generated/backend-constants';
 import type {
+  CarTarget,
   CrewRadioEvent,
-  RawVarMeta,
   VoiceComponentView,
   VoiceDownloadProgress,
   VoiceDraftCheck,
@@ -57,7 +56,6 @@ import {
   type AppSettingsStore,
 } from '@entities/app-settings/app-settings.store';
 import type { UnitsStore } from '@entities/app-settings/units.store';
-import { OVERLAY_VARIABLES, type OverlayVariable } from './sim-values';
 
 interface VoiceCrewDeps {
   appSettings: AppSettingsStore;
@@ -100,6 +98,28 @@ export const NUMBER_SLOT = 'number';
 const DRAFT_CHECK_DELAY_MS = 300;
 /** A reply variant's status while it has no recording. */
 const UNVOICED_STATUS = 'missing';
+/** The answer lists a question has beside its answers, by key suffix. */
+const NO_CAR_SUFFIX = '.noCar';
+const NO_VALUE_SUFFIX = '.noValue';
+
+/** Which of a question's answer lists a phrase key is; `null` for no question's. */
+export const questionAnswerList = (
+  key: string
+): 'answers' | 'noCar' | 'noValue' | null => {
+  if (!key.startsWith(VOICE_QUESTION_PREFIX)) {
+    return null;
+  }
+
+  if (key.endsWith(NO_CAR_SUFFIX)) {
+    return 'noCar';
+  }
+
+  if (key.endsWith(NO_VALUE_SUFFIX)) {
+    return 'noValue';
+  }
+
+  return 'answers';
+};
 const CREW_LANGUAGES = ['ru', 'en', 'es', 'zh'] as const;
 const FALLBACK_LANGUAGE = 'en';
 
@@ -127,8 +147,6 @@ export class VoiceCrewStore {
     null;
   /** The component whose sample is playing. */
   playingSample: string | null = null;
-  /** The running sim's own variable list; empty while it is not running. */
-  liveVariables: RawVarMeta[] = [];
   /** Sentences and replies edited as blocks; off, as the text they are. */
   blockEditing = true;
 
@@ -247,42 +265,6 @@ export class VoiceCrewStore {
     }));
 
     return [...catalogVoices, ...customVoices];
-  }
-
-  /** What a question's reply may read from the sim: the variables the overlay reads. */
-  get simVariables(): OverlayVariable[] {
-    return OVERLAY_VARIABLES;
-  }
-
-  get simVariablesLive(): boolean {
-    return this.liveVariables.length > 0;
-  }
-
-  /** Listed variables the running sim lacks for this car; none while it is not running. */
-  get missingSimVariables(): Set<string> {
-    if (!this.simVariablesLive) {
-      return new Set();
-    }
-
-    const live = new Set(this.liveVariables.map((variable) => variable.name));
-
-    return new Set(
-      OVERLAY_VARIABLES.filter((variable) => !live.has(variable.name)).map(
-        (variable) => variable.name
-      )
-    );
-  }
-
-  async loadSimVariables() {
-    try {
-      const variables = await getRawVarMeta();
-
-      runInAction(() => {
-        this.liveVariables = variables;
-      });
-    } catch (error) {
-      console.error('[voice-crew] variable list failed:', error);
-    }
   }
 
   get templateChecks(): Map<string, VoiceTemplateCheck> {
@@ -883,23 +865,73 @@ export class VoiceCrewStore {
     const id = `q${Date.now().toString(36)}`;
     const key = `${VOICE_QUESTION_PREFIX}${id}`;
 
+    const replies = [key, `${key}${NO_CAR_SUFFIX}`, `${key}${NO_VALUE_SUFFIX}`];
+
     pack.questions.push({ id, name, enabled: true, target: null, steps: [] });
     pack.intents.push({
       id: key,
       slots: [],
       templates: [''],
       sentences: 0,
-      replies: [key],
+      replies,
       whenUnsaid: null,
     });
-    pack.phrases.push({
-      key,
-      values: [...pack.questionValues],
-      variants: [],
-    });
+
+    for (const reply of replies) {
+      pack.phrases.push({
+        key: reply,
+        values: pack.questionFields.map((field) => field.name),
+        variants: [],
+      });
+    }
+
     this.addVariant(key);
 
     return key;
+  }
+
+  /**
+   * The car a question asks about. Its phrases then carry the slot that car
+   * is picked by: a slot the old car took is renamed in them.
+   */
+  setQuestionTarget(id: string, target: CarTarget | null) {
+    const question = this.findQuestion(id);
+    const intent = this.intent(`${VOICE_QUESTION_PREFIX}${id}`);
+
+    if (!question || !intent) {
+      return;
+    }
+
+    const slot = this.targetSlot(target);
+    const oldSlot = intent.slots[0] ?? null;
+
+    if (slot !== null && oldSlot !== null && slot !== oldSlot) {
+      intent.templates = intent.templates.map((template) =>
+        template.replaceAll(`{${oldSlot}}`, `{${slot}}`)
+      );
+    }
+
+    question.target = target;
+    intent.slots = slot === null ? [] : [slot];
+    this.edited();
+  }
+
+  /** The slot a car target's phrases name it by; `null` for none. */
+  targetSlot(target: CarTarget | null): string | null {
+    return (
+      this.pack?.carTargets.find((entry) => entry.target === target)?.slot ??
+      null
+    );
+  }
+
+  /** The fields a question's answer may name: the car's, then the session's. */
+  get questionFields(): { car: string[]; session: string[] } {
+    const fields = this.pack?.questionFields ?? [];
+
+    return {
+      car: fields.filter((field) => field.car).map((field) => field.name),
+      session: fields.filter((field) => !field.car).map((field) => field.name),
+    };
   }
 
   renameQuestion(id: string, name: string) {

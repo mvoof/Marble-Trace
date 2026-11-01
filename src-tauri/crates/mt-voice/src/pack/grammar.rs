@@ -23,6 +23,10 @@ pub const UNKNOWN_WORD: &str = "[unk]";
 /// is called this, the pack's slots being only the known ones.
 const CAR_NUMBER_PHRASES: &str = "#carNumber";
 
+/// Built-in intents that name a car by its number; their `{number}` is heard
+/// as a question's is, zeros and all.
+const CAR_NUMBER_INTENTS: [&str; 3] = ["query.carPosition", "query.carLastLap", "query.carBestLap"];
+
 /// Past this many sentences recognition slows and confusions grow; the pack
 /// still loads, with a warning.
 pub const LARGE_GRAMMAR_SENTENCES: usize = 50_000;
@@ -296,7 +300,12 @@ pub fn compile(language: &str, commands: &CommandsFile) -> (CommandGrammar, Vec<
             let lookup = |name: &str| {
                 let phrases = match name {
                     // A question hears a car's number as said, zeros and all.
-                    NUMBER_FIELD if question.is_some() => CAR_NUMBER_PHRASES,
+                    NUMBER_FIELD
+                        if question.is_some()
+                            || CAR_NUMBER_INTENTS.contains(&intent_id.as_str()) =>
+                    {
+                        CAR_NUMBER_PHRASES
+                    }
                     POSITION_FIELD | CLASS_POSITION_FIELD => NUMBER_FIELD,
                     _ => name,
                 };

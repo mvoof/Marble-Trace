@@ -31,12 +31,6 @@ describe('reply blocks', () => {
     expect(parseReplyBlocks(text)).toEqual([{ kind: 'message', text }]);
   });
 
-  it('reads a sim value as a value', () => {
-    expect(parseReplyBlocks('{sim.Speed.kmh}')).toEqual([
-      { kind: 'value', value: 'sim.Speed.kmh' },
-    ]);
-  });
-
   it('refuses marks that do not pair up', () => {
     expect(parseReplyBlocks('Топливо {liters')).toBeNull();
     expect(parseReplyBlocks('Топливо }')).toBeNull();
