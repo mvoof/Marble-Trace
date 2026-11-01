@@ -18,25 +18,23 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use mt_model::app::crew::QUESTION_VALUES;
+use mt_model::app::crew_questions::question_field_named;
 use mt_model::contract::generated_paths::IRACING_VARIABLES_PATH;
 use serde::Serialize;
 
 /// Variables the engineer already reads into a value of its own, which the
 /// editor offers first: `{fuel}` rather than `{sim.FuelLevel}`. Each is the
-/// variable `frame_map` maps onto the field `update_view`
-/// (`mt-telemetry/src/crew.rs`) fills that value from.
+/// variable `frame_map` maps onto the field `update_question_view`
+/// (`mt-telemetry/src/crew.rs`) fills that field from.
 const READY_VALUES: &[(&str, &str)] = &[
     ("AirTemp", "airTemp"),
     ("TrackTempCrew", "trackTemp"),
     ("Precipitation", "rain"),
-    ("TrackWetness", "wetness"),
-    ("WindVel", "wind"),
     ("FuelLevel", "fuel"),
     ("Lap", "lap"),
     ("SessionLapsRemainEx", "lapsLeft"),
     ("SessionTimeRemain", "minutesLeft"),
-    ("PlayerCarClassPosition", "position"),
+    ("PlayerCarClassPosition", "classPosition"),
 ];
 
 const FRAME_ACCESS: &str = "frame.";
@@ -282,13 +280,13 @@ fn the_checked_in_variable_list_is_current() {
 }
 
 #[test]
-fn every_ready_value_is_a_listed_variable_and_a_question_value() {
+fn every_ready_value_is_a_listed_variable_and_a_question_field() {
     let variables = overlay_variables();
 
     for (name, value) in READY_VALUES {
         assert!(
-            QUESTION_VALUES.contains(value),
-            "{value} is not a question value"
+            question_field_named(value).is_some(),
+            "{value} is not a question field"
         );
         assert!(
             variables.iter().any(|variable| variable.name == *name),

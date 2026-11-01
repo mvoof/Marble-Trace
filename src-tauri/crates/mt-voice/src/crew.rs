@@ -12,20 +12,27 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use mt_model::app::crew::{
-    CompoundKind, CrewArg, CrewIntent, CrewRadioEvent, CrewReply, SimRead, CHAT_MACRO_ACTION,
+    CompoundKind, CrewArg, CrewIntent, CrewRadioEvent, CrewReply, CHAT_MACRO_ACTION,
     QUESTION_PREFIX,
+};
+use mt_model::app::crew_questions::{
+    question_field_named, question_no_value_key, question_reply_kind, AskedCar, CarTarget,
+    QuestionField, QuestionReplyKind, VoiceQuestionDef, CLASS_POSITION_FIELD, NUMBER_FIELD,
+    POSITION_FIELD,
 };
 use mt_model::pit::pit_action::TireSet;
 use mt_model::utils::lock_or_recover;
 
 use crate::assets::VoiceAssets;
 use crate::pack::catalog::{
-    ask_key, intent_named, sim_values_in, COMPOUND_SLOT, NUMBER_SLOT, TIRES_SLOT,
+    ask_key, intent_named, COMPOUND_SLOT, NO_KEY, NUMBER_SLOT, TIRES_SLOT, YES_KEY,
 };
 use crate::pack::grammar::Recognised;
-use crate::pack::message::{Arg, Args};
+use crate::pack::message::{values_used, Arg, Args};
+use crate::pack::questions::AnswerList;
+use crate::pack::say::{said, Units};
 use crate::pack::template::SlotValue;
-use crate::pack::{load, step_command, CompiledVariant, LanguagePack, VariantPicker};
+use crate::pack::{answer_key, load, step_command, CompiledVariant, LanguagePack, VariantPicker};
 use crate::queue::Reply;
 use crate::voice_in::{understand, InputConfig, Understood, VoiceIn, VoiceInEvents, WordLookup};
 use crate::voice_out::{OutputConfig, Utterance, VoiceOut, VoiceOutEvents};
@@ -56,6 +63,8 @@ pub struct CrewConfig {
     pub volume: f32,
     pub length_scale: f32,
     pub confidence_threshold: f32,
+    /// Answers say miles, gallons and Fahrenheit.
+    pub imperial: bool,
 }
 
 struct Mouth {
@@ -64,6 +73,7 @@ struct Mouth {
     picker: VariantPicker,
     last: Option<Utterance>,
     threshold: f32,
+    units: Units,
 }
 
 struct Shared {
@@ -97,6 +107,7 @@ impl Crew {
                     picker: VariantPicker::default(),
                     last: None,
                     threshold: 0.0,
+                    units: Units::default(),
                 }),
             }),
             ear: None,
@@ -138,6 +149,9 @@ impl Crew {
 
             mouth.pack = pack;
             mouth.threshold = config.confidence_threshold;
+            mouth.units = Units {
+                imperial: config.imperial,
+            };
 
             match &mouth.out {
                 Some(out) => out.configure(output),
@@ -299,57 +313,50 @@ impl Shared {
     fn carry_out(&self, command: &Recognised) {
         match command.intent.as_str() {
             "control.repeat" => self.repeat(),
-            _ => match crew_intent(command) {
-                Some(intent) => self.host.ask(self.with_pack_parts(intent)),
-                None => self.speak(&CrewReply::plain(missing_value_reply(command))),
-            },
+            _ => {
+                match crew_intent(command).and_then(|intent| self.with_pack_parts(intent, command))
+                {
+                    Some(intent) => self.host.ask(intent),
+                    None => self.speak(&CrewReply::plain(missing_value_reply(command))),
+                }
+            }
         }
     }
 
-    /// A question names the sim values its replies say, for the telemetry
-    /// thread to read on the tick that answers it, and the steps it carries
-    /// out first.
-    fn with_pack_parts(&self, intent: CrewIntent) -> CrewIntent {
+    /// A question names the car it asks about, as its phrase heard it, the
+    /// fields its answers say, for the telemetry thread to read on the tick
+    /// that answers it, and the steps it carries out first. `None` for a
+    /// question the pack no longer has.
+    fn with_pack_parts(&self, intent: CrewIntent, command: &Recognised) -> Option<CrewIntent> {
         let CrewIntent::Question { id, .. } = intent else {
-            return intent;
+            return Some(intent);
         };
         let mouth = lock_or_recover(&self.mouth);
-        let mut names: Vec<String> = mouth
-            .pack
-            .variants(&format!("{QUESTION_PREFIX}{id}"))
-            .iter()
-            .flat_map(CompiledVariant::messages)
-            .flat_map(sim_values_in)
-            .collect();
-        // A step the pack check refused is left out, as it was reported.
-        let steps = mouth
+        let question = mouth
             .pack
             .commands_file
             .custom
             .questions
             .iter()
-            .find(|question| question.id == id)
-            .map(|question| {
-                question
-                    .steps
-                    .iter()
-                    .filter_map(|step| step_command(step).ok())
-                    .filter_map(|command| crew_intent(&command))
-                    .collect()
-            })
-            .unwrap_or_default();
+            .find(|question| question.id == id)?;
+        let asked = match question.target {
+            None => None,
+            Some(target) => Some(asked_car(target, command)?),
+        };
+        // A step the pack check refused is left out, as it was reported.
+        let steps = question
+            .steps
+            .iter()
+            .filter_map(|step| step_command(step).ok())
+            .filter_map(|command| crew_intent(&command))
+            .collect();
 
-        names.sort();
-        names.dedup();
-
-        CrewIntent::Question {
+        Some(CrewIntent::Question {
+            fields: fields_named(&mouth.pack, question),
+            asked,
             id,
-            sim: names
-                .into_iter()
-                .map(|name| SimRead { name, value: None })
-                .collect(),
             steps,
-        }
+        })
     }
 
     fn repeat(&self) {
@@ -365,14 +372,26 @@ impl Shared {
 
     fn speak(&self, crew_reply: &CrewReply) {
         let mut mouth = lock_or_recover(&self.mouth);
-        // A question's answer may name a value the sim does not have now.
-        let utterance = utterance(&mut mouth, crew_reply).or_else(|| {
-            crew_reply
-                .key
-                .starts_with(QUESTION_PREFIX)
-                .then(|| utterance(&mut mouth, &CrewReply::plain("engineer.noData")))
-                .flatten()
-        });
+        // A question's reply may name a value the sim does not have now: then
+        // its "no value" answer is said, and failing that the engineer's own.
+        let utterance = utterance(&mut mouth, crew_reply)
+            .or_else(|| match question_reply_kind(&crew_reply.key) {
+                Some((id, QuestionReplyKind::Reply)) => utterance(
+                    &mut mouth,
+                    &CrewReply {
+                        key: question_no_value_key(id),
+                        ..crew_reply.clone()
+                    },
+                ),
+                _ => None,
+            })
+            .or_else(|| {
+                crew_reply
+                    .key
+                    .starts_with(QUESTION_PREFIX)
+                    .then(|| utterance(&mut mouth, &CrewReply::plain("engineer.noData")))
+                    .flatten()
+            });
         let Some(utterance) = utterance else {
             tracing::warn!(key = %crew_reply.key, "voice pack has no words for this reply");
             return;
@@ -401,27 +420,100 @@ fn reply(utterance: Utterance) -> Reply<Utterance> {
     }
 }
 
-/// The reply in the pack's words: a variant picked, its values filled in.
+/// The reply in the pack's words: a variant picked, its values filled in —
+/// a question's each in its field's format.
 fn utterance(mouth: &mut Mouth, crew_reply: &CrewReply) -> Option<Utterance> {
-    let Mouth { pack, picker, .. } = mouth;
+    let Mouth {
+        pack,
+        picker,
+        units,
+        ..
+    } = mouth;
+    let question = question_reply_kind(&crew_reply.key).is_some();
     let saying = picker.pick(pack, &crew_reply.key)?;
     let args: Args<'_> = crew_reply
         .args
         .iter()
-        .map(|(name, value)| {
-            let arg = match value {
-                CrewArg::Number { value } => Arg::Number(*value),
-                CrewArg::Slot { slot, value } => {
-                    Arg::Text(pack.slot_word(slot, value).unwrap_or(value).to_string())
-                }
+        .filter_map(|(name, value)| {
+            let arg = match question_field_named(name).filter(|_| question) {
+                Some(spec) => said(pack, *units, spec.say, value)?,
+                None => plain_arg(pack, value)?,
             };
 
-            (name.as_str(), arg)
+            Some((name.as_str(), arg))
         })
         .collect();
     let text = pack.text(saying, &args)?;
 
     Some(Utterance { text })
+}
+
+/// A built-in reply's value: a number as it is, a slot value in the pack's
+/// words.
+fn plain_arg(pack: &LanguagePack, value: &CrewArg) -> Option<Arg> {
+    Some(match value {
+        CrewArg::Number { value } => Arg::Number(*value),
+        CrewArg::Slot { slot, value } => {
+            Arg::Text(pack.slot_word(slot, value).unwrap_or(value).to_string())
+        }
+        CrewArg::Text { value } => Arg::Text(value.clone()),
+        CrewArg::Flag { value } => {
+            let key = if *value { YES_KEY } else { NO_KEY };
+
+            Arg::Text(pack.variants(key).first()?.sayings.first()?.text.clone())
+        }
+    })
+}
+
+/// The car a question names, from what its phrase heard: a number in its
+/// `{number}`, a place in its `{position}` or `{classPosition}`.
+fn asked_car(target: CarTarget, command: &Recognised) -> Option<AskedCar> {
+    if let Some(asked) = AskedCar::fixed(target) {
+        return Some(asked);
+    }
+
+    let place = |slot: &str| match command.slot(slot) {
+        Some(SlotValue::Number(place)) => i32::try_from(*place).ok(),
+        _ => None,
+    };
+
+    Some(match target {
+        CarTarget::ByCarNumber => match command.slot(NUMBER_FIELD) {
+            Some(SlotValue::Digits(number)) => AskedCar::ByCarNumber {
+                number: number.clone(),
+            },
+            _ => return None,
+        },
+        CarTarget::ByPosition => AskedCar::ByPosition {
+            position: place(POSITION_FIELD)?,
+        },
+        CarTarget::ByClassPosition => AskedCar::ByClassPosition {
+            position: place(CLASS_POSITION_FIELD)?,
+        },
+        CarTarget::Me
+        | CarTarget::Ahead
+        | CarTarget::Behind
+        | CarTarget::Leader
+        | CarTarget::ClassLeader
+        | CarTarget::AheadOnTrack
+        | CarTarget::BehindOnTrack => return None,
+    })
+}
+
+/// Every field a question's answers name, each once, in catalog order.
+fn fields_named(pack: &LanguagePack, question: &VoiceQuestionDef) -> Vec<QuestionField> {
+    let names: Vec<String> = AnswerList::ALL
+        .iter()
+        .flat_map(|list| pack.variants(&answer_key(&question.id, *list)))
+        .flat_map(CompiledVariant::messages)
+        .flat_map(values_used)
+        .collect();
+
+    mt_model::app::crew_questions::QUESTION_FIELDS
+        .iter()
+        .filter(|spec| names.iter().any(|name| name == spec.name))
+        .map(|spec| spec.field)
+        .collect()
 }
 
 /// Where the voice comes from and goes, for these settings.
@@ -511,7 +603,8 @@ pub fn crew_intent(command: &Recognised) -> Option<CrewIntent> {
         CHAT_MACRO_ACTION => CrewIntent::ChatMacro { slot: number()? },
         other => CrewIntent::Question {
             id: other.strip_prefix(QUESTION_PREFIX)?.to_string(),
-            sim: Vec::new(),
+            asked: None,
+            fields: Vec::new(),
             steps: Vec::new(),
         },
     })
@@ -557,6 +650,7 @@ impl VoiceOutEvents for MouthEvents {
 
 #[cfg(test)]
 mod tests {
+    use mt_model::app::crew_questions::{CarField, SessionField};
     use mt_model::app::voice::VoiceStep;
 
     use super::*;
@@ -588,6 +682,7 @@ mod tests {
                 picker: VariantPicker::with_seed(1),
                 last: None,
                 threshold: 0.6,
+                units: Units::default(),
             }),
         };
 
@@ -786,22 +881,46 @@ mod tests {
         }
     }
 
-    fn with_question(shared: &Shared, name: &str) {
+    fn question(id: &str, target: Option<CarTarget>) -> VoiceQuestionDef {
+        VoiceQuestionDef {
+            id: id.into(),
+            name: String::new(),
+            enabled: true,
+            phrases: Vec::new(),
+            target,
+            replies: Vec::new(),
+            no_car: Vec::new(),
+            no_value: Vec::new(),
+            steps: Vec::new(),
+        }
+    }
+
+    fn with_questions(shared: &Shared, name: &str) {
         let mut mouth = lock_or_recover(&shared.mouth);
         let mut commands = mouth.pack.commands_file.clone();
 
-        commands.custom.questions.push(crate::pack::Question {
-            id: "weather".into(),
-            name: "Weather".into(),
+        commands.custom.questions.push(VoiceQuestionDef {
             phrases: vec!["how is the sky".into()],
             steps: vec![
                 step("pit.fuel", Some("30")),
                 step("chat.macro", Some("4")),
                 step("pit.fuel", Some("lots")),
             ],
-            replies: vec![crate::pack::Variant {
-                text: "Air {airTemp}, {sim.PlayerCarMyIncidentCount, plural, one {# incident} other {# incidents}}".into(),
-            }],
+            replies: vec!["Air {airTemp}, track {trackTemp}".into()],
+            no_value: vec!["No idea about {trackName}".into()],
+            ..question("weather", None)
+        });
+        commands.custom.questions.push(VoiceQuestionDef {
+            phrases: vec!["tell me about car {number}".into()],
+            replies: vec!["Car {number} is P{position}, {inPit}".into()],
+            no_car: vec!["No car {number}".into()],
+            ..question("car", Some(CarTarget::ByCarNumber))
+        });
+        commands.custom.questions.push(VoiceQuestionDef {
+            phrases: vec!["who is p {position}".into()],
+            replies: vec!["{name}".into()],
+            no_car: vec!["Nobody".into()],
+            ..question("place", Some(CarTarget::ByPosition))
         });
 
         let folder =
@@ -818,21 +937,30 @@ mod tests {
         let _ = std::fs::remove_dir_all(folder);
     }
 
+    fn last_said(shared: &Shared) -> Option<String> {
+        lock_or_recover(&shared.mouth)
+            .last
+            .as_ref()
+            .map(|last| last.text.clone())
+    }
+
     #[test]
     fn asks_the_engineer_a_question_of_the_drivers_own_with_its_steps() {
         let (recorder, shared) = shared("en");
 
-        with_question(&shared, "ask");
+        with_questions(&shared, "ask");
         shared.heard(heard("how is the sky"));
 
         assert_eq!(
             *recorder.asked.lock().unwrap(),
             vec![CrewIntent::Question {
                 id: "weather".into(),
-                sim: vec![SimRead {
-                    name: "sim.PlayerCarMyIncidentCount".into(),
-                    value: None,
-                }],
+                asked: None,
+                fields: vec![
+                    QuestionField::Session(SessionField::AirTemp),
+                    QuestionField::Session(SessionField::TrackTemp),
+                    QuestionField::Session(SessionField::TrackName),
+                ],
                 // The step the pack refused is left out.
                 steps: vec![
                     CrewIntent::Fuel { liters: 30 },
@@ -843,10 +971,50 @@ mod tests {
     }
 
     #[test]
+    fn names_the_car_by_the_number_or_the_place_heard() {
+        let (recorder, shared) = shared("en");
+
+        with_questions(&shared, "car");
+        shared.heard(heard("tell me about car zero nine"));
+        shared.heard(heard("tell me about car nine"));
+        shared.heard(heard("who is p three"));
+
+        let asked: Vec<Option<AskedCar>> = recorder
+            .asked
+            .lock()
+            .unwrap()
+            .iter()
+            .map(|intent| match intent {
+                CrewIntent::Question { asked, .. } => asked.clone(),
+                other => panic!("a question, not {other:?}"),
+            })
+            .collect();
+
+        assert_eq!(
+            asked,
+            vec![
+                Some(AskedCar::ByCarNumber {
+                    number: "09".into()
+                }),
+                Some(AskedCar::ByCarNumber { number: "9".into() }),
+                Some(AskedCar::ByPosition { position: 3 }),
+            ]
+        );
+        assert!(matches!(
+            &recorder.asked.lock().unwrap()[0],
+            CrewIntent::Question { fields, .. } if *fields == vec![
+                QuestionField::Car(CarField::Number),
+                QuestionField::Car(CarField::Position),
+                QuestionField::Car(CarField::InPit),
+            ]
+        ));
+    }
+
+    #[test]
     fn a_routine_heard_unsure_is_not_carried_out() {
         let (recorder, shared) = shared("en");
 
-        with_question(&shared, "unsure");
+        with_questions(&shared, "unsure");
         shared.heard(Heard {
             text: "how is the sky".into(),
             confidence: 0.3,
@@ -856,22 +1024,53 @@ mod tests {
     }
 
     #[test]
-    fn answers_a_question_or_says_there_is_no_data_for_it() {
+    fn says_each_field_in_its_format() {
         let (_, shared) = shared("en");
-        let text = |shared: &Shared| {
-            lock_or_recover(&shared.mouth)
-                .last
-                .as_ref()
-                .map(|last| last.text.clone())
-        };
 
-        with_question(&shared, "answer");
+        with_questions(&shared, "say");
+        shared.speak(
+            &CrewReply::plain("question.car")
+                .arg("number", CrewArg::Text { value: "09".into() })
+                .number("position", 3.0)
+                .arg("inPit", CrewArg::Flag { value: false }),
+        );
+
+        assert_eq!(
+            last_said(&shared).as_deref(),
+            Some("Car zero nine is P3, no")
+        );
+
+        shared.speak(
+            &CrewReply::plain("question.car.noCar")
+                .arg("number", CrewArg::Text { value: "99".into() }),
+        );
+
+        assert_eq!(last_said(&shared).as_deref(), Some("No car nine nine"));
+    }
+
+    #[test]
+    fn a_value_missing_says_the_no_value_answer_then_the_engineers_own() {
+        let (_, shared) = shared("en");
+
+        with_questions(&shared, "answer");
+        shared.speak(
+            &CrewReply::plain("question.weather")
+                .number("airTemp", 21.4)
+                .number("trackTemp", 30.0),
+        );
+        assert_eq!(last_said(&shared).as_deref(), Some("Air 21, track 30"));
+
         shared.speak(
             &CrewReply::plain("question.weather")
                 .number("airTemp", 21.0)
-                .number("sim.PlayerCarMyIncidentCount", 4.0),
+                .arg(
+                    "trackName",
+                    CrewArg::Text {
+                        value: "Spa".into(),
+                    },
+                ),
         );
-        assert_eq!(text(&shared).as_deref(), Some("Air 21, 4 incidents"));
+        assert_eq!(last_said(&shared).as_deref(), Some("No idea about Spa"));
 
         shared.speak(&CrewReply::plain("question.weather"));
 
@@ -882,6 +1081,6 @@ mod tests {
             .map(|variant| variant.variant.text.clone())
             .collect();
 
-        assert!(no_data.contains(&text(&shared).unwrap()));
+        assert!(no_data.contains(&last_said(&shared).unwrap()));
     }
 }

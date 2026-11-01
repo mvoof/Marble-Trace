@@ -45,6 +45,18 @@ impl fmt::Display for TemplateError {
 pub enum SlotValue {
     Number(u32),
     Name(String),
+    /// A car number as said, leading zeros kept: "zero nine" is `09`.
+    Digits(String),
+}
+
+impl SlotValue {
+    /// The value as the editor shows it.
+    pub fn text(&self) -> String {
+        match self {
+            Self::Number(number) => number.to_string(),
+            Self::Name(name) | Self::Digits(name) => name.clone(),
+        }
+    }
 }
 
 /// One way to say a slot's value.

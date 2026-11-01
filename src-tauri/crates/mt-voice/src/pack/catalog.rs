@@ -6,10 +6,10 @@
 //! join later as `spotter.*` without touching these.
 
 pub use mt_model::app::crew::ASK_WHEN_UNSAID;
-use mt_model::app::crew::{SimValue, QUESTION_PREFIX, QUESTION_VALUES};
+use mt_model::app::crew::QUESTION_PREFIX;
+use mt_model::app::crew_questions::QUESTION_FIELDS;
 use mt_model::pit::pit_action::TireSet;
 
-use crate::pack::message::{values_used, Part};
 use crate::pack::template::SlotValue;
 
 /// A phrase key and the values the code fills it with.
@@ -68,47 +68,38 @@ pub const PHRASE_KEYS: &[PhraseKey] = &[
     key("engineer.noData", &[]),
     key("engineer.cannot", &[]),
     key("engineer.nothingToRepeat", &[]),
+    // The words a question's answer says a value with.
+    key(YES_KEY, &[]),
+    key(NO_KEY, &[]),
+    key(PLUS_KEY, &[SAID_VALUE]),
+    key(MINUS_KEY, &[SAID_VALUE]),
+    key(FASTER_KEY, &[SAID_VALUE]),
+    key(SLOWER_KEY, &[SAID_VALUE]),
 ];
+
+pub const YES_KEY: &str = "engineer.yes";
+pub const NO_KEY: &str = "engineer.no";
+pub const PLUS_KEY: &str = "engineer.plus";
+pub const MINUS_KEY: &str = "engineer.minus";
+pub const FASTER_KEY: &str = "engineer.faster";
+pub const SLOWER_KEY: &str = "engineer.slower";
+/// The number a sign or a delta word puts in words.
+pub const SAID_VALUE: &str = "value";
 
 pub fn phrase_key(id: &str) -> Option<&'static PhraseKey> {
     PHRASE_KEYS.iter().find(|key| key.id == id)
 }
 
-/// The values a reply is filled with: a built-in key's own, or every value a
-/// question of the driver's may name.
-pub fn reply_values(key: &str) -> &'static [&'static str] {
+/// The values a reply is filled with: a built-in key's own, or every field
+/// a question of the driver's may name.
+pub fn reply_values(key: &str) -> Vec<&'static str> {
     match phrase_key(key) {
-        Some(phrase) => phrase.values,
-        None if key.starts_with(QUESTION_PREFIX) => QUESTION_VALUES,
-        None => &[],
+        Some(phrase) => phrase.values.to_vec(),
+        None if key.starts_with(QUESTION_PREFIX) => {
+            QUESTION_FIELDS.iter().map(|spec| spec.name).collect()
+        }
+        None => Vec::new(),
     }
-}
-
-/// A reply's values with the sim's own variables it names: a question's reply
-/// may name any (`{sim.Speed.kmh}`), a built-in key's none.
-pub fn reply_values_in(key: &str, message: &[Part]) -> Vec<String> {
-    let mut values: Vec<String> = reply_values(key)
-        .iter()
-        .map(|value| value.to_string())
-        .collect();
-
-    if key.starts_with(QUESTION_PREFIX) {
-        values.extend(sim_values_in(message));
-    }
-
-    values
-}
-
-/// The sim values a message names, each once.
-pub fn sim_values_in(message: &[Part]) -> Vec<String> {
-    let mut names: Vec<String> = values_used(message)
-        .into_iter()
-        .filter(|name| SimValue::parse(name).is_some())
-        .collect();
-
-    names.sort();
-    names.dedup();
-    names
 }
 
 /// A slot's kind decides where its phrases come from.
@@ -298,9 +289,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_questions_reply_takes_the_question_values() {
-        assert_eq!(reply_values("engineer.ack.fuel"), &["liters"]);
-        assert_eq!(reply_values("question.weather"), QUESTION_VALUES);
+    fn a_questions_reply_takes_the_question_fields() {
+        assert_eq!(reply_values("engineer.ack.fuel"), vec!["liters"]);
+        assert_eq!(
+            reply_values("question.weather").len(),
+            QUESTION_FIELDS.len()
+        );
         assert!(reply_values("engineer.teleport").is_empty());
     }
 

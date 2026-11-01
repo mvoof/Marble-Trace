@@ -2955,6 +2955,10 @@ export type VoiceCrewSettings = {
    * Where the downloads, packs and cache live; empty is the app's own.
    */
   folder?: string;
+  /**
+   * Answers say miles, gallons and Fahrenheit, as the overlay's units do.
+   */
+  imperial?: boolean;
 };
 
 /**
@@ -3074,6 +3078,11 @@ export type VoiceQuestionDef = {
 export type VoiceQuestionView = {
   id: string;
   name: string;
+  enabled: boolean;
+  /**
+   * The car it asks about; `None` asks about none.
+   */
+  target: CarTarget | null;
   steps: VoiceStep[];
 };
 

@@ -22,7 +22,7 @@ use mt_voice::cache::{generate, missing_lines};
 use mt_voice::capture::input_devices;
 use mt_voice::crew::{output_config, pack_folder, CrewConfig};
 use mt_voice::folder::move_folder;
-use mt_voice::pack::catalog::reply_values_in;
+use mt_voice::pack::catalog::reply_values;
 use mt_voice::pack::editor::{
     check_draft, draft_vosk_grammar, pack_view, recognise_draft, save_pack,
 };
@@ -82,6 +82,7 @@ pub async fn configure_voice_crew(
         // Piper's length scale is the inverse of a speed: 2 speaks at half pace.
         length_scale: 1.0 / settings.speed.clamp(MIN_SPEED, MAX_SPEED),
         confidence_threshold: settings.confidence_threshold.clamp(0.0, 1.0),
+        imperial: settings.imperial,
     });
 
     Ok(())
@@ -419,6 +420,7 @@ fn disabled(config: Option<&CrewConfig>) -> CrewConfig {
             volume: 1.0,
             length_scale: 1.0,
             confidence_threshold: 0.0,
+            imperial: false,
         },
     }
 }
@@ -552,17 +554,17 @@ pub async fn preview_voice_line(
         .slot_word(COMPOUND_VALUE, PREVIEW_COMPOUND)
         .unwrap_or(PREVIEW_COMPOUND)
         .to_string();
-    let values = reply_values_in(&key, &saying.message);
+    let values = reply_values(&key);
     let args: Args<'_> = values
         .iter()
         .map(|value| {
-            let sample = if value == COMPOUND_VALUE {
+            let sample = if *value == COMPOUND_VALUE {
                 Arg::Text(compound.clone())
             } else {
                 Arg::Number(PREVIEW_NUMBER)
             };
 
-            (value.as_str(), sample)
+            (*value, sample)
         })
         .collect();
     let text = pack.text(saying, &args).ok_or("the line does not format")?;

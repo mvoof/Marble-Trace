@@ -1,4 +1,5 @@
-//! How the built-in languages say a number, for the `{number}` slot.
+//! How the built-in languages say a number, for the `{number}` slot, and a
+//! car number digit by digit.
 //!
 //! Only whole numbers up to `MAX_SPOKEN_NUMBER`: every one of them is a branch
 //! of each command that takes a number, and nothing a driver orders by voice —
@@ -7,6 +8,11 @@
 use crate::pack::template::{SlotPhrase, SlotValue};
 
 pub const MAX_SPOKEN_NUMBER: u32 = 200;
+/// "zero seven", "zero zero seven": iRacing numbers carry up to two.
+const MAX_LEADING_ZEROS: usize = 2;
+/// iRacing's longest car number.
+const MAX_CAR_NUMBER_DIGITS: usize = 3;
+const ZERO_DIGIT: char = '0';
 
 const RU_UNITS: [&str; 20] = [
     "ноль",
@@ -243,9 +249,80 @@ pub fn number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
         .collect()
 }
 
+/// Every car number the language can say: a number as it is ("nine" is
+/// `9`), or after its leading zeros ("zero nine" is `09`).
+pub fn car_number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
+    let zero = spoken(language, 0)?;
+    let mut phrases = Vec::new();
+
+    for zeros in 0..=MAX_LEADING_ZEROS {
+        for number in 0..=MAX_SPOKEN_NUMBER {
+            let digits = format!("{}{number}", ZERO_DIGIT.to_string().repeat(zeros));
+
+            if digits.len() > MAX_CAR_NUMBER_DIGITS {
+                continue;
+            }
+
+            let mut words = vec![zero.clone(); zeros];
+
+            words.extend(spoken(language, number)?.split(' ').map(str::to_string));
+            phrases.push(SlotPhrase {
+                words,
+                value: SlotValue::Digits(digits),
+            });
+        }
+    }
+
+    Some(phrases)
+}
+
+/// A car number said digit by digit, its zeros too: "zero seven"; a
+/// character that is not a digit, or a language without number words, is
+/// said as it is.
+pub fn spoken_digits(language: &str, digits: &str) -> String {
+    digits
+        .chars()
+        .map(|character| {
+            character
+                .to_digit(10)
+                .and_then(|digit| spoken(language, digit))
+                .unwrap_or_else(|| character.to_string())
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hears_a_car_number_with_its_leading_zeros() {
+        let phrases = car_number_phrases("ru").unwrap();
+        let heard = |said: &str| {
+            phrases
+                .iter()
+                .find(|phrase| phrase.words.join(" ") == said)
+                .map(|phrase| phrase.value.clone())
+        };
+
+        assert_eq!(heard("девять"), Some(SlotValue::Digits("9".into())));
+        assert_eq!(heard("ноль девять"), Some(SlotValue::Digits("09".into())));
+        assert_eq!(
+            heard("ноль ноль семь"),
+            Some(SlotValue::Digits("007".into()))
+        );
+        assert_eq!(heard("ноль"), Some(SlotValue::Digits("0".into())));
+        assert_eq!(heard("ноль сто"), None);
+        assert_eq!(car_number_phrases("xx"), None);
+    }
+
+    #[test]
+    fn says_a_car_number_digit_by_digit() {
+        assert_eq!(spoken_digits("ru", "07"), "ноль семь");
+        assert_eq!(spoken_digits("en", "12"), "one two");
+        assert_eq!(spoken_digits("xx", "07"), "0 7");
+    }
 
     #[test]
     fn spells_russian_numbers() {

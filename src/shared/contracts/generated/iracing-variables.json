@@ -685,7 +685,7 @@
     "unit": "",
     "desc": "Players class position in race",
     "count": 1,
-    "ready": "position"
+    "ready": "classPosition"
   },
   {
     "name": "PlayerCarIdx",
@@ -1085,7 +1085,7 @@
     "unit": "irsdk_TrackWetness",
     "desc": "How wet is the average track surface",
     "count": 1,
-    "ready": "wetness"
+    "ready": null
   },
   {
     "name": "VelocityX",
@@ -1149,7 +1149,7 @@
     "unit": "m/s",
     "desc": "Wind velocity at start/finish line",
     "count": 1,
-    "ready": "wind"
+    "ready": null
   },
   {
     "name": "Yaw",

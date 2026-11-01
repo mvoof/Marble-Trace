@@ -11,7 +11,10 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
-use mt_model::app::crew::{QUESTION_PREFIX, QUESTION_VALUES};
+use mt_model::app::crew::QUESTION_PREFIX;
+use mt_model::app::crew_questions::{
+    question_reply_key, CarTarget, VoiceQuestionDef, QUESTION_FIELDS,
+};
 use mt_model::app::voice::{
     VoiceConflictView, VoiceDraftCheck, VoiceIntentView, VoiceIssueView, VoicePackView,
     VoicePhraseView, VoiceQuestionView, VoiceRecognisedView, VoiceSlotHeard, VoiceSlotValueView,
@@ -19,15 +22,15 @@ use mt_model::app::voice::{
 };
 
 use crate::cache::{variant_status, VariantStatus};
-use crate::pack::catalog::{reply_values_in, ASK_WHEN_UNSAID, COMPOUND_SLOT, INTENTS, PHRASE_KEYS};
+use crate::pack::catalog::{reply_values, ASK_WHEN_UNSAID, COMPOUND_SLOT, INTENTS, PHRASE_KEYS};
 use crate::pack::grammar::{compile, Conflict};
 use crate::pack::message::{format, parse, values_used, Arg, Args};
+use crate::pack::questions::AnswerList;
 use crate::pack::sayings::sayings;
-use crate::pack::template::SlotValue;
 use crate::pack::{
-    built_in, commands_schema, phrases_schema, question_location, CommandsFile, CompiledVariant,
-    CustomActions, LanguagePack, PhrasesFile, Question, Saying, Severity, Variant, COMMANDS_FILE,
-    PACK_FORMAT, PHRASES_FILE,
+    answer_key, built_in, commands_schema, phrases_schema, question_location, CommandsFile,
+    CompiledVariant, CustomActions, LanguagePack, PhrasesFile, Saying, Severity, Variant,
+    COMMANDS_FILE, PACK_FORMAT, PHRASES_FILE,
 };
 use crate::voice_out::OutputConfig;
 
@@ -42,9 +45,9 @@ const SAMPLE_COMPOUND: &str = "dry";
 
 pub fn pack_view(pack: &LanguagePack, folder: &Path, config: &OutputConfig) -> VoicePackView {
     let questions = &pack.commands_file.custom.questions;
-    let question_values: Vec<String> = QUESTION_VALUES
+    let question_values: Vec<String> = QUESTION_FIELDS
         .iter()
-        .map(|value| value.to_string())
+        .map(|spec| spec.name.to_string())
         .collect();
     let phrases = PHRASE_KEYS
         .iter()
@@ -63,16 +66,16 @@ pub fn pack_view(pack: &LanguagePack, folder: &Path, config: &OutputConfig) -> V
                 })
                 .unwrap_or_default(),
         })
-        .chain(questions.iter().map(|question| {
-            VoicePhraseView {
-                key: question.key(),
+        .chain(questions.iter().flat_map(|question| {
+            AnswerList::ALL.map(|list| VoicePhraseView {
+                key: answer_key(&question.id, list),
                 values: question_values.clone(),
-                variants: question
-                    .replies
+                variants: list
+                    .variants(question)
                     .iter()
-                    .map(|variant| variant_view(variant, config))
+                    .map(|text| variant_view(&Variant { text: text.clone() }, config))
                     .collect(),
-            }
+            })
         }))
         .collect();
     let intents = INTENTS
@@ -91,13 +94,24 @@ pub fn pack_view(pack: &LanguagePack, folder: &Path, config: &OutputConfig) -> V
             when_unsaid: (!intent.slots.is_empty())
                 .then(|| when_unsaid(&pack.commands_file, intent.id).to_string()),
         })
-        .chain(questions.iter().map(|question| VoiceIntentView {
-            id: question.key(),
-            slots: Vec::new(),
-            templates: question.phrases.clone(),
-            sentences: pack.grammar.sentences_for(&question.key()) as u32,
-            replies: vec![question.key()],
-            when_unsaid: None,
+        .chain(questions.iter().map(|question| {
+            let key = question_reply_key(&question.id);
+
+            VoiceIntentView {
+                slots: question
+                    .target
+                    .and_then(CarTarget::phrase_slot)
+                    .map(str::to_string)
+                    .into_iter()
+                    .collect(),
+                templates: question.phrases.clone(),
+                sentences: pack.grammar.sentences_for(&key) as u32,
+                replies: AnswerList::ALL
+                    .map(|list| answer_key(&question.id, list))
+                    .to_vec(),
+                when_unsaid: None,
+                id: key,
+            }
         }))
         .collect();
     let slots = pack
@@ -127,6 +141,8 @@ pub fn pack_view(pack: &LanguagePack, folder: &Path, config: &OutputConfig) -> V
             .map(|question| VoiceQuestionView {
                 id: question.id.clone(),
                 name: question.name.clone(),
+                enabled: question.enabled,
+                target: question.target,
                 steps: question.steps.clone(),
             })
             .collect(),
@@ -160,16 +176,33 @@ fn conflict_views(conflicts: &[Conflict]) -> Vec<VoiceConflictView> {
 }
 
 /// The draft's own questions, put back together from the intent and the
-/// phrase listed for each.
-fn draft_questions(view: &VoicePackView) -> Vec<Question> {
+/// phrases listed for each.
+fn draft_questions(view: &VoicePackView) -> Vec<VoiceQuestionDef> {
     view.questions
         .iter()
         .map(|question| {
-            let key = format!("{QUESTION_PREFIX}{}", question.id);
+            let answers = |list: AnswerList| {
+                let key = answer_key(&question.id, list);
 
-            Question {
+                view.phrases
+                    .iter()
+                    .find(|phrase| phrase.key == key)
+                    .map(|phrase| {
+                        phrase
+                            .variants
+                            .iter()
+                            .map(|variant| variant.text.clone())
+                            .collect()
+                    })
+                    .unwrap_or_default()
+            };
+            let key = question_reply_key(&question.id);
+
+            VoiceQuestionDef {
                 id: question.id.clone(),
                 name: question.name.clone(),
+                enabled: question.enabled,
+                target: question.target,
                 steps: question.steps.clone(),
                 phrases: view
                     .intents
@@ -177,12 +210,9 @@ fn draft_questions(view: &VoicePackView) -> Vec<Question> {
                     .find(|intent| intent.id == key)
                     .map(|intent| intent.templates.clone())
                     .unwrap_or_default(),
-                replies: view
-                    .phrases
-                    .iter()
-                    .find(|phrase| phrase.key == key)
-                    .map(|phrase| phrase.variants.iter().map(variant_from_view).collect())
-                    .unwrap_or_default(),
+                replies: answers(AnswerList::Replies),
+                no_car: answers(AnswerList::NoCar),
+                no_value: answers(AnswerList::NoValue),
             }
         })
         .collect()
@@ -299,15 +329,31 @@ fn check_template(
     index: usize,
     template: &str,
 ) -> (VoiceTemplateCheck, BTreeSet<String>) {
-    let (alone, location) = match intent.strip_prefix(QUESTION_PREFIX) {
-        Some(id) => (
+    let question = intent.strip_prefix(QUESTION_PREFIX).map(|id| {
+        commands
+            .custom
+            .questions
+            .iter()
+            .find(|question| question.id == id)
+            .and_then(|question| question.target)
+    });
+    let (alone, location) = match intent.strip_prefix(QUESTION_PREFIX).zip(question) {
+        Some((id, target)) => (
             CommandsFile {
                 intents: BTreeMap::new(),
                 custom: CustomActions {
-                    questions: vec![Question {
+                    questions: vec![VoiceQuestionDef {
                         id: id.to_string(),
+                        name: String::new(),
+                        enabled: true,
                         phrases: vec![template.to_string()],
-                        ..Question::default()
+                        target,
+                        replies: Vec::new(),
+                        // The phrase is checked alone: a missing answer for
+                        // no car is the question's mistake, not the phrase's.
+                        no_car: vec![String::new()],
+                        no_value: Vec::new(),
+                        steps: Vec::new(),
                     }],
                 },
                 ..commands.clone()
@@ -399,12 +445,7 @@ fn check_variant(
 
     check.sayings = messages.len() as u32;
 
-    let values: Vec<String> = messages
-        .iter()
-        .flat_map(|message| reply_values_in(key, message))
-        .collect::<BTreeSet<_>>()
-        .into_iter()
-        .collect();
+    let values: Vec<String> = reply_values(key).into_iter().map(str::to_string).collect();
     let has_numbers = values.iter().any(|value| value != COMPOUND_SLOT);
     let numbers: &[f64] = if has_numbers {
         sample_numbers(language)
@@ -460,10 +501,7 @@ pub fn recognise_draft(view: &VoicePackView, sentence: &str) -> Vec<VoiceRecogni
                 .iter()
                 .map(|(slot, value)| VoiceSlotHeard {
                     slot: slot.clone(),
-                    value: match value {
-                        SlotValue::Number(number) => number.to_string(),
-                        SlotValue::Name(name) => name.clone(),
-                    },
+                    value: value.text(),
                 })
                 .collect(),
         })
@@ -758,6 +796,8 @@ mod tests {
         view.questions.push(VoiceQuestionView {
             id: "weather".into(),
             name: "Weather".into(),
+            enabled: true,
+            target: None,
             steps: vec![VoiceStep {
                 action: "pit.tires".into(),
                 value: Some("front".into()),

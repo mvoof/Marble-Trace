@@ -11,6 +11,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::app::voice::VoiceStep;
+use crate::contract::defaults::QUESTION_PREFIX;
 
 /// The car a question asks about. The session's fields are there whatever
 /// the target.
@@ -78,6 +79,87 @@ pub const CLASS_POSITION_FIELD: &str = "classPosition";
 
 /// The slots a phrase may carry to pick its car.
 pub const PHRASE_SLOTS: [&str; 3] = [NUMBER_FIELD, POSITION_FIELD, CLASS_POSITION_FIELD];
+
+/// The car a question was asked about, with what its phrase heard to name
+/// it: a target and its slot's value.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(tag = "target", rename_all = "camelCase")]
+pub enum AskedCar {
+    Me,
+    Ahead,
+    Behind,
+    Leader,
+    ClassLeader,
+    AheadOnTrack,
+    BehindOnTrack,
+    /// The number as said, leading zeros kept: "zero nine" is `09`.
+    ByCarNumber {
+        number: String,
+    },
+    ByPosition {
+        position: i32,
+    },
+    ByClassPosition {
+        position: i32,
+    },
+}
+
+impl AskedCar {
+    /// A target that needs no slot, as asked; `None` for one that does.
+    pub const fn fixed(target: CarTarget) -> Option<Self> {
+        Some(match target {
+            CarTarget::Me => Self::Me,
+            CarTarget::Ahead => Self::Ahead,
+            CarTarget::Behind => Self::Behind,
+            CarTarget::Leader => Self::Leader,
+            CarTarget::ClassLeader => Self::ClassLeader,
+            CarTarget::AheadOnTrack => Self::AheadOnTrack,
+            CarTarget::BehindOnTrack => Self::BehindOnTrack,
+            CarTarget::ByCarNumber | CarTarget::ByPosition | CarTarget::ByClassPosition => {
+                return None
+            }
+        })
+    }
+}
+
+/// The key a question's answers are spoken under; its "no such car" and
+/// "no value" answers add a suffix, which an id cannot hold.
+pub fn question_reply_key(id: &str) -> String {
+    format!("{QUESTION_PREFIX}{id}")
+}
+
+pub fn question_no_car_key(id: &str) -> String {
+    format!("{QUESTION_PREFIX}{id}{NO_CAR_SUFFIX}")
+}
+
+pub fn question_no_value_key(id: &str) -> String {
+    format!("{QUESTION_PREFIX}{id}{NO_VALUE_SUFFIX}")
+}
+
+const NO_CAR_SUFFIX: &str = ".noCar";
+const NO_VALUE_SUFFIX: &str = ".noValue";
+
+/// Which of a question's answer lists a reply key names.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum QuestionReplyKind {
+    Reply,
+    NoCar,
+    NoValue,
+}
+
+/// A question's id and answer list from a reply key, `None` for a key that
+/// is not a question's.
+pub fn question_reply_kind(key: &str) -> Option<(&str, QuestionReplyKind)> {
+    let rest = key.strip_prefix(QUESTION_PREFIX)?;
+
+    Some(if let Some(id) = rest.strip_suffix(NO_CAR_SUFFIX) {
+        (id, QuestionReplyKind::NoCar)
+    } else if let Some(id) = rest.strip_suffix(NO_VALUE_SUFFIX) {
+        (id, QuestionReplyKind::NoValue)
+    } else {
+        (rest, QuestionReplyKind::Reply)
+    })
+}
 
 /// How a field's value is said.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -280,6 +362,10 @@ pub fn question_field_named(name: &str) -> Option<&'static FieldSpec> {
     QUESTION_FIELDS.iter().find(|spec| spec.name == name)
 }
 
+pub fn question_field_spec(field: QuestionField) -> Option<&'static FieldSpec> {
+    QUESTION_FIELDS.iter().find(|spec| spec.field == field)
+}
+
 const fn enabled_by_default() -> bool {
     true
 }
@@ -341,6 +427,29 @@ mod tests {
             assert!(spec.of_car(), "{slot}");
             assert!(PHRASE_SLOTS.contains(&slot));
         }
+    }
+
+    #[test]
+    fn a_reply_key_names_its_question_and_answer_list() {
+        assert_eq!(
+            question_reply_kind(&question_reply_key("gap")),
+            Some(("gap", QuestionReplyKind::Reply))
+        );
+        assert_eq!(
+            question_reply_kind(&question_no_car_key("gap")),
+            Some(("gap", QuestionReplyKind::NoCar))
+        );
+        assert_eq!(
+            question_reply_kind(&question_no_value_key("gap")),
+            Some(("gap", QuestionReplyKind::NoValue))
+        );
+        assert_eq!(question_reply_kind("engineer.noData"), None);
+    }
+
+    #[test]
+    fn a_target_with_a_slot_is_asked_by_what_was_heard() {
+        assert_eq!(AskedCar::fixed(CarTarget::Leader), Some(AskedCar::Leader));
+        assert_eq!(AskedCar::fixed(CarTarget::ByCarNumber), None);
     }
 
     #[test]

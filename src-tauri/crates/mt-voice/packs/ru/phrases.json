@@ -126,6 +126,12 @@
     "engineer.notInCar": [{ "text": "Ты не в машине" }],
     "engineer.noData": [{ "text": "Пока не знаю" }, { "text": "Данных нет" }],
     "engineer.cannot": [{ "text": "Так не получится" }],
-    "engineer.nothingToRepeat": [{ "text": "Я ещё ничего не говорил" }]
+    "engineer.nothingToRepeat": [{ "text": "Я ещё ничего не говорил" }],
+    "engineer.yes": [{ "text": "да" }],
+    "engineer.no": [{ "text": "нет" }],
+    "engineer.plus": [{ "text": "плюс {value}" }],
+    "engineer.minus": [{ "text": "минус {value}" }],
+    "engineer.faster": [{ "text": "быстрее на {value}" }],
+    "engineer.slower": [{ "text": "медленнее на {value}" }]
   }
 }

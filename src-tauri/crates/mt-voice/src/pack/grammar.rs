@@ -7,12 +7,21 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use crate::pack::catalog::{
     changes_the_car, intent_named, slot_kind, unsaid_value, SlotKind, ASK_WHEN_UNSAID,
 };
-use crate::pack::numbers::number_phrases;
+use mt_model::app::crew_questions::{
+    question_reply_key, CarTarget, CLASS_POSITION_FIELD, NUMBER_FIELD, POSITION_FIELD,
+};
+
+use crate::pack::numbers::{car_number_phrases, number_phrases};
+use crate::pack::questions::phrase_mistake;
 use crate::pack::template::{expand, parse, SlotPhrase, SlotValue};
 use crate::pack::{question_location, usable_questions, CommandsFile, PackIssue};
 
 /// What the recogniser hears when the driver says something outside the list.
 pub const UNKNOWN_WORD: &str = "[unk]";
+
+/// Where the car numbers' phrases are kept beside the slots': no pack slot
+/// is called this, the pack's slots being only the known ones.
+const CAR_NUMBER_PHRASES: &str = "#carNumber";
 
 /// Past this many sentences recognition slows and confusions grow; the pack
 /// still loads, with a warning.
@@ -233,6 +242,7 @@ pub fn compile(language: &str, commands: &CommandsFile) -> (CommandGrammar, Vec<
         said.push(Said {
             intent_id: intent_id.clone(),
             slots: intent.slots,
+            question: None,
             unsaid: unsaid.get(intent_id).cloned(),
             templates,
             location: Box::new(move |index| format!("commands.intents.{intent_id}[{index}]")),
@@ -242,13 +252,16 @@ pub fn compile(language: &str, commands: &CommandsFile) -> (CommandGrammar, Vec<
     // The driver's questions come after the built-in intents, so a sentence
     // both claim stays with the built-in one.
     for (question_index, question) in usable_questions(&commands.custom.questions, &mut issues) {
+        let key = question_reply_key(&question.id);
+
         if !question.steps.is_empty() {
-            grammar.routines.insert(question.key());
+            grammar.routines.insert(key.clone());
         }
 
         said.push(Said {
-            intent_id: question.key(),
-            slots: &[],
+            intent_id: key,
+            slots: question_slots(question.target),
+            question: Some(question.target),
             unsaid: None,
             templates: &question.phrases,
             location: Box::new(move |index| question_location(question_index, "phrases", index)),
@@ -258,6 +271,7 @@ pub fn compile(language: &str, commands: &CommandsFile) -> (CommandGrammar, Vec<
     for Said {
         intent_id,
         slots,
+        question,
         unsaid,
         templates,
         location,
@@ -274,10 +288,22 @@ pub fn compile(language: &str, commands: &CommandsFile) -> (CommandGrammar, Vec<
                     continue;
                 }
             };
+            if let Some(mistake) = question.and_then(|target| phrase_mistake(target, &nodes)) {
+                issues.push(PackIssue::error(location, mistake));
+                continue;
+            }
+
             let lookup = |name: &str| {
+                let phrases = match name {
+                    // A question hears a car's number as said, zeros and all.
+                    NUMBER_FIELD if question.is_some() => CAR_NUMBER_PHRASES,
+                    POSITION_FIELD | CLASS_POSITION_FIELD => NUMBER_FIELD,
+                    _ => name,
+                };
+
                 slots
                     .contains(&name)
-                    .then(|| slot_phrases.get(name).map(Vec::as_slice))
+                    .then(|| slot_phrases.get(phrases).map(Vec::as_slice))
                     .flatten()
             };
             let sentences = match expand(&nodes, &lookup) {
@@ -372,6 +398,9 @@ struct Cover {
 struct Said<'a> {
     intent_id: String,
     slots: &'static [&'static str],
+    /// A question of the driver's own, with the car it asks about: its
+    /// phrases carry the slot that car is picked by.
+    question: Option<Option<CarTarget>>,
     /// The slot and value a sentence that leaves it out takes.
     unsaid: Option<(&'static str, SlotValue)>,
     templates: &'a [String],
@@ -386,9 +415,10 @@ fn slot_phrases(
 ) -> HashMap<String, Vec<SlotPhrase>> {
     let mut phrases = HashMap::new();
 
-    match number_phrases(language) {
-        Some(numbers) => {
-            phrases.insert("number".to_string(), numbers);
+    match number_phrases(language).zip(car_number_phrases(language)) {
+        Some((numbers, car_numbers)) => {
+            phrases.insert(NUMBER_FIELD.to_string(), numbers);
+            phrases.insert(CAR_NUMBER_PHRASES.to_string(), car_numbers);
         }
         None => issues.push(PackIssue::warning(
             "commands",
@@ -425,6 +455,16 @@ fn slot_phrases(
     }
 
     phrases
+}
+
+/// The slot a question's phrases hear its car in.
+fn question_slots(target: Option<CarTarget>) -> &'static [&'static str] {
+    match target {
+        Some(CarTarget::ByCarNumber) => &[NUMBER_FIELD],
+        Some(CarTarget::ByPosition) => &[POSITION_FIELD],
+        Some(CarTarget::ByClassPosition) => &[CLASS_POSITION_FIELD],
+        Some(_) | None => &[],
+    }
 }
 
 /// A slot's phrases may use the template syntax themselves, but no slots.

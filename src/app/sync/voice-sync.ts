@@ -12,7 +12,8 @@ export const registerVoiceMainReactions = (
   root: RendererCore
 ): IReactionDisposer[] => [
   reaction(
-    () => voiceCrewSettingsOf(root.appSettings.appSettings),
+    () =>
+      voiceCrewSettingsOf(root.appSettings.appSettings, root.units.unitSystem),
     (settings) => configureVoiceCrewSilent(settings),
     { equals: compareStructural, fireImmediately: true }
   ),

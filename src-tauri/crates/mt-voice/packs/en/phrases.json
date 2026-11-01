@@ -109,6 +109,12 @@
     "engineer.notInCar": [{ "text": "You're not in the car" }],
     "engineer.noData": [{ "text": "Don't know yet" }, { "text": "No data" }],
     "engineer.cannot": [{ "text": "Can't do that" }],
-    "engineer.nothingToRepeat": [{ "text": "I haven't said anything yet" }]
+    "engineer.nothingToRepeat": [{ "text": "I haven't said anything yet" }],
+    "engineer.yes": [{ "text": "yes" }],
+    "engineer.no": [{ "text": "no" }],
+    "engineer.plus": [{ "text": "plus {value}" }],
+    "engineer.minus": [{ "text": "minus {value}" }],
+    "engineer.faster": [{ "text": "{value} faster" }],
+    "engineer.slower": [{ "text": "{value} slower" }]
   }
 }

@@ -54,10 +54,12 @@ import {
   voiceCrewSettingsOf,
   type AppSettingsStore,
 } from '@entities/app-settings/app-settings.store';
+import type { UnitsStore } from '@entities/app-settings/units.store';
 import { OVERLAY_VARIABLES, type OverlayVariable } from './sim-values';
 
 interface VoiceCrewDeps {
   appSettings: AppSettingsStore;
+  units: UnitsStore;
 }
 
 /** What the test button heard, shown until the next press. */
@@ -516,7 +518,12 @@ export class VoiceCrewStore {
 
     this.root.appSettings.setVoiceSettings({ voiceFolder: folder });
     await this.run(() =>
-      configureVoiceCrew(voiceCrewSettingsOf(this.root.appSettings.appSettings))
+      configureVoiceCrew(
+        voiceCrewSettingsOf(
+          this.root.appSettings.appSettings,
+          this.root.units.unitSystem
+        )
+      )
     );
     await this.refresh();
     await this.loadPack();
@@ -800,7 +807,7 @@ export class VoiceCrewStore {
     const id = `q${Date.now().toString(36)}`;
     const key = `${VOICE_QUESTION_PREFIX}${id}`;
 
-    pack.questions.push({ id, name, steps: [] });
+    pack.questions.push({ id, name, enabled: true, target: null, steps: [] });
     pack.intents.push({
       id: key,
       slots: [],

@@ -5,11 +5,12 @@
 //! pack's. A pit command is confirmed only once it went out, so the driver
 //! never hears "copy" for an order the sim did not take.
 
-use mt_model::app::crew::{CompoundKind, CrewIntent, CrewReply, SimRead, QUESTION_PREFIX};
+use mt_model::app::crew::{CompoundKind, CrewIntent, CrewReply};
 use mt_model::pit::pit_action::{PitAction, TireSet};
 use mt_model::pit::pit_command::PitCommandKind;
-use mt_model::sim::session::TireCompoundEntry;
+use mt_model::sim::session::{SessionSnapshot, TireCompoundEntry};
 
+use crate::crew::questions::{QuestionSource, QuestionView};
 use crate::field::driver_entries::DriverEntry;
 use crate::strategy::pit_actions::ManualOrder;
 
@@ -64,6 +65,8 @@ pub struct EngineerView {
     pub wind_ms: Option<f32>,
     /// Every car but the player's.
     pub cars: Vec<CarView>,
+    /// What the driver's own questions are answered from.
+    pub questions: QuestionView,
 }
 
 /// How a pit command is confirmed once it went out.
@@ -96,16 +99,25 @@ const fn ack_with_liters(key: &'static str) -> Ack {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum EngineerStep {
-    Pit { action: PitAction, ack: Ack },
-    ChatMacro { slot: u32 },
+    Pit {
+        action: PitAction,
+        ack: Ack,
+    },
+    ChatMacro {
+        slot: u32,
+    },
     Reply(CrewReply),
+    /// A question of the driver's own: a reply for each car it names.
+    Answers(Vec<CrewReply>),
 }
 
 pub fn plan(
     intent: CrewIntent,
     view: &EngineerView,
-    compounds: &[TireCompoundEntry],
+    session: Option<&SessionSnapshot>,
 ) -> EngineerStep {
+    let compounds = session.map_or(&[][..], |session| session.driver_tires.as_slice());
+
     if intent.is_pit_command() && !view.in_car {
         return EngineerStep::Reply(CrewReply::plain("engineer.notInCar").command(false));
     }
@@ -173,9 +185,15 @@ pub fn plan(
         ),
         CrewIntent::ChatMacro { slot } => EngineerStep::ChatMacro { slot },
         // Its steps are carried out before it is planned.
-        CrewIntent::Question { id, sim, .. } => {
-            EngineerStep::Reply(question_reply(&id, &sim, view))
-        }
+        CrewIntent::Question {
+            id, asked, fields, ..
+        } => EngineerStep::Answers(
+            QuestionSource {
+                view: &view.questions,
+                session,
+            }
+            .answer(&id, asked.as_ref(), &fields),
+        ),
         query => EngineerStep::Reply(answer(query, view)),
     }
 }
@@ -271,55 +289,6 @@ fn car_lap_reply(key: &str, car: u32, lap_s: Option<f32>) -> CrewReply {
         Some(lap) => with_lap_time(CrewReply::plain(key).number("car", car_number), lap),
         None => CrewReply::plain("engineer.answer.carNoLapTime").number("car", car_number),
     }
-}
-
-/// Every value a question of the driver's own may name that the sim has now,
-/// and the sim's own variables its replies name, read this tick; the pack's
-/// reply picks the ones it says.
-fn question_reply(id: &str, sim: &[SimRead], view: &EngineerView) -> CrewReply {
-    let rounded = |value: Option<f32>| value.map(|value| f64::from(value.round()));
-    let tenths = |value: Option<f32>| value.map(|value| (f64::from(value) * 10.0).round() / 10.0);
-    let laps_left = view
-        .laps_left
-        .filter(|laps| (0..UNLIMITED_LAPS).contains(laps));
-    let minutes_left = view
-        .seconds_left
-        .filter(|seconds| *seconds >= 0.0)
-        .map(|seconds| (seconds / SECONDS_PER_MINUTE).floor());
-    let values = [
-        ("airTemp", rounded(view.air_temp_c)),
-        ("trackTemp", rounded(view.track_temp_c)),
-        (
-            "rain",
-            rounded(view.precipitation.map(|share| share * PERCENT)),
-        ),
-        ("wetness", view.track_wetness.map(f64::from)),
-        ("wind", rounded(view.wind_ms)),
-        ("fuel", rounded(view.fuel_l)),
-        (
-            "fuelLaps",
-            view.fuel_laps.map(|laps| f64::from(laps.floor().max(0.0))),
-        ),
-        ("position", view.class_position.map(f64::from)),
-        ("gapAhead", tenths(view.gap_ahead_s)),
-        ("gapBehind", tenths(view.gap_behind_s)),
-        ("lap", view.lap.map(f64::from)),
-        ("lapsLeft", laps_left.map(f64::from)),
-        ("minutesLeft", minutes_left),
-    ];
-
-    let reply = values.into_iter().fold(
-        CrewReply::plain(&format!("{QUESTION_PREFIX}{id}")),
-        |reply, (name, value)| match value {
-            Some(value) => reply.number(name, value),
-            None => reply,
-        },
-    );
-
-    sim.iter().fold(reply, |reply, read| match read.value {
-        Some(value) => reply.number(&read.name, value),
-        None => reply,
-    })
 }
 
 /// "Nobody ahead" for the class leader; a gap to one decimal otherwise.
@@ -478,26 +447,27 @@ mod tests {
         };
 
         assert_eq!(
-            plan(CrewIntent::Fuel { liters: 40 }, &view, &[]),
+            plan(CrewIntent::Fuel { liters: 40 }, &view, None),
             EngineerStep::Reply(CrewReply::plain("engineer.notInCar").command(false))
         );
 
         let routine = |step| CrewIntent::Question {
             id: "routine".into(),
-            sim: Vec::new(),
+            asked: None,
+            fields: Vec::new(),
             steps: vec![step],
         };
 
         assert_eq!(
-            plan(routine(CrewIntent::FastRepair), &view, &[]),
+            plan(routine(CrewIntent::FastRepair), &view, None),
             EngineerStep::Reply(CrewReply::plain("engineer.notInCar").command(false))
         );
         assert!(matches!(
-            plan(routine(CrewIntent::ChatMacro { slot: 2 }), &view, &[]),
-            EngineerStep::Reply(reply) if reply.key == "question.routine"
+            plan(routine(CrewIntent::ChatMacro { slot: 2 }), &view, None),
+            EngineerStep::Answers(replies) if replies[0].key == "question.routine"
         ));
 
-        let EngineerStep::Reply(position) = plan(CrewIntent::QueryPosition, &view, &[]) else {
+        let EngineerStep::Reply(position) = plan(CrewIntent::QueryPosition, &view, None) else {
             panic!("a reply");
         };
 
@@ -507,7 +477,7 @@ mod tests {
     #[test]
     fn confirms_the_liters_the_order_carries() {
         let EngineerStep::Pit { action, ack } =
-            plan(CrewIntent::Fuel { liters: 120 }, &in_car(), &[])
+            plan(CrewIntent::Fuel { liters: 120 }, &in_car(), None)
         else {
             panic!("a pit action");
         };
@@ -549,7 +519,7 @@ mod tests {
             lf: true,
             ..TireSet::NONE
         };
-        let EngineerStep::Pit { ack, .. } = plan(CrewIntent::Tires { corners }, &in_car(), &[])
+        let EngineerStep::Pit { ack, .. } = plan(CrewIntent::Tires { corners }, &in_car(), None)
         else {
             panic!("a pit step");
         };
@@ -568,18 +538,22 @@ mod tests {
 
     #[test]
     fn finds_a_compound_by_its_type_and_dry_as_any_but_wet() {
-        let session = [compound(0, "Hard"), compound(1, "Wet")];
+        let compounds = [compound(0, "Hard"), compound(1, "Wet")];
+        let session = SessionSnapshot {
+            driver_tires: compounds.to_vec(),
+            ..SessionSnapshot::default()
+        };
 
-        assert_eq!(compound_index(&session, CompoundKind::Wet), Some(1));
-        assert_eq!(compound_index(&session, CompoundKind::Dry), Some(0));
-        assert_eq!(compound_index(&session, CompoundKind::Soft), None);
+        assert_eq!(compound_index(&compounds, CompoundKind::Wet), Some(1));
+        assert_eq!(compound_index(&compounds, CompoundKind::Dry), Some(0));
+        assert_eq!(compound_index(&compounds, CompoundKind::Soft), None);
         assert_eq!(
             plan(
                 CrewIntent::Compound {
                     compound: CompoundKind::Soft
                 },
                 &in_car(),
-                &session
+                Some(&session)
             ),
             EngineerStep::Reply(CrewReply::plain("engineer.cannot").command(false))
         );
@@ -591,7 +565,7 @@ mod tests {
             last_lap_s: Some(92.43),
             ..EngineerView::default()
         };
-        let EngineerStep::Reply(reply) = plan(CrewIntent::QueryLastLap, &view, &[]) else {
+        let EngineerStep::Reply(reply) = plan(CrewIntent::QueryLastLap, &view, None) else {
             panic!("a reply");
         };
 
@@ -612,10 +586,10 @@ mod tests {
             ..EngineerView::default()
         };
 
-        let EngineerStep::Reply(laps) = plan(CrewIntent::QueryLapsLeft, &lap_race, &[]) else {
+        let EngineerStep::Reply(laps) = plan(CrewIntent::QueryLapsLeft, &lap_race, None) else {
             panic!("a reply");
         };
-        let EngineerStep::Reply(minutes) = plan(CrewIntent::QueryLapsLeft, &timed, &[]) else {
+        let EngineerStep::Reply(minutes) = plan(CrewIntent::QueryLapsLeft, &timed, None) else {
             panic!("a reply");
         };
 
@@ -636,65 +610,15 @@ mod tests {
             gap_behind_s: Some(2.34),
             ..EngineerView::default()
         };
-        let EngineerStep::Reply(ahead) = plan(CrewIntent::QueryGapAhead, &view, &[]) else {
+        let EngineerStep::Reply(ahead) = plan(CrewIntent::QueryGapAhead, &view, None) else {
             panic!("a reply");
         };
-        let EngineerStep::Reply(behind) = plan(CrewIntent::QueryGapBehind, &view, &[]) else {
+        let EngineerStep::Reply(behind) = plan(CrewIntent::QueryGapBehind, &view, None) else {
             panic!("a reply");
         };
 
         assert_eq!(ahead.key, "engineer.answer.noCarAhead");
         assert_eq!(number(&behind, "gap"), Some(2.3));
-    }
-
-    #[test]
-    fn answers_a_question_of_the_drivers_own_with_the_values_the_sim_has() {
-        let view = EngineerView {
-            air_temp_c: Some(21.6),
-            precipitation: Some(0.35),
-            gap_ahead_s: Some(1.26),
-            laps_left: Some(UNLIMITED_LAPS),
-            ..in_car()
-        };
-        let EngineerStep::Reply(reply) = plan(
-            CrewIntent::Question {
-                id: "weather".into(),
-                sim: vec![
-                    SimRead {
-                        name: "sim.PlayerCarMyIncidentCount".into(),
-                        value: Some(4.0),
-                    },
-                    SimRead {
-                        name: "sim.Missing".into(),
-                        value: None,
-                    },
-                ],
-                steps: Vec::new(),
-            },
-            &view,
-            &[],
-        ) else {
-            panic!("a reply");
-        };
-        let names: Vec<&str> = reply.args.iter().map(|(name, _)| name.as_str()).collect();
-
-        assert_eq!(reply.key, "question.weather");
-        assert_eq!(
-            names,
-            vec![
-                "airTemp",
-                "rain",
-                "gapAhead",
-                "sim.PlayerCarMyIncidentCount"
-            ]
-        );
-        assert_eq!(number(&reply, "airTemp"), Some(22.0));
-        assert_eq!(number(&reply, "rain"), Some(35.0));
-        assert_eq!(number(&reply, "gapAhead"), Some(1.3));
-        assert_eq!(number(&reply, "sim.PlayerCarMyIncidentCount"), Some(4.0));
-        assert!(names.iter().all(|name| {
-            mt_model::app::crew::QUESTION_VALUES.contains(name) || name.starts_with("sim.")
-        }));
     }
 
     #[test]
@@ -709,10 +633,10 @@ mod tests {
             precipitation: Some(0.42),
             ..dry.clone()
         };
-        let EngineerStep::Reply(dry) = plan(CrewIntent::QueryWeather, &dry, &[]) else {
+        let EngineerStep::Reply(dry) = plan(CrewIntent::QueryWeather, &dry, None) else {
             panic!("a reply");
         };
-        let EngineerStep::Reply(wet) = plan(CrewIntent::QueryWeather, &wet, &[]) else {
+        let EngineerStep::Reply(wet) = plan(CrewIntent::QueryWeather, &wet, None) else {
             panic!("a reply");
         };
 
@@ -733,7 +657,7 @@ mod tests {
             }],
             ..EngineerView::default()
         };
-        let reply = |intent| match plan(intent, &view, &[]) {
+        let reply = |intent| match plan(intent, &view, None) {
             EngineerStep::Reply(reply) => reply,
             _ => panic!("a reply"),
         };

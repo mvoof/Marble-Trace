@@ -12,6 +12,8 @@ pub mod editor;
 pub mod grammar;
 pub mod message;
 pub mod numbers;
+pub mod questions;
+pub mod say;
 pub mod sayings;
 pub mod template;
 
@@ -19,9 +21,10 @@ use std::collections::{BTreeMap, HashMap};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use mt_model::app::crew::{
-    SimValue, CHAT_MACRO_ACTION, CHAT_MACRO_COUNT, QUESTION_PREFIX, QUESTION_VALUES,
-    SIM_VALUE_PREFIX,
+use mt_model::app::crew::{CHAT_MACRO_ACTION, CHAT_MACRO_COUNT};
+use mt_model::app::crew_questions::{
+    question_no_car_key, question_no_value_key, question_reply_key, CarTarget, VoiceQuestionDef,
+    QUESTION_FIELDS,
 };
 use mt_model::app::voice::VoiceStep;
 use serde::{Deserialize, Serialize};
@@ -33,6 +36,7 @@ use crate::pack::catalog::{
 };
 use crate::pack::grammar::{compile, CommandGrammar, Recognised};
 use crate::pack::message::{format, parse as parse_message, values_used, Args, Part};
+use crate::pack::questions::{answer_mistake, lacks_no_car, AnswerList};
 use crate::pack::sayings::sayings;
 use crate::pack::template::{expand, parse as parse_template, SlotValue};
 
@@ -94,37 +98,12 @@ pub struct CommandsFile {
 #[serde(rename_all = "camelCase")]
 pub struct CustomActions {
     #[serde(default)]
-    pub questions: Vec<Question>,
+    pub questions: Vec<VoiceQuestionDef>,
 }
 
 impl CustomActions {
     pub fn is_empty(&self) -> bool {
         self.questions.is_empty()
-    }
-}
-
-/// A question of the driver's own: the sentences that ask it, what it
-/// carries out — pit actions, chat macros — and the engineer's answers,
-/// filled with `QUESTION_VALUES`. One with steps is a routine.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct Question {
-    /// Letters, digits, `-` and `_`; the intent and reply key are
-    /// `question.<id>`.
-    pub id: String,
-    #[serde(default)]
-    pub name: String,
-    #[serde(default)]
-    pub phrases: Vec<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub steps: Vec<VoiceStep>,
-    #[serde(default)]
-    pub replies: Vec<Variant>,
-}
-
-impl Question {
-    pub fn key(&self) -> String {
-        format!("{QUESTION_PREFIX}{}", self.id)
     }
 }
 
@@ -187,12 +166,13 @@ fn valid_question_id(id: &str) -> bool {
             .all(|letter| letter.is_ascii_alphanumeric() || letter == '-' || letter == '_')
 }
 
-/// The questions whose ids are well-formed and not taken by an earlier one,
+/// The questions that are on, whose ids are well-formed and not taken by an
+/// earlier one, and that say what to answer when their car is not there,
 /// with their place in the file; the rest are reported.
 pub fn usable_questions<'a>(
-    questions: &'a [Question],
+    questions: &'a [VoiceQuestionDef],
     issues: &mut Vec<PackIssue>,
-) -> Vec<(usize, &'a Question)> {
+) -> Vec<(usize, &'a VoiceQuestionDef)> {
     let mut seen: Vec<&str> = Vec::new();
     let mut usable = Vec::new();
 
@@ -209,9 +189,18 @@ pub fn usable_questions<'a>(
                 location,
                 format!("id \"{}\" is taken", question.id),
             ));
+        } else if lacks_no_car(question) {
+            seen.push(&question.id);
+            issues.push(PackIssue::error(
+                format!("{location}.{}", AnswerList::NoCar.part()),
+                "a question about a car needs an answer for when it is not there",
+            ));
         } else {
             seen.push(&question.id);
-            usable.push((index, question));
+
+            if question.enabled {
+                usable.push((index, question));
+            }
         }
     }
 
@@ -487,7 +476,7 @@ fn compile_phrases(
         let mut good = Vec::new();
 
         for (index, variant) in variants.iter().enumerate() {
-            match compile_variant(key.values, false, variant) {
+            match compile_variant(variant, |used| key_values_mistake(key.values, used)) {
                 Ok(variant) => good.push(variant),
                 Err(message) => {
                     issues.push(PackIssue::error(
@@ -505,7 +494,8 @@ fn compile_phrases(
 }
 
 /// The answers to the driver's questions, under their reply keys beside the
-/// built-in phrases.
+/// built-in phrases: the replies, and what is said when the car or a value
+/// is not there.
 fn compile_question_replies(
     commands: &CommandsFile,
     compiled: &mut HashMap<String, Vec<CompiledVariant>>,
@@ -515,19 +505,24 @@ fn compile_question_replies(
     let mut id_issues = Vec::new();
 
     for (question_index, question) in usable_questions(&commands.custom.questions, &mut id_issues) {
-        let mut good = Vec::new();
+        for list in AnswerList::ALL {
+            let mut good = Vec::new();
 
-        for (index, variant) in question.replies.iter().enumerate() {
-            match compile_variant(QUESTION_VALUES, true, variant) {
-                Ok(variant) => good.push(variant),
-                Err(message) => issues.push(PackIssue::error(
-                    question_location(question_index, "replies", index),
-                    message,
-                )),
+            for (index, text) in list.variants(question).iter().enumerate() {
+                let variant = Variant { text: text.clone() };
+                let mistake = |used: &[String]| answer_mistake(question.target, list, used);
+
+                match compile_variant(&variant, mistake) {
+                    Ok(variant) => good.push(variant),
+                    Err(message) => issues.push(PackIssue::error(
+                        question_location(question_index, list.part(), index),
+                        message,
+                    )),
+                }
             }
-        }
 
-        compiled.insert(question.key(), good);
+            compiled.insert(answer_key(&question.id, list), good);
+        }
 
         for (index, step) in question.steps.iter().enumerate() {
             if let Err(message) = step_command(step) {
@@ -540,12 +535,33 @@ fn compile_question_replies(
     }
 }
 
-/// `sim_values`: a question's reply, which may also name any of the sim's own
-/// variables.
+/// The reply key a question's answer list is spoken under.
+pub fn answer_key(id: &str, list: AnswerList) -> String {
+    match list {
+        AnswerList::Replies => question_reply_key(id),
+        AnswerList::NoCar => question_no_car_key(id),
+        AnswerList::NoValue => question_no_value_key(id),
+    }
+}
+
+/// A value a built-in key's variant names that the key does not fill.
+fn key_values_mistake(values: &[&str], used: &[String]) -> Option<String> {
+    let unknown = used.iter().find(|name| !values.contains(&name.as_str()))?;
+    let offered = if values.is_empty() {
+        "none".to_string()
+    } else {
+        values.join(", ")
+    };
+
+    Some(format!(
+        "no value {{{unknown}}} here — this phrase has {offered}"
+    ))
+}
+
+/// `mistake` tells what is wrong with the values the variant names.
 fn compile_variant(
-    values: &[&str],
-    sim_values: bool,
     variant: &Variant,
+    mistake: impl Fn(&[String]) -> Option<String>,
 ) -> Result<CompiledVariant, String> {
     let texts = sayings(&variant.text).map_err(|error| error.to_string())?;
     let mut compiled = Vec::with_capacity(texts.len());
@@ -560,23 +576,9 @@ fn compile_variant(
         .iter()
         .flat_map(|saying| values_used(&saying.message))
         .collect();
-    let known =
-        |name: &str| values.contains(&name) || (sim_values && SimValue::parse(name).is_some());
 
-    if let Some(unknown) = used.iter().find(|name| !known(name)) {
-        let mut offered = if values.is_empty() {
-            "none".to_string()
-        } else {
-            values.join(", ")
-        };
-
-        if sim_values {
-            offered.push_str(&format!(", {SIM_VALUE_PREFIX}<iRacing variable>"));
-        }
-
-        return Err(format!(
-            "no value {{{unknown}}} here — this phrase has {offered}"
-        ));
+    if let Some(message) = mistake(&used) {
+        return Err(message);
     }
 
     Ok(CompiledVariant {
@@ -723,12 +725,26 @@ pub fn commands_schema() -> Value {
         .filter(|id| id.starts_with("pit."))
         .chain([CHAT_MACRO_ACTION])
         .collect();
+    let targets: Vec<Value> = CarTarget::ALL
+        .iter()
+        .map(|target| serde_json::to_value(target).unwrap_or_default())
+        .collect();
+    let fields = QUESTION_FIELDS
+        .iter()
+        .map(|spec| format!("{{{}}}", spec.name))
+        .collect::<Vec<_>>()
+        .join(", ");
     let question = json!({
         "type": "object",
         "required": ["id"],
         "properties": {
             "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
             "name": { "type": "string" },
+            "enabled": { "type": "boolean" },
+            "target": {
+                "description": "The car the question asks about; left out, it asks about none. byCarNumber, byPosition and byClassPosition hear it in the phrase's {number}, {position} or {classPosition}.",
+                "enum": targets
+            },
             "phrases": phrase_lists.clone(),
             "steps": {
                 "description": "Carried out in order before the answer; the first that fails stops the rest.",
@@ -747,8 +763,19 @@ pub fn commands_schema() -> Value {
                 }
             },
             "replies": {
-                "description": format!("Values: {}, or any iRacing variable as {{{SIM_VALUE_PREFIX}<Name>}}, {{{SIM_VALUE_PREFIX}<Name>.tenths|kmh|percent}}", QUESTION_VALUES.iter().map(|value| format!("{{{value}}}")).collect::<Vec<_>>().join(", ")),
-                "$ref": "#/$defs/variants"
+                "description": format!("Fields: {fields} — a car's only with a target"),
+                "type": "array",
+                "items": { "type": "string" }
+            },
+            "noCar": {
+                "description": "Said when the car is not there; required with a target. May name the session's fields and the slot heard.",
+                "type": "array",
+                "items": { "type": "string" }
+            },
+            "noValue": {
+                "description": "Said when a field the chosen reply names is empty now.",
+                "type": "array",
+                "items": { "type": "string" }
             }
         },
         "additionalProperties": false
@@ -889,6 +916,60 @@ mod tests {
     }
 
     #[test]
+    fn a_questions_mistakes_are_reported_and_left_out() {
+        let folder = scratch_folder("question-rules");
+
+        fs::write(
+            folder.join(COMMANDS_FILE),
+            r#"{ "format": 3, "custom": { "questions": [
+                { "id": "fuel", "phrases": ["tank check", "tank for car {number}"],
+                  "replies": ["{fuelLaps} laps", "{humidity}", "{lastLap}"] },
+                { "id": "gap", "target": "ahead", "phrases": ["split forward"],
+                  "replies": ["{gapToMe}"] },
+                { "id": "car", "target": "byCarNumber", "phrases": ["about car {number}"],
+                  "replies": ["P{position}"], "noCar": ["no {number}", "no {lastLap}"] },
+                { "id": "off", "enabled": false, "phrases": ["switched off"] }
+            ] } }"#,
+        )
+        .unwrap();
+
+        let pack = load("en", Some(&folder));
+        let issue = |location: &str| {
+            pack.issues
+                .iter()
+                .find(|issue| issue.location == location)
+                .map(|issue| issue.message.as_str())
+        };
+
+        assert_eq!(
+            issue("commands.custom.questions[0].phrases[1]"),
+            Some("{number} — this question does not pick its car by a slot")
+        );
+        assert_eq!(
+            issue("commands.custom.questions[0].replies[1]"),
+            Some("no field {humidity}")
+        );
+        assert!(issue("commands.custom.questions[0].replies[2]").is_some());
+        assert!(issue("commands.custom.questions[1].noCar").is_some());
+        assert!(issue("commands.custom.questions[2].noCar[1]").is_some());
+        assert_eq!(pack.issues.len(), 5, "{:?}", pack.issues);
+
+        assert!(pack.grammar.recognise("tank check").is_some());
+        assert_eq!(pack.variants("question.fuel").len(), 1);
+        assert!(pack.grammar.recognise("split forward").is_none());
+        assert_eq!(
+            pack.grammar
+                .recognise("about car zero seven")
+                .and_then(|heard| heard.slot("number")),
+            Some(&SlotValue::Digits("07".into()))
+        );
+        assert_eq!(pack.variants("question.car.noCar").len(), 1);
+        assert!(pack.grammar.recognise("switched off").is_none());
+
+        let _ = fs::remove_dir_all(folder);
+    }
+
+    #[test]
     fn refuses_a_variant_with_a_value_its_key_lacks() {
         let mut issues = Vec::new();
         let file = PhrasesFile {
@@ -950,12 +1031,12 @@ mod tests {
 
     #[test]
     fn a_variant_with_choices_is_put_each_way() {
+        let liters = |used: &[String]| key_values_mistake(&["liters"], used);
         let compiled = compile_variant(
-            &["liters"],
-            false,
             &Variant {
                 text: "(Принято|Понял), [ставим] {liters}".into(),
             },
+            liters,
         )
         .unwrap();
         let texts: Vec<&str> = compiled
@@ -975,11 +1056,10 @@ mod tests {
             ]
         );
         assert!(compile_variant(
-            &["liters"],
-            false,
             &Variant {
                 text: "(Принято|{laps})".into()
-            }
+            },
+            liters,
         )
         .is_err());
     }

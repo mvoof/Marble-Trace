@@ -3,6 +3,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::app::crew_questions::CarTarget;
+
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -141,6 +143,9 @@ pub struct VoiceIssueView {
 pub struct VoiceQuestionView {
     pub id: String,
     pub name: String,
+    pub enabled: bool,
+    /// The car it asks about; `None` asks about none.
+    pub target: Option<CarTarget>,
     pub steps: Vec<VoiceStep>,
 }
 

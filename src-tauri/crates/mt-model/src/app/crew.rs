@@ -7,6 +7,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::app::crew_questions::{AskedCar, QuestionField};
 use crate::pit::pit_action::TireSet;
 
 /// A tire compound as the driver names it; matched against the compounds the
@@ -42,94 +43,6 @@ impl CompoundKind {
 pub use crate::contract::defaults::{
     ASK_WHEN_UNSAID, CHAT_MACRO_ACTION, CHAT_MACRO_COUNT, QUESTION_PREFIX,
 };
-pub use crate::contract::defaults::{
-    SIM_SCALE_KMH, SIM_SCALE_PERCENT, SIM_SCALE_TENTHS, SIM_VALUE_PREFIX,
-};
-
-const KMH_PER_MS: f64 = 3.6;
-const PERCENT: f64 = 100.0;
-const TENTHS: f64 = 10.0;
-
-/// What a question of the driver's own may be answered with — the reply names
-/// them, the engineer fills those the sim has.
-pub const QUESTION_VALUES: &[&str] = &[
-    "airTemp",
-    "trackTemp",
-    "rain",
-    "wetness",
-    "wind",
-    "fuel",
-    "fuelLaps",
-    "position",
-    "gapAhead",
-    "gapBehind",
-    "lap",
-    "lapsLeft",
-    "minutesLeft",
-];
-
-/// How a sim value is read out.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SimScale {
-    Whole,
-    Tenths,
-    /// Metres per second, said in km/h.
-    KmPerHour,
-    /// A share of one, said as a percentage.
-    Percent,
-}
-
-/// A reply value that is one of the sim's own variables:
-/// `sim.<Variable>[.tenths|.kmh|.percent]`. Any variable the sim declares
-/// may be named; one it does not have now leaves the reply without it.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SimValue {
-    pub variable: String,
-    pub scale: SimScale,
-}
-
-impl SimValue {
-    pub fn parse(name: &str) -> Option<Self> {
-        let rest = name.strip_prefix(SIM_VALUE_PREFIX)?;
-        let (variable, scale) = match rest.split_once('.') {
-            None => (rest, SimScale::Whole),
-            Some((variable, SIM_SCALE_TENTHS)) => (variable, SimScale::Tenths),
-            Some((variable, SIM_SCALE_KMH)) => (variable, SimScale::KmPerHour),
-            Some((variable, SIM_SCALE_PERCENT)) => (variable, SimScale::Percent),
-            Some(_) => return None,
-        };
-        let valid = !variable.is_empty()
-            && variable
-                .chars()
-                .all(|character| character.is_ascii_alphanumeric() || character == '_');
-
-        valid.then(|| Self {
-            variable: variable.to_string(),
-            scale,
-        })
-    }
-
-    /// The number said for the sim's raw value.
-    pub fn read(&self, raw: f64) -> f64 {
-        match self.scale {
-            SimScale::Whole => raw.round(),
-            SimScale::Tenths => (raw * TENTHS).round() / TENTHS,
-            SimScale::KmPerHour => (raw * KMH_PER_MS).round(),
-            SimScale::Percent => (raw * PERCENT).round(),
-        }
-    }
-}
-
-/// A sim value a question's reply names, read on the telemetry thread on the
-/// tick that answers it. `None` until then, or when the sim lacks it.
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct SimRead {
-    pub name: String,
-    #[serde(default)]
-    pub value: Option<f64>,
-}
-
 /// What the driver asked of the engineer that needs the car's data. Controls
 /// of the radio itself (repeat, quiet) never leave the voice side.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -179,9 +92,12 @@ pub enum CrewIntent {
     /// A question of the driver's own, by its id in the pack.
     Question {
         id: String,
-        /// The sim values its replies name.
+        /// `None` for a question about no car.
         #[serde(default)]
-        sim: Vec<SimRead>,
+        asked: Option<AskedCar>,
+        /// The fields its answers name, each read once per car answered.
+        #[serde(default)]
+        fields: Vec<QuestionField>,
         /// Carried out in order before it is answered; the first that fails
         /// stops the rest.
         #[serde(default)]
@@ -228,6 +144,14 @@ pub enum CrewArg {
         slot: String,
         value: String,
     },
+    /// Words from the sim — a name, a car number — said as they are.
+    Text {
+        value: String,
+    },
+    /// Said as the pack's yes or no.
+    Flag {
+        value: bool,
+    },
 }
 
 /// The engineer's answer: a phrase key from the language pack and its values.
@@ -266,6 +190,11 @@ impl CrewReply {
         self
     }
 
+    pub fn arg(mut self, name: &str, value: CrewArg) -> Self {
+        self.args.push((name.to_string(), value));
+        self
+    }
+
     pub fn command(mut self, ok: bool) -> Self {
         self.command_ok = Some(ok);
         self
@@ -299,6 +228,9 @@ pub struct VoiceCrewSettings {
     /// Where the downloads, packs and cache live; empty is the app's own.
     #[serde(default)]
     pub folder: String,
+    /// Answers say miles, gallons and Fahrenheit, as the overlay's units do.
+    #[serde(default)]
+    pub imperial: bool,
 }
 
 /// What the windows are told about the crew's radio — rare events, a few per
@@ -327,35 +259,4 @@ pub enum CrewRadioEvent {
         intents: Vec<String>,
         confidence: f32,
     },
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn reads_a_sim_value_by_its_name_and_scale() {
-        let incidents = SimValue::parse("sim.PlayerCarMyIncidentCount").unwrap();
-        let speed = SimValue::parse("sim.Speed.kmh").unwrap();
-
-        assert_eq!(incidents.variable, "PlayerCarMyIncidentCount");
-        assert_eq!(incidents.read(4.4), 4.0);
-        assert_eq!(speed.read(50.0), 180.0);
-        assert_eq!(
-            SimValue::parse("sim.FuelLevelPct.percent")
-                .unwrap()
-                .read(0.456),
-            46.0
-        );
-        assert_eq!(
-            SimValue::parse("sim.LapDeltaToBestLap.tenths")
-                .unwrap()
-                .read(-0.46),
-            -0.5
-        );
-        assert_eq!(SimValue::parse("fuel"), None);
-        assert_eq!(SimValue::parse("sim."), None);
-        assert_eq!(SimValue::parse("sim.Speed.mph"), None);
-        assert_eq!(SimValue::parse("sim.Spe ed"), None);
-    }
 }

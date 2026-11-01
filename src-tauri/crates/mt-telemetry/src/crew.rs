@@ -4,6 +4,7 @@
 use mt_computations::crew::engineer::{
     acknowledge, class_gaps, ordered_tire_count, plan, CarView, EngineerStep, EngineerView,
 };
+use mt_computations::crew::questions::QuestionView;
 use mt_computations::field::driver_entries::DriverEntry;
 use mt_model::app::crew::{CrewIntent, CrewReply, CrewSink};
 use mt_model::sim::session::SessionSnapshot;
@@ -33,7 +34,6 @@ pub fn run_crew(
     }
 
     let compounds = compound_indexes(session);
-    let tires = session.map_or(&[][..], |session| session.driver_tires.as_slice());
 
     for mut intent in std::mem::take(&mut state.pending_crew) {
         // A question whose steps need the car is refused whole by `plan`.
@@ -48,12 +48,14 @@ pub fn run_crew(
         let carried_out =
             steps
                 .iter()
-                .all(|step| match plan(step.clone(), &state.engineer, tires) {
+                .all(|step| match plan(step.clone(), &state.engineer, session) {
                     EngineerStep::Pit { action, .. } => {
                         send_manual_action(action, frame, session, &compounds, state, pit).1
                     }
                     EngineerStep::ChatMacro { slot } => send_chat_macro(pit, slot),
                     EngineerStep::Reply(reply) => reply.command_ok == Some(true),
+                    // A question is never a step.
+                    EngineerStep::Answers(_) => false,
                 });
 
         if !carried_out {
@@ -61,9 +63,19 @@ pub fn run_crew(
             continue;
         }
 
-        let reply = match plan(intent, &state.engineer, tires) {
-            EngineerStep::Reply(reply) if !steps.is_empty() => reply.command(true),
+        let reply = match plan(intent, &state.engineer, session) {
             EngineerStep::Reply(reply) => reply,
+            EngineerStep::Answers(replies) => {
+                for reply in replies {
+                    crew.reply(if steps.is_empty() {
+                        reply
+                    } else {
+                        reply.command(true)
+                    });
+                }
+
+                continue;
+            }
             EngineerStep::Pit { action, ack } => {
                 let (order, sent) =
                     send_manual_action(action, frame, session, &compounds, state, pit);
@@ -106,6 +118,7 @@ fn update_view(
     view.precipitation = frame.environment.precipitation;
     view.track_wetness = frame.environment.track_wetness;
     view.wind_ms = frame.environment.wind_vel;
+    update_question_view(&mut view.questions, frame, bundle);
     view.ordered_tires = ordered_tire_count([
         service.change_lf,
         service.change_rf,
@@ -128,6 +141,32 @@ fn update_view(
         view.gap_ahead_s = ahead;
         view.gap_behind_s = behind;
         view.cars = car_views(&entries.entries, session);
+    }
+}
+
+/// What a question of the driver's own is answered from; the slower tiers
+/// values stand between their ticks.
+fn update_question_view(view: &mut QuestionView, frame: &SourceFrame, bundle: &TelemetryBundle) {
+    view.fuel_level = Some(frame.car_status.fuel_level);
+    view.air_temp = frame.environment.air_temp;
+    view.track_temp = frame.environment.track_temp;
+    view.precipitation = frame.environment.precipitation;
+    view.laps_remain_ex = frame.session.session_laps_remain_ex;
+    view.time_remain = frame.session.session_time_remain;
+    view.lap = frame.lap_timing.lap;
+
+    if let Some(fuel) = &bundle.fuel {
+        view.fuel_laps_remaining = fuel.laps_remaining;
+        view.fuel_to_add = fuel.fuel_to_add;
+        view.fuel_save_per_lap = fuel.fuel_save_per_lap;
+        view.pit_window_start = fuel.pit_window_start;
+        view.pit_window_end = fuel.pit_window_end;
+    }
+
+    if let Some(entries) = &bundle.driver_entries {
+        view.pit_entries
+            .update(frame.session.session_num, &entries.entries);
+        view.entries.clone_from(&entries.entries);
     }
 }
 

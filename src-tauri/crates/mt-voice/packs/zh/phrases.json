@@ -77,6 +77,12 @@
     "engineer.notInCar": [{ "text": "你不在车里" }],
     "engineer.noData": [{ "text": "还不知道" }, { "text": "没有数据" }],
     "engineer.cannot": [{ "text": "做不到" }],
-    "engineer.nothingToRepeat": [{ "text": "我还什么都没说" }]
+    "engineer.nothingToRepeat": [{ "text": "我还什么都没说" }],
+    "engineer.yes": [{ "text": "是" }],
+    "engineer.no": [{ "text": "不是" }],
+    "engineer.plus": [{ "text": "加{value}" }],
+    "engineer.minus": [{ "text": "减{value}" }],
+    "engineer.faster": [{ "text": "快{value}" }],
+    "engineer.slower": [{ "text": "慢{value}" }]
   }
 }

@@ -17,7 +17,7 @@ import { mergeWithDefaults } from '@shared/lib/deep-merge';
 import { detectSystemLanguage } from '@entities/app-settings/system-locale';
 import { createRemoteToken } from '@shared/lib/remote-screen';
 import i18n from '@/i18n';
-import type { AppLanguage } from '@shared/contracts/domain';
+import type { AppLanguage, UnitSystem } from '@shared/contracts/domain';
 import type {
   CompanionApp,
   InstallMismatch,
@@ -153,7 +153,8 @@ export const pitStrategyOf = (settings: AppSettings): PitStrategy => ({
 
 /** What the backend's voice crew runs with (`configure_voice_crew`). */
 export const voiceCrewSettingsOf = (
-  settings: AppSettings
+  settings: AppSettings,
+  unitSystem: UnitSystem
 ): VoiceCrewSettings => {
   const language =
     settings.voiceLanguage === 'app'
@@ -170,6 +171,7 @@ export const voiceCrewSettingsOf = (
     speed: settings.voiceSpeed,
     confidenceThreshold: settings.voiceConfidence,
     folder: settings.voiceFolder,
+    imperial: unitSystem === 'imperial',
   };
 };
 

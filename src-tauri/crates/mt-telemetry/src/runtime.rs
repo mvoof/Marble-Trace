@@ -23,7 +23,7 @@ use crate::io_worker::{IoWorker, SessionUpdate};
 use crate::loop_state::LoopState;
 use crate::state::TelemetryServiceState;
 use mt_computations::ProcessorCommand;
-use mt_model::app::crew::{CrewIntent, CrewSink, SimValue};
+use mt_model::app::crew::CrewSink;
 use mt_model::computed::track_shape::TrackShapePayload;
 use mt_model::contract::capabilities::Capabilities;
 use mt_model::contract::capabilities::CapabilitiesPayload;
@@ -292,8 +292,6 @@ fn run_telemetry_loop(
             service.publish_inspector_raw_values(source.raw_values());
         }
 
-        read_sim_values(source, &mut state.pending_crew);
-
         let ctx = EmitContext {
             sink: sink.as_ref(),
             io: &io,
@@ -316,24 +314,6 @@ fn run_telemetry_loop(
 
         #[cfg(not(feature = "dev"))]
         emit_domain_frames(ctx);
-    }
-}
-
-/// The sim's own variables a pending question's replies name, read now: only
-/// the source can reach them, and only when the driver asked.
-fn read_sim_values(source: &dyn TelemetrySource, pending: &mut [CrewIntent]) {
-    for intent in pending {
-        let CrewIntent::Question { sim, .. } = intent else {
-            continue;
-        };
-
-        for read in sim {
-            read.value = SimValue::parse(&read.name).and_then(|value| {
-                source
-                    .read_number(&value.variable)
-                    .map(|raw| value.read(raw))
-            });
-        }
     }
 }
 

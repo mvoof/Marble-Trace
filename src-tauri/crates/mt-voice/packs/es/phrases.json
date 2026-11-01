@@ -122,6 +122,12 @@
       { "text": "Sin datos" }
     ],
     "engineer.cannot": [{ "text": "No puedo hacerlo" }],
-    "engineer.nothingToRepeat": [{ "text": "Todavía no he dicho nada" }]
+    "engineer.nothingToRepeat": [{ "text": "Todavía no he dicho nada" }],
+    "engineer.yes": [{ "text": "sí" }],
+    "engineer.no": [{ "text": "no" }],
+    "engineer.plus": [{ "text": "más {value}" }],
+    "engineer.minus": [{ "text": "menos {value}" }],
+    "engineer.faster": [{ "text": "{value} más rápido" }],
+    "engineer.slower": [{ "text": "{value} más lento" }]
   }
 }
