@@ -199,7 +199,11 @@ export const CrewCommands = observer(() => {
               ))}
 
           {current ? (
-            <ActionCard key={current.id} intent={current} />
+            <ActionCard
+              key={current.id}
+              intent={current}
+              onOpen={setSelected}
+            />
           ) : (
             <SharedAnswers />
           )}
@@ -243,6 +247,10 @@ const CommandItem = observer(
       0
     );
     const broken = checks.some((check) => check?.error);
+    const switchedOff = intent.id.startsWith(VOICE_QUESTION_PREFIX)
+      ? crew.findQuestion(intent.id.slice(VOICE_QUESTION_PREFIX.length))
+          ?.enabled === false
+      : false;
 
     return (
       <button
@@ -250,7 +258,11 @@ const CommandItem = observer(
         className={`${styles.item} ${active ? styles.itemActive : ''}`}
         onClick={onSelect}
       >
-        <span className={styles.itemTitle}>{title}</span>
+        <span
+          className={`${styles.itemTitle} ${switchedOff ? styles.itemOff : ''}`}
+        >
+          {title}
+        </span>
 
         {heard && <AudioLines size={12} className={styles.itemHeard} />}
 

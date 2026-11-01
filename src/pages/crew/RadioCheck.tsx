@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Button, Typography } from 'antd';
 import { CircleCheck, CircleX, Mic, TriangleAlert } from 'lucide-react';
 import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
-import type { VoiceRecognisedView } from '@shared/contracts/generated/bindings';
+import type {
+  VoiceQuestionPreview,
+  VoiceRecognisedView,
+} from '@shared/contracts/generated/bindings';
 import styles from './CrewPage.module.scss';
 
 const PERCENT = 100;
@@ -142,11 +145,42 @@ const TrialResult = observer(({ actionTitle, onOpen }: RadioCheckProps) => {
                 : t('crewPage.check.sure', { percent })}
             </span>
           )}
+
+          <TrialAnswer answer={trial.answers[order] ?? null} />
         </button>
       ))}
     </>
   );
 });
+
+/** What the engineer would answer a question heard, one line per car. */
+const TrialAnswer = observer(
+  ({ answer }: { answer: VoiceQuestionPreview | null }) => {
+    const { t } = useTranslation('main-app');
+
+    if (answer === null) {
+      return null;
+    }
+
+    if (answer.kind !== 'said') {
+      return (
+        <span className={styles.radioCheckAnswer}>
+          {t(`crewPage.questions.preview.${answer.kind}`)}
+        </span>
+      );
+    }
+
+    return (
+      <>
+        {answer.texts.map((text, order) => (
+          <span key={order} className={styles.radioCheckAnswer}>
+            {t('crewPage.check.answer', { text })}
+          </span>
+        ))}
+      </>
+    );
+  }
+);
 
 const slotsText = (heard: VoiceRecognisedView): string =>
   heard.slots.map((slot) => ` · {${slot.slot}} = ${slot.value}`).join('');

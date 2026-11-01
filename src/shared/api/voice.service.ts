@@ -13,6 +13,7 @@ import type {
   VoiceDownloadProgress,
   VoiceDraftCheck,
   VoicePackView,
+  VoiceQuestionPreview,
   VoiceRecognisedView,
   VoiceStatus,
 } from '@shared/contracts/generated/bindings';
@@ -83,6 +84,19 @@ export const previewVoiceLine = (
   key: string,
   index: number
 ): Promise<void> => invoke('preview_voice_line', { language, key, index });
+
+/**
+ * What a question of the pack being edited would answer now, from the
+ * running session; `play` says it too. `car`: the number or place its
+ * phrase's slot would hear, as said.
+ */
+export const previewVoiceQuestion = (
+  pack: VoicePackView,
+  question: string,
+  car: string | null,
+  play: boolean
+): Promise<VoiceQuestionPreview> =>
+  invoke('preview_voice_question', { pack, question, car, play });
 
 /** `draft`: the pack being edited, listened for before it is saved. */
 export const voiceTestPtt = (

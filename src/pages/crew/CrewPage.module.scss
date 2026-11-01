@@ -168,6 +168,21 @@
   color: $sys-text-muted;
 }
 
+.radioCheckAnswer {
+  font-size: rem(12);
+  color: $sys-text-primary;
+}
+
+.previewCar {
+  width: rem(120);
+}
+
+.previewSaid {
+  margin-top: rem(8);
+  font-size: rem(13);
+  color: $sys-text-primary;
+}
+
 .saveBarErrors {
   font-family: $font-mono;
   font-size: rem(12);

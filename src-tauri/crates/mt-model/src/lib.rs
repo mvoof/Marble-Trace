@@ -94,5 +94,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<app::voice::VoiceDownloadProgress>()
         .register::<app::voice::VoicePackView>()
         .register::<app::voice::VoiceDraftCheck>()
-        .register::<app::voice::VoiceRecognisedView>();
+        .register::<app::voice::VoiceRecognisedView>()
+        .register::<app::voice::VoiceQuestionPreview>();
 }

@@ -696,7 +696,8 @@
       "unknown": "“{{sentence}}”——没有命令能匹配",
       "heard": "“{{sentence}}” → {{action}}{{slots}}",
       "sure": "{{percent}}%",
-      "unsure": "不确定，{{percent}}%——进站指令和问题步骤不会执行"
+      "unsure": "不确定，{{percent}}%——进站指令和问题步骤不会执行",
+      "answer": "工程师：“{{text}}”"
     },
     "openFolder": "打开文件夹",
     "downloads": {
@@ -865,7 +866,25 @@
       "stepsDesc": "在回答前按顺序执行。如果其中一步失败，其余步骤将被跳过，工程师会报告无法完成。进站操作需要你在车里；与进站指令一样，句子识别不确定时流程不会执行。",
       "addStep": "添加操作",
       "removeStep": "删除操作",
-      "macroSlot": "#"
+      "macroSlot": "#",
+      "enabled": "启用",
+      "duplicate": "复制",
+      "copyName": "{{name}}（副本）",
+      "preview": {
+        "title": "现在会说",
+        "desc": "根据应用当前连接的会话（实时或录像）给出的回答。修改立即生效，无需保存；不会执行问题的操作。",
+        "car": {
+          "number": "车号",
+          "position": "总排名",
+          "classPosition": "组别排名"
+        },
+        "show": "显示",
+        "listen": "试听",
+        "said": "“{{text}}”",
+        "noSession": "没有会话：请启动 iRacing 或录像。",
+        "needsCar": "请输入所问车辆的车号或名次。",
+        "silent": "工程师不会说话：语言包中没有这个回答的措辞。"
+      }
     },
     "values": {
       "simVariable": "iRacing 变量…",

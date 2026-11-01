@@ -232,6 +232,23 @@ pub struct VoiceSlotHeard {
     pub value: String,
 }
 
+/// What a question of the draft would answer now, read against the session
+/// the app is connected to — the sim's or a tape's.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub enum VoiceQuestionPreview {
+    /// The words the engineer would say: one answer per car the question
+    /// names, many for a number two cars carry.
+    Said { texts: Vec<String> },
+    /// No session answered.
+    NoSession,
+    /// The question names its car by a number or a place, and none was given.
+    NeedsCar,
+    /// The pack has no words for the answer: nothing would be said.
+    Silent,
+}
+
 /// What a typed sentence is recognised as by the draft.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

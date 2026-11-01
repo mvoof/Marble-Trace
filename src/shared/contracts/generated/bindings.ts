@@ -3072,6 +3072,29 @@ export type VoiceQuestionDef = {
 };
 
 /**
+ * What a question of the draft would answer now, read against the session
+ * the app is connected to — the sim's or a tape's.
+ */
+export type VoiceQuestionPreview =
+  /**
+   * The words the engineer would say: one answer per car the question
+   * names, many for a number two cars carry.
+   */
+  | { kind: 'said'; texts: string[] }
+  /**
+   * No session answered.
+   */
+  | { kind: 'noSession' }
+  /**
+   * The question names its car by a number or a place, and none was given.
+   */
+  | { kind: 'needsCar' }
+  /**
+   * The pack has no words for the answer: nothing would be said.
+   */
+  | { kind: 'silent' };
+
+/**
  * A question of the driver's own. Its sentences are listed with the intents
  * and its answers with the phrases, both as `question.<id>`.
  */

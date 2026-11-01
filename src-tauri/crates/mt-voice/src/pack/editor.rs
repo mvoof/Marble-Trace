@@ -28,9 +28,9 @@ use crate::pack::message::{format, parse, values_used, Arg, Args};
 use crate::pack::questions::AnswerList;
 use crate::pack::sayings::sayings;
 use crate::pack::{
-    answer_key, built_in, commands_schema, phrases_schema, question_location, CommandsFile,
-    CompiledVariant, CustomActions, LanguagePack, PhrasesFile, Saying, Severity, Variant,
-    COMMANDS_FILE, PACK_FORMAT, PHRASES_FILE,
+    answer_key, built_in, commands_schema, compile_question_replies, phrases_schema,
+    question_location, CommandsFile, CompiledVariant, CustomActions, LanguagePack, PhrasesFile,
+    Saying, Severity, Variant, COMMANDS_FILE, PACK_FORMAT, PHRASES_FILE,
 };
 use crate::voice_out::OutputConfig;
 
@@ -216,6 +216,26 @@ fn draft_questions(view: &VoicePackView) -> Vec<VoiceQuestionDef> {
             }
         })
         .collect()
+}
+
+/// The pack with the draft's questions in place of its own: what a preview
+/// answers with before the draft is saved. The question previewed counts as
+/// switched on.
+pub fn with_draft_questions(
+    mut pack: LanguagePack,
+    view: &VoicePackView,
+    id: &str,
+) -> LanguagePack {
+    let mut questions = draft_questions(view);
+
+    for question in &mut questions {
+        question.enabled |= question.id == id;
+    }
+
+    pack.commands_file.custom.questions = questions;
+    compile_question_replies(&pack.commands_file, &mut pack.phrases, &mut Vec::new());
+
+    pack
 }
 
 fn is_question(id: &str) -> bool {
@@ -819,6 +839,82 @@ mod tests {
                 status: "dynamic".into(),
             }],
         });
+    }
+
+    #[test]
+    fn an_unsaved_question_is_previewed_switched_off_and_without_its_steps() {
+        use crate::crew::{answer, preview_intent};
+        use crate::pack::say::Units;
+        use crate::pack::VariantPicker;
+        use mt_model::app::crew::{CrewIntent, CrewReply};
+        use mt_model::app::crew_questions::AskedCar;
+
+        let root = scratch("preview");
+        let pack = load("en", None);
+        let mut view = pack_view(&pack, &root, &config(&root));
+
+        with_weather_question(&mut view, "how is the sky", "Air {airTemp}");
+        view.questions[0].enabled = false;
+        view.questions.push(VoiceQuestionView {
+            id: "car".into(),
+            name: "Car".into(),
+            enabled: true,
+            target: Some(CarTarget::ByCarNumber),
+            steps: Vec::new(),
+        });
+        view.intents.push(VoiceIntentView {
+            id: "question.car".into(),
+            slots: vec!["number".into()],
+            templates: vec!["tell me about car {number}".into()],
+            sentences: 0,
+            replies: vec!["question.car".into()],
+            when_unsaid: None,
+        });
+
+        for (key, text) in [
+            ("question.car", "Car {number}"),
+            ("question.car.noCar", "No car {number}"),
+        ] {
+            view.phrases.push(VoicePhraseView {
+                key: key.into(),
+                values: view.question_values.clone(),
+                variants: vec![VoiceVariantView {
+                    text: text.into(),
+                    status: "dynamic".into(),
+                }],
+            });
+        }
+
+        let draft = with_draft_questions(pack, &view, "weather");
+        let Some(CrewIntent::Question { fields, steps, .. }) =
+            preview_intent(&draft, "weather", None)
+        else {
+            panic!("the draft's question is not asked");
+        };
+        let reply = CrewReply::plain("question.weather").number("airTemp", 21.4);
+        let said = answer(
+            &draft,
+            &mut VariantPicker::default(),
+            Units::default(),
+            &reply,
+        );
+
+        assert_eq!(fields.len(), 1);
+        assert!(steps.is_empty());
+        assert_eq!(said.map(|said| said.text).as_deref(), Some("Air 21"));
+
+        // A question about a car by its number needs one, zeros kept.
+        assert_eq!(preview_intent(&draft, "car", None), None);
+        assert_eq!(preview_intent(&draft, "car", Some("nine")), None);
+        assert!(matches!(
+            preview_intent(&draft, "car", Some(" 09 ")),
+            Some(CrewIntent::Question {
+                asked: Some(AskedCar::ByCarNumber { number }),
+                ..
+            }) if number == "09"
+        ));
+
+        let _ = fs::remove_dir_all(root);
     }
 
     #[test]

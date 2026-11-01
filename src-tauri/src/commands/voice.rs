@@ -3,6 +3,7 @@
 
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
+use std::sync::mpsc::sync_channel;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -12,22 +13,24 @@ use tracing::{info, warn};
 use mt_model::app::crew::VoiceCrewSettings;
 use mt_model::app::voice::{
     AudioDeviceView, VoiceComponentState, VoiceComponentView, VoiceDownloadProgress,
-    VoiceDraftCheck, VoicePackView, VoiceRecognisedView, VoiceStatus,
+    VoiceDraftCheck, VoicePackView, VoiceQuestionPreview, VoiceRecognisedView, VoiceStatus,
 };
 use mt_model::contract::event_sink::EventSink;
 use mt_model::contract::events::EVENT_CREW_DOWNLOAD;
+use mt_telemetry::control::TelemetryCommand;
+use mt_telemetry::state::TelemetryState;
 use mt_voice::assets::catalog::{catalog, Component, ComponentKind};
 use mt_voice::assets::VoiceAssets;
 use mt_voice::cache::{generate, missing_lines};
 use mt_voice::capture::input_devices;
-use mt_voice::crew::{output_config, pack_folder, CrewConfig};
+use mt_voice::crew::{answer, output_config, pack_folder, preview_intent, CrewConfig};
 use mt_voice::folder::move_folder;
 use mt_voice::pack::catalog::reply_values;
 use mt_voice::pack::editor::{
-    check_draft, draft_vosk_grammar, pack_view, recognise_draft, save_pack,
+    check_draft, draft_vosk_grammar, pack_view, recognise_draft, save_pack, with_draft_questions,
 };
 use mt_voice::pack::message::{Arg, Args};
-use mt_voice::pack::{load, BUILT_IN_LANGUAGES};
+use mt_voice::pack::{load, VariantPicker, BUILT_IN_LANGUAGES};
 use mt_voice::pack_files::{export_pack, import_pack};
 use mt_voice::playback::{output_devices, AudioDevice};
 use mt_voice::voice_out::Utterance;
@@ -44,6 +47,9 @@ const PROGRESS_INTERVAL: Duration = Duration::from_millis(200);
 const PREVIEW_NUMBER: f64 = 12.0;
 const COMPOUND_VALUE: &str = "compound";
 const PREVIEW_COMPOUND: &str = "dry";
+/// How long a question's preview waits for the telemetry thread: it answers
+/// on its next tick, so past this no session is running.
+const PREVIEW_WAIT: Duration = Duration::from_millis(500);
 
 /// Applies the crew's settings: starts, reconfigures or stops the voice. Sent
 /// on every change and once after the settings are read.
@@ -571,6 +577,65 @@ pub async fn preview_voice_line(
     state.crew().preview(Utterance { text });
 
     Ok(())
+}
+
+/// What a question of the draft would answer now, from the session the app is
+/// connected to; `play` says it as well. `car`: the number or place its
+/// phrase's slot would hear. Its steps are never carried out.
+#[tauri::command]
+pub async fn preview_voice_question(
+    app: AppHandle,
+    state: State<'_, Arc<VoiceCrewState>>,
+    telemetry: State<'_, TelemetryState>,
+    pack: VoicePackView,
+    question: String,
+    car: Option<String>,
+    play: bool,
+) -> Result<VoiceQuestionPreview, String> {
+    let language = known_language(&pack.language);
+    let folder = pack_folder(&voice_root(&app)?, &language);
+    let draft = with_draft_questions(load(&language, Some(&folder)), &pack, &question);
+    let Some(intent) = preview_intent(&draft, &question, car.as_deref()) else {
+        return Ok(VoiceQuestionPreview::NeedsCar);
+    };
+    let (sender, answered) = sync_channel(1);
+
+    telemetry.service.send(TelemetryCommand::CrewPreview {
+        intent,
+        answer: sender,
+    });
+
+    let replies = tauri::async_runtime::spawn_blocking(move || answered.recv_timeout(PREVIEW_WAIT))
+        .await
+        .map_err(|error| error.to_string())?;
+    let Ok(replies) = replies else {
+        return Ok(VoiceQuestionPreview::NoSession);
+    };
+    let units = state.crew().units();
+    let mut picker = VariantPicker::default();
+    let utterances: Vec<Utterance> = replies
+        .iter()
+        .filter_map(|reply| answer(&draft, &mut picker, units, reply))
+        .collect();
+
+    if utterances.is_empty() {
+        return Ok(VoiceQuestionPreview::Silent);
+    }
+
+    let texts = utterances
+        .iter()
+        .map(|utterance| utterance.text.clone())
+        .collect();
+
+    if play {
+        let crew = state.crew();
+
+        for utterance in utterances {
+            crew.preview(utterance);
+        }
+    }
+
+    Ok(VoiceQuestionPreview::Said { texts })
 }
 
 /// The Crew tab's test button: listens, reports, carries nothing out. With

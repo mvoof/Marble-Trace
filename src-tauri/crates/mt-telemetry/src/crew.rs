@@ -23,6 +23,8 @@ pub fn run_crew(
     crew: Option<&dyn CrewSink>,
 ) {
     update_view(&mut state.engineer, frame, bundle, session);
+    // Text only: a preview needs no voice running.
+    answer_previews(state, session);
 
     let Some(crew) = crew else {
         state.pending_crew.clear();
@@ -90,6 +92,16 @@ pub fn run_crew(
         };
 
         crew.reply(reply);
+    }
+}
+
+/// A preview's steps never reach it: it is only answered.
+fn answer_previews(state: &mut LoopState, session: Option<&SessionSnapshot>) {
+    for (intent, answer) in std::mem::take(&mut state.pending_previews) {
+        if let EngineerStep::Answers(replies) = plan(intent, &state.engineer, session) {
+            // The tab may have stopped waiting; then nobody needs them.
+            let _ = answer.try_send(replies);
+        }
     }
 }
 

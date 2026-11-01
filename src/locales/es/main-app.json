@@ -699,7 +699,8 @@
       "unknown": "«{{sentence}}»: ningún comando la acepta",
       "heard": "«{{sentence}}» → {{action}}{{slots}}",
       "sure": "{{percent}} %",
-      "unsure": "inseguro, {{percent}} %: las órdenes de boxes y los pasos de preguntas no se ejecutarán"
+      "unsure": "inseguro, {{percent}} %: las órdenes de boxes y los pasos de preguntas no se ejecutarán",
+      "answer": "Ingeniero: «{{text}}»"
     },
     "openFolder": "Abrir carpeta",
     "downloads": {
@@ -869,7 +870,25 @@
       "stepsDesc": "En orden, antes de la respuesta. Si una falla, se omiten las demás y el ingeniero avisa de que no se pudo hacer. Las acciones de boxes requieren que estés en el coche; como una orden de boxes, una rutina no se ejecuta si la frase se oyó con poca seguridad.",
       "addStep": "Añadir acción",
       "removeStep": "Eliminar acción",
-      "macroSlot": "#"
+      "macroSlot": "#",
+      "enabled": "Activa",
+      "duplicate": "Duplicar",
+      "copyName": "{{name}} (copia)",
+      "preview": {
+        "title": "Diría ahora",
+        "desc": "La respuesta según la sesión a la que está conectada la app: en vivo o una grabación. Los cambios se ven al momento, sin guardar; las acciones de la pregunta no se ejecutan.",
+        "car": {
+          "number": "Número de coche",
+          "position": "Posición general",
+          "classPosition": "Posición en la clase"
+        },
+        "show": "Mostrar",
+        "listen": "Escuchar",
+        "said": "«{{text}}»",
+        "noSession": "No hay sesión: inicia iRacing o una grabación.",
+        "needsCar": "Indica el número del coche o la posición por la que se pregunta.",
+        "silent": "El ingeniero se callará: el paquete no tiene palabras para esta respuesta."
+      }
     },
     "values": {
       "simVariable": "Variable de iRacing…",

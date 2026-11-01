@@ -496,7 +496,7 @@ fn compile_phrases(
 /// The answers to the driver's questions, under their reply keys beside the
 /// built-in phrases: the replies, and what is said when the car or a value
 /// is not there.
-fn compile_question_replies(
+pub(crate) fn compile_question_replies(
     commands: &CommandsFile,
     compiled: &mut HashMap<String, Vec<CompiledVariant>>,
     issues: &mut Vec<PackIssue>,

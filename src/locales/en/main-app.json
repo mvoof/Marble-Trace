@@ -699,7 +699,8 @@
       "unknown": "“{{sentence}}” — no command takes it",
       "heard": "“{{sentence}}” → {{action}}{{slots}}",
       "sure": "{{percent}}%",
-      "unsure": "unsure, {{percent}}% — pit orders and question steps will not run"
+      "unsure": "unsure, {{percent}}% — pit orders and question steps will not run",
+      "answer": "Engineer: “{{text}}”"
     },
     "openFolder": "Open folder",
     "downloads": {
@@ -869,7 +870,25 @@
       "stepsDesc": "In order, before the answer. If one fails, the rest are skipped and the engineer reports it could not be done. Pit actions need you in the car; like a pit command, a routine is not carried out when the sentence was heard unsure.",
       "addStep": "Add action",
       "removeStep": "Remove action",
-      "macroSlot": "#"
+      "macroSlot": "#",
+      "enabled": "Heard",
+      "duplicate": "Duplicate",
+      "copyName": "{{name}} (copy)",
+      "preview": {
+        "title": "Would say now",
+        "desc": "The answer from the session the app is connected to: live or a recording. Edits show at once, no need to save; the question's steps are not carried out.",
+        "car": {
+          "number": "Car number",
+          "position": "Overall place",
+          "classPosition": "Class place"
+        },
+        "show": "Show",
+        "listen": "Listen",
+        "said": "“{{text}}”",
+        "noSession": "No session: start iRacing or a recording.",
+        "needsCar": "Enter the car number or the place the question asks about.",
+        "silent": "The engineer stays quiet: the pack has no words for this answer."
+      }
     },
     "values": {
       "simVariable": "iRacing variable…",

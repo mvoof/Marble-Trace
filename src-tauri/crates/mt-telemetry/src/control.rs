@@ -4,12 +4,12 @@
 /// The thread owns its state; nothing outside it writes there. A command that
 /// changes something is a `TelemetryCommand` on a channel the thread drains at
 /// the top of each tick, so the tick never waits on a lock a command holds.
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::mpsc::{channel, Receiver, Sender, SyncSender};
 use std::time::Instant;
 
 use mt_computations::strategy::fuel::FuelSettings;
 use mt_computations::strategy::pit_auto::PitAutoCommand;
-use mt_model::app::crew::CrewIntent;
+use mt_model::app::crew::{CrewIntent, CrewReply};
 use mt_model::contract::defaults::{DEFAULT_CAR_LENGTH_M, DEFAULT_OVERLAY_UPDATE_HZ};
 use mt_model::pit::pit_action::PitAction;
 use mt_model::pit::pit_auto::PitAutoConfig;
@@ -74,6 +74,12 @@ pub enum TelemetryCommand {
     Crew {
         intent: CrewIntent,
         issued_at: Instant,
+    },
+    /// A question the Crew tab previews: answered on the next tick into
+    /// `answer`, never spoken or carried out — its steps are left out.
+    CrewPreview {
+        intent: CrewIntent,
+        answer: SyncSender<Vec<CrewReply>>,
     },
 }
 

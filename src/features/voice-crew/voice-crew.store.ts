@@ -20,6 +20,7 @@ import {
   pickVoiceFiles,
   pickVoiceFolder,
   previewVoiceLine,
+  previewVoiceQuestion,
   recogniseVoiceSentence,
   removeCustomVoice,
   removeVoiceComponent,
@@ -42,6 +43,7 @@ import type {
   VoiceDownloadProgress,
   VoiceDraftCheck,
   VoicePackView,
+  VoiceQuestionPreview,
   VoiceQuestionView,
   VoiceRecognisedView,
   VoiceStatus,
@@ -77,6 +79,11 @@ export interface VoiceSentenceTrial {
   heard: VoiceRecognisedView[];
   /** How sure the ear was of a spoken sentence; `null` for a typed one. */
   confidence: number | null;
+  /**
+   * What the engineer would answer each question heard, by its place in
+   * `heard`; `null` for a command that is not a question. Empty until read.
+   */
+  answers: (VoiceQuestionPreview | null)[];
 }
 
 /** A pit action a question can carry out, or the chat macro, and its slot. */
@@ -115,6 +122,9 @@ export class VoiceCrewStore {
   /** The pack being edited, checked: examples, samples, mistakes, conflicts. */
   draftCheck: VoiceDraftCheck | null = null;
   trial: VoiceSentenceTrial | null = null;
+  /** What a question would answer now; dropped on the next edit. */
+  questionPreview: { questionId: string; result: VoiceQuestionPreview } | null =
+    null;
   /** The component whose sample is playing. */
   playingSample: string | null = null;
   /** The running sim's own variable list; empty while it is not running. */
@@ -392,7 +402,7 @@ export class VoiceCrewStore {
     const pack = this.pack;
 
     if (!pack || sentence.trim() === '') {
-      this.trial = { sentence: '', heard: [], confidence };
+      this.trial = { sentence: '', heard: [], confidence, answers: [] };
 
       return;
     }
@@ -401,8 +411,9 @@ export class VoiceCrewStore {
       const heard = await recogniseVoiceSentence(toJS(pack), sentence);
 
       runInAction(() => {
-        this.trial = { sentence, heard, confidence };
+        this.trial = { sentence, heard, confidence, answers: [] };
       });
+      await this.answerTrial(pack);
     } catch (error) {
       runInAction(() => {
         this.lastError = String(error);
@@ -644,6 +655,7 @@ export class VoiceCrewStore {
   /** The pack changed in the editor: unsaved, and due a fresh check. */
   private edited() {
     this.dirty = true;
+    this.questionPreview = null;
     this.scheduleDraftCheck();
   }
 
@@ -697,7 +709,71 @@ export class VoiceCrewStore {
     );
 
     runInAction(() => {
-      this.trial = { sentence: trimmed, heard: heard ?? [], confidence: null };
+      this.trial = {
+        sentence: trimmed,
+        heard: heard ?? [],
+        confidence: null,
+        answers: [],
+      };
+    });
+    await this.answerTrial(pack);
+  }
+
+  /**
+   * The questions the last sentence called, answered from the running session
+   * as the preview answers them: said by no one, their steps never carried out.
+   */
+  private async answerTrial(pack: VoicePackView) {
+    const trial = this.trial;
+
+    if (!trial) {
+      return;
+    }
+
+    const answers = await this.run(() =>
+      Promise.all(
+        trial.heard.map((heard) => {
+          if (!heard.intent.startsWith(VOICE_QUESTION_PREFIX)) {
+            return Promise.resolve(null);
+          }
+
+          // A question's phrase carries at most one slot: the one naming its car.
+          const carSlot = this.intent(heard.intent)?.slots[0];
+          const car =
+            heard.slots.find((slot) => slot.slot === carSlot)?.value ?? null;
+
+          return previewVoiceQuestion(
+            toJS(pack),
+            heard.intent.slice(VOICE_QUESTION_PREFIX.length),
+            car,
+            false
+          );
+        })
+      )
+    );
+
+    runInAction(() => {
+      // A newer sentence may have been tried meanwhile.
+      if (answers && this.trial === trial) {
+        this.trial = { ...trial, answers };
+      }
+    });
+  }
+
+  /** Answers from the draft, saved or not; its steps are never carried out. */
+  async previewQuestion(questionId: string, car: string | null, play: boolean) {
+    const pack = this.pack;
+
+    if (!pack) {
+      return;
+    }
+
+    const result = await this.run(() =>
+      previewVoiceQuestion(toJS(pack), questionId, car, play)
+    );
+
+    runInAction(() => {
+      this.questionPreview = result && { questionId, result };
     });
   }
 
@@ -835,6 +911,16 @@ export class VoiceCrewStore {
     }
   }
 
+  /** A question switched off is kept, but never heard. */
+  setQuestionEnabled(id: string, enabled: boolean) {
+    const question = this.findQuestion(id);
+
+    if (question) {
+      question.enabled = enabled;
+      this.edited();
+    }
+  }
+
   removeQuestion(id: string) {
     const pack = this.pack;
 
@@ -843,11 +929,66 @@ export class VoiceCrewStore {
     }
 
     const key = `${VOICE_QUESTION_PREFIX}${id}`;
+    const answerKeys = this.intent(key)?.replies ?? [key];
 
     pack.questions = pack.questions.filter((entry) => entry.id !== id);
     pack.intents = pack.intents.filter((entry) => entry.id !== key);
-    pack.phrases = pack.phrases.filter((entry) => entry.key !== key);
+    pack.phrases = pack.phrases.filter(
+      (entry) => !answerKeys.includes(entry.key)
+    );
     this.edited();
+  }
+
+  /**
+   * A new question with a question's car, sentences, answers and steps. The
+   * copy takes over: the source is switched off, or both would be heard on
+   * the same sentences.
+   */
+  duplicateQuestion(id: string, name: string): string | null {
+    const pack = this.pack;
+    const source = this.findQuestion(id);
+    const sourceKey = `${VOICE_QUESTION_PREFIX}${id}`;
+    const sourceIntent = this.intent(sourceKey);
+
+    if (!pack || !source || !sourceIntent) {
+      return null;
+    }
+
+    const copyId = `q${Date.now().toString(36)}`;
+    const key = `${VOICE_QUESTION_PREFIX}${copyId}`;
+    // Each answer list's key is the question's own with its suffix.
+    const copyKey = (answerKey: string) =>
+      `${key}${answerKey.slice(sourceKey.length)}`;
+
+    pack.questions.push({
+      id: copyId,
+      name,
+      enabled: true,
+      target: source.target,
+      steps: source.steps.map((step) => ({ ...step })),
+    });
+    pack.intents.push({
+      ...sourceIntent,
+      id: key,
+      slots: [...sourceIntent.slots],
+      templates: [...sourceIntent.templates],
+      replies: sourceIntent.replies.map(copyKey),
+    });
+
+    for (const phrase of pack.phrases.filter((entry) =>
+      sourceIntent.replies.includes(entry.key)
+    )) {
+      pack.phrases.push({
+        key: copyKey(phrase.key),
+        values: [...phrase.values],
+        variants: phrase.variants.map((variant) => ({ ...variant })),
+      });
+    }
+
+    source.enabled = false;
+    this.edited();
+
+    return key;
   }
 
   /**

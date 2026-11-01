@@ -42,6 +42,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         voice::recognise_voice_sentence,
         voice::generate_voice_lines,
         voice::preview_voice_line,
+        voice::preview_voice_question,
         voice::voice_test_ptt,
         voice::export_voice_pack,
         voice::import_voice_pack,

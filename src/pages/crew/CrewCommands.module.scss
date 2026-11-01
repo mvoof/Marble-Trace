@@ -89,6 +89,11 @@
   text-overflow: ellipsis;
 }
 
+.itemOff {
+  color: $sys-text-muted;
+  text-decoration: line-through;
+}
+
 .itemHeard {
   flex-shrink: 0;
   color: $sys-accent;

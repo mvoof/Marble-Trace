@@ -16,9 +16,9 @@ use mt_model::app::crew::{
     QUESTION_PREFIX,
 };
 use mt_model::app::crew_questions::{
-    question_field_named, question_no_value_key, question_reply_kind, AskedCar, CarTarget,
-    QuestionField, QuestionReplyKind, VoiceQuestionDef, CLASS_POSITION_FIELD, NUMBER_FIELD,
-    POSITION_FIELD,
+    question_field_named, question_no_value_key, question_reply_key, question_reply_kind, AskedCar,
+    CarTarget, QuestionField, QuestionReplyKind, VoiceQuestionDef, CLASS_POSITION_FIELD,
+    NUMBER_FIELD, POSITION_FIELD,
 };
 use mt_model::pit::pit_action::TireSet;
 use mt_model::utils::lock_or_recover;
@@ -248,6 +248,11 @@ impl Crew {
         }
     }
 
+    /// The units the crew says values in, as the app's settings have them.
+    pub fn units(&self) -> Units {
+        lock_or_recover(&self.shared.mouth).units
+    }
+
     /// The engineer's answer from the telemetry thread.
     pub fn on_reply(&self, reply: &CrewReply) {
         self.shared.speak(reply);
@@ -323,40 +328,12 @@ impl Shared {
         }
     }
 
-    /// A question names the car it asks about, as its phrase heard it, the
-    /// fields its answers say, for the telemetry thread to read on the tick
-    /// that answers it, and the steps it carries out first. `None` for a
-    /// question the pack no longer has.
     fn with_pack_parts(&self, intent: CrewIntent, command: &Recognised) -> Option<CrewIntent> {
         let CrewIntent::Question { id, .. } = intent else {
             return Some(intent);
         };
-        let mouth = lock_or_recover(&self.mouth);
-        let question = mouth
-            .pack
-            .commands_file
-            .custom
-            .questions
-            .iter()
-            .find(|question| question.id == id)?;
-        let asked = match question.target {
-            None => None,
-            Some(target) => Some(asked_car(target, command)?),
-        };
-        // A step the pack check refused is left out, as it was reported.
-        let steps = question
-            .steps
-            .iter()
-            .filter_map(|step| step_command(step).ok())
-            .filter_map(|command| crew_intent(&command))
-            .collect();
 
-        Some(CrewIntent::Question {
-            fields: fields_named(&mouth.pack, question),
-            asked,
-            id,
-            steps,
-        })
+        question_intent(&lock_or_recover(&self.mouth).pack, &id, command)
     }
 
     fn repeat(&self) {
@@ -372,27 +349,13 @@ impl Shared {
 
     fn speak(&self, crew_reply: &CrewReply) {
         let mut mouth = lock_or_recover(&self.mouth);
-        // A question's reply may name a value the sim does not have now: then
-        // its "no value" answer is said, and failing that the engineer's own.
-        let utterance = utterance(&mut mouth, crew_reply)
-            .or_else(|| match question_reply_kind(&crew_reply.key) {
-                Some((id, QuestionReplyKind::Reply)) => utterance(
-                    &mut mouth,
-                    &CrewReply {
-                        key: question_no_value_key(id),
-                        ..crew_reply.clone()
-                    },
-                ),
-                _ => None,
-            })
-            .or_else(|| {
-                crew_reply
-                    .key
-                    .starts_with(QUESTION_PREFIX)
-                    .then(|| utterance(&mut mouth, &CrewReply::plain("engineer.noData")))
-                    .flatten()
-            });
-        let Some(utterance) = utterance else {
+        let Mouth {
+            pack,
+            picker,
+            units,
+            ..
+        } = &mut *mouth;
+        let Some(utterance) = answer(pack, picker, *units, crew_reply) else {
             tracing::warn!(key = %crew_reply.key, "voice pack has no words for this reply");
             return;
         };
@@ -420,15 +383,116 @@ fn reply(utterance: Utterance) -> Reply<Utterance> {
     }
 }
 
+/// A question of the pack as the engineer is asked it: the car its phrase
+/// named, the fields its answers say, for the telemetry thread to read on the
+/// tick that answers it, and the steps it carries out first. `None` for a
+/// question the pack does not have, or a car the phrase did not name.
+fn question_intent(pack: &LanguagePack, id: &str, command: &Recognised) -> Option<CrewIntent> {
+    let question = pack
+        .commands_file
+        .custom
+        .questions
+        .iter()
+        .find(|question| question.id == id)?;
+    let asked = match question.target {
+        None => None,
+        Some(target) => Some(asked_car(target, command)?),
+    };
+    // A step the pack check refused is left out, as it was reported.
+    let steps = question
+        .steps
+        .iter()
+        .filter_map(|step| step_command(step).ok())
+        .filter_map(|command| crew_intent(&command))
+        .collect();
+
+    Some(CrewIntent::Question {
+        fields: fields_named(pack, question),
+        asked,
+        id: id.to_string(),
+        steps,
+    })
+}
+
+/// A question as a preview asks it: its car named by `car` — the number or
+/// the place its phrase's slot would hear — and its steps left out. `None`
+/// when the question needs a car and `car` does not name one.
+pub fn preview_intent(pack: &LanguagePack, id: &str, car: Option<&str>) -> Option<CrewIntent> {
+    let target = pack
+        .commands_file
+        .custom
+        .questions
+        .iter()
+        .find(|question| question.id == id)?
+        .target;
+    let slots = match (target.and_then(CarTarget::phrase_slot), car.map(str::trim)) {
+        (None, _) => Vec::new(),
+        (Some(slot), Some(car)) => vec![(slot.to_string(), heard_car(slot, car)?)],
+        (Some(_), None) => return None,
+    };
+    let command = Recognised {
+        intent: question_reply_key(id),
+        slots,
+    };
+    let mut intent = question_intent(pack, id, &command)?;
+
+    if let CrewIntent::Question { steps, .. } = &mut intent {
+        steps.clear();
+    }
+
+    Some(intent)
+}
+
+/// A car typed as its phrase's slot would hear it: a number with its leading
+/// zeros, a place as a whole number.
+fn heard_car(slot: &str, car: &str) -> Option<SlotValue> {
+    if slot == NUMBER_FIELD {
+        return (!car.is_empty() && car.chars().all(|digit| digit.is_ascii_digit()))
+            .then(|| SlotValue::Digits(car.to_string()));
+    }
+
+    car.parse().ok().map(SlotValue::Number)
+}
+
+/// The reply in the pack's words. A question's reply may name a value the sim
+/// does not have now: then its "no value" answer is said, and failing that the
+/// engineer's own.
+pub fn answer(
+    pack: &LanguagePack,
+    picker: &mut VariantPicker,
+    units: Units,
+    crew_reply: &CrewReply,
+) -> Option<Utterance> {
+    utterance(pack, picker, units, crew_reply)
+        .or_else(|| match question_reply_kind(&crew_reply.key) {
+            Some((id, QuestionReplyKind::Reply)) => utterance(
+                pack,
+                picker,
+                units,
+                &CrewReply {
+                    key: question_no_value_key(id),
+                    ..crew_reply.clone()
+                },
+            ),
+            _ => None,
+        })
+        .or_else(|| {
+            crew_reply
+                .key
+                .starts_with(QUESTION_PREFIX)
+                .then(|| utterance(pack, picker, units, &CrewReply::plain("engineer.noData")))
+                .flatten()
+        })
+}
+
 /// The reply in the pack's words: a variant picked, its values filled in —
 /// a question's each in its field's format.
-fn utterance(mouth: &mut Mouth, crew_reply: &CrewReply) -> Option<Utterance> {
-    let Mouth {
-        pack,
-        picker,
-        units,
-        ..
-    } = mouth;
+fn utterance(
+    pack: &LanguagePack,
+    picker: &mut VariantPicker,
+    units: Units,
+    crew_reply: &CrewReply,
+) -> Option<Utterance> {
     let question = question_reply_kind(&crew_reply.key).is_some();
     let saying = picker.pick(pack, &crew_reply.key)?;
     let args: Args<'_> = crew_reply
@@ -436,7 +500,7 @@ fn utterance(mouth: &mut Mouth, crew_reply: &CrewReply) -> Option<Utterance> {
         .iter()
         .filter_map(|(name, value)| {
             let arg = match question_field_named(name).filter(|_| question) {
-                Some(spec) => said(pack, *units, spec.say, value)?,
+                Some(spec) => said(pack, units, spec.say, value)?,
                 None => plain_arg(pack, value)?,
             };
 
