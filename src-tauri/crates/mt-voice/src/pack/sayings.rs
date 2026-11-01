@@ -3,7 +3,7 @@
 //! one of, `[a]` may be left out — and never reach into a `{value}` or a
 //! plural, whose braces are copied as they stand.
 
-use std::fmt;
+use mt_model::app::voice::VoiceMistake;
 
 /// The most sayings one variant may have: each fixed one is a sound file of
 /// its own.
@@ -18,15 +18,19 @@ pub enum SayingsError {
     TooMany(usize),
 }
 
-impl fmt::Display for SayingsError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Unclosed(mark) => write!(formatter, "'{mark}' is never closed"),
-            Self::Unexpected(mark) => write!(formatter, "'{mark}' has nothing open to close"),
-            Self::TooMany(count) => write!(
-                formatter,
-                "{count} ways to say it, at most {MAX_SAYINGS} — fewer choices"
-            ),
+impl From<SayingsError> for VoiceMistake {
+    fn from(error: SayingsError) -> Self {
+        match error {
+            SayingsError::Unclosed(mark) => Self::Unclosed {
+                mark: mark.to_string(),
+            },
+            SayingsError::Unexpected(mark) => Self::NothingToClose {
+                mark: mark.to_string(),
+            },
+            SayingsError::TooMany(count) => Self::TooManySayings {
+                count: count as u32,
+                limit: MAX_SAYINGS as u32,
+            },
         }
     }
 }

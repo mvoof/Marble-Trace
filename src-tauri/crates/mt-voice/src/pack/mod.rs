@@ -26,7 +26,7 @@ use mt_model::app::crew_questions::{
     question_no_car_key, question_no_value_key, question_reply_key, CarTarget, VoiceQuestionDef,
     QUESTION_FIELDS,
 };
-use mt_model::app::voice::VoiceStep;
+use mt_model::app::voice::{VoiceMistake, VoiceStep};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
@@ -114,43 +114,53 @@ pub fn question_location(question: usize, part: &str, index: usize) -> String {
 
 /// A question's step as the command it stands for: a pit intent with its slot
 /// filled, or a chat macro by its number.
-pub fn step_command(step: &VoiceStep) -> Result<Recognised, String> {
+pub fn step_command(step: &VoiceStep) -> Result<Recognised, VoiceMistake> {
     let value = step.value.as_deref().map(str::trim).unwrap_or_default();
     let slot = if step.action == CHAT_MACRO_ACTION {
         Some(NUMBER_SLOT)
     } else {
         match intent_named(&step.action) {
             Some(intent) if intent.id.starts_with("pit.") => intent.slots.first().copied(),
-            _ => return Err(format!("no action \"{}\"", step.action)),
+            _ => {
+                return Err(VoiceMistake::NoAction {
+                    action: step.action.clone(),
+                })
+            }
         }
     };
     let slots = match slot.map(|slot| (slot, slot_kind(slot))) {
         None => Vec::new(),
         Some((slot, Some(SlotKind::Number))) => {
-            let number: u32 = value
-                .parse()
-                .map_err(|_| format!("{} needs a number, not \"{value}\"", step.action))?;
+            let number: u32 = value.parse().map_err(|_| VoiceMistake::StepNeedsNumber {
+                action: step.action.clone(),
+                value: value.to_string(),
+            })?;
 
             if step.action == CHAT_MACRO_ACTION && !(1..=CHAT_MACRO_COUNT).contains(&number) {
-                return Err(format!(
-                    "a chat macro is 1 to {CHAT_MACRO_COUNT}, not {number}"
-                ));
+                return Err(VoiceMistake::MacroOutOfRange {
+                    number,
+                    limit: CHAT_MACRO_COUNT,
+                });
             }
 
             vec![(slot.to_string(), SlotValue::Number(number))]
         }
         Some((slot, Some(SlotKind::Fixed(values)))) => {
             if !values.contains(&value) {
-                return Err(format!(
-                    "{} takes {}, not \"{value}\"",
-                    step.action,
-                    values.join(", ")
-                ));
+                return Err(VoiceMistake::StepValueUnknown {
+                    action: step.action.clone(),
+                    value: value.to_string(),
+                    expected: to_strings(values),
+                });
             }
 
             vec![(slot.to_string(), SlotValue::Name(value.to_string()))]
         }
-        Some((slot, None)) => return Err(format!("unknown slot {{{slot}}}")),
+        Some((slot, None)) => {
+            return Err(VoiceMistake::UnknownSlot {
+                slot: slot.to_string(),
+            })
+        }
     };
 
     Ok(Recognised {
@@ -182,12 +192,16 @@ pub fn usable_questions<'a>(
         if !valid_question_id(&question.id) {
             issues.push(PackIssue::error(
                 location,
-                format!("id \"{}\" — letters, digits, - and _ only", question.id),
+                VoiceMistake::BadQuestionId {
+                    id: question.id.clone(),
+                },
             ));
         } else if seen.contains(&question.id.as_str()) {
             issues.push(PackIssue::error(
                 location,
-                format!("id \"{}\" is taken", question.id),
+                VoiceMistake::QuestionIdTaken {
+                    id: question.id.clone(),
+                },
             ));
         } else {
             seen.push(&question.id);
@@ -215,23 +229,23 @@ pub struct PackIssue {
     pub severity: Severity,
     /// `phrases.<key>[<variant>]`, `commands.intents.<intent>[<template>]`, …
     pub location: String,
-    pub message: String,
+    pub mistake: VoiceMistake,
 }
 
 impl PackIssue {
-    pub fn error(location: impl Into<String>, message: impl Into<String>) -> Self {
+    pub fn error(location: impl Into<String>, mistake: impl Into<VoiceMistake>) -> Self {
         Self {
             severity: Severity::Error,
             location: location.into(),
-            message: message.into(),
+            mistake: mistake.into(),
         }
     }
 
-    pub fn warning(location: impl Into<String>, message: impl Into<String>) -> Self {
+    pub fn warning(location: impl Into<String>, mistake: impl Into<VoiceMistake>) -> Self {
         Self {
             severity: Severity::Warning,
             location: location.into(),
-            message: message.into(),
+            mistake: mistake.into(),
         }
     }
 }
@@ -414,14 +428,25 @@ where
         Ok(text) => text,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return None,
         Err(error) => {
-            issues.push(PackIssue::error(name, error.to_string()));
+            let detail = error.to_string();
+
+            issues.push(PackIssue::error(
+                name,
+                VoiceMistake::FileUnreadable { detail },
+            ));
             return None;
         }
     };
     let file: T = match serde_json::from_str(&text) {
         Ok(file) => file,
         Err(error) => {
-            issues.push(PackIssue::error(name, error.to_string()));
+            let mistake = VoiceMistake::FileInvalid {
+                line: error.line() as u32,
+                column: error.column() as u32,
+                detail: error.to_string(),
+            };
+
+            issues.push(PackIssue::error(name, mistake));
             return None;
         }
     };
@@ -429,10 +454,11 @@ where
     if !(OLDEST_FORMAT..=PACK_FORMAT).contains(&file.format()) {
         issues.push(PackIssue::error(
             name,
-            format!(
-                "format {} — this build reads {OLDEST_FORMAT} to {PACK_FORMAT}",
-                file.format()
-            ),
+            VoiceMistake::FormatUnsupported {
+                format: file.format(),
+                oldest: OLDEST_FORMAT,
+                newest: PACK_FORMAT,
+            },
         ));
         return None;
     }
@@ -464,7 +490,10 @@ fn compile_phrases(
 
     for (key_id, variants) in &file.phrases {
         let Some(key) = phrase_key(key_id) else {
-            issues.push(PackIssue::error(format!("phrases.{key_id}"), "unknown key"));
+            issues.push(PackIssue::error(
+                format!("phrases.{key_id}"),
+                VoiceMistake::UnknownKey,
+            ));
             continue;
         };
         let mut good = Vec::new();
@@ -472,10 +501,10 @@ fn compile_phrases(
         for (index, variant) in variants.iter().enumerate() {
             match compile_variant(variant, |used| key_values_mistake(key.values, used)) {
                 Ok(variant) => good.push(variant),
-                Err(message) => {
+                Err(mistake) => {
                     issues.push(PackIssue::error(
                         format!("phrases.{key_id}[{index}]"),
-                        message,
+                        mistake,
                     ));
                 }
             }
@@ -508,9 +537,9 @@ pub(crate) fn compile_question_replies(
 
                 match compile_variant(&variant, mistake) {
                     Ok(variant) => good.push(variant),
-                    Err(message) => issues.push(PackIssue::error(
+                    Err(mistake) => issues.push(PackIssue::error(
                         question_location(question_index, list.part(), index),
-                        message,
+                        mistake,
                     )),
                 }
             }
@@ -519,10 +548,10 @@ pub(crate) fn compile_question_replies(
         }
 
         for (index, step) in question.steps.iter().enumerate() {
-            if let Err(message) = step_command(step) {
+            if let Err(mistake) = step_command(step) {
                 issues.push(PackIssue::error(
                     question_location(question_index, "steps", index),
-                    message,
+                    mistake,
                 ));
             }
         }
@@ -539,29 +568,29 @@ pub fn answer_key(id: &str, list: AnswerList) -> String {
 }
 
 /// A value a built-in key's variant names that the key does not fill.
-fn key_values_mistake(values: &[&str], used: &[String]) -> Option<String> {
+fn key_values_mistake(values: &[&str], used: &[String]) -> Option<VoiceMistake> {
     let unknown = used.iter().find(|name| !values.contains(&name.as_str()))?;
-    let offered = if values.is_empty() {
-        "none".to_string()
-    } else {
-        values.join(", ")
-    };
 
-    Some(format!(
-        "no value {{{unknown}}} here — this phrase has {offered}"
-    ))
+    Some(VoiceMistake::NoValueHere {
+        name: unknown.clone(),
+        offered: to_strings(values),
+    })
+}
+
+pub(crate) fn to_strings(names: &[&str]) -> Vec<String> {
+    names.iter().map(|name| name.to_string()).collect()
 }
 
 /// `mistake` tells what is wrong with the values the variant names.
 fn compile_variant(
     variant: &Variant,
-    mistake: impl Fn(&[String]) -> Option<String>,
-) -> Result<CompiledVariant, String> {
-    let texts = sayings(&variant.text).map_err(|error| error.to_string())?;
+    mistake: impl Fn(&[String]) -> Option<VoiceMistake>,
+) -> Result<CompiledVariant, VoiceMistake> {
+    let texts = sayings(&variant.text)?;
     let mut compiled = Vec::with_capacity(texts.len());
 
     for text in texts {
-        let message = parse_message(&text).map_err(|error| error.to_string())?;
+        let message = parse_message(&text)?;
 
         compiled.push(Saying { text, message });
     }
@@ -571,8 +600,8 @@ fn compile_variant(
         .flat_map(|saying| values_used(&saying.message))
         .collect();
 
-    if let Some(message) = mistake(&used) {
-        return Err(message);
+    if let Some(mistake) = mistake(&used) {
+        return Err(mistake);
     }
 
     Ok(CompiledVariant {
@@ -941,16 +970,20 @@ mod tests {
             pack.issues
                 .iter()
                 .find(|issue| issue.location == location)
-                .map(|issue| issue.message.as_str())
+                .map(|issue| issue.mistake.clone())
         };
 
         assert_eq!(
             issue("commands.custom.questions[0].phrases[1]"),
-            Some("{number} — this question does not pick its car by a slot")
+            Some(VoiceMistake::PhraseNoSlot {
+                found: vec!["number".into()]
+            })
         );
         assert_eq!(
             issue("commands.custom.questions[0].replies[1]"),
-            Some("no field {humidity}")
+            Some(VoiceMistake::NoField {
+                field: "humidity".into()
+            })
         );
         assert!(issue("commands.custom.questions[0].replies[2]").is_some());
         assert!(issue("commands.custom.questions[2].noCar[1]").is_some());

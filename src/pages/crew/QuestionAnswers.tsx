@@ -6,6 +6,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { questionAnswerList } from '@features/voice-crew/voice-crew.store';
 import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import type { VoiceIntentView } from '@shared/contracts/generated/bindings';
+import { useMistakeText } from './useMistakeText';
 import styles from './CrewPage.module.scss';
 
 /** What opens the field list while typing an answer. */
@@ -160,6 +161,7 @@ const AnswerRow = observer(
   ({ phraseKey, index, text, fields, onFocus }: AnswerRowProps) => {
     const crew = useVoiceCrewStore();
     const { t } = useTranslation('main-app');
+    const { mistakeText } = useMistakeText();
     const check = crew.variantChecks.get(`${phraseKey}#${index}`);
 
     return (
@@ -191,7 +193,9 @@ const AnswerRow = observer(
 
         {check?.error && (
           <div className={styles.checkError}>
-            {t('crewPage.phrases.mistake', { message: check.error })}
+            {t('crewPage.phrases.mistake', {
+              message: mistakeText(check.error),
+            })}
           </div>
         )}
       </div>

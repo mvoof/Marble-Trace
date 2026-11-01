@@ -3,7 +3,8 @@
 //! for the word that agrees with a number, `#` inside a case standing for it.
 
 use std::collections::HashMap;
-use std::fmt;
+
+use mt_model::app::voice::VoiceMistake;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Part {
@@ -57,17 +58,19 @@ pub enum MessageError {
     UnknownValue(String),
 }
 
-impl fmt::Display for MessageError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Unclosed => write!(formatter, "a '{{' is never closed"),
-            Self::Unexpected(character) => write!(formatter, "unexpected '{character}'"),
-            Self::UnknownFormat(format) => {
-                write!(formatter, "unknown format '{format}', only plural")
-            }
-            Self::UnknownCase(case) => write!(formatter, "unknown plural case '{case}'"),
-            Self::NoCases(name) => write!(formatter, "{{{name}, plural}} has no cases"),
-            Self::UnknownValue(name) => write!(formatter, "this phrase has no value {{{name}}}"),
+impl From<MessageError> for VoiceMistake {
+    fn from(error: MessageError) -> Self {
+        match error {
+            MessageError::Unclosed => Self::Unclosed {
+                mark: "{".to_string(),
+            },
+            MessageError::Unexpected(character) => Self::Unexpected {
+                mark: character.to_string(),
+            },
+            MessageError::UnknownFormat(format) => Self::UnknownFormat { format },
+            MessageError::UnknownCase(case) => Self::UnknownPluralCase { case },
+            MessageError::NoCases(name) => Self::NoPluralCases { name },
+            MessageError::UnknownValue(name) => Self::UnknownValue { name },
         }
     }
 }

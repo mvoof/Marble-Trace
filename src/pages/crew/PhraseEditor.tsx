@@ -9,6 +9,7 @@ import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import type { VoicePhraseView } from '@shared/contracts/generated/bindings';
 import { ReplyBlocks } from './ReplyBlocks';
 import { ValueInsert } from './ValueInsert';
+import { useMistakeText } from './useMistakeText';
 import styles from './CrewPage.module.scss';
 
 const STATUS_BADGES: Record<string, BadgeProps['status']> = {
@@ -66,6 +67,7 @@ const VariantRow = observer(
   ({ phrase, index, text, status }: VariantRowProps) => {
     const crew = useVoiceCrewStore();
     const { t } = useTranslation('main-app');
+    const { mistakeText } = useMistakeText();
     const check = crew.variantChecks.get(`${phrase.key}#${index}`);
     // A line typed as text stays text until it is left, or it would turn
     // into blocks under the cursor and drop the focus.
@@ -137,7 +139,9 @@ const VariantRow = observer(
 
         {check?.error && (
           <div className={styles.checkError}>
-            {t('crewPage.phrases.mistake', { message: check.error })}
+            {t('crewPage.phrases.mistake', {
+              message: mistakeText(check.error),
+            })}
           </div>
         )}
 

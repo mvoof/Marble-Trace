@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Input, Popover, Select, Switch } from 'antd';
 import { Copy, Plus, Settings2, Trash2 } from 'lucide-react';
+import { questionIssueKey } from '@features/voice-crew/issue-location';
 import { parseTemplateBlocks } from '@features/voice-crew/template-blocks';
 import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import { VOICE_QUESTION_PREFIX } from '@shared/contracts/generated/backend-constants';
@@ -16,6 +17,7 @@ import { QuestionPreview } from './QuestionPreview';
 import { QuestionSteps } from './QuestionSteps';
 import { SlotSettings } from './SlotSettings';
 import { TemplateBlocks } from './TemplateBlocks';
+import { useMistakeText } from './useMistakeText';
 import styles from './CrewPage.module.scss';
 
 /**
@@ -148,6 +150,8 @@ const QuestionHeader = observer(
   ({ questionId: id, name, onOpen }: QuestionHeaderProps) => {
     const crew = useVoiceCrewStore();
     const { t } = useTranslation('main-app');
+    const { mistakeText } = useMistakeText();
+    const issue = crew.questionIssues.get(questionIssueKey(id));
     const duplicate = () => {
       const key = crew.duplicateQuestion(
         id,
@@ -162,48 +166,59 @@ const QuestionHeader = observer(
     };
 
     return (
-      <div className={styles.variantRow}>
-        <Switch
-          size="small"
-          checked={crew.findQuestion(id)?.enabled ?? true}
-          title={t('crewPage.questions.enabled')}
-          onChange={(enabled) => crew.setQuestionEnabled(id, enabled)}
-        />
+      <div className={styles.variant}>
+        <div className={styles.variantRow}>
+          <Switch
+            size="small"
+            checked={crew.findQuestion(id)?.enabled ?? true}
+            title={t('crewPage.questions.enabled')}
+            onChange={(enabled) => crew.setQuestionEnabled(id, enabled)}
+          />
 
-        <Input
-          className={styles.variantText}
-          value={name}
-          placeholder={t('crewPage.questions.name')}
-          onChange={(event) => crew.renameQuestion(id, event.target.value)}
-        />
+          <Input
+            className={styles.variantText}
+            value={name}
+            placeholder={t('crewPage.questions.name')}
+            status={issue ? 'error' : undefined}
+            onChange={(event) => crew.renameQuestion(id, event.target.value)}
+          />
 
-        <Select
-          className={styles.targetSelect}
-          value={crew.findQuestion(id)?.target ?? NO_CAR}
-          title={t('crewPage.questions.target.title')}
-          options={[
-            { value: NO_CAR, label: t('crewPage.questions.target.none') },
-            ...(crew.pack?.carTargets ?? []).map(({ target }) => ({
-              value: target,
-              label: t(`crewPage.questions.target.${target}`),
-            })),
-          ]}
-          onChange={(target: CarTarget | typeof NO_CAR) =>
-            crew.setQuestionTarget(id, target === NO_CAR ? null : target)
-          }
-        />
+          <Select
+            className={styles.targetSelect}
+            value={crew.findQuestion(id)?.target ?? NO_CAR}
+            title={t('crewPage.questions.target.title')}
+            options={[
+              { value: NO_CAR, label: t('crewPage.questions.target.none') },
+              ...(crew.pack?.carTargets ?? []).map(({ target }) => ({
+                value: target,
+                label: t(`crewPage.questions.target.${target}`),
+              })),
+            ]}
+            onChange={(target: CarTarget | typeof NO_CAR) =>
+              crew.setQuestionTarget(id, target === NO_CAR ? null : target)
+            }
+          />
 
-        <Button icon={<Copy size={14} />} onClick={duplicate}>
-          {t('crewPage.questions.duplicate')}
-        </Button>
+          <Button icon={<Copy size={14} />} onClick={duplicate}>
+            {t('crewPage.questions.duplicate')}
+          </Button>
 
-        <Button
-          danger
-          icon={<Trash2 size={14} />}
-          onClick={() => crew.removeQuestion(id)}
-        >
-          {t('crewPage.questions.remove')}
-        </Button>
+          <Button
+            danger
+            icon={<Trash2 size={14} />}
+            onClick={() => crew.removeQuestion(id)}
+          >
+            {t('crewPage.questions.remove')}
+          </Button>
+        </div>
+
+        {issue && (
+          <div className={styles.checkError}>
+            {t('crewPage.commands.mistake', {
+              message: mistakeText(issue.mistake),
+            })}
+          </div>
+        )}
       </div>
     );
   }
@@ -222,6 +237,7 @@ const TemplateRow = observer(
     const intentId = intent.id;
     const crew = useVoiceCrewStore();
     const { t } = useTranslation('main-app');
+    const { mistakeText } = useMistakeText();
     const check = crew.templateChecks.get(`${intentId}#${index}`);
     const hidden = check ? check.sentences - check.examples.length : 0;
     // A line typed as text stays text until it is left, or it would turn
@@ -263,7 +279,9 @@ const TemplateRow = observer(
 
         {check?.error && (
           <div className={styles.checkError}>
-            {t('crewPage.commands.mistake', { message: check.error })}
+            {t('crewPage.commands.mistake', {
+              message: mistakeText(check.error),
+            })}
           </div>
         )}
 

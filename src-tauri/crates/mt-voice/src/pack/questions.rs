@@ -3,6 +3,7 @@
 //! phrases carry the slot its car is picked by.
 
 use mt_model::app::crew_questions::{question_field_named, CarTarget, VoiceQuestionDef};
+use mt_model::app::voice::VoiceMistake;
 
 use crate::pack::template::Node;
 
@@ -42,10 +43,12 @@ pub fn answer_mistake(
     target: Option<CarTarget>,
     list: AnswerList,
     used: &[String],
-) -> Option<String> {
+) -> Option<VoiceMistake> {
     used.iter().find_map(|name| {
         let Some(spec) = question_field_named(name) else {
-            return Some(format!("no field {{{name}}}"));
+            return Some(VoiceMistake::NoField {
+                field: name.clone(),
+            });
         };
 
         if !spec.of_car() {
@@ -53,15 +56,15 @@ pub fn answer_mistake(
         }
 
         match target {
-            None => Some(format!(
-                "{{{name}}} is a car's — this question asks about no car"
-            )),
+            None => Some(VoiceMistake::CarFieldNoTarget {
+                field: name.clone(),
+            }),
             Some(target)
                 if list == AnswerList::NoCar && target.phrase_slot() != Some(name.as_str()) =>
             {
-                Some(format!(
-                    "{{{name}}} is a car's — there is no car to read it from"
-                ))
+                Some(VoiceMistake::CarFieldNoCar {
+                    field: name.clone(),
+                })
             }
             Some(_) => None,
         }
@@ -71,7 +74,7 @@ pub fn answer_mistake(
 /// What is wrong with the slots a phrase carries: a question picking its car
 /// by a number or a place hears it in exactly that slot, any other question
 /// in none.
-pub fn phrase_mistake(target: Option<CarTarget>, nodes: &[Node]) -> Option<String> {
+pub fn phrase_mistake(target: Option<CarTarget>, nodes: &[Node]) -> Option<VoiceMistake> {
     let mut slots = Vec::new();
 
     slots_in(nodes, &mut slots);
@@ -80,16 +83,15 @@ pub fn phrase_mistake(target: Option<CarTarget>, nodes: &[Node]) -> Option<Strin
 
     match (target.and_then(CarTarget::phrase_slot), slots.as_slice()) {
         (Some(wanted), [slot]) if slot == wanted => None,
-        (Some(wanted), []) => Some(format!("needs {{{wanted}}} — it names the car by it")),
-        (Some(wanted), _) => Some(format!(
-            "names the car by {{{wanted}}} alone, not {}",
-            braced(&slots)
-        )),
+        (Some(wanted), []) => Some(VoiceMistake::PhraseNeedsSlot {
+            slot: wanted.to_string(),
+        }),
+        (Some(wanted), _) => Some(VoiceMistake::PhraseOnlySlot {
+            slot: wanted.to_string(),
+            found: slots,
+        }),
         (None, []) => None,
-        (None, _) => Some(format!(
-            "{} — this question does not pick its car by a slot",
-            braced(&slots)
-        )),
+        (None, _) => Some(VoiceMistake::PhraseNoSlot { found: slots }),
     }
 }
 
@@ -108,14 +110,6 @@ fn slots_in(nodes: &[Node], slots: &mut Vec<String>) {
     }
 }
 
-fn braced(names: &[String]) -> String {
-    names
-        .iter()
-        .map(|name| format!("{{{name}}}"))
-        .collect::<Vec<_>>()
-        .join(", ")
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -125,7 +119,7 @@ mod tests {
         names.iter().map(|name| name.to_string()).collect()
     }
 
-    fn phrase(target: Option<CarTarget>, template: &str) -> Option<String> {
+    fn phrase(target: Option<CarTarget>, template: &str) -> Option<VoiceMistake> {
         phrase_mistake(target, &parse(template).unwrap())
     }
 
@@ -133,7 +127,9 @@ mod tests {
     fn an_answer_names_only_fields_the_catalog_has() {
         assert_eq!(
             answer_mistake(None, AnswerList::Replies, &used(&["fuelLaps", "humidity"])),
-            Some("no field {humidity}".into())
+            Some(VoiceMistake::NoField {
+                field: "humidity".into()
+            })
         );
         assert_eq!(
             answer_mistake(None, AnswerList::Replies, &used(&["fuelLaps"])),
@@ -179,11 +175,16 @@ mod tests {
         assert_eq!(phrase(by_position, "who is (p|place) {position}"), None);
         assert_eq!(
             phrase(by_position, "gap to car {number}"),
-            Some("names the car by {position} alone, not {number}".into())
+            Some(VoiceMistake::PhraseOnlySlot {
+                slot: "position".into(),
+                found: vec!["number".into()],
+            })
         );
         assert_eq!(
             phrase(by_position, "who is ahead"),
-            Some("needs {position} — it names the car by it".into())
+            Some(VoiceMistake::PhraseNeedsSlot {
+                slot: "position".into()
+            })
         );
         assert!(phrase(Some(CarTarget::Ahead), "car [{number}]").is_some());
         assert!(phrase(None, "fuel {number}").is_some());

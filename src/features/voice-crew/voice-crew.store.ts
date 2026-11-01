@@ -41,6 +41,7 @@ import type {
   VoiceComponentView,
   VoiceDownloadProgress,
   VoiceDraftCheck,
+  VoiceIssueView,
   VoicePackView,
   VoiceQuestionPreview,
   VoiceQuestionView,
@@ -56,6 +57,7 @@ import {
   type AppSettingsStore,
 } from '@entities/app-settings/app-settings.store';
 import type { UnitsStore } from '@entities/app-settings/units.store';
+import { questionIssueKey, questionIssuePlace } from './issue-location';
 
 /** Which numbers take which plural form, language by language (CLDR). */
 const PLURAL_RULES_URL =
@@ -147,6 +149,11 @@ export class VoiceCrewStore {
   testingDraft = false;
   /** The pack being edited, checked: examples, samples, mistakes, conflicts. */
   draftCheck: VoiceDraftCheck | null = null;
+  /**
+   * The questions' ids as the pack was loaded or saved, in file order: a
+   * pack mistake's location names a question by that place.
+   */
+  issueQuestionIds: string[] = [];
   trial: VoiceSentenceTrial | null = null;
   /** What a question would answer now; dropped on the next edit. */
   questionPreview: { questionId: string; result: VoiceQuestionPreview } | null =
@@ -289,6 +296,47 @@ export class VoiceCrewStore {
         check,
       ])
     );
+  }
+
+  /** The saved pack's mistakes in a question, by `questionIssueKey`. */
+  get questionIssues(): Map<string, VoiceIssueView> {
+    const issues = new Map<string, VoiceIssueView>();
+
+    for (const issue of this.pack?.issues ?? []) {
+      const place = questionIssuePlace(issue.location);
+      const questionId =
+        place === null ? undefined : this.issueQuestionIds[place.question];
+
+      if (place !== null && questionId !== undefined) {
+        issues.set(
+          questionIssueKey(questionId, place.part, place.index),
+          issue
+        );
+      }
+    }
+
+    return issues;
+  }
+
+  /**
+   * The saved pack has a mistake in the question itself or in its steps —
+   * what the draft check does not look at.
+   */
+  questionBroken(questionId: string): boolean {
+    const stepsKey = `${questionId}:steps#`;
+
+    return [...this.questionIssues.keys()].some(
+      (key) => key === questionIssueKey(questionId) || key.startsWith(stepsKey)
+    );
+  }
+
+  /** The id of the question a saved pack's mistake is in, if it is in one. */
+  issueQuestion(issue: VoiceIssueView): string | null {
+    const place = questionIssuePlace(issue.location);
+
+    return place === null
+      ? null
+      : (this.issueQuestionIds[place.question] ?? null);
   }
 
   /** Templates and variants in the draft that cannot be read out. */
@@ -604,6 +652,7 @@ export class VoiceCrewStore {
     if (pack) {
       runInAction(() => {
         this.pack = pack;
+        this.issueQuestionIds = pack.questions.map((question) => question.id);
         this.dirty = false;
       });
       this.scheduleDraftCheck();
@@ -633,6 +682,7 @@ export class VoiceCrewStore {
     if (saved) {
       runInAction(() => {
         this.pack = saved;
+        this.issueQuestionIds = saved.questions.map((question) => question.id);
         this.dirty = false;
       });
 

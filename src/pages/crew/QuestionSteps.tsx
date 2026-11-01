@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Dropdown, InputNumber, Select } from 'antd';
 import { Plus, Trash2 } from 'lucide-react';
+import { questionIssueKey } from '@features/voice-crew/issue-location';
 import {
   NUMBER_SLOT,
   type StepAction,
@@ -12,6 +13,7 @@ import {
   VOICE_CHAT_MACRO_COUNT,
 } from '@shared/contracts/generated/backend-constants';
 import type { VoiceStep } from '@shared/contracts/generated/bindings';
+import { useMistakeText } from './useMistakeText';
 import styles from './CrewPage.module.scss';
 
 /** The most liters a fuel step takes — the number words go no higher. */
@@ -81,6 +83,10 @@ const StepRow = observer(
   ({ questionId, index, step, actions, actionName }: StepRowProps) => {
     const crew = useVoiceCrewStore();
     const { t } = useTranslation('main-app');
+    const { mistakeText } = useMistakeText();
+    const issue = crew.questionIssues.get(
+      questionIssueKey(questionId, 'steps', index)
+    );
     const slot =
       actions.find((candidate) => candidate.action === step.action)?.slot ??
       null;
@@ -88,65 +94,76 @@ const StepRow = observer(
       crew.setStep(questionId, index, { ...step, value });
 
     return (
-      <div className={styles.variantRow}>
-        <span className={styles.stepNumber}>{index + 1}</span>
+      <div className={styles.variant}>
+        <div className={styles.variantRow}>
+          <span className={styles.stepNumber}>{index + 1}</span>
 
-        <Select
-          className={styles.variantText}
-          value={step.action}
-          options={actions.map(({ action }) => ({
-            value: action,
-            label: actionName(action),
-          }))}
-          onChange={(action: string) =>
-            crew.setStep(questionId, index, {
-              action,
-              value: crew.defaultStepValue(action),
-            })
-          }
-        />
-
-        {slot === NUMBER_SLOT && (
-          <InputNumber
-            min={1}
-            max={
-              step.action === VOICE_CHAT_MACRO_ACTION
-                ? VOICE_CHAT_MACRO_COUNT
-                : MAX_FUEL_LITERS
-            }
-            precision={0}
-            value={Number(step.value ?? 1)}
-            addonBefore={
-              step.action === VOICE_CHAT_MACRO_ACTION
-                ? t('crewPage.questions.macroSlot')
-                : undefined
-            }
-            onChange={(value) => value !== null && setValue(String(value))}
-          />
-        )}
-
-        {slot !== null && slot !== NUMBER_SLOT && (
           <Select
-            className={styles.stepValue}
-            value={step.value ?? undefined}
-            options={(
-              crew.pack?.slots.find((candidate) => candidate.slot === slot)
-                ?.values ?? []
-            ).map(({ value }) => ({
-              value,
-              label: t(`crewPage.commands.slotValues.${slot}.${value}`, {
-                defaultValue: value,
-              }),
+            className={styles.variantText}
+            value={step.action}
+            status={issue ? 'error' : undefined}
+            options={actions.map(({ action }) => ({
+              value: action,
+              label: actionName(action),
             }))}
-            onChange={(value: string) => setValue(value)}
+            onChange={(action: string) =>
+              crew.setStep(questionId, index, {
+                action,
+                value: crew.defaultStepValue(action),
+              })
+            }
           />
-        )}
 
-        <Button
-          icon={<Trash2 size={14} />}
-          onClick={() => crew.removeStep(questionId, index)}
-          aria-label={t('crewPage.questions.removeStep')}
-        />
+          {slot === NUMBER_SLOT && (
+            <InputNumber
+              min={1}
+              max={
+                step.action === VOICE_CHAT_MACRO_ACTION
+                  ? VOICE_CHAT_MACRO_COUNT
+                  : MAX_FUEL_LITERS
+              }
+              precision={0}
+              value={Number(step.value ?? 1)}
+              addonBefore={
+                step.action === VOICE_CHAT_MACRO_ACTION
+                  ? t('crewPage.questions.macroSlot')
+                  : undefined
+              }
+              onChange={(value) => value !== null && setValue(String(value))}
+            />
+          )}
+
+          {slot !== null && slot !== NUMBER_SLOT && (
+            <Select
+              className={styles.stepValue}
+              value={step.value ?? undefined}
+              options={(
+                crew.pack?.slots.find((candidate) => candidate.slot === slot)
+                  ?.values ?? []
+              ).map(({ value }) => ({
+                value,
+                label: t(`crewPage.commands.slotValues.${slot}.${value}`, {
+                  defaultValue: value,
+                }),
+              }))}
+              onChange={(value: string) => setValue(value)}
+            />
+          )}
+
+          <Button
+            icon={<Trash2 size={14} />}
+            onClick={() => crew.removeStep(questionId, index)}
+            aria-label={t('crewPage.questions.removeStep')}
+          />
+        </div>
+
+        {issue && (
+          <div className={styles.checkError}>
+            {t('crewPage.commands.mistake', {
+              message: mistakeText(issue.mistake),
+            })}
+          </div>
+        )}
       </div>
     );
   }

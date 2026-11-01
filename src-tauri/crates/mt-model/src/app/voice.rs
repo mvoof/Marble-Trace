@@ -132,7 +132,141 @@ pub struct VoiceIssueView {
     /// `error` or `warning`.
     pub severity: String,
     pub location: String,
-    pub message: String,
+    pub mistake: VoiceMistake,
+}
+
+/// What is wrong in a pack, by code with what the editor needs to say it in
+/// the user's language. Names (`slot`, `field`, `name`, …) come without their braces.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(tag = "code", rename_all = "camelCase")]
+pub enum VoiceMistake {
+    /// `detail` is the system's own words.
+    FileUnreadable {
+        detail: String,
+    },
+    /// Not JSON, or not a pack's shape; `detail` is the parser's own words.
+    FileInvalid {
+        line: u32,
+        column: u32,
+        detail: String,
+    },
+    FormatUnsupported {
+        format: u32,
+        oldest: u32,
+        newest: u32,
+    },
+    UnknownKey,
+    UnknownIntent,
+    /// `commands.defaults` names an intent that takes no value.
+    IntentTakesNoValue,
+    /// A default value none of the intent's slots has.
+    NotAValueOf {
+        value: String,
+        slots: Vec<String>,
+    },
+    UnknownSlotValue {
+        value: String,
+        expected: Vec<String>,
+    },
+    NumberSlotBuiltIn,
+    UnknownSlot {
+        slot: String,
+    },
+    NoNumberWords {
+        language: String,
+    },
+    SentenceConflict {
+        sentence: String,
+        intents: Vec<String>,
+    },
+    LargeGrammar {
+        sentences: u32,
+        limit: u32,
+    },
+    /// A `(`, `[` or `{` with no closing mark.
+    Unclosed {
+        mark: String,
+    },
+    Unexpected {
+        mark: String,
+    },
+    /// A `)`, `]` or `|` with nothing open for it.
+    NothingToClose {
+        mark: String,
+    },
+    EmptySlot,
+    TooManySentences {
+        limit: u32,
+    },
+    TooManySayings {
+        count: u32,
+        limit: u32,
+    },
+    /// `{name, select}`: only `plural` is understood.
+    UnknownFormat {
+        format: String,
+    },
+    UnknownPluralCase {
+        case: String,
+    },
+    NoPluralCases {
+        name: String,
+    },
+    /// A value the phrase is never filled with.
+    UnknownValue {
+        name: String,
+    },
+    /// A value a built-in phrase is not filled with, and those it is.
+    NoValueHere {
+        name: String,
+        offered: Vec<String>,
+    },
+    BadQuestionId {
+        id: String,
+    },
+    QuestionIdTaken {
+        id: String,
+    },
+    NoField {
+        field: String,
+    },
+    /// A car's field in a question about no car.
+    CarFieldNoTarget {
+        field: String,
+    },
+    /// A car's field in what is said when the car is not there.
+    CarFieldNoCar {
+        field: String,
+    },
+    /// The phrase lacks the slot the question picks its car by.
+    PhraseNeedsSlot {
+        slot: String,
+    },
+    PhraseOnlySlot {
+        slot: String,
+        found: Vec<String>,
+    },
+    /// Slots in a phrase of a question that picks no car by one.
+    PhraseNoSlot {
+        found: Vec<String>,
+    },
+    NoAction {
+        action: String,
+    },
+    StepNeedsNumber {
+        action: String,
+        value: String,
+    },
+    MacroOutOfRange {
+        number: u32,
+        limit: u32,
+    },
+    StepValueUnknown {
+        action: String,
+        value: String,
+        expected: Vec<String>,
+    },
 }
 
 /// A question of the driver's own. Its sentences are listed with the intents
@@ -212,7 +346,7 @@ pub struct VoiceTemplateCheck {
     pub index: u32,
     pub sentences: u32,
     pub examples: Vec<String>,
-    pub error: Option<String>,
+    pub error: Option<VoiceMistake>,
     /// Words the recognition model lacks: a sentence with one is never heard.
     pub missing_words: Vec<String>,
 }
@@ -228,7 +362,7 @@ pub struct VoiceVariantCheck {
     pub samples: Vec<String>,
     /// The ways the variant can be put: its choices and optional parts.
     pub sayings: u32,
-    pub error: Option<String>,
+    pub error: Option<VoiceMistake>,
 }
 
 /// The pack being edited, checked before it is saved.

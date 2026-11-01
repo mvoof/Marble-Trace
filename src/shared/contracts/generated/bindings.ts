@@ -3020,8 +3020,99 @@ export type VoiceIssueView = {
    */
   severity: string;
   location: string;
-  message: string;
+  mistake: VoiceMistake;
 };
+
+/**
+ * What is wrong in a pack, by code with what the editor needs to say it in
+ * the user's language. Names (`slot`, `field`, `name`, …) come without their braces.
+ */
+export type VoiceMistake =
+  /**
+   * `detail` is the system's own words.
+   */
+  | { code: 'fileUnreadable'; detail: string }
+  /**
+   * Not JSON, or not a pack's shape; `detail` is the parser's own words.
+   */
+  | { code: 'fileInvalid'; line: number; column: number; detail: string }
+  | {
+      code: 'formatUnsupported';
+      format: number;
+      oldest: number;
+      newest: number;
+    }
+  | { code: 'unknownKey' }
+  | { code: 'unknownIntent' }
+  /**
+   * `commands.defaults` names an intent that takes no value.
+   */
+  | { code: 'intentTakesNoValue' }
+  /**
+   * A default value none of the intent's slots has.
+   */
+  | { code: 'notAValueOf'; value: string; slots: string[] }
+  | { code: 'unknownSlotValue'; value: string; expected: string[] }
+  | { code: 'numberSlotBuiltIn' }
+  | { code: 'unknownSlot'; slot: string }
+  | { code: 'noNumberWords'; language: string }
+  | { code: 'sentenceConflict'; sentence: string; intents: string[] }
+  | { code: 'largeGrammar'; sentences: number; limit: number }
+  /**
+   * A `(`, `[` or `{` with no closing mark.
+   */
+  | { code: 'unclosed'; mark: string }
+  | { code: 'unexpected'; mark: string }
+  /**
+   * A `)`, `]` or `|` with nothing open for it.
+   */
+  | { code: 'nothingToClose'; mark: string }
+  | { code: 'emptySlot' }
+  | { code: 'tooManySentences'; limit: number }
+  | { code: 'tooManySayings'; count: number; limit: number }
+  /**
+   * `{name, select}`: only `plural` is understood.
+   */
+  | { code: 'unknownFormat'; format: string }
+  | { code: 'unknownPluralCase'; case: string }
+  | { code: 'noPluralCases'; name: string }
+  /**
+   * A value the phrase is never filled with.
+   */
+  | { code: 'unknownValue'; name: string }
+  /**
+   * A value a built-in phrase is not filled with, and those it is.
+   */
+  | { code: 'noValueHere'; name: string; offered: string[] }
+  | { code: 'badQuestionId'; id: string }
+  | { code: 'questionIdTaken'; id: string }
+  | { code: 'noField'; field: string }
+  /**
+   * A car's field in a question about no car.
+   */
+  | { code: 'carFieldNoTarget'; field: string }
+  /**
+   * A car's field in what is said when the car is not there.
+   */
+  | { code: 'carFieldNoCar'; field: string }
+  /**
+   * The phrase lacks the slot the question picks its car by.
+   */
+  | { code: 'phraseNeedsSlot'; slot: string }
+  | { code: 'phraseOnlySlot'; slot: string; found: string[] }
+  /**
+   * Slots in a phrase of a question that picks no car by one.
+   */
+  | { code: 'phraseNoSlot'; found: string[] }
+  | { code: 'noAction'; action: string }
+  | { code: 'stepNeedsNumber'; action: string; value: string }
+  | { code: 'macroOutOfRange'; number: number; limit: number }
+  | {
+      code: 'stepValueUnknown';
+      action: string;
+      value: string;
+      expected: string[];
+    };
 
 /**
  * A language pack as the editor shows it: the built-in one with the user's
@@ -3167,7 +3258,7 @@ export type VoiceTemplateCheck = {
   index: number;
   sentences: number;
   examples: string[];
-  error: string | null;
+  error: VoiceMistake | null;
   /**
    * Words the recognition model lacks: a sentence with one is never heard.
    */
@@ -3186,7 +3277,7 @@ export type VoiceVariantCheck = {
    * The ways the variant can be put: its choices and optional parts.
    */
   sayings: number;
-  error: string | null;
+  error: VoiceMistake | null;
 };
 
 export type VoiceVariantView = {

@@ -143,7 +143,7 @@ impl Crew {
         let output = output_config(&config);
 
         for issue in &pack.issues {
-            tracing::warn!(location = %issue.location, message = %issue.message, "voice pack");
+            tracing::warn!(location = %issue.location, mistake = ?issue.mistake, "voice pack");
         }
 
         {

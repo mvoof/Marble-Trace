@@ -14,6 +14,7 @@ import { PhraseEditor } from './PhraseEditor';
 import { CrewSaveBar } from './CrewSaveBar';
 import { RadioCheck } from './RadioCheck';
 import { SyntaxHelp } from './SyntaxHelp';
+import { useMistakeText } from './useMistakeText';
 import styles from './CrewCommands.module.scss';
 
 /** Intents grouped by the first part of their id: `pit.fuel` is a pit order. */
@@ -39,6 +40,7 @@ const sharedPhrases = (pack: VoicePackView) => {
 export const CrewCommands = observer(() => {
   const crew = useVoiceCrewStore();
   const { t } = useTranslation('main-app');
+  const { mistakeText, issueWhere } = useMistakeText();
   const [selected, setSelected] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
   const pack = crew.pack;
@@ -164,13 +166,13 @@ export const CrewCommands = observer(() => {
         </div>
 
         <div className={styles.detail}>
-          {pack.issues.map((issue) => (
+          {pack.issues.map((issue, index) => (
             <Alert
-              key={`${issue.location}:${issue.message}`}
+              key={`${issue.location}#${index}`}
               className={styles.alert}
               type={issue.severity === 'error' ? 'error' : 'warning'}
               showIcon
-              title={`${issue.location}: ${issue.message}`}
+              title={`${issueWhere(issue)}: ${mistakeText(issue.mistake)}`}
             />
           ))}
 
@@ -246,7 +248,10 @@ const CommandItem = observer(
       (total, check) => total + (check?.sentences ?? 0),
       0
     );
-    const broken = checks.some((check) => check?.error);
+    const broken =
+      checks.some((check) => check?.error) ||
+      (intent.id.startsWith(VOICE_QUESTION_PREFIX) &&
+        crew.questionBroken(intent.id.slice(VOICE_QUESTION_PREFIX.length)));
     const switchedOff = intent.id.startsWith(VOICE_QUESTION_PREFIX)
       ? crew.findQuestion(intent.id.slice(VOICE_QUESTION_PREFIX.length))
           ?.enabled === false

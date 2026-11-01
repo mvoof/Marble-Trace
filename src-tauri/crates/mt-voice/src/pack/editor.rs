@@ -26,7 +26,7 @@ use crate::cache::{variant_status, VariantStatus};
 use crate::pack::catalog::{reply_values, ASK_WHEN_UNSAID, COMPOUND_SLOT, INTENTS, PHRASE_KEYS};
 use crate::pack::grammar::{compile, Conflict};
 use crate::pack::message::{format, parse, values_used, Arg, Args};
-use crate::pack::questions::AnswerList;
+use crate::pack::questions::{answer_mistake, AnswerList};
 use crate::pack::sayings::sayings;
 use crate::pack::{
     answer_key, built_in, commands_schema, compile_question_replies, phrases_schema,
@@ -174,7 +174,7 @@ pub fn pack_view(pack: &LanguagePack, folder: &Path, config: &OutputConfig) -> V
                 }
                 .to_string(),
                 location: issue.location.clone(),
-                message: issue.message.clone(),
+                mistake: issue.mistake.clone(),
             })
             .collect(),
     }
@@ -340,9 +340,30 @@ pub fn check_draft(
         .phrases
         .iter()
         .flat_map(|phrase| {
-            phrase.variants.iter().enumerate().map(|(index, variant)| {
-                check_variant(&view.language, &phrase.key, index, &variant.text, compound)
-            })
+            let answer = answer_of(&commands, &phrase.key);
+
+            phrase
+                .variants
+                .iter()
+                .enumerate()
+                .map(move |(index, variant)| {
+                    let mut check =
+                        check_variant(&view.language, &phrase.key, index, &variant.text, compound);
+
+                    if let (None, Some((target, list))) = (&check.error, answer) {
+                        check.error = sayings(&variant.text).ok().and_then(|texts| {
+                            let used: Vec<String> = texts
+                                .iter()
+                                .filter_map(|text| parse(text).ok())
+                                .flat_map(|message| values_used(&message))
+                                .collect();
+
+                            answer_mistake(target, list, &used)
+                        });
+                    }
+
+                    check
+                })
         })
         .collect();
 
@@ -353,6 +374,17 @@ pub fn check_draft(
         conflicts: conflict_views(&grammar.conflicts),
         vocabulary_checked: missing.is_some(),
     }
+}
+
+/// The question a reply key answers, by the car it asks about, and which of
+/// its lists the key is.
+fn answer_of(commands: &CommandsFile, key: &str) -> Option<(Option<CarTarget>, AnswerList)> {
+    commands.custom.questions.iter().find_map(|question| {
+        AnswerList::ALL
+            .into_iter()
+            .find(|list| answer_key(&question.id, *list) == key)
+            .map(|list| (question.target, list))
+    })
 }
 
 /// One template compiled alone, with the draft's slots, and every word its
@@ -427,7 +459,7 @@ fn check_template(
         error: issues
             .into_iter()
             .find(|issue| issue.location == location)
-            .map(|issue| issue.message),
+            .map(|issue| issue.mistake),
         missing_words: Vec::new(),
     };
 
@@ -460,7 +492,7 @@ fn check_variant(
     let texts = match sayings(text) {
         Ok(texts) => texts,
         Err(error) => {
-            check.error = Some(error.to_string());
+            check.error = Some(error.into());
 
             return check;
         }
@@ -471,7 +503,7 @@ fn check_variant(
         match parse(text) {
             Ok(message) => messages.push(message),
             Err(error) => {
-                check.error = Some(error.to_string());
+                check.error = Some(error.into());
 
                 return check;
             }
@@ -510,7 +542,7 @@ fn check_variant(
         match format(message, language, &args) {
             Ok(sample) => check.samples.push(sample),
             Err(error) => {
-                check.error = Some(error.to_string());
+                check.error = Some(error.into());
                 check.samples.clear();
 
                 return check;
@@ -670,7 +702,7 @@ fn write_json(path: &Path, value: &impl serde::Serialize) -> io::Result<()> {
 mod tests {
     use super::*;
     use crate::pack::load;
-    use mt_model::app::voice::VoiceStep;
+    use mt_model::app::voice::{VoiceMistake, VoiceStep};
     use std::path::PathBuf;
 
     fn scratch(name: &str) -> PathBuf {
@@ -1019,6 +1051,30 @@ mod tests {
             .unwrap();
 
         assert!(reply.error.is_some());
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn a_car_field_in_a_question_about_no_car_is_marked_while_typed() {
+        let root = scratch("question-car-field");
+        let mut view = pack_view(&load("en", None), &root, &config(&root));
+
+        with_weather_question(&mut view, "weather", "Last lap {lastLap}");
+
+        let check = check_draft(&view, |_| None);
+        let reply = check
+            .variants
+            .iter()
+            .find(|variant| variant.key == "question.weather")
+            .unwrap();
+
+        assert_eq!(
+            reply.error,
+            Some(VoiceMistake::CarFieldNoTarget {
+                field: "lastLap".into()
+            })
+        );
 
         let _ = fs::remove_dir_all(root);
     }

@@ -2,7 +2,7 @@
 //! typed value. A template is expanded into every sentence it allows, because
 //! that is what a recogniser in grammar mode is given — a closed list.
 
-use std::fmt;
+use mt_model::app::voice::VoiceMistake;
 
 /// Past this many sentences a template is refused rather than expanded: the
 /// recogniser's grammar grows with every one of them.
@@ -25,17 +25,20 @@ pub enum TemplateError {
     TooManySentences,
 }
 
-impl fmt::Display for TemplateError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Unclosed(bracket) => write!(formatter, "'{bracket}' is never closed"),
-            Self::Unexpected(character) => write!(formatter, "unexpected '{character}'"),
-            Self::EmptySlot => write!(formatter, "a slot needs a name: {{name}}"),
-            Self::UnknownSlot(name) => write!(formatter, "unknown slot {{{name}}}"),
-            Self::TooManySentences => write!(
-                formatter,
-                "expands to more than {MAX_SENTENCES_PER_TEMPLATE} sentences"
-            ),
+impl From<TemplateError> for VoiceMistake {
+    fn from(error: TemplateError) -> Self {
+        match error {
+            TemplateError::Unclosed(bracket) => Self::Unclosed {
+                mark: bracket.to_string(),
+            },
+            TemplateError::Unexpected(character) => Self::Unexpected {
+                mark: character.to_string(),
+            },
+            TemplateError::EmptySlot => Self::EmptySlot,
+            TemplateError::UnknownSlot(slot) => Self::UnknownSlot { slot },
+            TemplateError::TooManySentences => Self::TooManySentences {
+                limit: MAX_SENTENCES_PER_TEMPLATE as u32,
+            },
         }
     }
 }

@@ -10,11 +10,12 @@ use crate::pack::catalog::{
 use mt_model::app::crew_questions::{
     question_reply_key, CarTarget, CLASS_POSITION_FIELD, NUMBER_FIELD, POSITION_FIELD,
 };
+use mt_model::app::voice::VoiceMistake;
 
 use crate::pack::numbers::{car_number_phrases, number_phrases};
 use crate::pack::questions::phrase_mistake;
 use crate::pack::template::{expand, parse, SlotPhrase, SlotValue};
-use crate::pack::{question_location, usable_questions, CommandsFile, PackIssue};
+use crate::pack::{question_location, to_strings, usable_questions, CommandsFile, PackIssue};
 
 /// What the recogniser hears when the driver says something outside the list.
 pub const UNKNOWN_WORD: &str = "[unk]";
@@ -198,7 +199,7 @@ fn unsaid_values(
     for (intent_id, value) in &commands.defaults {
         let location = format!("commands.defaults.{intent_id}");
         let Some(intent) = intent_named(intent_id).filter(|intent| !intent.slots.is_empty()) else {
-            issues.push(PackIssue::error(location, "no intent with a value"));
+            issues.push(PackIssue::error(location, VoiceMistake::IntentTakesNoValue));
             continue;
         };
 
@@ -212,10 +213,10 @@ fn unsaid_values(
             }
             None => issues.push(PackIssue::error(
                 location,
-                format!(
-                    "\"{value}\" is not a value of {{{}}}",
-                    intent.slots.join("}, {")
-                ),
+                VoiceMistake::NotAValueOf {
+                    value: value.clone(),
+                    slots: to_strings(intent.slots),
+                },
             )),
         }
     }
@@ -238,7 +239,7 @@ pub fn compile(language: &str, commands: &CommandsFile) -> (CommandGrammar, Vec<
         let Some(intent) = intent_named(intent_id) else {
             issues.push(PackIssue::error(
                 format!("commands.intents.{intent_id}"),
-                "unknown intent",
+                VoiceMistake::UnknownIntent,
             ));
             continue;
         };
@@ -288,7 +289,7 @@ pub fn compile(language: &str, commands: &CommandsFile) -> (CommandGrammar, Vec<
             let nodes = match parse(template) {
                 Ok(nodes) => nodes,
                 Err(error) => {
-                    issues.push(PackIssue::error(location, error.to_string()));
+                    issues.push(PackIssue::error(location, error));
                     continue;
                 }
             };
@@ -318,7 +319,7 @@ pub fn compile(language: &str, commands: &CommandsFile) -> (CommandGrammar, Vec<
             let sentences = match expand(&nodes, &lookup) {
                 Ok(sentences) => sentences,
                 Err(error) => {
-                    issues.push(PackIssue::error(location, error.to_string()));
+                    issues.push(PackIssue::error(location, error));
                     continue;
                 }
             };
@@ -369,21 +370,20 @@ pub fn compile(language: &str, commands: &CommandsFile) -> (CommandGrammar, Vec<
     for conflict in &conflicts {
         issues.push(PackIssue::warning(
             "commands.intents",
-            format!(
-                "\"{}\" belongs to {}",
-                conflict.sentence,
-                conflict.intents.join(", ")
-            ),
+            VoiceMistake::SentenceConflict {
+                sentence: conflict.sentence.clone(),
+                intents: conflict.intents.clone(),
+            },
         ));
     }
 
     if grammar.sentence_count() > LARGE_GRAMMAR_SENTENCES {
         issues.push(PackIssue::warning(
             "commands",
-            format!(
-                "{} sentences — recognition slows past {LARGE_GRAMMAR_SENTENCES}",
-                grammar.sentence_count()
-            ),
+            VoiceMistake::LargeGrammar {
+                sentences: grammar.sentence_count() as u32,
+                limit: LARGE_GRAMMAR_SENTENCES as u32,
+            },
         ));
     }
 
@@ -431,7 +431,9 @@ fn slot_phrases(
         }
         None => issues.push(PackIssue::warning(
             "commands",
-            format!("no number words for '{language}' — {{number}} commands are left out"),
+            VoiceMistake::NoNumberWords {
+                language: language.to_string(),
+            },
         )),
     }
 
@@ -446,7 +448,10 @@ fn slot_phrases(
                 {
                     issues.push(PackIssue::error(
                         format!("{location}.{value}"),
-                        format!("unknown value, expected one of {}", allowed.join(", ")),
+                        VoiceMistake::UnknownSlotValue {
+                            value: value.clone(),
+                            expected: to_strings(allowed),
+                        },
                     ));
                 }
 
@@ -455,11 +460,13 @@ fn slot_phrases(
                     named_phrases(&location, values, allowed, issues),
                 );
             }
-            Some(SlotKind::Number) => issues.push(PackIssue::error(
+            Some(SlotKind::Number) => {
+                issues.push(PackIssue::error(location, VoiceMistake::NumberSlotBuiltIn))
+            }
+            None => issues.push(PackIssue::error(
                 location,
-                "numbers are built in and cannot be redefined",
+                VoiceMistake::UnknownSlot { slot: slot.clone() },
             )),
-            None => issues.push(PackIssue::error(location, "unknown slot")),
         }
     }
 
@@ -500,7 +507,7 @@ fn named_phrases(
                 })),
                 Err(error) => issues.push(PackIssue::error(
                     format!("{location}.{value}[{index}]"),
-                    error.to_string(),
+                    error,
                 )),
             }
         }
