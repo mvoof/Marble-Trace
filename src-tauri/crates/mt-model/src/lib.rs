@@ -87,6 +87,9 @@ pub fn register_types(types: &mut specta::TypeCollection) {
     types
         .register::<app::crew::CrewRadioEvent>()
         .register::<app::crew::VoiceCrewSettings>()
+        .register::<app::crew_questions::VoiceQuestionDef>()
+        .register::<app::crew_questions::QuestionField>()
+        .register::<app::crew_questions::SayFormat>()
         .register::<app::voice::VoiceStatus>()
         .register::<app::voice::VoiceDownloadProgress>()
         .register::<app::voice::VoicePackView>()

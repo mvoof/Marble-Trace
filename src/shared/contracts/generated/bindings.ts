@@ -156,6 +156,50 @@ export type CarEntry = {
   carClassEstLapTime: number;
 };
 
+/**
+ * A field read for the asked car.
+ */
+export type CarField =
+  | 'name'
+  | 'number'
+  | 'carName'
+  | 'className'
+  | 'position'
+  | 'classPosition'
+  | 'startPosition'
+  /**
+   * The class start place less the class place now.
+   */
+  | 'positionsGained'
+  /**
+   * The class leader's laps less the car's.
+   */
+  | 'lapsDown'
+  | 'lastLap'
+  | 'bestLap'
+  | 'qualifyTime'
+  /**
+   * Seconds along the track to the player, as Relative shows it.
+   */
+  | 'gapToMe'
+  /**
+   * The car's race time behind the class leader.
+   */
+  | 'gapToLeader'
+  /**
+   * The car's last lap less the player's.
+   */
+  | 'lapDeltaToMe'
+  | 'inPit'
+  | 'pitStops'
+  | 'tireCompound'
+  | 'speed'
+  | 'irating'
+  | 'license'
+  | 'incidents'
+  | 'irDelta'
+  | 'isRetired';
+
 export type CarIdxFrame = {
   /**
    * Percentage distance around lap for each car (-1 = not on track)
@@ -445,6 +489,52 @@ export type CarStatusFrame = {
    */
   player_car_team_incident_count: number | null;
 };
+
+/**
+ * The car a question asks about. The session's fields are there whatever
+ * the target.
+ */
+export type CarTarget =
+  /**
+   * The player's own car; none for a spectator or in a replay.
+   */
+  | 'me'
+  /**
+   * One place ahead of the player in the class.
+   */
+  | 'ahead'
+  /**
+   * One place behind the player in the class.
+   */
+  | 'behind'
+  /**
+   * First overall.
+   */
+  | 'leader'
+  /**
+   * First in the player's class.
+   */
+  | 'classLeader'
+  /**
+   * The nearest car ahead on track, lapped or not, as Relative shows it.
+   */
+  | 'aheadOnTrack'
+  /**
+   * The nearest car behind on track.
+   */
+  | 'behindOnTrack'
+  /**
+   * The car whose number the phrase's `{number}` slot heard.
+   */
+  | 'byCarNumber'
+  /**
+   * The car at the overall place the phrase's `{position}` slot heard.
+   */
+  | 'byPosition'
+  /**
+   * The car at the class place the phrase's `{classPosition}` slot heard.
+   */
+  | 'byClassPosition';
 
 /**
  * Chassis telemetry — per-wheel tire and suspension data.
@@ -1863,6 +1953,10 @@ export type QualifyResultEntry = {
   fastestLap: number | null;
 };
 
+export type QuestionField =
+  | { scope: 'car'; field: CarField }
+  | { scope: 'session'; field: SessionField };
+
 /**
  * Decoded race flag state for the current session and the player's car.
  *
@@ -2312,6 +2406,53 @@ export type SafetyRatingFrame = {
   cleanCornersNeeded: number | null;
 };
 
+/**
+ * How a field's value is said.
+ */
+export type SayFormat =
+  | 'whole'
+  /**
+   * "plus 3", "minus 1", in the pack's words.
+   */
+  | 'signedWhole'
+  | 'tenths'
+  /**
+   * "faster by 0.3", "slower by 0.5", in the pack's words.
+   */
+  | 'deltaTenths'
+  /**
+   * Minutes, seconds and tenths, the way an engineer reads a lap.
+   */
+  | 'lapTime'
+  /**
+   * Minutes and seconds.
+   */
+  | 'duration'
+  /**
+   * km/h or mph by the unit system.
+   */
+  | 'speed'
+  /**
+   * Litres or gallons by the unit system.
+   */
+  | 'volume'
+  /**
+   * °C or °F by the unit system.
+   */
+  | 'temperature'
+  /**
+   * The pack's `engineer.yes` / `engineer.no`.
+   */
+  | 'yesNo'
+  /**
+   * Text as it is.
+   */
+  | 'text'
+  /**
+   * Digit by digit, leading zeros said: a car number, "zero seven".
+   */
+  | 'digits';
+
 export type SectorEntry = { sectorNum: number; sectorStartPct: number };
 
 export type SessionEntry = {
@@ -2326,6 +2467,30 @@ export type SessionEntry = {
   sessionLaps: string;
   resultsPositions: ResultPosition[];
 };
+
+/**
+ * A field read once for the session or the player, whatever the target.
+ */
+export type SessionField =
+  | 'fuel'
+  | 'fuelLaps'
+  | 'fuelToFinish'
+  | 'fuelSavePerLap'
+  | 'pitWindowOpen'
+  | 'pitWindowClose'
+  | 'airTemp'
+  | 'trackTemp'
+  | 'rain'
+  | 'trackName'
+  /**
+   * Empty in a timed race.
+   */
+  | 'lapsLeft'
+  /**
+   * Empty when the session has no time limit.
+   */
+  | 'minutesLeft'
+  | 'lap';
 
 export type SessionFrame = {
   /**
@@ -2872,6 +3037,34 @@ export type VoicePhraseView = {
    */
   values: string[];
   variants: VoiceVariantView[];
+};
+
+/**
+ * A question of the driver's own. With `target: None` it asks about no car
+ * and its answers name session fields only.
+ */
+export type VoiceQuestionDef = {
+  /**
+   * Letters, digits, `-` and `_`.
+   */
+  id: string;
+  name?: string;
+  enabled?: boolean;
+  phrases?: string[];
+  target?: CarTarget | null;
+  /**
+   * Said when every field a reply names has a value.
+   */
+  replies?: string[];
+  /**
+   * Said when the target car is not there; required with a target.
+   */
+  noCar?: string[];
+  /**
+   * Said when a field the chosen reply names is empty.
+   */
+  noValue?: string[];
+  steps: VoiceStep[];
 };
 
 /**
