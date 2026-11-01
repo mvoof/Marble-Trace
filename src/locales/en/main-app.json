@@ -909,7 +909,7 @@
         },
         "noCar": {
           "title": "No such car",
-          "desc": "Said when the car is not there: nobody ahead, no car with that number. Required when the question asks about a car."
+          "desc": "Said when the car is not there: nobody ahead, no car with that number. Left empty, the engineer says there is no data."
         },
         "noValue": {
           "title": "No value",
@@ -1018,7 +1018,27 @@
         "title": "Nesting",
         "desc": "Brackets nest: an optional choice of several words."
       },
-      "replies": "In the engineer's replies the values go in from the \"+\" menu: a number with a word picks its form itself — \"1 litre\", \"5 litres\". (a|b) and [a] work as in the driver's sentences: the engineer says one of the ways each time."
+      "replies": {
+        "title": "How to write replies",
+        "intro": "In the engineer's replies (a|b) and [a] work as in the driver's sentences: the engineer says one of the ways each time. Replies also take fields and number forms — ICU MessageFormat, of which only {field} and plural are supported.",
+        "field": {
+          "example": "You are P{classPosition}",
+          "title": "{field} — a value",
+          "desc": "The value of a field from the sheet, in its own format: a lap time, litres, degrees."
+        },
+        "plural": {
+          "example": "{incidents, plural, one {# incident} other {# incidents}}",
+          "title": "plural — the word for the number",
+          "desc": "# is the number itself. The engineer picks the form by the number: \"1 incident\", \"5 incidents\"."
+        },
+        "exact": {
+          "example": "{incidents, plural, =0 {no incidents} other {# incidents}}",
+          "title": "=N — an exact number",
+          "desc": "Its own text for one number; checked before the forms."
+        },
+        "forms": "Forms in English: one (1) and other (everything else). Russian: one — 1, 21…; few — 2–4, 22–24…; many — 0, 5–20…; other — fractions. Spanish: one, many and other; Chinese: other only.",
+        "rulesLink": "Which numbers take which form (CLDR)"
+      }
     },
     "actions": {
       "pit": {

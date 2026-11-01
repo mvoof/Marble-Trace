@@ -36,7 +36,7 @@ use crate::pack::catalog::{
 };
 use crate::pack::grammar::{compile, CommandGrammar, Recognised};
 use crate::pack::message::{format, parse as parse_message, values_used, Args, Part};
-use crate::pack::questions::{answer_mistake, lacks_no_car, AnswerList};
+use crate::pack::questions::{answer_mistake, AnswerList};
 use crate::pack::sayings::sayings;
 use crate::pack::template::{expand, parse as parse_template, SlotValue};
 
@@ -188,12 +188,6 @@ pub fn usable_questions<'a>(
             issues.push(PackIssue::error(
                 location,
                 format!("id \"{}\" is taken", question.id),
-            ));
-        } else if lacks_no_car(question) {
-            seen.push(&question.id);
-            issues.push(PackIssue::error(
-                format!("{location}.{}", AnswerList::NoCar.part()),
-                "a question about a car needs an answer for when it is not there",
             ));
         } else {
             seen.push(&question.id);
@@ -959,13 +953,13 @@ mod tests {
             Some("no field {humidity}")
         );
         assert!(issue("commands.custom.questions[0].replies[2]").is_some());
-        assert!(issue("commands.custom.questions[1].noCar").is_some());
         assert!(issue("commands.custom.questions[2].noCar[1]").is_some());
-        assert_eq!(pack.issues.len(), 5, "{:?}", pack.issues);
+        assert_eq!(pack.issues.len(), 4, "{:?}", pack.issues);
 
         assert!(pack.grammar.recognise("tank check").is_some());
         assert_eq!(pack.variants("question.fuel").len(), 1);
-        assert!(pack.grammar.recognise("split forward").is_none());
+        // With no "no such car" answer the engineer's own "no data" is said.
+        assert!(pack.grammar.recognise("split forward").is_some());
         assert_eq!(
             pack.grammar
                 .recognise("about car zero seven")

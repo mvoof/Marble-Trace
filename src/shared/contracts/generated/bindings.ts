@@ -196,7 +196,6 @@ export type CarField =
   | 'speed'
   | 'irating'
   | 'license'
-  | 'incidents'
   | 'irDelta'
   | 'isRetired';
 
@@ -2490,7 +2489,11 @@ export type SessionField =
    * Empty when the session has no time limit.
    */
   | 'minutesLeft'
-  | 'lap';
+  | 'lap'
+  /**
+   * The player's own: the sim gives no other car's live.
+   */
+  | 'incidents';
 
 export type SessionFrame = {
   /**

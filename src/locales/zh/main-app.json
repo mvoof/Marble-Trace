@@ -905,7 +905,7 @@
         },
         "noCar": {
           "title": "没有这辆车",
-          "desc": "车辆不存在时说出：前面没有车、没有这个车号。问题针对车辆时必填。"
+          "desc": "车辆不存在时说出：前面没有车、没有这个车号。留空时，工程师会说没有数据。"
         },
         "noValue": {
           "title": "没有数值",
@@ -1014,7 +1014,27 @@
         "title": "嵌套",
         "desc": "括号可以嵌套：从几个词中可选地选一个。"
       },
-      "replies": "在工程师的回复中，值从“+”菜单插入。(a|b) 和 [a] 的用法与车手的句子相同：工程师每次说其中一种说法。"
+      "replies": {
+        "title": "如何编写回答",
+        "intro": "在工程师的回答中，(a|b) 和 [a] 的用法与车手的句子相同：工程师每次说出其中一种。回答还可以包含字段和数字形式——ICU MessageFormat 格式，只支持 {字段} 和 plural。",
+        "field": {
+          "example": "你第 {classPosition} 名",
+          "title": "{字段} — 一个值",
+          "desc": "插入字段表中某个字段的值，按其自身格式：圈速、升、度。"
+        },
+        "plural": {
+          "example": "{incidents, plural, other {# 次事故}}",
+          "title": "plural — 随数字变化的词",
+          "desc": "# 即数字本身。中文只有 other 一种形式。"
+        },
+        "exact": {
+          "example": "{incidents, plural, =0 {没有事故} other {# 次事故}}",
+          "title": "=N — 精确数字",
+          "desc": "为某个数字单独写的文本；先于其他形式检查。"
+        },
+        "forms": "中文只需要 other。英语：one 和 other；俄语：one、few、many 和 other；西班牙语：one、many 和 other。",
+        "rulesLink": "哪些数字使用哪种形式（CLDR）"
+      }
     },
     "actions": {
       "pit": {

@@ -909,7 +909,7 @@
         },
         "noCar": {
           "title": "No hay coche",
-          "desc": "Se dice cuando el coche no está: nadie delante, ningún coche con ese número. Obligatoria si la pregunta es sobre un coche."
+          "desc": "Se dice cuando el coche no está: nadie delante, ningún coche con ese número. Si se deja vacía, el ingeniero dice que no hay datos."
         },
         "noValue": {
           "title": "Sin valor",
@@ -1018,7 +1018,27 @@
         "title": "Anidamiento",
         "desc": "Los corchetes se anidan: una elección opcional entre varias palabras."
       },
-      "replies": "En las respuestas del ingeniero los valores se insertan desde el menú «+»: un número con palabra elige su forma solo: «1 litro», «5 litros». (a|b) y [a] funcionan como en las frases del piloto: el ingeniero dice una de las formas cada vez."
+      "replies": {
+        "title": "Cómo escribir las respuestas",
+        "intro": "En las respuestas del ingeniero (a|b) y [a] funcionan como en las frases del piloto: el ingeniero dice una de las formas cada vez. Las respuestas también llevan campos y formas del número — ICU MessageFormat, del que solo se admiten {campo} y plural.",
+        "field": {
+          "example": "Vas P{classPosition}",
+          "title": "{campo} — un valor",
+          "desc": "El valor de un campo de la lista, en su formato: un tiempo de vuelta, litros, grados."
+        },
+        "plural": {
+          "example": "{incidents, plural, one {# incidente} other {# incidentes}}",
+          "title": "plural — la palabra según el número",
+          "desc": "# es el propio número. El ingeniero elige la forma por el número: «1 incidente», «5 incidentes»."
+        },
+        "exact": {
+          "example": "{incidents, plural, =0 {ningún incidente} other {# incidentes}}",
+          "title": "=N — un número exacto",
+          "desc": "Un texto propio para un número; se comprueba antes que las formas."
+        },
+        "forms": "Formas en español: one (1), many (millones: 1 000 000) y other (el resto). En inglés: one y other; en ruso: one, few, many y other; en chino: solo other.",
+        "rulesLink": "Qué números llevan qué forma (CLDR)"
+      }
     },
     "actions": {
       "pit": {

@@ -221,7 +221,6 @@ pub enum CarField {
     Speed,
     IRating,
     License,
-    Incidents,
     IrDelta,
     IsRetired,
 }
@@ -246,6 +245,8 @@ pub enum SessionField {
     /// Empty when the session has no time limit.
     MinutesLeft,
     Lap,
+    /// The player's own: the sim gives no other car's live.
+    Incidents,
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -320,7 +321,6 @@ pub const QUESTION_FIELDS: &[FieldSpec] = &[
     car("speed", CarField::Speed, SayFormat::Speed),
     car("iRating", CarField::IRating, SayFormat::Whole),
     car("license", CarField::License, SayFormat::Text),
-    car("incidents", CarField::Incidents, SayFormat::Whole),
     car("irDelta", CarField::IrDelta, SayFormat::SignedWhole),
     car("isRetired", CarField::IsRetired, SayFormat::YesNo),
     session("fuel", SessionField::Fuel, SayFormat::Volume),
@@ -356,6 +356,7 @@ pub const QUESTION_FIELDS: &[FieldSpec] = &[
         SayFormat::Duration,
     ),
     session("lap", SessionField::Lap, SayFormat::Whole),
+    session("incidents", SessionField::Incidents, SayFormat::Whole),
 ];
 
 pub fn question_field_named(name: &str) -> Option<&'static FieldSpec> {

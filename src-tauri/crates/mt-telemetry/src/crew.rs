@@ -166,6 +166,7 @@ fn update_question_view(view: &mut QuestionView, frame: &SourceFrame, bundle: &T
     view.laps_remain_ex = frame.session.session_laps_remain_ex;
     view.time_remain = frame.session.session_time_remain;
     view.lap = frame.lap_timing.lap;
+    view.incidents = frame.car_status.player_car_my_incident_count;
 
     if let Some(fuel) = &bundle.fuel {
         view.fuel_laps_remaining = fuel.laps_remaining;

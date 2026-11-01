@@ -1,7 +1,6 @@
 //! What a question of the driver's own is checked by when the pack loads:
 //! its answers name fields the catalog has and the question can read, its
-//! phrases carry the slot its car is picked by, and a question about a car
-//! says what to answer when that car is not there.
+//! phrases carry the slot its car is picked by.
 
 use mt_model::app::crew_questions::{question_field_named, CarTarget, VoiceQuestionDef};
 
@@ -92,11 +91,6 @@ pub fn phrase_mistake(target: Option<CarTarget>, nodes: &[Node]) -> Option<Strin
             braced(&slots)
         )),
     }
-}
-
-/// A question about a car must say what to answer when it is not there.
-pub fn lacks_no_car(question: &VoiceQuestionDef) -> bool {
-    question.target.is_some() && question.no_car.is_empty()
 }
 
 fn slots_in(nodes: &[Node], slots: &mut Vec<String>) {
@@ -194,27 +188,5 @@ mod tests {
         assert!(phrase(Some(CarTarget::Ahead), "car [{number}]").is_some());
         assert!(phrase(None, "fuel {number}").is_some());
         assert_eq!(phrase(None, "how much fuel"), None);
-    }
-
-    #[test]
-    fn a_question_about_a_car_says_when_it_is_not_there() {
-        let question = |target, no_car: &[&str]| VoiceQuestionDef {
-            id: "gap".into(),
-            name: String::new(),
-            enabled: true,
-            phrases: Vec::new(),
-            target,
-            replies: Vec::new(),
-            no_car: used(no_car),
-            no_value: Vec::new(),
-            steps: Vec::new(),
-        };
-
-        assert!(lacks_no_car(&question(Some(CarTarget::Ahead), &[])));
-        assert!(!lacks_no_car(&question(
-            Some(CarTarget::Ahead),
-            &["nobody"]
-        )));
-        assert!(!lacks_no_car(&question(None, &[])));
     }
 }

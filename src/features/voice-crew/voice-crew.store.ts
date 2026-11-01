@@ -57,6 +57,10 @@ import {
 } from '@entities/app-settings/app-settings.store';
 import type { UnitsStore } from '@entities/app-settings/units.store';
 
+/** Which numbers take which plural form, language by language (CLDR). */
+const PLURAL_RULES_URL =
+  'https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html';
+
 interface VoiceCrewDeps {
   appSettings: AppSettingsStore;
   units: UnitsStore;
@@ -573,6 +577,10 @@ export class VoiceCrewStore {
 
   openLicense(component: VoiceComponentView) {
     openExternalLink(component.licenseUrl);
+  }
+
+  openPluralRules() {
+    openExternalLink(PLURAL_RULES_URL);
   }
 
   stopSample() {

@@ -81,6 +81,7 @@ pub struct QuestionView {
     pub laps_remain_ex: Option<i32>,
     pub time_remain: Option<f64>,
     pub lap: Option<i32>,
+    pub incidents: Option<i32>,
 }
 
 /// A car as a field reads it: its line in the driver table and in the
@@ -295,7 +296,6 @@ impl<'a> QuestionSource<'a> {
             CarField::Speed => entry.speed.map(measured),
             CarField::IRating => place(car.session.i_rating),
             CarField::License => text(&car.session.lic_string),
-            CarField::Incidents => Some(whole(car.session.incident_count)),
             CarField::IrDelta => entry.estimated_ir_delta_live.map(whole),
             CarField::IsRetired => Some(CrewArg::Flag {
                 value: entry.is_retired,
@@ -347,6 +347,7 @@ impl<'a> QuestionSource<'a> {
                 .filter(|seconds| (0.0..UNLIMITED_SECONDS).contains(seconds))
                 .map(|value| CrewArg::Number { value }),
             SessionField::Lap => lap(view.lap),
+            SessionField::Incidents => view.incidents.filter(|count| *count >= 0).map(whole),
         }
     }
 }
@@ -591,6 +592,34 @@ mod tests {
                 value: "Spa".into()
             })
         );
+    }
+
+    #[test]
+    fn incidents_are_the_players_own_live_count() {
+        let (mut view, session) = race();
+        let fields = [QuestionField::Session(SessionField::Incidents)];
+
+        view.incidents = Some(4);
+
+        let counted = QuestionSource {
+            view: &view,
+            session: Some(&session),
+        }
+        .answer("incidents", None, &fields);
+
+        view.incidents = None;
+
+        let not_sent = QuestionSource {
+            view: &view,
+            session: Some(&session),
+        }
+        .answer("incidents", None, &fields);
+
+        assert_eq!(
+            arg(&counted[0], "incidents"),
+            Some(&CrewArg::Number { value: 4.0 })
+        );
+        assert_eq!(arg(&not_sent[0], "incidents"), None);
     }
 
     #[test]
