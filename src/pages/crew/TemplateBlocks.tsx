@@ -115,6 +115,11 @@ export const TemplateBlocks = observer(
         ];
       }
 
+      // A question's slot picks its car: a sentence never leaves it out.
+      if (intent.whenUnsaid === null) {
+        return [];
+      }
+
       return [
         {
           key: 'optional',

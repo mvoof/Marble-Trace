@@ -63,7 +63,6 @@ export const ActionCard = observer(({ intent, onOpen }: ActionCardProps) => {
             intent={intent}
             index={index}
             template={template}
-            asText={questionName !== null}
           />
         ))}
 
@@ -228,12 +227,10 @@ interface TemplateRowProps {
   intent: VoiceIntentView;
   index: number;
   template: string;
-  /** A question's phrase, edited as text alone. */
-  asText: boolean;
 }
 
 const TemplateRow = observer(
-  ({ intent, index, template, asText }: TemplateRowProps) => {
+  ({ intent, index, template }: TemplateRowProps) => {
     const intentId = intent.id;
     const crew = useVoiceCrewStore();
     const { t } = useTranslation('main-app');
@@ -244,9 +241,7 @@ const TemplateRow = observer(
     // into blocks under the cursor and drop the focus.
     const [typing, setTyping] = useState(false);
     const blocks =
-      crew.blockEditing && !asText && !typing
-        ? parseTemplateBlocks(template)
-        : null;
+      crew.blockEditing && !typing ? parseTemplateBlocks(template) : null;
 
     return (
       <div className={styles.variant}>
