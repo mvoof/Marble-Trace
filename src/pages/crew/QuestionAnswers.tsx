@@ -1,11 +1,13 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Mentions, Tooltip } from 'antd';
 import { Plus, Trash2 } from 'lucide-react';
+import { parseReplyBlocks } from '@features/voice-crew/reply-blocks';
 import { questionAnswerList } from '@features/voice-crew/voice-crew.store';
 import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import type { VoiceIntentView } from '@shared/contracts/generated/bindings';
+import { ReplyBlocks } from './ReplyBlocks';
 import { useMistakeText } from './useMistakeText';
 import styles from './CrewPage.module.scss';
 
@@ -14,9 +16,12 @@ const FIELD_OPEN = '{';
 /** A field name ends at a space or a brace: past one, the list closes. */
 const OUTSIDE_FIELD_NAME = /[\s{}]/;
 
-/** The answer field the cursor was last in: a field tag goes there. */
+/**
+ * The answer the driver was last in: a field tag goes to its cursor, or to
+ * its end when it is edited as blocks.
+ */
 interface ActiveField {
-  element: HTMLTextAreaElement;
+  element: HTMLTextAreaElement | null;
   phraseKey: string;
   index: number;
 }
@@ -27,9 +32,9 @@ interface QuestionAnswersProps {
 }
 
 /**
- * A question's answers as text: the answer itself, what is said with no car
- * and with a value missing — and the fields they may name, one click from
- * the field the cursor is in.
+ * A question's answers, as blocks or as text: the answer itself, what is
+ * said with no car and with a value missing — and the fields they may name,
+ * one click from the answer last worked on.
  */
 export const QuestionAnswers = observer(
   ({ intent, questionId }: QuestionAnswersProps) => {
@@ -61,10 +66,21 @@ export const QuestionAnswers = observer(
       const index =
         active && active.index < phrase.variants.length ? active.index : 0;
       const text = phrase.variants[index]?.text ?? '';
-      const element = active?.element ?? null;
-      const start = element?.selectionStart ?? text.length;
-      const end = element?.selectionEnd ?? text.length;
+      const element = active?.element?.isConnected ? active.element : null;
       const tag = `${FIELD_OPEN}${field}}`;
+
+      if (!element) {
+        crew.setVariantText(
+          phrase.key,
+          index,
+          `${text.trimEnd()} ${tag}`.trim()
+        );
+
+        return;
+      }
+
+      const start = element.selectionStart;
+      const end = element.selectionEnd;
 
       crew.setVariantText(
         phrase.key,
@@ -72,8 +88,8 @@ export const QuestionAnswers = observer(
         `${text.slice(0, start)}${tag}${text.slice(end)}`
       );
       requestAnimationFrame(() => {
-        element?.focus();
-        element?.setSelectionRange(start + tag.length, start + tag.length);
+        element.focus();
+        element.setSelectionRange(start + tag.length, start + tag.length);
       });
     };
 
@@ -153,35 +169,66 @@ interface AnswerRowProps {
   index: number;
   text: string;
   fields: string[];
-  onFocus: (element: HTMLTextAreaElement) => void;
+  /** The answer was entered: its text field, or `null` for its blocks. */
+  onFocus: (element: HTMLTextAreaElement | null) => void;
 }
 
-/** One way to say an answer; `{` lists the fields it may name. */
+/**
+ * One way to say an answer: blocks, or text where `{` lists the fields it
+ * may name.
+ */
 const AnswerRow = observer(
   ({ phraseKey, index, text, fields, onFocus }: AnswerRowProps) => {
     const crew = useVoiceCrewStore();
     const { t } = useTranslation('main-app');
     const { mistakeText } = useMistakeText();
     const check = crew.variantChecks.get(`${phraseKey}#${index}`);
+    // A line typed as text stays text until it is left, or it would turn
+    // into blocks under the cursor and drop the focus.
+    const [typing, setTyping] = useState(false);
+    const blocks = crew.blockEditing && !typing ? parseReplyBlocks(text) : null;
+    const fieldName = (field: string) =>
+      t(`crewPage.questions.fields.names.${field}`, { defaultValue: field });
+    const setText = (next: string) =>
+      crew.setVariantText(phraseKey, index, next);
 
     return (
       <div className={styles.variant}>
         <div className={styles.variantRow}>
-          <Mentions
-            className={styles.variantText}
-            autoSize
-            prefix={FIELD_OPEN}
-            split=""
-            value={text}
-            status={check?.error ? 'error' : undefined}
-            options={fields.map((field) => ({
-              value: `${field}}`,
-              label: `${FIELD_OPEN}${field}}`,
-            }))}
-            validateSearch={(search) => !OUTSIDE_FIELD_NAME.test(search)}
-            onFocus={(event) => onFocus(event.currentTarget)}
-            onChange={(next) => crew.setVariantText(phraseKey, index, next)}
-          />
+          {blocks ? (
+            <div
+              className={styles.variantText}
+              onPointerDownCapture={() => onFocus(null)}
+            >
+              <ReplyBlocks
+                language={crew.packLanguage}
+                blocks={blocks}
+                values={fields}
+                valueName={fieldName}
+                onChange={setText}
+              />
+            </div>
+          ) : (
+            <Mentions
+              className={styles.variantText}
+              autoSize
+              prefix={FIELD_OPEN}
+              split=""
+              value={text}
+              status={check?.error ? 'error' : undefined}
+              options={fields.map((field) => ({
+                value: `${field}}`,
+                label: `${FIELD_OPEN}${field}}`,
+              }))}
+              validateSearch={(search) => !OUTSIDE_FIELD_NAME.test(search)}
+              onFocus={(event) => {
+                setTyping(true);
+                onFocus(event.currentTarget);
+              }}
+              onBlur={() => setTyping(false)}
+              onChange={setText}
+            />
+          )}
 
           <Button
             type="text"

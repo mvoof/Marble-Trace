@@ -20,6 +20,8 @@ interface ValueInsertProps {
   values: string[];
   /** What the menu offers before the values: plain text, for blocks. */
   leadingItems?: NonNullable<MenuProps['items']>;
+  /** A value's name in the menu; a built-in phrase's values by default. */
+  valueName?: (value: string) => string;
   onInsert: (text: string) => void;
 }
 
@@ -34,9 +36,17 @@ interface AgreeingValue {
  * agrees with it, its forms typed in one field each.
  */
 export const ValueInsert = observer(
-  ({ language, values, leadingItems = [], onInsert }: ValueInsertProps) => {
+  ({
+    language,
+    values,
+    leadingItems = [],
+    valueName,
+    onInsert,
+  }: ValueInsertProps) => {
     const { t } = useTranslation('main-app');
     const [agreeing, setAgreeing] = useState<AgreeingValue | null>(null);
+    const nameOf =
+      valueName ?? ((value: string) => t(`crewPage.values.names.${value}`));
 
     if (values.length === 0 && leadingItems.length === 0) {
       return null;
@@ -45,9 +55,7 @@ export const ValueInsert = observer(
     const valueItems = values.flatMap((value) => {
       const plain = {
         key: `${value}:plain`,
-        label: t('crewPage.values.insertPlain', {
-          value: t(`crewPage.values.names.${value}`),
-        }),
+        label: t('crewPage.values.insertPlain', { value: nameOf(value) }),
         onClick: () => onInsert(`{${value}}`),
       };
 
@@ -59,14 +67,8 @@ export const ValueInsert = observer(
         plain,
         {
           key: `${value}:plural`,
-          label: t('crewPage.values.insertWithWord', {
-            value: t(`crewPage.values.names.${value}`),
-          }),
-          onClick: () =>
-            setAgreeing({
-              value,
-              label: t(`crewPage.values.names.${value}`),
-            }),
+          label: t('crewPage.values.insertWithWord', { value: nameOf(value) }),
+          onClick: () => setAgreeing({ value, label: nameOf(value) }),
         },
       ];
     });

@@ -20,6 +20,8 @@ interface ReplyBlocksProps {
   blocks: ReplyBlock[];
   /** The values the reply may name. */
   values: string[];
+  /** A value's name on its block; a built-in phrase's values by default. */
+  valueName?: (value: string) => string;
   onChange: (text: string) => void;
 }
 
@@ -44,7 +46,13 @@ const TONES: Record<ReplyBlock['kind'], BlockTone> = {
  * menu adds any of them.
  */
 export const ReplyBlocks = observer(
-  ({ language, blocks, values, onChange }: ReplyBlocksProps) => {
+  ({
+    language,
+    blocks,
+    values,
+    valueName: nameOf,
+    onChange,
+  }: ReplyBlocksProps) => {
     const { t } = useTranslation('main-app');
     const [editing, setEditing] = useState<number | null>(null);
     const [pending, setPending] = useState<PendingBlock | null>(null);
@@ -56,8 +64,10 @@ export const ReplyBlocks = observer(
       write(blocks.map((current, at) => (at === index ? block : current)));
     const remove = (index: number) =>
       write(blocks.filter((_, at) => at !== index));
-    const valueName = (value: string) =>
-      t(`crewPage.values.names.${value}`, { defaultValue: value });
+    const valueName =
+      nameOf ??
+      ((value: string) =>
+        t(`crewPage.values.names.${value}`, { defaultValue: value }));
     const editingBlock = editing === null ? null : blocks[editing];
     const drag = useBlockDrag(blocks.length, (from, before) =>
       write(movedBefore(blocks, from, before))
@@ -261,6 +271,7 @@ export const ReplyBlocks = observer(
         <ValueInsert
           language={language}
           values={values}
+          valueName={valueName}
           leadingItems={[
             {
               key: 'text',
