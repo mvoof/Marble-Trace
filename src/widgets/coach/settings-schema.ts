@@ -19,7 +19,7 @@ export const COACH_SETTINGS = defineSettings('coach', {
   traceChannel: choice(COACH_TRACE_CHANNEL, 'speed'),
   /** Half-width of the trace window in metres: it spans this far behind and ahead of the car. */
   windowMeters: num(150, { min: 50, max: 500, step: 25 }),
-  /** BRAKE / APEX / THROTTLE beside the call: time gained or lost in each phase of the corner. */
+  /** IN / APEX / OUT beside the call: time gained or lost in each part of the corner. */
   showPhaseFigures: bool(true),
   /** Brake urgency bar under the call row. */
   showUrgencyBar: bool(true),

@@ -357,7 +357,7 @@ export class CoachWidgetStore {
       throttle: reference.throttlePointM,
     };
 
-    this.forgetLastCorner(measured);
+    this.forgetLastCorner(startsM);
 
     const brakeTime = this.settleTime('brake', startsM.brake, measured.brake);
     const apexTime = this.settleTime('apex', startsM.apex, measured.apex);
@@ -395,17 +395,33 @@ export class CoachWidgetStore {
   }
 
   /**
-   * Once a phase is running, the settled times that are not this corner's go:
-   * the running phase's own and every one after it — this corner has not
-   * reached them yet — and any too far behind the car to be this corner's.
-   * Until then the last corner's figures stay up, down the straight after it.
+   * Once the car reaches a phase of a new corner — whether it can be measured
+   * or not, running or already past on the first frame it is seen — the
+   * settled times that are not this corner's go: that phase's own and every
+   * one after it, which this corner has not reached yet, and any too far
+   * behind the car to be this corner's. Until then the last corner's figures
+   * stay up, down the straight after it.
    */
-  private forgetLastCorner(measured: Record<CornerPhase, PhaseTime | null>) {
-    const runningIndex = CORNER_PHASES.findIndex(
-      (phase) => measured[phase]?.kind === 'running'
-    );
+  private forgetLastCorner(startsM: Record<CornerPhase, number | null>) {
+    const isNewPhase = (phase: CornerPhase): boolean => {
+      const startM = startsM[phase];
+      const startLapM = startM === null ? null : this.lapPositionM(startM);
+      const settled = this.settledTimes[phase];
 
-    if (runningIndex === -1) return;
+      // Reached, whether or not it could be measured: a phase this lap could
+      // not be compared in still means the car is in a new corner.
+      if (startM === null || startM > 0 || startLapM === null) return false;
+
+      return (
+        settled === null ||
+        lapDistanceBetween(settled.startLapM, startLapM, this.trackLengthM) >
+          SAME_PHASE_M
+      );
+    };
+
+    const newIndex = CORNER_PHASES.findIndex(isNewPhase);
+
+    if (newIndex === -1) return;
 
     const carLapM = this.lapPositionM(0);
 
@@ -421,7 +437,7 @@ export class CoachWidgetStore {
               this.trackLengthM) %
             this.trackLengthM;
 
-      if (index >= runningIndex || behindM > LAST_CORNER_SPAN_M) {
+      if (index >= newIndex || behindM > LAST_CORNER_SPAN_M) {
         this.settledTimes[phase] = null;
       }
     });

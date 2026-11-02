@@ -35,6 +35,19 @@ const FULL_THROTTLE_THRESHOLD = 0.95;
  */
 const APEX_SPEED_RISE_MPS = 0.5;
 
+/**
+ * Below this speed (m/s) somewhere in a phase, this lap is not comparable
+ * there: the car stopped, spun or was towed, and the phase time would be a
+ * figure in the tens of seconds that says nothing about the driving.
+ */
+const MIN_COMPARABLE_SPEED_MPS = 3;
+
+/**
+ * A phase this short (metres) behind the car has no time to show yet: both
+ * ends would read the same stretch of the trace and claim an even 0.00.
+ */
+const MIN_PHASE_DRIVEN_M = 5;
+
 /** A bucket or sample slot carrying no value. */
 export const NO_VALUE = Number.NaN;
 
@@ -488,9 +501,9 @@ const timeDeltaAt = (buffers: TraceWindowBuffers, offsetM: number): number => {
  * How much time this lap has gained or lost against the reference between
  * `startM` and `endM` — one phase of the reference's corner, in metres from the
  * car. Read off the running time delta, so the three phases of a corner add up
- * to what the corner cost. Null before the car reaches the phase, and where
- * this lap's trace does not cover its start: a car that was parked, reset or
- * towed has not driven it.
+ * to what the corner cost. Null before the car reaches the phase, where this
+ * lap's trace does not cover its start, and where the car all but stopped in
+ * it: a car that was parked, reset or towed has not driven it.
  */
 export const phaseTime = (
   buffers: TraceWindowBuffers,
@@ -503,9 +516,35 @@ export const phaseTime = (
 
   const atStart = timeDeltaAt(buffers, startM);
   const passed = endM !== null && endM <= 0;
-  const atEnd = timeDeltaAt(buffers, passed ? endM : 0);
+  const untilM = passed ? endM : 0;
+  const atEnd = timeDeltaAt(buffers, untilM);
 
   if (!isValue(atStart) || !isValue(atEnd)) {
+    return null;
+  }
+
+  if (untilM - startM < MIN_PHASE_DRIVEN_M) {
+    return null;
+  }
+
+  // This lap must have been recorded inside the phase, and never all but
+  // stopped there.
+  let recordedInside = false;
+
+  for (let index = 0; index < TRACE_POINT_COUNT; index++) {
+    const offsetM = buffers.offsetM[index] ?? NO_VALUE;
+    const speed = buffers.ownSpeed[index] ?? NO_VALUE;
+
+    if (offsetM < startM || offsetM > untilM || !isValue(speed)) continue;
+
+    if (speed < MIN_COMPARABLE_SPEED_MPS) {
+      return null;
+    }
+
+    recordedInside = true;
+  }
+
+  if (!recordedInside) {
     return null;
   }
 

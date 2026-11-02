@@ -61,14 +61,13 @@ $phase-block-height: calc(#{fs(xxxs)} + #{sp(xxxs)} + #{fs(md)});
   display: flex;
 }
 
-// Fixed width, wide enough for THROTTLE on top and −0.00 underneath: a cell
-// that followed its content would shift its neighbours every time a digit
-// changed.
+// Fixed width, wide enough for −0.00 under the label: a cell that followed
+// its content would shift its neighbours every time a digit changed.
 .phase {
   display: flex;
   flex-direction: column;
   gap: sp(xxxs);
-  width: ws(72);
+  width: ws(60);
   padding-left: sp(sm);
 
   & + & {

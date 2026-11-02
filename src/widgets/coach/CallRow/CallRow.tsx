@@ -107,8 +107,9 @@ const PhaseReadout = observer(
 
 /**
  * The advisory call on the left, and on the right where the corner's time went:
- * gained or lost in the braking zone, mid-corner and on the exit, each phase
- * as the reference drove it — the shaded zones on the chart below. The three
+ * gained or lost IN (the braking zone), at the APEX (off the brakes until the
+ * throttle opens) and OUT (until full throttle), each part as the reference
+ * drove it — the shaded zones on the chart below. The three
  * add up to what the corner cost. The advisory comes from the
  * shared coach store; the figures from this widget's trace window.
  */
@@ -195,7 +196,7 @@ export const CallRow = observer(() => {
         ) : settings.showPhaseFigures ? (
           <span className={styles.phases}>
             <PhaseReadout
-              label="BRAKE"
+              label="IN"
               color={settings.brakeColor}
               gainColor={settings.gainColor}
               lossColor={settings.lossColor}
@@ -211,7 +212,7 @@ export const CallRow = observer(() => {
               time={trace.displayedApexTime}
             />
             <PhaseReadout
-              label="THROTTLE"
+              label="OUT"
               color={settings.gasColor}
               gainColor={settings.gainColor}
               lossColor={settings.lossColor}

@@ -416,9 +416,11 @@ describe('phaseTime', () => {
     for (let index = 0; index < TRACE_POINT_COUNT; index++) {
       const offsetM = -WINDOW_M + index * STEP_M;
 
+      const recorded = offsetM <= 0 && offsetM >= traceFromM;
+
       buffers.offsetM[index] = offsetM;
-      buffers.timeDeltaS[index] =
-        offsetM <= 0 && offsetM >= traceFromM ? deltaAt(offsetM) : NO_VALUE;
+      buffers.ownSpeed[index] = recorded ? 40 : NO_VALUE;
+      buffers.timeDeltaS[index] = recorded ? deltaAt(offsetM) : NO_VALUE;
     }
 
     return buffers;
@@ -451,6 +453,31 @@ describe('phaseTime', () => {
   it('has nothing before the car reaches the phase', () => {
     expect(phaseTime(losing, 10, 40)).toBeNull();
     expect(phaseTime(losing, null, -20)).toBeNull();
+  });
+
+  it('has nothing until the car is a little way into the phase', () => {
+    // Both ends would read the same stretch of the trace and claim 0.00.
+    expect(phaseTime(losing, -1, 30)).toBeNull();
+  });
+
+  it('has nothing for a phase this lap has no sample of its own in', () => {
+    const unrecorded = windowWithDelta(() => 0);
+
+    unrecorded.ownSpeed.fill(NO_VALUE);
+
+    expect(phaseTime(unrecorded, -40, -20)).toBeNull();
+  });
+
+  it('has nothing for a phase the car all but stopped in', () => {
+    // Spun, stopped or towed: tens of seconds that say nothing about the driving.
+    const stopped = windowWithDelta((offsetM) => (offsetM + 150) * 0.5);
+
+    for (let index = 0; index < TRACE_POINT_COUNT; index++) {
+      stopped.ownSpeed[index] =
+        (stopped.offsetM[index] ?? 0) <= 0 ? 0.5 : NO_VALUE;
+    }
+
+    expect(phaseTime(stopped, -40, -20)).toBeNull();
   });
 
   it('has nothing for a phase this lap was not seen to drive', () => {
