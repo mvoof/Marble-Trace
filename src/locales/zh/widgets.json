@@ -92,6 +92,9 @@
     },
     "radio": {
       "description": "谁在无线电中讲话：车号、姓名和频道。"
+    },
+    "crew-radio": {
+      "description": "语音工程师无线电：你的请求、回复，以及指令的 ✓ 或 ✗。"
     }
   },
   "settingsPanels": {
@@ -909,6 +912,16 @@
       "showOnRetuneDesc": "切换后显示新频道三秒，以便看清你的声音会传到哪里。",
       "idleShowsChannel": "空闲时显示频道",
       "idleShowsChannelDesc": "无人讲话时也保留小部件，显示你的无线电所调到的频道。"
+    },
+    "crewRadio": {
+      "moduleParameters": "模块参数",
+      "history": "显示的消息",
+      "history_current": "仅当前",
+      "history_recent": "最近",
+      "historyDesc": "只显示正在播报的一句，或最近几句，让你的问题留在回答上方。",
+      "recentCount": "最近消息数",
+      "hideDriverLines": "隐藏车手消息",
+      "hideDriverLinesDesc": "只显示工程师。你说的话和指令的 ✓ / ✗ 不再显示。"
     }
   },
   "streamChat": {

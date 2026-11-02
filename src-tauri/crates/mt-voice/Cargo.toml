@@ -1,0 +1,29 @@
+[package]
+name = "mt-voice"
+description = "Voice crew: language packs, speech recognition and synthesis, the reply queue."
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+mt-model.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+fastrand.workspace = true
+reqwest.workspace = true
+sha2.workspace = true
+zip.workspace = true
+rodio = { version = "0.23", default-features = false, features = ["playback", "wav"] }
+libloading = "0.9"
+
+[target.'cfg(windows)'.dependencies]
+windows.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true

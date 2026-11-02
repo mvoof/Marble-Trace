@@ -6,6 +6,7 @@
     "sections": {
       "layouts": "布局",
       "widgets": "小组件",
+      "crew": "车队",
       "settings": "设置"
     }
   },
@@ -622,6 +623,7 @@
     "actions": {
       "toggleDragMode": "拖动模式",
       "toggleInteractMode": "交互模式",
+      "pushToTalk": "按键通话（车队语音）",
       "toggleHideAllWidgets": "隐藏所有组件",
       "standingsCycleViewMode": "切换视图模式（全部 → 分组 → 循环）",
       "standingsClassPrev": "上一个组别（循环模式）",
@@ -659,5 +661,657 @@
     "searchByKeyHint": "按下按键或设备按钮，列表会显示它绑定到了什么。",
     "searchPressKey": "请按下按键或设备按钮…",
     "keyIsFree": "{{key}} 尚未绑定到任何操作。"
+  },
+  "crewPage": {
+    "title": "车队",
+    "sections": {
+      "commands": "命令",
+      "voice": "语音",
+      "downloads": "下载",
+      "pack": "语言包"
+    },
+    "notReady": "语音需要引擎、一个声音和一个识别模型——请前往“下载”。",
+    "openDownloads": "打开下载",
+    "packOutdated": "未保存的修改属于“{{pack}}”语言包，但车队现在使用“{{language}}”。保存或放弃这些修改后才能打开“{{language}}”语言包。",
+    "save": "保存",
+    "saveBar": {
+      "changes": "有未保存的修改",
+      "errors_other": "{{count}} 个错误",
+      "discard": "放弃",
+      "unvoiced": "尚未配音的回复：{{count}}",
+      "generate": "生成语音"
+    },
+    "leave": {
+      "title": "有未保存的修改",
+      "desc": "车队命令有未保存的修改。离开前要保存吗？",
+      "stay": "留下",
+      "discard": "不保存"
+    },
+    "check": {
+      "idle": "按住并说一句话，或在列表中输入",
+      "listening": "正在聆听…",
+      "draftNote": "同时识别未保存的修改",
+      "voiceOff": "语音已关闭——请在“语音”中开启",
+      "silence": "没有听到声音——请在“语音”中检查麦克风",
+      "unknown": "“{{sentence}}”——没有命令能匹配",
+      "heard": "“{{sentence}}” → {{action}}{{slots}}",
+      "sure": "{{percent}}%",
+      "unsure": "不确定，{{percent}}%——进站指令和问题步骤不会执行",
+      "answer": "工程师：“{{text}}”"
+    },
+    "openFolder": "打开文件夹",
+    "downloads": {
+      "tabs": {
+        "recognition": "识别",
+        "voices": "声音",
+        "custom": "我的声音"
+      },
+      "voicesTitle": "声音 · {{count}}",
+      "languageFilter": {
+        "all": "全部"
+      },
+      "recommendedTag": "推荐",
+      "sample": "试听",
+      "importFolder": "导入文件夹",
+      "noCustomVoices": "还没有自己的声音",
+      "banner": "语音需要一个引擎和一个声音——约 {{size}} MB。",
+      "recommended": "下载适合你语言的推荐项",
+      "download": "下载",
+      "cancel": "取消",
+      "remove": "删除",
+      "importFiles": "从文件导入",
+      "customVoice": "自己的 Piper 声音",
+      "customVoiceDesc": "Piper 的 .onnx 声音文件，旁边要有对应的 .onnx.json——可以是一个文件，也可以是一个文件夹及其子文件夹中的全部声音。",
+      "importVoice": "导入声音",
+      "folder": "声音文件夹",
+      "state": {
+        "installed": "已安装",
+        "outdated": "已过时",
+        "missing": "未安装"
+      },
+      "kind": {
+        "ttsEngine": "语音合成引擎",
+        "sttEngine": "语音识别引擎",
+        "ttsVoice": "声音",
+        "sttModel": "识别模型"
+      },
+      "changeFolder": "更改文件夹…",
+      "defaultFolder": "恢复默认文件夹",
+      "folderDesc": "下载内容、语言包和缓存会整体移动到所选文件夹，例如空间更大的磁盘。新文件夹必须为空；移动期间语音会关闭。"
+    },
+    "voice": {
+      "title": "语音",
+      "enabled": "语音工程师",
+      "enabledDesc": "按住按键通话（设置 → 按键绑定）提问，或下达进站指令。",
+      "language": "语言",
+      "experimental": "实验性",
+      "languages": {
+        "app": "与应用相同",
+        "ru": "俄语",
+        "en": "英语",
+        "es": "西班牙语",
+        "zh": "中文"
+      },
+      "voice": "声音",
+      "recommendedVoice": "推荐",
+      "output": "输出设备",
+      "input": "麦克风",
+      "systemDefault": "系统默认",
+      "volume": "音量 {{percent}}%",
+      "speed": "语速 ×{{speed}}",
+      "confidence": "置信度阈值 {{percent}}%",
+      "confidenceDesc": "置信度低于此值的进站指令不会执行。",
+      "test": "测试麦克风",
+      "testDesc": "按住并说话：显示听到了什么以及会执行什么，但不会真正执行。",
+      "hold": "按住测试",
+      "testIdle": "尚未测试",
+      "testResult": "听到“{{text}}” → {{intent}}（{{percent}}%）",
+      "testNotUnderstood": "未识别"
+    },
+    "phrases": {
+      "desc": "工程师在没听懂一句话或某个值没有数据时说的话。",
+      "play": "播放",
+      "addVariant": "变体",
+      "removeVariant": "删除变体",
+      "status": {
+        "generated": "已生成",
+        "missing": "未生成",
+        "dynamic": "实时生成"
+      },
+      "shared": "通用回复",
+      "mistake": "错误：{{message}}",
+      "sounds": "听起来是：{{samples}}",
+      "playSaveFirst": "保存修改后才能试听",
+      "soundsWays_other": "{{count}} 种说法，例如：{{samples}}"
+    },
+    "commands": {
+      "counts": "{{intents}} 个命令，{{sentences}} 个句子",
+      "sentences": "{{count}} 个句子",
+      "conflict": "“{{sentence}}”同时属于 {{intents}}",
+      "tryShort": "试一句…",
+      "tryPlaceholder": "按你会说的方式输入，例如“加油 四十”",
+      "tryButton": "试试",
+      "groups": {
+        "pit": "进站指令",
+        "query": "提问",
+        "control": "工程师控制"
+      },
+      "broken": "错误",
+      "says": "你说",
+      "answers": "工程师回答",
+      "addTemplate": "句子",
+      "removeTemplate": "删除句子",
+      "unsaidTitle": "没有说出{{slot}}时",
+      "unsaidDesc": "句子可以省略这个值：在它的值块上勾选“可以省略”。这时工程师会追问，或使用这里选择的值。",
+      "unsaidAsk": "工程师追问",
+      "unsaidNumber": "使用此数字",
+      "sharedAnswers": "不在车里或命令执行失败时，会播放通用回复——它们在列表末尾。",
+      "mistake": "错误：{{message}}",
+      "more": "还有 {{count}} 个",
+      "missingWords": "不在语音模型的词表中：{{words}}——含有这些词的句子永远不会被识别",
+      "vocabularyUnchecked": "未用语音模型检查词语：车队语音已关闭，或未安装该语言的模型",
+      "slotTitle": "值 {{slot}}",
+      "slots": {
+        "number": "0 到 200 的数字，用中文说出：“四十”、“一百二十”。数字词已内置。",
+        "tires": "哪些轮胎。为每一项填写你对它的叫法；按 Enter 添加一个词。",
+        "compound": "轮胎配方。为每一项填写你对它的叫法；按 Enter 添加一个词。"
+      },
+      "slotValues": {
+        "tires": {
+          "all": "全部",
+          "front": "前轮",
+          "rear": "后轮",
+          "left": "左侧",
+          "right": "右侧",
+          "lf": "左前",
+          "rf": "右前",
+          "lr": "左后",
+          "rr": "右后"
+        },
+        "compound": {
+          "dry": "干胎",
+          "wet": "雨胎",
+          "soft": "软胎",
+          "medium": "中性胎",
+          "hard": "硬胎"
+        }
+      },
+      "search": "查找命令",
+      "conflicted": "冲突",
+      "slotsTitle": "值："
+    },
+    "mistakes": {
+      "fileUnreadable": "无法读取文件：{{detail}}",
+      "fileInvalid": "不是语言包文件——第 {{line}} 行第 {{column}} 列：{{detail}}",
+      "formatUnsupported": "格式 {{format}}——此版本只能读取 {{oldest}} 到 {{newest}}",
+      "unknownKey": "没有这条语句",
+      "unknownIntent": "没有这个命令",
+      "intentTakesNoValue": "这个命令不带值",
+      "notAValueOf": "“{{value}}”不是 {{slots}} 的值",
+      "unknownSlotValue": "未知的值“{{value}}”，应为以下之一：{{expected}}",
+      "numberSlotBuiltIn": "数字是内置的，不能重新定义",
+      "unknownSlot": "这里没有值 {{slot}}",
+      "noNumberWords": "“{{language}}”没有数字词——带数字的命令已停用",
+      "sentenceConflict": "“{{sentence}}”同时属于 {{intents}}",
+      "largeGrammar": "{{sentences}} 个句子——超过 {{limit}} 后识别会变慢",
+      "unclosed": "“{{mark}}”没有闭合",
+      "unexpected": "多余的“{{mark}}”",
+      "nothingToClose": "“{{mark}}”没有可闭合的内容",
+      "emptySlot": "空的花括号：值需要名称",
+      "tooManySentences": "展开后超过 {{limit}} 个句子",
+      "tooManySayings": "共 {{count}} 种说法，最多 {{limit}} 种——请减少选项",
+      "unknownFormat": "未知格式“{{format}}”——只支持 plural",
+      "unknownPluralCase": "未知的 plural 形式“{{case}}”",
+      "noPluralCases": "{{name}} 的 plural 没有任何形式",
+      "unknownValue": "这条语句没有值 {{name}}",
+      "noValueHere": "这里没有值 {{name}}——这条语句有：{{offered}}",
+      "noValueHereNone": "这里没有值 {{name}}——这条语句没有任何值",
+      "badQuestionId": "ID“{{id}}”——只能用拉丁字母、数字、- 和 _",
+      "questionIdTaken": "ID“{{id}}”已被占用",
+      "noField": "没有字段 {{field}}",
+      "carFieldNoTarget": "{{field}} 是赛车字段——这个问题不针对任何赛车",
+      "carFieldNoCar": "{{field}} 是赛车字段——没有赛车可读取",
+      "phraseNeedsSlot": "需要 {{slot}}——赛车按它选择",
+      "phraseOnlySlot": "赛车只按 {{slot}} 选择，不按 {{found}}",
+      "phraseNoSlot": "{{found}}——这个问题不按值选择赛车",
+      "noAction": "没有动作“{{action}}”",
+      "stepNeedsNumber": "{{action}} 需要数字，而不是“{{value}}”",
+      "macroOutOfRange": "聊天宏为 1 到 {{limit}}，而不是 {{number}}",
+      "stepValueUnknown": "{{action}} 只接受 {{expected}}，而不是“{{value}}”",
+      "where": {
+        "question": "问题“{{name}}”",
+        "phrases": "问题“{{name}}”，第 {{index}} 句",
+        "replies": "问题“{{name}}”，第 {{index}} 个回答",
+        "noCar": "问题“{{name}}”，无赛车时 {{index}}",
+        "noValue": "问题“{{name}}”，无数值时 {{index}}",
+        "steps": "问题“{{name}}”，第 {{index}} 步"
+      }
+    },
+    "pack": {
+      "title": "语言包文件",
+      "folder": "语言包文件夹",
+      "folderDesc": "phrases.json 和 commands.json，旁边附有 JSON 架构。",
+      "share": "分享",
+      "shareDesc": "将语言包的短语和命令打包成一个压缩文件。",
+      "export": "导出",
+      "import": "导入",
+      "reload": "重新加载",
+      "reloadDesc": "手动编辑文件后重新读取语言包。",
+      "reloadButton": "重新加载",
+      "switchedOff": "带有操作的问题已以关闭状态导入。请检查后自行开启：",
+      "exported": "语言包已导出：{{path}}",
+      "imported": "语言包已导入",
+      "exportFailed": "语言包未导出",
+      "importFailed": "语言包未导入——你的语言包保持不变",
+      "errors": {
+        "notAnArchive": "该文件不是 zip 压缩文件。",
+        "noPackExport": "该语言还没有你自己的语言包——请先保存一次修改。",
+        "noPackImport": "压缩文件中没有语音包：里面没有 phrases.json 或 commands.json。",
+        "brokenFile": "{{file}}：{{mistake}}"
+      }
+    },
+    "questions": {
+      "title": "我的问题",
+      "desc": "向工程师问你自己的问题，或创建一个流程：触发它的句子、要执行的操作（进站操作、聊天宏），以及带数值的回答——天气、燃油、名次、差距、圈数、时间。",
+      "add": "添加问题",
+      "newName": "新问题",
+      "name": "名称",
+      "remove": "删除问题",
+      "untitled": "未命名问题",
+      "steps": "先执行",
+      "stepsDesc": "在回答前按顺序执行。如果其中一步失败，其余步骤将被跳过，工程师会报告无法完成。进站操作需要你在车里；与进站指令一样，句子识别不确定时流程不会执行。",
+      "addStep": "添加操作",
+      "removeStep": "删除操作",
+      "macroSlot": "#",
+      "enabled": "启用",
+      "duplicate": "复制",
+      "copyName": "{{name}}（副本）",
+      "preview": {
+        "title": "现在会说",
+        "desc": "根据应用当前连接的会话（实时或录像）给出的回答。修改立即生效，无需保存；不会执行问题的操作。",
+        "car": {
+          "number": "车号",
+          "position": "总排名",
+          "classPosition": "组别排名"
+        },
+        "show": "显示",
+        "listen": "试听",
+        "said": "“{{text}}”",
+        "noSession": "没有会话：请启动 iRacing 或录像。",
+        "needsCar": "请输入所问车辆的车号或名次。",
+        "silent": "工程师不会说话：语言包中没有这个回答的措辞。"
+      },
+      "target": {
+        "title": "询问的车辆",
+        "none": "不针对车辆",
+        "me": "我的车",
+        "ahead": "同组前车",
+        "behind": "同组后车",
+        "leader": "总排名领先者",
+        "classLeader": "组别领先者",
+        "aheadOnTrack": "赛道上的前车",
+        "behindOnTrack": "赛道上的后车",
+        "byCarNumber": "按车号 — {number}",
+        "byPosition": "按总排名 — {position}",
+        "byClassPosition": "按组别排名 — {classPosition}"
+      },
+      "lists": {
+        "answers": {
+          "title": "回答",
+          "desc": "所含字段都有值时说出。"
+        },
+        "noCar": {
+          "title": "没有这辆车",
+          "desc": "车辆不存在时说出：前面没有车、没有这个车号。留空时，工程师会说没有数据。"
+        },
+        "noValue": {
+          "title": "没有数值",
+          "desc": "回答中的字段暂时没有值时说出（没有降雨数据、还没有圈速）。留空：工程师会说没有数据。"
+        }
+      },
+      "fields": {
+        "desc": "点击字段即可插入到光标处，或在回答中输入 {。",
+        "car": "车辆",
+        "session": "赛事",
+        "carNeedsTarget": "选择问题针对的车辆后即可使用其字段。",
+        "names": {
+          "name": "车手姓名",
+          "number": "车号（逐位读出）",
+          "carName": "车型",
+          "className": "组别",
+          "position": "总排名",
+          "classPosition": "组别排名",
+          "startPosition": "起步位置",
+          "positionsGained": "起步后提升的名次",
+          "lapsDown": "落后领先者的圈数",
+          "lastLap": "上一圈",
+          "bestLap": "最快圈",
+          "qualifyTime": "排位赛成绩",
+          "gapToMe": "与我的差距（秒）",
+          "gapToLeader": "与领先者的差距（秒）",
+          "lapDeltaToMe": "与我的圈速差（秒）",
+          "inPit": "是否在维修区",
+          "pitStops": "进站次数",
+          "tireCompound": "轮胎配方",
+          "speed": "速度",
+          "iRating": "iRating",
+          "license": "驾照",
+          "incidents": "事故分",
+          "irDelta": "iRating 变化",
+          "isRetired": "是否退赛",
+          "fuel": "油箱燃油",
+          "fuelLaps": "燃油可跑圈数",
+          "fuelToFinish": "到终点所需燃油",
+          "fuelSavePerLap": "每圈需节省燃油",
+          "pitWindowOpen": "进站窗口开启圈",
+          "pitWindowClose": "进站窗口关闭圈",
+          "airTemp": "气温",
+          "trackTemp": "赛道温度",
+          "rain": "降雨（%）",
+          "trackName": "赛道名称",
+          "lapsLeft": "剩余圈数",
+          "minutesLeft": "剩余分钟",
+          "lap": "当前圈"
+        }
+      }
+    },
+    "values": {
+      "cancel": "取消",
+      "insert": "插入",
+      "insertPlain": "{{value}}——仅数字",
+      "insertWithWord": "{{value}}——数字加词",
+      "insertAmount": "{{value}}——带单位（升或加仑）",
+      "pluralTitle": "带词的数字：{{value}}",
+      "pluralDesc": "数字后面跟的词（单位或量词）。中文只有一种形式，写一次即可。",
+      "pluralPlaceholder": "“{{sample}}”后面的词",
+      "names": {
+        "laps": "圈数",
+        "gap": "差距",
+        "position": "名次",
+        "minutes": "分钟",
+        "seconds": "秒",
+        "compound": "配方",
+        "tires": "轮胎",
+        "corners": "哪些轮胎",
+        "airTemp": "气温",
+        "trackTemp": "赛道温度",
+        "rain": "降雨",
+        "wetness": "赛道湿度",
+        "wind": "风",
+        "fuel": "燃油",
+        "fuelLaps": "燃油可跑圈数",
+        "gapAhead": "与前车差距",
+        "gapBehind": "与后车差距",
+        "lap": "圈",
+        "lapsLeft": "剩余圈数",
+        "minutesLeft": "剩余分钟",
+        "car": "车号",
+        "name": "车手名字",
+        "className": "组别"
+      }
+    },
+    "syntax": {
+      "title": "如何编写句子",
+      "intro": "一行代表许多种说法。只有写出来的说法才会被识别，所以每种说法都必须写进去。词与词之间用空格分开。",
+      "choice": {
+        "example": "(加油|加) 四十",
+        "title": "(a|b)——其中之一",
+        "desc": "说其中任意一个词：“加油 四十”或“加 四十”。"
+      },
+      "optional": {
+        "example": "加油 四十 [升]",
+        "title": "[x]——可以省略",
+        "desc": "“加油 四十”和“加油 四十 升”都能识别。"
+      },
+      "slot": {
+        "example": "加油 {number}",
+        "title": "{值}——有名称的内容",
+        "desc": "这里放一个数字或下面列表中的一个词；命令会得到它的值。"
+      },
+      "nested": {
+        "example": "[(升|公升)]",
+        "title": "嵌套",
+        "desc": "括号可以嵌套：从几个词中可选地选一个。"
+      },
+      "replies": {
+        "title": "如何编写回答",
+        "intro": "在工程师的回答中，(a|b) 和 [a] 的用法与车手的句子相同：工程师每次说出其中一种。回答还可以包含字段和数字形式——ICU MessageFormat 格式，只支持 {字段} 和 plural。",
+        "field": {
+          "example": "你第 {classPosition} 名",
+          "title": "{字段} — 一个值",
+          "desc": "插入字段表中某个字段的值，按其自身格式：圈速、数字。燃油、温度和速度会自带设置中所选的单位：“40升”或“11加仑”，后面不用再写单位。"
+        },
+        "plural": {
+          "example": "{incidents, plural, other {# 次事故}}",
+          "title": "plural — 随数字变化的词",
+          "desc": "# 即数字本身。中文只有 other 一种形式。"
+        },
+        "exact": {
+          "example": "{incidents, plural, =0 {没有事故} other {# 次事故}}",
+          "title": "=N — 精确数字",
+          "desc": "为某个数字单独写的文本；先于其他形式检查。"
+        },
+        "forms": "中文只需要 other。英语：one 和 other；俄语：one、few、many 和 other；西班牙语：one、many 和 other。",
+        "rulesLink": "哪些数字使用哪种形式（CLDR）"
+      }
+    },
+    "actions": {
+      "pit": {
+        "fuel": {
+          "title": "加油",
+          "desc": "把进站指令中的燃油设为你说的量，按设置中的单位（升或加仑）。"
+        },
+        "fuelToFinish": {
+          "title": "加油到终点",
+          "desc": "设置比赛剩余所需的燃油。"
+        },
+        "clearFuel": {
+          "title": "不加油",
+          "desc": "从进站指令中去掉加油。"
+        },
+        "tires": {
+          "title": "换胎",
+          "desc": "标记你说的轮胎进行更换：全部、前轮、后轮、左侧、右侧或单个轮胎。"
+        },
+        "clearTires": {
+          "title": "不换胎",
+          "desc": "从进站指令中去掉换胎。"
+        },
+        "compound": {
+          "title": "轮胎配方",
+          "desc": "选择配方（如果本节赛事提供）。"
+        },
+        "fastRepair": {
+          "title": "快速修理",
+          "desc": "在进站指令中开启快速修理。"
+        },
+        "clearFastRepair": {
+          "title": "不快速修理",
+          "desc": "关闭快速修理。"
+        },
+        "windshield": {
+          "title": "清洁挡风玻璃",
+          "desc": "开启挡风玻璃撕膜。"
+        },
+        "clearWindshield": {
+          "title": "不清洁挡风玻璃",
+          "desc": "关闭挡风玻璃撕膜。"
+        },
+        "clearAll": {
+          "title": "清空指令",
+          "desc": "清空整个进站指令。"
+        },
+        "applyPlanned": {
+          "title": "按计划进站",
+          "desc": "设置比赛所需的燃油并更换四个轮胎。"
+        }
+      },
+      "query": {
+        "fuel": {
+          "title": "剩余燃油",
+          "desc": "工程师报出油箱里的升数和能跑的圈数。"
+        },
+        "gapAhead": {
+          "title": "与前车差距",
+          "desc": "与同组别前车相差的秒数。"
+        },
+        "gapBehind": {
+          "title": "与后车差距",
+          "desc": "与同组别后车相差的秒数。"
+        },
+        "whoAhead": {
+          "title": "前面是谁",
+          "desc": "赛道上最近的前车（任意组别）：车号、车手、多组别时的组别、差距，以及是否被套圈或与你争位置。"
+        },
+        "whoBehind": {
+          "title": "后面是谁",
+          "desc": "赛道上最近的后车（任意组别）：车号、车手、多组别时的组别、差距，以及是否被套圈或与你争位置。"
+        },
+        "position": {
+          "title": "名次",
+          "desc": "你在组别中的名次。"
+        },
+        "lapsLeft": {
+          "title": "剩余圈数",
+          "desc": "到终点的圈数，计时赛则为分钟数。"
+        },
+        "lastLap": {
+          "title": "上一圈",
+          "desc": "你上一圈的圈速。"
+        },
+        "bestLap": {
+          "title": "最快圈",
+          "desc": "你的最快圈速。"
+        },
+        "pitOrder": {
+          "title": "进站指令",
+          "desc": "工程师报出当前的进站指令。"
+        },
+        "weather": {
+          "title": "天气",
+          "desc": "气温和赛道温度，下雨时还有雨量。"
+        },
+        "carPosition": {
+          "title": "某车名次",
+          "desc": "该号码的车在其组别中的名次。"
+        },
+        "carLastLap": {
+          "title": "某车上一圈",
+          "desc": "该号码的车上一圈的圈速。"
+        },
+        "carBestLap": {
+          "title": "某车最快圈",
+          "desc": "该号码的车的最快圈速。"
+        }
+      },
+      "control": {
+        "repeat": {
+          "title": "重复",
+          "desc": "工程师再说一遍上一句话。"
+        }
+      },
+      "chat": {
+        "macro": {
+          "title": "聊天宏",
+          "desc": "按编号（1–15）发送 iRacing 聊天宏；宏的文字在 iRacing 的选项中设置。"
+        }
+      }
+    },
+    "replies": {
+      "engineer": {
+        "ack": {
+          "fuel": "确认加油",
+          "fuelToFinish": "确认加油到终点",
+          "clearFuel": "已取消加油",
+          "tires": "确认换胎",
+          "clearTires": "已取消换胎",
+          "compound": "确认配方",
+          "fastRepair": "确认快速修理",
+          "clearFastRepair": "已取消快速修理",
+          "windshield": "确认清洁挡风玻璃",
+          "clearWindshield": "已取消清洁挡风玻璃",
+          "clearAll": "指令已清空",
+          "applyPlanned": "确认按计划进站"
+        },
+        "answer": {
+          "fuel": "回答",
+          "gapAhead": "回答",
+          "gapBehind": "回答",
+          "noCarAhead": "前面没有车（你领跑组别）",
+          "noCarBehind": "后面没有车",
+          "lapsAhead": "领先一圈或以上",
+          "lapsBehind": "落后一圈或以上",
+          "carAheadOnTrack": "回答",
+          "carBehindOnTrack": "回答",
+          "carAheadOnTrackClass": "多组别比赛",
+          "carBehindOnTrackClass": "多组别比赛",
+          "noCarAheadOnTrack": "赛道上前面没有车",
+          "noCarBehindOnTrack": "赛道上后面没有车",
+          "trackRival": "接着：与你争位置",
+          "trackLapped": "接着：被套圈的车",
+          "trackLapsUp": "接着：领先你几圈",
+          "position": "回答",
+          "lapsLeft": "按圈数比赛",
+          "timeLeft": "计时赛",
+          "lastLap": "回答",
+          "bestLap": "回答",
+          "noLapTime": "还没有圈速",
+          "pitOrder": "回答",
+          "pitOrderEmpty": "指令为空",
+          "weather": "干燥",
+          "weatherRain": "下雨",
+          "carPosition": "回答",
+          "carLastLap": "回答",
+          "carBestLap": "回答",
+          "carNoLapTime": "该车还没有圈速时",
+          "noSuchCar": "没有这个车号时"
+        },
+        "ask": {
+          "fuel": "没有说出值时",
+          "tires": "没有说出值时",
+          "compound": "没有说出值时",
+          "car": "没有说出值时"
+        },
+        "unit": {
+          "liters": "升",
+          "gallons": "加仑",
+          "celsius": "摄氏度",
+          "fahrenheit": "华氏度",
+          "kmh": "公里每小时",
+          "mph": "英里每小时"
+        },
+        "notUnderstood": "没听懂",
+        "notInCar": "不在车里时下达进站指令",
+        "noData": "没有可回答的数据",
+        "cannot": "命令无法执行",
+        "nothingToRepeat": "没有可重复的内容"
+      }
+    },
+    "blocks": {
+      "blocks": "积木",
+      "text": "文本",
+      "modeDesc": "积木用词语、选项和值拼出句子，无需输入符号。括号不成对的句子会以文本打开。",
+      "newWord": "词",
+      "words": "词语",
+      "choice": "其中之一",
+      "optional": "可以省略",
+      "slot": "值 {{slot}}",
+      "add": "添加积木",
+      "remove": "删除积木",
+      "move": "拖动以移动",
+      "apply": "应用",
+      "reply": {
+        "text": "文本"
+      },
+      "emptySentence": "输入一个句子——按 Enter 或点击别处即生成积木",
+      "slotOptional": "可以省略",
+      "emptyReply": "输入一条回复——按 Enter 或点击别处即生成积木",
+      "choiceHint": "按 Enter 添加一个选项。只有一个选项时会变成普通词语。",
+      "change": "修改积木",
+      "makeOptional": "可以省略",
+      "makeRequired": "必须说出",
+      "makeChoice": "改为“其中之一”",
+      "makeWords": "改为普通词语"
+    }
   }
 }

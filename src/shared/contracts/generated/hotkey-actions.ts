@@ -41,6 +41,14 @@ export const HOTKEY_ACTIONS: readonly HotkeyActionSpec[] = [
     },
   },
   {
+    id: 'app:push-to-talk',
+    owner: 'app',
+    labelKey: 'pushToTalk',
+    kind: 'sim',
+    trigger: 'hold',
+    defaultBinding: null,
+  },
+  {
     id: 'standings:cycle-view-mode',
     owner: 'standings',
     labelKey: 'standingsCycleViewMode',

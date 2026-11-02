@@ -9,6 +9,7 @@ import type { AppSettingsStore } from '@entities/app-settings/app-settings.store
 import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { CarsStore } from '@entities/cars/cars.store';
 import type { ChatStore } from '@entities/chat/chat.store';
+import type { CrewRadioStore } from '@entities/crew-radio/crew-radio.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { PlayerPositionStore } from '@entities/player/player-position.store';
 import type { PlayerStore } from '@entities/player/player.store';
@@ -27,6 +28,7 @@ export interface WidgetCore {
   backendComputed: BackendComputedStore;
   cars: CarsStore;
   chat: ChatStore;
+  crewRadio: CrewRadioStore;
   liveWidgets: LiveWidgetsView;
   player: PlayerStore;
   playerPosition: PlayerPositionStore;

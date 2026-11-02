@@ -86,6 +86,18 @@ export const CHAT_PRESENCE = 'chat://presence';
 export const CHAT_DELETION = 'chat://deletion';
 
 /**
+ * The voice crew's radio: push-to-talk, what the driver said, the reply
+ * on air and a pit command's result. A few per press, never batched into
+ * the telemetry bundle.
+ */
+export const CREW_RADIO_EVENT = 'crew://radio';
+
+/**
+ * A voice download's progress, for the Crew tab.
+ */
+export const CREW_DOWNLOAD_EVENT = 'crew://download';
+
+/**
  * The set of attached game controllers changed.
  */
 export const INPUT_DEVICES_EVENT = 'input://devices';

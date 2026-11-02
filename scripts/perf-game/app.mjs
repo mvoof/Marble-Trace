@@ -83,9 +83,13 @@ const packFromTopLeft = (widgets) => {
  * `layout` becomes the active layout with layout auto-switching off (a replay
  * would switch it back to its session's layout), `widgets` keeps only those
  * instance ids on among the ones already on, `pack` gathers them in the
- * monitor's top-left corner, `rateHz` sets the overlay update rate.
+ * monitor's top-left corner, `rateHz` sets the overlay update rate, `voice`
+ * turns the voice crew off (`off`) or on (anything else).
  */
-const applyRunSettings = (settings, { layout, widgets, pack, rateHz }) => {
+const applyRunSettings = (
+  settings,
+  { layout, widgets, pack, rateHz, voice }
+) => {
   const enabled = [];
   const extents = [];
 
@@ -144,6 +148,10 @@ const applyRunSettings = (settings, { layout, widgets, pack, rateHz }) => {
 
   if (rateHz) {
     settings.app.overlayUpdateHz = rateHz;
+  }
+
+  if (voice) {
+    settings.app.voiceEnabled = voice !== 'off';
   }
 
   return { layout: active?.name, enabled, extents };

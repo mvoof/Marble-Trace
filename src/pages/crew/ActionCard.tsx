@@ -1,0 +1,300 @@
+import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
+import { Button, Input, Popover, Select, Switch } from 'antd';
+import { Copy, Plus, Settings2, Trash2 } from 'lucide-react';
+import { questionIssueKey } from '@features/voice-crew/issue-location';
+import { parseTemplateBlocks } from '@features/voice-crew/template-blocks';
+import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
+import { VOICE_QUESTION_PREFIX } from '@shared/contracts/generated/backend-constants';
+import type {
+  CarTarget,
+  VoiceIntentView,
+} from '@shared/contracts/generated/bindings';
+import { PhraseEditor } from './PhraseEditor';
+import { QuestionAnswers } from './QuestionAnswers';
+import { QuestionPreview } from './QuestionPreview';
+import { QuestionSteps } from './QuestionSteps';
+import { SlotSettings } from './SlotSettings';
+import { TemplateBlocks } from './TemplateBlocks';
+import { useMistakeText } from './useMistakeText';
+import styles from './CrewPage.module.scss';
+
+/**
+ * One action: what it does, the sentences that call it, and the engineer's
+ * answers. What a value's words are and what an unsaid one does open from
+ * the value itself.
+ */
+interface ActionCardProps {
+  intent: VoiceIntentView;
+  /** Opens another command: a question's copy once it is made. */
+  onOpen: (intentId: string) => void;
+}
+
+export const ActionCard = observer(({ intent, onOpen }: ActionCardProps) => {
+  const crew = useVoiceCrewStore();
+  const { t } = useTranslation('main-app');
+  const phrases = (crew.pack?.phrases ?? []).filter((phrase) =>
+    intent.replies.includes(phrase.key)
+  );
+  const questionName = crew.questionName(intent.id);
+  const questionId = intent.id.slice(VOICE_QUESTION_PREFIX.length);
+
+  return (
+    <div className={styles.actionCard}>
+      {questionName === null ? (
+        <div className={styles.fieldDesc}>
+          {t(`crewPage.actions.${intent.id}.desc`, { defaultValue: '' })}
+        </div>
+      ) : (
+        <QuestionHeader
+          questionId={questionId}
+          name={questionName}
+          onOpen={onOpen}
+        />
+      )}
+
+      <div className={styles.actionSection}>
+        <div className={styles.fieldTitle}>{t('crewPage.commands.says')}</div>
+
+        {intent.templates.map((template, index) => (
+          <TemplateRow
+            key={index}
+            intent={intent}
+            index={index}
+            template={template}
+          />
+        ))}
+
+        <div className={styles.actions}>
+          <Button
+            size="small"
+            icon={<Plus size={12} />}
+            onClick={() => crew.addTemplate(intent.id)}
+          >
+            {t('crewPage.commands.addTemplate')}
+          </Button>
+
+          {intent.slots.length > 0 && (
+            <span className={styles.slotsLabel}>
+              {t('crewPage.commands.slotsTitle')}
+            </span>
+          )}
+
+          {intent.slots.map((slot) => (
+            <Popover
+              key={slot}
+              trigger="click"
+              placement="bottomLeft"
+              content={
+                <div className={styles.slotPopover}>
+                  <SlotSettings intent={intent} slot={slot} />
+                </div>
+              }
+            >
+              <Button size="small" icon={<Settings2 size={12} />}>
+                {`{${slot}}`}
+              </Button>
+            </Popover>
+          ))}
+        </div>
+      </div>
+
+      {questionName !== null && <QuestionSteps questionId={questionId} />}
+
+      {questionName === null ? (
+        <div className={styles.actionSection}>
+          <div className={styles.fieldTitle}>
+            {t('crewPage.commands.answers')}
+          </div>
+
+          {intent.id.startsWith('pit.') && (
+            <div className={styles.fieldHint}>
+              {t('crewPage.commands.sharedAnswers')}
+            </div>
+          )}
+
+          {phrases.map((phrase) => (
+            <PhraseEditor key={phrase.key} phrase={phrase} />
+          ))}
+        </div>
+      ) : (
+        <QuestionAnswers intent={intent} questionId={questionId} />
+      )}
+
+      {questionName !== null && (
+        <QuestionPreview
+          questionId={questionId}
+          carSlot={intent.slots[0] ?? null}
+        />
+      )}
+    </div>
+  );
+});
+
+interface QuestionHeaderProps {
+  questionId: string;
+  name: string;
+  onOpen: (intentId: string) => void;
+}
+
+/** The target select's value for a question that asks about no car. */
+const NO_CAR = 'none';
+
+/**
+ * A question's own name, whether it is heard, the car it asks about, and the
+ * ways to duplicate and delete it.
+ */
+const QuestionHeader = observer(
+  ({ questionId: id, name, onOpen }: QuestionHeaderProps) => {
+    const crew = useVoiceCrewStore();
+    const { t } = useTranslation('main-app');
+    const { mistakeText } = useMistakeText();
+    const issue = crew.questionIssues.get(questionIssueKey(id));
+    const duplicate = () => {
+      const key = crew.duplicateQuestion(
+        id,
+        t('crewPage.questions.copyName', {
+          name: name || t('crewPage.questions.untitled'),
+        })
+      );
+
+      if (key) {
+        onOpen(key);
+      }
+    };
+
+    return (
+      <div className={styles.variant}>
+        <div className={styles.variantRow}>
+          <Switch
+            size="small"
+            checked={crew.findQuestion(id)?.enabled ?? true}
+            title={t('crewPage.questions.enabled')}
+            onChange={(enabled) => crew.setQuestionEnabled(id, enabled)}
+          />
+
+          <Input
+            className={styles.variantText}
+            value={name}
+            placeholder={t('crewPage.questions.name')}
+            status={issue ? 'error' : undefined}
+            onChange={(event) => crew.renameQuestion(id, event.target.value)}
+          />
+
+          <Select
+            className={styles.targetSelect}
+            value={crew.findQuestion(id)?.target ?? NO_CAR}
+            title={t('crewPage.questions.target.title')}
+            options={[
+              { value: NO_CAR, label: t('crewPage.questions.target.none') },
+              ...(crew.pack?.carTargets ?? []).map(({ target }) => ({
+                value: target,
+                label: t(`crewPage.questions.target.${target}`),
+              })),
+            ]}
+            onChange={(target: CarTarget | typeof NO_CAR) =>
+              crew.setQuestionTarget(id, target === NO_CAR ? null : target)
+            }
+          />
+
+          <Button icon={<Copy size={14} />} onClick={duplicate}>
+            {t('crewPage.questions.duplicate')}
+          </Button>
+
+          <Button
+            danger
+            icon={<Trash2 size={14} />}
+            onClick={() => crew.removeQuestion(id)}
+          >
+            {t('crewPage.questions.remove')}
+          </Button>
+        </div>
+
+        {issue && (
+          <div className={styles.checkError}>
+            {t('crewPage.commands.mistake', {
+              message: mistakeText(issue.mistake),
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+
+interface TemplateRowProps {
+  intent: VoiceIntentView;
+  index: number;
+  template: string;
+}
+
+const TemplateRow = observer(
+  ({ intent, index, template }: TemplateRowProps) => {
+    const intentId = intent.id;
+    const crew = useVoiceCrewStore();
+    const { t } = useTranslation('main-app');
+    const { mistakeText } = useMistakeText();
+    const check = crew.templateChecks.get(`${intentId}#${index}`);
+    const hidden = check ? check.sentences - check.examples.length : 0;
+    // A line typed as text stays text until it is left, or it would turn
+    // into blocks under the cursor and drop the focus.
+    const [typing, setTyping] = useState(false);
+    const blocks =
+      crew.blockEditing && !typing ? parseTemplateBlocks(template) : null;
+
+    return (
+      <div className={styles.variant}>
+        <div className={styles.variantRow}>
+          {blocks ? (
+            <TemplateBlocks
+              blocks={blocks}
+              intent={intent}
+              onChange={(next) => crew.setTemplate(intentId, index, next)}
+            />
+          ) : (
+            <Input
+              className={`${styles.variantText} ${styles.mono}`}
+              value={template}
+              status={check?.error ? 'error' : undefined}
+              onFocus={() => setTyping(true)}
+              onBlur={() => setTyping(false)}
+              onChange={(event) =>
+                crew.setTemplate(intentId, index, event.target.value)
+              }
+            />
+          )}
+
+          <Button
+            icon={<Trash2 size={14} />}
+            onClick={() => crew.removeTemplate(intentId, index)}
+            aria-label={t('crewPage.commands.removeTemplate')}
+          />
+        </div>
+
+        {check?.error && (
+          <div className={styles.checkError}>
+            {t('crewPage.commands.mistake', {
+              message: mistakeText(check.error),
+            })}
+          </div>
+        )}
+
+        {check && check.missingWords.length > 0 && (
+          <div className={styles.checkError}>
+            {t('crewPage.commands.missingWords', {
+              words: check.missingWords.join(', '),
+            })}
+          </div>
+        )}
+
+        {check && !check.error && check.examples.length > 0 && (
+          <div className={styles.fieldHint}>
+            {check.examples.map((example) => `«${example}»`).join(' · ')}
+            {hidden > 0 && ` ${t('crewPage.commands.more', { count: hidden })}`}
+          </div>
+        )}
+      </div>
+    );
+  }
+);

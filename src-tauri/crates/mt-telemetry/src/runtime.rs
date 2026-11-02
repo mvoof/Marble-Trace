@@ -23,6 +23,7 @@ use crate::io_worker::{IoWorker, SessionUpdate};
 use crate::loop_state::LoopState;
 use crate::state::TelemetryServiceState;
 use mt_computations::ProcessorCommand;
+use mt_model::app::crew::CrewSink;
 use mt_model::computed::track_shape::TrackShapePayload;
 use mt_model::contract::capabilities::Capabilities;
 use mt_model::contract::capabilities::CapabilitiesPayload;
@@ -51,6 +52,8 @@ pub struct TelemetryHost {
     /// not stored.
     pub data_dir: Option<PathBuf>,
     pub connect: SourceFactory,
+    /// The voice crew's ear on the telemetry thread; `None` runs without one.
+    pub crew: Option<Arc<dyn CrewSink>>,
 }
 
 /// Spawn the dedicated telemetry thread; returns an error if the OS refuses.
@@ -74,6 +77,7 @@ pub fn spawn_telemetry_thread(
                 sink,
                 data_dir,
                 connect,
+                crew,
             } = host;
 
             loop {
@@ -111,6 +115,7 @@ pub fn spawn_telemetry_thread(
                     commands: &commands,
                     capabilities,
                     data_dir: data_dir.clone(),
+                    crew: crew.clone(),
                 };
 
                 run_telemetry_loop(&sink, source.as_mut(), &service, &mut state, session);
@@ -166,6 +171,7 @@ struct LoopSession<'a> {
     commands: &'a Receiver<TelemetryCommand>,
     capabilities: Capabilities,
     data_dir: Option<PathBuf>,
+    crew: Option<Arc<dyn CrewSink>>,
 }
 
 fn run_telemetry_loop(
@@ -295,6 +301,7 @@ fn run_telemetry_loop(
             state,
             capabilities: session.capabilities,
             pit: pit.as_deref(),
+            crew: session.crew.as_deref(),
         };
 
         #[cfg(feature = "dev")]

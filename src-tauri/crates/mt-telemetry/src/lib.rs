@@ -5,6 +5,7 @@
 pub mod delivery;
 
 pub mod control;
+pub mod crew;
 pub mod emitter;
 pub mod io_worker;
 pub mod loop_state;

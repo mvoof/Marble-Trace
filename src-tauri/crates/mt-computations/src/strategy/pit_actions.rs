@@ -9,7 +9,7 @@
 //! and the windshield claim nothing — auto mode never decides on them.
 
 use crate::strategy::pit_auto::PitOrder;
-use mt_model::pit::pit_action::{PitAction, TireCorner};
+use mt_model::pit::pit_action::{PitAction, TireCorner, TireSet};
 use mt_model::pit::pit_auto::PitClaim;
 use mt_model::pit::pit_command::{PitCommandKind, PitCommandRequest};
 use mt_model::sim::player::PitServiceFrame;
@@ -83,6 +83,19 @@ pub fn resolve(action: PitAction, input: &PitActionInput<'_>) -> Option<ManualOr
         } else {
             PitCommandKind::Windshield
         })),
+        PitAction::PlannedFuel => planned_fuel(input),
+        PitAction::SetTires { corners } => Some(set_tires(input.service, corners)),
+        PitAction::SetCompound { index } => set_compound(input, index),
+        PitAction::SetFastRepair { on } => Some(unclaimed(if on {
+            PitCommandKind::FastRepair
+        } else {
+            PitCommandKind::ClearFastRepair
+        })),
+        PitAction::SetWindshield { on } => Some(unclaimed(if on {
+            PitCommandKind::Windshield
+        } else {
+            PitCommandKind::ClearWindshield
+        })),
     }
 }
 
@@ -138,6 +151,10 @@ fn toggle_fuel(input: &PitActionInput<'_>) -> Option<ManualOrder> {
         ));
     }
 
+    planned_fuel(input)
+}
+
+fn planned_fuel(input: &PitActionInput<'_>) -> Option<ManualOrder> {
     let fill = planned_fill_l(input).filter(|fill| *fill > 0)?;
 
     Some(claimed(
@@ -220,6 +237,52 @@ fn toggle_all_tires(service: &PitServiceFrame) -> ManualOrder {
             .collect(),
         TIRES_CLAIM,
     )
+}
+
+/// Adding a corner is a plain check; dropping one goes through the same
+/// clear-and-resend as `toggle_tire`, keeping the pressure of every corner that
+/// stays.
+fn set_tires(service: &PitServiceFrame, corners: TireSet) -> ManualOrder {
+    let drops_a_corner = TireCorner::ALL
+        .iter()
+        .any(|corner| is_corner_ordered(service, *corner) && !corners.contains(*corner));
+
+    if !drops_a_corner {
+        let added = TireCorner::ALL
+            .iter()
+            .filter(|corner| corners.contains(**corner) && !is_corner_ordered(service, **corner))
+            .map(|corner| request(corner_kind(*corner), 0))
+            .collect();
+
+        return claimed(added, TIRES_CLAIM);
+    }
+
+    let mut order = vec![request(PitCommandKind::ClearTires, 0)];
+
+    for corner in TireCorner::ALL {
+        if corners.contains(corner) {
+            let pressure = if is_corner_ordered(service, corner) {
+                ordered_pressure(service, corner).unwrap_or(0.0).round() as i32
+            } else {
+                0
+            };
+
+            order.push(request(corner_kind(corner), pressure));
+        }
+    }
+
+    claimed(order, TIRES_CLAIM)
+}
+
+fn set_compound(input: &PitActionInput<'_>, index: i32) -> Option<ManualOrder> {
+    if !input.compounds.contains(&index) {
+        return None;
+    }
+
+    Some(claimed(
+        vec![request(PitCommandKind::TireCompound, index)],
+        TIRES_CLAIM,
+    ))
 }
 
 /// The SDK takes an index, not a step, so the wrap is worked out here. Part of
@@ -513,6 +576,125 @@ mod tests {
         session.compounds = &[0];
 
         assert_eq!(resolve(PitAction::CycleCompound, &session), None);
+    }
+
+    #[test]
+    fn orders_the_planned_fuel_even_when_fuel_is_already_checked() {
+        let checked = PitServiceFrame {
+            add_fuel: true,
+            fuel_amount: Some(10.0),
+            ..service()
+        };
+
+        assert_eq!(
+            requests(resolve(
+                PitAction::PlannedFuel,
+                &input(&checked, Some(30.4))
+            )),
+            vec![(PitCommandKind::Fuel, 31)]
+        );
+        assert_eq!(
+            resolve(PitAction::PlannedFuel, &input(&checked, None)),
+            None
+        );
+    }
+
+    #[test]
+    fn adds_only_the_missing_corners_when_none_is_dropped() {
+        let left_front = PitServiceFrame {
+            change_lf: true,
+            ..service()
+        };
+        let fronts = TireSet {
+            lf: true,
+            rf: true,
+            ..TireSet::NONE
+        };
+
+        assert_eq!(
+            requests(resolve(
+                PitAction::SetTires { corners: fronts },
+                &input(&left_front, None)
+            )),
+            vec![(PitCommandKind::Rf, 0)]
+        );
+    }
+
+    #[test]
+    fn drops_corners_by_clearing_and_keeps_the_pressure_of_those_that_stay() {
+        let all = PitServiceFrame {
+            change_lf: true,
+            change_rf: true,
+            change_lr: true,
+            change_rr: true,
+            lf_pressure: Some(165.4),
+            rf_pressure: Some(170.0),
+            ..service()
+        };
+        let fronts = TireSet {
+            lf: true,
+            rf: true,
+            ..TireSet::NONE
+        };
+
+        assert_eq!(
+            requests(resolve(
+                PitAction::SetTires { corners: fronts },
+                &input(&all, None)
+            )),
+            vec![
+                (PitCommandKind::ClearTires, 0),
+                (PitCommandKind::Lf, 165),
+                (PitCommandKind::Rf, 170),
+            ]
+        );
+        assert_eq!(
+            requests(resolve(
+                PitAction::SetTires {
+                    corners: TireSet::NONE
+                },
+                &input(&all, None)
+            )),
+            vec![(PitCommandKind::ClearTires, 0)]
+        );
+    }
+
+    #[test]
+    fn sets_a_listed_compound_and_refuses_an_unknown_one() {
+        let service = service();
+        let mut session = input(&service, None);
+
+        session.compounds = &[0, 2];
+
+        assert_eq!(
+            requests(resolve(PitAction::SetCompound { index: 2 }, &session)),
+            vec![(PitCommandKind::TireCompound, 2)]
+        );
+        assert_eq!(resolve(PitAction::SetCompound { index: 1 }, &session), None);
+    }
+
+    #[test]
+    fn sets_fast_repair_and_windshield_whatever_the_sim_holds() {
+        let checked = PitServiceFrame {
+            fast_repair: true,
+            clean_windshield: true,
+            ..service()
+        };
+
+        assert_eq!(
+            requests(resolve(
+                PitAction::SetFastRepair { on: true },
+                &input(&checked, None)
+            )),
+            vec![(PitCommandKind::FastRepair, 0)]
+        );
+        assert_eq!(
+            requests(resolve(
+                PitAction::SetWindshield { on: false },
+                &input(&service(), None)
+            )),
+            vec![(PitCommandKind::ClearWindshield, 0)]
+        );
     }
 
     #[test]

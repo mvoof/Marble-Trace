@@ -3,7 +3,7 @@
 //! The protocol itself (message name, command codes, packing) lives in
 //! `kerb::iracing::broadcast` — this layer only translates types.
 
-use kerb::iracing::{send_pit_command, PitCommand};
+use kerb::iracing::{send_chat_macro, send_pit_command, PitCommand};
 use tracing::{debug, warn};
 
 use mt_model::pit::pit_command::{PitCommandKind, PitCommandRequest};
@@ -33,6 +33,20 @@ pub struct IracingPitCommander;
 impl PitCommander for IracingPitCommander {
     fn send_pit_order(&self, requests: &[PitCommandRequest]) -> Result<(), String> {
         send_pit_order(requests)
+    }
+
+    fn send_chat_macro(&self, slot: u32) -> Result<(), String> {
+        let sent = i32::try_from(slot).is_ok_and(send_chat_macro);
+
+        if !sent {
+            warn!(slot, "chat macro: not sent");
+
+            return Err(format!("chat macro {slot} was not sent"));
+        }
+
+        debug!(slot, "chat macro sent");
+
+        Ok(())
     }
 }
 

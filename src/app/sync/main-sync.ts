@@ -15,6 +15,7 @@ import { setupMainListeners } from './listeners';
 import { registerChatReactions } from './chat-sync';
 import { pitStrategyOf } from '@entities/app-settings/app-settings.store';
 import { registerPitServiceMainReactions } from './pit-service-sync';
+import { registerVoiceMainReactions } from './voice-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { registerRemotePublishing } from './remote-publish';
 import { registerClientPublishing } from './client-publish';
@@ -394,6 +395,7 @@ export const initMainSync = async (root: MainRoot) => {
         ...registerDisplayPreferenceReactions(root, onSave),
         ...registerChatReactions(root, onSave),
         ...registerPitServiceMainReactions(root),
+        ...registerVoiceMainReactions(root),
       ];
 
       // Owns the remote server's lifetime, so it is torn down with the rest.

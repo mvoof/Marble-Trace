@@ -102,12 +102,14 @@ pub enum HotkeyEffect {
     InteractMode,
     /// Applied by the main window.
     Settings,
+    /// The voice crew's radio button: held, the crew listens.
+    PushToTalk,
 }
 
 impl HotkeyEffect {
     pub const fn kind(self) -> HotkeyKind {
         match self {
-            Self::Pit(_) | Self::PitAutoMode => HotkeyKind::Sim,
+            Self::Pit(_) | Self::PitAutoMode | Self::PushToTalk => HotkeyKind::Sim,
             Self::View(_) | Self::ToggleDragMode | Self::InteractMode => HotkeyKind::View,
             Self::Settings => HotkeyKind::Settings,
         }
@@ -115,7 +117,7 @@ impl HotkeyEffect {
 
     pub const fn trigger(self) -> HotkeyTrigger {
         match self {
-            Self::InteractMode => HotkeyTrigger::Hold,
+            Self::InteractMode | Self::PushToTalk => HotkeyTrigger::Hold,
             _ => HotkeyTrigger::Press,
         }
     }
@@ -195,6 +197,13 @@ pub const HOTKEY_ACTIONS: &[HotkeyActionDecl] = &[
             HotkeyEffect::Settings,
         ),
         "F10",
+    ),
+    // Unbound: a wheel button is what it wants, and every rig has its own.
+    action(
+        "app:push-to-talk",
+        APP_OWNER,
+        "pushToTalk",
+        HotkeyEffect::PushToTalk,
     ),
     action(
         "standings:cycle-view-mode",
@@ -433,14 +442,14 @@ mod tests {
     }
 
     #[test]
-    fn only_the_interact_key_is_held() {
+    fn only_interact_and_push_to_talk_are_held() {
         let held: Vec<&str> = HOTKEY_ACTIONS
             .iter()
             .filter(|decl| decl.effect.trigger() == HotkeyTrigger::Hold)
             .map(|decl| decl.id)
             .collect();
 
-        assert_eq!(held, vec!["app:toggle-interact-mode"]);
+        assert_eq!(held, vec!["app:toggle-interact-mode", "app:push-to-talk"]);
     }
 
     #[test]

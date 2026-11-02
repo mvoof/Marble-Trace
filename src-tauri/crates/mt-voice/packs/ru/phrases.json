@@ -1,0 +1,222 @@
+{
+  "format": 1,
+  "language": "ru",
+  "phrases": {
+    "engineer.ack.fuel": [
+      {
+        "text": "Принято, {fuel}"
+      },
+      {
+        "text": "Заливаем {fuel}"
+      }
+    ],
+    "engineer.ack.fuelToFinish": [
+      {
+        "text": "До финиша, {fuel}"
+      }
+    ],
+    "engineer.ack.clearFuel": [{ "text": "Принято, без топлива" }],
+    "engineer.ack.tires": [
+      { "text": "Принято, меняем {corners}" },
+      { "text": "Меняем {corners}" }
+    ],
+    "engineer.ack.clearTires": [{ "text": "Принято, без шин" }],
+    "engineer.ack.compound": [{ "text": "Принято, ставим {compound}" }],
+    "engineer.ack.fastRepair": [{ "text": "Быстрый ремонт, принято" }],
+    "engineer.ack.clearFastRepair": [{ "text": "Без быстрого ремонта" }],
+    "engineer.ack.windshield": [{ "text": "Стекло почистим" }],
+    "engineer.ack.clearWindshield": [{ "text": "Стекло не трогаем" }],
+    "engineer.ack.clearAll": [
+      { "text": "Заказ сброшен" },
+      { "text": "Принято, всё сбросил" }
+    ],
+    "engineer.ack.applyPlanned": [
+      {
+        "text": "По плану: {fuel} и четыре шины"
+      }
+    ],
+    "engineer.answer.fuel": [
+      {
+        "text": "Топлива {fuel}, хватит на {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      },
+      {
+        "text": "В баке {fuel}, это {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      }
+    ],
+    "engineer.answer.gapAhead": [
+      {
+        "text": "До переднего {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      },
+      {
+        "text": "Впереди {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      }
+    ],
+    "engineer.answer.gapBehind": [
+      {
+        "text": "Сзади {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      },
+      {
+        "text": "Запас {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      }
+    ],
+    "engineer.answer.noCarAhead": [{ "text": "Впереди никого" }],
+    "engineer.answer.noCarBehind": [{ "text": "Сзади никого" }],
+    "engineer.answer.lapsAhead": [
+      {
+        "text": "Передний впереди на {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      }
+    ],
+    "engineer.answer.lapsBehind": [
+      {
+        "text": "Задний позади на {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      }
+    ],
+    "engineer.answer.carAheadOnTrack": [
+      {
+        "text": "Впереди номер {car}, {name}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrack": [
+      {
+        "text": "Сзади номер {car}, {name}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      }
+    ],
+    "engineer.answer.carAheadOnTrackClass": [
+      {
+        "text": "Впереди номер {car}, {name}, {className}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrackClass": [
+      {
+        "text": "Сзади номер {car}, {name}, {className}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      }
+    ],
+    "engineer.answer.noCarAheadOnTrack": [
+      { "text": "Впереди на трассе никого" }
+    ],
+    "engineer.answer.noCarBehindOnTrack": [
+      { "text": "Сзади на трассе никого" }
+    ],
+    "engineer.answer.trackRival": [{ "text": "Соперник за позицию" }],
+    "engineer.answer.trackLapped": [
+      {
+        "text": "Круговой, отстаёт на {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      }
+    ],
+    "engineer.answer.trackLapsUp": [
+      {
+        "text": "Он впереди тебя на {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      }
+    ],
+    "engineer.answer.position": [
+      { "text": "Ты {position}" },
+      { "text": "Позиция {position}" }
+    ],
+    "engineer.answer.lapsLeft": [
+      {
+        "text": "Осталось {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      }
+    ],
+    "engineer.answer.timeLeft": [
+      {
+        "text": "Осталось {minutes, plural, one {# минута} few {# минуты} many {# минут} other {# минуты}}"
+      }
+    ],
+    "engineer.answer.lastLap": [
+      { "text": "Последний круг {minutes} {seconds}" }
+    ],
+    "engineer.answer.bestLap": [{ "text": "Лучший круг {minutes} {seconds}" }],
+    "engineer.answer.noLapTime": [{ "text": "Времени круга пока нет" }],
+    "engineer.answer.pitOrder": [
+      {
+        "text": "На пит-стопе: {fuel, plural, =0 {без топлива} other {{fuel}}}, {tires, plural, =0 {без шин} one {# шина} few {# шины} many {# шин} other {# шины}}"
+      }
+    ],
+    "engineer.answer.pitOrderEmpty": [{ "text": "Ничего не заказано" }],
+    "engineer.answer.weather": [
+      {
+        "text": "Трасса {surface}. Воздух {airTemp}, асфальт {trackTemp}"
+      },
+      { "text": "Воздух {airTemp}, асфальт {trackTemp}, трасса {surface}" }
+    ],
+    "engineer.answer.weatherRain": [
+      {
+        "text": "Идёт дождь, осадки {rain} процентов, трасса {surface}. Воздух {airTemp}, асфальт {trackTemp}"
+      }
+    ],
+    "engineer.answer.carPosition": [
+      { "text": "Номер {car} — {position} в классе" },
+      { "text": "{car}-й идёт {position}" }
+    ],
+    "engineer.answer.carLastLap": [
+      { "text": "У номера {car} последний круг {minutes} {seconds}" }
+    ],
+    "engineer.answer.carBestLap": [
+      { "text": "У номера {car} лучший круг {minutes} {seconds}" }
+    ],
+    "engineer.answer.carNoLapTime": [
+      { "text": "У номера {car} времени круга пока нет" }
+    ],
+    "engineer.answer.noSuchCar": [{ "text": "Номера {car} в сессии нет" }],
+    "engineer.ask.fuel": [{ "text": "Сколько топлива?" }],
+    "engineer.ask.tires": [
+      { "text": "Какие шины меняем?" },
+      { "text": "Какие колёса?" }
+    ],
+    "engineer.ask.compound": [{ "text": "Какой состав ставим?" }],
+    "engineer.ask.car": [{ "text": "Какой номер?" }],
+    "engineer.notUnderstood": [
+      { "text": "Не понял, повтори" },
+      { "text": "Ещё раз?" },
+      { "text": "Не расслышал" }
+    ],
+    "engineer.notInCar": [{ "text": "Ты не в машине" }],
+    "engineer.noData": [{ "text": "Пока не знаю" }, { "text": "Данных нет" }],
+    "engineer.cannot": [{ "text": "Так не получится" }],
+    "engineer.nothingToRepeat": [{ "text": "Я ещё ничего не говорил" }],
+    "engineer.yes": [{ "text": "да" }],
+    "engineer.no": [{ "text": "нет" }],
+    "engineer.plus": [{ "text": "плюс {value}" }],
+    "engineer.minus": [{ "text": "минус {value}" }],
+    "engineer.faster": [{ "text": "быстрее на {value}" }],
+    "engineer.slower": [{ "text": "медленнее на {value}" }],
+    "engineer.surface.unknown": [{ "text": "без данных" }],
+    "engineer.surface.dry": [{ "text": "сухая" }],
+    "engineer.surface.mostlyDry": [{ "text": "почти сухая" }],
+    "engineer.surface.veryLightlyWet": [{ "text": "чуть влажная" }],
+    "engineer.surface.lightlyWet": [{ "text": "слегка мокрая" }],
+    "engineer.surface.moderatelyWet": [{ "text": "мокрая" }],
+    "engineer.surface.veryWet": [{ "text": "очень мокрая" }],
+    "engineer.surface.extremelyWet": [{ "text": "залита водой" }],
+    "engineer.unit.liters": [
+      {
+        "text": "{value, plural, one {# литр} few {# литра} many {# литров} other {# литра}}"
+      }
+    ],
+    "engineer.unit.gallons": [
+      {
+        "text": "{value, plural, one {# галлон} few {# галлона} many {# галлонов} other {# галлона}}"
+      }
+    ],
+    "engineer.unit.celsius": [
+      {
+        "text": "{value, plural, one {# градус} few {# градуса} many {# градусов} other {# градуса}}"
+      }
+    ],
+    "engineer.unit.fahrenheit": [
+      {
+        "text": "{value, plural, one {# градус} few {# градуса} many {# градусов} other {# градуса}}"
+      }
+    ],
+    "engineer.unit.kmh": [
+      {
+        "text": "{value, plural, one {# километр в час} few {# километра в час} many {# километров в час} other {# километра в час}}"
+      }
+    ],
+    "engineer.unit.mph": [
+      {
+        "text": "{value, plural, one {# миля в час} few {# мили в час} many {# миль в час} other {# мили в час}}"
+      }
+    ]
+  }
+}

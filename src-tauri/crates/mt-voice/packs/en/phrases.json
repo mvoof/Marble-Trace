@@ -1,0 +1,193 @@
+{
+  "format": 1,
+  "language": "en",
+  "phrases": {
+    "engineer.ack.fuel": [
+      { "text": "Copy, {fuel}" },
+      { "text": "{fuel} it is" }
+    ],
+    "engineer.ack.fuelToFinish": [
+      {
+        "text": "Fuel to the finish, {fuel}"
+      }
+    ],
+    "engineer.ack.clearFuel": [{ "text": "Copy, no fuel" }],
+    "engineer.ack.tires": [
+      { "text": "Copy, changing {corners}" },
+      { "text": "Changing {corners}" }
+    ],
+    "engineer.ack.clearTires": [{ "text": "Copy, no tires" }],
+    "engineer.ack.compound": [{ "text": "Copy, {compound} tires" }],
+    "engineer.ack.fastRepair": [{ "text": "Fast repair, copy" }],
+    "engineer.ack.clearFastRepair": [{ "text": "No fast repair" }],
+    "engineer.ack.windshield": [{ "text": "We'll clean the screen" }],
+    "engineer.ack.clearWindshield": [{ "text": "Leaving the screen" }],
+    "engineer.ack.clearAll": [
+      { "text": "Pit order cleared" },
+      { "text": "Copy, all cleared" }
+    ],
+    "engineer.ack.applyPlanned": [
+      {
+        "text": "As planned: {fuel} and four tires"
+      }
+    ],
+    "engineer.answer.fuel": [
+      {
+        "text": "{fuel} of fuel, good for {laps, plural, one {# lap} other {# laps}}"
+      },
+      { "text": "Fuel for {laps, plural, one {# lap} other {# laps}}" }
+    ],
+    "engineer.answer.gapAhead": [
+      { "text": "Gap ahead {gap, plural, one {# second} other {# seconds}}" },
+      {
+        "text": "{gap, plural, one {# second} other {# seconds}} to the car ahead"
+      }
+    ],
+    "engineer.answer.gapBehind": [
+      { "text": "Gap behind {gap, plural, one {# second} other {# seconds}}" },
+      {
+        "text": "{gap, plural, one {# second} other {# seconds}} to the car behind"
+      }
+    ],
+    "engineer.answer.noCarAhead": [{ "text": "Nobody ahead" }],
+    "engineer.answer.noCarBehind": [{ "text": "Nobody behind" }],
+    "engineer.answer.lapsAhead": [
+      {
+        "text": "The car ahead is {laps, plural, one {# lap} other {# laps}} up"
+      }
+    ],
+    "engineer.answer.lapsBehind": [
+      {
+        "text": "The car behind is {laps, plural, one {# lap} other {# laps}} down"
+      }
+    ],
+    "engineer.answer.carAheadOnTrack": [
+      {
+        "text": "Ahead is number {car}, {name}, {gap, plural, one {# second} other {# seconds}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrack": [
+      {
+        "text": "Behind is number {car}, {name}, {gap, plural, one {# second} other {# seconds}}"
+      }
+    ],
+    "engineer.answer.carAheadOnTrackClass": [
+      {
+        "text": "Ahead is number {car}, {name}, {className}, {gap, plural, one {# second} other {# seconds}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrackClass": [
+      {
+        "text": "Behind is number {car}, {name}, {className}, {gap, plural, one {# second} other {# seconds}}"
+      }
+    ],
+    "engineer.answer.noCarAheadOnTrack": [{ "text": "Nobody ahead on track" }],
+    "engineer.answer.noCarBehindOnTrack": [
+      { "text": "Nobody behind on track" }
+    ],
+    "engineer.answer.trackRival": [{ "text": "Racing you for position" }],
+    "engineer.answer.trackLapped": [
+      { "text": "Lapped car, {laps, plural, one {# lap} other {# laps}} down" }
+    ],
+    "engineer.answer.trackLapsUp": [
+      { "text": "{laps, plural, one {# lap} other {# laps}} up on you" }
+    ],
+    "engineer.answer.position": [
+      { "text": "You're P{position}" },
+      { "text": "Position {position}" }
+    ],
+    "engineer.answer.lapsLeft": [
+      { "text": "{laps, plural, one {# lap} other {# laps}} to go" }
+    ],
+    "engineer.answer.timeLeft": [
+      { "text": "{minutes, plural, one {# minute} other {# minutes}} to go" }
+    ],
+    "engineer.answer.lastLap": [{ "text": "Last lap {minutes} {seconds}" }],
+    "engineer.answer.bestLap": [{ "text": "Best lap {minutes} {seconds}" }],
+    "engineer.answer.noLapTime": [{ "text": "No lap time yet" }],
+    "engineer.answer.pitOrder": [
+      {
+        "text": "This stop: {fuel, plural, =0 {no fuel} other {{fuel}}}, {tires, plural, =0 {no tires} one {# tire} other {# tires}}"
+      }
+    ],
+    "engineer.answer.pitOrderEmpty": [{ "text": "Nothing ordered" }],
+    "engineer.answer.weather": [
+      {
+        "text": "Surface {surface}. Air {airTemp}, track {trackTemp}"
+      },
+      { "text": "Air {airTemp}, track {trackTemp}, surface {surface}" }
+    ],
+    "engineer.answer.weatherRain": [
+      {
+        "text": "Rain at {rain} percent, surface {surface}. Air {airTemp}, track {trackTemp}"
+      }
+    ],
+    "engineer.answer.carPosition": [
+      { "text": "Car {car} is P{position} in class" }
+    ],
+    "engineer.answer.carLastLap": [
+      { "text": "Car {car}, last lap {minutes} {seconds}" }
+    ],
+    "engineer.answer.carBestLap": [
+      { "text": "Car {car}, best lap {minutes} {seconds}" }
+    ],
+    "engineer.answer.carNoLapTime": [
+      { "text": "No lap time for car {car} yet" }
+    ],
+    "engineer.answer.noSuchCar": [
+      { "text": "There is no car {car} in the session" }
+    ],
+    "engineer.ask.fuel": [{ "text": "How much fuel?" }],
+    "engineer.ask.tires": [
+      { "text": "Which tires?" },
+      { "text": "Which tires do we change?" }
+    ],
+    "engineer.ask.compound": [{ "text": "Which compound?" }],
+    "engineer.ask.car": [{ "text": "Which car number?" }],
+    "engineer.notUnderstood": [
+      { "text": "Say again?" },
+      { "text": "Didn't get that" },
+      { "text": "Come again?" }
+    ],
+    "engineer.notInCar": [{ "text": "You're not in the car" }],
+    "engineer.noData": [{ "text": "Don't know yet" }, { "text": "No data" }],
+    "engineer.cannot": [{ "text": "Can't do that" }],
+    "engineer.nothingToRepeat": [{ "text": "I haven't said anything yet" }],
+    "engineer.yes": [{ "text": "yes" }],
+    "engineer.no": [{ "text": "no" }],
+    "engineer.plus": [{ "text": "plus {value}" }],
+    "engineer.minus": [{ "text": "minus {value}" }],
+    "engineer.faster": [{ "text": "{value} faster" }],
+    "engineer.slower": [{ "text": "{value} slower" }],
+    "engineer.surface.unknown": [{ "text": "unknown" }],
+    "engineer.surface.dry": [{ "text": "dry" }],
+    "engineer.surface.mostlyDry": [{ "text": "mostly dry" }],
+    "engineer.surface.veryLightlyWet": [{ "text": "very lightly wet" }],
+    "engineer.surface.lightlyWet": [{ "text": "lightly wet" }],
+    "engineer.surface.moderatelyWet": [{ "text": "moderately wet" }],
+    "engineer.surface.veryWet": [{ "text": "very wet" }],
+    "engineer.surface.extremelyWet": [{ "text": "extremely wet" }],
+    "engineer.unit.liters": [
+      { "text": "{value, plural, one {# liter} other {# liters}}" }
+    ],
+    "engineer.unit.gallons": [
+      { "text": "{value, plural, one {# gallon} other {# gallons}}" }
+    ],
+    "engineer.unit.celsius": [
+      { "text": "{value, plural, one {# degree} other {# degrees}}" }
+    ],
+    "engineer.unit.fahrenheit": [
+      { "text": "{value, plural, one {# degree} other {# degrees}}" }
+    ],
+    "engineer.unit.kmh": [
+      {
+        "text": "{value, plural, one {# kilometer per hour} other {# kilometers per hour}}"
+      }
+    ],
+    "engineer.unit.mph": [
+      {
+        "text": "{value, plural, one {# mile per hour} other {# miles per hour}}"
+      }
+    ]
+  }
+}

@@ -51,6 +51,7 @@ const SHOTS = {
   battery: ['BatteryWidget', 'deploying'],
   'close-battle': ['CloseBattleWidget', 'ahead-behind-and-merged'],
   coach: ['CoachWidget', 'brake-call'],
+  'crew-radio': ['CrewRadioWidget', 'reply'],
   delta: ['DeltaWidget', 'default'],
   'delta-best': ['DeltaWidget', 'best-lap'],
   drs: ['DrsWidget', 'open'],

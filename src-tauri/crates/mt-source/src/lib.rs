@@ -93,6 +93,12 @@ pub enum SourceReadResult<F> {
 pub trait PitCommander {
     /// Sends a whole order, its requests applied in the order given.
     fn send_pit_order(&self, requests: &[PitCommandRequest]) -> Result<(), String>;
+
+    /// Sends one of the sim's chat macros, by its slot; the text is the
+    /// sim's own setting.
+    fn send_chat_macro(&self, _slot: u32) -> Result<(), String> {
+        Err("this sim has no chat macros".to_string())
+    }
 }
 
 /// Abstracts over a connected simulator; implementors live in `sources/`.
@@ -132,6 +138,14 @@ pub trait TelemetrySource {
     /// Every telemetry variable's value at the latest tick, under the sim's
     /// names. `None` where `raw_var_meta` is empty.
     fn raw_values(&self) -> Option<RawValues> {
+        None
+    }
+
+    /// One telemetry variable's value now, by the sim's name, as a number: a
+    /// boolean is 0 or 1, a per-car array gives the player's car. `None` for
+    /// a name the sim does not declare, text, or a source without the sim's
+    /// variables. Read when the driver asks, not every tick.
+    fn read_number(&self, _name: &str) -> Option<f64> {
         None
     }
 

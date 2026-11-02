@@ -24,6 +24,8 @@
 //             for the run so the replay's session cannot switch it back
 // --widgets   instance ids to keep on (comma-separated); the rest switched off
 // --rate      overlay update rate in Hz: 60, 30, 20 or 15
+// --voice     off, idle or speak: the voice crew off, on, or on and saying a
+//             line every 5 s; every one of them runs with the debugging port
 // --pack      gather the widgets that are on in rows from the monitor's
 //             top-left corner, for this run only
 // --shrink-overlay  shrink the overlay window from its top-left corner to the
@@ -60,6 +62,7 @@ import {
   probeChanges,
   probeHeap,
   probeProcesses,
+  speakEvery,
 } from './perf-game/probes.mjs';
 import {
   ownsForegroundWindow,
@@ -77,6 +80,9 @@ const DEFAULT_PROCESS_SECONDS = 30;
 /** What an app run spends starting and settling, so a game-only capture covers the same stretch. */
 const APP_LEAD_SECONDS = 20;
 const OVERLAY_RATES_HZ = [60, 30, 20, 15];
+const VOICE_MODES = ['off', 'idle', 'speak'];
+/** How often `--voice speak` has the crew say a line. */
+const SPEAK_INTERVAL_SECONDS = 5;
 /** Room around the widgets a shrunk overlay keeps, for shadows and outlines. */
 const SHRINK_PADDING = 16;
 
@@ -133,11 +139,16 @@ const runChange = (options) => {
     throw new Error(`--rate must be one of ${OVERLAY_RATES_HZ.join(', ')}`);
   }
 
+  if (options.voice !== undefined && !VOICE_MODES.includes(options.voice)) {
+    throw new Error(`--voice must be one of ${VOICE_MODES.join(', ')}`);
+  }
+
   return {
     layout: options.layout,
     widgets: options.widgets?.split(',').filter(Boolean),
     pack: Boolean(options.pack),
     rateHz,
+    voice: options.voice,
   };
 };
 
@@ -210,14 +221,25 @@ const run = async (options) => {
       console.error(
         `${applied.layout}: ${applied.enabled.length} widgets on — ${applied.enabled.join(' ')}`
       );
+      // Every voice variant runs with the debugging port, so the one that
+      // speaks through it differs from the others by the speaking alone.
       const stop = await launchApp(
-        {},
+        options.voice
+          ? {
+              WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${DEBUGGING_PORT}`,
+            }
+          : {},
         shrinkOverlayStep(options, applied.extents)
       );
+      const stopSpeaking =
+        options.voice === 'speak'
+          ? await speakEvery(SPEAK_INTERVAL_SECONDS)
+          : () => {};
 
       try {
         await captureGame();
       } finally {
+        stopSpeaking();
         await stop();
       }
     });

@@ -164,7 +164,7 @@ export const TelemetryInspectorSection = observer(() => {
           <Alert
             type="error"
             showIcon
-            message={inspector.lastError}
+            title={inspector.lastError}
             className={styles.alert}
           />
         )}

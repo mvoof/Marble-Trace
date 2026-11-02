@@ -1,3 +1,4 @@
+pub mod crew;
 pub mod driving;
 pub mod field;
 pub mod rating;

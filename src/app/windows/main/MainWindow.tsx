@@ -7,6 +7,9 @@ import { WidgetList } from '@pages/widgets/WidgetList/WidgetList';
 import { WidgetWorkbench } from '@pages/widgets/WidgetWorkbench/WidgetWorkbench';
 import { LayoutEditor } from '@pages/layouts/LayoutEditor';
 import { SettingsPage } from '@pages/settings/SettingsPage';
+import { CrewPage } from '@pages/crew/CrewPage';
+import { CrewLeaveDialog } from '@pages/crew/CrewLeaveDialog';
+import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import { AppHeader, type AppSection } from './AppHeader/AppHeader';
 import { AppFooter } from './AppFooter/AppFooter';
 import { UpdateBanner } from './UpdateBanner/UpdateBanner';
@@ -21,11 +24,24 @@ const { Content } = Layout;
 export const MainWindow = observer(() => {
   const simStore = useSimStore();
   const root = useMainRoot();
+  const crew = useVoiceCrewStore();
   const { t } = useTranslation('main-app');
 
   const [activeSection, setActiveSection] = useState<AppSection>('layouts');
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
   const [layoutsMode, setLayoutsMode] = useState<'list' | 'editor'>('list');
+  const [leavingFor, setLeavingFor] = useState<AppSection | null>(null);
+
+  // The crew's unsaved edits are saved or dropped before another section opens.
+  const changeSection = (next: AppSection) => {
+    if (activeSection === 'crew' && next !== 'crew' && crew.dirty) {
+      setLeavingFor(next);
+
+      return;
+    }
+
+    setActiveSection(next);
+  };
 
   // Nothing selected yet falls back to the first widget in the catalog, so the
   // workbench never has to report a default choice back up here.
@@ -120,7 +136,19 @@ export const MainWindow = observer(() => {
         <Layout className={styles.layout}>
           <AppHeader
             activeSection={activeSection}
-            onSectionChange={setActiveSection}
+            onSectionChange={changeSection}
+          />
+
+          <CrewLeaveDialog
+            open={leavingFor !== null}
+            onStay={() => setLeavingFor(null)}
+            onLeave={() => {
+              if (leavingFor !== null) {
+                setActiveSection(leavingFor);
+              }
+
+              setLeavingFor(null);
+            }}
           />
 
           <InstallMismatchBanner />
@@ -137,6 +165,15 @@ export const MainWindow = observer(() => {
                 >
                   <SettingsPage />
                 </div>
+              </div>
+            )}
+
+            {activeSection === 'crew' && (
+              <div
+                className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
+                key="crew"
+              >
+                <CrewPage />
               </div>
             )}
 

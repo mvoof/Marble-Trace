@@ -7,7 +7,7 @@ import { WindowControls } from './WindowControls';
 import Logo from '@assets/brand-mark.svg?react';
 import styles from './AppHeader.module.scss';
 
-export type AppSection = 'layouts' | 'widgets' | 'settings';
+export type AppSection = 'layouts' | 'widgets' | 'crew' | 'settings';
 
 interface AppHeaderProps {
   activeSection: AppSection;
@@ -23,6 +23,7 @@ export const AppHeader = observer(
     const sectionOptions = [
       { label: t('appHeader.sections.layouts'), value: 'layouts' },
       { label: t('appHeader.sections.widgets'), value: 'widgets' },
+      { label: t('appHeader.sections.crew'), value: 'crew' },
       { label: t('appHeader.sections.settings'), value: 'settings' },
     ];
 

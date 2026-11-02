@@ -1,0 +1,1294 @@
+import { makeAutoObservable, reaction, runInAction, toJS } from 'mobx';
+
+import {
+  cancelVoiceDownload,
+  checkVoiceDraft,
+  exportVoicePack,
+  generateVoiceLines,
+  importCustomVoice,
+  configureVoiceCrew,
+  importCustomVoiceFolder,
+  moveVoiceFolder,
+  importVoiceFiles,
+  importVoicePack,
+  installVoiceComponent,
+  listenCrewDownload,
+  listenCrewRadio,
+  pickCustomVoice,
+  pickPackArchive,
+  pickPackArchiveTarget,
+  pickVoiceFiles,
+  pickVoiceFolder,
+  previewVoiceLine,
+  previewVoiceQuestion,
+  recogniseVoiceSentence,
+  removeCustomVoice,
+  removeVoiceComponent,
+  revealVoiceFolder,
+  saveVoicePack,
+  voicePack,
+  voiceStatus,
+  voiceTestPtt,
+} from '@shared/api/voice.service';
+import { openExternalLink } from '@shared/api/external-link';
+import {
+  VOICE_CHAT_MACRO_ACTION,
+  VOICE_QUESTION_PREFIX,
+} from '@shared/contracts/generated/backend-constants';
+import type {
+  CarTarget,
+  CrewRadioEvent,
+  PackFileError,
+  VoiceComponentView,
+  VoiceDownloadProgress,
+  VoiceDraftCheck,
+  VoiceIssueView,
+  VoicePackView,
+  VoiceQuestionPreview,
+  VoiceQuestionView,
+  VoiceRecognisedView,
+  VoiceStatus,
+  VoiceStep,
+  VoiceTemplateCheck,
+  VoiceVariantCheck,
+} from '@shared/contracts/generated/bindings';
+import {
+  resolveAppLanguage,
+  voiceCrewSettingsOf,
+  type AppSettingsStore,
+} from '@entities/app-settings/app-settings.store';
+import type { UnitsStore } from '@entities/app-settings/units.store';
+import { questionIssueKey, questionIssuePlace } from './issue-location';
+
+/** Which numbers take which plural form, language by language (CLDR). */
+const PLURAL_RULES_URL =
+  'https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html';
+
+interface VoiceCrewDeps {
+  appSettings: AppSettingsStore;
+  units: UnitsStore;
+}
+
+/** What the test button heard, shown until the next press. */
+export interface VoiceTestResult {
+  text: string;
+  /** The commands it holds, in the order said; empty when none. */
+  intents: string[];
+  confidence: number;
+}
+
+/** A typed sentence and the commands the pack being edited hears in it. */
+/** A sentence tried against the pack being edited: typed, or said into the microphone. */
+export interface VoiceSentenceTrial {
+  sentence: string;
+  heard: VoiceRecognisedView[];
+  /** How sure the ear was of a spoken sentence; `null` for a typed one. */
+  confidence: number | null;
+  /**
+   * What the engineer would answer each question heard, by its place in
+   * `heard`; `null` for a command that is not a question. Empty until read.
+   */
+  answers: (VoiceQuestionPreview | null)[];
+}
+
+/** What a pack export or import that went through did. */
+export type PackFileDone =
+  | { action: 'exported'; path: string }
+  | { action: 'imported' };
+
+/** What went wrong with a pack archive, and on which way. */
+export interface PackFileFailure {
+  action: 'export' | 'import';
+  error: PackFileError;
+}
+
+const isPackFileError = (error: unknown): error is PackFileError =>
+  typeof error === 'object' && error !== null && 'code' in error;
+
+/** The backend's pack error as it came, anything else as a failure in its own words. */
+const toPackFileError = (error: unknown): PackFileError =>
+  isPackFileError(error) ? error : { code: 'failed', detail: String(error) };
+
+/** A pit action a question can carry out, or the chat macro, and its slot. */
+export interface StepAction {
+  action: string;
+  slot: string | null;
+}
+
+const CUSTOM_VOICE_PREFIX = 'custom:';
+const PIT_ACTION_PREFIX = 'pit.';
+/** The slot every number is said with — its words are built in, not edited. */
+export const NUMBER_SLOT = 'number';
+/** Edits settle this long before the draft is checked again. */
+const DRAFT_CHECK_DELAY_MS = 300;
+/** A reply variant's status while it has no recording. */
+const UNVOICED_STATUS = 'missing';
+/** The answer lists a question has beside its answers, by key suffix. */
+const NO_CAR_SUFFIX = '.noCar';
+const NO_VALUE_SUFFIX = '.noValue';
+
+/** Which of a question's answer lists a phrase key is; `null` for no question's. */
+export const questionAnswerList = (
+  key: string
+): 'answers' | 'noCar' | 'noValue' | null => {
+  if (!key.startsWith(VOICE_QUESTION_PREFIX)) {
+    return null;
+  }
+
+  if (key.endsWith(NO_CAR_SUFFIX)) {
+    return 'noCar';
+  }
+
+  if (key.endsWith(NO_VALUE_SUFFIX)) {
+    return 'noValue';
+  }
+
+  return 'answers';
+};
+const CREW_LANGUAGES = ['ru', 'en', 'es', 'zh'] as const;
+const FALLBACK_LANGUAGE = 'en';
+
+/**
+ * The Crew tab: the downloads, the language pack being edited, the test
+ * press. Main window only — the overlays only ever hear the crew.
+ */
+export class VoiceCrewStore {
+  status: VoiceStatus | null = null;
+  downloads: Record<string, VoiceDownloadProgress> = {};
+  pack: VoicePackView | null = null;
+  /** The pack has edits not yet written. */
+  dirty = false;
+  busy = false;
+  lastError: string | null = null;
+  /** Questions with steps the last import switched off, for the driver to look over. */
+  importedSwitchedOff: string[] = [];
+  /** The last pack export or import that failed, shown until the next one. */
+  packFileFailure: PackFileFailure | null = null;
+  lastTest: VoiceTestResult | null = null;
+  testing = false;
+  /** The test press under way listens for the unsaved edits. */
+  testingDraft = false;
+  /** The pack being edited, checked: examples, samples, mistakes, conflicts. */
+  draftCheck: VoiceDraftCheck | null = null;
+  /**
+   * The questions' ids as the pack was loaded or saved, in file order: a
+   * pack mistake's location names a question by that place.
+   */
+  issueQuestionIds: string[] = [];
+  trial: VoiceSentenceTrial | null = null;
+  /** What a question would answer now; dropped on the next edit. */
+  questionPreview: { questionId: string; result: VoiceQuestionPreview } | null =
+    null;
+  /** The component whose sample is playing. */
+  playingSample: string | null = null;
+  /** Sentences and replies edited as blocks; off, as the text they are. */
+  blockEditing = true;
+
+  private sampleAudio: HTMLAudioElement | null = null;
+  private unlisteners: (() => void)[] = [];
+  private draftCheckTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Bumped by every load and save: only the latest one's pack is taken. */
+  private packRequest = 0;
+  /** Bumped by every edit: a pack that came back after one is stale. */
+  private packEdits = 0;
+  private started = false;
+
+  constructor(private root: VoiceCrewDeps) {
+    makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  /** The language the crew speaks, which is the pack the tab edits. */
+  get language(): string {
+    const settings = this.root.appSettings.appSettings;
+    const chosen =
+      settings.voiceLanguage === 'app'
+        ? resolveAppLanguage(settings.language)
+        : settings.voiceLanguage;
+
+    return CREW_LANGUAGES.some((language) => language === chosen)
+      ? chosen
+      : FALLBACK_LANGUAGE;
+  }
+
+  /**
+   * The language of the pack being edited. It stays the pack's own while its
+   * edits are unsaved, even when the crew's language has moved on.
+   */
+  get packLanguage(): string {
+    return this.pack?.language ?? this.language;
+  }
+
+  /** Unsaved edits hold a pack of a language the crew no longer speaks. */
+  get packOutdated(): boolean {
+    return this.pack !== null && this.pack.language !== this.language;
+  }
+
+  get components(): VoiceComponentView[] {
+    return this.status?.components ?? [];
+  }
+
+  /**
+   * The languages there are voices for and how many each has, the crew's
+   * own first.
+   */
+  get voiceLanguages(): { language: string; count: number }[] {
+    const counts = new Map<string, number>();
+
+    for (const component of this.components) {
+      if (component.kind === 'ttsVoice' && component.language !== null) {
+        counts.set(
+          component.language,
+          (counts.get(component.language) ?? 0) + 1
+        );
+      }
+    }
+
+    return [...counts]
+      .map(([language, count]) => ({ language, count }))
+      .sort(
+        (left, right) =>
+          Number(right.language === this.language) -
+            Number(left.language === this.language) ||
+          left.language.localeCompare(right.language)
+      );
+  }
+
+  /** What "download the recommended set" fetches for the crew's language. */
+  get recommendedMissing(): VoiceComponentView[] {
+    return this.components.filter(
+      (component) =>
+        component.recommended &&
+        component.state !== 'installed' &&
+        (component.language === null || component.language === this.language)
+    );
+  }
+
+  get recommendedMissingBytes(): number {
+    return this.recommendedMissing.reduce(
+      (total, component) => total + component.sizeBytes,
+      0
+    );
+  }
+
+  get ready(): boolean {
+    const installed = (kind: string) =>
+      this.components.some(
+        (component) =>
+          component.kind === kind &&
+          component.state === 'installed' &&
+          (component.language === null || component.language === this.language)
+      );
+
+    return (
+      installed('ttsEngine') &&
+      installed('sttEngine') &&
+      installed('sttModel') &&
+      (installed('ttsVoice') || (this.status?.customVoices.length ?? 0) > 0)
+    );
+  }
+
+  /** The voices the crew can speak with in its language. */
+  get voiceOptions(): { value: string; label: string }[] {
+    const catalogVoices = this.components
+      .filter(
+        (component) =>
+          component.kind === 'ttsVoice' &&
+          component.state === 'installed' &&
+          component.language === this.language
+      )
+      .map((component) => ({ value: component.id, label: component.title }));
+    const customVoices = (this.status?.customVoices ?? []).map((name) => ({
+      value: `${CUSTOM_VOICE_PREFIX}${name}`,
+      label: name,
+    }));
+
+    return [...catalogVoices, ...customVoices];
+  }
+
+  get templateChecks(): Map<string, VoiceTemplateCheck> {
+    return new Map(
+      (this.draftCheck?.templates ?? []).map((check) => [
+        `${check.intent}#${check.index}`,
+        check,
+      ])
+    );
+  }
+
+  get variantChecks(): Map<string, VoiceVariantCheck> {
+    return new Map(
+      (this.draftCheck?.variants ?? []).map((check) => [
+        `${check.key}#${check.index}`,
+        check,
+      ])
+    );
+  }
+
+  /** The saved pack's mistakes in a question, by `questionIssueKey`. */
+  get questionIssues(): Map<string, VoiceIssueView> {
+    const issues = new Map<string, VoiceIssueView>();
+
+    for (const issue of this.pack?.issues ?? []) {
+      const place = questionIssuePlace(issue.location);
+      const questionId =
+        place === null ? undefined : this.issueQuestionIds[place.question];
+
+      if (place !== null && questionId !== undefined) {
+        issues.set(
+          questionIssueKey(questionId, place.part, place.index),
+          issue
+        );
+      }
+    }
+
+    return issues;
+  }
+
+  /**
+   * The saved pack has a mistake in the question itself or in its steps —
+   * what the draft check does not look at.
+   */
+  questionBroken(questionId: string): boolean {
+    const stepsKey = `${questionId}:steps#`;
+
+    return [...this.questionIssues.keys()].some(
+      (key) => key === questionIssueKey(questionId) || key.startsWith(stepsKey)
+    );
+  }
+
+  /** The id of the question a saved pack's mistake is in, if it is in one. */
+  issueQuestion(issue: VoiceIssueView): string | null {
+    const place = questionIssuePlace(issue.location);
+
+    return place === null
+      ? null
+      : (this.issueQuestionIds[place.question] ?? null);
+  }
+
+  /** Templates and variants in the draft that cannot be read out. */
+  get draftErrors(): number {
+    const templates = this.draftCheck?.templates ?? [];
+    const variants = this.draftCheck?.variants ?? [];
+
+    return [...templates, ...variants].filter((check) => check.error !== null)
+      .length;
+  }
+
+  /** Saved reply variants with no recording yet: what "generate" would make. */
+  get unvoicedLines(): number {
+    return (this.pack?.phrases ?? [])
+      .flatMap((phrase) => phrase.variants)
+      .filter((variant) => variant.status === UNVOICED_STATUS).length;
+  }
+
+  /** The voice folder is one the user chose, not the app's own. */
+  get customFolder(): boolean {
+    return this.root.appSettings.appSettings.voiceFolder !== '';
+  }
+
+  get downloading(): boolean {
+    return Object.values(this.downloads).some((progress) => !progress.finished);
+  }
+
+  start() {
+    if (this.started) {
+      return;
+    }
+
+    this.started = true;
+    void this.refresh();
+
+    // Edits outlive leaving the tab; coming back must not reload over them.
+    if (!this.dirty) {
+      void this.loadPack();
+    }
+
+    this.keep(
+      reaction(
+        () => this.language,
+        () => {
+          if (!this.dirty) {
+            void this.loadPack();
+          }
+        }
+      )
+    );
+    void listenCrewDownload((progress) => this.onDownload(progress)).then(
+      (unlisten) => this.keep(unlisten)
+    );
+    void listenCrewRadio((event) => this.onRadio(event)).then((unlisten) =>
+      this.keep(unlisten)
+    );
+  }
+
+  dispose() {
+    this.unlisteners.forEach((unlisten) => unlisten());
+    this.unlisteners = [];
+    this.started = false;
+    this.clearDraftCheckTimer();
+    this.stopSample();
+  }
+
+  private keep(unlisten: () => void) {
+    if (this.started) {
+      this.unlisteners.push(unlisten);
+    } else {
+      unlisten();
+    }
+  }
+
+  private onDownload(progress: VoiceDownloadProgress) {
+    this.downloads[progress.component] = progress;
+
+    if (progress.error) {
+      this.lastError = progress.error;
+    }
+  }
+
+  private onRadio(event: CrewRadioEvent) {
+    if (event.kind === 'tested') {
+      this.lastTest = {
+        text: event.text,
+        intents: event.intents,
+        confidence: event.confidence,
+      };
+      void this.understandSpoken(event.text, event.confidence);
+    }
+  }
+
+  /**
+   * A spoken sentence read against the pack being edited, as a typed one is,
+   * so the values it named show too.
+   */
+  private async understandSpoken(sentence: string, confidence: number) {
+    const pack = this.pack;
+
+    if (!pack || sentence.trim() === '') {
+      this.trial = { sentence: '', heard: [], confidence, answers: [] };
+
+      return;
+    }
+
+    try {
+      const heard = await recogniseVoiceSentence(toJS(pack), sentence);
+
+      runInAction(() => {
+        this.trial = { sentence, heard, confidence, answers: [] };
+      });
+      await this.answerTrial(pack);
+    } catch (error) {
+      runInAction(() => {
+        this.lastError = String(error);
+      });
+    }
+  }
+
+  get voiceEnabled(): boolean {
+    return this.root.appSettings.appSettings.voiceEnabled;
+  }
+
+  /** Below it the crew does not carry out a pit order or a question's steps. */
+  get confidenceThreshold(): number {
+    return this.root.appSettings.appSettings.voiceConfidence;
+  }
+
+  private async run<T>(work: () => Promise<T>): Promise<T | null> {
+    this.busy = true;
+    this.lastError = null;
+
+    try {
+      return await work();
+    } catch (error) {
+      runInAction(() => {
+        this.lastError = String(error);
+      });
+
+      return null;
+    } finally {
+      runInAction(() => {
+        this.busy = false;
+      });
+    }
+  }
+
+  async refresh() {
+    const status = await this.run(voiceStatus);
+
+    if (status) {
+      runInAction(() => {
+        this.status = status;
+      });
+    }
+  }
+
+  async install(id: string) {
+    await this.run(() => installVoiceComponent(id));
+    await this.refresh();
+  }
+
+  async installRecommended() {
+    for (const component of this.recommendedMissing) {
+      await this.run(() => installVoiceComponent(component.id));
+    }
+
+    await this.refresh();
+  }
+
+  cancelDownload() {
+    void cancelVoiceDownload();
+  }
+
+  async importFiles(id: string) {
+    const paths = await pickVoiceFiles();
+
+    if (paths.length === 0) {
+      return;
+    }
+
+    await this.run(() => importVoiceFiles(id, paths));
+    await this.refresh();
+  }
+
+  async importCustomVoice() {
+    const path = await pickCustomVoice();
+
+    if (path === null) {
+      return;
+    }
+
+    const name = await this.run(() => importCustomVoice(path));
+
+    await this.refresh();
+
+    if (name) {
+      this.root.appSettings.setVoiceSettings({
+        voiceName: `${CUSTOM_VOICE_PREFIX}${name}`,
+      });
+    }
+  }
+
+  /**
+   * Moves the voice folder to one the user picks, or back to the app's own
+   * with `toDefault`, and takes it into use. A folder that is not empty is
+   * refused: nothing of the user's is overwritten.
+   */
+  async changeFolder(toDefault = false) {
+    const folder = toDefault ? '' : await pickVoiceFolder();
+
+    if (folder === null) {
+      return;
+    }
+
+    const moved = await this.run(async () => {
+      await moveVoiceFolder(folder);
+
+      return true;
+    });
+
+    if (!moved) {
+      return;
+    }
+
+    this.root.appSettings.setVoiceSettings({ voiceFolder: folder });
+    await this.run(() =>
+      configureVoiceCrew(
+        voiceCrewSettingsOf(
+          this.root.appSettings.appSettings,
+          this.root.units.unitSystem
+        )
+      )
+    );
+    await this.refresh();
+    await this.loadPack();
+  }
+
+  async importCustomVoiceFolder() {
+    const path = await pickVoiceFolder();
+
+    if (path === null) {
+      return;
+    }
+
+    await this.run(() => importCustomVoiceFolder(path));
+    await this.refresh();
+  }
+
+  async removeCustomVoice(name: string) {
+    const settings = this.root.appSettings.appSettings;
+    const id = `${CUSTOM_VOICE_PREFIX}${name}`;
+
+    await this.run(() => removeCustomVoice(name));
+    await this.refresh();
+
+    if (settings.voiceName === id) {
+      this.root.appSettings.setVoiceSettings({ voiceName: '' });
+    }
+  }
+
+  /** Plays a voice's sample, or stops it when it is the one playing. */
+  toggleSample(component: VoiceComponentView) {
+    const playing = this.playingSample === component.id;
+
+    this.stopSample();
+
+    if (playing || component.sampleUrl === null) {
+      return;
+    }
+
+    const audio = new Audio(component.sampleUrl);
+
+    audio.onended = () => this.stopSample();
+    audio.onerror = () => {
+      this.stopSample();
+      runInAction(() => {
+        this.lastError = `${component.title}: sample unavailable`;
+      });
+    };
+    this.sampleAudio = audio;
+    this.playingSample = component.id;
+    void audio.play().catch(() => this.stopSample());
+  }
+
+  openLicense(component: VoiceComponentView) {
+    openExternalLink(component.licenseUrl);
+  }
+
+  openPluralRules() {
+    openExternalLink(PLURAL_RULES_URL);
+  }
+
+  stopSample() {
+    this.sampleAudio?.pause();
+    this.sampleAudio = null;
+    this.playingSample = null;
+  }
+
+  async remove(id: string) {
+    await this.run(() => removeVoiceComponent(id));
+    await this.refresh();
+  }
+
+  revealFolder(path: string) {
+    void revealVoiceFolder(path);
+  }
+
+  /** Whether a pack asked for at `request` with `edits` made is still the one to show. */
+  private packStillCurrent(request: number, edits: number) {
+    return request === this.packRequest && edits === this.packEdits;
+  }
+
+  async loadPack() {
+    const request = ++this.packRequest;
+    const edits = this.packEdits;
+    const pack = await this.run(() => voicePack(this.language));
+
+    if (pack && this.packStillCurrent(request, edits)) {
+      runInAction(() => {
+        this.pack = pack;
+        this.issueQuestionIds = pack.questions.map((question) => question.id);
+        this.dirty = false;
+      });
+      this.scheduleDraftCheck();
+    }
+  }
+
+  /** Drops the edits: the pack as last saved. */
+  discardEdits() {
+    void this.loadPack();
+  }
+
+  async savePack() {
+    const pack = this.pack;
+
+    if (!pack) {
+      return;
+    }
+
+    for (const intent of pack.intents) {
+      intent.templates = intent.templates
+        .map((template) => template.trim())
+        .filter((template) => template.length > 0);
+    }
+
+    const request = ++this.packRequest;
+    const edits = this.packEdits;
+    const saved = await this.run(() => saveVoicePack(pack));
+
+    // Edited while saving: the newer edits stay, still unsaved.
+    if (saved && this.packStillCurrent(request, edits)) {
+      runInAction(() => {
+        this.pack = saved;
+        this.issueQuestionIds = saved.questions.map((question) => question.id);
+        this.dirty = false;
+      });
+
+      if (this.packOutdated) {
+        await this.loadPack();
+      } else {
+        this.scheduleDraftCheck();
+      }
+    }
+  }
+
+  /** The pack changed in the editor: unsaved, and due a fresh check. */
+  private edited() {
+    this.packEdits += 1;
+    this.dirty = true;
+    this.questionPreview = null;
+    this.scheduleDraftCheck();
+  }
+
+  private scheduleDraftCheck() {
+    this.clearDraftCheckTimer();
+    this.draftCheckTimer = setTimeout(() => {
+      this.draftCheckTimer = null;
+      void this.checkDraft();
+    }, DRAFT_CHECK_DELAY_MS);
+  }
+
+  private clearDraftCheckTimer() {
+    if (this.draftCheckTimer) {
+      clearTimeout(this.draftCheckTimer);
+      this.draftCheckTimer = null;
+    }
+  }
+
+  private async checkDraft() {
+    const pack = this.pack;
+
+    if (!pack) {
+      return;
+    }
+
+    try {
+      const check = await checkVoiceDraft(toJS(pack));
+
+      runInAction(() => {
+        this.draftCheck = check;
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.lastError = String(error);
+      });
+    }
+  }
+
+  async trySentence(sentence: string) {
+    const pack = this.pack;
+    const trimmed = sentence.trim();
+
+    if (!pack || trimmed.length === 0) {
+      this.trial = null;
+
+      return;
+    }
+
+    const heard = await this.run(() =>
+      recogniseVoiceSentence(toJS(pack), trimmed)
+    );
+
+    runInAction(() => {
+      this.trial = {
+        sentence: trimmed,
+        heard: heard ?? [],
+        confidence: null,
+        answers: [],
+      };
+    });
+    await this.answerTrial(pack);
+  }
+
+  /**
+   * The questions the last sentence called, answered from the running session
+   * as the preview answers them: said by no one, their steps never carried out.
+   */
+  private async answerTrial(pack: VoicePackView) {
+    const trial = this.trial;
+
+    if (!trial) {
+      return;
+    }
+
+    const answers = await this.run(() =>
+      Promise.all(
+        trial.heard.map((heard) => {
+          if (!heard.intent.startsWith(VOICE_QUESTION_PREFIX)) {
+            return Promise.resolve(null);
+          }
+
+          // A question's phrase carries at most one slot: the one naming its car.
+          const carSlot = this.intent(heard.intent)?.slots[0];
+          const car =
+            heard.slots.find((slot) => slot.slot === carSlot)?.value ?? null;
+
+          return previewVoiceQuestion(
+            toJS(pack),
+            heard.intent.slice(VOICE_QUESTION_PREFIX.length),
+            car,
+            false
+          );
+        })
+      )
+    );
+
+    runInAction(() => {
+      // A newer sentence may have been tried meanwhile.
+      if (answers && this.trial === trial) {
+        this.trial = { ...trial, answers };
+      }
+    });
+  }
+
+  /** Answers from the draft, saved or not; its steps are never carried out. */
+  async previewQuestion(questionId: string, car: string | null, play: boolean) {
+    const pack = this.pack;
+
+    if (!pack) {
+      return;
+    }
+
+    const result = await this.run(() =>
+      previewVoiceQuestion(toJS(pack), questionId, car, play)
+    );
+
+    runInAction(() => {
+      this.questionPreview = result && { questionId, result };
+    });
+  }
+
+  private variant(key: string, index: number) {
+    return this.pack?.phrases.find((phrase) => phrase.key === key)?.variants[
+      index
+    ];
+  }
+
+  setVariantText(key: string, index: number, text: string) {
+    const variant = this.variant(key, index);
+
+    if (variant) {
+      variant.text = text;
+      this.edited();
+    }
+  }
+
+  addVariant(key: string) {
+    const phrase = this.pack?.phrases.find((entry) => entry.key === key);
+
+    if (phrase) {
+      phrase.variants.push({ text: '', status: 'missing' });
+      this.edited();
+    }
+  }
+
+  removeVariant(key: string, index: number) {
+    const phrase = this.pack?.phrases.find((entry) => entry.key === key);
+
+    if (phrase) {
+      phrase.variants.splice(index, 1);
+      this.edited();
+    }
+  }
+
+  private intent(id: string) {
+    return this.pack?.intents.find((entry) => entry.id === id);
+  }
+
+  setTemplate(id: string, index: number, template: string) {
+    const intent = this.intent(id);
+
+    if (intent && index < intent.templates.length) {
+      intent.templates[index] = template;
+      this.edited();
+    }
+  }
+
+  addTemplate(id: string) {
+    const intent = this.intent(id);
+
+    if (intent) {
+      intent.templates.push('');
+      this.edited();
+    }
+  }
+
+  removeTemplate(id: string, index: number) {
+    const intent = this.intent(id);
+
+    if (intent) {
+      intent.templates.splice(index, 1);
+      this.edited();
+    }
+  }
+
+  /** What an intent takes when its value is not said, or `ask`. */
+  setWhenUnsaid(id: string, value: string) {
+    const intent = this.intent(id);
+
+    if (intent && intent.whenUnsaid !== null) {
+      intent.whenUnsaid = value;
+      this.edited();
+    }
+  }
+
+  setBlockEditing(on: boolean) {
+    this.blockEditing = on;
+  }
+
+  /** The words that say one value of a slot, e.g. tires `front`. */
+  setSlotPhrases(slot: string, value: string, phrases: string[]) {
+    const entry = this.pack?.slots
+      .find((candidate) => candidate.slot === slot)
+      ?.values.find((candidate) => candidate.value === value);
+
+    if (entry) {
+      entry.phrases = phrases
+        .map((phrase) => phrase.trim())
+        .filter((phrase) => phrase.length > 0);
+      this.edited();
+    }
+  }
+
+  /**
+   * A new question of the driver's own: listed with the actions for its
+   * sentences and with the phrases for its answers, both under its key.
+   */
+  addQuestion(name: string): string | null {
+    const pack = this.pack;
+
+    if (!pack) {
+      return null;
+    }
+
+    const id = `q${Date.now().toString(36)}`;
+    const key = `${VOICE_QUESTION_PREFIX}${id}`;
+
+    const replies = [key, `${key}${NO_CAR_SUFFIX}`, `${key}${NO_VALUE_SUFFIX}`];
+
+    pack.questions.push({ id, name, enabled: true, target: null, steps: [] });
+    pack.intents.push({
+      id: key,
+      slots: [],
+      templates: [''],
+      sentences: 0,
+      replies,
+      whenUnsaid: null,
+    });
+
+    for (const reply of replies) {
+      pack.phrases.push({
+        key: reply,
+        values: pack.questionFields.map((field) => field.name),
+        variants: [],
+      });
+    }
+
+    this.addVariant(key);
+
+    return key;
+  }
+
+  /**
+   * The car a question asks about. Its phrases then carry the slot that car
+   * is picked by: a slot the old car took is renamed in them.
+   */
+  setQuestionTarget(id: string, target: CarTarget | null) {
+    const question = this.findQuestion(id);
+    const intent = this.intent(`${VOICE_QUESTION_PREFIX}${id}`);
+
+    if (!question || !intent) {
+      return;
+    }
+
+    const slot = this.targetSlot(target);
+    const oldSlot = intent.slots[0] ?? null;
+
+    if (slot !== null && oldSlot !== null && slot !== oldSlot) {
+      intent.templates = intent.templates.map((template) =>
+        template.replaceAll(`{${oldSlot}}`, `{${slot}}`)
+      );
+    }
+
+    question.target = target;
+    intent.slots = slot === null ? [] : [slot];
+    this.edited();
+  }
+
+  /** The slot a car target's phrases name it by; `null` for none. */
+  targetSlot(target: CarTarget | null): string | null {
+    return (
+      this.pack?.carTargets.find((entry) => entry.target === target)?.slot ??
+      null
+    );
+  }
+
+  /** The fields a question's answer may name: the car's, then the session's. */
+  get questionFields(): { car: string[]; session: string[] } {
+    const fields = this.pack?.questionFields ?? [];
+
+    return {
+      car: fields.filter((field) => field.car).map((field) => field.name),
+      session: fields.filter((field) => !field.car).map((field) => field.name),
+    };
+  }
+
+  renameQuestion(id: string, name: string) {
+    const question = this.findQuestion(id);
+
+    if (question) {
+      question.name = name;
+      this.edited();
+    }
+  }
+
+  /** A question switched off is kept, but never heard. */
+  setQuestionEnabled(id: string, enabled: boolean) {
+    const question = this.findQuestion(id);
+
+    if (question) {
+      question.enabled = enabled;
+      this.edited();
+    }
+  }
+
+  removeQuestion(id: string) {
+    const pack = this.pack;
+
+    if (!pack) {
+      return;
+    }
+
+    const key = `${VOICE_QUESTION_PREFIX}${id}`;
+    const answerKeys = this.intent(key)?.replies ?? [key];
+
+    pack.questions = pack.questions.filter((entry) => entry.id !== id);
+    pack.intents = pack.intents.filter((entry) => entry.id !== key);
+    pack.phrases = pack.phrases.filter(
+      (entry) => !answerKeys.includes(entry.key)
+    );
+    this.edited();
+  }
+
+  /**
+   * A new question with a question's car, sentences, answers and steps. The
+   * copy takes over: the source is switched off, or both would be heard on
+   * the same sentences.
+   */
+  duplicateQuestion(id: string, name: string): string | null {
+    const pack = this.pack;
+    const source = this.findQuestion(id);
+    const sourceKey = `${VOICE_QUESTION_PREFIX}${id}`;
+    const sourceIntent = this.intent(sourceKey);
+
+    if (!pack || !source || !sourceIntent) {
+      return null;
+    }
+
+    const copyId = `q${Date.now().toString(36)}`;
+    const key = `${VOICE_QUESTION_PREFIX}${copyId}`;
+    // Each answer list's key is the question's own with its suffix.
+    const copyKey = (answerKey: string) =>
+      `${key}${answerKey.slice(sourceKey.length)}`;
+
+    pack.questions.push({
+      id: copyId,
+      name,
+      enabled: true,
+      target: source.target,
+      steps: source.steps.map((step) => ({ ...step })),
+    });
+    pack.intents.push({
+      ...sourceIntent,
+      id: key,
+      slots: [...sourceIntent.slots],
+      templates: [...sourceIntent.templates],
+      replies: sourceIntent.replies.map(copyKey),
+    });
+
+    for (const phrase of pack.phrases.filter((entry) =>
+      sourceIntent.replies.includes(entry.key)
+    )) {
+      pack.phrases.push({
+        key: copyKey(phrase.key),
+        values: [...phrase.values],
+        variants: phrase.variants.map((variant) => ({ ...variant })),
+      });
+    }
+
+    source.enabled = false;
+    this.edited();
+
+    return key;
+  }
+
+  /**
+   * What a question can carry out before it answers: every pit action, then
+   * the sim's chat macro — each with the one slot its value fills, if any.
+   */
+  get stepActions(): StepAction[] {
+    const pitActions = (this.pack?.intents ?? [])
+      .filter((intent) => intent.id.startsWith(PIT_ACTION_PREFIX))
+      .map((intent) => ({ action: intent.id, slot: intent.slots[0] ?? null }));
+
+    return [
+      ...pitActions,
+      { action: VOICE_CHAT_MACRO_ACTION, slot: NUMBER_SLOT },
+    ];
+  }
+
+  /** A step's value to start from: a slot's first value, or the number 1. */
+  defaultStepValue(action: string): string | null {
+    const slot = this.stepActions.find(
+      (candidate) => candidate.action === action
+    )?.slot;
+
+    if (!slot) {
+      return null;
+    }
+
+    if (slot === NUMBER_SLOT) {
+      return '1';
+    }
+
+    return (
+      this.pack?.slots.find((candidate) => candidate.slot === slot)?.values[0]
+        ?.value ?? null
+    );
+  }
+
+  addStep(questionId: string, action: string) {
+    const question = this.findQuestion(questionId);
+
+    if (question) {
+      question.steps.push({ action, value: this.defaultStepValue(action) });
+      this.edited();
+    }
+  }
+
+  setStep(questionId: string, index: number, step: VoiceStep) {
+    const question = this.findQuestion(questionId);
+
+    if (question && index < question.steps.length) {
+      question.steps[index] = step;
+      this.edited();
+    }
+  }
+
+  removeStep(questionId: string, index: number) {
+    const question = this.findQuestion(questionId);
+
+    if (question) {
+      question.steps.splice(index, 1);
+      this.edited();
+    }
+  }
+
+  findQuestion(id: string): VoiceQuestionView | undefined {
+    return this.pack?.questions.find((entry) => entry.id === id);
+  }
+
+  /** A question's name for a key or intent id, `null` for a built-in one. */
+  questionName(key: string): string | null {
+    if (!key.startsWith(VOICE_QUESTION_PREFIX)) {
+      return null;
+    }
+
+    const id = key.slice(VOICE_QUESTION_PREFIX.length);
+
+    return this.pack?.questions.find((entry) => entry.id === id)?.name ?? '';
+  }
+
+  preview(key: string, index: number) {
+    void this.run(() => previewVoiceLine(this.packLanguage, key, index));
+  }
+
+  async generate() {
+    await this.run(() => generateVoiceLines(this.packLanguage));
+    await this.loadPack();
+  }
+
+  /** A test press listens for the unsaved edits too, so a sentence just made can be said. */
+  testPress(held: boolean) {
+    this.testing = held;
+
+    if (held) {
+      this.lastTest = null;
+      this.testingDraft = this.dirty;
+    }
+
+    const draft = held && this.dirty && this.pack ? toJS(this.pack) : null;
+
+    void voiceTestPtt(held, draft);
+  }
+
+  /** `null` when the driver closed the file dialog or the export failed. */
+  async exportPack(): Promise<PackFileDone | null> {
+    const path = await pickPackArchiveTarget(this.language);
+
+    if (path === null) {
+      return null;
+    }
+
+    const done = await this.runPackFile('export', () =>
+      exportVoicePack(this.language, path)
+    );
+
+    return done ? { action: 'exported', path } : null;
+  }
+
+  /** `null` when the driver closed the file dialog or the import failed. */
+  async importPack(): Promise<PackFileDone | null> {
+    const path = await pickPackArchive();
+
+    if (path === null) {
+      return null;
+    }
+
+    const done = await this.runPackFile('import', () =>
+      importVoicePack(this.language, path)
+    );
+
+    if (!done) {
+      return null;
+    }
+
+    runInAction(() => {
+      this.importedSwitchedOff = done.value;
+    });
+    await this.loadPack();
+
+    return { action: 'imported' };
+  }
+
+  /** Runs an export or import; its failure is kept for the pack card to say. */
+  private async runPackFile<T>(
+    action: PackFileFailure['action'],
+    work: () => Promise<T>
+  ): Promise<{ value: T } | null> {
+    this.busy = true;
+    this.packFileFailure = null;
+    this.importedSwitchedOff = [];
+
+    try {
+      const value = await work();
+
+      return { value };
+    } catch (error) {
+      runInAction(() => {
+        this.packFileFailure = { action, error: toPackFileError(error) };
+      });
+
+      return null;
+    } finally {
+      runInAction(() => {
+        this.busy = false;
+      });
+    }
+  }
+
+  dismissPackFileFailure() {
+    this.packFileFailure = null;
+  }
+
+  dismissImportedSwitchedOff() {
+    this.importedSwitchedOff = [];
+  }
+}
