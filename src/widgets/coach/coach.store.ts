@@ -288,13 +288,15 @@ export class CoachWidgetStore {
             windowMeters: this.settings.windowMeters,
           });
 
-    const { reference, own } = this.windowStats;
+    const { reference, own, ownTraceStartM } = this.windowStats;
     const brakeFigure = quantizeFigure(
-      phaseFigure(reference.brakePointM, own.brakePointM)
+      phaseFigure(reference.brakePointM, own.brakePointM, ownTraceStartM)
     );
-    const apexFigure = quantizeFigure(phaseFigure(reference.apexM, own.apexM));
+    const apexFigure = quantizeFigure(
+      phaseFigure(reference.apexM, own.apexM, ownTraceStartM)
+    );
     const throttleFigure = quantizeFigure(
-      phaseFigure(reference.throttlePointM, own.throttlePointM)
+      phaseFigure(reference.throttlePointM, own.throttlePointM, ownTraceStartM)
     );
 
     if (!sameFigure(brakeFigure, this.displayedBrakeFigure)) {

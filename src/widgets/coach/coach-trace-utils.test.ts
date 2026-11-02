@@ -370,21 +370,30 @@ describe('corner phases', () => {
 
 describe('phaseFigure', () => {
   it('counts down to a reference point still ahead', () => {
-    expect(phaseFigure(40, null)).toEqual({ kind: 'to-go', valueM: 40 });
+    expect(phaseFigure(40, null, -150)).toEqual({ kind: 'to-go', valueM: 40 });
   });
 
   it('counts the metres run past a reference point not yet matched', () => {
-    expect(phaseFigure(-15, null)).toEqual({ kind: 'overshoot', valueM: 15 });
+    expect(phaseFigure(-15, null, -150)).toEqual({
+      kind: 'overshoot',
+      valueM: 15,
+    });
   });
 
   it('settles on the miss once this lap has done it', () => {
-    expect(phaseFigure(-30, -18)).toEqual({ kind: 'miss', valueM: 12 });
+    expect(phaseFigure(-30, -18, -150)).toEqual({ kind: 'miss', valueM: 12 });
     // Earlier than a point still ahead of the car is a miss too.
-    expect(phaseFigure(20, -5)).toEqual({ kind: 'miss', valueM: -25 });
+    expect(phaseFigure(20, -5, -150)).toEqual({ kind: 'miss', valueM: -25 });
   });
 
   it('has nothing to say without the reference point', () => {
-    expect(phaseFigure(null, -5)).toBeNull();
+    expect(phaseFigure(null, -5, -150)).toBeNull();
+  });
+
+  it('has not run past a point this lap was not seen to drive through', () => {
+    // Parked, reset or towed: the trace starts at the car, after the point.
+    expect(phaseFigure(-40, null, 0)).toBeNull();
+    expect(phaseFigure(-40, null, null)).toBeNull();
   });
 });
 

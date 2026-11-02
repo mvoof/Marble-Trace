@@ -26,7 +26,6 @@ const ADVISORY_LABEL = {
 const SOON_LABEL = 'SOON';
 const PACE_LABEL = 'PACE';
 const NO_VALUE_TEXT = '—';
-const METRES_UNIT = 'm';
 
 /**
  * What the coach shows when it is not evaluating. Each of these used to read as
@@ -47,68 +46,100 @@ const INACTIVE_HINT: Record<CoachInactiveReason, string> = {
   'no-telemetry': 'waiting for telemetry',
 };
 
-const figureText = (figure: PhaseFigure | null): string => {
+/** A miss this small is the reference's point, near enough: the figure says ON. */
+const ON_TARGET_M = 3;
+
+/** How a figure is coloured: grey while counting down, green on target, amber off it. */
+type ReadoutTone = 'idle' | 'on' | 'off';
+
+interface ReadoutParts {
+  word: string;
+  metres: string | null;
+  tone: ReadoutTone;
+}
+
+const NO_FIGURE: ReadoutParts = {
+  word: NO_VALUE_TEXT,
+  metres: null,
+  tone: 'idle',
+};
+
+/**
+ * The figure in words, so it reads without a legend: IN 40 before the
+ * reference's point, PAST 25 while running past it undone, and once done ON,
+ * or LATE / EARLY by how much.
+ */
+const readoutParts = (figure: PhaseFigure | null): ReadoutParts => {
   if (figure === null) {
-    return NO_VALUE_TEXT;
+    return NO_FIGURE;
   }
 
   const metres = Math.abs(figure.valueM).toFixed(0);
 
   if (figure.kind === 'to-go') {
-    return metres;
+    return { word: 'IN', metres, tone: 'idle' };
   }
 
   if (figure.kind === 'overshoot') {
-    return `+${metres}`;
+    return { word: 'PAST', metres, tone: 'off' };
   }
 
-  const sign = figure.valueM > 0 ? '+' : figure.valueM < 0 ? '−' : '';
+  if (Math.abs(figure.valueM) <= ON_TARGET_M) {
+    return { word: 'ON', metres: null, tone: 'on' };
+  }
 
-  return `${sign}${metres}`;
+  return {
+    word: figure.valueM > 0 ? 'LATE' : 'EARLY',
+    metres,
+    tone: 'off',
+  };
 };
 
-const FIGURE_CLASS: Record<PhaseFigure['kind'], string> = {
-  'to-go': styles.phaseValueToGo ?? '',
-  overshoot: styles.phaseValueOvershoot ?? '',
-  miss: '',
+const TONE_CLASS: Record<ReadoutTone, string> = {
+  idle: styles.toneIdle ?? '',
+  on: '',
+  off: styles.toneOff ?? '',
 };
 
 interface PhaseReadoutProps {
   label: string;
   color: string;
+  /** The on-target colour — the same green the trace draws a gain in. */
+  onColor: string;
   figure: PhaseFigure | null;
 }
 
 /**
- * One phase of the corner. Before the reference's point: metres to it. Past it
- * without having done it: metres run past so far. Once done: how much later
- * (+) or earlier (−) than the reference. The value sits in a fixed-width slot
- * and the unit is always laid out, so a changing figure never moves its
- * neighbours.
+ * One phase of the corner, as two lines: the phase in its colour, and what this
+ * lap did against the reference's point in words. Every cell has the same
+ * fixed width, so a changing figure never moves its neighbours.
  */
-const PhaseReadout = observer(({ label, color, figure }: PhaseReadoutProps) => {
-  const valueClass = [
-    styles.phaseValue,
-    figure === null ? '' : FIGURE_CLASS[figure.kind],
-  ]
-    .filter(Boolean)
-    .join(' ');
+const PhaseReadout = observer(
+  ({ label, color, onColor, figure }: PhaseReadoutProps) => {
+    const { word, metres, tone } = readoutParts(figure);
 
-  return (
-    <span className={styles.phase}>
-      <span className={styles.phaseLabel} style={{ color } as CSSProperties}>
-        {label}
+    return (
+      <span className={styles.phase}>
+        <span className={styles.phaseLabel} style={{ color } as CSSProperties}>
+          {label}
+        </span>
+        <span className={`${styles.phaseValue} ${TONE_CLASS[tone]}`}>
+          <span
+            className={styles.phaseWord}
+            style={
+              tone === 'on' ? ({ color: onColor } as CSSProperties) : undefined
+            }
+          >
+            {word}
+          </span>
+          {metres === null ? null : (
+            <span className={styles.phaseMetres}>{metres}</span>
+          )}
+        </span>
       </span>
-      <span className={valueClass}>{figureText(figure)}</span>
-      <small
-        className={styles.phaseUnit}
-        data-hidden={figure === null ? 'true' : undefined}
-      >
-        {METRES_UNIT}
-      </small>
-    </span>
-  );
-});
+    );
+  }
+);
 
 /**
  * The advisory call on the left, and on the right the corner in three figures:
@@ -197,11 +228,12 @@ export const CallRow = observer(() => {
 
         {inactiveReason !== null ? (
           <span className={styles.hint}>{INACTIVE_HINT[inactiveReason]}</span>
-        ) : (
+        ) : settings.showPhaseFigures ? (
           <span className={styles.phases}>
             <PhaseReadout
               label="BRAKE"
               color={settings.brakeColor}
+              onColor={settings.gainColor}
               figure={trace.displayedBrakeFigure}
             />
             {/* The apex has no pedal of its own: it takes the reference lap's
@@ -209,15 +241,17 @@ export const CallRow = observer(() => {
             <PhaseReadout
               label="APEX"
               color={settings.referenceColor}
+              onColor={settings.gainColor}
               figure={trace.displayedApexFigure}
             />
             <PhaseReadout
               label="THROTTLE"
               color={settings.gasColor}
+              onColor={settings.gainColor}
               figure={trace.displayedThrottleFigure}
             />
           </span>
-        )}
+        ) : null}
       </div>
 
       {settings.showUrgencyBar ? (

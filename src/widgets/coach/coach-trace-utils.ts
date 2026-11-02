@@ -116,6 +116,12 @@ export interface TraceWindowStats {
   throttleDeltaM: number | null;
   /** Whether anything at all was drawn — false leaves the canvas empty. */
   hasData: boolean;
+  /**
+   * Where this lap's recorded trace begins in the window, in metres from the
+   * car — null when nothing was recorded. A reference point before it is one
+   * this lap was not seen to drive through.
+   */
+  ownTraceStartM: number | null;
 }
 
 export const createTraceWindowBuffers = (): TraceWindowBuffers => ({
@@ -146,6 +152,7 @@ export const EMPTY_TRACE_STATS: TraceWindowStats = {
   apexDeltaM: null,
   throttleDeltaM: null,
   hasData: false,
+  ownTraceStartM: null,
 };
 
 export interface FillTraceWindowParams {
@@ -389,11 +396,14 @@ export interface PhaseFigure {
 /**
  * The header figure for one phase, from where the reference did it and where
  * this lap did, both in metres from the car. Null when the reference's point
- * is not in the window — there is nothing to measure against.
+ * is not in the window — there is nothing to measure against — and when it is
+ * behind the car but this lap's trace does not reach back to it: a car that
+ * was parked, reset or towed has not run past anything.
  */
 export const phaseFigure = (
   referenceM: number | null,
-  ownM: number | null
+  ownM: number | null,
+  ownTraceStartM: number | null
 ): PhaseFigure | null => {
   if (referenceM === null) {
     return null;
@@ -405,6 +415,10 @@ export const phaseFigure = (
 
   if (referenceM > 0) {
     return { kind: 'to-go', valueM: referenceM };
+  }
+
+  if (ownTraceStartM === null || ownTraceStartM > referenceM) {
+    return null;
   }
 
   return { kind: 'overshoot', valueM: -referenceM };
@@ -449,6 +463,7 @@ export const fillTraceWindow = (
   let previousOwnSpeed = NO_VALUE;
   let previousReferenceSpeed = NO_VALUE;
   let hasData = false;
+  let ownTraceStartM: number | null = null;
 
   for (let index = 0; index < TRACE_POINT_COUNT; index++) {
     const offsetM = -windowMeters + index * step;
@@ -485,6 +500,10 @@ export const fillTraceWindow = (
 
     if (isValue(referenceSpeed) || isValue(ownSpeed)) {
       hasData = true;
+    }
+
+    if (ownTraceStartM === null && isValue(ownSpeed)) {
+      ownTraceStartM = offsetM;
     }
 
     if (
@@ -535,6 +554,7 @@ export const fillTraceWindow = (
     apexDeltaM: laterBy(own.apexM, reference.apexM),
     throttleDeltaM: laterBy(own.throttlePointM, reference.throttlePointM),
     hasData,
+    ownTraceStartM,
   };
 };
 

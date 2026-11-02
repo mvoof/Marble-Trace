@@ -21,6 +21,7 @@ export const CoachSettingsPanel = observer(() => {
           <Row setting="showCallRow" />
         </div>
 
+        <Row setting="showPhaseFigures" dependsOn="showCallRow" />
         <Row setting="showUrgencyBar" dependsOn="showCallRow" />
         <Row setting="showCornerExitCalls" dependsOn="showCallRow" />
         <Row setting="brakeColor" dependsOn="showCallRow" />
