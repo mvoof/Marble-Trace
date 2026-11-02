@@ -162,6 +162,7 @@ pub fn compute(
     track_length_m: f32,
     tick_seconds: f32,
     cars: &mut HashMap<i32, CarState>,
+    pace_car_idxs: &[i32],
 ) -> IncidentsFrame {
     let tick = tick_seconds.max(MIN_TICK_SECONDS);
     let mut incidents = Vec::new();
@@ -169,6 +170,13 @@ pub fn compute(
 
     for (idx, &lap_dist_pct) in car_idx.car_idx_lap_dist_pct.iter().enumerate() {
         let car_index = idx as i32;
+
+        // The pace car stands still on the circuit by design — ahead of the
+        // grid, and at some tracks in a parking pocket that reports `OnTrack`.
+        if pace_car_idxs.contains(&car_index) {
+            continue;
+        }
+
         let surface = car_idx
             .car_idx_track_surface
             .get(idx)
@@ -278,7 +286,20 @@ impl Processor for IncidentsProcessor {
     }
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
-        let frame = compute(ctx.car_idx, ctx.track_length_m, 1.0 / 10.0, &mut self.cars);
+        let pace_car_idxs: Vec<i32> = ctx
+            .session
+            .cars
+            .iter()
+            .filter(|car| car.is_pace_car)
+            .map(|car| car.car_idx)
+            .collect();
+        let frame = compute(
+            ctx.car_idx,
+            ctx.track_length_m,
+            1.0 / 10.0,
+            &mut self.cars,
+            &pace_car_idxs,
+        );
 
         Some(ComputedOutput::Incidents(frame))
     }
@@ -294,6 +315,7 @@ mod tests {
 
     const TRACK_M: f32 = 5000.0;
     const TICK: f32 = 0.1;
+    const NO_PACE_CARS: &[i32] = &[];
 
     fn frame(pcts: &[f32], surfaces: &[TrackSurface]) -> CarIdxFrame {
         CarIdxFrame {
@@ -317,6 +339,25 @@ mod tests {
                 TRACK_M,
                 TICK,
                 &mut cars,
+                NO_PACE_CARS,
+            );
+
+            assert!(out.incidents.is_empty());
+        }
+    }
+
+    #[test]
+    fn a_pace_car_standing_on_track_is_never_marked() {
+        let mut cars = HashMap::new();
+        let pace_car_idxs = [0];
+
+        for _ in 0..100 {
+            let out = compute(
+                &frame(&[0.07], &[TrackSurface::OnTrack]),
+                TRACK_M,
+                TICK,
+                &mut cars,
+                &pace_car_idxs,
             );
 
             assert!(out.incidents.is_empty());
@@ -334,6 +375,7 @@ mod tests {
                 TRACK_M,
                 TICK,
                 &mut cars,
+                NO_PACE_CARS,
             );
 
             if tick < 9 {
@@ -367,7 +409,13 @@ mod tests {
                 TrackSurface::OnTrack
             };
 
-            let out = compute(&frame(&[pct], &[surface]), TRACK_M, TICK, &mut cars);
+            let out = compute(
+                &frame(&[pct], &[surface]),
+                TRACK_M,
+                TICK,
+                &mut cars,
+                NO_PACE_CARS,
+            );
 
             assert!(out.incidents.is_empty());
         }
@@ -383,6 +431,7 @@ mod tests {
                 TRACK_M,
                 TICK,
                 &mut cars,
+                NO_PACE_CARS,
             );
         }
 
@@ -397,6 +446,7 @@ mod tests {
                 TRACK_M,
                 TICK,
                 &mut cars,
+                NO_PACE_CARS,
             );
 
             if let Some(point) = out.incidents.first() {
@@ -417,6 +467,7 @@ mod tests {
                 TRACK_M,
                 TICK,
                 &mut cars,
+                NO_PACE_CARS,
             );
         }
 
@@ -425,6 +476,7 @@ mod tests {
             TRACK_M,
             TICK,
             &mut cars,
+            NO_PACE_CARS,
         );
 
         assert!(out.incidents.is_empty(), "the marker should have expired");
@@ -440,6 +492,7 @@ mod tests {
                 TRACK_M,
                 TICK,
                 &mut cars,
+                NO_PACE_CARS,
             );
 
             assert!(out.incidents.is_empty());
@@ -447,7 +500,13 @@ mod tests {
     }
 
     fn run(cars: &mut HashMap<i32, CarState>, pct: f32, surface: TrackSurface) -> IncidentsFrame {
-        compute(&frame(&[pct], &[surface]), TRACK_M, TICK, cars)
+        compute(
+            &frame(&[pct], &[surface]),
+            TRACK_M,
+            TICK,
+            cars,
+            NO_PACE_CARS,
+        )
     }
 
     #[test]

@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
-use mt_model::sim::cars::PaceFormation;
+use mt_model::sim::cars::{PaceFormation, PacingFrame};
 use mt_model::sim::enums::{SessionState, TrackSurface};
 use mt_model::sim::flags::{CAUTION, CAUTION_WAVING};
 
@@ -72,24 +72,32 @@ pub enum Stillness {
     Stationary,
 }
 
+/// Whether the field is lined up behind the pace car. `PaceMode` alone does
+/// not say so: it kept reporting a double-file start for the whole race at
+/// Zolder (tape, 2026-11-02), while every car's pace line dropped to -1 within
+/// seconds of the green.
+pub fn field_lined_up(pacing: &PacingFrame) -> bool {
+    pacing.formation != PaceFormation::NotPacing
+        && pacing.car_idx_pace_line.iter().any(|&line| line >= 0)
+}
+
 /// Whether the pace car may legitimately stand still on the circuit: before
-/// the start (ahead of the grid), during a formation, or under a caution. Only
-/// a green racing session — or what follows it — with none of those rules it
-/// out. An unknown session state counts as expected, the side that never hides
-/// a car that is really out there.
+/// the start (ahead of the grid), with the field lined up behind it, or under
+/// a caution. Only a green racing session — or what follows it — with none of
+/// those rules it out. An unknown session state counts as expected, the side
+/// that never hides a car that is really out there.
 pub fn expected_on_track(
-    formation: PaceFormation,
+    lined_up: bool,
     session_state: Option<SessionState>,
     session_flags: Option<u32>,
 ) -> bool {
-    let pacing = formation != PaceFormation::NotPacing;
     let caution = session_flags.is_some_and(|flags| flags & CAUTION_BITS != 0);
     let past_the_start = matches!(
         session_state,
         Some(SessionState::Racing | SessionState::Checkered | SessionState::CoolDown)
     );
 
-    pacing || caution || !past_the_start
+    lined_up || caution || !past_the_start
 }
 
 /// One step of the phase machine.
@@ -269,8 +277,11 @@ impl Processor for PaceCarProcessor {
         // The session clock stops with the sim, so a paused session does not
         // turn a pace car rolling down the lane into a parked one.
         let now_s = ctx.session_time.unwrap_or(0.0);
-        let expected =
-            expected_on_track(ctx.pacing.formation, ctx.session_state, ctx.session_flags);
+        let expected = expected_on_track(
+            field_lined_up(ctx.pacing),
+            ctx.session_state,
+            ctx.session_flags,
+        );
 
         let frame = self.step(
             &pace_car_idxs,
@@ -319,6 +330,8 @@ mod tests {
     const ON_TRACK: TrackSurface = TrackSurface::OnTrack;
     const EXPECTED: bool = true;
     const NOT_EXPECTED: bool = false;
+    const LINED_UP: bool = true;
+    const NOT_LINED_UP: bool = false;
 
     /// A reading where the context does not rule the pace car off the circuit.
     fn phase_of(
@@ -464,37 +477,20 @@ mod tests {
             SessionState::Warmup,
             SessionState::ParadeLaps,
         ] {
-            assert!(expected_on_track(
-                PaceFormation::NotPacing,
-                Some(state),
-                Some(0)
-            ));
+            assert!(expected_on_track(NOT_LINED_UP, Some(state), Some(0)));
         }
 
-        assert!(expected_on_track(PaceFormation::NotPacing, None, None));
+        assert!(expected_on_track(NOT_LINED_UP, None, None));
     }
 
     #[test]
-    fn expects_the_pace_car_on_track_in_a_formation_or_under_caution() {
+    fn expects_the_pace_car_on_track_with_the_field_lined_up_or_under_caution() {
         let racing = Some(SessionState::Racing);
 
+        assert!(expected_on_track(LINED_UP, racing, Some(0)));
+        assert!(expected_on_track(NOT_LINED_UP, racing, Some(CAUTION)));
         assert!(expected_on_track(
-            PaceFormation::DoubleFile,
-            racing,
-            Some(0)
-        ));
-        assert!(expected_on_track(
-            PaceFormation::SingleFile,
-            racing,
-            Some(0)
-        ));
-        assert!(expected_on_track(
-            PaceFormation::NotPacing,
-            racing,
-            Some(CAUTION)
-        ));
-        assert!(expected_on_track(
-            PaceFormation::NotPacing,
+            NOT_LINED_UP,
             racing,
             Some(CAUTION_WAVING)
         ));
@@ -507,12 +503,28 @@ mod tests {
             SessionState::Checkered,
             SessionState::CoolDown,
         ] {
-            assert!(!expected_on_track(
-                PaceFormation::NotPacing,
-                Some(state),
-                Some(0)
-            ));
+            assert!(!expected_on_track(NOT_LINED_UP, Some(state), Some(0)));
         }
+    }
+
+    #[test]
+    fn a_pace_mode_without_pace_lines_is_not_a_lined_up_field() {
+        let after_the_green = PacingFrame {
+            formation: PaceFormation::DoubleFile,
+            car_idx_pace_line: vec![-1, -1, -1],
+        };
+        let on_the_grid = PacingFrame {
+            formation: PaceFormation::DoubleFile,
+            car_idx_pace_line: vec![-1, 0, 1],
+        };
+        let no_pace_mode = PacingFrame {
+            formation: PaceFormation::NotPacing,
+            car_idx_pace_line: vec![0, 1],
+        };
+
+        assert!(!field_lined_up(&after_the_green));
+        assert!(field_lined_up(&on_the_grid));
+        assert!(!field_lined_up(&no_pace_mode));
     }
 
     const PACE_CAR: i32 = 2;
