@@ -269,6 +269,23 @@ pub enum VoiceMistake {
     },
 }
 
+/// Why a pack archive was not written or taken in, by code, for the page to
+/// say in the user's language. An import that fails leaves the pack as it was.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(tag = "code", rename_all = "camelCase")]
+pub enum PackFileError {
+    /// The file is not a zip; `detail` is the reader's own words.
+    NotAnArchive { detail: String },
+    /// Export: the language has no pack of the user's yet. Import: the
+    /// archive holds neither `phrases.json` nor `commands.json`.
+    NoPack,
+    /// One of the archive's pack files cannot be read as one.
+    BrokenFile { file: String, mistake: VoiceMistake },
+    /// The system's own words: a disk full, a file in use.
+    Failed { detail: String },
+}
+
 /// A question of the driver's own. Its sentences are listed with the intents
 /// and its answers with the phrases, both as `question.<id>`.
 #[cfg_attr(feature = "dev", derive(specta::Type))]

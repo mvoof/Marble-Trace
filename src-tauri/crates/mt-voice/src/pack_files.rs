@@ -6,13 +6,14 @@ use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
+use mt_model::app::voice::PackFileError;
 use zip::write::SimpleFileOptions;
-use zip::{CompressionMethod, ZipWriter};
+use zip::{CompressionMethod, ZipArchive, ZipWriter};
 
 use serde_json::Value;
 
 use crate::assets::unpack::unpack_zip_within;
-use crate::pack::{COMMANDS_FILE, PHRASES_FILE};
+use crate::pack::{unreadable_file, COMMANDS_FILE, PHRASES_FILE};
 
 const IMPORT_STAGING_SUFFIX: &str = ".importing";
 /// Where the pack being replaced waits until the imported one is in place.
@@ -20,62 +21,74 @@ const IMPORT_PREVIOUS_SUFFIX: &str = ".previous";
 /// A pack is two JSON files of text; anything near this is not one.
 const PACK_ARCHIVE_MAX_BYTES: u64 = 16 * 1024 * 1024;
 
-/// The pack folder as one zip to hand to someone else.
-pub fn export_pack(pack_folder: &Path, archive: &Path) -> io::Result<()> {
-    let mut zip = ZipWriter::new(File::create(archive)?);
-    let options = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
-    let mut files = Vec::new();
-
-    for name in [PHRASES_FILE, COMMANDS_FILE] {
-        let path = pack_folder.join(name);
-
-        if path.is_file() {
-            files.push((name.to_string(), path));
-        }
+fn failed(error: impl ToString) -> PackFileError {
+    PackFileError::Failed {
+        detail: error.to_string(),
     }
+}
+
+/// The pack folder as one zip to hand to someone else.
+pub fn export_pack(pack_folder: &Path, archive: &Path) -> Result<(), PackFileError> {
+    let files: Vec<_> = [PHRASES_FILE, COMMANDS_FILE]
+        .into_iter()
+        .map(|name| (name, pack_folder.join(name)))
+        .filter(|(_, path)| path.is_file())
+        .collect();
 
     if files.is_empty() {
-        return Err(io::Error::new(
-            io::ErrorKind::NotFound,
-            "the pack folder holds no pack",
-        ));
+        return Err(PackFileError::NoPack);
     }
+
+    let mut zip = ZipWriter::new(File::create(archive).map_err(failed)?);
+    let options = SimpleFileOptions::default().compression_method(CompressionMethod::Deflated);
 
     for (name, path) in files {
-        zip.start_file(name, options).map_err(io::Error::other)?;
-        zip.write_all(&fs::read(path)?)?;
+        zip.start_file(name, options).map_err(failed)?;
+        zip.write_all(&fs::read(path).map_err(failed)?)
+            .map_err(failed)?;
     }
 
-    zip.finish().map_err(io::Error::other)?;
+    zip.finish().map_err(failed)?;
 
     Ok(())
 }
 
 /// Replaces the pack folder with an archive's contents — only once the
-/// archive has unpacked whole and holds a pack at all. Someone else's
-/// questions that carry out steps (pit orders, chat macros) come in switched
-/// off; their names are returned for the driver to look over.
-pub fn import_pack(archive: &Path, pack_folder: &Path) -> io::Result<Vec<String>> {
+/// archive has unpacked whole and holds a pack the loader reads. Someone
+/// else's questions that carry out steps (pit orders, chat macros) come in
+/// switched off; their names are returned for the driver to look over.
+pub fn import_pack(archive: &Path, pack_folder: &Path) -> Result<Vec<String>, PackFileError> {
+    ZipArchive::new(File::open(archive).map_err(failed)?).map_err(|error| {
+        PackFileError::NotAnArchive {
+            detail: error.to_string(),
+        }
+    })?;
+
     let staging = PathBuf::from(format!("{}{IMPORT_STAGING_SUFFIX}", pack_folder.display()));
     let previous = PathBuf::from(format!("{}{IMPORT_PREVIOUS_SUFFIX}", pack_folder.display()));
     let _ = fs::remove_dir_all(&staging);
     let result = (|| {
-        unpack_zip_within(archive, &staging, PACK_ARCHIVE_MAX_BYTES)?;
+        unpack_zip_within(archive, &staging, PACK_ARCHIVE_MAX_BYTES).map_err(failed)?;
 
         if !staging.join(PHRASES_FILE).is_file() && !staging.join(COMMANDS_FILE).is_file() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "the archive holds no phrases.json or commands.json",
-            ));
+            return Err(PackFileError::NoPack);
         }
 
-        let switched_off = switch_off_questions_with_steps(&staging.join(COMMANDS_FILE))?;
+        if let Some(issue) = unreadable_file(&staging) {
+            return Err(PackFileError::BrokenFile {
+                file: issue.location,
+                mistake: issue.mistake,
+            });
+        }
+
+        let switched_off =
+            switch_off_questions_with_steps(&staging.join(COMMANDS_FILE)).map_err(failed)?;
 
         if let Some(parent) = pack_folder.parent() {
-            fs::create_dir_all(parent)?;
+            fs::create_dir_all(parent).map_err(failed)?;
         }
 
-        swap_in(&staging, pack_folder, &previous)?;
+        swap_in(&staging, pack_folder, &previous).map_err(failed)?;
 
         Ok(switched_off)
     })();
@@ -217,8 +230,62 @@ mod tests {
         fs::create_dir_all(&target).unwrap();
         fs::write(target.join(PHRASES_FILE), "{}").unwrap();
 
-        assert!(import_pack(&archive, &target).is_err());
+        assert_eq!(import_pack(&archive, &target), Err(PackFileError::NoPack));
         assert!(target.join(PHRASES_FILE).is_file());
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn refuses_a_file_that_is_not_a_zip() {
+        let root = scratch("notazip");
+        let archive = root.join("pack.zip");
+
+        fs::write(&archive, "plain text").unwrap();
+
+        let result = import_pack(&archive, &root.join("packs/en"));
+
+        assert!(matches!(result, Err(PackFileError::NotAnArchive { .. })));
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn refuses_a_broken_pack_file_and_keeps_the_old_pack() {
+        let root = scratch("broken");
+        let archive = root.join("broken.zip");
+        let target = root.join("packs/en");
+        let mut zip = ZipWriter::new(File::create(&archive).unwrap());
+
+        zip.start_file(PHRASES_FILE, SimpleFileOptions::default())
+            .unwrap();
+        zip.write_all(b"{ not json").unwrap();
+        zip.finish().unwrap();
+        fs::create_dir_all(&target).unwrap();
+        fs::write(target.join(PHRASES_FILE), "old").unwrap();
+
+        let result = import_pack(&archive, &target);
+
+        assert!(matches!(
+            result,
+            Err(PackFileError::BrokenFile { ref file, .. }) if file == PHRASES_FILE
+        ));
+        assert_eq!(
+            fs::read_to_string(target.join(PHRASES_FILE)).unwrap(),
+            "old"
+        );
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn export_without_a_pack_says_so() {
+        let root = scratch("exportempty");
+
+        assert_eq!(
+            export_pack(&root.join("en"), &root.join("en.zip")),
+            Err(PackFileError::NoPack)
+        );
 
         let _ = fs::remove_dir_all(root);
     }
@@ -232,9 +299,9 @@ mod tests {
         let commands = r#"{
           "format": 1,
           "custom": { "questions": [
-            { "id": "box", "name": "Box now", "steps": [{ "kind": "chat", "text": "/box" }] },
+            { "id": "box", "name": "Box now", "steps": [{ "action": "chat", "value": "/box" }] },
             { "id": "gap", "name": "", "replies": ["{gap}"] },
-            { "id": "fuel", "steps": [{ "kind": "chat", "text": "/fuel" }] }
+            { "id": "fuel", "steps": [{ "action": "chat", "value": "/fuel" }] }
           ] }
         }"#;
 

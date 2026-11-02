@@ -38,6 +38,7 @@ import {
 import type {
   CarTarget,
   CrewRadioEvent,
+  PackFileError,
   VoiceComponentView,
   VoiceDownloadProgress,
   VoiceDraftCheck,
@@ -89,6 +90,24 @@ export interface VoiceSentenceTrial {
    */
   answers: (VoiceQuestionPreview | null)[];
 }
+
+/** What a pack export or import that went through did. */
+export type PackFileDone =
+  | { action: 'exported'; path: string }
+  | { action: 'imported' };
+
+/** What went wrong with a pack archive, and on which way. */
+export interface PackFileFailure {
+  action: 'export' | 'import';
+  error: PackFileError;
+}
+
+const isPackFileError = (error: unknown): error is PackFileError =>
+  typeof error === 'object' && error !== null && 'code' in error;
+
+/** The backend's pack error as it came, anything else as a failure in its own words. */
+const toPackFileError = (error: unknown): PackFileError =>
+  isPackFileError(error) ? error : { code: 'failed', detail: String(error) };
 
 /** A pit action a question can carry out, or the chat macro, and its slot. */
 export interface StepAction {
@@ -143,6 +162,8 @@ export class VoiceCrewStore {
   lastError: string | null = null;
   /** Questions with steps the last import switched off, for the driver to look over. */
   importedSwitchedOff: string[] = [];
+  /** The last pack export or import that failed, shown until the next one. */
+  packFileFailure: PackFileFailure | null = null;
   lastTest: VoiceTestResult | null = null;
   testing = false;
   /** The test press under way listens for the unsaved edits. */
@@ -1198,31 +1219,73 @@ export class VoiceCrewStore {
     void voiceTestPtt(held, draft);
   }
 
-  async exportPack() {
+  /** `null` when the driver closed the file dialog or the export failed. */
+  async exportPack(): Promise<PackFileDone | null> {
     const path = await pickPackArchiveTarget(this.language);
 
     if (path === null) {
-      return;
+      return null;
     }
 
-    await this.run(() => exportVoicePack(this.language, path));
+    const done = await this.runPackFile('export', () =>
+      exportVoicePack(this.language, path)
+    );
+
+    return done ? { action: 'exported', path } : null;
   }
 
-  async importPack() {
+  /** `null` when the driver closed the file dialog or the import failed. */
+  async importPack(): Promise<PackFileDone | null> {
     const path = await pickPackArchive();
 
     if (path === null) {
-      return;
+      return null;
     }
 
-    const switchedOff = await this.run(() =>
+    const done = await this.runPackFile('import', () =>
       importVoicePack(this.language, path)
     );
 
+    if (!done) {
+      return null;
+    }
+
     runInAction(() => {
-      this.importedSwitchedOff = switchedOff ?? [];
+      this.importedSwitchedOff = done.value;
     });
     await this.loadPack();
+
+    return { action: 'imported' };
+  }
+
+  /** Runs an export or import; its failure is kept for the pack card to say. */
+  private async runPackFile<T>(
+    action: PackFileFailure['action'],
+    work: () => Promise<T>
+  ): Promise<{ value: T } | null> {
+    this.busy = true;
+    this.packFileFailure = null;
+    this.importedSwitchedOff = [];
+
+    try {
+      const value = await work();
+
+      return { value };
+    } catch (error) {
+      runInAction(() => {
+        this.packFileFailure = { action, error: toPackFileError(error) };
+      });
+
+      return null;
+    } finally {
+      runInAction(() => {
+        this.busy = false;
+      });
+    }
+  }
+
+  dismissPackFileFailure() {
+    this.packFileFailure = null;
   }
 
   dismissImportedSwitchedOff() {

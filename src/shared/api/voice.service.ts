@@ -104,11 +104,13 @@ export const voiceTestPtt = (
   draft: VoicePackView | null
 ): Promise<void> => invoke('voice_test_ptt', { held, draft });
 
+/** Rejects with a `PackFileError`. */
 export const exportVoicePack = (
   language: string,
   path: string
 ): Promise<void> => invoke('export_voice_pack', { language, path });
 
+/** The questions it switched off; rejects with a `PackFileError`. */
 export const importVoicePack = (
   language: string,
   path: string

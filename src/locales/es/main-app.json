@@ -896,13 +896,23 @@
       "folder": "Carpeta del paquete",
       "folderDesc": "phrases.json y commands.json, con sus esquemas JSON al lado.",
       "share": "Compartir",
-      "shareDesc": "El paquete con sus grabaciones en un solo archivo.",
+      "shareDesc": "Las frases y comandos del paquete en un solo archivo.",
       "export": "Exportar",
       "import": "Importar",
       "reload": "Recargar",
       "reloadDesc": "Vuelve a leer el paquete tras editar sus archivos a mano.",
       "reloadButton": "Recargar",
-      "switchedOff": "Las preguntas que ejecutan acciones se importaron desactivadas. Revísalas y actívalas tú mismo:"
+      "switchedOff": "Las preguntas que ejecutan acciones se importaron desactivadas. Revísalas y actívalas tú mismo:",
+      "exported": "Paquete exportado: {{path}}",
+      "imported": "Paquete importado",
+      "exportFailed": "El paquete no se exportó",
+      "importFailed": "El paquete no se importó — el tuyo no ha cambiado",
+      "errors": {
+        "notAnArchive": "El archivo no es un archivo zip.",
+        "noPackExport": "Este idioma aún no tiene un paquete propio — guarda primero un cambio.",
+        "noPackImport": "El archivo no contiene un paquete de voz: no hay phrases.json ni commands.json dentro.",
+        "brokenFile": "{{file}}: {{mistake}}"
+      }
     },
     "questions": {
       "title": "Tus preguntas",

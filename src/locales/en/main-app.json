@@ -896,13 +896,23 @@
       "folder": "Pack folder",
       "folderDesc": "phrases.json and commands.json, with JSON schemas beside them.",
       "share": "Share",
-      "shareDesc": "The pack with its recordings as one archive.",
+      "shareDesc": "The pack's phrases and commands as one archive.",
       "export": "Export",
       "import": "Import",
       "reload": "Reload",
       "reloadDesc": "Read the pack again after editing its files by hand.",
       "reloadButton": "Reload",
-      "switchedOff": "Questions that carry out actions came in switched off. Look them over and switch them on yourself:"
+      "switchedOff": "Questions that carry out actions came in switched off. Look them over and switch them on yourself:",
+      "exported": "Pack exported: {{path}}",
+      "imported": "Pack imported",
+      "exportFailed": "The pack was not exported",
+      "importFailed": "The pack was not imported — yours is unchanged",
+      "errors": {
+        "notAnArchive": "The file is not a zip archive.",
+        "noPackExport": "This language has no pack of your own yet — save an edit first.",
+        "noPackImport": "The archive holds no voice pack: there is no phrases.json or commands.json in it.",
+        "brokenFile": "{{file}}: {{mistake}}"
+      }
     },
     "questions": {
       "title": "Your questions",

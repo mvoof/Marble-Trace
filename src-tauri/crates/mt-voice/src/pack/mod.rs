@@ -466,6 +466,18 @@ where
     Some(file)
 }
 
+/// The first of a pack folder's files the loader would refuse whole: not
+/// JSON, not a pack's shape, a format it does not know. Mistakes inside a
+/// file that reads are the editor's to show, not a reason to refuse it.
+pub fn unreadable_file(folder: &Path) -> Option<PackIssue> {
+    let mut issues = Vec::new();
+
+    read_pack_file::<PhrasesFile>(&folder.join(PHRASES_FILE), &mut issues);
+    read_pack_file::<CommandsFile>(&folder.join(COMMANDS_FILE), &mut issues);
+
+    issues.into_iter().next()
+}
+
 trait PackFormat {
     fn format(&self) -> u32;
 }

@@ -12,7 +12,7 @@ use tracing::{info, warn};
 
 use mt_model::app::crew::VoiceCrewSettings;
 use mt_model::app::voice::{
-    AudioDeviceView, VoiceComponentState, VoiceComponentView, VoiceDownloadProgress,
+    AudioDeviceView, PackFileError, VoiceComponentState, VoiceComponentView, VoiceDownloadProgress,
     VoiceDraftCheck, VoicePackView, VoiceQuestionPreview, VoiceRecognisedView, VoiceStatus,
 };
 use mt_model::contract::event_sink::EventSink;
@@ -653,15 +653,20 @@ pub async fn voice_test_ptt(
     Ok(())
 }
 
+/// The language's pack folder, the failure to find it said as a pack error.
+fn pack_folder_for(app: &AppHandle, language: &str) -> Result<PathBuf, PackFileError> {
+    let root = voice_root(app).map_err(|detail| PackFileError::Failed { detail })?;
+
+    Ok(pack_folder(&root, &known_language(language)))
+}
+
 #[tauri::command]
 pub async fn export_voice_pack(
     app: AppHandle,
     language: String,
     path: String,
-) -> Result<(), String> {
-    let folder = pack_folder(&voice_root(&app)?, &known_language(&language));
-
-    export_pack(&folder, Path::new(&path)).map_err(|error| error.to_string())
+) -> Result<(), PackFileError> {
+    export_pack(&pack_folder_for(&app, &language)?, Path::new(&path))
 }
 
 #[tauri::command]
@@ -670,9 +675,8 @@ pub async fn import_voice_pack(
     state: State<'_, Arc<VoiceCrewState>>,
     language: String,
     path: String,
-) -> Result<Vec<String>, String> {
-    let folder = pack_folder(&voice_root(&app)?, &known_language(&language));
-    let switched_off = import_pack(Path::new(&path), &folder).map_err(|error| error.to_string())?;
+) -> Result<Vec<String>, PackFileError> {
+    let switched_off = import_pack(Path::new(&path), &pack_folder_for(&app, &language)?)?;
     state.crew().reload();
 
     Ok(switched_off)

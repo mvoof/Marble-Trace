@@ -1666,6 +1666,29 @@ export type PacingFrame = {
 };
 
 /**
+ * Why a pack archive was not written or taken in, by code, for the page to
+ * say in the user's language. An import that fails leaves the pack as it was.
+ */
+export type PackFileError =
+  /**
+   * The file is not a zip; `detail` is the reader's own words.
+   */
+  | { code: 'notAnArchive'; detail: string }
+  /**
+   * Export: the language has no pack of the user's yet. Import: the
+   * archive holds neither `phrases.json` nor `commands.json`.
+   */
+  | { code: 'noPack' }
+  /**
+   * One of the archive's pack files cannot be read as one.
+   */
+  | { code: 'brokenFile'; file: string; mistake: VoiceMistake }
+  /**
+   * The system's own words: a disk full, a file in use.
+   */
+  | { code: 'failed'; detail: string };
+
+/**
  * What an overlay needs to know about the run, read once when it loads.
  */
 export type PerfRunConfig = {

@@ -892,13 +892,23 @@
       "folder": "语言包文件夹",
       "folderDesc": "phrases.json 和 commands.json，旁边附有 JSON 架构。",
       "share": "分享",
-      "shareDesc": "将语言包连同录音打包成一个压缩文件。",
+      "shareDesc": "将语言包的短语和命令打包成一个压缩文件。",
       "export": "导出",
       "import": "导入",
       "reload": "重新加载",
       "reloadDesc": "手动编辑文件后重新读取语言包。",
       "reloadButton": "重新加载",
-      "switchedOff": "带有操作的问题已以关闭状态导入。请检查后自行开启："
+      "switchedOff": "带有操作的问题已以关闭状态导入。请检查后自行开启：",
+      "exported": "语言包已导出：{{path}}",
+      "imported": "语言包已导入",
+      "exportFailed": "语言包未导出",
+      "importFailed": "语言包未导入——你的语言包保持不变",
+      "errors": {
+        "notAnArchive": "该文件不是 zip 压缩文件。",
+        "noPackExport": "该语言还没有你自己的语言包——请先保存一次修改。",
+        "noPackImport": "压缩文件中没有语音包：里面没有 phrases.json 或 commands.json。",
+        "brokenFile": "{{file}}：{{mistake}}"
+      }
     },
     "questions": {
       "title": "我的问题",
