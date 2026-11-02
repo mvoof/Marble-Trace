@@ -26,8 +26,10 @@ export const createTraceBufferState = (): TraceBufferState => ({
 
 const SAMPLES_PER_SECOND = 60;
 const GRID_LINE_COUNT = 3;
-const GRID_LINE_COLOR = 'rgba(255, 255, 255, 0.06)';
-const GRID_LINE_DASH = [3, 3];
+// Matches the g-meter's scale rings.
+const GRID_LINE_COLOR = 'rgba(250, 250, 250, 0.1)';
+const GRID_LINE_WIDTH_PX = 0.75;
+const GRID_LINE_DASH = [2, 4];
 
 type TraceChannel = { color: string; type: 'throttle' | 'brake' | 'clutch' };
 
@@ -58,7 +60,7 @@ const drawGrid = (
   logicalHeight: number
 ) => {
   ctx.strokeStyle = GRID_LINE_COLOR;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = GRID_LINE_WIDTH_PX;
   ctx.beginPath();
 
   for (let gridIndex = 1; gridIndex <= GRID_LINE_COUNT; gridIndex++) {
