@@ -1,8 +1,9 @@
-// A road-sign plate: red figures on white inside a red frame, the limit big and
-// the unit small beside it. It hangs above the widget box rather than in it —
-// the manifest lets the widget draw outside its frame — so showing it never
-// takes height from the bars. Never narrower than the widget, and wider when
-// the figures need it, centred over the bars either way.
+// A road-sign plate: red figures on white inside a red frame, the limit
+// big and the unit small beside it. It hangs above the widget box
+// rather than in it — the manifest lets the widget draw outside its frame — so
+// showing it never takes height from the bars. Never narrower than the widget,
+// and wider when the figures need it, centred over the bars either way. Its
+// corners are the bars'.
 .plate {
   position: absolute;
   bottom: calc(100% + #{sp(xs)});
@@ -17,9 +18,9 @@
   padding: sp(xs) sp(sm);
   white-space: nowrap;
   font-family: $font-mono;
-  color: $race-red;
-  background: $road-sign-face;
-  border: 3px solid $race-red;
+  color: $widget-status-danger;
+  background: $flag-band-white;
+  border: 3px solid $widget-status-danger;
   border-radius: radius(md);
 }
 
@@ -34,8 +35,4 @@
   font-size: fs(xs);
   font-weight: 700;
   letter-spacing: 0.04em;
-}
-
-.plateHidden {
-  visibility: hidden;
 }

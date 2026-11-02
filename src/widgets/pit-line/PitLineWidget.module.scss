@@ -28,7 +28,17 @@
 // it, outside the widget box, so the bars keep every pixel of the height the
 // driver dragged.
 .root {
+  border-radius: inherit;
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+// The bars stay clipped to the rounded frame, as they were before the frame
+// was opened up for the plate.
+.body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
 }

@@ -34,25 +34,27 @@ export const PitLineWidget = observer(() => {
     <div className={styles.root}>
       {showPitSpeed && showLimitPlate && <PitLimitPlate withUnit={showUnits} />}
 
-      <WidgetPanel direction="column" gap={0} minWidth={0}>
-        <div className={styles.stack}>
-          {showPitSpeed && (
-            <div className={styles.slot}>
-              <PitSpeedPlate withUnit={showUnits} />
-            </div>
-          )}
+      <div className={styles.body}>
+        <WidgetPanel direction="column" gap={0} minWidth={0}>
+          <div className={styles.stack}>
+            {showPitSpeed && (
+              <div className={styles.slot}>
+                <PitSpeedPlate withUnit={showUnits} />
+              </div>
+            )}
 
-          {showPitApproach && (
-            <div className={styles.slot}>
-              <PitApproachRail
-                withBrakeCue={showPitBrakeCue}
-                withUnit={showUnits}
-                revealOnApproachM={revealOnApproachM}
-              />
-            </div>
-          )}
-        </div>
-      </WidgetPanel>
+            {showPitApproach && (
+              <div className={styles.slot}>
+                <PitApproachRail
+                  withBrakeCue={showPitBrakeCue}
+                  withUnit={showUnits}
+                  revealOnApproachM={revealOnApproachM}
+                />
+              </div>
+            )}
+          </div>
+        </WidgetPanel>
+      </div>
     </div>
   );
 });
