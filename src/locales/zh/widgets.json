@@ -774,7 +774,7 @@
       "showPitSpeed": "维修道速度",
       "showPitSpeedDesc": "相对于维修道限速的当前车速，含收油区间与限速器状态。",
       "showLimitPlate": "限速牌",
-      "showLimitPlateDesc": "限速器关闭且车速低于限速时，在示意条上方以标牌显示维修道限速。",
+      "showLimitPlateDesc": "进站途中及在维修道上限速器关闭时，在示意条上方以标牌显示维修道限速。超速时标牌也保持显示。",
       "showPitApproach": "进站接近",
       "showPitApproachDesc": "在维修道示意条上显示到自己维修位的距离，标出维修位并提示刹车点。",
       "showPitBrakeCue": "刹车提示",

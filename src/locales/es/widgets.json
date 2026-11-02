@@ -774,7 +774,7 @@
       "showPitSpeed": "Velocidad en el pit lane",
       "showPitSpeedDesc": "Velocidad actual frente al límite del pit lane, con la banda de levantar el gas y el estado del limitador.",
       "showLimitPlate": "Placa de límite",
-      "showLimitPlateDesc": "El límite de velocidad del pit lane como señal sobre las barras, con el limitador apagado y la velocidad por debajo del límite.",
+      "showLimitPlateDesc": "El límite de velocidad del pit lane como señal sobre las barras, al entrar y en el pit lane mientras el limitador está apagado. Sigue visible también por encima del límite.",
       "showPitApproach": "Aproximación al box",
       "showPitApproachDesc": "Distancia a tu box sobre el dibujo del pit lane, con el box marcado y un aviso de frenada.",
       "showPitBrakeCue": "Aviso de frenada",
