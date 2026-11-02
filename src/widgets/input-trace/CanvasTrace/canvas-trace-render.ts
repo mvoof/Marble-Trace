@@ -27,6 +27,7 @@ export const createTraceBufferState = (): TraceBufferState => ({
 const SAMPLES_PER_SECOND = 60;
 const GRID_LINE_COUNT = 3;
 const GRID_LINE_COLOR = 'rgba(255, 255, 255, 0.06)';
+const GRID_LINE_DASH = [3, 3];
 
 type TraceChannel = { color: string; type: 'throttle' | 'brake' | 'clutch' };
 
@@ -67,7 +68,9 @@ const drawGrid = (
     ctx.lineTo(logicalWidth, yPos);
   }
 
+  ctx.setLineDash(GRID_LINE_DASH);
   ctx.stroke();
+  ctx.setLineDash([]);
 };
 
 interface ChannelPassContext {
