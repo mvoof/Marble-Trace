@@ -4,7 +4,7 @@ import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { CoachInactiveReason } from '@shared/contracts/generated/bindings';
-import type { PhaseFigure } from '@widgets/coach/coach-trace-utils';
+import type { PhaseTime } from '@widgets/coach/coach-trace-utils';
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,
@@ -46,95 +46,59 @@ const INACTIVE_HINT: Record<CoachInactiveReason, string> = {
   'no-telemetry': 'waiting for telemetry',
 };
 
-/** A miss this small is the reference's point, near enough: the figure says ON. */
-const ON_TARGET_M = 3;
+/** Below this (seconds) a phase is called even — neither gained nor lost. */
+const EVEN_TIME_S = 0.005;
 
-/** How a figure is coloured: grey while counting down, green on target, amber off it. */
-type ReadoutTone = 'idle' | 'on' | 'off';
+const signedSeconds = (deltaS: number): string => {
+  const sign = deltaS >= EVEN_TIME_S ? '+' : deltaS <= -EVEN_TIME_S ? '−' : '';
 
-interface ReadoutParts {
-  word: string;
-  metres: string | null;
-  tone: ReadoutTone;
-}
-
-const NO_FIGURE: ReadoutParts = {
-  word: NO_VALUE_TEXT,
-  metres: null,
-  tone: 'idle',
-};
-
-/**
- * The figure in words, so it reads without a legend: IN 40 before the
- * reference's point, PAST 25 while running past it undone, and once done ON,
- * or LATE / EARLY by how much.
- */
-const readoutParts = (figure: PhaseFigure | null): ReadoutParts => {
-  if (figure === null) {
-    return NO_FIGURE;
-  }
-
-  const metres = Math.abs(figure.valueM).toFixed(0);
-
-  if (figure.kind === 'to-go') {
-    return { word: 'IN', metres, tone: 'idle' };
-  }
-
-  if (figure.kind === 'overshoot') {
-    return { word: 'PAST', metres, tone: 'off' };
-  }
-
-  if (Math.abs(figure.valueM) <= ON_TARGET_M) {
-    return { word: 'ON', metres: null, tone: 'on' };
-  }
-
-  return {
-    word: figure.valueM > 0 ? 'LATE' : 'EARLY',
-    metres,
-    tone: 'off',
-  };
-};
-
-const TONE_CLASS: Record<ReadoutTone, string> = {
-  idle: styles.toneIdle ?? '',
-  on: '',
-  off: styles.toneOff ?? '',
+  return `${sign}${Math.abs(deltaS).toFixed(2)}`;
 };
 
 interface PhaseReadoutProps {
   label: string;
   color: string;
-  /** The on-target colour — the same green the trace draws a gain in. */
-  onColor: string;
-  figure: PhaseFigure | null;
+  gainColor: string;
+  lossColor: string;
+  time: PhaseTime | null;
 }
 
 /**
- * One phase of the corner, as two lines: the phase in its colour, and what this
- * lap did against the reference's point in words. Every cell has the same
- * fixed width, so a changing figure never moves its neighbours.
+ * One phase of the reference's corner, as two lines: the phase in its colour,
+ * and the time this lap gained (−, gain colour) or lost (+, loss colour) inside
+ * it. While the car is still in the phase the figure runs, dimmed; past it,
+ * it settles. Every cell has the same fixed width, so a changing figure never
+ * moves its neighbours.
  */
 const PhaseReadout = observer(
-  ({ label, color, onColor, figure }: PhaseReadoutProps) => {
-    const { word, metres, tone } = readoutParts(figure);
+  ({ label, color, gainColor, lossColor, time }: PhaseReadoutProps) => {
+    const deltaColor =
+      time === null || Math.abs(time.deltaS) < EVEN_TIME_S
+        ? undefined
+        : time.deltaS > 0
+          ? lossColor
+          : gainColor;
+
+    const valueClass = [
+      styles.phaseValue,
+      time === null ? styles.phaseValueEmpty : '',
+      time?.kind === 'running' ? styles.phaseValueRunning : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return (
       <span className={styles.phase}>
         <span className={styles.phaseLabel} style={{ color } as CSSProperties}>
           {label}
         </span>
-        <span className={`${styles.phaseValue} ${TONE_CLASS[tone]}`}>
-          <span
-            className={styles.phaseWord}
-            style={
-              tone === 'on' ? ({ color: onColor } as CSSProperties) : undefined
-            }
-          >
-            {word}
-          </span>
-          {metres === null ? null : (
-            <span className={styles.phaseMetres}>{metres}</span>
-          )}
+        <span
+          className={valueClass}
+          style={
+            deltaColor ? ({ color: deltaColor } as CSSProperties) : undefined
+          }
+        >
+          {time === null ? NO_VALUE_TEXT : signedSeconds(time.deltaS)}
         </span>
       </span>
     );
@@ -142,10 +106,10 @@ const PhaseReadout = observer(
 );
 
 /**
- * The advisory call on the left, and on the right the corner in three figures:
- * braking, apex, throttle — each against the reference's point, see
- * `PhaseReadout`. A settled figure is the gap between a dot and a dashed line
- * on the chart below, in the same colour. The advisory comes from the
+ * The advisory call on the left, and on the right where the corner's time went:
+ * gained or lost in the braking zone, mid-corner and on the exit, each phase
+ * as the reference drove it — the shaded zones on the chart below. The three
+ * add up to what the corner cost. The advisory comes from the
  * shared coach store; the figures from this widget's trace window.
  */
 export const CallRow = observer(() => {
@@ -233,22 +197,25 @@ export const CallRow = observer(() => {
             <PhaseReadout
               label="BRAKE"
               color={settings.brakeColor}
-              onColor={settings.gainColor}
-              figure={trace.displayedBrakeFigure}
+              gainColor={settings.gainColor}
+              lossColor={settings.lossColor}
+              time={trace.displayedBrakeTime}
             />
-            {/* The apex has no pedal of its own: it takes the reference lap's
-                colour, the line it is the lowest point of. */}
+            {/* Mid-corner has no pedal of its own: it takes the reference
+                lap's colour, the same as its zone on the chart. */}
             <PhaseReadout
               label="APEX"
               color={settings.referenceColor}
-              onColor={settings.gainColor}
-              figure={trace.displayedApexFigure}
+              gainColor={settings.gainColor}
+              lossColor={settings.lossColor}
+              time={trace.displayedApexTime}
             />
             <PhaseReadout
               label="THROTTLE"
               color={settings.gasColor}
-              onColor={settings.gainColor}
-              figure={trace.displayedThrottleFigure}
+              gainColor={settings.gainColor}
+              lossColor={settings.lossColor}
+              time={trace.displayedThrottleTime}
             />
           </span>
         ) : null}

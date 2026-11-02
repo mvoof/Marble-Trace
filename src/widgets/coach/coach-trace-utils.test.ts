@@ -5,7 +5,7 @@ import {
   createTraceWindowBuffers,
   fillTraceWindow,
   NO_VALUE,
-  phaseFigure,
+  phaseTime,
   traceValueRange,
   TRACE_POINT_COUNT,
   type TraceWindowBuffers,
@@ -403,32 +403,61 @@ describe('corner phases', () => {
   });
 });
 
-describe('phaseFigure', () => {
-  it('counts down to a reference point still ahead', () => {
-    expect(phaseFigure(40, null, -150)).toEqual({ kind: 'to-go', valueM: 40 });
+describe('phaseTime', () => {
+  const STEP_M = (WINDOW_M * 2) / (TRACE_POINT_COUNT - 1);
+
+  /** A window whose running delta is `deltaAt(offset)` behind the car, from `traceFromM` on. */
+  const windowWithDelta = (
+    deltaAt: (offsetM: number) => number,
+    traceFromM = -WINDOW_M
+  ): TraceWindowBuffers => {
+    const buffers = createTraceWindowBuffers();
+
+    for (let index = 0; index < TRACE_POINT_COUNT; index++) {
+      const offsetM = -WINDOW_M + index * STEP_M;
+
+      buffers.offsetM[index] = offsetM;
+      buffers.timeDeltaS[index] =
+        offsetM <= 0 && offsetM >= traceFromM ? deltaAt(offsetM) : NO_VALUE;
+    }
+
+    return buffers;
+  };
+
+  // Losing a hundredth every 10 m from 60 m behind the car on.
+  const losing = windowWithDelta((offsetM) =>
+    offsetM < -60 ? 0 : (offsetM + 60) * 0.001
+  );
+
+  it('is what the phase cost once the car is past it', () => {
+    const time = phaseTime(losing, -50, -20);
+
+    expect(time?.kind).toBe('settled');
+    expect(time?.deltaS).toBeCloseTo(0.03, 6);
   });
 
-  it('counts the metres run past a reference point not yet matched', () => {
-    expect(phaseFigure(-15, null, -150)).toEqual({
-      kind: 'overshoot',
-      valueM: 15,
-    });
+  it('runs up to the car while the car is inside the phase', () => {
+    const time = phaseTime(losing, -40, 30);
+
+    expect(time?.kind).toBe('running');
+    expect(time?.deltaS).toBeCloseTo(0.04, 6);
   });
 
-  it('settles on the miss once this lap has done it', () => {
-    expect(phaseFigure(-30, -18, -150)).toEqual({ kind: 'miss', valueM: 12 });
-    // Earlier than a point still ahead of the car is a miss too.
-    expect(phaseFigure(20, -5, -150)).toEqual({ kind: 'miss', valueM: -25 });
+  it('reads between the drawn samples', () => {
+    // Neither end on the 2.5 m grid.
+    expect(phaseTime(losing, -41.3, -21.3)?.deltaS).toBeCloseTo(0.02, 6);
   });
 
-  it('has nothing to say without the reference point', () => {
-    expect(phaseFigure(null, -5, -150)).toBeNull();
+  it('has nothing before the car reaches the phase', () => {
+    expect(phaseTime(losing, 10, 40)).toBeNull();
+    expect(phaseTime(losing, null, -20)).toBeNull();
   });
 
-  it('has not run past a point this lap was not seen to drive through', () => {
-    // Parked, reset or towed: the trace starts at the car, after the point.
-    expect(phaseFigure(-40, null, 0)).toBeNull();
-    expect(phaseFigure(-40, null, null)).toBeNull();
+  it('has nothing for a phase this lap was not seen to drive', () => {
+    // Parked, reset or towed: the trace starts after the phase does.
+    const shortTrace = windowWithDelta(() => 0, -10);
+
+    expect(phaseTime(shortTrace, -40, -20)).toBeNull();
   });
 });
 

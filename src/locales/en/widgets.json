@@ -789,7 +789,7 @@
       "showCallRow": "Show Call",
       "showCallRowDesc": "The BRAKE / GAS call row on top. Off leaves only the trace and the readouts.",
       "showPhaseFigures": "Phase Figures",
-      "showPhaseFiguresDesc": "BRAKE / APEX / THROTTLE beside the call: metres to the reference point, then ON, or how far EARLY or LATE you were.",
+      "showPhaseFiguresDesc": "Time gained or lost in each phase of the corner: braking, mid-corner and exit, against the reference.",
       "showUrgencyBar": "Urgency Bar",
       "showUrgencyBarDesc": "Bar under the call showing how close the next braking zone is.",
       "showCornerExitCalls": "Corner-Exit Calls",

@@ -789,7 +789,7 @@
       "showCallRow": "显示提示行",
       "showCallRowDesc": "顶部的 BRAKE / GAS 提示行。关闭后仅保留曲线和读数。",
       "showPhaseFigures": "阶段数字",
-      "showPhaseFiguresDesc": "提示旁的 BRAKE / APEX / THROTTLE：距参考点的米数，之后显示 ON，或你提前（EARLY）或推迟（LATE）了多少。",
+      "showPhaseFiguresDesc": "与参考圈相比，在弯道每个阶段（刹车、弯心、出弯）赢得或损失的时间。",
       "showUrgencyBar": "紧急度条",
       "showUrgencyBarDesc": "提示下方的条形图，显示下一个刹车区还有多近。",
       "showCornerExitCalls": "出弯提示",

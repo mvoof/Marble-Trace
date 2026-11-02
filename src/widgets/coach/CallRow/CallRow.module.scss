@@ -61,9 +61,9 @@ $phase-block-height: calc(#{fs(xxxs)} + #{sp(xxxs)} + #{fs(md)});
   display: flex;
 }
 
-// Fixed width, wide enough for THROTTLE on top and EARLY 500 underneath: a
-// cell that followed its content would shift its neighbours every time a
-// word or a digit changed.
+// Fixed width, wide enough for THROTTLE on top and −0.00 underneath: a cell
+// that followed its content would shift its neighbours every time a digit
+// changed.
 .phase {
   display: flex;
   flex-direction: column;
@@ -84,41 +84,25 @@ $phase-block-height: calc(#{fs(xxxs)} + #{sp(xxxs)} + #{fs(md)});
   letter-spacing: 0.1em;
 }
 
-// A fixed height: a dash or ON alone is shorter than a word and its metres,
-// and the cell would otherwise shrink with them.
+// A fixed height, so a dash and a figure take the same room.
 .phaseValue {
-  display: flex;
-  align-items: baseline;
-  gap: sp(xxs);
   height: fs(md);
-  line-height: 1;
-  color: $widget-text-primary;
-}
-
-.phaseWord {
-  font-family: $font-widget;
-  font-size: fs(xs);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-}
-
-.phaseMetres {
   font-family: $font-mono;
   font-size: fs(md);
   font-weight: 700;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
+  color: $widget-text-primary;
 }
 
-// Counting down to a point not reached yet: a distance, not a verdict — quieter
-// than the figure it turns into.
-.toneIdle {
+.phaseValueEmpty {
   color: $widget-text-muted;
 }
 
-// Off the reference's point — early, late, or still running past it. Only the
-// word takes the warning colour; the metres stay legible in white.
-.toneOff .phaseWord {
-  color: $race-amber;
+// The car is still inside the phase: the figure is a running total, not yet
+// what the phase cost — dimmed until it settles.
+.phaseValueRunning {
+  opacity: 0.6;
 }
 
 .hint {

@@ -5,6 +5,7 @@ import { RendererCore } from '@app/roots/renderer-core';
 import {
   mockCoachFrame,
   mockReferenceLap,
+  PREVIEW_BRAKE_RELEASE_PCT,
   PREVIEW_BRAKE_START_PCT,
   referenceSpeedKmhAt,
 } from '@features/preview/mocks/coach';
@@ -98,25 +99,30 @@ describe('playerLapDistPct', () => {
   });
 });
 
-describe('CoachWidgetStore — the phase figures', () => {
+describe('CoachWidgetStore — the phase times', () => {
   const TRACK_LENGTH_M = 4000;
-  /** Past the preview corner's braking point, before its apex. */
-  const CAR_PCT = 0.485;
+  /** Off the brakes, short of the apex: the braking zone is behind the car. */
+  const CAR_PCT = 0.495;
 
   let core: RendererCore;
   let coach: CoachWidgetStore;
 
-  /** This lap up to the car: the reference's speed, on the brakes from `brakeFromPct`. */
-  const driveTo = (brakeFromPct: number) => {
-    const lastBucket = Math.floor(CAR_PCT * REFERENCE_LAP_BUCKET_COUNT);
+  /** This lap up to the car: the reference's speed, scaled by `pace` in the braking zone. */
+  const driveTo = (pace: number, carPct = CAR_PCT) => {
+    runInAction(() => {
+      core.player.lapTiming = { lap_dist_pct: carPct } as never;
+    });
+
+    const lastBucket = Math.floor(carPct * REFERENCE_LAP_BUCKET_COUNT);
 
     for (let bucket = 0; bucket <= lastBucket; bucket++) {
       const pct = bucketPct(bucket);
-      const braking = pct >= brakeFromPct;
+      const braking =
+        pct >= PREVIEW_BRAKE_START_PCT && pct <= PREVIEW_BRAKE_RELEASE_PCT;
 
       coach.seedBucket(
         bucket,
-        referenceSpeedKmhAt(pct) / KMH_PER_MPS,
+        (referenceSpeedKmhAt(pct) / KMH_PER_MPS) * (braking ? pace : 1),
         braking ? 1 : 0,
         braking ? 0 : 1
       );
@@ -141,23 +147,38 @@ describe('CoachWidgetStore — the phase figures', () => {
     core.dispose();
   });
 
-  // Both points are measured again on every frame; a miss read afresh each
-  // time wandered by a metre or two and the header flickered with it.
-  it('keeps a miss as it was first measured for the rest of the corner', () => {
-    const lateByPct = 0.002;
+  it('settles the braking zone once the car is past it', () => {
+    driveTo(0.95);
 
-    driveTo(PREVIEW_BRAKE_START_PCT + lateByPct);
+    const time = coach.displayedBrakeTime;
 
-    const settled = coach.displayedBrakeFigure;
+    expect(time?.kind).toBe('settled');
+    expect(time?.deltaS).toBeGreaterThan(0);
+  });
 
-    expect(settled?.kind).toBe('miss');
-    expect(
-      Math.abs((settled?.valueM ?? 0) - lateByPct * TRACK_LENGTH_M)
-    ).toBeLessThan(3);
+  // The phase is measured again on every frame; a time read afresh each time
+  // could wander and the header would flicker with it.
+  it('keeps a settled time for the rest of the corner', () => {
+    driveTo(0.95);
 
-    // The same corner measured again, a few metres differently.
-    driveTo(PREVIEW_BRAKE_START_PCT + lateByPct + 0.001);
+    const settled = coach.displayedBrakeTime;
 
-    expect(coach.displayedBrakeFigure).toEqual(settled);
+    // The same corner measured again, differently.
+    driveTo(0.9);
+
+    expect(coach.displayedBrakeTime).toEqual(settled);
+  });
+
+  // The braking point leaves the window 150 m behind the car, long before the
+  // corner is over; the figure went with it.
+  it('keeps the last corner up down the straight after it', () => {
+    driveTo(0.95);
+
+    const settled = coach.displayedBrakeTime;
+
+    // 300 m on, out of the corner: the braking point is far behind the window.
+    driveTo(0.95, CAR_PCT + 0.075);
+
+    expect(coach.displayedBrakeTime).toEqual(settled);
   });
 });

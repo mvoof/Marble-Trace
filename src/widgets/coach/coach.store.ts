@@ -11,9 +11,9 @@ import {
   EMPTY_TRACE_STATS,
   fillTraceWindow,
   NO_VALUE,
-  phaseFigure,
+  phaseTime,
   playerLapDistPct,
-  type PhaseFigure,
+  type PhaseTime,
   type TraceWindowBuffers,
   type TraceWindowStats,
 } from './coach-trace-utils';
@@ -41,52 +41,55 @@ interface CoachDeps {
  */
 const MAX_BACKWARD_STEP_PCT = 0.5;
 
-/** A settled miss is displayed to the metre; anything finer is noise. */
-const MISS_DISPLAY_STEP_M = 1;
-
 /**
- * A figure that moves with the car — metres to go, metres run past — steps by
- * this much. The window is rebuilt on every telemetry frame for the canvas,
- * but the text above it must not re-render observers at the frame rate.
+ * Phase times are displayed to the hundredth. The window is rebuilt on every
+ * telemetry frame for the canvas, but the text above it must not re-render
+ * observers for a digit that is not shown.
  */
-const MOVING_DISPLAY_STEP_M = 5;
+const PHASE_TIME_DISPLAY_STEP_S = 0.01;
 
-const quantizeFigure = (figure: PhaseFigure | null): PhaseFigure | null => {
-  if (figure === null) {
-    return null;
-  }
+const quantizeTime = (time: PhaseTime | null): PhaseTime | null =>
+  time === null
+    ? null
+    : {
+        kind: time.kind,
+        deltaS:
+          Math.round(time.deltaS / PHASE_TIME_DISPLAY_STEP_S) *
+          PHASE_TIME_DISPLAY_STEP_S,
+      };
 
-  const step =
-    figure.kind === 'miss' ? MISS_DISPLAY_STEP_M : MOVING_DISPLAY_STEP_M;
-
-  return { kind: figure.kind, valueM: Math.round(figure.valueM / step) * step };
-};
-
-const sameFigure = (
-  left: PhaseFigure | null,
-  right: PhaseFigure | null
-): boolean =>
+const sameTime = (left: PhaseTime | null, right: PhaseTime | null): boolean =>
   left === right ||
   (left !== null &&
     right !== null &&
     left.kind === right.kind &&
-    left.valueM === right.valueM);
+    left.deltaS === right.deltaS);
 
 /**
- * A reference point within this of a settled one is the same point measured
+ * A phase starting within this of a settled one is the same phase measured
  * again on a later frame, not the next corner's.
  */
-const SAME_POINT_M = 15;
+const SAME_PHASE_M = 15;
 
 type CornerPhase = 'brake' | 'apex' | 'throttle';
 
-/** A miss as it was first measured, and where on the lap its reference point lies. */
-interface SettledMiss {
-  referenceLapM: number;
-  figure: PhaseFigure;
+/** The phases in the order a corner is driven through them. */
+const CORNER_PHASES: readonly CornerPhase[] = ['brake', 'apex', 'throttle'];
+
+/**
+ * A settled phase further behind the car than this, when a new phase starts,
+ * belongs to an earlier corner — however long a corner's phases run, they do
+ * not stretch this far.
+ */
+const LAST_CORNER_SPAN_M = 400;
+
+/** A phase time as it settled, and where on the lap its phase starts. */
+interface SettledTime {
+  startLapM: number;
+  time: PhaseTime;
 }
 
-const NO_SETTLED_MISSES = (): Record<CornerPhase, SettledMiss | null> => ({
+const NO_SETTLED_TIMES = (): Record<CornerPhase, SettledTime | null> => ({
   brake: null,
   apex: null,
   throttle: null,
@@ -125,14 +128,14 @@ export class CoachWidgetStore {
    */
   frameTick = 0;
 
-  /** The header's BRAKE figure: to the reference's braking point, past it, or the miss. */
-  displayedBrakeFigure: PhaseFigure | null = null;
+  /** Time gained or lost in the reference's braking zone: braking point to release. */
+  displayedBrakeTime: PhaseTime | null = null;
 
-  /** The header's APEX figure, against the reference's lowest speed. */
-  displayedApexFigure: PhaseFigure | null = null;
+  /** Time gained or lost mid-corner: brake release to the throttle opening. */
+  displayedApexTime: PhaseTime | null = null;
 
-  /** The header's THROTTLE figure, against the reference's throttle point. */
-  displayedThrottleFigure: PhaseFigure | null = null;
+  /** Time gained or lost on the exit: throttle opening to full throttle. */
+  displayedThrottleTime: PhaseTime | null = null;
 
   /** The drawn window. Refilled in place — never reassigned, never observable. */
   readonly window: TraceWindowBuffers = createTraceWindowBuffers();
@@ -154,13 +157,12 @@ export class CoachWidgetStore {
   /** Last bucket written this lap, for forward-filling the ones jumped over. */
   private previousBucket: number | null = null;
   /**
-   * Each phase's miss, kept from the frame it was first measured until its
-   * reference point leaves the window. Both points are re-measured on every
-   * frame; a miss read afresh each time would wander by the odd metre and
-   * flicker in the header — and the miss is a fact about a corner already
-   * driven, it has no reason to change.
+   * Each phase's time, kept from the frame it settled until the phase leaves
+   * the window. The phase is re-measured on every frame; a time read afresh
+   * each time could wander by a hundredth and flicker in the header — and it
+   * is a fact about a corner already driven, it has no reason to change.
    */
-  private settledMisses = NO_SETTLED_MISSES();
+  private settledTimes = NO_SETTLED_TIMES();
   private readonly disposers: IReactionDisposer[] = [];
 
   private readonly root: CoachDeps;
@@ -180,7 +182,7 @@ export class CoachWidgetStore {
       | 'instanceId'
       | 'previousDistPct'
       | 'previousBucket'
-      | 'settledMisses'
+      | 'settledTimes'
       | 'disposers'
       | 'ownSpeedByBucket'
       | 'ownBrakeByBucket'
@@ -194,7 +196,7 @@ export class CoachWidgetStore {
         instanceId: false,
         previousDistPct: false,
         previousBucket: false,
-        settledMisses: false,
+        settledTimes: false,
         disposers: false,
         ownSpeedByBucket: false,
         ownBrakeByBucket: false,
@@ -329,81 +331,140 @@ export class CoachWidgetStore {
             windowMeters: this.settings.windowMeters,
           });
 
-    const { reference, own, ownTraceStartM } = this.windowStats;
-    const brakeFigure = this.settleFigure(
-      'brake',
-      reference.brakePointM,
-      phaseFigure(reference.brakePointM, own.brakePointM, ownTraceStartM)
-    );
-    const apexFigure = this.settleFigure(
-      'apex',
-      reference.apexM,
-      phaseFigure(reference.apexM, own.apexM, ownTraceStartM)
-    );
-    const throttleFigure = this.settleFigure(
+    const { reference } = this.windowStats;
+    const measured: Record<CornerPhase, PhaseTime | null> = {
+      brake: quantizeTime(
+        phaseTime(this.window, reference.brakePointM, reference.brakeReleaseM)
+      ),
+      apex: quantizeTime(
+        phaseTime(
+          this.window,
+          reference.brakeReleaseM,
+          reference.throttlePointM
+        )
+      ),
+      throttle: quantizeTime(
+        phaseTime(
+          this.window,
+          reference.throttlePointM,
+          reference.fullThrottleM
+        )
+      ),
+    };
+    const startsM: Record<CornerPhase, number | null> = {
+      brake: reference.brakePointM,
+      apex: reference.brakeReleaseM,
+      throttle: reference.throttlePointM,
+    };
+
+    this.forgetLastCorner(measured);
+
+    const brakeTime = this.settleTime('brake', startsM.brake, measured.brake);
+    const apexTime = this.settleTime('apex', startsM.apex, measured.apex);
+    const throttleTime = this.settleTime(
       'throttle',
-      reference.throttlePointM,
-      phaseFigure(reference.throttlePointM, own.throttlePointM, ownTraceStartM)
+      startsM.throttle,
+      measured.throttle
     );
 
-    if (!sameFigure(brakeFigure, this.displayedBrakeFigure)) {
-      this.displayedBrakeFigure = brakeFigure;
+    if (!sameTime(brakeTime, this.displayedBrakeTime)) {
+      this.displayedBrakeTime = brakeTime;
     }
 
-    if (!sameFigure(apexFigure, this.displayedApexFigure)) {
-      this.displayedApexFigure = apexFigure;
+    if (!sameTime(apexTime, this.displayedApexTime)) {
+      this.displayedApexTime = apexTime;
     }
 
-    if (!sameFigure(throttleFigure, this.displayedThrottleFigure)) {
-      this.displayedThrottleFigure = throttleFigure;
+    if (!sameTime(throttleTime, this.displayedThrottleTime)) {
+      this.displayedThrottleTime = throttleTime;
     }
 
     this.frameTick++;
   }
 
-  /**
-   * The figure to show for a phase: a miss already settled for this reference
-   * point as it was first measured, otherwise this frame's figure — which is
-   * settled in turn the first time it is a miss.
-   */
-  private settleFigure(
-    phase: CornerPhase,
-    referenceM: number | null,
-    measured: PhaseFigure | null
-  ): PhaseFigure | null {
-    const figure = quantizeFigure(measured);
+  /** Where on the lap a point `offsetM` from the car lies, in metres; null without a position. */
+  private lapPositionM(offsetM: number): number | null {
     const currentDistPct = this.currentDistPct;
     const trackLengthM = this.trackLengthM;
 
-    if (referenceM === null || currentDistPct === null || trackLengthM <= 0) {
-      this.settledMisses[phase] = null;
+    if (currentDistPct === null || trackLengthM <= 0) return null;
 
-      return figure;
+    const lapPct = (((currentDistPct + offsetM / trackLengthM) % 1) + 1) % 1;
+
+    return lapPct * trackLengthM;
+  }
+
+  /**
+   * Once a phase is running, the settled times that are not this corner's go:
+   * the running phase's own and every one after it — this corner has not
+   * reached them yet — and any too far behind the car to be this corner's.
+   * Until then the last corner's figures stay up, down the straight after it.
+   */
+  private forgetLastCorner(measured: Record<CornerPhase, PhaseTime | null>) {
+    const runningIndex = CORNER_PHASES.findIndex(
+      (phase) => measured[phase]?.kind === 'running'
+    );
+
+    if (runningIndex === -1) return;
+
+    const carLapM = this.lapPositionM(0);
+
+    CORNER_PHASES.forEach((phase, index) => {
+      const settled = this.settledTimes[phase];
+
+      if (settled === null) return;
+
+      const behindM =
+        carLapM === null
+          ? 0
+          : (((carLapM - settled.startLapM) % this.trackLengthM) +
+              this.trackLengthM) %
+            this.trackLengthM;
+
+      if (index >= runningIndex || behindM > LAST_CORNER_SPAN_M) {
+        this.settledTimes[phase] = null;
+      }
+    });
+  }
+
+  /**
+   * The time to show for a phase. A phase once settled keeps the time it
+   * settled with — it is re-measured on every frame and would otherwise wander —
+   * and stays up after its start leaves the window, until `forgetLastCorner`
+   * clears it for the next corner.
+   */
+  private settleTime(
+    phase: CornerPhase,
+    startM: number | null,
+    time: PhaseTime | null
+  ): PhaseTime | null {
+    const settled = this.settledTimes[phase];
+    const startLapM = startM === null ? null : this.lapPositionM(startM);
+
+    if (time === null || startLapM === null) {
+      return settled?.time ?? time;
     }
-
-    const lapPct = (((currentDistPct + referenceM / trackLengthM) % 1) + 1) % 1;
-    const referenceLapM = lapPct * trackLengthM;
-    const settled = this.settledMisses[phase];
 
     if (
       settled !== null &&
-      lapDistanceBetween(settled.referenceLapM, referenceLapM, trackLengthM) <=
-        SAME_POINT_M
+      lapDistanceBetween(settled.startLapM, startLapM, this.trackLengthM) <=
+        SAME_PHASE_M
     ) {
-      return settled.figure;
+      return settled.time;
     }
 
-    this.settledMisses[phase] =
-      figure?.kind === 'miss' ? { referenceLapM, figure } : null;
+    if (time.kind === 'settled') {
+      this.settledTimes[phase] = { startLapM, time };
+    }
 
-    return figure;
+    return time;
   }
 
   private clearBuffers() {
     this.ownSpeedByBucket.fill(NO_VALUE);
     this.ownBrakeByBucket.fill(NO_VALUE);
     this.ownThrottleByBucket.fill(NO_VALUE);
-    this.settledMisses = NO_SETTLED_MISSES();
+    this.settledTimes = NO_SETTLED_TIMES();
   }
 
   /**
@@ -466,9 +527,9 @@ export class CoachWidgetStore {
     this.previousDistPct = null;
     this.previousBucket = null;
     this.windowStats = EMPTY_TRACE_STATS;
-    this.displayedBrakeFigure = null;
-    this.displayedApexFigure = null;
-    this.displayedThrottleFigure = null;
+    this.displayedBrakeTime = null;
+    this.displayedApexTime = null;
+    this.displayedThrottleTime = null;
     this.frameTick = 0;
   }
 }

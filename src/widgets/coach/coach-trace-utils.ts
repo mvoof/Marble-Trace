@@ -116,12 +116,6 @@ export interface TraceWindowStats {
   throttleDeltaM: number | null;
   /** Whether anything at all was drawn — false leaves the canvas empty. */
   hasData: boolean;
-  /**
-   * Where this lap's recorded trace begins in the window, in metres from the
-   * car — null when nothing was recorded. A reference point before it is one
-   * this lap was not seen to drive through.
-   */
-  ownTraceStartM: number | null;
 }
 
 export const createTraceWindowBuffers = (): TraceWindowBuffers => ({
@@ -152,7 +146,6 @@ export const EMPTY_TRACE_STATS: TraceWindowStats = {
   apexDeltaM: null,
   throttleDeltaM: null,
   hasData: false,
-  ownTraceStartM: null,
 };
 
 export interface FillTraceWindowParams {
@@ -457,51 +450,66 @@ const laterBy = (own: number | null, reference: number | null) =>
   own !== null && reference !== null ? own - reference : null;
 
 /**
- * What one phase figure in the header says:
- * - `to-go` — the reference's point is still ahead and this lap has not got
- *   there yet: metres left to it;
- * - `overshoot` — the reference's point is behind and this lap still has not
- *   done it: metres run past it so far, growing;
- * - `miss` — this lap has done it: metres later (+) or earlier (−) than the
- *   reference, settled.
+ * Time gained or lost inside one phase of the reference's corner:
+ * - `running` — the car is inside the phase; the figure grows with it;
+ * - `settled` — the car is past it; the figure is what the phase cost.
  */
-export type PhaseFigureKind = 'to-go' | 'overshoot' | 'miss';
+export type PhaseTimeKind = 'running' | 'settled';
 
-export interface PhaseFigure {
-  kind: PhaseFigureKind;
-  /** Metres; signed only for `miss`. */
-  valueM: number;
+export interface PhaseTime {
+  kind: PhaseTimeKind;
+  /** Seconds; positive = lost against the reference, negative = gained. */
+  deltaS: number;
 }
 
+/** `timeDeltaS` at a point of the window, between the drawn samples. */
+const timeDeltaAt = (buffers: TraceWindowBuffers, offsetM: number): number => {
+  const first = buffers.offsetM[0];
+  const last = buffers.offsetM.at(-1);
+
+  if (first === undefined || last === undefined || last <= first) {
+    return NO_VALUE;
+  }
+
+  const position =
+    ((offsetM - first) / (last - first)) * (TRACE_POINT_COUNT - 1);
+  const lowerIndex = Math.floor(position);
+  const lower = buffers.timeDeltaS[lowerIndex] ?? NO_VALUE;
+  const upper = buffers.timeDeltaS[lowerIndex + 1] ?? NO_VALUE;
+
+  if (!isValue(upper)) return lower;
+
+  if (!isValue(lower)) return upper;
+
+  return lower + (upper - lower) * (position - lowerIndex);
+};
+
 /**
- * The header figure for one phase, from where the reference did it and where
- * this lap did, both in metres from the car. Null when the reference's point
- * is not in the window — there is nothing to measure against — and when it is
- * behind the car but this lap's trace does not reach back to it: a car that
- * was parked, reset or towed has not run past anything.
+ * How much time this lap has gained or lost against the reference between
+ * `startM` and `endM` — one phase of the reference's corner, in metres from the
+ * car. Read off the running time delta, so the three phases of a corner add up
+ * to what the corner cost. Null before the car reaches the phase, and where
+ * this lap's trace does not cover its start: a car that was parked, reset or
+ * towed has not driven it.
  */
-export const phaseFigure = (
-  referenceM: number | null,
-  ownM: number | null,
-  ownTraceStartM: number | null
-): PhaseFigure | null => {
-  if (referenceM === null) {
+export const phaseTime = (
+  buffers: TraceWindowBuffers,
+  startM: number | null,
+  endM: number | null
+): PhaseTime | null => {
+  if (startM === null || startM > 0) {
     return null;
   }
 
-  if (ownM !== null) {
-    return { kind: 'miss', valueM: ownM - referenceM };
-  }
+  const atStart = timeDeltaAt(buffers, startM);
+  const passed = endM !== null && endM <= 0;
+  const atEnd = timeDeltaAt(buffers, passed ? endM : 0);
 
-  if (referenceM > 0) {
-    return { kind: 'to-go', valueM: referenceM };
-  }
-
-  if (ownTraceStartM === null || ownTraceStartM > referenceM) {
+  if (!isValue(atStart) || !isValue(atEnd)) {
     return null;
   }
 
-  return { kind: 'overshoot', valueM: -referenceM };
+  return { kind: passed ? 'settled' : 'running', deltaS: atEnd - atStart };
 };
 
 /**
@@ -543,7 +551,6 @@ export const fillTraceWindow = (
   let previousOwnSpeed = NO_VALUE;
   let previousReferenceSpeed = NO_VALUE;
   let hasData = false;
-  let ownTraceStartM: number | null = null;
 
   for (let index = 0; index < TRACE_POINT_COUNT; index++) {
     const offsetM = -windowMeters + index * step;
@@ -580,10 +587,6 @@ export const fillTraceWindow = (
 
     if (isValue(referenceSpeed) || isValue(ownSpeed)) {
       hasData = true;
-    }
-
-    if (ownTraceStartM === null && isValue(ownSpeed)) {
-      ownTraceStartM = offsetM;
     }
 
     if (
@@ -652,7 +655,6 @@ export const fillTraceWindow = (
     apexDeltaM: laterBy(own.apexM, reference.apexM),
     throttleDeltaM: laterBy(own.throttlePointM, reference.throttlePointM),
     hasData,
-    ownTraceStartM,
   };
 };
 

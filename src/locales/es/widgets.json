@@ -789,7 +789,7 @@
       "showCallRow": "Mostrar la indicación",
       "showCallRowDesc": "La fila de indicación FRENO / GAS de arriba. Desactivada, quedan solo la traza y las lecturas.",
       "showPhaseFigures": "Cifras de fases",
-      "showPhaseFiguresDesc": "BRAKE / APEX / THROTTLE junto a la indicación: metros hasta el punto de referencia y luego ON, o cuánto antes (EARLY) o después (LATE) lo hiciste.",
+      "showPhaseFiguresDesc": "Tiempo ganado o perdido en cada fase de la curva: frenada, centro de curva y salida, frente a la referencia.",
       "showUrgencyBar": "Barra de urgencia",
       "showUrgencyBarDesc": "Barra bajo la indicación que muestra lo cerca que está la próxima zona de frenada.",
       "showCornerExitCalls": "Indicaciones de salida de curva",
