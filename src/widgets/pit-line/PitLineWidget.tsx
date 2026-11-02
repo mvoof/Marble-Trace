@@ -31,26 +31,28 @@ export const PitLineWidget = observer(() => {
 
   // Both bars size themselves; the panel's shipped 200 px floor is not theirs.
   return (
-    <WidgetPanel direction="column" gap={0} minWidth={0}>
+    <div className={styles.root}>
       {showPitSpeed && showLimitPlate && <PitLimitPlate withUnit={showUnits} />}
 
-      <div className={styles.stack}>
-        {showPitSpeed && (
-          <div className={styles.slot}>
-            <PitSpeedPlate withUnit={showUnits} />
-          </div>
-        )}
+      <WidgetPanel direction="column" gap={0} minWidth={0}>
+        <div className={styles.stack}>
+          {showPitSpeed && (
+            <div className={styles.slot}>
+              <PitSpeedPlate withUnit={showUnits} />
+            </div>
+          )}
 
-        {showPitApproach && (
-          <div className={styles.slot}>
-            <PitApproachRail
-              withBrakeCue={showPitBrakeCue}
-              withUnit={showUnits}
-              revealOnApproachM={revealOnApproachM}
-            />
-          </div>
-        )}
-      </div>
-    </WidgetPanel>
+          {showPitApproach && (
+            <div className={styles.slot}>
+              <PitApproachRail
+                withBrakeCue={showPitBrakeCue}
+                withUnit={showUnits}
+                revealOnApproachM={revealOnApproachM}
+              />
+            </div>
+          )}
+        </div>
+      </WidgetPanel>
+    </div>
   );
 });
