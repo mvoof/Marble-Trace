@@ -1014,11 +1014,11 @@
       "insert": "Insertar",
       "insertPlain": "{{value}}: solo el número",
       "insertWithWord": "{{value}}: el número con palabra",
+      "insertAmount": "{{value}}: con su unidad, litros o galones",
       "pluralTitle": "Número con palabra: {{value}}",
-      "pluralDesc": "La palabra tras un número cambia: 1 litro, 5 litros. Escribe la palabra para cada número y se elige la correcta.",
+      "pluralDesc": "La palabra tras un número cambia: 1 vuelta, 5 vueltas. Escribe la palabra para cada número y se elige la correcta.",
       "pluralPlaceholder": "la palabra tras «{{sample}}»",
       "names": {
-        "liters": "litros",
         "laps": "vueltas",
         "gap": "diferencia",
         "position": "posición",
@@ -1073,7 +1073,7 @@
         "field": {
           "example": "Vas P{classPosition}",
           "title": "{campo} — un valor",
-          "desc": "El valor de un campo de la lista, en su formato: un tiempo de vuelta, litros, grados."
+          "desc": "El valor de un campo de la lista, en su formato: un tiempo de vuelta, un número. El combustible, la temperatura y la velocidad dicen su unidad, la elegida en los ajustes: «40 litros» o «11 galones». No escribas la unidad detrás."
         },
         "plural": {
           "example": "{incidents, plural, one {# incidente} other {# incidentes}}",
@@ -1093,7 +1093,7 @@
       "pit": {
         "fuel": {
           "title": "Combustible",
-          "desc": "Pone en la orden de boxes los litros que digas."
+          "desc": "Pone en la orden de boxes el combustible que digas, en litros o galones según los ajustes."
         },
         "fuelToFinish": {
           "title": "Combustible hasta el final",
@@ -1265,6 +1265,14 @@
           "tires": "Cuando no se dice el valor",
           "compound": "Cuando no se dice el valor",
           "car": "Cuando no se dice el valor"
+        },
+        "unit": {
+          "liters": "Litros",
+          "gallons": "Galones",
+          "celsius": "Grados Celsius",
+          "fahrenheit": "Grados Fahrenheit",
+          "kmh": "Kilómetros por hora",
+          "mph": "Millas por hora"
         },
         "notUnderstood": "No entendido",
         "notInCar": "Orden de boxes fuera del coche",

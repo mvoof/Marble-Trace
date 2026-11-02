@@ -10,6 +10,7 @@ import {
   pluralSample,
   type PluralForm,
 } from '@features/voice-crew/plural-message';
+import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import styles from './CrewPage.module.scss';
 
 /** Values the engineer fills with a name, not a number — no word to agree. */
@@ -44,6 +45,7 @@ export const ValueInsert = observer(
     onInsert,
   }: ValueInsertProps) => {
     const { t } = useTranslation('main-app');
+    const crew = useVoiceCrewStore();
     const [agreeing, setAgreeing] = useState<AgreeingValue | null>(null);
     const nameOf =
       valueName ?? ((value: string) => t(`crewPage.values.names.${value}`));
@@ -61,6 +63,16 @@ export const ValueInsert = observer(
 
       if (TEXT_VALUES.includes(value)) {
         return [plain];
+      }
+
+      // An amount says its own unit word, in the driver's units.
+      if (crew.pack?.amountValues.includes(value)) {
+        return [
+          {
+            ...plain,
+            label: t('crewPage.values.insertAmount', { value: nameOf(value) }),
+          },
+        ];
       }
 
       return [

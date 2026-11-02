@@ -30,7 +30,7 @@ use crate::pack::catalog::{
 use crate::pack::grammar::Recognised;
 use crate::pack::message::{values_used, Arg, Args};
 use crate::pack::questions::AnswerList;
-use crate::pack::say::{said, Units};
+use crate::pack::say::{liters_from, measured, said, Units};
 use crate::pack::template::SlotValue;
 use crate::pack::{answer_key, load, step_command, CompiledVariant, LanguagePack, VariantPicker};
 use crate::queue::Reply;
@@ -321,7 +321,10 @@ impl Shared {
         match command.intent.as_str() {
             "control.repeat" => self.repeat(),
             _ => {
-                match crew_intent(command).and_then(|intent| self.with_pack_parts(intent, command))
+                let units = lock_or_recover(&self.mouth).units;
+
+                match crew_intent(command, units)
+                    .and_then(|intent| self.with_pack_parts(intent, command))
                 {
                     Some(intent) => self.host.ask(intent),
                     None => self.speak(&CrewReply::plain(missing_value_reply(command))),
@@ -335,7 +338,9 @@ impl Shared {
             return Some(intent);
         };
 
-        question_intent(&lock_or_recover(&self.mouth).pack, &id, command)
+        let mouth = lock_or_recover(&self.mouth);
+
+        question_intent(&mouth.pack, mouth.units, &id, command)
     }
 
     fn repeat(&self) {
@@ -389,7 +394,12 @@ fn reply(utterance: Utterance) -> Reply<Utterance> {
 /// named, the fields its answers say, for the telemetry thread to read on the
 /// tick that answers it, and the steps it carries out first. `None` for a
 /// question the pack does not have, or a car the phrase did not name.
-fn question_intent(pack: &LanguagePack, id: &str, command: &Recognised) -> Option<CrewIntent> {
+fn question_intent(
+    pack: &LanguagePack,
+    units: Units,
+    id: &str,
+    command: &Recognised,
+) -> Option<CrewIntent> {
     let question = pack
         .commands_file
         .custom
@@ -405,7 +415,7 @@ fn question_intent(pack: &LanguagePack, id: &str, command: &Recognised) -> Optio
         .steps
         .iter()
         .filter_map(|step| step_command(step).ok())
-        .filter_map(|command| crew_intent(&command))
+        .filter_map(|command| crew_intent(&command, units))
         .collect();
 
     Some(CrewIntent::Question {
@@ -436,7 +446,8 @@ pub fn preview_intent(pack: &LanguagePack, id: &str, car: Option<&str>) -> Optio
         intent: question_reply_key(id),
         slots,
     };
-    let mut intent = question_intent(pack, id, &command)?;
+    // Its steps are dropped, so the units they would be read in do not matter.
+    let mut intent = question_intent(pack, Units::default(), id, &command)?;
 
     if let CrewIntent::Question { steps, .. } = &mut intent {
         steps.clear();
@@ -504,7 +515,7 @@ fn utterance(
             let arg = match question_field_named(name).filter(|_| question) {
                 Some(spec) => said(pack, units, spec.say, value)?,
                 None if name == CAR_NUMBER_ARG => said(pack, units, SayFormat::Digits, value)?,
-                None => plain_arg(pack, value)?,
+                None => plain_arg(pack, units, value)?,
             };
 
             Some((name.as_str(), arg))
@@ -515,10 +526,11 @@ fn utterance(
     Some(Utterance { text })
 }
 
-/// A built-in reply's value: a number as it is, a slot value in the pack's
-/// words.
-fn plain_arg(pack: &LanguagePack, value: &CrewArg) -> Option<Arg> {
+/// A built-in reply's value: a number as it is, an amount in the driver's
+/// units, a slot value in the pack's words.
+fn plain_arg(pack: &LanguagePack, units: Units, value: &CrewArg) -> Option<Arg> {
     Some(match value {
+        CrewArg::Measure { quantity, value } => measured(pack, units, *quantity, *value),
         CrewArg::Number { value } => Arg::Number(*value),
         CrewArg::Slot { slot, value } => {
             Arg::Text(pack.slot_word(slot, value).unwrap_or(value).to_string())
@@ -627,8 +639,9 @@ fn missing_value_reply(command: &Recognised) -> &'static str {
 }
 
 /// A recognised sentence as the engineer's request. Radio controls are not
-/// requests and give `None`, as does a slot value nothing maps.
-pub fn crew_intent(command: &Recognised) -> Option<CrewIntent> {
+/// requests and give `None`, as does a slot value nothing maps. An amount of
+/// fuel is said in the driver's units.
+pub fn crew_intent(command: &Recognised, units: Units) -> Option<CrewIntent> {
     let name = |slot: &str| match command.slot(slot) {
         Some(SlotValue::Name(name)) => Some(name.as_str()),
         _ => None,
@@ -644,7 +657,9 @@ pub fn crew_intent(command: &Recognised) -> Option<CrewIntent> {
 
     Some(match command.intent.as_str() {
         "pit.fuel" => match command.slot(NUMBER_SLOT) {
-            Some(SlotValue::Number(liters)) => CrewIntent::Fuel { liters: *liters },
+            Some(SlotValue::Number(amount)) => CrewIntent::Fuel {
+                liters: liters_from(units, *amount),
+            },
             _ => return None,
         },
         "pit.fuelToFinish" => CrewIntent::FuelToFinish,
@@ -726,6 +741,7 @@ impl VoiceOutEvents for MouthEvents {
 
 #[cfg(test)]
 mod tests {
+    use mt_model::app::crew::Quantity;
     use mt_model::app::crew_questions::{CarField, SessionField};
     use mt_model::app::voice::VoiceStep;
 
@@ -1026,14 +1042,42 @@ mod tests {
 
         shared.speak(
             &CrewReply::plain("engineer.answer.weather")
-                .number("airTemp", 18.0)
-                .number("trackTemp", 22.0)
+                .measure("airTemp", Quantity::Temperature, 18.0)
+                .measure("trackTemp", Quantity::Temperature, 22.0)
                 .word("surface", "engineer.surface.mostlyDry"),
         );
 
-        assert!(last_said(&shared)
-            .unwrap()
-            .starts_with("Трасса почти сухая."));
+        let said = last_said(&shared).unwrap();
+
+        assert!(said.contains("почти сухая"), "{said}");
+        assert!(said.contains("Воздух 18 градусов"), "{said}");
+    }
+
+    #[test]
+    fn says_fuel_in_gallons_and_hears_an_order_in_them() {
+        let (_, shared) = shared("en");
+
+        lock_or_recover(&shared.mouth).units = Units { imperial: true };
+        shared.speak(&CrewReply::plain("engineer.ack.fuelToFinish").measure(
+            "fuel",
+            Quantity::Volume,
+            40.0,
+        ));
+
+        assert_eq!(
+            last_said(&shared).as_deref(),
+            Some("Fuel to the finish, 11 gallons")
+        );
+
+        let order = Recognised {
+            intent: "pit.fuel".into(),
+            slots: vec![(NUMBER_SLOT.to_string(), SlotValue::Number(10))],
+        };
+
+        assert_eq!(
+            crew_intent(&order, Units { imperial: true }),
+            Some(CrewIntent::Fuel { liters: 38 })
+        );
     }
 
     #[test]
@@ -1150,7 +1194,10 @@ mod tests {
                 .number("airTemp", 21.4)
                 .number("trackTemp", 30.0),
         );
-        assert_eq!(last_said(&shared).as_deref(), Some("Air 21, track 30"));
+        assert_eq!(
+            last_said(&shared).as_deref(),
+            Some("Air 21 degrees, track 30 degrees")
+        );
 
         shared.speak(
             &CrewReply::plain("question.weather")

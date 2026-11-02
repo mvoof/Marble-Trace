@@ -3129,6 +3129,11 @@ export type VoicePackView = {
    * What a question's answer may name, the car's fields first.
    */
   questionFields: VoiceQuestionFieldView[];
+  /**
+   * The values said with their unit word — "40 liters", "11 gallons" —
+   * so a reply names no unit of its own for them.
+   */
+  amountValues: string[];
   carTargets: VoiceCarTargetView[];
   sentenceCount: number;
   conflicts: VoiceConflictView[];

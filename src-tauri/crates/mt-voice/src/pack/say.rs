@@ -2,11 +2,11 @@
 //! driver's unit system, with the pack's own words for yes and no, a sign or
 //! a faster lap.
 
-use mt_model::app::crew::CrewArg;
+use mt_model::app::crew::{CrewArg, Quantity};
 use mt_model::app::crew_questions::SayFormat;
 
 use crate::pack::catalog::{
-    FASTER_KEY, MINUS_KEY, NO_KEY, PLUS_KEY, SAID_VALUE, SLOWER_KEY, YES_KEY,
+    unit_key, FASTER_KEY, MINUS_KEY, NO_KEY, PLUS_KEY, SAID_VALUE, SLOWER_KEY, YES_KEY,
 };
 use crate::pack::message::{format, Arg, Args};
 use crate::pack::numbers::spoken_digits;
@@ -17,6 +17,8 @@ const TENTHS: f64 = 10.0;
 const KMH_PER_MS: f64 = 3.6;
 const MPH_PER_MS: f64 = 2.236_936;
 const GALLONS_PER_LITER: f64 = 0.264_172;
+const FAHRENHEIT_PER_CELSIUS: f64 = 9.0 / 5.0;
+const FAHRENHEIT_AT_ZERO_CELSIUS: f64 = 32.0;
 /// Below this a volume is said to a tenth — fuel saved per lap is fractions.
 const WHOLE_VOLUME_FROM: f64 = 10.0;
 /// A text from the sim is cut here: it is put in as words, never a template.
@@ -46,6 +48,9 @@ pub fn said(pack: &LanguagePack, units: Units, say: SayFormat, value: &CrewArg) 
                 pack.slot_word(slot, value).unwrap_or(value).to_string(),
             ));
         }
+        CrewArg::Measure { quantity, value } => {
+            return Some(measured(pack, units, *quantity, *value))
+        }
     };
 
     Some(match say {
@@ -55,43 +60,73 @@ pub fn said(pack: &LanguagePack, units: Units, say: SayFormat, value: &CrewArg) 
         SayFormat::DeltaTenths => signed(pack, tenths(number), SLOWER_KEY, FASTER_KEY)?,
         SayFormat::LapTime => Arg::Text(lap_time(number, &pack.language)),
         SayFormat::Duration => Arg::Number((number / SECONDS_PER_MINUTE).floor()),
-        SayFormat::Speed => {
-            let scale = if units.imperial {
-                MPH_PER_MS
-            } else {
-                KMH_PER_MS
-            };
-
-            Arg::Number((number * scale).round())
-        }
-        SayFormat::Volume => {
-            let volume = if units.imperial {
-                number * GALLONS_PER_LITER
-            } else {
-                number
-            };
-
-            if volume.abs() < WHOLE_VOLUME_FROM {
-                Arg::Number(tenths(volume))
-            } else {
-                Arg::Number(volume.round())
-            }
-        }
-        SayFormat::Temperature => {
-            let degrees = if units.imperial {
-                number * 9.0 / 5.0 + 32.0
-            } else {
-                number
-            };
-
-            Arg::Number(degrees.round())
-        }
+        SayFormat::Speed => measured(pack, units, Quantity::Speed, number),
+        SayFormat::Volume => measured(pack, units, Quantity::Volume, number),
+        SayFormat::Temperature => measured(pack, units, Quantity::Temperature, number),
         SayFormat::YesNo => {
             words(pack, if number != 0.0 { YES_KEY } else { NO_KEY }, None).map(Arg::Text)?
         }
         SayFormat::Text => Arg::Number(number),
         SayFormat::Digits => Arg::Text(spoken_digits(&pack.language, &number.to_string())),
     })
+}
+
+/// A metric amount in the driver's units, rounded the way it is said, with
+/// the pack's word for the unit — the number alone when the pack has none.
+pub fn measured(pack: &LanguagePack, units: Units, quantity: Quantity, metric: f64) -> Arg {
+    let number = in_units(units, quantity, metric);
+
+    match words(pack, unit_key(quantity, units.imperial), Some(number)) {
+        Some(said) => Arg::Measured { number, said },
+        None => Arg::Number(number),
+    }
+}
+
+/// A metric amount converted to the driver's units and rounded as said:
+/// a volume under ten to a tenth — fuel saved per lap is fractions.
+pub fn in_units(units: Units, quantity: Quantity, metric: f64) -> f64 {
+    match quantity {
+        Quantity::Speed => {
+            let scale = if units.imperial {
+                MPH_PER_MS
+            } else {
+                KMH_PER_MS
+            };
+
+            (metric * scale).round()
+        }
+        Quantity::Volume => {
+            let volume = if units.imperial {
+                metric * GALLONS_PER_LITER
+            } else {
+                metric
+            };
+
+            if volume.abs() < WHOLE_VOLUME_FROM {
+                tenths(volume)
+            } else {
+                volume.round()
+            }
+        }
+        Quantity::Temperature => {
+            let degrees = if units.imperial {
+                metric * FAHRENHEIT_PER_CELSIUS + FAHRENHEIT_AT_ZERO_CELSIUS
+            } else {
+                metric
+            };
+
+            degrees.round()
+        }
+    }
+}
+
+/// An amount the driver said in their units, in liters for the pit crew.
+pub fn liters_from(units: Units, amount: u32) -> u32 {
+    if units.imperial {
+        (f64::from(amount) / GALLONS_PER_LITER).round() as u32
+    } else {
+        amount
+    }
 }
 
 /// A number above zero in the `above` words, below in the `below` words with
@@ -163,6 +198,46 @@ mod tests {
         Arg::Text(value.into())
     }
 
+    fn amount(number: f64, said: &str) -> Arg {
+        Arg::Measured {
+            number,
+            said: said.into(),
+        }
+    }
+
+    #[test]
+    fn says_a_built_in_amount_in_the_drivers_units_with_its_word() {
+        let fuel = CrewArg::Measure {
+            quantity: Quantity::Volume,
+            value: 40.0,
+        };
+
+        assert_eq!(
+            said(
+                &load("ru", None),
+                Units { imperial: false },
+                SayFormat::Text,
+                &fuel
+            ),
+            Some(amount(40.0, "40 литров"))
+        );
+        assert_eq!(
+            said(
+                &load("ru", None),
+                Units { imperial: true },
+                SayFormat::Text,
+                &fuel
+            ),
+            Some(amount(11.0, "11 галлонов"))
+        );
+    }
+
+    #[test]
+    fn an_amount_said_in_gallons_is_ordered_in_liters() {
+        assert_eq!(liters_from(Units { imperial: true }, 10), 38);
+        assert_eq!(liters_from(Units { imperial: false }, 10), 10);
+    }
+
     #[test]
     fn says_a_value_in_its_format_and_units() {
         assert_eq!(
@@ -175,23 +250,23 @@ mod tests {
         );
         assert_eq!(
             say("en", false, SayFormat::Speed, number(50.0)),
-            Some(Arg::Number(180.0))
+            Some(amount(180.0, "180 kilometers per hour"))
         );
         assert_eq!(
             say("en", true, SayFormat::Speed, number(50.0)),
-            Some(Arg::Number(112.0))
+            Some(amount(112.0, "112 miles per hour"))
         );
         assert_eq!(
             say("en", true, SayFormat::Temperature, number(20.0)),
-            Some(Arg::Number(68.0))
+            Some(amount(68.0, "68 degrees"))
         );
         assert_eq!(
             say("en", false, SayFormat::Volume, number(0.34)),
-            Some(Arg::Number(0.3))
+            Some(amount(0.3, "0.3 liters"))
         );
         assert_eq!(
             say("en", true, SayFormat::Volume, number(40.0)),
-            Some(Arg::Number(11.0))
+            Some(amount(11.0, "11 gallons"))
         );
         assert_eq!(
             say("en", false, SayFormat::Duration, number(1_530.0)),

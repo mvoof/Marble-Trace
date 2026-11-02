@@ -5,7 +5,7 @@
 //! pack's. A pit command is confirmed only once it went out, so the driver
 //! never hears "copy" for an order the sim did not take.
 
-use mt_model::app::crew::{CompoundKind, CrewArg, CrewIntent, CrewReply};
+use mt_model::app::crew::{CompoundKind, CrewArg, CrewIntent, CrewReply, Quantity};
 use mt_model::pit::pit_action::{PitAction, TireSet};
 use mt_model::pit::pit_command::PitCommandKind;
 use mt_model::sim::enums::TrackSurface;
@@ -29,6 +29,8 @@ const PERCENT: f32 = 100.0;
 /// Below this share of precipitation the weather is told as dry.
 const RAIN_SHARE: f32 = 0.01;
 const NO_DATA_KEY: &str = "engineer.noData";
+/// The fuel a reply names, in liters; said in the driver's units.
+const FUEL_VALUE: &str = "fuel";
 const SURFACE_VALUE: &str = "surface";
 
 /// Another car as the engineer can answer about it.
@@ -265,7 +267,7 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
     match query {
         CrewIntent::QueryFuel => match (view.fuel_l, view.fuel_laps) {
             (Some(liters), Some(laps)) => CrewReply::plain("engineer.answer.fuel")
-                .number("liters", f64::from(liters.round()))
+                .measure(FUEL_VALUE, Quantity::Volume, f64::from(liters))
                 .number("laps", f64::from(laps.floor().max(0.0))),
             _ => no_data(),
         },
@@ -298,8 +300,8 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
                 };
 
                 reply
-                    .number("airTemp", f64::from(air.round()))
-                    .number("trackTemp", f64::from(track.round()))
+                    .measure("airTemp", Quantity::Temperature, f64::from(air))
+                    .measure("trackTemp", Quantity::Temperature, f64::from(track))
                     .word(SURFACE_VALUE, surface_key(view.track_wetness))
             }
             _ => no_data(),
@@ -309,9 +311,10 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
                 CrewReply::plain("engineer.answer.pitOrderEmpty")
             } else {
                 CrewReply::plain("engineer.answer.pitOrder")
-                    .number(
-                        "liters",
-                        f64::from(view.ordered_fuel_l.unwrap_or(0.0).round()),
+                    .measure(
+                        FUEL_VALUE,
+                        Quantity::Volume,
+                        f64::from(view.ordered_fuel_l.unwrap_or(0.0)),
                     )
                     .number("tires", f64::from(view.ordered_tires))
             }
@@ -483,7 +486,7 @@ pub fn acknowledge(ack: Ack, order: Option<&ManualOrder>, sent: bool) -> CrewRep
             .find(|request| request.kind == PitCommandKind::Fuel)
             .map_or(0, |request| request.value);
 
-        reply = reply.number("liters", f64::from(liters));
+        reply = reply.measure(FUEL_VALUE, Quantity::Volume, f64::from(liters));
     }
 
     if let Some(compound) = ack.compound {
@@ -682,7 +685,9 @@ mod tests {
 
     fn number(reply: &CrewReply, name: &str) -> Option<f64> {
         reply.args.iter().find_map(|(arg, value)| match value {
-            CrewArg::Number { value } if arg == name => Some(*value),
+            CrewArg::Number { value } | CrewArg::Measure { value, .. } if arg == name => {
+                Some(*value)
+            }
             _ => None,
         })
     }
@@ -749,7 +754,7 @@ mod tests {
         let reply = acknowledge(ack, Some(&capped), true);
 
         assert_eq!(reply.key, "engineer.ack.fuel");
-        assert_eq!(number(&reply, "liters"), Some(80.0));
+        assert_eq!(number(&reply, "fuel"), Some(80.0));
         assert_eq!(reply.command_ok, Some(true));
     }
 
@@ -896,7 +901,7 @@ mod tests {
         };
 
         assert_eq!(dry.key, "engineer.answer.weather");
-        assert_eq!(number(&dry, "trackTemp"), Some(27.0));
+        assert!(number(&dry, "trackTemp").is_some_and(|degrees| (degrees - 26.6).abs() < 1e-3));
         assert_eq!(wet.key, "engineer.answer.weatherRain");
         assert_eq!(number(&wet, "rain"), Some(42.0));
     }

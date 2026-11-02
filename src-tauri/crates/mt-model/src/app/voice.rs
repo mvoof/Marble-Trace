@@ -330,6 +330,9 @@ pub struct VoicePackView {
     pub questions: Vec<VoiceQuestionView>,
     /// What a question's answer may name, the car's fields first.
     pub question_fields: Vec<VoiceQuestionFieldView>,
+    /// The values said with their unit word — "40 liters", "11 gallons" —
+    /// so a reply names no unit of its own for them.
+    pub amount_values: Vec<String>,
     pub car_targets: Vec<VoiceCarTargetView>,
     pub sentence_count: u32,
     pub conflicts: Vec<VoiceConflictView>,

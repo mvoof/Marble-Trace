@@ -80,6 +80,22 @@ impl From<MessageError> for VoiceMistake {
 pub enum Arg {
     Number(f64),
     Text(String),
+    /// An amount with its unit: said whole, "11 gallons", and a plural over
+    /// it agrees with the number.
+    Measured {
+        number: f64,
+        said: String,
+    },
+}
+
+impl Arg {
+    /// The number a plural agrees with.
+    fn count(&self) -> Option<f64> {
+        match self {
+            Self::Number(number) | Self::Measured { number, .. } => Some(*number),
+            Self::Text(_) => None,
+        }
+    }
 }
 
 pub type Args<'a> = HashMap<&'a str, Arg>;
@@ -292,18 +308,18 @@ fn write_parts(
             }
             Part::Value(name) => match args.get(name.as_str()) {
                 Some(Arg::Number(number)) => out.push_str(&format_number(*number, language)),
-                Some(Arg::Text(text)) => out.push_str(text),
+                Some(Arg::Text(text) | Arg::Measured { said: text, .. }) => out.push_str(text),
                 None => return Err(MessageError::UnknownValue(name.clone())),
             },
             Part::Plural { name, cases } => {
-                let Some(Arg::Number(number)) = args.get(name.as_str()) else {
+                let Some(number) = args.get(name.as_str()).and_then(Arg::count) else {
                     return Err(MessageError::UnknownValue(name.clone()));
                 };
-                let Some(body) = pick_case(cases, *number, language) else {
+                let Some(body) = pick_case(cases, number, language) else {
                     return Err(MessageError::NoCases(name.clone()));
                 };
 
-                write_parts(body, language, args, Some(*number), out)?;
+                write_parts(body, language, args, Some(number), out)?;
             }
         }
     }

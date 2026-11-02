@@ -1010,11 +1010,11 @@
       "insert": "插入",
       "insertPlain": "{{value}}——仅数字",
       "insertWithWord": "{{value}}——数字加词",
+      "insertAmount": "{{value}}——带单位（升或加仑）",
       "pluralTitle": "带词的数字：{{value}}",
       "pluralDesc": "数字后面跟的词（单位或量词）。中文只有一种形式，写一次即可。",
       "pluralPlaceholder": "“{{sample}}”后面的词",
       "names": {
-        "liters": "升数",
         "laps": "圈数",
         "gap": "差距",
         "position": "名次",
@@ -1069,7 +1069,7 @@
         "field": {
           "example": "你第 {classPosition} 名",
           "title": "{字段} — 一个值",
-          "desc": "插入字段表中某个字段的值，按其自身格式：圈速、升、度。"
+          "desc": "插入字段表中某个字段的值，按其自身格式：圈速、数字。燃油、温度和速度会自带设置中所选的单位：“40升”或“11加仑”，后面不用再写单位。"
         },
         "plural": {
           "example": "{incidents, plural, other {# 次事故}}",
@@ -1089,7 +1089,7 @@
       "pit": {
         "fuel": {
           "title": "加油",
-          "desc": "把进站指令中的燃油设为你说的升数。"
+          "desc": "把进站指令中的燃油设为你说的量，按设置中的单位（升或加仑）。"
         },
         "fuelToFinish": {
           "title": "加油到终点",
@@ -1261,6 +1261,14 @@
           "tires": "没有说出值时",
           "compound": "没有说出值时",
           "car": "没有说出值时"
+        },
+        "unit": {
+          "liters": "升",
+          "gallons": "加仑",
+          "celsius": "摄氏度",
+          "fahrenheit": "华氏度",
+          "kmh": "公里每小时",
+          "mph": "英里每小时"
         },
         "notUnderstood": "没听懂",
         "notInCar": "不在车里时下达进站指令",

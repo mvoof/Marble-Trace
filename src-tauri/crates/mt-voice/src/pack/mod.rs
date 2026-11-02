@@ -1057,7 +1057,13 @@ mod tests {
         assert_eq!(
             pack.text(
                 &ack.sayings[0],
-                &Args::from([("liters", Arg::Number(40.0))])
+                &Args::from([(
+                    "fuel",
+                    Arg::Measured {
+                        number: 40.0,
+                        said: "40 литров".into()
+                    }
+                )])
             )
             .as_deref(),
             Some("Принято, 40 литров")

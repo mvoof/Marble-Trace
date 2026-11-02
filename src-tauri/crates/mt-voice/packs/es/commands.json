@@ -2,8 +2,8 @@
   "format": 3,
   "intents": {
     "pit.fuel": [
-      "(combustible|gasolina|carga|echa|pon) {number} [litros]",
-      "{number} litros [de (combustible|gasolina)]"
+      "(combustible|gasolina|carga|echa|pon) {number} [(litros|galones)]",
+      "{number} (litros|galones) [de (combustible|gasolina)]"
     ],
     "pit.fuelToFinish": [
       "(combustible|gasolina) hasta el final",

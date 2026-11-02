@@ -3,12 +3,12 @@
   "language": "en",
   "phrases": {
     "engineer.ack.fuel": [
-      { "text": "Copy, {liters, plural, one {# liter} other {# liters}}" },
-      { "text": "{liters, plural, one {# liter} other {# liters}} it is" }
+      { "text": "Copy, {fuel}" },
+      { "text": "{fuel} it is" }
     ],
     "engineer.ack.fuelToFinish": [
       {
-        "text": "Fuel to the finish, {liters, plural, one {# liter} other {# liters}}"
+        "text": "Fuel to the finish, {fuel}"
       }
     ],
     "engineer.ack.clearFuel": [{ "text": "Copy, no fuel" }],
@@ -28,12 +28,12 @@
     ],
     "engineer.ack.applyPlanned": [
       {
-        "text": "As planned: {liters, plural, one {# liter} other {# liters}} and four tires"
+        "text": "As planned: {fuel} and four tires"
       }
     ],
     "engineer.answer.fuel": [
       {
-        "text": "{liters, plural, one {# liter} other {# liters}} of fuel, good for {laps, plural, one {# lap} other {# laps}}"
+        "text": "{fuel} of fuel, good for {laps, plural, one {# lap} other {# laps}}"
       },
       { "text": "Fuel for {laps, plural, one {# lap} other {# laps}}" }
     ],
@@ -107,15 +107,15 @@
     "engineer.answer.noLapTime": [{ "text": "No lap time yet" }],
     "engineer.answer.pitOrder": [
       {
-        "text": "This stop: {liters, plural, =0 {no fuel} one {# liter} other {# liters}}, {tires, plural, =0 {no tires} one {# tire} other {# tires}}"
+        "text": "This stop: {fuel, plural, =0 {no fuel} other {{fuel}}}, {tires, plural, =0 {no tires} one {# tire} other {# tires}}"
       }
     ],
     "engineer.answer.pitOrderEmpty": [{ "text": "Nothing ordered" }],
     "engineer.answer.weather": [
       {
-        "text": "Surface {surface}. Air {airTemp, plural, one {# degree} other {# degrees}}, track {trackTemp, plural, one {# degree} other {# degrees}}"
+        "text": "Surface {surface}. Air {airTemp}, track {trackTemp}"
       },
-      { "text": "Surface {surface}. Air {airTemp}, track {trackTemp}" }
+      { "text": "Air {airTemp}, track {trackTemp}, surface {surface}" }
     ],
     "engineer.answer.weatherRain": [
       {
@@ -137,7 +137,7 @@
     "engineer.answer.noSuchCar": [
       { "text": "There is no car {car} in the session" }
     ],
-    "engineer.ask.fuel": [{ "text": "How many liters?" }],
+    "engineer.ask.fuel": [{ "text": "How much fuel?" }],
     "engineer.ask.tires": [
       { "text": "Which tires?" },
       { "text": "Which tires do we change?" }
@@ -166,6 +166,28 @@
     "engineer.surface.lightlyWet": [{ "text": "lightly wet" }],
     "engineer.surface.moderatelyWet": [{ "text": "moderately wet" }],
     "engineer.surface.veryWet": [{ "text": "very wet" }],
-    "engineer.surface.extremelyWet": [{ "text": "extremely wet" }]
+    "engineer.surface.extremelyWet": [{ "text": "extremely wet" }],
+    "engineer.unit.liters": [
+      { "text": "{value, plural, one {# liter} other {# liters}}" }
+    ],
+    "engineer.unit.gallons": [
+      { "text": "{value, plural, one {# gallon} other {# gallons}}" }
+    ],
+    "engineer.unit.celsius": [
+      { "text": "{value, plural, one {# degree} other {# degrees}}" }
+    ],
+    "engineer.unit.fahrenheit": [
+      { "text": "{value, plural, one {# degree} other {# degrees}}" }
+    ],
+    "engineer.unit.kmh": [
+      {
+        "text": "{value, plural, one {# kilometer per hour} other {# kilometers per hour}}"
+      }
+    ],
+    "engineer.unit.mph": [
+      {
+        "text": "{value, plural, one {# mile per hour} other {# miles per hour}}"
+      }
+    ]
   }
 }

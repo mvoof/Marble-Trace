@@ -51,6 +51,7 @@ const packWithQuestion = (): VoicePackView => ({
     { name: 'number', car: true },
     { name: 'fuel', car: false },
   ],
+  amountValues: [],
   carTargets: [
     { target: 'me', slot: null },
     { target: 'byCarNumber', slot: 'number' },

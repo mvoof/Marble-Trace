@@ -1,7 +1,7 @@
 {
   "format": 3,
   "intents": {
-    "pit.fuel": ["(加油|加) {number} 升", "{number} 升 [油]"],
+    "pit.fuel": ["(加油|加) {number} [(升|加仑)]", "{number} (升|加仑) [油]"],
     "pit.fuelToFinish": ["加油 到 终点", "加 够 油", "加油"],
     "pit.clearFuel": ["不 加油", "(取消|不要) 加油"],
     "pit.tires": ["(换|更换) {tires} [轮胎]", "(换|更换) 轮胎"],

@@ -1014,11 +1014,11 @@
       "insert": "Insert",
       "insertPlain": "{{value}} — the number alone",
       "insertWithWord": "{{value}} — the number with a word",
+      "insertAmount": "{{value}} — with its unit, litres or gallons",
       "pluralTitle": "Number with a word: {{value}}",
-      "pluralDesc": "The word after a number changes: 1 litre, 5 litres. Write the word for each number and the right one is picked.",
+      "pluralDesc": "The word after a number changes: 1 lap, 5 laps. Write the word for each number and the right one is picked.",
       "pluralPlaceholder": "the word after \"{{sample}}\"",
       "names": {
-        "liters": "litres",
         "laps": "laps",
         "gap": "gap",
         "position": "position",
@@ -1073,7 +1073,7 @@
         "field": {
           "example": "You are P{classPosition}",
           "title": "{field} — a value",
-          "desc": "The value of a field from the sheet, in its own format: a lap time, litres, degrees."
+          "desc": "The value of a field from the sheet, in its own format: a lap time, a number. Fuel, temperatures and speed say their unit in the units chosen in the settings: \"40 litres\" or \"11 gallons\" — write no unit after them."
         },
         "plural": {
           "example": "{incidents, plural, one {# incident} other {# incidents}}",
@@ -1093,7 +1093,7 @@
       "pit": {
         "fuel": {
           "title": "Fuel",
-          "desc": "Sets the pit order to the litres you name."
+          "desc": "Sets the pit order to the fuel you name, in litres or gallons as chosen in the settings."
         },
         "fuelToFinish": {
           "title": "Fuel to the finish",
@@ -1265,6 +1265,14 @@
           "tires": "When the value is not said",
           "compound": "When the value is not said",
           "car": "When the value is not said"
+        },
+        "unit": {
+          "liters": "Litres",
+          "gallons": "Gallons",
+          "celsius": "Degrees Celsius",
+          "fahrenheit": "Degrees Fahrenheit",
+          "kmh": "Kilometres per hour",
+          "mph": "Miles per hour"
         },
         "notUnderstood": "Not understood",
         "notInCar": "A pit command while out of the car",

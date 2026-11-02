@@ -162,6 +162,24 @@ pub enum CrewArg {
     Word {
         key: String,
     },
+    /// A measured amount in metric — liters, °C, m/s — said in the driver's
+    /// units with the pack's word for them.
+    Measure {
+        quantity: Quantity,
+        value: f64,
+    },
+}
+
+/// What a measured amount is, so it is said in the driver's units.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum Quantity {
+    /// Liters or gallons.
+    Volume,
+    /// °C or °F.
+    Temperature,
+    /// km/h or mph, from m/s.
+    Speed,
 }
 
 /// The engineer's answer: a phrase key from the language pack and its values.
@@ -186,6 +204,12 @@ impl CrewReply {
     pub fn number(mut self, name: &str, value: f64) -> Self {
         self.args
             .push((name.to_string(), CrewArg::Number { value }));
+        self
+    }
+
+    pub fn measure(mut self, name: &str, quantity: Quantity, value: f64) -> Self {
+        self.args
+            .push((name.to_string(), CrewArg::Measure { quantity, value }));
         self
     }
 

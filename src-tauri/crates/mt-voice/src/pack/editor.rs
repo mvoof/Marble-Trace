@@ -11,7 +11,7 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
-use mt_model::app::crew::QUESTION_PREFIX;
+use mt_model::app::crew::{Quantity, QUESTION_PREFIX};
 use mt_model::app::crew_questions::{
     question_reply_key, CarTarget, VoiceQuestionDef, QUESTION_FIELDS,
 };
@@ -24,11 +24,11 @@ use mt_model::app::voice::{
 
 use crate::cache::{variant_status, VariantStatus};
 use crate::pack::catalog::{
-    reply_values, ASK_WHEN_UNSAID, COMPOUND_SLOT, INTENTS, PHRASE_KEYS, SURFACE_DRY_KEY,
-    SURFACE_VALUE,
+    amount_values, reply_values, unit_key, value_quantity, ASK_WHEN_UNSAID, COMPOUND_SLOT, INTENTS,
+    PHRASE_KEYS, SAID_VALUE, SURFACE_DRY_KEY, SURFACE_VALUE,
 };
 use crate::pack::grammar::{compile, Conflict};
-use crate::pack::message::{format, parse, values_used, Arg, Args};
+use crate::pack::message::{format, parse, values_used, Arg, Args, Part};
 use crate::pack::questions::{answer_mistake, AnswerList};
 use crate::pack::sayings::sayings;
 use crate::pack::{
@@ -160,6 +160,7 @@ pub fn pack_view(pack: &LanguagePack, folder: &Path, config: &OutputConfig) -> V
             })
             .collect(),
         question_fields,
+        amount_values: amount_values().into_iter().map(str::to_string).collect(),
         car_targets: CarTarget::ALL
             .iter()
             .map(|target| VoiceCarTargetView {
@@ -350,6 +351,21 @@ pub fn check_draft(
         .and_then(|texts| texts.into_iter().next())
         .unwrap_or_else(|| SAMPLE_SURFACE.to_string());
     let word_samples = [(COMPOUND_SLOT, compound), (SURFACE_VALUE, surface.as_str())];
+    // An amount's sample says the draft's own metric unit word.
+    let unit_message = |quantity: Quantity| {
+        view.phrases
+            .iter()
+            .find(|phrase| phrase.key == unit_key(quantity, false))
+            .and_then(|phrase| phrase.variants.first())
+            .and_then(|variant| sayings(&variant.text).ok())
+            .and_then(|texts| texts.into_iter().next())
+            .and_then(|text| parse(&text).ok())
+    };
+    let unit_samples: &[(Quantity, Vec<Part>)] =
+        &[Quantity::Volume, Quantity::Temperature, Quantity::Speed]
+            .into_iter()
+            .filter_map(|quantity| Some((quantity, unit_message(quantity)?)))
+            .collect::<Vec<_>>();
     let variants = view
         .phrases
         .iter()
@@ -367,6 +383,7 @@ pub fn check_draft(
                         index,
                         &variant.text,
                         &word_samples,
+                        unit_samples,
                     );
 
                     if let (None, Some((target, list))) = (&check.error, answer) {
@@ -500,6 +517,7 @@ fn check_variant(
     index: usize,
     text: &str,
     word_samples: &[(&str, &str)],
+    unit_samples: &[(Quantity, Vec<Part>)],
 ) -> VoiceVariantCheck {
     let word_sample = |value: &str| {
         word_samples
@@ -554,9 +572,16 @@ fn check_variant(
         let args: Args<'_> = values
             .iter()
             .map(|value| {
-                let sample = match word_sample(value) {
-                    Some(word) => Arg::Text(word.to_string()),
-                    None => Arg::Number(number),
+                let unit = value_quantity(key, value).and_then(|quantity| {
+                    let (_, message) = unit_samples.iter().find(|(kind, _)| *kind == quantity)?;
+                    let args = Args::from([(SAID_VALUE, Arg::Number(number))]);
+
+                    format(message, language, &args).ok()
+                });
+                let sample = match (word_sample(value), unit) {
+                    (Some(word), _) => Arg::Text(word.to_string()),
+                    (None, Some(said)) => Arg::Measured { number, said },
+                    (None, None) => Arg::Number(number),
                 };
 
                 (value.as_str(), sample)
@@ -764,7 +789,7 @@ mod tests {
             .find(|phrase| phrase.key == "engineer.ack.fuel")
             .unwrap();
 
-        assert_eq!(fuel.values, vec!["liters"]);
+        assert_eq!(fuel.values, vec!["fuel"]);
         assert_eq!(fuel.variants[0].status, "dynamic");
 
         let _ = fs::remove_dir_all(root);
@@ -979,7 +1004,10 @@ mod tests {
 
         assert_eq!(fields.len(), 1);
         assert!(steps.is_empty());
-        assert_eq!(said.map(|said| said.text).as_deref(), Some("Air 21"));
+        assert_eq!(
+            said.map(|said| said.text).as_deref(),
+            Some("Air 21 degrees")
+        );
 
         // A question about a car by its number needs one, zeros kept.
         assert_eq!(preview_intent(&draft, "car", None), None);
@@ -1020,7 +1048,7 @@ mod tests {
             .unwrap();
 
         assert_eq!(template.sentences, 2);
-        assert_eq!(reply.samples[0], "Воздух 1, трасса 1");
+        assert_eq!(reply.samples[0], "Воздух 1 градус, трасса 1 градус");
         assert_eq!(
             recognise_draft(&view, "как там сейчас небо")
                 .into_iter()

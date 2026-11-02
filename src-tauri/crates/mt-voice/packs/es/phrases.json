@@ -3,12 +3,12 @@
   "language": "es",
   "phrases": {
     "engineer.ack.fuel": [
-      { "text": "Recibido, {liters, plural, one {# litro} other {# litros}}" },
-      { "text": "{liters, plural, one {# litro} other {# litros}}, entendido" }
+      { "text": "Recibido, {fuel}" },
+      { "text": "{fuel}, entendido" }
     ],
     "engineer.ack.fuelToFinish": [
       {
-        "text": "Combustible hasta el final, {liters, plural, one {# litro} other {# litros}}"
+        "text": "Combustible hasta el final, {fuel}"
       }
     ],
     "engineer.ack.clearFuel": [{ "text": "Recibido, sin combustible" }],
@@ -28,12 +28,12 @@
     ],
     "engineer.ack.applyPlanned": [
       {
-        "text": "Según el plan: {liters, plural, one {# litro} other {# litros}} y cuatro ruedas"
+        "text": "Según el plan: {fuel} y cuatro ruedas"
       }
     ],
     "engineer.answer.fuel": [
       {
-        "text": "{liters, plural, one {# litro} other {# litros}} de combustible, para {laps, plural, one {# vuelta} other {# vueltas}}"
+        "text": "{fuel} de combustible, para {laps, plural, one {# vuelta} other {# vueltas}}"
       },
       {
         "text": "Combustible para {laps, plural, one {# vuelta} other {# vueltas}}"
@@ -119,15 +119,15 @@
     ],
     "engineer.answer.pitOrder": [
       {
-        "text": "En esta parada: {liters, plural, =0 {sin combustible} one {# litro} other {# litros}}, {tires, plural, =0 {sin ruedas} one {# rueda} other {# ruedas}}"
+        "text": "En esta parada: {fuel, plural, =0 {sin combustible} other {{fuel}}}, {tires, plural, =0 {sin ruedas} one {# rueda} other {# ruedas}}"
       }
     ],
     "engineer.answer.pitOrderEmpty": [{ "text": "No hay nada pedido" }],
     "engineer.answer.weather": [
       {
-        "text": "Pista {surface}. Aire {airTemp, plural, one {# grado} other {# grados}}, asfalto {trackTemp, plural, one {# grado} other {# grados}}"
+        "text": "Pista {surface}. Aire {airTemp}, asfalto {trackTemp}"
       },
-      { "text": "Pista {surface}. Aire {airTemp}, asfalto {trackTemp}" }
+      { "text": "Aire {airTemp}, asfalto {trackTemp}, pista {surface}" }
     ],
     "engineer.answer.weatherRain": [
       {
@@ -149,7 +149,7 @@
     "engineer.answer.noSuchCar": [
       { "text": "No hay ningún coche {car} en la sesión" }
     ],
-    "engineer.ask.fuel": [{ "text": "¿Cuántos litros?" }],
+    "engineer.ask.fuel": [{ "text": "¿Cuánto combustible?" }],
     "engineer.ask.tires": [
       { "text": "¿Qué ruedas?" },
       { "text": "¿Qué ruedas cambiamos?" }
@@ -181,6 +181,28 @@
     "engineer.surface.lightlyWet": [{ "text": "algo mojada" }],
     "engineer.surface.moderatelyWet": [{ "text": "mojada" }],
     "engineer.surface.veryWet": [{ "text": "muy mojada" }],
-    "engineer.surface.extremelyWet": [{ "text": "encharcada" }]
+    "engineer.surface.extremelyWet": [{ "text": "encharcada" }],
+    "engineer.unit.liters": [
+      { "text": "{value, plural, one {# litro} other {# litros}}" }
+    ],
+    "engineer.unit.gallons": [
+      { "text": "{value, plural, one {# galón} other {# galones}}" }
+    ],
+    "engineer.unit.celsius": [
+      { "text": "{value, plural, one {# grado} other {# grados}}" }
+    ],
+    "engineer.unit.fahrenheit": [
+      { "text": "{value, plural, one {# grado} other {# grados}}" }
+    ],
+    "engineer.unit.kmh": [
+      {
+        "text": "{value, plural, one {# kilómetro por hora} other {# kilómetros por hora}}"
+      }
+    ],
+    "engineer.unit.mph": [
+      {
+        "text": "{value, plural, one {# milla por hora} other {# millas por hora}}"
+      }
+    ]
   }
 }

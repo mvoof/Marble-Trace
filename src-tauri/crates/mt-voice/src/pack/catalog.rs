@@ -6,8 +6,8 @@
 //! join later as `spotter.*` without touching these.
 
 pub use mt_model::app::crew::ASK_WHEN_UNSAID;
-use mt_model::app::crew::QUESTION_PREFIX;
-use mt_model::app::crew_questions::QUESTION_FIELDS;
+use mt_model::app::crew::{Quantity, QUESTION_PREFIX};
+use mt_model::app::crew_questions::{question_field_named, SayFormat, QUESTION_FIELDS};
 use mt_model::pit::pit_action::TireSet;
 
 use crate::pack::template::SlotValue;
@@ -24,8 +24,8 @@ const fn key(id: &'static str, values: &'static [&'static str]) -> PhraseKey {
 }
 
 pub const PHRASE_KEYS: &[PhraseKey] = &[
-    key("engineer.ack.fuel", &["liters"]),
-    key("engineer.ack.fuelToFinish", &["liters"]),
+    key("engineer.ack.fuel", &[FUEL_VALUE]),
+    key("engineer.ack.fuelToFinish", &[FUEL_VALUE]),
     key("engineer.ack.clearFuel", &[]),
     key("engineer.ack.tires", &["corners"]),
     key("engineer.ack.clearTires", &[]),
@@ -35,8 +35,8 @@ pub const PHRASE_KEYS: &[PhraseKey] = &[
     key("engineer.ack.windshield", &[]),
     key("engineer.ack.clearWindshield", &[]),
     key("engineer.ack.clearAll", &[]),
-    key("engineer.ack.applyPlanned", &["liters"]),
-    key("engineer.answer.fuel", &["liters", "laps"]),
+    key("engineer.ack.applyPlanned", &[FUEL_VALUE]),
+    key("engineer.answer.fuel", &[FUEL_VALUE, "laps"]),
     key("engineer.answer.gapAhead", &["gap"]),
     key("engineer.answer.gapBehind", &["gap"]),
     key("engineer.answer.noCarAhead", &[]),
@@ -64,15 +64,15 @@ pub const PHRASE_KEYS: &[PhraseKey] = &[
     key("engineer.answer.lastLap", &["minutes", "seconds"]),
     key("engineer.answer.bestLap", &["minutes", "seconds"]),
     key("engineer.answer.noLapTime", &[]),
-    key("engineer.answer.pitOrder", &["liters", "tires"]),
+    key("engineer.answer.pitOrder", &[FUEL_VALUE, "tires"]),
     key("engineer.answer.pitOrderEmpty", &[]),
     key(
         "engineer.answer.weather",
-        &["airTemp", "trackTemp", SURFACE_VALUE],
+        &[AIR_TEMP_VALUE, TRACK_TEMP_VALUE, SURFACE_VALUE],
     ),
     key(
         "engineer.answer.weatherRain",
-        &["airTemp", "trackTemp", "rain", SURFACE_VALUE],
+        &[AIR_TEMP_VALUE, TRACK_TEMP_VALUE, "rain", SURFACE_VALUE],
     ),
     key("engineer.answer.carPosition", &["car", "position"]),
     key("engineer.answer.carLastLap", &["car", "minutes", "seconds"]),
@@ -104,7 +104,74 @@ pub const PHRASE_KEYS: &[PhraseKey] = &[
     key("engineer.surface.moderatelyWet", &[]),
     key("engineer.surface.veryWet", &[]),
     key("engineer.surface.extremelyWet", &[]),
+    // The words an amount is said with, by the driver's unit system.
+    key(LITERS_KEY, &[SAID_VALUE]),
+    key(GALLONS_KEY, &[SAID_VALUE]),
+    key(CELSIUS_KEY, &[SAID_VALUE]),
+    key(FAHRENHEIT_KEY, &[SAID_VALUE]),
+    key(KMH_KEY, &[SAID_VALUE]),
+    key(MPH_KEY, &[SAID_VALUE]),
 ];
+
+pub const LITERS_KEY: &str = "engineer.unit.liters";
+pub const GALLONS_KEY: &str = "engineer.unit.gallons";
+pub const CELSIUS_KEY: &str = "engineer.unit.celsius";
+pub const FAHRENHEIT_KEY: &str = "engineer.unit.fahrenheit";
+pub const KMH_KEY: &str = "engineer.unit.kmh";
+pub const MPH_KEY: &str = "engineer.unit.mph";
+/// The fuel a built-in reply names.
+pub const FUEL_VALUE: &str = "fuel";
+const AIR_TEMP_VALUE: &str = "airTemp";
+const TRACK_TEMP_VALUE: &str = "trackTemp";
+
+/// The phrase that says an amount of this kind with its unit.
+pub fn unit_key(quantity: Quantity, imperial: bool) -> &'static str {
+    match (quantity, imperial) {
+        (Quantity::Volume, false) => LITERS_KEY,
+        (Quantity::Volume, true) => GALLONS_KEY,
+        (Quantity::Temperature, false) => CELSIUS_KEY,
+        (Quantity::Temperature, true) => FAHRENHEIT_KEY,
+        (Quantity::Speed, false) => KMH_KEY,
+        (Quantity::Speed, true) => MPH_KEY,
+    }
+}
+
+/// Every value said with its unit word, built-in replies' and questions'.
+pub fn amount_values() -> Vec<&'static str> {
+    let built_in = PHRASE_KEYS.iter().flat_map(|key| {
+        key.values
+            .iter()
+            .filter(|value| value_quantity(key.id, value).is_some())
+    });
+    let question = QUESTION_FIELDS
+        .iter()
+        .map(|spec| spec.name)
+        .filter(|name| value_quantity(QUESTION_PREFIX, name).is_some());
+    let mut names: Vec<&'static str> = built_in.copied().chain(question).collect();
+
+    names.sort_unstable();
+    names.dedup();
+    names
+}
+
+/// What a reply's value measures, when it is an amount said with its unit:
+/// a built-in reply's fuel and temperatures, a question's field by its format.
+pub fn value_quantity(key: &str, value: &str) -> Option<Quantity> {
+    if key.starts_with(QUESTION_PREFIX) {
+        return match question_field_named(value)?.say {
+            SayFormat::Volume => Some(Quantity::Volume),
+            SayFormat::Temperature => Some(Quantity::Temperature),
+            SayFormat::Speed => Some(Quantity::Speed),
+            _ => None,
+        };
+    }
+
+    match value {
+        FUEL_VALUE => Some(Quantity::Volume),
+        AIR_TEMP_VALUE | TRACK_TEMP_VALUE => Some(Quantity::Temperature),
+        _ => None,
+    }
+}
 
 pub const YES_KEY: &str = "engineer.yes";
 pub const NO_KEY: &str = "engineer.no";
@@ -355,7 +422,7 @@ mod tests {
 
     #[test]
     fn a_questions_reply_takes_the_question_fields() {
-        assert_eq!(reply_values("engineer.ack.fuel"), vec!["liters"]);
+        assert_eq!(reply_values("engineer.ack.fuel"), vec!["fuel"]);
         assert_eq!(
             reply_values("question.weather").len(),
             QUESTION_FIELDS.len()

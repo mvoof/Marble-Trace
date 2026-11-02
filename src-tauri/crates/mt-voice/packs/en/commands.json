@@ -2,8 +2,8 @@
   "format": 3,
   "intents": {
     "pit.fuel": [
-      "(fuel|add|refuel|give me) {number} [(liters|litres)]",
-      "{number} (liters|litres) [of fuel]"
+      "(fuel|add|refuel|give me) {number} [(liters|litres|gallons)]",
+      "{number} (liters|litres|gallons) [of fuel]"
     ],
     "pit.fuelToFinish": [
       "(fuel|fill) to (the end|the finish|finish)",
