@@ -81,6 +81,22 @@
   line-height: 1;
   font-variant-numeric: tabular-nums;
   color: $widget-text-primary;
+  // Wide enough for the longest figure the window allows (−500), and aligned
+  // to the right so the digits stay put as the sign comes and goes.
+  min-width: 4ch;
+  text-align: right;
+}
+
+// Metres to a point not reached yet: a countdown, not a verdict — quieter
+// than the figure it turns into.
+.phaseValueToGo {
+  color: $widget-text-muted;
+}
+
+// Run past the reference's point without having done it: the figure is still
+// growing, so it reads as a warning until it settles.
+.phaseValueOvershoot {
+  color: $race-amber;
 }
 
 .phaseUnit {
@@ -88,6 +104,11 @@
   font-size: fs(xxs);
   font-weight: 500;
   color: $widget-text-muted;
+
+  // Laid out even with no figure, so the dash does not pull its neighbours in.
+  &[data-hidden='true'] {
+    visibility: hidden;
+  }
 }
 
 .hint {

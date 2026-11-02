@@ -11,7 +11,9 @@ import {
   EMPTY_TRACE_STATS,
   fillTraceWindow,
   NO_VALUE,
+  phaseFigure,
   playerLapDistPct,
+  type PhaseFigure,
   type TraceWindowBuffers,
   type TraceWindowStats,
 } from './coach-trace-utils';
@@ -39,18 +41,36 @@ interface CoachDeps {
  */
 const MAX_BACKWARD_STEP_PCT = 0.5;
 
-/**
- * The phase figures are displayed to the metre. The window is rebuilt on every
- * telemetry frame for the canvas, but the text above it must not re-render
- * observers at 60 Hz for a digit that is not shown.
- */
-const PHASE_DELTA_DISPLAY_STEP_M = 1;
+/** A settled miss is displayed to the metre; anything finer is noise. */
+const MISS_DISPLAY_STEP_M = 1;
 
-const quantizeM = (valueM: number | null): number | null =>
-  valueM === null
-    ? null
-    : Math.round(valueM / PHASE_DELTA_DISPLAY_STEP_M) *
-      PHASE_DELTA_DISPLAY_STEP_M;
+/**
+ * A figure that moves with the car — metres to go, metres run past — steps by
+ * this much. The window is rebuilt on every telemetry frame for the canvas,
+ * but the text above it must not re-render observers at the frame rate.
+ */
+const MOVING_DISPLAY_STEP_M = 5;
+
+const quantizeFigure = (figure: PhaseFigure | null): PhaseFigure | null => {
+  if (figure === null) {
+    return null;
+  }
+
+  const step =
+    figure.kind === 'miss' ? MISS_DISPLAY_STEP_M : MOVING_DISPLAY_STEP_M;
+
+  return { kind: figure.kind, valueM: Math.round(figure.valueM / step) * step };
+};
+
+const sameFigure = (
+  left: PhaseFigure | null,
+  right: PhaseFigure | null
+): boolean =>
+  left === right ||
+  (left !== null &&
+    right !== null &&
+    left.kind === right.kind &&
+    left.valueM === right.valueM);
 
 /**
  * Owns the lap in progress as a distance-bucketed trace, and the drawn window
@@ -74,14 +94,14 @@ export class CoachWidgetStore {
    */
   frameTick = 0;
 
-  /** Quantized `windowStats.brakeDeltaM` — metres later on the brakes than the reference. */
-  displayedBrakeDeltaM: number | null = null;
+  /** The header's BRAKE figure: to the reference's braking point, past it, or the miss. */
+  displayedBrakeFigure: PhaseFigure | null = null;
 
-  /** Quantized `windowStats.apexDeltaM` — metres later to the lowest speed than the reference. */
-  displayedApexDeltaM: number | null = null;
+  /** The header's APEX figure, against the reference's lowest speed. */
+  displayedApexFigure: PhaseFigure | null = null;
 
-  /** Quantized `windowStats.throttleDeltaM` — metres later on the power than the reference. */
-  displayedThrottleDeltaM: number | null = null;
+  /** The header's THROTTLE figure, against the reference's throttle point. */
+  displayedThrottleFigure: PhaseFigure | null = null;
 
   /** The drawn window. Refilled in place — never reassigned, never observable. */
   readonly window: TraceWindowBuffers = createTraceWindowBuffers();
@@ -268,21 +288,25 @@ export class CoachWidgetStore {
             windowMeters: this.settings.windowMeters,
           });
 
-    const { brakeDeltaM, apexDeltaM, throttleDeltaM } = this.windowStats;
-    const quantizedBrakeDeltaM = quantizeM(brakeDeltaM);
-    const quantizedApexDeltaM = quantizeM(apexDeltaM);
-    const quantizedThrottleDeltaM = quantizeM(throttleDeltaM);
+    const { reference, own } = this.windowStats;
+    const brakeFigure = quantizeFigure(
+      phaseFigure(reference.brakePointM, own.brakePointM)
+    );
+    const apexFigure = quantizeFigure(phaseFigure(reference.apexM, own.apexM));
+    const throttleFigure = quantizeFigure(
+      phaseFigure(reference.throttlePointM, own.throttlePointM)
+    );
 
-    if (quantizedBrakeDeltaM !== this.displayedBrakeDeltaM) {
-      this.displayedBrakeDeltaM = quantizedBrakeDeltaM;
+    if (!sameFigure(brakeFigure, this.displayedBrakeFigure)) {
+      this.displayedBrakeFigure = brakeFigure;
     }
 
-    if (quantizedApexDeltaM !== this.displayedApexDeltaM) {
-      this.displayedApexDeltaM = quantizedApexDeltaM;
+    if (!sameFigure(apexFigure, this.displayedApexFigure)) {
+      this.displayedApexFigure = apexFigure;
     }
 
-    if (quantizedThrottleDeltaM !== this.displayedThrottleDeltaM) {
-      this.displayedThrottleDeltaM = quantizedThrottleDeltaM;
+    if (!sameFigure(throttleFigure, this.displayedThrottleFigure)) {
+      this.displayedThrottleFigure = throttleFigure;
     }
 
     this.frameTick++;
@@ -354,9 +378,9 @@ export class CoachWidgetStore {
     this.previousDistPct = null;
     this.previousBucket = null;
     this.windowStats = EMPTY_TRACE_STATS;
-    this.displayedBrakeDeltaM = null;
-    this.displayedApexDeltaM = null;
-    this.displayedThrottleDeltaM = null;
+    this.displayedBrakeFigure = null;
+    this.displayedApexFigure = null;
+    this.displayedThrottleFigure = null;
     this.frameTick = 0;
   }
 }

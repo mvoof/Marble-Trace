@@ -370,6 +370,47 @@ const laterBy = (own: number | null, reference: number | null) =>
   own !== null && reference !== null ? own - reference : null;
 
 /**
+ * What one phase figure in the header says:
+ * - `to-go` — the reference's point is still ahead and this lap has not got
+ *   there yet: metres left to it;
+ * - `overshoot` — the reference's point is behind and this lap still has not
+ *   done it: metres run past it so far, growing;
+ * - `miss` — this lap has done it: metres later (+) or earlier (−) than the
+ *   reference, settled.
+ */
+export type PhaseFigureKind = 'to-go' | 'overshoot' | 'miss';
+
+export interface PhaseFigure {
+  kind: PhaseFigureKind;
+  /** Metres; signed only for `miss`. */
+  valueM: number;
+}
+
+/**
+ * The header figure for one phase, from where the reference did it and where
+ * this lap did, both in metres from the car. Null when the reference's point
+ * is not in the window — there is nothing to measure against.
+ */
+export const phaseFigure = (
+  referenceM: number | null,
+  ownM: number | null
+): PhaseFigure | null => {
+  if (referenceM === null) {
+    return null;
+  }
+
+  if (ownM !== null) {
+    return { kind: 'miss', valueM: ownM - referenceM };
+  }
+
+  if (referenceM > 0) {
+    return { kind: 'to-go', valueM: referenceM };
+  }
+
+  return { kind: 'overshoot', valueM: -referenceM };
+};
+
+/**
  * Refills `buffers` with the reference lap and the lap in progress across a
  * window centred on the car, accumulating the time delta between them along it.
  *

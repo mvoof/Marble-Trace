@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { CoachInactiveReason } from '@shared/contracts/generated/bindings';
+import type { PhaseFigure } from '@widgets/coach/coach-trace-utils';
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,
@@ -46,42 +47,74 @@ const INACTIVE_HINT: Record<CoachInactiveReason, string> = {
   'no-telemetry': 'waiting for telemetry',
 };
 
-const signedMetres = (valueM: number | null): string => {
-  if (valueM === null) {
+const figureText = (figure: PhaseFigure | null): string => {
+  if (figure === null) {
     return NO_VALUE_TEXT;
   }
 
-  const sign = valueM > 0 ? '+' : valueM < 0 ? '−' : '';
+  const metres = Math.abs(figure.valueM).toFixed(0);
 
-  return `${sign}${Math.abs(valueM).toFixed(0)}`;
+  if (figure.kind === 'to-go') {
+    return metres;
+  }
+
+  if (figure.kind === 'overshoot') {
+    return `+${metres}`;
+  }
+
+  const sign = figure.valueM > 0 ? '+' : figure.valueM < 0 ? '−' : '';
+
+  return `${sign}${metres}`;
 };
 
-interface PhaseFigureProps {
+const FIGURE_CLASS: Record<PhaseFigure['kind'], string> = {
+  'to-go': styles.phaseValueToGo ?? '',
+  overshoot: styles.phaseValueOvershoot ?? '',
+  miss: '',
+};
+
+interface PhaseReadoutProps {
   label: string;
   color: string;
-  valueM: number | null;
+  figure: PhaseFigure | null;
 }
 
-/** One phase of the corner: how many metres later than the reference this lap got there. */
-const PhaseFigure = observer(({ label, color, valueM }: PhaseFigureProps) => {
+/**
+ * One phase of the corner. Before the reference's point: metres to it. Past it
+ * without having done it: metres run past so far. Once done: how much later
+ * (+) or earlier (−) than the reference. The value sits in a fixed-width slot
+ * and the unit is always laid out, so a changing figure never moves its
+ * neighbours.
+ */
+const PhaseReadout = observer(({ label, color, figure }: PhaseReadoutProps) => {
+  const valueClass = [
+    styles.phaseValue,
+    figure === null ? '' : FIGURE_CLASS[figure.kind],
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <span className={styles.phase}>
       <span className={styles.phaseLabel} style={{ color } as CSSProperties}>
         {label}
       </span>
-      <span className={styles.phaseValue}>{signedMetres(valueM)}</span>
-      {valueM === null ? null : (
-        <small className={styles.phaseUnit}>{METRES_UNIT}</small>
-      )}
+      <span className={valueClass}>{figureText(figure)}</span>
+      <small
+        className={styles.phaseUnit}
+        data-hidden={figure === null ? 'true' : undefined}
+      >
+        {METRES_UNIT}
+      </small>
     </span>
   );
 });
 
 /**
  * The advisory call on the left, and on the right the corner in three figures:
- * how many metres later than the reference this lap braked, reached its lowest
- * speed and opened the throttle. Each is the gap between a dot and a dashed
- * line on the chart below, in the same colour. The advisory comes from the
+ * braking, apex, throttle — each against the reference's point, see
+ * `PhaseReadout`. A settled figure is the gap between a dot and a dashed line
+ * on the chart below, in the same colour. The advisory comes from the
  * shared coach store; the figures from this widget's trace window.
  */
 export const CallRow = observer(() => {
@@ -166,22 +199,22 @@ export const CallRow = observer(() => {
           <span className={styles.hint}>{INACTIVE_HINT[inactiveReason]}</span>
         ) : (
           <span className={styles.phases}>
-            <PhaseFigure
+            <PhaseReadout
               label="BRAKE"
               color={settings.brakeColor}
-              valueM={trace.displayedBrakeDeltaM}
+              figure={trace.displayedBrakeFigure}
             />
             {/* The apex has no pedal of its own: it takes the reference lap's
                 colour, the line it is the lowest point of. */}
-            <PhaseFigure
+            <PhaseReadout
               label="APEX"
               color={settings.referenceColor}
-              valueM={trace.displayedApexDeltaM}
+              figure={trace.displayedApexFigure}
             />
-            <PhaseFigure
+            <PhaseReadout
               label="THROTTLE"
               color={settings.gasColor}
-              valueM={trace.displayedThrottleDeltaM}
+              figure={trace.displayedThrottleFigure}
             />
           </span>
         )}

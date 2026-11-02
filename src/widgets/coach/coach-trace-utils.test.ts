@@ -5,6 +5,7 @@ import {
   createTraceWindowBuffers,
   fillTraceWindow,
   NO_VALUE,
+  phaseFigure,
   traceValueRange,
   TRACE_POINT_COUNT,
   type TraceWindowBuffers,
@@ -364,6 +365,26 @@ describe('corner phases', () => {
 
     expect(reference.brakeZoneStartM).toBe(-WINDOW_M);
     expect(reference.brakePointM).toBeNull();
+  });
+});
+
+describe('phaseFigure', () => {
+  it('counts down to a reference point still ahead', () => {
+    expect(phaseFigure(40, null)).toEqual({ kind: 'to-go', valueM: 40 });
+  });
+
+  it('counts the metres run past a reference point not yet matched', () => {
+    expect(phaseFigure(-15, null)).toEqual({ kind: 'overshoot', valueM: 15 });
+  });
+
+  it('settles on the miss once this lap has done it', () => {
+    expect(phaseFigure(-30, -18)).toEqual({ kind: 'miss', valueM: 12 });
+    // Earlier than a point still ahead of the car is a miss too.
+    expect(phaseFigure(20, -5)).toEqual({ kind: 'miss', valueM: -25 });
+  });
+
+  it('has nothing to say without the reference point', () => {
+    expect(phaseFigure(null, -5)).toBeNull();
   });
 });
 
