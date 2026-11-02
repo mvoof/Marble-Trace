@@ -95,6 +95,8 @@ pub struct ComputeContext<'a> {
     pub session_time_remain: Option<f64>,
     /// Session state from the telemetry frame (used by driver entries to latch finishers).
     pub session_state: Option<SessionState>,
+    /// Session-wide flag bits (`mt_model::sim::flags`), e.g. a caution.
+    pub session_flags: Option<u32>,
 }
 
 #[derive(Debug, Clone)]

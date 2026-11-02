@@ -127,6 +127,18 @@ pub struct SessionSnapshot {
     pub player_radio: Option<RadioTune>,
 }
 
+impl SessionSnapshot {
+    /// Car indices of every pace car in the roster — one per class in a
+    /// multiclass race.
+    pub fn pace_car_idxs(&self) -> Vec<i32> {
+        self.cars
+            .iter()
+            .filter(|car| car.is_pace_car)
+            .map(|car| car.car_idx)
+            .collect()
+    }
+}
+
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 pub enum SessionType {
