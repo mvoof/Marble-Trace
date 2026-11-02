@@ -99,6 +99,33 @@ $speed-limit-seam: $pit-readout-seam;
   background: rgba($race-red, 0.8);
 }
 
+// The speed-limit sign: a white disc in a red ring, sized off its own digits so
+// three of them still sit inside the circle. No `display` of its own, or the
+// `hidden` attribute that steps it aside would be overridden.
+$limit-sign-diameter: 2.4em;
+$limit-sign-ring: 0.2em;
+
+.limitSign {
+  position: absolute;
+  top: sp(xxs);
+  left: 50%;
+  box-sizing: border-box;
+  width: $limit-sign-diameter;
+  height: $limit-sign-diameter;
+  margin-left: calc(#{$limit-sign-diameter} / -2);
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: calc(#{$limit-sign-diameter} - 2 * #{$limit-sign-ring});
+  letter-spacing: -0.04em;
+  text-align: center;
+  color: $race-red;
+  background: $road-sign-face;
+  border: $limit-sign-ring solid $race-red;
+  border-radius: 50%;
+}
+
 .label {
   font-size: fs(xs);
   letter-spacing: 0.1em;

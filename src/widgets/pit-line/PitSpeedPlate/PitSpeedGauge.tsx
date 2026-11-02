@@ -56,10 +56,15 @@ export const PitSpeedGauge = observer(({ withUnit }: PitSpeedGaugeProps) => {
         player.carDynamics?.long_accel ?? null
       );
 
-      const speedText =
-        limitMs > 0
-          ? Math.round(speedMs * units.speedFactor).toString()
-          : NO_LIMIT_TEXT;
+      const hasLimit = limitMs > 0;
+
+      const speedText = hasLimit
+        ? Math.round(speedMs * units.speedFactor).toString()
+        : NO_LIMIT_TEXT;
+
+      const limitText = hasLimit
+        ? Math.round(limitMs * units.speedFactor).toString()
+        : '';
 
       scheduleWrite(() => {
         element.style.setProperty(FILL_WIDTH_PROPERTY, `${view.fill * PCT}%`);
@@ -103,6 +108,13 @@ export const PitSpeedGauge = observer(({ withUnit }: PitSpeedGaugeProps) => {
           value.classList.toggle(styles.valueUnder, !view.isOver);
           value.textContent = speedText;
         }
+
+        const sign = element.querySelector(`.${styles.limitSign}`);
+
+        if (sign instanceof HTMLElement) {
+          sign.hidden = !hasLimit || view.isOver;
+          sign.textContent = limitText;
+        }
       });
     },
     [player, sessionStore, units]
@@ -126,6 +138,13 @@ export const PitSpeedGauge = observer(({ withUnit }: PitSpeedGaugeProps) => {
       <span className={styles.liftZone} />
 
       <span className={styles.limitTick} />
+
+      {/*
+        The limit itself, as the sign by the lane shows it, in the red band the
+        speed must not reach. It steps aside once the speed is over: the number
+        takes that band then, and the offence is all there is to read.
+      */}
+      <span className={styles.limitSign} hidden />
 
       {/*
         A zero-height anchor on the limit line itself: the number hangs below it
