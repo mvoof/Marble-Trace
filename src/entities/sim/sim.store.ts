@@ -400,6 +400,10 @@ export class SimStore {
       });
 
       await this.hydrateTrackShape(this.initId);
+      // Like the map, the reference is announced only when it changes: an
+      // overlay opened or reloaded after that would compare against nothing
+      // until the next best lap.
+      await this.hydrateReferenceLap(this.initId);
     } catch (err) {
       debug.telemetry('Failed to fetch initial status: %o', err);
     }

@@ -375,3 +375,28 @@ describe('SimStore active-events mask', () => {
     });
   });
 });
+
+describe('SimStore reference lap in an overlay window', () => {
+  afterEach(() => {
+    asMainWindow();
+  });
+
+  // The reference is announced only when it changes; an overlay opened or
+  // reloaded after that must ask for it, or the coach compares against nothing.
+  it('loads the active reference when the widget listener starts', async () => {
+    const { getActiveReferenceLap } = await import('@shared/api/track.service');
+    const { mockReferenceLap } = await import('@features/preview/mocks/coach');
+    const reference = mockReferenceLap();
+
+    vi.mocked(getActiveReferenceLap).mockResolvedValueOnce(reference);
+
+    asOverlayWindow();
+    const root = new MainRoot({ skipInit: true });
+
+    await root.sim.startWidgetListener();
+
+    expect(root.referenceLap.data?.lapTime).toBe(reference.lapTime);
+
+    root.dispose();
+  });
+});
