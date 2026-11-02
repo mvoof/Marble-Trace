@@ -131,11 +131,20 @@ export class SimStore {
   private stopWatchingMinimized: StopWatching | null = null;
   private isDisposed = false;
   private initId = 0;
+  /**
+   * Reference announcements received so far. A hydrate answer fetched before
+   * one of them arrived is older than what it announced and must not replace it.
+   */
+  private referenceEventCount = 0;
   private unlistens: UnlistenFn[] = [];
   private readonly disposers: IReactionDisposer[] = [];
 
   constructor(private readonly root: SimDeps) {
-    makeAutoObservable(this, { bundleApplyProbe: false }, { autoBind: true });
+    makeAutoObservable<SimStore, 'referenceEventCount'>(
+      this,
+      { bundleApplyProbe: false, referenceEventCount: false },
+      { autoBind: true }
+    );
   }
 
   suppressWidgets() {
@@ -215,10 +224,17 @@ export class SimStore {
 
   /** The reference the telemetry thread made active before this window listened. */
   private async hydrateReferenceLap(guardId: number) {
+    const eventCountBefore = this.referenceEventCount;
+
     try {
       const data = await getActiveReferenceLap();
 
-      if (this.initId !== guardId) return;
+      if (
+        this.initId !== guardId ||
+        this.referenceEventCount !== eventCountBefore
+      ) {
+        return;
+      }
 
       runInAction(() => this.applyActiveReference(data));
     } catch (err) {
@@ -400,6 +416,10 @@ export class SimStore {
       });
 
       await this.hydrateTrackShape(this.initId);
+      // Like the map, the reference is announced only when it changes: an
+      // overlay opened or reloaded after that would compare against nothing
+      // until the next best lap.
+      await this.hydrateReferenceLap(this.initId);
     } catch (err) {
       debug.telemetry('Failed to fetch initial status: %o', err);
     }
@@ -572,7 +592,10 @@ export class SimStore {
         (event) => {
           if (this.initId !== guardId) return;
 
-          runInAction(() => this.applyActiveReference(event.payload));
+          runInAction(() => {
+            this.referenceEventCount++;
+            this.applyActiveReference(event.payload);
+          });
         }
       )
     );

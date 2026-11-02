@@ -27,6 +27,11 @@ const CORNER_HALF_WIDTH_PCT = 0.05;
  * against a braking zone the reference does not have.
  */
 export const PREVIEW_BRAKE_START_PCT = PREVIEW_CORNER_CENTER_PCT - 0.035;
+/**
+ * Where the reference comes off the brakes, short of the apex: the stretch
+ * between is the corner's middle phase, off both pedals.
+ */
+export const PREVIEW_BRAKE_RELEASE_PCT = PREVIEW_CORNER_CENTER_PCT - 0.008;
 /** How far past the apex the reference is still short of full throttle. */
 const EXIT_WIDTH_PCT = 0.03;
 
@@ -55,26 +60,37 @@ const speedAtPct = (pct: number): number => {
   );
 };
 
+const throttleAtPct = (pct: number): number => {
+  if (pct >= PREVIEW_BRAKE_START_PCT && pct <= PREVIEW_CORNER_CENTER_PCT) {
+    return 0;
+  }
+
+  if (
+    pct > PREVIEW_CORNER_CENTER_PCT &&
+    pct <= PREVIEW_CORNER_CENTER_PCT + EXIT_WIDTH_PCT
+  ) {
+    return (pct - PREVIEW_CORNER_CENTER_PCT) / EXIT_WIDTH_PCT;
+  }
+
+  return 1;
+};
+
 const sampleAtPct = (pct: number): ReferenceLapSample => {
   const braking =
-    pct >= PREVIEW_BRAKE_START_PCT && pct <= PREVIEW_CORNER_CENTER_PCT;
-  const exiting =
-    pct > PREVIEW_CORNER_CENTER_PCT &&
-    pct <= PREVIEW_CORNER_CENTER_PCT + EXIT_WIDTH_PCT;
+    pct >= PREVIEW_BRAKE_START_PCT && pct <= PREVIEW_BRAKE_RELEASE_PCT;
 
   return {
     speed: speedAtPct(pct),
-    throttle: braking
-      ? 0
-      : exiting
-        ? (pct - PREVIEW_CORNER_CENTER_PCT) / EXIT_WIDTH_PCT
-        : 1,
+    throttle: throttleAtPct(pct),
     brake: braking ? 1 : 0,
     latAccel: null,
     longAccel: null,
     steeringWheelAngle: 0,
   };
 };
+
+/** The throttle the reference carries at a point on the lap, 0-1. */
+export const referenceThrottleAt = (pct: number): number => throttleAtPct(pct);
 
 /** The speed the reference carries at a point on the lap, in km/h. */
 export const referenceSpeedKmhAt = (pct: number): number =>

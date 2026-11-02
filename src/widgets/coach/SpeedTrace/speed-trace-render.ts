@@ -1,6 +1,8 @@
 import {
   traceValueRange,
   TRACE_POINT_COUNT,
+  windowIndexAt,
+  type CornerPhases,
   type TraceWindowBuffers,
   type TraceWindowStats,
 } from '@widgets/coach/coach-trace-utils';
@@ -12,24 +14,36 @@ export interface SpeedTraceColors {
   loss: string;
   grid: string;
   marker: string;
+  /** The braking zone, its marks and the BRAKE figure. */
+  brake: string;
+  /** The stretch off the brakes and through the apex. */
+  apex: string;
+  /** The exit, from the throttle point to full throttle. */
+  throttle: string;
 }
 
-/** Horizontal grid lines drawn behind the traces. */
+/** Horizontal grid lines drawn behind the traces — dashed, as on the input trace. */
 const GRID_LINE_COUNT = 3;
-/** Share of the canvas height left clear above and below a braking mark. */
-const BRAKE_MARK_INSET_RATIO = 0.12;
+const GRID_LINE_WIDTH = 0.75;
+const GRID_LINE_DASH: [number, number] = [2, 4];
+/** A phase zone is a tint, not a fill: the traces drawn over it must stay the loudest thing. */
+const PHASE_FILL_ALPHA = 0.1;
+/** The 1 px edges that say where each phase of the reference begins and ends. */
+const PHASE_EDGE_ALPHA = 0.45;
 /** Share of the value range added above and below so the curves never touch the edges. */
 const RANGE_PADDING = 0.12;
 /** Speed range (m/s) forced open when both traces are nearly flat, so a straight does not amplify noise. */
 const MIN_SPEED_RANGE_MPS = 5;
 const REFERENCE_LINE_WIDTH = 1.75;
 const OWN_LINE_WIDTH = 2.25;
-const BRAKE_MARK_WIDTH = 1.5;
+const PHASE_MARK_WIDTH = 1.25;
 const MARKER_RADIUS = 2.75;
+/** This lap's phase points — larger than the "now" dot, which they must not be confused with. */
+const PHASE_DOT_RADIUS = 3.25;
 const NOW_DASH: [number, number] = [3, 3];
-const BRAKE_MARK_DASH: [number, number] = [2, 3];
-/** Braking marks are drawn dimmer than the lines they belong to — they mark a point, they are not a signal of their own. */
-const BRAKE_MARK_ALPHA = 0.55;
+const PHASE_MARK_DASH: [number, number] = [3, 3];
+/** Phase marks are drawn dimmer than the lines they belong to — they mark a point, they are not a signal of their own. */
+const PHASE_MARK_ALPHA = 0.7;
 /** Below this magnitude (seconds) the delta is called even and drawn neutral. */
 const EVEN_DELTA_S = 0.005;
 
@@ -42,6 +56,8 @@ interface Projection {
 interface Channel {
   reference: Float32Array;
   own: Float32Array;
+  /** Whether the traces are speed — the channel the apex is a point on. */
+  isSpeed: boolean;
   /** Fixed vertical range, or null to scale to what is in the window. */
   fixedRange: { min: number; max: number } | null;
 }
@@ -57,6 +73,7 @@ const channelFor = (
     ? {
         reference: buffers.referenceBrake,
         own: buffers.ownBrake,
+        isSpeed: false,
         // Pedal travel is already 0-1 and its absolute level is the point —
         // autoscaling would make a feather-light brush of the pedal look like
         // a full stop.
@@ -65,6 +82,7 @@ const channelFor = (
     : {
         reference: buffers.referenceSpeed,
         own: buffers.ownSpeed,
+        isSpeed: true,
         fixedRange: null,
       };
 
@@ -104,17 +122,64 @@ const drawGrid = (
   height: number,
   color: string
 ) => {
+  ctx.save();
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = GRID_LINE_WIDTH;
+  ctx.setLineDash(GRID_LINE_DASH);
+  ctx.beginPath();
 
   for (let index = 1; index <= GRID_LINE_COUNT; index++) {
     const y = Math.round((height / (GRID_LINE_COUNT + 1)) * index) + 0.5;
 
-    ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(width, y);
-    ctx.stroke();
   }
+
+  ctx.stroke();
+  ctx.restore();
+};
+
+/**
+ * The reference's corner, shaded by phase: on the brakes, through the apex, on
+ * the way back to full throttle. Each zone is a faint tint with a 1 px edge on
+ * either side, so the length of a phase reads at a glance and this lap's
+ * points, drawn over it, read as early or late against the zone they fall in.
+ * A phase that runs off the window is drawn to the edge.
+ */
+const drawPhaseZones = (
+  ctx: CanvasRenderingContext2D,
+  phases: CornerPhases,
+  projection: Projection,
+  width: number,
+  height: number,
+  colors: SpeedTraceColors
+) => {
+  const drawZone = (
+    startM: number | null,
+    endM: number | null,
+    color: string
+  ) => {
+    if (startM === null) return;
+
+    const left = Math.round(projection.x(startM));
+    const right = endM === null ? width : Math.round(projection.x(endM));
+
+    if (right <= left) return;
+
+    ctx.fillStyle = color;
+    ctx.globalAlpha = PHASE_FILL_ALPHA;
+    ctx.fillRect(left, 0, right - left, height);
+
+    ctx.globalAlpha = PHASE_EDGE_ALPHA;
+    ctx.fillRect(left, 0, 1, height);
+    ctx.fillRect(right - 1, 0, 1, height);
+  };
+
+  ctx.save();
+  drawZone(phases.brakeZoneStartM, phases.brakeReleaseM, colors.brake);
+  drawZone(phases.brakeReleaseM, phases.throttlePointM, colors.apex);
+  drawZone(phases.throttlePointM, phases.fullThrottleM, colors.throttle);
+  ctx.restore();
 };
 
 const drawReference = (
@@ -235,55 +300,90 @@ const drawOwnTrace = (
   closeRun();
 };
 
+/** The trace's value at a point of the window, or null where it has none. */
+const valueAt = (
+  buffers: TraceWindowBuffers,
+  values: Float32Array,
+  offsetM: number
+): number | null => {
+  const position = windowIndexAt(buffers.offsetM, offsetM);
+
+  if (!isValue(position)) return null;
+
+  const value = values[Math.round(position)];
+
+  return isValue(value) ? value : null;
+};
+
 /**
- * Dashed vertical at each braking point — where the pedal first went down. The
- * gap between the two is the metre figure the call row prints; the marks are
- * what let the driver see it rather than take it on trust. Full height, inset
- * top and bottom: a stub at the bottom edge disappeared under the trace exactly
- * where the two lines diverge, which is where it is needed.
+ * Where the reference brakes, bottoms out and opens the throttle, and where
+ * this lap did. The reference's points are dashed verticals — full height at
+ * the braking and throttle points, and at the apex from the speed curve down,
+ * so it does not cut through the line where the two traces meet. The apex is
+ * the lowest speed, so on a pedal channel it has no point on the curve and is
+ * drawn full height too. This lap's are dots on its own line; the gap between
+ * a dot and its line is how much earlier or later this lap got there.
  */
-const drawBrakeMarks = (
+const drawPhaseMarks = (
   ctx: CanvasRenderingContext2D,
+  buffers: TraceWindowBuffers,
+  channel: Channel,
   stats: TraceWindowStats,
   projection: Projection,
   height: number,
   colors: SpeedTraceColors
 ) => {
-  const inset = height * BRAKE_MARK_INSET_RATIO;
-
-  ctx.save();
-  ctx.lineWidth = BRAKE_MARK_WIDTH;
-  ctx.globalAlpha = BRAKE_MARK_ALPHA;
-  ctx.setLineDash(BRAKE_MARK_DASH);
-
-  const drawMark = (offsetM: number | null, color: string) => {
+  const drawLine = (
+    offsetM: number | null,
+    fullHeight: boolean,
+    color: string
+  ) => {
     if (offsetM === null) return;
 
+    const value = valueAt(buffers, channel.reference, offsetM);
+    const top = fullHeight || value === null ? 0 : projection.y(value);
     const x = Math.round(projection.x(offsetM)) + 0.5;
 
     ctx.strokeStyle = color;
     ctx.beginPath();
-    ctx.moveTo(x, height - inset);
-    ctx.lineTo(x, inset);
+    ctx.moveTo(x, height);
+    ctx.lineTo(x, top);
     ctx.stroke();
   };
 
-  drawMark(stats.referenceBrakeOffsetM, colors.reference);
+  ctx.save();
+  ctx.lineWidth = PHASE_MARK_WIDTH;
+  ctx.globalAlpha = PHASE_MARK_ALPHA;
+  ctx.setLineDash(PHASE_MARK_DASH);
 
-  // Braking later than the reference is what costs time, so this mark takes the
-  // same colour the line does where the two diverge. With no reference mark in
-  // the window there is nothing to be earlier or later than, and claiming a
-  // gain or a loss there would be an invention — it stays neutral.
-  const ownMarkColor =
-    stats.brakeDeltaM === null
-      ? colors.marker
-      : stats.brakeDeltaM > 0
-        ? colors.loss
-        : colors.gain;
-
-  drawMark(stats.ownBrakeOffsetM, ownMarkColor);
+  drawLine(stats.reference.brakePointM, true, colors.brake);
+  drawLine(stats.reference.apexM, !channel.isSpeed, colors.apex);
+  drawLine(stats.reference.throttlePointM, true, colors.throttle);
 
   ctx.restore();
+
+  const drawDot = (offsetM: number | null, color: string) => {
+    if (offsetM === null) return;
+
+    const value = valueAt(buffers, channel.own, offsetM);
+
+    if (value === null) return;
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(
+      projection.x(offsetM),
+      projection.y(value),
+      PHASE_DOT_RADIUS,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+  };
+
+  drawDot(stats.own.brakePointM, colors.brake);
+  drawDot(stats.own.apexM, colors.apex);
+  drawDot(stats.own.throttlePointM, colors.throttle);
 };
 
 /** Dashed line and dot at the car's current position — where the own trace ends. */
@@ -341,17 +441,22 @@ export const drawSpeedTrace = (
 
   if (width <= 0 || height <= 0) return;
 
-  drawGrid(ctx, width, height, colors.grid);
-
-  if (!stats.hasData) return;
-
   const channel = channelFor(buffers, channelName);
-  const projection = buildProjection(buffers, channel, width, height);
+  const projection = stats.hasData
+    ? buildProjection(buffers, channel, width, height)
+    : null;
+
+  // The zones go under the grid so the dashes stay visible through the tint.
+  if (projection) {
+    drawPhaseZones(ctx, stats.reference, projection, width, height, colors);
+  }
+
+  drawGrid(ctx, width, height, colors.grid);
 
   if (!projection) return;
 
   drawReference(ctx, buffers, channel.reference, projection, colors.reference);
   drawOwnTrace(ctx, buffers, channel.own, projection, colors);
-  drawBrakeMarks(ctx, stats, projection, height, colors);
+  drawPhaseMarks(ctx, buffers, channel, stats, projection, height, colors);
   drawNowMarker(ctx, buffers, channel.own, projection, height, colors);
 };

@@ -19,8 +19,8 @@ export const COACH_MANIFEST: WidgetManifest = {
   description:
     'Brake/gas call and a speed trace against your stored best lap, colored by time gained or lost.',
   requiredCapabilities: ['playerDynamics'],
-  designWidth: 300,
-  designHeight: 130,
+  designWidth: 360,
+  designHeight: 150,
   // The trace can be switched off, leaving only the call row — a fixed height
   // would hang an empty plate under it.
   autoHeight: true,
@@ -28,8 +28,8 @@ export const COACH_MANIFEST: WidgetManifest = {
     enabled: false,
     x: 400,
     y: 240,
-    currentWidth: 300,
-    currentHeight: 130,
+    currentWidth: 360,
+    currentHeight: 150,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     ...COACH_SETTINGS.defaults,

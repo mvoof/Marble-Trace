@@ -788,6 +788,8 @@
       "call": "Indicación",
       "showCallRow": "Mostrar la indicación",
       "showCallRowDesc": "La fila de indicación FRENO / GAS de arriba. Desactivada, quedan solo la traza y las lecturas.",
+      "showPhaseFigures": "Cifras de fases",
+      "showPhaseFiguresDesc": "IN / APEX / OUT junto a la indicación: tiempo ganado o perdido en la entrada, el centro y la salida de la curva, frente a la referencia.",
       "showUrgencyBar": "Barra de urgencia",
       "showUrgencyBarDesc": "Barra bajo la indicación que muestra lo cerca que está la próxima zona de frenada.",
       "showCornerExitCalls": "Indicaciones de salida de curva",
