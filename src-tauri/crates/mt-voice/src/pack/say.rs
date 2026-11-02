@@ -40,6 +40,7 @@ pub fn said(pack: &LanguagePack, units: Units, say: SayFormat, value: &CrewArg) 
         CrewArg::Flag { value } => {
             return words(pack, if *value { YES_KEY } else { NO_KEY }, None).map(Arg::Text);
         }
+        CrewArg::Word { key } => return words(pack, key, None).map(Arg::Text),
         CrewArg::Slot { slot, value } => {
             return Some(Arg::Text(
                 pack.slot_word(slot, value).unwrap_or(value).to_string(),

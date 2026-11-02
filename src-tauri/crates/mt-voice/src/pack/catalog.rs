@@ -66,10 +66,13 @@ pub const PHRASE_KEYS: &[PhraseKey] = &[
     key("engineer.answer.noLapTime", &[]),
     key("engineer.answer.pitOrder", &["liters", "tires"]),
     key("engineer.answer.pitOrderEmpty", &[]),
-    key("engineer.answer.weather", &["airTemp", "trackTemp"]),
+    key(
+        "engineer.answer.weather",
+        &["airTemp", "trackTemp", SURFACE_VALUE],
+    ),
     key(
         "engineer.answer.weatherRain",
-        &["airTemp", "trackTemp", "rain"],
+        &["airTemp", "trackTemp", "rain", SURFACE_VALUE],
     ),
     key("engineer.answer.carPosition", &["car", "position"]),
     key("engineer.answer.carLastLap", &["car", "minutes", "seconds"]),
@@ -92,6 +95,15 @@ pub const PHRASE_KEYS: &[PhraseKey] = &[
     key(MINUS_KEY, &[SAID_VALUE]),
     key(FASTER_KEY, &[SAID_VALUE]),
     key(SLOWER_KEY, &[SAID_VALUE]),
+    // The track surface a weather answer names, by the sim's wetness level.
+    key("engineer.surface.unknown", &[]),
+    key(SURFACE_DRY_KEY, &[]),
+    key("engineer.surface.mostlyDry", &[]),
+    key("engineer.surface.veryLightlyWet", &[]),
+    key("engineer.surface.lightlyWet", &[]),
+    key("engineer.surface.moderatelyWet", &[]),
+    key("engineer.surface.veryWet", &[]),
+    key("engineer.surface.extremelyWet", &[]),
 ];
 
 pub const YES_KEY: &str = "engineer.yes";
@@ -102,6 +114,10 @@ pub const FASTER_KEY: &str = "engineer.faster";
 pub const SLOWER_KEY: &str = "engineer.slower";
 /// The number a sign or a delta word puts in words.
 pub const SAID_VALUE: &str = "value";
+/// The track surface a weather answer says, in the pack's words.
+pub const SURFACE_VALUE: &str = "surface";
+/// The surface the phrase editor samples a weather answer with.
+pub const SURFACE_DRY_KEY: &str = "engineer.surface.dry";
 
 pub fn phrase_key(id: &str) -> Option<&'static PhraseKey> {
     PHRASE_KEYS.iter().find(|key| key.id == id)

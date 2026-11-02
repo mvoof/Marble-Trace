@@ -24,6 +24,7 @@ const PERCENT: f32 = 100.0;
 /// Below this share of precipitation the weather is told as dry.
 const RAIN_SHARE: f32 = 0.01;
 const NO_DATA_KEY: &str = "engineer.noData";
+const SURFACE_VALUE: &str = "surface";
 
 /// Another car as the engineer can answer about it.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -292,6 +293,7 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
                 reply
                     .number("airTemp", f64::from(air.round()))
                     .number("trackTemp", f64::from(track.round()))
+                    .word(SURFACE_VALUE, surface_key(view.track_wetness))
             }
             _ => no_data(),
         },
@@ -308,6 +310,21 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
             }
         }
         _ => no_data(),
+    }
+}
+
+/// The pack's word for the track surface, by the sim's wetness level — the
+/// levels the weather widget shows.
+fn surface_key(track_wetness: Option<i32>) -> &'static str {
+    match track_wetness {
+        Some(1) => "engineer.surface.dry",
+        Some(2) => "engineer.surface.mostlyDry",
+        Some(3) => "engineer.surface.veryLightlyWet",
+        Some(4) => "engineer.surface.lightlyWet",
+        Some(5) => "engineer.surface.moderatelyWet",
+        Some(6) => "engineer.surface.veryWet",
+        Some(level) if level >= 7 => "engineer.surface.extremelyWet",
+        _ => "engineer.surface.unknown",
     }
 }
 
@@ -865,6 +882,45 @@ mod tests {
         assert_eq!(number(&dry, "trackTemp"), Some(27.0));
         assert_eq!(wet.key, "engineer.answer.weatherRain");
         assert_eq!(number(&wet, "rain"), Some(42.0));
+    }
+
+    #[test]
+    fn names_the_track_surface_by_its_wetness_not_the_rain() {
+        let surface = |track_wetness| {
+            let view = EngineerView {
+                air_temp_c: Some(18.0),
+                track_temp_c: Some(22.0),
+                precipitation: Some(0.0),
+                track_wetness,
+                ..EngineerView::default()
+            };
+            let EngineerStep::Reply(reply) = plan(CrewIntent::QueryWeather, &view, None) else {
+                panic!("a reply");
+            };
+
+            reply
+                .args
+                .into_iter()
+                .find_map(|(name, value)| match value {
+                    CrewArg::Word { key } if name == "surface" => Some(key),
+                    _ => None,
+                })
+        };
+
+        assert_eq!(surface(Some(1)).as_deref(), Some("engineer.surface.dry"));
+        assert_eq!(
+            surface(Some(2)).as_deref(),
+            Some("engineer.surface.mostlyDry")
+        );
+        assert_eq!(
+            surface(Some(5)).as_deref(),
+            Some("engineer.surface.moderatelyWet")
+        );
+        assert_eq!(
+            surface(Some(7)).as_deref(),
+            Some("engineer.surface.extremelyWet")
+        );
+        assert_eq!(surface(None).as_deref(), Some("engineer.surface.unknown"));
     }
 
     #[test]

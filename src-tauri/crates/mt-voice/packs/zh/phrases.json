@@ -68,11 +68,13 @@
     ],
     "engineer.answer.pitOrderEmpty": [{ "text": "没有进站计划" }],
     "engineer.answer.weather": [
-      { "text": "气温{airTemp}度，赛道{trackTemp}度" },
-      { "text": "干燥。气温{airTemp}度，赛道{trackTemp}度" }
+      { "text": "路面{surface}。气温{airTemp}度，赛道{trackTemp}度" },
+      { "text": "路面{surface}。气温{airTemp}度，地面{trackTemp}度" }
     ],
     "engineer.answer.weatherRain": [
-      { "text": "雨量百分之{rain}。气温{airTemp}度，赛道{trackTemp}度" }
+      {
+        "text": "雨量百分之{rain}，路面{surface}。气温{airTemp}度，赛道{trackTemp}度"
+      }
     ],
     "engineer.answer.carPosition": [
       { "text": "{car}号车在组别里排第{position}名" }
@@ -102,6 +104,14 @@
     "engineer.plus": [{ "text": "加{value}" }],
     "engineer.minus": [{ "text": "减{value}" }],
     "engineer.faster": [{ "text": "快{value}" }],
-    "engineer.slower": [{ "text": "慢{value}" }]
+    "engineer.slower": [{ "text": "慢{value}" }],
+    "engineer.surface.unknown": [{ "text": "情况未知" }],
+    "engineer.surface.dry": [{ "text": "干燥" }],
+    "engineer.surface.mostlyDry": [{ "text": "基本干燥" }],
+    "engineer.surface.veryLightlyWet": [{ "text": "微湿" }],
+    "engineer.surface.lightlyWet": [{ "text": "轻度湿滑" }],
+    "engineer.surface.moderatelyWet": [{ "text": "中度湿滑" }],
+    "engineer.surface.veryWet": [{ "text": "非常湿滑" }],
+    "engineer.surface.extremelyWet": [{ "text": "严重积水" }]
   }
 }

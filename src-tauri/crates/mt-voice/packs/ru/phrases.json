@@ -135,13 +135,13 @@
     "engineer.answer.pitOrderEmpty": [{ "text": "Ничего не заказано" }],
     "engineer.answer.weather": [
       {
-        "text": "Воздух {airTemp, plural, one {# градус} few {# градуса} many {# градусов} other {# градуса}}, трасса {trackTemp, plural, one {# градус} few {# градуса} many {# градусов} other {# градуса}}"
+        "text": "Трасса {surface}. Воздух {airTemp, plural, one {# градус} few {# градуса} many {# градусов} other {# градуса}}, асфальт {trackTemp, plural, one {# градус} few {# градуса} many {# градусов} other {# градуса}}"
       },
-      { "text": "Сухо. Воздух {airTemp}, асфальт {trackTemp}" }
+      { "text": "Трасса {surface}. Воздух {airTemp}, асфальт {trackTemp}" }
     ],
     "engineer.answer.weatherRain": [
       {
-        "text": "Идёт дождь, осадки {rain} процентов. Воздух {airTemp}, трасса {trackTemp}"
+        "text": "Идёт дождь, осадки {rain} процентов, трасса {surface}. Воздух {airTemp}, асфальт {trackTemp}"
       }
     ],
     "engineer.answer.carPosition": [
@@ -179,6 +179,14 @@
     "engineer.plus": [{ "text": "плюс {value}" }],
     "engineer.minus": [{ "text": "минус {value}" }],
     "engineer.faster": [{ "text": "быстрее на {value}" }],
-    "engineer.slower": [{ "text": "медленнее на {value}" }]
+    "engineer.slower": [{ "text": "медленнее на {value}" }],
+    "engineer.surface.unknown": [{ "text": "без данных" }],
+    "engineer.surface.dry": [{ "text": "сухая" }],
+    "engineer.surface.mostlyDry": [{ "text": "почти сухая" }],
+    "engineer.surface.veryLightlyWet": [{ "text": "чуть влажная" }],
+    "engineer.surface.lightlyWet": [{ "text": "слегка мокрая" }],
+    "engineer.surface.moderatelyWet": [{ "text": "мокрая" }],
+    "engineer.surface.veryWet": [{ "text": "очень мокрая" }],
+    "engineer.surface.extremelyWet": [{ "text": "залита водой" }]
   }
 }

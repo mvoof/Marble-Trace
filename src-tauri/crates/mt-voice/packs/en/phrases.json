@@ -113,12 +113,14 @@
     "engineer.answer.pitOrderEmpty": [{ "text": "Nothing ordered" }],
     "engineer.answer.weather": [
       {
-        "text": "Air {airTemp, plural, one {# degree} other {# degrees}}, track {trackTemp, plural, one {# degree} other {# degrees}}"
+        "text": "Surface {surface}. Air {airTemp, plural, one {# degree} other {# degrees}}, track {trackTemp, plural, one {# degree} other {# degrees}}"
       },
-      { "text": "Dry. Air {airTemp}, track {trackTemp}" }
+      { "text": "Surface {surface}. Air {airTemp}, track {trackTemp}" }
     ],
     "engineer.answer.weatherRain": [
-      { "text": "Rain at {rain} percent. Air {airTemp}, track {trackTemp}" }
+      {
+        "text": "Rain at {rain} percent, surface {surface}. Air {airTemp}, track {trackTemp}"
+      }
     ],
     "engineer.answer.carPosition": [
       { "text": "Car {car} is P{position} in class" }
@@ -156,6 +158,14 @@
     "engineer.plus": [{ "text": "plus {value}" }],
     "engineer.minus": [{ "text": "minus {value}" }],
     "engineer.faster": [{ "text": "{value} faster" }],
-    "engineer.slower": [{ "text": "{value} slower" }]
+    "engineer.slower": [{ "text": "{value} slower" }],
+    "engineer.surface.unknown": [{ "text": "unknown" }],
+    "engineer.surface.dry": [{ "text": "dry" }],
+    "engineer.surface.mostlyDry": [{ "text": "mostly dry" }],
+    "engineer.surface.veryLightlyWet": [{ "text": "very lightly wet" }],
+    "engineer.surface.lightlyWet": [{ "text": "lightly wet" }],
+    "engineer.surface.moderatelyWet": [{ "text": "moderately wet" }],
+    "engineer.surface.veryWet": [{ "text": "very wet" }],
+    "engineer.surface.extremelyWet": [{ "text": "extremely wet" }]
   }
 }

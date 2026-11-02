@@ -157,6 +157,11 @@ pub enum CrewArg {
     Flag {
         value: bool,
     },
+    /// Said as the pack's phrase under this key — a word the code picks, the
+    /// pack words.
+    Word {
+        key: String,
+    },
 }
 
 /// The engineer's answer: a phrase key from the language pack and its values.
@@ -190,6 +195,16 @@ impl CrewReply {
             CrewArg::Slot {
                 slot: slot.to_string(),
                 value: value.to_string(),
+            },
+        ));
+        self
+    }
+
+    pub fn word(mut self, name: &str, key: &str) -> Self {
+        self.args.push((
+            name.to_string(),
+            CrewArg::Word {
+                key: key.to_string(),
             },
         ));
         self

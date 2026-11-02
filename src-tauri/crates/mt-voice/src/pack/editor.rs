@@ -23,7 +23,10 @@ use mt_model::app::voice::{
 };
 
 use crate::cache::{variant_status, VariantStatus};
-use crate::pack::catalog::{reply_values, ASK_WHEN_UNSAID, COMPOUND_SLOT, INTENTS, PHRASE_KEYS};
+use crate::pack::catalog::{
+    reply_values, ASK_WHEN_UNSAID, COMPOUND_SLOT, INTENTS, PHRASE_KEYS, SURFACE_DRY_KEY,
+    SURFACE_VALUE,
+};
 use crate::pack::grammar::{compile, Conflict};
 use crate::pack::message::{format, parse, values_used, Arg, Args};
 use crate::pack::questions::{answer_mistake, AnswerList};
@@ -43,6 +46,8 @@ const TEMPLATE_EXAMPLES: usize = 6;
 const MAX_FIXED_SAMPLES: usize = 4;
 /// The compound a reply's sample names.
 const SAMPLE_COMPOUND: &str = "dry";
+/// The surface a weather sample names when the pack has no word for it.
+const SAMPLE_SURFACE: &str = "dry";
 
 pub fn pack_view(pack: &LanguagePack, folder: &Path, config: &OutputConfig) -> VoicePackView {
     let questions = &pack.commands_file.custom.questions;
@@ -336,6 +341,15 @@ pub fn check_draft(
         })
         .and_then(|value| value.phrases.first())
         .map_or(SAMPLE_COMPOUND, String::as_str);
+    let surface = view
+        .phrases
+        .iter()
+        .find(|phrase| phrase.key == SURFACE_DRY_KEY)
+        .and_then(|phrase| phrase.variants.first())
+        .and_then(|variant| sayings(&variant.text).ok())
+        .and_then(|texts| texts.into_iter().next())
+        .unwrap_or_else(|| SAMPLE_SURFACE.to_string());
+    let word_samples = [(COMPOUND_SLOT, compound), (SURFACE_VALUE, surface.as_str())];
     let variants = view
         .phrases
         .iter()
@@ -347,8 +361,13 @@ pub fn check_draft(
                 .iter()
                 .enumerate()
                 .map(move |(index, variant)| {
-                    let mut check =
-                        check_variant(&view.language, &phrase.key, index, &variant.text, compound);
+                    let mut check = check_variant(
+                        &view.language,
+                        &phrase.key,
+                        index,
+                        &variant.text,
+                        &word_samples,
+                    );
 
                     if let (None, Some((target, list))) = (&check.error, answer) {
                         check.error = sayings(&variant.text).ok().and_then(|texts| {
@@ -480,8 +499,14 @@ fn check_variant(
     key: &str,
     index: usize,
     text: &str,
-    compound: &str,
+    word_samples: &[(&str, &str)],
 ) -> VoiceVariantCheck {
+    let word_sample = |value: &str| {
+        word_samples
+            .iter()
+            .find(|(name, _)| *name == value)
+            .map(|(_, sample)| *sample)
+    };
     let mut check = VoiceVariantCheck {
         key: key.to_string(),
         index: index as u32,
@@ -513,7 +538,7 @@ fn check_variant(
     check.sayings = messages.len() as u32;
 
     let values: Vec<String> = reply_values(key).into_iter().map(str::to_string).collect();
-    let has_numbers = values.iter().any(|value| value != COMPOUND_SLOT);
+    let has_numbers = values.iter().any(|value| word_sample(value).is_none());
     let numbers: &[f64] = if has_numbers {
         sample_numbers(language)
     } else {
@@ -529,10 +554,9 @@ fn check_variant(
         let args: Args<'_> = values
             .iter()
             .map(|value| {
-                let sample = if value == COMPOUND_SLOT {
-                    Arg::Text(compound.to_string())
-                } else {
-                    Arg::Number(number)
+                let sample = match word_sample(value) {
+                    Some(word) => Arg::Text(word.to_string()),
+                    None => Arg::Number(number),
                 };
 
                 (value.as_str(), sample)

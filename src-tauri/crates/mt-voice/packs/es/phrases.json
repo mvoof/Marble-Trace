@@ -125,13 +125,13 @@
     "engineer.answer.pitOrderEmpty": [{ "text": "No hay nada pedido" }],
     "engineer.answer.weather": [
       {
-        "text": "Aire {airTemp, plural, one {# grado} other {# grados}}, pista {trackTemp, plural, one {# grado} other {# grados}}"
+        "text": "Pista {surface}. Aire {airTemp, plural, one {# grado} other {# grados}}, asfalto {trackTemp, plural, one {# grado} other {# grados}}"
       },
-      { "text": "Seco. Aire {airTemp}, pista {trackTemp}" }
+      { "text": "Pista {surface}. Aire {airTemp}, asfalto {trackTemp}" }
     ],
     "engineer.answer.weatherRain": [
       {
-        "text": "Lluvia al {rain} por ciento. Aire {airTemp}, pista {trackTemp}"
+        "text": "Lluvia al {rain} por ciento, pista {surface}. Aire {airTemp}, asfalto {trackTemp}"
       }
     ],
     "engineer.answer.carPosition": [
@@ -173,6 +173,14 @@
     "engineer.plus": [{ "text": "más {value}" }],
     "engineer.minus": [{ "text": "menos {value}" }],
     "engineer.faster": [{ "text": "{value} más rápido" }],
-    "engineer.slower": [{ "text": "{value} más lento" }]
+    "engineer.slower": [{ "text": "{value} más lento" }],
+    "engineer.surface.unknown": [{ "text": "sin datos" }],
+    "engineer.surface.dry": [{ "text": "seca" }],
+    "engineer.surface.mostlyDry": [{ "text": "casi seca" }],
+    "engineer.surface.veryLightlyWet": [{ "text": "apenas húmeda" }],
+    "engineer.surface.lightlyWet": [{ "text": "algo mojada" }],
+    "engineer.surface.moderatelyWet": [{ "text": "mojada" }],
+    "engineer.surface.veryWet": [{ "text": "muy mojada" }],
+    "engineer.surface.extremelyWet": [{ "text": "encharcada" }]
   }
 }

@@ -529,6 +529,9 @@ fn plain_arg(pack: &LanguagePack, value: &CrewArg) -> Option<Arg> {
 
             Arg::Text(pack.variants(key).first()?.sayings.first()?.text.clone())
         }
+        CrewArg::Word { key } => {
+            Arg::Text(pack.variants(key).first()?.sayings.first()?.text.clone())
+        }
     })
 }
 
@@ -1015,6 +1018,22 @@ mod tests {
             .last
             .as_ref()
             .map(|last| last.text.clone())
+    }
+
+    #[test]
+    fn says_the_track_surface_in_the_packs_words() {
+        let (_, shared) = shared("ru");
+
+        shared.speak(
+            &CrewReply::plain("engineer.answer.weather")
+                .number("airTemp", 18.0)
+                .number("trackTemp", 22.0)
+                .word("surface", "engineer.surface.mostlyDry"),
+        );
+
+        assert!(last_said(&shared)
+            .unwrap()
+            .starts_with("Трасса почти сухая."));
     }
 
     #[test]
