@@ -16,6 +16,7 @@ import {
   type PhaseTime,
   type TraceWindowBuffers,
   type TraceWindowStats,
+  wrapPct,
 } from './coach-trace-utils';
 import type { BackendComputedStore } from '@entities/cars/computed.store';
 import type { PlayerStore } from '@entities/player/player.store';
@@ -227,11 +228,15 @@ export class CoachWidgetStore {
       )
     );
 
-    // A new reference lap changes what the current window is compared against.
+    // A new reference lap changes what the current window is compared against,
+    // and the figures settled against the old one no longer describe it.
     this.disposers.push(
       reaction(
         () => this.root.referenceLap.data,
-        () => this.rebuildWindow()
+        () => {
+          this.settledTimes = NO_SETTLED_TIMES();
+          this.rebuildWindow();
+        }
       )
     );
 
@@ -265,8 +270,11 @@ export class CoachWidgetStore {
       this.clearBuffers();
       this.previousBucket = null;
 
+      // The last corner's figures stay up down the straight after the line; a
+      // teleport leaves no corner behind the car they could still belong to.
       if (!wrappedNormally) {
         this.previousDistPct = null;
+        this.settledTimes = NO_SETTLED_TIMES();
       }
     }
 
@@ -389,9 +397,7 @@ export class CoachWidgetStore {
 
     if (currentDistPct === null || trackLengthM <= 0) return null;
 
-    const lapPct = (((currentDistPct + offsetM / trackLengthM) % 1) + 1) % 1;
-
-    return lapPct * trackLengthM;
+    return wrapPct(currentDistPct + offsetM / trackLengthM) * trackLengthM;
   }
 
   /**
@@ -480,7 +486,6 @@ export class CoachWidgetStore {
     this.ownSpeedByBucket.fill(NO_VALUE);
     this.ownBrakeByBucket.fill(NO_VALUE);
     this.ownThrottleByBucket.fill(NO_VALUE);
-    this.settledTimes = NO_SETTLED_TIMES();
   }
 
   /**
@@ -540,6 +545,7 @@ export class CoachWidgetStore {
 
   reset() {
     this.clearBuffers();
+    this.settledTimes = NO_SETTLED_TIMES();
     this.previousDistPct = null;
     this.previousBucket = null;
     this.windowStats = EMPTY_TRACE_STATS;

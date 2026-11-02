@@ -82,17 +82,18 @@ export interface TraceWindowBuffers {
 }
 
 /**
- * One lap's way through the first corner in the window, in metres from the
+ * One lap's way through the corner the window is about, in metres from the
  * car: on the brakes, off them and through the apex, back on the power. A
- * point the lap has not reached — or that lies outside the window — is null.
+ * point the lap has not reached is null; one behind the window's left edge is
+ * reported where it lies.
  */
 export interface CornerPhases {
   /**
-   * Where the braking zone starts as drawn: the braking point, or the window's
-   * left edge when the brake is already down there.
+   * Where the braking zone starts as drawn: the braking point, or where the
+   * searched stretch begins when the brake is already down there.
    */
   brakeZoneStartM: number | null;
-  /** Where the pedal went down. Null when that happened before the window. */
+  /** Where the pedal went down. Null when that happened before the searched stretch. */
   brakePointM: number | null;
   /** Where the brake came off again. */
   brakeReleaseM: number | null;
@@ -117,16 +118,6 @@ export interface TraceWindowStats {
   reference: CornerPhases;
   /** This lap's corner phases, as far as the car has driven. */
   own: CornerPhases;
-  /**
-   * How much later this lap got on the brakes than the reference, in metres.
-   * Positive = braked later. Null unless both braking points are in the window,
-   * because there is nothing to be later *than* otherwise.
-   */
-  brakeDeltaM: number | null;
-  /** How much later this lap reached its lowest speed than the reference, in metres. */
-  apexDeltaM: number | null;
-  /** How much later this lap opened the throttle than the reference, in metres. */
-  throttleDeltaM: number | null;
   /** Whether anything at all was drawn — false leaves the canvas empty. */
   hasData: boolean;
 }
@@ -155,9 +146,6 @@ export const EMPTY_TRACE_STATS: TraceWindowStats = {
   windowDeltaS: null,
   reference: NO_CORNER_PHASES,
   own: NO_CORNER_PHASES,
-  brakeDeltaM: null,
-  apexDeltaM: null,
-  throttleDeltaM: null,
   hasData: false,
 };
 
@@ -175,7 +163,8 @@ export interface FillTraceWindowParams {
   windowMeters: number;
 }
 
-const wrapPct = (pct: number): number => ((pct % 1) + 1) % 1;
+/** A lap position folded back into 0..1, across the line either way. */
+export const wrapPct = (pct: number): number => ((pct % 1) + 1) % 1;
 
 /** Seconds to cover `distanceM` at `speedMps`, floored so a stopped car cannot diverge. */
 const secondsFor = (distanceM: number, speedMps: number): number =>
@@ -243,18 +232,139 @@ const referenceValueAt = (
   );
 };
 
-/** First index at or after `from` where `matches` holds, stopping at the first gap in `values`. */
-const findIndex = (
-  values: Float32Array,
-  from: number,
-  matches: (value: number, index: number) => boolean
-): number | null => {
-  for (let index = from; index < TRACE_POINT_COUNT; index++) {
-    const value = values[index] ?? NO_VALUE;
+type TraceField = 'speed' | 'brake' | 'throttle';
 
-    if (!isValue(value)) return null;
+/** One trace read anywhere around the car, between the drawn samples; `NO_VALUE` where it has nothing. */
+type TraceReader = (field: TraceField, offsetM: number) => number;
 
-    if (matches(value, index)) return index;
+/**
+ * What the two readers read on the current frame. Set once per
+ * `fillTraceWindow` rather than captured in closures built per frame: the
+ * window is refilled on every telemetry frame and must not allocate.
+ */
+const frameSource: {
+  referenceSamples: ReferenceLapSample[] | null;
+  ownSpeedByBucket: Float32Array;
+  ownBrakeByBucket: Float32Array;
+  ownThrottleByBucket: Float32Array;
+  currentDistPct: number;
+  trackLengthM: number;
+} = {
+  referenceSamples: null,
+  ownSpeedByBucket: new Float32Array(0),
+  ownBrakeByBucket: new Float32Array(0),
+  ownThrottleByBucket: new Float32Array(0),
+  currentDistPct: 0,
+  trackLengthM: 1,
+};
+
+const pctAt = (offsetM: number): number =>
+  wrapPct(frameSource.currentDistPct + offsetM / frameSource.trackLengthM);
+
+const readReference: TraceReader = (field, offsetM) =>
+  referenceValueAt(frameSource.referenceSamples, field, pctAt(offsetM));
+
+const ownBucketsFor = (field: TraceField): Float32Array => {
+  if (field === 'speed') {
+    return frameSource.ownSpeedByBucket;
+  }
+
+  return field === 'brake'
+    ? frameSource.ownBrakeByBucket
+    : frameSource.ownThrottleByBucket;
+};
+
+/**
+ * Nothing ahead of the car has been driven this lap yet, and a bucket the car
+ * has not reached still holds the previous lap's value until it is cleared —
+ * both must read as absent rather than as a flat line.
+ */
+const readOwn: TraceReader = (field, offsetM) =>
+  offsetM > 0 ? NO_VALUE : bucketValueAt(ownBucketsFor(field), pctAt(offsetM));
+
+/**
+ * How far behind the window a corner is looked for. A corner whose braking
+ * zone has scrolled off the left edge is still the one the car is in until its
+ * exit is over; searched for inside the window alone, it gave way to the next
+ * corner's braking before its apex and exit had been measured.
+ */
+const CORNER_LOOKBACK_M = 400;
+
+/** Samples across the look-back — 5 m apart; every point found on them is located on the trace itself. */
+const LOOKBACK_POINT_COUNT = 80;
+
+const GRID_POINT_COUNT = LOOKBACK_POINT_COUNT + TRACE_POINT_COUNT;
+
+/**
+ * The stretch a corner is searched on: the look-back, then the drawn window.
+ * One trace at a time, refilled in place.
+ */
+const grid = {
+  offsetM: new Float32Array(GRID_POINT_COUNT),
+  speed: new Float32Array(GRID_POINT_COUNT),
+  brake: new Float32Array(GRID_POINT_COUNT),
+  throttle: new Float32Array(GRID_POINT_COUNT),
+};
+
+const fillGrid = (
+  windowOffsetM: Float32Array,
+  windowSpeed: Float32Array,
+  windowBrake: Float32Array,
+  windowThrottle: Float32Array,
+  read: TraceReader
+) => {
+  const windowStartM = windowOffsetM[0] ?? 0;
+  const lookbackStep = CORNER_LOOKBACK_M / LOOKBACK_POINT_COUNT;
+
+  for (let index = 0; index < LOOKBACK_POINT_COUNT; index++) {
+    const offsetM = windowStartM - CORNER_LOOKBACK_M + index * lookbackStep;
+
+    grid.offsetM[index] = offsetM;
+    grid.speed[index] = read('speed', offsetM);
+    grid.brake[index] = read('brake', offsetM);
+    grid.throttle[index] = read('throttle', offsetM);
+  }
+
+  grid.offsetM.set(windowOffsetM, LOOKBACK_POINT_COUNT);
+  grid.speed.set(windowSpeed, LOOKBACK_POINT_COUNT);
+  grid.brake.set(windowBrake, LOOKBACK_POINT_COUNT);
+  grid.throttle.set(windowThrottle, LOOKBACK_POINT_COUNT);
+};
+
+const isBraking = (brake: number) => brake > BRAKE_ON_THRESHOLD;
+const isOffBrake = (brake: number) => brake <= BRAKE_ON_THRESHOLD;
+
+/** A rule on both pedals at one point. Comparisons with `NO_VALUE` are false, so a gap never matches. */
+type PedalRule = (brake: number, throttle: number) => boolean;
+
+const brakeOn: PedalRule = (brake) => isBraking(brake);
+
+const brakeOff: PedalRule = (brake) => isOffBrake(brake);
+
+/** Back on the power — with the brake off, so throttle blipped under braking is not taken for it. */
+const throttleOpen: PedalRule = (brake, throttle) =>
+  throttle > THROTTLE_OPEN_THRESHOLD && isOffBrake(brake);
+
+/** The exit is over at full throttle, or where the next braking starts short of it. */
+const exitOver: PedalRule = (brake, throttle) =>
+  throttle >= FULL_THROTTLE_THRESHOLD || isBraking(brake);
+
+/** First grid index at or after `from` where `rule` holds, stopping at the first gap. */
+const findIndex = (from: number, rule: PedalRule): number | null => {
+  for (let index = from; index < GRID_POINT_COUNT; index++) {
+    const brake = grid.brake[index] ?? NO_VALUE;
+
+    if (!isValue(brake)) return null;
+
+    if (rule(brake, grid.throttle[index] ?? NO_VALUE)) return index;
+  }
+
+  return null;
+};
+
+const firstValueIndex = (values: Float32Array): number | null => {
+  for (let index = 0; index < GRID_POINT_COUNT; index++) {
+    if (isValue(values[index] ?? NO_VALUE)) return index;
   }
 
   return null;
@@ -264,7 +374,7 @@ const findIndex = (
 const lastValueIndex = (values: Float32Array, from: number): number => {
   let last = from;
 
-  for (let index = from; index < TRACE_POINT_COUNT; index++) {
+  for (let index = from; index < GRID_POINT_COUNT; index++) {
     if (!isValue(values[index] ?? NO_VALUE)) break;
 
     last = index;
@@ -305,34 +415,29 @@ const findApex = (
     : null;
 };
 
-/** One trace read anywhere in the window, between the drawn samples. */
-interface TraceSampler {
-  speed: (offsetM: number) => number;
-  brake: (offsetM: number) => number;
-  throttle: (offsetM: number) => number;
-}
-
-/** Halvings of the gap between two samples when locating a pedal edge: 2.5 m down to a few millimetres. */
-const EDGE_REFINE_STEPS = 10;
+/** Halvings of the gap between two samples when locating a pedal edge: 5 m down to a few millimetres. */
+const EDGE_REFINE_STEPS = 11;
 
 /** Points read across the two samples either side of the lowest one when locating the apex. */
 const APEX_REFINE_POINTS = 24;
 
 /**
- * Where `reached` first holds between the sample before `index` and `index`
+ * Where `rule` first holds between the grid sample before `index` and `index`
  * itself, in metres from the car — found on the trace itself rather than on
- * the drawn samples. The window's sampling grid slides along the track as the
- * car moves; a point snapped to it, or interpolated across it, moves by up to
- * a sample from frame to frame, and every figure measured from it flickers.
+ * the samples, and by the same rule that found `index`. The window's sampling
+ * grid slides along the track as the car moves; a point snapped to it, or
+ * interpolated across it, moves by up to a sample from frame to frame, and
+ * every figure measured from it flickers.
  */
 const refineEdge = (
-  offsetM: Float32Array,
-  index: number,
-  sample: (offsetM: number) => number,
-  reached: (value: number) => boolean
+  index: number | null,
+  read: TraceReader,
+  rule: PedalRule
 ): number | null => {
-  let high = offsetM[index];
-  let low = offsetM[index - 1];
+  if (index === null) return null;
+
+  let high = grid.offsetM[index];
+  let low = grid.offsetM[index - 1];
 
   if (high === undefined) return null;
 
@@ -340,9 +445,8 @@ const refineEdge = (
 
   for (let step = 0; step < EDGE_REFINE_STEPS; step++) {
     const middle = (low + high) / 2;
-    const value = sample(middle);
 
-    if (isValue(value) && reached(value)) {
+    if (rule(read('brake', middle), read('throttle', middle))) {
       high = middle;
     } else {
       low = middle;
@@ -352,24 +456,22 @@ const refineEdge = (
   return high;
 };
 
-/** The lowest speed around the lowest drawn sample, read on the trace itself — see `refineEdge`. */
-const refineApex = (
-  offsetM: Float32Array,
-  index: number,
-  sample: (offsetM: number) => number
-): number | null => {
-  const centre = offsetM[index];
+/** The lowest speed around the lowest grid sample, read on the trace itself — see `refineEdge`. */
+const refineApex = (index: number | null, read: TraceReader): number | null => {
+  if (index === null) return null;
+
+  const centre = grid.offsetM[index];
 
   if (centre === undefined) return null;
 
-  const from = offsetM[index - 1] ?? centre;
-  const to = offsetM[index + 1] ?? centre;
+  const from = grid.offsetM[index - 1] ?? centre;
+  const to = grid.offsetM[index + 1] ?? centre;
   let lowestAt = centre;
-  let lowest = sample(centre);
+  let lowest = read('speed', centre);
 
   for (let point = 0; point <= APEX_REFINE_POINTS; point++) {
     const at = from + ((to - from) * point) / APEX_REFINE_POINTS;
-    const value = sample(at);
+    const value = read('speed', at);
 
     if (isValue(value) && !(value >= lowest)) {
       lowest = value;
@@ -380,87 +482,97 @@ const refineApex = (
   return lowestAt;
 };
 
+/** One corner's phase boundaries as grid indexes, written in place by `scanCorner`. */
+const cornerIndexes = {
+  zoneStart: null as number | null,
+  release: null as number | null,
+  throttlePoint: null as number | null,
+  fullThrottle: null as number | null,
+};
+
 /**
- * The first corner in the window, split into the phases a driver works through:
- * the brake goes down, comes off, the speed bottoms out, the throttle opens and
- * reaches full. Each phase is searched for only after the one before it, so a
- * lift on the straight is not taken for a throttle point and the next corner's
- * braking is not taken for this one's. Found on the drawn samples, then
- * located precisely on the trace through `sampler`.
+ * The corner whose braking starts at or after `from`. Each phase is searched
+ * for only after the one before it, so a lift on the straight is not taken for
+ * a throttle point and the next corner's braking is not taken for this one's.
  */
-const findCornerPhases = (
-  offsetM: Float32Array,
-  speed: Float32Array,
-  brake: Float32Array,
-  throttle: Float32Array,
-  sampler: TraceSampler
-): CornerPhases => {
+const scanCorner = (from: number) => {
+  const zoneStart = findIndex(from, brakeOn);
+  const release = zoneStart === null ? null : findIndex(zoneStart, brakeOff);
+  const throttlePoint =
+    release === null ? null : findIndex(release, throttleOpen);
+
+  cornerIndexes.zoneStart = zoneStart;
+  cornerIndexes.release = release;
+  cornerIndexes.throttlePoint = throttlePoint;
+  cornerIndexes.fullThrottle =
+    throttlePoint === null ? null : findIndex(throttlePoint, exitOver);
+};
+
+/**
+ * The corner the window is about, split into the phases a driver works
+ * through: the brake goes down, comes off, the speed bottoms out, the throttle
+ * opens and reaches full. It is the first corner whose exit reaches into the
+ * window — searched for in the look-back too, so a long corner keeps its
+ * phases once its braking has scrolled off the edge — unless the car has
+ * already braked for the next one. Found on the grid, then located precisely
+ * on the trace through `read`. Points before the window are reported as they
+ * are, beyond the left edge.
+ */
+const findCornerPhases = (read: TraceReader): CornerPhases => {
+  const windowStartM = grid.offsetM[LOOKBACK_POINT_COUNT] ?? 0;
+  const firstValue = firstValueIndex(grid.brake);
+
   // A lap that has only just started has nothing behind the car yet.
-  const firstValue = brake.findIndex((value) => isValue(value));
+  if (firstValue === null) return NO_CORNER_PHASES;
 
-  if (firstValue === -1) return NO_CORNER_PHASES;
+  let from = firstValue;
 
-  const isBraking = (value: number) => value > BRAKE_ON_THRESHOLD;
-  const isOffBrake = (value: number) => value <= BRAKE_ON_THRESHOLD;
-  const isThrottleOpen = (value: number) => value > THROTTLE_OPEN_THRESHOLD;
-  const isFullThrottle = (value: number) => value >= FULL_THROTTLE_THRESHOLD;
+  for (;;) {
+    scanCorner(from);
 
-  const zoneStart = findIndex(brake, firstValue, isBraking);
+    const { zoneStart, fullThrottle } = cornerIndexes;
+
+    if (zoneStart === null) return NO_CORNER_PHASES;
+
+    if (fullThrottle === null) break;
+
+    const fullThrottleM = grid.offsetM[fullThrottle] ?? 0;
+    const nextZoneStart = findIndex(fullThrottle, brakeOn);
+    const isInNextCorner =
+      fullThrottleM <= 0 &&
+      nextZoneStart !== null &&
+      (grid.offsetM[nextZoneStart] ?? 0) <= 0;
+
+    if (fullThrottleM >= windowStartM && !isInNextCorner) break;
+
+    if (nextZoneStart === null) return NO_CORNER_PHASES;
+
+    from = nextZoneStart;
+  }
+
+  const { zoneStart, release, throttlePoint, fullThrottle } = cornerIndexes;
 
   if (zoneStart === null) return NO_CORNER_PHASES;
 
   // The braking point is a rising edge: the pedal already down where the trace
-  // begins went down somewhere this window does not show.
-  const hasBrakePoint = zoneStart > firstValue;
-
-  const release = findIndex(brake, zoneStart, isOffBrake);
-  const throttlePoint =
-    release === null
-      ? null
-      : findIndex(
-          throttle,
-          release,
-          (value, index) =>
-            isThrottleOpen(value) && isOffBrake(brake[index] ?? 0)
-        );
-  const fullThrottle =
-    throttlePoint === null
-      ? null
-      : findIndex(
-          throttle,
-          throttlePoint,
-          (value, index) =>
-            isFullThrottle(value) || isBraking(brake[index] ?? 0)
-        );
+  // begins went down somewhere it does not reach.
+  const brakePointM =
+    zoneStart > firstValue ? refineEdge(zoneStart, read, brakeOn) : null;
   const apex = findApex(
-    speed,
+    grid.speed,
     zoneStart,
-    fullThrottle ?? lastValueIndex(speed, zoneStart)
+    fullThrottle ?? lastValueIndex(grid.speed, zoneStart)
   );
 
-  const edge = (
-    index: number | null,
-    sample: (offsetM: number) => number,
-    reached: (value: number) => boolean
-  ): number | null =>
-    index === null ? null : refineEdge(offsetM, index, sample, reached);
-
-  const brakePointM = hasBrakePoint
-    ? edge(zoneStart, sampler.brake, isBraking)
-    : null;
-
   return {
-    brakeZoneStartM: brakePointM ?? offsetM[zoneStart] ?? null,
+    brakeZoneStartM: brakePointM ?? grid.offsetM[zoneStart] ?? null,
     brakePointM,
-    brakeReleaseM: edge(release, sampler.brake, isOffBrake),
-    apexM: apex === null ? null : refineApex(offsetM, apex, sampler.speed),
-    throttlePointM: edge(throttlePoint, sampler.throttle, isThrottleOpen),
-    fullThrottleM: edge(fullThrottle, sampler.throttle, isFullThrottle),
+    brakeReleaseM: refineEdge(release, read, brakeOff),
+    apexM: refineApex(apex, read),
+    throttlePointM: refineEdge(throttlePoint, read, throttleOpen),
+    fullThrottleM: refineEdge(fullThrottle, read, exitOver),
   };
 };
-
-const laterBy = (own: number | null, reference: number | null) =>
-  own !== null && reference !== null ? own - reference : null;
 
 /**
  * Time gained or lost inside one phase of the reference's corner:
@@ -475,17 +587,29 @@ export interface PhaseTime {
   deltaS: number;
 }
 
-/** `timeDeltaS` at a point of the window, between the drawn samples. */
-const timeDeltaAt = (buffers: TraceWindowBuffers, offsetM: number): number => {
-  const first = buffers.offsetM[0];
-  const last = buffers.offsetM.at(-1);
+/**
+ * Where `atM` falls on the window's sample grid, as a fractional index;
+ * `NO_VALUE` outside the window.
+ */
+export const windowIndexAt = (offsetM: Float32Array, atM: number): number => {
+  const first = offsetM[0];
+  const last = offsetM[TRACE_POINT_COUNT - 1];
 
   if (first === undefined || last === undefined || last <= first) {
     return NO_VALUE;
   }
 
-  const position =
-    ((offsetM - first) / (last - first)) * (TRACE_POINT_COUNT - 1);
+  const position = ((atM - first) / (last - first)) * (TRACE_POINT_COUNT - 1);
+
+  return position < 0 || position > TRACE_POINT_COUNT - 1 ? NO_VALUE : position;
+};
+
+/** `timeDeltaS` at a point of the window, between the drawn samples. */
+const timeDeltaAt = (buffers: TraceWindowBuffers, offsetM: number): number => {
+  const position = windowIndexAt(buffers.offsetM, offsetM);
+
+  if (!isValue(position)) return NO_VALUE;
+
   const lowerIndex = Math.floor(position);
   const lower = buffers.timeDeltaS[lowerIndex] ?? NO_VALUE;
   const upper = buffers.timeDeltaS[lowerIndex + 1] ?? NO_VALUE;
@@ -501,9 +625,10 @@ const timeDeltaAt = (buffers: TraceWindowBuffers, offsetM: number): number => {
  * How much time this lap has gained or lost against the reference between
  * `startM` and `endM` — one phase of the reference's corner, in metres from the
  * car. Read off the running time delta, so the three phases of a corner add up
- * to what the corner cost. Null before the car reaches the phase, where this
- * lap's trace does not cover its start, and where the car all but stopped in
- * it: a car that was parked, reset or towed has not driven it.
+ * to what the corner cost. Null before the car reaches the phase, once its
+ * start has left the window, where this lap's trace does not cover its start,
+ * and where the car all but stopped in it: a car that was parked, reset or
+ * towed has not driven it.
  */
 export const phaseTime = (
   buffers: TraceWindowBuffers,
@@ -523,7 +648,9 @@ export const phaseTime = (
     return null;
   }
 
-  if (untilM - startM < MIN_PHASE_DRIVEN_M) {
+  // A phase just entered has no time to show yet; one already driven has its
+  // time however short it was.
+  if (!passed && untilM - startM < MIN_PHASE_DRIVEN_M) {
     return null;
   }
 
@@ -544,7 +671,11 @@ export const phaseTime = (
     recordedInside = true;
   }
 
-  if (!recordedInside) {
+  // A phase shorter than a sample may hold none; both its ends were read on
+  // this lap's trace all the same.
+  const stepM = (buffers.offsetM[1] ?? 0) - (buffers.offsetM[0] ?? 0);
+
+  if (!recordedInside && untilM - startM >= stepM) {
     return null;
   }
 
@@ -584,6 +715,13 @@ export const fillTraceWindow = (
     return EMPTY_TRACE_STATS;
   }
 
+  frameSource.referenceSamples = referenceSamples;
+  frameSource.ownSpeedByBucket = ownSpeedByBucket;
+  frameSource.ownBrakeByBucket = ownBrakeByBucket;
+  frameSource.ownThrottleByBucket = ownThrottleByBucket;
+  frameSource.currentDistPct = currentDistPct;
+  frameSource.trackLengthM = trackLengthM;
+
   const step = (windowMeters * 2) / (TRACE_POINT_COUNT - 1);
 
   let cumulativeDeltaS = NO_VALUE;
@@ -593,36 +731,16 @@ export const fillTraceWindow = (
 
   for (let index = 0; index < TRACE_POINT_COUNT; index++) {
     const offsetM = -windowMeters + index * step;
-    const pct = wrapPct(currentDistPct + offsetM / trackLengthM);
+    const referenceSpeed = readReference('speed', offsetM);
+    const ownSpeed = readOwn('speed', offsetM);
 
     buffers.offsetM[index] = offsetM;
-
-    const referenceSpeed = referenceValueAt(referenceSamples, 'speed', pct);
-
-    // Nothing ahead of the car has been driven this lap yet, and a bucket the
-    // car has not reached still holds the previous lap's value until it is
-    // cleared — both must read as absent rather than as a flat line.
-    const driven = offsetM <= 0;
-    const ownSpeed = driven ? bucketValueAt(ownSpeedByBucket, pct) : NO_VALUE;
-
     buffers.referenceSpeed[index] = referenceSpeed;
     buffers.ownSpeed[index] = ownSpeed;
-    buffers.referenceBrake[index] = referenceValueAt(
-      referenceSamples,
-      'brake',
-      pct
-    );
-    buffers.ownBrake[index] = driven
-      ? bucketValueAt(ownBrakeByBucket, pct)
-      : NO_VALUE;
-    buffers.referenceThrottle[index] = referenceValueAt(
-      referenceSamples,
-      'throttle',
-      pct
-    );
-    buffers.ownThrottle[index] = driven
-      ? bucketValueAt(ownThrottleByBucket, pct)
-      : NO_VALUE;
+    buffers.referenceBrake[index] = readReference('brake', offsetM);
+    buffers.ownBrake[index] = readOwn('brake', offsetM);
+    buffers.referenceThrottle[index] = readReference('throttle', offsetM);
+    buffers.ownThrottle[index] = readOwn('throttle', offsetM);
 
     if (isValue(referenceSpeed) || isValue(ownSpeed)) {
       hasData = true;
@@ -655,44 +773,28 @@ export const fillTraceWindow = (
     previousReferenceSpeed = referenceSpeed;
   }
 
-  const pctAt = (offsetM: number) =>
-    wrapPct(currentDistPct + offsetM / trackLengthM);
-  const ownAt = (values: Float32Array) => (offsetM: number) =>
-    offsetM > 0 ? NO_VALUE : bucketValueAt(values, pctAt(offsetM));
-
-  const reference = findCornerPhases(
+  fillGrid(
     buffers.offsetM,
     buffers.referenceSpeed,
     buffers.referenceBrake,
     buffers.referenceThrottle,
-    {
-      speed: (offsetM) =>
-        referenceValueAt(referenceSamples, 'speed', pctAt(offsetM)),
-      brake: (offsetM) =>
-        referenceValueAt(referenceSamples, 'brake', pctAt(offsetM)),
-      throttle: (offsetM) =>
-        referenceValueAt(referenceSamples, 'throttle', pctAt(offsetM)),
-    }
+    readReference
   );
-  const own = findCornerPhases(
+  const reference = findCornerPhases(readReference);
+
+  fillGrid(
     buffers.offsetM,
     buffers.ownSpeed,
     buffers.ownBrake,
     buffers.ownThrottle,
-    {
-      speed: ownAt(ownSpeedByBucket),
-      brake: ownAt(ownBrakeByBucket),
-      throttle: ownAt(ownThrottleByBucket),
-    }
+    readOwn
   );
+  const own = findCornerPhases(readOwn);
 
   return {
     windowDeltaS: isValue(cumulativeDeltaS) ? cumulativeDeltaS : null,
     reference,
     own,
-    brakeDeltaM: laterBy(own.brakePointM, reference.brakePointM),
-    apexDeltaM: laterBy(own.apexM, reference.apexM),
-    throttleDeltaM: laterBy(own.throttlePointM, reference.throttlePointM),
     hasData,
   };
 };

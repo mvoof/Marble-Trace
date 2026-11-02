@@ -1,6 +1,7 @@
 import {
   traceValueRange,
   TRACE_POINT_COUNT,
+  windowIndexAt,
   type CornerPhases,
   type TraceWindowBuffers,
   type TraceWindowStats,
@@ -55,6 +56,8 @@ interface Projection {
 interface Channel {
   reference: Float32Array;
   own: Float32Array;
+  /** Whether the traces are speed — the channel the apex is a point on. */
+  isSpeed: boolean;
   /** Fixed vertical range, or null to scale to what is in the window. */
   fixedRange: { min: number; max: number } | null;
 }
@@ -70,6 +73,7 @@ const channelFor = (
     ? {
         reference: buffers.referenceBrake,
         own: buffers.ownBrake,
+        isSpeed: false,
         // Pedal travel is already 0-1 and its absolute level is the point —
         // autoscaling would make a feather-light brush of the pedal look like
         // a full stop.
@@ -78,6 +82,7 @@ const channelFor = (
     : {
         reference: buffers.referenceSpeed,
         own: buffers.ownSpeed,
+        isSpeed: true,
         fixedRange: null,
       };
 
@@ -301,15 +306,11 @@ const valueAt = (
   values: Float32Array,
   offsetM: number
 ): number | null => {
-  const first = buffers.offsetM[0];
-  const last = buffers.offsetM.at(-1);
+  const position = windowIndexAt(buffers.offsetM, offsetM);
 
-  if (first === undefined || last === undefined || last <= first) return null;
+  if (!isValue(position)) return null;
 
-  const index = Math.round(
-    ((offsetM - first) / (last - first)) * (TRACE_POINT_COUNT - 1)
-  );
-  const value = values[index];
+  const value = values[Math.round(position)];
 
   return isValue(value) ? value : null;
 };
@@ -317,11 +318,11 @@ const valueAt = (
 /**
  * Where the reference brakes, bottoms out and opens the throttle, and where
  * this lap did. The reference's points are dashed verticals — full height at
- * the braking and throttle points, from the curve down at the apex, so it does
- * not cut through the line where the two traces meet. This lap's are dots on
- * its own line. The gap between a dot and its line is the metre figure in the
- * header; the marks are what let the driver see it rather than take it on
- * trust.
+ * the braking and throttle points, and at the apex from the speed curve down,
+ * so it does not cut through the line where the two traces meet. The apex is
+ * the lowest speed, so on a pedal channel it has no point on the curve and is
+ * drawn full height too. This lap's are dots on its own line; the gap between
+ * a dot and its line is how much earlier or later this lap got there.
  */
 const drawPhaseMarks = (
   ctx: CanvasRenderingContext2D,
@@ -356,7 +357,7 @@ const drawPhaseMarks = (
   ctx.setLineDash(PHASE_MARK_DASH);
 
   drawLine(stats.reference.brakePointM, true, colors.brake);
-  drawLine(stats.reference.apexM, false, colors.apex);
+  drawLine(stats.reference.apexM, !channel.isSpeed, colors.apex);
   drawLine(stats.reference.throttlePointM, true, colors.throttle);
 
   ctx.restore();

@@ -131,8 +131,8 @@ describe('CoachWidgetStore — the phase times', () => {
     coach.refreshFromSeed();
   };
 
-  beforeEach(() => {
-    core = new RendererCore({ skipInit: true });
+  const createStores = (startsWidgetStores: boolean) => {
+    core = new RendererCore({ skipInit: true, startsWidgetStores });
     coach = new CoachWidgetStore({ core, instanceId: COACH });
 
     runInAction(() => {
@@ -140,6 +140,17 @@ describe('CoachWidgetStore — the phase times', () => {
       core.player.lapTiming = { lap_dist_pct: CAR_PCT } as never;
       core.referenceLap.updateReferenceLap(mockReferenceLap());
     });
+  };
+
+  /** A store that records on the telemetry frame and follows the reference, as in an overlay. */
+  const startReactions = () => {
+    coach.dispose();
+    core.dispose();
+    createStores(true);
+  };
+
+  beforeEach(() => {
+    createStores(false);
   });
 
   afterEach(() => {
@@ -178,6 +189,51 @@ describe('CoachWidgetStore — the phase times', () => {
 
     // 300 m on, out of the corner: the braking point is far behind the window.
     driveTo(0.95, CAR_PCT + 0.075);
+
+    expect(coach.displayedBrakeTime).toEqual(settled);
+  });
+
+  // A reference change mid-lap rebuilt the window but kept the figures
+  // settled against the old one.
+  it('measures the corner afresh against a new reference', () => {
+    startReactions();
+    driveTo(0.95);
+
+    const settled = coach.displayedBrakeTime;
+
+    runInAction(() => {
+      core.referenceLap.updateReferenceLap(
+        mockReferenceLap({
+          samples: mockReferenceLap().samples.map((sample) => ({
+            ...sample,
+            speed: sample.speed * 1.1,
+          })),
+        })
+      );
+    });
+
+    expect(coach.displayedBrakeTime?.deltaS).not.toBe(settled?.deltaS);
+  });
+
+  // Crossing the line clears this lap's trace; the figures went with it,
+  // just when the driver looks at them down the straight.
+  it('keeps the last corner up across the line', () => {
+    startReactions();
+    driveTo(0.95);
+
+    const settled = coach.displayedBrakeTime;
+
+    expect(settled?.kind).toBe('settled');
+
+    const driveFrame = (pct: number, speed: number) => {
+      runInAction(() => {
+        core.player.lapTiming = { lap_dist_pct: pct } as never;
+        core.player.updateCarDynamics({ speed } as CarDynamicsFrame);
+      });
+    };
+
+    driveFrame(0.99, 50);
+    driveFrame(0.002, 51);
 
     expect(coach.displayedBrakeTime).toEqual(settled);
   });

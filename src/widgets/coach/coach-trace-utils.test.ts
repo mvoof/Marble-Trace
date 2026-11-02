@@ -54,6 +54,9 @@ const fill = (
     ...overrides,
   });
 
+const laterBy = (own: number | null, reference: number | null) =>
+  own !== null && reference !== null ? own - reference : null;
+
 const values = (buffer: Float32Array): number[] =>
   Array.from(buffer).filter((value) => !Number.isNaN(value));
 
@@ -215,21 +218,9 @@ describe('fillTraceWindow', () => {
       });
 
       // Reference brakes at 0.49, this lap at 0.495 — 20 m later on a 4000 m lap.
-      expect(stats.brakeDeltaM).toBeCloseTo(20, 0);
-    });
-
-    it('has no braking comparison when only one mark is in the window', () => {
-      const buffers = createTraceWindowBuffers();
-      const ownBrake = new Float32Array(BUCKET_COUNT).fill(0);
-
-      for (let bucket = 495; bucket < BUCKET_COUNT; bucket++) {
-        ownBrake[bucket] = 1;
-      }
-
-      const stats = fill(buffers, { ownBrakeByBucket: ownBrake });
-
-      expect(stats.own.brakePointM).not.toBeNull();
-      expect(stats.brakeDeltaM).toBeNull();
+      expect(
+        laterBy(stats.own.brakePointM, stats.reference.brakePointM)
+      ).toBeCloseTo(20, 0);
     });
 
     it('finds this lap braking point', () => {
@@ -339,9 +330,12 @@ describe('corner phases', () => {
       currentDistPct: CAR_PCT,
     });
 
-    expectNear(stats.brakeDeltaM, 8);
-    expectNear(stats.apexDeltaM, 8);
-    expectNear(stats.throttleDeltaM, 8);
+    expectNear(laterBy(stats.own.brakePointM, stats.reference.brakePointM), 8);
+    expectNear(laterBy(stats.own.apexM, stats.reference.apexM), 8);
+    expectNear(
+      laterBy(stats.own.throttlePointM, stats.reference.throttlePointM),
+      8
+    );
   });
 
   // The window's sampling grid slides along the track with the car; a point
@@ -363,9 +357,17 @@ describe('corner phases', () => {
         currentDistPct: CAR_PCT + frame * 0.00005,
       });
 
-      misses.brake.push(stats.brakeDeltaM ?? Number.NaN);
-      misses.apex.push(stats.apexDeltaM ?? Number.NaN);
-      misses.throttle.push(stats.throttleDeltaM ?? Number.NaN);
+      misses.brake.push(
+        laterBy(stats.own.brakePointM, stats.reference.brakePointM) ??
+          Number.NaN
+      );
+      misses.apex.push(
+        laterBy(stats.own.apexM, stats.reference.apexM) ?? Number.NaN
+      );
+      misses.throttle.push(
+        laterBy(stats.own.throttlePointM, stats.reference.throttlePointM) ??
+          Number.NaN
+      );
     }
 
     const spread = (values: number[]) =>
@@ -389,7 +391,6 @@ describe('corner phases', () => {
 
     expect(stats.own.brakePointM).not.toBeNull();
     expect(stats.own.apexM).toBeNull();
-    expect(stats.apexDeltaM).toBeNull();
   });
 
   it('draws a braking zone already underway from the window edge', () => {
@@ -398,8 +399,77 @@ describe('corner phases', () => {
       referenceSamples: referenceLap(50, () => 1),
     });
 
-    expect(reference.brakeZoneStartM).toBe(-WINDOW_M);
+    expect(reference.brakeZoneStartM).toBeLessThanOrEqual(-WINDOW_M);
     expect(reference.brakePointM).toBeNull();
+  });
+
+  // The release lies 30 m behind the window's left edge, full throttle 10 m inside;
+  // searched for in the window alone, the corner was lost before its exit.
+  it('keeps a corner whose braking has scrolled off the window', () => {
+    const buffers = createTraceWindowBuffers();
+    const carPct = 0.54;
+    const { reference } = fill(buffers, {
+      referenceSamples: cornerReference(),
+      ...cornerOwn(0),
+      currentDistPct: carPct,
+    });
+    const fromCar = (pct: number) => (pct - carPct) * TRACK_LENGTH_M;
+
+    expect(fromCar(0.495)).toBeLessThan(-WINDOW_M);
+    expectNear(reference.brakePointM, fromCar(0.49));
+    expectNear(reference.brakeReleaseM, fromCar(0.495));
+    expectNear(reference.throttlePointM, fromCar(0.497));
+    expectNear(reference.fullThrottleM, fromCar(0.505));
+  });
+
+  it('moves on to the next corner once the car brakes for it', () => {
+    const buffers = createTraceWindowBuffers();
+    const nextBrakeAt = (pct: number) =>
+      brakeAt(pct) || (pct >= 0.515 && pct < 0.52 ? 1 : 0);
+    const referenceSamples = cornerReference().map((sample, index) => ({
+      ...sample,
+      brake: nextBrakeAt(index / BUCKET_COUNT),
+    }));
+
+    // Short of the next braking point the last corner is still the one shown…
+    const before = fill(buffers, {
+      referenceSamples,
+      ...cornerOwn(0),
+      currentDistPct: 0.514,
+    }).reference;
+
+    expectNear(before.brakePointM, (0.49 - 0.514) * TRACK_LENGTH_M);
+
+    // …and once past it, the next one.
+    const after = fill(buffers, {
+      referenceSamples,
+      ...cornerOwn(0),
+      currentDistPct: 0.516,
+    }).reference;
+
+    expectNear(after.brakePointM, (0.515 - 0.516) * TRACK_LENGTH_M);
+  });
+
+  it('opens the throttle where the brake is off, as found', () => {
+    // Throttle already past 20 % while the pedal is still down: the throttle
+    // point is where the brake comes off, not where the throttle rose.
+    const overlapThrottleAt = (pct: number) =>
+      pct >= 0.494 && pct < 0.505 ? 0.5 : throttleAt(pct);
+    const referenceSamples = cornerReference().map((sample, index) => ({
+      ...sample,
+      throttle: overlapThrottleAt(index / BUCKET_COUNT),
+    }));
+    const { reference } = fill(createTraceWindowBuffers(), {
+      referenceSamples,
+      ...cornerOwn(0),
+      currentDistPct: CAR_PCT,
+    });
+
+    expect(reference.throttlePointM).not.toBeNull();
+    expect(reference.brakeReleaseM).not.toBeNull();
+    expect(reference.throttlePointM ?? 0).toBeGreaterThanOrEqual(
+      (reference.brakeReleaseM ?? 0) - 0.01
+    );
   });
 });
 
@@ -458,6 +528,17 @@ describe('phaseTime', () => {
   it('has nothing until the car is a little way into the phase', () => {
     // Both ends would read the same stretch of the trace and claim 0.00.
     expect(phaseTime(losing, -1, 30)).toBeNull();
+  });
+
+  it('has a time for a short phase once the car is past it', () => {
+    const time = phaseTime(losing, -24, -21);
+
+    expect(time?.kind).toBe('settled');
+    expect(time?.deltaS).toBeCloseTo(0.003, 6);
+  });
+
+  it('has nothing once the phase start has left the window', () => {
+    expect(phaseTime(losing, -WINDOW_M - 10, -20)).toBeNull();
   });
 
   it('has nothing for a phase this lap has no sample of its own in', () => {
