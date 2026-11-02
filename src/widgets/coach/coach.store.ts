@@ -73,6 +73,37 @@ const sameFigure = (
     left.valueM === right.valueM);
 
 /**
+ * A reference point within this of a settled one is the same point measured
+ * again on a later frame, not the next corner's.
+ */
+const SAME_POINT_M = 15;
+
+type CornerPhase = 'brake' | 'apex' | 'throttle';
+
+/** A miss as it was first measured, and where on the lap its reference point lies. */
+interface SettledMiss {
+  referenceLapM: number;
+  figure: PhaseFigure;
+}
+
+const NO_SETTLED_MISSES = (): Record<CornerPhase, SettledMiss | null> => ({
+  brake: null,
+  apex: null,
+  throttle: null,
+});
+
+/** Distance between two points on a lap, the short way round. */
+const lapDistanceBetween = (
+  fromM: number,
+  toM: number,
+  trackLengthM: number
+): number => {
+  const apart = Math.abs(fromM - toM) % trackLengthM;
+
+  return Math.min(apart, trackLengthM - apart);
+};
+
+/**
  * Owns the lap in progress as a distance-bucketed trace, and the drawn window
  * comparing it against the reference lap the backend recorded.
  *
@@ -122,6 +153,14 @@ export class CoachWidgetStore {
   private previousDistPct: number | null = null;
   /** Last bucket written this lap, for forward-filling the ones jumped over. */
   private previousBucket: number | null = null;
+  /**
+   * Each phase's miss, kept from the frame it was first measured until its
+   * reference point leaves the window. Both points are re-measured on every
+   * frame; a miss read afresh each time would wander by the odd metre and
+   * flicker in the header — and the miss is a fact about a corner already
+   * driven, it has no reason to change.
+   */
+  private settledMisses = NO_SETTLED_MISSES();
   private readonly disposers: IReactionDisposer[] = [];
 
   private readonly root: CoachDeps;
@@ -141,6 +180,7 @@ export class CoachWidgetStore {
       | 'instanceId'
       | 'previousDistPct'
       | 'previousBucket'
+      | 'settledMisses'
       | 'disposers'
       | 'ownSpeedByBucket'
       | 'ownBrakeByBucket'
@@ -154,6 +194,7 @@ export class CoachWidgetStore {
         instanceId: false,
         previousDistPct: false,
         previousBucket: false,
+        settledMisses: false,
         disposers: false,
         ownSpeedByBucket: false,
         ownBrakeByBucket: false,
@@ -289,13 +330,19 @@ export class CoachWidgetStore {
           });
 
     const { reference, own, ownTraceStartM } = this.windowStats;
-    const brakeFigure = quantizeFigure(
+    const brakeFigure = this.settleFigure(
+      'brake',
+      reference.brakePointM,
       phaseFigure(reference.brakePointM, own.brakePointM, ownTraceStartM)
     );
-    const apexFigure = quantizeFigure(
+    const apexFigure = this.settleFigure(
+      'apex',
+      reference.apexM,
       phaseFigure(reference.apexM, own.apexM, ownTraceStartM)
     );
-    const throttleFigure = quantizeFigure(
+    const throttleFigure = this.settleFigure(
+      'throttle',
+      reference.throttlePointM,
       phaseFigure(reference.throttlePointM, own.throttlePointM, ownTraceStartM)
     );
 
@@ -314,10 +361,49 @@ export class CoachWidgetStore {
     this.frameTick++;
   }
 
+  /**
+   * The figure to show for a phase: a miss already settled for this reference
+   * point as it was first measured, otherwise this frame's figure — which is
+   * settled in turn the first time it is a miss.
+   */
+  private settleFigure(
+    phase: CornerPhase,
+    referenceM: number | null,
+    measured: PhaseFigure | null
+  ): PhaseFigure | null {
+    const figure = quantizeFigure(measured);
+    const currentDistPct = this.currentDistPct;
+    const trackLengthM = this.trackLengthM;
+
+    if (referenceM === null || currentDistPct === null || trackLengthM <= 0) {
+      this.settledMisses[phase] = null;
+
+      return figure;
+    }
+
+    const lapPct = (((currentDistPct + referenceM / trackLengthM) % 1) + 1) % 1;
+    const referenceLapM = lapPct * trackLengthM;
+    const settled = this.settledMisses[phase];
+
+    if (
+      settled !== null &&
+      lapDistanceBetween(settled.referenceLapM, referenceLapM, trackLengthM) <=
+        SAME_POINT_M
+    ) {
+      return settled.figure;
+    }
+
+    this.settledMisses[phase] =
+      figure?.kind === 'miss' ? { referenceLapM, figure } : null;
+
+    return figure;
+  }
+
   private clearBuffers() {
     this.ownSpeedByBucket.fill(NO_VALUE);
     this.ownBrakeByBucket.fill(NO_VALUE);
     this.ownThrottleByBucket.fill(NO_VALUE);
+    this.settledMisses = NO_SETTLED_MISSES();
   }
 
   /**

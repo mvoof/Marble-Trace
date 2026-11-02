@@ -299,29 +299,107 @@ const findApex = (
     : null;
 };
 
+/** One trace read anywhere in the window, between the drawn samples. */
+interface TraceSampler {
+  speed: (offsetM: number) => number;
+  brake: (offsetM: number) => number;
+  throttle: (offsetM: number) => number;
+}
+
+/** Halvings of the gap between two samples when locating a pedal edge: 2.5 m down to a few millimetres. */
+const EDGE_REFINE_STEPS = 10;
+
+/** Points read across the two samples either side of the lowest one when locating the apex. */
+const APEX_REFINE_POINTS = 24;
+
+/**
+ * Where `reached` first holds between the sample before `index` and `index`
+ * itself, in metres from the car — found on the trace itself rather than on
+ * the drawn samples. The window's sampling grid slides along the track as the
+ * car moves; a point snapped to it, or interpolated across it, moves by up to
+ * a sample from frame to frame, and every figure measured from it flickers.
+ */
+const refineEdge = (
+  offsetM: Float32Array,
+  index: number,
+  sample: (offsetM: number) => number,
+  reached: (value: number) => boolean
+): number | null => {
+  let high = offsetM[index];
+  let low = offsetM[index - 1];
+
+  if (high === undefined) return null;
+
+  if (low === undefined) return high;
+
+  for (let step = 0; step < EDGE_REFINE_STEPS; step++) {
+    const middle = (low + high) / 2;
+    const value = sample(middle);
+
+    if (isValue(value) && reached(value)) {
+      high = middle;
+    } else {
+      low = middle;
+    }
+  }
+
+  return high;
+};
+
+/** The lowest speed around the lowest drawn sample, read on the trace itself — see `refineEdge`. */
+const refineApex = (
+  offsetM: Float32Array,
+  index: number,
+  sample: (offsetM: number) => number
+): number | null => {
+  const centre = offsetM[index];
+
+  if (centre === undefined) return null;
+
+  const from = offsetM[index - 1] ?? centre;
+  const to = offsetM[index + 1] ?? centre;
+  let lowestAt = centre;
+  let lowest = sample(centre);
+
+  for (let point = 0; point <= APEX_REFINE_POINTS; point++) {
+    const at = from + ((to - from) * point) / APEX_REFINE_POINTS;
+    const value = sample(at);
+
+    if (isValue(value) && !(value >= lowest)) {
+      lowest = value;
+      lowestAt = at;
+    }
+  }
+
+  return lowestAt;
+};
+
 /**
  * The first corner in the window, split into the phases a driver works through:
  * the brake goes down, comes off, the speed bottoms out, the throttle opens and
  * reaches full. Each phase is searched for only after the one before it, so a
  * lift on the straight is not taken for a throttle point and the next corner's
- * braking is not taken for this one's.
+ * braking is not taken for this one's. Found on the drawn samples, then
+ * located precisely on the trace through `sampler`.
  */
 const findCornerPhases = (
   offsetM: Float32Array,
   speed: Float32Array,
   brake: Float32Array,
-  throttle: Float32Array
+  throttle: Float32Array,
+  sampler: TraceSampler
 ): CornerPhases => {
   // A lap that has only just started has nothing behind the car yet.
   const firstValue = brake.findIndex((value) => isValue(value));
 
   if (firstValue === -1) return NO_CORNER_PHASES;
 
-  const zoneStart = findIndex(
-    brake,
-    firstValue,
-    (value) => value > BRAKE_ON_THRESHOLD
-  );
+  const isBraking = (value: number) => value > BRAKE_ON_THRESHOLD;
+  const isOffBrake = (value: number) => value <= BRAKE_ON_THRESHOLD;
+  const isThrottleOpen = (value: number) => value > THROTTLE_OPEN_THRESHOLD;
+  const isFullThrottle = (value: number) => value >= FULL_THROTTLE_THRESHOLD;
+
+  const zoneStart = findIndex(brake, firstValue, isBraking);
 
   if (zoneStart === null) return NO_CORNER_PHASES;
 
@@ -329,11 +407,7 @@ const findCornerPhases = (
   // begins went down somewhere this window does not show.
   const hasBrakePoint = zoneStart > firstValue;
 
-  const release = findIndex(
-    brake,
-    zoneStart,
-    (value) => value <= BRAKE_ON_THRESHOLD
-  );
+  const release = findIndex(brake, zoneStart, isOffBrake);
   const throttlePoint =
     release === null
       ? null
@@ -341,8 +415,7 @@ const findCornerPhases = (
           throttle,
           release,
           (value, index) =>
-            value > THROTTLE_OPEN_THRESHOLD &&
-            (brake[index] ?? 0) <= BRAKE_ON_THRESHOLD
+            isThrottleOpen(value) && isOffBrake(brake[index] ?? 0)
         );
   const fullThrottle =
     throttlePoint === null
@@ -351,8 +424,7 @@ const findCornerPhases = (
           throttle,
           throttlePoint,
           (value, index) =>
-            value >= FULL_THROTTLE_THRESHOLD ||
-            (brake[index] ?? 0) > BRAKE_ON_THRESHOLD
+            isFullThrottle(value) || isBraking(brake[index] ?? 0)
         );
   const apex = findApex(
     speed,
@@ -360,16 +432,24 @@ const findCornerPhases = (
     fullThrottle ?? lastValueIndex(speed, zoneStart)
   );
 
-  const offsetAt = (index: number | null): number | null =>
-    index === null ? null : (offsetM[index] ?? null);
+  const edge = (
+    index: number | null,
+    sample: (offsetM: number) => number,
+    reached: (value: number) => boolean
+  ): number | null =>
+    index === null ? null : refineEdge(offsetM, index, sample, reached);
+
+  const brakePointM = hasBrakePoint
+    ? edge(zoneStart, sampler.brake, isBraking)
+    : null;
 
   return {
-    brakeZoneStartM: offsetAt(zoneStart),
-    brakePointM: hasBrakePoint ? offsetAt(zoneStart) : null,
-    brakeReleaseM: offsetAt(release),
-    apexM: offsetAt(apex),
-    throttlePointM: offsetAt(throttlePoint),
-    fullThrottleM: offsetAt(fullThrottle),
+    brakeZoneStartM: brakePointM ?? offsetM[zoneStart] ?? null,
+    brakePointM,
+    brakeReleaseM: edge(release, sampler.brake, isOffBrake),
+    apexM: apex === null ? null : refineApex(offsetM, apex, sampler.speed),
+    throttlePointM: edge(throttlePoint, sampler.throttle, isThrottleOpen),
+    fullThrottleM: edge(fullThrottle, sampler.throttle, isFullThrottle),
   };
 };
 
@@ -533,17 +613,35 @@ export const fillTraceWindow = (
     previousReferenceSpeed = referenceSpeed;
   }
 
+  const pctAt = (offsetM: number) =>
+    wrapPct(currentDistPct + offsetM / trackLengthM);
+  const ownAt = (values: Float32Array) => (offsetM: number) =>
+    offsetM > 0 ? NO_VALUE : bucketValueAt(values, pctAt(offsetM));
+
   const reference = findCornerPhases(
     buffers.offsetM,
     buffers.referenceSpeed,
     buffers.referenceBrake,
-    buffers.referenceThrottle
+    buffers.referenceThrottle,
+    {
+      speed: (offsetM) =>
+        referenceValueAt(referenceSamples, 'speed', pctAt(offsetM)),
+      brake: (offsetM) =>
+        referenceValueAt(referenceSamples, 'brake', pctAt(offsetM)),
+      throttle: (offsetM) =>
+        referenceValueAt(referenceSamples, 'throttle', pctAt(offsetM)),
+    }
   );
   const own = findCornerPhases(
     buffers.offsetM,
     buffers.ownSpeed,
     buffers.ownBrake,
-    buffers.ownThrottle
+    buffers.ownThrottle,
+    {
+      speed: ownAt(ownSpeedByBucket),
+      brake: ownAt(ownBrakeByBucket),
+      throttle: ownAt(ownThrottleByBucket),
+    }
   );
 
   return {

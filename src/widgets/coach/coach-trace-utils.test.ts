@@ -196,8 +196,9 @@ describe('fillTraceWindow', () => {
         referenceSamples: referenceLap(50, brakeFromPct(0.49)),
       });
 
-      // 0.01 of a 4000 m lap behind the car.
-      expect(stats.reference.brakePointM).toBeCloseTo(-40, 0);
+      // 0.01 of a 4000 m lap behind the car — a little before it, where the
+      // pedal crosses 5 % on its way up between two bucket centres.
+      expect(Math.abs((stats.reference.brakePointM ?? 0) + 40)).toBeLessThan(3);
     });
 
     it('reports how much later this lap braked', () => {
@@ -239,9 +240,10 @@ describe('fillTraceWindow', () => {
         ownBrake[bucket] = 1;
       }
 
-      expect(
-        fill(buffers, { ownBrakeByBucket: ownBrake }).own.brakePointM
-      ).toBeCloseTo(-20, 0);
+      const ownBrakePointM = fill(buffers, { ownBrakeByBucket: ownBrake }).own
+        .brakePointM;
+
+      expect(Math.abs((ownBrakePointM ?? 0) + 20)).toBeLessThan(3);
     });
 
     it('reports no braking point when the brake was never touched', () => {
@@ -340,6 +342,39 @@ describe('corner phases', () => {
     expectNear(stats.brakeDeltaM, 8);
     expectNear(stats.apexDeltaM, 8);
     expectNear(stats.throttleDeltaM, 8);
+  });
+
+  // The window's sampling grid slides along the track with the car; a point
+  // snapped to it moved by a whole 2.5 m sample from frame to frame, and the
+  // header figure flickered with it.
+  it('keeps every miss steady as the car moves', () => {
+    const buffers = createTraceWindowBuffers();
+    const misses = {
+      brake: [] as number[],
+      apex: [] as number[],
+      throttle: [] as number[],
+    };
+
+    for (let frame = 0; frame < 20; frame++) {
+      // 0.2 m a frame — less than one sample, so the grid lands differently each time.
+      const stats = fill(buffers, {
+        referenceSamples: cornerReference(),
+        ...cornerOwn(0.002),
+        currentDistPct: CAR_PCT + frame * 0.00005,
+      });
+
+      misses.brake.push(stats.brakeDeltaM ?? Number.NaN);
+      misses.apex.push(stats.apexDeltaM ?? Number.NaN);
+      misses.throttle.push(stats.throttleDeltaM ?? Number.NaN);
+    }
+
+    const spread = (values: number[]) =>
+      Math.max(...values) - Math.min(...values);
+
+    // Half a metre: well under the 1 m the header rounds a miss to.
+    expect(spread(misses.brake)).toBeLessThan(0.5);
+    expect(spread(misses.apex)).toBeLessThan(0.5);
+    expect(spread(misses.throttle)).toBeLessThan(0.5);
   });
 
   it('has no apex while this lap is still slowing', () => {

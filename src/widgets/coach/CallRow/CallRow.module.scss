@@ -4,11 +4,21 @@
   width: 100%;
 }
 
+// The phase cells: a label line, the gap, a value line.
+$phase-block-height: calc(#{fs(xxxs)} + #{sp(xxxs)} + #{fs(md)});
+
 .row {
   display: flex;
   align-items: center;
   gap: sp(sm);
   padding: sp(xs) sp(md);
+
+  // Holds the row at the phase cells' height whatever is in it — the hint, a
+  // call with the figures switched off — so the trace under it never moves.
+  &::after {
+    content: '';
+    height: $phase-block-height;
+  }
 }
 
 .call {
@@ -74,10 +84,13 @@
   letter-spacing: 0.1em;
 }
 
+// A fixed height: a dash or ON alone is shorter than a word and its metres,
+// and the cell would otherwise shrink with them.
 .phaseValue {
   display: flex;
   align-items: baseline;
   gap: sp(xxs);
+  height: fs(md);
   line-height: 1;
   color: $widget-text-primary;
 }
