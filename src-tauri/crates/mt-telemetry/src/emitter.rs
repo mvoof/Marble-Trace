@@ -241,6 +241,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
             session_time: frame.session.session_time,
             session_time_remain: frame.session.session_time_remain,
             session_state: frame.session.session_state,
+            session_flags: frame.session.session_flags,
         };
 
         // 60 Hz computed (lap delta, gated by lap_delta_active inside processor)

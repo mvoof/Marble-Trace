@@ -14,7 +14,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
-use mt_model::sim::enums::TrackSurface;
+use mt_model::sim::cars::PaceFormation;
+use mt_model::sim::enums::{SessionState, TrackSurface};
+use mt_model::sim::flags::{CAUTION, CAUTION_WAVING};
 
 /// How long the lap distance may stand still before a car on pit road counts as
 /// parked. A car rolling slowly down the pit lane can repeat a position for a
@@ -25,6 +27,8 @@ const PARKED_AFTER_S: f64 = 2.0;
 /// `mt-telemetry/src/delivery/quantize.rs`): the raw float of a car sitting still can still
 /// jitter in its last bits, and that must not read as movement.
 const LAP_DIST_STEPS: f32 = 10_000.0;
+
+const CAUTION_BITS: u32 = CAUTION | CAUTION_WAVING;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -57,6 +61,37 @@ pub struct PaceCarFrame {
     pub cars: Vec<PaceCarState>,
 }
 
+/// How still a car is, from its lap distance over time.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Stillness {
+    /// The lap distance changed on this reading.
+    Moving,
+    /// The lap distance holds, but not yet for `PARKED_AFTER_S`.
+    Settling,
+    /// The lap distance has held for `PARKED_AFTER_S`.
+    Stationary,
+}
+
+/// Whether the pace car may legitimately stand still on the circuit: before
+/// the start (ahead of the grid), during a formation, or under a caution. Only
+/// a green racing session — or what follows it — with none of those rules it
+/// out. An unknown session state counts as expected, the side that never hides
+/// a car that is really out there.
+pub fn expected_on_track(
+    formation: PaceFormation,
+    session_state: Option<SessionState>,
+    session_flags: Option<u32>,
+) -> bool {
+    let pacing = formation != PaceFormation::NotPacing;
+    let caution = session_flags.is_some_and(|flags| flags & CAUTION_BITS != 0);
+    let past_the_start = matches!(
+        session_state,
+        Some(SessionState::Racing | SessionState::Checkered | SessionState::CoolDown)
+    );
+
+    pacing || caution || !past_the_start
+}
+
 /// One step of the phase machine.
 ///
 /// `NotInWorld` is not a location but the absence of one — the pace car spends
@@ -68,12 +103,20 @@ pub struct PaceCarFrame {
 /// its box to a parking spot on the pit lane and sits there, still reporting
 /// `AproachingPits`. A car standing still on pit road is therefore `Parked`, and
 /// counts as having come from a stop once it moves again.
+///
+/// At some tracks the parking spot lies outside the pit-road zone and reports
+/// `OnTrack`. A still car there is `Parked` when it came straight from the pit
+/// lane without driving on track, or when the pace car is not
+/// `expected_on_track` at all; otherwise it is a pace car waiting on the
+/// circuit and stays `OnTrack`.
 pub fn next_phase(
     surface: TrackSurface,
     previous: PaceCarPitPhase,
     on_pit_road: bool,
-    stationary: bool,
+    stillness: Stillness,
+    expected_on_track: bool,
 ) -> PaceCarPitPhase {
+    let stationary = stillness == Stillness::Stationary;
     let in_pit_lane = surface == TrackSurface::AproachingPits
         || (on_pit_road && surface == TrackSurface::OnTrack);
 
@@ -96,6 +139,24 @@ pub fn next_phase(
     // its box can report `OnTrack`.
     if on_pit_road && surface == TrackSurface::OnTrack {
         return pit_lane_phase;
+    }
+
+    if surface == TrackSurface::OnTrack && stillness != Stillness::Moving {
+        let came_from_pit_lane = came_from_stop || previous == PaceCarPitPhase::PitIn;
+
+        // Until the hold is over the car keeps its pit phase, so it is not
+        // drawn out on circuit for the two seconds it takes to call it parked.
+        if came_from_pit_lane {
+            return if stationary {
+                PaceCarPitPhase::Parked
+            } else {
+                previous
+            };
+        }
+
+        if stationary && !expected_on_track {
+            return PaceCarPitPhase::Parked;
+        }
     }
 
     match surface {
@@ -122,13 +183,17 @@ pub struct PaceCarProcessor {
 }
 
 impl PaceCarProcessor {
-    /// Whether the car has held its lap distance for `PARKED_AFTER_S`.
-    fn is_stationary(&mut self, car_idx: i32, lap_dist_pct: f32, now_s: f64) -> bool {
+    /// How long the car has held its lap distance, against `PARKED_AFTER_S`.
+    fn stillness(&mut self, car_idx: i32, lap_dist_pct: f32, now_s: f64) -> Stillness {
         let lap_dist_step = (lap_dist_pct * LAP_DIST_STEPS).round() as i32;
 
         match self.motion.get(&car_idx) {
             Some(motion) if motion.lap_dist_step == lap_dist_step => {
-                now_s - motion.moved_at_s >= PARKED_AFTER_S
+                if now_s - motion.moved_at_s >= PARKED_AFTER_S {
+                    Stillness::Stationary
+                } else {
+                    Stillness::Settling
+                }
             }
             _ => {
                 self.motion.insert(
@@ -139,7 +204,7 @@ impl PaceCarProcessor {
                     },
                 );
 
-                false
+                Stillness::Moving
             }
         }
     }
@@ -151,6 +216,7 @@ impl PaceCarProcessor {
         surface_of: impl Fn(usize) -> TrackSurface,
         on_pit_road_of: impl Fn(usize) -> bool,
         lap_dist_of: impl Fn(usize) -> f32,
+        expected_on_track: bool,
         now_s: f64,
     ) -> PaceCarFrame {
         let mut cars = Vec::with_capacity(pace_car_idxs.len());
@@ -160,9 +226,15 @@ impl PaceCarProcessor {
                 continue;
             };
 
-            let stationary = self.is_stationary(car_idx, lap_dist_of(slot), now_s);
+            let stillness = self.stillness(car_idx, lap_dist_of(slot), now_s);
             let previous = self.phases.get(&car_idx).copied().unwrap_or_default();
-            let phase = next_phase(surface_of(slot), previous, on_pit_road_of(slot), stationary);
+            let phase = next_phase(
+                surface_of(slot),
+                previous,
+                on_pit_road_of(slot),
+                stillness,
+                expected_on_track,
+            );
 
             self.phases.insert(car_idx, phase);
             cars.push(PaceCarState { car_idx, phase });
@@ -197,6 +269,8 @@ impl Processor for PaceCarProcessor {
         // The session clock stops with the sim, so a paused session does not
         // turn a pace car rolling down the lane into a parked one.
         let now_s = ctx.session_time.unwrap_or(0.0);
+        let expected =
+            expected_on_track(ctx.pacing.formation, ctx.session_state, ctx.session_flags);
 
         let frame = self.step(
             &pace_car_idxs,
@@ -221,6 +295,7 @@ impl Processor for PaceCarProcessor {
                     .copied()
                     .unwrap_or(-1.0)
             },
+            expected,
             now_s,
         );
 
@@ -238,91 +313,206 @@ mod tests {
     use super::*;
 
     use PaceCarPitPhase::{OnTrack, Parked, PitIn, PitOut, Stall, Unknown};
+    use Stillness::{Moving, Settling, Stationary};
     use TrackSurface::{AproachingPits, InPitStall, NotInWorld, OffTrack};
 
     const ON_TRACK: TrackSurface = TrackSurface::OnTrack;
+    const EXPECTED: bool = true;
+    const NOT_EXPECTED: bool = false;
+
+    /// A reading where the context does not rule the pace car off the circuit.
+    fn phase_of(
+        surface: TrackSurface,
+        previous: PaceCarPitPhase,
+        on_pit_road: bool,
+        stillness: Stillness,
+    ) -> PaceCarPitPhase {
+        next_phase(surface, previous, on_pit_road, stillness, EXPECTED)
+    }
 
     #[test]
     fn reads_the_unambiguous_surfaces_without_the_previous_phase() {
-        assert_eq!(next_phase(InPitStall, OnTrack, false, false), Stall);
-        assert_eq!(next_phase(ON_TRACK, Stall, false, false), OnTrack);
+        assert_eq!(phase_of(InPitStall, OnTrack, false, Moving), Stall);
+        assert_eq!(phase_of(ON_TRACK, Stall, false, Moving), OnTrack);
     }
 
     #[test]
     fn tells_pit_entry_from_pit_exit_by_where_the_car_came_from() {
-        assert_eq!(next_phase(AproachingPits, OnTrack, false, false), PitIn);
-        assert_eq!(next_phase(AproachingPits, Stall, false, false), PitOut);
-        assert_eq!(next_phase(AproachingPits, PitOut, false, false), PitOut);
+        assert_eq!(phase_of(AproachingPits, OnTrack, false, Moving), PitIn);
+        assert_eq!(phase_of(AproachingPits, Stall, false, Moving), PitOut);
+        assert_eq!(phase_of(AproachingPits, PitOut, false, Moving), PitOut);
     }
 
     #[test]
     fn assumes_pit_entry_without_a_trustworthy_previous_phase() {
-        assert_eq!(next_phase(AproachingPits, Unknown, false, false), PitIn);
+        assert_eq!(phase_of(AproachingPits, Unknown, false, Moving), PitIn);
     }
 
     #[test]
     fn drops_to_unknown_when_the_car_leaves_the_world() {
-        assert_eq!(next_phase(NotInWorld, OnTrack, false, false), Unknown);
-        assert_eq!(next_phase(NotInWorld, PitOut, false, false), Unknown);
+        assert_eq!(phase_of(NotInWorld, OnTrack, false, Moving), Unknown);
+        assert_eq!(phase_of(NotInWorld, PitOut, false, Moving), Unknown);
     }
 
     #[test]
     fn keeps_the_phase_across_an_off_track_reading() {
-        assert_eq!(next_phase(OffTrack, OnTrack, false, false), OnTrack);
-        assert_eq!(next_phase(OffTrack, Stall, false, false), Stall);
+        assert_eq!(phase_of(OffTrack, OnTrack, false, Moving), OnTrack);
+        assert_eq!(phase_of(OffTrack, Stall, false, Moving), Stall);
     }
 
     #[test]
     fn trusts_the_pit_road_flag_over_an_on_track_surface() {
-        assert_eq!(next_phase(ON_TRACK, Unknown, true, false), PitIn);
-        assert_eq!(next_phase(ON_TRACK, Stall, true, false), PitOut);
+        assert_eq!(phase_of(ON_TRACK, Unknown, true, Moving), PitIn);
+        assert_eq!(phase_of(ON_TRACK, Stall, true, Moving), PitOut);
     }
 
     #[test]
     fn reads_a_clean_on_track_surface_as_on_track_once_the_flag_clears() {
-        assert_eq!(next_phase(ON_TRACK, PitOut, false, false), OnTrack);
+        assert_eq!(phase_of(ON_TRACK, PitOut, false, Moving), OnTrack);
     }
 
     #[test]
     fn never_resurrects_a_pit_out_phase_after_the_car_is_removed() {
-        let mut phase = next_phase(InPitStall, Unknown, false, false);
-        phase = next_phase(AproachingPits, phase, false, false);
+        let mut phase = phase_of(InPitStall, Unknown, false, Moving);
+        phase = phase_of(AproachingPits, phase, false, Moving);
         assert_eq!(phase, PitOut);
 
-        phase = next_phase(NotInWorld, phase, false, false);
+        phase = phase_of(NotInWorld, phase, false, Moving);
         assert_eq!(phase, Unknown);
     }
 
     #[test]
     fn reads_a_car_standing_still_in_the_pit_lane_as_parked() {
-        assert_eq!(next_phase(AproachingPits, PitOut, false, true), Parked);
-        assert_eq!(next_phase(AproachingPits, Unknown, false, true), Parked);
-        assert_eq!(next_phase(ON_TRACK, Stall, true, true), Parked);
+        assert_eq!(phase_of(AproachingPits, PitOut, false, Stationary), Parked);
+        assert_eq!(phase_of(AproachingPits, Unknown, false, Stationary), Parked);
+        assert_eq!(phase_of(ON_TRACK, Stall, true, Stationary), Parked);
     }
 
     #[test]
     fn does_not_hold_a_pit_exit_open_while_the_car_is_parked_after_its_stall() {
-        let mut phase = next_phase(InPitStall, Unknown, false, false);
-        phase = next_phase(AproachingPits, phase, false, false);
+        let mut phase = phase_of(InPitStall, Unknown, false, Moving);
+        phase = phase_of(AproachingPits, phase, false, Moving);
         assert_eq!(phase, PitOut);
 
-        phase = next_phase(AproachingPits, phase, false, true);
+        phase = phase_of(AproachingPits, phase, false, Stationary);
         assert_eq!(phase, Parked);
 
-        phase = next_phase(AproachingPits, phase, false, true);
+        phase = phase_of(AproachingPits, phase, false, Stationary);
         assert_eq!(phase, Parked);
     }
 
     #[test]
     fn reads_a_parked_car_that_moves_off_as_leaving_the_pits() {
-        assert_eq!(next_phase(AproachingPits, Parked, false, false), PitOut);
-        assert_eq!(next_phase(ON_TRACK, Parked, true, false), PitOut);
+        assert_eq!(phase_of(AproachingPits, Parked, false, Moving), PitOut);
+        assert_eq!(phase_of(ON_TRACK, Parked, true, Moving), PitOut);
     }
 
     #[test]
-    fn never_parks_a_car_standing_on_the_track_itself() {
-        assert_eq!(next_phase(ON_TRACK, OnTrack, false, true), OnTrack);
-        assert_eq!(next_phase(InPitStall, PitIn, false, true), Stall);
+    fn never_parks_a_car_standing_on_the_track_where_it_is_expected() {
+        assert_eq!(phase_of(ON_TRACK, OnTrack, false, Stationary), OnTrack);
+        assert_eq!(phase_of(ON_TRACK, Unknown, false, Stationary), OnTrack);
+        assert_eq!(phase_of(InPitStall, PitIn, false, Stationary), Stall);
+    }
+
+    #[test]
+    fn parks_a_still_on_track_car_that_came_straight_from_the_pit_lane() {
+        for previous in [PitIn, PitOut, Parked, Stall] {
+            assert_eq!(phase_of(ON_TRACK, previous, false, Stationary), Parked);
+        }
+    }
+
+    #[test]
+    fn keeps_the_pit_phase_while_a_car_from_the_pit_lane_settles_on_track() {
+        assert_eq!(phase_of(ON_TRACK, PitOut, false, Settling), PitOut);
+        assert_eq!(phase_of(ON_TRACK, PitIn, false, Settling), PitIn);
+    }
+
+    #[test]
+    fn parks_a_still_on_track_car_the_session_does_not_expect_on_circuit() {
+        assert_eq!(
+            next_phase(ON_TRACK, Unknown, false, Stationary, NOT_EXPECTED),
+            Parked
+        );
+        assert_eq!(
+            next_phase(ON_TRACK, OnTrack, false, Stationary, NOT_EXPECTED),
+            Parked
+        );
+    }
+
+    #[test]
+    fn waits_out_the_hold_before_parking_on_context_alone() {
+        assert_eq!(
+            next_phase(ON_TRACK, Unknown, false, Settling, NOT_EXPECTED),
+            OnTrack
+        );
+    }
+
+    #[test]
+    fn reads_a_parked_car_that_drives_off_on_track_as_on_track() {
+        assert_eq!(
+            next_phase(ON_TRACK, Parked, false, Moving, NOT_EXPECTED),
+            OnTrack
+        );
+        assert_eq!(phase_of(ON_TRACK, Parked, false, Moving), OnTrack);
+    }
+
+    #[test]
+    fn expects_the_pace_car_on_track_before_the_start() {
+        for state in [
+            SessionState::Invalid,
+            SessionState::GetInCar,
+            SessionState::Warmup,
+            SessionState::ParadeLaps,
+        ] {
+            assert!(expected_on_track(
+                PaceFormation::NotPacing,
+                Some(state),
+                Some(0)
+            ));
+        }
+
+        assert!(expected_on_track(PaceFormation::NotPacing, None, None));
+    }
+
+    #[test]
+    fn expects_the_pace_car_on_track_in_a_formation_or_under_caution() {
+        let racing = Some(SessionState::Racing);
+
+        assert!(expected_on_track(
+            PaceFormation::DoubleFile,
+            racing,
+            Some(0)
+        ));
+        assert!(expected_on_track(
+            PaceFormation::SingleFile,
+            racing,
+            Some(0)
+        ));
+        assert!(expected_on_track(
+            PaceFormation::NotPacing,
+            racing,
+            Some(CAUTION)
+        ));
+        assert!(expected_on_track(
+            PaceFormation::NotPacing,
+            racing,
+            Some(CAUTION_WAVING)
+        ));
+    }
+
+    #[test]
+    fn does_not_expect_the_pace_car_on_track_under_green_or_after_it() {
+        for state in [
+            SessionState::Racing,
+            SessionState::Checkered,
+            SessionState::CoolDown,
+        ] {
+            assert!(!expected_on_track(
+                PaceFormation::NotPacing,
+                Some(state),
+                Some(0)
+            ));
+        }
     }
 
     const PACE_CAR: i32 = 2;
@@ -333,8 +523,25 @@ mod tests {
         lap_dist: f32,
         now_s: f64,
     ) -> PaceCarPitPhase {
+        step_in_context(processor, surface, lap_dist, EXPECTED, now_s)
+    }
+
+    fn step_in_context(
+        processor: &mut PaceCarProcessor,
+        surface: TrackSurface,
+        lap_dist: f32,
+        expected_on_track: bool,
+        now_s: f64,
+    ) -> PaceCarPitPhase {
         processor
-            .step(&[PACE_CAR], |_| surface, |_| false, |_| lap_dist, now_s)
+            .step(
+                &[PACE_CAR],
+                |_| surface,
+                |_| false,
+                |_| lap_dist,
+                expected_on_track,
+                now_s,
+            )
             .cars[0]
             .phase
     }
@@ -347,6 +554,40 @@ mod tests {
         assert_eq!(step_at(&mut processor, AproachingPits, 0.11, 1.0), PitOut);
         assert_eq!(step_at(&mut processor, AproachingPits, 0.11, 2.5), PitOut);
         assert_eq!(step_at(&mut processor, AproachingPits, 0.11, 3.0), Parked);
+    }
+
+    #[test]
+    fn a_car_stopping_in_an_on_track_pocket_after_the_lane_parks() {
+        let mut processor = PaceCarProcessor::default();
+
+        assert_eq!(step_at(&mut processor, AproachingPits, 0.10, 0.0), PitIn);
+        assert_eq!(step_at(&mut processor, ON_TRACK, 0.10, 0.5), PitIn);
+        assert_eq!(step_at(&mut processor, ON_TRACK, 0.10, 2.0), Parked);
+        assert_eq!(step_at(&mut processor, ON_TRACK, 0.11, 2.5), OnTrack);
+    }
+
+    #[test]
+    fn a_car_standing_on_track_under_green_parks_with_no_history() {
+        let mut processor = PaceCarProcessor::default();
+
+        assert_eq!(
+            step_in_context(&mut processor, ON_TRACK, 0.3, NOT_EXPECTED, 0.0),
+            OnTrack
+        );
+        assert_eq!(
+            step_in_context(&mut processor, ON_TRACK, 0.3, NOT_EXPECTED, 2.0),
+            Parked
+        );
+    }
+
+    #[test]
+    fn a_car_waiting_ahead_of_the_grid_stays_on_track() {
+        let mut processor = PaceCarProcessor::default();
+
+        step_at(&mut processor, NotInWorld, -1.0, 0.0);
+        step_at(&mut processor, ON_TRACK, 0.98, 1.0);
+
+        assert_eq!(step_at(&mut processor, ON_TRACK, 0.98, 10.0), OnTrack);
     }
 
     #[test]
@@ -386,7 +627,7 @@ mod tests {
     fn publishes_every_roster_pace_car_and_nothing_else() {
         let mut processor = PaceCarProcessor::default();
 
-        let frame = processor.step(&[3, 7], |_| ON_TRACK, |_| false, |_| 0.5, 0.0);
+        let frame = processor.step(&[3, 7], |_| ON_TRACK, |_| false, |_| 0.5, EXPECTED, 0.0);
 
         assert_eq!(
             frame.cars,
@@ -402,7 +643,7 @@ mod tests {
             ]
         );
         assert!(processor
-            .step(&[], |_| ON_TRACK, |_| false, |_| 0.5, 0.0)
+            .step(&[], |_| ON_TRACK, |_| false, |_| 0.5, EXPECTED, 0.0)
             .cars
             .is_empty());
     }

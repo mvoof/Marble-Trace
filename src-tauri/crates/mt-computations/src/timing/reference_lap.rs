@@ -734,6 +734,7 @@ mod tests {
             session_time: None,
             session_time_remain: None,
             session_state: None,
+            session_flags: None,
         }
     }
 
