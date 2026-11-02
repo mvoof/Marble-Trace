@@ -773,6 +773,8 @@
       "alwaysVisibleDesc": "Keep the widget on screen instead of showing it only on pit road and while being towed.",
       "showPitSpeed": "Pit Lane Speed",
       "showPitSpeedDesc": "Current speed read against the pit limit, with the lift-off band and the limiter state.",
+      "showLimitPlate": "Limit plate",
+      "showLimitPlateDesc": "The pit speed limit as a sign above the bars, while the limiter is off and the speed is under the limit.",
       "showPitApproach": "Pit Approach",
       "showPitApproachDesc": "Distance to your stall drawn over the pit lane, with the stall marked and a braking cue.",
       "showPitBrakeCue": "Braking cue",

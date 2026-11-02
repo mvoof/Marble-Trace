@@ -22,6 +22,7 @@ import type { PitLineWidgetSettings } from './settings-schema';
 export const PitLineWidget = observer(() => {
   const {
     showPitSpeed,
+    showLimitPlate,
     showPitApproach,
     showPitBrakeCue,
     showUnits,
@@ -31,7 +32,7 @@ export const PitLineWidget = observer(() => {
   // Both bars size themselves; the panel's shipped 200 px floor is not theirs.
   return (
     <WidgetPanel direction="column" gap={0} minWidth={0}>
-      {showPitSpeed && <PitLimitPlate withUnit={showUnits} />}
+      {showPitSpeed && showLimitPlate && <PitLimitPlate withUnit={showUnits} />}
 
       <div className={styles.stack}>
         {showPitSpeed && (
