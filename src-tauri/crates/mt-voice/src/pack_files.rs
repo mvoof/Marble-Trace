@@ -15,6 +15,8 @@ use crate::assets::unpack::unpack_zip_within;
 use crate::pack::{COMMANDS_FILE, PHRASES_FILE};
 
 const IMPORT_STAGING_SUFFIX: &str = ".importing";
+/// Where the pack being replaced waits until the imported one is in place.
+const IMPORT_PREVIOUS_SUFFIX: &str = ".previous";
 /// A pack is two JSON files of text; anything near this is not one.
 const PACK_ARCHIVE_MAX_BYTES: u64 = 16 * 1024 * 1024;
 
@@ -55,6 +57,7 @@ pub fn export_pack(pack_folder: &Path, archive: &Path) -> io::Result<()> {
 /// off; their names are returned for the driver to look over.
 pub fn import_pack(archive: &Path, pack_folder: &Path) -> io::Result<Vec<String>> {
     let staging = PathBuf::from(format!("{}{IMPORT_STAGING_SUFFIX}", pack_folder.display()));
+    let previous = PathBuf::from(format!("{}{IMPORT_PREVIOUS_SUFFIX}", pack_folder.display()));
     let _ = fs::remove_dir_all(&staging);
     let result = (|| {
         unpack_zip_within(archive, &staging, PACK_ARCHIVE_MAX_BYTES)?;
@@ -68,16 +71,11 @@ pub fn import_pack(archive: &Path, pack_folder: &Path) -> io::Result<Vec<String>
 
         let switched_off = switch_off_questions_with_steps(&staging.join(COMMANDS_FILE))?;
 
-        match fs::remove_dir_all(pack_folder) {
-            Err(error) if error.kind() != io::ErrorKind::NotFound => return Err(error),
-            _ => {}
-        }
-
         if let Some(parent) = pack_folder.parent() {
             fs::create_dir_all(parent)?;
         }
 
-        fs::rename(&staging, pack_folder)?;
+        swap_in(&staging, pack_folder, &previous)?;
 
         Ok(switched_off)
     })();
@@ -87,6 +85,32 @@ pub fn import_pack(archive: &Path, pack_folder: &Path) -> io::Result<Vec<String>
     }
 
     result
+}
+
+/// Puts the staged pack in the folder's place. The pack there is moved aside
+/// first and put back when the staged one cannot take its place, so a failed
+/// rename never leaves the driver with no pack.
+fn swap_in(staging: &Path, pack_folder: &Path, previous: &Path) -> io::Result<()> {
+    let _ = fs::remove_dir_all(previous);
+    let had_pack = match fs::rename(pack_folder, previous) {
+        Ok(()) => true,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => false,
+        Err(error) => return Err(error),
+    };
+
+    if let Err(error) = fs::rename(staging, pack_folder) {
+        if had_pack {
+            let _ = fs::rename(previous, pack_folder);
+        }
+
+        return Err(error);
+    }
+
+    if had_pack {
+        let _ = fs::remove_dir_all(previous);
+    }
+
+    Ok(())
 }
 
 /// Sets `enabled: false` on every question in `commands.json` that has steps

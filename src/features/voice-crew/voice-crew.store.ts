@@ -166,6 +166,10 @@ export class VoiceCrewStore {
   private sampleAudio: HTMLAudioElement | null = null;
   private unlisteners: (() => void)[] = [];
   private draftCheckTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Bumped by every load and save: only the latest one's pack is taken. */
+  private packRequest = 0;
+  /** Bumped by every edit: a pack that came back after one is stale. */
+  private packEdits = 0;
   private started = false;
 
   constructor(private root: VoiceCrewDeps) {
@@ -646,10 +650,17 @@ export class VoiceCrewStore {
     void revealVoiceFolder(path);
   }
 
+  /** Whether a pack asked for at `request` with `edits` made is still the one to show. */
+  private packStillCurrent(request: number, edits: number) {
+    return request === this.packRequest && edits === this.packEdits;
+  }
+
   async loadPack() {
+    const request = ++this.packRequest;
+    const edits = this.packEdits;
     const pack = await this.run(() => voicePack(this.language));
 
-    if (pack) {
+    if (pack && this.packStillCurrent(request, edits)) {
       runInAction(() => {
         this.pack = pack;
         this.issueQuestionIds = pack.questions.map((question) => question.id);
@@ -677,9 +688,12 @@ export class VoiceCrewStore {
         .filter((template) => template.length > 0);
     }
 
+    const request = ++this.packRequest;
+    const edits = this.packEdits;
     const saved = await this.run(() => saveVoicePack(pack));
 
-    if (saved) {
+    // Edited while saving: the newer edits stay, still unsaved.
+    if (saved && this.packStillCurrent(request, edits)) {
       runInAction(() => {
         this.pack = saved;
         this.issueQuestionIds = saved.questions.map((question) => question.id);
@@ -696,6 +710,7 @@ export class VoiceCrewStore {
 
   /** The pack changed in the editor: unsaved, and due a fresh check. */
   private edited() {
+    this.packEdits += 1;
     this.dirty = true;
     this.questionPreview = null;
     this.scheduleDraftCheck();

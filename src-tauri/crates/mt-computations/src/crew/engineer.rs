@@ -19,7 +19,12 @@ const SECONDS_PER_MINUTE: f64 = 60.0;
 const COMPOUND_SLOT: &str = "compound";
 const TIRES_SLOT: &str = "tires";
 /// The sim's "unlimited laps" marker in a timed session.
-const UNLIMITED_LAPS: i32 = 32_767;
+pub(crate) const UNLIMITED_LAPS: i32 = 32_767;
+/// The sim's time remaining in a session with no time limit: a week.
+pub(crate) const UNLIMITED_SECONDS: f64 = 604_800.0;
+/// Below this share of the lap the car's time into it says too little to
+/// read a lap time from.
+const MIN_LAP_SHARE_FOR_PACE: f32 = 0.1;
 const PERCENT: f32 = 100.0;
 /// Below this share of precipitation the weather is told as dry.
 const RAIN_SHARE: f32 = 0.01;
@@ -275,8 +280,10 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
             (Some(laps), _) if (0..UNLIMITED_LAPS).contains(&laps) => {
                 CrewReply::plain("engineer.answer.lapsLeft").number("laps", f64::from(laps))
             }
-            (_, Some(seconds)) if seconds >= 0.0 => CrewReply::plain("engineer.answer.timeLeft")
-                .number("minutes", (seconds / SECONDS_PER_MINUTE).floor()),
+            (_, Some(seconds)) if (0.0..UNLIMITED_SECONDS).contains(&seconds) => {
+                CrewReply::plain("engineer.answer.timeLeft")
+                    .number("minutes", (seconds / SECONDS_PER_MINUTE).floor())
+            }
             _ => no_data(),
         },
         CrewIntent::QueryLastLap => lap_reply("engineer.answer.lastLap", view.last_lap_s),
@@ -530,7 +537,7 @@ pub fn class_gaps(entries: &[DriverEntry]) -> (Option<i32>, Option<Gap>, Option<
 
 /// Laps run plus the share of the current one; `None` before the car has a
 /// lap or a place on track.
-fn progress(entry: &DriverEntry) -> Option<f32> {
+pub(crate) fn progress(entry: &DriverEntry) -> Option<f32> {
     (entry.lap >= 0 && entry.lap_dist_pct >= 0.0).then_some(entry.lap as f32 + entry.lap_dist_pct)
 }
 
@@ -595,15 +602,25 @@ pub fn track_neighbours(
 /// Seconds between a car and the player along the lap, scaled by class pace
 /// so a faster class is not told closer than it is — Relative's gap.
 fn relative_gap(car: &DriverEntry, player: &DriverEntry) -> f32 {
+    // Before a class pace or a best lap, the time into the lap over its
+    // share stands in for the lap.
     let lap_time = |entry: &DriverEntry| {
         Some(entry.class_est_lap_time)
             .filter(|time| *time > 0.0)
             .or(entry.best_lap_time)
             .filter(|time| *time > 0.0)
+            .or_else(|| {
+                (entry.lap_dist_pct >= MIN_LAP_SHARE_FOR_PACE)
+                    .then(|| entry.est_time / entry.lap_dist_pct)
+                    .filter(|time| *time > 0.0)
+            })
     };
     let ahead = car.relative_lap_dist > 0.0;
     let (front, back) = if ahead { (car, player) } else { (player, car) };
-    let (Some(front_lap), Some(back_lap)) = (lap_time(front), lap_time(back)) else {
+    let (Some(front_lap), Some(back_lap)) = (
+        lap_time(front).or(lap_time(back)),
+        lap_time(back).or(lap_time(front)),
+    ) else {
         return car.est_time - player.est_time;
     };
     let front_scaled = front.est_time * back_lap / front_lap;
@@ -637,7 +654,7 @@ fn track_relation(car: &DriverEntry, player: &DriverEntry) -> TrackRelation {
 }
 
 /// Seconds from `from` to `to` along the lap, wrapping the line.
-fn track_gap(from: f32, to: f32, lap_time: f32) -> Option<f32> {
+pub(crate) fn track_gap(from: f32, to: f32, lap_time: f32) -> Option<f32> {
     if lap_time <= 0.0 {
         return None;
     }
@@ -1132,5 +1149,33 @@ mod tests {
         );
         assert_eq!(number(&replies[0], "gap"), Some(1.3));
         assert_eq!(nobody.key, "engineer.answer.noCarBehindOnTrack");
+    }
+
+    #[test]
+    fn a_session_with_no_time_limit_has_no_time_left_to_tell() {
+        let open_practice = EngineerView {
+            laps_left: Some(UNLIMITED_LAPS),
+            seconds_left: Some(UNLIMITED_SECONDS),
+            ..EngineerView::default()
+        };
+
+        let EngineerStep::Reply(reply) = plan(CrewIntent::QueryLapsLeft, &open_practice, None)
+        else {
+            panic!("a reply");
+        };
+
+        assert_eq!(reply.key, NO_DATA_KEY);
+    }
+
+    #[test]
+    fn before_any_lap_time_the_gap_still_wraps_the_line() {
+        let mut player = placed(racing(0, GT3, 1, 0, 0.95), 0.0);
+        let mut across_the_line = placed(racing(1, GT3, 2, 1, 0.05), 0.1);
+        player.class_est_lap_time = 0.0;
+        across_the_line.class_est_lap_time = 0.0;
+
+        let gap = relative_gap(&across_the_line, &player);
+
+        assert!((gap - 9.0).abs() < 1e-3, "gap {gap}");
     }
 }

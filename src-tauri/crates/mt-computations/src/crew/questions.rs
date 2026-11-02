@@ -17,22 +17,21 @@ use mt_model::app::crew_questions::{
 use mt_model::sim::enums::TrackSurface;
 use mt_model::sim::session::{CarEntry, SessionSnapshot};
 
+use crate::crew::engineer::{progress, track_gap, UNLIMITED_LAPS, UNLIMITED_SECONDS};
 use crate::field::driver_entries::DriverEntry;
 
-/// The sim's "unlimited laps" marker in a timed session.
-const UNLIMITED_LAPS: i32 = 32_767;
-/// The sim's time remaining in a session with no time limit: a week.
-const UNLIMITED_SECONDS: f64 = 604_800.0;
 const PERCENT: f64 = 100.0;
 const LEADING_ZERO: char = '0';
 
 /// How many times each car turned onto pit road this session, counted from
-/// the driver table as it arrives.
+/// the driver table as it arrives; a car first seen on pit road started there
+/// and has made no stop yet.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct PitEntries {
     session_num: Option<i32>,
     counts: BTreeMap<i32, u32>,
     on_pit_road: BTreeSet<i32>,
+    seen: BTreeSet<i32>,
 }
 
 impl PitEntries {
@@ -46,8 +45,13 @@ impl PitEntries {
 
         for entry in entries {
             let was_on_pit_road = self.on_pit_road.contains(&entry.car_idx);
+            let first_seen = self.seen.insert(entry.car_idx);
 
-            if entry.on_pit_road && !was_on_pit_road {
+            if first_seen {
+                if entry.on_pit_road {
+                    self.on_pit_road.insert(entry.car_idx);
+                }
+            } else if entry.on_pit_road && !was_on_pit_road {
                 *self.counts.entry(entry.car_idx).or_default() += 1;
                 self.on_pit_road.insert(entry.car_idx);
             } else if !entry.on_pit_road && was_on_pit_road {
@@ -267,8 +271,9 @@ impl<'a> QuestionSource<'a> {
             }
             CarField::LapsDown => {
                 let leader = self.class_leader_of(car)?.entry;
+                let laps_down = (progress(leader)? - progress(entry)?).floor().max(0.0);
 
-                (leader.lap >= 0 && entry.lap >= 0).then(|| whole((leader.lap - entry.lap).max(0)))
+                Some(whole(laps_down as i32))
             }
             CarField::LastLap => lap_time(entry.last_lap_time),
             CarField::BestLap => lap_time(entry.best_lap_time),
@@ -303,8 +308,8 @@ impl<'a> QuestionSource<'a> {
         }
     }
 
-    /// Seconds along the lap from the player forward to a car placed ahead,
-    /// or back to one placed behind, across the line.
+    /// Seconds from the car further round the race back to the other, whole
+    /// laps between them included; by place while either has not run a lap.
     fn gap_to_me(&self, entry: &DriverEntry) -> Option<f32> {
         let me = self.me()?.entry;
 
@@ -312,13 +317,24 @@ impl<'a> QuestionSource<'a> {
             return Some(0.0);
         }
 
-        let ahead = entry.live_position > 0 && entry.live_position < me.live_position;
+        let lap_time = me.class_est_lap_time;
+        let progresses = progress(entry).zip(progress(me));
+        let ahead = match progresses {
+            Some((theirs, mine)) => theirs > mine,
+            None => {
+                let placed = entry.live_position > 0 && me.live_position > 0;
 
-        if ahead {
-            track_gap(me.est_time, entry.est_time, me.class_est_lap_time)
-        } else {
-            track_gap(entry.est_time, me.est_time, me.class_est_lap_time)
-        }
+                if !placed {
+                    return None;
+                }
+
+                entry.live_position < me.live_position
+            }
+        };
+        let laps_apart = progresses.map_or(0.0, |(theirs, mine)| (theirs - mine).abs().floor());
+        let (front, back) = if ahead { (entry, me) } else { (me, entry) };
+
+        track_gap(back.est_time, front.est_time, lap_time).map(|gap| laps_apart * lap_time + gap)
     }
 
     fn session_value(&self, field: SessionField) -> Option<CrewArg> {
@@ -420,15 +436,6 @@ fn text(value: &str) -> Option<CrewArg> {
     (!value.is_empty()).then(|| CrewArg::Text {
         value: value.to_string(),
     })
-}
-
-/// Seconds from `from` to `to` along the lap, wrapping the line.
-fn track_gap(from: f32, to: f32, lap_time: f32) -> Option<f32> {
-    if lap_time <= 0.0 {
-        return None;
-    }
-
-    Some((to - from).rem_euclid(lap_time))
 }
 
 #[cfg(test)]
@@ -807,5 +814,78 @@ mod tests {
         pits.update(Some(3), &[]);
 
         assert_eq!(pits.count(3), 0);
+    }
+
+    #[test]
+    fn a_car_just_behind_a_leader_who_crossed_the_line_is_not_a_lap_down() {
+        let (mut view, session) = race();
+        view.entries[1].lap = 11;
+        view.entries[1].lap_dist_pct = 0.01;
+        view.entries[0].lap = 10;
+        view.entries[0].lap_dist_pct = 0.99;
+        let source = QuestionSource {
+            view: &view,
+            session: Some(&session),
+        };
+
+        let replies = source.answer("me", Some(&AskedCar::Me), &[car(CarField::LapsDown)]);
+
+        assert_eq!(number(&replies[0], "lapsDown"), Some(0.0));
+    }
+
+    #[test]
+    fn the_gap_to_a_car_laps_ahead_counts_the_laps() {
+        let (mut view, session) = race();
+        view.entries[0].lap = 4;
+        view.entries[0].lap_dist_pct = 0.1;
+        view.entries[0].est_time = 9.0;
+        view.entries[1].lap = 5;
+        view.entries[1].lap_dist_pct = 0.1 + 3.0 / 90.0;
+        view.entries[1].est_time = 12.0;
+        let source = QuestionSource {
+            view: &view,
+            session: Some(&session),
+        };
+
+        let replies = source.answer("leader", Some(&AskedCar::Leader), &[car(CarField::GapToMe)]);
+
+        assert!(number(&replies[0], "gapToMe").is_some_and(|gap| (gap - 93.0).abs() < 1e-3));
+    }
+
+    #[test]
+    fn without_laps_or_a_place_there_is_no_gap_to_tell() {
+        let (mut view, session) = race();
+        view.entries[0].live_position = 0;
+
+        for entry in &mut view.entries {
+            entry.lap = -1;
+        }
+
+        let source = QuestionSource {
+            view: &view,
+            session: Some(&session),
+        };
+
+        let replies = source.answer("leader", Some(&AskedCar::Leader), &[car(CarField::GapToMe)]);
+
+        assert_eq!(arg(&replies[0], "gapToMe"), None);
+    }
+
+    #[test]
+    fn a_car_first_seen_on_pit_road_has_made_no_stop() {
+        let mut pits = PitEntries::default();
+        let mut car = entry(3, GT3, 4, 4);
+        car.on_pit_road = true;
+
+        pits.update(Some(1), std::slice::from_ref(&car));
+
+        assert_eq!(pits.count(3), 0);
+
+        car.on_pit_road = false;
+        pits.update(Some(1), std::slice::from_ref(&car));
+        car.on_pit_road = true;
+        pits.update(Some(1), std::slice::from_ref(&car));
+
+        assert_eq!(pits.count(3), 1);
     }
 }

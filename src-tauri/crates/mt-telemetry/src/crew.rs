@@ -15,6 +15,8 @@ use crate::emitter::{compound_indexes, send_manual_action, TelemetryBundle};
 use crate::loop_state::LoopState;
 
 /// Every tick: keeps the engineer's view current and answers what was asked.
+/// The cars are read only while someone can ask about them; pit stops are
+/// counted all the time — a crew switched on mid-race still knows them.
 pub fn run_crew(
     frame: &SourceFrame,
     bundle: &TelemetryBundle,
@@ -23,9 +25,15 @@ pub fn run_crew(
     pit: Option<&dyn PitCommander>,
     crew: Option<&dyn CrewSink>,
 ) {
-    update_view(&mut state.engineer, frame, bundle, session);
-    // Text only: a preview needs no voice running.
-    answer_previews(state, session);
+    let read_cars = crew.is_some() || !state.pending_previews.is_empty();
+
+    update_view(&mut state.engineer, frame, bundle, session, read_cars);
+
+    // Text only: a preview needs no voice running. With none, the cars were
+    // last read who knows when — the preview waits for the next driver table.
+    if crew.is_some() || bundle.driver_entries.is_some() {
+        answer_previews(state, session);
+    }
 
     let Some(crew) = crew else {
         state.pending_crew.clear();
@@ -115,6 +123,7 @@ fn update_view(
     frame: &SourceFrame,
     bundle: &TelemetryBundle,
     session: Option<&SessionSnapshot>,
+    read_cars: bool,
 ) {
     let service = &frame.pit_service;
 
@@ -131,7 +140,7 @@ fn update_view(
     view.precipitation = frame.environment.precipitation;
     view.track_wetness = frame.environment.track_wetness;
     view.wind_ms = frame.environment.wind_vel;
-    update_question_view(&mut view.questions, frame, bundle);
+    update_question_view(&mut view.questions, frame, bundle, read_cars);
     view.ordered_tires = ordered_tire_count([
         service.change_lf,
         service.change_rf,
@@ -147,7 +156,7 @@ fn update_view(
         view.pit_window = fuel.pit_window_start.zip(fuel.pit_window_end);
     }
 
-    if let Some(entries) = &bundle.driver_entries {
+    if let Some(entries) = bundle.driver_entries.as_ref().filter(|_| read_cars) {
         let (position, ahead, behind) = class_gaps(&entries.entries);
 
         view.class_position = position.or(frame.lap_timing.player_car_class_position);
@@ -162,7 +171,12 @@ fn update_view(
 
 /// What a question of the driver's own is answered from; the slower tiers
 /// values stand between their ticks.
-fn update_question_view(view: &mut QuestionView, frame: &SourceFrame, bundle: &TelemetryBundle) {
+fn update_question_view(
+    view: &mut QuestionView,
+    frame: &SourceFrame,
+    bundle: &TelemetryBundle,
+    read_cars: bool,
+) {
     view.fuel_level = Some(frame.car_status.fuel_level);
     view.air_temp = frame.environment.air_temp;
     view.track_temp = frame.environment.track_temp;
@@ -183,11 +197,15 @@ fn update_question_view(view: &mut QuestionView, frame: &SourceFrame, bundle: &T
     if let Some(entries) = &bundle.driver_entries {
         view.pit_entries
             .update(frame.session.session_num, &entries.entries);
-        view.entries.clone_from(&entries.entries);
+
+        if read_cars {
+            view.entries.clone_from(&entries.entries);
+        }
     }
 }
 
-/// The other cars by the numbers on them, as the sim writes them.
+/// The other cars by the numbers on them, as the sim writes them: no pace
+/// car, no spectator, no car without a driver — the cars a question finds.
 fn car_views(entries: &[DriverEntry], session: Option<&SessionSnapshot>) -> Vec<CarView> {
     let Some(session) = session else {
         return Vec::new();
@@ -200,7 +218,8 @@ fn car_views(entries: &[DriverEntry], session: Option<&SessionSnapshot>) -> Vec<
             let car = session
                 .cars
                 .iter()
-                .find(|car| car.car_idx == entry.car_idx)?;
+                .find(|car| car.car_idx == entry.car_idx)
+                .filter(|car| !car.is_pace_car && !car.is_spectator && !car.user_name.is_empty())?;
 
             Some(CarView {
                 number: car.car_number.trim().to_string(),

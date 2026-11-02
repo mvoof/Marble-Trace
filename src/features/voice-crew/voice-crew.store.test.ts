@@ -3,7 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 import type { VoicePackView } from '@shared/contracts/generated/bindings';
 import { VoiceCrewStore } from './voice-crew.store';
 
-vi.mock('@shared/api/voice.service', () => ({}));
+const voiceService = vi.hoisted(() => ({
+  saveVoicePack: vi.fn(),
+  voicePack: vi.fn(),
+}));
+
+vi.mock('@shared/api/voice.service', () => voiceService);
 vi.mock('@shared/api/external-link', () => ({}));
 
 const SOURCE_ID = 'car';
@@ -57,9 +62,9 @@ const packWithQuestion = (): VoicePackView => ({
 });
 
 const storeWith = (pack: VoicePackView) => {
-  const store = new VoiceCrewStore(
-    {} as ConstructorParameters<typeof VoiceCrewStore>[0]
-  );
+  const store = new VoiceCrewStore({
+    appSettings: { appSettings: { voiceLanguage: 'en', language: 'en' } },
+  } as unknown as ConstructorParameters<typeof VoiceCrewStore>[0]);
 
   store.pack = pack;
 
@@ -158,5 +163,53 @@ describe('voice crew questions', () => {
       car: ['number'],
       session: ['fuel'],
     });
+  });
+});
+
+describe('voice crew pack saving', () => {
+  it('keeps an edit made while the save was on its way', async () => {
+    vi.useFakeTimers();
+
+    let finishSave: (pack: VoicePackView) => void = () => {};
+    voiceService.saveVoicePack.mockImplementation(
+      () =>
+        new Promise<VoicePackView>((resolve) => {
+          finishSave = resolve;
+        })
+    );
+
+    const store = storeWith(packWithQuestion());
+    const saving = store.savePack();
+
+    store.setTemplate(SOURCE_KEY, 0, 'what about car {number}');
+    finishSave(packWithQuestion());
+    await saving;
+
+    expect(store.pack?.intents[0]?.templates[0]).toBe(
+      'what about car {number}'
+    );
+    expect(store.dirty).toBe(true);
+  });
+
+  it('shows the pack of the last load asked for', async () => {
+    vi.useFakeTimers();
+
+    const finishes: ((pack: VoicePackView) => void)[] = [];
+    voiceService.voicePack.mockImplementation(
+      () =>
+        new Promise<VoicePackView>((resolve) => {
+          finishes.push(resolve);
+        })
+    );
+
+    const store = storeWith(packWithQuestion());
+    const first = store.loadPack();
+    const second = store.loadPack();
+
+    finishes[1]?.({ ...packWithQuestion(), language: 'ru' });
+    finishes[0]?.({ ...packWithQuestion(), language: 'en' });
+    await Promise.all([first, second]);
+
+    expect(store.pack?.language).toBe('ru');
   });
 });
