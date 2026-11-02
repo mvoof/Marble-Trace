@@ -1,0 +1,22 @@
+// A road-sign plate: red figures on white, read at the size of the numbers in
+// the bars under it. The line height is fixed so an empty, hidden plate keeps
+// the same place a shown one takes.
+.plate {
+  flex: 0 0 auto;
+  margin: sp(xxs) sp(xxs) 0;
+  padding: sp(xxxs) sp(xs);
+  font-family: $font-mono;
+  font-size: fs(xl);
+  font-weight: 700;
+  line-height: 1;
+  height: calc(1em + 2 * #{sp(xxxs)});
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: $race-red;
+  background: $road-sign-face;
+  border-radius: radius(sm);
+}
+
+.plateHidden {
+  visibility: hidden;
+}

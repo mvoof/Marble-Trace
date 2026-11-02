@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 
+import { PitLimitPlate } from './PitLimitPlate/PitLimitPlate';
 import { PitSpeedPlate } from './PitSpeedPlate/PitSpeedPlate';
 import { PitApproachRail } from './PitApproachRail/PitApproachRail';
 import styles from './PitLineWidget.module.scss';
@@ -30,6 +31,8 @@ export const PitLineWidget = observer(() => {
   // Both bars size themselves; the panel's shipped 200 px floor is not theirs.
   return (
     <WidgetPanel direction="column" gap={0} minWidth={0}>
+      {showPitSpeed && <PitLimitPlate />}
+
       <div className={styles.stack}>
         {showPitSpeed && (
           <div className={styles.slot}>
