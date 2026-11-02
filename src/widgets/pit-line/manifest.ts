@@ -35,6 +35,9 @@ export const PIT_LINE_MANIFEST: WidgetManifest = {
   // anyone chose. `restoreWidgets` rescales `currentWidth` by the same factor,
   // which keeps the scale the driver set.
   deriveDesignWidth: () => DESIGN_WIDTH,
+  // The limit plate hangs above the box, so it never takes height from the
+  // bars; the widget has to be allowed to draw outside its frame for it.
+  overflowVisible: true,
   userSettings: {
     enabled: false,
     x: 100,

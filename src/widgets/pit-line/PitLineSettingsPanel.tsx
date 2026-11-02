@@ -56,6 +56,8 @@ export const PitLineSettingsPanel = observer(() => {
       <Card title={t('settingsPanels.pitLine.sections')}>
         <Row setting="showPitSpeed" />
 
+        <Row setting="showLimitPlate" dependsOn="showPitSpeed" />
+
         <Row setting="showPitApproach" />
 
         <Row setting="showPitBrakeCue" dependsOn="showPitApproach" />

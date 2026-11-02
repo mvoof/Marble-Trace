@@ -8,6 +8,11 @@ import {
 export const PIT_LINE_SETTINGS = defineSettings('pitLine', {
   showPitSpeed: bool(true),
   /**
+   * The limit as a road sign above the bars, while the driver is the one
+   * holding the car to it. Read with the speed column, so it goes with it.
+   */
+  showLimitPlate: bool(true),
+  /**
    * The approach rail: a bar that fills to the stall on the way in and to the
    * pit exit once the box is behind us, with the braking cue on it. Read
    * together with the speed plate it answers the whole of "how fast, how far"

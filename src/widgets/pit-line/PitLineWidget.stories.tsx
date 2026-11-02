@@ -27,7 +27,9 @@ interface StoryArgs {
   leavingBox?: boolean;
 }
 
-const WIDGET_SIZE = { width: 80, height: 380 };
+// The limit plate hangs above the frame, as `overflowVisible` lets it in the
+// overlay.
+const WIDGET_SIZE = { width: 80, height: 380, overflow: 'visible' };
 
 // The sample track's pit lane wraps the start/finish line, so the span and the
 // stall's place in it are measured the long way round.

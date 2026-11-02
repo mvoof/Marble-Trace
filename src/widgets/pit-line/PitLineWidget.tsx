@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 
+import { PitLimitPlate } from './PitLimitPlate/PitLimitPlate';
 import { PitSpeedPlate } from './PitSpeedPlate/PitSpeedPlate';
 import { PitApproachRail } from './PitApproachRail/PitApproachRail';
 import styles from './PitLineWidget.module.scss';
@@ -21,6 +22,7 @@ import type { PitLineWidgetSettings } from './settings-schema';
 export const PitLineWidget = observer(() => {
   const {
     showPitSpeed,
+    showLimitPlate,
     showPitApproach,
     showPitBrakeCue,
     showUnits,
@@ -29,24 +31,30 @@ export const PitLineWidget = observer(() => {
 
   // Both bars size themselves; the panel's shipped 200 px floor is not theirs.
   return (
-    <WidgetPanel direction="column" gap={0} minWidth={0}>
-      <div className={styles.stack}>
-        {showPitSpeed && (
-          <div className={styles.slot}>
-            <PitSpeedPlate withUnit={showUnits} />
-          </div>
-        )}
+    <div className={styles.root}>
+      {showPitSpeed && showLimitPlate && <PitLimitPlate withUnit={showUnits} />}
 
-        {showPitApproach && (
-          <div className={styles.slot}>
-            <PitApproachRail
-              withBrakeCue={showPitBrakeCue}
-              withUnit={showUnits}
-              revealOnApproachM={revealOnApproachM}
-            />
+      <div className={styles.body}>
+        <WidgetPanel direction="column" gap={0} minWidth={0}>
+          <div className={styles.stack}>
+            {showPitSpeed && (
+              <div className={styles.slot}>
+                <PitSpeedPlate withUnit={showUnits} />
+              </div>
+            )}
+
+            {showPitApproach && (
+              <div className={styles.slot}>
+                <PitApproachRail
+                  withBrakeCue={showPitBrakeCue}
+                  withUnit={showUnits}
+                  revealOnApproachM={revealOnApproachM}
+                />
+              </div>
+            )}
           </div>
-        )}
+        </WidgetPanel>
       </div>
-    </WidgetPanel>
+    </div>
   );
 });
