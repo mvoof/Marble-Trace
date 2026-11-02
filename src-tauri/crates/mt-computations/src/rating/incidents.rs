@@ -286,13 +286,7 @@ impl Processor for IncidentsProcessor {
     }
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
-        let pace_car_idxs: Vec<i32> = ctx
-            .session
-            .cars
-            .iter()
-            .filter(|car| car.is_pace_car)
-            .map(|car| car.car_idx)
-            .collect();
+        let pace_car_idxs = ctx.session.pace_car_idxs();
         let frame = compute(
             ctx.car_idx,
             ctx.track_length_m,
