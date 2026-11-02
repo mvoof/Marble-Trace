@@ -51,6 +51,51 @@
     ],
     "engineer.answer.noCarAhead": [{ "text": "No hay nadie delante" }],
     "engineer.answer.noCarBehind": [{ "text": "No hay nadie detrás" }],
+    "engineer.answer.lapsAhead": [
+      {
+        "text": "El de delante va {laps, plural, one {# vuelta} other {# vueltas}} por delante"
+      }
+    ],
+    "engineer.answer.lapsBehind": [
+      {
+        "text": "El de atrás va {laps, plural, one {# vuelta} other {# vueltas}} por detrás"
+      }
+    ],
+    "engineer.answer.carAheadOnTrack": [
+      {
+        "text": "Delante el número {car}, {name}, a {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrack": [
+      {
+        "text": "Detrás el número {car}, {name}, a {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.carAheadOnTrackClass": [
+      {
+        "text": "Delante el número {car}, {name}, {className}, a {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrackClass": [
+      {
+        "text": "Detrás el número {car}, {name}, {className}, a {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.noCarAheadOnTrack": [
+      { "text": "No hay nadie delante en pista" }
+    ],
+    "engineer.answer.noCarBehindOnTrack": [
+      { "text": "No hay nadie detrás en pista" }
+    ],
+    "engineer.answer.trackRival": [{ "text": "Pelea contigo por la posición" }],
+    "engineer.answer.trackLapped": [
+      {
+        "text": "Doblado, {laps, plural, one {# vuelta} other {# vueltas}} por detrás"
+      }
+    ],
+    "engineer.answer.trackLapsUp": [
+      { "text": "Te saca {laps, plural, one {# vuelta} other {# vueltas}}" }
+    ],
     "engineer.answer.position": [
       { "text": "Vas P{position}" },
       { "text": "Posición {position}" }

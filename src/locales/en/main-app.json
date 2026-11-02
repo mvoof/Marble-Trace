@@ -1039,7 +1039,9 @@
         "lap": "lap",
         "lapsLeft": "laps left",
         "minutesLeft": "minutes left",
-        "car": "car number"
+        "car": "car number",
+        "name": "driver name",
+        "className": "class"
       }
     },
     "syntax": {
@@ -1151,6 +1153,14 @@
           "title": "Gap behind",
           "desc": "Seconds to the car behind in your class."
         },
+        "whoAhead": {
+          "title": "Who is ahead",
+          "desc": "The nearest car ahead on track, any class: number, driver, class in a multiclass race, gap, and whether it is lapped or racing you."
+        },
+        "whoBehind": {
+          "title": "Who is behind",
+          "desc": "The nearest car behind on track, any class: number, driver, class in a multiclass race, gap, and whether it is lapped or racing you."
+        },
         "position": {
           "title": "Position",
           "desc": "Your place in class."
@@ -1223,6 +1233,17 @@
           "gapBehind": "Answer",
           "noCarAhead": "Nobody ahead (you lead the class)",
           "noCarBehind": "Nobody behind",
+          "lapsAhead": "A lap or more ahead",
+          "lapsBehind": "A lap or more behind",
+          "carAheadOnTrack": "Answer",
+          "carBehindOnTrack": "Answer",
+          "carAheadOnTrackClass": "Multiclass race",
+          "carBehindOnTrackClass": "Multiclass race",
+          "noCarAheadOnTrack": "Nobody ahead on track",
+          "noCarBehindOnTrack": "Nobody behind on track",
+          "trackRival": "Then: racing you for position",
+          "trackLapped": "Then: a lapped car",
+          "trackLapsUp": "Then: laps up on you",
           "position": "Answer",
           "lapsLeft": "Race over laps",
           "timeLeft": "Timed race",

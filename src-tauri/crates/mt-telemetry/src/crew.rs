@@ -2,7 +2,8 @@
 //! against the frame this tick holds, the same way a pit key is.
 
 use mt_computations::crew::engineer::{
-    acknowledge, class_gaps, ordered_tire_count, plan, CarView, EngineerStep, EngineerView,
+    acknowledge, class_gaps, ordered_tire_count, plan, track_neighbours, CarView, EngineerStep,
+    EngineerView,
 };
 use mt_computations::crew::questions::QuestionView;
 use mt_computations::field::driver_entries::DriverEntry;
@@ -150,8 +151,11 @@ fn update_view(
         let (position, ahead, behind) = class_gaps(&entries.entries);
 
         view.class_position = position.or(frame.lap_timing.player_car_class_position);
-        view.gap_ahead_s = ahead;
-        view.gap_behind_s = behind;
+        view.gap_ahead = ahead;
+        view.gap_behind = behind;
+        (view.car_ahead_on_track, view.car_behind_on_track) = session
+            .map(|session| track_neighbours(&entries.entries, session))
+            .unwrap_or_default();
         view.cars = car_views(&entries.entries, session);
     }
 }

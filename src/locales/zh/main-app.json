@@ -1035,7 +1035,9 @@
         "lap": "圈",
         "lapsLeft": "剩余圈数",
         "minutesLeft": "剩余分钟",
-        "car": "车号"
+        "car": "车号",
+        "name": "车手名字",
+        "className": "组别"
       }
     },
     "syntax": {
@@ -1147,6 +1149,14 @@
           "title": "与后车差距",
           "desc": "与同组别后车相差的秒数。"
         },
+        "whoAhead": {
+          "title": "前面是谁",
+          "desc": "赛道上最近的前车（任意组别）：车号、车手、多组别时的组别、差距，以及是否被套圈或与你争位置。"
+        },
+        "whoBehind": {
+          "title": "后面是谁",
+          "desc": "赛道上最近的后车（任意组别）：车号、车手、多组别时的组别、差距，以及是否被套圈或与你争位置。"
+        },
         "position": {
           "title": "名次",
           "desc": "你在组别中的名次。"
@@ -1219,6 +1229,17 @@
           "gapBehind": "回答",
           "noCarAhead": "前面没有车（你领跑组别）",
           "noCarBehind": "后面没有车",
+          "lapsAhead": "领先一圈或以上",
+          "lapsBehind": "落后一圈或以上",
+          "carAheadOnTrack": "回答",
+          "carBehindOnTrack": "回答",
+          "carAheadOnTrackClass": "多组别比赛",
+          "carBehindOnTrackClass": "多组别比赛",
+          "noCarAheadOnTrack": "赛道上前面没有车",
+          "noCarBehindOnTrack": "赛道上后面没有车",
+          "trackRival": "接着：与你争位置",
+          "trackLapped": "接着：被套圈的车",
+          "trackLapsUp": "接着：领先你几圈",
           "position": "回答",
           "lapsLeft": "按圈数比赛",
           "timeLeft": "计时赛",

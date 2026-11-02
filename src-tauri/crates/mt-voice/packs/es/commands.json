@@ -61,14 +61,14 @@
     ],
     "query.gapAhead": [
       "(diferencia|distancia) con el de delante",
-      "quién va delante",
       "a cuánto está el de delante"
     ],
     "query.gapBehind": [
       "(diferencia|distancia) con el de atrás",
-      "quién va detrás",
       "a cuánto está el de atrás"
     ],
+    "query.whoAhead": ["quién (va|está) delante", "quién es el de delante"],
+    "query.whoBehind": ["quién (va|está) detrás", "quién es el de atrás"],
     "query.position": [
       "en qué posición (voy|estoy)",
       "cuál es mi posición",

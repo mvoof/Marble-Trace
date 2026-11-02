@@ -8,7 +8,8 @@
 use mt_model::app::crew::{CompoundKind, CrewArg, CrewIntent, CrewReply};
 use mt_model::pit::pit_action::{PitAction, TireSet};
 use mt_model::pit::pit_command::PitCommandKind;
-use mt_model::sim::session::{SessionSnapshot, TireCompoundEntry};
+use mt_model::sim::enums::TrackSurface;
+use mt_model::sim::session::{CarEntry, SessionSnapshot, TireCompoundEntry};
 
 use crate::crew::questions::{number_matches, QuestionSource, QuestionView};
 use crate::field::driver_entries::DriverEntry;
@@ -34,6 +35,39 @@ pub struct CarView {
     pub best_lap_s: Option<f32>,
 }
 
+/// How far a rival in the class is: seconds while on the same lap, whole
+/// laps once a lap or more apart.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Gap {
+    Seconds(f32),
+    Laps(i32),
+}
+
+/// Who the nearest car on track is to the player.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TrackRelation {
+    /// One place ahead or behind in the class, on the same lap.
+    Rival,
+    /// That many laps down on the player.
+    Lapped(i32),
+    /// That many laps up on the player.
+    LapsUp(i32),
+    /// Another place, another class, or laps unknown.
+    Other,
+}
+
+/// The nearest car on one side of the player along the lap, as Relative
+/// shows it.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TrackNeighbour {
+    pub number: String,
+    pub name: String,
+    /// `None` in a session of one class.
+    pub class_name: Option<String>,
+    pub gap_s: f32,
+    pub relation: TrackRelation,
+}
+
 /// What the engineer knows about the car, kept current by the telemetry
 /// thread — some of it arrives only on slower tiers, so it is held between
 /// them rather than read off the tick's bundle.
@@ -43,8 +77,12 @@ pub struct EngineerView {
     pub fuel_l: Option<f32>,
     pub fuel_laps: Option<f32>,
     pub class_position: Option<i32>,
-    pub gap_ahead_s: Option<f32>,
-    pub gap_behind_s: Option<f32>,
+    /// To the cars one place ahead and behind in the class.
+    pub gap_ahead: Option<Gap>,
+    pub gap_behind: Option<Gap>,
+    /// The nearest cars on track, any class, lapped or not.
+    pub car_ahead_on_track: Option<TrackNeighbour>,
+    pub car_behind_on_track: Option<TrackNeighbour>,
     pub laps_left: Option<i32>,
     pub seconds_left: Option<f64>,
     pub last_lap_s: Option<f32>,
@@ -209,6 +247,8 @@ pub fn plan(
         CrewIntent::QueryCarBestLap { car } => about_cars(view, &car, |found| {
             car_lap_reply("engineer.answer.carBestLap", found, found.best_lap_s)
         }),
+        CrewIntent::QueryWhoAhead => who_reply(view.car_ahead_on_track.as_ref(), "Ahead"),
+        CrewIntent::QueryWhoBehind => who_reply(view.car_behind_on_track.as_ref(), "Behind"),
         query => EngineerStep::Reply(answer(query, view)),
     }
 }
@@ -224,9 +264,9 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
             _ => no_data(),
         },
         CrewIntent::QueryGapAhead => {
-            gap_reply(view.class_position == Some(1), view.gap_ahead_s, "Ahead")
+            gap_reply(view.class_position == Some(1), view.gap_ahead, "Ahead")
         }
-        CrewIntent::QueryGapBehind => gap_reply(false, view.gap_behind_s, "Behind"),
+        CrewIntent::QueryGapBehind => gap_reply(false, view.gap_behind, "Behind"),
         CrewIntent::QueryPosition => view.class_position.map_or_else(no_data, |position| {
             CrewReply::plain("engineer.answer.position").number("position", f64::from(position))
         }),
@@ -310,17 +350,59 @@ fn car_lap_reply(key: &str, car: &CarView, lap_s: Option<f32>) -> CrewReply {
     }
 }
 
-/// "Nobody ahead" for the class leader; a gap to one decimal otherwise.
-fn gap_reply(leading: bool, gap_s: Option<f32>, side: &str) -> CrewReply {
+/// "Nobody ahead" for the class leader; a gap to one decimal, or the laps
+/// between, otherwise.
+fn gap_reply(leading: bool, gap: Option<Gap>, side: &str) -> CrewReply {
     if leading {
         return CrewReply::plain(&format!("engineer.answer.noCar{side}"));
     }
 
-    match gap_s {
-        Some(gap) => CrewReply::plain(&format!("engineer.answer.gap{side}"))
-            .number("gap", (f64::from(gap) * 10.0).round() / 10.0),
+    match gap {
+        Some(Gap::Seconds(seconds)) => {
+            CrewReply::plain(&format!("engineer.answer.gap{side}")).number("gap", tenths(seconds))
+        }
+        Some(Gap::Laps(laps)) => {
+            CrewReply::plain(&format!("engineer.answer.laps{side}")).number("laps", f64::from(laps))
+        }
         None => CrewReply::plain(&format!("engineer.answer.noCar{side}")),
     }
+}
+
+fn tenths(seconds: f32) -> f64 {
+    (f64::from(seconds) * 10.0).round() / 10.0
+}
+
+/// Who the nearest car on track is — number, name, class in a session of
+/// several — then how it stands to the player when that matters.
+fn who_reply(car: Option<&TrackNeighbour>, side: &str) -> EngineerStep {
+    let Some(car) = car else {
+        return EngineerStep::Reply(CrewReply::plain(&format!(
+            "engineer.answer.noCar{side}OnTrack"
+        )));
+    };
+    let text = |value: &str| CrewArg::Text {
+        value: value.to_string(),
+    };
+    let who = match &car.class_name {
+        Some(class_name) => CrewReply::plain(&format!("engineer.answer.car{side}OnTrackClass"))
+            .arg("className", text(class_name)),
+        None => CrewReply::plain(&format!("engineer.answer.car{side}OnTrack")),
+    }
+    .arg("car", text(&car.number))
+    .arg("name", text(&car.name))
+    .number("gap", tenths(car.gap_s));
+    let relation = match car.relation {
+        TrackRelation::Rival => Some(CrewReply::plain("engineer.answer.trackRival")),
+        TrackRelation::Lapped(laps) => {
+            Some(CrewReply::plain("engineer.answer.trackLapped").number("laps", f64::from(laps)))
+        }
+        TrackRelation::LapsUp(laps) => {
+            Some(CrewReply::plain("engineer.answer.trackLapsUp").number("laps", f64::from(laps)))
+        }
+        TrackRelation::Other => None,
+    };
+
+    EngineerStep::Answers(std::iter::once(who).chain(relation).collect())
 }
 
 /// Minutes and seconds the way an engineer reads a lap: "one thirty-two four".
@@ -391,9 +473,10 @@ pub fn acknowledge(ack: Ack, order: Option<&ManualOrder>, sent: bool) -> CrewRep
     reply.command(true)
 }
 
-/// The player's class position and the on-track gaps, in seconds, to the cars
-/// one place ahead and behind in the class.
-pub fn class_gaps(entries: &[DriverEntry]) -> (Option<i32>, Option<f32>, Option<f32>) {
+/// The player's class position and the live gaps to the cars one place ahead
+/// and behind in the class: seconds along the lap, whole laps once the cars
+/// are a lap or more apart.
+pub fn class_gaps(entries: &[DriverEntry]) -> (Option<i32>, Option<Gap>, Option<Gap>) {
     let Some(player) = entries.iter().find(|entry| entry.is_player) else {
         return (None, None, None);
     };
@@ -411,10 +494,129 @@ pub fn class_gaps(entries: &[DriverEntry]) -> (Option<i32>, Option<f32>, Option<
         })
     };
     let lap_time = player.class_est_lap_time;
-    let ahead = rival(-1).map(|car| track_gap(player.est_time, car.est_time, lap_time));
-    let behind = rival(1).map(|car| track_gap(car.est_time, player.est_time, lap_time));
+    let gap = |front: &DriverEntry, back: &DriverEntry| {
+        let laps_apart = progress(front)
+            .zip(progress(back))
+            .map(|(front, back)| (front - back).floor() as i32)
+            .filter(|laps| *laps >= 1);
 
-    (Some(position), ahead.flatten(), behind.flatten())
+        match laps_apart {
+            Some(laps) => Some(Gap::Laps(laps)),
+            None => track_gap(back.est_time, front.est_time, lap_time).map(Gap::Seconds),
+        }
+    };
+    let ahead = rival(-1).and_then(|car| gap(car, player));
+    let behind = rival(1).and_then(|car| gap(player, car));
+
+    (Some(position), ahead, behind)
+}
+
+/// Laps run plus the share of the current one; `None` before the car has a
+/// lap or a place on track.
+fn progress(entry: &DriverEntry) -> Option<f32> {
+    (entry.lap >= 0 && entry.lap_dist_pct >= 0.0).then_some(entry.lap as f32 + entry.lap_dist_pct)
+}
+
+/// The nearest cars ahead and behind the player along the lap, as Relative
+/// shows them: any class, lapped or not; a car on pit road or out of the
+/// world is passed over.
+pub fn track_neighbours(
+    entries: &[DriverEntry],
+    session: &SessionSnapshot,
+) -> (Option<TrackNeighbour>, Option<TrackNeighbour>) {
+    let racing =
+        |car: &&CarEntry| !car.is_pace_car && !car.is_spectator && !car.user_name.is_empty();
+    let Some(player) = entries.iter().find(|entry| entry.is_player) else {
+        return (None, None);
+    };
+    let multiclass = {
+        let mut classes = session
+            .cars
+            .iter()
+            .filter(racing)
+            .map(|car| car.car_class_id);
+        let first = classes.next();
+
+        classes.any(|class| Some(class) != first)
+    };
+    let nearest = |ahead: bool| {
+        entries
+            .iter()
+            .filter(|entry| {
+                !entry.is_player
+                    && !entry.on_pit_road
+                    && entry.track_surface != TrackSurface::NotInWorld
+                    && (entry.relative_lap_dist > 0.0) == ahead
+                    && entry.relative_lap_dist != 0.0
+            })
+            .filter_map(|entry| {
+                let car = session
+                    .cars
+                    .iter()
+                    .filter(racing)
+                    .find(|car| car.car_idx == entry.car_idx)?;
+
+                Some((entry, car))
+            })
+            .min_by(|(left, _), (right, _)| {
+                left.relative_lap_dist
+                    .abs()
+                    .total_cmp(&right.relative_lap_dist.abs())
+            })
+            .map(|(entry, car)| TrackNeighbour {
+                number: car.car_number.trim().to_string(),
+                name: car.user_name.trim().to_string(),
+                class_name: multiclass.then(|| car.car_class_short_name.trim().to_string()),
+                gap_s: relative_gap(entry, player).abs(),
+                relation: track_relation(entry, player),
+            })
+    };
+
+    (nearest(true), nearest(false))
+}
+
+/// Seconds between a car and the player along the lap, scaled by class pace
+/// so a faster class is not told closer than it is — Relative's gap.
+fn relative_gap(car: &DriverEntry, player: &DriverEntry) -> f32 {
+    let lap_time = |entry: &DriverEntry| {
+        Some(entry.class_est_lap_time)
+            .filter(|time| *time > 0.0)
+            .or(entry.best_lap_time)
+            .filter(|time| *time > 0.0)
+    };
+    let ahead = car.relative_lap_dist > 0.0;
+    let (front, back) = if ahead { (car, player) } else { (player, car) };
+    let (Some(front_lap), Some(back_lap)) = (lap_time(front), lap_time(back)) else {
+        return car.est_time - player.est_time;
+    };
+    let front_scaled = front.est_time * back_lap / front_lap;
+    let gap = (front_scaled - back.est_time).rem_euclid(back_lap);
+
+    if gap > back_lap / 2.0 {
+        gap - back_lap
+    } else {
+        gap
+    }
+}
+
+/// Laps the car is up or down on the player, from both cars' progress less
+/// the distance between them on track.
+fn track_relation(car: &DriverEntry, player: &DriverEntry) -> TrackRelation {
+    let Some(laps_up) = progress(car)
+        .zip(progress(player))
+        .map(|(car_progress, mine)| (car_progress - mine - car.relative_lap_dist).round() as i32)
+    else {
+        return TrackRelation::Other;
+    };
+    let next_place = player.live_class_position > 0
+        && (car.live_class_position - player.live_class_position).abs() == 1;
+
+    match laps_up {
+        laps if laps < 0 => TrackRelation::Lapped(-laps),
+        laps if laps > 0 => TrackRelation::LapsUp(laps),
+        _ if car.car_class_id == player.car_class_id && next_place => TrackRelation::Rival,
+        _ => TrackRelation::Other,
+    }
 }
 
 /// Seconds from `from` to `to` along the lap, wrapping the line.
@@ -626,7 +828,7 @@ mod tests {
     fn the_class_leader_has_nobody_ahead() {
         let view = EngineerView {
             class_position: Some(1),
-            gap_behind_s: Some(2.34),
+            gap_behind: Some(Gap::Seconds(2.34)),
             ..EngineerView::default()
         };
         let EngineerStep::Reply(ahead) = plan(CrewIntent::QueryGapAhead, &view, None) else {
@@ -718,5 +920,161 @@ mod tests {
         assert_eq!(track_gap(85.0, 3.0, 90.0), Some(8.0));
         assert_eq!(track_gap(10.0, 12.5, 90.0), Some(2.5));
         assert_eq!(track_gap(10.0, 12.5, 0.0), None);
+    }
+
+    const GT3: i32 = 1;
+    const GT4: i32 = 2;
+
+    /// A car on track at `lap` + `lap_dist_pct`, its estimated time on a
+    /// 90 s lap.
+    fn racing(
+        car_idx: i32,
+        class: i32,
+        class_position: i32,
+        lap: i32,
+        lap_dist_pct: f32,
+    ) -> DriverEntry {
+        DriverEntry {
+            car_idx,
+            car_class_id: class,
+            tire_compound: String::new(),
+            position: class_position,
+            class_position,
+            live_position: class_position,
+            live_class_position: class_position,
+            start_pos_overall: None,
+            start_pos_class: None,
+            lap,
+            lap_dist_pct,
+            last_lap_time: None,
+            best_lap_time: None,
+            qualify_time: None,
+            f2_time: 0.0,
+            est_time: lap_dist_pct * 90.0,
+            track_surface: TrackSurface::OnTrack,
+            i_rating: 0,
+            is_player: car_idx == 0,
+            on_pit_road: false,
+            estimated_ir_delta_live: None,
+            estimated_ir_delta_official: None,
+            relative_lap_dist: 0.0,
+            class_est_lap_time: 90.0,
+            raw_flags: 0,
+            results_position_lap: None,
+            results_position_time: None,
+            is_retired: false,
+            is_finished: false,
+            is_towed: false,
+            pit_state: Default::default(),
+            speed: None,
+        }
+    }
+
+    fn placed(mut entry: DriverEntry, relative_lap_dist: f32) -> DriverEntry {
+        entry.relative_lap_dist = relative_lap_dist;
+        entry
+    }
+
+    fn session_car(car_idx: i32, class: i32, number: &str, class_name: &str) -> CarEntry {
+        CarEntry {
+            car_idx,
+            user_name: format!("Driver {car_idx}"),
+            car_number: number.into(),
+            car_class_id: class,
+            car_class_short_name: class_name.into(),
+            ..CarEntry::default()
+        }
+    }
+
+    #[test]
+    fn a_class_rival_a_lap_or_more_away_is_told_in_laps() {
+        let entries = [
+            racing(0, GT3, 2, 5, 0.5),
+            racing(1, GT3, 1, 6, 0.6),
+            racing(2, GT3, 3, 5, 0.45),
+        ];
+
+        let (position, ahead, behind) = class_gaps(&entries);
+
+        assert_eq!(position, Some(2));
+        assert_eq!(ahead, Some(Gap::Laps(1)));
+        assert!(matches!(behind, Some(Gap::Seconds(gap)) if (gap - 4.5).abs() < 1e-3));
+    }
+
+    #[test]
+    fn the_nearest_car_on_track_skips_the_pits_and_says_how_it_stands() {
+        let mut in_pits = placed(racing(3, GT3, 4, 5, 0.51), 0.01);
+        in_pits.on_pit_road = true;
+        let mut lapped_gt4 = placed(racing(4, GT4, 6, 4, 0.55), 0.05);
+        lapped_gt4.class_est_lap_time = 100.0;
+        lapped_gt4.est_time = 55.0;
+        let entries = [
+            racing(0, GT3, 2, 5, 0.5),
+            in_pits,
+            lapped_gt4,
+            placed(racing(2, GT3, 3, 5, 0.48), -0.02),
+        ];
+        let session = SessionSnapshot {
+            player_car_idx: 0,
+            cars: vec![
+                session_car(0, GT3, "5", "GT3"),
+                session_car(2, GT3, "12", "GT3"),
+                session_car(3, GT3, "33", "GT3"),
+                session_car(4, GT4, "09", "GT4"),
+            ],
+            ..SessionSnapshot::default()
+        };
+
+        let (ahead, behind) = track_neighbours(&entries, &session);
+        let ahead = ahead.expect("a car ahead");
+        let behind = behind.expect("a car behind");
+
+        assert_eq!(
+            (
+                ahead.number.as_str(),
+                ahead.class_name.as_deref(),
+                ahead.relation
+            ),
+            ("09", Some("GT4"), TrackRelation::Lapped(1))
+        );
+        assert!((ahead.gap_s - 4.5).abs() < 1e-3);
+        assert_eq!(
+            (behind.number.as_str(), behind.relation),
+            ("12", TrackRelation::Rival)
+        );
+    }
+
+    #[test]
+    fn who_is_ahead_names_the_car_then_how_it_stands() {
+        let view = EngineerView {
+            car_ahead_on_track: Some(TrackNeighbour {
+                number: "09".into(),
+                name: "Driver 4".into(),
+                class_name: None,
+                gap_s: 1.26,
+                relation: TrackRelation::Lapped(1),
+            }),
+            ..EngineerView::default()
+        };
+
+        let EngineerStep::Answers(replies) = plan(CrewIntent::QueryWhoAhead, &view, None) else {
+            panic!("answers");
+        };
+        let EngineerStep::Reply(nobody) = plan(CrewIntent::QueryWhoBehind, &view, None) else {
+            panic!("a reply");
+        };
+
+        assert_eq!(
+            replies
+                .iter()
+                .map(|reply| reply.key.as_str())
+                .collect::<Vec<_>>(),
+            [
+                "engineer.answer.carAheadOnTrack",
+                "engineer.answer.trackLapped"
+            ]
+        );
+        assert_eq!(number(&replies[0], "gap"), Some(1.3));
+        assert_eq!(nobody.key, "engineer.answer.noCarBehindOnTrack");
     }
 }

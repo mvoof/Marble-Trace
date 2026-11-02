@@ -61,6 +61,53 @@
     ],
     "engineer.answer.noCarAhead": [{ "text": "Впереди никого" }],
     "engineer.answer.noCarBehind": [{ "text": "Сзади никого" }],
+    "engineer.answer.lapsAhead": [
+      {
+        "text": "Передний впереди на {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      }
+    ],
+    "engineer.answer.lapsBehind": [
+      {
+        "text": "Задний позади на {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      }
+    ],
+    "engineer.answer.carAheadOnTrack": [
+      {
+        "text": "Впереди номер {car}, {name}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrack": [
+      {
+        "text": "Сзади номер {car}, {name}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      }
+    ],
+    "engineer.answer.carAheadOnTrackClass": [
+      {
+        "text": "Впереди номер {car}, {name}, {className}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrackClass": [
+      {
+        "text": "Сзади номер {car}, {name}, {className}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+      }
+    ],
+    "engineer.answer.noCarAheadOnTrack": [
+      { "text": "Впереди на трассе никого" }
+    ],
+    "engineer.answer.noCarBehindOnTrack": [
+      { "text": "Сзади на трассе никого" }
+    ],
+    "engineer.answer.trackRival": [{ "text": "Соперник за позицию" }],
+    "engineer.answer.trackLapped": [
+      {
+        "text": "Круговой, отстаёт на {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      }
+    ],
+    "engineer.answer.trackLapsUp": [
+      {
+        "text": "Он впереди тебя на {laps, plural, one {# круг} few {# круга} many {# кругов} other {# круга}}"
+      }
+    ],
     "engineer.answer.position": [
       { "text": "Ты {position}" },
       { "text": "Позиция {position}" }

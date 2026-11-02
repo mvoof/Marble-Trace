@@ -62,14 +62,17 @@
     ],
     "query.gapAhead": [
       "gap (ahead|to the car ahead|in front)",
-      "how far (ahead|to the car ahead)",
-      "who is ahead"
+      "how far (ahead|to the car ahead)"
     ],
     "query.gapBehind": [
       "gap (behind|to the car behind)",
-      "how far (behind|to the car behind)",
-      "who is behind"
+      "how far (behind|to the car behind)"
     ],
+    "query.whoAhead": [
+      "who is (ahead|in front) [on track]",
+      "who is the car ahead"
+    ],
+    "query.whoBehind": ["who is behind [on track]", "who is the car behind"],
     "query.position": [
       "what position [am i]",
       "(what's|what is) my position",

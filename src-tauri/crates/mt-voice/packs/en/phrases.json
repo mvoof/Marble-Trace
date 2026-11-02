@@ -51,6 +51,47 @@
     ],
     "engineer.answer.noCarAhead": [{ "text": "Nobody ahead" }],
     "engineer.answer.noCarBehind": [{ "text": "Nobody behind" }],
+    "engineer.answer.lapsAhead": [
+      {
+        "text": "The car ahead is {laps, plural, one {# lap} other {# laps}} up"
+      }
+    ],
+    "engineer.answer.lapsBehind": [
+      {
+        "text": "The car behind is {laps, plural, one {# lap} other {# laps}} down"
+      }
+    ],
+    "engineer.answer.carAheadOnTrack": [
+      {
+        "text": "Ahead is number {car}, {name}, {gap, plural, one {# second} other {# seconds}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrack": [
+      {
+        "text": "Behind is number {car}, {name}, {gap, plural, one {# second} other {# seconds}}"
+      }
+    ],
+    "engineer.answer.carAheadOnTrackClass": [
+      {
+        "text": "Ahead is number {car}, {name}, {className}, {gap, plural, one {# second} other {# seconds}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrackClass": [
+      {
+        "text": "Behind is number {car}, {name}, {className}, {gap, plural, one {# second} other {# seconds}}"
+      }
+    ],
+    "engineer.answer.noCarAheadOnTrack": [{ "text": "Nobody ahead on track" }],
+    "engineer.answer.noCarBehindOnTrack": [
+      { "text": "Nobody behind on track" }
+    ],
+    "engineer.answer.trackRival": [{ "text": "Racing you for position" }],
+    "engineer.answer.trackLapped": [
+      { "text": "Lapped car, {laps, plural, one {# lap} other {# laps}} down" }
+    ],
+    "engineer.answer.trackLapsUp": [
+      { "text": "{laps, plural, one {# lap} other {# laps}} up on you" }
+    ],
     "engineer.answer.position": [
       { "text": "You're P{position}" },
       { "text": "Position {position}" }

@@ -69,6 +69,9 @@ pub enum CrewIntent {
     QueryFuel,
     QueryGapAhead,
     QueryGapBehind,
+    /// The nearest car ahead on track, lapped or not, as Relative shows it.
+    QueryWhoAhead,
+    QueryWhoBehind,
     QueryPosition,
     QueryLapsLeft,
     QueryLastLap,
@@ -117,6 +120,8 @@ impl CrewIntent {
             Self::QueryFuel
                 | Self::QueryGapAhead
                 | Self::QueryGapBehind
+                | Self::QueryWhoAhead
+                | Self::QueryWhoBehind
                 | Self::QueryPosition
                 | Self::QueryLapsLeft
                 | Self::QueryLastLap

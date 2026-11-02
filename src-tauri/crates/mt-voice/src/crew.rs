@@ -662,6 +662,8 @@ pub fn crew_intent(command: &Recognised) -> Option<CrewIntent> {
         "query.fuel" => CrewIntent::QueryFuel,
         "query.gapAhead" => CrewIntent::QueryGapAhead,
         "query.gapBehind" => CrewIntent::QueryGapBehind,
+        "query.whoAhead" => CrewIntent::QueryWhoAhead,
+        "query.whoBehind" => CrewIntent::QueryWhoBehind,
         "query.position" => CrewIntent::QueryPosition,
         "query.lapsLeft" => CrewIntent::QueryLapsLeft,
         "query.lastLap" => CrewIntent::QueryLastLap,

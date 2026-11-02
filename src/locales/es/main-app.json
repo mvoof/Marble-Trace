@@ -1039,7 +1039,9 @@
         "lap": "vuelta",
         "lapsLeft": "vueltas restantes",
         "minutesLeft": "minutos restantes",
-        "car": "número de coche"
+        "car": "número de coche",
+        "name": "nombre del piloto",
+        "className": "clase"
       }
     },
     "syntax": {
@@ -1151,6 +1153,14 @@
           "title": "Diferencia con el de atrás",
           "desc": "Segundos al coche de atrás en tu clase."
         },
+        "whoAhead": {
+          "title": "Quién va delante",
+          "desc": "El coche más cercano delante en pista, de cualquier clase: número, piloto, clase en multiclase, distancia y si está doblado o pelea contigo."
+        },
+        "whoBehind": {
+          "title": "Quién va detrás",
+          "desc": "El coche más cercano detrás en pista, de cualquier clase: número, piloto, clase en multiclase, distancia y si está doblado o pelea contigo."
+        },
         "position": {
           "title": "Posición",
           "desc": "Tu puesto en la clase."
@@ -1223,6 +1233,17 @@
           "gapBehind": "Respuesta",
           "noCarAhead": "Nadie delante (lideras la clase)",
           "noCarBehind": "Nadie detrás",
+          "lapsAhead": "Una vuelta o más por delante",
+          "lapsBehind": "Una vuelta o más por detrás",
+          "carAheadOnTrack": "Respuesta",
+          "carBehindOnTrack": "Respuesta",
+          "carAheadOnTrackClass": "Carrera multiclase",
+          "carBehindOnTrackClass": "Carrera multiclase",
+          "noCarAheadOnTrack": "Nadie delante en pista",
+          "noCarBehindOnTrack": "Nadie detrás en pista",
+          "trackRival": "Después: pelea por la posición",
+          "trackLapped": "Después: coche doblado",
+          "trackLapsUp": "Después: te saca vueltas",
           "position": "Respuesta",
           "lapsLeft": "Carrera por vueltas",
           "timeLeft": "Carrera por tiempo",
