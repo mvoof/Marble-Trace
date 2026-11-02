@@ -1,22 +1,35 @@
-// A road-sign plate: red figures on white, read at the size of the numbers in
-// the bars under it. The line height is fixed so an empty, hidden plate keeps
-// the same place a shown one takes.
+// A road-sign plate: red figures on white inside a red frame, the limit read
+// at the size of the numbers in the bars under it and the unit small beside it.
 .plate {
+  display: flex;
   flex: 0 0 auto;
-  margin: sp(xxs) sp(xxs) 0;
-  padding: sp(xxxs) sp(xs);
+  align-items: baseline;
+  justify-content: center;
+  gap: sp(xxxs);
+  margin: sp(xxs) sp(xxs) sp(xxs);
+  padding: sp(xxs) sp(xs);
   font-family: $font-mono;
+  color: $race-red;
+  background: $road-sign-face;
+  border: 2px solid $race-red;
+  border-radius: radius(md);
+}
+
+.value {
   font-size: fs(xl);
   font-weight: 700;
   line-height: 1;
-  height: calc(1em + 2 * #{sp(xxxs)});
   font-variant-numeric: tabular-nums;
-  text-align: center;
-  color: $race-red;
-  background: $road-sign-face;
-  border-radius: radius(sm);
 }
 
+.unit {
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+// Hidden by visibility, not removed: the plate keeps its place so the bars
+// under it do not jump every time the speed crosses the limit.
 .plateHidden {
   visibility: hidden;
 }

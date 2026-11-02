@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { parsePitSpeedLimitMs } from '@shared/lib/telemetry-format';
+import { parsePitSpeedLimitMs, speedUnit } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
@@ -18,7 +18,11 @@ import styles from './PitLimitPlate.module.scss';
  * every time the speed crosses the limit. The speed moves every tick, so the
  * plate is written straight to the DOM. See `docs/rendering.md`.
  */
-export const PitLimitPlate = observer(() => {
+interface PitLimitPlateProps {
+  withUnit: boolean;
+}
+
+export const PitLimitPlate = observer(({ withUnit }: PitLimitPlateProps) => {
   const player = usePlayerStore();
   const sessionStore = useSessionStore();
   const units = useUnitsStore();
@@ -32,23 +36,36 @@ export const PitLimitPlate = observer(() => {
         sessionStore.sessionInfo?.trackPitSpeedLimit
       );
 
+      const hasLimit = limitMs > 0;
       const isDriverHolding =
         !pitService.isLimiterOn && !pitService.isPitLimitReleased;
-      const isShown = limitMs > 0 && isDriverHolding && speedMs <= limitMs;
+      const isShown = hasLimit && isDriverHolding && speedMs <= limitMs;
 
-      const limitText = isShown
+      // Written even while hidden, so the plate keeps the height it shows at.
+      const limitText = hasLimit
         ? Math.round(limitMs * units.speedFactor).toString()
         : '';
 
       scheduleWrite(() => {
         element.classList.toggle(styles.plateHidden, !isShown);
-        element.textContent = limitText;
+
+        const value = element.querySelector(`.${styles.value}`);
+
+        if (value instanceof HTMLElement) {
+          value.textContent = limitText;
+        }
       });
     },
     [player, sessionStore, units, pitService]
   );
 
   return (
-    <div ref={plateRef} className={`${styles.plate} ${styles.plateHidden}`} />
+    <div ref={plateRef} className={`${styles.plate} ${styles.plateHidden}`}>
+      <span className={styles.value} />
+
+      {withUnit && (
+        <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
+      )}
+    </div>
   );
 });
