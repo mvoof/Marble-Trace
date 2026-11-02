@@ -464,18 +464,18 @@ const refineApex = (index: number | null, read: TraceReader): number | null => {
 
   if (centre === undefined) return null;
 
-  const from = grid.offsetM[index - 1] ?? centre;
-  const to = grid.offsetM[index + 1] ?? centre;
+  const fromM = grid.offsetM[index - 1] ?? centre;
+  const toM = grid.offsetM[index + 1] ?? centre;
   let lowestAt = centre;
   let lowest = read('speed', centre);
 
   for (let point = 0; point <= APEX_REFINE_POINTS; point++) {
-    const at = from + ((to - from) * point) / APEX_REFINE_POINTS;
-    const value = read('speed', at);
+    const pointM = fromM + ((toM - fromM) * point) / APEX_REFINE_POINTS;
+    const value = read('speed', pointM);
 
     if (isValue(value) && !(value >= lowest)) {
       lowest = value;
-      lowestAt = at;
+      lowestAt = pointM;
     }
   }
 

@@ -399,4 +399,45 @@ describe('SimStore reference lap in an overlay window', () => {
 
     root.dispose();
   });
+
+  // The answer was fetched before the announcement arrived; applied after it,
+  // it put the older reference back — or none at all.
+  it('keeps a reference announced while the active one was loading', async () => {
+    const { getActiveReferenceLap } = await import('@shared/api/track.service');
+    const { listenTo } = await import('@shared/api/events.service');
+    const { SIM_REFERENCE_LAP_UPDATED } =
+      await import('@shared/api/sim-events');
+    const { mockReferenceLap } = await import('@features/preview/mocks/coach');
+    const announced = mockReferenceLap({ lapTime: 88 });
+    let answerHydrate: (data: null) => void = () => {};
+
+    vi.mocked(getActiveReferenceLap).mockReturnValueOnce(
+      new Promise((resolve) => {
+        answerHydrate = resolve;
+      })
+    );
+
+    asOverlayWindow();
+    const root = new MainRoot({ skipInit: true });
+    const listening = root.sim.startWidgetListener();
+
+    await vi.waitFor(() => {
+      expect(vi.mocked(getActiveReferenceLap)).toHaveBeenCalled();
+    });
+
+    const referenceCall = vi
+      .mocked(listenTo)
+      .mock.calls.findLast(([event]) => event === SIM_REFERENCE_LAP_UPDATED);
+    const announce = referenceCall?.[1] as (event: {
+      payload: typeof announced;
+    }) => void;
+
+    announce({ payload: announced });
+    answerHydrate(null);
+    await listening;
+
+    expect(root.referenceLap.data?.lapTime).toBe(88);
+
+    root.dispose();
+  });
 });
