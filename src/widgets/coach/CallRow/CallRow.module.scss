@@ -6,7 +6,7 @@
 
 .row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: sp(sm);
   padding: sp(xs) sp(md);
 }
@@ -44,45 +44,50 @@
   letter-spacing: 0.14em;
 }
 
-.delta {
+// The corner in three figures, pushed to the right edge. Only the figures are
+// divided — the call on the left is set apart by the space between them.
+.phases {
   margin-left: auto;
+  display: flex;
+  align-items: baseline;
+}
+
+.phase {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+  padding: 0 sp(sm);
+
+  &:last-child {
+    padding-right: 0;
+  }
+
+  & + & {
+    border-left: 1px solid $widget-border-subtle;
+  }
+}
+
+.phaseLabel {
+  font-family: $font-widget;
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.phaseValue {
   font-family: $font-mono;
-  font-size: fs(lg);
+  font-size: fs(md);
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   color: $widget-text-primary;
 }
 
-.deltaUnit {
-  margin-left: sp(xxxs);
+.phaseUnit {
+  font-family: $font-widget;
   font-size: fs(xxs);
   font-weight: 500;
   color: $widget-text-muted;
-}
-
-// Distance to the next braking point or apex — a label and a figure, not a
-// signed delta, so it stays quiet next to the call.
-.countdown {
-  margin-left: auto;
-  display: flex;
-  align-items: baseline;
-  gap: sp(xxs);
-  font-family: $font-widget;
-  font-size: fs(xxxs);
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: $widget-text-muted;
-}
-
-.countdownValue {
-  font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0;
-  font-variant-numeric: tabular-nums;
-  color: $widget-text-secondary;
 }
 
 .hint {

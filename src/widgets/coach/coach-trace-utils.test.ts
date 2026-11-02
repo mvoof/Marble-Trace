@@ -33,6 +33,8 @@ const ownLap = (speedMps: number): Float32Array =>
 
 const noBrake = (): Float32Array => new Float32Array(BUCKET_COUNT).fill(0);
 
+const fullThrottle = (): Float32Array => new Float32Array(BUCKET_COUNT).fill(1);
+
 const emptyLap = (): Float32Array =>
   new Float32Array(BUCKET_COUNT).fill(NO_VALUE);
 
@@ -44,6 +46,7 @@ const fill = (
     referenceSamples: referenceLap(50),
     ownSpeedByBucket: ownLap(50),
     ownBrakeByBucket: noBrake(),
+    ownThrottleByBucket: fullThrottle(),
     currentDistPct: 0.5,
     trackLengthM: TRACK_LENGTH_M,
     windowMeters: WINDOW_M,
@@ -193,7 +196,7 @@ describe('fillTraceWindow', () => {
       });
 
       // 0.01 of a 4000 m lap behind the car.
-      expect(stats.referenceBrakeOffsetM).toBeCloseTo(-40, 0);
+      expect(stats.reference.brakePointM).toBeCloseTo(-40, 0);
     });
 
     it('reports how much later this lap braked', () => {
@@ -223,7 +226,7 @@ describe('fillTraceWindow', () => {
 
       const stats = fill(buffers, { ownBrakeByBucket: ownBrake });
 
-      expect(stats.ownBrakeOffsetM).not.toBeNull();
+      expect(stats.own.brakePointM).not.toBeNull();
       expect(stats.brakeDeltaM).toBeNull();
     });
 
@@ -236,7 +239,7 @@ describe('fillTraceWindow', () => {
       }
 
       expect(
-        fill(buffers, { ownBrakeByBucket: ownBrake }).ownBrakeOffsetM
+        fill(buffers, { ownBrakeByBucket: ownBrake }).own.brakePointM
       ).toBeCloseTo(-20, 0);
     });
 
@@ -244,8 +247,8 @@ describe('fillTraceWindow', () => {
       const buffers = createTraceWindowBuffers();
       const stats = fill(buffers);
 
-      expect(stats.referenceBrakeOffsetM).toBeNull();
-      expect(stats.ownBrakeOffsetM).toBeNull();
+      expect(stats.reference.brakePointM).toBeNull();
+      expect(stats.own.brakePointM).toBeNull();
     });
 
     it('ignores braking already underway at the window edge', () => {
@@ -254,8 +257,113 @@ describe('fillTraceWindow', () => {
         referenceSamples: referenceLap(50, () => 1),
       });
 
-      expect(stats.referenceBrakeOffsetM).toBeNull();
+      expect(stats.reference.brakePointM).toBeNull();
     });
+  });
+});
+
+describe('corner phases', () => {
+  // One corner: on the brakes from 0.49 to 0.495, off both pedals to 0.497,
+  // half throttle to 0.505 and full after; slowest at 0.5. The car sits at
+  // 0.52, so the whole corner lies behind it — 4 m a thousandth of the lap.
+  const CAR_PCT = 0.52;
+  const metresFromCar = (pct: number) => (pct - CAR_PCT) * TRACK_LENGTH_M;
+
+  const brakeAt = (pct: number) => (pct >= 0.49 && pct < 0.495 ? 1 : 0);
+  const throttleAt = (pct: number) =>
+    pct >= 0.49 && pct < 0.497 ? 0 : pct < 0.505 && pct >= 0.497 ? 0.5 : 1;
+  const speedAt = (pct: number) =>
+    Math.min(30 + Math.abs(pct - 0.5) * 1000, 50);
+
+  const cornerReference = (): ReferenceLapSample[] =>
+    Array.from({ length: BUCKET_COUNT }, (_unused, index) => {
+      const pct = index / BUCKET_COUNT;
+
+      return {
+        speed: speedAt(pct),
+        throttle: throttleAt(pct),
+        brake: brakeAt(pct),
+        latAccel: null,
+        longAccel: null,
+        steeringWheelAngle: 0,
+      };
+    });
+
+  /** The same corner driven `latePct` later in every phase. */
+  const cornerOwn = (latePct: number) => {
+    const byBucket = (sample: (pct: number) => number) =>
+      Float32Array.from({ length: BUCKET_COUNT }, (_unused, index) =>
+        sample(index / BUCKET_COUNT - latePct)
+      );
+
+    return {
+      ownSpeedByBucket: byBucket(speedAt),
+      ownBrakeByBucket: byBucket(brakeAt),
+      ownThrottleByBucket: byBucket(throttleAt),
+    };
+  };
+
+  /** A bucket is 4 m and the window is read between bucket centres. */
+  const TOLERANCE_M = 3;
+
+  const expectNear = (actual: number | null, expected: number) => {
+    expect(actual).not.toBeNull();
+    expect(Math.abs((actual ?? Number.NaN) - expected)).toBeLessThan(
+      TOLERANCE_M
+    );
+  };
+
+  it('splits the reference corner into its phases', () => {
+    const buffers = createTraceWindowBuffers();
+    const { reference } = fill(buffers, {
+      referenceSamples: cornerReference(),
+      ...cornerOwn(0),
+      currentDistPct: CAR_PCT,
+    });
+
+    expectNear(reference.brakePointM, metresFromCar(0.49));
+    expectNear(reference.brakeReleaseM, metresFromCar(0.495));
+    expectNear(reference.apexM, metresFromCar(0.5));
+    expectNear(reference.throttlePointM, metresFromCar(0.497));
+    expectNear(reference.fullThrottleM, metresFromCar(0.505));
+  });
+
+  it('reports how much later this lap reached every phase', () => {
+    const buffers = createTraceWindowBuffers();
+    const stats = fill(buffers, {
+      referenceSamples: cornerReference(),
+      ...cornerOwn(0.002),
+      currentDistPct: CAR_PCT,
+    });
+
+    expectNear(stats.brakeDeltaM, 8);
+    expectNear(stats.apexDeltaM, 8);
+    expectNear(stats.throttleDeltaM, 8);
+  });
+
+  it('has no apex while this lap is still slowing', () => {
+    const buffers = createTraceWindowBuffers();
+    // The car sits just short of the apex: the lowest speed so far is the
+    // latest one, not the corner's.
+    const stats = fill(buffers, {
+      referenceSamples: cornerReference(),
+      ...cornerOwn(0),
+      currentDistPct: 0.499,
+    });
+
+    expect(stats.own.brakePointM).not.toBeNull();
+    expect(stats.own.apexM).toBeNull();
+    expect(stats.apexDeltaM).toBeNull();
+  });
+
+  it('draws a braking zone already underway from the window edge', () => {
+    const buffers = createTraceWindowBuffers();
+    const { reference } = fill(buffers, {
+      referenceSamples: referenceLap(50, () => 1),
+    });
+
+    expect(reference.brakeZoneStartM).toBe(-WINDOW_M);
+    expect(reference.brakePointM).toBeNull();
   });
 });
 

@@ -40,14 +40,17 @@ interface CoachDeps {
 const MAX_BACKWARD_STEP_PCT = 0.5;
 
 /**
- * The delta readout is quantized to this step (seconds). The window is rebuilt
- * on every telemetry frame for the canvas, but the text next to it must not
- * re-render observers at 60 Hz for a digit that is not shown.
+ * The phase figures are displayed to the metre. The window is rebuilt on every
+ * telemetry frame for the canvas, but the text above it must not re-render
+ * observers at 60 Hz for a digit that is not shown.
  */
-const WINDOW_DELTA_DISPLAY_STEP_S = 0.01;
+const PHASE_DELTA_DISPLAY_STEP_M = 1;
 
-/** The braking-point figure is displayed to the metre; anything finer is noise. */
-const BRAKE_DELTA_DISPLAY_STEP_M = 1;
+const quantizeM = (valueM: number | null): number | null =>
+  valueM === null
+    ? null
+    : Math.round(valueM / PHASE_DELTA_DISPLAY_STEP_M) *
+      PHASE_DELTA_DISPLAY_STEP_M;
 
 /**
  * Owns the lap in progress as a distance-bucketed trace, and the drawn window
@@ -57,8 +60,8 @@ const BRAKE_DELTA_DISPLAY_STEP_M = 1;
  * window is refilled in place on the telemetry frame and the canvas draws
  * straight out of those buffers, the same way the input trace keeps its ring
  * buffer out of the render path. The only observable the canvas subscribes to
- * at frame rate is `frameTick`; the delta text has its own quantized field that
- * changes far less often.
+ * at frame rate is `frameTick`; the phase figures have their own quantized
+ * fields that change far less often.
  *
  * The advisory itself (BRAKE / GAS and its urgency) is not duplicated here —
  * it stays owned by `DrivingCoachWidgetStore`.
@@ -71,15 +74,14 @@ export class CoachWidgetStore {
    */
   frameTick = 0;
 
-  /** Quantized `windowStats.windowDeltaS`, for the call row's readout. */
-  displayedWindowDeltaS: number | null = null;
-
-  /**
-   * Quantized `windowStats.brakeDeltaM` — how many metres later than the
-   * reference this lap got on the brakes. The call row's headline number
-   * whenever both braking points are in the window.
-   */
+  /** Quantized `windowStats.brakeDeltaM` — metres later on the brakes than the reference. */
   displayedBrakeDeltaM: number | null = null;
+
+  /** Quantized `windowStats.apexDeltaM` — metres later to the lowest speed than the reference. */
+  displayedApexDeltaM: number | null = null;
+
+  /** Quantized `windowStats.throttleDeltaM` — metres later on the power than the reference. */
+  displayedThrottleDeltaM: number | null = null;
 
   /** The drawn window. Refilled in place — never reassigned, never observable. */
   readonly window: TraceWindowBuffers = createTraceWindowBuffers();
@@ -91,6 +93,9 @@ export class CoachWidgetStore {
     REFERENCE_LAP_BUCKET_COUNT
   ).fill(NO_VALUE);
   private readonly ownBrakeByBucket = new Float32Array(
+    REFERENCE_LAP_BUCKET_COUNT
+  ).fill(NO_VALUE);
+  private readonly ownThrottleByBucket = new Float32Array(
     REFERENCE_LAP_BUCKET_COUNT
   ).fill(NO_VALUE);
 
@@ -119,6 +124,7 @@ export class CoachWidgetStore {
       | 'disposers'
       | 'ownSpeedByBucket'
       | 'ownBrakeByBucket'
+      | 'ownThrottleByBucket'
       | 'window'
       | 'windowStats'
     >(
@@ -131,6 +137,7 @@ export class CoachWidgetStore {
         disposers: false,
         ownSpeedByBucket: false,
         ownBrakeByBucket: false,
+        ownThrottleByBucket: false,
         window: false,
         windowStats: false,
       },
@@ -205,6 +212,7 @@ export class CoachWidgetStore {
       REFERENCE_LAP_BUCKET_COUNT - 1
     );
     const brake = this.root.player.carInputs?.brake ?? 0;
+    const throttle = this.root.player.carInputs?.throttle ?? 0;
 
     // Fill the buckets jumped over since the last sample. One bucket is
     // trackLength/1000 metres — on a short track that is about a metre, which a
@@ -218,6 +226,7 @@ export class CoachWidgetStore {
     if (previousBucket !== null && bucket > previousBucket + 1) {
       const fromSpeed = this.ownSpeedByBucket[previousBucket];
       const fromBrake = this.ownBrakeByBucket[previousBucket];
+      const fromThrottle = this.ownThrottleByBucket[previousBucket];
       const span = bucket - previousBucket;
 
       for (let skipped = previousBucket + 1; skipped < bucket; skipped++) {
@@ -227,17 +236,20 @@ export class CoachWidgetStore {
           fromSpeed + (speed - fromSpeed) * weight;
         this.ownBrakeByBucket[skipped] =
           fromBrake + (brake - fromBrake) * weight;
+        this.ownThrottleByBucket[skipped] =
+          fromThrottle + (throttle - fromThrottle) * weight;
       }
     }
 
     this.ownSpeedByBucket[bucket] = speed;
     this.ownBrakeByBucket[bucket] = brake;
+    this.ownThrottleByBucket[bucket] = throttle;
     this.previousBucket = bucket;
     this.previousDistPct = lapDistPct;
   }
 
   /**
-   * Refills the window in place and publishes the one number the text row
+   * Refills the window in place and publishes the figures the call row
    * needs. Called on the telemetry frame, never from a render.
    */
   private rebuildWindow() {
@@ -250,31 +262,27 @@ export class CoachWidgetStore {
             referenceSamples: this.referenceSamples,
             ownSpeedByBucket: this.ownSpeedByBucket,
             ownBrakeByBucket: this.ownBrakeByBucket,
+            ownThrottleByBucket: this.ownThrottleByBucket,
             currentDistPct,
             trackLengthM: this.trackLengthM,
             windowMeters: this.settings.windowMeters,
           });
 
-    const { windowDeltaS } = this.windowStats;
-    const quantized =
-      windowDeltaS === null
-        ? null
-        : Math.round(windowDeltaS / WINDOW_DELTA_DISPLAY_STEP_S) *
-          WINDOW_DELTA_DISPLAY_STEP_S;
-
-    if (quantized !== this.displayedWindowDeltaS) {
-      this.displayedWindowDeltaS = quantized;
-    }
-
-    const { brakeDeltaM } = this.windowStats;
-    const quantizedBrakeDeltaM =
-      brakeDeltaM === null
-        ? null
-        : Math.round(brakeDeltaM / BRAKE_DELTA_DISPLAY_STEP_M) *
-          BRAKE_DELTA_DISPLAY_STEP_M;
+    const { brakeDeltaM, apexDeltaM, throttleDeltaM } = this.windowStats;
+    const quantizedBrakeDeltaM = quantizeM(brakeDeltaM);
+    const quantizedApexDeltaM = quantizeM(apexDeltaM);
+    const quantizedThrottleDeltaM = quantizeM(throttleDeltaM);
 
     if (quantizedBrakeDeltaM !== this.displayedBrakeDeltaM) {
       this.displayedBrakeDeltaM = quantizedBrakeDeltaM;
+    }
+
+    if (quantizedApexDeltaM !== this.displayedApexDeltaM) {
+      this.displayedApexDeltaM = quantizedApexDeltaM;
+    }
+
+    if (quantizedThrottleDeltaM !== this.displayedThrottleDeltaM) {
+      this.displayedThrottleDeltaM = quantizedThrottleDeltaM;
     }
 
     this.frameTick++;
@@ -283,6 +291,7 @@ export class CoachWidgetStore {
   private clearBuffers() {
     this.ownSpeedByBucket.fill(NO_VALUE);
     this.ownBrakeByBucket.fill(NO_VALUE);
+    this.ownThrottleByBucket.fill(NO_VALUE);
   }
 
   /**
@@ -290,11 +299,12 @@ export class CoachWidgetStore {
    * For seeded previews (Storybook, the settings preview), which never run
    * `init()` and so have no telemetry frame to record on.
    */
-  seedBucket(bucket: number, speed: number, brake: number) {
+  seedBucket(bucket: number, speed: number, brake: number, throttle: number) {
     if (bucket < 0 || bucket >= REFERENCE_LAP_BUCKET_COUNT) return;
 
     this.ownSpeedByBucket[bucket] = speed;
     this.ownBrakeByBucket[bucket] = brake;
+    this.ownThrottleByBucket[bucket] = throttle;
   }
 
   /** Refills the window from whatever the buffers currently hold. For seeded previews. */
@@ -344,8 +354,9 @@ export class CoachWidgetStore {
     this.previousDistPct = null;
     this.previousBucket = null;
     this.windowStats = EMPTY_TRACE_STATS;
-    this.displayedWindowDeltaS = null;
     this.displayedBrakeDeltaM = null;
+    this.displayedApexDeltaM = null;
+    this.displayedThrottleDeltaM = null;
     this.frameTick = 0;
   }
 }

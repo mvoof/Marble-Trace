@@ -5,9 +5,11 @@ import { mockLapTiming } from '@features/preview/mocks/delta';
 import { seedCoachAdvisory } from '@features/preview/coach-advisory-seed';
 import {
   mockReferenceLap,
+  PREVIEW_BRAKE_RELEASE_PCT,
   PREVIEW_BRAKE_START_PCT,
   PREVIEW_CORNER_CENTER_PCT,
   referenceSpeedKmhAt,
+  referenceThrottleAt,
 } from '@features/preview/mocks/coach';
 import { CoachWidget } from './CoachWidget';
 import type { CoachWidgetStores } from './coach-stores';
@@ -41,15 +43,28 @@ const ownSpeedAt = (pct: number, apexDeltaKmh: number): number => {
   return (referenceKmh + apexDeltaKmh * depth) / KMH_PER_MPS;
 };
 
-/** Pedal down from this lap's braking point until the apex. */
+/** Pedal down from this lap's braking point until the reference comes off it. */
 const ownBrakeAt = (pct: number, brakeLatePct: number): number => {
   const brakeStartPct = PREVIEW_BRAKE_START_PCT + brakeLatePct;
 
-  if (pct >= brakeStartPct && pct <= PREVIEW_CORNER_CENTER_PCT) {
+  if (pct >= brakeStartPct && pct <= PREVIEW_BRAKE_RELEASE_PCT) {
     return 1;
   }
 
   return 0;
+};
+
+/** The reference's throttle, opened `throttleLatePct` later — and never under the brake. */
+const ownThrottleAt = (
+  pct: number,
+  brakeLatePct: number,
+  throttleLatePct: number
+): number => {
+  if (ownBrakeAt(pct, brakeLatePct) > 0) {
+    return 0;
+  }
+
+  return referenceThrottleAt(pct - throttleLatePct);
 };
 
 interface StoryArgs {
@@ -71,6 +86,8 @@ interface StoryArgs {
   ownApexDeltaKmh: number;
   /** How much later than the reference this lap gets on the brakes, in lap fraction. */
   ownBrakeLatePct: number;
+  /** How much later than the reference this lap opens the throttle, in lap fraction. */
+  ownThrottleLatePct: number;
   /** Where the car sits. Left undefined, the base's own position is kept. */
   distPct?: number;
 
@@ -86,7 +103,7 @@ const meta: Meta<StoryArgs> = {
   ...defineWidgetStories<StoryArgs>({
     widget: CoachWidget,
     size: {
-      width: 300,
+      width: 360,
       background: '#101318',
       widgetBg: 'rgba(21, 22, 26, 0.8)',
       borderRadius: 8,
@@ -151,7 +168,8 @@ const meta: Meta<StoryArgs> = {
           trace.seedBucket(
             bucket,
             ownSpeedAt(pct, args.ownApexDeltaKmh),
-            ownBrakeAt(pct, args.ownBrakeLatePct)
+            ownBrakeAt(pct, args.ownBrakeLatePct),
+            ownThrottleAt(pct, args.ownBrakeLatePct, args.ownThrottleLatePct)
           );
         }
 
@@ -169,6 +187,7 @@ const meta: Meta<StoryArgs> = {
       wetReference: false,
       ownApexDeltaKmh: 0,
       ownBrakeLatePct: 0,
+      ownThrottleLatePct: 0,
       showTrace: true,
       showUrgencyBar: true,
       showSpeed: true,
@@ -263,6 +282,17 @@ export const BrakingEarlierThanReference: Story = {
     ownBrakeLatePct: -0.008,
     ownApexDeltaKmh: 15,
     distPct: PREVIEW_CORNER_CENTER_PCT - 0.005,
+  },
+};
+
+/** Out of the corner: braked early, opened the throttle late — every phase figure filled. */
+export const WholeCorner: Story = {
+  args: {
+    ownBrakeLatePct: -0.006,
+    ownThrottleLatePct: 0.004,
+    ownApexDeltaKmh: -8,
+    distPct: PREVIEW_CORNER_CENTER_PCT + 0.02,
+    windowMeters: 250,
   },
 };
 

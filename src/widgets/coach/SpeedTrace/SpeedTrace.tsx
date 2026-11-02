@@ -13,7 +13,7 @@ import type { CoachWidgetSettings } from '../settings-schema';
 
 // Grid and the "now" marker are structural, not semantic — they stay neutral
 // whatever the user picks for the gain/loss pair.
-const GRID_COLOR = 'rgba(255, 255, 255, 0.06)';
+const GRID_COLOR = 'rgba(250, 250, 250, 0.1)';
 const MARKER_COLOR = 'rgba(255, 255, 255, 0.45)';
 
 const traceColors = (settings: CoachWidgetSettings): SpeedTraceColors => ({
@@ -22,6 +22,10 @@ const traceColors = (settings: CoachWidgetSettings): SpeedTraceColors => ({
   loss: settings.lossColor,
   grid: GRID_COLOR,
   marker: MARKER_COLOR,
+  brake: settings.brakeColor,
+  // The apex is where the reference lap is at its slowest — its own colour.
+  apex: settings.referenceColor,
+  throttle: settings.gasColor,
 });
 
 // The window itself is built in the store on the telemetry frame — this

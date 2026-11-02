@@ -22,6 +22,19 @@ const MIN_SPEED_FOR_TIME_MPS = 1;
 /** Pedal travel above which the brake counts as applied — same value the corner scan uses. */
 const BRAKE_ON_THRESHOLD = 0.05;
 
+/** Throttle above which the car is back on the power — the telemetry thread's `EXIT_THROTTLE_OPEN`. */
+const THROTTLE_OPEN_THRESHOLD = 0.2;
+
+/** Throttle at which the exit is over — the telemetry thread's `GAS_THROTTLE_THRESHOLD`. */
+const FULL_THROTTLE_THRESHOLD = 0.95;
+
+/**
+ * How far (m/s) the speed has to climb back past its lowest point before that
+ * point counts as the apex. Until then the car may still be slowing, and the
+ * lowest point seen so far is only the latest one.
+ */
+const APEX_SPEED_RISE_MPS = 0.5;
+
 /** A bucket or sample slot carrying no value. */
 export const NO_VALUE = Number.NaN;
 
@@ -43,6 +56,10 @@ export interface TraceWindowBuffers {
   referenceBrake: Float32Array;
   /** This lap's brake input (0-1), or `NO_VALUE`. */
   ownBrake: Float32Array;
+  /** Reference-lap throttle input (0-1), or `NO_VALUE`. */
+  referenceThrottle: Float32Array;
+  /** This lap's throttle input (0-1), or `NO_VALUE`. */
+  ownThrottle: Float32Array;
   /**
    * Time gained or lost against the reference from the start of the window up
    * to this point, in seconds. Positive = lost time, negative = gained.
@@ -51,25 +68,52 @@ export interface TraceWindowBuffers {
   timeDeltaS: Float32Array;
 }
 
+/**
+ * One lap's way through the first corner in the window, in metres from the
+ * car: on the brakes, off them and through the apex, back on the power. A
+ * point the lap has not reached — or that lies outside the window — is null.
+ */
+export interface CornerPhases {
+  /**
+   * Where the braking zone starts as drawn: the braking point, or the window's
+   * left edge when the brake is already down there.
+   */
+  brakeZoneStartM: number | null;
+  /** Where the pedal went down. Null when that happened before the window. */
+  brakePointM: number | null;
+  /** Where the brake came off again. */
+  brakeReleaseM: number | null;
+  /** Lowest speed between the braking point and full throttle. */
+  apexM: number | null;
+  /** Where the throttle opened past `THROTTLE_OPEN_THRESHOLD` after the brake came off. */
+  throttlePointM: number | null;
+  /** Where the throttle reached `FULL_THROTTLE_THRESHOLD` — the end of the exit. */
+  fullThrottleM: number | null;
+}
+
 export interface TraceWindowStats {
   /**
    * `timeDeltaS` at the car's current position — how much this pass through the
    * window has cost or gained against the reference. This is what colors the
-   * line and what the call row reads out; it is deliberately anchored to the
-   * window rather than to the start of the lap, so a single braking zone can be
-   * judged on its own instead of being buried under the whole lap's delta.
+   * line; it is deliberately anchored to the window rather than to the start of
+   * the lap, so a single braking zone can be judged on its own instead of
+   * being buried under the whole lap's delta.
    */
   windowDeltaS: number | null;
-  /** Where the reference driver first got on the brakes inside this window, in metres from the car. */
-  referenceBrakeOffsetM: number | null;
-  /** Where this lap first got on the brakes inside this window, in metres from the car. */
-  ownBrakeOffsetM: number | null;
+  /** The reference lap's corner phases — the zones the chart is shaded by. */
+  reference: CornerPhases;
+  /** This lap's corner phases, as far as the car has driven. */
+  own: CornerPhases;
   /**
    * How much later this lap got on the brakes than the reference, in metres.
    * Positive = braked later. Null unless both braking points are in the window,
    * because there is nothing to be later *than* otherwise.
    */
   brakeDeltaM: number | null;
+  /** How much later this lap reached its lowest speed than the reference, in metres. */
+  apexDeltaM: number | null;
+  /** How much later this lap opened the throttle than the reference, in metres. */
+  throttleDeltaM: number | null;
   /** Whether anything at all was drawn — false leaves the canvas empty. */
   hasData: boolean;
 }
@@ -80,14 +124,27 @@ export const createTraceWindowBuffers = (): TraceWindowBuffers => ({
   ownSpeed: new Float32Array(TRACE_POINT_COUNT).fill(NO_VALUE),
   referenceBrake: new Float32Array(TRACE_POINT_COUNT).fill(NO_VALUE),
   ownBrake: new Float32Array(TRACE_POINT_COUNT).fill(NO_VALUE),
+  referenceThrottle: new Float32Array(TRACE_POINT_COUNT).fill(NO_VALUE),
+  ownThrottle: new Float32Array(TRACE_POINT_COUNT).fill(NO_VALUE),
   timeDeltaS: new Float32Array(TRACE_POINT_COUNT).fill(NO_VALUE),
 });
 
+export const NO_CORNER_PHASES: CornerPhases = {
+  brakeZoneStartM: null,
+  brakePointM: null,
+  brakeReleaseM: null,
+  apexM: null,
+  throttlePointM: null,
+  fullThrottleM: null,
+};
+
 export const EMPTY_TRACE_STATS: TraceWindowStats = {
   windowDeltaS: null,
-  referenceBrakeOffsetM: null,
-  ownBrakeOffsetM: null,
+  reference: NO_CORNER_PHASES,
+  own: NO_CORNER_PHASES,
   brakeDeltaM: null,
+  apexDeltaM: null,
+  throttleDeltaM: null,
   hasData: false,
 };
 
@@ -97,6 +154,8 @@ export interface FillTraceWindowParams {
   ownSpeedByBucket: Float32Array;
   /** Brake input per lap-distance bucket for the lap in progress; `NO_VALUE` where nothing was written. */
   ownBrakeByBucket: Float32Array;
+  /** Throttle input per lap-distance bucket for the lap in progress; `NO_VALUE` where nothing was written. */
+  ownThrottleByBucket: Float32Array;
   currentDistPct: number;
   trackLengthM: number;
   /** Half-width of the window: the trace spans `-windowMeters .. +windowMeters`. */
@@ -158,7 +217,7 @@ const bucketValueAt = (values: Float32Array, pct: number): number => {
 
 const referenceValueAt = (
   samples: ReferenceLapSample[] | null,
-  field: 'speed' | 'brake',
+  field: 'speed' | 'brake' | 'throttle',
   pct: number
 ): number => {
   if (!samples || samples.length === 0) return NO_VALUE;
@@ -170,6 +229,145 @@ const referenceValueAt = (
     samples[bucketSpan.upper]?.[field] ?? NO_VALUE
   );
 };
+
+/** First index at or after `from` where `matches` holds, stopping at the first gap in `values`. */
+const findIndex = (
+  values: Float32Array,
+  from: number,
+  matches: (value: number, index: number) => boolean
+): number | null => {
+  for (let index = from; index < TRACE_POINT_COUNT; index++) {
+    const value = values[index] ?? NO_VALUE;
+
+    if (!isValue(value)) return null;
+
+    if (matches(value, index)) return index;
+  }
+
+  return null;
+};
+
+/** Last index from `from` on before the first gap — how far this trace reaches. */
+const lastValueIndex = (values: Float32Array, from: number): number => {
+  let last = from;
+
+  for (let index = from; index < TRACE_POINT_COUNT; index++) {
+    if (!isValue(values[index] ?? NO_VALUE)) break;
+
+    last = index;
+  }
+
+  return last;
+};
+
+/**
+ * Lowest speed in `[from, to]`, once the speed has climbed back far enough past
+ * it to be sure it is the lowest; null while the car could still be slowing.
+ */
+const findApex = (
+  speed: Float32Array,
+  from: number,
+  to: number
+): number | null => {
+  let lowestIndex = from;
+  let lowest = speed[from] ?? NO_VALUE;
+  let highestAfterLowest = lowest;
+
+  for (let index = from + 1; index <= to; index++) {
+    const value = speed[index] ?? NO_VALUE;
+
+    if (!isValue(value)) break;
+
+    if (value < lowest) {
+      lowest = value;
+      lowestIndex = index;
+      highestAfterLowest = value;
+    } else {
+      highestAfterLowest = Math.max(highestAfterLowest, value);
+    }
+  }
+
+  return highestAfterLowest - lowest >= APEX_SPEED_RISE_MPS
+    ? lowestIndex
+    : null;
+};
+
+/**
+ * The first corner in the window, split into the phases a driver works through:
+ * the brake goes down, comes off, the speed bottoms out, the throttle opens and
+ * reaches full. Each phase is searched for only after the one before it, so a
+ * lift on the straight is not taken for a throttle point and the next corner's
+ * braking is not taken for this one's.
+ */
+const findCornerPhases = (
+  offsetM: Float32Array,
+  speed: Float32Array,
+  brake: Float32Array,
+  throttle: Float32Array
+): CornerPhases => {
+  // A lap that has only just started has nothing behind the car yet.
+  const firstValue = brake.findIndex((value) => isValue(value));
+
+  if (firstValue === -1) return NO_CORNER_PHASES;
+
+  const zoneStart = findIndex(
+    brake,
+    firstValue,
+    (value) => value > BRAKE_ON_THRESHOLD
+  );
+
+  if (zoneStart === null) return NO_CORNER_PHASES;
+
+  // The braking point is a rising edge: the pedal already down where the trace
+  // begins went down somewhere this window does not show.
+  const hasBrakePoint = zoneStart > firstValue;
+
+  const release = findIndex(
+    brake,
+    zoneStart,
+    (value) => value <= BRAKE_ON_THRESHOLD
+  );
+  const throttlePoint =
+    release === null
+      ? null
+      : findIndex(
+          throttle,
+          release,
+          (value, index) =>
+            value > THROTTLE_OPEN_THRESHOLD &&
+            (brake[index] ?? 0) <= BRAKE_ON_THRESHOLD
+        );
+  const fullThrottle =
+    throttlePoint === null
+      ? null
+      : findIndex(
+          throttle,
+          throttlePoint,
+          (value, index) =>
+            value >= FULL_THROTTLE_THRESHOLD ||
+            (brake[index] ?? 0) > BRAKE_ON_THRESHOLD
+        );
+  const apex = findApex(
+    speed,
+    zoneStart,
+    fullThrottle ?? lastValueIndex(speed, zoneStart)
+  );
+
+  const offsetAt = (index: number | null): number | null =>
+    index === null ? null : (offsetM[index] ?? null);
+
+  return {
+    brakeZoneStartM: offsetAt(zoneStart),
+    brakePointM: hasBrakePoint ? offsetAt(zoneStart) : null,
+    brakeReleaseM: offsetAt(release),
+    apexM: offsetAt(apex),
+    throttlePointM: offsetAt(throttlePoint),
+    fullThrottleM: offsetAt(fullThrottle),
+  };
+};
+
+const laterBy = (own: number | null, reference: number | null) =>
+  own !== null && reference !== null ? own - reference : null;
 
 /**
  * Refills `buffers` with the reference lap and the lap in progress across a
@@ -186,6 +384,7 @@ export const fillTraceWindow = (
     referenceSamples,
     ownSpeedByBucket,
     ownBrakeByBucket,
+    ownThrottleByBucket,
     currentDistPct,
     trackLengthM,
     windowMeters,
@@ -195,6 +394,8 @@ export const fillTraceWindow = (
   buffers.ownSpeed.fill(NO_VALUE);
   buffers.referenceBrake.fill(NO_VALUE);
   buffers.ownBrake.fill(NO_VALUE);
+  buffers.referenceThrottle.fill(NO_VALUE);
+  buffers.ownThrottle.fill(NO_VALUE);
   buffers.timeDeltaS.fill(NO_VALUE);
 
   if (trackLengthM <= 0 || windowMeters <= 0) {
@@ -206,10 +407,6 @@ export const fillTraceWindow = (
   let cumulativeDeltaS = NO_VALUE;
   let previousOwnSpeed = NO_VALUE;
   let previousReferenceSpeed = NO_VALUE;
-  let previousReferenceBrake = NO_VALUE;
-  let previousOwnBrake = NO_VALUE;
-  let referenceBrakeOffsetM: number | null = null;
-  let ownBrakeOffsetM: number | null = null;
   let hasData = false;
 
   for (let index = 0; index < TRACE_POINT_COUNT; index++) {
@@ -219,43 +416,34 @@ export const fillTraceWindow = (
     buffers.offsetM[index] = offsetM;
 
     const referenceSpeed = referenceValueAt(referenceSamples, 'speed', pct);
-    const referenceBrake = referenceValueAt(referenceSamples, 'brake', pct);
 
     // Nothing ahead of the car has been driven this lap yet, and a bucket the
     // car has not reached still holds the previous lap's value until it is
     // cleared — both must read as absent rather than as a flat line.
-    const ownSpeed =
-      offsetM > 0 ? NO_VALUE : bucketValueAt(ownSpeedByBucket, pct);
-    const ownBrake =
-      offsetM > 0 ? NO_VALUE : bucketValueAt(ownBrakeByBucket, pct);
+    const driven = offsetM <= 0;
+    const ownSpeed = driven ? bucketValueAt(ownSpeedByBucket, pct) : NO_VALUE;
 
     buffers.referenceSpeed[index] = referenceSpeed;
     buffers.ownSpeed[index] = ownSpeed;
-    buffers.referenceBrake[index] = referenceBrake;
-    buffers.ownBrake[index] = ownBrake;
+    buffers.referenceBrake[index] = referenceValueAt(
+      referenceSamples,
+      'brake',
+      pct
+    );
+    buffers.ownBrake[index] = driven
+      ? bucketValueAt(ownBrakeByBucket, pct)
+      : NO_VALUE;
+    buffers.referenceThrottle[index] = referenceValueAt(
+      referenceSamples,
+      'throttle',
+      pct
+    );
+    buffers.ownThrottle[index] = driven
+      ? bucketValueAt(ownThrottleByBucket, pct)
+      : NO_VALUE;
 
     if (isValue(referenceSpeed) || isValue(ownSpeed)) {
       hasData = true;
-    }
-
-    // First rising edge only: the braking point is where the pedal went down,
-    // not every moment it happened to be held.
-    if (
-      referenceBrakeOffsetM === null &&
-      isValue(previousReferenceBrake) &&
-      previousReferenceBrake <= BRAKE_ON_THRESHOLD &&
-      referenceBrake > BRAKE_ON_THRESHOLD
-    ) {
-      referenceBrakeOffsetM = offsetM;
-    }
-
-    if (
-      ownBrakeOffsetM === null &&
-      isValue(previousOwnBrake) &&
-      previousOwnBrake <= BRAKE_ON_THRESHOLD &&
-      ownBrake > BRAKE_ON_THRESHOLD
-    ) {
-      ownBrakeOffsetM = offsetM;
     }
 
     if (
@@ -283,18 +471,28 @@ export const fillTraceWindow = (
 
     previousOwnSpeed = ownSpeed;
     previousReferenceSpeed = referenceSpeed;
-    previousReferenceBrake = referenceBrake;
-    previousOwnBrake = ownBrake;
   }
+
+  const reference = findCornerPhases(
+    buffers.offsetM,
+    buffers.referenceSpeed,
+    buffers.referenceBrake,
+    buffers.referenceThrottle
+  );
+  const own = findCornerPhases(
+    buffers.offsetM,
+    buffers.ownSpeed,
+    buffers.ownBrake,
+    buffers.ownThrottle
+  );
 
   return {
     windowDeltaS: isValue(cumulativeDeltaS) ? cumulativeDeltaS : null,
-    referenceBrakeOffsetM,
-    ownBrakeOffsetM,
-    brakeDeltaM:
-      referenceBrakeOffsetM !== null && ownBrakeOffsetM !== null
-        ? ownBrakeOffsetM - referenceBrakeOffsetM
-        : null,
+    reference,
+    own,
+    brakeDeltaM: laterBy(own.brakePointM, reference.brakePointM),
+    apexDeltaM: laterBy(own.apexM, reference.apexM),
+    throttleDeltaM: laterBy(own.throttlePointM, reference.throttlePointM),
     hasData,
   };
 };

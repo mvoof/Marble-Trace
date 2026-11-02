@@ -2,7 +2,7 @@
   display: flex;
   align-items: baseline;
   gap: sp(md);
-  padding: sp(xxs) sp(md) sp(xs);
+  padding: sp(xs) sp(md);
   border-top: 1px solid $widget-border-subtle;
 }
 
@@ -18,7 +18,7 @@
 
 .label {
   font-family: $font-widget;
-  font-size: fs(xxxs);
+  font-size: fs(xxs);
   font-weight: 600;
   letter-spacing: 0.14em;
   color: $widget-text-muted;
@@ -26,7 +26,7 @@
 
 .value {
   font-family: $font-mono;
-  font-size: fs(sm);
+  font-size: fs(md);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: $widget-text-primary;
@@ -36,32 +36,32 @@
 // the trace line does.
 .reference {
   font-family: $font-mono;
-  font-size: fs(sm);
+  font-size: fs(md);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: $widget-text-best-lap;
 }
 
-// The stored lap's time is context, not a live reading, so it is a weight and a
-// step lighter than everything that changes — but it keeps the best-lap color
-// the reference trace is drawn in.
+// The stored lap's time is context, not a live reading, so it is a weight
+// lighter than the speed pair it balances — the same size, and the best-lap
+// color the reference trace is drawn in.
 .referenceLapTime {
   font-family: $font-mono;
-  font-size: fs(xs);
-  font-weight: 500;
+  font-size: fs(md);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: $widget-text-best-lap;
 }
 
 .separator {
   font-family: $font-mono;
-  font-size: fs(xs);
+  font-size: fs(sm);
   color: $widget-text-muted;
 }
 
 .unit {
   font-family: $font-widget;
-  font-size: fs(xxxs);
+  font-size: fs(xxs);
   letter-spacing: 0.1em;
   color: $widget-text-muted;
 }
@@ -70,7 +70,7 @@
 // noticing, so only it takes a color.
 .condition {
   font-family: $font-widget;
-  font-size: fs(xxxs);
+  font-size: fs(xxs);
   font-weight: 500;
   letter-spacing: 0.12em;
   color: $widget-text-muted;
