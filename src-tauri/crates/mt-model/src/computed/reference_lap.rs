@@ -87,6 +87,13 @@ pub struct ReferenceLapSample {
     pub long_accel: Option<f32>,
     /// Steering wheel angle in radians.
     pub steering_wheel_angle: f32,
+    /// Seconds into the lap at which the car passed this bucket's centre,
+    /// `(i + 0.5) / N` — the lap's own clock, so the time between two points
+    /// is read off rather than integrated from speed. `None` where the lap had
+    /// no clock to read, and on every reference recorded before this field
+    /// existed (`serde(default)`).
+    #[serde(default)]
+    pub time_into_lap: Option<f32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

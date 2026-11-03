@@ -221,6 +221,10 @@ pub struct CoachFrame {
     /// coarse put a whole run of trace buckets under one speed, a step every
     /// tenth of a second.
     pub lap_dist_pct: Option<f32>,
+    /// The session clock on this tick, s. The coach widget times the lap in
+    /// progress by it, bucket by bucket, against the reference lap's own
+    /// times; `session` reaches the windows only on a slower tier.
+    pub session_time: Option<f64>,
 }
 
 /// Distance ahead from `from_pct` to `to_pct`, wrapping around the lap, in `[0, 1)`.
@@ -284,6 +288,9 @@ pub fn interpolate_reference_sample(
             upper.steering_wheel_angle,
             weight,
         ),
+        // Read per bucket where it is needed; across the line it would blend
+        // the end of the lap with its start.
+        time_into_lap: None,
     })
 }
 
@@ -1098,6 +1105,7 @@ impl CoachProcessor {
             apex_distance_m,
             brake_point_distance_m,
             lap_dist_pct: None,
+            session_time: None,
         }
     }
 }
@@ -1119,6 +1127,7 @@ impl Processor for CoachProcessor {
         let mut frame = self.frame(ctx);
 
         frame.lap_dist_pct = ctx.lap_timing.lap_dist_pct.filter(|pct| *pct >= 0.0);
+        frame.session_time = ctx.session_time;
 
         Some(ComputedOutput::Coach(frame))
     }
@@ -1162,6 +1171,7 @@ mod tests {
             lat_accel,
             long_accel: Some(0.0),
             steering_wheel_angle: 0.0,
+            time_into_lap: None,
         }
     }
 

@@ -10,9 +10,12 @@ import {
   createTraceWindowBuffers,
   EMPTY_TRACE_STATS,
   fillTraceWindow,
+  integrateBucketTimes,
+  type LapSource,
   NO_VALUE,
   phaseTime,
   playerLapDistPct,
+  referenceTimesByBucket,
   type PhaseTime,
   type TraceWindowBuffers,
   type TraceWindowStats,
@@ -41,6 +44,13 @@ interface CoachDeps {
  * a rewind as a completed lap.
  */
 const MAX_BACKWARD_STEP_PCT = 0.5;
+
+/**
+ * A step forward longer than this (in lap fraction) between two frames is a
+ * teleport or a stall, not driving: 2 % of a lap is 1.2 s at 100 m/s on the
+ * shortest tracks. The bucket centres it jumps over are left untimed.
+ */
+const MAX_TIMED_STEP_PCT = 0.02;
 
 /**
  * Phase times are displayed to the hundredth. The window is rebuilt on every
@@ -153,6 +163,26 @@ export class CoachWidgetStore {
   private readonly ownThrottleByBucket = new Float32Array(
     REFERENCE_LAP_BUCKET_COUNT
   ).fill(NO_VALUE);
+  /** When the lap in progress passed each bucket centre — see `LapSource.ownTimeByBucket`. */
+  private readonly ownTimeByBucket = new Float64Array(
+    REFERENCE_LAP_BUCKET_COUNT
+  ).fill(NO_VALUE);
+  /**
+   * The clock the lap in progress is timed by, on the last frame: the
+   * session's, or one run off the speed where no coach frame carries it.
+   */
+  private previousClockS: number | null = null;
+  /**
+   * Whether `previousClockS` was the session's. A step across a change of
+   * clock is not timed: the two clocks do not share an origin.
+   */
+  private previousClockIsSession: boolean | null = null;
+  /** The reference's bucket times, worked out once per reference and track length. */
+  private referenceTimes: {
+    samples: ReferenceLapSample[];
+    trackLengthM: number;
+    times: Float64Array;
+  } | null = null;
 
   private previousDistPct: number | null = null;
   /** Last bucket written this lap, for forward-filling the ones jumped over. */
@@ -188,6 +218,10 @@ export class CoachWidgetStore {
       | 'ownSpeedByBucket'
       | 'ownBrakeByBucket'
       | 'ownThrottleByBucket'
+      | 'ownTimeByBucket'
+      | 'previousClockS'
+      | 'previousClockIsSession'
+      | 'referenceTimes'
       | 'window'
       | 'windowStats'
     >(
@@ -202,6 +236,10 @@ export class CoachWidgetStore {
         ownSpeedByBucket: false,
         ownBrakeByBucket: false,
         ownThrottleByBucket: false,
+        ownTimeByBucket: false,
+        previousClockS: false,
+        previousClockIsSession: false,
+        referenceTimes: false,
         window: false,
         windowStats: false,
       },
@@ -261,6 +299,7 @@ export class CoachWidgetStore {
     if (speed === undefined || lapDistPct === null) return;
 
     const previous = this.previousDistPct;
+    let timedFromPct = previous;
 
     if (previous !== null && lapDistPct < previous) {
       // Crossing the line or being teleported both leave the buffers holding a
@@ -269,6 +308,8 @@ export class CoachWidgetStore {
 
       this.clearBuffers();
       this.previousBucket = null;
+      // Across the line the frame before sits just short of this lap's start.
+      timedFromPct = wrappedNormally ? previous - 1 : null;
 
       // The last corner's figures stay up down the straight after the line; a
       // teleport leaves no corner behind the car they could still belong to.
@@ -317,6 +358,59 @@ export class CoachWidgetStore {
     this.ownThrottleByBucket[bucket] = throttle;
     this.previousBucket = bucket;
     this.previousDistPct = lapDistPct;
+    this.timeCentres(timedFromPct, lapDistPct, speed);
+  }
+
+  /**
+   * Times every bucket centre the car passed since the last frame, along the
+   * line between the two frames' clocks — the same way the reference lap was
+   * timed, so the two compare centre for centre. The clock is the session's;
+   * where no coach frame carries it (a preview) one is run off the speed.
+   */
+  private timeCentres(fromPct: number | null, toPct: number, speed: number) {
+    const stepPct = fromPct === null ? NO_VALUE : toPct - fromPct;
+    const isDriving = stepPct > 0 && stepPct <= MAX_TIMED_STEP_PCT;
+    const sessionTime = this.root.backendComputed.coach?.sessionTime ?? null;
+    const isSessionClock = sessionTime !== null;
+    const isSameClock = this.previousClockIsSession === isSessionClock;
+    const previousClockS = isSameClock ? this.previousClockS : null;
+    let clockS = sessionTime;
+
+    if (clockS === null) {
+      const stepM = isDriving ? stepPct * this.trackLengthM : 0;
+
+      clockS = (previousClockS ?? 0) + stepM / Math.max(speed, 1);
+    }
+
+    this.previousClockS = clockS;
+    this.previousClockIsSession = isSessionClock;
+
+    if (
+      !isDriving ||
+      fromPct === null ||
+      previousClockS === null ||
+      clockS < previousClockS
+    ) {
+      return;
+    }
+
+    const bucketCount = this.ownTimeByBucket.length;
+    const firstCentre = Math.max(
+      Math.floor(fromPct * bucketCount - 0.5) + 1,
+      0
+    );
+    const lastCentre = Math.min(
+      Math.floor(toPct * bucketCount - 0.5),
+      bucketCount - 1
+    );
+
+    for (let bucket = firstCentre; bucket <= lastCentre; bucket++) {
+      const centrePct = (bucket + 0.5) / bucketCount;
+      const weight = (centrePct - fromPct) / stepPct;
+
+      this.ownTimeByBucket[bucket] =
+        previousClockS + (clockS - previousClockS) * weight;
+    }
   }
 
   /**
@@ -325,38 +419,35 @@ export class CoachWidgetStore {
    */
   private rebuildWindow() {
     const currentDistPct = this.currentDistPct;
+    const lap: LapSource = {
+      referenceSamples: this.referenceSamples,
+      referenceTimeByBucket: this.referenceTimeByBucket(),
+      ownSpeedByBucket: this.ownSpeedByBucket,
+      ownBrakeByBucket: this.ownBrakeByBucket,
+      ownThrottleByBucket: this.ownThrottleByBucket,
+      ownTimeByBucket: this.ownTimeByBucket,
+      currentDistPct: currentDistPct ?? 0,
+      trackLengthM: this.trackLengthM,
+    };
 
     this.windowStats =
       currentDistPct === null
         ? EMPTY_TRACE_STATS
         : fillTraceWindow(this.window, {
-            referenceSamples: this.referenceSamples,
-            ownSpeedByBucket: this.ownSpeedByBucket,
-            ownBrakeByBucket: this.ownBrakeByBucket,
-            ownThrottleByBucket: this.ownThrottleByBucket,
-            currentDistPct,
-            trackLengthM: this.trackLengthM,
+            ...lap,
             windowMeters: this.settings.windowMeters,
           });
 
     const { reference } = this.windowStats;
     const measured: Record<CornerPhase, PhaseTime | null> = {
       brake: quantizeTime(
-        phaseTime(this.window, reference.brakePointM, reference.brakeReleaseM)
+        phaseTime(lap, reference.brakePointM, reference.brakeReleaseM)
       ),
       apex: quantizeTime(
-        phaseTime(
-          this.window,
-          reference.brakeReleaseM,
-          reference.throttlePointM
-        )
+        phaseTime(lap, reference.brakeReleaseM, reference.throttlePointM)
       ),
       throttle: quantizeTime(
-        phaseTime(
-          this.window,
-          reference.throttlePointM,
-          reference.fullThrottleM
-        )
+        phaseTime(lap, reference.throttlePointM, reference.fullThrottleM)
       ),
     };
     const startsM: Record<CornerPhase, number | null> = {
@@ -486,6 +577,29 @@ export class CoachWidgetStore {
     this.ownSpeedByBucket.fill(NO_VALUE);
     this.ownBrakeByBucket.fill(NO_VALUE);
     this.ownThrottleByBucket.fill(NO_VALUE);
+    this.ownTimeByBucket.fill(NO_VALUE);
+  }
+
+  /** The reference's bucket times, worked out again only when the reference or the track length changes. */
+  private referenceTimeByBucket(): Float64Array | null {
+    const samples = this.referenceSamples;
+    const trackLengthM = this.trackLengthM;
+
+    if (!samples || samples.length === 0) {
+      return null;
+    }
+
+    const cached = this.referenceTimes;
+
+    if (cached?.samples === samples && cached.trackLengthM === trackLengthM) {
+      return cached.times;
+    }
+
+    const times = referenceTimesByBucket(samples, trackLengthM);
+
+    this.referenceTimes = { samples, trackLengthM, times };
+
+    return times;
   }
 
   /**
@@ -501,8 +615,16 @@ export class CoachWidgetStore {
     this.ownThrottleByBucket[bucket] = throttle;
   }
 
-  /** Refills the window from whatever the buffers currently hold. For seeded previews. */
+  /**
+   * Refills the window from whatever the buffers currently hold. For seeded
+   * previews, which have no clock: the seeded lap is timed by its speeds.
+   */
   refreshFromSeed() {
+    integrateBucketTimes(
+      this.ownSpeedByBucket,
+      this.trackLengthM,
+      this.ownTimeByBucket
+    );
     this.rebuildWindow();
   }
 
@@ -548,6 +670,8 @@ export class CoachWidgetStore {
     this.settledTimes = NO_SETTLED_TIMES();
     this.previousDistPct = null;
     this.previousBucket = null;
+    this.previousClockS = null;
+    this.previousClockIsSession = null;
     this.windowStats = EMPTY_TRACE_STATS;
     this.displayedBrakeTime = null;
     this.displayedApexTime = null;

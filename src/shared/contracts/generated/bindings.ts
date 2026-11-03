@@ -814,6 +814,12 @@ export type CoachFrame = {
    * tenth of a second.
    */
   lapDistPct: number | null;
+  /**
+   * The session clock on this tick, s. The coach widget times the lap in
+   * progress by it, bucket by bucket, against the reference lap's own
+   * times; `session` reaches the windows only on a slower tier.
+   */
+  sessionTime: number | null;
 };
 
 /**
@@ -2182,6 +2188,14 @@ export type ReferenceLapSample = {
    * Steering wheel angle in radians.
    */
   steeringWheelAngle: number;
+  /**
+   * Seconds into the lap at which the car passed this bucket's centre,
+   * `(i + 0.5) / N` — the lap's own clock, so the time between two points
+   * is read off rather than integrated from speed. `None` where the lap had
+   * no clock to read, and on every reference recorded before this field
+   * existed (`serde(default)`).
+   */
+  timeIntoLap?: number | null;
 };
 
 /**

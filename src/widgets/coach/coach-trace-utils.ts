@@ -149,16 +149,31 @@ export const EMPTY_TRACE_STATS: TraceWindowStats = {
   hasData: false,
 };
 
-export interface FillTraceWindowParams {
+/** The two laps as the coach holds them, bucket by bucket, and where the car is. */
+export interface LapSource {
   referenceSamples: ReferenceLapSample[] | null;
+  /**
+   * When the reference lap passed each bucket's centre, seconds into the lap
+   * (`referenceTimesByBucket`); null without a reference.
+   */
+  referenceTimeByBucket: Float64Array | null;
   /** Speed per lap-distance bucket for the lap in progress; `NO_VALUE` where nothing was written. */
   ownSpeedByBucket: Float32Array;
   /** Brake input per lap-distance bucket for the lap in progress; `NO_VALUE` where nothing was written. */
   ownBrakeByBucket: Float32Array;
   /** Throttle input per lap-distance bucket for the lap in progress; `NO_VALUE` where nothing was written. */
   ownThrottleByBucket: Float32Array;
+  /**
+   * When the lap in progress passed each bucket's centre, on any clock that
+   * runs at a second a second — only differences between buckets are read.
+   * `NO_VALUE` where the car has not been.
+   */
+  ownTimeByBucket: Float64Array;
   currentDistPct: number;
   trackLengthM: number;
+}
+
+export interface FillTraceWindowParams extends LapSource {
   /** Half-width of the window: the trace spans `-windowMeters .. +windowMeters`. */
   windowMeters: number;
 }
@@ -233,6 +248,124 @@ const referenceValueAt = (
 };
 
 type TraceField = 'speed' | 'brake' | 'throttle';
+
+/**
+ * A lap's clock at `pct`, along the line through two neighbouring bucket
+ * centres. Never across the line: a lap's times run from its start to its
+ * end, and the bucket after the last is the same lap's first. Where one
+ * neighbour has no time yet — the bucket the car has just entered — the line
+ * through the two centres before it is carried on.
+ */
+const timeAt = (times: Float64Array, pct: number): number => {
+  const bucketCount = times.length;
+  const position = wrapPct(pct) * bucketCount - 0.5;
+  const lower = Math.floor(position);
+
+  const lineThrough = (first: number): number => {
+    if (first < 0 || first + 1 >= bucketCount) return NO_VALUE;
+
+    const from = times[first] ?? NO_VALUE;
+    const to = times[first + 1] ?? NO_VALUE;
+
+    return from + (to - from) * (position - first);
+  };
+
+  const between = lineThrough(lower);
+
+  if (isValue(between)) return between;
+
+  const before = lineThrough(lower - 1);
+
+  return isValue(before) ? before : lineThrough(lower + 1);
+};
+
+/**
+ * Seconds the lap in progress has lost against the reference from its start
+ * to `offsetM` from the car — the difference of their clocks there, whatever
+ * each clock was started at. Only differences between two points mean
+ * anything. `NO_VALUE` ahead of the car and where either lap has no time.
+ */
+const lapDeltaAt = (lap: LapSource, offsetM: number): number => {
+  if (offsetM > 0 || !lap.referenceTimeByBucket || lap.trackLengthM <= 0) {
+    return NO_VALUE;
+  }
+
+  const pct = wrapPct(lap.currentDistPct + offsetM / lap.trackLengthM);
+
+  return (
+    timeAt(lap.ownTimeByBucket, pct) - timeAt(lap.referenceTimeByBucket, pct)
+  );
+};
+
+/**
+ * Each bucket centre's time on a lap timed by nothing but its speeds, written
+ * into `target`: zero at the first bucket with a speed, run on segment by
+ * segment, and started again at zero after a gap — a stretch is timed only as
+ * far as it was driven unbroken. Previews have no clock; a reference recorded
+ * before references carried one has only its speeds.
+ */
+export const integrateBucketTimes = (
+  speeds: ArrayLike<number>,
+  trackLengthM: number,
+  target: Float64Array
+) => {
+  target.fill(NO_VALUE);
+
+  if (trackLengthM <= 0) return;
+
+  const bucketM = trackLengthM / target.length;
+  let time = NO_VALUE;
+
+  for (let index = 0; index < target.length; index++) {
+    const speed = speeds[index] ?? NO_VALUE;
+    const previous = index > 0 ? (speeds[index - 1] ?? NO_VALUE) : NO_VALUE;
+
+    if (!isValue(speed)) {
+      time = NO_VALUE;
+      continue;
+    }
+
+    time =
+      isValue(time) && isValue(previous)
+        ? time + secondsFor(bucketM, (previous + speed) / 2)
+        : 0;
+    target[index] = time;
+  }
+};
+
+/**
+ * When the reference lap passed each bucket centre, seconds into the lap. Read
+ * off the times it was recorded with; a reference stored before it carried
+ * them is timed by its speeds instead, the way the window used to be.
+ */
+export const referenceTimesByBucket = (
+  samples: ReferenceLapSample[],
+  trackLengthM: number
+): Float64Array => {
+  const times = new Float64Array(samples.length);
+  const recorded = samples.every(
+    (sample) =>
+      sample.timeIntoLap !== null &&
+      sample.timeIntoLap !== undefined &&
+      Number.isFinite(sample.timeIntoLap)
+  );
+
+  if (!recorded) {
+    integrateBucketTimes(
+      samples.map((sample) => sample.speed),
+      trackLengthM,
+      times
+    );
+
+    return times;
+  }
+
+  samples.forEach((sample, index) => {
+    times[index] = sample.timeIntoLap ?? NO_VALUE;
+  });
+
+  return times;
+};
 
 /** One trace read anywhere around the car, between the drawn samples; `NO_VALUE` where it has nothing. */
 type TraceReader = (field: TraceField, offsetM: number) => number;
@@ -604,49 +737,58 @@ export const windowIndexAt = (offsetM: Float32Array, atM: number): number => {
   return position < 0 || position > TRACE_POINT_COUNT - 1 ? NO_VALUE : position;
 };
 
-/** `timeDeltaS` at a point of the window, between the drawn samples. */
-const timeDeltaAt = (buffers: TraceWindowBuffers, offsetM: number): number => {
-  const position = windowIndexAt(buffers.offsetM, offsetM);
+/**
+ * Whether the lap in progress drove the whole of `[startM, untilM]` behind
+ * the car: a speed in every bucket of it, never all but stopped. A car that
+ * was parked, reset or towed there has not driven it, and a stretch over the
+ * line was driven on the lap before, which has been cleared.
+ */
+const droveThrough = (
+  lap: LapSource,
+  startM: number,
+  untilM: number
+): boolean => {
+  const bucketCount = lap.ownSpeedByBucket.length;
+  const bucketOf = (offsetM: number): number =>
+    Math.min(
+      Math.floor(
+        wrapPct(lap.currentDistPct + offsetM / lap.trackLengthM) * bucketCount
+      ),
+      bucketCount - 1
+    );
+  const first = bucketOf(startM);
+  const span = (bucketOf(untilM) - first + bucketCount) % bucketCount;
 
-  if (!isValue(position)) return NO_VALUE;
+  for (let step = 0; step <= span; step++) {
+    const speed =
+      lap.ownSpeedByBucket[(first + step) % bucketCount] ?? NO_VALUE;
 
-  const lowerIndex = Math.floor(position);
-  const lower = buffers.timeDeltaS[lowerIndex] ?? NO_VALUE;
-  const upper = buffers.timeDeltaS[lowerIndex + 1] ?? NO_VALUE;
+    if (!(speed >= MIN_COMPARABLE_SPEED_MPS)) return false;
+  }
 
-  if (!isValue(upper)) return lower;
-
-  if (!isValue(lower)) return upper;
-
-  return lower + (upper - lower) * (position - lowerIndex);
+  return true;
 };
 
 /**
  * How much time this lap has gained or lost against the reference between
  * `startM` and `endM` — one phase of the reference's corner, in metres from the
- * car. Read off the running time delta, so the three phases of a corner add up
- * to what the corner cost. Null before the car reaches the phase, once its
- * start has left the window, where this lap's trace does not cover its start,
- * and where the car all but stopped in it: a car that was parked, reset or
- * towed has not driven it.
+ * car — as the difference of the two laps' clocks across it, so the three
+ * phases of a corner add up to what the corner cost. Read off the whole lap,
+ * not the drawn window: a phase longer than the window behind the car keeps
+ * its time. Null before the car reaches the phase, and where this lap did not
+ * drive all of it — see `droveThrough`.
  */
 export const phaseTime = (
-  buffers: TraceWindowBuffers,
+  lap: LapSource,
   startM: number | null,
   endM: number | null
 ): PhaseTime | null => {
-  if (startM === null || startM > 0) {
+  if (startM === null || startM > 0 || lap.trackLengthM <= 0) {
     return null;
   }
 
-  const atStart = timeDeltaAt(buffers, startM);
   const passed = endM !== null && endM <= 0;
   const untilM = passed ? endM : 0;
-  const atEnd = timeDeltaAt(buffers, untilM);
-
-  if (!isValue(atStart) || !isValue(atEnd)) {
-    return null;
-  }
 
   // A phase just entered has no time to show yet; one already driven has its
   // time however short it was.
@@ -654,28 +796,14 @@ export const phaseTime = (
     return null;
   }
 
-  // This lap must have been recorded inside the phase, and never all but
-  // stopped there.
-  let recordedInside = false;
-
-  for (let index = 0; index < TRACE_POINT_COUNT; index++) {
-    const offsetM = buffers.offsetM[index] ?? NO_VALUE;
-    const speed = buffers.ownSpeed[index] ?? NO_VALUE;
-
-    if (offsetM < startM || offsetM > untilM || !isValue(speed)) continue;
-
-    if (speed < MIN_COMPARABLE_SPEED_MPS) {
-      return null;
-    }
-
-    recordedInside = true;
+  if (!droveThrough(lap, startM, untilM)) {
+    return null;
   }
 
-  // A phase shorter than a sample may hold none; both its ends were read on
-  // this lap's trace all the same.
-  const stepM = (buffers.offsetM[1] ?? 0) - (buffers.offsetM[0] ?? 0);
+  const atStart = lapDeltaAt(lap, startM);
+  const atEnd = lapDeltaAt(lap, untilM);
 
-  if (!recordedInside && untilM - startM >= stepM) {
+  if (!isValue(atStart) || !isValue(atEnd)) {
     return null;
   }
 
@@ -684,7 +812,9 @@ export const phaseTime = (
 
 /**
  * Refills `buffers` with the reference lap and the lap in progress across a
- * window centred on the car, accumulating the time delta between them along it.
+ * window centred on the car, and the time lost between them along it — the
+ * difference of the two laps' clocks, counted from where the window's
+ * comparison starts.
  *
  * The reference is drawn across the whole window because it is the only source
  * of what lies ahead; the own trace necessarily stops at the car. Both are
@@ -693,7 +823,9 @@ export const phaseTime = (
  */
 export const fillTraceWindow = (
   buffers: TraceWindowBuffers,
-  {
+  params: FillTraceWindowParams
+): TraceWindowStats => {
+  const {
     referenceSamples,
     ownSpeedByBucket,
     ownBrakeByBucket,
@@ -701,8 +833,8 @@ export const fillTraceWindow = (
     currentDistPct,
     trackLengthM,
     windowMeters,
-  }: FillTraceWindowParams
-): TraceWindowStats => {
+  } = params;
+
   buffers.referenceSpeed.fill(NO_VALUE);
   buffers.ownSpeed.fill(NO_VALUE);
   buffers.referenceBrake.fill(NO_VALUE);
@@ -724,9 +856,8 @@ export const fillTraceWindow = (
 
   const step = (windowMeters * 2) / (TRACE_POINT_COUNT - 1);
 
-  let cumulativeDeltaS = NO_VALUE;
-  let previousOwnSpeed = NO_VALUE;
-  let previousReferenceSpeed = NO_VALUE;
+  let firstDeltaS = NO_VALUE;
+  let windowDeltaS = NO_VALUE;
   let hasData = false;
 
   for (let index = 0; index < TRACE_POINT_COUNT; index++) {
@@ -746,31 +877,16 @@ export const fillTraceWindow = (
       hasData = true;
     }
 
-    if (
-      isValue(previousOwnSpeed) &&
-      isValue(previousReferenceSpeed) &&
-      isValue(ownSpeed) &&
-      isValue(referenceSpeed)
-    ) {
-      // Trapezoid over the segment: average the endpoint speeds on each trace,
-      // then difference the two times.
-      const ownSegmentS = secondsFor(step, (previousOwnSpeed + ownSpeed) / 2);
-      const referenceSegmentS = secondsFor(
-        step,
-        (previousReferenceSpeed + referenceSpeed) / 2
-      );
+    const lapDeltaS = lapDeltaAt(params, offsetM);
 
-      cumulativeDeltaS =
-        (isValue(cumulativeDeltaS) ? cumulativeDeltaS : 0) +
-        (ownSegmentS - referenceSegmentS);
+    if (isValue(lapDeltaS) && isValue(ownSpeed)) {
+      if (!isValue(firstDeltaS)) {
+        firstDeltaS = lapDeltaS;
+      }
+
+      windowDeltaS = lapDeltaS - firstDeltaS;
+      buffers.timeDeltaS[index] = windowDeltaS;
     }
-
-    if (isValue(ownSpeed)) {
-      buffers.timeDeltaS[index] = cumulativeDeltaS;
-    }
-
-    previousOwnSpeed = ownSpeed;
-    previousReferenceSpeed = referenceSpeed;
   }
 
   fillGrid(
@@ -792,7 +908,7 @@ export const fillTraceWindow = (
   const own = findCornerPhases(readOwn);
 
   return {
-    windowDeltaS: isValue(cumulativeDeltaS) ? cumulativeDeltaS : null,
+    windowDeltaS: isValue(windowDeltaS) ? windowDeltaS : null,
     reference,
     own,
     hasData,
