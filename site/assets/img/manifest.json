@@ -42,16 +42,20 @@
     ]
   },
   "assets/widgets/coach.png": {
-    "width": 900,
-    "height": 384,
+    "width": 1080,
+    "height": 486,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/coach-480.webp"
       },
       {
-        "width": 900,
-        "path": "assets/img/widgets/coach-900.webp"
+        "width": 960,
+        "path": "assets/img/widgets/coach-960.webp"
+      },
+      {
+        "width": 1080,
+        "path": "assets/img/widgets/coach-1080.webp"
       }
     ]
   },
@@ -346,12 +350,12 @@
     ]
   },
   "assets/widgets/pit-line.png": {
-    "width": 240,
-    "height": 1140,
+    "width": 270,
+    "height": 1302,
     "variants": [
       {
-        "width": 240,
-        "path": "assets/img/widgets/pit-line-240.webp"
+        "width": 270,
+        "path": "assets/img/widgets/pit-line-270.webp"
       }
     ]
   },
@@ -497,7 +501,7 @@
   },
   "assets/widgets/sector-matrix.png": {
     "width": 960,
-    "height": 516,
+    "height": 588,
     "variants": [
       {
         "width": 480,
