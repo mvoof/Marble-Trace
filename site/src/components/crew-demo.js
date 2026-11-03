@@ -21,6 +21,7 @@
   const TYPE_MS = 34;
   const ANSWER_DELAY_MS = 420;
   const NEXT_EXCHANGE_MS = 2600;
+  const VISIBLE_RATIO = 0.4;
   const EMPTY_LINE = ' ';
 
   const ON_AIR_CLASS = 'is-on-air';
@@ -43,6 +44,7 @@
     const heard = demo.querySelector('[data-crew-heard]');
     const reply = demo.querySelector('[data-crew-reply]');
     const mark = demo.querySelector('[data-crew-mark]');
+    const status = demo.querySelector('[data-crew-status]');
     const prompts = Array.from(demo.querySelectorAll('.crew-prompt'));
 
     let timer = 0;
@@ -74,7 +76,7 @@
       }
     };
 
-    const play = async (prompt) => {
+    const play = async (prompt, { announce = false } = {}) => {
       window.clearTimeout(timer);
       exchange += 1;
 
@@ -105,6 +107,11 @@
         return;
       }
 
+      // Only an exchange the visitor asked for is read out, never the round
+      if (announce && status) {
+        status.textContent = prompt.dataset.reply;
+      }
+
       if (autoplay && visible) {
         nextIndex = (prompts.indexOf(prompt) + 1) % prompts.length;
         await wait(NEXT_EXCHANGE_MS);
@@ -118,7 +125,7 @@
     prompts.forEach((prompt) => {
       prompt.addEventListener('click', () => {
         autoplay = false;
-        void play(prompt);
+        void play(prompt, { announce: true });
       });
     });
 
@@ -130,17 +137,21 @@
 
     const observer = new IntersectionObserver(
       (entries) => {
-        visible = entries.some((entry) => entry.isIntersecting);
+        const wasVisible = visible;
 
-        if (visible && autoplay) {
+        visible = entries.some(
+          (entry) => entry.intersectionRatio >= VISIBLE_RATIO
+        );
+
+        if (visible && !wasVisible && autoplay) {
           void play(prompts[nextIndex]);
-        } else if (!visible) {
+        } else if (!visible && wasVisible) {
           window.clearTimeout(timer);
           exchange += 1;
           driverLine.classList.remove(ON_AIR_CLASS);
         }
       },
-      { threshold: 0.4 }
+      { threshold: VISIBLE_RATIO }
     );
 
     observer.observe(demo);
