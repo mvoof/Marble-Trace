@@ -172,6 +172,11 @@ export class CoachWidgetStore {
    * session's, or one run off the speed where no coach frame carries it.
    */
   private previousClockS: number | null = null;
+  /**
+   * Whether `previousClockS` was the session's. A step across a change of
+   * clock is not timed: the two clocks do not share an origin.
+   */
+  private previousClockIsSession: boolean | null = null;
   /** The reference's bucket times, worked out once per reference and track length. */
   private referenceTimes: {
     samples: ReferenceLapSample[];
@@ -215,6 +220,7 @@ export class CoachWidgetStore {
       | 'ownThrottleByBucket'
       | 'ownTimeByBucket'
       | 'previousClockS'
+      | 'previousClockIsSession'
       | 'referenceTimes'
       | 'window'
       | 'windowStats'
@@ -232,6 +238,7 @@ export class CoachWidgetStore {
         ownThrottleByBucket: false,
         ownTimeByBucket: false,
         previousClockS: false,
+        previousClockIsSession: false,
         referenceTimes: false,
         window: false,
         windowStats: false,
@@ -364,7 +371,9 @@ export class CoachWidgetStore {
     const stepPct = fromPct === null ? NO_VALUE : toPct - fromPct;
     const isDriving = stepPct > 0 && stepPct <= MAX_TIMED_STEP_PCT;
     const sessionTime = this.root.backendComputed.coach?.sessionTime ?? null;
-    const previousClockS = this.previousClockS;
+    const isSessionClock = sessionTime !== null;
+    const isSameClock = this.previousClockIsSession === isSessionClock;
+    const previousClockS = isSameClock ? this.previousClockS : null;
     let clockS = sessionTime;
 
     if (clockS === null) {
@@ -374,6 +383,7 @@ export class CoachWidgetStore {
     }
 
     this.previousClockS = clockS;
+    this.previousClockIsSession = isSessionClock;
 
     if (
       !isDriving ||
@@ -661,6 +671,7 @@ export class CoachWidgetStore {
     this.previousDistPct = null;
     this.previousBucket = null;
     this.previousClockS = null;
+    this.previousClockIsSession = null;
     this.windowStats = EMPTY_TRACE_STATS;
     this.displayedBrakeTime = null;
     this.displayedApexTime = null;
