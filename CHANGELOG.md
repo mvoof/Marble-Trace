@@ -7,9 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.0] — 2026-11-03
+
 ### Added
 
+- **Voice Crew:** A race engineer you talk to. Hold push-to-talk and ask for fuel, tyres, a compound, a fast repair or a clean windscreen, or ask about the gaps, who is ahead or behind, your position, laps left, lap times, the pit order or the weather. The engineer answers out loud and sets the pit order. Speech is recognised and spoken on your own PC, in English, Russian, Spanish or Chinese; the speech model and the voices are downloaded on the new Crew page, where every sentence it listens for and every reply it gives can be edited, and a command pack can be exported and imported.
+- **Crew Radio Widget:** The engineer's side of the radio on the overlay: what you said, the reply while it is spoken, and a ✓ or ✗ beside a pit command once the sim took it or refused it.
+- **Radio Widget:** Who is talking on the radio: the car number in its class colour, the driver's name and the channel they are on — your own voice too, while you hold push-to-talk.
+- **Radio Mic in Standings and Relative:** A mic beside the name of the driver on the air, in the colour of their channel.
 - **ABS Widget:** The ABS setting from the cockpit, 0 to 12, beside a badge that lights yellow while ABS is working. The level can be switched off to keep only the badge, and the widget hides itself on cars without an ABS adjustment.
+- **Corner Speeds:** Input Trace, Race Dash and Invisible Dash can show the entry, apex and exit speeds of the corner ahead, taken from your reference lap, with your speed coloured against them. Input Trace also gets its own speed and gear block, on either side of the graph, and colours the steering line while the car slides.
+- **Shift Blink:** The gear in Input Trace, Race Dash and Invisible Dash can take the rev zone colour and flash at the shift point.
+- **Coach — Time per Corner Phase:** The call row shows the corner in three figures — braking, apex and throttle — against your reference lap, and the trace shades each phase.
+- **Pit Line — Speed Limit Plate:** The pit speed limit sits on a plate above the bars.
+- **Lap Counter Setting:** Timer and Standings count the session's lap, the leader's, by default; a setting switches either to your own.
+- **G-Meter — Rings and Axes:** The scale rings and the axes can each be switched off.
+
+### Changed
+
+- **Flat Flags:** A new look — each flag a row with an icon and a slanted colour band — and nothing blinks any more.
+- **Sector Matrix:** Larger times, easier labels, and the running sector coloured by its delta.
+- **G-Meter:** A hairline grid and a solid rim that lengthens with the load replace the glow band.
+- **Timer:** The clocks sit in two columns, lap and position share one plate, and the lap shown is the session's unless you choose your own.
+- **Lap Log:** No arrow before the live lap number.
+
+### Fixed
+
+- **Coach Without a Reference After a Reload:** An overlay window opened or reloaded mid-session now picks up the reference lap at once; before, the coach compared against nothing until your next best lap.
+- **Coach Trace Drawn as Steps:** The reference and live traces are now drawn as smooth lines, not a staircase — most visibly on long tracks like the Nordschleife.
+- **Pace Car Parked on Track:** At tracks where the pace car parks in a pocket off the racing line, such as Zolder, it is no longer shown as out on circuit, and it no longer raises a stopped-car incident.
+- **Safety Rating Estimate on the Nordschleife:** The Incident Tracker now scores the Nordschleife on the 73 corners its race results count, not 154, so the estimate matches the result.
+- **Standings Header Setting:** The switch labelled "Session Progress" hid the whole header; it is now called Session Header, and a separate switch hides only the lap counter.
+- **Engine Panel Values Overflowing:** Switching cells on or off no longer leaves values drawn too large and spilling into their neighbours.
+- **Car Number Badge Width:** In Standings and Relative the car number badge is always three digits wide, so one- and two-digit numbers line up.
+- **Rare Crashes:** A few rare cases in the lap log and in reading game controllers no longer crash the app.
 
 ## [0.27.0] — 2026-10-20
 
