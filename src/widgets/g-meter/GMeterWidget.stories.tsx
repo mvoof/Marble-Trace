@@ -32,7 +32,8 @@ const meta: Meta<StoryArgs> = {
     size: {
       width: 240,
       height: 240,
-      background: 'transparent',
+      // The plate is the frame, clipped round, as widget-frame.ts draws it
+      borderRadius: '50%',
       border: 'none',
     },
     seed: (store, args) => {
@@ -76,8 +77,33 @@ const BRAKE_SPAN = 0.62;
 const EXIT_START = 0.55;
 const EXIT_SPAN = 0.45;
 
+const FRAME_MS = 1000 / SAMPLES_PER_SECOND;
+
+// The meter smooths and decays by the time between frames, read off
+// performance.now(). A burst replayed in one go has none between them, so the
+// clock is stepped one 60 Hz frame per sample, ending on the real time.
 const replayCorner = (store: RendererCore): void => {
+  const realNow = performance.now.bind(performance);
+  const startMs = realNow() - CORNER_SAMPLES * FRAME_MS;
+  let frameIndex = 0;
+
+  performance.now = () => startMs + frameIndex * FRAME_MS;
+
+  try {
+    replayCornerFrames(store, (index) => {
+      frameIndex = index;
+    });
+  } finally {
+    performance.now = realNow;
+  }
+};
+
+const replayCornerFrames = (
+  store: RendererCore,
+  onFrame: (index: number) => void
+): void => {
   for (let index = 0; index < CORNER_SAMPLES; index++) {
+    onFrame(index + 1);
     const phase = index / SAMPLES_PER_SECOND / CORNER_SECONDS;
     const braking = Math.max(0, Math.cos((phase / BRAKE_SPAN) * (Math.PI / 2)));
     const cornering = Math.sin(phase * Math.PI);

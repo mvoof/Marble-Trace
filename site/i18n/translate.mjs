@@ -72,6 +72,7 @@ const TRANSLATED_ATTRIBUTES = [
   'data-status-game',
   'data-edit-note',
   'data-edit-exit',
+  'data-reply',
 ];
 
 /** <meta> tags whose content is a sentence rather than a URL or a flag. */

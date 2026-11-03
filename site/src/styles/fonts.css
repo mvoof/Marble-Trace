@@ -74,3 +74,23 @@
   src: url('../../assets/fonts/roboto-condensed-italic-800-900-cyrillic.woff2') format('woff2');
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
+
+/* Rajdhani - the overlay widgets' face, taken from the app (public/fonts) for
+   the crew radio, which draws the Crew Radio widget. Latin only, like the
+   app's own copy; any other script falls through to Exo 2. */
+
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../../assets/fonts/rajdhani-normal-400-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../../assets/fonts/rajdhani-normal-700-latin.woff2') format('woff2');
+}

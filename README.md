@@ -118,7 +118,7 @@ Watch your throttle, brake, and clutch inputs scroll in real time. The horizonta
 
 The steering block draws either the built-in dial or one of several wheel silhouettes, with your choice of gear, speed, angle or nothing at all in the middle. Adding another wheel is a traced product photo — see [docs/steering-wheel-assets.md](docs/steering-wheel-assets.md).
 
-<img src="site/assets/widgets/input-trace.png" alt="Input Trace" width="533">
+<img src="site/assets/widgets/input-trace.png" alt="Input Trace" width="530">
 
 ---
 
@@ -134,7 +134,7 @@ Friction circle visualising lateral and longitudinal G-forces in real time. Thre
 
 Live braking and throttle coaching against your stored best lap. The call row tells you what to do right now — **BRAKE** with the distance left to the braking point, or a corner-exit **GAS** call — with an urgency bar that fills as the marker approaches. Underneath, a rolling speed trace plots your current lap against the reference lap in a configurable window (in metres), coloured green where you are gaining time and red where you are losing it. Footer shows current vs reference speed, the reference lap time and the track condition. Both rows can be switched off independently, and every colour is configurable.
 
-<img src="site/assets/widgets/coach.png" alt="Coach" width="300">
+<img src="site/assets/widgets/coach.png" alt="Coach" width="360">
 
 ---
 
@@ -152,7 +152,7 @@ Full race standings table with multi-class support, SOF, qualify deltas, brand &
 
 Relative timing sorted by F2Time — player always centred. Closing/gap trend arrows, lap status (lapping/lapped), class stripes.
 
-<img src="site/assets/widgets/relative.png" alt="Relative" width="420">
+<img src="site/assets/widgets/relative.png" alt="Relative" width="422">
 
 ---
 
@@ -284,7 +284,7 @@ Optional automation adds fuel for you and orders new tires once wear drops below
 
 Pit lane speed against the limit, and the roll to your stall — as a vertical or a horizontal rail.
 
-<img src="site/assets/widgets/pit-line.png" alt="Pit Line" width="80">
+<img src="site/assets/widgets/pit-line.png" alt="Pit Line" width="90">
 
 ---
 
