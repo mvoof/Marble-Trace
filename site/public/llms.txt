@@ -18,7 +18,7 @@
 
 - Driving HUD: Race Dash, Invisible Dash, RPM Lights, Engine Panel, Battery, DRS, ABS, Input Trace, G-Meter, Coach
 - Timing & standings: Standings, Relative, Relative Map, Delta, Sector Matrix, Lap Log, Timer
-- Awareness: Track Map, Proximity Radar, Radar Bar, Close Battle, Wheel to Wheel, Flags (LED and flat)
+- Awareness: Track Map, Proximity Radar, Radar Bar, Radio, Crew Radio, Close Battle, Wheel to Wheel, Flags (LED and flat)
 - Car & session: Pit Service, Pit Line, Fuel calculator, Weather
 - Streaming: Stream Chat
 
@@ -28,6 +28,12 @@
 - Several layouts (practice, qualifying, race, garage) switch automatically by session type or by a hotkey / wheel button.
 - Remote screens: a layout monitor served over the LAN to any browser — phone, tablet, laptop, second PC or an OBS Browser Source with a transparent background. Open by link or QR code; nothing is installed on the device. Links carry a regenerable access token; devices can only watch and cannot change settings. `?widget=<id>` isolates one widget for its own OBS source.
 - Keyboard shortcuts and controller/wheel buttons (DirectInput) are bindable to app actions.
+
+## Voice crew
+
+- A push-to-talk race engineer: hold a bound key or wheel button and ask for fuel, tyres, a compound, a fast repair or a windscreen tear-off, or ask about gaps, who is ahead or behind, position, laps left, lap times, the pit order or the weather. The engineer answers out loud and sets the pit order.
+- Speech is recognised (Vosk) and spoken (Piper) on the PC itself, in English, Russian, Spanish or Chinese; the speech model and the voices are downloaded in the app.
+- Every sentence it listens for and every reply it gives can be edited in the Crew tab; command packs can be exported and imported. The Crew Radio widget shows the exchange on the overlay.
 
 ## Docs
 

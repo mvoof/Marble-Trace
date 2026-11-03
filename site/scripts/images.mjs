@@ -28,7 +28,7 @@ const SITE = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(SITE, 'assets', 'img');
 
 /** Folders whose pictures the page shows. */
-const SOURCE_DIRS = ['widgets', 'control', 'why', 'screens', 'layouts'];
+const SOURCE_DIRS = ['widgets', 'control', 'why', 'screens', 'layouts', 'crew'];
 const SOURCE_TYPES = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 
 /** The widths a srcset offers; a picture never gets a copy wider than itself. */

@@ -17,8 +17,13 @@ export const withReplay = (replay: (store: PreviewCore) => void): Decorator => {
   const ReplayDecorator: Decorator = (Story) => {
     const store = usePreviewStore();
 
+    // WidgetInstanceScope mounts the widget on its second render, and React
+    // runs this effect before that render: replayed here, the burst would land
+    // before the widget's reaction exists. A frame later it is mounted.
     useEffect(() => {
-      replay(store);
+      const frame = requestAnimationFrame(() => replay(store));
+
+      return () => cancelAnimationFrame(frame);
     }, [store]);
 
     return <Story />;
