@@ -2313,6 +2313,28 @@ button:focus-visible {
    in the app's instrument face, the push-to-talk light, the sentence heard
    and the reply, and the sentences to try under it. */
 
+/* A microphone on the air, faint, half out of the lower left corner under
+   the copy; it dissolves towards the text so it never competes with it. */
+.crew::before {
+  content: '';
+  position: absolute;
+  left: clamp(-8rem, -7vw, -3rem);
+  bottom: clamp(-9rem, -8vw, -4rem);
+  width: clamp(18rem, 30vw, 28rem);
+  aspect-ratio: 1;
+  background: url('../../assets/radio-waves.svg') no-repeat center / contain;
+  opacity: 0.06;
+  -webkit-mask-image: radial-gradient(circle at 35% 60%, #000 30%, transparent 70%);
+  mask-image: radial-gradient(circle at 35% 60%, #000 30%, transparent 70%);
+  transform: rotate(-12deg);
+  pointer-events: none;
+}
+
+.crew > .container {
+  position: relative;
+  z-index: 1;
+}
+
 .crew-note {
   max-width: 44ch;
   margin-top: 1.75rem;

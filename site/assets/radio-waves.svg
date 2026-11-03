@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" fill="none" stroke="#101317" stroke-linecap="round" stroke-linejoin="round">
+  <!-- A microphone on the air: the capsule and its stand, and three pairs of
+       radio waves going out to either side, each fainter than the last. -->
+  <g stroke-width="10">
+    <rect x="204" y="132" width="72" height="140" rx="36" />
+    <path d="M168 232v8a72 72 0 0 0 144 0v-8" />
+    <path d="M240 312v40" />
+    <path d="M200 352h80" />
+  </g>
+  <g stroke-width="8">
+    <path d="M136 156a120 120 0 0 0 0 168" />
+    <path d="M344 156a120 120 0 0 1 0 168" />
+  </g>
+  <g stroke-width="7" stroke-opacity="0.7">
+    <path d="M96 120a172 172 0 0 0 0 240" />
+    <path d="M384 120a172 172 0 0 1 0 240" />
+  </g>
+  <g stroke-width="6" stroke-opacity="0.45">
+    <path d="M56 84a224 224 0 0 0 0 312" />
+    <path d="M424 84a224 224 0 0 1 0 312" />
+  </g>
+</svg>
