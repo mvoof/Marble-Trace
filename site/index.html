@@ -302,6 +302,7 @@
           <a href="#widgets" class="nav-link">Widgets</a>
           <a href="#screens" class="nav-link">Screens</a>
           <a href="#layouts" class="nav-link">Layouts</a>
+          <a href="#crew" class="nav-link">Crew</a>
           <a href="#performance" class="nav-link">Performance</a>
           <a href="#faq" class="nav-link">FAQ</a>
           <a href="#open-source" class="nav-link">Open Source</a>
@@ -457,6 +458,12 @@
         </a>
         <a href="#layouts" class="drawer-nav-link">
           <span>Layouts</span>
+          <svg aria-hidden="true">
+            <use href="assets/icons/sprite.svg#icon-chevron-right" />
+          </svg>
+        </a>
+        <a href="#crew" class="drawer-nav-link">
+          <span>Crew</span>
           <svg aria-hidden="true">
             <use href="assets/icons/sprite.svg#icon-chevron-right" />
           </svg>
@@ -2757,6 +2764,148 @@
         </div>
       </section>
 
+      <!-- ---- Voice crew ----------------------------------------------------
+           The push-to-talk engineer. The picture is the Crew tab's command
+           editor, and over its corner a radio that plays the exchange the
+           Crew Radio widget shows: a sentence heard, the engineer's reply, a
+           check beside a pit command. Every sentence and reply on the buttons
+           is one the English pack takes and says
+           (src-tauri/crates/mt-voice/packs/en); the driver is made up.
+           crew-demo.js plays them while the band is on screen. -->
+      <section
+        id="crew"
+        class="feature feature-light crew"
+        aria-labelledby="crew-heading"
+      >
+        <div class="container feature-grid">
+          <div class="feature-copy">
+            <p class="feature-kicker">Voice crew</p>
+
+            <h2 id="crew-heading" class="feature-title">
+              Talk to<br />
+              your engineer.
+            </h2>
+
+            <p class="feature-desc">
+              Hold push-to-talk and say it: fuel, tyres, a fast repair, or a
+              question about the race. The engineer answers out loud and sets
+              the pit order for you.
+            </p>
+
+            <ul class="pill-list pill-list-inline">
+              <li class="pill">Refuelling</li>
+              <li class="pill">Tyres</li>
+              <li class="pill">Fast repair</li>
+              <li class="pill">Gaps</li>
+              <li class="pill">Who is behind</li>
+              <li class="pill">Position</li>
+              <li class="pill">Lap times</li>
+              <li class="pill">Track and weather</li>
+              <li class="pill pill-lit">Runs on your PC</li>
+            </ul>
+
+            <p class="crew-note">
+              Speech is heard and spoken on your own PC, in English, Russian,
+              Spanish or Chinese. Every sentence it listens for and every
+              reply it gives can be edited, word by word.
+            </p>
+          </div>
+
+          <div class="feature-media crew-media">
+            <button
+              class="shot-crop shot-crew"
+              type="button"
+              style="
+                --cap-w: 1523;
+                --cap-h: 1109;
+                --x: 250;
+                --y: 120;
+                --w: 1262;
+                --h: 930;
+              "
+              data-zoom
+              aria-label="Open the crew commands screenshot"
+            >
+              <img
+                src="assets/crew/commands.png"
+                alt="The Crew tab: the Fuel command's sentences as blocks, the engineer's replies, and a tried sentence matched to the command"
+                width="1523"
+                height="1109"
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+
+            <div class="crew-demo" data-crew-demo>
+              <!-- The Crew Radio widget's plate (widgets/crew-radio): a line
+                   per speaker, the one on the air marked by its bar and mic.
+                   Its labels stay English, as the widget's do. -->
+              <div class="crew-radio">
+                <div class="crew-line crew-driver" data-crew-driver>
+                  <p class="crew-head">
+                    <svg class="crew-mic" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                      <path d="M12 19v3" />
+                    </svg>
+                    <span class="crew-who" translate="no">You</span>
+                    <svg
+                      class="crew-mark"
+                      viewBox="0 0 24 24"
+                      data-crew-mark
+                      aria-hidden="true"
+                    >
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  </p>
+                  <p class="crew-text" data-crew-heard>&nbsp;</p>
+                </div>
+
+                <div class="crew-line crew-engineer" data-crew-engineer>
+                  <p class="crew-head">
+                    <svg class="crew-mic" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                      <path d="M12 19v3" />
+                    </svg>
+                    <span class="crew-who" translate="no">Engineer</span>
+                  </p>
+                  <p class="crew-text" data-crew-reply>&nbsp;</p>
+                </div>
+              </div>
+
+              <div class="crew-prompts" role="group" aria-label="Try a sentence">
+                <button
+                  class="crew-prompt"
+                  type="button"
+                  data-reply="Copy, 42 liters"
+                  data-pit
+                >
+                  Refuel forty two liters
+                </button>
+                <button
+                  class="crew-prompt"
+                  type="button"
+                  data-reply="Gap ahead 1.4 seconds"
+                >
+                  Gap ahead
+                </button>
+                <button
+                  class="crew-prompt"
+                  type="button"
+                  data-reply="Behind is number 7, J. Novak, 0.8 seconds"
+                >
+                  Who is behind
+                </button>
+                <button class="crew-prompt" type="button" data-reply="You're P4">
+                  Where am I
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ====================================================================
          Section 05 - Performance
 
@@ -3260,6 +3409,7 @@
             <a href="#widgets" class="footer-link">Widgets</a>
             <a href="#screens" class="footer-link">Screens</a>
             <a href="#layouts" class="footer-link">Layouts</a>
+            <a href="#crew" class="footer-link">Crew</a>
             <a href="#performance" class="footer-link">Performance</a>
             <a href="#faq" class="footer-link">FAQ</a>
           </nav>
@@ -3415,6 +3565,7 @@
     <script type="module" src="src/components/layout-demo.js"></script>
     <script type="module" src="src/components/screens-demo.js"></script>
     <script type="module" src="src/components/interact-demo.js"></script>
+    <script type="module" src="src/components/crew-demo.js"></script>
     <script type="module" src="src/components/rate-demo.js"></script>
     <script type="module" src="src/components/page-modes.js"></script>
     <script type="module" src="src/components/release.js"></script>

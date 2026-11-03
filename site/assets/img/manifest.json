@@ -880,5 +880,27 @@
         "path": "assets/img/layouts/race-2560.webp"
       }
     ]
+  },
+  "assets/crew/commands.png": {
+    "width": 1523,
+    "height": 1109,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/crew/commands-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/crew/commands-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/crew/commands-1440.webp"
+      },
+      {
+        "width": 1523,
+        "path": "assets/img/crew/commands-1523.webp"
+      }
+    ]
   }
 }
