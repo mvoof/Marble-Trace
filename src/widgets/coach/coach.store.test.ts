@@ -63,6 +63,32 @@ describe('CoachWidgetStore — the recorded trace', () => {
     expect(speedAt(104)).toBe(30);
   });
 
+  // The reference is timed off the session clock centre by centre; the lap in
+  // progress has to be timed the same way to compare with it.
+  it('times each bucket centre passed off the session clock', () => {
+    // A frame is recorded when the speed moves, as it does on every real one.
+    const tick = (lapDistPct: number, sessionTime: number, speed: number) => {
+      runInAction(() => {
+        core.backendComputed.updateCoach({
+          ...mockCoachFrame(),
+          lapDistPct,
+          sessionTime,
+        });
+        core.player.updateCarDynamics({ speed } as CarDynamicsFrame);
+      });
+    };
+
+    tick(0.1003, 10, 40);
+    tick(0.1047, 10.4, 41);
+
+    const times = (coach as unknown as { ownTimeByBucket: Float64Array })
+      .ownTimeByBucket;
+
+    expect(times[102]).toBeCloseTo(10.2, 6);
+    expect(times[104]).toBeCloseTo(10 + (0.4 * 0.0042) / 0.0044, 6);
+    expect(times[105]).toBeNaN();
+  });
+
   it('places the sample where the coach frame says the car is', () => {
     runInAction(() => {
       core.player.updateLapTiming({

@@ -435,6 +435,7 @@ mod tests {
             lat_accel: None,
             long_accel: None,
             steering_wheel_angle: 0.0,
+            time_into_lap: None,
         }
     }
 

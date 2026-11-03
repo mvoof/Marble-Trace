@@ -39,6 +39,8 @@ use mt_model::sim::player::PitTargetFrame;
 /// Position around the lap, 0..1. 4 dp is 0.01 % of a lap — about 0.5 m on a
 /// 5 km track, well under a pixel on any rendered map.
 const POSITION_DP: u32 = 4;
+/// The player's position on the coach frame, which times the lap — see `coach`.
+const COACH_POSITION_DP: u32 = 5;
 /// Gaps and estimated lap times, in seconds. Displayed as `toFixed(1)`, so 2 dp
 /// leaves a factor of ten in hand.
 const GAP_DP: u32 = 2;
@@ -127,9 +129,12 @@ pub fn coach(frame: &mut CoachFrame) {
     frame.brake_point_distance_m = frame
         .brake_point_distance_m
         .map(|metres| round_to_step(metres, COACH_COUNTDOWN_STEP_M));
-    // A position, not a figure the row draws: rounded like every other lap
-    // position, a decimal finer than the trace's thousand buckets.
-    round_opt(&mut frame.lap_dist_pct, POSITION_DP);
+    // A position the coach widget times the lap by, bucket centre by bucket
+    // centre: 0.5 m of rounding is 6 ms at 80 m/s, the size of the figures it
+    // shows. A decimal finer than every other lap position, and the session
+    // clock as it is — both change every tick a car moves, so rounding them
+    // would suppress nothing.
+    round_opt(&mut frame.lap_dist_pct, COACH_POSITION_DP);
 }
 
 /// The corner speeds are drawn as whole km/h or mph.

@@ -161,5 +161,6 @@ export const mockCoachFrame = (call: MockCoachCall = {}): CoachFrame => {
     // The scenario places the car through `lapTiming`, which the coach reads
     // when its own frame carries no position.
     lapDistPct: null,
+    sessionTime: null,
   };
 };

@@ -62,10 +62,17 @@ pub struct ReferenceLapProcessor {
     mid_lap_best_lap_time: Option<f32>,
     last_track_id: Option<i32>,
     last_car_screen_name: Option<String>,
-    /// Last bucket written this lap — lets us forward-fill buckets skipped
-    /// between ticks (e.g. high speed relative to bucket resolution) so they
-    /// don't fall back to a default zero-speed sample.
+    /// Last bucket written this lap — lets us fill the buckets skipped between
+    /// ticks (e.g. high speed relative to bucket resolution) so they don't
+    /// fall back to a default zero-speed sample.
     last_bucket: Option<usize>,
+    /// `session_time` on the previous tick, for timing the bucket centres
+    /// passed between two ticks.
+    prev_session_time: Option<f64>,
+    /// `session_time` at which the lap in progress started, interpolated to
+    /// the moment the car crossed the line. `None` until a crossing is seen —
+    /// a lap joined part-way has no start to time it from.
+    lap_start_session_time: Option<f64>,
     /// Set when `lap_dist_pct` was invalid/missing mid-lap (e.g. a pit
     /// teleport) — the resulting position discontinuity can look like a
     /// finish-line crossing even though no real lap was driven, so the
@@ -135,6 +142,30 @@ fn average_tire_wear(chassis: &ChassisFrame) -> Option<f32> {
     Some(present.iter().sum::<f32>() / present.len() as f32)
 }
 
+/// The sample a `weight` of the way from `from` to `to`; untimed — a bucket's
+/// time is stamped when the car passes its centre, never interpolated here.
+fn lerp_sample(
+    from: &ReferenceLapSample,
+    to: &ReferenceLapSample,
+    weight: f32,
+) -> ReferenceLapSample {
+    let lerp = |start: f32, end: f32| start + (end - start) * weight;
+    let lerp_optional = |start: Option<f32>, end: Option<f32>| match (start, end) {
+        (Some(start), Some(end)) => Some(lerp(start, end)),
+        _ => end.or(start),
+    };
+
+    ReferenceLapSample {
+        speed: lerp(from.speed, to.speed),
+        throttle: lerp(from.throttle, to.throttle),
+        brake: lerp(from.brake, to.brake),
+        lat_accel: lerp_optional(from.lat_accel, to.lat_accel),
+        long_accel: lerp_optional(from.long_accel, to.long_accel),
+        steering_wheel_angle: lerp(from.steering_wheel_angle, to.steering_wheel_angle),
+        time_into_lap: None,
+    }
+}
+
 impl ReferenceLapProcessor {
     fn ensure_working_buffer(&mut self) {
         if self.working.len() != REFERENCE_LAP_BUCKET_COUNT {
@@ -150,6 +181,7 @@ impl ReferenceLapProcessor {
         }
 
         self.last_bucket = None;
+        self.lap_start_session_time = None;
         self.lap_invalidated = false;
         self.lap_max_wetness = None;
         self.mid_lap_last_lap_time = None;
@@ -171,6 +203,82 @@ impl ReferenceLapProcessor {
         self.reset_for_new_lap();
         self.pending = None;
         self.prev_lap_dist_pct = -1.0;
+        self.prev_session_time = None;
+    }
+
+    /// Writes `sample` into an unwrapped bucket index — `N..2N` is the lap
+    /// after the line — keeping the time the bucket's centre was already
+    /// stamped with: a later tick inside the same bucket must not erase it.
+    fn write_bucket(&mut self, unwrapped: usize, sample: ReferenceLapSample) {
+        let slot = &mut self.working[unwrapped % REFERENCE_LAP_BUCKET_COUNT];
+
+        *slot = ReferenceLapSample {
+            time_into_lap: slot.time_into_lap,
+            ..sample
+        };
+    }
+
+    /// Fills the buckets jumped over between the last one written and
+    /// `to_unwrapped` along the line between the two samples, for those of
+    /// them in `range` (unwrapped indexes). A flat fill with the new sample
+    /// alone shifted every skipped bucket to where the car was a tick later.
+    fn fill_skipped(
+        &mut self,
+        previous: Option<(usize, ReferenceLapSample)>,
+        to_unwrapped: usize,
+        sample: ReferenceLapSample,
+        range: std::ops::Range<usize>,
+    ) {
+        let Some((from, from_sample)) = previous else {
+            return;
+        };
+
+        if to_unwrapped <= from + 1 {
+            return;
+        }
+
+        let span = (to_unwrapped - from) as f32;
+        let start = range.start.max(from + 1);
+        let end = range.end.min(to_unwrapped);
+
+        for unwrapped in start..end {
+            let weight = (unwrapped - from) as f32 / span;
+
+            self.write_bucket(unwrapped, lerp_sample(&from_sample, &sample, weight));
+        }
+    }
+
+    /// Stamps every bucket whose centre the car passed between `from_pct` and
+    /// `to_pct` (unwrapped: past 1.0 is the next lap) with the time it got
+    /// there, read along the line between the two ticks, in `range`
+    /// (unwrapped indexes) and counted from `lap_start`.
+    fn stamp_centres(
+        &mut self,
+        (from_pct, to_pct): (f32, f32),
+        (from_time, to_time): (f64, f64),
+        lap_start: f64,
+        range: std::ops::Range<usize>,
+    ) {
+        let bucket_count = REFERENCE_LAP_BUCKET_COUNT as f64;
+        let from_pct = f64::from(from_pct);
+        let to_pct = f64::from(to_pct);
+        let first = ((from_pct * bucket_count - 0.5).floor() + 1.0).max(0.0) as usize;
+        let last = (to_pct * bucket_count - 0.5).floor();
+
+        if last < 0.0 || to_pct <= from_pct {
+            return;
+        }
+
+        let end = (last as usize + 1).min(range.end);
+
+        for unwrapped in first.max(range.start)..end {
+            let centre = (unwrapped as f64 + 0.5) / bucket_count;
+            let weight = (centre - from_pct) / (to_pct - from_pct);
+            let at = from_time + (to_time - from_time) * weight;
+
+            self.working[unwrapped % REFERENCE_LAP_BUCKET_COUNT].time_into_lap =
+                Some((at - lap_start) as f32);
+        }
     }
 
     /// Commits the parked lap once the sim publishes its time. Returns the
@@ -290,6 +398,8 @@ impl Processor for ReferenceLapProcessor {
         // lap: the forward-fill below would otherwise smear a single stationary
         // pit-stall sample (speed ~0) across every skipped bucket, and a later
         // commit would bake those zeros into the reference lap.
+        let mut jumped = false;
+
         if self.prev_lap_dist_pct >= 0.0 {
             let delta = lap_dist_pct - self.prev_lap_dist_pct;
             let is_finish_wrap =
@@ -303,6 +413,7 @@ impl Processor for ReferenceLapProcessor {
             let max_allowed_jump = lag_travel_pct.max(MAX_TICK_DIST_PCT_JUMP);
 
             if delta.abs() > max_allowed_jump && !is_finish_wrap {
+                jumped = true;
                 self.invalidate_lap(&format!(
                     "lap_dist_pct jumped by {delta:.4} (max {max_allowed_jump:.4}) — teleport"
                 ));
@@ -319,15 +430,50 @@ impl Processor for ReferenceLapProcessor {
             lat_accel: ctx.car_dynamics.lat_accel,
             long_accel: ctx.car_dynamics.long_accel,
             steering_wheel_angle: ctx.car_dynamics.steering_wheel_angle,
+            time_into_lap: None,
         };
 
         // The crossing is settled *before* this tick's sample is filed: the tick
         // that wraps past the line already belongs to the new lap, so writing it
         // into the working buffer first would hand the completed lap a bucket of
         // the next one's data.
+        let previous_pct = self.prev_lap_dist_pct;
         let crossed_finish_line =
-            self.prev_lap_dist_pct > WRAP_HIGH_THRESHOLD && lap_dist_pct < WRAP_LOW_THRESHOLD;
+            previous_pct > WRAP_HIGH_THRESHOLD && lap_dist_pct < WRAP_LOW_THRESHOLD;
         self.prev_lap_dist_pct = lap_dist_pct;
+
+        // Indexes past `N` are the lap after the line, so one tick across it is
+        // filled and timed as the stretch of road it is.
+        let bucket_count = REFERENCE_LAP_BUCKET_COUNT;
+        let (to_pct, to_unwrapped) = if crossed_finish_line {
+            (lap_dist_pct + 1.0, bucket + bucket_count)
+        } else {
+            (lap_dist_pct, bucket)
+        };
+        let moved_on = !jumped && previous_pct >= 0.0 && to_pct >= previous_pct;
+        let previous = self
+            .last_bucket
+            .filter(|_| moved_on)
+            .map(|last| (last, self.working[last]));
+        let clock = match (self.prev_session_time, ctx.session_time) {
+            (Some(from), Some(to)) if moved_on && to >= from => Some((from, to)),
+            _ => None,
+        };
+        self.prev_session_time = ctx.session_time;
+
+        // Where on the clock the car crossed the line, between the two ticks.
+        let crossed_at = clock.filter(|_| crossed_finish_line).map(|(from, to)| {
+            let weight = (1.0 - f64::from(previous_pct)) / f64::from(to_pct - previous_pct);
+
+            from + (to - from) * weight
+        });
+
+        // The completed lap's last metres are filed before it is committed.
+        self.fill_skipped(previous, to_unwrapped, sample, 0..bucket_count);
+
+        if let (Some(times), Some(lap_start)) = (clock, self.lap_start_session_time) {
+            self.stamp_centres((previous_pct, to_pct), times, lap_start, 0..bucket_count);
+        }
 
         if crossed_finish_line {
             // A lap that could not be timed is dropped rather than queued, and
@@ -358,17 +504,27 @@ impl Processor for ReferenceLapProcessor {
             });
 
             self.reset_for_new_lap();
-        }
+            self.lap_start_session_time = crossed_at;
 
-        if let Some(last) = self.last_bucket {
-            if bucket > last + 1 {
-                for skipped in (last + 1)..bucket {
-                    self.working[skipped] = sample;
-                }
+            // The new lap's first metres, from the line up to the car.
+            self.fill_skipped(
+                previous,
+                to_unwrapped,
+                sample,
+                bucket_count..2 * bucket_count,
+            );
+
+            if let (Some(times), Some(lap_start)) = (clock, crossed_at) {
+                self.stamp_centres(
+                    (previous_pct, to_pct),
+                    times,
+                    lap_start,
+                    bucket_count..2 * bucket_count,
+                );
             }
         }
 
-        self.working[bucket] = sample;
+        self.write_bucket(bucket, sample);
         self.last_bucket = Some(bucket);
 
         if (BASELINE_SAMPLE_LOW..BASELINE_SAMPLE_HIGH).contains(&lap_dist_pct) {
@@ -1182,5 +1338,130 @@ mod tests {
         let session2 = make_session(2);
         drive_segment(&mut proc, &session2, 0.005, 0.995);
         assert!(cross_line(&mut proc, &session2, 95.0).is_some());
+    }
+
+    /// One tick at `session_time` on the sim's clock.
+    fn run_timed_tick(
+        proc: &mut ReferenceLapProcessor,
+        session: &SessionSnapshot,
+        lap_dist_pct: f32,
+        session_time: f64,
+        speed: f32,
+        last_lap_time: Option<f32>,
+    ) -> Option<ComputedOutput> {
+        let dynamics = make_dynamics(speed);
+        let inputs = make_inputs(1.0, 0.0);
+        let lap_timing = make_lap_timing(lap_dist_pct, last_lap_time);
+        let car_status = make_car_status();
+        let car_idx = make_car_idx();
+        let start_pos = HashMap::new();
+        let chassis = ChassisFrame::default();
+        let environment = EnvironmentFrame::default();
+        let mut ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
+        ctx.session_time = Some(session_time);
+
+        proc.compute(&ctx)
+    }
+
+    /// A lap of `LAP_S` seconds at a steady pace, ticked at 30 Hz from
+    /// `from_s` to `to_s` on a clock that started at the line at `0.0`;
+    /// returns the first output.
+    fn drive_timed(
+        proc: &mut ReferenceLapProcessor,
+        session: &SessionSnapshot,
+        (from_s, to_s): (f64, f64),
+        last_lap_time: Option<f32>,
+    ) -> Option<ComputedOutput> {
+        const LAP_S: f64 = 100.0;
+        const TICK_S: f64 = 1.0 / 30.0;
+        // Off the bucket grid, so no tick lands on a bucket centre.
+        const OFFSET_S: f64 = 0.0123;
+
+        let mut tick = (from_s / TICK_S).ceil() as i64;
+
+        loop {
+            let at = tick as f64 * TICK_S + OFFSET_S;
+
+            if at > to_s {
+                return None;
+            }
+
+            let pct = (at / LAP_S).rem_euclid(1.0) as f32;
+            // A lap time is far longer than the session clock here; offset it
+            // so the clock reads like a session already under way.
+            let output = run_timed_tick(proc, session, pct, 1000.0 + at, 37.0, last_lap_time);
+
+            if output.is_some() {
+                return output;
+            }
+
+            tick += 1;
+        }
+    }
+
+    // Integrated from speed, the time between two points carried the error of
+    // every bucket on the way; stamped off the clock it is what it was.
+    #[test]
+    fn each_bucket_carries_the_time_the_car_passed_its_centre() {
+        let mut proc = ReferenceLapProcessor::default();
+        let session = make_session(1);
+
+        // Joined before the line, then a full lap and a little more until the
+        // sim publishes its time.
+        assert!(drive_timed(&mut proc, &session, (-5.0, 100.5), None).is_none());
+
+        match drive_timed(&mut proc, &session, (100.5, 102.0), Some(100.0)) {
+            Some(ComputedOutput::ReferenceLap(data)) => {
+                for bucket in [0, 1, 500, 998, 999] {
+                    let expected = (bucket as f32 + 0.5) / 10.0;
+                    let time = data.samples[bucket].time_into_lap.expect("timed");
+
+                    assert!(
+                        (time - expected).abs() < 1e-3,
+                        "bucket {bucket}: {time} against {expected}"
+                    );
+                }
+
+                assert!(data.samples.iter().all(|sample| sample.speed == 37.0));
+            }
+            other => panic!("expected ReferenceLap output, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn a_lap_joined_part_way_has_no_clock() {
+        let mut proc = ReferenceLapProcessor::default();
+        let session = make_session(1);
+
+        drive_timed(&mut proc, &session, (30.0, 60.0), None);
+
+        assert_eq!(proc.working[400].time_into_lap, None);
+    }
+
+    // The flat fill moved every skipped bucket to where the car was a tick later.
+    #[test]
+    fn skipped_buckets_run_along_the_line_between_two_ticks() {
+        let mut proc = ReferenceLapProcessor::default();
+        let session = make_session(1);
+        let dry = EnvironmentFrame::default();
+
+        run_tick_at_speed(&mut proc, &session, 0.1005, None, &dry, 10.0);
+        run_tick_at_speed(&mut proc, &session, 0.1045, None, &dry, 30.0);
+
+        let speeds: Vec<f32> = (101..=104)
+            .map(|bucket| proc.working[bucket].speed)
+            .collect();
+
+        assert_eq!(speeds, vec![15.0, 20.0, 25.0, 30.0]);
     }
 }

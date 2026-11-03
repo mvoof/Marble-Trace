@@ -4,8 +4,11 @@ import type { ReferenceLapSample } from '@shared/contracts/generated/bindings';
 import {
   createTraceWindowBuffers,
   fillTraceWindow,
+  integrateBucketTimes,
+  type LapSource,
   NO_VALUE,
   phaseTime,
+  referenceTimesByBucket,
   traceValueRange,
   TRACE_POINT_COUNT,
   type TraceWindowBuffers,
@@ -39,11 +42,12 @@ const fullThrottle = (): Float32Array => new Float32Array(BUCKET_COUNT).fill(1);
 const emptyLap = (): Float32Array =>
   new Float32Array(BUCKET_COUNT).fill(NO_VALUE);
 
+/** Both laps timed by their speeds, the way a preview is. */
 const fill = (
   buffers: TraceWindowBuffers,
   overrides: Partial<Parameters<typeof fillTraceWindow>[1]> = {}
-) =>
-  fillTraceWindow(buffers, {
+) => {
+  const params = {
     referenceSamples: referenceLap(50),
     ownSpeedByBucket: ownLap(50),
     ownBrakeByBucket: noBrake(),
@@ -52,7 +56,23 @@ const fill = (
     trackLengthM: TRACK_LENGTH_M,
     windowMeters: WINDOW_M,
     ...overrides,
+  };
+  const ownTimeByBucket = new Float64Array(BUCKET_COUNT);
+
+  integrateBucketTimes(
+    params.ownSpeedByBucket,
+    params.trackLengthM,
+    ownTimeByBucket
+  );
+
+  return fillTraceWindow(buffers, {
+    ...params,
+    referenceTimeByBucket: params.referenceSamples
+      ? referenceTimesByBucket(params.referenceSamples, params.trackLengthM)
+      : null,
+    ownTimeByBucket,
   });
+};
 
 const laterBy = (own: number | null, reference: number | null) =>
   own !== null && reference !== null ? own - reference : null;
@@ -474,30 +494,52 @@ describe('corner phases', () => {
 });
 
 describe('phaseTime', () => {
-  const STEP_M = (WINDOW_M * 2) / (TRACE_POINT_COUNT - 1);
+  const CAR_PCT = 0.5;
+  const BUCKET_M = TRACK_LENGTH_M / BUCKET_COUNT;
 
-  /** A window whose running delta is `deltaAt(offset)` behind the car, from `traceFromM` on. */
-  const windowWithDelta = (
+  /**
+   * A lap whose clock runs `deltaAt(offset)` behind the reference's at every
+   * bucket centre the car has passed, driven at 40 m/s from `traceFromM` on.
+   */
+  const lapWithDelta = (
     deltaAt: (offsetM: number) => number,
-    traceFromM = -WINDOW_M
-  ): TraceWindowBuffers => {
-    const buffers = createTraceWindowBuffers();
+    traceFromM = -TRACK_LENGTH_M / 4
+  ): LapSource => {
+    const referenceTimeByBucket = new Float64Array(BUCKET_COUNT);
+    const ownTimeByBucket = new Float64Array(BUCKET_COUNT).fill(NO_VALUE);
+    const ownSpeedByBucket = emptyLap();
 
-    for (let index = 0; index < TRACE_POINT_COUNT; index++) {
-      const offsetM = -WINDOW_M + index * STEP_M;
+    for (let bucket = 0; bucket < BUCKET_COUNT; bucket++) {
+      const startM = (bucket / BUCKET_COUNT - CAR_PCT) * TRACK_LENGTH_M;
+      const centreM = startM + BUCKET_M / 2;
+      // Any clock will do: only differences are read.
+      const referenceTime = bucket * 0.1;
 
-      const recorded = offsetM <= 0 && offsetM >= traceFromM;
+      referenceTimeByBucket[bucket] = referenceTime;
 
-      buffers.offsetM[index] = offsetM;
-      buffers.ownSpeed[index] = recorded ? 40 : NO_VALUE;
-      buffers.timeDeltaS[index] = recorded ? deltaAt(offsetM) : NO_VALUE;
+      if (startM <= 0 && startM + BUCKET_M >= traceFromM) {
+        ownSpeedByBucket[bucket] = 40;
+      }
+
+      if (centreM <= 0 && centreM >= traceFromM) {
+        ownTimeByBucket[bucket] = 7 + referenceTime + deltaAt(centreM);
+      }
     }
 
-    return buffers;
+    return {
+      referenceSamples: referenceLap(40),
+      referenceTimeByBucket,
+      ownSpeedByBucket,
+      ownBrakeByBucket: noBrake(),
+      ownThrottleByBucket: fullThrottle(),
+      ownTimeByBucket,
+      currentDistPct: CAR_PCT,
+      trackLengthM: TRACK_LENGTH_M,
+    };
   };
 
   // Losing a hundredth every 10 m from 60 m behind the car on.
-  const losing = windowWithDelta((offsetM) =>
+  const losing = lapWithDelta((offsetM) =>
     offsetM < -60 ? 0 : (offsetM + 60) * 0.001
   );
 
@@ -515,8 +557,8 @@ describe('phaseTime', () => {
     expect(time?.deltaS).toBeCloseTo(0.04, 6);
   });
 
-  it('reads between the drawn samples', () => {
-    // Neither end on the 2.5 m grid.
+  it('reads between the bucket centres', () => {
+    // Neither end on the 4 m bucket grid.
     expect(phaseTime(losing, -41.3, -21.3)?.deltaS).toBeCloseTo(0.02, 6);
   });
 
@@ -537,35 +579,76 @@ describe('phaseTime', () => {
     expect(time?.deltaS).toBeCloseTo(0.003, 6);
   });
 
-  it('has nothing once the phase start has left the window', () => {
-    expect(phaseTime(losing, -WINDOW_M - 10, -20)).toBeNull();
+  // Read off the window, a phase whose start had scrolled out of it lost its
+  // figure, and one longer than the window never got one.
+  it('keeps the time of a phase longer than the window', () => {
+    const time = phaseTime(losing, -WINDOW_M - 150, -20);
+
+    expect(time?.kind).toBe('settled');
+    expect(time?.deltaS).toBeCloseTo(0.04, 6);
   });
 
   it('has nothing for a phase this lap has no sample of its own in', () => {
-    const unrecorded = windowWithDelta(() => 0);
+    const unrecorded = lapWithDelta(() => 0);
 
-    unrecorded.ownSpeed.fill(NO_VALUE);
+    unrecorded.ownSpeedByBucket.fill(NO_VALUE);
 
     expect(phaseTime(unrecorded, -40, -20)).toBeNull();
   });
 
   it('has nothing for a phase the car all but stopped in', () => {
     // Spun, stopped or towed: tens of seconds that say nothing about the driving.
-    const stopped = windowWithDelta((offsetM) => (offsetM + 150) * 0.5);
+    const stopped = lapWithDelta((offsetM) => (offsetM + 150) * 0.5);
 
-    for (let index = 0; index < TRACE_POINT_COUNT; index++) {
-      stopped.ownSpeed[index] =
-        (stopped.offsetM[index] ?? 0) <= 0 ? 0.5 : NO_VALUE;
-    }
+    stopped.ownSpeedByBucket.forEach((speed, bucket) => {
+      stopped.ownSpeedByBucket[bucket] = Number.isNaN(speed) ? speed : 0.5;
+    });
 
     expect(phaseTime(stopped, -40, -20)).toBeNull();
   });
 
   it('has nothing for a phase this lap was not seen to drive', () => {
     // Parked, reset or towed: the trace starts after the phase does.
-    const shortTrace = windowWithDelta(() => 0, -10);
+    const shortTrace = lapWithDelta(() => 0, -10);
 
     expect(phaseTime(shortTrace, -40, -20)).toBeNull();
+  });
+
+  it('has nothing for a phase across the line, driven on the lap before', () => {
+    const justOver = { ...losing, currentDistPct: 0.002 };
+
+    expect(phaseTime(justOver, -40, -2)).toBeNull();
+  });
+});
+
+describe('referenceTimesByBucket', () => {
+  const sample = (
+    speed: number,
+    timeIntoLap: number | null = null
+  ): ReferenceLapSample => ({
+    speed,
+    throttle: 1,
+    brake: 0,
+    latAccel: null,
+    longAccel: null,
+    steeringWheelAngle: 0,
+    timeIntoLap,
+  });
+
+  it('reads the times the lap was recorded with', () => {
+    const samples = [sample(50, 0.1), sample(50, 0.2), sample(50, 0.3)];
+
+    expect(Array.from(referenceTimesByBucket(samples, 30))).toEqual([
+      0.1, 0.2, 0.3,
+    ]);
+  });
+
+  // A reference stored before it carried times has only its speeds.
+  it('times a lap recorded without them by its speeds', () => {
+    // Three 10 m buckets at 10 m/s: 1 s apart.
+    const samples = [sample(10), sample(10, 0.5), sample(10)];
+
+    expect(Array.from(referenceTimesByBucket(samples, 30))).toEqual([0, 1, 2]);
   });
 });
 
