@@ -9,7 +9,12 @@ import { LapFlash } from './LapFlash/LapFlash';
 import styles from './DeltaWidget.module.scss';
 import type { DeltaWidgetSettings } from './settings-schema';
 
-export const DeltaWidget = observer(() => {
+interface Props {
+  /** Holds the reference label on screen, for a story to show it. */
+  previewAnnouncement?: boolean;
+}
+
+export const DeltaWidget = observer(({ previewAnnouncement }: Props) => {
   const lapStore = useBackendComputedStore();
   const { dragMode } = useAppSettingsStore();
 
@@ -60,7 +65,7 @@ export const DeltaWidget = observer(() => {
     <div className={styles.container}>
       {!showFlash && (
         <div className={styles.deltaWrapper}>
-          <DeltaLive />
+          <DeltaLive previewAnnouncement={previewAnnouncement} />
         </div>
       )}
 

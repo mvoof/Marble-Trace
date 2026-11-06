@@ -19,7 +19,4 @@
   // every box border-box, so padding on a slot-sized number would eat into the
   // slots its own text reserved.
   padding-inline: sp(lg);
-  // Callers shift the plate by its margin while its width animates; the two
-  // have to move on the same clock or the number drifts mid-transition.
-  transition: margin-right 140ms ease-out;
 }

@@ -27,7 +27,12 @@ const DELTA_CLASS = {
   neutral: styles.neutral,
 };
 
-export const DeltaLive = observer(() => {
+interface Props {
+  /** Holds the reference label on screen, for a story to show it. */
+  previewAnnouncement?: boolean;
+}
+
+export const DeltaLive = observer(({ previewAnnouncement = false }: Props) => {
   const { lapTiming } = usePlayerStore();
   const { reference, hideWhenNoReference, showGauge } =
     useWidgetSettings<DeltaWidgetSettings>('delta');
@@ -84,10 +89,12 @@ export const DeltaLive = observer(() => {
     };
   }, [announcing, reference]);
 
+  const labelShown = announcing || previewAnnouncement;
+
   // The announcement outranks the no-reference hiding: a switch wipes the
   // latch, so the widget would otherwise vanish at the very moment it has
   // something to say.
-  if (hideWhenNoReference && !hasHadReference && !announcing) {
+  if (hideWhenNoReference && !hasHadReference && !labelShown) {
     return null;
   }
 
@@ -95,25 +102,22 @@ export const DeltaLive = observer(() => {
 
   return (
     <div className={styles.root}>
-      <DeltaPlate className={announcing ? styles.plateAnnouncing : ''}>
-        {/* The badge stays mounted and only opens its box, so an announcement
-            widens the plate once and a second press inside it changes two
-            letters and nothing else — no height moves either way. */}
+      <div className={styles.plateSlot}>
         <span
-          className={`${styles.badge} ${announcing ? styles.badgeShown : ''}`}
-          aria-hidden={!announcing}
+          className={`${styles.referenceLabel} ${labelShown ? styles.referenceLabelShown : ''}`}
+          aria-hidden={!labelShown}
         >
-          <span className={styles.badgeText}>
-            {DELTA_REFERENCE_BADGE[reference]}
-          </span>
+          {DELTA_REFERENCE_BADGE[reference]}
         </span>
 
-        <span
-          className={`${styles.delta} ${DELTA_CLASS[getDeltaState(delta)]}`}
-        >
-          {formatDelta(delta)}
-        </span>
-      </DeltaPlate>
+        <DeltaPlate>
+          <span
+            className={`${styles.delta} ${DELTA_CLASS[getDeltaState(delta)]}`}
+          >
+            {formatDelta(delta)}
+          </span>
+        </DeltaPlate>
+      </div>
 
       {showGauge && (
         <div className={styles.gaugeSlot}>

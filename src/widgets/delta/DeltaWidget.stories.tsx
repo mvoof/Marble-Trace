@@ -12,9 +12,17 @@ import type { LapDeltaReference } from '@shared/contracts/widget-choices';
 /** Long enough that the flash is still up while the story is being looked at. */
 const HELD_FLASH_S = 999;
 
+/** A bright sim image behind a widget whose background is fully transparent. */
+const BRIGHT_SIM_FRAME = {
+  width: 320,
+  background: '#e8edf2',
+  widgetBg: 'transparent',
+};
+
 interface StoryArgs {
   reference: LapDeltaReference;
   showLapFlash: boolean;
+  previewAnnouncement: boolean;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -26,6 +34,7 @@ const meta: Meta<StoryArgs> = {
       height: 100,
       background: 'transparent',
       border: 'none',
+      overflow: 'visible',
     },
     seed: (store, args) => {
       store.liveWidgets.updateUserSettings('delta', {
@@ -35,7 +44,11 @@ const meta: Meta<StoryArgs> = {
         flashDuration: HELD_FLASH_S,
       });
     },
-    args: { reference: 'personal_best', showLapFlash: false },
+    args: {
+      reference: 'personal_best',
+      showLapFlash: false,
+      previewAnnouncement: false,
+    },
     argTypes: {
       reference: {
         control: 'select',
@@ -60,6 +73,23 @@ export const Default: Story = {
 
 export const Behind: Story = {
   parameters: previewScenario('delta-behind'),
+};
+
+// The label shown after a reference switch, held so it can be looked at: the
+// Reference control walks every label.
+export const ReferenceSwitch: Story = {
+  name: 'Reference Switch',
+  parameters: previewScenario('delta-ahead'),
+  args: { previewAnnouncement: true },
+};
+
+export const ReferenceSwitchBrightSim: Story = {
+  name: 'Reference Switch: Bright Sim, Transparent Widget',
+  parameters: {
+    ...previewScenario('delta-ahead'),
+    widgetFrame: BRIGHT_SIM_FRAME,
+  },
+  args: { previewAnnouncement: true },
 };
 
 // The lap has just been banked as a best, which is the only state the flash is

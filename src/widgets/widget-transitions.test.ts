@@ -17,9 +17,7 @@ const STATE_CHANGE_TRANSITIONS: Record<string, string> = {
   'close-battle/BattleAxis.module.scss':
     'the axis rescales when the battle range changes, not every frame',
   'delta/DeltaLive/DeltaLive.module.scss':
-    'the plate resizes when the number gains or loses a digit',
-  'delta/DeltaPlate/DeltaPlate.module.scss':
-    'moves with DeltaLive on the same digit-count change',
+    'the reference label shows on a key press and leaves once',
   'drs/DrsWidget.module.scss': 'DRS available / open is a state',
   'engine-panel/EnginePanelWidget.module.scss':
     'warning lights switch on and off',
