@@ -1,3 +1,4 @@
+import { TrackSurface } from '@shared/contracts/domain';
 import { describe, expect, it } from 'vitest';
 
 import type { FlagType } from '@shared/contracts/domain';
@@ -291,6 +292,42 @@ describe('the driver roster', () => {
 // the close pack is only right if both widgets end up describing the same grid.
 // The assertions are about what is in the store, never about how the builder
 // composed it.
+describe('the team-race scenario', () => {
+  it('names the teams only in a team event', () => {
+    const teamRace = seed('team-race').session.sessionInfo;
+    const baseline = seed('baseline').session.sessionInfo;
+
+    expect(teamRace?.teamRacing).toBe(true);
+    expect(baseline?.teamRacing).not.toBe(true);
+
+    const playerCar = teamRace?.cars.find(
+      (car) => car.carIdx === teamRace.playerCarIdx
+    );
+
+    expect(playerCar?.teamName).toBe('Marble Trace');
+  });
+
+  it('reaches the rows through the roster', () => {
+    const entries = seed('team-race').backendComputed.fieldEntries;
+
+    expect(entries.length).toBeGreaterThan(0);
+    expect(entries.every((entry) => entry.teamName !== '')).toBe(true);
+  });
+
+  it('races the whole recorded field, several classes in it', () => {
+    const entries = seed('team-race').backendComputed.fieldEntries;
+    const classes = new Set(entries.map((entry) => entry.carClassId));
+
+    expect(classes.size).toBeGreaterThan(1);
+    expect(
+      entries.every((entry) => entry.trackSurface === TrackSurface.OnTrack)
+    ).toBe(true);
+    expect(entries.map((entry) => entry.position)).toEqual(
+      entries.map((_entry, index) => index + 1)
+    );
+  });
+});
+
 describe('the close-pack scenario', () => {
   it('packs the field inside a second', () => {
     const entries = seed('field-close-pack').backendComputed.fieldEntries;

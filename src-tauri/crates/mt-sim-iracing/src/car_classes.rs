@@ -156,6 +156,20 @@ mod tests {
             .collect()
     }
 
+    // A class the sim names after the series, seen in a NEC team event: one car
+    // missing from the map would hand the whole class that name.
+    #[test]
+    fn badges_a_series_named_tcr_class() {
+        let mut cars = vec![
+            make_car(0, 4101, 147, "Honda Civic Type R TCR", "NECTCR 2026"),
+            make_car(1, 4101, 210, "Audi RS3 LMS Gen2 TCR", "NECTCR 2026"),
+        ];
+
+        apply_class_badges(&mut cars);
+
+        assert_eq!(badges(&cars), ["TCR", "TCR"]);
+    }
+
     /// The roster of a real AI race (Monza, 2026-09-23): the sim named no class.
     #[test]
     fn badges_an_ai_race_the_sim_left_unnamed() {

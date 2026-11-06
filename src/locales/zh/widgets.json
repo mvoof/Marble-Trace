@@ -577,6 +577,8 @@
       "driversBehindDesc": "当你无法显示在表格顶部时，在你后方显示的行数。前后都为 0 时，仅将你的行固定在底部。",
       "showBrand": "车辆品牌标志",
       "showBrandDesc": "车手姓名旁的厂商徽章。",
+      "showTeamName": "车队名称",
+      "showTeamNameDesc": "在车队赛事中于车手姓名下方显示车队。行高会略有增加。",
       "showTire": "轮胎配方",
       "showTireDesc": "当前轮胎类型的可视化指示器。",
       "showLicBadge": "驾照徽章",

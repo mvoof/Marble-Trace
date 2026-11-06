@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Team Names in Standings:** In team events the team sits under the driver's name, in a smaller size. The name steps down a size so rows grow as little as possible, and a setting switches it off.
+
+### Changed
+
+- **Delta:** A new look, with the reference switch in its own block left of the plate.
+
+### Fixed
+
+- **TCR Badge:** A TCR class with the Audi RS3 LMS Gen2 in it is badged TCR, not by the series name the sim gives it.
+
 ## [0.28.0] — 2026-11-03
 
 ### Added

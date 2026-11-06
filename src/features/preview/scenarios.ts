@@ -9,7 +9,12 @@ import type {
 import type { PreviewScenarioId } from '@shared/contracts/preview-scenarios';
 import { action } from 'mobx';
 import type { PreviewTarget } from './preview-target';
-import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';
+import {
+  seedSampleTelemetry,
+  syncFlagDisplay,
+  teamRaceSnapshot,
+} from './sample-telemetry';
+import { computeDriverEntries } from './mocks/driver-entries';
 import { mockFlags } from './mocks/flags';
 import {
   mockPitCarStatus,
@@ -19,8 +24,10 @@ import {
 } from './mocks/pit';
 import { mockFuel } from './mocks/fuel';
 import { mockSafetyRating } from './mocks/safety-rating';
-import { respaceField } from './field-seed';
+import { respaceField, seedField } from './field-seed';
 import {
+  mockCarPositions,
+  mockField,
   mockIncidents,
   mockPaceCarEntry,
   mockPaceCarFrame,
@@ -357,6 +364,44 @@ const applySessionClock = (
   });
 };
 
+/** Close enough to read as racing, far enough for the gap column to differ. */
+const TEAM_RACE_GAP_S = 1.2;
+
+/**
+ * A recorded team event's roster, raced. The cars, teams and classes are the
+ * recording's; it was taken in practice with half the field in the garage, so
+ * the session stays the baseline's race and `mockField` puts every car on track.
+ */
+const applyTeamRace = (store: PreviewTarget) => {
+  const baseInfo = store.session.sessionInfo;
+  const { sessionInfo: recordedInfo, carIdx: recordedCarIdx } =
+    teamRaceSnapshot;
+
+  if (!baseInfo || !recordedInfo) {
+    return;
+  }
+
+  store.session.updateSessionInfo({
+    ...recordedInfo,
+    currentSessionNum: baseInfo.currentSessionNum,
+    // Results are keyed by car index, which means another car in this roster.
+    sessions: baseInfo.sessions.map((entry) => ({
+      ...entry,
+      resultsPositions: [],
+    })),
+    qualifyResults: [],
+  });
+
+  // Hardly anyone had a position yet, so the running order is the entry order.
+  const roster = computeDriverEntries(recordedCarIdx, recordedInfo).sort(
+    (first, second) => first.carIdx - second.carIdx
+  );
+  const field = mockField(roster, { gapS: TEAM_RACE_GAP_S });
+
+  seedField(store, field);
+  store.cars.updateCarPositions(mockCarPositions(field.entries));
+};
+
 /**
  * Who the scenario is offered to. A `'widget'` scenario states one domain and
  * belongs to the widgets that declare it; a `'session'` scenario states a whole
@@ -656,6 +701,14 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       applyCoachReference(store, { atPct: 0.5, deltaKmh: 0 });
       store.referenceLap.updateReferenceLap(mockReferenceLapWithoutCorners());
       seedCoachAdvisory(store, { inactiveReason: 'no-corners' });
+    },
+  },
+  {
+    id: 'team-race',
+    label: 'Team race',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyTeamRace(store);
     },
   },
   {

@@ -94,8 +94,9 @@ const CAR_ID_BADGES: &[(i32, &str)] = &[
     // TCR
     (112, TCR),
     (146, TCR),
-    (147, TCR),
+    (147, TCR), // Honda Civic Type R TCR — verified
     (153, TCR),
+    (210, TCR), // Audi RS3 LMS Gen2 TCR — verified
     // Formula 1
     (145, F1), // Mercedes W12 — verified
     (161, F1), // Mercedes-AMG W13 E Performance — verified

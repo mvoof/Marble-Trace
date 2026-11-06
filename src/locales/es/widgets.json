@@ -577,6 +577,8 @@
       "driversBehindDesc": "Filas mostradas detrás de ti cuando ya no cabes en la parte alta de la tabla. Con 0 delante y 0 detrás, tu fila queda sola al final.",
       "showBrand": "Logo de la marca del coche",
       "showBrandDesc": "Distintivo del fabricante junto al nombre del piloto.",
+      "showTeamName": "Nombre del equipo",
+      "showTeamNameDesc": "El equipo bajo el nombre del piloto en eventos por equipos. Las filas son un poco más altas.",
       "showTire": "Compuesto de neumático",
       "showTireDesc": "Indicador visual del tipo de neumático actual.",
       "showLicBadge": "Distintivo de licencia",

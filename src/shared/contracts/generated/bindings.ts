@@ -107,6 +107,12 @@ export type CarDynamicsFrame = {
 export type CarEntry = {
   carIdx: number;
   userName: string;
+  /**
+   * iRacing's `TeamName`, a free-text name the sim fills in itself with
+   * `Team <driver>` when the team never picked one. The same for every driver
+   * of a car; only means something when `SessionSnapshot::team_racing` is set.
+   */
+  teamName: string;
   carNumber: string;
   /**
    * iRacing's `CarID` — the car model. Keys the class badge map

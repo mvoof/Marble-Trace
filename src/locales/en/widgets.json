@@ -577,6 +577,8 @@
       "driversBehindDesc": "Rows shown behind you when you no longer fit in the top of the table. 0 ahead and 0 behind pins your row alone at the bottom.",
       "showBrand": "Vehicle Brand Logo",
       "showBrandDesc": "Manufacturer badge next to driver name.",
+      "showTeamName": "Team Name",
+      "showTeamNameDesc": "The team under the driver name in team events. Rows get a little taller.",
       "showTire": "Tire Compound",
       "showTireDesc": "Visual indicator of current tire type.",
       "showLicBadge": "License Badge",

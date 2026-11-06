@@ -148,6 +148,15 @@ export const ThirdClass: Story = {
   args: { settings: { viewMode: 'cycling' }, activeClassIndex: 2 },
 };
 
+export const TeamRace: Story = {
+  parameters: previewScenario('team-race'),
+};
+
+export const TeamRaceWideRows: Story = {
+  parameters: previewScenario('team-race'),
+  args: { settings: { rowPadding: 'wide' } },
+};
+
 export const WithPitBadges: Story = {
   args: { rows: MOCK_PIT_ROWS },
 };

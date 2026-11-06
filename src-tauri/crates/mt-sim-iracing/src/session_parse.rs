@@ -202,6 +202,7 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
             Some(CarEntry {
                 car_idx: raw_driver.car_idx?,
                 user_name: raw_driver.user_name.unwrap_or_default(),
+                team_name: raw_driver.team_name.unwrap_or_default().trim().to_string(),
                 car_number: raw_driver.car_number.unwrap_or_default(),
                 car_id: raw_driver.car_id.unwrap_or(-1),
                 car_class_id: raw_driver.car_class_id.unwrap_or(-1),
@@ -491,6 +492,7 @@ struct RawDriverInfo {
 struct RawDriver {
     car_idx: Option<i32>,
     user_name: Option<String>,
+    team_name: Option<String>,
     car_number: Option<String>,
     #[serde(rename = "CarID")]
     car_id: Option<i32>,
@@ -767,6 +769,7 @@ QualifyResultsInfo:
 
         assert_eq!(parsed.snapshot.cars.len(), 1);
         assert_eq!(parsed.snapshot.cars[0].user_name, "? ?");
+        assert_eq!(parsed.snapshot.cars[0].team_name, "O'Brien: Racing");
     }
 
     #[test]

@@ -189,6 +189,10 @@ pub struct ResultPosition {
 pub struct CarEntry {
     pub car_idx: i32,
     pub user_name: String,
+    /// iRacing's `TeamName`, a free-text name the sim fills in itself with
+    /// `Team <driver>` when the team never picked one. The same for every driver
+    /// of a car; only means something when `SessionSnapshot::team_racing` is set.
+    pub team_name: String,
     pub car_number: String,
     /// iRacing's `CarID` — the car model. Keys the class badge map
     /// (`mt-sim-iracing/src/car_badges.rs`).
