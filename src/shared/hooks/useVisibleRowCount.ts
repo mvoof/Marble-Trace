@@ -39,6 +39,11 @@ export const useVisibleRowCount = <T extends HTMLElement>(
       return;
     }
 
+    let observedRow: HTMLElement | null = null;
+    // A row can change height with the container standing still — a setting or
+    // a session type that adds a line — so the row itself is watched too.
+    const rowRo = new ResizeObserver(() => remeasure());
+
     const measure = () => {
       let rowPx = 0;
       let firstReal: HTMLElement | null = null;
@@ -51,6 +56,15 @@ export const useVisibleRowCount = <T extends HTMLElement>(
             (c): c is HTMLElement =>
               c instanceof HTMLElement && !c.className.includes('Placeholder')
           ) ?? null;
+      }
+
+      if (firstReal !== observedRow) {
+        rowRo.disconnect();
+        observedRow = firstReal;
+
+        if (firstReal) {
+          rowRo.observe(firstReal);
+        }
       }
 
       // getBoundingClientRect is scaled by ancestor CSS transforms (the layout
@@ -123,6 +137,7 @@ export const useVisibleRowCount = <T extends HTMLElement>(
       cancelAnimationFrame(rafId2);
       clearTimeout(t1);
       clearTimeout(t2);
+      rowRo.disconnect();
       ro.disconnect();
       rootRo.disconnect();
       mo.disconnect();
