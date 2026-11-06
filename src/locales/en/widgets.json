@@ -188,7 +188,8 @@
       "showGauge": "Show delta gauge",
       "lapCompletedCard": "Lap Completed Card",
       "showLapFlash": "Show after lap",
-      "flashDuration": "Display duration: {{seconds}}s"
+      "flashDuration": "Display duration: {{seconds}}s",
+      "referenceLabelDuration": "Reference name shown for: {{seconds}}s"
     },
     "fuel": {
       "analyticsAndWarnings": "Analytics & Warnings",

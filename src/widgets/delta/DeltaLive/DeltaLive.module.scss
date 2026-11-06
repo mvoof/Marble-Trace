@@ -26,12 +26,9 @@
   max-width: none;
 }
 
-// The reference, shown for a moment after it is switched. It carries its own
-// opaque ground: the plate's follows --widget-bg, which may be fully transparent
-// over a bright sim image, and this has to be read at a glance either way.
-//
-// As tall as the plate, and of a fixed width: the letters differ in width, and
-// a second press inside the window changes them and nothing else.
+// The reference, shown for a moment after it is switched: a square as tall as
+// the plate, on the same user-set ground and border. The letters differ in
+// width and the box does not, so a second press changes them and nothing else.
 .referenceLabel {
   position: absolute;
   top: 0;
@@ -40,7 +37,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 4ch;
+  aspect-ratio: 1;
   margin-right: sp(xs);
   font-family: $font-widget;
   font-size: fs(xxl);
@@ -48,9 +45,9 @@
   line-height: 1;
   letter-spacing: 0.04em;
   color: $widget-text-primary;
-  background: $widget-surface-solid;
-  border: 1px solid $widget-border-default;
-  border-radius: 999px;
+  background: var(--widget-bg);
+  border: 1px solid var(--widget-border);
+  border-radius: radius(lg);
   opacity: 0;
   transition: opacity 120ms ease-out;
 }
@@ -70,7 +67,6 @@
   // `pre` keeps that padding so the glyphs never move or shrink, and the box
   // reserves the widest possible reading up front.
   white-space: pre;
-  padding-block: sp(sm);
 }
 
 .ahead {

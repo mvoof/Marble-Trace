@@ -17,9 +17,7 @@ import { DeltaPlate } from '../DeltaPlate/DeltaPlate';
 import styles from './DeltaLive.module.scss';
 import type { DeltaWidgetSettings } from '../settings-schema';
 
-// Long enough to be read out of the corner of the eye on a straight, short
-// enough that the number stands alone again before the next braking point.
-const REFERENCE_SWITCH_MS = 1500;
+const MS_PER_SECOND = 1000;
 
 const DELTA_CLASS = {
   ahead: styles.ahead,
@@ -34,7 +32,7 @@ interface Props {
 
 export const DeltaLive = observer(({ previewAnnouncement = false }: Props) => {
   const { lapTiming } = usePlayerStore();
-  const { reference, hideWhenNoReference, showGauge } =
+  const { reference, hideWhenNoReference, showGauge, referenceLabelDuration } =
     useWidgetSettings<DeltaWidgetSettings>('delta');
 
   const liveDelta = getGameDelta(lapTiming, reference);
@@ -82,12 +80,12 @@ export const DeltaLive = observer(({ previewAnnouncement = false }: Props) => {
     // restarts the window instead of letting the first one close it early.
     const timer = setTimeout(() => {
       setAnnouncing(false);
-    }, REFERENCE_SWITCH_MS);
+    }, referenceLabelDuration * MS_PER_SECOND);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [announcing, reference]);
+  }, [announcing, reference, referenceLabelDuration]);
 
   const labelShown = announcing || previewAnnouncement;
 

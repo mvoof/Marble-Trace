@@ -60,10 +60,6 @@ $widget-surface-raised: plate(rgba(255, 255, 255, 0.05));
 // than inside a panel — a see-through row loses its own edges against a corner.
 $widget-surface-plate: plate(#17181c);
 
-// Opaque whatever the widget's background is set to, for a label that has to
-// stay legible on a fully transparent widget.
-$widget-surface-solid: #17181c;
-
 // The same plate lit rather than flat: a vertical fall from a lifted top edge
 // to a floor darker than the flat plate, so a free-standing row reads as a
 // physical tab over the track instead of a rectangle of paint. The tab that

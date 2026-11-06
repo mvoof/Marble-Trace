@@ -18,7 +18,7 @@ export const PANEL_WIDGET_IDS = ['delta'];
 
 const { DependentBlock } = panelRows<DeltaWidgetSettings>();
 const { Row } = schemaRows(DELTA_SETTINGS);
-const { flashDuration } = DELTA_SETTINGS.shape;
+const { flashDuration, referenceLabelDuration } = DELTA_SETTINGS.shape;
 
 const referenceDescOf = (t: TFunction): Record<LapDeltaReference, string> => ({
   personal_best: t('settingsPanels.delta.referenceDesc.personalBest'),
@@ -62,6 +62,21 @@ export const DeltaSettingsPanel = observer(() => {
           <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
             {referenceDescOf(t)[settings.reference]}
           </div>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldLabel}>
+            {t('settingsPanels.delta.referenceLabelDuration', {
+              seconds: settings.referenceLabelDuration,
+            })}
+          </div>
+          <Slider
+            min={referenceLabelDuration.min}
+            max={referenceLabelDuration.max}
+            step={1}
+            value={settings.referenceLabelDuration}
+            onChange={(value) => update({ referenceLabelDuration: value })}
+          />
         </div>
       </Card>
 

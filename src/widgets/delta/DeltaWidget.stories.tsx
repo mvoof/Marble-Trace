@@ -12,12 +12,11 @@ import type { LapDeltaReference } from '@shared/contracts/widget-choices';
 /** Long enough that the flash is still up while the story is being looked at. */
 const HELD_FLASH_S = 999;
 
-/** A bright sim image behind a widget whose background is fully transparent. */
-const BRIGHT_SIM_FRAME = {
-  width: 320,
-  background: '#e8edf2',
-  widgetBg: 'transparent',
-};
+/** The shipped plate colour: the frame stays clear, as the overlay's does. */
+const STORY_WIDGET_BG = 'rgba(21, 22, 26, 0.8)';
+
+/** A bright sim image behind the widget. */
+const BRIGHT_SIM_FRAME = { width: 320, background: '#e8edf2' };
 
 interface StoryArgs {
   reference: LapDeltaReference;
@@ -33,6 +32,7 @@ const meta: Meta<StoryArgs> = {
       width: 200,
       height: 100,
       background: 'transparent',
+      widgetBg: STORY_WIDGET_BG,
       border: 'none',
       overflow: 'visible',
     },
@@ -84,7 +84,7 @@ export const ReferenceSwitch: Story = {
 };
 
 export const ReferenceSwitchBrightSim: Story = {
-  name: 'Reference Switch: Bright Sim, Transparent Widget',
+  name: 'Reference Switch: Bright Sim',
   parameters: {
     ...previewScenario('delta-ahead'),
     widgetFrame: BRIGHT_SIM_FRAME,

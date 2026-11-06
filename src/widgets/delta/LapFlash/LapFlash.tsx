@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import { formatLapTime } from '@shared/lib/telemetry-format';
 import { formatDelta, getDeltaState } from '@shared/lib/delta-utils';
+import { DeltaPlate } from '../DeltaPlate/DeltaPlate';
 import styles from './LapFlash.module.scss';
 
 interface Props {
@@ -40,42 +41,46 @@ export const LapFlash = observer(
 
     return (
       <div className={styles.root} style={animationStyle}>
-        <svg
-          className={styles.ring}
-          viewBox="0 0 22 22"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <circle
-            className={styles.ringTrack}
-            cx="11"
-            cy="11"
-            r={RING_RADIUS}
-          />
-          <circle
-            className={`${styles.ringProgress} ${isBest ? styles.ringBest : ''}`}
-            cx="11"
-            cy="11"
-            r={RING_RADIUS}
-            strokeDasharray={RING_CIRCUMFERENCE}
-            style={
-              {
-                ...animationStyle,
-                '--ring-length': RING_CIRCUMFERENCE,
-              } as unknown as CSSProperties
-            }
-          />
-        </svg>
+        <DeltaPlate>
+          <div className={styles.content}>
+            <svg
+              className={styles.ring}
+              viewBox="0 0 22 22"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle
+                className={styles.ringTrack}
+                cx="11"
+                cy="11"
+                r={RING_RADIUS}
+              />
+              <circle
+                className={`${styles.ringProgress} ${isBest ? styles.ringBest : ''}`}
+                cx="11"
+                cy="11"
+                r={RING_RADIUS}
+                strokeDasharray={RING_CIRCUMFERENCE}
+                style={
+                  {
+                    ...animationStyle,
+                    '--ring-length': RING_CIRCUMFERENCE,
+                  } as unknown as CSSProperties
+                }
+              />
+            </svg>
 
-        <div className={`${styles.lapTime} ${isBest ? styles.best : ''}`}>
-          {formatLapTime(lapTime)}
-        </div>
+            <div className={`${styles.lapTime} ${isBest ? styles.best : ''}`}>
+              {formatLapTime(lapTime)}
+            </div>
 
-        <div
-          className={`${styles.delta} ${DELTA_CLASS[getDeltaState(personalDelta)]}`}
-        >
-          {formatDelta(personalDelta)}
-        </div>
+            <div
+              className={`${styles.delta} ${DELTA_CLASS[getDeltaState(personalDelta)]}`}
+            >
+              {formatDelta(personalDelta)}
+            </div>
+          </div>
+        </DeltaPlate>
       </div>
     );
   }

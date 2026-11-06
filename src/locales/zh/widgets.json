@@ -188,7 +188,8 @@
       "showGauge": "显示差值刻度条",
       "lapCompletedCard": "圈速完成卡片",
       "showLapFlash": "圈后显示",
-      "flashDuration": "显示时长：{{seconds}} 秒"
+      "flashDuration": "显示时长：{{seconds}} 秒",
+      "referenceLabelDuration": "基准名称显示时长：{{seconds}} 秒"
     },
     "fuel": {
       "analyticsAndWarnings": "分析与警告",
