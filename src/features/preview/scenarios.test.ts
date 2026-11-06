@@ -291,6 +291,30 @@ describe('the driver roster', () => {
 // the close pack is only right if both widgets end up describing the same grid.
 // The assertions are about what is in the store, never about how the builder
 // composed it.
+describe('the team-race scenario', () => {
+  it('names the teams only in a team event', () => {
+    const teamRace = seed('team-race').session.sessionInfo;
+    const baseline = seed('baseline').session.sessionInfo;
+
+    expect(teamRace?.teamRacing).toBe(true);
+    expect(baseline?.teamRacing).not.toBe(true);
+
+    const playerCar = teamRace?.cars.find(
+      (car) => car.carIdx === teamRace.playerCarIdx
+    );
+
+    expect(playerCar?.teamName).toBe('Marble Trace');
+  });
+
+  it('reaches the rows through the roster', () => {
+    const entries = seed('team-race').backendComputed.fieldEntries;
+    const named = entries.filter((entry) => entry.teamName !== '');
+
+    expect(named.length).toBeGreaterThan(0);
+    expect(named.length).toBeLessThan(entries.length);
+  });
+});
+
 describe('the close-pack scenario', () => {
   it('packs the field inside a second', () => {
     const entries = seed('field-close-pack').backendComputed.fieldEntries;

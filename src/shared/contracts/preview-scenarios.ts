@@ -39,6 +39,7 @@ export type PreviewScenarioId =
   | 'driving-coach-grip'
   | 'driving-coach-inactive'
   | 'field-close-pack'
+  | 'team-race'
   | 'incident-limit'
   | 'incident-clean'
   | 'incident-minor'

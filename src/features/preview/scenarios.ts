@@ -1,5 +1,6 @@
 import type {
   CarDynamicsFrame,
+  CarEntry,
   CarStatusFrame,
   PitTargetFrame,
   RaceFlags,
@@ -357,6 +358,51 @@ const applySessionClock = (
   });
 };
 
+const BLANK_TEAM_CAR_IDX = 12;
+
+const PREVIEW_TEAM_NAMES = [
+  'Apex Motorsport',
+  'Northern Lights Endurance Racing Academy',
+  'Redline Works',
+];
+
+/**
+ * A team event as the sim reports one: the player's own team, picked names, the
+ * longest of them past the name column, and the `Team <driver>` the sim fills
+ * in itself. The one blank states the row a team name is missing from.
+ */
+const applyTeamRace = (store: PreviewTarget) => {
+  const sessionInfo = store.session.sessionInfo;
+
+  if (!sessionInfo) {
+    return;
+  }
+
+  const teamNameOf = (car: CarEntry): string => {
+    if (car.carIdx === sessionInfo.playerCarIdx) {
+      return 'Marble Trace';
+    }
+
+    if (car.carIdx === BLANK_TEAM_CAR_IDX) {
+      return '';
+    }
+
+    return (
+      PREVIEW_TEAM_NAMES[car.carIdx % (PREVIEW_TEAM_NAMES.length * 2)] ??
+      `Team ${car.userName}`
+    );
+  };
+
+  store.session.updateSessionInfo({
+    ...sessionInfo,
+    teamRacing: true,
+    cars: sessionInfo.cars.map((car) => ({
+      ...car,
+      teamName: teamNameOf(car),
+    })),
+  });
+};
+
 /**
  * Who the scenario is offered to. A `'widget'` scenario states one domain and
  * belongs to the widgets that declare it; a `'session'` scenario states a whole
@@ -656,6 +702,14 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       applyCoachReference(store, { atPct: 0.5, deltaKmh: 0 });
       store.referenceLap.updateReferenceLap(mockReferenceLapWithoutCorners());
       seedCoachAdvisory(store, { inactiveReason: 'no-corners' });
+    },
+  },
+  {
+    id: 'team-race',
+    label: 'Team race',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyTeamRace(store);
     },
   },
   {

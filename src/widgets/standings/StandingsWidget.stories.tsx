@@ -34,17 +34,7 @@ interface StoryArgs {
   rows?: MockFieldRows;
   /** The player on the radio, on this channel. */
   playerOnRadio?: RadioChannel;
-  /** A team event: every car carries a team, the last ones the sim's default. */
-  teamRace?: boolean;
 }
-
-/** One name long enough to show the ellipsis in the name column. */
-const MOCK_TEAM_NAMES = [
-  'Marble Trace',
-  'Williams Esports',
-  'Nürburgring eSports Young Guns Academy',
-  'SSmotorsport',
-];
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/StandingsWidget',
@@ -82,23 +72,6 @@ const meta: Meta<StoryArgs> = {
           ),
           pushToTalk: true,
         });
-      }
-
-      if (args.teamRace) {
-        const session = store.session.sessionInfo;
-
-        if (session) {
-          store.session.updateSessionInfo({
-            ...session,
-            teamRacing: true,
-            cars: session.cars.map((car) => ({
-              ...car,
-              teamName:
-                MOCK_TEAM_NAMES[car.carIdx] ??
-                (car.carIdx % 3 === 0 ? '' : `Team ${car.userName}`),
-            })),
-          });
-        }
       }
 
       if (args.activeClassIndex !== undefined) {
@@ -176,11 +149,12 @@ export const ThirdClass: Story = {
 };
 
 export const TeamRace: Story = {
-  args: { teamRace: true },
+  parameters: previewScenario('team-race'),
 };
 
 export const TeamRaceWideRows: Story = {
-  args: { teamRace: true, settings: { rowPadding: 'wide' } },
+  parameters: previewScenario('team-race'),
+  args: { settings: { rowPadding: 'wide' } },
 };
 
 export const WithPitBadges: Story = {

@@ -31,6 +31,7 @@ export const STANDINGS_MANIFEST: WidgetManifest = {
   // to the weather widget itself.
   previewScenarios: [
     'field-close-pack',
+    'team-race',
     'incident-limit',
     'rain',
     'heavy-rain',
