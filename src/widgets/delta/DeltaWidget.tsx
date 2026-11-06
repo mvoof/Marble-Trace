@@ -3,10 +3,7 @@ import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
-import {
-  getDeltaToPreviousBest,
-  getPreviousBestLapTime,
-} from '@shared/lib/delta-utils';
+import { getDeltaToPreviousBest } from '@shared/lib/delta-utils';
 import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';
 import styles from './DeltaWidget.module.scss';
@@ -59,9 +56,6 @@ export const DeltaWidget = observer(({ previewAnnouncement }: Props) => {
       ? historyEntry.lapTime
       : 0;
   const flashIsBest = historyEntry?.isBest ?? false;
-  const flashBestLapTime = lap
-    ? getPreviousBestLapTime(lapStore.lapHistory, lap.lapNum)
-    : null;
   const flashPersonalDelta =
     lap && flashLapTime > 0
       ? getDeltaToPreviousBest(lapStore.lapHistory, lap.lapNum, flashLapTime)
@@ -81,7 +75,6 @@ export const DeltaWidget = observer(({ previewAnnouncement }: Props) => {
             key={String(lap.lapNum)}
             lapTime={flashLapTime}
             isBest={flashIsBest}
-            bestLapTime={flashBestLapTime}
             personalDelta={flashPersonalDelta}
             duration={flashDuration}
           />

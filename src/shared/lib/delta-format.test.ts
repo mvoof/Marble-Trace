@@ -5,7 +5,6 @@ import {
   DELTA_SLOTS,
   formatDelta,
   getDeltaToPreviousBest,
-  getPreviousBestLapTime,
   resolveGaugeRange,
 } from './delta-utils';
 
@@ -32,21 +31,10 @@ describe('formatDelta', () => {
   });
 });
 
-const entry = (lapNum: number, lapTime: number | null): LapHistoryEntry =>
-  ({ lapNum, lapTime, delta: null, isBest: false }) as LapHistoryEntry;
-describe('getPreviousBestLapTime', () => {
-  it('reads the fastest lap before the given one, not that lap itself', () => {
-    const history = [entry(1, 91.2), entry(2, 90.5), entry(3, 89.1)];
-
-    expect(getPreviousBestLapTime(history, 3)).toBe(90.5);
-  });
-
-  it('has nothing to report on the first lap', () => {
-    expect(getPreviousBestLapTime([entry(1, 91.2)], 1)).toBeNull();
-  });
-});
-
 describe('getDeltaToPreviousBest', () => {
+  const entry = (lapNum: number, lapTime: number | null): LapHistoryEntry =>
+    ({ lapNum, lapTime, delta: null, isBest: false }) as LapHistoryEntry;
+
   it('compares against the best lap excluding the one just completed', () => {
     const history = [entry(3, 89.1), entry(2, 90.5), entry(1, 91.2)];
 

@@ -9,8 +9,6 @@ interface Props {
   lapTime: number;
   /** Personal best at the time the lap was recorded — colors the lap time. */
   isBest: boolean;
-  /** Best lap before this one, which is what `personalDelta` is measured to. */
-  bestLapTime?: number | null;
   /**
    * Gap to the driver's own best lap before this one. For a new personal best
    * this is how much the old mark was beaten by, not a meaningless zero.
@@ -33,7 +31,6 @@ export const LapFlash = observer(
   ({
     lapTime,
     isBest,
-    bestLapTime = null,
     personalDelta = null,
     duration = 5,
     preview = false,
@@ -76,14 +73,6 @@ export const LapFlash = observer(
             <div className={`${styles.lapTime} ${isBest ? styles.best : ''}`}>
               {formatLapTime(lapTime)}
             </div>
-
-            {bestLapTime !== null && (
-              <div
-                className={`${styles.bestLapTime} ${isBest ? '' : styles.best}`}
-              >
-                {formatLapTime(bestLapTime)}
-              </div>
-            )}
 
             <div
               className={`${styles.delta} ${DELTA_CLASS[getDeltaState(personalDelta)]}`}

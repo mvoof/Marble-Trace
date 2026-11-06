@@ -105,39 +105,21 @@ export const BestLap: Story = {
 export const FlashCloseToBest: Story = {
   name: 'Flash: Close To Best',
   render: () => (
-    <LapFlash
-      lapTime={89.526}
-      bestLapTime={89.342}
-      personalDelta={0.184}
-      isBest={false}
-      preview
-    />
+    <LapFlash lapTime={89.526} personalDelta={0.184} isBest={false} preview />
   ),
 };
 
 export const FlashBehind: Story = {
   name: 'Flash: Behind',
   render: () => (
-    <LapFlash
-      lapTime={91.123}
-      bestLapTime={89.158}
-      personalDelta={1.965}
-      isBest={false}
-      preview
-    />
+    <LapFlash lapTime={91.123} personalDelta={1.965} isBest={false} preview />
   ),
 };
 
 export const FlashNewBest: Story = {
   name: 'Flash: New Best',
   render: () => (
-    <LapFlash
-      lapTime={89.342}
-      bestLapTime={89.683}
-      personalDelta={-0.341}
-      isBest
-      preview
-    />
+    <LapFlash lapTime={89.342} personalDelta={-0.341} isBest preview />
   ),
 };
 

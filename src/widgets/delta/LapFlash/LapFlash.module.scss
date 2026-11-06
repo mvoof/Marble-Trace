@@ -7,13 +7,13 @@
   animation: lapFlashFade linear forwards;
 }
 
-// Every value at the live number's size, so the plate grows around them. Set
-// flush right: the digits are monospace, so the decimals stack in one column.
-// The side padding keeps the first line clear of the countdown in the corner.
+// The lap time at the live number's size and the delta a step under it, with
+// the plate growing around them. The side padding keeps the first line clear of
+// the countdown in the corner.
 .content {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   padding-inline: sp(xl);
 }
@@ -70,8 +70,7 @@
 
 // No "NEW BEST" caption: the lap time's own color carries the rank, the same
 // way it does in LapLog and SectorMatrix.
-.lapTime,
-.bestLapTime {
+.lapTime {
   font-family: $font-mono;
   font-size: fs(xxxl);
   font-weight: 700;
@@ -81,19 +80,13 @@
   white-space: nowrap;
 }
 
-// The old mark, once this lap has beaten it. While it stands it is the best
-// lap and takes that colour below.
-.bestLapTime {
-  color: $widget-label;
-}
-
 .best {
   color: $widget-text-best-lap;
 }
 
 .delta {
   font-family: $font-mono;
-  font-size: fs(xxxl);
+  font-size: fs(xxl);
   font-weight: 700;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
