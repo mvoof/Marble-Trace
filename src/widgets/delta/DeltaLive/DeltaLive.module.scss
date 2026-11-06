@@ -17,62 +17,43 @@
   margin-inline: -50%;
 }
 
-// What the badge adds to the plate when it opens: its own box plus the gap
-// between it and the number.
-$badge-slot: 32 + 8;
-
-// The plate is centred, so a badge opening on its left would push the number
-// right by half of what it added. The same measure as a right margin moves the
-// centred box back by exactly that half, which pins the plate's right edge —
-// and with it the number — while the plate grows leftwards alone.
-.plateAnnouncing {
-  margin-right: ws($badge-slot);
+// Sized by the plate alone, and as wide as it is: the label hangs out of this
+// box, so nothing the label does can reach the plate or the widget's size.
+.plateSlot {
+  position: relative;
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: none;
 }
 
-// The reference badge, shown for a moment after the reference is switched. It
-// is never unmounted: the box opens and closes instead, so the plate grows once
-// per announcement and a second press inside one costs no layout at all. The
-// badge is shorter than the number's line box, so the widget's height is the
-// number's whether the badge is open or shut.
-//
-// Aligned on the digits' baseline rather than the centre of their line box:
-// the box reserves room under the baseline for descenders the digits never
-// use, so a small pill centred in it reads as sitting too high next to them.
-.badge {
+// The reference, shown for a moment after it is switched: a square as tall as
+// the plate, on the same user-set ground and border. The letters differ in
+// width and the box does not, so a second press changes them and nothing else.
+.referenceLabel {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: baseline;
-  flex: 0 0 auto;
-  width: 0;
-  padding-block: sp(xxs);
-  margin-right: 0;
-  overflow: hidden;
-  opacity: 0;
-  background: color-mix(in srgb, $widget-text-primary 12%, transparent);
-  border-radius: radius(md);
-  transition:
-    width 140ms ease-out,
-    margin-right 140ms ease-out,
-    opacity 120ms ease-out;
-}
-
-.badgeShown {
-  // Two letters at fs(sm) plus a square's worth of air on each side. A fixed
-  // measure, not the text's own: every badge is two characters, and a width
-  // the content decides could not be transitioned.
-  width: ws(32);
-  margin-right: sp(sm);
-  opacity: 1;
-}
-
-.badgeText {
+  aspect-ratio: 1;
+  margin-right: sp(xs);
   font-family: $font-widget;
-  font-size: fs(sm);
+  font-size: fs(xxl);
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.06em;
-  color: $widget-text-secondary;
+  letter-spacing: 0.04em;
+  color: $widget-text-primary;
+  background: var(--widget-bg);
+  border: 1px solid var(--widget-border);
+  border-radius: radius(lg);
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.referenceLabelShown {
+  opacity: 1;
 }
 
 .delta {
@@ -86,7 +67,6 @@ $badge-slot: 32 + 8;
   // `pre` keeps that padding so the glyphs never move or shrink, and the box
   // reserves the widest possible reading up front.
   white-space: pre;
-  padding-block: sp(sm);
 }
 
 .ahead {

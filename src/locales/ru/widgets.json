@@ -188,7 +188,8 @@
       "showGauge": "Показывать шкалу дельты",
       "lapCompletedCard": "Карточка завершения круга",
       "showLapFlash": "Показывать после круга",
-      "flashDuration": "Длительность показа: {{seconds}} с"
+      "flashDuration": "Длительность показа: {{seconds}} с",
+      "referenceLabelDuration": "Показ названия эталона: {{seconds}} с"
     },
     "fuel": {
       "analyticsAndWarnings": "Аналитика и предупреждения",

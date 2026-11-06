@@ -188,7 +188,8 @@
       "showGauge": "Mostrar el indicador de delta",
       "lapCompletedCard": "Tarjeta de vuelta completada",
       "showLapFlash": "Mostrar al terminar la vuelta",
-      "flashDuration": "Duración en pantalla: {{seconds}} s"
+      "flashDuration": "Duración en pantalla: {{seconds}} s",
+      "referenceLabelDuration": "Nombre de la referencia en pantalla: {{seconds}} s"
     },
     "fuel": {
       "analyticsAndWarnings": "Análisis y avisos",

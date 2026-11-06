@@ -3,23 +3,24 @@
 // background-as-border would then show through the whole plate instead of
 // tracing its edge.
 //
-// Sized by its content and never clamped to the widget (a column flex item
-// otherwise is) — a reading always occupies the same DELTA_SLOTS monospace
-// slots, so that measure is both constant and exact.
+// DELTA_SLOTS monospace slots of the live number wide and one of its lines tall
+// at the least, which is exactly what the live number takes. The lap flash grows
+// it both ways. Never clamped to the widget, as a column flex item otherwise is.
 .plate {
+  position: relative;
+  box-sizing: content-box;
   display: flex;
   align-items: center;
+  justify-content: center;
   width: max-content;
+  min-width: 7ch;
+  min-height: 1.2em;
   max-width: none;
   flex: 0 0 auto;
+  padding: sp(sm) sp(lg);
+  font-family: $font-mono;
+  font-size: fs(xxxl);
   background: var(--widget-bg);
   border: 1px solid var(--widget-border);
-  border-radius: 999px;
-  // The side padding belongs to the plate, not to the numbers: the reset makes
-  // every box border-box, so padding on a slot-sized number would eat into the
-  // slots its own text reserved.
-  padding-inline: sp(lg);
-  // Callers shift the plate by its margin while its width animates; the two
-  // have to move on the same clock or the number drifts mid-transition.
-  transition: margin-right 140ms ease-out;
+  border-radius: radius(lg);
 }
