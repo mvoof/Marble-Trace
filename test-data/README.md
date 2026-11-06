@@ -8,6 +8,7 @@ Storybook.
 | File                                       | Contents                                                                            |
 | ------------------------------------------ | ----------------------------------------------------------------------------------- |
 | `telemetry-snapshot-2026-09-07_02-13.json` | iRacing telemetry snapshot — realistic multi-car session (drivers, classes, timing) |
+| `team-race-snapshot.json`                  | A team event's practice, `raw` removed — the roster behind the `team-race` scenario |
 
 The snapshot is loaded by the neutral preview fixture
 `src/preview/sample-telemetry.ts` (globbed as `telemetry-snapshot-*.json`,

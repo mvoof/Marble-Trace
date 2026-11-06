@@ -6,6 +6,7 @@ import type {
   ProximityFrame,
 } from '@shared/contracts/generated/bindings';
 import { action } from 'mobx';
+import recordedTeamRace from '../../../test-data/team-race-snapshot.json';
 import { TrackSurface } from '@shared/contracts/domain';
 import type { PreviewTarget } from './preview-target';
 import { computeDriverEntries } from './mocks/driver-entries';
@@ -45,6 +46,13 @@ if (!firstSnapshot) {
 }
 
 export const sampleSnapshot = firstSnapshot as unknown as TelemetrySnapshot;
+
+/**
+ * A team event, recorded. A file of its own, outside the glob above: that one
+ * is the base every widget and test stands on, and this only feeds `team-race`.
+ */
+export const teamRaceSnapshot =
+  recordedTeamRace as unknown as TelemetrySnapshot;
 
 // The recorded snapshot has no chassis / fuel / sector frames (they ride on the
 // 4 Hz tier and aren't captured), so widgets reading them show dashes. Build

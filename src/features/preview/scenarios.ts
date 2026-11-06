@@ -1,6 +1,5 @@
 import type {
   CarDynamicsFrame,
-  CarEntry,
   CarStatusFrame,
   PitTargetFrame,
   RaceFlags,
@@ -10,7 +9,12 @@ import type {
 import type { PreviewScenarioId } from '@shared/contracts/preview-scenarios';
 import { action } from 'mobx';
 import type { PreviewTarget } from './preview-target';
-import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';
+import {
+  seedSampleTelemetry,
+  syncFlagDisplay,
+  teamRaceSnapshot,
+} from './sample-telemetry';
+import { computeDriverEntries } from './mocks/driver-entries';
 import { mockFlags } from './mocks/flags';
 import {
   mockPitCarStatus,
@@ -20,8 +24,10 @@ import {
 } from './mocks/pit';
 import { mockFuel } from './mocks/fuel';
 import { mockSafetyRating } from './mocks/safety-rating';
-import { respaceField } from './field-seed';
+import { respaceField, seedField } from './field-seed';
 import {
+  mockCarPositions,
+  mockField,
   mockIncidents,
   mockPaceCarEntry,
   mockPaceCarFrame,
@@ -358,49 +364,42 @@ const applySessionClock = (
   });
 };
 
-const BLANK_TEAM_CAR_IDX = 12;
-
-const PREVIEW_TEAM_NAMES = [
-  'Apex Motorsport',
-  'Northern Lights Endurance Racing Academy',
-  'Redline Works',
-];
+/** Close enough to read as racing, far enough for the gap column to differ. */
+const TEAM_RACE_GAP_S = 1.2;
 
 /**
- * A team event as the sim reports one: the player's own team, picked names, the
- * longest of them past the name column, and the `Team <driver>` the sim fills
- * in itself. The one blank states the row a team name is missing from.
+ * A recorded team event's roster, raced. The cars, teams and classes are the
+ * recording's; it was taken in practice with half the field in the garage, so
+ * the session stays the baseline's race and `mockField` puts every car on track.
  */
 const applyTeamRace = (store: PreviewTarget) => {
-  const sessionInfo = store.session.sessionInfo;
+  const baseInfo = store.session.sessionInfo;
+  const { sessionInfo: recordedInfo, carIdx: recordedCarIdx } =
+    teamRaceSnapshot;
 
-  if (!sessionInfo) {
+  if (!baseInfo || !recordedInfo) {
     return;
   }
 
-  const teamNameOf = (car: CarEntry): string => {
-    if (car.carIdx === sessionInfo.playerCarIdx) {
-      return 'Marble Trace';
-    }
-
-    if (car.carIdx === BLANK_TEAM_CAR_IDX) {
-      return '';
-    }
-
-    return (
-      PREVIEW_TEAM_NAMES[car.carIdx % (PREVIEW_TEAM_NAMES.length * 2)] ??
-      `Team ${car.userName}`
-    );
-  };
-
   store.session.updateSessionInfo({
-    ...sessionInfo,
-    teamRacing: true,
-    cars: sessionInfo.cars.map((car) => ({
-      ...car,
-      teamName: teamNameOf(car),
+    ...recordedInfo,
+    currentSessionNum: baseInfo.currentSessionNum,
+    // Results are keyed by car index, which means another car in this roster.
+    sessions: baseInfo.sessions.map((entry) => ({
+      ...entry,
+      resultsPositions: [],
     })),
+    qualifyResults: [],
   });
+
+  // Hardly anyone had a position yet, so the running order is the entry order.
+  const roster = computeDriverEntries(recordedCarIdx, recordedInfo).sort(
+    (first, second) => first.carIdx - second.carIdx
+  );
+  const field = mockField(roster, { gapS: TEAM_RACE_GAP_S });
+
+  seedField(store, field);
+  store.cars.updateCarPositions(mockCarPositions(field.entries));
 };
 
 /**

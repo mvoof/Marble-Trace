@@ -1,3 +1,4 @@
+import { TrackSurface } from '@shared/contracts/domain';
 import { describe, expect, it } from 'vitest';
 
 import type { FlagType } from '@shared/contracts/domain';
@@ -308,10 +309,22 @@ describe('the team-race scenario', () => {
 
   it('reaches the rows through the roster', () => {
     const entries = seed('team-race').backendComputed.fieldEntries;
-    const named = entries.filter((entry) => entry.teamName !== '');
 
-    expect(named.length).toBeGreaterThan(0);
-    expect(named.length).toBeLessThan(entries.length);
+    expect(entries.length).toBeGreaterThan(0);
+    expect(entries.every((entry) => entry.teamName !== '')).toBe(true);
+  });
+
+  it('races the whole recorded field, several classes in it', () => {
+    const entries = seed('team-race').backendComputed.fieldEntries;
+    const classes = new Set(entries.map((entry) => entry.carClassId));
+
+    expect(classes.size).toBeGreaterThan(1);
+    expect(
+      entries.every((entry) => entry.trackSurface === TrackSurface.OnTrack)
+    ).toBe(true);
+    expect(entries.map((entry) => entry.position)).toEqual(
+      entries.map((_entry, index) => index + 1)
+    );
   });
 });
 
