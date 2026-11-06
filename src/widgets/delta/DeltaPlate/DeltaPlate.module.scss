@@ -3,18 +3,18 @@
 // background-as-border would then show through the whole plate instead of
 // tracing its edge.
 //
-// The plate owns its measure: DELTA_SLOTS monospace slots of the live number
-// wide, one of its lines plus air tall. Whatever sits on it — the live number or
-// the lap flash — lands on the same box, and the box is never clamped to the
-// widget (a column flex item otherwise is).
+// DELTA_SLOTS monospace slots of the live number wide and one of its lines tall
+// at the least, which is exactly what the live number takes. The lap flash grows
+// it both ways. Never clamped to the widget, as a column flex item otherwise is.
 .plate {
   position: relative;
   box-sizing: content-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 7ch;
-  height: 1.2em;
+  width: max-content;
+  min-width: 7ch;
+  min-height: 1.2em;
   max-width: none;
   flex: 0 0 auto;
   padding: sp(sm) sp(lg);

@@ -69,12 +69,10 @@ export const formatDelta = (delta: number | null): string => {
   return padSlots(`${sign}>1h`);
 };
 
-// Gap to the driver's own best lap *before* this one, so a new personal best
-// reports how much it beat the old mark by instead of a meaningless 0.000.
-export const getDeltaToPreviousBest = (
+// The driver's own best lap *before* this one.
+export const getPreviousBestLapTime = (
   history: LapHistoryEntry[],
-  lapNum: number,
-  lapTime: number
+  lapNum: number
 ): number | null => {
   const previousTimes = history
     .filter((entry) => entry.lapNum < lapNum && entry.lapTime !== null)
@@ -82,7 +80,21 @@ export const getDeltaToPreviousBest = (
 
   if (previousTimes.length === 0) return null;
 
-  return lapTime - Math.min(...previousTimes);
+  return Math.min(...previousTimes);
+};
+
+// Measured against the best *before* this lap, so a new personal best reports
+// how much it beat the old mark by instead of a meaningless 0.000.
+export const getDeltaToPreviousBest = (
+  history: LapHistoryEntry[],
+  lapNum: number,
+  lapTime: number
+): number | null => {
+  const previousBest = getPreviousBestLapTime(history, lapNum);
+
+  if (previousBest === null) return null;
+
+  return lapTime - previousBest;
 };
 
 // The gauge auto-ranges like the sim's own delta bar: a tight scale while the

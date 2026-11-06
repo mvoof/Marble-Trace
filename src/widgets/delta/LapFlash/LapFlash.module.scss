@@ -7,13 +7,15 @@
   animation: lapFlashFade linear forwards;
 }
 
-// Two lines on the live number's plate, which is why they are smaller than it:
-// the longest lap time, 9:59.999, has to fit its seven slots of larger digits.
+// Every value at the live number's size, so the plate grows around them. Set
+// flush right: the digits are monospace, so the decimals stack in one column.
+// The side padding keeps the first line clear of the countdown in the corner.
 .content {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
+  padding-inline: sp(xl);
 }
 
 @keyframes lapFlashFade {
@@ -68,15 +70,21 @@
 
 // No "NEW BEST" caption: the lap time's own color carries the rank, the same
 // way it does in LapLog and SectorMatrix.
-.lapTime {
+.lapTime,
+.bestLapTime {
   font-family: $font-mono;
-  font-size: fs(xl);
+  font-size: fs(xxxl);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.2;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
   white-space: nowrap;
+}
+
+// The old mark, once this lap has beaten it. While it stands it is the best
+// lap and takes that colour below.
+.bestLapTime {
+  color: $widget-label;
 }
 
 .best {
@@ -85,11 +93,10 @@
 
 .delta {
   font-family: $font-mono;
-  font-size: fs(lg);
+  font-size: fs(xxxl);
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
   // Same fixed-slot contract as the live delta — the flash never reflows.
   white-space: pre;
 }
