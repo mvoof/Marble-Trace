@@ -120,6 +120,7 @@ export const computeDriverEntries = (
     entries.push({
       carIdx: idx,
       userName: car.userName,
+      teamName: car.teamName,
       carNumber: car.carNumber || String(idx),
       carClassId: car.carClassId,
       // Already the resolved badge: the snapshot records the session as the

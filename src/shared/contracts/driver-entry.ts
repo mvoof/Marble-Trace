@@ -14,6 +14,7 @@ import type {
  */
 export const SESSION_CAR_FIELDS = {
   userName: 'userName',
+  teamName: 'teamName',
   carNumber: 'carNumber',
   carClassId: 'carClassId',
   carClassShortName: 'carClassShortName',

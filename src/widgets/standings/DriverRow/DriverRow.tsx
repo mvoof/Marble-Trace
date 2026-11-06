@@ -134,8 +134,14 @@ export const DriverRow = observer(
 
     const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
+    // Every row of a team event takes the second line, an unnamed team too, so
+    // the table keeps one row height while teams come and go.
+    const showsTeamNames =
+      settings.showTeamName && session.sessionInfo?.teamRacing === true;
+
     const rowClass = [
       styles.driverRow,
+      showsTeamNames ? styles.driverRowWithTeam : '',
       settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
       settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
       settings.rowPadding === 'wide' ? styles.rowPaddingWide : '',
@@ -174,6 +180,16 @@ export const DriverRow = observer(
     // One switch mutes every informational column at once, so the row's accent
     // is left to the position, the name and the best lap.
     const dimClass = settings.dimSecondaryColumns ? styles.cellDimmed : '';
+
+    const driverName = (
+      <span
+        className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
+      >
+        {settings.abbreviateNames
+          ? abbreviateName(driver.userName)
+          : driver.userName}
+      </span>
+    );
 
     return (
       <div
@@ -216,13 +232,14 @@ export const DriverRow = observer(
               flagType !== 'none' && <DriverFlagBadge type={flagType} />
             ))}
 
-          <span
-            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
-          >
-            {settings.abbreviateNames
-              ? abbreviateName(driver.userName)
-              : driver.userName}
-          </span>
+          {showsTeamNames ? (
+            <div className={styles.nameStack}>
+              {driverName}
+              <span className={styles.teamName}>{driver.teamName}</span>
+            </div>
+          ) : (
+            driverName
+          )}
 
           {settings.showRadioMark && (
             <RadioMark carIdx={driver.carIdx} onPlayerRow={driver.isPlayer} />

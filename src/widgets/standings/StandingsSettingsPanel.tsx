@@ -210,6 +210,7 @@ export const StandingsSettingsPanel = observer(() => {
         <Row setting="showIrChange" />
         <Row setting="showLapsCompleted" />
         <Row setting="abbreviateNames" />
+        <Row setting="showTeamName" />
         <Row setting="showCountryFlag" />
         <Row setting="showDriverFlags" />
         <Row setting="hideRetiredDrivers" />

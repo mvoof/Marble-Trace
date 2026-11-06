@@ -73,39 +73,40 @@
   justify-content: flex-end;
 }
 
-.rowPaddingNarrow {
-  padding-top: sp(xxxs);
-  padding-bottom: sp(xxxs);
+@mixin row-padding($space) {
+  padding-top: $space;
+  padding-bottom: $space;
 
   .posCell {
-    margin-top: calc(-1 * sp(xxxs));
-    margin-bottom: calc(-1 * sp(xxxs));
-    padding-top: sp(xxxs);
-    padding-bottom: sp(xxxs);
+    margin-top: calc(-1 * #{$space});
+    margin-bottom: calc(-1 * #{$space});
+    padding-top: $space;
+    padding-bottom: $space;
   }
+}
+
+.rowPaddingNarrow {
+  @include row-padding(sp(xxxs));
 }
 
 .rowPaddingMedium {
-  padding-top: sp(xxs);
-  padding-bottom: sp(xxs);
-
-  .posCell {
-    margin-top: calc(-1 * sp(xxs));
-    margin-bottom: calc(-1 * sp(xxs));
-    padding-top: sp(xxs);
-    padding-bottom: sp(xxs);
-  }
+  @include row-padding(sp(xxs));
 }
 
 .rowPaddingWide {
-  padding-top: sp(xs);
-  padding-bottom: sp(xs);
+  @include row-padding(sp(xs));
+}
 
-  .posCell {
-    margin-top: calc(-1 * sp(xs));
-    margin-bottom: calc(-1 * sp(xs));
-    padding-top: sp(xs);
-    padding-bottom: sp(xs);
+// The second line is paid for out of the row's padding, so a team event costs
+// the table as few rows as it can.
+.driverRowWithTeam {
+  &.rowPaddingNarrow,
+  &.rowPaddingMedium {
+    @include row-padding(0px);
+  }
+
+  &.rowPaddingWide {
+    @include row-padding(sp(xxxs));
   }
 }
 
@@ -217,6 +218,31 @@
 
 .driverNamePlayer {
   color: $widget-text-primary;
+}
+
+// Name over team. The name steps down a size so the pair fits the row; the
+// team's box holds its height even with no text, so rows stay one height.
+.nameStack {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.1;
+
+  .driverName {
+    flex: none;
+    font-size: fs(sm);
+  }
+}
+
+.teamName {
+  min-height: 1lh;
+  font-size: fs(xxxs);
+  color: $widget-text-secondary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 // Class badge

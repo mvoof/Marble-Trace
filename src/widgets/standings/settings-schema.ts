@@ -43,6 +43,8 @@ const COLUMNS = {
   showPosChange: bool(true),
   /** Driver's profile country flag, in its own column before the name. */
   showCountryFlag: bool(false),
+  /** The team under the driver's name; a row only grows it in a team event. */
+  showTeamName: bool(true),
   showBrand: bool(true),
   showTire: bool(true),
   showLicBadge: bool(true),

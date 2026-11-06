@@ -36,6 +36,7 @@ export const rosterByCarIdx = (cars: CarEntry[]): Map<number, CarEntry> => {
 const joinedRowOf = (entry: LiveDriverEntry, car: CarEntry): DriverEntry => ({
   ...entry,
   userName: car.userName,
+  teamName: car.teamName,
   carNumber: car.carNumber,
   carClassId: car.carClassId,
   carClassShortName: car.carClassShortName,

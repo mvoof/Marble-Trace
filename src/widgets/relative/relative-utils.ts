@@ -138,6 +138,7 @@ export const buildPaceCarRowEntries = (
       {
         carIdx: idx,
         userName: buildPaceCarRowName(paceCar.userName, pitPhase),
+        teamName: '',
         carNumber: paceCar.carNumber,
         carClassId: paceCar.carClassId,
         carClassShortName: '',
