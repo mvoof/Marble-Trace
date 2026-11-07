@@ -40,7 +40,7 @@ jobs:
           fi
           echo "CHANGELOG.md entry found for $VERSION"
 
-      - name: Verify Tag matches package.json
+      - name: Verify Tag matches version files
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
@@ -55,16 +55,30 @@ jobs:
           # Remove 'v' prefix
           TAG_VERSION="${TAG_NAME#v}"
 
-          # Get version from package.json
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          TAURI_VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          # [package] only: [workspace.package] carries a placeholder version
+          CARGO_VERSION=$(awk -F'"' '/^\[/ { in_package = ($0 == "[package]") } in_package && /^version[[:space:]]*=/ { print $2; exit }' src-tauri/Cargo.toml)
 
           echo "Tag version: $TAG_VERSION"
-          echo "Package version: $PACKAGE_VERSION"
+          echo "package.json version: $PACKAGE_VERSION"
+          echo "tauri.conf.json version: $TAURI_VERSION"
+          echo "Cargo.toml version: $CARGO_VERSION"
 
-          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
-            echo "Error: Tag version ($TAG_VERSION) does not match package.json version ($PACKAGE_VERSION)"
-            exit 1
-          fi
+          MISMATCH=0
+
+          check_version() {
+            if [ "$TAG_VERSION" != "$2" ]; then
+              echo "Error: Tag version ($TAG_VERSION) does not match $1 version ($2)"
+              MISMATCH=1
+            fi
+          }
+
+          check_version "package.json" "$PACKAGE_VERSION"
+          check_version "tauri.conf.json" "$TAURI_VERSION"
+          check_version "Cargo.toml" "$CARGO_VERSION"
+
+          exit "$MISMATCH"
 
   quality-checks:
     name: Quality Checks
