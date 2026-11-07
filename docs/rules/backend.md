@@ -179,7 +179,7 @@ it does, and decides the kind the frontend sees:
 
 ## Packaging and the updater
 
-_Held by: test (the install-mismatch check failing on the bump to 0.29.0); review (NSIS only, the stated `installMode`)._
+_Held by: review (NSIS only, the stated `installMode`)._
 
 **NSIS only.** `bundle.targets` is `["nsis"]` — the `.msi` was dropped in 0.25.0
 and must not come back. The two are separate installers with separate records of
@@ -198,9 +198,3 @@ executable.
 
 `plugins.updater.windows.installMode` is stated explicitly rather than inherited
 from the plugin default.
-
-**Temporary until 0.29.0:** `commands/install.rs` reports at startup that the
-running executable is not the registered installation — the `.msi` migration's
-user-facing half. A test in that file fails on the version bump that reaches
-0.29.0, and its module doc lists every file to delete. Do not extend it; it is
-scheduled to go.

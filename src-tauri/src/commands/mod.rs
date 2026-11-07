@@ -9,7 +9,6 @@ pub mod chat;
 pub mod companions;
 pub mod hotkeys;
 pub mod input;
-pub mod install;
 #[cfg(feature = "dev")]
 pub mod perf;
 pub mod pit;
@@ -86,7 +85,6 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         settings::backup_settings_file,
         settings::settings_file_exists,
         settings::delete_settings_file,
-        install::check_install_integrity,
         pit::run_pit_action,
         pit::set_pit_strategy,
         pit::toggle_pit_auto,

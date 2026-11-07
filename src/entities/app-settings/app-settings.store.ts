@@ -2,7 +2,6 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
-import { checkInstallIntegrity } from '@shared/api/install.service';
 import {
   requestDragMode,
   requestInteractMode,
@@ -23,7 +22,6 @@ import type {
   ChatCommandsConfig,
   ChatDisplay,
   CompanionApp,
-  InstallMismatch,
   InteractHotkeyMode,
   OverlayModes,
   VoiceCrewSettings,
@@ -231,15 +229,6 @@ export class AppSettingsStore {
   settingsLockReason: SettingsLockReason | null = null;
 
   /**
-   * Set when this executable is not the one Windows has on record as installed.
-   * Read once at startup — an installation does not change under a running app.
-   *
-   * Temporary: part of the `.msi` migration, deleted with the rest of it (see
-   * the module doc of `src-tauri/src/commands/install.rs`).
-   */
-  installMismatch: InstallMismatch | null = null;
-
-  /**
    * The overlay's mouse modes. Owned by the hotkey dispatcher in the backend —
    * their keys fire there — and mirrored here from `app://overlay-modes`
    * (`applyOverlayModes`). A setter asks the dispatcher; it never writes these.
@@ -276,12 +265,6 @@ export class AppSettingsStore {
 
     runInAction(() => {
       this.currentVersion = version;
-    });
-
-    const mismatch = await checkInstallIntegrity();
-
-    runInAction(() => {
-      this.installMismatch = mismatch;
     });
 
     if (this.appSettings.autoUpdate) {

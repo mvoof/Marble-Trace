@@ -55,7 +55,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<app::input::InputButtonEvent>()
         .register::<app::input::InputDeviceRemap>()
         .register::<app::input::InputDeviceResolution>()
-        .register::<app::install::InstallMismatch>()
         .register::<computed::lap_log::LapLogFrame>()
         .register::<pit::pit_action::PitAction>()
         .register::<pit::pit_action::TireCorner>()
