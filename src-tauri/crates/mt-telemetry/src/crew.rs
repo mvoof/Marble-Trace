@@ -1,6 +1,7 @@
 //! The engineer on the telemetry thread: the driver's requests resolved
 //! against the frame this tick holds, the same way a pit key is.
 
+use mt_computations::crew::chat_answers;
 use mt_computations::crew::engineer::{
     acknowledge, class_gaps, ordered_tire_count, plan, track_neighbours, CarView, EngineerStep,
     EngineerView,
@@ -25,7 +26,8 @@ pub fn run_crew(
     pit: Option<&dyn PitCommander>,
     crew: Option<&dyn CrewSink>,
 ) {
-    let read_cars = crew.is_some() || !state.pending_previews.is_empty();
+    let read_cars =
+        crew.is_some() || !state.pending_previews.is_empty() || !state.pending_chat.is_empty();
 
     update_view(&mut state.engineer, frame, bundle, session, read_cars);
 
@@ -33,6 +35,7 @@ pub fn run_crew(
     // last read who knows when — the preview waits for the next driver table.
     if crew.is_some() || bundle.driver_entries.is_some() {
         answer_previews(state, session);
+        answer_chat_commands(state, session);
     }
 
     let Some(crew) = crew else {
@@ -111,6 +114,13 @@ fn answer_previews(state: &mut LoopState, session: Option<&SessionSnapshot>) {
             // The tab may have stopped waiting; then nobody needs them.
             let _ = answer.try_send(replies);
         }
+    }
+}
+
+/// A reply nobody waits for any more is dropped.
+fn answer_chat_commands(state: &mut LoopState, session: Option<&SessionSnapshot>) {
+    for (command, answer) in std::mem::take(&mut state.pending_chat) {
+        let _ = answer.try_send(chat_answers::answer(command, &state.engineer, session));
     }
 }
 

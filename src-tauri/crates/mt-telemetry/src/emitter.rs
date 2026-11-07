@@ -22,6 +22,7 @@ use crate::loop_state::LoopState;
 use crate::state::TelemetryServiceState;
 use mt_computations::driving::input_sample::input_sample;
 use mt_computations::field::relative::RelativeFrame;
+use mt_computations::rating::last_race::FinishSource;
 use mt_computations::strategy::pit_actions::{self, ManualOrder, PitActionInput};
 use mt_computations::strategy::pit_auto::{worst_tire_wear, PitAutoCommand, PitAutoInput};
 use mt_computations::strategy::pit_target::resolve_pit_target;
@@ -355,6 +356,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     // that drains it, against the order the sim reports on that same frame.
     run_pit_actions(frame, session_info, state, pit);
     run_crew(frame, &bundle, session_info, state, pit, crew);
+    note_last_race(frame, &bundle, session_info, state, io);
 
     if due.hz10 {
         bundle.chassis = Some(frame.chassis.clone());
@@ -680,6 +682,41 @@ fn measure_size(bundle: &TelemetryBundle) -> (Option<usize>, Duration) {
 #[cfg(not(feature = "dev"))]
 fn measure_size(_bundle: &TelemetryBundle) -> (Option<usize>, Duration) {
     (None, Duration::ZERO)
+}
+
+/// Keeps the record of a race under the flag on disk, on the tier the Safety
+/// Rating arrives on. The record changes as the sim refines the result; a tick
+/// that changes nothing writes nothing.
+fn note_last_race(
+    frame: &SourceFrame,
+    bundle: &TelemetryBundle,
+    session: Option<&SessionSnapshot>,
+    state: &mut LoopState,
+    io: &IoWorker,
+) {
+    let (Some(session), Some(safety_rating)) = (session, bundle.safety_rating.as_ref()) else {
+        return;
+    };
+    let source = FinishSource {
+        session,
+        session_num: frame.session.session_num,
+        session_state: frame.session.session_state,
+        safety_rating,
+        player: state
+            .engineer
+            .questions
+            .entries
+            .iter()
+            .find(|entry| entry.is_player),
+    };
+    let Some(race) = source.last_race() else {
+        return;
+    };
+
+    if state.last_race.as_ref() != Some(&race) {
+        io.save_last_race(race.clone());
+        state.last_race = Some(race);
+    }
 }
 
 /// Removes from `bundle` every demand-gated field the mask does not ask for.

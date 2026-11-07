@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
 import type {
+  ChatCommandsConfig,
   TwitchAccount,
   TwitchDeviceCode,
   TwitchTokenResult,
@@ -40,6 +41,13 @@ export const twitchSignOut = async (): Promise<void> =>
 export const startChatStreamSilent = (config: ChatStreamConfig): void => {
   invoke('start_chat_stream', { config }).catch((error) =>
     console.error('[twitch.service] start_chat_stream failed:', error)
+  );
+};
+
+/** Fire-and-forget, like the connectors: applied with no reconnect. */
+export const setChatCommandsSilent = (config: ChatCommandsConfig): void => {
+  invoke('set_chat_commands', { config }).catch((error) =>
+    console.error('[twitch.service] set_chat_commands failed:', error)
   );
 };
 

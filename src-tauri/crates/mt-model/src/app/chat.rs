@@ -263,3 +263,74 @@ pub const CHAT_IMAGE_SOURCES: [&str; 5] = [
     "https://fonts.gstatic.com",
     "https://www.youtube.com",
 ];
+
+/// What a viewer can ask in the streamer's Twitch chat.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "lowercase")]
+pub enum ChatCommand {
+    Pos,
+    Gap,
+    Lap,
+    Best,
+    Sof,
+    Car,
+    Info,
+    Weather,
+    Lastrace,
+    Fuel,
+}
+
+impl ChatCommand {
+    const ALL: [Self; 10] = [
+        Self::Pos,
+        Self::Gap,
+        Self::Lap,
+        Self::Best,
+        Self::Sof,
+        Self::Car,
+        Self::Info,
+        Self::Weather,
+        Self::Lastrace,
+        Self::Fuel,
+    ];
+
+    /// What a viewer types.
+    pub const fn trigger(self) -> &'static str {
+        match self {
+            Self::Pos => "!pos",
+            Self::Gap => "!gap",
+            Self::Lap => "!lap",
+            Self::Best => "!best",
+            Self::Sof => "!sof",
+            Self::Car => "!car",
+            Self::Info => "!info",
+            Self::Weather => "!weather",
+            Self::Lastrace => "!lastrace",
+            Self::Fuel => "!fuel",
+        }
+    }
+
+    /// The command a chat message opens with, in any case. Words after it
+    /// are ignored.
+    pub fn parse(message: &str) -> Option<Self> {
+        let word = message.split_whitespace().next()?;
+
+        Self::ALL
+            .into_iter()
+            .find(|command| command.trigger().eq_ignore_ascii_case(word))
+    }
+}
+
+/// The chat commands as the streamer set them. Apart from `ChatConfig`:
+/// flipping a switch must not reconnect the chat.
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
+pub struct ChatCommandsConfig {
+    pub enabled: bool,
+    /// How long a command stays quiet after it was let through.
+    pub cooldown_seconds: u32,
+    /// The commands switched on.
+    pub commands: Vec<ChatCommand>,
+}

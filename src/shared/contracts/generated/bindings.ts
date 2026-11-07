@@ -613,6 +613,37 @@ export type ChatBadge = {
 };
 
 /**
+ * What a viewer can ask in the streamer's Twitch chat.
+ */
+export type ChatCommand =
+  | 'pos'
+  | 'gap'
+  | 'lap'
+  | 'best'
+  | 'sof'
+  | 'car'
+  | 'info'
+  | 'weather'
+  | 'lastrace'
+  | 'fuel';
+
+/**
+ * The chat commands as the streamer set them. Apart from `ChatConfig`:
+ * flipping a switch must not reconnect the chat.
+ */
+export type ChatCommandsConfig = {
+  enabled: boolean;
+  /**
+   * How long a command stays quiet after it was let through.
+   */
+  cooldownSeconds: number;
+  /**
+   * The commands switched on.
+   */
+  commands: ChatCommand[];
+};
+
+/**
  * Everything the chat runtime needs to connect, sent from the frontend when
  * the user edits the source settings.
  */

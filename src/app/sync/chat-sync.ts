@@ -1,9 +1,11 @@
 import { reaction, type IReactionDisposer, compareStructural } from 'mobx';
 
 import {
+  setChatCommandsSilent,
   startChatStreamSilent,
   stopChatStreamSilent,
 } from '@shared/api/twitch.service';
+import { chatCommandsConfigOf } from '@entities/app-settings/app-settings.store';
 import { emitStreamChatCleared } from '@shared/api/events.service';
 import type { RendererCore } from '@app/roots/renderer-core';
 
@@ -32,10 +34,13 @@ export const registerChatReactions = (
       // Asked of the layout on screen, not the one in the editor: opening a
       // layout without the chat widget must not tear down the connectors the
       // driver is reading from.
-      enabled: root.liveWidgets.liveWidgets.some(
-        (widget) =>
-          widget.id === STREAM_CHAT_WIDGET_ID && widget.userSettings.enabled
-      ),
+      // Chat commands read chat with no widget on screen.
+      enabled:
+        root.appSettings.appSettings.streamChatCommandsEnabled ||
+        root.liveWidgets.liveWidgets.some(
+          (widget) =>
+            widget.id === STREAM_CHAT_WIDGET_ID && widget.userSettings.enabled
+        ),
       config: {
         twitchChannel: root.appSettings.appSettings.streamChatTwitchChannel,
         youtubeTarget: root.appSettings.appSettings.streamChatYoutubeTarget,
@@ -75,5 +80,13 @@ export const registerChatReactions = (
       void onSave();
     },
     { equals: compareStructural }
+  ),
+  reaction(
+    () => chatCommandsConfigOf(root.appSettings.appSettings),
+    (config) => {
+      setChatCommandsSilent(config);
+      void onSave();
+    },
+    { equals: compareStructural, fireImmediately: true }
   ),
 ];

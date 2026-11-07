@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { BindingsSettings } from '@pages/settings/bindings/BindingsSettings';
 import { DevicesSettings } from '@pages/settings/bindings/DevicesSettings';
-import { StreamChatSourceCard } from '@features/twitch-auth/StreamChatSourceCard/StreamChatSourceCard';
 import { SettingsNav } from './SettingsNav';
 import { GeneralSection } from './sections/GeneralSection';
 import { CompanionAppsSection } from '@features/companion-apps/CompanionAppsSection';
@@ -13,6 +12,7 @@ import { OverlaySection } from './sections/OverlaySection';
 import { InteractionSection } from './sections/InteractionSection';
 import { TrackMapSection } from './sections/TrackMapSection';
 import { SharedValuesSection } from './sections/SharedValuesSection';
+import { StreamChatSection } from './sections/StreamChatSection';
 import { MaintenanceSection } from './sections/MaintenanceSection';
 import { TelemetryInspectorSection } from '@features/telemetry-inspector/TelemetryInspectorSection/TelemetryInspectorSection';
 import { RemoteScreensSection } from '@features/remote-screens/RemoteScreensSection';
@@ -35,7 +35,7 @@ const SECTION_COMPONENTS: Record<SettingsSectionId, () => React.ReactElement> =
     devices: DevicesSettings,
     trackMap: TrackMapSection,
     sharedValues: SharedValuesSection,
-    streamChat: StreamChatSourceCard,
+    streamChat: StreamChatSection,
     remoteScreens: RemoteScreensSection,
     maintenance: MaintenanceSection,
     telemetryInspector: TelemetryInspectorSection,

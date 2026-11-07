@@ -1,0 +1,74 @@
+// Mirrors the SettingsPage card shell. Duplicated rather than imported from
+// the parent: module styles are never shared across components in this project.
+.card {
+  margin-bottom: rem(24);
+  break-inside: avoid;
+}
+
+.cardTitle {
+  color: $sys-text-secondary;
+  font-weight: 500;
+  margin-bottom: rem(12);
+  font-size: rem(11);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.cardContent {
+  background: $sys-bg-card;
+  backdrop-filter: blur(20px);
+  border: 1px solid $sys-border-main;
+  border-radius: 6px;
+  padding: rem(20);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.fieldGroup {
+  padding-bottom: rem(20);
+  margin-bottom: rem(20);
+  border-bottom: 1px solid $sys-border-sub;
+
+  &:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(8);
+}
+
+.fieldTexts {
+  flex: 1;
+  padding-right: rem(24);
+}
+
+.fieldTitle {
+  font-size: rem(14);
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: rem(4);
+}
+
+.commandName {
+  font-family: $font-mono;
+  font-size: rem(14);
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: rem(4);
+}
+
+.fieldDesc {
+  display: block;
+  font-size: rem(12);
+  color: $sys-text-secondary;
+  margin-top: rem(6);
+}
+
+.notice {
+  margin-top: rem(12);
+}

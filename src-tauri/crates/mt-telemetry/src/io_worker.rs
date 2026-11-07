@@ -15,6 +15,7 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use tracing::{error, warn};
 
 use crate::storage;
+use mt_computations::rating::last_race::LastRace;
 use mt_computations::rating::safety_rating::SafetyRatingState;
 use mt_computations::timing::reference_selection::StoredReferences;
 use mt_model::computed::reference_lap::ReferenceLapData;
@@ -45,6 +46,7 @@ enum IoJob {
     SaveTrackShape(TrackShapePayload),
     SaveReferenceLap(Box<ReferenceLapData>),
     SaveSafetyRating(SafetyRatingState),
+    SaveLastRace(LastRace),
     PatchPitLanePct {
         track_id: i32,
         pit_in_pct: f32,
@@ -110,6 +112,10 @@ impl IoWorker {
         self.send(IoJob::SaveSafetyRating(state));
     }
 
+    pub fn save_last_race(&self, race: LastRace) {
+        self.send(IoJob::SaveLastRace(race));
+    }
+
     pub fn patch_pit_lane_pct(&self, track_id: i32, pit_in_pct: f32, pit_exit_pct: f32) {
         self.send(IoJob::PatchPitLanePct {
             track_id,
@@ -163,6 +169,11 @@ impl Worker {
             IoJob::SaveSafetyRating(state) => {
                 if let Some(data_dir) = &self.data_dir {
                     storage::save_safety_rating(data_dir, state);
+                }
+            }
+            IoJob::SaveLastRace(race) => {
+                if let Some(data_dir) = &self.data_dir {
+                    storage::save_last_race(data_dir, race);
                 }
             }
             IoJob::PatchPitLanePct {
@@ -337,6 +348,30 @@ mod tests {
         std::fs::remove_dir_all(&data_dir).ok();
 
         assert_eq!(loaded, vec![Some(42), None, Some(7)]);
+    }
+
+    #[test]
+    fn the_last_race_survives_a_restart_and_the_newest_stands() {
+        let data_dir = temp_data_dir("last-race");
+        let race = |position| LastRace {
+            track: "Spa".into(),
+            position,
+            class_finish: None,
+            incidents: 2,
+            estimated_sr: Some(2.81),
+            estimated_ir: None,
+        };
+
+        assert_eq!(storage::load_last_race(&data_dir), None);
+
+        storage::save_last_race(&data_dir, race(5));
+        storage::save_last_race(&data_dir, race(3));
+
+        let loaded = storage::load_last_race(&data_dir);
+
+        std::fs::remove_dir_all(&data_dir).ok();
+
+        assert_eq!(loaded, Some(race(3)));
     }
 
     fn event_yaml(sub_session_id: i32) -> String {

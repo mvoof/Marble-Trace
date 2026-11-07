@@ -92,6 +92,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         pit::toggle_pit_auto,
         chat::start_chat_stream,
         chat::stop_chat_stream,
+        chat::set_chat_commands,
         chat::twitch_request_device_code,
         chat::twitch_poll_device_token,
         chat::twitch_has_client_id,

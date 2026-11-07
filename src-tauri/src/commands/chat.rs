@@ -5,13 +5,17 @@
 
 use std::sync::Arc;
 
-use tauri::{AppHandle, State};
-use tracing::info;
+use tauri::{AppHandle, Manager, State};
+use tracing::{info, warn};
 
+use crate::chat_host::AppChatHost;
 use crate::sink::TauriSink;
 use mt_chat::state::ChatState;
 use mt_chat::{has_baked_client_id, helix, resolve_client_id, runtime, secrets};
-use mt_model::app::chat::{ChatConfig, TwitchAccount, TwitchDeviceCode, TwitchTokenResult};
+use mt_model::app::chat::{
+    ChatCommandsConfig, ChatConfig, TwitchAccount, TwitchDeviceCode, TwitchTokenResult,
+};
+use mt_telemetry::state::TelemetryState;
 
 const NO_CLIENT_ID: &str = "no twitch client id available";
 
@@ -23,7 +27,22 @@ pub async fn start_chat_stream(
     state: State<'_, ChatState>,
     config: ChatConfig,
 ) -> Result<(), String> {
-    runtime::start(Arc::new(TauriSink(app)), state.service.clone(), config);
+    let data_dir = app
+        .path()
+        .app_data_dir()
+        .inspect_err(|error| warn!("No app data dir, no last race for chat: {error}"))
+        .ok();
+    let host = AppChatHost {
+        telemetry: Arc::clone(&app.state::<TelemetryState>().service),
+        data_dir,
+    };
+
+    runtime::start(
+        Arc::new(TauriSink(app)),
+        state.service.clone(),
+        Arc::new(host),
+        config,
+    );
 
     Ok(())
 }
@@ -33,6 +52,12 @@ pub async fn stop_chat_stream(state: State<'_, ChatState>) -> Result<(), String>
     runtime::stop(&state.service);
 
     Ok(())
+}
+
+/// The streamer's chat command settings. Applied at once, with no reconnect.
+#[tauri::command]
+pub fn set_chat_commands(state: State<'_, ChatState>, config: ChatCommandsConfig) {
+    state.service.set_commands(config);
 }
 
 /// True when the build carries a client id, so the UI knows whether to ask the

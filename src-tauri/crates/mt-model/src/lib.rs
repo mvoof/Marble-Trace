@@ -28,6 +28,8 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<sim::radio::RadioTune>()
         .register::<contract::client_protocol::ClientEnvelope>()
         .register::<contract::client_protocol::RejectedCommand>()
+        .register::<app::chat::ChatCommand>()
+        .register::<app::chat::ChatCommandsConfig>()
         .register::<app::companions::CompanionApp>()
         .register::<app::companions::CompanionStatus>()
         .register::<app::companions::DetectedApp>()
