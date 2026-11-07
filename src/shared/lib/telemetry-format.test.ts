@@ -25,6 +25,11 @@ describe('telemetry-format', () => {
       expect(formatLapTime(5.123)).toBe('5.123');
     });
 
+    it('carries a time rounding up to the minute into it', () => {
+      expect(formatLapTime(59.9996)).toBe('1:00.000');
+      expect(formatLapTime(119.9996)).toBe('2:00.000');
+    });
+
     it('handles null/zero correctly', () => {
       expect(formatLapTime(null)).toBe('--:--.---');
       expect(formatLapTime(0)).toBe('--:--.---');

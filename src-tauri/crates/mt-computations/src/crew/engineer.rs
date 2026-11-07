@@ -5,7 +5,9 @@
 //! pack's. A pit command is confirmed only once it went out, so the driver
 //! never hears "copy" for an order the sim did not take.
 
-use mt_model::app::crew::{CompoundKind, CrewArg, CrewIntent, CrewReply, Quantity};
+use mt_model::app::crew::{
+    minutes_and_seconds, CompoundKind, CrewArg, CrewIntent, CrewReply, Quantity, TENTHS,
+};
 use mt_model::pit::pit_action::{PitAction, TireSet};
 use mt_model::pit::pit_command::PitCommandKind;
 use mt_model::sim::enums::TrackSurface;
@@ -464,18 +466,9 @@ fn lap_reply(key: &str, lap_s: Option<f32>) -> CrewReply {
 }
 
 fn with_lap_time(reply: CrewReply, lap_s: f32) -> CrewReply {
-    let (minutes, seconds) = minutes_and_seconds(lap_s);
-    let seconds = (seconds * 10.0).round() / 10.0;
+    let (minutes, seconds) = minutes_and_seconds(f64::from(lap_s), TENTHS);
 
     reply.number("minutes", minutes).number("seconds", seconds)
-}
-
-/// A lap time split the way it is told.
-pub(crate) fn minutes_and_seconds(lap_s: f32) -> (f64, f64) {
-    let lap = f64::from(lap_s);
-    let minutes = (lap / SECONDS_PER_MINUTE).floor();
-
-    (minutes, lap - minutes * SECONDS_PER_MINUTE)
 }
 
 /// What is left of the session, in the terms it is limited by.

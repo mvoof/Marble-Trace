@@ -102,11 +102,16 @@ export function formatGear(gear: number): string {
   return gear.toString();
 }
 
+const MS_PER_SECOND = 1000;
+const MS_PER_MINUTE = 60_000;
+
 export function formatLapTime(seconds: number | null): string {
   if (seconds === null || seconds <= 0) return '--:--.---';
 
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+  // Rounded before the split: 59.9996 is one minute flat, never 60 seconds.
+  const totalMillis = Math.round(seconds * MS_PER_SECOND);
+  const mins = Math.floor(totalMillis / MS_PER_MINUTE);
+  const secs = (totalMillis % MS_PER_MINUTE) / MS_PER_SECOND;
 
   if (mins > 0) {
     return `${mins}:${secs.toFixed(3).padStart(6, '0')}`;

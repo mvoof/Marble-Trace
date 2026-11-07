@@ -8,12 +8,11 @@
 //! there is no reply at all, which is also what happens outside a session.
 
 use mt_model::app::chat::{ChatCommand, ChatDisplay};
-use mt_model::app::crew::{in_units, Quantity, Units};
+use mt_model::app::crew::{in_units, minutes_and_seconds, Quantity, Units, THOUSANDTHS};
 use mt_model::sim::session::{CarEntry, SessionSnapshot};
 
 use crate::crew::engineer::{
-    is_multiclass, minutes_and_seconds, session_left, surface_words, whole_laps, EngineerView, Gap,
-    SessionLeft,
+    is_multiclass, session_left, surface_words, whole_laps, EngineerView, Gap, SessionLeft,
 };
 use crate::rating::last_race::LastRace;
 
@@ -142,9 +141,13 @@ fn lap(view: &EngineerView) -> Option<String> {
 }
 
 fn lap_time(lap_s: f32) -> String {
-    let (minutes, seconds) = minutes_and_seconds(lap_s);
+    let (minutes, seconds) = minutes_and_seconds(f64::from(lap_s), THOUSANDTHS);
 
-    format!("{minutes}:{seconds:06.3}")
+    if minutes > 0.0 {
+        format!("{minutes}:{seconds:06.3}")
+    } else {
+        format!("{seconds:.3}")
+    }
 }
 
 fn lap_times(view: &EngineerView) -> Option<String> {
@@ -373,6 +376,33 @@ mod tests {
         assert_eq!(
             reply(ChatCommand::Best, METRIC, &view).as_deref(),
             Some("Best 1:32.456")
+        );
+    }
+
+    #[test]
+    fn a_lap_rounding_up_to_the_minute_reads_as_the_minute() {
+        let view = EngineerView {
+            best_lap_s: Some(119.9996),
+            last_lap_s: Some(59.9996),
+            ..EngineerView::default()
+        };
+
+        assert_eq!(
+            reply(ChatCommand::Best, METRIC, &view).as_deref(),
+            Some("Best 2:00.000, Last 1:00.000")
+        );
+    }
+
+    #[test]
+    fn a_lap_under_a_minute_has_no_minutes_like_the_overlay() {
+        let view = EngineerView {
+            best_lap_s: Some(45.123),
+            ..EngineerView::default()
+        };
+
+        assert_eq!(
+            reply(ChatCommand::Best, METRIC, &view).as_deref(),
+            Some("Best 45.123")
         );
     }
 

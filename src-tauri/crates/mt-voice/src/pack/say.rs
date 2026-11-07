@@ -2,7 +2,9 @@
 //! driver's unit system, with the pack's own words for yes and no, a sign or
 //! a faster lap.
 
-use mt_model::app::crew::{in_units, CrewArg, Quantity, GALLONS_PER_LITER};
+use mt_model::app::crew::{
+    in_units, minutes_and_seconds, CrewArg, Quantity, GALLONS_PER_LITER, TENTHS,
+};
 use mt_model::app::crew_questions::SayFormat;
 
 use crate::pack::catalog::{
@@ -13,7 +15,6 @@ use crate::pack::numbers::spoken_digits;
 use crate::pack::LanguagePack;
 
 const SECONDS_PER_MINUTE: f64 = 60.0;
-const TENTHS: f64 = 10.0;
 /// A text from the sim is cut here: it is put in as words, never a template.
 const MAX_SPOKEN_TEXT: usize = 80;
 
@@ -110,8 +111,7 @@ fn tenths(value: f64) -> f64 {
 /// Minutes and seconds the way an engineer reads a lap: "1 32.4", or the
 /// seconds alone under a minute; Chinese names the units ("1分32.4秒").
 fn lap_time(seconds: f64, language: &str) -> String {
-    let minutes = (seconds / SECONDS_PER_MINUTE).floor();
-    let rest = tenths(seconds - minutes * SECONDS_PER_MINUTE);
+    let (minutes, rest) = minutes_and_seconds(seconds, TENTHS);
 
     match (language, minutes > 0.0) {
         ("zh", true) => format!("{minutes}分{rest}秒"),
