@@ -54,9 +54,9 @@ pub fn last_race_reply(race: &LastRace) -> String {
     let result = joined([
         Some(finish),
         Some(format!("{}x", race.incidents)),
-        race.estimated_sr.map(|sr| format!("SR ~{sr:.2}")),
+        race.estimated_sr.map(|sr| format!("SR ≈{sr:.2}")),
         race.estimated_ir_delta
-            .map(|delta| format!("iR ~{delta:+}")),
+            .map(|delta| format!("iR ≈{delta:+}")),
     ])
     .unwrap_or_default();
 
@@ -446,7 +446,7 @@ mod tests {
 
         assert_eq!(
             last_race_reply(&race),
-            "Spa: P4 in GT3, P12 overall, 2x, SR ~2.81, iR ~+34"
+            "Spa: P4 in GT3, P12 overall, 2x, SR ≈2.81, iR ≈+34"
         );
     }
 }
