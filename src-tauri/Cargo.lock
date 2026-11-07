@@ -2833,7 +2833,6 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "windows",
- "winreg",
 ]
 
 [[package]]

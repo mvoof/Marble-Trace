@@ -13,7 +13,6 @@ import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import { AppHeader, type AppSection } from './AppHeader/AppHeader';
 import { AppFooter } from './AppFooter/AppFooter';
 import { UpdateBanner } from './UpdateBanner/UpdateBanner';
-import { InstallMismatchBanner } from './InstallMismatchBanner/InstallMismatchBanner';
 import { SettingsLockBanner } from './SettingsLockBanner/SettingsLockBanner';
 import styles from './MainWindow.module.scss';
 import { useSimStore } from '@entities/sim/sim-context';
@@ -150,8 +149,6 @@ export const MainWindow = observer(() => {
               setLeavingFor(null);
             }}
           />
-
-          <InstallMismatchBanner />
 
           <SettingsLockBanner />
 

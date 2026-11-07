@@ -1416,31 +1416,6 @@ export type InputSample = {
 };
 
 /**
- * Reported only when the running executable sits outside the directory the
- * installer registered — never for a normal install, and never when there is
- * no registry entry to compare against (a portable copy, a build run straight
- * out of `target/`).
- */
-export type InstallMismatch = {
-  /**
-   * Directory the running executable was launched from.
-   */
-  runningDir: string;
-  /**
-   * Version of the running executable.
-   */
-  runningVersion: string;
-  /**
-   * Directory the installer recorded as the installation.
-   */
-  registeredDir: string;
-  /**
-   * Version recorded beside it, when the entry carries one.
-   */
-  registeredVersion: string | null;
-};
-
-/**
  * How the interact key behaves: a toggle, or on only while held.
  */
 export type InteractHotkeyMode = 'toggle' | 'hold';

@@ -7,6 +7,5 @@ pub mod crew;
 pub mod crew_questions;
 pub mod hotkeys;
 pub mod input;
-pub mod install;
 pub mod remote;
 pub mod voice;

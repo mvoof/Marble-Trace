@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Delta:** A new look, with the reference switch in its own block left of the plate.
 
+### Removed
+
+- **Second-Copy Warning:** The app no longer warns at startup about a leftover `.msi` installation next to the `-setup.exe` one. If you still have such a copy, remove it through Windows **Apps & features**.
+
 ### Fixed
 
 - **TCR Badge:** A TCR class with the Audi RS3 LMS Gen2 in it is badged TCR, not by the series name the sim gives it.

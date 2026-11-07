@@ -377,12 +377,7 @@ How it is measured: [docs/perf-methodology.md](docs/perf-methodology.md). Why it
 Download **`Marble Trace_<version>_x64-setup.exe`** from the [latest release](https://github.com/mvoof/Marble-Trace/releases/latest) and run it. There is nothing else to install.
 
 > [!IMPORTANT]
-> **Do not use the `.msi` file, and do not keep an installation made from it.**
-> The `.msi` is no longer published as of v0.25.0 — only `-setup.exe` is. The two are separate installers that track their installation separately, so an `.msi` install and an `-setup.exe` install can sit side by side in different folders: the updater only ever reaches the `-setup.exe` one, while your shortcut may keep launching the other, outdated copy.
->
-> If you installed from an `.msi`, remove Marble Trace through Windows **Apps & features**, then install once from `-setup.exe`. Your settings, layouts and bindings are kept — they live in `%APPDATA%\com.voof.marble-trace`, not in the installation folder.
->
-> Until v0.29.0 the app detects this situation at startup and names both copies. From v0.29.0 that warning is gone and only `-setup.exe` installs are supported.
+> Only `-setup.exe` is supported. If you still have a copy installed from an `.msi`, remove it through Windows **Apps & features**, then install once from `-setup.exe`. Your settings, layouts and bindings are kept — they live in `%APPDATA%m.voof.marble-trace`, not in the installation folder.
 
 ---
 

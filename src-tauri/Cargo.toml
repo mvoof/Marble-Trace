@@ -171,7 +171,6 @@ specta-typescript = { version = "0.0.9", optional = true }
 specta-serde = { version = "0.0.9", optional = true }
 
 [target.'cfg(windows)'.dependencies]
-winreg.workspace = true
 windows.workspace = true
 
 [features]
