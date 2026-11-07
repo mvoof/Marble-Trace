@@ -347,6 +347,7 @@ fn apply_session_update(
         cached_track,
         stored_references,
         saved_safety_rating,
+        saved_memory,
     } = update;
     let snapshot = parsed.snapshot;
     let new_track_id = snapshot.track_id;
@@ -389,6 +390,21 @@ fn apply_session_update(
         state
             .registry
             .command(ProcessorCommand::RestoreSafetyRating(Box::new(saved)));
+    }
+
+    if let Some(memory) = saved_memory {
+        info!(
+            sub_session_id = memory.sub_session_id,
+            fuel_laps = memory.fuel.laps.len(),
+            logged_laps = memory.lap_log.history.len(),
+            "Resumed the event after a restart"
+        );
+
+        state.pit_auto.restore_suspended(memory.pit_auto_suspended);
+        state.saved_memory = Some(memory.clone());
+        state
+            .registry
+            .command(ProcessorCommand::ResumeSession(Box::new(memory)));
     }
 
     let player_car = snapshot

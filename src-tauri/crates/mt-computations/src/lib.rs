@@ -2,6 +2,7 @@ pub mod crew;
 pub mod driving;
 pub mod field;
 pub mod rating;
+pub mod session_memory;
 pub mod strategy;
 pub mod timing;
 pub mod track_shape;
@@ -30,6 +31,7 @@ use mt_model::computed::lap_log::LapLogFrame;
 use mt_model::computed::reference_lap::{ReferenceLapData, StoredReferenceTimes};
 use rating::incidents::{IncidentsFrame, IncidentsProcessor};
 use rating::safety_rating::{SafetyRatingFrame, SafetyRatingProcessor, SafetyRatingState};
+use session_memory::SessionMemory;
 use strategy::fuel::{FuelComputedFrame, FuelProcessor};
 use strategy::pit_stops::{PitStopsFrame, PitStopsProcessor};
 use timing::lap_delta::{LapDeltaFrame, LapDeltaProcessor};
@@ -148,6 +150,9 @@ pub enum ProcessorCommand {
     ActiveReference(Option<Arc<ReferenceLapData>>),
     /// The Safety Rating state saved for this event before the app restarted.
     RestoreSafetyRating(Box<SafetyRatingState>),
+    /// What this event measured before the app or the sim restarted. Sent once,
+    /// on the connection's first session, ahead of any tick on it.
+    ResumeSession(Box<SessionMemory>),
 }
 
 pub trait Processor: Send {
@@ -158,6 +163,8 @@ pub trait Processor: Send {
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput>;
     fn reset(&mut self);
     fn command(&mut self, _command: &ProcessorCommand) {}
+    /// Writes this processor's part of the memory; most have none.
+    fn remember(&self, _memory: &mut SessionMemory) {}
 }
 
 pub struct ProcessorRegistry {
@@ -198,6 +205,19 @@ impl ProcessorRegistry {
         for processor in &mut self.processors {
             processor.reset();
         }
+    }
+
+    pub fn session_memory(&self, sub_session_id: i32) -> SessionMemory {
+        let mut memory = SessionMemory {
+            sub_session_id,
+            ..SessionMemory::default()
+        };
+
+        for processor in &self.processors {
+            processor.remember(&mut memory);
+        }
+
+        memory
     }
 
     /// Run all processors whose rate matches `rate` and whose required capabilities

@@ -3,7 +3,8 @@ use std::time::Instant;
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 
-use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::session_memory::{SessionMemory, FIRST_LAP};
+use crate::{ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
 use mt_model::sim::player::{CarStatusFrame, LapTimingFrame};
 use mt_model::sim::session::SessionSnapshot;
@@ -73,7 +74,7 @@ pub struct FuelSample {
 /// A rejected lap still burned fuel and still happened, so it belongs in the
 /// history the widget draws — dropping it silently left the chart unable to say
 /// which lap any bar referred to. `rejected` carries why it does not count.
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct FuelLapRecord {
@@ -89,6 +90,13 @@ impl FuelLapRecord {
     }
 }
 
+/// The session's lap records, kept across a restart.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+pub struct FuelMemory {
+    pub session_num: i32,
+    pub laps: Vec<FuelLapRecord>,
+}
+
 pub struct FuelState {
     pub lap_fuel_history: Vec<FuelLapRecord>,
     pub last_lap: i32,
@@ -100,6 +108,8 @@ pub struct FuelState {
     lap_left_track: bool,
     lap_under_caution: bool,
     lap_started_at: Option<Instant>,
+    /// History came back from a restart and no lap has been seen to judge it by.
+    resuming: bool,
 }
 
 impl Default for FuelState {
@@ -114,6 +124,7 @@ impl Default for FuelState {
             lap_left_track: false,
             lap_under_caution: false,
             lap_started_at: None,
+            resuming: false,
         }
     }
 }
@@ -148,10 +159,45 @@ impl FuelState {
         *self = Self::default();
     }
 
+    /// Takes the history back. The lap in progress was not watched from its
+    /// start, so it stays unmeasured: no start fuel, and `finish_lap` skips it.
+    pub fn resume(&mut self, memory: &FuelMemory) {
+        *self = Self {
+            lap_fuel_history: memory.laps.clone(),
+            tracked_session_num: memory.session_num,
+            resuming: !memory.laps.is_empty(),
+            ..Self::default()
+        };
+    }
+
+    /// Judges resumed history by the first real lap number, and takes that lap
+    /// as the one in progress. A lap counter already past the history's last
+    /// lap carries on; one that is not means the session restarted meanwhile.
+    fn settle_resume(&mut self, lap: i32) {
+        self.resuming = false;
+        self.last_lap = lap;
+
+        if self
+            .lap_fuel_history
+            .last()
+            .is_some_and(|record| record.lap >= lap)
+        {
+            self.lap_fuel_history.clear();
+        }
+    }
+
     pub fn update(&mut self, sample: FuelSample) {
         if sample.session_num != self.tracked_session_num {
             self.reset();
             self.tracked_session_num = sample.session_num;
+        }
+
+        if self.resuming {
+            if sample.lap < FIRST_LAP {
+                return;
+            }
+
+            self.settle_resume(sample.lap);
         }
 
         self.track_refuel(sample.fuel_level);
@@ -623,6 +669,19 @@ impl Processor for FuelProcessor {
 
     fn reset(&mut self) {
         self.state.reset();
+    }
+
+    fn command(&mut self, command: &ProcessorCommand) {
+        if let ProcessorCommand::ResumeSession(memory) = command {
+            self.state.resume(&memory.fuel);
+        }
+    }
+
+    fn remember(&self, memory: &mut SessionMemory) {
+        memory.fuel = FuelMemory {
+            session_num: self.state.tracked_session_num,
+            laps: self.state.lap_fuel_history.clone(),
+        };
     }
 }
 
@@ -1140,5 +1199,63 @@ mod tests {
                 fill_now: 42.6
             })
         );
+    }
+
+    fn resumed_with_laps(session_num: i32, laps: &[i32]) -> FuelState {
+        let mut state = FuelState::default();
+
+        state.resume(&FuelMemory {
+            session_num,
+            laps: laps
+                .iter()
+                .map(|lap| FuelLapRecord {
+                    lap: *lap,
+                    used: 2.0,
+                    rejected: None,
+                })
+                .collect(),
+        });
+
+        state
+    }
+
+    #[test]
+    fn resumed_history_waits_out_a_car_not_yet_in_the_world() {
+        let mut state = resumed_with_laps(1, &[3, 4]);
+
+        drive(&mut state, green(-1, 0.0));
+        drive(&mut state, green(0, 0.0));
+
+        assert_eq!(state.counted_laps(), vec![2.0, 2.0]);
+    }
+
+    #[test]
+    fn the_lap_a_restart_cut_into_is_not_measured() {
+        let mut state = resumed_with_laps(1, &[3, 4]);
+
+        drive(&mut state, green(5, 40.0));
+        drive(&mut state, green(6, 39.5));
+        assert_eq!(state.counted_laps(), vec![2.0, 2.0]);
+
+        drive(&mut state, green(7, 37.5));
+        assert_eq!(state.counted_laps(), vec![2.0, 2.0, 2.0]);
+    }
+
+    #[test]
+    fn a_lap_counter_behind_the_history_means_the_session_restarted() {
+        let mut state = resumed_with_laps(1, &[3, 4]);
+
+        drive(&mut state, green(2, 40.0));
+
+        assert!(state.lap_fuel_history.is_empty());
+    }
+
+    #[test]
+    fn history_from_an_earlier_session_is_dropped() {
+        let mut state = resumed_with_laps(0, &[3, 4]);
+
+        drive(&mut state, green(5, 40.0));
+
+        assert!(state.lap_fuel_history.is_empty());
     }
 }

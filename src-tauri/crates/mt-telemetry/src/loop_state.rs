@@ -13,6 +13,7 @@ use crate::delivery::publications::PublicationRegistry;
 use crate::state::TelemetryServiceState;
 use mt_computations::crew::engineer::EngineerView;
 use mt_computations::rating::last_race::LastRace;
+use mt_computations::session_memory::SessionMemory;
 use mt_computations::strategy::pit_auto::PitAuto;
 use mt_computations::timing::reference_selection::{ReferenceChange, ReferenceSelection};
 use mt_computations::{field::driver_entries, ProcessorCommand, ProcessorRegistry};
@@ -68,6 +69,9 @@ pub struct LoopState {
     pub pending_chat: Vec<(ChatCommand, ChatDisplay, SyncSender<Option<String>>)>,
     /// The race record last saved, so an unchanged one is not written again.
     pub last_race: Option<LastRace>,
+    /// The session memory last saved or read back, so an unchanged one is not
+    /// written again.
+    pub saved_memory: Option<SessionMemory>,
     /// The player's row of the driver table, held for the 4 Hz tier the race
     /// is recorded on: the table is on another, and is kept whether or not
     /// anyone can ask the engineer.
@@ -108,6 +112,7 @@ impl LoopState {
             pending_previews: Vec::new(),
             pending_chat: Vec::new(),
             last_race: None,
+            saved_memory: None,
             player_entry: None,
             engineer: EngineerView::default(),
             planned_fuel_l: None,
@@ -190,6 +195,7 @@ impl LoopState {
         self.pending_previews.clear();
         self.pending_chat.clear();
         self.last_race = None;
+        self.saved_memory = None;
         self.player_entry = None;
         self.engineer = EngineerView::default();
         self.planned_fuel_l = None;

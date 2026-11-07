@@ -218,6 +218,16 @@ impl PitAuto {
         *self = Self::default();
     }
 
+    pub fn is_suspended(&self) -> bool {
+        self.suspended
+    }
+
+    /// The switch as the driver left it before a restart. Only the switch: the
+    /// per-stop overrides belong to a stop the restart ended.
+    pub fn restore_suspended(&mut self, suspended: bool) {
+        self.suspended = suspended;
+    }
+
     /// The orders this tick calls for, in the order they go out.
     pub fn step(&mut self, input: &PitAutoInput, config: &PitAutoConfig) -> Vec<PitOrder> {
         let now = Observed::of(input);

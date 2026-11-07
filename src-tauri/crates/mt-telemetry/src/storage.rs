@@ -1,6 +1,7 @@
 //! The files the telemetry layer keeps under the app data directory: one
 //! recorded shape per track, one reference lap per track, car and condition,
-//! the Safety Rating state of the event in progress, and the race finished last.
+//! the Safety Rating state and the session memory of the event in progress, and
+//! the race finished last.
 //!
 //! Plain functions on a directory, so the I/O worker and the commands share
 //! them and a test can point them at a temporary one. Nothing here may be
@@ -13,6 +14,7 @@ use tracing::{info, warn};
 
 use mt_computations::rating::last_race::LastRace;
 use mt_computations::rating::safety_rating::SafetyRatingState;
+use mt_computations::session_memory::SessionMemory;
 use mt_computations::timing::reference_selection::StoredReferences;
 use mt_model::computed::reference_lap::{ReferenceLapData, TrackCondition};
 use mt_model::computed::track_shape::TrackShapePayload;
@@ -22,6 +24,8 @@ const TRACKS_DIR: &str = "tracks";
 const REFERENCE_LAPS_DIR: &str = "reference_laps";
 /// One file, overwritten: the Safety Rating state of the event in progress.
 const SAFETY_RATING_FILE: &str = "safety_rating.json";
+/// One file, overwritten: what the event in progress has measured.
+const SESSION_MEMORY_FILE: &str = "session_memory.json";
 /// One file, overwritten: the race finished last.
 const LAST_RACE_FILE: &str = "last_race.json";
 const FILE_VERSION: u32 = 1;
@@ -231,6 +235,41 @@ pub fn read_stored_references(data_dir: &Path, session: &SessionSnapshot) -> Sto
         dry: read_lap(TrackCondition::Dry),
         wet: read_lap(TrackCondition::Wet),
     }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct StoredSessionMemory {
+    version: u32,
+    memory: SessionMemory,
+}
+
+/// Overwrites the saved session memory with the event in progress.
+pub fn save_session_memory(data_dir: &Path, memory: SessionMemory) {
+    let stored = StoredSessionMemory {
+        version: FILE_VERSION,
+        memory,
+    };
+
+    if fs::create_dir_all(data_dir).is_err() {
+        return;
+    }
+
+    if let Ok(json) = serde_json::to_string(&stored) {
+        let _ = fs::write(data_dir.join(SESSION_MEMORY_FILE), json);
+    }
+}
+
+/// The saved session memory, when it belongs to this event. A save from an
+/// earlier event is left on disk for the next save to overwrite.
+pub fn load_session_memory(data_dir: &Path, sub_session_id: i32) -> Option<SessionMemory> {
+    let json = fs::read_to_string(data_dir.join(SESSION_MEMORY_FILE)).ok()?;
+    let stored = serde_json::from_str::<StoredSessionMemory>(&json).ok()?;
+
+    if stored.version < FILE_VERSION || stored.memory.sub_session_id != sub_session_id {
+        return None;
+    }
+
+    Some(stored.memory)
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]

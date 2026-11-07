@@ -491,6 +491,15 @@ directory (one file, overwritten; at most every quarter lap while driving), and
 read back with the session whose `SubSessionID` it names, so a restart of the
 app mid-event carries on where it stopped.
 
+What else the sim cannot give back — the fuel and lap history, the personal
+best's sectors, the pit stop count, the pit auto off switch — lives the same way
+in `session_memory.json`, checked once a second and written when it changed. It
+comes back only with a connection's first session, so a sim restart resumes too.
+Each processor's part names its session, and a session that moved on is dropped
+by the check that resets the processor live; a lap counter behind the history
+means a restart and drops it too. The lap a restart cut into stays unmeasured.
+An event with no `SubSessionID` keeps nothing.
+
 Known limits: the estimate covers the local driver only (a teammate's stint on
 another PC is invisible to the SDK); corners driven while the app was not
 running are not counted; a session is known

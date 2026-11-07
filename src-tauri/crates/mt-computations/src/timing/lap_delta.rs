@@ -2,7 +2,8 @@ use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::session_memory::SessionMemory;
+use crate::{ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
 use mt_model::sim::player::{CarStatusFrame, LapTimingFrame};
 use mt_model::sim::session::SessionSnapshot;
@@ -10,6 +11,13 @@ use mt_model::utils::lock_or_recover;
 
 const MAX_REASONABLE_SECTOR_TIME: f32 = 120.0;
 const MAX_REASONABLE_LAP_TIME: f32 = 600.0;
+
+/// The driver's best lap and its sectors, kept across a restart.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+pub struct PersonalBestMemory {
+    pub lap_time: Option<f32>,
+    pub sectors: Vec<Option<f32>>,
+}
 
 /// Sector timing state — tracks current lap sector times and personal best sectors.
 /// Total delta is provided directly by iRacing via LapTimingFrame fields.
@@ -54,6 +62,20 @@ impl Default for LapDeltaState {
 impl LapDeltaState {
     pub fn reset(&mut self) {
         *self = Self::default();
+    }
+
+    /// Takes the personal best back. The sector count comes with it: the first
+    /// tick would otherwise see a new track layout and clear what it just got.
+    fn resume(&mut self, memory: &PersonalBestMemory) {
+        let sector_count = memory.sectors.len();
+
+        *self = Self {
+            sector_count,
+            sector_times: vec![None; sector_count],
+            personal_best_lap_time: memory.lap_time,
+            personal_best_lap_sectors: memory.sectors.clone(),
+            ..Self::default()
+        };
     }
 }
 
@@ -474,6 +496,21 @@ impl Processor for LapDeltaProcessor {
             locked.reset();
         }
     }
+
+    fn command(&mut self, command: &ProcessorCommand) {
+        if let ProcessorCommand::ResumeSession(memory) = command {
+            lock_or_recover(&self.state).resume(&memory.personal_best);
+        }
+    }
+
+    fn remember(&self, memory: &mut SessionMemory) {
+        let state = lock_or_recover(&self.state);
+
+        memory.personal_best = PersonalBestMemory {
+            lap_time: state.personal_best_lap_time,
+            sectors: state.personal_best_lap_sectors.clone(),
+        };
+    }
 }
 
 #[cfg(test)]
@@ -568,6 +605,30 @@ mod tests {
             ],
             ..Default::default()
         }
+    }
+
+    #[test]
+    fn a_resumed_personal_best_survives_the_first_tick() {
+        let session = create_mock_session();
+        let mut processor = LapDeltaProcessor::default();
+
+        processor.command(&ProcessorCommand::ResumeSession(Box::new(SessionMemory {
+            personal_best: PersonalBestMemory {
+                lap_time: Some(90.0),
+                sectors: vec![Some(45.0), Some(45.0)],
+            },
+            ..SessionMemory::default()
+        })));
+
+        let lap_timing = make_lap_timing(0.1, 10.0, 5);
+        let car_status = make_car_status_on_track();
+        compute(&lap_timing, &car_status, &session, &processor.state);
+
+        let mut memory = SessionMemory::default();
+        processor.remember(&mut memory);
+
+        assert_eq!(memory.personal_best.lap_time, Some(90.0));
+        assert_eq!(memory.personal_best.sectors, vec![Some(45.0), Some(45.0)]);
     }
 
     #[test]

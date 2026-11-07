@@ -6,7 +6,8 @@
 //! and an overlay and a remote screen could show different numbers; it is kept
 //! here once.
 
-use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::session_memory::SessionMemory;
+use crate::{ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
 use serde::{Deserialize, Serialize};
 
@@ -33,6 +34,16 @@ pub struct PitStopsInput {
     pub service_active: bool,
     /// The session clock, which stops with the sim.
     pub now_s: Option<f64>,
+}
+
+/// The session's stops, kept across a restart. `was_on_pit_road` comes along so
+/// a restart in the pit lane does not count that stop a second time.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+pub struct PitStopsMemory {
+    pub session_num: Option<i32>,
+    pub stops: u32,
+    pub was_on_pit_road: bool,
+    pub last_service_s: Option<f32>,
 }
 
 pub struct PitStopsProcessor {
@@ -134,6 +145,29 @@ impl Processor for PitStopsProcessor {
     fn reset(&mut self) {
         *self = Self::default();
     }
+
+    fn command(&mut self, command: &ProcessorCommand) {
+        if let ProcessorCommand::ResumeSession(memory) = command {
+            let saved = &memory.pit_stops;
+
+            *self = Self {
+                stops: saved.stops,
+                was_on_pit_road: saved.was_on_pit_road,
+                tracked_session_num: saved.session_num,
+                service_started_at_s: None,
+                last_service_s: saved.last_service_s,
+            };
+        }
+    }
+
+    fn remember(&self, memory: &mut SessionMemory) {
+        memory.pit_stops = PitStopsMemory {
+            session_num: self.tracked_session_num,
+            stops: self.stops,
+            was_on_pit_road: self.was_on_pit_road,
+            last_service_s: self.last_service_s,
+        };
+    }
 }
 
 #[cfg(test)]
@@ -141,6 +175,49 @@ mod tests {
     use super::*;
 
     const SESSION: Option<i32> = Some(2);
+
+    fn memory_after_a_stop(session_num: Option<i32>, in_pit_lane: bool) -> SessionMemory {
+        SessionMemory {
+            pit_stops: PitStopsMemory {
+                session_num,
+                stops: 1,
+                was_on_pit_road: in_pit_lane,
+                last_service_s: Some(24.0),
+            },
+            ..SessionMemory::default()
+        }
+    }
+
+    fn resumed(memory: SessionMemory) -> PitStopsProcessor {
+        let mut processor = PitStopsProcessor::default();
+        processor.command(&ProcessorCommand::ResumeSession(Box::new(memory)));
+
+        processor
+    }
+
+    #[test]
+    fn resuming_keeps_the_count_and_the_last_service() {
+        let mut processor = resumed(memory_after_a_stop(SESSION, false));
+
+        let frame = processor.step(input(false, false, 0.0));
+
+        assert_eq!(frame.player_stops, 1);
+        assert_eq!(frame.last_service_s, Some(24.0));
+    }
+
+    #[test]
+    fn a_restart_in_the_pit_lane_does_not_count_that_stop_again() {
+        let mut processor = resumed(memory_after_a_stop(SESSION, true));
+
+        assert_eq!(processor.step(input(true, false, 0.0)).player_stops, 1);
+    }
+
+    #[test]
+    fn stops_from_an_earlier_session_are_dropped() {
+        let mut processor = resumed(memory_after_a_stop(Some(1), false));
+
+        assert_eq!(processor.step(input(false, false, 0.0)).player_stops, 0);
+    }
 
     fn input(on_pit_road: bool, service_active: bool, now_s: f64) -> PitStopsInput {
         PitStopsInput {

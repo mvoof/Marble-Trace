@@ -1,5 +1,6 @@
+use crate::session_memory::{SessionMemory, FIRST_LAP};
 use crate::timing::lap_time_settle::is_settled;
-use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::{ComputeContext, ComputedOutput, Processor, ProcessorCommand, ProcessorId, TickRate};
 use mt_model::computed::lap_log::{LapHistoryEntry, LapLogFrame, LastCompletedLap};
 /// Lap log processor — tracks lap completion events, handles iRacing SDK quirks
 /// around `lap_last_lap_time` delivery timing, and maintains a capped history of
@@ -10,8 +11,17 @@ use mt_model::computed::lap_log::{LapHistoryEntry, LapLogFrame, LastCompletedLap
 /// sample buffer at the line tick-exact. The two share only when the published
 /// time may be believed — `lap_time_settle`.
 use mt_model::contract::capabilities::Capabilities;
+use serde::{Deserialize, Serialize};
 
 const HISTORY_SIZE: usize = 12;
+
+/// The session's lap log, kept across a restart.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+pub struct LapLogMemory {
+    pub session_num: Option<i32>,
+    pub history: Vec<LapHistoryEntry>,
+    pub last_completed_lap: Option<LastCompletedLap>,
+}
 
 /// Internal state for the lap log processor.
 #[derive(Debug, Default)]
@@ -43,6 +53,9 @@ struct LapLogState {
     /// below 2 s, or dropped vs the previous frame). Guards against recording the
     /// wrong lap time on the first frames after a lap transition.
     time_reset_received: bool,
+
+    /// History came back from a restart and no lap has been seen to judge it by.
+    resuming: bool,
 }
 
 impl Default for LapLogState {
@@ -56,6 +69,7 @@ impl Default for LapLogState {
             pending_lap_num: None,
             last_recorded_lap_time: -1.0,
             time_reset_received: true,
+            resuming: false,
         }
     }
 }
@@ -67,6 +81,35 @@ impl LapLogState {
         self.pending_lap_num = None;
         self.last_recorded_lap_time = -1.0;
         self.time_reset_received = true;
+        self.resuming = false;
+    }
+
+    fn resume(&mut self, memory: &LapLogMemory) {
+        *self = Self {
+            history: memory.history.clone(),
+            last_completed_lap: memory.last_completed_lap.clone(),
+            prev_session_num: memory.session_num,
+            resuming: !memory.history.is_empty(),
+            ..Self::default()
+        };
+    }
+
+    /// Judges resumed history by the first real lap number: one past the newest
+    /// entry carries on, one that is not means the session restarted meanwhile.
+    /// The reading in the sim now is the last lap's, so a lap finished from here
+    /// waits for a new one.
+    fn settle_resume(&mut self, lap_num: i32, lap_last_lap_time: f32) {
+        self.resuming = false;
+
+        if self
+            .history
+            .first()
+            .is_some_and(|entry| entry.lap_num >= lap_num)
+        {
+            self.reset();
+        }
+
+        self.last_recorded_lap_time = lap_last_lap_time;
     }
 
     fn reset_with_frame(&mut self, lap_last_lap_time: f32) {
@@ -104,6 +147,14 @@ impl LapLogState {
             }
 
             self.prev_session_num = session_num;
+        }
+
+        if self.resuming {
+            if lap_num < FIRST_LAP {
+                return self.current_frame();
+            }
+
+            self.settle_resume(lap_num, lap_last_lap_time);
         }
 
         let prev_lap_num = self.prev_lap_num.unwrap_or(lap_num);
@@ -268,6 +319,20 @@ impl Processor for LapLogProcessor {
 
     fn reset(&mut self) {
         self.state.reset();
+    }
+
+    fn command(&mut self, command: &ProcessorCommand) {
+        if let ProcessorCommand::ResumeSession(memory) = command {
+            self.state.resume(&memory.lap_log);
+        }
+    }
+
+    fn remember(&self, memory: &mut SessionMemory) {
+        memory.lap_log = LapLogMemory {
+            session_num: self.state.prev_session_num,
+            history: self.state.history.clone(),
+            last_completed_lap: self.state.last_completed_lap.clone(),
+        };
     }
 }
 
@@ -810,5 +875,65 @@ mod tests {
         assert_eq!(frame.history[0].lap_num, 2);
         assert_eq!(frame.history[0].lap_time, Some(91.0));
         assert_eq!(frame.history[0].delta, Some(1.0));
+    }
+
+    const RESUMED_SESSION: Option<i32> = Some(2);
+
+    fn resumed_after_lap(session_num: Option<i32>, lap_num: i32) -> LapLogState {
+        let mut state = new_state();
+
+        state.resume(&LapLogMemory {
+            session_num,
+            history: vec![LapHistoryEntry {
+                lap_num,
+                lap_time: Some(91.0),
+                delta: Some(1.0),
+                is_best: false,
+            }],
+            last_completed_lap: None,
+        });
+
+        state
+    }
+
+    #[test]
+    fn resumed_history_waits_out_a_car_not_yet_in_the_world() {
+        let mut state = resumed_after_lap(RESUMED_SESSION, 3);
+
+        let frame = push(&mut state, 0, -1.0, 0.0, 0.0, RESUMED_SESSION);
+
+        assert_eq!(frame.history.len(), 1);
+    }
+
+    #[test]
+    fn a_resumed_log_carries_on_with_the_next_lap_finished() {
+        let mut state = resumed_after_lap(RESUMED_SESSION, 3);
+
+        push(&mut state, 5, 92.0, 90.0, 30.0, RESUMED_SESSION);
+        let waiting = push(&mut state, 6, 92.0, 90.0, 0.2, RESUMED_SESSION);
+        let frame = push(&mut state, 6, 93.0, 90.0, 0.7, RESUMED_SESSION);
+
+        assert_eq!(waiting.history.len(), 1);
+        assert_eq!(frame.history.len(), 2);
+        assert_eq!(frame.history[0].lap_num, 5);
+        assert_eq!(frame.history[0].lap_time, Some(93.0));
+    }
+
+    #[test]
+    fn a_lap_counter_behind_the_log_means_the_session_restarted() {
+        let mut state = resumed_after_lap(RESUMED_SESSION, 3);
+
+        let frame = push(&mut state, 2, 92.0, 90.0, 10.0, RESUMED_SESSION);
+
+        assert!(frame.history.is_empty());
+    }
+
+    #[test]
+    fn a_log_from_an_earlier_session_is_dropped() {
+        let mut state = resumed_after_lap(Some(1), 3);
+
+        let frame = push(&mut state, 5, 92.0, 90.0, 10.0, RESUMED_SESSION);
+
+        assert!(frame.history.is_empty());
     }
 }

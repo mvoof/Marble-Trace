@@ -17,6 +17,7 @@ use tracing::{error, warn};
 use crate::storage;
 use mt_computations::rating::last_race::LastRace;
 use mt_computations::rating::safety_rating::SafetyRatingState;
+use mt_computations::session_memory::SessionMemory;
 use mt_computations::timing::reference_selection::StoredReferences;
 use mt_model::computed::reference_lap::ReferenceLapData;
 use mt_model::computed::track_shape::TrackShapePayload;
@@ -39,6 +40,9 @@ pub struct SessionUpdate {
     /// The Safety Rating state saved for this very event before the app
     /// restarted; `None` for any other event.
     pub saved_safety_rating: Option<SafetyRatingState>,
+    /// What this event measured before a restart. Only with the connection's
+    /// first session: later ones would land on processors already counting.
+    pub saved_memory: Option<SessionMemory>,
 }
 
 enum IoJob {
@@ -46,6 +50,7 @@ enum IoJob {
     SaveTrackShape(TrackShapePayload),
     SaveReferenceLap(Box<ReferenceLapData>),
     SaveSafetyRating(SafetyRatingState),
+    SaveSessionMemory(Box<SessionMemory>),
     SaveLastRace(LastRace),
     PatchPitLanePct {
         track_id: i32,
@@ -77,6 +82,7 @@ impl IoWorker {
             on_track_shape,
             session_results,
             last_track_id: None,
+            memory_read: false,
         };
 
         let spawned = std::thread::Builder::new()
@@ -112,6 +118,10 @@ impl IoWorker {
         self.send(IoJob::SaveSafetyRating(state));
     }
 
+    pub fn save_session_memory(&self, memory: SessionMemory) {
+        self.send(IoJob::SaveSessionMemory(Box::new(memory)));
+    }
+
     pub fn save_last_race(&self, race: LastRace) {
         self.send(IoJob::SaveLastRace(race));
     }
@@ -144,6 +154,8 @@ struct Worker {
     /// telemetry thread will have applied by the time this result reaches it,
     /// since both sides take the sessions in the same order.
     last_track_id: Option<i32>,
+    /// The session memory has been read for this connection.
+    memory_read: bool,
 }
 
 impl Worker {
@@ -169,6 +181,11 @@ impl Worker {
             IoJob::SaveSafetyRating(state) => {
                 if let Some(data_dir) = &self.data_dir {
                     storage::save_safety_rating(data_dir, state);
+                }
+            }
+            IoJob::SaveSessionMemory(memory) => {
+                if let Some(data_dir) = &self.data_dir {
+                    storage::save_session_memory(data_dir, *memory);
                 }
             }
             IoJob::SaveLastRace(race) => {
@@ -213,6 +230,7 @@ impl Worker {
                 cached_track: None,
                 stored_references: StoredReferences::default(),
                 saved_safety_rating: None,
+                saved_memory: None,
             });
         };
 
@@ -227,12 +245,19 @@ impl Worker {
             .snapshot
             .sub_session_id
             .and_then(|sub_session_id| storage::load_safety_rating(data_dir, sub_session_id));
+        let saved_memory = parsed
+            .snapshot
+            .sub_session_id
+            .filter(|_| !self.memory_read)
+            .and_then(|sub_session_id| storage::load_session_memory(data_dir, sub_session_id));
+        self.memory_read = true;
 
         Some(SessionUpdate {
             parsed,
             cached_track,
             stored_references,
             saved_safety_rating,
+            saved_memory,
         })
     }
 }
@@ -398,6 +423,47 @@ mod tests {
             Some(500)
         );
         assert!(other_event.saved_safety_rating.is_none());
+    }
+
+    fn saved_memory_of(sub_session_id: i32) -> SessionMemory {
+        SessionMemory {
+            sub_session_id,
+            pit_auto_suspended: true,
+            ..SessionMemory::default()
+        }
+    }
+
+    #[test]
+    fn the_session_memory_comes_only_with_the_first_session_of_a_connection() {
+        let data_dir = temp_data_dir("session-memory");
+        storage::save_session_memory(&data_dir, saved_memory_of(500));
+
+        let worker = quiet_worker(&data_dir);
+        worker.parse_session(event_yaml(500));
+        worker.parse_session(event_yaml(500));
+        let first = next_session(&worker);
+        let second = next_session(&worker);
+
+        std::fs::remove_dir_all(&data_dir).ok();
+
+        assert_eq!(first.saved_memory, Some(saved_memory_of(500)));
+        assert_eq!(second.saved_memory, None);
+    }
+
+    #[test]
+    fn the_session_memory_of_another_event_stays_on_disk_unread() {
+        let data_dir = temp_data_dir("session-memory-other");
+        storage::save_session_memory(&data_dir, saved_memory_of(500));
+
+        let worker = quiet_worker(&data_dir);
+        worker.parse_session(event_yaml(501));
+        let other_event = next_session(&worker);
+        let on_disk = storage::load_session_memory(&data_dir, 500);
+
+        std::fs::remove_dir_all(&data_dir).ok();
+
+        assert_eq!(other_event.saved_memory, None);
+        assert_eq!(on_disk, Some(saved_memory_of(500)));
     }
 
     #[test]
