@@ -5,12 +5,11 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::crew::engineer::is_multiclass;
 use crate::field::driver_entries::DriverEntry;
 use crate::rating::safety_rating::SafetyRatingFrame;
 use mt_model::sim::enums::SessionState;
 use mt_model::sim::session::{SessionSnapshot, SessionType};
-
-const SR_PRECISION: f32 = 100.0;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -21,7 +20,7 @@ pub struct LastRace {
     pub class_finish: Option<ClassFinish>,
     pub incidents: i32,
     pub estimated_sr: Option<f32>,
-    pub estimated_ir: Option<i32>,
+    pub estimated_ir_delta: Option<i32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -86,28 +85,10 @@ impl FinishSource<'_> {
             position: result.position,
             class_finish,
             incidents: self.safety_rating.driver_incidents,
-            estimated_sr: self
-                .safety_rating
-                .sr_now
-                .filter(|_| rated)
-                .map(|sr| (sr * SR_PRECISION).round() / SR_PRECISION),
-            estimated_ir: estimated_ir_delta
-                .filter(|_| car.i_rating > 0)
-                .map(|delta| car.i_rating + delta),
+            estimated_sr: self.safety_rating.sr_now.filter(|_| rated),
+            estimated_ir_delta,
         })
     }
-}
-
-/// More than one class of real cars in the session.
-pub fn is_multiclass(session: &SessionSnapshot) -> bool {
-    let mut classes = session
-        .cars
-        .iter()
-        .filter(|car| !car.is_pace_car && !car.is_spectator)
-        .map(|car| car.car_class_id);
-    let first = classes.next();
-
-    classes.any(|class| Some(class) != first)
 }
 
 #[cfg(test)]
@@ -136,6 +117,7 @@ mod tests {
                     car_idx: 3 + index as i32,
                     car_class_id: *class,
                     car_class_short_name: "GT3".into(),
+                    user_name: "Driver".into(),
                     i_rating: 2000,
                     ..CarEntry::default()
                 })
@@ -147,7 +129,7 @@ mod tests {
     fn frame() -> SafetyRatingFrame {
         SafetyRatingFrame {
             driver_incidents: 2,
-            sr_now: Some(2.8149),
+            sr_now: Some(2.81),
             ..SafetyRatingFrame::default()
         }
     }

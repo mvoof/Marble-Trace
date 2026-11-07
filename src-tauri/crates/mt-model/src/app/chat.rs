@@ -279,10 +279,11 @@ pub enum ChatCommand {
     Weather,
     Lastrace,
     Fuel,
+    Commands,
 }
 
 impl ChatCommand {
-    const ALL: [Self; 10] = [
+    const ALL: [Self; 11] = [
         Self::Pos,
         Self::Gap,
         Self::Lap,
@@ -293,6 +294,7 @@ impl ChatCommand {
         Self::Weather,
         Self::Lastrace,
         Self::Fuel,
+        Self::Commands,
     ];
 
     /// What a viewer types.
@@ -308,6 +310,7 @@ impl ChatCommand {
             Self::Weather => "!weather",
             Self::Lastrace => "!lastrace",
             Self::Fuel => "!fuel",
+            Self::Commands => "!commands",
         }
     }
 
@@ -322,6 +325,16 @@ impl ChatCommand {
     }
 }
 
+/// What a chat reply takes from the windows, so it reads as the overlay does:
+/// the streamer's units, and the SOF of their class as Standings works it out.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
+pub struct ChatDisplay {
+    pub imperial: bool,
+    pub class_sof: Option<i32>,
+}
+
 /// The chat commands as the streamer set them. Apart from `ChatConfig`:
 /// flipping a switch must not reconnect the chat.
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -331,6 +344,9 @@ pub struct ChatCommandsConfig {
     pub enabled: bool,
     /// How long a command stays quiet after it was let through.
     pub cooldown_seconds: u32,
+    /// How far apart any two replies are, whichever commands they answer.
+    pub global_cooldown_seconds: u32,
     /// The commands switched on.
     pub commands: Vec<ChatCommand>,
+    pub display: ChatDisplay,
 }

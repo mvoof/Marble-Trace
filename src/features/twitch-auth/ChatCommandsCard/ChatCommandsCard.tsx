@@ -19,10 +19,13 @@ const COMMANDS: ChatCommand[] = [
   'weather',
   'lastrace',
   'fuel',
+  'commands',
 ];
 
 const MIN_COOLDOWN_SECONDS = 5;
 const MAX_COOLDOWN_SECONDS = 300;
+/** The backend never goes below this: it keeps replies under the Twitch limit. */
+const MIN_GLOBAL_COOLDOWN_SECONDS = 2;
 
 /**
  * Viewers' commands in Twitch chat. Answered from the streamer's own account,
@@ -43,6 +46,12 @@ export const ChatCommandsCard = observer(() => {
   const handleCooldownChange = (value: number | null) => {
     if (value !== null) {
       appSettings.setStreamChatCommandCooldownSeconds(value);
+    }
+  };
+
+  const handleGlobalCooldownChange = (value: number | null) => {
+    if (value !== null) {
+      appSettings.setStreamChatCommandGlobalCooldownSeconds(value);
     }
   };
 
@@ -125,6 +134,27 @@ export const ChatCommandsCard = observer(() => {
               max={MAX_COOLDOWN_SECONDS}
               value={settings.streamChatCommandCooldownSeconds}
               onChange={handleCooldownChange}
+            />
+          </div>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>
+                {t('settingsPage.streamChat.commands.globalCooldown')}
+              </div>
+
+              <div className={styles.fieldDesc}>
+                {t('settingsPage.streamChat.commands.globalCooldownDesc')}
+              </div>
+            </div>
+
+            <InputNumber
+              min={MIN_GLOBAL_COOLDOWN_SECONDS}
+              max={MAX_COOLDOWN_SECONDS}
+              value={settings.streamChatCommandGlobalCooldownSeconds}
+              onChange={handleGlobalCooldownChange}
             />
           </div>
         </div>

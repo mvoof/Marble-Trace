@@ -625,7 +625,8 @@ export type ChatCommand =
   | 'info'
   | 'weather'
   | 'lastrace'
-  | 'fuel';
+  | 'fuel'
+  | 'commands';
 
 /**
  * The chat commands as the streamer set them. Apart from `ChatConfig`:
@@ -638,9 +639,14 @@ export type ChatCommandsConfig = {
    */
   cooldownSeconds: number;
   /**
+   * How far apart any two replies are, whichever commands they answer.
+   */
+  globalCooldownSeconds: number;
+  /**
    * The commands switched on.
    */
   commands: ChatCommand[];
+  display: ChatDisplay;
 };
 
 /**
@@ -689,6 +695,12 @@ export type ChatDeletion = {
    */
   authorName: string | null;
 };
+
+/**
+ * What a chat reply takes from the windows, so it reads as the overlay does:
+ * the streamer's units, and the SOF of their class as Standings works it out.
+ */
+export type ChatDisplay = { imperial: boolean; classSof: number | null };
 
 /**
  * A message is a sequence of fragments, never a raw string: emote positions

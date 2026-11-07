@@ -1,26 +1,32 @@
-//! The replies to viewers' chat commands, read from the same view the
-//! engineer answers the driver from. In English, like widget text.
+//! The replies to viewers' chat commands: what the overlay already shows, put
+//! into words. Nothing is worked out here. The values come from the view the
+//! engineer answers the driver from, and what only the windows hold — the
+//! streamer's units, the class SOF — from `ChatDisplay`. In English, like
+//! widget text.
 //!
 //! A value the sim does not have is left out of the reply; with nothing left
 //! there is no reply at all, which is also what happens outside a session.
 
-use mt_model::app::chat::ChatCommand;
+use mt_model::app::chat::{ChatCommand, ChatDisplay};
+use mt_model::app::crew::{in_units, Quantity, Units};
 use mt_model::sim::session::{CarEntry, SessionSnapshot};
 
-use crate::crew::engineer::{EngineerView, Gap, UNLIMITED_LAPS, UNLIMITED_SECONDS};
-use crate::field::driver_entries::DriverEntry;
-use crate::rating::last_race::{is_multiclass, LastRace};
+use crate::crew::engineer::{
+    is_multiclass, surface_words, EngineerView, Gap, UNLIMITED_LAPS, UNLIMITED_SECONDS,
+};
+use crate::rating::last_race::LastRace;
 
 const SECONDS_PER_MINUTE: f64 = 60.0;
 const MILLIS_PER_SECOND: i64 = 1000;
 const MILLIS_PER_MINUTE: i64 = 60_000;
-const KMH_PER_MS: f32 = 3.6;
 const SEPARATOR: &str = ", ";
 
-/// The reply to a command answered from the session. `!lastrace` is not one:
-/// it reads the stored record, through `last_race_reply`.
+/// The reply to a command answered from the session. `!lastrace` reads the
+/// stored record instead, through `last_race_reply`, and `!commands` the
+/// streamer's switches, which `mt-chat` holds.
 pub fn answer(
     command: ChatCommand,
+    display: ChatDisplay,
     view: &EngineerView,
     session: Option<&SessionSnapshot>,
 ) -> Option<String> {
@@ -31,12 +37,12 @@ pub fn answer(
         ChatCommand::Gap => gaps(view),
         ChatCommand::Lap => lap(view),
         ChatCommand::Best => lap_times(view),
-        ChatCommand::Sof => strength_of_field(session),
+        ChatCommand::Sof => strength_of_field(display, session),
         ChatCommand::Car => car_at_track(session),
         ChatCommand::Info => info(session),
-        ChatCommand::Weather => weather(view),
-        ChatCommand::Fuel => fuel(view),
-        ChatCommand::Lastrace => None,
+        ChatCommand::Weather => weather(display, view),
+        ChatCommand::Fuel => fuel(display, view),
+        ChatCommand::Lastrace | ChatCommand::Commands => None,
     }
 }
 
@@ -52,7 +58,8 @@ pub fn last_race_reply(race: &LastRace) -> String {
         Some(finish),
         Some(format!("{}x", race.incidents)),
         race.estimated_sr.map(|sr| format!("SR ~{sr:.2}")),
-        race.estimated_ir.map(|ir| format!("iR ~{ir}")),
+        race.estimated_ir_delta
+            .map(|delta| format!("iR ~{delta:+}")),
     ])
     .unwrap_or_default();
 
@@ -71,8 +78,10 @@ fn named(value: &str) -> Option<&str> {
     (!value.is_empty()).then_some(value)
 }
 
-fn player_entry(view: &EngineerView) -> Option<&DriverEntry> {
-    view.questions.entries.iter().find(|entry| entry.is_player)
+fn units_of(display: ChatDisplay) -> Units {
+    Units {
+        imperial: display.imperial,
+    }
 }
 
 fn player_car(session: &SessionSnapshot) -> Option<&CarEntry> {
@@ -82,21 +91,16 @@ fn player_car(session: &SessionSnapshot) -> Option<&CarEntry> {
         .find(|car| car.car_idx == session.player_car_idx)
 }
 
-fn real_cars(session: &SessionSnapshot) -> impl Iterator<Item = &CarEntry> {
-    session
-        .cars
-        .iter()
-        .filter(|car| !car.is_pace_car && !car.is_spectator && !car.user_name.is_empty())
-}
-
 fn position(view: &EngineerView, session: &SessionSnapshot) -> Option<String> {
-    let player = player_entry(view)?;
+    let player = view
+        .questions
+        .entries
+        .iter()
+        .find(|entry| entry.is_player)?;
     let overall = Some(player.live_position).filter(|place| *place > 0);
 
     if !is_multiclass(session) {
-        let cars = real_cars(session).count();
-
-        return overall.map(|place| format!("P{place} of {cars}"));
+        return overall.map(|place| format!("P{place}"));
     }
 
     let class_name = player_car(session)
@@ -164,22 +168,13 @@ fn lap_times(view: &EngineerView) -> Option<String> {
     ])
 }
 
-/// The average iRating of the player's class, the number Standings shows.
-fn strength_of_field(session: &SessionSnapshot) -> Option<String> {
-    let player = player_car(session)?;
-    let ratings: Vec<i64> = real_cars(session)
-        .filter(|car| car.car_class_id == player.car_class_id)
-        .map(|car| i64::from(car.i_rating))
-        .filter(|rating| *rating > 0)
-        .collect();
-    let sof = (!ratings.is_empty())
-        .then(|| ratings.iter().sum::<i64>() as f64 / ratings.len() as f64)
-        .map(|average| format!("SOF {}", average.round() as i64));
-    let rating = Some(player.i_rating)
+fn strength_of_field(display: ChatDisplay, session: &SessionSnapshot) -> Option<String> {
+    let rating = player_car(session)
+        .map(|car| car.i_rating)
         .filter(|rating| *rating > 0)
         .map(|rating| format!("iRating {rating}"));
 
-    joined([sof, rating])
+    joined([display.class_sof.map(|sof| format!("SOF {sof}")), rating])
 }
 
 fn track_name(session: &SessionSnapshot) -> Option<String> {
@@ -215,38 +210,41 @@ fn info(session: &SessionSnapshot) -> Option<String> {
     ])
 }
 
-/// The levels the weather widget shows.
-fn surface(track_wetness: Option<i32>) -> Option<&'static str> {
-    match track_wetness? {
-        1 => Some("dry track"),
-        2 => Some("mostly dry track"),
-        3 => Some("very lightly wet track"),
-        4 => Some("lightly wet track"),
-        5 => Some("moderately wet track"),
-        6 => Some("very wet track"),
-        level if level >= 7 => Some("extremely wet track"),
-        _ => None,
-    }
-}
+fn weather(display: ChatDisplay, view: &EngineerView) -> Option<String> {
+    let units = units_of(display);
+    let degrees = |celsius: f32| in_units(units, Quantity::Temperature, f64::from(celsius));
+    let (degree_unit, speed_unit) = if display.imperial {
+        ("°F", "mph")
+    } else {
+        ("°C", "km/h")
+    };
 
-fn weather(view: &EngineerView) -> Option<String> {
     joined([
-        view.air_temp_c.map(|air| format!("Air {air:.0}°C")),
-        view.track_temp_c.map(|track| format!("Track {track:.0}°C")),
-        view.wind_ms
-            .map(|wind| format!("Wind {:.0} km/h", wind * KMH_PER_MS)),
-        surface(view.track_wetness).map(str::to_string),
+        view.air_temp_c
+            .map(|air| format!("Air {}{degree_unit}", degrees(air))),
+        view.track_temp_c
+            .map(|track| format!("Track {}{degree_unit}", degrees(track))),
+        view.wind_ms.map(|wind| {
+            let speed = in_units(units, Quantity::Speed, f64::from(wind));
+
+            format!("Wind {speed} {speed_unit}")
+        }),
+        surface_words(view.track_wetness).map(str::to_string),
     ])
 }
 
-fn fuel(view: &EngineerView) -> Option<String> {
+fn fuel(display: ChatDisplay, view: &EngineerView) -> Option<String> {
+    let volume_unit = if display.imperial { "gal" } else { "L" };
+
     joined([
-        view.fuel_l
-            .filter(|fuel| *fuel > 0.0)
-            .map(|fuel| format!("Fuel {fuel:.1} L")),
+        view.fuel_l.filter(|fuel| *fuel > 0.0).map(|fuel| {
+            let volume = in_units(units_of(display), Quantity::Volume, f64::from(fuel));
+
+            format!("Fuel {volume} {volume_unit}")
+        }),
         view.fuel_laps
             .filter(|laps| *laps > 0.0)
-            .map(|laps| format!("{:.0} laps of it", laps.floor())),
+            .map(|laps| format!("{} laps of it", laps.floor())),
     ])
 }
 
@@ -255,6 +253,15 @@ mod tests {
     use super::*;
     use crate::rating::last_race::ClassFinish;
     use mt_model::sim::session::SessionEntry;
+
+    const METRIC: ChatDisplay = ChatDisplay {
+        imperial: false,
+        class_sof: Some(2500),
+    };
+    const IMPERIAL: ChatDisplay = ChatDisplay {
+        imperial: true,
+        class_sof: None,
+    };
 
     fn car(car_idx: i32, class: i32, rating: i32) -> CarEntry {
         CarEntry {
@@ -282,11 +289,15 @@ mod tests {
         }
     }
 
+    fn reply(command: ChatCommand, display: ChatDisplay, view: &EngineerView) -> Option<String> {
+        answer(command, display, view, Some(&session()))
+    }
+
     #[test]
     fn nothing_is_said_outside_a_session() {
         let view = EngineerView::default();
 
-        assert_eq!(answer(ChatCommand::Weather, &view, None), None);
+        assert_eq!(answer(ChatCommand::Weather, METRIC, &view, None), None);
     }
 
     #[test]
@@ -298,8 +309,31 @@ mod tests {
         };
 
         assert_eq!(
-            answer(ChatCommand::Weather, &view, Some(&session())).as_deref(),
+            reply(ChatCommand::Weather, METRIC, &view).as_deref(),
             Some("Air 23°C, dry track")
+        );
+    }
+
+    #[test]
+    fn values_come_in_the_streamers_units() {
+        let view = EngineerView {
+            air_temp_c: Some(20.0),
+            wind_ms: Some(10.0),
+            fuel_l: Some(40.0),
+            ..EngineerView::default()
+        };
+
+        assert_eq!(
+            reply(ChatCommand::Weather, IMPERIAL, &view).as_deref(),
+            Some("Air 68°F, Wind 22 mph")
+        );
+        assert_eq!(
+            reply(ChatCommand::Weather, METRIC, &view).as_deref(),
+            Some("Air 20°C, Wind 36 km/h")
+        );
+        assert_eq!(
+            reply(ChatCommand::Fuel, IMPERIAL, &view).as_deref(),
+            Some("Fuel 11 gal")
         );
     }
 
@@ -308,7 +342,7 @@ mod tests {
         let view = EngineerView::default();
 
         for command in [ChatCommand::Gap, ChatCommand::Best, ChatCommand::Fuel] {
-            assert_eq!(answer(command, &view, Some(&session())), None);
+            assert_eq!(reply(command, METRIC, &view), None);
         }
     }
 
@@ -320,7 +354,7 @@ mod tests {
         };
 
         assert_eq!(
-            answer(ChatCommand::Gap, &view, Some(&session())).as_deref(),
+            reply(ChatCommand::Gap, METRIC, &view).as_deref(),
             Some("Behind 1 lap")
         );
     }
@@ -335,7 +369,7 @@ mod tests {
         };
 
         assert_eq!(
-            answer(ChatCommand::Lap, &view, Some(&session())).as_deref(),
+            reply(ChatCommand::Lap, METRIC, &view).as_deref(),
             Some("Lap 5, 10 min left")
         );
     }
@@ -349,18 +383,22 @@ mod tests {
         };
 
         assert_eq!(
-            answer(ChatCommand::Best, &view, Some(&session())).as_deref(),
+            reply(ChatCommand::Best, METRIC, &view).as_deref(),
             Some("Best 1:32.456")
         );
     }
 
     #[test]
-    fn strength_of_field_is_the_players_class() {
+    fn strength_of_field_is_the_number_the_windows_sent() {
         let view = EngineerView::default();
 
         assert_eq!(
-            answer(ChatCommand::Sof, &view, Some(&session())).as_deref(),
+            reply(ChatCommand::Sof, METRIC, &view).as_deref(),
             Some("SOF 2500, iRating 2000")
+        );
+        assert_eq!(
+            reply(ChatCommand::Sof, IMPERIAL, &view).as_deref(),
+            Some("iRating 2000")
         );
     }
 
@@ -369,7 +407,7 @@ mod tests {
         let view = EngineerView::default();
 
         assert_eq!(
-            answer(ChatCommand::Info, &view, Some(&session())).as_deref(),
+            reply(ChatCommand::Info, METRIC, &view).as_deref(),
             Some("Spa (Endurance), BMW M4 GT3, Race")
         );
     }
@@ -385,12 +423,12 @@ mod tests {
             }),
             incidents: 2,
             estimated_sr: Some(2.81),
-            estimated_ir: None,
+            estimated_ir_delta: Some(34),
         };
 
         assert_eq!(
             last_race_reply(&race),
-            "Spa: P4 in GT3, P12 overall, 2x, SR ~2.81"
+            "Spa: P4 in GT3, P12 overall, 2x, SR ~2.81, iR ~+34"
         );
     }
 }

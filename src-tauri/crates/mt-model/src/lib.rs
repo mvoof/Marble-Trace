@@ -30,6 +30,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<contract::client_protocol::RejectedCommand>()
         .register::<app::chat::ChatCommand>()
         .register::<app::chat::ChatCommandsConfig>()
+        .register::<app::chat::ChatDisplay>()
         .register::<app::companions::CompanionApp>()
         .register::<app::companions::CompanionStatus>()
         .register::<app::companions::DetectedApp>()

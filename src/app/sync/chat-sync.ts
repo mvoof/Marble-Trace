@@ -82,7 +82,11 @@ export const registerChatReactions = (
     { equals: compareStructural }
   ),
   reaction(
-    () => chatCommandsConfigOf(root.appSettings.appSettings),
+    () =>
+      chatCommandsConfigOf(root.appSettings.appSettings, {
+        imperial: root.units.unitSystem === 'imperial',
+        classSof: root.session.playerClassSof,
+      }),
     (config) => {
       setChatCommandsSilent(config);
       void onSave();

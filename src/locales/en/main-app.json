@@ -493,8 +493,10 @@
         "needsSignIn": "Sign in to Twitch above: replies are sent from your account.",
         "needsReconnect": "Your Twitch sign-in has no permission to post in chat. Reconnect to grant it.",
         "ownChannelOnly": "Commands work only in your own channel: the Twitch channel above must be the account you signed in with.",
-        "cooldown": "Cooldown, seconds",
-        "cooldownDesc": "How long a command stays quiet after a reply. Any two replies are also at least 2 seconds apart.",
+        "cooldown": "Cooldown per command, seconds",
+        "cooldownDesc": "How long one command stays quiet after a reply.",
+        "globalCooldown": "Time between replies, seconds",
+        "globalCooldownDesc": "Limits spam: no two replies come closer than this, whichever commands viewers type. Never under 2 seconds, to stay within Twitch limits.",
         "list": {
           "pos": "Position in class and overall.",
           "gap": "Gap to the cars ahead and behind.",
@@ -505,7 +507,8 @@
           "info": "Track, car and session type.",
           "weather": "Air and track temperature, wind, track state.",
           "lastrace": "Track, finish, incidents, SR and iR after your last race. Shows your incidents and rating to everyone.",
-          "fuel": "Fuel state. Rivals watching the stream see your strategy."
+          "fuel": "Fuel state. Rivals watching the stream see your strategy.",
+          "commands": "The list of commands switched on."
         }
       },
       "signedIn": "Signed in",

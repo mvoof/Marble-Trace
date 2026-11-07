@@ -323,19 +323,43 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
     }
 }
 
-/// The pack's word for the track surface, by the sim's wetness level — the
-/// levels the weather widget shows.
+/// The sim's wetness levels from 1, as the weather widget shows them: the
+/// pack's key, and the words chat says.
+const SURFACES: [(&str, &str); 7] = [
+    ("engineer.surface.dry", "dry track"),
+    ("engineer.surface.mostlyDry", "mostly dry track"),
+    ("engineer.surface.veryLightlyWet", "very lightly wet track"),
+    ("engineer.surface.lightlyWet", "lightly wet track"),
+    ("engineer.surface.moderatelyWet", "moderately wet track"),
+    ("engineer.surface.veryWet", "very wet track"),
+    ("engineer.surface.extremelyWet", "extremely wet track"),
+];
+
+fn surface(track_wetness: Option<i32>) -> Option<(&'static str, &'static str)> {
+    let level = track_wetness.filter(|level| *level >= 1)?;
+    let index = usize::try_from(level - 1).ok()?;
+
+    SURFACES.get(index.min(SURFACES.len() - 1)).copied()
+}
+
 fn surface_key(track_wetness: Option<i32>) -> &'static str {
-    match track_wetness {
-        Some(1) => "engineer.surface.dry",
-        Some(2) => "engineer.surface.mostlyDry",
-        Some(3) => "engineer.surface.veryLightlyWet",
-        Some(4) => "engineer.surface.lightlyWet",
-        Some(5) => "engineer.surface.moderatelyWet",
-        Some(6) => "engineer.surface.veryWet",
-        Some(level) if level >= 7 => "engineer.surface.extremelyWet",
-        _ => "engineer.surface.unknown",
-    }
+    surface(track_wetness).map_or("engineer.surface.unknown", |(key, _)| key)
+}
+
+pub(crate) fn surface_words(track_wetness: Option<i32>) -> Option<&'static str> {
+    surface(track_wetness).map(|(_, words)| words)
+}
+
+/// More than one class of real cars in the session.
+pub(crate) fn is_multiclass(session: &SessionSnapshot) -> bool {
+    let mut classes = session
+        .cars
+        .iter()
+        .filter(|car| !car.is_pace_car && !car.is_spectator && !car.user_name.is_empty())
+        .map(|car| car.car_class_id);
+    let first = classes.next();
+
+    classes.any(|class| Some(class) != first)
 }
 
 /// A reply about each car the heard number names — two cars may wear the
@@ -556,16 +580,7 @@ pub fn track_neighbours(
     let Some(player) = entries.iter().find(|entry| entry.is_player) else {
         return (None, None);
     };
-    let multiclass = {
-        let mut classes = session
-            .cars
-            .iter()
-            .filter(racing)
-            .map(|car| car.car_class_id);
-        let first = classes.next();
-
-        classes.any(|class| Some(class) != first)
-    };
+    let multiclass = is_multiclass(session);
     let nearest = |ahead: bool| {
         entries
             .iter()

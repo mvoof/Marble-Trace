@@ -9,21 +9,48 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use mt_model::app::chat::ChatCommand;
+use mt_model::app::chat::{ChatCommand, ChatDisplay};
 use tracing::{debug, warn};
 
 use super::helix;
 use super::state::ChatServiceState;
 
-/// Between any two replies. With one command on cooldown per ten seconds, ten
-/// commands would otherwise reach 30 messages in 30 seconds, past the 20 Twitch
-/// allows an ordinary account and more than a chat can read.
-const GLOBAL_COOLDOWN: Duration = Duration::from_secs(2);
+/// The least time between any two replies, whatever the settings say: 15
+/// messages in 30 seconds stays under the 20 Twitch allows an ordinary account.
+const MIN_GLOBAL_COOLDOWN: Duration = Duration::from_secs(2);
+
+/// How often commands may be answered.
+#[derive(Debug, Clone, Copy)]
+pub struct CommandLimits {
+    pub per_command: Duration,
+    pub between_replies: Duration,
+}
+
+impl CommandLimits {
+    pub fn new(cooldown_seconds: u32, global_cooldown_seconds: u32) -> Self {
+        Self {
+            per_command: Duration::from_secs(u64::from(cooldown_seconds)),
+            between_replies: Duration::from_secs(u64::from(global_cooldown_seconds))
+                .max(MIN_GLOBAL_COOLDOWN),
+        }
+    }
+}
+
+/// The reply to `!commands`: what the streamer has switched on.
+pub fn command_list_reply(enabled: &[ChatCommand]) -> Option<String> {
+    let triggers: Vec<&str> = enabled
+        .iter()
+        .filter(|command| **command != ChatCommand::Commands)
+        .map(|command| command.trigger())
+        .collect();
+
+    (!triggers.is_empty()).then(|| format!("Commands: {}", triggers.join(" ")))
+}
 
 /// What the app answers a command with. Blocks while it waits for the
 /// telemetry thread; `None` is silence: no session, or nothing to say.
 pub trait ChatHost: Send + Sync {
-    fn answer(&self, command: ChatCommand) -> Option<String>;
+    fn answer(&self, command: ChatCommand, display: ChatDisplay) -> Option<String>;
 }
 
 /// When each command was last let through.
@@ -35,13 +62,13 @@ pub struct Cooldowns {
 
 impl Cooldowns {
     /// Whether the command may be answered now; if so, the cooldowns start.
-    pub fn admit(&mut self, command: ChatCommand, cooldown: Duration, now: Instant) -> bool {
+    pub fn admit(&mut self, command: ChatCommand, limits: CommandLimits, now: Instant) -> bool {
         let elapsed_since = |moment: Option<&Instant>, wait: Duration| {
             moment.is_none_or(|moment| now.duration_since(*moment) >= wait)
         };
 
-        if !elapsed_since(self.last_reply.as_ref(), GLOBAL_COOLDOWN)
-            || !elapsed_since(self.last_by_command.get(&command), cooldown)
+        if !elapsed_since(self.last_reply.as_ref(), limits.between_replies)
+            || !elapsed_since(self.last_by_command.get(&command), limits.per_command)
         {
             return false;
         }
@@ -102,11 +129,17 @@ impl CommandResponder {
             return;
         }
 
-        let host = Arc::clone(&self.host);
-        let reply = tokio::task::spawn_blocking(move || host.answer(command))
-            .await
-            .ok()
-            .flatten();
+        let reply = if command == ChatCommand::Commands {
+            self.service.command_list()
+        } else {
+            let host = Arc::clone(&self.host);
+            let display = self.service.chat_display();
+
+            tokio::task::spawn_blocking(move || host.answer(command, display))
+                .await
+                .ok()
+                .flatten()
+        };
         let Some(reply) = reply else {
             return;
         };
@@ -127,13 +160,17 @@ mod tests {
     use super::*;
 
     const COOLDOWN: Duration = Duration::from_secs(10);
+    const LIMITS: CommandLimits = CommandLimits {
+        per_command: COOLDOWN,
+        between_replies: MIN_GLOBAL_COOLDOWN,
+    };
 
     #[test]
     fn a_burst_gets_one_reply() {
         let mut cooldowns = Cooldowns::default();
         let start = Instant::now();
         let admitted = (0..50)
-            .filter(|_| cooldowns.admit(ChatCommand::Gap, COOLDOWN, start))
+            .filter(|_| cooldowns.admit(ChatCommand::Gap, LIMITS, start))
             .count();
 
         assert_eq!(admitted, 1);
@@ -144,9 +181,9 @@ mod tests {
         let mut cooldowns = Cooldowns::default();
         let start = Instant::now();
 
-        assert!(cooldowns.admit(ChatCommand::Gap, COOLDOWN, start));
-        assert!(!cooldowns.admit(ChatCommand::Gap, COOLDOWN, start + Duration::from_secs(9)));
-        assert!(cooldowns.admit(ChatCommand::Gap, COOLDOWN, start + COOLDOWN));
+        assert!(cooldowns.admit(ChatCommand::Gap, LIMITS, start));
+        assert!(!cooldowns.admit(ChatCommand::Gap, LIMITS, start + Duration::from_secs(9)));
+        assert!(cooldowns.admit(ChatCommand::Gap, LIMITS, start + COOLDOWN));
     }
 
     #[test]
@@ -154,9 +191,46 @@ mod tests {
         let mut cooldowns = Cooldowns::default();
         let start = Instant::now();
 
-        assert!(cooldowns.admit(ChatCommand::Gap, COOLDOWN, start));
-        assert!(!cooldowns.admit(ChatCommand::Pos, COOLDOWN, start + Duration::from_secs(1)));
-        assert!(cooldowns.admit(ChatCommand::Pos, COOLDOWN, start + GLOBAL_COOLDOWN));
+        assert!(cooldowns.admit(ChatCommand::Gap, LIMITS, start));
+        assert!(!cooldowns.admit(ChatCommand::Pos, LIMITS, start + Duration::from_secs(1)));
+        assert!(cooldowns.admit(ChatCommand::Pos, LIMITS, start + MIN_GLOBAL_COOLDOWN));
+    }
+
+    #[test]
+    fn a_longer_global_cooldown_holds_every_command_back() {
+        let limits = CommandLimits::new(10, 30);
+        let mut cooldowns = Cooldowns::default();
+        let start = Instant::now();
+
+        assert!(cooldowns.admit(ChatCommand::Gap, limits, start));
+        assert!(!cooldowns.admit(ChatCommand::Pos, limits, start + Duration::from_secs(29)));
+        assert!(cooldowns.admit(ChatCommand::Pos, limits, start + Duration::from_secs(30)));
+    }
+
+    #[test]
+    fn the_global_cooldown_cannot_go_under_what_twitch_allows() {
+        assert_eq!(
+            CommandLimits::new(10, 0).between_replies,
+            MIN_GLOBAL_COOLDOWN
+        );
+    }
+
+    #[test]
+    fn the_list_names_what_is_on_and_not_itself() {
+        let enabled = [ChatCommand::Pos, ChatCommand::Gap, ChatCommand::Commands];
+
+        assert_eq!(
+            command_list_reply(&enabled).as_deref(),
+            Some("Commands: !pos !gap")
+        );
+        assert_eq!(command_list_reply(&[ChatCommand::Commands]), None);
+    }
+
+    #[test]
+    fn the_list_cannot_read_as_a_command() {
+        let reply = command_list_reply(&[ChatCommand::Pos]).expect("a reply");
+
+        assert_eq!(ChatCommand::parse(&reply), None);
     }
 
     #[test]

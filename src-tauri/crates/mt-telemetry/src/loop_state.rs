@@ -16,7 +16,7 @@ use mt_computations::rating::last_race::LastRace;
 use mt_computations::strategy::pit_auto::PitAuto;
 use mt_computations::timing::reference_selection::{ReferenceChange, ReferenceSelection};
 use mt_computations::{field::driver_entries, ProcessorCommand, ProcessorRegistry};
-use mt_model::app::chat::ChatCommand;
+use mt_model::app::chat::{ChatCommand, ChatDisplay};
 use mt_model::app::crew::{CrewIntent, CrewReply};
 use mt_model::pit::pit_action::PitAction;
 use mt_model::sim::player::InputSample;
@@ -65,7 +65,7 @@ pub struct LoopState {
     /// Questions the Crew tab previews, each with where its answers go.
     pub pending_previews: Vec<(CrewIntent, SyncSender<Vec<CrewReply>>)>,
     /// Chat commands, each with where its reply goes.
-    pub pending_chat: Vec<(ChatCommand, SyncSender<Option<String>>)>,
+    pub pending_chat: Vec<(ChatCommand, ChatDisplay, SyncSender<Option<String>>)>,
     /// The race record last saved, so an unchanged one is not written again.
     pub last_race: Option<LastRace>,
     /// What the engineer answers from, held across the slower tiers.
@@ -156,8 +156,12 @@ impl LoopState {
             TelemetryCommand::CrewPreview { intent, answer } => {
                 self.pending_previews.push((intent, answer));
             }
-            TelemetryCommand::ChatCommand { command, answer } => {
-                self.pending_chat.push((command, answer));
+            TelemetryCommand::ChatCommand {
+                command,
+                display,
+                answer,
+            } => {
+                self.pending_chat.push((command, display, answer));
             }
         }
     }

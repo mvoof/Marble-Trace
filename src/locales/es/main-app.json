@@ -493,8 +493,10 @@
         "needsSignIn": "Inicia sesión en Twitch arriba: las respuestas se envían desde tu cuenta.",
         "needsReconnect": "Tu sesión de Twitch no tiene permiso para escribir en el chat. Reconéctate para concederlo.",
         "ownChannelOnly": "Los comandos solo funcionan en tu propio canal: el canal de Twitch de arriba debe ser la cuenta con la que iniciaste sesión.",
-        "cooldown": "Enfriamiento, segundos",
-        "cooldownDesc": "Cuánto tiempo calla un comando después de responder. Entre dos respuestas cualesquiera también pasan al menos 2 segundos.",
+        "cooldown": "Enfriamiento por comando, segundos",
+        "cooldownDesc": "Cuánto tiempo calla un comando después de responder.",
+        "globalCooldown": "Tiempo entre respuestas, segundos",
+        "globalCooldownDesc": "Limita el spam: dos respuestas nunca llegan más seguidas que esto, sean cuales sean los comandos. Nunca menos de 2 segundos, para respetar los límites de Twitch.",
         "list": {
           "pos": "Posición en la clase y en la general.",
           "gap": "Diferencia con los coches de delante y de detrás.",
@@ -505,7 +507,8 @@
           "info": "Circuito, coche y tipo de sesión.",
           "weather": "Temperatura del aire y de la pista, viento, estado de la pista.",
           "lastrace": "Circuito, resultado, incidentes, SR e iR tras tu última carrera. Muestra a todos tus incidentes y tu clasificación.",
-          "fuel": "Estado del combustible. Los rivales que vean el directo verán tu estrategia."
+          "fuel": "Estado del combustible. Los rivales que vean el directo verán tu estrategia.",
+          "commands": "La lista de comandos activados."
         }
       },
       "signedIn": "Sesión iniciada",

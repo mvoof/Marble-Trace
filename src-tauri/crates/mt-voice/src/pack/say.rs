@@ -2,7 +2,7 @@
 //! driver's unit system, with the pack's own words for yes and no, a sign or
 //! a faster lap.
 
-use mt_model::app::crew::{CrewArg, Quantity};
+use mt_model::app::crew::{in_units, CrewArg, Quantity, GALLONS_PER_LITER};
 use mt_model::app::crew_questions::SayFormat;
 
 use crate::pack::catalog::{
@@ -14,21 +14,10 @@ use crate::pack::LanguagePack;
 
 const SECONDS_PER_MINUTE: f64 = 60.0;
 const TENTHS: f64 = 10.0;
-const KMH_PER_MS: f64 = 3.6;
-const MPH_PER_MS: f64 = 2.236_936;
-const GALLONS_PER_LITER: f64 = 0.264_172;
-const FAHRENHEIT_PER_CELSIUS: f64 = 9.0 / 5.0;
-const FAHRENHEIT_AT_ZERO_CELSIUS: f64 = 32.0;
-/// Below this a volume is said to a tenth — fuel saved per lap is fractions.
-const WHOLE_VOLUME_FROM: f64 = 10.0;
 /// A text from the sim is cut here: it is put in as words, never a template.
 const MAX_SPOKEN_TEXT: usize = 80;
 
-/// What the unit system changes about a value said.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct Units {
-    pub imperial: bool,
-}
+pub use mt_model::app::crew::Units;
 
 /// The value as the reply says it, `None` when the pack lacks the words it
 /// needs.
@@ -79,44 +68,6 @@ pub fn measured(pack: &LanguagePack, units: Units, quantity: Quantity, metric: f
     match words(pack, unit_key(quantity, units.imperial), Some(number)) {
         Some(said) => Arg::Measured { number, said },
         None => Arg::Number(number),
-    }
-}
-
-/// A metric amount converted to the driver's units and rounded as said:
-/// a volume under ten to a tenth — fuel saved per lap is fractions.
-pub fn in_units(units: Units, quantity: Quantity, metric: f64) -> f64 {
-    match quantity {
-        Quantity::Speed => {
-            let scale = if units.imperial {
-                MPH_PER_MS
-            } else {
-                KMH_PER_MS
-            };
-
-            (metric * scale).round()
-        }
-        Quantity::Volume => {
-            let volume = if units.imperial {
-                metric * GALLONS_PER_LITER
-            } else {
-                metric
-            };
-
-            if volume.abs() < WHOLE_VOLUME_FROM {
-                tenths(volume)
-            } else {
-                volume.round()
-            }
-        }
-        Quantity::Temperature => {
-            let degrees = if units.imperial {
-                metric * FAHRENHEIT_PER_CELSIUS + FAHRENHEIT_AT_ZERO_CELSIUS
-            } else {
-                metric
-            };
-
-            degrees.round()
-        }
     }
 }
 

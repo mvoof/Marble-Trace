@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use mt_chat::commands::ChatHost;
 use mt_computations::crew::chat_answers::last_race_reply;
-use mt_model::app::chat::ChatCommand;
+use mt_model::app::chat::{ChatCommand, ChatDisplay};
 use mt_telemetry::control::TelemetryCommand;
 use mt_telemetry::state::TelemetryServiceState;
 use mt_telemetry::storage::load_last_race;
@@ -24,7 +24,7 @@ pub struct AppChatHost {
 }
 
 impl ChatHost for AppChatHost {
-    fn answer(&self, command: ChatCommand) -> Option<String> {
+    fn answer(&self, command: ChatCommand, display: ChatDisplay) -> Option<String> {
         if command == ChatCommand::Lastrace {
             let race = load_last_race(self.data_dir.as_deref()?)?;
 
@@ -40,6 +40,7 @@ impl ChatHost for AppChatHost {
 
         self.telemetry.send(TelemetryCommand::ChatCommand {
             command,
+            display,
             answer: sender,
         });
 

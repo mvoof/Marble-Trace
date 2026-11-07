@@ -2,10 +2,10 @@
 
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
-use super::commands::Cooldowns;
-use mt_model::app::chat::{ChatCommand, ChatCommandsConfig, ChatConfig};
+use super::commands::{command_list_reply, CommandLimits, Cooldowns};
+use mt_model::app::chat::{ChatCommand, ChatCommandsConfig, ChatConfig, ChatDisplay};
 use mt_model::utils::lock_or_recover;
 
 #[derive(Debug, Default)]
@@ -56,6 +56,15 @@ impl ChatServiceState {
         lock_or_recover(&self.commands).config = config;
     }
 
+    /// The reply to `!commands`, from the switches as they stand.
+    pub fn command_list(&self) -> Option<String> {
+        command_list_reply(&lock_or_recover(&self.commands).config.commands)
+    }
+
+    pub fn chat_display(&self) -> ChatDisplay {
+        lock_or_recover(&self.commands).config.display
+    }
+
     pub fn commands_enabled(&self) -> bool {
         lock_or_recover(&self.commands).config.enabled
     }
@@ -69,9 +78,12 @@ impl ChatServiceState {
             return false;
         }
 
-        let cooldown = Duration::from_secs(u64::from(desk.config.cooldown_seconds));
+        let limits = CommandLimits::new(
+            desk.config.cooldown_seconds,
+            desk.config.global_cooldown_seconds,
+        );
 
-        desk.cooldowns.admit(command, cooldown, now)
+        desk.cooldowns.admit(command, limits, now)
     }
 
     pub fn set_eventsub_owns_subs(&self, owns: bool) {
@@ -132,7 +144,9 @@ mod tests {
         ChatCommandsConfig {
             enabled,
             cooldown_seconds: 10,
+            global_cooldown_seconds: 2,
             commands,
+            display: ChatDisplay::default(),
         }
     }
 

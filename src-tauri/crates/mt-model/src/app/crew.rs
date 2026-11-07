@@ -182,6 +182,59 @@ pub enum Quantity {
     Speed,
 }
 
+pub const GALLONS_PER_LITER: f64 = 0.264_172;
+const KMH_PER_MS: f64 = 3.6;
+const MPH_PER_MS: f64 = 2.236_936;
+const FAHRENHEIT_PER_CELSIUS: f64 = 9.0 / 5.0;
+const FAHRENHEIT_AT_ZERO_CELSIUS: f64 = 32.0;
+/// A volume from here up is told in whole units.
+const WHOLE_VOLUME_FROM: f64 = 10.0;
+const TENTHS: f64 = 10.0;
+
+/// What the unit system changes about a value told.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Units {
+    pub imperial: bool,
+}
+
+/// A metric amount converted to the driver's units and rounded as it is told:
+/// a volume under ten to a tenth — fuel saved per lap is fractions.
+pub fn in_units(units: Units, quantity: Quantity, metric: f64) -> f64 {
+    match quantity {
+        Quantity::Speed => {
+            let scale = if units.imperial {
+                MPH_PER_MS
+            } else {
+                KMH_PER_MS
+            };
+
+            (metric * scale).round()
+        }
+        Quantity::Volume => {
+            let volume = if units.imperial {
+                metric * GALLONS_PER_LITER
+            } else {
+                metric
+            };
+
+            if volume.abs() < WHOLE_VOLUME_FROM {
+                (volume * TENTHS).round() / TENTHS
+            } else {
+                volume.round()
+            }
+        }
+        Quantity::Temperature => {
+            let degrees = if units.imperial {
+                metric * FAHRENHEIT_PER_CELSIUS + FAHRENHEIT_AT_ZERO_CELSIUS
+            } else {
+                metric
+            };
+
+            degrees.round()
+        }
+    }
+}
+
 /// The engineer's answer: a phrase key from the language pack and its values.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]

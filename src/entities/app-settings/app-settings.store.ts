@@ -21,6 +21,7 @@ import type { AppLanguage, UnitSystem } from '@shared/contracts/domain';
 import type {
   ChatCommand,
   ChatCommandsConfig,
+  ChatDisplay,
   CompanionApp,
   InstallMismatch,
   InteractHotkeyMode,
@@ -99,6 +100,8 @@ export const DEFAULT_APP_SETTINGS = {
   /** Viewers' commands in Twitch chat. Off until the streamer turns them on. */
   streamChatCommandsEnabled: false,
   streamChatCommandCooldownSeconds: 10,
+  /** The least time between any two replies. */
+  streamChatCommandGlobalCooldownSeconds: 2,
   /** `fuel` shows strategy to rivals on the stream, `lastrace` the streamer's
    *  incidents and rating: both wait to be switched on. */
   streamChatCommandSwitches: {
@@ -112,6 +115,7 @@ export const DEFAULT_APP_SETTINGS = {
     weather: true,
     lastrace: false,
     fuel: false,
+    commands: true,
   } as Record<ChatCommand, boolean>,
   /** Remote screens: serve layouts to devices on the network. App-level rather
    *  than per layout — one server, whichever layout is active. */
@@ -162,13 +166,16 @@ export const pitStrategyOf = (settings: AppSettings): PitStrategy => ({
 
 /** What the backend's chat commands run with (`set_chat_commands`). */
 export const chatCommandsConfigOf = (
-  settings: AppSettings
+  settings: AppSettings,
+  display: ChatDisplay
 ): ChatCommandsConfig => ({
   enabled: settings.streamChatCommandsEnabled,
   cooldownSeconds: settings.streamChatCommandCooldownSeconds,
+  globalCooldownSeconds: settings.streamChatCommandGlobalCooldownSeconds,
   commands: (
     Object.keys(settings.streamChatCommandSwitches) as ChatCommand[]
   ).filter((command) => settings.streamChatCommandSwitches[command]),
+  display,
 });
 
 /** What the backend's voice crew runs with (`configure_voice_crew`). */
@@ -546,6 +553,10 @@ export class AppSettingsStore {
 
   setStreamChatCommandCooldownSeconds(value: number) {
     this.appSettings.streamChatCommandCooldownSeconds = value;
+  }
+
+  setStreamChatCommandGlobalCooldownSeconds(value: number) {
+    this.appSettings.streamChatCommandGlobalCooldownSeconds = value;
   }
 
   setStreamChatCommandSwitch(command: ChatCommand, value: boolean) {

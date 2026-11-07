@@ -697,11 +697,16 @@ fn note_last_race(
     let (Some(session), Some(safety_rating)) = (session, bundle.safety_rating.as_ref()) else {
         return;
     };
+    // Rounded as the widget shows it: this runs ahead of the delivery rounding.
+    let mut safety_rating = safety_rating.clone();
+
+    quantize::safety_rating(&mut safety_rating);
+
     let source = FinishSource {
         session,
         session_num: frame.session.session_num,
         session_state: frame.session.session_state,
-        safety_rating,
+        safety_rating: &safety_rating,
         player: state
             .engineer
             .questions

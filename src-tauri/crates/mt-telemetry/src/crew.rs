@@ -119,8 +119,10 @@ fn answer_previews(state: &mut LoopState, session: Option<&SessionSnapshot>) {
 
 /// A reply nobody waits for any more is dropped.
 fn answer_chat_commands(state: &mut LoopState, session: Option<&SessionSnapshot>) {
-    for (command, answer) in std::mem::take(&mut state.pending_chat) {
-        let _ = answer.try_send(chat_answers::answer(command, &state.engineer, session));
+    for (command, display, answer) in std::mem::take(&mut state.pending_chat) {
+        let reply = chat_answers::answer(command, display, &state.engineer, session);
+
+        let _ = answer.try_send(reply);
     }
 }
 

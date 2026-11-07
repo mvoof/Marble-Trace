@@ -359,7 +359,7 @@ mod tests {
             class_finish: None,
             incidents: 2,
             estimated_sr: Some(2.81),
-            estimated_ir: None,
+            estimated_ir_delta: None,
         };
 
         assert_eq!(storage::load_last_race(&data_dir), None);
