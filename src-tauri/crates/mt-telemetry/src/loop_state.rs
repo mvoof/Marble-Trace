@@ -68,6 +68,10 @@ pub struct LoopState {
     pub pending_chat: Vec<(ChatCommand, ChatDisplay, SyncSender<Option<String>>)>,
     /// The race record last saved, so an unchanged one is not written again.
     pub last_race: Option<LastRace>,
+    /// The player's row of the driver table, held for the 4 Hz tier the race
+    /// is recorded on: the table is on another, and is kept whether or not
+    /// anyone can ask the engineer.
+    pub player_entry: Option<driver_entries::DriverEntry>,
     /// What the engineer answers from, held across the slower tiers.
     pub engineer: EngineerView,
     /// The fuel calculation's last `fill_now`. Computed on the 4 Hz tier, read
@@ -104,6 +108,7 @@ impl LoopState {
             pending_previews: Vec::new(),
             pending_chat: Vec::new(),
             last_race: None,
+            player_entry: None,
             engineer: EngineerView::default(),
             planned_fuel_l: None,
             references: ReferenceSelection::default(),
@@ -185,6 +190,7 @@ impl LoopState {
         self.pending_previews.clear();
         self.pending_chat.clear();
         self.last_race = None;
+        self.player_entry = None;
         self.engineer = EngineerView::default();
         self.planned_fuel_l = None;
         self.references = ReferenceSelection::default();
