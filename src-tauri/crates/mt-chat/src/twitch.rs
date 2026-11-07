@@ -14,6 +14,7 @@ use mt_model::contract::event_sink::EventSink;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tracing::{debug, info, warn};
 
+use super::commands::CommandResponder;
 use super::state::ChatServiceState;
 use super::{
     backoff_delay, color_for_author, now_ms, EVENT_CHAT_DELETION, EVENT_CHAT_MESSAGE,
@@ -374,6 +375,7 @@ pub async fn run(
     generation: u64,
     channel: String,
     credentials: Option<(String, String)>,
+    responder: Arc<CommandResponder>,
 ) {
     let channel = channel.trim().trim_start_matches('#').to_lowercase();
 
@@ -408,6 +410,7 @@ pub async fn run(
             generation,
             &channel,
             credentials.as_ref(),
+            &responder,
         )
         .await
         {
@@ -431,6 +434,7 @@ async fn connect_once(
     generation: u64,
     channel: &str,
     credentials: Option<&(String, String)>,
+    responder: &Arc<CommandResponder>,
 ) -> Result<(), String> {
     let (stream, _) = connect_async(IRC_WS_URL)
         .await
@@ -517,6 +521,10 @@ async fn connect_once(
                     return Ok(());
                 }
                 "PRIVMSG" => {
+                    if let Some(text) = &line.trailing {
+                        responder.on_message(text);
+                    }
+
                     if let Some(message) = message_from_privmsg(&line, service) {
                         if let Err(error) = sink.emit(EVENT_CHAT_MESSAGE, &message) {
                             warn!("failed to emit twitch message: {error}");

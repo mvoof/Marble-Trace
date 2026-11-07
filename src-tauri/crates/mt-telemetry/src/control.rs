@@ -9,6 +9,7 @@ use std::time::Instant;
 
 use mt_computations::strategy::fuel::FuelSettings;
 use mt_computations::strategy::pit_auto::PitAutoCommand;
+use mt_model::app::chat::{ChatCommand, ChatDisplay};
 use mt_model::app::crew::{CrewIntent, CrewReply};
 use mt_model::contract::defaults::{DEFAULT_CAR_LENGTH_M, DEFAULT_OVERLAY_UPDATE_HZ};
 use mt_model::pit::pit_action::PitAction;
@@ -80,6 +81,13 @@ pub enum TelemetryCommand {
     CrewPreview {
         intent: CrewIntent,
         answer: SyncSender<Vec<CrewReply>>,
+    },
+    /// A viewer's command in chat: answered on the next tick into `answer`,
+    /// `None` when the session has nothing to say.
+    ChatCommand {
+        command: ChatCommand,
+        display: ChatDisplay,
+        answer: SyncSender<Option<String>>,
     },
 }
 

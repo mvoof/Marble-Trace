@@ -317,7 +317,7 @@ async fn authorize(channel: &str) -> Option<(String, String)> {
     let token = secrets::access_token()?;
     let identity = helix::validate_token(&token).await.ok()?;
 
-    if !helix::missing_scopes(&identity.scopes).is_empty() {
+    if !helix::can_use_eventsub(&identity.scopes) {
         debug!("eventsub idle: the stored token predates its scopes");
 
         return None;

@@ -23,8 +23,8 @@ const MS_PER_SECOND = 1000;
  * Chosen over the authorization code flow because it is the only user-token
  * flow a desktop app can complete without shipping a client secret: the app
  * shows a short code, the user types it on twitch.tv/activate, and a refresh
- * token comes back. Reading chat works without any of this — signing in only
- * unlocks the viewer count and uptime.
+ * token comes back. Reading chat works without any of this — signing in
+ * unlocks the viewer count, uptime and the replies to viewers' chat commands.
  *
  * No token ever reaches this store. They are written to the OS credential store
  * by the backend, which also refreshes them when Helix rejects one; all that

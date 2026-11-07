@@ -19,6 +19,9 @@ import { createRemoteToken } from '@shared/lib/remote-screen';
 import i18n from '@/i18n';
 import type { AppLanguage, UnitSystem } from '@shared/contracts/domain';
 import type {
+  ChatCommand,
+  ChatCommandsConfig,
+  ChatDisplay,
   CompanionApp,
   InstallMismatch,
   InteractHotkeyMode,
@@ -37,7 +40,7 @@ export const resolveAppLanguage = (language: AppLanguage) =>
 /** The language the crew speaks; `app` follows the interface. */
 export type VoiceLanguage = 'app' | 'ru' | 'en' | 'es' | 'zh';
 
-const DEFAULT_APP_SETTINGS = {
+export const DEFAULT_APP_SETTINGS = {
   // Interact mode: mouse events reach the overlay without unlocking widget
   // dragging. Whether its binding toggles or is held is a property of the
   // action rather than of the binding, so it stays here.
@@ -94,6 +97,26 @@ const DEFAULT_APP_SETTINGS = {
   streamChatAuthRevision: 0,
   streamChatHideCommands: true,
   streamChatIgnoredBots: 'Nightbot, StreamElements, Moobot',
+  /** Viewers' commands in Twitch chat. Off until the streamer turns them on. */
+  streamChatCommandsEnabled: false,
+  streamChatCommandCooldownSeconds: 10,
+  /** The least time between any two replies. */
+  streamChatCommandGlobalCooldownSeconds: 2,
+  /** `fuel` shows strategy to rivals on the stream, `lastrace` the streamer's
+   *  incidents and rating: both wait to be switched on. */
+  streamChatCommandSwitches: {
+    pos: true,
+    gap: true,
+    lap: true,
+    best: true,
+    sof: true,
+    car: true,
+    info: true,
+    weather: true,
+    lastrace: false,
+    fuel: false,
+    commands: true,
+  } as Record<ChatCommand, boolean>,
   /** Remote screens: serve layouts to devices on the network. App-level rather
    *  than per layout — one server, whichever layout is active. */
   remoteEnabled: false,
@@ -139,6 +162,20 @@ export const pitStrategyOf = (settings: AppSettings): PitStrategy => ({
   pitAutoTires: settings.pitAutoTires,
   pitAutoTireWearThreshold: settings.pitAutoTireWearThreshold,
   pitFuelAdjustStep: settings.pitFuelAdjustStep,
+});
+
+/** What the backend's chat commands run with (`set_chat_commands`). */
+export const chatCommandsConfigOf = (
+  settings: AppSettings,
+  display: ChatDisplay
+): ChatCommandsConfig => ({
+  enabled: settings.streamChatCommandsEnabled,
+  cooldownSeconds: settings.streamChatCommandCooldownSeconds,
+  globalCooldownSeconds: settings.streamChatCommandGlobalCooldownSeconds,
+  commands: (
+    Object.keys(settings.streamChatCommandSwitches) as ChatCommand[]
+  ).filter((command) => settings.streamChatCommandSwitches[command]),
+  display,
 });
 
 /** What the backend's voice crew runs with (`configure_voice_crew`). */
@@ -508,6 +545,22 @@ export class AppSettingsStore {
 
   setStreamChatIgnoredBots(value: string) {
     this.appSettings.streamChatIgnoredBots = value;
+  }
+
+  setStreamChatCommandsEnabled(value: boolean) {
+    this.appSettings.streamChatCommandsEnabled = value;
+  }
+
+  setStreamChatCommandCooldownSeconds(value: number) {
+    this.appSettings.streamChatCommandCooldownSeconds = value;
+  }
+
+  setStreamChatCommandGlobalCooldownSeconds(value: number) {
+    this.appSettings.streamChatCommandGlobalCooldownSeconds = value;
+  }
+
+  setStreamChatCommandSwitch(command: ChatCommand, value: boolean) {
+    this.appSettings.streamChatCommandSwitches[command] = value;
   }
 
   setAutoSwitchLayouts(value: boolean) {

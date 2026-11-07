@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Twitch Chat Commands:** Viewers type `!pos`, `!gap`, `!lap`, `!best`, `!sof`, `!car`, `!info`, `!weather`, `!lastrace`, `!fuel` or `!commands` in your Twitch chat and Marble Trace replies there from your account with live session data. Off by default, with a switch per command and two limits against spam: a cooldown per command and a minimum time between any replies; `!fuel` and `!lastrace` start switched off. Needs one more Twitch sign-in to grant the permission to post in chat.
 - **Team Names in Standings:** In team events the team sits under the driver's name, in a smaller size. The name steps down a size so rows grow as little as possible, and a setting switches it off.
 
 ### Changed

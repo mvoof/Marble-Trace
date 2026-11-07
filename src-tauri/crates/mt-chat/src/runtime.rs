@@ -11,6 +11,7 @@ use std::sync::Arc;
 use mt_model::contract::event_sink::EventSink;
 use tracing::{info, warn};
 
+use super::commands::{ChatHost, CommandResponder};
 use super::state::ChatServiceState;
 use super::{eventsub, helix, resolve_client_id, secrets, twitch, youtube};
 use mt_model::app::chat::ChatConfig;
@@ -22,7 +23,12 @@ fn non_empty(value: &Option<String>) -> Option<String> {
         .filter(|trimmed| !trimmed.is_empty())
 }
 
-pub fn start(sink: Arc<dyn EventSink>, service: Arc<ChatServiceState>, config: ChatConfig) {
+pub fn start(
+    sink: Arc<dyn EventSink>,
+    service: Arc<ChatServiceState>,
+    host: Arc<dyn ChatHost>,
+    config: ChatConfig,
+) {
     service.running.store(true, Ordering::SeqCst);
 
     let generation = service.next_generation();
@@ -91,6 +97,13 @@ pub fn start(sink: Arc<dyn EventSink>, service: Arc<ChatServiceState>, config: C
         let sink_for_irc = sink.clone();
         let service_for_irc = Arc::clone(&service);
         let channel_for_irc = channel.clone();
+        let responder = Arc::new(CommandResponder {
+            host,
+            service: Arc::clone(&service),
+            generation,
+            channel: channel.trim().trim_start_matches('#').to_lowercase(),
+            client_id: client_id.clone(),
+        });
 
         // Signed in: IRC connects as the user's own account. Anonymous
         // otherwise — reading works either way, so a stale token silently
@@ -110,6 +123,7 @@ pub fn start(sink: Arc<dyn EventSink>, service: Arc<ChatServiceState>, config: C
                 generation,
                 channel_for_irc,
                 credentials,
+                responder,
             )
             .await;
         });

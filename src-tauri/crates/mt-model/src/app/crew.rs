@@ -182,6 +182,75 @@ pub enum Quantity {
     Speed,
 }
 
+pub const GALLONS_PER_LITER: f64 = 0.264_172;
+const KMH_PER_MS: f64 = 3.6;
+const MPH_PER_MS: f64 = 2.236_936;
+const FAHRENHEIT_PER_CELSIUS: f64 = 9.0 / 5.0;
+const FAHRENHEIT_AT_ZERO_CELSIUS: f64 = 32.0;
+/// A volume from here up is told in whole units.
+const WHOLE_VOLUME_FROM: f64 = 10.0;
+pub const TENTHS: f64 = 10.0;
+pub const THOUSANDTHS: f64 = 1000.0;
+const SECONDS_PER_MINUTE: f64 = 60.0;
+
+/// What the unit system changes about a value told.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct Units {
+    pub imperial: bool,
+}
+
+/// A metric amount converted to the driver's units and rounded as it is told:
+/// a volume under ten to a tenth — fuel saved per lap is fractions.
+pub fn in_units(units: Units, quantity: Quantity, metric: f64) -> f64 {
+    match quantity {
+        Quantity::Speed => {
+            let scale = if units.imperial {
+                MPH_PER_MS
+            } else {
+                KMH_PER_MS
+            };
+
+            (metric * scale).round()
+        }
+        Quantity::Volume => {
+            let volume = if units.imperial {
+                metric * GALLONS_PER_LITER
+            } else {
+                metric
+            };
+
+            if volume.abs() < WHOLE_VOLUME_FROM {
+                (volume * TENTHS).round() / TENTHS
+            } else {
+                volume.round()
+            }
+        }
+        Quantity::Temperature => {
+            let degrees = if units.imperial {
+                metric * FAHRENHEIT_PER_CELSIUS + FAHRENHEIT_AT_ZERO_CELSIUS
+            } else {
+                metric
+            };
+
+            degrees.round()
+        }
+    }
+}
+
+/// A time split into minutes and seconds at a given precision, in steps per
+/// second. Rounded before it is split: 59.9996 at thousandths is one minute
+/// flat, never 60 seconds.
+pub fn minutes_and_seconds(seconds: f64, steps_per_second: f64) -> (f64, f64) {
+    let steps = (seconds * steps_per_second).round();
+    let steps_per_minute = SECONDS_PER_MINUTE * steps_per_second;
+    let minutes = (steps / steps_per_minute).floor();
+
+    (
+        minutes,
+        (steps - minutes * steps_per_minute) / steps_per_second,
+    )
+}
+
 /// The engineer's answer: a phrase key from the language pack and its values.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -303,4 +372,23 @@ pub enum CrewRadioEvent {
         intents: Vec<String>,
         confidence: f32,
     },
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_time_rounding_up_to_the_minute_carries_into_it() {
+        assert_eq!(minutes_and_seconds(59.9996, THOUSANDTHS), (1.0, 0.0));
+        assert_eq!(minutes_and_seconds(119.9996, THOUSANDTHS), (2.0, 0.0));
+        assert_eq!(minutes_and_seconds(59.96, TENTHS), (1.0, 0.0));
+    }
+
+    #[test]
+    fn a_time_keeps_its_precision_exact() {
+        assert_eq!(minutes_and_seconds(92.456, THOUSANDTHS), (1.0, 32.456));
+        assert_eq!(minutes_and_seconds(92.34, TENTHS), (1.0, 32.3));
+        assert_eq!(minutes_and_seconds(59.94, TENTHS), (0.0, 59.9));
+    }
 }

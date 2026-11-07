@@ -5,6 +5,7 @@
 //! sim data, runs on its own connections, and must keep working while no sim is
 //! running at all.
 
+pub mod commands;
 pub mod eventsub;
 pub mod helix;
 pub mod runtime;

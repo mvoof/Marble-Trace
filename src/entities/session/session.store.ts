@@ -5,6 +5,7 @@ import type {
   SessionSnapshot,
   SessionType,
 } from '@shared/contracts/generated/bindings';
+import { computeClassSof } from '@shared/lib/driver';
 
 export class SessionStore {
   session: SessionFrame | null = null;
@@ -20,6 +21,27 @@ export class SessionStore {
       session: observableRef,
       sessionInfo: observableRef,
     });
+  }
+
+  /** The SOF Standings shows for the player's class; `null` before a session. */
+  get playerClassSof(): number | null {
+    const info = this.sessionInfo;
+    const player = info?.cars.find((car) => car.carIdx === info.playerCarIdx);
+
+    if (!info || !player) {
+      return null;
+    }
+
+    const sof = computeClassSof(
+      info.cars.filter(
+        (car) =>
+          car.carClassId === player.carClassId &&
+          !car.isPaceCar &&
+          !car.isSpectator
+      )
+    );
+
+    return sof > 0 ? sof : null;
   }
 
   get currentSessionType(): SessionType | null {

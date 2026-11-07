@@ -27,9 +27,11 @@ const STREAMS_URL: &str = "https://api.twitch.tv/helix/streams";
 const USERS_URL: &str = "https://api.twitch.tv/helix/users";
 const GLOBAL_BADGES_URL: &str = "https://api.twitch.tv/helix/chat/badges/global";
 const CHANNEL_BADGES_URL: &str = "https://api.twitch.tv/helix/chat/badges";
+const CHAT_MESSAGES_URL: &str = "https://api.twitch.tv/helix/chat/messages";
 const DEVICE_GRANT: &str = "urn:ietf:params:oauth:grant-type:device_code";
 
-/// Read-only scopes. Nothing here writes to chat or reads private data.
+/// Nothing here reads private data, and the one write is `user:write:chat`:
+/// the replies to chat commands, posted as the signed-in user.
 ///
 /// `moderator:read:followers` and `channel:read:subscriptions` exist for
 /// EventSub: follows never arrive over IRC at all, and subscriptions arrive
@@ -39,11 +41,21 @@ const DEVICE_GRANT: &str = "urn:ietf:params:oauth:grant-type:device_code";
 /// The set is requested at sign-in and baked into the token that comes back, so
 /// a token minted before a scope was added never gains it — refreshing carries
 /// the old set forward. That is what `missing_scopes` is for.
-const REQUIRED_SCOPES: [&str; 3] = [
+const REQUIRED_SCOPES: [&str; 4] = [
     "chat:read",
     "moderator:read:followers",
     "channel:read:subscriptions",
+    "user:write:chat",
 ];
+
+/// What EventSub needs of `REQUIRED_SCOPES`: a token that only lacks the write
+/// scope keeps its follows and subscription events.
+const EVENTSUB_SCOPES: [&str; 2] = ["moderator:read:followers", "channel:read:subscriptions"];
+
+const CHAT_WRITE_SCOPE: &str = "user:write:chat";
+
+/// Twitch refuses anything longer.
+const MAX_CHAT_MESSAGE_CHARS: usize = 500;
 
 /// Helix rate limits are generous (800/min); the ceiling here is taste, not
 /// policy — a viewer number that moves faster than once a minute is noise.
@@ -268,8 +280,7 @@ pub struct TokenIdentity {
     pub login: String,
     /// Numeric user id. `channel.follow` needs it as `moderator_user_id`, and
     /// resolving it from the login costs an extra Helix call. Read by the
-    /// EventSub client only, which is why nothing in this module touches it.
-    #[allow(dead_code)]
+    /// EventSub client and the chat replies.
     pub user_id: String,
     pub scopes: Vec<String>,
 }
@@ -282,6 +293,18 @@ pub fn missing_scopes(granted: &[String]) -> Vec<String> {
         .filter(|required| !granted.iter().any(|scope| scope == *required))
         .map(|required| (*required).to_string())
         .collect()
+}
+
+/// Whether EventSub can run on this token.
+pub fn can_use_eventsub(granted: &[String]) -> bool {
+    EVENTSUB_SCOPES
+        .iter()
+        .all(|required| granted.iter().any(|scope| scope == required))
+}
+
+/// Whether chat commands can reply with this token.
+pub fn can_send_chat(granted: &[String]) -> bool {
+    granted.iter().any(|scope| scope == CHAT_WRITE_SCOPE)
 }
 
 /// Doubles as a liveness check — a 401 here means the stored token is dead.
@@ -354,6 +377,49 @@ pub async fn current_identity() -> Option<TokenIdentity> {
         .await
         .ok()
         .filter(|identity| !identity.login.is_empty())
+}
+
+/// Posts a message to the signed-in user's own chat, as that user.
+pub async fn send_chat_message(
+    client_id: &str,
+    user_id: &str,
+    message: &str,
+) -> Result<(), String> {
+    let Some(token) = secrets::access_token() else {
+        return Err("no twitch token stored".to_string());
+    };
+    let message: String = message.chars().take(MAX_CHAT_MESSAGE_CHARS).collect();
+    let response = client()?
+        .post(CHAT_MESSAGES_URL)
+        .header("Client-Id", client_id)
+        .header("Authorization", format!("Bearer {token}"))
+        .json(&serde_json::json!({
+            "broadcaster_id": user_id,
+            "sender_id": user_id,
+            "message": message,
+        }))
+        .send()
+        .await
+        .map_err(|error| format!("chat messages: {error}"))?;
+
+    if !response.status().is_success() {
+        return Err(format!("chat messages failed ({})", response.status()));
+    }
+
+    let parsed: serde_json::Value = response
+        .json()
+        .await
+        .map_err(|error| format!("chat messages json: {error}"))?;
+    let sent = &parsed["data"][0];
+
+    if sent["is_sent"].as_bool() == Some(true) {
+        return Ok(());
+    }
+
+    Err(format!(
+        "twitch dropped the message: {}",
+        sent["drop_reason"]["message"].as_str().unwrap_or("unknown")
+    ))
 }
 
 /// Resolves a login to the numeric broadcaster id that badge and stream
@@ -763,6 +829,21 @@ mod tests {
             parse_rfc3339_seconds("2024-02-29T12:00:00Z"),
             Some(1_709_208_000)
         );
+    }
+
+    #[test]
+    fn a_token_without_the_write_scope_keeps_eventsub() {
+        let granted: Vec<String> = [
+            "chat:read",
+            "moderator:read:followers",
+            "channel:read:subscriptions",
+        ]
+        .map(str::to_string)
+        .to_vec();
+
+        assert!(can_use_eventsub(&granted));
+        assert!(!can_send_chat(&granted));
+        assert_eq!(missing_scopes(&granted), vec!["user:write:chat"]);
     }
 
     #[test]

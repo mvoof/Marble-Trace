@@ -1,6 +1,6 @@
 //! The files the telemetry layer keeps under the app data directory: one
 //! recorded shape per track, one reference lap per track, car and condition,
-//! and the Safety Rating state of the event in progress.
+//! the Safety Rating state of the event in progress, and the race finished last.
 //!
 //! Plain functions on a directory, so the I/O worker and the commands share
 //! them and a test can point them at a temporary one. Nothing here may be
@@ -11,6 +11,7 @@ use std::sync::Arc;
 
 use tracing::{info, warn};
 
+use mt_computations::rating::last_race::LastRace;
 use mt_computations::rating::safety_rating::SafetyRatingState;
 use mt_computations::timing::reference_selection::StoredReferences;
 use mt_model::computed::reference_lap::{ReferenceLapData, TrackCondition};
@@ -21,6 +22,8 @@ const TRACKS_DIR: &str = "tracks";
 const REFERENCE_LAPS_DIR: &str = "reference_laps";
 /// One file, overwritten: the Safety Rating state of the event in progress.
 const SAFETY_RATING_FILE: &str = "safety_rating.json";
+/// One file, overwritten: the race finished last.
+const LAST_RACE_FILE: &str = "last_race.json";
 const FILE_VERSION: u32 = 1;
 
 pub fn track_shape_path(data_dir: &Path, track_id: i32) -> PathBuf {
@@ -228,4 +231,34 @@ pub fn read_stored_references(data_dir: &Path, session: &SessionSnapshot) -> Sto
         dry: read_lap(TrackCondition::Dry),
         wet: read_lap(TrackCondition::Wet),
     }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct StoredLastRace {
+    version: u32,
+    race: LastRace,
+}
+
+/// Overwrites the record of the last race.
+pub fn save_last_race(data_dir: &Path, race: LastRace) {
+    let stored = StoredLastRace {
+        version: FILE_VERSION,
+        race,
+    };
+
+    if fs::create_dir_all(data_dir).is_err() {
+        return;
+    }
+
+    if let Ok(json) = serde_json::to_string(&stored) {
+        let _ = fs::write(data_dir.join(LAST_RACE_FILE), json);
+    }
+}
+
+/// The last race finished, from any earlier run of the app.
+pub fn load_last_race(data_dir: &Path) -> Option<LastRace> {
+    let json = fs::read_to_string(data_dir.join(LAST_RACE_FILE)).ok()?;
+    let stored = serde_json::from_str::<StoredLastRace>(&json).ok()?;
+
+    (stored.version >= FILE_VERSION).then_some(stored.race)
 }

@@ -613,6 +613,43 @@ export type ChatBadge = {
 };
 
 /**
+ * What a viewer can ask in the streamer's Twitch chat.
+ */
+export type ChatCommand =
+  | 'pos'
+  | 'gap'
+  | 'lap'
+  | 'best'
+  | 'sof'
+  | 'car'
+  | 'info'
+  | 'weather'
+  | 'lastrace'
+  | 'fuel'
+  | 'commands';
+
+/**
+ * The chat commands as the streamer set them. Apart from `ChatConfig`:
+ * flipping a switch must not reconnect the chat.
+ */
+export type ChatCommandsConfig = {
+  enabled: boolean;
+  /**
+   * How long a command stays quiet after it was let through.
+   */
+  cooldownSeconds: number;
+  /**
+   * How far apart any two replies are, whichever commands they answer.
+   */
+  globalCooldownSeconds: number;
+  /**
+   * The commands switched on.
+   */
+  commands: ChatCommand[];
+  display: ChatDisplay;
+};
+
+/**
  * Everything the chat runtime needs to connect, sent from the frontend when
  * the user edits the source settings.
  */
@@ -658,6 +695,12 @@ export type ChatDeletion = {
    */
   authorName: string | null;
 };
+
+/**
+ * What a chat reply takes from the windows, so it reads as the overlay does:
+ * the streamer's units, and the SOF of their class as Standings works it out.
+ */
+export type ChatDisplay = { imperial: boolean; classSof: number | null };
 
 /**
  * A message is a sequence of fragments, never a raw string: emote positions

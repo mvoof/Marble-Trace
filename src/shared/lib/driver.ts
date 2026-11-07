@@ -168,7 +168,9 @@ export const parseDriverFlags = (rawFlags: number): FlagType => {
  * Lives here rather than with the Standings widget because the standings store
  * needs it too, and a store must not reach into the UI layer.
  */
-export const computeClassSof = (drivers: CarIdentity[]): number => {
+export const computeClassSof = (
+  drivers: Pick<CarIdentity, 'iRating'>[]
+): number => {
   if (drivers.length === 0) return 0;
 
   const total = drivers.reduce((sum, driver) => sum + driver.iRating, 0);

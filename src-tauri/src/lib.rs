@@ -1,5 +1,6 @@
 #[cfg(feature = "dev")]
 mod bindings;
+mod chat_host;
 mod commands;
 mod hotkeys;
 mod logging;

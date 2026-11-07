@@ -5,7 +5,9 @@
 //! pack's. A pit command is confirmed only once it went out, so the driver
 //! never hears "copy" for an order the sim did not take.
 
-use mt_model::app::crew::{CompoundKind, CrewArg, CrewIntent, CrewReply, Quantity};
+use mt_model::app::crew::{
+    minutes_and_seconds, CompoundKind, CrewArg, CrewIntent, CrewReply, Quantity, TENTHS,
+};
 use mt_model::pit::pit_action::{PitAction, TireSet};
 use mt_model::pit::pit_command::PitCommandKind;
 use mt_model::sim::enums::TrackSurface;
@@ -268,7 +270,7 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
         CrewIntent::QueryFuel => match (view.fuel_l, view.fuel_laps) {
             (Some(liters), Some(laps)) => CrewReply::plain("engineer.answer.fuel")
                 .measure(FUEL_VALUE, Quantity::Volume, f64::from(liters))
-                .number("laps", f64::from(laps.floor().max(0.0))),
+                .number("laps", f64::from(whole_laps(laps))),
             _ => no_data(),
         },
         CrewIntent::QueryGapAhead => {
@@ -278,15 +280,14 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
         CrewIntent::QueryPosition => view.class_position.map_or_else(no_data, |position| {
             CrewReply::plain("engineer.answer.position").number("position", f64::from(position))
         }),
-        CrewIntent::QueryLapsLeft => match (view.laps_left, view.seconds_left) {
-            (Some(laps), _) if (0..UNLIMITED_LAPS).contains(&laps) => {
+        CrewIntent::QueryLapsLeft => match session_left(view) {
+            Some(SessionLeft::Laps(laps)) => {
                 CrewReply::plain("engineer.answer.lapsLeft").number("laps", f64::from(laps))
             }
-            (_, Some(seconds)) if (0.0..UNLIMITED_SECONDS).contains(&seconds) => {
-                CrewReply::plain("engineer.answer.timeLeft")
-                    .number("minutes", (seconds / SECONDS_PER_MINUTE).floor())
+            Some(SessionLeft::Minutes(minutes)) => {
+                CrewReply::plain("engineer.answer.timeLeft").number("minutes", minutes)
             }
-            _ => no_data(),
+            None => no_data(),
         },
         CrewIntent::QueryLastLap => lap_reply("engineer.answer.lastLap", view.last_lap_s),
         CrewIntent::QueryBestLap => lap_reply("engineer.answer.bestLap", view.best_lap_s),
@@ -323,19 +324,43 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
     }
 }
 
-/// The pack's word for the track surface, by the sim's wetness level — the
-/// levels the weather widget shows.
+/// The sim's wetness levels from 1, as the weather widget shows them: the
+/// pack's key, and the words chat says.
+const SURFACES: [(&str, &str); 7] = [
+    ("engineer.surface.dry", "dry track"),
+    ("engineer.surface.mostlyDry", "mostly dry track"),
+    ("engineer.surface.veryLightlyWet", "very lightly wet track"),
+    ("engineer.surface.lightlyWet", "lightly wet track"),
+    ("engineer.surface.moderatelyWet", "moderately wet track"),
+    ("engineer.surface.veryWet", "very wet track"),
+    ("engineer.surface.extremelyWet", "extremely wet track"),
+];
+
+fn surface(track_wetness: Option<i32>) -> Option<(&'static str, &'static str)> {
+    let level = track_wetness.filter(|level| *level >= 1)?;
+    let index = usize::try_from(level - 1).ok()?;
+
+    SURFACES.get(index.min(SURFACES.len() - 1)).copied()
+}
+
 fn surface_key(track_wetness: Option<i32>) -> &'static str {
-    match track_wetness {
-        Some(1) => "engineer.surface.dry",
-        Some(2) => "engineer.surface.mostlyDry",
-        Some(3) => "engineer.surface.veryLightlyWet",
-        Some(4) => "engineer.surface.lightlyWet",
-        Some(5) => "engineer.surface.moderatelyWet",
-        Some(6) => "engineer.surface.veryWet",
-        Some(level) if level >= 7 => "engineer.surface.extremelyWet",
-        _ => "engineer.surface.unknown",
-    }
+    surface(track_wetness).map_or("engineer.surface.unknown", |(key, _)| key)
+}
+
+pub(crate) fn surface_words(track_wetness: Option<i32>) -> Option<&'static str> {
+    surface(track_wetness).map(|(_, words)| words)
+}
+
+/// More than one class of real cars in the session.
+pub(crate) fn is_multiclass(session: &SessionSnapshot) -> bool {
+    let mut classes = session
+        .cars
+        .iter()
+        .filter(|car| !car.is_pace_car && !car.is_spectator && !car.user_name.is_empty())
+        .map(|car| car.car_class_id);
+    let first = classes.next();
+
+    classes.any(|class| Some(class) != first)
 }
 
 /// A reply about each car the heard number names — two cars may wear the
@@ -441,11 +466,32 @@ fn lap_reply(key: &str, lap_s: Option<f32>) -> CrewReply {
 }
 
 fn with_lap_time(reply: CrewReply, lap_s: f32) -> CrewReply {
-    let lap = f64::from(lap_s);
-    let minutes = (lap / SECONDS_PER_MINUTE).floor();
-    let seconds = ((lap - minutes * SECONDS_PER_MINUTE) * 10.0).round() / 10.0;
+    let (minutes, seconds) = minutes_and_seconds(f64::from(lap_s), TENTHS);
 
     reply.number("minutes", minutes).number("seconds", seconds)
+}
+
+/// What is left of the session, in the terms it is limited by.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) enum SessionLeft {
+    Laps(i32),
+    /// Whole minutes.
+    Minutes(f64),
+}
+
+pub(crate) fn session_left(view: &EngineerView) -> Option<SessionLeft> {
+    match (view.laps_left, view.seconds_left) {
+        (Some(laps), _) if (0..UNLIMITED_LAPS).contains(&laps) => Some(SessionLeft::Laps(laps)),
+        (_, Some(seconds)) if (0.0..UNLIMITED_SECONDS).contains(&seconds) => {
+            Some(SessionLeft::Minutes((seconds / SECONDS_PER_MINUTE).floor()))
+        }
+        _ => None,
+    }
+}
+
+/// The laps the fuel lasts, as complete laps.
+pub(crate) fn whole_laps(laps: f32) -> f32 {
+    laps.floor().max(0.0)
 }
 
 /// The session's compound of that kind: its type names it ("Wet", "Soft"…);
@@ -556,16 +602,7 @@ pub fn track_neighbours(
     let Some(player) = entries.iter().find(|entry| entry.is_player) else {
         return (None, None);
     };
-    let multiclass = {
-        let mut classes = session
-            .cars
-            .iter()
-            .filter(racing)
-            .map(|car| car.car_class_id);
-        let first = classes.next();
-
-        classes.any(|class| Some(class) != first)
-    };
+    let multiclass = is_multiclass(session);
     let nearest = |ahead: bool| {
         entries
             .iter()

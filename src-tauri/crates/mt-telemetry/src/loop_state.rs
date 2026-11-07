@@ -12,9 +12,11 @@ use crate::control::{TelemetryCommand, TelemetryConfig};
 use crate::delivery::publications::PublicationRegistry;
 use crate::state::TelemetryServiceState;
 use mt_computations::crew::engineer::EngineerView;
+use mt_computations::rating::last_race::LastRace;
 use mt_computations::strategy::pit_auto::PitAuto;
 use mt_computations::timing::reference_selection::{ReferenceChange, ReferenceSelection};
 use mt_computations::{field::driver_entries, ProcessorCommand, ProcessorRegistry};
+use mt_model::app::chat::{ChatCommand, ChatDisplay};
 use mt_model::app::crew::{CrewIntent, CrewReply};
 use mt_model::pit::pit_action::PitAction;
 use mt_model::sim::player::InputSample;
@@ -62,6 +64,14 @@ pub struct LoopState {
     pub pending_crew: Vec<CrewIntent>,
     /// Questions the Crew tab previews, each with where its answers go.
     pub pending_previews: Vec<(CrewIntent, SyncSender<Vec<CrewReply>>)>,
+    /// Chat commands, each with where its reply goes.
+    pub pending_chat: Vec<(ChatCommand, ChatDisplay, SyncSender<Option<String>>)>,
+    /// The race record last saved, so an unchanged one is not written again.
+    pub last_race: Option<LastRace>,
+    /// The player's row of the driver table, held for the 4 Hz tier the race
+    /// is recorded on: the table is on another, and is kept whether or not
+    /// anyone can ask the engineer.
+    pub player_entry: Option<driver_entries::DriverEntry>,
     /// What the engineer answers from, held across the slower tiers.
     pub engineer: EngineerView,
     /// The fuel calculation's last `fill_now`. Computed on the 4 Hz tier, read
@@ -96,6 +106,9 @@ impl LoopState {
             pending_pit_actions: Vec::new(),
             pending_crew: Vec::new(),
             pending_previews: Vec::new(),
+            pending_chat: Vec::new(),
+            last_race: None,
+            player_entry: None,
             engineer: EngineerView::default(),
             planned_fuel_l: None,
             references: ReferenceSelection::default(),
@@ -148,6 +161,13 @@ impl LoopState {
             TelemetryCommand::CrewPreview { intent, answer } => {
                 self.pending_previews.push((intent, answer));
             }
+            TelemetryCommand::ChatCommand {
+                command,
+                display,
+                answer,
+            } => {
+                self.pending_chat.push((command, display, answer));
+            }
         }
     }
 
@@ -168,6 +188,9 @@ impl LoopState {
         self.pending_pit_actions.clear();
         self.pending_crew.clear();
         self.pending_previews.clear();
+        self.pending_chat.clear();
+        self.last_race = None;
+        self.player_entry = None;
         self.engineer = EngineerView::default();
         self.planned_fuel_l = None;
         self.references = ReferenceSelection::default();
