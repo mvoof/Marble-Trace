@@ -12,13 +12,11 @@ use mt_model::app::crew::{in_units, Quantity, Units};
 use mt_model::sim::session::{CarEntry, SessionSnapshot};
 
 use crate::crew::engineer::{
-    is_multiclass, surface_words, EngineerView, Gap, UNLIMITED_LAPS, UNLIMITED_SECONDS,
+    is_multiclass, minutes_and_seconds, session_left, surface_words, whole_laps, EngineerView, Gap,
+    SessionLeft,
 };
 use crate::rating::last_race::LastRace;
 
-const SECONDS_PER_MINUTE: f64 = 60.0;
-const MILLIS_PER_SECOND: i64 = 1000;
-const MILLIS_PER_MINUTE: i64 = 60_000;
 const SEPARATOR: &str = ", ";
 
 /// The reply to a command answered from the session. `!lastrace` reads the
@@ -134,29 +132,19 @@ fn lap(view: &EngineerView) -> Option<String> {
         .lap
         .filter(|lap| *lap > 0)
         .map(|lap| format!("Lap {lap}"));
-    let left = match (view.laps_left, view.seconds_left) {
-        (Some(1), _) => Some("1 lap left".to_string()),
-        (Some(laps), _) if (0..UNLIMITED_LAPS).contains(&laps) => Some(format!("{laps} laps left")),
-        (_, Some(seconds)) if (0.0..UNLIMITED_SECONDS).contains(&seconds) => Some(format!(
-            "{} min left",
-            (seconds / SECONDS_PER_MINUTE).floor()
-        )),
-        _ => None,
-    };
+    let left = session_left(view).map(|left| match left {
+        SessionLeft::Laps(1) => "1 lap left".to_string(),
+        SessionLeft::Laps(laps) => format!("{laps} laps left"),
+        SessionLeft::Minutes(minutes) => format!("{minutes} min left"),
+    });
 
     joined([current, left])
 }
 
 fn lap_time(lap_s: f32) -> String {
-    let millis = (f64::from(lap_s) * MILLIS_PER_SECOND as f64).round() as i64;
-    let minutes = millis / MILLIS_PER_MINUTE;
-    let rest = millis % MILLIS_PER_MINUTE;
+    let (minutes, seconds) = minutes_and_seconds(lap_s);
 
-    format!(
-        "{minutes}:{:02}.{:03}",
-        rest / MILLIS_PER_SECOND,
-        rest % MILLIS_PER_SECOND
-    )
+    format!("{minutes}:{seconds:06.3}")
 }
 
 fn lap_times(view: &EngineerView) -> Option<String> {
@@ -243,14 +231,14 @@ fn fuel(display: ChatDisplay, view: &EngineerView) -> Option<String> {
             format!("Fuel {volume} {volume_unit}")
         }),
         view.fuel_laps
-            .filter(|laps| *laps > 0.0)
-            .map(|laps| format!("{} laps of it", laps.floor())),
+            .map(|laps| format!("{} laps of it", whole_laps(laps))),
     ])
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::crew::engineer::UNLIMITED_LAPS;
     use crate::rating::last_race::ClassFinish;
     use mt_model::sim::session::SessionEntry;
 

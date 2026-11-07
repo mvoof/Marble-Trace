@@ -268,7 +268,7 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
         CrewIntent::QueryFuel => match (view.fuel_l, view.fuel_laps) {
             (Some(liters), Some(laps)) => CrewReply::plain("engineer.answer.fuel")
                 .measure(FUEL_VALUE, Quantity::Volume, f64::from(liters))
-                .number("laps", f64::from(laps.floor().max(0.0))),
+                .number("laps", f64::from(whole_laps(laps))),
             _ => no_data(),
         },
         CrewIntent::QueryGapAhead => {
@@ -278,15 +278,14 @@ fn answer(query: CrewIntent, view: &EngineerView) -> CrewReply {
         CrewIntent::QueryPosition => view.class_position.map_or_else(no_data, |position| {
             CrewReply::plain("engineer.answer.position").number("position", f64::from(position))
         }),
-        CrewIntent::QueryLapsLeft => match (view.laps_left, view.seconds_left) {
-            (Some(laps), _) if (0..UNLIMITED_LAPS).contains(&laps) => {
+        CrewIntent::QueryLapsLeft => match session_left(view) {
+            Some(SessionLeft::Laps(laps)) => {
                 CrewReply::plain("engineer.answer.lapsLeft").number("laps", f64::from(laps))
             }
-            (_, Some(seconds)) if (0.0..UNLIMITED_SECONDS).contains(&seconds) => {
-                CrewReply::plain("engineer.answer.timeLeft")
-                    .number("minutes", (seconds / SECONDS_PER_MINUTE).floor())
+            Some(SessionLeft::Minutes(minutes)) => {
+                CrewReply::plain("engineer.answer.timeLeft").number("minutes", minutes)
             }
-            _ => no_data(),
+            None => no_data(),
         },
         CrewIntent::QueryLastLap => lap_reply("engineer.answer.lastLap", view.last_lap_s),
         CrewIntent::QueryBestLap => lap_reply("engineer.answer.bestLap", view.best_lap_s),
@@ -465,11 +464,41 @@ fn lap_reply(key: &str, lap_s: Option<f32>) -> CrewReply {
 }
 
 fn with_lap_time(reply: CrewReply, lap_s: f32) -> CrewReply {
-    let lap = f64::from(lap_s);
-    let minutes = (lap / SECONDS_PER_MINUTE).floor();
-    let seconds = ((lap - minutes * SECONDS_PER_MINUTE) * 10.0).round() / 10.0;
+    let (minutes, seconds) = minutes_and_seconds(lap_s);
+    let seconds = (seconds * 10.0).round() / 10.0;
 
     reply.number("minutes", minutes).number("seconds", seconds)
+}
+
+/// A lap time split the way it is told.
+pub(crate) fn minutes_and_seconds(lap_s: f32) -> (f64, f64) {
+    let lap = f64::from(lap_s);
+    let minutes = (lap / SECONDS_PER_MINUTE).floor();
+
+    (minutes, lap - minutes * SECONDS_PER_MINUTE)
+}
+
+/// What is left of the session, in the terms it is limited by.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) enum SessionLeft {
+    Laps(i32),
+    /// Whole minutes.
+    Minutes(f64),
+}
+
+pub(crate) fn session_left(view: &EngineerView) -> Option<SessionLeft> {
+    match (view.laps_left, view.seconds_left) {
+        (Some(laps), _) if (0..UNLIMITED_LAPS).contains(&laps) => Some(SessionLeft::Laps(laps)),
+        (_, Some(seconds)) if (0.0..UNLIMITED_SECONDS).contains(&seconds) => {
+            Some(SessionLeft::Minutes((seconds / SECONDS_PER_MINUTE).floor()))
+        }
+        _ => None,
+    }
+}
+
+/// The laps the fuel lasts, as complete laps.
+pub(crate) fn whole_laps(laps: f32) -> f32 {
+    laps.floor().max(0.0)
 }
 
 /// The session's compound of that kind: its type names it ("Wet", "Soft"…);
