@@ -1,9 +1,14 @@
 name: Build App on PR
 
+# The preview build is asked for, never automatic: a PR shows no pending
+# check until someone wants an installer. Adding the `build` label to a PR
+# builds it — only a maintainer can label, so the label is the approval — and
+# adding it again after new commits builds those. Run workflow on a branch
+# does the same; the preview comment finds the PR by commit either way.
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened]
+    types: [labeled]
     paths-ignore:
       - 'docs/**'
       - '**.md'
@@ -20,14 +25,17 @@ permissions:
 jobs:
   check-changes:
     name: Check Changes
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'build'
     runs-on: ubuntu-latest
     outputs:
-      app: ${{ steps.filter.outputs.rust == 'true' }}
+      # A run asked for by hand builds whatever the branch holds.
+      app: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.rust == 'true' || steps.filter.outputs.js == 'true' }}
     steps:
       - uses: actions/checkout@v5
 
       - name: Check for file changes
         id: filter
+        if: github.event_name == 'pull_request'
         uses: dorny/paths-filter@v3
         with:
           filters: .github/filters.yml
@@ -36,7 +44,6 @@ jobs:
     name: Build Preview
     needs: check-changes
     if: needs.check-changes.outputs.app == 'true'
-    environment: pr-review
     strategy:
       fail-fast: false
       matrix:
