@@ -15,6 +15,7 @@ import {
   type SessionColorKey,
 } from '@shared/lib/timer-utils';
 
+import { StatChip, type StatChipTone } from '@shared/ui/StatChip/StatChip';
 import { SessionClock } from '@widgets/standings/SessionClock/SessionClock';
 import styles from './SessionHeader.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
@@ -24,16 +25,18 @@ import { usePlayerPositionStore } from '@entities/player/player-position-context
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
 import type { StandingsWidgetSettings } from '../settings-schema';
 
-// Matches the icon size the footer's stat pills use.
-const STAT_ICON_SIZE_PX = 11;
-
-const SESSION_TYPE_CLASS: Record<SessionColorKey, string> = {
-  practice: styles.sessionTypePractice,
-  qualify: styles.sessionTypeQualify,
-  race: styles.sessionTypeRace,
-  other: styles.sessionTypeOther,
+// The session's own color, filled, with the type written near-black on it.
+const SESSION_TYPE_TONE: Record<SessionColorKey, StatChipTone> = {
+  practice: 'info',
+  qualify: 'special',
+  race: 'positive',
+  other: 'muted',
 };
 
+/**
+ * The bar over the rows: the session and its field at the left, the track in
+ * the middle, the laps and the clock at the right.
+ */
 export const SessionHeader = observer(() => {
   const { driverIdentities, leaderLap } = useBackendComputedStore();
   const playerPosition = usePlayerPositionStore();
@@ -47,7 +50,6 @@ export const SessionHeader = observer(() => {
     return null;
   }
 
-  const sessionInfoData = sessionInfo;
   const overallSof = computeClassSof(driverIdentities);
 
   // Per-class headers own the SOF in those view modes.
@@ -58,8 +60,8 @@ export const SessionHeader = observer(() => {
       standingsWidget.allClassGroups.length
     );
 
-  const sessions = sessionInfoData?.sessions;
-  const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
+  const sessions = sessionInfo?.sessions;
+  const currentSession = sessions?.[sessionInfo?.currentSessionNum ?? 0];
   const trackName = sessionInfo?.trackDisplayName ?? '';
 
   const shownLap =
@@ -84,83 +86,71 @@ export const SessionHeader = observer(() => {
     ? buildLapProgress(shownLap, totalLaps, !isLapLimited)
     : null;
 
-  // Whether anything precedes the SOF in the left group — a rule with nothing on
-  // its left would read as the edge of a missing item.
-  const hasSessionStat = Boolean(currentSession) || settings.showTotalDrivers;
+  // "12/~16": the laps run in the value's white, the total quieter behind it.
+  const lapsSplit = lapProgress?.value.indexOf('/') ?? -1;
+  const lapsDone =
+    lapsSplit < 0 ? lapProgress?.value : lapProgress?.value.slice(0, lapsSplit);
+  const lapsTotal =
+    lapsSplit < 0 ? null : (lapProgress?.value.slice(lapsSplit) ?? null);
 
   return (
     <div className={styles.sessionHeader}>
       <div className={styles.sessionLeft}>
         {currentSession && (
-          <span
-            className={`${styles.sessionType} ${SESSION_TYPE_CLASS[resolveSessionColorKey(currentSession.sessionType)]}`}
-          >
-            {(
+          <StatChip
+            lead={(
               currentSession.sessionTypeLabel ?? currentSession.sessionType
             ).toUpperCase()}
-          </span>
-        )}
-
-        {currentSession && settings.showTotalDrivers && (
-          <span className={styles.divider} aria-hidden="true" />
+            leadVariant="solid"
+            size="md"
+            tone={
+              SESSION_TYPE_TONE[
+                resolveSessionColorKey(currentSession.sessionType)
+              ]
+            }
+          />
         )}
 
         {settings.showTotalDrivers && (
-          <span className={styles.stat}>
-            <Users
-              size={STAT_ICON_SIZE_PX}
-              className={`${styles.statIcon} ${styles.statIconField}`}
-            />
-
-            <span className={styles.statValue}>{driverIdentities.length}</span>
-          </span>
-        )}
-
-        {showSof && hasSessionStat && (
-          <span className={styles.divider} aria-hidden="true" />
+          <StatChip icon={Users} lead="DRIVERS" tone="info" size="md">
+            {driverIdentities.length}
+          </StatChip>
         )}
 
         {showSof && (
-          <span className={styles.stat}>
-            <Trophy
-              size={STAT_ICON_SIZE_PX}
-              className={`${styles.statIcon} ${styles.statIconAccent}`}
-            />
-
-            <span className={styles.statLabel}>SOF</span>
-
-            <span className={styles.statValue}>
-              {formatIRating(overallSof, settings.abbreviateSof)}
-            </span>
-          </span>
+          <StatChip icon={Trophy} lead="SOF" tone="accent" size="md">
+            {formatIRating(overallSof, settings.abbreviateSof)}
+          </StatChip>
         )}
       </div>
 
-      <div className={styles.sessionCenter}>
-        {trackName && <span className={styles.trackName}>{trackName}</span>}
-      </div>
+      <div className={styles.trackName}>{trackName}</div>
 
       <div className={styles.sessionRight}>
         {lapProgress && (
-          <span
-            className={`${styles.laps} ${isLapLimited ? '' : styles.lapsMuted} ${lapProgress.isFinalLap ? styles.lapsFinal : ''}`}
+          <StatChip
+            icon={Flag}
+            lead="LAPS"
+            size="md"
+            tone={lapProgress.isFinalLap ? 'accent' : 'positive'}
+            emphasized={lapProgress.isFinalLap}
           >
-            <Flag
-              size={STAT_ICON_SIZE_PX}
-              className={`${styles.statIcon} ${styles.statIconProgress}`}
-            />
-
             <span
-              className={styles.lapsValue}
+              className={[
+                styles.lapsValue,
+                isLapLimited ? '' : styles.lapsMuted,
+                lapProgress.isFinalLap ? styles.lapsFinal : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               style={{ minWidth: `${lapProgress.widthChars}ch` }}
             >
-              {lapProgress.value}
+              {lapsDone}
+              {lapsTotal !== null && (
+                <span className={styles.lapsTotal}>{lapsTotal}</span>
+              )}
             </span>
-          </span>
-        )}
-
-        {lapProgress && settings.showSessionTime && (
-          <span className={styles.divider} aria-hidden="true" />
+          </StatChip>
         )}
 
         <SessionClock />

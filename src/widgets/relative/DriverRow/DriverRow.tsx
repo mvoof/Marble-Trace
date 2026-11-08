@@ -13,8 +13,13 @@ import { RadioMark } from '@entities/cars/RadioMark/RadioMark';
 import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge } from '@shared/ui/RatingBadge/LicBadge';
-import { formatIr } from '@shared/ui/RatingBadge/LicBadge.utils';
+import { StatChip } from '@shared/ui/StatChip/StatChip';
+import {
+  formatIr,
+  iRatingChars,
+  licenseTone,
+  safetyRatingLabel,
+} from '@shared/ui/StatChip/rating';
 import {
   buildRelativeGridTemplate,
   resolveRowPosition,
@@ -191,7 +196,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         </div>
       )}
 
-      <div className={styles.infoBlock}>
+      <div className={`${styles.infoBlock} ${styles.blockEnd}`}>
         {settings.showDriverFlags && flagType !== 'none' && (
           <DriverFlagBadge type={flagType} />
         )}
@@ -227,21 +232,28 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         />
       </div>
 
-      {settings.showLicBadge ? (
-        <div className={styles.colLic}>
-          <LicBadge
-            licString={driver.licString}
-            showLetter={settings.showLicenseLetter}
-            badgeStyle={settings.licBadgeStyle}
-          />
+      {(settings.showLicBadge || settings.showIRating) && (
+        <div className={`${styles.colRating} ${styles.blockEnd}`}>
+          <StatChip
+            lead={
+              settings.showLicBadge
+                ? safetyRatingLabel(
+                    driver.licString,
+                    settings.showLicenseLetter
+                  )
+                : undefined
+            }
+            leadKind="number"
+            leadVariant={settings.licBadgeStyle === 'dark' ? 'tint' : 'solid'}
+            tone={licenseTone(driver.licString)}
+            valueChars={iRatingChars(settings.abbreviateIRating)}
+          >
+            {settings.showIRating
+              ? formatIr(driver.iRating, settings.abbreviateIRating)
+              : undefined}
+          </StatChip>
         </div>
-      ) : null}
-
-      {settings.showIRating ? (
-        <div className={styles.colIr}>
-          <span>{formatIr(driver.iRating, settings.abbreviateIRating)}</span>
-        </div>
-      ) : null}
+      )}
 
       <div className={styles.f2Block}>
         <span ref={gapRef} className={styles.f2Time} />

@@ -4,9 +4,11 @@ import { asObject, mapEveryStoredWidget, type StoredBlobWidget } from '../blob';
 /**
  * v6 → v7. The Standings and Relative columns grew wider.
  *
- * Every value cell gained a little padding on both sides, and Standings gained
- * two columns shown by default — the interval and the lap delta. A table's
- * design width is the sum of its columns, so it grew with them.
+ * Every value cell gained a little padding on both sides, Standings gained
+ * two columns shown by default — the interval and the lap delta — and the
+ * safety rating and iRating merged into one chip whose column is the chip's own
+ * width. A table's design width is the sum of its columns, so it moved with
+ * them.
  *
  * The file does not hold that design width unless it departs from the one the
  * settings derive, and on load the derived width is taken as it is: the frame
@@ -41,11 +43,20 @@ const LIC_COLUMN_PX: Record<
   plain: { withLetter: 48, ratingOnly: 34 },
 };
 
+// The rating chip of v7, frozen: the rating's lead with and without the class
+// letter, the iRating's half abbreviated and spelled out, and its 1px edges.
+const RATING_SR_PX = { withLetter: 57, ratingOnly: 45 };
+const RATING_IR_PX = { abbreviated: 41, full: 47 };
+const RATING_EDGE_PX = 2;
+
 interface Column {
   show: (settings: TableSettings) => boolean;
+  /** Whether it shows in v7, when that differs from v6. */
+  showAfter?: (settings: TableSettings) => boolean;
   /** Width in v6, or null for a column v6 did not have. */
   before: WidthOf | null;
-  after: WidthOf;
+  /** Width in v7, or null for a column v7 no longer has. */
+  after: WidthOf | null;
 }
 
 const flag =
@@ -91,10 +102,24 @@ const iRatingWidth =
   (settings) =>
     flag('abbreviateIRating', true)(settings) ? abbreviatedPx : fullPx;
 
-const paddedWidth =
-  (width: WidthOf): WidthOf =>
-  (settings) =>
-    padded(width(settings));
+const showsRating = (settings: TableSettings): boolean =>
+  flag('showLicBadge', true)(settings) || flag('showIRating', true)(settings);
+
+/** The v7 rating column: the chip of whichever parts are shown, padded. */
+const ratingChipWidth: WidthOf = (settings) => {
+  const sr = !flag('showLicBadge', true)(settings)
+    ? 0
+    : flag('showLicenseLetter', true)(settings)
+      ? RATING_SR_PX.withLetter
+      : RATING_SR_PX.ratingOnly;
+  const ir = !flag('showIRating', true)(settings)
+    ? 0
+    : flag('abbreviateIRating', true)(settings)
+      ? RATING_IR_PX.abbreviated
+      : RATING_IR_PX.full;
+
+  return padded(sr + ir + RATING_EDGE_PX);
+};
 
 const STANDINGS_COLUMNS: readonly Column[] = [
   { show: always, before: fixed(28), after: fixed(28) },
@@ -116,13 +141,14 @@ const STANDINGS_COLUMNS: readonly Column[] = [
   },
   {
     show: flag('showLicBadge', true),
+    showAfter: showsRating,
     before: licWidth,
-    after: paddedWidth(licWidth),
+    after: ratingChipWidth,
   },
   {
     show: flag('showIRating', true),
     before: iRatingWidth(42, 52),
-    after: paddedWidth(iRatingWidth(42, 52)),
+    after: null,
   },
   {
     show: flag('showIrChange', true),
@@ -174,13 +200,14 @@ const RELATIVE_COLUMNS: readonly Column[] = [
   },
   {
     show: flag('showLicBadge', true),
+    showAfter: showsRating,
     before: licWidth,
-    after: paddedWidth(licWidth),
+    after: ratingChipWidth,
   },
   {
     show: flag('showIRating', true),
     before: iRatingWidth(36, 48),
-    after: paddedWidth(iRatingWidth(36, 48)),
+    after: null,
   },
   { show: always, before: fixed(56), after: fixed(padded(56)) },
 ];
@@ -195,8 +222,13 @@ const designWidth = (
   settings: TableSettings,
   side: 'before' | 'after'
 ): number => {
+  const shows = (column: Column): boolean =>
+    side === 'after' && column.showAfter !== undefined
+      ? column.showAfter(settings)
+      : column.show(settings);
+
   const widths = columns
-    .filter((column) => column[side] !== null && column.show(settings))
+    .filter((column) => column[side] !== null && shows(column))
     .map((column) => (column[side] as WidthOf)(settings));
 
   const columnsWidth = widths.reduce((sum, width) => sum + width, 0);

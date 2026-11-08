@@ -6,7 +6,7 @@ import type {
 import type { DriverEntry } from '@shared/contracts/driver-entry';
 import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { PaceCarPitPhase } from '@shared/contracts/generated/bindings';
-import { licColumnWidthPx } from '@shared/ui/RatingBadge/LicBadge.utils';
+import { ratingChipParts, ratingChipWidthPx } from '@shared/ui/StatChip/rating';
 import type { RelativeWidgetSettings } from './settings-schema';
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
@@ -48,17 +48,16 @@ const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
   { px: padded(40), show: settings.showCarNumber }, // carNum — class-colored badge, right after pos
   { px: padded(22), show: settings.showCountryFlag }, // country flag, right before the name
   { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
-  // Both widths follow the format the value is written in — see the same pair in
-  // Standings, which the two widgets keep aligned so their SR columns match.
+  // Safety rating and iRating, one chip — the same column Standings has, so
+  // the two tables line up when stacked.
   {
     px: padded(
-      licColumnWidthPx(settings.licBadgeStyle, settings.showLicenseLetter)
+      ratingChipWidthPx(
+        ratingChipParts(settings).sr,
+        ratingChipParts(settings).ir
+      )
     ),
-    show: settings.showLicBadge,
-  },
-  {
-    px: padded(settings.abbreviateIRating ? 36 : 48),
-    show: settings.showIRating,
+    show: settings.showLicBadge || settings.showIRating,
   },
   { px: padded(56), show: true }, // gap
 ];

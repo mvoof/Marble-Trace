@@ -222,7 +222,7 @@ describe('getStandingsGap', () => {
     const leader = makeGapEntry({});
 
     expect(getStandingsGap(leader, leader, true, true, 0)).toEqual({
-      value: 'LEADER',
+      value: 'LDR',
       isLeader: true,
       isEmpty: false,
     });

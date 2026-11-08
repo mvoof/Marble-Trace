@@ -1,52 +1,24 @@
-.clock {
-  display: inline-flex;
-  align-items: center;
-  gap: sp(xxs);
-  text-align: right;
-  font-family: $font-mono;
-  font-variant-numeric: tabular-nums;
-  // Matches .lapsValue in SessionHeader — the two sit side by side as one readout.
-  font-size: fs(sm);
-  color: $widget-text-primary;
-}
-
-// Shares the lap flag's green: the two are one readout at rest, and both leave
-// that color together once the session is running out.
-.clockIcon {
-  width: ws(11);
-  height: ws(11);
-  flex-shrink: 0;
-  color: $race-green;
-}
-
 // Holds the reserved width, so a countdown running out never shifts the header.
 .clockValue {
   display: inline-block;
+  color: $chip-accent;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
-// The value that ends the session leads; the other recedes — by opacity only, so
-// the bar keeps a single weight throughout.
+// The value that ends the session leads; the other recedes.
 .clockMuted {
   opacity: 0.7;
 }
 
-// An urgent clock takes the icon with it — a grey timer beside a red countdown
-// reads as two separate readings.
 .clockWarning {
-  color: $widget-status-warning;
-
-  .clockIcon {
-    color: inherit;
-  }
+  color: $chip-accent;
+  opacity: 1;
 }
 
 .clockCritical {
-  color: $widget-status-danger;
-
-  .clockIcon {
-    color: inherit;
-  }
+  color: $chip-danger;
+  opacity: 1;
 }
 
 // `CRITICAL_BLINK` in SessionClock writes the step.

@@ -1,10 +1,10 @@
 .headerRow {
   display: grid;
-  align-items: center;
+  align-items: stretch;
   column-gap: sp(xxxs);
-  padding: sp(xs) sp(md);
-  background: rgb(24, 24, 27);
-  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
+  padding: 0 sp(md);
+  background: plate($table-head-bg);
+  border-bottom: 1px solid $table-bar-border;
   position: sticky;
   top: 0;
   z-index: 2;

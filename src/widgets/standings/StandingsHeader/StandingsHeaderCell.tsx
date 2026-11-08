@@ -6,31 +6,35 @@ import styles from './StandingsHeaderCell.module.scss';
 interface StandingsHeaderCellProps {
   align?: 'left' | 'center' | 'right';
   title?: string;
-  className?: string;
+  /** Closes a group of columns — the rule the rows carry runs up through it. */
+  endsBlock?: boolean;
   children: React.ReactNode;
 }
+
+const ALIGN_CLASS = {
+  left: undefined,
+  center: styles.thCenter,
+  right: styles.thRight,
+} as const;
 
 export const StandingsHeaderCell = observer(
   ({
     align = 'left',
     title,
-    className,
+    endsBlock = false,
     children,
-  }: StandingsHeaderCellProps) => {
-    const alignClass =
-      align === 'center'
-        ? styles.thCenter
-        : align === 'right'
-          ? styles.thRight
-          : undefined;
-
-    return (
-      <span
-        className={[styles.th, alignClass, className].filter(Boolean).join(' ')}
-        title={title}
-      >
-        {children}
-      </span>
-    );
-  }
+  }: StandingsHeaderCellProps) => (
+    <span
+      className={[
+        styles.th,
+        ALIGN_CLASS[align],
+        endsBlock ? styles.thBlockEnd : undefined,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      title={title}
+    >
+      {children}
+    </span>
+  )
 );

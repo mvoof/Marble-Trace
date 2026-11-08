@@ -15,10 +15,16 @@ import { RadioMark } from '@entities/cars/RadioMark/RadioMark';
 import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge } from '@shared/ui/RatingBadge/LicBadge';
-import { formatIr } from '@shared/ui/RatingBadge/LicBadge.utils';
+import {
+  formatIr,
+  iRatingChars,
+  licenseTone,
+  safetyRatingLabel,
+} from '@shared/ui/StatChip/rating';
+import { StatChip, writeStatChip } from '@shared/ui/StatChip/StatChip';
 import { TireBadge } from '@shared/ui/TireBadge/TireBadge';
 import {
+  buildBlockEndColumns,
   buildGridTemplate,
   calculateLapsBehind,
   EMPTY_VALUE,
@@ -28,6 +34,7 @@ import {
   getStandingsInterval,
   resolveBestLapDisplay,
   type LapDeltaTone,
+  type StandingsColumn,
   type StandingsGapInfo,
 } from '@widgets/standings/standings-utils';
 import { PosChange } from './PosChange';
@@ -44,14 +51,31 @@ import { TowTime } from '@entities/player/TowTime/TowTime';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
 import type { StandingsWidgetSettings } from '../settings-schema';
 
-const writeGap = (element: HTMLSpanElement, gapInfo: StandingsGapInfo) => {
-  element.classList.toggle(styles.gapLeader, gapInfo.isLeader);
-  element.classList.toggle(styles.gapEmpty, gapInfo.isEmpty);
-  element.classList.toggle(styles.cellEmpty, gapInfo.isEmpty);
-  element.classList.toggle(
-    styles.gapValue,
-    !gapInfo.isLeader && !gapInfo.isEmpty
-  );
+// The leader and a lapped car read as chips — a state, not a distance; a
+// distance stays a plain number. Laps down are the only gap written "N L".
+const isLapsDown = (gapInfo: StandingsGapInfo): boolean =>
+  gapInfo.value.endsWith(' L');
+
+const writeGap = (
+  element: HTMLSpanElement,
+  gapInfo: StandingsGapInfo,
+  valueClass: string
+) => {
+  if (gapInfo.isLeader) {
+    writeStatChip(element, 'accent', 'label', gapInfo.value);
+
+    return;
+  }
+
+  if (isLapsDown(gapInfo)) {
+    writeStatChip(element, 'lapped', 'number', gapInfo.value);
+
+    return;
+  }
+
+  element.className = gapInfo.isEmpty
+    ? `${styles.gapEmpty} ${styles.cellEmpty}`
+    : valueClass;
   element.textContent = gapInfo.value;
 };
 
@@ -78,6 +102,17 @@ export const DriverRow = observer(
     const driver = standingsWidget.driverMap.get(carIdx);
     const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
     const gridTemplate = buildGridTemplate(settings);
+    const blockEnds = buildBlockEndColumns(settings);
+
+    // One switch mutes every informational column at once, so the row's accent
+    // is left to the position, the name and the best lap.
+    const dimClass = settings.dimSecondaryColumns ? styles.cellDimmed : '';
+
+    // The cell that closes a group of columns carries the rule after it.
+    const cellClass = (column: StandingsColumn, ...extra: string[]): string =>
+      [styles.cell, blockEnds.has(column) ? styles.blockEnd : '', ...extra]
+        .filter(Boolean)
+        .join(' ');
 
     // The gap is the row's one moving number: it is measured against the leader's
     // live entry and changes on every tick, so it is written straight to its span
@@ -116,9 +151,11 @@ export const DriverRow = observer(
           calculateLapsBehind(liveLeader, liveDriver)
         );
 
-        scheduleWrite(() => writeGap(element, gapInfo));
+        scheduleWrite(() =>
+          writeGap(element, gapInfo, `${styles.gapValue} ${dimClass}`)
+        );
       },
-      [computed, standingsWidget, session, settings, carIdx]
+      [computed, standingsWidget, session, settings, carIdx, dimClass]
     );
 
     // Same measurement as the gap, against the car drawn directly above.
@@ -142,9 +179,11 @@ export const DriverRow = observer(
           session.currentSessionType === 'Race'
         );
 
-        scheduleWrite(() => writeGap(element, intervalInfo));
+        scheduleWrite(() =>
+          writeGap(element, intervalInfo, `${styles.intervalValue} ${dimClass}`)
+        );
       },
-      [computed, standingsWidget, session, carIdx]
+      [computed, standingsWidget, session, carIdx, dimClass]
     );
 
     if (!driver) {
@@ -234,10 +273,6 @@ export const DriverRow = observer(
       standingsWidget.lapDeltas.get(carIdx)
     );
 
-    // One switch mutes every informational column at once, so the row's accent
-    // is left to the position, the name and the best lap.
-    const dimClass = settings.dimSecondaryColumns ? styles.cellDimmed : '';
-
     const driverName = (
       <span
         className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
@@ -257,7 +292,7 @@ export const DriverRow = observer(
       >
         <PositionCell carIdx={carIdx} />
 
-        <div className={`${styles.cell} ${styles.carNumberCell}`}>
+        <div className={cellClass('carNumber', styles.carNumberCell)}>
           <span
             className={styles.carNumber}
             style={{
@@ -270,18 +305,18 @@ export const DriverRow = observer(
         </div>
 
         {settings.showPosChange && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
+          <div className={cellClass('posChange', styles.cellCenter)}>
             <PosChange carIdx={carIdx} />
           </div>
         )}
 
         {settings.showCountryFlag && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
+          <div className={cellClass('countryFlag', styles.cellCenter)}>
             <CountryFlag flairId={driver.flairId} isAi={driver.isAi} />
           </div>
         )}
 
-        <div className={`${styles.cell} ${styles.nameCell}`}>
+        <div className={cellClass('name', styles.nameCell)}>
           {settings.showDriverFlags &&
             (isFinished ? (
               <DriverFlagBadge type="checkered" />
@@ -324,32 +359,37 @@ export const DriverRow = observer(
           />
         </div>
 
-        {settings.showLicBadge && (
-          <div className={`${styles.cell} ${styles.cellRating}`}>
-            <LicBadge
-              licString={driver.licString}
-              showLetter={settings.showLicenseLetter}
-              badgeStyle={settings.licBadgeStyle}
-            />
-          </div>
-        )}
-
-        {settings.showIRating && (
-          <div className={`${styles.cell} ${styles.cellRight}`}>
-            <span className={`${styles.irValue} ${dimClass}`}>
-              {formatIr(driver.iRating, settings.abbreviateIRating)}
-            </span>
+        {(settings.showLicBadge || settings.showIRating) && (
+          <div className={cellClass('rating', styles.cellCenter)}>
+            <StatChip
+              lead={
+                settings.showLicBadge
+                  ? safetyRatingLabel(
+                      driver.licString,
+                      settings.showLicenseLetter
+                    )
+                  : undefined
+              }
+              leadKind="number"
+              leadVariant={settings.licBadgeStyle === 'dark' ? 'tint' : 'solid'}
+              tone={licenseTone(driver.licString)}
+              valueChars={iRatingChars(settings.abbreviateIRating)}
+            >
+              {settings.showIRating
+                ? formatIr(driver.iRating, settings.abbreviateIRating)
+                : undefined}
+            </StatChip>
           </div>
         )}
 
         {settings.showIrChange && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
+          <div className={cellClass('irChange', styles.cellCenter)}>
             <IrChangeCell carIdx={carIdx} />
           </div>
         )}
 
         {settings.showLapsCompleted && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
+          <div className={cellClass('laps', styles.cellCenter)}>
             <span className={`${styles.lapsCompleted} ${dimClass}`}>
               {driver.lap}
             </span>
@@ -357,19 +397,19 @@ export const DriverRow = observer(
         )}
 
         {settings.showGap && (
-          <div className={`${styles.cell} ${styles.cellRight}`}>
-            <span ref={gapRef} className={dimClass} />
+          <div className={cellClass('gap', styles.cellRight)}>
+            <span ref={gapRef} />
           </div>
         )}
 
         {settings.showInterval && (
-          <div className={`${styles.cell} ${styles.cellRight}`}>
-            <span ref={intervalRef} className={dimClass} />
+          <div className={cellClass('interval', styles.cellRight)}>
+            <span ref={intervalRef} />
           </div>
         )}
 
         {settings.showLastLap && (
-          <div className={`${styles.cell} ${styles.cellRight}`}>
+          <div className={cellClass('lastLap', styles.cellRight)}>
             <span
               className={`${styles.lastLap} ${dimClass} ${lastLapText === EMPTY_VALUE ? styles.cellEmpty : ''}`}
             >
@@ -379,7 +419,7 @@ export const DriverRow = observer(
         )}
 
         {settings.showLapDelta && (
-          <div className={`${styles.cell} ${styles.cellRight}`}>
+          <div className={cellClass('lapDelta', styles.cellRight)}>
             <span
               className={`${styles.lastLapDelta} ${LAP_DELTA_TONE_CLASS[lapDeltaDisplay.tone]} ${lapDeltaDisplay.value === EMPTY_VALUE ? styles.cellEmpty : ''}`}
             >
@@ -389,30 +429,37 @@ export const DriverRow = observer(
         )}
 
         {settings.showBestLap && (
-          <div
-            className={`${styles.cell} ${styles.cellRight} ${styles.bestLapCell}`}
-          >
-            <span
-              className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''} ${bestLap.isQualifying ? styles.bestLapQualifying : ''} ${bestLapText === EMPTY_VALUE ? styles.cellEmpty : ''}`}
-            >
-              {bestLapText}
-            </span>
+          <div className={cellClass('bestLap', styles.cellRight)}>
+            {bestLapText === EMPTY_VALUE ? (
+              <span className={`${styles.bestLap} ${styles.cellEmpty}`}>
+                {bestLapText}
+              </span>
+            ) : isClassBestLap ? (
+              <StatChip lead={bestLapText} leadKind="number" tone="special" />
+            ) : (
+              <StatChip
+                lead={bestLapText}
+                leadKind="number"
+                tone={bestLap.isQualifying ? 'muted' : 'neutral'}
+              />
+            )}
           </div>
         )}
 
         {settings.showBrand && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
-            <span
-              className={`${styles.brandLabel} ${dimClass}`}
-              title={driver.carScreenName}
-            >
-              {formatBrand(driver.carScreenName)}
+          <div className={cellClass('brand', styles.cellCenter)}>
+            <span title={driver.carScreenName}>
+              <StatChip
+                lead={formatBrand(driver.carScreenName)}
+                leadKind="number"
+                tone="muted"
+              />
             </span>
           </div>
         )}
 
         {settings.showTire && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
+          <div className={cellClass('tire', styles.cellCenter)}>
             <TireBadge tire={driver.tireCompound} />
           </div>
         )}

@@ -1,20 +1,29 @@
+// Each label fills its column's full height and width — the vertical air is in
+// the cell, not on the row — so a group's rule runs from edge to edge, and the
+// label lines up with the values below it, padded as the row's cells are.
 .th {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: sp(xs) sp(xxs);
   font-family: $font-mono;
   text-transform: uppercase;
-  font-size: fs(xxs);
-  letter-spacing: 0.06em;
-  color: $widget-text-secondary;
-  font-weight: 400;
+  font-size: fs(xxxs);
+  letter-spacing: 0.05em;
+  color: $table-head-text;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
 }
 
 .thCenter {
-  text-align: center;
-  justify-self: center;
+  justify-content: center;
 }
 
 .thRight {
-  text-align: right;
-  justify-self: end;
+  justify-content: flex-end;
+}
+
+.thBlockEnd {
+  border-right: 1px solid $table-rule;
 }

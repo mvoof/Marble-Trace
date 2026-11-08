@@ -1,43 +1,19 @@
+// Two groups pulled to the ends: track conditions at the left, the player's own
+// counts at the right.
 .sessionFooter {
-  background: rgba(18, 18, 20, $opacity-heavy);
-  // A peer of the rows above it, not a second header — but the text still needs
-  // room to sit off both edges, so the strip is one line with air, not a squeeze.
-  padding: sp(sm) sp(md);
-  // Mirrors the header's three tracks: the player's own numbers hold the centre
-  // under the rows, and the track conditions frame them from both edges.
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  column-gap: sp(sm);
-  border-top: 1px solid $widget-row-border;
-  font-family: $font-mono;
-  text-transform: uppercase;
-  font-size: fs(md);
-  font-weight: 400;
-  color: $widget-text-secondary;
-}
-
-.footerLeft {
   display: flex;
-  gap: sp(md);
   align-items: center;
-  justify-self: start;
-  min-width: 0;
+  justify-content: space-between;
+  gap: sp(sm);
+  padding: sp(xs) sp(md);
   overflow: hidden;
+  background: plate($table-bar-bg);
+  border-top: 1px solid $table-bar-border;
 }
 
-.footerCenter {
+.footerGroup {
   display: flex;
-  gap: sp(md);
   align-items: center;
-  justify-content: center;
-}
-
-.footerRight {
-  display: flex;
-  gap: sp(md);
-  align-items: center;
-  justify-self: end;
+  gap: sp(xs);
   min-width: 0;
-  overflow: hidden;
 }

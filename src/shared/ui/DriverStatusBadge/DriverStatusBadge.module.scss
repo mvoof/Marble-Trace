@@ -1,77 +1,52 @@
-// Sized like the SR badge (`LicBadge`) beside it — same font size, weight and
-// padding — so every chip in a row is one height.
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.2em 0.35em;
-  border-radius: 0.25em;
-  font-size: 0.85em;
-  font-weight: 700;
-  white-space: nowrap;
-  flex-shrink: 0;
-  line-height: 1;
-  background: var(--badge-color);
-  color: var(--badge-text, #fff);
-}
-
-// Two halves: the status on its colour, the value on the same hue darkened, so
-// the pair reads as one chip — the SR badge's pattern.
-// Each half paints and rounds its own side: a coloured wrapper clipped to the
-// radius leaves its colour fringing the dark half's corners.
-.badgeWithDetail {
-  align-items: stretch;
-  padding: 0;
-  background: none;
-}
-
-.label {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2em 0.35em;
-  border-radius: 0.25em 0 0 0.25em;
-  background: var(--badge-color);
-}
-
-.detail {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2em 0.4em;
-  border-radius: 0 0.25em 0.25em 0;
-  background: color-mix(in srgb, var(--badge-color) 35%, black);
-  color: rgba(255, 255, 255, 0.9);
-  font-family: $font-mono;
-}
-
+// Each status sets the chip's colors; the chip draws the rest. A stop is the
+// status filled with its value on the same color gone near-black; the states
+// that are not events stay tinted.
 .pit {
-  --badge-color: #{$race-red};
+  --chip-solid-bg: #{$chip-pit};
+  --chip-on-solid: #{$widget-text-primary};
+  --chip-edge: #{rgba($chip-pit, 0.5)};
+  --chip-value-bg: #{$chip-pit-value-bg};
+  --chip-value-text: #{$chip-pit-value};
 }
 
 .pitIn {
-  --badge-color: #{$race-blue};
+  --chip-solid-bg: #{$chip-info};
+  --chip-on-solid: #{$widget-text-primary};
+  --chip-edge: #{rgba($chip-info, 0.5)};
+  --chip-value-bg: #{$chip-info-bg};
+  --chip-value-text: #{$chip-pit-value};
 }
 
 .pitExit {
-  --badge-color: #{$race-amber};
-  --badge-text: rgba(0, 0, 0, 0.85);
+  --chip-solid-bg: #{$chip-accent};
+  --chip-on-solid: #{$chip-bg};
+  --chip-edge: #{rgba($chip-accent, 0.5)};
+  --chip-value-bg: #{$chip-accent-bg};
+  --chip-value-text: #{$chip-pit-value};
 }
 
 .tow {
-  --badge-color: #{$race-orange};
-  --badge-text: rgba(0, 0, 0, 0.85);
+  --chip-solid-bg: #{$chip-lapped};
+  --chip-on-solid: #{$chip-bg};
+  --chip-edge: #{rgba($chip-lapped, 0.5)};
+  --chip-value-bg: #{$chip-lapped-bg};
+  --chip-value-text: #{$chip-pit-value};
 }
 
 .out {
-  --badge-color: rgba(255, 255, 255, 0.12);
-  --badge-text: rgba(255, 255, 255, 0.45);
+  --chip-lead-bg: #{$chip-neutral-bg};
+  --chip-lead-text: #{$chip-neutral-text};
+  --chip-edge: #{$chip-neutral-border};
 }
 
 .offTrack {
-  --badge-color: rgba(255, 255, 255, 0.08);
-  --badge-text: rgba(255, 255, 255, 0.35);
+  --chip-lead-bg: #{$chip-neutral-bg};
+  --chip-lead-text: #{$table-empty-text};
+  --chip-edge: #{$chip-neutral-border};
 }
 
 .dnf {
-  --badge-color: #111;
-  --badge-text: #{$race-red};
+  --chip-lead-bg: #{$chip-danger-bg};
+  --chip-lead-text: #{$chip-danger};
+  --chip-edge: #{$chip-danger-border};
 }

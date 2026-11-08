@@ -5,10 +5,11 @@
   align-items: stretch;
   column-gap: sp(xxxs);
   padding: 0 sp(md);
-  border-bottom: 1px solid $widget-row-border;
+  border-bottom: 1px solid $table-row-rule;
   position: relative;
   line-height: 1.15;
-  font-size: fs(md);
+  font-size: fs(xs);
+  background: plate($table-row-bg);
 
   &:hover:not(.driverRowPlayer) {
     background-color: $widget-row-hover;
@@ -28,7 +29,7 @@
 }
 
 .rowOdd {
-  background-color: rgba(255, 255, 255, 0.025);
+  background: plate($table-row-bg-alt);
 }
 
 .driverRowPlayer {
@@ -46,8 +47,9 @@
 }
 
 // First row of the "around the player" block — detaches it from the top block
+// by a little more air than a row's own height, and nothing written in it.
 .driverRowWindowStart {
-  margin-top: sp(sm);
+  margin-top: sp(md);
   border-top: 1px solid $widget-border-default;
   box-shadow: 0 -4px 6px -4px rgba(0, 0, 0, 0.6);
 }
@@ -75,10 +77,11 @@
   justify-content: flex-end;
 }
 
-// Every other column carries the same faint fill as every other row, so the
-// table reads as a grid in both directions.
-.driverRow > :nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.025);
+// A thin rule after the last column of each group — who, how rated, where in
+// the race, how fast, in what car. Between groups only: a rule after every
+// column turns the row back into a grid of boxes.
+.blockEnd {
+  border-right: 1px solid $table-rule;
 }
 
 // The row's vertical padding sits in its cells, not on the row: a padded row
@@ -145,8 +148,9 @@
 
 // Position number
 .posNumber {
-  font-weight: 700;
-  font-size: fs(md);
+  font-family: $font-mono;
+  font-weight: 800;
+  font-size: fs(xs);
   color: $widget-text-primary;
 }
 
@@ -172,7 +176,7 @@
   align-items: center;
   justify-content: center;
   font-family: $font-mono;
-  font-size: fs(md);
+  font-size: fs(xs);
   font-weight: 400;
 }
 
@@ -182,7 +186,7 @@
   align-items: center;
   justify-content: center;
   font-family: $font-mono;
-  font-size: fs(md);
+  font-size: fs(xs);
   font-weight: 400;
 }
 
@@ -196,11 +200,11 @@
 // Car number — the badge carries the class color
 .carNumber {
   font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 700;
-  line-height: 1;
+  font-size: fs(xxs);
+  font-weight: 800;
+  line-height: 1.25;
   padding: sp(xxxs) sp(xxs);
-  border-radius: radius(md);
+  border-radius: radius(sm);
   white-space: nowrap;
 
   // Sized for three digits, the widest number the field can hold, so a one-digit
@@ -208,15 +212,15 @@
   // edge. Inline-block, or min-width is ignored; content-box, so the padding
   // sits outside the three digits.
   display: inline-block;
-  box-sizing: content-box;
-  min-width: 3ch;
+  box-sizing: border-box;
+  min-width: ws(28);
   text-align: center;
 }
 
 // Driver name
 .driverName {
   font-weight: 700;
-  font-size: fs(md);
+  font-size: fs(xs);
   color: $widget-text-primary;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -241,7 +245,7 @@
 
   .driverName {
     flex: none;
-    font-size: fs(sm);
+    font-size: fs(xxs);
   }
 }
 
@@ -264,15 +268,6 @@
   overflow: hidden;
 }
 
-// Brand label
-.brandLabel {
-  font-family: $font-mono;
-  font-size: fs(xs);
-  color: $widget-text-secondary;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
 .ratingBadge {
   flex-shrink: 0;
 }
@@ -283,8 +278,8 @@
 
 .irValue {
   font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 600;
+  font-size: fs(xs);
+  font-weight: 700;
   color: $widget-text-primary;
 }
 
@@ -293,7 +288,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: fs(md);
+  font-size: fs(xs);
   font-family: $font-mono;
   font-weight: 400;
 }
@@ -319,80 +314,70 @@
 
 .lapsCompleted {
   font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 400;
-  color: $widget-text-primary;
+  font-size: fs(xs);
+  font-weight: 600;
+  color: $table-dim-text;
 }
 
-// Gap and interval
-.gapLeader {
-  font-family: $font-mono;
-  font-size: fs(sm);
-  font-weight: 700;
-  color: $widget-status-caution;
-}
-
+// Gap and interval — the leader and laps down are chips, written by the row.
 .gapEmpty {
   font-family: $font-mono;
-  font-size: fs(md);
+  font-size: fs(xs);
   font-weight: 400;
-  color: $widget-text-muted;
+  color: $table-empty-text;
 }
 
+// The gap to the leader reads quieter than the interval: the fight is with the
+// car ahead.
 .gapValue {
   font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 400;
+  font-size: fs(xs);
+  font-weight: 600;
+  color: $table-dim-text;
+}
+
+.intervalValue {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
   color: $widget-text-primary;
 }
 
 // Lap time columns
 .lastLap {
   font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 900;
+  font-size: fs(xs);
+  font-weight: 700;
   color: $widget-text-primary;
 }
 
 .bestLap {
   font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 900;
-  color: $widget-text-primary;
-}
-
-// The best-lap column carries the best-lap tint, the record its text colour —
-// the pair the lap log uses. Declared after the column stripes, which it
-// replaces.
-.driverRow > .bestLapCell {
-  background-color: $widget-tint-best-lap;
-}
-
-.bestLapFastest {
-  color: $widget-text-best-lap;
+  font-size: fs(xs);
+  font-weight: 400;
+  color: $table-empty-text;
 }
 
 // Last lap against the lap before it: faster green, slower red.
 .lastLapDelta {
   font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 600;
-  color: $widget-text-muted;
+  font-size: fs(xs);
+  font-weight: 700;
+  color: $table-empty-text;
 }
 
 .lastLapDeltaFaster {
-  color: $widget-status-positive;
+  color: $chip-positive;
 }
 
 .lastLapDeltaSlower {
-  color: $widget-status-danger;
+  color: $chip-danger;
 }
 
-// Standing in from qualifying, not set in this session — muted so the column
+// Standing in from qualifying, not set in this session — faded so the column
 // still reads as empty at a glance until real lap times arrive.
 .bestLapQualifying {
-  color: $widget-text-secondary;
-  font-weight: 400;
+  opacity: 0.55;
 }
 
 // A cell without a value: its dash sits in the middle of the column, whatever
