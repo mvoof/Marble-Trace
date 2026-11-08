@@ -68,7 +68,11 @@ const COLUMNS = {
   showIrChange: bool(true),
   /** Gap to the leader of the table's current reference (overall or class). */
   showGap: bool(true),
+  /** Gap to the car directly ahead in the same reference as the Gap column. */
+  showInterval: bool(true),
   showLastLap: bool(true),
+  /** Last lap against the lap before it, measured while the table is open. */
+  showLapDelta: bool(true),
   showBestLap: bool(true),
   showLapsCompleted: bool(true),
 } as const;
@@ -118,6 +122,8 @@ export const STANDINGS_SETTINGS = defineSettings('standings', {
   showPitIndicator: bool(true, { label: 'common.showPitIndicator' }),
   /** Mic beside the driver on the radio, in the channel's colour. */
   showRadioMark: bool(true, { label: 'common.showRadioMark' }),
+  /** Lap and time on pit road of each car's latest stop, beside its name. */
+  showPitStopTime: bool(true),
   /** Player-only pit stop counter (counted on the frontend). */
   showPitStops: bool(true),
   showIncidentsBadge: bool(true),

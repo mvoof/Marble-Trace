@@ -1,7 +1,6 @@
 ﻿import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
-import { formatLapTime } from '@shared/lib/telemetry-format';
 import {
   abbreviateName,
   formatBrand,
@@ -22,12 +21,19 @@ import { TireBadge } from '@shared/ui/TireBadge/TireBadge';
 import {
   buildGridTemplate,
   calculateLapsBehind,
+  EMPTY_VALUE,
+  formatLapCell,
+  formatLapDelta,
   getStandingsGap,
+  getStandingsInterval,
   resolveBestLapDisplay,
+  type LapDeltaTone,
+  type StandingsGapInfo,
 } from '@widgets/standings/standings-utils';
 import { PosChange } from './PosChange';
 import { PositionCell } from './PositionCell';
 import { IrChangeCell } from './IrChangeCell';
+import { PitStopBadge } from './PitStopBadge';
 
 import styles from './DriverRow.module.scss';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
@@ -35,6 +41,23 @@ import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
 import type { StandingsWidgetSettings } from '../settings-schema';
+
+const writeGap = (element: HTMLSpanElement, gapInfo: StandingsGapInfo) => {
+  element.classList.toggle(styles.gapLeader, gapInfo.isLeader);
+  element.classList.toggle(styles.gapEmpty, gapInfo.isEmpty);
+  element.classList.toggle(styles.cellEmpty, gapInfo.isEmpty);
+  element.classList.toggle(
+    styles.gapValue,
+    !gapInfo.isLeader && !gapInfo.isEmpty
+  );
+  element.textContent = gapInfo.value;
+};
+
+const LAP_DELTA_TONE_CLASS: Record<LapDeltaTone, string> = {
+  faster: styles.lastLapDeltaFaster,
+  slower: styles.lastLapDeltaSlower,
+  even: '',
+};
 
 interface DriverRowProps {
   carIdx: number;
@@ -90,15 +113,35 @@ export const DriverRow = observer(
           calculateLapsBehind(liveLeader, liveDriver)
         );
 
-        scheduleWrite(() => {
-          const isMuted = gapInfo.isLeader || gapInfo.isEmpty;
-
-          element.classList.toggle(styles.gapLeader, isMuted);
-          element.classList.toggle(styles.gapValue, !isMuted);
-          element.textContent = gapInfo.value;
-        });
+        scheduleWrite(() => writeGap(element, gapInfo));
       },
       [computed, standingsWidget, session, settings, carIdx]
+    );
+
+    // Same measurement as the gap, against the car drawn directly above.
+    const intervalRef = useReactiveDomWrite<HTMLSpanElement>(
+      (element, scheduleWrite) => {
+        const liveDriver = computed.driverEntryOf(carIdx);
+
+        if (!liveDriver) {
+          return;
+        }
+
+        const aheadIdx = standingsWidget.carAheadMap.get(carIdx);
+        const liveAhead =
+          aheadIdx === undefined
+            ? null
+            : (computed.driverEntryOf(aheadIdx) ?? null);
+
+        const intervalInfo = getStandingsInterval(
+          liveDriver,
+          liveAhead,
+          session.currentSessionType === 'Race'
+        );
+
+        scheduleWrite(() => writeGap(element, intervalInfo));
+      },
+      [computed, standingsWidget, session, carIdx]
     );
 
     if (!driver) {
@@ -176,6 +219,14 @@ export const DriverRow = observer(
       driver.bestLapTime === classBest;
 
     const bestLap = resolveBestLapDisplay(driver);
+
+    const lastLapText = isPit ? EMPTY_VALUE : formatLapCell(driver.lastLapTime);
+
+    const bestLapText = formatLapCell(bestLap.time);
+
+    const lapDeltaDisplay = formatLapDelta(
+      standingsWidget.lapDeltas.get(carIdx)
+    );
 
     // One switch mutes every informational column at once, so the row's accent
     // is left to the position, the name and the best lap.
@@ -255,6 +306,10 @@ export const DriverRow = observer(
             isFinished={isFinished}
             showPit={settings.showPitIndicator}
           />
+
+          {settings.showPitStopTime && !isFinished && (
+            <PitStopBadge carIdx={carIdx} />
+          )}
         </div>
 
         {settings.showLicBadge && (
@@ -295,20 +350,40 @@ export const DriverRow = observer(
           </div>
         )}
 
+        {settings.showInterval && (
+          <div className={`${styles.cell} ${styles.cellRight}`}>
+            <span ref={intervalRef} className={dimClass} />
+          </div>
+        )}
+
         {settings.showLastLap && (
           <div className={`${styles.cell} ${styles.cellRight}`}>
-            <span className={`${styles.lastLap} ${dimClass}`}>
-              {isPit ? '-' : formatLapTime(driver.lastLapTime)}
+            <span
+              className={`${styles.lastLap} ${dimClass} ${lastLapText === EMPTY_VALUE ? styles.cellEmpty : ''}`}
+            >
+              {lastLapText}
+            </span>
+          </div>
+        )}
+
+        {settings.showLapDelta && (
+          <div className={`${styles.cell} ${styles.cellRight}`}>
+            <span
+              className={`${styles.lastLapDelta} ${LAP_DELTA_TONE_CLASS[lapDeltaDisplay.tone]} ${lapDeltaDisplay.value === EMPTY_VALUE ? styles.cellEmpty : ''}`}
+            >
+              {lapDeltaDisplay.value}
             </span>
           </div>
         )}
 
         {settings.showBestLap && (
-          <div className={`${styles.cell} ${styles.cellRight}`}>
+          <div
+            className={`${styles.cell} ${styles.cellRight} ${styles.bestLapCell}`}
+          >
             <span
-              className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''} ${bestLap.isQualifying ? styles.bestLapQualifying : ''}`}
+              className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''} ${bestLap.isQualifying ? styles.bestLapQualifying : ''} ${bestLapText === EMPTY_VALUE ? styles.cellEmpty : ''}`}
             >
-              {formatLapTime(bestLap.time)}
+              {bestLapText}
             </span>
           </div>
         )}

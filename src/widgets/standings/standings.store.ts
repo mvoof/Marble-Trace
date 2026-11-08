@@ -52,6 +52,9 @@ const MS_PER_SECOND = 1000;
 // positive, so it can never collide with one.
 export const SINGLE_LIST_SCROLL_KEY = -1;
 
+// Key of the one reference the overall view ranks every car against.
+const OVERALL_REFERENCE = -1;
+
 type PendingPosition = { position: number; since: number };
 
 // A rank of zero or below is a car the sim has not placed yet (no lap in
@@ -123,6 +126,15 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
   /** carIdx → direction of the position change currently being flashed. */
   positionChanges = new Map<number, PositionChangeDirection>();
 
+  /**
+   * carIdx → last lap minus the lap before it. The sim keeps only the last lap
+   * of each car, so the one before is whatever this table saw last — a car
+   * gets its first delta on the second lap completed while the table is open.
+   */
+  lapDeltas = new Map<number, number>();
+
+  private readonly seenLapTimes = new Map<number, number>();
+
   /** carIdx → position the table is currently drawn with (debounced). */
   private settledPositions = new Map<number, number>();
 
@@ -153,6 +165,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
       StandingsWidgetStore,
       | 'root'
       | 'previousPositions'
+      | 'seenLapTimes'
       | 'pendingPositions'
       | 'changeTimers'
       | 'disposers'
@@ -162,6 +175,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
       {
         root: false,
         previousPositions: false,
+        seenLapTimes: false,
         pendingPositions: false,
         changeTimers: false,
         disposers: false,
@@ -179,7 +193,16 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
         (entries) => {
           this.settleOrder(entries);
           this.trackPositionChanges(entries);
+          this.trackLapDeltas(entries);
         }
+      )
+    );
+
+    // Lap times of another session say nothing about this one's laps.
+    this.disposers.push(
+      reaction(
+        () => this.root.session.sessionInfo?.currentSessionNum,
+        () => this.resetLapDeltas()
       )
     );
 
@@ -264,6 +287,54 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     this.previousPositions.clear();
     this.pendingPositions.clear();
     this.settledPositions = new Map();
+    this.resetLapDeltas();
+  }
+
+  private trackLapDeltas(entries: CarIdentity[]) {
+    for (const entry of entries) {
+      const lapTime = entry.lastLapTime;
+
+      if (lapTime === null) {
+        continue;
+      }
+
+      const seen = this.seenLapTimes.get(entry.carIdx);
+
+      if (seen !== undefined && seen !== lapTime) {
+        this.lapDeltas.set(entry.carIdx, lapTime - seen);
+      }
+
+      this.seenLapTimes.set(entry.carIdx, lapTime);
+    }
+  }
+
+  private resetLapDeltas() {
+    this.seenLapTimes.clear();
+    this.lapDeltas.clear();
+  }
+
+  /**
+   * carIdx → the car drawn directly above it in the table's reference — the
+   * whole field in the overall view, the car's own class in the others. The
+   * first car of a reference has no entry.
+   */
+  get carAheadMap(): Map<number, number> {
+    const byClass = this.settings.viewMode !== 'all';
+    const result = new Map<number, number>();
+    const lastSeenByReference = new Map<number, number>();
+
+    for (const entry of this.orderedEntries) {
+      const reference = byClass ? entry.carClassId : OVERALL_REFERENCE;
+      const ahead = lastSeenByReference.get(reference);
+
+      if (ahead !== undefined) {
+        result.set(entry.carIdx, ahead);
+      }
+
+      lastSeenByReference.set(reference, entry.carIdx);
+    }
+
+    return result;
   }
 
   // Drops the debounce so the next frame is drawn in its own order immediately.

@@ -1,6 +1,7 @@
 import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
 import { licColumnWidthPx } from '@shared/ui/RatingBadge/LicBadge.utils';
+import { formatLapTime } from '@shared/lib/telemetry-format';
 import type { StandingsWidgetSettings } from './settings-schema';
 
 export interface VisibleRows {
@@ -184,9 +185,11 @@ const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   },
   { px: 42, show: settings.showIrChange }, // ΔiR     "+123"
   { px: 28, show: settings.showLapsCompleted }, // laps "00"
-  { px: 50, show: settings.showGap }, // gap  "+123.4" / "12 L"
-  { px: 82, show: settings.showLastLap }, // last "--:--.---" (9 chars mono)
-  { px: 82, show: settings.showBestLap }, // best "--:--.---" (9 chars mono)
+  { px: 50, show: settings.showGap }, // gap  "+123.4" / "12 L" / "LEADER"
+  { px: 50, show: settings.showInterval }, // int  "123.4" / "12 L"
+  { px: 82, show: settings.showLastLap }, // last "1:32.400" (9 chars mono max)
+  { px: 50, show: settings.showLapDelta }, // Δlap "+12.34"
+  { px: 82, show: settings.showBestLap }, // best "1:32.400" (9 chars mono max)
   { px: 36, show: settings.showBrand }, // brand    "MERC" — at end
   { px: 30, show: settings.showTire }, // tire     badge — at end
 ];
@@ -263,6 +266,94 @@ export interface StandingsGapInfo {
   isEmpty: boolean;
 }
 
+const LEADER_LABEL = 'LEADER';
+
+/** What a table cell holds when it has no value — drawn centred. */
+export const EMPTY_VALUE = '-';
+
+/** A lap time for the Last and Best columns, or the empty dash without one. */
+export const formatLapCell = (seconds: number | null): string =>
+  seconds === null || seconds <= 0 ? EMPTY_VALUE : formatLapTime(seconds);
+
+const SECONDS_PER_MINUTE = 60;
+
+/**
+ * Time on pit road, short enough for a badge: tenths under a minute
+ * ("23.5s"), minutes and whole seconds past it ("1:32").
+ */
+export const formatPitStopTime = (seconds: number | null): string => {
+  if (seconds === null || !Number.isFinite(seconds)) {
+    return '-';
+  }
+
+  if (seconds < SECONDS_PER_MINUTE) {
+    return `${seconds.toFixed(1)}s`;
+  }
+
+  const wholeSeconds = Math.floor(seconds);
+  const minutes = Math.floor(wholeSeconds / SECONDS_PER_MINUTE);
+  const remainder = wholeSeconds % SECONDS_PER_MINUTE;
+
+  return `${minutes}:${String(remainder).padStart(2, '0')}`;
+};
+
+const LAP_DELTA_DECIMALS = 2;
+
+export type LapDeltaTone = 'faster' | 'slower' | 'even';
+
+export interface LapDeltaDisplay {
+  value: string;
+  tone: LapDeltaTone;
+}
+
+/**
+ * The Delta column: the last lap against the one before it, unsigned, to two
+ * decimals — the colour alone says faster or slower. A delta that rounds to
+ * zero is neither.
+ */
+export const formatLapDelta = (delta: number | undefined): LapDeltaDisplay => {
+  if (delta === undefined || !Number.isFinite(delta)) {
+    return { value: EMPTY_VALUE, tone: 'even' };
+  }
+
+  const rounded = Number(delta.toFixed(LAP_DELTA_DECIMALS));
+
+  if (rounded === 0) {
+    return { value: (0).toFixed(LAP_DELTA_DECIMALS), tone: 'even' };
+  }
+
+  if (rounded < 0) {
+    return {
+      value: Math.abs(rounded).toFixed(LAP_DELTA_DECIMALS),
+      tone: 'faster',
+    };
+  }
+
+  return { value: rounded.toFixed(LAP_DELTA_DECIMALS), tone: 'slower' };
+};
+
+/**
+ * The interval: the same measurement as the gap, taken against the car
+ * directly ahead instead of the leader. The leader has no car ahead.
+ */
+export const getStandingsInterval = (
+  driver: DriverEntry,
+  carAhead: DriverEntry | null,
+  isRace: boolean
+): StandingsGapInfo => {
+  if (carAhead === null) {
+    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
+  }
+
+  return getStandingsGap(
+    driver,
+    carAhead,
+    isRace,
+    false,
+    calculateLapsBehind(carAhead, driver)
+  );
+};
+
 export const getStandingsGap = (
   driver: DriverEntry,
   leader: DriverEntry | null,
@@ -271,7 +362,7 @@ export const getStandingsGap = (
   lapsBehind: number
 ): StandingsGapInfo => {
   if (isLeader) {
-    return { value: '-', isLeader: true, isEmpty: false };
+    return { value: LEADER_LABEL, isLeader: true, isEmpty: false };
   }
 
   if (!isRace) {
@@ -286,10 +377,10 @@ export const getStandingsGap = (
         return { value: timeDiff.toFixed(1), isLeader: false, isEmpty: false };
       }
 
-      return { value: '--.-', isLeader: false, isEmpty: true };
+      return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
     }
 
-    return { value: '--.-', isLeader: false, isEmpty: true };
+    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
   }
 
   // In race, try to use Session ResultsPositions gap data. Everything the sim
@@ -329,7 +420,7 @@ export const getStandingsGap = (
     // Only the row the caller marked as leader may render as leader. A
     // non-positive difference here means the reference row is not actually
     // ahead of this car — showing a second '-' would read as a second leader.
-    return { value: '--.-', isLeader: false, isEmpty: true };
+    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
   }
 
   // Fallback if resultsPosition values are not available (e.g. at the start of a
@@ -348,7 +439,7 @@ export const getStandingsGap = (
     };
   }
 
-  return { value: '--.-', isLeader: false, isEmpty: true };
+  return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
 };
 
 const UNLIMITED_LAPS = 'unlimited';

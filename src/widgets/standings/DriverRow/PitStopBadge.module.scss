@@ -1,0 +1,33 @@
+// Two-tone like the SR badge, and sized like it: the lap on the plate, the time
+// on the same hue darkened, so the two read as one chip with two values.
+.pitStopBadge {
+  --pit-stop-color: #{$race-neutral};
+
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 0.25em;
+  overflow: hidden;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 0.85em;
+  font-weight: 700;
+}
+
+.lap {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2em 0.35em;
+  background: var(--pit-stop-color);
+  color: rgba(0, 0, 0, 0.85);
+  font-weight: 800;
+}
+
+.time {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2em 0.4em;
+  background: color-mix(in srgb, var(--pit-stop-color) 35%, black);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: $font-mono;
+}

@@ -32,7 +32,12 @@ describe('CarIdentityCache', () => {
     const cache = new CarIdentityCache();
     const [first] = cache.identitiesOf([makeEntry()]);
     const [second] = cache.identitiesOf([
-      makeEntry({ lapDistPct: 0.3, speed: 62, estTime: 40.9 }),
+      makeEntry({
+        lapDistPct: 0.3,
+        speed: 62,
+        estTime: 40.9,
+        pitElapsedS: 12.3,
+      }),
     ]);
 
     expect(second).toBe(first);

@@ -23,7 +23,7 @@ export const DriverStatusBadge = ({ status }: DriverStatusBadgeProps) => {
   }
 
   if (status === 'pit_exit') {
-    return <span className={`${styles.badge} ${styles.pitExit}`}>PIT OUT</span>;
+    return <span className={`${styles.badge} ${styles.pitExit}`}>OUT</span>;
   }
 
   if (status === 'tow') {
@@ -31,7 +31,7 @@ export const DriverStatusBadge = ({ status }: DriverStatusBadgeProps) => {
   }
 
   if (status === 'out') {
-    return <span className={`${styles.badge} ${styles.out}`}>OUT</span>;
+    return <span className={`${styles.badge} ${styles.out}`}>GAR</span>;
   }
 
   if (status === 'off_track') {

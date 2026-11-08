@@ -15,6 +15,8 @@ export const MOVING_CAR_FIELDS = [
   'estTime',
   'f2Time',
   'speed',
+  // Counts up every tick while the car is on pit road.
+  'pitElapsedS',
 ] as const;
 
 /** A car as it is drawn: the whole entry apart from what moves every tick. */

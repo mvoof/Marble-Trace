@@ -58,8 +58,21 @@ export const StandingsHeader = observer(() => {
         <StandingsHeaderCell align="center">Gap</StandingsHeaderCell>
       )}
 
+      {settings.showInterval && (
+        <StandingsHeaderCell align="center">Int</StandingsHeaderCell>
+      )}
+
       {settings.showLastLap && (
         <StandingsHeaderCell align="center">Last</StandingsHeaderCell>
+      )}
+
+      {settings.showLapDelta && (
+        <StandingsHeaderCell
+          align="center"
+          title="Last lap against the lap before it"
+        >
+          Delta
+        </StandingsHeaderCell>
       )}
 
       {settings.showBestLap && (
