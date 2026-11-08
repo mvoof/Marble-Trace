@@ -1,6 +1,11 @@
 import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
-import { ratingChipParts, ratingChipWidthPx } from '@shared/ui/StatChip/rating';
+import {
+  chipColumnCss,
+  columnPx,
+  ratingChipParts,
+  ratingChipWidth,
+} from '@shared/ui/StatChip/rating';
 import { formatLapTime } from '@shared/lib/telemetry-format';
 import type { StandingsWidgetSettings } from './settings-schema';
 
@@ -195,8 +200,24 @@ interface ColSpec {
   key: StandingsColumn;
   block: ColumnBlock;
   px: number;
+  /** The track as CSS, when it is more than `px` at the widget's scale. */
+  css?: string;
   show: boolean;
 }
+
+// The rating column: the chip's own width and the cell's padding, growing with
+// the font scale as the chip's digits do.
+const ratingColumn = (
+  settings: StandingsWidgetSettings
+): { px: number; css: string } => {
+  const { sr, ir } = ratingChipParts(settings);
+  const width = ratingChipWidth(sr, ir, settings.licBadgeStyle);
+
+  return {
+    px: columnPx(width, CELL_PAD_X_PX * 2),
+    css: chipColumnCss(width, CELL_PAD_X_PX * 2),
+  };
+};
 
 const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   { key: 'pos', block: 'driver', px: 28, show: true }, // "00" (fs md, bold)
@@ -225,12 +246,7 @@ const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
     // moves the column by what the chip gained or lost and nothing else.
     key: 'rating',
     block: 'rating',
-    px: padded(
-      ratingChipWidthPx(
-        ratingChipParts(settings).sr,
-        ratingChipParts(settings).ir
-      )
-    ),
+    ...ratingColumn(settings),
     show: settings.showLicBadge || settings.showIRating,
   },
   {
@@ -303,7 +319,7 @@ export const buildGridTemplate = (
 
   for (const col of colSpecs(settings)) {
     if (col.show) {
-      parts.push(ws(col.px));
+      parts.push(col.css ?? ws(col.px));
     }
   }
 

@@ -6,7 +6,12 @@ import type {
 import type { DriverEntry } from '@shared/contracts/driver-entry';
 import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { PaceCarPitPhase } from '@shared/contracts/generated/bindings';
-import { ratingChipParts, ratingChipWidthPx } from '@shared/ui/StatChip/rating';
+import {
+  chipColumnCss,
+  columnPx,
+  ratingChipParts,
+  ratingChipWidth,
+} from '@shared/ui/StatChip/rating';
 import type { RelativeWidgetSettings } from './settings-schema';
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
@@ -38,8 +43,24 @@ const clampNameColumnWidth = (width: number | undefined) => {
 
 interface ColSpec {
   px: number;
+  /** The track as CSS, when it is more than `px` at the widget's scale. */
+  css?: string;
   show: boolean;
 }
+
+// The rating column: the chip's own width and the cell's padding, growing with
+// the font scale as the chip's digits do.
+const ratingColumn = (
+  settings: RelativeWidgetSettings
+): { px: number; css: string } => {
+  const { sr, ir } = ratingChipParts(settings);
+  const width = ratingChipWidth(sr, ir, settings.licBadgeStyle);
+
+  return {
+    px: columnPx(width, CELL_PAD_X_PX * 2),
+    css: chipColumnCss(width, CELL_PAD_X_PX * 2),
+  };
+};
 
 // Single source of truth for column order + widths (px at scale 1). Order MUST
 // match the render order in DriverRow.tsx.
@@ -51,12 +72,7 @@ const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
   // Safety rating and iRating, one chip — the same column Standings has, so
   // the two tables line up when stacked.
   {
-    px: padded(
-      ratingChipWidthPx(
-        ratingChipParts(settings).sr,
-        ratingChipParts(settings).ir
-      )
-    ),
+    ...ratingColumn(settings),
     show: settings.showLicBadge || settings.showIRating,
   },
   { px: padded(56), show: true }, // gap
@@ -69,7 +85,7 @@ export const buildRelativeGridTemplate = (
 
   for (const col of colSpecs(settings)) {
     if (col.show) {
-      parts.push(ws(col.px));
+      parts.push(col.css ?? ws(col.px));
     }
   }
 

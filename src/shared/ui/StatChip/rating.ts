@@ -1,3 +1,5 @@
+import type { LicBadgeStyle } from '@shared/contracts/widget-choices';
+
 import type { StatChipTone } from './StatChip';
 
 export const formatIr = (ir: number, abbreviate = true): string => {
@@ -10,21 +12,6 @@ export type RatingChipSr = 'none' | 'withLetter' | 'ratingOnly';
 
 /** What the rating chip shows of the iRating. */
 export type RatingChipIr = 'none' | 'abbreviated' | 'full';
-
-// The rating chip's parts at scale 1, measured from `StatChip`'s CSS: the rating's lead, the iRating's half, and the 1px edge on
-// either side. Change the chip's padding, font or digit widths and these move
-// with it — the table columns are sized from them.
-const SR_PART_PX: Record<RatingChipSr, number> = {
-  none: 0,
-  withLetter: 57,
-  ratingOnly: 45,
-};
-const IR_PART_PX: Record<RatingChipIr, number> = {
-  none: 0,
-  abbreviated: 41,
-  full: 47,
-};
-const CHIP_EDGE_PX = 2;
 
 /** What the chip carries, from a table's settings. */
 export const ratingChipParts = (settings: {
@@ -45,19 +32,74 @@ export const ratingChipParts = (settings: {
       : 'full',
 });
 
-/**
- * The rating chip's width at scale 1 — the column holding it is this plus its
- * own padding, so switching a format grows or shrinks the column by exactly
- * what the chip gained or lost, and the padding never moves. Shared by
- * Standings and Relative, which keep their rating columns the same width so the
- * two tables line up when stacked.
- */
-export const ratingChipWidthPx = (sr: RatingChipSr, ir: RatingChipIr): number =>
-  SR_PART_PX[sr] + IR_PART_PX[ir] + CHIP_EDGE_PX;
+// The chip's geometry at scale 1, from `StatChip`'s CSS. Padding and edges
+// follow the widget's scale alone; the digits also follow the user's font
+// scale, so the two are kept apart and the column grows with the text.
+const CHIP_FONT_PX = 11; // fs(xxs)
+const MONO_ADVANCE_EM = 0.5498; // Consolas
+const SOLID_TRACKING_EM = 0.06; // .leadSolid letter-spacing
+const SOLID_LEAD_PAD_PX = 16; // sp(sm) on both sides
+const TINT_LEAD_PAD_PX = 12; // sp(xs) on both sides
+const VALUE_PAD_PX = 16; // sp(sm) on both sides
+const CHIP_EDGE_PX = 2; // 1px on either side
+
+const SR_CHARS: Record<RatingChipSr, number> = {
+  none: 0,
+  withLetter: 6, // "A 4.99"
+  ratingOnly: 4, // "4.99"
+};
+
+const IR_CHARS: Record<RatingChipIr, number> = {
+  none: 0,
+  abbreviated: 4, // "9.9k"
+  full: 5, // "12345"
+};
 
 /** The characters the iRating half always holds: "9.9k", or "12345". */
 export const iRatingChars = (abbreviate: boolean): number =>
-  abbreviate ? 4 : 5;
+  abbreviate ? IR_CHARS.abbreviated : IR_CHARS.full;
+
+/** A chip's width at scale 1, split by what follows the font scale. */
+export interface ChipWidth {
+  /** Padding and edges — the widget's scale alone. */
+  fixedPx: number;
+  /** The characters — the widget's scale and the font scale. */
+  textPx: number;
+}
+
+/** The rating chip's width for the parts it shows and the badge style. */
+export const ratingChipWidth = (
+  sr: RatingChipSr,
+  ir: RatingChipIr,
+  badgeStyle: LicBadgeStyle
+): ChipWidth => {
+  const isSolid = badgeStyle !== 'dark';
+  const advancePx = MONO_ADVANCE_EM * CHIP_FONT_PX;
+  const srAdvancePx = isSolid
+    ? (MONO_ADVANCE_EM + SOLID_TRACKING_EM) * CHIP_FONT_PX
+    : advancePx;
+
+  const srPadPx =
+    sr === 'none' ? 0 : isSolid ? SOLID_LEAD_PAD_PX : TINT_LEAD_PAD_PX;
+  const irPadPx = ir === 'none' ? 0 : VALUE_PAD_PX;
+
+  return {
+    fixedPx: srPadPx + irPadPx + CHIP_EDGE_PX,
+    textPx: SR_CHARS[sr] * srAdvancePx + IR_CHARS[ir] * advancePx,
+  };
+};
+
+/**
+ * A grid column holding the chip plus `paddingPx` of cell padding, as CSS: it
+ * grows with the font scale exactly as the chip does, so the padding around
+ * the chip never changes. At font scale 1 it is `columnPx` wide.
+ */
+export const chipColumnCss = (width: ChipWidth, paddingPx: number): string =>
+  `calc(${columnPx(width, paddingPx) - width.textPx}px * var(--wfs, 1) + ${width.textPx}px * var(--wfs, 1) * var(--font-scale, 1))`;
+
+/** The same column at scale 1, rounded up to a whole pixel. */
+export const columnPx = (width: ChipWidth, paddingPx: number): number =>
+  Math.ceil(width.fixedPx + width.textPx + paddingPx);
 
 const LICENSE_TONE: Record<string, StatChipTone> = {
   A: 'licenseA',

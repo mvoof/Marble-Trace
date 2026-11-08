@@ -43,10 +43,13 @@ const LIC_COLUMN_PX: Record<
   plain: { withLetter: 48, ratingOnly: 34 },
 };
 
-// The rating chip of v7, frozen: the rating's lead with and without the class
-// letter, the iRating's half abbreviated and spelled out, and its 1px edges.
-const RATING_SR_PX = { withLetter: 57, ratingOnly: 45 };
-const RATING_IR_PX = { abbreviated: 41, full: 47 };
+// The rating chip of v7, frozen: Consolas digits at 11px, the solid lead
+// tracked 0.06em, its padding, the iRating's padding and the chip's edges.
+const RATING_ADVANCE_PX = 0.5498 * 11;
+const RATING_SOLID_ADVANCE_PX = (0.5498 + 0.06) * 11;
+const RATING_SOLID_PAD_PX = 16;
+const RATING_TINT_PAD_PX = 12;
+const RATING_VALUE_PAD_PX = 16;
 const RATING_EDGE_PX = 2;
 
 interface Column {
@@ -107,18 +110,30 @@ const showsRating = (settings: TableSettings): boolean =>
 
 /** The v7 rating column: the chip of whichever parts are shown, padded. */
 const ratingChipWidth: WidthOf = (settings) => {
-  const sr = !flag('showLicBadge', true)(settings)
+  const isSolid = settings['licBadgeStyle'] !== 'dark';
+  const showsSr = flag('showLicBadge', true)(settings);
+  const showsIr = flag('showIRating', true)(settings);
+  const srChars = !showsSr
     ? 0
     : flag('showLicenseLetter', true)(settings)
-      ? RATING_SR_PX.withLetter
-      : RATING_SR_PX.ratingOnly;
-  const ir = !flag('showIRating', true)(settings)
+      ? 6
+      : 4;
+  const irChars = !showsIr
     ? 0
     : flag('abbreviateIRating', true)(settings)
-      ? RATING_IR_PX.abbreviated
-      : RATING_IR_PX.full;
+      ? 4
+      : 5;
 
-  return padded(sr + ir + RATING_EDGE_PX);
+  const srPx =
+    srChars === 0
+      ? 0
+      : isSolid
+        ? RATING_SOLID_PAD_PX + srChars * RATING_SOLID_ADVANCE_PX
+        : RATING_TINT_PAD_PX + srChars * RATING_ADVANCE_PX;
+  const irPx =
+    irChars === 0 ? 0 : RATING_VALUE_PAD_PX + irChars * RATING_ADVANCE_PX;
+
+  return Math.ceil(srPx + irPx + RATING_EDGE_PX + CELL_PAD_X_PX * 2);
 };
 
 const STANDINGS_COLUMNS: readonly Column[] = [
