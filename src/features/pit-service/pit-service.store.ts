@@ -88,6 +88,11 @@ export class PitServiceWidgetStore {
         { fireImmediately: true }
       ),
       reaction(
+        () => this.isInPitStall,
+        (inPitStall) => this.panel.handleStallChange(inPitStall),
+        { fireImmediately: true }
+      ),
+      reaction(
         () => this.isServiceActive,
         (serviceActive) => {
           this.order.handleServiceActiveChange(serviceActive);

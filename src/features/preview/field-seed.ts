@@ -37,6 +37,8 @@ export const seedField = (store: PreviewTarget, field: MockField) => {
   store.backendComputed.updateDriverEntries({
     entries: field.entries.map(liveDriverEntryOf),
     playerCarIdx: field.playerCarIdx,
+    pitLaneLossS: null,
+    pitExitLossS: null,
   });
   store.backendComputed.updateRelative({
     entries: field.relativeEntries.map(liveDriverEntryOf),

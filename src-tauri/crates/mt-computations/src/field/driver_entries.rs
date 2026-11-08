@@ -6,6 +6,7 @@ use irating::{calculate as calculate_irating_changes, RaceResult};
 use serde::{Deserialize, Serialize};
 
 use crate::field::car_speed::CarSpeedTracker;
+use crate::field::pit_timing::PitTimingTracker;
 use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
 use mt_model::sim::cars::CarIdxFrame;
@@ -86,6 +87,14 @@ pub struct DriverEntry {
     /// The sim reports it only for the player; every other car's is derived
     /// from its lap distance — see `CarSpeedTracker`.
     pub speed: Option<f32>,
+    /// Lap the car came onto pit road on, for the stop it is making or its
+    /// last one this session. `None` until it has been on pit road.
+    pub pit_lap: Option<i32>,
+    /// Seconds on pit road so far this stop; `None` while off it.
+    pub pit_elapsed_s: Option<f32>,
+    /// Seconds the last completed stop spent on pit road, entry line to exit
+    /// line. See `PitTimingTracker`.
+    pub last_pit_s: Option<f32>,
 }
 
 #[derive(Default)]
@@ -120,6 +129,13 @@ pub struct DriverEntriesState {
 pub struct DriverEntriesFrame {
     pub entries: Vec<DriverEntry>,
     pub player_car_idx: i32,
+    /// What driving through the pit lane costs over the same stretch at racing
+    /// pace, measured from the stops the field has made. `None` until one has
+    /// been timed from entry to exit. See `PitTimingTracker`.
+    pub pit_lane_loss_s: Option<f32>,
+    /// The part of that loss from the stall to the exit line: what is still
+    /// ahead of a car standing in its box.
+    pub pit_exit_loss_s: Option<f32>,
 }
 
 pub fn compute(
@@ -137,6 +153,8 @@ pub fn compute(
         return DriverEntriesFrame {
             entries: vec![],
             player_car_idx,
+            pit_lane_loss_s: None,
+            pit_exit_loss_s: None,
         };
     }
 
@@ -346,6 +364,9 @@ pub fn compute(
                 is_towed: false,
                 pit_state: PitState::None,
                 speed: None,
+                pit_lap: None,
+                pit_elapsed_s: None,
+                last_pit_s: None,
             }
         })
         .collect();
@@ -538,6 +559,8 @@ pub fn compute(
     DriverEntriesFrame {
         entries,
         player_car_idx,
+        pit_lane_loss_s: None,
+        pit_exit_loss_s: None,
     }
 }
 
@@ -948,6 +971,7 @@ fn compute_ir_deltas(entries: &[DriverEntry], use_live: bool) -> HashMap<i32, i3
 pub struct DriverEntriesProcessor {
     state: Mutex<DriverEntriesState>,
     speeds: CarSpeedTracker,
+    pit_timing: PitTimingTracker,
 }
 
 impl Default for DriverEntriesProcessor {
@@ -955,6 +979,7 @@ impl Default for DriverEntriesProcessor {
         Self {
             state: Mutex::new(DriverEntriesState::default()),
             speeds: CarSpeedTracker::default(),
+            pit_timing: PitTimingTracker::default(),
         }
     }
 }
@@ -989,6 +1014,13 @@ impl Processor for DriverEntriesProcessor {
             ctx.car_dynamics.speed,
         );
 
+        let lane_loss =
+            self.pit_timing
+                .apply(&mut frame.entries, ctx.session_time, ctx.session_num);
+
+        frame.pit_lane_loss_s = lane_loss.lane_s;
+        frame.pit_exit_loss_s = lane_loss.exit_s;
+
         Some(ComputedOutput::DriverEntries(frame))
     }
 
@@ -998,6 +1030,7 @@ impl Processor for DriverEntriesProcessor {
         }
 
         self.speeds.reset();
+        self.pit_timing.reset();
     }
 }
 
@@ -2088,6 +2121,9 @@ pub(crate) mod tests {
             is_towed: false,
             pit_state: PitState::None,
             speed: None,
+            pit_lap: None,
+            pit_elapsed_s: None,
+            last_pit_s: None,
         }
     }
 

@@ -180,9 +180,14 @@ fn driver_entry(entry: &mut DriverEntry) {
     entry.class_est_lap_time = round(entry.class_est_lap_time, LAP_TIME_DP);
     round_opt(&mut entry.results_position_time, LAP_TIME_DP);
     round_opt(&mut entry.speed, SPEED_DP);
+    round_opt(&mut entry.pit_elapsed_s, GAP_DP);
+    round_opt(&mut entry.last_pit_s, GAP_DP);
 }
 
 pub fn driver_entries(frame: &mut DriverEntriesFrame) {
+    round_opt(&mut frame.pit_lane_loss_s, GAP_DP);
+    round_opt(&mut frame.pit_exit_loss_s, GAP_DP);
+
     for entry in frame.entries.iter_mut() {
         driver_entry(entry);
     }

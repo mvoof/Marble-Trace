@@ -51,12 +51,12 @@ describe('projectPositionsLost', () => {
       isPlayer: false,
       onPitRoad: false,
       isRetired: false,
-      relativeLapDist: 0,
       position: 5,
       classPosition: 5,
       livePosition: 5,
       liveClassPosition: 5,
-      estTime: 0,
+      lap: 10,
+      lapDistPct: 0,
       classEstLapTime: 100,
       bestLapTime: 100,
       ...overrides,
@@ -65,21 +65,28 @@ describe('projectPositionsLost', () => {
   const player = buildEntry({
     carIdx: 0,
     isPlayer: true,
-    estTime: 50,
+    lap: 10,
+    lapDistPct: 0.5,
     position: 5,
     classPosition: 5,
   });
 
-  // estTime is seconds around the lap, so a car 5 s behind sits at 45.
-  const chaser = (carIdx: number, secondsBehind: number, extra = {}) =>
-    buildEntry({
+  // A 100 s lap, so a car 5 s behind is 0.05 of a lap back.
+  const LAP_S = 100;
+
+  const chaser = (carIdx: number, secondsBehind: number, extra = {}) => {
+    const progress = 10.5 - secondsBehind / LAP_S;
+    const lap = Math.floor(progress);
+
+    return buildEntry({
       carIdx,
-      estTime: 50 - secondsBehind,
-      relativeLapDist: -0.01,
+      lap,
+      lapDistPct: progress - lap,
       position: 6,
       classPosition: 6,
       ...extra,
     });
+  };
 
   it('counts only the cars close enough to get past', () => {
     const entries = [player, chaser(1, 5), chaser(2, 20)];
@@ -94,10 +101,26 @@ describe('projectPositionsLost', () => {
   });
 
   it('ignores cars ahead — they cannot gain on a stationary car', () => {
-    const entries = [
-      player,
-      buildEntry({ carIdx: 1, estTime: 55, relativeLapDist: 0.01 }),
-    ];
+    const entries = [player, chaser(1, -5)];
+
+    expect(projectPositionsLost(entries, 12, false, false)).toBe(0);
+  });
+
+  it('ignores a car a lap down sitting right behind on track', () => {
+    // 5 s behind on the road, a lap and 5 s behind in the race.
+    const entries = [player, chaser(1, LAP_S + 5)];
+
+    expect(projectPositionsLost(entries, 12, false, false)).toBe(0);
+  });
+
+  it('counts a car more than half a lap back when the stop costs that much', () => {
+    const entries = [player, chaser(1, 60)];
+
+    expect(projectPositionsLost(entries, 70, false, false)).toBe(1);
+  });
+
+  it('ignores cars out of the world', () => {
+    const entries = [player, chaser(1, 5, { lap: 0, lapDistPct: -1 })];
 
     expect(projectPositionsLost(entries, 12, false, false)).toBe(0);
   });
@@ -115,7 +138,7 @@ describe('projectPositionsLost', () => {
     );
   });
 
-  it('ignores lapped traffic sitting behind us on the relative', () => {
+  it('ignores a car ranked ahead sitting behind us on track', () => {
     // Close on track, but ranked ahead — a car a lap up cannot take our place.
     const entries = [player, chaser(1, 5, { position: 2, classPosition: 2 })];
 

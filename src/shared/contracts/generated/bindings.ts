@@ -1030,6 +1030,17 @@ export type DetectedApp = {
 export type DriverEntriesFrame = {
   entries: DriverEntry[];
   playerCarIdx: number;
+  /**
+   * What driving through the pit lane costs over the same stretch at racing
+   * pace, measured from the stops the field has made. `None` until one has
+   * been timed from entry to exit. See `PitTimingTracker`.
+   */
+  pitLaneLossS: number | null;
+  /**
+   * The part of that loss from the stall to the exit line: what is still
+   * ahead of a car standing in its box.
+   */
+  pitExitLossS: number | null;
 };
 
 /**
@@ -1115,6 +1126,20 @@ export type DriverEntry = {
    * from its lap distance — see `CarSpeedTracker`.
    */
   speed: number | null;
+  /**
+   * Lap the car came onto pit road on, for the stop it is making or its
+   * last one this session. `None` until it has been on pit road.
+   */
+  pitLap: number | null;
+  /**
+   * Seconds on pit road so far this stop; `None` while off it.
+   */
+  pitElapsedS: number | null;
+  /**
+   * Seconds the last completed stop spent on pit road, entry line to exit
+   * line. See `PitTimingTracker`.
+   */
+  lastPitS: number | null;
 };
 
 /**

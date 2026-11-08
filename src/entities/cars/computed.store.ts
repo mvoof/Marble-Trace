@@ -199,6 +199,20 @@ export class BackendComputedStore {
     return this.fieldJoin.join(this.driverEntries?.entries ?? [], this.roster);
   }
 
+  /**
+   * What driving the pit lane costs, measured from the field's stops — a
+   * number of its own, so a reader wakes when the measurement moves rather
+   * than on every standings tick.
+   */
+  get pitLaneLossS(): number | null {
+    return this.driverEntries?.pitLaneLossS ?? null;
+  }
+
+  /** The part of `pitLaneLossS` from the stall to the exit line. */
+  get pitExitLossS(): number | null {
+    return this.driverEntries?.pitExitLossS ?? null;
+  }
+
   /** The standings field as it is drawn, without the numbers that move. */
   get driverIdentities(): CarIdentity[] {
     return this.fieldIdentityCache.identitiesOf(this.fieldEntries);

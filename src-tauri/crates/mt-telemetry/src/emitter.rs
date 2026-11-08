@@ -964,6 +964,8 @@ mod tests {
         DriverEntriesFrame {
             entries: vec![],
             player_car_idx: 0,
+            pit_lane_loss_s: None,
+            pit_exit_loss_s: None,
         }
     }
 
@@ -1292,6 +1294,9 @@ mod tests {
             is_towed: false,
             pit_state: PitState::None,
             speed: None,
+            pit_lap: None,
+            pit_elapsed_s: None,
+            last_pit_s: None,
         }
     }
 
@@ -1307,6 +1312,8 @@ mod tests {
             driver_entries: Some(DriverEntriesFrame {
                 entries: vec![entry(), player],
                 player_car_idx: 0,
+                pit_lane_loss_s: None,
+                pit_exit_loss_s: None,
             }),
             ..TelemetryBundle::default()
         };

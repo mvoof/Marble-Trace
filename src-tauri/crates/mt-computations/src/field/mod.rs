@@ -3,6 +3,7 @@
 pub mod car_speed;
 pub mod driver_entries;
 pub mod pace_car;
+pub mod pit_timing;
 pub mod proximity;
 pub mod radio;
 pub mod relative;
