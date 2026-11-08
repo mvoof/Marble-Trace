@@ -9,7 +9,7 @@
   position: relative;
   line-height: 1.15;
   font-size: fs(xs);
-  background: plate($table-row-bg);
+  background: $table-row-bg;
 
   &:hover:not(.driverRowPlayer) {
     background-color: $widget-row-hover;
@@ -29,7 +29,7 @@
 }
 
 .rowOdd {
-  background: plate($table-row-bg-alt);
+  background: $table-row-bg-alt;
 }
 
 .driverRowPlayer {

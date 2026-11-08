@@ -7,7 +7,7 @@
   gap: sp(sm);
   padding: sp(xs) sp(md);
   overflow: hidden;
-  background: plate($table-bar-bg);
+  background: $table-bar-bg;
   border-top: 1px solid $table-bar-border;
 }
 

@@ -3,7 +3,7 @@
   align-items: stretch;
   column-gap: sp(xxxs);
   padding: 0 sp(md);
-  background: plate($table-head-bg);
+  background: $table-head-bg;
   border-bottom: 1px solid $table-bar-border;
   position: sticky;
   top: 0;

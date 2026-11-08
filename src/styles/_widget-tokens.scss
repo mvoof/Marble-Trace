@@ -222,12 +222,15 @@ $chip-lic-b: #107c65;
 $chip-lic-c: #7c5a12;
 $chip-lic-d: #7c4d19;
 $chip-lic-r: #8a2222;
-// The timing table around the chips.
-$table-row-bg: #121417;
-$table-row-bg-alt: #16181d;
-$table-head-bg: #111215;
+// The timing table around the chips. The grounds are shades laid over the
+// widget's own background — never a color of their own — so the background
+// color and transparency the user picks still carry the whole table; over the
+// default plate they come out at the mockup's tones.
+$table-row-bg: rgba(0, 0, 0, 0.1);
+$table-row-bg-alt: rgba(255, 255, 255, 0.015);
+$table-head-bg: rgba(0, 0, 0, 0.16);
 $table-head-text: #7e828a;
-$table-bar-bg: #181a1f;
+$table-bar-bg: rgba(255, 255, 255, 0.025);
 $table-bar-border: #282b33;
 $table-rule: #1c1e24;
 $table-row-rule: #1e2025;

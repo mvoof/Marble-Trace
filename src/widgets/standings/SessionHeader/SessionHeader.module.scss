@@ -7,7 +7,7 @@
   align-items: center;
   column-gap: sp(sm);
   padding: sp(xs) sp(md);
-  background: plate($table-bar-bg);
+  background: $table-bar-bg;
   border-bottom: 1px solid $table-bar-border;
 }
 
