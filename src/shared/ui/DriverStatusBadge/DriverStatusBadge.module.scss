@@ -11,38 +11,67 @@
   white-space: nowrap;
   flex-shrink: 0;
   line-height: 1;
-  color: #fff;
+  background: var(--badge-color);
+  color: var(--badge-text, #fff);
+}
+
+// Two halves: the status on its colour, the value on the same hue darkened, so
+// the pair reads as one chip — the SR badge's pattern.
+// Each half paints and rounds its own side: a coloured wrapper clipped to the
+// radius leaves its colour fringing the dark half's corners.
+.badgeWithDetail {
+  align-items: stretch;
+  padding: 0;
+  background: none;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2em 0.35em;
+  border-radius: 0.25em 0 0 0.25em;
+  background: var(--badge-color);
+}
+
+.detail {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2em 0.4em;
+  border-radius: 0 0.25em 0.25em 0;
+  background: color-mix(in srgb, var(--badge-color) 35%, black);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: $font-mono;
 }
 
 .pit {
-  background: $race-red;
+  --badge-color: #{$race-red};
 }
 
 .pitIn {
-  background: $race-blue;
+  --badge-color: #{$race-blue};
 }
 
 .pitExit {
-  background: $race-amber;
-  color: rgba(0, 0, 0, 0.85);
+  --badge-color: #{$race-amber};
+  --badge-text: rgba(0, 0, 0, 0.85);
 }
 
 .tow {
-  background: $race-orange;
-  color: rgba(0, 0, 0, 0.85);
+  --badge-color: #{$race-orange};
+  --badge-text: rgba(0, 0, 0, 0.85);
 }
 
 .out {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.45);
+  --badge-color: rgba(255, 255, 255, 0.12);
+  --badge-text: rgba(255, 255, 255, 0.45);
 }
 
 .offTrack {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.35);
+  --badge-color: rgba(255, 255, 255, 0.08);
+  --badge-text: rgba(255, 255, 255, 0.35);
 }
 
 .dnf {
-  background: #111;
-  color: $race-red;
+  --badge-color: #111;
+  --badge-text: #{$race-red};
 }

@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import styles from './DriverStatusBadge.module.scss';
 
 type DriverStatus =
@@ -11,32 +13,37 @@ type DriverStatus =
 
 interface DriverStatusBadgeProps {
   status: DriverStatus;
+  /**
+   * A value carried on the badge's second half, the status colour darkened —
+   * two-tone like the SR badge. The time on pit road rides on the pit badge.
+   */
+  detail?: ReactNode;
 }
 
-export const DriverStatusBadge = ({ status }: DriverStatusBadgeProps) => {
-  if (status === 'dnf') {
-    return <span className={`${styles.badge} ${styles.dnf}`}>DNF</span>;
+const BADGE_BY_STATUS: Record<DriverStatus, { label: string; tone: string }> = {
+  dnf: { label: 'DNF', tone: styles.dnf },
+  pit_in: { label: 'IN', tone: styles.pitIn },
+  pit_exit: { label: 'OUT', tone: styles.pitExit },
+  tow: { label: 'TOW', tone: styles.tow },
+  out: { label: 'GAR', tone: styles.out },
+  off_track: { label: 'OT', tone: styles.offTrack },
+  pit: { label: 'PIT', tone: styles.pit },
+};
+
+export const DriverStatusBadge = ({
+  status,
+  detail,
+}: DriverStatusBadgeProps) => {
+  const { label, tone } = BADGE_BY_STATUS[status];
+
+  if (detail === undefined) {
+    return <span className={`${styles.badge} ${tone}`}>{label}</span>;
   }
 
-  if (status === 'pit_in') {
-    return <span className={`${styles.badge} ${styles.pitIn}`}>PIT IN</span>;
-  }
-
-  if (status === 'pit_exit') {
-    return <span className={`${styles.badge} ${styles.pitExit}`}>OUT</span>;
-  }
-
-  if (status === 'tow') {
-    return <span className={`${styles.badge} ${styles.tow}`}>TOW</span>;
-  }
-
-  if (status === 'out') {
-    return <span className={`${styles.badge} ${styles.out}`}>GAR</span>;
-  }
-
-  if (status === 'off_track') {
-    return <span className={`${styles.badge} ${styles.offTrack}`}>OT</span>;
-  }
-
-  return <span className={`${styles.badge} ${styles.pit}`}>PIT</span>;
+  return (
+    <span className={`${styles.badge} ${styles.badgeWithDetail} ${tone}`}>
+      <span className={styles.label}>{label}</span>
+      <span className={styles.detail}>{detail}</span>
+    </span>
+  );
 };

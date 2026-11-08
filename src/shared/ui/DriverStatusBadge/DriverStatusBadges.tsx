@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { DriverStatusBadge } from './DriverStatusBadge';
@@ -19,6 +20,10 @@ export interface DriverStatusBadgesProps {
   isFinished?: boolean;
   /** Relative makes the pit badge optional; Standings always shows it. */
   showPit?: boolean;
+  /** Carried on the pit badge's darker half — Standings puts the time there. */
+  pitDetail?: ReactNode;
+  /** Carried on the tow badge's darker half — the player's tow countdown. */
+  towDetail?: ReactNode;
 }
 
 /**
@@ -27,7 +32,8 @@ export interface DriverStatusBadgesProps {
  *
  * Shared by Standings and Relative, which resolved the same five states in the
  * same order with the same precedence — a disqualification hides the rest, and
- * a tow hides "out".
+ * a tow hides "out" and the pit badge: the car stands in its stall until the
+ * tow is over, and only then is it a stop.
  */
 export const DriverStatusBadges = observer(
   ({
@@ -39,6 +45,8 @@ export const DriverStatusBadges = observer(
     pitState,
     isFinished = false,
     showPit = true,
+    pitDetail,
+    towDetail,
   }: DriverStatusBadgesProps) => {
     if (flagType === 'dq') {
       return <DriverStatusBadge status="dnf" />;
@@ -46,13 +54,13 @@ export const DriverStatusBadges = observer(
 
     return (
       <>
-        {isTowed && <DriverStatusBadge status="tow" />}
+        {isTowed && <DriverStatusBadge status="tow" detail={towDetail} />}
 
         {isOut && !isTowed && !isFinished && <DriverStatusBadge status="out" />}
 
         {isOffTrack && !isFinished && <DriverStatusBadge status="off_track" />}
 
-        {showPit && isPit && !isFinished && (
+        {showPit && isPit && !isTowed && !isFinished && (
           <DriverStatusBadge
             status={
               pitState === 'in'
@@ -61,6 +69,7 @@ export const DriverStatusBadges = observer(
                   ? 'pit_exit'
                   : 'pit'
             }
+            detail={pitDetail}
           />
         )}
       </>

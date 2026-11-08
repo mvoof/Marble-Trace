@@ -361,16 +361,15 @@
   color: $widget-text-primary;
 }
 
-// The best-lap column is tinted with the colour of its record, so it reads as
-// one band down the table. Declared after the column stripes, which it replaces.
+// The best-lap column carries the best-lap tint, the record its text colour —
+// the pair the lap log uses. Declared after the column stripes, which it
+// replaces.
 .driverRow > .bestLapCell {
-  background-color: rgba($race-purple, 0.14);
+  background-color: $widget-tint-best-lap;
 }
 
-// The class record keeps its purple, lifted towards white so it stands out on
-// the purple band instead of sinking into it.
 .bestLapFastest {
-  color: color-mix(in srgb, $race-purple 55%, white);
+  color: $widget-text-best-lap;
 }
 
 // Last lap against the lap before it: faster green, slower red.

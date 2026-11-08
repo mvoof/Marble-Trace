@@ -618,7 +618,7 @@
       "abbreviateSof": "缩写 SOF",
       "abbreviateSofDesc": "将 SOF 四舍五入到千位（“6.1k”）；关闭后完整显示（“6148”）。",
       "showPitStopTime": "进站时间",
-      "showPitStopTimeDesc": "每辆车最近一次进站的圈数和维修区用时，停留期间实时计时。",
+      "showPitStopTimeDesc": "维修区用时，车辆停留期间在 PIT 徽章上实时计时。",
       "showPitStops": "进站计数器（仅玩家）",
       "showPitStopsDesc": "玩家车辆的进站次数。",
       "showIncidentsBadge": "违规徽章（仅玩家）",

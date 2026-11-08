@@ -157,8 +157,12 @@ export const TeamRaceWideRows: Story = {
   args: { settings: { rowPadding: 'wide' } },
 };
 
+/** The pit rows sit around the player, below the top block: opened up to show them. */
 export const WithPitBadges: Story = {
-  args: { rows: MOCK_PIT_ROWS },
+  args: {
+    rows: MOCK_PIT_ROWS,
+    settings: { driversAhead: 3, driversBehind: 3 },
+  },
 };
 
 export const WithDriverFlags: Story = {

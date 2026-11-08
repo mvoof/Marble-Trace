@@ -618,7 +618,7 @@
       "abbreviateSof": "Abreviar el SOF",
       "abbreviateSofDesc": "Redondea el SOF al millar (\"6.1k\"); al desactivarlo se escribe completo (\"6148\").",
       "showPitStopTime": "Tiempo de parada",
-      "showPitStopTimeDesc": "Vuelta y tiempo en el pit lane de la última parada de cada coche; cuenta mientras está allí.",
+      "showPitStopTimeDesc": "Tiempo en el pit lane: cuenta en la insignia PIT mientras el coche está allí.",
       "showPitStops": "Contador de paradas (solo tú)",
       "showPitStopsDesc": "Número de paradas en boxes hechas por tu coche.",
       "showIncidentsBadge": "Distintivo de incidentes (solo tú)",

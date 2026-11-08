@@ -23,6 +23,8 @@ import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 
 import styles from './DriverRow.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { TowTime } from '@entities/player/TowTime/TowTime';
 import type { RelativeWidgetSettings } from '../settings-schema';
 
 interface DriverRowProps {
@@ -38,6 +40,7 @@ interface DriverRowProps {
  */
 export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const computed = useBackendComputedStore();
+  const player = usePlayerStore();
 
   const settings = useWidgetSettings<RelativeWidgetSettings>('relative');
 
@@ -121,6 +124,10 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
   const pitState = driver.pitState;
   const flagType = parseDriverFlags(driver.rawFlags);
+
+  // A towed player sits in the stall while the tow counts down — that is the
+  // tow, not a stop.
+  const isTowed = driver.isTowed || (driver.isPlayer && player.isTowing);
 
   const position = resolveRowPosition(driver, settings.useLivePositions);
 
@@ -208,7 +215,10 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
         <DriverStatusBadges
           flagType={flagType}
-          isTowed={driver.isTowed}
+          isTowed={isTowed}
+          towDetail={
+            driver.isPlayer && player.isTowing ? <TowTime /> : undefined
+          }
           isOut={isOut}
           isOffTrack={isOffTrack}
           isPit={isPit}

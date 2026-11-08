@@ -33,12 +33,14 @@ import {
 import { PosChange } from './PosChange';
 import { PositionCell } from './PositionCell';
 import { IrChangeCell } from './IrChangeCell';
-import { PitStopBadge } from './PitStopBadge';
+import { PitStopTime } from './PitStopTime';
 
 import styles from './DriverRow.module.scss';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSessionStore } from '@entities/session/session-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { TowTime } from '@entities/player/TowTime/TowTime';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
 import type { StandingsWidgetSettings } from '../settings-schema';
 
@@ -71,6 +73,7 @@ export const DriverRow = observer(
     const standingsWidget = useStandingsWidgetStore();
     const session = useSessionStore();
     const computed = useBackendComputedStore();
+    const player = usePlayerStore();
 
     const driver = standingsWidget.driverMap.get(carIdx);
     const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
@@ -172,8 +175,11 @@ export const DriverRow = observer(
     const flagType = parseDriverFlags(driver.rawFlags);
 
     // The tow truck has the car: it left the world without going through the pit
-    // lane, which OUT alone would not tell apart from a garage exit.
-    const isTowed = driver.isTowed && !isFinished;
+    // lane, which OUT alone would not tell apart from a garage exit. A towed
+    // player sits in the stall while the tow counts down — that is the tow too,
+    // not a stop.
+    const isTowed =
+      (driver.isTowed || (driver.isPlayer && player.isTowing)) && !isFinished;
 
     const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
@@ -305,11 +311,17 @@ export const DriverRow = observer(
             pitState={pitState}
             isFinished={isFinished}
             showPit={settings.showPitIndicator}
+            pitDetail={
+              settings.showPitStopTime ? (
+                <PitStopTime carIdx={carIdx} />
+              ) : undefined
+            }
+            towDetail={
+              settings.showPitStopTime && driver.isPlayer && player.isTowing ? (
+                <TowTime />
+              ) : undefined
+            }
           />
-
-          {settings.showPitStopTime && !isFinished && (
-            <PitStopBadge carIdx={carIdx} />
-          )}
         </div>
 
         {settings.showLicBadge && (
