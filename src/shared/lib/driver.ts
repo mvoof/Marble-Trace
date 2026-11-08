@@ -9,29 +9,28 @@ export const TRACK_SURFACE_OFF_TRACK: TrackSurfaceType = TrackSurface.OffTrack;
 export const TRACK_SURFACE_IN_PIT_STALL: TrackSurfaceType =
   TrackSurface.InPitStall;
 export const TRACK_SURFACE_ON_TRACK: TrackSurfaceType = TrackSurface.OnTrack;
-export const NEAR_DQ_INCIDENT_THRESHOLD = 15;
-
-/** Incidents left before disqualification at which the counter starts warning. */
-const NEAR_DQ_INCIDENT_MARGIN = 2;
 
 /**
- * Whether the incident counter should warn. With a limit reported by the sim the
- * warning tracks it; without one it falls back to the threshold of a default
- * 17x session, which is what most official series run.
+ * Incidents left before a limit — the disqualification or the next penalty — at
+ * which the counter starts warning. A count, not a share of the limit: five to
+ * go reads the same whether the session allows 17 or 50.
+ */
+const NEAR_INCIDENT_LIMIT_MARGIN = 5;
+
+/**
+ * Whether the incident counter should warn of the disqualification. A session
+ * that reports no limit has none, so there is nothing to warn of.
  */
 export const isNearIncidentLimit = (
   incidents: number,
   incidentLimit: number | null
 ): boolean => {
   if (incidentLimit === null) {
-    return incidents >= NEAR_DQ_INCIDENT_THRESHOLD;
+    return false;
   }
 
-  return incidents >= incidentLimit - NEAR_DQ_INCIDENT_MARGIN;
+  return incidents >= incidentLimit - NEAR_INCIDENT_LIMIT_MARGIN;
 };
-
-/** Incidents left before the next penalty at which the counter starts warning. */
-const NEAR_PENALTY_INCIDENT_MARGIN = 2;
 
 export interface IncidentPenaltyRules {
   initial: number | null;
@@ -90,7 +89,7 @@ export const isNearIncidentPenalty = (
     return false;
   }
 
-  return incidents >= status.nextAt - NEAR_PENALTY_INCIDENT_MARGIN;
+  return incidents >= status.nextAt - NEAR_INCIDENT_LIMIT_MARGIN;
 };
 
 // ─── Formatters ───────────────────────────────────────────────────────────

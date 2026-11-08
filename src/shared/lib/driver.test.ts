@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getIncidentPenaltyStatus,
+  isNearIncidentLimit,
   isNearIncidentPenalty,
   parseDriverFlags,
 } from './driver';
@@ -77,10 +78,23 @@ describe('getIncidentPenaltyStatus', () => {
   });
 });
 
+describe('isNearIncidentLimit', () => {
+  it('warns within five incidents of the limit, whatever the limit', () => {
+    expect(isNearIncidentLimit(12, 17)).toBe(true);
+    expect(isNearIncidentLimit(11, 17)).toBe(false);
+    expect(isNearIncidentLimit(45, 50)).toBe(true);
+    expect(isNearIncidentLimit(17, 50)).toBe(false);
+  });
+
+  it('stays quiet when the session has no limit', () => {
+    expect(isNearIncidentLimit(40, null)).toBe(false);
+  });
+});
+
 describe('isNearIncidentPenalty', () => {
   it('warns within the margin of the next penalty', () => {
-    expect(isNearIncidentPenalty(6, { served: 0, nextAt: 8 })).toBe(true);
-    expect(isNearIncidentPenalty(5, { served: 0, nextAt: 8 })).toBe(false);
+    expect(isNearIncidentPenalty(3, { served: 0, nextAt: 8 })).toBe(true);
+    expect(isNearIncidentPenalty(2, { served: 0, nextAt: 8 })).toBe(false);
   });
 
   it('stays quiet with no penalty ahead', () => {
