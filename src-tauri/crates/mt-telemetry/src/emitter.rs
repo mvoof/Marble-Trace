@@ -388,6 +388,8 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     }
 
     if due.hz1 {
+        note_session_memory(session_info, state, io);
+
         bundle.session = Some(frame.session.clone());
         bundle.environment = Some(frame.environment.clone());
 
@@ -688,6 +690,24 @@ fn measure_size(_bundle: &TelemetryBundle) -> (Option<usize>, Duration) {
 /// Keeps the record of a race under the flag on disk, on the tier the Safety
 /// Rating arrives on. The record changes as the sim refines the result; a tick
 /// that changes nothing writes nothing.
+/// Saves what the event has measured when it changed. An event the sim gives no
+/// id has nothing to be told apart by, so it is not kept.
+fn note_session_memory(session: Option<&SessionSnapshot>, state: &mut LoopState, io: &IoWorker) {
+    let Some(sub_session_id) = session.and_then(|session| session.sub_session_id) else {
+        return;
+    };
+
+    let mut memory = state.registry.session_memory(sub_session_id);
+    memory.pit_auto_suspended = state.pit_auto.is_suspended();
+
+    if memory.is_blank() || state.saved_memory.as_ref() == Some(&memory) {
+        return;
+    }
+
+    io.save_session_memory(memory.clone());
+    state.saved_memory = Some(memory);
+}
+
 fn note_last_race(
     frame: &SourceFrame,
     bundle: &TelemetryBundle,
