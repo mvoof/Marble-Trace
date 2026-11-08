@@ -480,6 +480,9 @@ mod tests {
             is_towed: false,
             pit_state: Default::default(),
             speed: None,
+            pit_lap: None,
+            pit_elapsed_s: None,
+            last_pit_s: None,
         }
     }
 

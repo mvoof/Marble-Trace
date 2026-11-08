@@ -1,6 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { PitServiceWidgetStore } from './pit-service.store';
+import { pitTimeStillToLoseS, type PitVisitPhase } from './pit-loss';
 
 // The panel lingers briefly after pit exit so the last service result stays
 // readable while the car is already accelerating away.
@@ -47,6 +48,12 @@ export class PitPanelState {
    */
   lingering = false;
 
+  /**
+   * The car has stood in its stall since it came onto pit road — what tells
+   * the way out of the lane from the way in.
+   */
+  stoodInStall = false;
+
   private revealTimer: ReturnType<typeof setTimeout> | null = null;
   private lastOnPitRoad = false;
   /** Where the local stop clock was last set from a frame: seconds, and when. */
@@ -80,28 +87,59 @@ export class PitPanelState {
     );
   }
 
+  get visitPhase(): PitVisitPhase {
+    if (this.store.isTowing || this.store.isInPitStall) {
+      return 'stall';
+    }
+
+    if (!this.store.isOnPitRoad) {
+      return 'track';
+    }
+
+    return this.stoodInStall ? 'leaving' : 'entering';
+  }
+
   /**
    * Seconds the car is still expected to stand still: the countdowns the sim
-   * reports plus whatever is left of a stop as long as the last one. Null when
-   * nothing is known — the first stop of a session has nothing to learn from.
+   * reports plus a stop as long as the last one. Before the stall the service
+   * counts only when an order is armed; in it, only what is left of it. The
+   * first stop of a session has no last one to learn from, so only the
+   * countdowns count there.
    */
-  get expectedRemainingS(): number | null {
+  get standstillS(): number {
     const service = this.store.root.player.pitService;
 
     const timed = (service?.repairLeftS ?? 0) + (service?.optRepairLeftS ?? 0);
     const tow = this.store.towTimeS;
+    const lastStopS = this.lastStopDurationS ?? 0;
+    const phase = this.visitPhase;
+
+    if (phase === 'track' || phase === 'entering') {
+      const isOrderArmed = this.store.order.simArmedFlags !== 0;
+
+      return Math.max(timed, isOrderArmed ? lastStopS : 0) + tow;
+    }
 
     if (!this.store.isServiceActive) {
-      return timed + tow > 0 ? timed + tow : null;
+      return timed + tow;
     }
 
-    if (this.lastStopDurationS === null) {
-      return timed > 0 ? timed : null;
-    }
+    return Math.max(timed, Math.max(0, lastStopS - this.stopElapsedS));
+  }
 
-    const serviceLeft = Math.max(0, this.lastStopDurationS - this.stopElapsedS);
+  /**
+   * Seconds the stop still costs against the field — the lane over and above
+   * racing pace, plus the standing still. See `pitTimeStillToLoseS`.
+   */
+  get timeStillToLoseS(): number | null {
+    const { pitLaneLossS, pitExitLossS } = this.store.root.backendComputed;
 
-    return Math.max(timed, serviceLeft);
+    return pitTimeStillToLoseS({
+      phase: this.visitPhase,
+      laneLossS: pitLaneLossS,
+      exitLossS: pitExitLossS,
+      standstillS: this.standstillS,
+    });
   }
 
   toggleManualShow() {
@@ -187,6 +225,7 @@ export class PitPanelState {
     }
 
     this.lastOnPitRoad = onPitRoad;
+    this.stoodInStall = false;
 
     if (this.hideTimer !== null) {
       clearTimeout(this.hideTimer);
@@ -207,6 +246,13 @@ export class PitPanelState {
         this.hideTimer = null;
       });
     }, HIDE_DELAY_MS);
+  }
+
+  /** Called on every stall transition, to tell the way out of the lane from the way in. */
+  handleStallChange(inPitStall: boolean) {
+    if (inPitStall) {
+      this.stoodInStall = true;
+    }
   }
 
   private setStopElapsed(seconds: number) {
@@ -237,6 +283,7 @@ export class PitPanelState {
     this.manualShow = false;
     this.lingering = false;
     this.lastOnPitRoad = false;
+    this.stoodInStall = false;
     this.clockAnchor = null;
     this.stopElapsedS = 0;
   }

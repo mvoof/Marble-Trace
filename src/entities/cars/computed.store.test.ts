@@ -96,6 +96,8 @@ const makeEntries = (carCount: number): DriverEntriesFrame => ({
     (_unused, carIdx) => ({ carIdx }) as unknown as DriverEntry
   ),
   playerCarIdx: 0,
+  pitLaneLossS: null,
+  pitExitLossS: null,
 });
 
 const makeRoster = (carClassIds: number[]): SessionSnapshot =>
@@ -163,6 +165,8 @@ describe('BackendComputedStore leaderLap', () => {
             ({ carIdx, lap: lapNumber }) as unknown as DriverEntry
         ),
         playerCarIdx: 0,
+        pitLaneLossS: null,
+        pitExitLossS: null,
       });
     });
 

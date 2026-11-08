@@ -553,4 +553,101 @@ describe('PitServiceWidgetStore — pit orders', () => {
       vi.useRealTimers();
     });
   });
+
+  // The lane is measured on the telemetry thread from the field's stops; the
+  // panel adds the part still ahead of the car to the standing still.
+  describe('what the stop still costs', () => {
+    const LANE_LOSS_S = 22;
+    const EXIT_LOSS_S = 9;
+    const LAST_STOP_S = 30;
+
+    const setScene = (options: {
+      onPitRoad: boolean;
+      inPitStall?: boolean;
+      serviceActive?: boolean;
+      armedFlags?: number;
+    }) => {
+      runInAction(() => {
+        rootStore.player.carStatus = {
+          on_pit_road: options.onPitRoad,
+          engine_warnings: 0,
+        } as never;
+
+        rootStore.player.pitService = {
+          inPitStall: options.inPitStall ?? false,
+          serviceActive: options.serviceActive ?? false,
+          flags: options.armedFlags ?? 0,
+          towTimeS: 0,
+          repairLeftS: 0,
+          optRepairLeftS: 0,
+        } as never;
+
+        rootStore.backendComputed.updatePitStops({
+          playerStops: 1,
+          serviceElapsedS: options.serviceActive === true ? 0 : null,
+          lastServiceS: LAST_STOP_S,
+        });
+
+        rootStore.backendComputed.updateDriverEntries({
+          entries: [],
+          playerCarIdx: 0,
+          pitLaneLossS: LANE_LOSS_S,
+          pitExitLossS: EXIT_LOSS_S,
+        });
+      });
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      rootStore.pitServiceWidget.init();
+    });
+
+    it('counts the lane alone on track with nothing ordered', () => {
+      setScene({ onPitRoad: false });
+
+      expect(rootStore.pitServiceWidget.panel.timeStillToLoseS).toBe(
+        LANE_LOSS_S
+      );
+      vi.useRealTimers();
+    });
+
+    it('adds a stop as long as the last one once an order is armed', () => {
+      setScene({ onPitRoad: false, armedFlags: 1 });
+
+      expect(rootStore.pitServiceWidget.panel.timeStillToLoseS).toBe(
+        LANE_LOSS_S + LAST_STOP_S
+      );
+      vi.useRealTimers();
+    });
+
+    it('counts only the run out of the lane once in the stall', () => {
+      setScene({ onPitRoad: true });
+      setScene({ onPitRoad: true, inPitStall: true, serviceActive: true });
+
+      expect(rootStore.pitServiceWidget.panel.visitPhase).toBe('stall');
+      expect(rootStore.pitServiceWidget.panel.timeStillToLoseS).toBe(
+        EXIT_LOSS_S + LAST_STOP_S
+      );
+      vi.useRealTimers();
+    });
+
+    it('says nothing once the car has left the stall', () => {
+      setScene({ onPitRoad: true });
+      setScene({ onPitRoad: true, inPitStall: true });
+      setScene({ onPitRoad: true, inPitStall: false });
+
+      expect(rootStore.pitServiceWidget.panel.visitPhase).toBe('leaving');
+      expect(rootStore.pitServiceWidget.panel.timeStillToLoseS).toBeNull();
+      vi.useRealTimers();
+    });
+
+    it('starts the next visit on the way in again', () => {
+      setScene({ onPitRoad: true, inPitStall: true });
+      setScene({ onPitRoad: false });
+      setScene({ onPitRoad: true });
+
+      expect(rootStore.pitServiceWidget.panel.visitPhase).toBe('entering');
+      vi.useRealTimers();
+    });
+  });
 });

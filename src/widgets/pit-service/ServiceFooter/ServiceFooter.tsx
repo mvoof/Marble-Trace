@@ -35,10 +35,6 @@ export const ServiceFooter = observer(() => {
 
   const stops = pitStops?.playerStops ?? 0;
 
-  // Repairs and tow come from the sim; the service part is what is left of a
-  // stop as long as the previous one, since the sim reports no duration.
-  const secondsLost = pitServiceWidget.panel.expectedRemainingS ?? 0;
-
   // The header this widget used to carry said "PIT SERVICE" and nothing else,
   // while the footer ran half empty — so the two states that were up there come
   // down here instead of costing a row of their own.
@@ -72,7 +68,6 @@ export const ServiceFooter = observer(() => {
         useLivePositions={useLivePositions}
         classPositionInMulticlass={classPositionInMulticlass}
         showProjectedPosition={showProjectedPosition}
-        secondsLost={secondsLost}
       />
     </footer>
   );

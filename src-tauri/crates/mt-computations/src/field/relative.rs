@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::field::car_speed::CarSpeedTracker;
 use crate::field::driver_entries::{self, DriverEntriesState, DriverEntry};
+use crate::field::pit_timing::PitTimingTracker;
 use crate::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use mt_model::contract::capabilities::Capabilities;
 
@@ -54,6 +55,7 @@ pub fn compute(entries: &[DriverEntry], player_car_idx: i32) -> RelativeFrame {
 pub struct RelativeProcessor {
     state: Mutex<DriverEntriesState>,
     speeds: CarSpeedTracker,
+    pit_timing: PitTimingTracker,
 }
 
 impl Default for RelativeProcessor {
@@ -61,6 +63,7 @@ impl Default for RelativeProcessor {
         Self {
             state: Mutex::new(DriverEntriesState::default()),
             speeds: CarSpeedTracker::default(),
+            pit_timing: PitTimingTracker::default(),
         }
     }
 }
@@ -102,6 +105,14 @@ impl Processor for RelativeProcessor {
             ctx.car_dynamics.speed,
         );
 
+        // The relative table carries the same pit timing as the standings; the
+        // lane loss travels on the standings frame alone.
+        self.pit_timing.apply(
+            &mut standings_frame.entries,
+            ctx.session_time,
+            ctx.session_num,
+        );
+
         let frame = compute(&standings_frame.entries, player_car_idx);
 
         Some(ComputedOutput::Relative(frame))
@@ -113,6 +124,7 @@ impl Processor for RelativeProcessor {
         }
 
         self.speeds.reset();
+        self.pit_timing.reset();
     }
 }
 
@@ -167,6 +179,9 @@ mod tests {
             is_towed: false,
             pit_state: PitState::None,
             speed: None,
+            pit_lap: None,
+            pit_elapsed_s: None,
+            last_pit_s: None,
         }
     }
 

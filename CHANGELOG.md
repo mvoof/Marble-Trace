@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Pit Service — Projected Position:** The `P5 → P8` estimate now counts the time the pit lane itself costs, measured from the stops the field makes, on top of the standing still, and shows on the way to the pits, not only in the box. A car a lap down right behind you no longer counts as a place lost, a car more than half a lap back still does, and the estimate no longer needs the Relative widget on screen to work.
 - **TCR Badge:** A TCR class with the Audi RS3 LMS Gen2 in it is badged TCR, not by the series name the sim gives it.
 
 ## [0.28.0] — 2026-11-03

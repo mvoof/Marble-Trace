@@ -5,7 +5,6 @@ import type {
 import type { DriverEntry } from '@shared/contracts/driver-entry';
 import type { UnitSystem } from '@shared/contracts/domain';
 import type { CornerPosition } from '@features/pit-service/pit-tires';
-import { computeRelativeGap } from '@shared/lib/driver';
 
 export interface TireCornerData {
   wearL: number | null;
@@ -118,16 +117,25 @@ export const resolveServiceState = (
   return hasOrder ? 'armed' : 'idle';
 };
 
+/** Laps covered so far; null for a car out of the world. */
+const raceProgress = (entry: DriverEntry): number | null =>
+  entry.lapDistPct < 0 ? null : entry.lap + entry.lapDistPct;
+
 /**
- * How many cars currently behind us on track get past while we stand still for
- * `secondsLost`.
+ * How many cars behind us in the race get past while the stop still costs us
+ * `secondsLost` — the lane and the standing still together.
+ *
+ * The gap is the race distance between us turned into time at the chaser's
+ * lap pace, not the gap on track: a car a lap down sitting right behind on the
+ * relative passes us on the road and stays a lap down, and a car more than
+ * half a lap back is still behind, however long the repair.
  *
  * It is a first-order estimate, not a race prediction: it assumes the cars
- * behind keep their current pace and do not pit themselves. That is exactly
- * the question being asked in the box — "who comes out in front of me if this
- * takes another twelve seconds" — and the answer stops being useful the moment
- * it pretends to more precision than that. Cars already in the pit lane are
- * skipped: they are losing the same time we are.
+ * behind keep their pace and do not pit themselves, and it spreads a lap's
+ * time evenly over its distance. That is the question asked around a stop —
+ * "who comes out in front of me if this takes another twelve seconds" — and
+ * the answer stops being useful the moment it pretends to more precision than
+ * that. Cars already in the pit lane are skipped: they are losing time too.
  */
 export const projectPositionsLost = (
   entries: DriverEntry[],
@@ -140,6 +148,10 @@ export const projectPositionsLost = (
   const player = entries.find((entry) => entry.isPlayer);
 
   if (!player) return 0;
+
+  const playerProgress = raceProgress(player);
+
+  if (playerProgress === null) return 0;
 
   const rankOf = (entry: DriverEntry): number => {
     if (byClass) {
@@ -160,17 +172,19 @@ export const projectPositionsLost = (
 
     if (byClass && entry.carClassId !== player.carClassId) return false;
 
-    // Nearby on track is not the same as racing us for a place: lapped and
-    // lapping traffic sits right behind on the relative but cannot take a
-    // position we hold. Only cars ranked behind us can.
+    // A car ranked ahead holds that place already, wherever it is on track.
     const rank = rankOf(entry);
 
     if (!rank || !playerRank || rank <= playerRank) return false;
 
-    // Only cars behind can gain a position on a stationary car.
-    if (entry.relativeLapDist >= 0) return false;
+    const progress = raceProgress(entry);
+    const lapTimeS = entry.classEstLapTime || entry.bestLapTime;
 
-    return Math.abs(computeRelativeGap(entry, player)) < secondsLost;
+    if (progress === null || !lapTimeS) return false;
+
+    const gapS = (playerProgress - progress) * lapTimeS;
+
+    return gapS > 0 && gapS < secondsLost;
   }).length;
 };
 

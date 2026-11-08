@@ -164,6 +164,9 @@ export const computeDriverEntries = (
       isTowed: false,
       pitState: previewPitState(onPitRoad, trackSurface),
       speed: previewSpeed(idx, onPitRoad, trackSurface),
+      pitLap: null,
+      pitElapsedS: null,
+      lastPitS: null,
     });
   }
 
