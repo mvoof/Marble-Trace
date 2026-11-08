@@ -10,7 +10,10 @@ import {
 } from '@shared/lib/driver';
 import { parseDriverFlags } from '@shared/lib/driver';
 import { isSessionEnded } from '@shared/lib/timer-utils';
-import { DriverStatusBadges } from '@shared/ui/DriverStatusBadge/DriverStatusBadges';
+import {
+  isPitStatus,
+  resolveDriverStatuses,
+} from '@shared/ui/StatChip/driver-status';
 import { RadioMark } from '@entities/cars/RadioMark/RadioMark';
 import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
@@ -273,6 +276,29 @@ export const DriverRow = observer(
       standingsWidget.lapDeltas.get(carIdx)
     );
 
+    // Read from the identity, so the list changes with the row's own render and
+    // adds none: a pit stop or a tow is the rare event the row redraws for.
+    const statusChips = resolveDriverStatuses({
+      flagType,
+      isTowed,
+      isOut,
+      isOffTrack,
+      isPit,
+      pitState,
+      isFinished,
+      showPit: settings.showPitIndicator,
+    });
+
+    // What rides on a chip's dark half: the time on pit road, the tow.
+    const pitDetail = settings.showPitStopTime ? (
+      <PitStopTime carIdx={carIdx} />
+    ) : undefined;
+
+    const towDetail =
+      settings.showPitStopTime && driver.isPlayer && player.isTowing ? (
+        <TowTime />
+      ) : undefined;
+
     const driverName = (
       <span
         className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
@@ -337,26 +363,21 @@ export const DriverRow = observer(
             <RadioMark carIdx={driver.carIdx} onPlayerRow={driver.isPlayer} />
           )}
 
-          <DriverStatusBadges
-            flagType={flagType}
-            isTowed={isTowed}
-            isOut={isOut}
-            isOffTrack={isOffTrack}
-            isPit={isPit}
-            pitState={pitState}
-            isFinished={isFinished}
-            showPit={settings.showPitIndicator}
-            pitDetail={
-              settings.showPitStopTime ? (
-                <PitStopTime carIdx={carIdx} />
-              ) : undefined
-            }
-            towDetail={
-              settings.showPitStopTime && driver.isPlayer && player.isTowing ? (
-                <TowTime />
-              ) : undefined
-            }
-          />
+          {statusChips.map((chip) => (
+            <StatChip
+              key={chip.status}
+              lead={chip.label}
+              leadVariant={chip.lead}
+              tone={chip.tone}
+              emphasized={chip.lead === 'solid'}
+            >
+              {chip.status === 'tow'
+                ? towDetail
+                : isPitStatus(chip.status)
+                  ? pitDetail
+                  : undefined}
+            </StatChip>
+          ))}
         </div>
 
         {(settings.showLicBadge || settings.showIRating) && (

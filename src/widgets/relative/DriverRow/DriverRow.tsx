@@ -8,7 +8,7 @@ import {
   TRACK_SURFACE_OFF_TRACK,
 } from '@shared/lib/driver';
 import { computeRelativeGap, parseDriverFlags } from '@shared/lib/driver';
-import { DriverStatusBadges } from '@shared/ui/DriverStatusBadge/DriverStatusBadges';
+import { resolveDriverStatuses } from '@shared/ui/StatChip/driver-status';
 import { RadioMark } from '@entities/cars/RadioMark/RadioMark';
 import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
@@ -134,6 +134,18 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   // tow, not a stop.
   const isTowed = driver.isTowed || (driver.isPlayer && player.isTowing);
 
+  // Read from the identity, so the list changes with the row's own render and
+  // adds none: a pit stop or a tow is the rare event the row redraws for.
+  const statusChips = resolveDriverStatuses({
+    flagType,
+    isTowed,
+    isOut,
+    isOffTrack,
+    isPit,
+    pitState,
+    showPit: settings.showPitIndicator,
+  });
+
   const position = resolveRowPosition(driver, settings.useLivePositions);
 
   const rowClass = [
@@ -218,18 +230,19 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
           <RadioMark carIdx={driver.carIdx} onPlayerRow={driver.isPlayer} />
         )}
 
-        <DriverStatusBadges
-          flagType={flagType}
-          isTowed={isTowed}
-          towDetail={
-            driver.isPlayer && player.isTowing ? <TowTime /> : undefined
-          }
-          isOut={isOut}
-          isOffTrack={isOffTrack}
-          isPit={isPit}
-          pitState={pitState}
-          showPit={settings.showPitIndicator}
-        />
+        {statusChips.map((chip) => (
+          <StatChip
+            key={chip.status}
+            lead={chip.label}
+            leadVariant={chip.lead}
+            tone={chip.tone}
+            emphasized={chip.lead === 'solid'}
+          >
+            {chip.status === 'tow' && driver.isPlayer && player.isTowing ? (
+              <TowTime />
+            ) : undefined}
+          </StatChip>
+        ))}
       </div>
 
       {(settings.showLicBadge || settings.showIRating) && (
