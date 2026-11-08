@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { DriverStatusBadge } from './DriverStatusBadge';
+import {
+  StatChip,
+  type StatChipLead,
+  type StatChipTone,
+} from '@shared/ui/StatChip/StatChip';
 import type { FlagType } from '@shared/contracts/domain';
 import type { PitState } from '@shared/contracts/generated/bindings';
 
@@ -35,6 +39,51 @@ export interface DriverStatusBadgesProps {
  * a tow hides "out" and the pit badge: the car stands in its stall until the
  * tow is over, and only then is it a stop.
  */
+type DriverStatus =
+  | 'pit'
+  | 'pit_in'
+  | 'pit_exit'
+  | 'out'
+  | 'off_track'
+  | 'dnf'
+  | 'tow';
+
+interface StatusChip {
+  label: string;
+  tone: StatChipTone;
+  lead: StatChipLead;
+}
+
+// A stop and a tow are filled — they change the race. Garage, off-track and a
+// disqualification are tinted: they are states, not events. Whatever rides
+// along — the pit time, the tow — sits on the chip's dark half.
+const CHIP_BY_STATUS: Record<DriverStatus, StatusChip> = {
+  dnf: { label: 'DNF', tone: 'danger', lead: 'tint' },
+  pit_in: { label: 'IN', tone: 'info', lead: 'solid' },
+  pit_exit: { label: 'OUT', tone: 'accent', lead: 'solid' },
+  tow: { label: 'TOW', tone: 'lapped', lead: 'solid' },
+  out: { label: 'GAR', tone: 'muted', lead: 'tint' },
+  off_track: { label: 'OT', tone: 'muted', lead: 'tint' },
+  pit: { label: 'PIT', tone: 'danger', lead: 'solid' },
+};
+
+const StatusChip = observer(
+  ({ status, detail }: { status: DriverStatus; detail?: ReactNode }) => {
+    const { label, tone, lead } = CHIP_BY_STATUS[status];
+
+    return (
+      <StatChip
+        lead={label}
+        leadVariant={lead}
+        tone={tone}
+        emphasized={lead === 'solid'}
+      >
+        {detail}
+      </StatChip>
+    );
+  }
+);
+
 export const DriverStatusBadges = observer(
   ({
     flagType,
@@ -49,19 +98,19 @@ export const DriverStatusBadges = observer(
     towDetail,
   }: DriverStatusBadgesProps) => {
     if (flagType === 'dq') {
-      return <DriverStatusBadge status="dnf" />;
+      return <StatusChip status="dnf" />;
     }
 
     return (
       <>
-        {isTowed && <DriverStatusBadge status="tow" detail={towDetail} />}
+        {isTowed && <StatusChip status="tow" detail={towDetail} />}
 
-        {isOut && !isTowed && !isFinished && <DriverStatusBadge status="out" />}
+        {isOut && !isTowed && !isFinished && <StatusChip status="out" />}
 
-        {isOffTrack && !isFinished && <DriverStatusBadge status="off_track" />}
+        {isOffTrack && !isFinished && <StatusChip status="off_track" />}
 
         {showPit && isPit && !isTowed && !isFinished && (
-          <DriverStatusBadge
+          <StatusChip
             status={
               pitState === 'in'
                 ? 'pit_in'

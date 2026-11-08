@@ -153,7 +153,7 @@ $edge: var(--chip-edge, #{$chip-border});
 .toneDanger {
   --chip-lead-bg: #{$chip-danger-bg};
   --chip-lead-text: #{$chip-danger};
-  --chip-solid-bg: #{$chip-danger};
+  --chip-solid-bg: #{$chip-pit};
   --chip-on-solid: #{$widget-text-primary};
   --chip-edge: #{$chip-danger-border};
 }
@@ -161,6 +161,8 @@ $edge: var(--chip-edge, #{$chip-border});
 .toneLapped {
   --chip-lead-bg: #{$chip-lapped-bg};
   --chip-lead-text: #{$chip-lapped};
+  --chip-solid-bg: #{$chip-lapped};
+  --chip-on-solid: #{$chip-bg};
   --chip-edge: #{rgba($chip-lapped-edge, 0.5)};
 }
 
