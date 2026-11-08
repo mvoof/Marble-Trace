@@ -9,6 +9,8 @@ import type { PaceCarPitPhase } from '@shared/contracts/generated/bindings';
 import {
   chipColumnCss,
   columnPx,
+  fontScaleOf,
+  type WithFontScale,
   ratingChipParts,
   ratingChipWidth,
 } from '@shared/ui/StatChip/rating';
@@ -51,20 +53,24 @@ interface ColSpec {
 // The rating column: the chip's own width and the cell's padding, growing with
 // the font scale as the chip's digits do.
 const ratingColumn = (
-  settings: RelativeWidgetSettings
+  settings: WithFontScale<RelativeWidgetSettings>
 ): { px: number; css: string } => {
   const { sr, ir } = ratingChipParts(settings);
   const width = ratingChipWidth(sr, ir, settings.licBadgeStyle);
 
   return {
-    px: columnPx(width, CELL_PAD_X_PX * 2),
+    // The design width is what the grid really draws, the font scale too —
+    // else a scaled-up chip pushes the last column out of the frame.
+    px: columnPx(width, CELL_PAD_X_PX * 2, fontScaleOf(settings)),
     css: chipColumnCss(width, CELL_PAD_X_PX * 2),
   };
 };
 
 // Single source of truth for column order + widths (px at scale 1). Order MUST
 // match the render order in DriverRow.tsx.
-const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
+const colSpecs = (
+  settings: WithFontScale<RelativeWidgetSettings>
+): ColSpec[] => [
   { px: 28, show: true }, // pos
   { px: padded(40), show: settings.showCarNumber }, // carNum — class-colored badge, right after pos
   { px: padded(22), show: settings.showCountryFlag }, // country flag, right before the name
@@ -95,7 +101,7 @@ export const buildRelativeGridTemplate = (
 // Natural content width of the currently-visible columns (px at scale 1) — used
 // as designWidth so toggling lic/iR shrinks the widget WITHOUT shrinking text.
 export const computeRelativeDesignWidth = (
-  settings: RelativeWidgetSettings
+  settings: WithFontScale<RelativeWidgetSettings>
 ): number => {
   const visible = colSpecs(settings).filter((col) => col.show);
   const columnsWidth = visible.reduce((sum, col) => sum + col.px, 0);

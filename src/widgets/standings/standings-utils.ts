@@ -3,6 +3,8 @@ import type { DriverEntry } from '@shared/contracts/driver-entry';
 import {
   chipColumnCss,
   columnPx,
+  fontScaleOf,
+  type WithFontScale,
   ratingChipParts,
   ratingChipWidth,
 } from '@shared/ui/StatChip/rating';
@@ -208,18 +210,22 @@ interface ColSpec {
 // The rating column: the chip's own width and the cell's padding, growing with
 // the font scale as the chip's digits do.
 const ratingColumn = (
-  settings: StandingsWidgetSettings
+  settings: WithFontScale<StandingsWidgetSettings>
 ): { px: number; css: string } => {
   const { sr, ir } = ratingChipParts(settings);
   const width = ratingChipWidth(sr, ir, settings.licBadgeStyle);
 
   return {
-    px: columnPx(width, CELL_PAD_X_PX * 2),
+    // The design width is what the grid really draws, the font scale too —
+    // else a scaled-up chip pushes the last column out of the frame.
+    px: columnPx(width, CELL_PAD_X_PX * 2, fontScaleOf(settings)),
     css: chipColumnCss(width, CELL_PAD_X_PX * 2),
   };
 };
 
-const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
+const colSpecs = (
+  settings: WithFontScale<StandingsWidgetSettings>
+): ColSpec[] => [
   { key: 'pos', block: 'driver', px: 28, show: true }, // "00" (fs md, bold)
   { key: 'carNumber', block: 'driver', px: padded(40), show: true }, // class-colored badge
   {
@@ -331,7 +337,7 @@ export const buildGridTemplate = (
 // shrinking text: --wfs = currentWidth / designWidth stays put when both move
 // together (see resolveStandingsLayout in widget-defaults).
 export const computeStandingsDesignWidth = (
-  settings: StandingsWidgetSettings
+  settings: WithFontScale<StandingsWidgetSettings>
 ): number => {
   const visible = colSpecs(settings).filter((col) => col.show);
   const columnsWidth = visible.reduce((sum, col) => sum + col.px, 0);

@@ -1,3 +1,4 @@
+import type { WithFontScale } from '@shared/ui/StatChip/rating';
 import type { WidgetManifest } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
@@ -11,14 +12,16 @@ import {
   type StandingsWidgetSettings,
 } from './settings-schema';
 
-const resolveStandingsLayout =
-  makeExactColumnLayoutResolver<StandingsWidgetSettings>(
-    // Some of these change a column's width rather than its presence (the
-    // license letter, the badge style, the abbreviated iRating), so the table
-    // is re-measured for them exactly as for a column being toggled.
-    STANDINGS_COLUMN_KEYS,
-    computeStandingsDesignWidth
-  );
+const resolveStandingsLayout = makeExactColumnLayoutResolver<
+  WithFontScale<StandingsWidgetSettings>
+>(
+  // Some of these change a column's width rather than its presence (the
+  // license letter, the badge style, the abbreviated iRating), so the table
+  // is re-measured for them exactly as for a column being toggled. The font
+  // scale widens the rating chip, so it re-measures the table too.
+  [...STANDINGS_COLUMN_KEYS, 'fontScale'],
+  computeStandingsDesignWidth
+);
 
 const STANDINGS_DESIGN_WIDTH = computeStandingsDesignWidth(
   STANDINGS_SETTINGS.defaults

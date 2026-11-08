@@ -19,7 +19,10 @@ import {
   maxScrollOffset,
   resolveBestLapDisplay,
 } from './standings-utils';
-import type { StandingsWidgetSettings } from './settings-schema';
+import {
+  STANDINGS_SETTINGS,
+  type StandingsWidgetSettings,
+} from './settings-schema';
 
 const makeField = (count: number, playerIdx: number): DriverEntry[] =>
   Array.from(
@@ -404,6 +407,22 @@ describe('name column width', () => {
     );
 
     expect(wide - narrow).toBe(40);
+  });
+
+  it('widens the table with the font scale, as the rating chip grows', () => {
+    const atScale = computeStandingsDesignWidth({
+      ...STANDINGS_SETTINGS.defaults,
+      fontScale: 1,
+    });
+    const scaledUp = computeStandingsDesignWidth({
+      ...STANDINGS_SETTINGS.defaults,
+      fontScale: 1.3,
+    });
+
+    expect(atScale).toBe(
+      computeStandingsDesignWidth(STANDINGS_SETTINGS.defaults)
+    );
+    expect(scaledUp).toBeGreaterThan(atScale);
   });
 
   it('clamps a width outside the slider range', () => {

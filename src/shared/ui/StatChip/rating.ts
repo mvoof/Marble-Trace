@@ -97,9 +97,24 @@ export const ratingChipWidth = (
 export const chipColumnCss = (width: ChipWidth, paddingPx: number): string =>
   `calc(${columnPx(width, paddingPx) - width.textPx}px * var(--wfs, 1) + ${width.textPx}px * var(--wfs, 1) * var(--font-scale, 1))`;
 
-/** The same column at scale 1, rounded up to a whole pixel. */
-export const columnPx = (width: ChipWidth, paddingPx: number): number =>
-  Math.ceil(width.fixedPx + width.textPx + paddingPx);
+/** A table's settings as its design width reads them: the font scale too. */
+export type WithFontScale<Settings> = Settings & { fontScale?: number };
+
+/** The font scale a widget's settings carry, 1 when they carry none. */
+export const fontScaleOf = (settings: { fontScale?: unknown }): number =>
+  typeof settings.fontScale === 'number' && settings.fontScale > 0
+    ? settings.fontScale
+    : 1;
+
+/**
+ * The same column at the widget's scale 1 and the given font scale, rounded up
+ * to a whole pixel — what a table adds up as its design width.
+ */
+export const columnPx = (
+  width: ChipWidth,
+  paddingPx: number,
+  fontScale = 1
+): number => Math.ceil(width.fixedPx + width.textPx * fontScale + paddingPx);
 
 const LICENSE_TONE: Record<string, StatChipTone> = {
   A: 'licenseA',
