@@ -40,7 +40,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/StandingsWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: StandingsWidget,
-    size: { width: 900, height: 500 },
+    size: { width: 1010, height: 500 },
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
       // A scenario has already spaced the field the way it means to show it, so

@@ -116,6 +116,13 @@
   }
 }
 
+// Every value cell keeps a little room on both sides, so a value never touches
+// the edge of its column stripe — `CELL_PAD_X_PX` in standings-utils, which
+// widens each column by the same amount. Position and name have their own.
+.driverRow > .cell:not(.posCell, .nameCell) {
+  padding-inline: sp(xxs);
+}
+
 // Position cell — reaches the row's left edge so the class marker sits on it
 .posCell {
   margin-left: calc(-1 * sp(md));
@@ -124,7 +131,6 @@
 
 // Car number cell
 .carNumberCell {
-  padding: 0 sp(xxxs);
   justify-content: flex-end;
 }
 
@@ -359,7 +365,6 @@
 // one band down the table. Declared after the column stripes, which it replaces.
 .driverRow > .bestLapCell {
   background-color: rgba($race-purple, 0.14);
-  padding-right: sp(xxs);
 }
 
 // The class record keeps its purple, lifted towards white so it stands out on

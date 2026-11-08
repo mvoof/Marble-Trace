@@ -111,7 +111,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/RelativeWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: RelativeWidget,
-    size: { width: 406, height: 400 },
+    size: { width: 462, height: 400 },
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
       // A scenario has already spaced the field the way it means to show it, so

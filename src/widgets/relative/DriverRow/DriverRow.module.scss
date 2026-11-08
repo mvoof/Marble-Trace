@@ -88,6 +88,13 @@
   @include row-padding(sp(xs));
 }
 
+// Every value cell keeps a little room on both sides, so a value never touches
+// the edge of its column stripe — `CELL_PAD_X_PX` in relative-utils, which
+// widens each column by the same amount. Position and name have their own.
+.driverRow > :not(.posBlock, .infoBlock) {
+  padding-inline: sp(xxs);
+}
+
 // Position block — reaches the row's left edge so the class marker sits on it
 .posBlock {
   display: flex;
@@ -119,7 +126,6 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 sp(sm) 0 0;
 }
 
 // Car number — the badge carries the class color
@@ -197,7 +203,6 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding-right: sp(xxxs);
 }
 
 .f2Time {

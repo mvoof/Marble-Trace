@@ -14,6 +14,12 @@ const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 // Layout constants — mirror the SCSS: column-gap sp(xxxs)=2, padding sp(md)=10.
 const COL_GAP_PX = 2;
 const ROW_PAD_X_PX = 10;
+// Inner padding on each side of a value cell — sp(xxs) in the SCSS — so a value
+// never touches the edge of its column stripe. Position and name carry their own.
+const CELL_PAD_X_PX = 4;
+
+const padded = (contentPx: number): number => contentPx + CELL_PAD_X_PX * 2;
+
 // The name column is fixed, not elastic — see the same note in standings-utils.
 export const NAME_COLUMN_MIN_PX = 80;
 export const NAME_COLUMN_MAX_PX = 300;
@@ -39,17 +45,22 @@ interface ColSpec {
 // match the render order in DriverRow.tsx.
 const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
   { px: 28, show: true }, // pos
-  { px: 40, show: settings.showCarNumber }, // carNum — class-colored badge, right after pos
-  { px: 22, show: settings.showCountryFlag }, // country flag, right before the name
+  { px: padded(40), show: settings.showCarNumber }, // carNum — class-colored badge, right after pos
+  { px: padded(22), show: settings.showCountryFlag }, // country flag, right before the name
   { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
   // Both widths follow the format the value is written in — see the same pair in
   // Standings, which the two widgets keep aligned so their SR columns match.
   {
-    px: licColumnWidthPx(settings.licBadgeStyle, settings.showLicenseLetter),
+    px: padded(
+      licColumnWidthPx(settings.licBadgeStyle, settings.showLicenseLetter)
+    ),
     show: settings.showLicBadge,
   },
-  { px: settings.abbreviateIRating ? 36 : 48, show: settings.showIRating },
-  { px: 56, show: true }, // gap
+  {
+    px: padded(settings.abbreviateIRating ? 36 : 48),
+    show: settings.showIRating,
+  },
+  { px: padded(56), show: true }, // gap
 ];
 
 export const buildRelativeGridTemplate = (

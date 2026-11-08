@@ -140,6 +140,12 @@ const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 // Layout constants — must mirror the SCSS: column-gap sp(xxxs)=2, padding sp(md)=10.
 const COL_GAP_PX = 2;
 const ROW_PAD_X_PX = 10;
+// Inner padding on each side of a value cell — sp(xxs) in the SCSS — so a value
+// never touches the edge of its column stripe. Position and name carry their own.
+const CELL_PAD_X_PX = 4;
+
+const padded = (contentPx: number): number => contentPx + CELL_PAD_X_PX * 2;
+
 // The name column is fixed, not elastic: an elastic name swallows every pixel
 // freed by a hidden column, so the only way left to narrow the table is to drag
 // its edge — which scales the text down with it. Its width is a user setting,
@@ -168,30 +174,32 @@ interface ColSpec {
 
 const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   { px: 28, show: true }, // pos      "00" (fs md, bold)
-  { px: 40, show: true }, // carNum   class-colored badge, right after pos
-  { px: 38, show: settings.showPosChange }, // +/- pos  "▲12"
-  { px: 22, show: settings.showCountryFlag }, // country flag, right before the name
+  { px: padded(40), show: true }, // carNum   class-colored badge, right after pos
+  { px: padded(38), show: settings.showPosChange }, // +/- pos  "▲12"
+  { px: padded(22), show: settings.showCountryFlag }, // country flag, right before the name
   { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
   {
     // "A 4.99" — matches Relative for an equal PIT↔SR gap; the width follows
     // both the class letter and the style the value is drawn in.
-    px: licColumnWidthPx(settings.licBadgeStyle, settings.showLicenseLetter),
+    px: padded(
+      licColumnWidthPx(settings.licBadgeStyle, settings.showLicenseLetter)
+    ),
     show: settings.showLicBadge,
   },
   {
     // "9.9k" abbreviated, "12345" spelled out — five mono digits need the room.
-    px: settings.abbreviateIRating ? 42 : 52,
+    px: padded(settings.abbreviateIRating ? 42 : 52),
     show: settings.showIRating,
   },
-  { px: 42, show: settings.showIrChange }, // ΔiR     "+123"
-  { px: 28, show: settings.showLapsCompleted }, // laps "00"
-  { px: 50, show: settings.showGap }, // gap  "+123.4" / "12 L" / "LEADER"
-  { px: 50, show: settings.showInterval }, // int  "123.4" / "12 L"
-  { px: 82, show: settings.showLastLap }, // last "1:32.400" (9 chars mono max)
-  { px: 50, show: settings.showLapDelta }, // Δlap "+12.34"
-  { px: 82, show: settings.showBestLap }, // best "1:32.400" (9 chars mono max)
-  { px: 36, show: settings.showBrand }, // brand    "MERC" — at end
-  { px: 30, show: settings.showTire }, // tire     badge — at end
+  { px: padded(42), show: settings.showIrChange }, // ΔiR     "+123"
+  { px: padded(28), show: settings.showLapsCompleted }, // laps "00"
+  { px: padded(50), show: settings.showGap }, // gap  "+123.4" / "12 L" / "LEADER"
+  { px: padded(50), show: settings.showInterval }, // int  "123.4" / "12 L"
+  { px: padded(82), show: settings.showLastLap }, // last "1:32.400" (9 chars mono max)
+  { px: padded(50), show: settings.showLapDelta }, // delta "12.34"
+  { px: padded(82), show: settings.showBestLap }, // best "1:32.400" (9 chars mono max)
+  { px: padded(36), show: settings.showBrand }, // brand    "MERC" — at end
+  { px: padded(30), show: settings.showTire }, // tire     badge — at end
 ];
 
 export const buildGridTemplate = (
