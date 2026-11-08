@@ -341,8 +341,6 @@ impl CornerAccumulator {
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SessionStart {
     session_num: Option<i32>,
-    driver_incidents: Option<i32>,
-    team_incidents: Option<i32>,
     /// The rating the session is estimated from.
     rating: Option<(f64, Licence)>,
     /// The YAML's own rating as first seen in this session — stale or not.
@@ -417,21 +415,6 @@ fn scored_corners_per_lap(session: &SessionSnapshot) -> Option<f64> {
     scored.or(session.track_num_turns).map(f64::from)
 }
 
-/// Points since the session's base. A counter that went backwards was reset
-/// by the sim, and becomes the new base.
-fn since_base(base: &mut Option<i32>, current: Option<i32>) -> Option<i32> {
-    let current = current?;
-    let base_value = *base.get_or_insert(current);
-
-    if current < base_value {
-        *base = Some(current);
-
-        return Some(0);
-    }
-
-    Some(current - base_value)
-}
-
 /// The player's rating and licence as the session YAML has them right now.
 fn player_rating(session: &SessionSnapshot) -> Option<(f64, Licence)> {
     let player = session
@@ -449,6 +432,17 @@ impl SafetyRatingProcessor {
     fn begin_session_if_new(&mut self, session_num: Option<i32>) {
         if self.start.session_num == session_num {
             return;
+        }
+
+        // An event's sessions only move forward. The sim drops the number to 0
+        // for a frame now and then — seen live on a reconnect and mid-race — and
+        // taking that for a new session would latch the incident base again and
+        // count the session's points from zero, a loss the save then carries
+        // over a restart.
+        if let (Some(current), Some(next)) = (self.start.session_num, session_num) {
+            if next < current {
+                return;
+            }
         }
 
         let is_next_session = self.start.session_num.is_some();
@@ -555,9 +549,9 @@ impl SafetyRatingProcessor {
     }
 
     /// The state to write, when it differs from the last one written: at once
-    /// for a new session or a new start value (an incident base, a rating),
-    /// every [`SAVE_EVERY_LAPS`] for the distance alone. The incident count
-    /// itself is not state — the sim keeps counting from the saved base.
+    /// for a new session or a new start value (a rating), every
+    /// [`SAVE_EVERY_LAPS`] for the distance alone. The incident count is not
+    /// state: the sim holds it.
     fn state_to_save(&mut self) -> Option<SafetyRatingState> {
         let state = SafetyRatingState {
             sub_session_id: self.sub_session_id?,
@@ -602,16 +596,12 @@ impl SafetyRatingProcessor {
             ctx.car_status.is_on_track == Some(true),
         );
 
-        let driver_incidents = since_base(
-            &mut self.start.driver_incidents,
-            ctx.car_status.player_car_my_incident_count,
-        )
-        .unwrap_or(0);
-        let team_incidents = since_base(
-            &mut self.start.team_incidents,
-            ctx.car_status.player_car_team_incident_count,
-        )
-        .filter(|_| session.team_racing);
+        // The sim's own counts for this session, taken as they are.
+        let driver_incidents = ctx.car_status.player_car_my_incident_count.unwrap_or(0);
+        let team_incidents = ctx
+            .car_status
+            .player_car_team_incident_count
+            .filter(|_| session.team_racing);
 
         let start_rating = self.start_rating(player_rating(session));
 
@@ -1179,14 +1169,15 @@ mod tests {
     }
 
     #[test]
-    fn incidents_count_from_the_session_start() {
+    fn incidents_are_the_sims_own_count() {
         let session = race_session(false);
         let mut processor = SafetyRatingProcessor::default();
 
+        // Already 6 when the app first sees the session: they all count.
         step(&mut processor, &session, race_tick(0.10, 6));
         let frame = step(&mut processor, &session, race_tick(0.15, 10));
 
-        assert_eq!(frame.driver_incidents, 4);
+        assert_eq!(frame.driver_incidents, 10);
         assert_eq!(frame.team_incidents, None, "not a team race");
         assert_eq!(frame.session_weight, WEIGHT_RACE);
         assert_eq!(frame.sr_start, Some(2.75));
@@ -1229,12 +1220,34 @@ mod tests {
         assert_eq!(practice_frame.driver_incidents, 3);
         assert_eq!(practice_frame.session_weight, WEIGHT_OPEN);
 
-        let race_frame = step(&mut processor, &session, race_tick(0.50, 3));
+        let race_frame = step(&mut processor, &session, race_tick(0.50, 0));
 
         assert_eq!(race_frame.driver_incidents, 0);
         assert_eq!(race_frame.team_incidents, Some(0));
         assert_eq!(race_frame.corners_driven, 0.0);
         assert_eq!(race_frame.session_weight, WEIGHT_RACE);
+    }
+
+    #[test]
+    fn a_session_number_dropping_back_for_a_frame_keeps_the_session() {
+        let session = race_session(false);
+        let mut processor = SafetyRatingProcessor::default();
+        let flicker = Tick {
+            session_num: 0,
+            ..race_tick(0.20, 2)
+        };
+
+        step(&mut processor, &session, race_tick(0.10, 2));
+        step(&mut processor, &session, race_tick(0.15, 2));
+        step(&mut processor, &session, flicker);
+        let frame = step(&mut processor, &session, race_tick(0.25, 2));
+
+        assert!(
+            (frame.corners_driven - 3.0).abs() < 1e-3,
+            "the distance driven survives the flicker: {}",
+            frame.corners_driven
+        );
+        assert_eq!(frame.session_weight, WEIGHT_RACE);
     }
 
     fn practice_tick(pct: f32, incidents: i32) -> Tick {
@@ -1258,7 +1271,7 @@ mod tests {
         assert!(practice_end < 2.75, "four points in a lap cost rating");
 
         // The YAML still reads 2.75: the race carries the practice's outcome.
-        let race = step(&mut processor, &session, race_tick(0.50, 4));
+        let race = step(&mut processor, &session, race_tick(0.50, 0));
 
         assert_eq!(race.sr_start, Some(practice_end));
         assert_eq!(race.driver_incidents, 0);
@@ -1318,7 +1331,7 @@ mod tests {
         let race = step(&mut after, &session, race_tick(0.45, 5));
 
         assert_eq!(race.sr_start, Some(practice_end));
-        assert_eq!(race.driver_incidents, 1, "the base survives the restart");
+        assert_eq!(race.driver_incidents, 5, "the sim's count, restart or not");
         assert!(
             (race.corners_driven - 2.0).abs() < 1e-3,
             "0.10 lap before the restart, the jump over it uncounted"
@@ -1351,7 +1364,7 @@ mod tests {
             sub_session_id: Some(EVENT + 1),
             ..event_session()
         };
-        let race = step(&mut processor, &next_event, race_tick(0.20, 2));
+        let race = step(&mut processor, &next_event, race_tick(0.20, 0));
 
         assert_eq!(race.driver_incidents, 0);
         assert_eq!(race.corners_driven, 0.0);
@@ -1379,7 +1392,11 @@ mod tests {
         }
         assert!(processor.state_to_save().is_some(), "a quarter lap on");
 
-        step(&mut processor, &session, practice_tick(0.40, 1));
+        let next_session = Tick {
+            session_num: 2,
+            ..race_tick(0.40, 0)
+        };
+        step(&mut processor, &session, next_session);
         assert!(processor.state_to_save().is_some(), "a new session");
     }
 
@@ -1391,17 +1408,6 @@ mod tests {
         step(&mut processor, &session, race_tick(0.10, 0));
 
         assert!(processor.state_to_save().is_none());
-    }
-
-    #[test]
-    fn a_counter_reset_by_the_sim_becomes_the_new_base() {
-        let session = race_session(false);
-        let mut processor = SafetyRatingProcessor::default();
-
-        step(&mut processor, &session, race_tick(0.10, 5));
-        let frame = step(&mut processor, &session, race_tick(0.12, 0));
-
-        assert_eq!(frame.driver_incidents, 0);
     }
 
     #[test]
