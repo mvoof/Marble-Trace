@@ -76,7 +76,7 @@ export const SessionClock = observer(() => {
 
   if (isEnded) {
     return (
-      <StatChip icon={Timer} lead="TIME" tone="muted" size="md">
+      <StatChip icon={Timer} lead="TIME" tone="muted">
         END
       </StatChip>
     );
@@ -91,13 +91,7 @@ export const SessionClock = observer(() => {
   const prefix = isCountdown ? '' : '+';
 
   return (
-    <StatChip
-      icon={Timer}
-      lead="TIME"
-      size="md"
-      tone={URGENCY_TONE[urgency]}
-      emphasized
-    >
+    <StatChip icon={Timer} lead="TIME" tone={URGENCY_TONE[urgency]} emphasized>
       <span
         ref={clockRef}
         className={[

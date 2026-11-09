@@ -50,7 +50,7 @@ export type StatChipLead = 'tint' | 'solid';
 export type StatChipLeadKind = 'label' | 'number';
 
 /**
- * `md` for the bar over the table, a step up from the rows and the footer, so
+ * `md` for the session's own name over the table, a step up from every reading, so
  * the session reads first; `xs` for a note under a figure — the laps a fuel
  * reading lasts.
  */

@@ -474,6 +474,7 @@ export const DriverRow = observer(
                 lead={formatBrand(driver.carScreenName)}
                 leadKind="number"
                 tone="muted"
+                className={styles.brandChip}
               />
             </span>
           </div>

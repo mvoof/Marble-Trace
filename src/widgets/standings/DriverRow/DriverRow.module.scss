@@ -219,6 +219,7 @@
 
 // Driver name
 .driverName {
+  font-family: $font-widget;
   font-weight: 700;
   font-size: fs(xs);
   color: $widget-text-primary;
@@ -392,4 +393,9 @@
 .cellDimmed {
   color: $widget-text-secondary;
   font-weight: 400;
+}
+
+// The make is a tag, not a reading: a step under the row's figures.
+.brandChip {
+  --chip-lead-size: #{fs(xxxs)};
 }
