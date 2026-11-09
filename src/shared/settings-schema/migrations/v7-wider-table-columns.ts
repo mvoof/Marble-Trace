@@ -28,7 +28,7 @@ import { asObject, mapEveryStoredWidget, type StoredBlobWidget } from '../blob';
  * size — a default 240 frame comes out at 306. The lap log moved with it: its
  * design width became its mockup card, 264 instead of 220, and its height
  * stopped following its laps — a taller frame now shows more of them — so the
- * height it had on disk, never its own, gives way to its design height of 389
+ * height it had on disk, never its own, gives way to its design height of 385
  * at the frame's scale.
  */
 
@@ -48,7 +48,7 @@ interface DesignWidthRebase {
 
 const DESIGN_WIDTH_REBASES: Readonly<Record<string, DesignWidthRebase>> = {
   fuel: { before: 240, after: 306 },
-  'lap-log': { before: 220, after: 264, fitHeight: 389 },
+  'lap-log': { before: 220, after: 264, fitHeight: 385 },
 };
 
 type WidthOf = (settings: TableSettings) => number;

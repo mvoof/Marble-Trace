@@ -20,9 +20,15 @@ import styles from './LapLogWidget.module.scss';
 const ROW_HEIGHT_REM = 2.125;
 
 /** The lap being driven and at least one behind it. */
-const MIN_VISIBLE_ROWS = 2;
+const MIN_LAP_ROWS = 2;
 
 const LIVE_ROW_COUNT = 1;
+
+/**
+ * The footer is one row tall — a chip and the row's padding and rule — so the
+ * rows that fit the frame, counted from under the header, leave it one.
+ */
+const FOOTER_ROW_COUNT = 1;
 
 const entryKind = (entry: LapHistoryEntry): LapRowKind => {
   if (entry.isBest) {
@@ -43,7 +49,8 @@ const isShown = (visibility: LapLogVisibility, hasTime: boolean): boolean =>
  * The lap being driven over the laps before it, as a timing table: the best
  * lap in the header, each lap's loss to it in a chip — or, as a setting, a
  * bar — and the mean of the timed laps under them. Like the tables, the width
- * sets the scale and the height how many laps fit.
+ * sets the scale and the frame's height how many laps may show; the card is
+ * only as tall as the laps it has, so the frame is a ceiling, not a size.
  */
 export const LapLogWidget = observer(() => {
   const { paceLossBars, bestLapChip, averageFooter } =
@@ -52,10 +59,12 @@ export const LapLogWidget = observer(() => {
   const { lapTiming } = usePlayerStore();
   const sim = useSimStore();
 
-  const { ref: lapListRef, count: visibleRowCount } =
+  // Measured against the whole frame, not the card: the card is only as tall
+  // as its laps, the frame is the room they may take.
+  const { ref: frameRef, count: rowsUnderHeader } =
     useVisibleRowCount<HTMLDivElement>(
       ROW_HEIGHT_REM,
-      MIN_VISIBLE_ROWS,
+      MIN_LAP_ROWS,
       '[data-lap-row]'
     );
 
@@ -63,18 +72,24 @@ export const LapLogWidget = observer(() => {
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
-  const visibleHistory = lapHistory.slice(
-    0,
-    Math.max(0, visibleRowCount - LIVE_ROW_COUNT)
-  );
-  const { average, count } = averageValidLapTime(visibleHistory);
-
   const hasData = sim.isConnected && lapTiming != null;
   const showsBestChip = isShown(
     bestLapChip,
     bestLapTime !== null && bestLapTime > 0
   );
-  const showsFooter = hasData && isShown(averageFooter, average !== null);
+
+  // Whether the footer could show decides the room the laps get, so a lap
+  // turning valid never trades a row for the footer and back.
+  const reservesFooter = hasData && averageFooter !== 'never';
+  const lapRows = Math.max(
+    MIN_LAP_ROWS,
+    rowsUnderHeader - (reservesFooter ? FOOTER_ROW_COUNT : 0)
+  );
+
+  const visibleHistory = lapHistory.slice(0, lapRows - LIVE_ROW_COUNT);
+  const { average, count } = averageValidLapTime(visibleHistory);
+  const showsFooter =
+    reservesFooter && isShown(averageFooter, average !== null);
 
   return (
     <WidgetPanel
@@ -83,55 +98,65 @@ export const LapLogWidget = observer(() => {
       minWidth={0}
       className={styles.panel}
     >
-      <div className={styles.header}>
-        <span className={styles.title}>LAP LOG</span>
+      {/* Mounted afresh when the laps come in, so the row count is measured
+        against a real row instead of the fallback height. */}
+      <div
+        ref={frameRef}
+        key={hasData ? 'laps' : 'empty'}
+        className={styles.frame}
+      >
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <span className={styles.title}>LAP LOG</span>
 
-        {showsBestChip && (
-          <StatChip
-            lead="BEST"
-            tone="special"
-            emphasized
-            className={styles.bestChip}
-          >
-            <FixedDigits text={formatLapTimeOrDash(bestLapTime)} />
-          </StatChip>
-        )}
+            {showsBestChip && (
+              <StatChip
+                lead="BEST"
+                tone="special"
+                emphasized
+                className={styles.bestChip}
+              >
+                <FixedDigits text={formatLapTimeOrDash(bestLapTime)} />
+              </StatChip>
+            )}
+          </div>
+
+          {!hasData ? (
+            <NoDataPlaceholder />
+          ) : (
+            <div className={styles.lapList}>
+              <LapRow
+                kind="live"
+                lapNum={lapNum}
+                time={formatLapTimeOrDash(currentLapTime)}
+              />
+
+              {visibleHistory.map((entry) => (
+                <LapRow
+                  key={entry.lapNum}
+                  kind={entryKind(entry)}
+                  lapNum={entry.lapNum}
+                  time={formatLapTimeOrDash(entry.lapTime)}
+                  delta={entry.delta}
+                  paceLossBars={paceLossBars}
+                />
+              ))}
+            </div>
+          )}
+
+          {showsFooter && (
+            <div className={styles.footer}>
+              <span className={styles.footerLabel}>
+                AVG VALID ({count} {count === 1 ? 'LAP' : 'LAPS'})
+              </span>
+
+              <StatChip>
+                <FixedDigits text={formatLapTimeOrDash(average)} />
+              </StatChip>
+            </div>
+          )}
+        </div>
       </div>
-
-      {!hasData ? (
-        <NoDataPlaceholder />
-      ) : (
-        <div ref={lapListRef} className={styles.lapList}>
-          <LapRow
-            kind="live"
-            lapNum={lapNum}
-            time={formatLapTimeOrDash(currentLapTime)}
-          />
-
-          {visibleHistory.map((entry) => (
-            <LapRow
-              key={entry.lapNum}
-              kind={entryKind(entry)}
-              lapNum={entry.lapNum}
-              time={formatLapTimeOrDash(entry.lapTime)}
-              delta={entry.delta}
-              paceLossBars={paceLossBars}
-            />
-          ))}
-        </div>
-      )}
-
-      {showsFooter && (
-        <div className={styles.footer}>
-          <span className={styles.footerLabel}>
-            AVG VALID ({count} {count === 1 ? 'LAP' : 'LAPS'})
-          </span>
-
-          <StatChip>
-            <FixedDigits text={formatLapTimeOrDash(average)} />
-          </StatChip>
-        </div>
-      )}
     </WidgetPanel>
   );
 });

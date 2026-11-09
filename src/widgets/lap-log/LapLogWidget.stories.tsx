@@ -39,7 +39,16 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/LapLogWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: LapLogWidget,
-    size: { width: 264, height: 389 },
+    // The card paints its own ground from --widget-bg and is as tall as its
+    // laps; the frame around it stays empty, as the transparent container
+    // does on the overlay.
+    size: {
+      width: 264,
+      height: 385,
+      background: 'transparent',
+      widgetBg: 'rgba(21, 22, 26, 0.8)',
+      border: 'none',
+    },
     seed: (store, args, scenarioId) => {
       // A scenario states the whole lap — its timing, its delta and its log.
       // The knobs below are the other base: what a story states when no
