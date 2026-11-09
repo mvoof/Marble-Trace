@@ -14,13 +14,14 @@ export const SECTOR_MATRIX_MANIFEST: WidgetManifest = {
   requiredCapabilities: ['sectors'],
   previewScenarios: ['sector-in-progress'],
   autoHeight: true,
-  designWidth: 320,
+  // The redesign mockup's card.
+  designWidth: 330,
   designHeight: 180,
   userSettings: {
     enabled: false,
     x: 100,
     y: 300,
-    currentWidth: 320,
+    currentWidth: 330,
     currentHeight: 180,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,

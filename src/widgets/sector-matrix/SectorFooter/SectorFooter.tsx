@@ -1,8 +1,13 @@
 ﻿import { observer } from 'mobx-react-lite';
+
+import { StatChip } from '@shared/ui/StatChip/StatChip';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { usePlayerStore } from '@entities/player/player-context';
-import { formatLapTime } from '@shared/lib/telemetry-format';
+import { formatLapTimeOrDash } from '../sector-matrix-format';
+
 import styles from './SectorFooter.module.scss';
 
+/** The bar under the matrix: the last lap and the best, in the best's purple. */
 export const SectorFooter = observer(() => {
   const { lapTiming } = usePlayerStore();
 
@@ -10,20 +15,19 @@ export const SectorFooter = observer(() => {
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
   return (
-    <div className={styles.root}>
-      <div className={styles.entry}>
-        <span className={styles.tag}>LAST</span>
+    <div className={styles.footer}>
+      <StatChip lead="LAST" className={styles.chip}>
+        <FixedDigits text={formatLapTimeOrDash(lastLapTime)} />
+      </StatChip>
 
-        <span className={styles.time}>{formatLapTime(lastLapTime)}</span>
-      </div>
-
-      <div className={styles.entry}>
-        <span className={styles.tag}>BEST</span>
-
-        <span className={`${styles.time} ${styles.bestTime}`}>
-          {formatLapTime(bestLapTime)}
-        </span>
-      </div>
+      <StatChip
+        lead="BEST"
+        tone="special"
+        emphasized
+        className={`${styles.chip} ${styles.bestChip}`}
+      >
+        <FixedDigits text={formatLapTimeOrDash(bestLapTime)} />
+      </StatChip>
     </div>
   );
 });

@@ -1,31 +1,25 @@
-﻿import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import { observer } from 'mobx-react-lite';
-import { usePlayerStore } from '@entities/player/player-context';
-import { useBackendComputedStore } from '@entities/cars/computed-context';
-import { formatLapTime } from '@shared/lib/telemetry-format';
+﻿import { observer } from 'mobx-react-lite';
+
+import { StatChip } from '@shared/ui/StatChip/StatChip';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { getGameDelta } from '@shared/lib/delta-utils';
-import { getSectorColor } from '@shared/lib/colors';
-import styles from './SectorHeader.module.scss';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { usePlayerStore } from '@entities/player/player-context';
 import type { SectorMatrixWidgetSettings } from '../settings-schema';
+import { formatLapTimeOrDash } from '../sector-matrix-format';
 
-interface Props {
-  sectorCount: number;
-}
+import styles from './SectorHeader.module.scss';
 
-export const SectorHeader = observer(({ sectorCount }: Props) => {
+/** The bar over the matrix: the lap and its running time, the predicted lap. */
+export const SectorHeader = observer(() => {
   const { lapTiming } = usePlayerStore();
-  const { currentSectorIdx } = useBackendComputedStore();
 
   const { showPredicted } =
     useWidgetSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
   const lapNum = lapTiming?.lap ?? null;
-
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
-  const lapDistPct = lapTiming?.lap_dist_pct ?? 0;
-
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
-
   const liveDelta = getGameDelta(lapTiming, 'personal_best');
 
   const predictedTime =
@@ -34,53 +28,31 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
       : null;
 
   return (
-    <div className={styles.root}>
-      <div className={styles.topRow}>
-        <div className={styles.lapInfo}>
-          <span className={styles.lapTag}>L{lapNum ?? '--'}</span>
+    <div className={styles.header}>
+      <div className={styles.lap}>
+        <StatChip
+          lead={`L${lapNum ?? '-'}`}
+          leadVariant="solid"
+          tone="positive"
+          className={styles.lapChip}
+        />
 
-          <span className={styles.lapTime}>
-            {formatLapTime(currentLapTime)}
-          </span>
-        </div>
-
-        {showPredicted && (
-          <div className={styles.predInfo}>
-            <span className={styles.predLabel}>PRED</span>
-
-            <span className={styles.predTime}>
-              {formatLapTime(predictedTime)}
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div className={styles.progressBar}>
-        {Array.from({ length: sectorCount - 1 }, (_, idx) => (
-          <div
-            key={idx}
-            className={styles.sectorTick}
-            style={{ left: `${((idx + 1) / sectorCount) * 100}%` }}
-          />
-        ))}
-
-        <div
-          className={styles.progressFill}
-          style={{
-            width: `${lapDistPct * 100}%`,
-            background: getSectorColor(currentSectorIdx ?? 0),
-          }}
+        <FixedDigits
+          className={styles.lapTime}
+          text={formatLapTimeOrDash(currentLapTime)}
         />
       </div>
 
-      <div className={styles.progressMeta}>
-        <span>{Math.round(lapDistPct * 100)}% LAP</span>
-
-        <span>
-          S{currentSectorIdx === null ? '-' : currentSectorIdx + 1}/
-          {sectorCount}
-        </span>
-      </div>
+      {showPredicted && (
+        <StatChip
+          lead="PRED"
+          tone="accent"
+          emphasized
+          className={styles.predChip}
+        >
+          <FixedDigits text={formatLapTimeOrDash(predictedTime)} />
+        </StatChip>
+      )}
     </div>
   );
 });

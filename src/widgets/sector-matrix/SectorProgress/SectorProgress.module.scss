@@ -1,0 +1,62 @@
+// The band under the bar: a step darker, ruled off from the cells.
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: sp(xs);
+  padding: sp(xs) sp(md);
+  background: $table-head-bg;
+  border-bottom: 1px solid $table-bar-border;
+}
+
+.segments {
+  display: grid;
+  gap: sp(xxs);
+  height: ws(6);
+}
+
+.segment {
+  overflow: hidden;
+  border-radius: 1px;
+  background: $chip-neutral-border;
+}
+
+// Scaled rather than sized, so a new bundle moves no layout.
+.segmentFill {
+  display: block;
+  height: 100%;
+  background: $chip-positive;
+  transform-origin: left center;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(xs);
+}
+
+.lapProgress {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xs);
+  white-space: nowrap;
+}
+
+.percent {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 800;
+  color: $widget-text-primary;
+}
+
+.caption {
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: $chip-text-muted;
+}
+
+.counter {
+  --chip-lead-weight: 800;
+}

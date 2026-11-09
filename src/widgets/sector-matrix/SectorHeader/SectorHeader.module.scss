@@ -1,100 +1,41 @@
-.root {
+// The table's bar: the same ground, rule and padding as the standings header.
+.header {
   display: flex;
-  flex-direction: column;
-  gap: sp(xxs);
-  padding: sp(xs) sp(sm) sp(xxs);
-}
-
-.topRow {
-  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: baseline;
-}
-
-.topRowRight {
-  display: flex;
-  align-items: baseline;
   gap: sp(sm);
+  padding: sp(xs) sp(md);
+  background: $table-bar-bg;
+  border-bottom: 1px solid $table-bar-border;
 }
 
-.lapInfo {
+.lap {
   display: flex;
-  align-items: baseline;
-  gap: sp(sm);
+  align-items: center;
+  gap: sp(xs);
+  min-width: 0;
 }
 
-.lapTag {
-  font-family: $font-mono;
-  font-size: fs(lg);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: $widget-status-positive;
+// The lap number, filled in the green, at the bar's 11px.
+.lapChip {
+  --chip-lead-size: #{fs(xxs)};
+  --chip-solid-padding-x: #{sp(xs)};
 }
 
 .lapTime {
   font-family: $font-mono;
-  font-size: fs(lg);
-  font-weight: 700;
+  font-size: wfs(16);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: $widget-text-primary;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
-.predInfo {
-  display: flex;
-  align-items: baseline;
-  gap: sp(xs);
-}
-
-.predLabel {
-  font-family: $font-widget;
-  font-size: fs(xxxs);
-  font-weight: 300;
-  letter-spacing: 1px;
-  color: $widget-text-primary;
-  text-transform: uppercase;
-}
-
-.predTime {
-  font-family: $font-mono;
-  font-size: fs(lg);
-  font-weight: 700;
-  color: $widget-status-warning;
-  font-variant-numeric: tabular-nums;
-}
-
-.progressBar {
-  height: ws(3);
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: radius(sm);
-  position: relative;
-  overflow: hidden;
-}
-
-.sectorTick {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 2;
-  transform: translateX(-50%);
-}
-
-.progressFill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  background: $widget-status-positive;
-}
-
-.progressMeta {
-  display: flex;
-  justify-content: space-between;
-  font-family: $font-mono;
-  font-size: fs(xxs);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: $widget-text-secondary;
+// PRED over the predicted lap, both in the yellow; its caption a step under
+// the chip's own.
+.predChip {
+  --chip-lead-size: #{wfs(9)};
+  --chip-lead-padding: #{sp(xxxs) sp(xs)};
+  --chip-value-text: #{$chip-accent};
 }
