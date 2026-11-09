@@ -200,7 +200,7 @@ $pad-y: var(--chip-pad-y, #{sp(xxxs)});
   --chip-lead-text: #{$chip-danger};
   --chip-solid-bg: #{$chip-pit};
   --chip-on-solid: #{$widget-text-primary};
-  --chip-edge: #{$chip-danger-border};
+  --chip-edge: #{rgba($chip-danger, 0.4)};
 }
 
 .toneLapped {
