@@ -22,8 +22,9 @@ $tall-compass-inset: 10;
   padding: sp(xxs) sp(lg);
 }
 
-// The cells take a slightly larger share than the conditions: theirs is the
-// side with four labels on it, and "WIND 129°" is the longest of them.
+// The cells take a larger share than the conditions: theirs is the side with
+// four labels on it, and "WIND 129°" is the longest of them. The sky label
+// beside them shrinks to its column instead (HorizontalCondition).
 .inlineStats {
   display: flex;
   flex: 1.4 1 0;

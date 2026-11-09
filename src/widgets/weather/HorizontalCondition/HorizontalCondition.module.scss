@@ -7,6 +7,8 @@
   justify-content: center;
   gap: sp(xs);
   padding: sp(sm) sp(md);
+  // The sky label sizes itself against this column (`cqi`).
+  container-type: inline-size;
 }
 
 .skiesRow {
@@ -15,7 +17,7 @@
   gap: sp(xs);
   min-width: 0;
   // Centred in a column narrower than a long label, the row would spill out
-  // on both sides; capped, the label wraps instead.
+  // on both sides; capped, the label ellipsises instead.
   max-width: 100%;
 }
 
@@ -26,19 +28,25 @@
   color: $widget-text-primary;
 }
 
+// "Partly Cloudy", the longest sky label, measures this many of its own font
+// size in Inter 600; the icon and its gap take the rest of the row.
+$longest-sky-label-em: 6.6;
+$sky-icon-and-gap: 34;
+
 .skiesText {
   font-family: $font-widget;
-  font-size: fs(lg);
+  // One line at the full size while it fits; in a narrower column the label
+  // shrinks to the column rather than being cut or wrapped.
+  font-size: min(
+    #{fs(lg)},
+    calc((100cqi - #{ws($sky-icon-and-gap)}) / #{$longest-sky-label-em})
+  );
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1;
   color: $widget-text-primary;
-  // "Partly Cloudy" is wider than a narrow column; cut, it no longer says what
-  // the sky is, so it breaks between its words onto a second line instead.
-  overflow-wrap: normal;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .airTemp {
