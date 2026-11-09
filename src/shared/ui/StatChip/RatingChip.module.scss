@@ -34,12 +34,12 @@ $seam-half: 0.33em;
   align-items: center;
 }
 
-// The class on the license's bright color, written dark as the session type
-// is on its fill; the rating stays on the deeper shade the lead is filled with.
+// The class on the license's bright color, written white; the rating stays
+// on the deeper shade the lead is filled with.
 .letter {
   padding-inline: sp(sm) $seam-half;
   background: var(--chip-lic-bright);
-  color: $chip-bg;
+  color: $widget-text-primary;
 }
 
 .rating {
