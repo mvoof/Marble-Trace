@@ -26,7 +26,7 @@ import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import type { GMeterWidgetSettings } from '../../settings-schema';
 
 const BADGE_BASE_WIDTH_PX = 240;
-const BADGE_FONT_SIZE_PX = 18;
+const BADGE_FONT_SIZE_PX = 15;
 
 /** Below this load an axis reads as idle and shows its peak instead. */
 const AXIS_ACTIVE_G = 0.08;

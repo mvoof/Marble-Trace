@@ -7,25 +7,40 @@
   justify-content: center;
   gap: sp(xs);
   padding: sp(sm) sp(md);
+  // The sky label sizes itself against this column (`cqi`).
+  container-type: inline-size;
 }
 
 .skiesRow {
   display: flex;
   align-items: center;
-  gap: sp(sm);
+  gap: sp(xs);
   min-width: 0;
+  // Centred in a column narrower than a long label, the row would spill out
+  // on both sides; capped, the label ellipsises instead.
+  max-width: 100%;
 }
 
 .icon {
-  width: ws(34);
-  height: ws(34);
+  width: ws(28);
+  height: ws(28);
   flex-shrink: 0;
   color: $widget-text-primary;
 }
 
+// "Partly Cloudy", the longest sky label, measures this many of its own font
+// size in Inter 600; the icon and its gap take the rest of the row.
+$longest-sky-label-em: 6.6;
+$sky-icon-and-gap: 34;
+
 .skiesText {
   font-family: $font-widget;
-  font-size: fs(xl);
+  // One line at the full size while it fits; in a narrower column the label
+  // shrinks to the column rather than being cut or wrapped.
+  font-size: min(
+    #{fs(lg)},
+    calc((100cqi - #{ws($sky-icon-and-gap)}) / #{$longest-sky-label-em})
+  );
   font-weight: 600;
   line-height: 1;
   color: $widget-text-primary;
@@ -36,9 +51,7 @@
 
 .airTemp {
   font-family: $font-widget;
-  // Off the type scale on purpose: the mockup sets the reading at 8.3% of the
-  // widget's width, which lands between the xxxl step and the next one.
-  font-size: wfs(40);
+  font-size: fs(xxxl);
   font-weight: 700;
   line-height: 1;
   color: $widget-text-primary;
@@ -46,7 +59,7 @@
 }
 
 .airTempUnit {
-  font-size: fs(xl);
+  font-size: fs(md);
   font-weight: 600;
   margin-left: 1px;
   color: $widget-text-muted;

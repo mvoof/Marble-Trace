@@ -20,7 +20,7 @@ import { useWidgetInstanceId } from '@entities/layout/useWidgetSettings';
 import type { GMeterWidgetSettings } from '../../settings-schema';
 
 const LABEL_BASE_WIDTH_PX = 240;
-const LABEL_BASE_SIZE_PX = 14;
+const LABEL_BASE_SIZE_PX = 12;
 
 interface GMeterRingsProps {
   width: number;

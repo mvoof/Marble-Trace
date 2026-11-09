@@ -2,7 +2,7 @@
 // the speeds and the gaps of all three drivers line up under one another.
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 1px ws(150) 1px ws(104);
+  grid-template-columns: minmax(0, 1fr) 1px ws(150) 1px ws(116);
   align-items: center;
   column-gap: sp('lg');
   padding: sp('sm') sp('lg');
@@ -57,7 +57,7 @@
 }
 
 .name {
-  font-size: fs('lg');
+  font-size: fs('md');
   font-weight: 700;
 }
 
@@ -108,7 +108,7 @@
 }
 
 .gapValue {
-  font-size: fs('xl');
+  font-size: fs('lg');
   font-weight: 700;
 }
 

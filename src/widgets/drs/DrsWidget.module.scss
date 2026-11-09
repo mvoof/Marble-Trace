@@ -51,7 +51,7 @@
 // in. White, because the colour on this plate belongs to the state.
 .label {
   flex: 0 0 auto;
-  font-size: fs(xl);
+  font-size: fs(lg);
   font-weight: 700;
   letter-spacing: 0.08em;
   color: $widget-text-primary;
@@ -68,7 +68,7 @@
   flex: 0 0 auto;
   min-width: 6.2ch;
   text-align: left;
-  font-size: fs(lg);
+  font-size: fs(md);
   font-weight: 700;
   letter-spacing: 0.06em;
   line-height: 1;
