@@ -45,7 +45,12 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
     data.isPunctured ? PUNCTURE_BLINK : null
   );
   const ordered = isCornerOrdered(position, pitService);
-  const orderedKpa = orderedPressure(position, pitService);
+  // A pressure being dialed, or sent and not yet reported back by the sim,
+  // stands over the sim's own: the sim keeps showing the old one.
+  const dialed = widget.auto.dialedPressure(position);
+  const orderedKpa = dialed?.kpa ?? orderedPressure(position, pitService);
+  const isDialing = dialed?.pending === true;
+  const showsOrder = ordered || dialed !== null;
 
   // Which corner this is says itself from the place it holds in the grid, so
   // the row that used to name it (LF · SET 165) is gone. What the order sets is
@@ -112,17 +117,19 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
             </span>
           ))}
 
-          {ordered ? (
+          {showsOrder ? (
             <>
-              <Check
-                size={CHECK_SIZE}
-                strokeWidth={CHECK_STROKE}
-                className={styles.check}
-              />
+              {ordered && (
+                <Check
+                  size={CHECK_SIZE}
+                  strokeWidth={CHECK_STROKE}
+                  className={styles.check}
+                />
+              )}
 
               {orderedBar !== null && (
                 <span
-                  className={`${styles.pressure} ${styles.pressureOrdered}`}
+                  className={`${styles.pressure} ${styles.pressureOrdered} ${isDialing ? styles.pressureDialing : ''}`}
                 >
                   {orderedBar}
                 </span>

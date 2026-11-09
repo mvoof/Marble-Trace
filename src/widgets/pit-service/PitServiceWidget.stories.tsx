@@ -30,6 +30,8 @@ interface StoryArgs {
   repairDone?: boolean;
   /** Interact mode: the orders and the pressure steps take clicks. */
   interactMode?: boolean;
+  /** LF being dialed to this kPa, RF sent at this kPa and not reported back. */
+  dialedKpa?: number;
   changeFronts?: boolean;
   changeRears?: boolean;
   inPitStall?: boolean;
@@ -86,6 +88,20 @@ const meta: Meta<StoryArgs> = {
         store.appSettings.applyOverlayModes({
           dragMode: false,
           interactMode: true,
+        });
+      }
+
+      if (args.dialedKpa !== undefined) {
+        store.backendComputed.updatePitAuto({
+          mode: 'manual',
+          ordersSent: 0,
+          lastOrderOk: null,
+          dialedPressure: {
+            lf: { kpa: args.dialedKpa, pending: true },
+            rf: { kpa: args.dialedKpa, pending: false },
+            lr: null,
+            rr: null,
+          },
         });
       }
 
@@ -155,6 +171,13 @@ export const RepairDone: Story = {
 export const InteractMode: Story = {
   parameters: previewScenario('pit-service'),
   args: { interactMode: true },
+};
+
+// LF being dialed (amber, nothing sent yet) beside RF sent and not yet
+// reported back by the sim.
+export const PressureDialing: Story = {
+  parameters: previewScenario('pit-service'),
+  args: { interactMode: true, dialedKpa: 158, changeFronts: false },
 };
 
 export const ManualFuelOrder: Story = {

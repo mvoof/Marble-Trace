@@ -209,3 +209,8 @@
 .stepUp {
   right: sp(xxs);
 }
+
+// Dialed and not sent yet: the presses have not settled, the sim has nothing.
+.pressureDialing {
+  color: $chip-accent;
+}

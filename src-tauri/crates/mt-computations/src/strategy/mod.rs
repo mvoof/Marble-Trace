@@ -5,3 +5,4 @@ pub mod pit_actions;
 pub mod pit_auto;
 pub mod pit_stops;
 pub mod pit_target;
+pub mod pressure_dial;

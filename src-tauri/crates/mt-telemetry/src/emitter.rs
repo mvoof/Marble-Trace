@@ -5,9 +5,7 @@ use std::mem;
 /// runs the computations via `ProcessorRegistry` and emits a single bundle
 /// event per tick.
 use std::sync::Mutex;
-use std::time::Duration;
-#[cfg(feature = "dev")]
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use tracing::{info, warn};
 
@@ -484,7 +482,10 @@ fn run_pit_auto(
         state.pit_auto.record_send(result.is_ok());
     }
 
-    state.pit_auto.frame(&config)
+    PitAutoFrame {
+        dialed_pressure: state.pressure_dial.frame(&frame.pit_service),
+        ..state.pit_auto.frame(&config)
+    }
 }
 
 /// The manual pit actions applied this tick: each resolved against this frame
@@ -497,15 +498,43 @@ fn run_pit_actions(
     state: &mut LoopState,
     pit: Option<&dyn PitCommander>,
 ) {
-    if state.pending_pit_actions.is_empty() {
+    if !state.pending_pit_actions.is_empty() {
+        let compounds = compound_indexes(session);
+
+        for action in std::mem::take(&mut state.pending_pit_actions) {
+            send_manual_action(action, frame, session, &compounds, state, pit);
+        }
+    }
+
+    send_dialed_pressures(frame, state, pit);
+}
+
+/// The dialed tire pressures, sent once the presses have settled.
+fn send_dialed_pressures(
+    frame: &SourceFrame,
+    state: &mut LoopState,
+    pit: Option<&dyn PitCommander>,
+) {
+    let Some(order) = state
+        .pressure_dial
+        .take_due(&frame.pit_service, Instant::now())
+    else {
         return;
-    }
+    };
 
-    let compounds = compound_indexes(session);
+    let Some(pit) = pit else {
+        info!(
+            ?order,
+            "dialed pressures not sent: the source takes no orders"
+        );
 
-    for action in std::mem::take(&mut state.pending_pit_actions) {
-        send_manual_action(action, frame, session, &compounds, state, pit);
-    }
+        return;
+    };
+
+    let result = pit.send_pit_order(&order);
+
+    info!(?order, ok = result.is_ok(), "dialed pressure order");
+    state.pit_auto.record_send(result.is_ok());
 }
 
 /// The session's compound indexes, in the order it lists them.
@@ -531,6 +560,31 @@ pub(crate) fn send_manual_action(
     state: &mut LoopState,
     pit: Option<&dyn PitCommander>,
 ) -> (Option<ManualOrder>, bool) {
+    // A pressure step is dialed, not sent: the steps add up and go out as one
+    // order once they stop. It takes the tires from auto mode the moment it
+    // is pressed, so auto mode cannot order them over the dial meanwhile.
+    if let PitAction::PressureStepUp { corners } | PitAction::PressureStepDown { corners } = action
+    {
+        let step_kpa = state.config.pit_auto.pressure_step_kpa;
+        let signed_step = if matches!(action, PitAction::PressureStepUp { .. }) {
+            step_kpa
+        } else {
+            -step_kpa
+        };
+
+        if state
+            .pressure_dial
+            .step(&frame.pit_service, corners, signed_step, Instant::now())
+        {
+            state.pit_auto.command(
+                PitAutoCommand::Claim(pit_actions::TIRES_CLAIM),
+                &state.config.pit_auto,
+            );
+        }
+
+        return (None, false);
+    }
+
     let input = PitActionInput {
         service: &frame.pit_service,
         fuel_in_tank_l: frame.car_status.fuel_level,
@@ -538,7 +592,6 @@ pub(crate) fn send_manual_action(
         planned_fuel_l: state.planned_fuel_l,
         compounds,
         fuel_step_l: state.config.pit_auto.fuel_step_liters,
-        pressure_step_kpa: state.config.pit_auto.pressure_step_kpa,
     };
     let Some(order) = pit_actions::resolve(action, &input) else {
         return (None, false);

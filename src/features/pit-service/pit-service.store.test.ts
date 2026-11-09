@@ -109,12 +109,20 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
   // An order the telemetry thread sent, manual or automatic, as the widget
   // learns of it: the count on the published frame steps.
+  const NO_DIALED_PRESSURE = { lf: null, rf: null, lr: null, rr: null };
+
   const setPitAuto = (frame: Partial<PitAutoFrame> | null) => {
     runInAction(() => {
       rootStore.backendComputed.pitAuto =
         frame === null
           ? null
-          : { mode: 'auto', ordersSent: 0, lastOrderOk: null, ...frame };
+          : {
+              mode: 'auto',
+              ordersSent: 0,
+              lastOrderOk: null,
+              dialedPressure: NO_DIALED_PRESSURE,
+              ...frame,
+            };
     });
   };
 

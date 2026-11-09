@@ -15,6 +15,7 @@ use mt_computations::crew::engineer::EngineerView;
 use mt_computations::rating::last_race::LastRace;
 use mt_computations::session_memory::SessionMemory;
 use mt_computations::strategy::pit_auto::PitAuto;
+use mt_computations::strategy::pressure_dial::PressureDial;
 use mt_computations::timing::reference_selection::{ReferenceChange, ReferenceSelection};
 use mt_computations::{field::driver_entries, ProcessorCommand, ProcessorRegistry};
 use mt_model::app::chat::{ChatCommand, ChatDisplay};
@@ -58,6 +59,8 @@ pub struct LoopState {
     pub live_pit_in_pct: Option<f32>,
     /// Auto pit mode: the overrides, latches and edges it decides on.
     pub pit_auto: PitAuto,
+    /// Tire pressures dialed by hand, sent once the presses settle.
+    pub pressure_dial: PressureDial,
     /// Manual pit actions applied this tick, resolved by the emitter against
     /// the frame it holds.
     pub pending_pit_actions: Vec<PitAction>,
@@ -107,6 +110,7 @@ impl LoopState {
             pit_exit_pct: None,
             live_pit_in_pct: None,
             pit_auto: PitAuto::default(),
+            pressure_dial: PressureDial::default(),
             pending_pit_actions: Vec::new(),
             pending_crew: Vec::new(),
             pending_previews: Vec::new(),
@@ -190,6 +194,7 @@ impl LoopState {
         // treated as still delivered — the next connection republishes in full.
         self.publications.reset();
         self.pit_auto.reset();
+        self.pressure_dial.reset();
         self.pending_pit_actions.clear();
         self.pending_crew.clear();
         self.pending_previews.clear();

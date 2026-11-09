@@ -65,4 +65,28 @@ pub struct PitAutoFrame {
     /// Whether the last of those reached the sim's broadcast channel; `None`
     /// before the first.
     pub last_order_ok: Option<bool>,
+    /// Tire pressures the widget shows over the sim's own.
+    pub dialed_pressure: DialedPressures,
+}
+
+/// A tire pressure the telemetry thread holds over the one the sim reports:
+/// being dialed and not sent yet, or sent and not reported back by the sim.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct DialedPressure {
+    pub kpa: i32,
+    /// Still being dialed: the steps have not stopped, nothing has gone out.
+    pub pending: bool,
+}
+
+/// One `DialedPressure` per corner, `None` where the sim's own stands.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DialedPressures {
+    pub lf: Option<DialedPressure>,
+    pub rf: Option<DialedPressure>,
+    pub lr: Option<DialedPressure>,
+    pub rr: Option<DialedPressure>,
 }
