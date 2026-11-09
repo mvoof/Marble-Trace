@@ -13,6 +13,7 @@
 .label {
   font-family: $font-mono;
   font-size: wfs(9);
+  line-height: #{wfs(16)};
   font-weight: 600;
   color: $chip-text-muted;
   text-transform: uppercase;
@@ -24,7 +25,7 @@
   font-family: $font-mono;
   font-size: fs(xs);
   font-weight: 800;
-  line-height: 1.25;
+  line-height: #{wfs(16)};
   color: $widget-text-primary;
 }
 

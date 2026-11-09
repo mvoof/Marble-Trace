@@ -155,6 +155,7 @@ export const StatChip = observer(
         className={[
           styles.chip,
           hasValue ? '' : styles.chipSingle,
+          !hasValue && leadVariant === 'solid' ? styles.chipSolid : '',
           SIZE_CLASS[size],
           toneClass,
           emphasized ? styles.chipEmphasized : '',

@@ -57,6 +57,7 @@
   margin-bottom: ws(2);
   font-family: $font-widget;
   font-size: wfs(9);
+  line-height: #{wfs(16)};
   letter-spacing: 0.05em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -92,6 +93,7 @@
 .sideUnitDim {
   font-family: $font-mono;
   font-size: wfs(9);
+  line-height: #{wfs(16)};
   white-space: nowrap;
 }
 

@@ -14,6 +14,7 @@
 .amountLabel {
   font-family: $font-widget;
   font-size: wfs(9);
+  line-height: #{wfs(16)};
   font-weight: 800;
   letter-spacing: 0.05em;
   color: $chip-danger-soft;

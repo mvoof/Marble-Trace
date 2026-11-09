@@ -18,13 +18,20 @@ $edge: var(--chip-edge, #{$chip-border});
   border: 1px solid var(--chip-border, #{$chip-border});
   border-radius: radius(sm);
   background: $chip-bg;
-  line-height: 1.25;
+  // One line box for every face and size — the table's 16px — so a chip is
+  // one height whatever it holds.
+  line-height: #{wfs(16)};
   white-space: nowrap;
 }
 
 // Only a chip whose state asks for a look takes its color on the edge.
 .chipEmphasized {
   border-color: $edge;
+}
+
+// A state filled in its color — the session, FUEL — is the fill alone, no frame.
+.chipSolid {
+  border-width: 0;
 }
 
 // A lead alone — LEADER, laps down, a best lap — is the whole chip, framed in
@@ -40,7 +47,7 @@ $edge: var(--chip-edge, #{$chip-border});
   display: inline-flex;
   align-items: center;
   gap: sp(xxs);
-  min-height: calc(#{fs(xxs)} * 1.25 + #{sp(xxxs)} * 2);
+  min-height: calc(#{wfs(16)} + #{sp(xxxs)} * 2);
   padding: var(--chip-lead-padding, #{sp(xxxs) sp(xs)});
   background: $lead-bg;
   color: $lead-text;
@@ -98,10 +105,6 @@ $edge: var(--chip-edge, #{$chip-border});
 
 // A step up for the bar over the table.
 .chipMd {
-  .lead {
-    min-height: calc(#{fs(xs)} * 1.25 + #{sp(xxxs)} * 2);
-  }
-
   .leadLabel {
     font-size: fs(xxs);
   }
@@ -216,6 +219,14 @@ $edge: var(--chip-edge, #{$chip-border});
 // tint, written in the class's own color — beside the iRating on the darkest
 // ground the chip has.
 @mixin license($fill, $tier) {
+  // The rating sits tighter than the chips around it, as in the table's own
+  // SR / IR column.
+  line-height: 1.25;
+
+  .lead {
+    min-height: calc(#{fs(xxs)} * 1.25 + #{sp(xxxs)} * 2);
+  }
+
   --chip-solid-bg: #{$fill};
   --chip-on-solid: #{$widget-text-primary};
   --chip-lead-bg: #{$chip-value-dark};

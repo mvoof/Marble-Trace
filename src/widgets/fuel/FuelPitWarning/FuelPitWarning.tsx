@@ -14,7 +14,7 @@ import type { FuelWidgetSettings } from '../settings-schema';
  * plan's three chips stacked beside it — the tallest the block gets — plus
  * `sp(sm)` of padding at each end, at design scale.
  */
-const PIT_WARNING_HEIGHT_PX = 110;
+const PIT_WARNING_HEIGHT_PX = 129;
 
 export const FuelPitWarning = observer(() => {
   const { fuel } = useBackendComputedStore();
