@@ -358,6 +358,17 @@
   color: $widget-text-primary;
 }
 
+// The lap just run is the driver's best: the time in the good color.
+.lastLapPersonalBest {
+  font-weight: 800;
+  color: $chip-positive;
+}
+
+// …and its best-lap chip framed in that color.
+.bestLapPersonalBest {
+  --chip-edge: #{rgba($chip-positive, 0.5)};
+}
+
 .bestLap {
   font-family: $font-mono;
   font-size: fs(xs);

@@ -35,6 +35,7 @@ import {
   formatLapDelta,
   getStandingsGap,
   getStandingsInterval,
+  isPersonalBestLastLap,
   resolveBestLapDisplay,
   type LapDeltaTone,
   type StandingsColumn,
@@ -271,6 +272,7 @@ export const DriverRow = observer(
     const lastLapText = isPit ? EMPTY_VALUE : formatLapCell(driver.lastLapTime);
 
     const bestLapText = formatLapCell(bestLap.time);
+    const isPersonalBest = !isPit && isPersonalBestLastLap(driver);
 
     const lapDeltaDisplay = formatLapDelta(
       standingsWidget.lapDeltas.get(carIdx)
@@ -432,7 +434,7 @@ export const DriverRow = observer(
         {settings.showLastLap && (
           <div className={cellClass('lastLap', styles.cellRight)}>
             <span
-              className={`${styles.lastLap} ${dimClass} ${lastLapText === EMPTY_VALUE ? styles.cellEmpty : ''}`}
+              className={`${styles.lastLap} ${isPersonalBest ? styles.lastLapPersonalBest : ''} ${dimClass} ${lastLapText === EMPTY_VALUE ? styles.cellEmpty : ''}`}
             >
               {lastLapText}
             </span>
@@ -462,6 +464,9 @@ export const DriverRow = observer(
                 lead={bestLapText}
                 leadKind="number"
                 tone={bestLap.isQualifying ? 'muted' : 'neutral'}
+                className={
+                  isPersonalBest ? styles.bestLapPersonalBest : undefined
+                }
               />
             )}
           </div>

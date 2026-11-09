@@ -439,6 +439,15 @@ export const resolveBestLapDisplay = (driver: CarIdentity): BestLapDisplay => {
   return { time: null, isQualifying: false };
 };
 
+/**
+ * The lap just completed is the driver's best of the session — the last-lap
+ * time and the best-lap chip both say so, as the mockup marks them in green.
+ */
+export const isPersonalBestLastLap = (driver: CarIdentity): boolean =>
+  driver.lastLapTime !== null &&
+  driver.bestLapTime !== null &&
+  driver.lastLapTime === driver.bestLapTime;
+
 export interface StandingsGapInfo {
   value: string;
   isLeader: boolean;
