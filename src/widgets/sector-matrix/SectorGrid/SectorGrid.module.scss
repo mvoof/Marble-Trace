@@ -88,8 +88,16 @@
   --chip-lead-weight: 800;
 }
 
+// The delta filled in its tone, the tone's own text on it — a tint of green
+// over a green-shaded cell does not read.
+.deltaSlot.deltaChip {
+  --chip-lead-bg: var(--chip-solid-bg);
+  --chip-lead-text: var(--chip-on-solid);
+  --chip-edge: var(--chip-solid-bg);
+}
+
 // LIVE on the running sector: filled in the deep green, white on it.
-.deltaChip.deltaLive {
+.deltaSlot.deltaChip.deltaLive {
   --chip-lead-bg: #{$chip-lic-b};
   --chip-lead-text: #{$widget-text-primary};
   --chip-lead-size: #{wfs(9)};
