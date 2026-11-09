@@ -3,7 +3,7 @@
 $chip-height: calc(#{wfs(16)} + #{sp(xxxs)} * 2 + 2px);
 
 // The timing table's row: lap · time · delta in the mockup's 3 · 5 · 4, ruled
-// between the columns, the state marked on the left edge.
+// between the columns; only the lap being driven is marked on the left edge.
 .row {
   display: grid;
   grid-template-columns: 3fr 5fr 4fr;
@@ -29,13 +29,11 @@ $chip-height: calc(#{wfs(16)} + #{sp(xxxs)} * 2 + 2px);
 
 .rowBest,
 .rowBest:nth-child(even) {
-  border-left-color: $chip-special-edge;
   background: rgba($chip-special-edge, 0.16);
 }
 
 .rowInvalid,
 .rowInvalid:nth-child(even) {
-  border-left-color: $chip-pit;
   background: $chip-danger-ground;
 }
 
