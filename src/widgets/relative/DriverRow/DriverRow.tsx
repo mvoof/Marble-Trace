@@ -226,13 +226,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         )}
 
         {statusChips.map((chip) => (
-          <StatChip
-            key={chip.status}
-            lead={chip.label}
-            leadVariant={chip.lead}
-            tone={chip.tone}
-            emphasized={chip.lead === 'solid'}
-          >
+          <StatChip key={chip.status} lead={chip.label} tone={chip.tone}>
             {chip.status === 'tow' && driver.isPlayer && player.isTowing ? (
               <TowTime />
             ) : undefined}

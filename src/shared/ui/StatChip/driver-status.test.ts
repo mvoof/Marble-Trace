@@ -59,11 +59,11 @@ describe('resolveDriverStatuses', () => {
     ]);
   });
 
-  it('fills the events and tints the states', () => {
+  it('labels a stop and the garage', () => {
     const [pit] = resolveDriverStatuses({ ...ON_TRACK, isPit: true });
     const [garage] = resolveDriverStatuses({ ...ON_TRACK, isOut: true });
 
-    expect(pit).toMatchObject({ label: 'PIT', lead: 'solid' });
-    expect(garage).toMatchObject({ label: 'GAR', lead: 'tint' });
+    expect(pit).toMatchObject({ label: 'PIT', tone: 'danger' });
+    expect(garage).toMatchObject({ label: 'GAR', tone: 'muted' });
   });
 });
