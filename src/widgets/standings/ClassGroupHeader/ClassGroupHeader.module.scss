@@ -1,4 +1,11 @@
 .header {
+  // The bar chips are context for the table under them: a step smaller than
+  // the rows' names, on the rows' own line.
+  --chip-line: #{$table-chip-line};
+  --chip-lead-size: #{wfs(9)};
+  --chip-value-size: #{wfs(10)};
+  --chip-solid-padding-x: #{sp(xs)};
+
   display: flex;
   align-items: center;
   justify-content: space-between;

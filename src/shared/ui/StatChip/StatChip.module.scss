@@ -109,7 +109,7 @@ $edge: var(--chip-edge, #{$chip-border});
   background: var(--chip-value-bg, transparent);
   color: var(--chip-value-text, #{$widget-text-primary});
   font-family: $font-mono;
-  font-size: fs(xxs);
+  font-size: var(--chip-value-size, #{fs(xxs)});
   font-weight: var(--chip-value-weight, 800);
 }
 

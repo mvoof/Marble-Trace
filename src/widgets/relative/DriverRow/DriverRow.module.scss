@@ -128,7 +128,7 @@
 .driverPosition {
   font-family: $font-mono;
   font-weight: 800;
-  font-size: fs(xs);
+  font-size: fs(sm);
   color: $widget-text-primary;
 }
 
@@ -152,7 +152,7 @@
 
 // Car number — the badge carries the class color
 .driverCarNumber {
-  font-size: fs(xxs);
+  font-size: fs(xs);
   font-weight: 800;
   line-height: 1.25;
   font-family: $font-mono;
@@ -166,7 +166,7 @@
   // sits outside the three digits.
   display: inline-block;
   box-sizing: border-box;
-  min-width: ws(28);
+  min-width: ws(30);
   text-align: center;
 }
 
@@ -185,7 +185,7 @@
 .driverName {
   font-family: $font-widget;
   font-weight: 800;
-  font-size: fs(xs);
+  font-size: fs(sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
