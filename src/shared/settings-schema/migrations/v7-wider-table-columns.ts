@@ -71,12 +71,12 @@ const LIC_COLUMN_PX: Record<
 };
 
 // The rating chips of v7, frozen: JetBrains Mono digits at 11px, a filled SR
-// lead tracked 0.06em with no edge, a row chip's side padding and edges.
+// chip with no edge and its padding taking the edges back, a row chip's side
+// padding and edges.
 const RATING_ADVANCE_PX = 0.6 * 11;
-const RATING_SOLID_ADVANCE_PX = (0.6 + 0.06) * 11;
-const RATING_SOLID_PAD_PX = 12;
+const RATING_SOLID_PAD_PX = 10;
 const RATING_TINT_PAD_PX = 8;
-const RATING_VALUE_PAD_PX = 12;
+const RATING_VALUE_PAD_PX = 8;
 const RATING_EDGE_PX = 2;
 
 interface Column {
@@ -136,7 +136,7 @@ const srColumnWidth: WidthOf = (settings) => {
   const chipPx =
     settings['licBadgeStyle'] === 'dark'
       ? RATING_TINT_PAD_PX + RATING_EDGE_PX + chars * RATING_ADVANCE_PX
-      : RATING_SOLID_PAD_PX + chars * RATING_SOLID_ADVANCE_PX;
+      : RATING_SOLID_PAD_PX + chars * RATING_ADVANCE_PX;
 
   return Math.ceil(chipPx + CELL_PAD_X_PX * 2);
 };

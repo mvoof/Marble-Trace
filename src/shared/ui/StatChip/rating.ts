@@ -52,7 +52,6 @@ export const ratingChipParts = (settings: {
 // scale, so the two are kept apart and the column grows with the text.
 const CHIP_FONT_PX = 11; // fs(xxs)
 export const MONO_ADVANCE_EM = 0.6; // JetBrains Mono
-const SOLID_TRACKING_EM = 0.06; // .leadSolid letter-spacing
 const VALUE_PAD_PX = 16; // sp(sm) on both sides
 const CHIP_EDGE_PX = 2; // 1px on either side
 
@@ -83,9 +82,11 @@ export interface ChipWidth {
 
 // A row's own chips are tighter at the sides than a bar's (the rows'
 // `--chip-*-padding-x` and `--chip-lead-padding`).
-const ROW_SOLID_PAD_PX = 12; // sp(xs) on both sides — the SR's letter and rating too
+// A filled SR chip is the tinted one's size: its padding takes back the edges it
+// lacks, and its figures are untracked.
+const ROW_SOLID_PAD_PX = 10; // sp(xxs) + 1px on both sides
 const ROW_TINT_PAD_PX = 8; // sp(xxs) on both sides
-const ROW_VALUE_PAD_PX = 12; // sp(xs) on both sides
+const ROW_VALUE_PAD_PX = 8; // sp(xxs) on both sides — the SR chip's
 
 /**
  * The SR chip's width, or null when it is off. Filled it has no edge; its
@@ -103,8 +104,7 @@ export const srChipWidth = (
   if (badgeStyle !== 'dark') {
     return {
       fixedPx: ROW_SOLID_PAD_PX,
-      textPx:
-        SR_CHARS[sr] * (MONO_ADVANCE_EM + SOLID_TRACKING_EM) * CHIP_FONT_PX,
+      textPx: SR_CHARS[sr] * MONO_ADVANCE_EM * CHIP_FONT_PX,
     };
   }
 

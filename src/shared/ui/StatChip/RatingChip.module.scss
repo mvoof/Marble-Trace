@@ -1,13 +1,20 @@
 // A filled SR chip's lead gives up its padding and gap: the letter and the
 // rating each pad themselves, edge to edge. Together they hold what "A 4.99" in
-// one box would — the space between them (one tracked mono advance, 0.66em)
-// split across the seam (`srChipWidth`).
-$seam-half: 0.33em;
+// one box would — the space between them (one mono advance, 0.6em) split
+// across the seam (`srChipWidth`).
+$seam-half: 0.3em;
 
-// A filled chip has no edge, so it would sit 2px shorter than the chips beside
-// it; its line takes the 2px back.
+// A filled SR chip the size of the tinted one: it has no edge, so its line
+// and its side padding each take the 1px edges back, and its figures go
+// untracked as the tinted chip's are.
 .srSolid {
   --chip-line: calc(#{$table-chip-line} + 2px);
+  --chip-solid-padding-x: calc(#{sp(xxs)} + 1px);
+  --chip-split-padding-x: calc(#{sp(xxs)} + 1px);
+
+  > span:first-child {
+    letter-spacing: 0;
+  }
 }
 
 // The iRating on a white chip, its number dark — set apart from the colored SR
@@ -16,7 +23,8 @@ $seam-half: 0.33em;
   --chip-border: #{$chip-text};
   --chip-value-bg: #{$chip-text};
   --chip-value-text: #{$chip-bg};
-  --chip-value-padding-x: #{sp(xs)};
+  // The SR chip's side padding, so the two chips are one shape.
+  --chip-value-padding-x: #{sp(xxs)};
   // A step over the SR's 700: dark on white reads thinner than white on a
   // fill, so the two figures look one weight.
   --chip-value-weight: 800;
