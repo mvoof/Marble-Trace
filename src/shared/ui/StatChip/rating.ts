@@ -48,7 +48,7 @@ export const ratingChipParts = (settings: {
 // follow the widget's scale alone; the digits also follow the user's font
 // scale, so the two are kept apart and the column grows with the text.
 const CHIP_FONT_PX = 11; // fs(xxs)
-const MONO_ADVANCE_EM = 0.6; // JetBrains Mono
+export const MONO_ADVANCE_EM = 0.6; // JetBrains Mono
 const SOLID_TRACKING_EM = 0.06; // .leadSolid letter-spacing
 const SOLID_LEAD_PAD_PX = 16; // sp(sm) on both sides
 const TINT_LEAD_PAD_PX = 12; // sp(xs) on both sides
@@ -100,6 +100,15 @@ export const ratingChipWidth = (
     textPx: SR_CHARS[sr] * srAdvancePx + IR_CHARS[ir] * advancePx,
   };
 };
+
+/**
+ * A chip holding a value alone — a lap time — of `chars` characters: its
+ * padding and edges stay put, its digits follow the font scale.
+ */
+export const valueChipWidth = (chars: number): ChipWidth => ({
+  fixedPx: VALUE_PAD_PX + CHIP_EDGE_PX,
+  textPx: chars * MONO_ADVANCE_EM * CHIP_FONT_PX,
+});
 
 /**
  * A grid column holding the chip plus `paddingPx` of cell padding, as CSS: it

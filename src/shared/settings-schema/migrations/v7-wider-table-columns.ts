@@ -189,13 +189,15 @@ const STANDINGS_COLUMNS: readonly Column[] = [
   {
     show: flag('showLastLap', true),
     before: fixed(82),
-    after: fixed(padded(82)),
+    // The lap time alone: "10:32.400" at 12px, padded.
+    after: fixed(73),
   },
   { show: flag('showLapDelta', true), before: null, after: fixed(padded(50)) },
   {
     show: flag('showBestLap', true),
     before: fixed(82),
-    after: fixed(padded(82)),
+    // A chip of the lap time: its digits at 11px, padding and edges, padded.
+    after: fixed(86),
   },
   {
     show: flag('showBrand', true),

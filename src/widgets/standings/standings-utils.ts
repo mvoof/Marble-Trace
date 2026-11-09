@@ -7,6 +7,8 @@ import {
   type WithFontScale,
   ratingChipParts,
   ratingChipWidth,
+  MONO_ADVANCE_EM,
+  valueChipWidth,
 } from '@shared/ui/StatChip/rating';
 import { formatLapTime } from '@shared/lib/telemetry-format';
 import type { StandingsWidgetSettings } from './settings-schema';
@@ -241,6 +243,26 @@ const textColumn = (
   };
 };
 
+// The widest lap time a cell writes, "10:32.400", and the row's text size it
+// is set in — fs(xs).
+const LAP_TIME_CHARS = 9;
+const ROW_FONT_PX = 12;
+
+// The best lap is a chip of the lap time, the last lap the time alone — each
+// column as wide as its own content, not one shared guess.
+const LAST_LAP_TEXT_PX = LAP_TIME_CHARS * MONO_ADVANCE_EM * ROW_FONT_PX;
+
+const bestLapColumn = (
+  settings: WithFontScale<StandingsWidgetSettings>
+): { px: number; css: string } => {
+  const width = valueChipWidth(LAP_TIME_CHARS);
+
+  return {
+    px: columnPx(width, CELL_PAD_X_PX * 2, fontScaleOf(settings)),
+    css: chipColumnCss(width, CELL_PAD_X_PX * 2),
+  };
+};
+
 const colSpecs = (
   settings: WithFontScale<StandingsWidgetSettings>
 ): ColSpec[] => [
@@ -305,7 +327,7 @@ const colSpecs = (
   {
     key: 'lastLap',
     block: 'times',
-    ...textColumn(82, settings),
+    ...textColumn(LAST_LAP_TEXT_PX, settings),
     show: settings.showLastLap,
   }, // "1:32.400" (9 chars mono max)
   {
@@ -317,7 +339,7 @@ const colSpecs = (
   {
     key: 'bestLap',
     block: 'times',
-    ...textColumn(82, settings),
+    ...bestLapColumn(settings),
     show: settings.showBestLap,
   }, // "1:32.400" (9 chars mono max)
   {
