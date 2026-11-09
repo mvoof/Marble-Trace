@@ -1,6 +1,6 @@
 // The columns share the tier as the mockup's grid does — 4 · 5 · 3 — and a
-// column that leaves gives its share to the rest. A ruled edge between them,
-// as between a table's cells.
+// column that leaves takes its share of the plate with it. A ruled edge
+// between them, as between a table's cells.
 .cell {
   display: flex;
   align-items: center;

@@ -1,7 +1,7 @@
-// The plate is as wide as what it holds, never narrower than the mockup's card
-// (`minWidth`), so it paints the user's background and border itself; the
-// container around it is transparent (`transparentContainer`). The tiers draw
-// their own grounds inside it.
+// The plate is as wide as what it holds, never narrower than its columns'
+// share of the mockup's card (`minWidth`), so it paints the user's background
+// and border itself; the container around it is transparent
+// (`transparentContainer`). The tiers draw their own grounds inside it.
 .root {
   overflow: hidden;
   border: 1px solid var(--widget-border);
