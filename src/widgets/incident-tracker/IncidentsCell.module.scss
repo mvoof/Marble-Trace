@@ -1,6 +1,7 @@
-// The limit is context for the count, read once per session, so it sits small
-// on the count's baseline rather than competing with it.
+// The limit is context for the count, read once per session, so it sits a
+// step down and quieter, as the tables write "12/16".
 .limit {
-  font-size: fs(xxxs);
-  opacity: 0.75;
+  font-size: fs(xxs);
+  font-weight: 600;
+  color: $chip-text-muted;
 }

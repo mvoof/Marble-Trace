@@ -1,39 +1,39 @@
 import { observer } from 'mobx-react-lite';
 
+import { useBlink, type BlinkCycle } from '@shared/hooks/useBlink';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
+import { StatChip } from '@shared/ui/StatChip/StatChip';
 import { useIncidentTrackerStore } from './incident-tracker-context';
-import { MetricCell, type MetricTone } from './MetricCell';
+import { MetricCell } from './MetricCell';
 import styles from './PenaltiesCell.module.scss';
 
 const LABEL = 'PEN';
 const DISQUALIFIED_LABEL = 'DQ';
 
-/** Red a point or two off the next penalty, amber once one is served. */
-const penaltiesTone = (served: number, isNearNext: boolean): MetricTone => {
-  if (isNearNext) {
-    return 'danger';
-  }
+/** One incident more serves the next penalty: the buffer chip blinks. */
+const LAST_INCIDENT_BEFORE_PENALTY = 1;
 
-  if (served > 0) {
-    return 'warning';
-  }
-
-  return 'neutral';
-};
+const LAST_INCIDENT_BLINK: BlinkCycle = { stepMs: 400, steps: 2 };
 
 /**
- * Drive-throughs served and the incidents left before the next one. Drawn
- * only in a session that hands out penalties — the widget leaves it out
+ * Drive-throughs served and, in a chip of their own, the incidents left
+ * before the next one — red a point or two off it, blinking at the last.
+ * Drawn only in a session that hands out penalties — the widget leaves it out
  * otherwise.
  */
 export const PenaltiesCell = observer(() => {
   const store = useIncidentTrackerStore();
   const status = store.penaltyStatus;
   const toNext = store.incidentsToNextPenalty;
+  const blinkRef = useBlink<HTMLSpanElement>(
+    toNext === LAST_INCIDENT_BEFORE_PENALTY && !store.isDisqualified
+      ? LAST_INCIDENT_BLINK
+      : null
+  );
 
   if (store.isDisqualified) {
     return (
-      <MetricCell label={LABEL} tone="danger">
+      <MetricCell label={LABEL} width="wide" tone="danger">
         {DISQUALIFIED_LABEL}
       </MetricCell>
     );
@@ -43,13 +43,22 @@ export const PenaltiesCell = observer(() => {
     return null;
   }
 
-  const tone = penaltiesTone(status.served, store.isNearPenalty);
-
   return (
-    <MetricCell label={LABEL} tone={tone}>
+    <MetricCell
+      label={LABEL}
+      width="wide"
+      tone={status.served > 0 ? 'warning' : 'neutral'}
+    >
       <FixedDigits text={String(status.served)} />
       {toNext !== null ? (
-        <FixedDigits className={styles.buffer} text={`+${toNext}`} />
+        <span ref={blinkRef} className={styles.buffer}>
+          <StatChip
+            lead={`+${toNext}`}
+            leadKind="number"
+            size="xs"
+            tone={store.isNearPenalty ? 'danger' : 'muted'}
+          />
+        </span>
       ) : null}
     </MetricCell>
   );

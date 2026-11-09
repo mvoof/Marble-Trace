@@ -112,6 +112,37 @@ export class IncidentTrackerWidgetStore {
     return isNearIncidentLimit(this.countedIncidents, this.incidentLimit);
   }
 
+  /** Near or past the limit: the plate and the INC column turn red. */
+  get isLimitAlarm(): boolean {
+    return this.isDisqualified || this.isNearLimit;
+  }
+
+  /** How much of the limit is used, 0..1; `null` in a session without one. */
+  get limitShare(): number | null {
+    const limit = this.incidentLimit;
+
+    if (limit === null || limit <= 0) {
+      return null;
+    }
+
+    return Math.min(1, this.countedIncidents / limit);
+  }
+
+  private get playerCar() {
+    const sessionInfo = this.root.session.sessionInfo;
+
+    return (
+      sessionInfo?.cars.find(
+        (car) => car.carIdx === sessionInfo.playerCarIdx
+      ) ?? null
+    );
+  }
+
+  /** The player's license, "D 2.75" — its class colors the SR badge. */
+  get licString(): string | null {
+    return this.playerCar?.licString ?? null;
+  }
+
   get isNearPenalty(): boolean {
     return isNearIncidentPenalty(this.countedIncidents, this.penaltyStatus);
   }
@@ -132,11 +163,7 @@ export class IncidentTrackerWidgetStore {
    * which holds still while the chip moves.
    */
   get srOfficial(): number | null {
-    const sessionInfo = this.root.session.sessionInfo;
-    const player = sessionInfo?.cars.find(
-      (car) => car.carIdx === sessionInfo.playerCarIdx
-    );
-    const subLevel = player?.licSubLevel ?? null;
+    const subLevel = this.playerCar?.licSubLevel ?? null;
 
     // Before the roster carries the licence, the backend's own start value.
     if (subLevel === null) {

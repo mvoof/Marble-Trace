@@ -1,5 +1,11 @@
-// How far off the next penalty is, small beside the count it would add to.
+// How far off the next penalty is, a chip of its own beside the count it would
+// add to, so "0" and "+8" never read as one figure.
 .buffer {
-  font-size: fs(xxxs);
-  color: $widget-text-secondary;
+  display: inline-flex;
+}
+
+// The last incident before a penalty, written by `useBlink` — a timer, never
+// a CSS animation (ADR-0009).
+.buffer[data-blink-step='1'] {
+  opacity: 0.35;
 }
