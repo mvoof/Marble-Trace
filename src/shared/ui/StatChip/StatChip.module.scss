@@ -89,8 +89,14 @@ $edge: var(--chip-edge, #{$chip-border});
 
 .leadSolid {
   padding-inline: var(--chip-solid-padding-x, #{sp(sm)});
-  background: $solid-bg;
-  color: $on-solid;
+  // A caller can take the fill down toward the chip's ground and write on it
+  // in its own color — a bar where full fills would outshine the table.
+  background: color-mix(
+    in srgb,
+    #{$solid-bg} var(--chip-solid-strength, 100%),
+    #{$chip-bg}
+  );
+  color: var(--chip-solid-text, #{$on-solid});
   font-weight: var(--chip-solid-weight, 800);
   letter-spacing: 0.06em;
 }

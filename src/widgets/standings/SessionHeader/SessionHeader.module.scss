@@ -8,6 +8,10 @@
   --chip-lead-size: #{wfs(9)};
   --chip-value-size: #{wfs(10)};
   --chip-solid-padding-x: #{sp(xs)};
+  // Each fill a deep shade of its color, written light, so the bars stay
+  // under the rows they frame.
+  --chip-solid-strength: 40%;
+  --chip-solid-text: #{$chip-text};
 
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
