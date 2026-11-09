@@ -19,11 +19,12 @@ $seam-half: 0.33em;
   gap: sp(xxs);
 }
 
-// The iRating on the darkest ground the chip has, in the full white even in a
-// row that quiets its other chips.
+// The iRating on a white chip, its number dark — set apart from the colored SR
+// beside it, and from the rows' quieted chips.
 .iRating {
-  --chip-value-bg: #{$chip-value-dark};
-  --chip-value-text: #{$widget-text-primary};
+  --chip-border: #{$chip-text};
+  --chip-value-bg: #{$chip-text};
+  --chip-value-text: #{$chip-bg};
   --chip-value-padding-x: #{sp(xs)};
 }
 
