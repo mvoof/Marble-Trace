@@ -1,6 +1,10 @@
 // The block keeps the layout classes of its non-interactive form; this only
-// strips what the browser adds for a button.
-.reset {
+// strips what the browser adds for a button. Wrapped in `:where()` so it weighs
+// nothing: a block's own font, border or alignment always wins over it, and
+// the block looks the same as a button as it does as a div. The browser's own
+// button styles still lose — a page's rules beat the browser's whatever their
+// weight.
+:where(.reset) {
   appearance: none;
   border: none;
   margin: 0;
