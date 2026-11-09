@@ -2,17 +2,7 @@
 // the laps and the clock at the right. The middle one is the elastic one — the
 // track name ends in an ellipsis before a chip is ever pushed out.
 .sessionHeader {
-  // The bar chips are context for the table under them: a step smaller than
-  // the rows' names, on the rows' own line.
-  --chip-line: #{$table-chip-line};
-  --chip-lead-size: #{wfs(9)};
-  --chip-value-size: #{wfs(10)};
-  --chip-solid-padding-x: #{sp(xs)};
-  // Each fill a deep shade of its color, written light, so the bars stay
-  // under the rows they frame.
-  --chip-solid-strength: 40%;
-  --chip-solid-text: #{$chip-text};
-  --chip-solid-weight: 500;
+  @include table-bar-chips;
 
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;

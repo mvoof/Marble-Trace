@@ -197,6 +197,35 @@ $chip-value-dark: #0e1013;
 $chip-border: #262932;
 $chip-text: #e5e7eb;
 $chip-text-muted: #7e828a;
+
+// A filled chip lead that stays quiet: a deep shade of its color written light
+// in a regular weight, where full fills would outshine what they sit beside.
+// Any chip container takes it with `@include chip-muted-solid`.
+$chip-muted-fill-strength: 40%;
+$chip-muted-lead-text: $chip-text;
+$chip-muted-lead-weight: 500;
+
+@mixin chip-muted-solid {
+  --chip-solid-strength: #{$chip-muted-fill-strength};
+  --chip-solid-text: #{$chip-muted-lead-text};
+  --chip-solid-weight: #{$chip-muted-lead-weight};
+}
+
+// A table bar's chips — Standings' header, footer and class headers — are
+// context for the rows they frame: muted, and a step smaller than the rows'
+// names, on the rows' own line.
+$table-bar-chip-lead-size: wfs(9);
+$table-bar-chip-value-size: wfs(10);
+
+@mixin table-bar-chips {
+  @include chip-muted-solid;
+
+  --chip-line: #{$table-chip-line};
+  --chip-lead-size: #{$table-bar-chip-lead-size};
+  --chip-value-size: #{$table-bar-chip-value-size};
+  --chip-solid-padding-x: #{sp(xs)};
+}
+
 $chip-accent-bg: #382b14;
 $chip-accent: #e5b822;
 $chip-info-bg: #182945;
