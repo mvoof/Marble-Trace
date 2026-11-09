@@ -152,6 +152,14 @@ const licenseLetter = (licString: string): string =>
 export const licenseTone = (licString: string): StatChipTone =>
   LICENSE_TONE[licenseLetter(licString)] ?? 'licenseR';
 
+/** "A 4.99" as its class letter and its rating; the rating may be empty. */
+export const safetyRatingParts = (
+  licString: string
+): { letter: string; rating: string } => ({
+  letter: licenseLetter(licString),
+  rating: licString?.slice(1).trim() || '',
+});
+
 /**
  * The safety rating as the chip writes it: "A 4.99", or "4.99" without the
  * class letter. A license with no rating keeps its letter rather than leaving
@@ -161,8 +169,7 @@ export const safetyRatingLabel = (
   licString: string,
   showLetter: boolean
 ): string => {
-  const letter = licenseLetter(licString);
-  const rating = licString?.slice(1).trim() || '';
+  const { letter, rating } = safetyRatingParts(licString);
 
   return showLetter || !rating ? `${letter} ${rating}`.trim() : rating;
 };

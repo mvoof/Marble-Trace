@@ -75,7 +75,7 @@ $edge: var(--chip-edge, #{$chip-border});
 .leadLabel {
   font-family: $font-widget;
   font-size: var(--chip-lead-size, #{fs(xxxs)});
-  font-weight: 700;
+  font-weight: var(--chip-lead-weight, 700);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -91,7 +91,7 @@ $edge: var(--chip-edge, #{$chip-border});
   padding-inline: var(--chip-solid-padding-x, #{sp(sm)});
   background: $solid-bg;
   color: $on-solid;
-  font-weight: 800;
+  font-weight: var(--chip-solid-weight, 800);
   letter-spacing: 0.06em;
 }
 
@@ -110,7 +110,7 @@ $edge: var(--chip-edge, #{$chip-border});
   color: var(--chip-value-text, #{$widget-text-primary});
   font-family: $font-mono;
   font-size: fs(xxs);
-  font-weight: 800;
+  font-weight: var(--chip-value-weight, 800);
 }
 
 // A step up for the bar over the table.
@@ -233,6 +233,7 @@ $edge: var(--chip-edge, #{$chip-border});
   --chip-on-solid: #{$widget-text-primary};
   --chip-lead-bg: #{$chip-value-dark};
   --chip-lead-text: #{$tier};
+  --chip-lic-bright: #{$tier};
   --chip-value-bg: #{$chip-value-dark};
 }
 

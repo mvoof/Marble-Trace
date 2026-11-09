@@ -1,0 +1,34 @@
+// The lead gives up its padding and gap: the letter and the rating each pad
+// themselves, edge to edge. Together they take what "A 4.99" in one box took —
+// the box's sp(sm) at either end, and the space between them (one tracked mono
+// advance, 0.66em) split across the seam — so the column keeps its width
+// (`ratingChipWidth`).
+$seam-half: 0.33em;
+
+.split {
+  --chip-lead-padding: 0;
+  --chip-solid-padding-x: 0;
+
+  > span:first-child {
+    gap: 0;
+  }
+}
+
+.letter,
+.rating {
+  display: inline-flex;
+  align-self: stretch;
+  align-items: center;
+}
+
+// The class on the license's bright color, written dark as the session type
+// is on its fill; the rating stays on the deeper shade the lead is filled with.
+.letter {
+  padding-inline: sp(sm) $seam-half;
+  background: var(--chip-lic-bright);
+  color: $chip-bg;
+}
+
+.rating {
+  padding-inline: $seam-half sp(sm);
+}

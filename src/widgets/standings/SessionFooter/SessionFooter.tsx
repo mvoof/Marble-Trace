@@ -1,13 +1,5 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import {
-  Wrench,
-  Thermometer,
-  Waves,
-  TriangleAlert,
-  Flag,
-  Gavel,
-} from 'lucide-react';
 
 import { formatTemp, tempUnit } from '@shared/lib/telemetry-format';
 import { parseWeekendTemp } from '@widgets/standings/standings-utils';
@@ -83,19 +75,19 @@ export const SessionFooter = observer(() => {
     <div className={styles.sessionFooter}>
       <div className={styles.footerGroup}>
         {showWeather && airCelsius !== null && (
-          <StatChip icon={Thermometer} tone="accent" lead="AIR">
+          <StatChip tone="accent" lead="AIR" leadVariant="solid">
             {`${formatTemp(airCelsius, unitSystem)}${tUnit}`}
           </StatChip>
         )}
 
         {showWeather && trkCelsius !== null && (
-          <StatChip icon={Thermometer} tone="info" lead="TRACK">
+          <StatChip tone="info" lead="TRACK" leadVariant="solid">
             {`${formatTemp(trkCelsius, unitSystem)}${tUnit}`}
           </StatChip>
         )}
 
         {showWeather && wetnessInfo && (
-          <StatChip icon={Waves} tone="accent" lead="SURFACE">
+          <StatChip tone="accent" lead="SURFACE" leadVariant="solid">
             {wetnessInfo.label}
           </StatChip>
         )}
@@ -103,14 +95,14 @@ export const SessionFooter = observer(() => {
 
       <div className={styles.footerGroup}>
         {showPitStops && (
-          <StatChip icon={Wrench} lead="PIT" tone="accent">
+          <StatChip lead="PIT" leadVariant="solid" tone="accent">
             {playerPitStops}
           </StatChip>
         )}
 
         {showIncidents && (
           <StatChip
-            icon={Flag}
+            leadVariant="solid"
             tone={isNearLimit ? 'danger' : 'accent'}
             lead="INC"
             limit={incidentLimit ?? undefined}
@@ -123,7 +115,7 @@ export const SessionFooter = observer(() => {
 
         {showIncidents && incidentsToPenalty !== null && (
           <StatChip
-            icon={TriangleAlert}
+            leadVariant="solid"
             tone={isNearPenalty ? 'danger' : 'accent'}
             lead="TO PEN"
             valueDanger={isNearPenalty}
@@ -134,7 +126,7 @@ export const SessionFooter = observer(() => {
         )}
 
         {showIncidents && penaltyStatus && (
-          <StatChip icon={Gavel} lead="PEN" tone="accent">
+          <StatChip lead="PEN" leadVariant="solid" tone="accent">
             {penaltyStatus.served}
           </StatChip>
         )}

@@ -2,6 +2,13 @@
 // Columns: pos | car# | name+badges(1fr) | lic? | iR? | gap
 .driverRow {
   --chip-line: #{$table-chip-line};
+  // The chips are notes on the driver: a weight under the position, the number
+  // and the name, and the readings in the secondary white, so the row reads
+  // by who first.
+  --chip-lead-weight: 600;
+  --chip-solid-weight: 700;
+  --chip-value-weight: 600;
+  --chip-value-text: #{$widget-text-secondary};
 
   display: grid;
   // Cells fill the row's height so a column's stripe runs edge to edge; each
@@ -177,7 +184,7 @@
 
 .driverName {
   font-family: $font-widget;
-  font-weight: 700;
+  font-weight: 800;
   font-size: fs(xs);
   overflow: hidden;
   text-overflow: ellipsis;

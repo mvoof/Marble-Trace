@@ -41,8 +41,9 @@ const TONE_CLASS: Record<StatChipTone, string> = {
 
 /**
  * `tint` writes the lead in its color on a dark ground of it; `solid` fills it
- * with the color — kept for what names a state: the session type, a license
- * class, a pit badge.
+ * with the color and writes it dark — a state (the session type, a license
+ * class, a pit badge) and the readings of a table's bars, where colored text
+ * on dark would glare.
  */
 export type StatChipLead = 'tint' | 'solid';
 

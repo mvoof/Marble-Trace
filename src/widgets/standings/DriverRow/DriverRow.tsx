@@ -18,12 +18,7 @@ import { RadioMark } from '@entities/cars/RadioMark/RadioMark';
 import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
-import {
-  formatIr,
-  iRatingChars,
-  licenseTone,
-  safetyRatingLabel,
-} from '@shared/ui/StatChip/rating';
+import { RatingChip } from '@shared/ui/StatChip/RatingChip';
 import { StatChip, writeStatChip } from '@shared/ui/StatChip/StatChip';
 import { TireBadge } from '@shared/ui/TireBadge/TireBadge';
 import {
@@ -384,24 +379,15 @@ export const DriverRow = observer(
 
         {(settings.showLicBadge || settings.showIRating) && (
           <div className={cellClass('rating', styles.cellCenter)}>
-            <StatChip
-              lead={
-                settings.showLicBadge
-                  ? safetyRatingLabel(
-                      driver.licString,
-                      settings.showLicenseLetter
-                    )
-                  : undefined
-              }
-              leadKind="number"
-              leadVariant={settings.licBadgeStyle === 'dark' ? 'tint' : 'solid'}
-              tone={licenseTone(driver.licString)}
-              valueChars={iRatingChars(settings.abbreviateIRating)}
-            >
-              {settings.showIRating
-                ? formatIr(driver.iRating, settings.abbreviateIRating)
-                : undefined}
-            </StatChip>
+            <RatingChip
+              licString={driver.licString}
+              iRating={driver.iRating}
+              showSafetyRating={settings.showLicBadge}
+              showLicenseLetter={settings.showLicenseLetter}
+              showIRating={settings.showIRating}
+              abbreviateIRating={settings.abbreviateIRating}
+              badgeStyle={settings.licBadgeStyle}
+            />
           </div>
         )}
 

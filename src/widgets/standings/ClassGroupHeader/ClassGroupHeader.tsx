@@ -1,6 +1,6 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import { Trophy, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 import { formatIRating } from '@shared/lib/driver';
 
@@ -55,12 +55,12 @@ export const ClassGroupHeader = observer(
 
         <div className={styles.pills}>
           {settings.showSOF && (
-            <StatChip icon={Trophy} lead="SOF" tone="accent">
+            <StatChip lead="SOF" leadVariant="solid" tone="accent">
               {formatIRating(classSof, settings.abbreviateSof)}
             </StatChip>
           )}
 
-          <StatChip icon={Users} lead="DRIVERS" tone="info">
+          <StatChip icon={Users} leadVariant="solid" tone="info">
             {totalDrivers}
           </StatChip>
         </div>
