@@ -8,9 +8,8 @@ import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSimStore } from '@entities/sim/sim-context';
-import { formatLapTime } from '@shared/lib/telemetry-format';
 import type { LapHistoryEntry } from '@shared/contracts/generated/bindings';
-import { averageValidLapTime } from './lap-log-utils';
+import { averageValidLapTime, formatLapTimeOrDash } from './lap-log-utils';
 import { LapRow, type LapRowKind } from './LapRow/LapRow';
 import type { LapLogWidgetSettings } from './settings-schema';
 
@@ -61,7 +60,7 @@ export const LapLogWidget = observer(() => {
           emphasized
           className={styles.bestChip}
         >
-          <FixedDigits text={formatLapTime(bestLapTime)} />
+          <FixedDigits text={formatLapTimeOrDash(bestLapTime)} />
         </StatChip>
       </div>
 
@@ -73,7 +72,7 @@ export const LapLogWidget = observer(() => {
             <LapRow
               kind="live"
               lapNum={lapNum}
-              time={formatLapTime(currentLapTime)}
+              time={formatLapTimeOrDash(currentLapTime)}
             />
 
             {visibleHistory.map((entry) => (
@@ -81,7 +80,7 @@ export const LapLogWidget = observer(() => {
                 key={entry.lapNum}
                 kind={entryKind(entry)}
                 lapNum={entry.lapNum}
-                time={formatLapTime(entry.lapTime)}
+                time={formatLapTimeOrDash(entry.lapTime)}
                 delta={entry.delta}
                 paceLossBars={paceLossBars}
               />
@@ -94,7 +93,7 @@ export const LapLogWidget = observer(() => {
             </span>
 
             <StatChip>
-              <FixedDigits text={formatLapTime(average)} />
+              <FixedDigits text={formatLapTimeOrDash(average)} />
             </StatChip>
           </div>
         </>

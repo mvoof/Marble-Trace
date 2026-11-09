@@ -6,6 +6,7 @@ import { formatDelta } from '@shared/lib/delta-utils';
 import {
   paceLossFraction,
   paceLossTone,
+  EMPTY_VALUE,
   type PaceLossTone,
 } from '../lap-log-utils';
 
@@ -13,11 +14,6 @@ import styles from './LapRow.module.scss';
 
 /** The lap being driven, the best lap, a lap with no time, or any other. */
 export type LapRowKind = 'live' | 'best' | 'invalid' | 'lap';
-
-const EMPTY_DELTA = '-.---';
-
-/** A lap with no time: a dash where the time would be, INV beside it. */
-const EMPTY_TIME = '-';
 
 const ROW_CLASS: Record<LapRowKind, string> = {
   live: styles.rowLive,
@@ -41,7 +37,7 @@ const TONE_BAR_CLASS: Record<PaceLossTone, string> = {
 interface LapRowProps {
   kind: LapRowKind;
   lapNum: number | null;
-  /** The lap time, written; ignored on a lap with no time. */
+  /** The lap time, written, or a dash; ignored on a lap with no time. */
   time: string;
   /** Seconds off the best; null when the lap has none. */
   delta?: number | null;
@@ -57,7 +53,7 @@ interface DeltaCellProps {
 /** A finished lap's delta: a chip in its loss color, or a bar of the loss. */
 const DeltaCell = observer(({ delta, paceLossBars }: DeltaCellProps) => {
   if (delta === null) {
-    return <span className={styles.deltaEmpty}>{EMPTY_DELTA}</span>;
+    return <span className={styles.deltaEmpty}>{EMPTY_VALUE}</span>;
   }
 
   const tone = paceLossTone(delta);
@@ -91,12 +87,12 @@ export const LapRow = observer(
     return (
       <div className={`${styles.row} ${ROW_CLASS[kind]}`}>
         <span className={`${styles.cell} ${styles.lapCell}`}>
-          L{lapNum ?? '--'}
+          L{lapNum ?? EMPTY_VALUE}
         </span>
 
         <span className={`${styles.cell} ${styles.timeCell}`}>
-          {kind === 'invalid' ? (
-            <span className={styles.timeEmpty}>{EMPTY_TIME}</span>
+          {kind === 'invalid' || time === EMPTY_VALUE ? (
+            <span className={styles.timeEmpty}>{EMPTY_VALUE}</span>
           ) : (
             <FixedDigits className={styles.time} text={time} />
           )}
