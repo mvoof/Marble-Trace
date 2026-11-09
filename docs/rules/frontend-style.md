@@ -37,7 +37,7 @@ _Held by: review._
 - Flat camelCase class names in CSS Modules (e.g. `driverNamePlayer`).
 - SCSS modifier classes declared **after** their base class.
 - CSS variable names must not indicate color.
-- Fonts: `$font-widget` = `'Rajdhani', sans-serif`. `$font-mono` = `'Consolas', monospace`.
+- Fonts: `$font-widget` = `'Inter', sans-serif`. `$font-mono` = `'JetBrains Mono', monospace`. Both are self-hosted variable fonts (`public/fonts`, `_fonts.scss`); `WidgetPanel` turns on `tabular-nums`.
 
 ## Color tokens
 
@@ -55,9 +55,9 @@ live readout keeps each digit in a cell of the same width, so only the digit
 changes and nothing beside it shifts. A value the driver reads at the apex is
 read by shape as much as by content, and text that dances is read twice.
 
-`font-variant-numeric: tabular-nums` does **not** solve this here: `$font-widget`
-is Rajdhani, which ships no tabular figures, so the browser has nothing to switch
-to and silently keeps the proportional ones. Use one of the two grids instead:
+`tabular-nums` (on by default in every `WidgetPanel`) keeps Inter's digits one
+width, but not a sign, a colon or a dot beside them, and canvas text has no
+`font-variant-numeric` at all. Use one of the two grids for a live readout:
 
 | where  | use                                                               |
 | ------ | ----------------------------------------------------------------- |

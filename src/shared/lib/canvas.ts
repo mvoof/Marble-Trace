@@ -139,8 +139,8 @@ export const measureFixedDigits = (
 /**
  * Canvas counterpart of the `FixedDigits` component: every digit is drawn in a
  * cell as wide as the widest one, so a live readout does not shuffle sideways
- * as its digits change. `tabular-nums` cannot do this — Rajdhani ships no
- * tabular figures, so the browser has nothing to switch to.
+ * as its digits change. Canvas text has no `font-variant-numeric`, so the
+ * cells are laid out here instead.
  *
  * The text is centred on `centerX`/`centerY`; the caller's `textBaseline` is
  * respected, `textAlign` is restored on the way out.

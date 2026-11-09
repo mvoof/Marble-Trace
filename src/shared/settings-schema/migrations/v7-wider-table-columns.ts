@@ -43,10 +43,10 @@ const LIC_COLUMN_PX: Record<
   plain: { withLetter: 48, ratingOnly: 34 },
 };
 
-// The rating chip of v7, frozen: Consolas digits at 11px, the solid lead
+// The rating chip of v7, frozen: JetBrains Mono digits at 11px, the solid lead
 // tracked 0.06em, its padding, the iRating's padding and the chip's edges.
-const RATING_ADVANCE_PX = 0.5498 * 11;
-const RATING_SOLID_ADVANCE_PX = (0.5498 + 0.06) * 11;
+const RATING_ADVANCE_PX = 0.6 * 11;
+const RATING_SOLID_ADVANCE_PX = (0.6 + 0.06) * 11;
 const RATING_SOLID_PAD_PX = 16;
 const RATING_TINT_PAD_PX = 12;
 const RATING_VALUE_PAD_PX = 16;

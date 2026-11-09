@@ -48,7 +48,7 @@ export const ratingChipParts = (settings: {
 // follow the widget's scale alone; the digits also follow the user's font
 // scale, so the two are kept apart and the column grows with the text.
 const CHIP_FONT_PX = 11; // fs(xxs)
-const MONO_ADVANCE_EM = 0.5498; // Consolas
+const MONO_ADVANCE_EM = 0.6; // JetBrains Mono
 const SOLID_TRACKING_EM = 0.06; // .leadSolid letter-spacing
 const SOLID_LEAD_PAD_PX = 16; // sp(sm) on both sides
 const TINT_LEAD_PAD_PX = 12; // sp(xs) on both sides

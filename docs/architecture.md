@@ -1471,7 +1471,7 @@ not hand-roll either.
 - Flat camelCase class names (`driverNamePlayer`). SCSS modifier classes are
   declared _after_ their base class.
 - CSS variable names must not name a color.
-- `$font-widget` is `'Rajdhani', sans-serif`; `$font-mono` is `'Consolas', monospace`.
+- `$font-widget` is `'Inter', sans-serif`; `$font-mono` is `'JetBrains Mono', monospace` — both self-hosted variable fonts.
 - Layout is flexbox with `flex: 1 1 0` and `min-width: 0`; column sizing uses `ch`
   units when the maximum character count is known.
 

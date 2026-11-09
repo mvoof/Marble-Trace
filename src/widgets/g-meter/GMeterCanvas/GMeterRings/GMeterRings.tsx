@@ -61,7 +61,7 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
       LABEL_BASE_SIZE_PX * (width / LABEL_BASE_WIDTH_PX) * fontScale
     );
 
-    ctx.font = `600 ${labelSize}px 'Rajdhani', sans-serif`;
+    ctx.font = `600 ${labelSize}px 'Inter', sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.lineWidth = GRID_LINE_WIDTH_PX;

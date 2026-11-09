@@ -1,8 +1,8 @@
 @use 'functions' as *;
 
 // Typography
-$font-mono: 'Consolas', monospace;
-$font-widget: 'Rajdhani', sans-serif;
+$font-mono: 'JetBrains Mono', monospace;
+$font-widget: 'Inter', sans-serif;
 // Main window UI chrome only (not widgets, which stay on $font-widget until localized)
 $font-app: 'Exo 2', 'Noto Sans SC', sans-serif;
 $font-size-widget: rem(13);

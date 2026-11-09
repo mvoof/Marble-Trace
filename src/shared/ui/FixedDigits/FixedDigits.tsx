@@ -12,10 +12,8 @@ const DIGIT_PATTERN = /\d/;
 
 /**
  * Renders text with every digit in a cell of the same width, so a clock or a
- * lap count does not shuffle sideways as its digits change. `tabular-nums`
- * cannot do this here — Rajdhani ships no tabular figures, so the browser has
- * nothing to switch to and the widget's own font falls back to proportional
- * ones.
+ * lap count does not shuffle sideways as its digits change — whatever the
+ * face, a sign, a colon or a dot beside the digits keeps its place too.
  */
 export const FixedDigits = observer(({ text, className }: FixedDigitsProps) => {
   return (

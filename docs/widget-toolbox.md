@@ -99,7 +99,7 @@ Read by one feature's store and its widgets, nowhere else.
 | `CountryFlag`       | Showing a driver's flag from a country code; `driver-flair.ts` beside it maps an iRacing flair id to the code.                                                                                                                                             |
 | `DriverFlagBadge`   | Showing a waved flag against a driver — blue, meatball, black.                                                                                                                                                                                             |
 | `ErrorBoundary.tsx` | Wrapping a subtree that may throw, so one widget cannot take the overlay down with it.                                                                                                                                                                     |
-| `FixedDigits`       | A number that changes while the driver reads it — every digit in a cell of the same width, so nothing beside it shifts. Rajdhani has no tabular figures, so `tabular-nums` does nothing here.                                                              |
+| `FixedDigits`       | A number that changes while the driver reads it — every digit in a cell of the same width, so nothing beside it shifts. `tabular-nums` fixes the digits but not a sign or separator beside them.                                                           |
 | `NoDataPlaceholder` | The widget has nothing to show yet — the standard "NO DATA" plate instead of an empty box.                                                                                                                                                                 |
 | `PaceCarMarker`     | Drawing the pace car on a track line or map.                                                                                                                                                                                                               |
 | `ReservedSlot`      | (in `src/entities/app-settings/`: it reads the app settings store.) Holding the height a block will occupy while it is absent, so placing the widget in the editor shows its real size.                                                                    |
@@ -161,7 +161,7 @@ which cannot read SCSS, repeat the same palette hexes in JS: the widget
 manifests, `widgets/g-meter/g-meter-utils.ts`, `shared/lib/weather-utils.ts` and
 `shared/lib/colors.ts`.
 
-Fonts: `$font-widget` (`Rajdhani`) for everything, `$font-mono` (`Consolas`) for
+Fonts: `$font-widget` (`Inter`) for everything, `$font-mono` (`JetBrains Mono`) for
 figures that must not jitter between frames.
 
 ## `src/storybook/` — story helpers
