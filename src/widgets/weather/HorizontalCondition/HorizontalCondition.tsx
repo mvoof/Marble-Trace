@@ -11,7 +11,7 @@ import { weatherIconFor } from '../weather-icons';
 import styles from './HorizontalCondition.module.scss';
 import type { WeatherWidgetSettings } from '../settings-schema';
 
-const ICON_SIZE_PX = 34;
+const ICON_SIZE_PX = 28;
 
 export const HorizontalCondition = observer(() => {
   const { unitSystem } = useUnitsStore();
