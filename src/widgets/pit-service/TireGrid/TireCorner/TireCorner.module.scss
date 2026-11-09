@@ -6,7 +6,10 @@
   // gaps are what the grid is measured by.
   padding: sp(xxxs) sp(xxs) sp(xxs);
   border-radius: radius(sm);
-  border: 1px solid $chip-border;
+  // The frame is drawn inside the box, not as a border: in interact mode the
+  // corner is a button whose reset strips borders, and a border lost there
+  // made the panel two pixels a row shorter the moment interact mode came on.
+  box-shadow: inset 0 0 0 1px $chip-border;
   background: $chip-bg;
   font-family: $font-mono;
   font-variant-numeric: tabular-nums;
@@ -15,7 +18,7 @@
 // The order is the whole background, not a stripe beside it: one signal per
 // state reads faster than an edge and a tint saying the same thing.
 .cornerOrdered {
-  border-color: rgba($chip-positive, 0.6);
+  box-shadow: inset 0 0 0 1px rgba($chip-positive, 0.6);
   background: $chip-positive-bg;
 }
 
