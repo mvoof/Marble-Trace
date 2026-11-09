@@ -244,3 +244,11 @@ $table-rule: #1c1e24;
 $table-row-rule: #1e2025;
 $table-dim-text: #9ca3af;
 $table-empty-text: #52565e;
+// The sector matrix's cells: shades of each state over the row ground, the
+// running sector in the deep green, the sectors not reached a step darker.
+$sector-ahead-ground: rgba($chip-positive, 0.03);
+$sector-behind-ground: rgba($chip-danger, 0.04);
+$sector-live-ground: rgba(#1b4c47, 0.75);
+$sector-upcoming-ground: rgba(0, 0, 0, 0.12);
+$sector-empty-ground: rgba(0, 0, 0, 0.2);
+$sector-upcoming-text: #686c75;

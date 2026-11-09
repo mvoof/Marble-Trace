@@ -29,7 +29,8 @@ import { asObject, mapEveryStoredWidget, type StoredBlobWidget } from '../blob';
  * design width became its mockup card, 264 instead of 220, and its height
  * stopped following its laps — a taller frame now shows more of them — so the
  * height it had on disk, never its own, gives way to its design height of 385
- * at the frame's scale.
+ * at the frame's scale. The sector matrix moved too: its design width became
+ * its mockup card, 330 instead of 320, and its frame widens by that ratio.
  */
 
 type TableSettings = Record<string, unknown>;
@@ -49,6 +50,7 @@ interface DesignWidthRebase {
 const DESIGN_WIDTH_REBASES: Readonly<Record<string, DesignWidthRebase>> = {
   fuel: { before: 240, after: 306 },
   'lap-log': { before: 220, after: 264, fitHeight: 385 },
+  'sector-matrix': { before: 320, after: 330 },
 };
 
 type WidthOf = (settings: TableSettings) => number;
@@ -414,7 +416,7 @@ const widenTemplates = (blob: SettingsBlob): SettingsBlob => {
 export const v7WiderTableColumns: Migration = {
   to: 7,
   describe:
-    'Standings and Relative frames widened with their columns; Fuel and Lap Log widened to their new design widths',
+    'Standings and Relative frames widened with their columns; Fuel, Lap Log and Sector Matrix widened to their new design widths',
   migrate: (blob: SettingsBlob): SettingsBlob =>
     widenTemplates(
       mapEveryStoredWidget(blob, (widgets) => widgets.map(widenInstance))

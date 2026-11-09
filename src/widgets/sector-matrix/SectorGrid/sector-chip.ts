@@ -3,29 +3,37 @@ import {
   formatSectorTime,
   getDeltaState,
 } from '@shared/lib/delta-utils';
-
-const AHEAD_COLOR = 'var(--sector-ahead)';
-const BEHIND_COLOR = 'var(--sector-behind)';
-const NEUTRAL_COLOR = 'var(--sector-neutral)';
-const DIM_COLOR = 'var(--sector-dim)';
-const IDLE_BORDER_COLOR = 'rgba(255, 255, 255, 0.1)';
+import type { StatChipTone } from '@shared/ui/StatChip/StatChip';
 
 const PENDING_TIME = '--.---';
+const LIVE_TEXT = 'LIVE';
+
+/**
+ * What a cell shows the sector as: banked ahead of, behind or level with the
+ * best; the one the car is in; one not reached, with last lap's time or none.
+ */
+export type SectorCellKind =
+  | 'ahead'
+  | 'behind'
+  | 'level'
+  | 'current'
+  | 'upcoming'
+  | 'empty';
+
+/** The chip beside the sector's name: its delta, or LIVE on the running one. */
+export interface SectorDeltaChip {
+  text: string;
+  tone: StatChipTone;
+  /** The running sector before there is a best to measure it against. */
+  isLive: boolean;
+}
 
 export interface SectorChipState {
-  isCurrent: boolean;
-  isFuture: boolean;
+  kind: SectorCellKind;
   /** The sector's time, or the running one while the car is in it. */
   displayTime: string;
-  /**
-   * The delta against the personal best; absent on a sector not reached yet,
-   * and on the running one until there is a best to measure it against.
-   */
-  deltaText: string | null;
-  deltaColor: string;
-  borderColor: string;
-  /** Null on a sector already reached, which keeps the stylesheet's colour. */
-  timeColor: string | null;
+  /** Absent on a sector not reached yet. */
+  delta: SectorDeltaChip | null;
 }
 
 export interface SectorChipInput {
@@ -37,24 +45,47 @@ export interface SectorChipInput {
   currentLapTime: number;
 }
 
-const colorForDeltaState = (delta: number | null): string => {
+const toneForDelta = (delta: number | null): StatChipTone => {
   const deltaState = getDeltaState(delta);
 
   if (deltaState === 'ahead') {
-    return AHEAD_COLOR;
+    return 'positive';
   }
 
   if (deltaState === 'behind') {
-    return BEHIND_COLOR;
+    return 'danger';
   }
 
-  return NEUTRAL_COLOR;
+  return 'accent';
 };
 
+const bankedKindOf = (delta: number | null): SectorCellKind => {
+  const deltaState = getDeltaState(delta);
+
+  if (deltaState === 'ahead') {
+    return 'ahead';
+  }
+
+  if (deltaState === 'behind') {
+    return 'behind';
+  }
+
+  return 'level';
+};
+
+const deltaChipOf = (delta: number | null): SectorDeltaChip | null =>
+  delta === null
+    ? null
+    : {
+        text: formatSectorDelta(delta),
+        tone: toneForDelta(delta),
+        isLive: false,
+      };
+
 /**
- * Everything one chip of the matrix shows, as plain data. It is pure so that the
+ * Everything one cell of the matrix shows, as plain data. It is pure so that the
  * grid can apply it straight to the DOM on an animation frame — the sector
- * deltas move with the lap, and re-rendering twenty chips for them is what the
+ * deltas move with the lap, and re-rendering twenty cells for them is what the
  * rendering rule is about. See `docs/rendering.md`.
  */
 export const sectorChipStateOf = ({
@@ -65,58 +96,43 @@ export const sectorChipStateOf = ({
   currentLapTime,
 }: SectorChipInput): SectorChipState => {
   const sectorTime = sectorTimes[sectorIndex] ?? null;
-
-  const isOnLap = currentSectorIdx !== null;
+  const delta = sectorDeltas[sectorIndex] ?? null;
 
   // The index alone decides: the backend writes the running sector's time into
   // its slot too, so a time is no sign the car has left the sector.
-  const isCurrent = sectorIndex === currentSectorIdx;
-  const isFuture = !isOnLap || sectorIndex > currentSectorIdx;
+  if (sectorIndex === currentSectorIdx) {
+    const completedSectorSum = sectorTimes
+      .slice(0, sectorIndex)
+      .reduce<number>((sum, time) => sum + (time ?? 0), 0);
 
-  const delta = sectorDeltas[sectorIndex] ?? null;
-
-  const displayTime = (() => {
-    if (isCurrent) {
-      const completedSectorSum = sectorTimes
-        .slice(0, sectorIndex)
-        .reduce<number>((sum, time) => sum + (time ?? 0), 0);
-
-      return formatSectorTime(
+    return {
+      kind: 'current',
+      displayTime: formatSectorTime(
         sectorTime ?? currentLapTime - completedSectorSum
-      );
-    }
+      ),
+      // The running sector shows its live delta once there is a best lap.
+      delta: deltaChipOf(delta) ?? {
+        text: LIVE_TEXT,
+        tone: 'positive',
+        isLive: true,
+      },
+    };
+  }
 
-    if (sectorTime !== null && sectorTime > 0) {
-      return formatSectorTime(sectorTime);
-    }
+  const hasTime = sectorTime !== null && sectorTime > 0;
+  const isFuture = currentSectorIdx === null || sectorIndex > currentSectorIdx;
 
-    return PENDING_TIME;
-  })();
-
-  const borderColor = (() => {
-    if (isFuture) {
-      return IDLE_BORDER_COLOR;
-    }
-
-    // The running sector's edge follows its live delta, and keeps the last one
-    // once the car leaves it; green only marks it until there is a best lap.
-    if (isCurrent && delta === null) {
-      return AHEAD_COLOR;
-    }
-
-    return colorForDeltaState(delta);
-  })();
+  if (isFuture) {
+    return {
+      kind: hasTime ? 'upcoming' : 'empty',
+      displayTime: hasTime ? formatSectorTime(sectorTime) : PENDING_TIME,
+      delta: null,
+    };
+  }
 
   return {
-    isCurrent,
-    isFuture,
-    displayTime,
-    deltaText:
-      isFuture || (isCurrent && delta === null)
-        ? null
-        : formatSectorDelta(delta),
-    deltaColor: colorForDeltaState(delta),
-    borderColor,
-    timeColor: isFuture ? DIM_COLOR : null,
+    kind: bankedKindOf(delta),
+    displayTime: hasTime ? formatSectorTime(sectorTime) : PENDING_TIME,
+    delta: deltaChipOf(delta),
   };
 };

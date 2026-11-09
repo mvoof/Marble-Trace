@@ -29,7 +29,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/SectorMatrixWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: SectorMatrixWidget,
-    size: { width: 320 },
+    size: { width: 330 },
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
       const settings: Partial<SectorMatrixWidgetSettings> = {
@@ -97,6 +97,17 @@ export const InProgress: Story = {
 
 export const Behind: Story = {
   args: { delta: 0.612, sectorDeltas: [0.21, 0.15, null] },
+};
+
+/** Four sectors make a square: two banked, the running one, one not reached. */
+export const FourSectors: Story = {
+  args: {
+    lapTime: 61.284,
+    lapDistPct: 0.6,
+    sectorTimes: [28.412, 31.276, 1.596, 26.904],
+    sectorDeltas: [-0.12, 0.09, null, null],
+    currentSectorIdx: 2,
+  },
 };
 
 export const ManySectors: Story = {

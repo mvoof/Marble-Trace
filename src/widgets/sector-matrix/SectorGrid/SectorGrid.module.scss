@@ -1,118 +1,121 @@
-// Color tokens passed to JS via CSS custom properties on :root
-:root {
-  --sector-dim: #{$widget-text-secondary};
-  --sector-ahead: #{$widget-status-positive};
-  --sector-behind: #{$widget-status-danger};
-  --sector-neutral: #{$widget-status-warning};
-}
-
+// The cells sit on the table's row ground; each takes its state on a 3px left
+// edge and a shade of it over that ground.
 .grid {
   display: grid;
-  padding: 0 sp(sm);
+  background: $table-row-bg;
 }
 
-.chip {
-  position: relative;
-  padding: sp(xs) sp(sm);
-  background: $widget-surface-cell;
-  border-left: 2px solid var(--chip-border, rgba(255, 255, 255, 0.1));
+.cell {
+  --cell-edge: #{$chip-neutral-border};
+  --cell-ground: transparent;
+  --cell-label: #{$table-dim-text};
+  --cell-time: #{$widget-text-primary};
+
   display: flex;
   flex-direction: column;
-  gap: sp(xxxs);
-  min-width: 0;
-  container-type: inline-size;
-}
-
-// Dividers are hairlines inset from the plate edges, never full bleed.
-.dividerRight::after {
-  content: '';
-  position: absolute;
-  top: sp(xxs);
-  bottom: sp(xxs);
-  right: 0;
-  width: 1px;
-  background: $widget-border-subtle;
-}
-
-.dividerTop::before {
-  content: '';
-  position: absolute;
-  left: sp(xs);
-  right: sp(xs);
-  top: 0;
-  height: 1px;
-  background: $widget-border-subtle;
-}
-
-.chipTop {
-  display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  gap: sp(xxs);
+  min-width: 0;
+  padding: sp(sm) sp(md);
+  background: var(--cell-ground);
+  border-left: 3px solid var(--cell-edge);
+
+  &[data-kind='ahead'] {
+    --cell-edge: #{$chip-positive};
+    --cell-ground: #{$sector-ahead-ground};
+  }
+
+  &[data-kind='behind'] {
+    --cell-edge: #{$chip-danger};
+    --cell-ground: #{$sector-behind-ground};
+  }
+
+  &[data-kind='level'] {
+    --cell-edge: #{$chip-accent};
+  }
+
+  &[data-kind='current'] {
+    --cell-edge: #{$chip-accent};
+    --cell-ground: #{$sector-live-ground};
+    --cell-label: #{$chip-accent};
+  }
+
+  &[data-kind='upcoming'] {
+    --cell-ground: #{$sector-upcoming-ground};
+    --cell-label: #{$sector-upcoming-text};
+    --cell-time: #{$sector-upcoming-text};
+  }
+
+  &[data-kind='empty'] {
+    --cell-edge: #{$table-row-rule};
+    --cell-ground: #{$sector-empty-ground};
+    --cell-label: #{$table-empty-text};
+    --cell-time: #{$table-empty-text};
+  }
 }
 
-// The label and the delta share one row and shrink together once a larger font
-// scale outgrows the chip: S20 and +10.25 at these caps fill about 92% of it.
-.sectorLabel {
-  font-family: $font-mono;
-  font-size: min(#{fs(xs)}, 16cqi);
+// Rows are ruled apart; the columns are parted by the cells' own left edges.
+.ruleTop {
+  border-top: 1px solid $table-row-rule;
+}
+
+.cellTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(xxs);
+  // A delta chip's height, so a cell without one is no shorter.
+  min-height: $chip-outer-height;
+}
+
+.label {
+  font-family: $font-widget;
+  font-size: fs(xxxs);
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cell-label);
 }
 
-.labelDone {
-  color: $widget-label;
-}
-.labelCurrent {
-  color: $widget-status-positive;
-}
-.labelFuture {
-  color: $widget-text-secondary;
+.deltaSlot {
+  min-width: 0;
 }
 
-.sectorDelta {
-  color: var(--chip-delta-color, var(--sector-neutral));
+// The table's chip: a 14px line, the delta at 10px.
+.deltaChip {
+  --chip-line: #{$table-chip-line};
+  --chip-lead-size: #{fs(xxxs)};
+  --chip-lead-weight: 800;
+}
+
+// LIVE on the running sector: filled in the deep green, white on it.
+.deltaChip.deltaLive {
+  --chip-lead-bg: #{$chip-lic-b};
+  --chip-lead-text: #{$widget-text-primary};
+  --chip-lead-size: #{wfs(9)};
+  --chip-edge: #{$chip-lic-b};
+
+  font-weight: 800;
+}
+
+.time {
   font-family: $font-mono;
-  font-size: min(#{wfs(14)}, 18cqi);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-// The time never wraps, so once a larger font scale outgrows the chip it
-// shrinks to fit: eight monospace glyphs (1:00.000) span about 4.4em.
-.chipTime {
-  font-family: $font-mono;
-  font-size: min(#{fs(lg)}, 22cqi);
-  font-weight: 400;
+  font-size: fs(md);
+  font-weight: 800;
   line-height: 1;
-  color: var(--chip-time-color, #{$widget-text-primary});
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  color: var(--cell-time);
   white-space: nowrap;
 }
 
-// A single column lays the chip out as one row: label, time, delta.
-.gridOneColumn {
-  .chip {
-    display: grid;
-    grid-template-columns: ws(32) 1fr auto;
-    align-items: center;
-    gap: sp(md);
+// A long track: tighter cells and a smaller time, so twelve sectors stay short.
+.gridCompact {
+  .cell {
+    padding: sp(xs);
   }
 
-  .chipTop {
-    display: contents;
-  }
-
-  .sectorLabel {
-    font-size: fs(sm);
-    justify-self: start;
-  }
-
-  .chipTime {
-    order: 1;
-  }
-
-  .sectorDelta {
-    order: 2;
+  .time {
+    font-size: fs(xs);
   }
 }

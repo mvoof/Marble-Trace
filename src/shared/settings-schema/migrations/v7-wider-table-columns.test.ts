@@ -6,6 +6,7 @@ import { RELATIVE_SETTINGS } from '@widgets/relative/settings-schema';
 import { computeRelativeDesignWidth } from '@widgets/relative/relative-utils';
 import { FUEL_MANIFEST } from '@widgets/fuel/manifest';
 import { LAP_LOG_MANIFEST } from '@widgets/lap-log/manifest';
+import { SECTOR_MATRIX_MANIFEST } from '@widgets/sector-matrix/manifest';
 import { v7WiderTableColumns } from './v7-wider-table-columns';
 
 // What v6 derived for the shipped settings: the frames on disk were drawn
@@ -14,6 +15,7 @@ const STANDINGS_V6_DEFAULT_WIDTH = 802;
 const RELATIVE_V6_DEFAULT_WIDTH = 430;
 const FUEL_V6_DEFAULT_WIDTH = 240;
 const LAP_LOG_V6_DEFAULT_WIDTH = 220;
+const SECTOR_MATRIX_V6_DEFAULT_WIDTH = 320;
 
 const instance = (
   type: string,
@@ -219,6 +221,26 @@ describe('v7 — table frames widened with their columns', () => {
     >;
 
     expect(templates['lap-log'].size.width).toBe(LAP_LOG_MANIFEST.designWidth);
+  });
+
+  it('lands a default sector matrix frame on the mockup card width', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([instance('sector-matrix', SECTOR_MATRIX_V6_DEFAULT_WIDTH)])
+    );
+
+    expect(frameWidthOf(widgetsOf(migrated)[0])).toBe(
+      SECTOR_MATRIX_MANIFEST.designWidth
+    );
+  });
+
+  it('keeps the text size of a sector matrix frame the driver resized', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([instance('sector-matrix', 400)])
+    );
+
+    expect(frameWidthOf(widgetsOf(migrated)[0])).toBe(
+      Math.round(400 * (330 / 320))
+    );
   });
 
   it('widens the templates a new layout is built from', () => {
