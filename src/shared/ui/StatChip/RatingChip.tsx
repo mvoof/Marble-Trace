@@ -51,7 +51,11 @@ export const RatingChip = observer(
 
     return (
       <StatChip
-        className={showSafetyRating && splitsLetter ? styles.split : undefined}
+        className={
+          showSafetyRating && splitsLetter
+            ? `${styles.chip} ${styles.split}`
+            : styles.chip
+        }
         lead={lead}
         leadKind="number"
         leadVariant={isSolid ? 'solid' : 'tint'}

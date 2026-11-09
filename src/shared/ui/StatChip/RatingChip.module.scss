@@ -5,12 +5,25 @@
 // (`ratingChipWidth`).
 $seam-half: 0.33em;
 
+// The iRating sits on the darkest ground the chip has: it keeps the full
+// white even in a row that quiets its other chips.
+.chip {
+  --chip-value-text: #{$widget-text-primary};
+}
+
 .split {
   --chip-lead-padding: 0;
   --chip-solid-padding-x: 0;
 
+  // The lead and the text box inside it run the chip's full height, so the
+  // letter's fill does too.
   > span:first-child {
     gap: 0;
+    align-items: stretch;
+
+    > span {
+      display: flex;
+    }
   }
 }
 
