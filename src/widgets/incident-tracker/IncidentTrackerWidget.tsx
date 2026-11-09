@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import type { IncidentTrackerWidgetSettings } from './settings-schema';
-import { deltaDirection, type DeltaDirection } from './incident-tracker-utils';
 import { useIncidentTrackerStore } from './incident-tracker-context';
 import { SafetyRatingCell } from './SafetyRatingCell';
 import { IncidentLimitBar } from './IncidentLimitBar';
@@ -18,13 +17,6 @@ import styles from './IncidentTrackerWidget.module.scss';
  */
 const MOCKUP_CARD_WIDTH_PX = 248;
 
-/** The plate's left edge follows where the rating is heading. */
-const ACCENT_CLASS: Record<DeltaDirection, string> = {
-  up: styles.accentUp,
-  down: styles.accentDown,
-  flat: styles.accentFlat,
-};
-
 /**
  * Two tiers: the rating the session is heading for on top, the counters under
  * it, and between them how much of the incident limit is used. Everything
@@ -36,23 +28,13 @@ export const IncidentTrackerWidget = observer(() => {
     useWidgetSettings<IncidentTrackerWidgetSettings>('incident-tracker');
   const store = useIncidentTrackerStore();
 
-  const accentClass = store.isLimitAlarm
-    ? styles.accentDown
-    : ACCENT_CLASS[store.isRated ? deltaDirection(store.srDelta) : 'flat'];
-
   return (
     <WidgetPanel
       direction="column"
       gap={0}
       minWidth={MOCKUP_CARD_WIDTH_PX}
       fitContent
-      className={[
-        styles.root,
-        accentClass,
-        store.isLimitAlarm ? styles.rootAlarm : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      className={`${styles.root} ${store.isLimitAlarm ? styles.rootAlarm : ''}`}
     >
       {settings.showProjectedSr ? <SafetyRatingCell /> : null}
 

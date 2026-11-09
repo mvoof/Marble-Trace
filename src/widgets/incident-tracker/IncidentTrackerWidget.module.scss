@@ -5,7 +5,6 @@
 .root {
   overflow: hidden;
   border: 1px solid var(--widget-border);
-  border-left-width: ws(3);
   border-radius: radius(md);
   background: var(--widget-bg);
   font-family: $font-widget;
@@ -20,19 +19,6 @@
   .counters {
     background: $chip-danger-ground;
   }
-}
-
-// The left edge says where the rating is heading.
-.accentUp {
-  border-left-color: $chip-positive;
-}
-
-.accentDown {
-  border-left-color: $chip-danger;
-}
-
-.accentFlat {
-  border-left-color: $chip-neutral-text;
 }
 
 // The lower tier, a shade under the plate as a table's rows are.
