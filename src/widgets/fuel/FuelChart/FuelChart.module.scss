@@ -1,10 +1,52 @@
 .chartSection {
-  padding: sp(sm) sp(md);
-  background: rgba(0, 0, 0, 0.2);
+  padding: sp(md);
+  background: $table-head-bg;
+  border-bottom: 1px solid $chip-neutral-border;
+}
+
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(xs);
+  margin-bottom: sp(xxs);
+  font-family: $font-mono;
+  font-size: wfs(9);
+  line-height: #{wfs(16)};
+  color: $chip-text-muted;
+  white-space: nowrap;
+}
+
+.chartTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.05em;
+}
+
+.chartLegend {
+  display: inline-flex;
+  align-items: center;
+  gap: sp(xxs);
+  font-weight: 700;
+  color: $chip-accent;
+}
+
+.legendSwatch {
+  width: ws(8);
+  height: ws(2);
+  background: $chip-accent;
+}
+
+.chartFrame {
+  padding: sp(xxs);
+  border: 1px solid $table-rule;
+  border-radius: radius(sm);
+  background: $table-row-bg;
 }
 
 .chartCanvas {
   display: block;
   width: 100%;
-  height: ws(100);
+  // The frame is 80 tall in all: the plot, its padding and its edge.
+  height: ws(70);
 }

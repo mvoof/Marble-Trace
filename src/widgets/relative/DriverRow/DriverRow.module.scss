@@ -1,6 +1,8 @@
 // Driver row — grid layout for strict column alignment
 // Columns: pos | car# | name+badges(1fr) | lic? | iR? | gap
 .driverRow {
+  --chip-line: #{$table-chip-line};
+
   display: grid;
   // Cells fill the row's height so a column's stripe runs edge to edge; each
   // cell centres its own content.
@@ -81,6 +83,10 @@
   & > * {
     padding-top: $space;
     padding-bottom: $space;
+    // At least a chip tall inside the padding (the cells are border-box), so
+    // every row is one height whichever chips it holds — the widget counts the
+    // rows it can fit from the first one.
+    min-height: calc(#{$chip-outer-height} + #{$space} * 2);
   }
 }
 
@@ -170,6 +176,7 @@
 }
 
 .driverName {
+  font-family: $font-widget;
   font-weight: 700;
   font-size: fs(xs);
   overflow: hidden;

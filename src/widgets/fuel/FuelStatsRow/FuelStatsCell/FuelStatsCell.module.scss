@@ -1,53 +1,43 @@
 .cell {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: sp(xs) sp(xxxs);
-  background: $widget-surface-cell;
-  gap: sp(xxs);
+  min-width: 0;
+  padding: sp(xs) sp(xxs);
 }
 
-// Dividers are hairlines inset from the row edges, never full bleed.
-.cell:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: sp(xs);
-  bottom: sp(xs);
-  right: 0;
-  width: 1px;
-  background: $widget-border-subtle;
+.cell + .cell {
+  border-left: 1px solid $table-rule;
 }
 
 .label {
+  font-family: $font-mono;
   font-size: wfs(9);
-  letter-spacing: 0.09em;
-  color: $widget-text-primary;
-  text-align: center;
-}
-
-.consumption {
-  font-family: $font-mono;
-  font-size: fs(sm);
-  color: $widget-text-primary;
-  line-height: 1;
-  text-align: center;
-}
-
-// Laps to empty at this consumption — same quantity the summary shows large.
-.laps {
-  font-family: $font-mono;
-  font-size: fs(xxs);
-  color: $widget-text-secondary;
-  line-height: 1;
-  text-align: center;
+  line-height: #{wfs(16)};
+  font-weight: 600;
+  color: $chip-text-muted;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
-// Spelled out because a bare "L" reads as litres next to a fuel figure.
-.lapsUnit {
-  font-family: $font-widget;
-  font-size: wfs(9);
-  color: $widget-text-secondary;
-  margin-left: 2px;
+.consumption {
+  margin: ws(2) 0;
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 800;
+  line-height: #{wfs(16)};
+  color: $widget-text-primary;
+}
+
+.consumptionPositive {
+  color: $chip-positive;
+}
+
+.consumptionDanger {
+  color: $chip-danger;
+}
+
+// Laps to empty at this consumption, as a quiet note under the figure.
+.lapsChip {
+  --chip-value-text: #{$chip-text-muted};
 }

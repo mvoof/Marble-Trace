@@ -17,6 +17,7 @@ import {
   getStandingsGap,
   getStandingsInterval,
   maxScrollOffset,
+  isPersonalBestLastLap,
   resolveBestLapDisplay,
 } from './standings-utils';
 import {
@@ -314,6 +315,26 @@ const makeBestLapEntry = (
   bestLapTime: number | null,
   qualifyTime: number | null
 ) => ({ bestLapTime, qualifyTime }) as DriverEntry;
+
+const makeLapsEntry = (
+  lastLapTime: number | null,
+  bestLapTime: number | null
+) => ({ lastLapTime, bestLapTime }) as DriverEntry;
+
+describe('isPersonalBestLastLap', () => {
+  it('marks the lap just run when it is the best the driver has run', () => {
+    expect(isPersonalBestLastLap(makeLapsEntry(91.2, 91.2))).toBe(true);
+  });
+
+  it('stays quiet for a slower lap', () => {
+    expect(isPersonalBestLastLap(makeLapsEntry(91.8, 91.2))).toBe(false);
+  });
+
+  it('stays quiet without both times', () => {
+    expect(isPersonalBestLastLap(makeLapsEntry(null, 91.2))).toBe(false);
+    expect(isPersonalBestLastLap(makeLapsEntry(91.2, null))).toBe(false);
+  });
+});
 
 describe('resolveBestLapDisplay', () => {
   it('prefers a lap set in this session', () => {

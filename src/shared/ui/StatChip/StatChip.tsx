@@ -50,10 +50,17 @@ export type StatChipLead = 'tint' | 'solid';
 export type StatChipLeadKind = 'label' | 'number';
 
 /**
- * `md` for the bar over the table, a step up from the rows and the footer, so
- * the session reads first.
+ * `md` for the session's own name over the table, a step up from every reading, so
+ * the session reads first; `xs` for a note under a figure — the laps a fuel
+ * reading lasts.
  */
-export type StatChipSize = 'sm' | 'md';
+export type StatChipSize = 'xs' | 'sm' | 'md';
+
+const SIZE_CLASS: Record<StatChipSize, string> = {
+  xs: styles.chipXs,
+  sm: '',
+  md: styles.chipMd,
+};
 
 /**
  * Turns a span written outside React — a gap cell that updates every tick —
@@ -148,7 +155,8 @@ export const StatChip = observer(
         className={[
           styles.chip,
           hasValue ? '' : styles.chipSingle,
-          size === 'md' ? styles.chipMd : '',
+          !hasValue && leadVariant === 'solid' ? styles.chipSolid : '',
+          SIZE_CLASS[size],
           toneClass,
           emphasized ? styles.chipEmphasized : '',
           className ?? '',

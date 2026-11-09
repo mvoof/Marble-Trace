@@ -102,7 +102,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/FuelWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: FuelWidget,
-    size: { width: 240, height: 360 },
+    size: { width: 306, height: 350 },
     seedSnapshot: true,
     seed: (store, args) => {
       // The recorded snapshot was captured in the garage with the tank empty,

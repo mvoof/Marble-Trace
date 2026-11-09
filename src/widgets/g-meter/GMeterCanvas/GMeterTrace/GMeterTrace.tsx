@@ -143,7 +143,7 @@ const drawAxisBadges = (
     color,
   };
 
-  ctx.font = `700 ${fontSize}px 'Rajdhani', sans-serif`;
+  ctx.font = `700 ${fontSize}px 'Inter', sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 

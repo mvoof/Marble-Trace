@@ -112,13 +112,13 @@ export const SessionHeader = observer(() => {
         )}
 
         {settings.showTotalDrivers && (
-          <StatChip icon={Users} lead="DRIVERS" tone="info" size="md">
+          <StatChip icon={Users} lead="DRIVERS" tone="info">
             {driverIdentities.length}
           </StatChip>
         )}
 
         {showSof && (
-          <StatChip icon={Trophy} lead="SOF" tone="accent" size="md">
+          <StatChip icon={Trophy} lead="SOF" tone="accent">
             {formatIRating(overallSof, settings.abbreviateSof)}
           </StatChip>
         )}
@@ -131,7 +131,6 @@ export const SessionHeader = observer(() => {
           <StatChip
             icon={Flag}
             lead="LAPS"
-            size="md"
             tone={lapProgress.isFinalLap ? 'accent' : 'positive'}
             emphasized={lapProgress.isFinalLap}
           >

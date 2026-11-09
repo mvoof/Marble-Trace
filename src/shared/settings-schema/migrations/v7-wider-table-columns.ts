@@ -22,9 +22,18 @@ import { asObject, mapEveryStoredWidget, type StoredBlobWidget } from '../blob';
  * defaults of the builds that wrote them. An absent setting is on the shipped
  * default, and the default that matters is the one of the build that wrote the
  * file, not of whichever build runs this step later.
+ *
+ * Fuel moved the same way: its design width became the redesign mockup's card,
+ * 306 instead of 240, and its frame widens by that ratio so the text keeps its
+ * size — a default 240 frame comes out at 306.
  */
 
 type TableSettings = Record<string, unknown>;
+
+// Fuel's design width in v6 and in v7, frozen.
+const FUEL_V6_DESIGN_WIDTH = 240;
+const FUEL_V7_DESIGN_WIDTH = 306;
+const FUEL_TYPE = 'fuel';
 
 type WidthOf = (settings: TableSettings) => number;
 
@@ -43,10 +52,10 @@ const LIC_COLUMN_PX: Record<
   plain: { withLetter: 48, ratingOnly: 34 },
 };
 
-// The rating chip of v7, frozen: Consolas digits at 11px, the solid lead
+// The rating chip of v7, frozen: JetBrains Mono digits at 11px, the solid lead
 // tracked 0.06em, its padding, the iRating's padding and the chip's edges.
-const RATING_ADVANCE_PX = 0.5498 * 11;
-const RATING_SOLID_ADVANCE_PX = (0.5498 + 0.06) * 11;
+const RATING_ADVANCE_PX = 0.6 * 11;
+const RATING_SOLID_ADVANCE_PX = (0.6 + 0.06) * 11;
 const RATING_SOLID_PAD_PX = 16;
 const RATING_TINT_PAD_PX = 12;
 const RATING_VALUE_PAD_PX = 16;
@@ -180,13 +189,15 @@ const STANDINGS_COLUMNS: readonly Column[] = [
   {
     show: flag('showLastLap', true),
     before: fixed(82),
-    after: fixed(padded(82)),
+    // The lap time alone: "10:32.400" at 12px, padded.
+    after: fixed(73),
   },
   { show: flag('showLapDelta', true), before: null, after: fixed(padded(50)) },
   {
     show: flag('showBestLap', true),
     before: fixed(82),
-    after: fixed(padded(82)),
+    // A chip of the lap time: its digits at 11px, padding and edges, padded.
+    after: fixed(86),
   },
   {
     show: flag('showBrand', true),
@@ -271,7 +282,42 @@ const widenedWidth = (
   return Math.round((width / before) * after);
 };
 
+/** A size scaled by fuel's design-width ratio, or null when it is not a size. */
+const widenedFuelSize = (
+  size: Record<string, unknown>
+): Record<string, unknown> | null => {
+  const { width, height } = size;
+
+  if (!isPositive(width)) {
+    return null;
+  }
+
+  const ratio = FUEL_V7_DESIGN_WIDTH / FUEL_V6_DESIGN_WIDTH;
+
+  return {
+    ...size,
+    width: Math.round(width * ratio),
+    ...(isPositive(height) ? { height: Math.round(height * ratio) } : {}),
+  };
+};
+
+const widenFuelInstance = (widget: StoredBlobWidget): StoredBlobWidget => {
+  const frame = asObject(widget?.frame);
+
+  if (!frame || widget.design !== undefined) {
+    return widget;
+  }
+
+  const widened = widenedFuelSize(frame);
+
+  return widened === null ? widget : { ...widget, frame: widened };
+};
+
 const widenInstance = (widget: StoredBlobWidget): StoredBlobWidget => {
+  if (widget?.type === FUEL_TYPE) {
+    return widenFuelInstance(widget);
+  }
+
   const columns =
     typeof widget?.type === 'string' ? TABLE_COLUMNS[widget.type] : undefined;
   const frame = asObject(widget?.frame);
@@ -317,12 +363,24 @@ const widenTemplates = (blob: SettingsBlob): SettingsBlob => {
     }
   }
 
+  const fuelTemplate = asObject(templates[FUEL_TYPE]);
+  const fuelSize = asObject(fuelTemplate?.['size']);
+
+  if (fuelTemplate && fuelSize && fuelTemplate['design'] === undefined) {
+    const size = widenedFuelSize(fuelSize);
+
+    if (size !== null) {
+      widened[FUEL_TYPE] = { ...fuelTemplate, size };
+    }
+  }
+
   return { ...blob, widgetTemplates: widened };
 };
 
 export const v7WiderTableColumns: Migration = {
   to: 7,
-  describe: 'Standings and Relative frames widened with their columns',
+  describe:
+    'Standings and Relative frames widened with their columns; Fuel widened to its new design width',
   migrate: (blob: SettingsBlob): SettingsBlob =>
     widenTemplates(
       mapEveryStoredWidget(blob, (widgets) => widgets.map(widenInstance))

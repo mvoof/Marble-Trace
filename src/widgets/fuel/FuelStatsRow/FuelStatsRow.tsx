@@ -1,23 +1,47 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel } from '@shared/lib/telemetry-format';
+import {
+  formatFuel,
+  NO_FUEL_DATA_PLACEHOLDER,
+  NO_LAPS_REMAINING_DATA_PLACEHOLDER,
+} from '@shared/lib/telemetry-format';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
-  NO_FUEL_DATA_PLACEHOLDER,
-  NO_LAPS_REMAINING_DATA_PLACEHOLDER,
-} from '@shared/lib/telemetry-format';
-import {
   computeLapsToEmpty,
   EMPTY_FUEL_HISTORY_STATS,
+  type FuelStatKey,
   getFuelStatLabel,
   getVisibleFuelStatKeys,
 } from '../fuel-utils';
-import { FuelStatsCell } from './FuelStatsCell/FuelStatsCell';
+import {
+  FuelStatsCell,
+  type FuelStatTone,
+} from './FuelStatsCell/FuelStatsCell';
 import styles from './FuelStatsRow.module.scss';
+import type { FuelHistoryStats } from '@shared/contracts/generated/bindings';
 import type { FuelWidgetSettings } from '../settings-schema';
+
+/**
+ * LAST against the history's own average — the same split the chart's bars
+ * are colored by — and the best lap always in the good color.
+ */
+const resolveStatTone = (
+  key: FuelStatKey,
+  stats: FuelHistoryStats
+): FuelStatTone => {
+  if (key === 'min' && stats.min !== null) {
+    return 'positive';
+  }
+
+  if (key !== 'last' || stats.last === null || stats.avg === null) {
+    return 'neutral';
+  }
+
+  return stats.last > stats.avg ? 'danger' : 'positive';
+};
 
 export const FuelStatsRow = observer(() => {
   const { fuel } = useBackendComputedStore();
@@ -59,6 +83,7 @@ export const FuelStatsRow = observer(() => {
           label={getFuelStatLabel(key)}
           consumption={formatConsumption(stats[key])}
           laps={formatLaps(stats[key])}
+          tone={resolveStatTone(key, stats)}
         />
       ))}
     </div>

@@ -3,7 +3,9 @@ import { useLayoutEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { drawBarChart, drawLineChart } from './chart-renderers';
-import { countedLaps } from '../fuel-utils';
+import { countedLaps, fuelUnitShort } from '../fuel-utils';
+import { formatFuel } from '@shared/lib/telemetry-format';
+import { useUnitsStore } from '@entities/app-settings/units-context';
 import { resizeCanvasToDpr } from '@shared/lib/canvas';
 
 import styles from './FuelChart.module.scss';
@@ -12,6 +14,7 @@ import type { FuelWidgetSettings } from '../settings-schema';
 
 export const FuelChart = observer(() => {
   const { fuel } = useBackendComputedStore();
+  const { unitSystem } = useUnitsStore();
 
   const settings = useWidgetSettings<FuelWidgetSettings>('fuel');
   // Keep the raw reference (undefined or a stable array per fuel frame) so the
@@ -63,13 +66,29 @@ export const FuelChart = observer(() => {
     return null;
   }
 
+  const avgAll = fuel?.historyStats.avg ?? null;
+  const unit = fuelUnitShort(unitSystem).toUpperCase();
+
   return (
     <div className={styles.chartSection}>
-      <canvas
-        ref={canvasRef}
-        className={styles.chartCanvas}
-        aria-label="Fuel chart"
-      />
+      <div className={styles.chartHeader}>
+        <span className={styles.chartTitle}>HISTORY ({unit}/LAP)</span>
+
+        {avgAll !== null && (
+          <span className={styles.chartLegend}>
+            <span className={styles.legendSwatch} />
+            AVG {formatFuel(avgAll, unitSystem)}
+          </span>
+        )}
+      </div>
+
+      <div className={styles.chartFrame}>
+        <canvas
+          ref={canvasRef}
+          className={styles.chartCanvas}
+          aria-label="Fuel chart"
+        />
+      </div>
     </div>
   );
 });

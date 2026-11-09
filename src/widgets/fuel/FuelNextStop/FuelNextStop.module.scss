@@ -1,55 +1,44 @@
-// Caption over its reading, both centered — the same stacking the stat cells
-// elsewhere in the widget use. One line could not hold the caption and the
-// full window plus countdown at the widget's design width.
+// The table's footer bar: the caption at the left, its chips at the right.
 .nextStop {
-  margin: 0;
-  padding: sp(sm) sp(md);
-  background: $widget-surface-cell;
-  border-bottom: 1px solid $widget-border-subtle;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: sp(xxs);
+  justify-content: space-between;
+  gap: sp(xs);
+  padding: sp(sm) sp(md);
+  background: $table-bar-bg;
 }
 
 .label {
-  font-family: $font-mono;
-  font-size: wfs(9);
-  color: $widget-text-primary;
-  letter-spacing: 0.09em;
-  font-weight: 400;
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: $table-dim-text;
   white-space: nowrap;
 }
 
-.window {
-  font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 700;
-  color: $widget-text-primary;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  white-space: nowrap;
+.chips {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
 }
 
-// The window closing lap matters for planning, but the opening lap leads.
+// The window's closing lap supports the opening lap rather than competing.
 .lapRangeEnd {
-  color: $widget-text-secondary;
-  font-weight: 400;
+  font-weight: 600;
+  color: $chip-text-muted;
 }
 
-.separator {
-  margin: 0 sp(xs);
-  color: $widget-text-muted;
-  font-weight: 400;
+// The fuel footer's captions sit a step under the table's.
+.chip {
+  --chip-lead-size: #{wfs(9)};
 }
 
 .countdown {
-  color: $widget-text-secondary;
-  font-weight: 400;
+  --chip-value-text: #{$chip-accent};
 }
 
 // A placeholder is not a reading — it must not read as a live countdown.
 .countdownEmpty {
-  color: $widget-text-muted;
-  font-weight: 400;
+  --chip-value-text: #{$chip-text-muted};
 }

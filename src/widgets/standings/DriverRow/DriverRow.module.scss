@@ -1,4 +1,6 @@
 .driverRow {
+  --chip-line: #{$table-chip-line};
+
   display: grid;
   // Cells fill the row's height so a column's stripe runs edge to edge; each
   // cell centres its own content.
@@ -91,6 +93,10 @@
   & > * {
     padding-top: $space;
     padding-bottom: $space;
+    // At least a chip tall inside the padding (the cells are border-box), so
+    // every row is one height whichever chips it holds — the widget counts the
+    // rows it can fit from the first one.
+    min-height: calc(#{$chip-outer-height} + #{$space} * 2);
   }
 }
 
@@ -219,6 +225,7 @@
 
 // Driver name
 .driverName {
+  font-family: $font-widget;
   font-weight: 700;
   font-size: fs(xs);
   color: $widget-text-primary;
@@ -351,6 +358,17 @@
   color: $widget-text-primary;
 }
 
+// The lap just run is the driver's best: the time in the good color.
+.lastLapPersonalBest {
+  font-weight: 800;
+  color: $chip-positive;
+}
+
+// …and its best-lap chip framed in that color.
+.bestLapPersonalBest {
+  --chip-edge: #{rgba($chip-positive, 0.5)};
+}
+
 .bestLap {
   font-family: $font-mono;
   font-size: fs(xs);
@@ -392,4 +410,9 @@
 .cellDimmed {
   color: $widget-text-secondary;
   font-weight: 400;
+}
+
+// The make is a tag, not a reading: a step under the row's figures.
+.brandChip {
+  --chip-lead-size: #{fs(xxxs)};
 }

@@ -1,17 +1,26 @@
-﻿import React from 'react';
+import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel } from '@shared/lib/telemetry-format';
-
-import styles from './FuelProgress.module.scss';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
-import { useUnitsStore } from '@entities/app-settings/units-context';
+import type { FuelLapsStatus } from '../fuel-utils';
+import { useFuelLapsStatus } from '../use-fuel-status';
+
+import styles from './FuelProgress.module.scss';
+
+const FILL_STATUS_CLASSES: Record<FuelLapsStatus, string> = {
+  safe: '',
+  warning: styles.trackWarning,
+  danger: styles.trackDanger,
+};
+
+/** The quarters of the tank the track is ruled into. */
+const TANK_QUARTERS = 4;
 
 export const FuelProgress = observer(() => {
   const { carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
-  const { unitSystem } = useUnitsStore();
+  const lapsStatus = useFuelLapsStatus();
 
   const fuelLevel = carStatus?.fuel_level ?? null;
   const fuelMax = sessionInfo?.fuelCapacityLtr ?? null;
@@ -21,19 +30,24 @@ export const FuelProgress = observer(() => {
       ? Math.min(fuelLevel / fuelMax, 1)
       : null;
 
+  const statusClass =
+    lapsStatus !== null ? FILL_STATUS_CLASSES[lapsStatus] : '';
+
   return (
     <div className={styles.progressSection}>
-      <div className={styles.progressWrap}>
+      <div className={`${styles.track} ${statusClass}`}>
         {pct !== null && (
           <div
-            className={styles.progressBar}
-            style={{ '--progress': pct } as React.CSSProperties}
+            className={styles.fill}
+            style={{ '--progress': pct } as CSSProperties}
           />
         )}
 
-        <span className={styles.progressLabelMax}>
-          {fuelMax !== null ? `${formatFuel(fuelMax, unitSystem)} MAX` : ''}
-        </span>
+        <div className={styles.quarters}>
+          {[...Array(TANK_QUARTERS).keys()].map((quarterIndex) => (
+            <span className={styles.quarter} key={quarterIndex} />
+          ))}
+        </div>
       </div>
     </div>
   );

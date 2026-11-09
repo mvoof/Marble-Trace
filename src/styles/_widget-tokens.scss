@@ -187,6 +187,11 @@ $pit-readout-seam: 82%;
 // palette of its own: every lead is a dark ground of its color with the color
 // as text, so a row full of chips stays one tone darker than its values.
 $chip-bg: #111317;
+// A chip in a table row sits on a 14px line — 20px in all with its padding and
+// edges — a step tighter than the bars' 16px. A row holds at least that much,
+// so a row without a chip is no shorter.
+$table-chip-line: wfs(14);
+$chip-outer-height: calc(#{$table-chip-line} + #{sp(xxxs)} * 2 + 2px);
 // The darkest ground — the iRating beside its license.
 $chip-value-dark: #0e1013;
 $chip-border: #262932;
@@ -202,6 +207,8 @@ $chip-on-positive: #091f1a;
 $chip-danger-bg: #3b1a1e;
 $chip-danger: #ef4444;
 $chip-danger-border: #3b1d22;
+// A caption on a danger ground — the red lifted so it reads on its own tint.
+$chip-danger-soft: #fca5a5;
 $chip-special-bg: #2b174d;
 $chip-special: #c49bff;
 $chip-special-edge: #9c64fe;

@@ -7,6 +7,8 @@ import {
   type WithFontScale,
   ratingChipParts,
   ratingChipWidth,
+  MONO_ADVANCE_EM,
+  valueChipWidth,
 } from '@shared/ui/StatChip/rating';
 import { formatLapTime } from '@shared/lib/telemetry-format';
 import type { StandingsWidgetSettings } from './settings-schema';
@@ -223,15 +225,58 @@ const ratingColumn = (
   };
 };
 
+/**
+ * A column of text: `contentPx` is what its widest value takes at font scale 1,
+ * and the column grows with the font scale as the text does — else a scaled-up
+ * lap time is cut at the column's edge. The cell padding stays put.
+ */
+const textColumn = (
+  contentPx: number,
+  settings: WithFontScale<StandingsWidgetSettings>,
+  paddingPx = CELL_PAD_X_PX * 2
+): { px: number; css: string } => {
+  const width = { fixedPx: 0, textPx: contentPx };
+
+  return {
+    px: columnPx(width, paddingPx, fontScaleOf(settings)),
+    css: chipColumnCss(width, paddingPx),
+  };
+};
+
+// The widest lap time a cell writes, "10:32.400", and the row's text size it
+// is set in — fs(xs).
+const LAP_TIME_CHARS = 9;
+const ROW_FONT_PX = 12;
+
+// The best lap is a chip of the lap time, the last lap the time alone — each
+// column as wide as its own content, not one shared guess.
+const LAST_LAP_TEXT_PX = LAP_TIME_CHARS * MONO_ADVANCE_EM * ROW_FONT_PX;
+
+const bestLapColumn = (
+  settings: WithFontScale<StandingsWidgetSettings>
+): { px: number; css: string } => {
+  const width = valueChipWidth(LAP_TIME_CHARS);
+
+  return {
+    px: columnPx(width, CELL_PAD_X_PX * 2, fontScaleOf(settings)),
+    css: chipColumnCss(width, CELL_PAD_X_PX * 2),
+  };
+};
+
 const colSpecs = (
   settings: WithFontScale<StandingsWidgetSettings>
 ): ColSpec[] => [
-  { key: 'pos', block: 'driver', px: 28, show: true }, // "00" (fs md, bold)
-  { key: 'carNumber', block: 'driver', px: padded(40), show: true }, // class-colored badge
+  { key: 'pos', block: 'driver', ...textColumn(28, settings, 0), show: true }, // "00" (fs md, bold)
+  {
+    key: 'carNumber',
+    block: 'driver',
+    ...textColumn(40, settings),
+    show: true,
+  }, // class-colored badge
   {
     key: 'posChange',
     block: 'driver',
-    px: padded(38),
+    ...textColumn(38, settings),
     show: settings.showPosChange,
   }, // "▲12"
   {
@@ -258,41 +303,51 @@ const colSpecs = (
   {
     key: 'irChange',
     block: 'rating',
-    px: padded(42),
+    ...textColumn(42, settings),
     show: settings.showIrChange,
   }, // "+123"
   {
     key: 'laps',
     block: 'race',
-    px: padded(28),
+    ...textColumn(28, settings),
     show: settings.showLapsCompleted,
   }, // "00"
-  { key: 'gap', block: 'race', px: padded(50), show: settings.showGap }, // "+123.4" / "12 L" / "LDR"
+  {
+    key: 'gap',
+    block: 'race',
+    ...textColumn(50, settings),
+    show: settings.showGap,
+  }, // "+123.4" / "12 L" / "LDR"
   {
     key: 'interval',
     block: 'race',
-    px: padded(50),
+    ...textColumn(50, settings),
     show: settings.showInterval,
   }, // "123.4" / "12 L"
   {
     key: 'lastLap',
     block: 'times',
-    px: padded(82),
+    ...textColumn(LAST_LAP_TEXT_PX, settings),
     show: settings.showLastLap,
   }, // "1:32.400" (9 chars mono max)
   {
     key: 'lapDelta',
     block: 'times',
-    px: padded(50),
+    ...textColumn(50, settings),
     show: settings.showLapDelta,
   }, // "12.34"
   {
     key: 'bestLap',
     block: 'times',
-    px: padded(82),
+    ...bestLapColumn(settings),
     show: settings.showBestLap,
   }, // "1:32.400" (9 chars mono max)
-  { key: 'brand', block: 'car', px: padded(36), show: settings.showBrand }, // "MERC" — at end
+  {
+    key: 'brand',
+    block: 'car',
+    ...textColumn(36, settings),
+    show: settings.showBrand,
+  }, // "MERC" — at end
   { key: 'tire', block: 'car', px: padded(30), show: settings.showTire }, // badge — at end
 ];
 
@@ -383,6 +438,15 @@ export const resolveBestLapDisplay = (driver: CarIdentity): BestLapDisplay => {
 
   return { time: null, isQualifying: false };
 };
+
+/**
+ * The lap just completed is the driver's best of the session — the last-lap
+ * time and the best-lap chip both say so, as the mockup marks them in green.
+ */
+export const isPersonalBestLastLap = (driver: CarIdentity): boolean =>
+  driver.lastLapTime !== null &&
+  driver.bestLapTime !== null &&
+  driver.lastLapTime === driver.bestLapTime;
 
 export interface StandingsGapInfo {
   value: string;

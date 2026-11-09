@@ -12,10 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Twitch Chat Commands:** Viewers type `!pos`, `!gap`, `!lap`, `!best`, `!sof`, `!car`, `!info`, `!weather`, `!lastrace`, `!fuel` or `!commands` in your Twitch chat and Marble Trace replies there from your account with live session data. Off by default, with a switch per command and two limits against spam: a cooldown per command and a minimum time between any replies; `!fuel` and `!lastrace` start switched off. Needs one more Twitch sign-in to grant the permission to post in chat.
 - **Team Names in Standings:** In team events the team sits under the driver's name, in a smaller size. The name steps down a size so rows grow as little as possible, and a setting switches it off.
 - **Session Survives a Restart:** Restarting Marble Trace or the sim mid-session keeps the fuel history and average, the lap log, your best lap's sectors, the pit stop count and pit auto mode switched off. A new session starts clean as before. The lap you restart on is not measured.
+- **Standings — Interval and Delta Columns:** The interval is the gap to the car right above; the delta is the last lap against the one before it, green when faster and red when slower.
+- **Standings and Relative — Pit Time on the Badge:** A car on pit road shows how long it has been there, on its PIT badge; the pit-in badge reads IN, a car leaving reads OUT and one in the garage GAR. A towed player reads TOW, with the tow counting down.
+- **Standings — Personal Best:** When the lap just run is the driver's best of the session, the last lap turns green and the best-lap chip takes a green frame. The class best stays purple.
 
 ### Changed
 
 - **Delta:** A new look, with the reference switch in its own block left of the plate.
+- **Standings and Relative:** A new look, with every reading in one chip style: the safety rating and iRating in one chip, the pit and tow badges, the leader, laps down, the best lap and the car make. The header carries the session type, the field, the SOF, the laps and the clock around the track name; the footer the track conditions, your pit stops, incidents — red near the limit — and penalties. Rows are one height whatever chips they hold, and the tables shade the widget background again, so its colour and transparency reach them. Saved tables are widened once so their text keeps its size.
+- **Standings — Columns Follow the Font Size:** Every text column grows with the widget's font size, so a larger font widens the table instead of cutting lap times and the best-lap chip at the column edge. The last and best lap columns are each as wide as their own longest time.
+- **Relative — One Row at a Time:** Making the widget taller adds rows one by one, not in pairs; with an even number of rows the extra one goes to the cars ahead.
+- **Fuel:** A new look in the tables' chip style: a FUEL / FUEL LOW header over a quartered tank bar, LAPS LEFT in a box coloured by urgency, the laps each consumption lasts under LAST / MIN / MAX, NEXT PIT and PIT WINDOW as chips, and the widget framed in red in the last laps of a stint. With the averaging window on every lap, the AVG ALL column is hidden, as it repeated the summary. A plan of several stops reads as one chip — the stops and the total — under the +1 LAP BUFFER. The widget is drawn wider, as in the design; placed Fuel widgets are widened once so their text keeps its size.
+- **Widget Fonts:** Widgets are set in Inter, with figures in JetBrains Mono, in place of Rajdhani and Consolas.
 
 ### Removed
 
@@ -25,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Pit Service — Projected Position:** The `P5 → P8` estimate now counts the time the pit lane itself costs, measured from the stops the field makes, on top of the standing still, and shows on the way to the pits, not only in the box. A car a lap down right behind you no longer counts as a place lost, a car more than half a lap back still does, and the estimate no longer needs the Relative widget on screen to work.
 - **TCR Badge:** A TCR class with the Audi RS3 LMS Gen2 in it is badged TCR, not by the series name the sim gives it.
+- **Incident Count:** The Incident Tracker takes the count as the sim gives it. Started mid-session, it no longer counts from zero while the standings footer reads the right number, and a momentary drop of the session number no longer starts a new session.
+- **Incident Warning:** The warning comes five incidents short of the session's own limit or the next penalty, and stays quiet when the session has no limit; before, it fired at a fixed 15 or two short of the limit.
 
 ## [0.28.0] — 2026-11-03
 

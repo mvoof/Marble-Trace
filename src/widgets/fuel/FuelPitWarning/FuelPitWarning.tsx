@@ -10,11 +10,11 @@ import { useBackendComputedStore } from '@entities/cars/computed-context';
 import type { FuelWidgetSettings } from '../settings-schema';
 
 /**
- * The header row, the separator, the fill's amount cell and its footer, plus
- * `sp(sm)` of padding at each end — what `.pitWarning` and its two children
- * measure at design scale.
+ * The header row of chips and its rule, then the fill with a multi-stop
+ * plan's stops chip under the buffer beside it — the tallest the block gets — plus
+ * `sp(sm)` of padding at each end, at design scale.
  */
-const PIT_WARNING_HEIGHT_PX = 120;
+const PIT_WARNING_HEIGHT_PX = 103;
 
 export const FuelPitWarning = observer(() => {
   const { fuel } = useBackendComputedStore();

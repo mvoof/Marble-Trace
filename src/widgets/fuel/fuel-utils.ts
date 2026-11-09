@@ -2,6 +2,8 @@ import type {
   FuelHistoryStats,
   FuelLapRecord,
 } from '@shared/contracts/generated/bindings';
+import type { UnitSystem } from '@shared/contracts/domain';
+import type { StatChipTone } from '@shared/ui/StatChip/StatChip';
 import { FUEL_AVG_WINDOW_ALL_LAPS, FUEL_THRESHOLDS } from './fuel-constants';
 import type { FuelWidgetSettings } from './settings-schema';
 
@@ -54,10 +56,28 @@ const FUEL_STAT_SETTING_KEYS: Record<FuelStatKey, keyof FuelWidgetSettings> = {
   max: 'showStatMax',
 };
 
+/**
+ * With the averaging window on every lap, the summary's average is the very
+ * figure the AVG ALL column holds — the column steps aside rather than repeat it.
+ */
+const repeatsSummaryAverage = (
+  key: FuelStatKey,
+  settings: FuelWidgetSettings
+): boolean =>
+  key === 'avg' && settings.fuelAvgWindow === FUEL_AVG_WINDOW_ALL_LAPS;
+
 export const getVisibleFuelStatKeys = (
   settings: FuelWidgetSettings
 ): FuelStatKey[] =>
-  FUEL_STAT_ORDER.filter((key) => settings[FUEL_STAT_SETTING_KEYS[key]]);
+  FUEL_STAT_ORDER.filter(
+    (key) =>
+      settings[FUEL_STAT_SETTING_KEYS[key]] &&
+      !repeatsSummaryAverage(key, settings)
+  );
+
+/** The fuel unit as the widget writes it after a figure. */
+export const fuelUnitShort = (unitSystem: UnitSystem): string =>
+  unitSystem === 'metric' ? 'L' : 'gal';
 
 /** Laps the current tank covers at a given per-lap consumption. */
 export const computeLapsToEmpty = (
@@ -175,4 +195,11 @@ export const formatCountdown = (seconds: number): string => {
   }
 
   return `${minutes}:${String(secs).padStart(2, '0')}`;
+};
+
+/** The chip tone each urgency reads in, wherever the widget colors by it. */
+export const FUEL_STATUS_TONE: Record<FuelLapsStatus, StatChipTone> = {
+  safe: 'positive',
+  warning: 'accent',
+  danger: 'danger',
 };

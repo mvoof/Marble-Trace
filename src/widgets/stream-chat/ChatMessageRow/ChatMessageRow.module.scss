@@ -117,8 +117,8 @@
 .body {
   display: block;
   color: $widget-text-primary;
-  // Rajdhani has no Cyrillic; message text falls back to the app UI face so
-  // Russian chat does not land in an arbitrary system font.
+  // Chat is written in any script; the app UI face carries Chinese as well,
+  // so a message never lands in an arbitrary system font.
   font-family: $font-app;
   font-size: fs(sm);
   font-weight: 400;
@@ -158,7 +158,7 @@
 //
 // The meta group drops to plain inline flow rather than inline-flex. An
 // inline-flex box with centred items exposes a synthesized baseline taken from
-// its bottom edge, so the nick (Rajdhani 15px) and the message (Exo 2 13px)
+// its bottom edge, so the nick (widget face 15px) and the message (Exo 2 13px)
 // ended up sitting on different baselines. Pure inline flow makes both share
 // the line box's baseline, which is what "one line" actually means.
 .rowCompact {

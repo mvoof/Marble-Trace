@@ -1,6 +1,6 @@
-// Cells carry their own right border instead of a gap — a 1px gap lets the
-// panel show through as a light seam, which reads brighter than the values.
+// The detail row under the summary: a shade lighter, hairlines between cells.
 .statsRow {
   display: grid;
-  border-bottom: 1px solid $widget-border-subtle;
+  background: $table-bar-bg;
+  border-bottom: 1px solid $chip-neutral-border;
 }

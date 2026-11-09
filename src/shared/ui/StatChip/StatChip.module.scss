@@ -1,7 +1,8 @@
 // One chip for every bar and row of the timing tables. Each tone names its
 // lead's ground and text, its fill, and its edge; the chip reads them through
 // variables, so a caller's own class — a license, a pit state — can set them
-// too, whatever order the stylesheets load in.
+// too, whatever order the stylesheets load in. The plain frame reads
+// `--chip-border`, for a chip on a ground of its own color.
 $lead-bg: var(--chip-lead-bg, #{$chip-neutral-bg});
 $lead-text: var(--chip-lead-text, #{$chip-neutral-text});
 $solid-bg: var(--chip-solid-bg, #{$chip-neutral-text});
@@ -14,16 +15,27 @@ $edge: var(--chip-edge, #{$chip-border});
   flex-shrink: 0;
   min-width: 0;
   overflow: hidden;
-  border: 1px solid $chip-border;
+  border: 1px solid var(--chip-border, #{$chip-border});
   border-radius: radius(sm);
   background: $chip-bg;
-  line-height: 1.25;
+  // One line box for every face and size — the table's 16px — so a chip is
+  // one height whatever it holds.
+  line-height: var(--chip-line, #{wfs(16)});
   white-space: nowrap;
+  // Set inline — in a cell's <span> — the chip would sit on the text's
+  // baseline and leave room for descenders under it, making a row with a chip
+  // taller than one without.
+  vertical-align: middle;
 }
 
 // Only a chip whose state asks for a look takes its color on the edge.
 .chipEmphasized {
   border-color: $edge;
+}
+
+// A state filled in its color — the session, FUEL — is the fill alone, no frame.
+.chipSolid {
+  border-width: 0;
 }
 
 // A lead alone — LEADER, laps down, a best lap — is the whole chip, framed in
@@ -39,10 +51,16 @@ $edge: var(--chip-edge, #{$chip-border});
   display: inline-flex;
   align-items: center;
   gap: sp(xxs);
-  min-height: calc(#{fs(xxs)} * 1.25 + #{sp(xxxs)} * 2);
-  padding: sp(xxxs) sp(xs);
+  min-height: calc(var(--chip-line, #{wfs(16)}) + #{sp(xxxs)} * 2);
+  padding: var(--chip-lead-padding, #{sp(xxxs) sp(xs)});
   background: $lead-bg;
   color: $lead-text;
+}
+
+// A chip written outside React is its lead in one box, its edge inside that
+// box's height — counted back in so it is one height with the others.
+.chipSingle.lead {
+  min-height: calc(var(--chip-line, #{wfs(16)}) + #{sp(xxxs)} * 2 + 2px);
 }
 
 // A word set in the widget face sits high in its line box — the face's ascent
@@ -52,9 +70,11 @@ $edge: var(--chip-edge, #{$chip-border});
 }
 
 // A word: the label of a reading, a status.
+// A caller whose layout sets its own type steps the lead through
+// `--chip-lead-size` — a caption under a widget's own scale.
 .leadLabel {
   font-family: $font-widget;
-  font-size: fs(xxxs);
+  font-size: var(--chip-lead-size, #{fs(xxxs)});
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -63,7 +83,7 @@ $edge: var(--chip-edge, #{$chip-border});
 // A number: a safety rating, a lap time, laps down.
 .leadNumber {
   font-family: $font-mono;
-  font-size: fs(xxs);
+  font-size: var(--chip-lead-size, #{fs(xxs)});
   font-weight: 700;
 }
 
@@ -95,10 +115,6 @@ $edge: var(--chip-edge, #{$chip-border});
 
 // A step up for the bar over the table.
 .chipMd {
-  .lead {
-    min-height: calc(#{fs(xs)} * 1.25 + #{sp(xxxs)} * 2);
-  }
-
   .leadLabel {
     font-size: fs(xxs);
   }
@@ -106,6 +122,27 @@ $edge: var(--chip-edge, #{$chip-border});
   .leadNumber,
   .value {
     font-size: fs(xs);
+  }
+}
+
+// A note under a figure: quieter and tighter than any reading.
+.chipXs {
+  border-radius: 2px;
+
+  .lead {
+    min-height: 0;
+    padding: 0 sp(xxs);
+  }
+
+  .leadLabel,
+  .leadNumber,
+  .value {
+    font-size: wfs(9);
+  }
+
+  .value {
+    padding: 0 sp(xxs);
+    font-weight: 400;
   }
 }
 

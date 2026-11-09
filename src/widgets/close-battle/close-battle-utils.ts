@@ -539,11 +539,11 @@ export const glowIntensity = (clearance: number, glowRange: number): number => {
  * information on it.
  *
  * The numbers mirror the `ch` template in `BattleRow.module.scss` at the row's
- * own `wfs(16)` — one `ch` of Rajdhani is half its em — plus the margins each
+ * own `wfs(16)` — one `ch` of bold Inter is about 0.68 em — plus the margins each
  * column carries. They do not have to be exact: the name column is the only
  * flexible one, so any drift lands there rather than on a number.
  */
-const CH_PX = 8;
+const CH_PX = 11;
 
 /** Number tab: 5ch of digits inside sp(md) padding on both sides. */
 const NUMBER_COL_PX = 5 * CH_PX + 20;

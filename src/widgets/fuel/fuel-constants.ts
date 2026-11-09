@@ -1,32 +1,34 @@
 import { PIT_WINDOW_END_BUFFER_LAPS } from '@shared/contracts/generated/backend-constants';
 
 /**
- * Shared constants and thresholds for the FuelWidget.
+ * Shared constants and thresholds for the FuelWidget. The canvas colors are
+ * the stat-chip palette (`$chip-*` in `_widget-tokens.scss`), so the chart
+ * reads in the same tones as the rows above it.
  */
 
 export const FUEL_COLORS = {
   /** Safe fuel level (enough for the session + buffer) */
-  safe: '#22c55e',
+  safe: '#19b394',
   /** Warning level (within buffer zone) */
-  warning: '#f59e0b',
+  warning: '#e5b822',
   /** Danger level (short of fuel) */
   danger: '#ef4444',
   /** Neutral/Secondary color (blue) */
   primary: '#3399ff',
   /** Average line color (amber) */
-  average: 'rgba(251,191,36,0.9)',
+  average: 'rgba(229,184,34,0.8)',
   /** Average label color (amber muted) */
-  averageLabel: 'rgba(251,191,36,0.8)',
+  averageLabel: '#e5b822',
   /** Grid and guide lines */
   grid: 'rgba(255,255,255,0.07)',
   /** Text and labels muted */
-  textMuted: 'rgba(255,255,255,0.55)',
+  textMuted: '#7e828a',
   /**
    * A lap that happened but does not count — an out-lap, a caution lap, a lap
    * with a trip through the grass. Grey keeps it in the history without letting
    * it read as a consumption the average should have followed.
    */
-  rejected: 'rgba(255,255,255,0.28)',
+  rejected: '#52565e',
 } as const;
 
 export const FUEL_CHART_CONFIG = {

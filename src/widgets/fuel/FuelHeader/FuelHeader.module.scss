@@ -1,23 +1,55 @@
+// The table's bar: the same ground, rule and padding as the standings header.
 .header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: sp(sm) sp(md) sp(xxs);
-  align-items: baseline;
+  gap: sp(sm);
+  padding: sp(xs) sp(md);
+  background: $table-bar-bg;
+  border-bottom: 1px solid $table-bar-border;
 }
 
-.headerLabel {
-  letter-spacing: 1.5px;
+.title {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  min-width: 0;
 }
 
-.headerAmount {
+.unitWord {
   font-family: $font-mono;
-  font-size: fs(lg);
+  font-size: fs(xxxs);
   font-weight: 700;
+  letter-spacing: 0.05em;
+  color: $chip-text-muted;
+}
+
+.level {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+  font-family: $font-mono;
+  white-space: nowrap;
+}
+
+.levelValue {
+  font-size: wfs(16);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: $widget-text-primary;
 }
 
-.headerUnit {
+// The capacity, a step down and quieter, so the level leads.
+.levelMax {
+  margin-left: calc(-1 * #{sp(xxs)});
   font-size: fs(xs);
-  color: $widget-text-primary;
-  margin-left: sp(xs);
+  font-weight: 600;
+  color: $chip-text-muted;
+}
+
+.levelUnit {
+  font-size: fs(xxxs);
+  font-weight: 700;
+  color: $chip-text-muted;
 }
