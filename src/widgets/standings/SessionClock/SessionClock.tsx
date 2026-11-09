@@ -75,7 +75,7 @@ export const SessionClock = observer(() => {
 
   if (isEnded) {
     return (
-      <StatChip lead="TIME" leadVariant="solid" tone="muted">
+      <StatChip lead="TIME" leadVariant="solid" tone="muted" emphasized>
         END
       </StatChip>
     );

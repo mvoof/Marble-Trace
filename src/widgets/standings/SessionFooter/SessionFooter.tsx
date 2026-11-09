@@ -75,19 +75,19 @@ export const SessionFooter = observer(() => {
     <div className={styles.sessionFooter}>
       <div className={styles.footerGroup}>
         {showWeather && airCelsius !== null && (
-          <StatChip tone="accent" lead="AIR" leadVariant="solid">
+          <StatChip tone="accent" lead="AIR" leadVariant="solid" emphasized>
             {`${formatTemp(airCelsius, unitSystem)}${tUnit}`}
           </StatChip>
         )}
 
         {showWeather && trkCelsius !== null && (
-          <StatChip tone="info" lead="TRACK" leadVariant="solid">
+          <StatChip tone="info" lead="TRACK" leadVariant="solid" emphasized>
             {`${formatTemp(trkCelsius, unitSystem)}${tUnit}`}
           </StatChip>
         )}
 
         {showWeather && wetnessInfo && (
-          <StatChip tone="accent" lead="SURFACE" leadVariant="solid">
+          <StatChip tone="accent" lead="SURFACE" leadVariant="solid" emphasized>
             {wetnessInfo.label}
           </StatChip>
         )}
@@ -95,7 +95,7 @@ export const SessionFooter = observer(() => {
 
       <div className={styles.footerGroup}>
         {showPitStops && (
-          <StatChip lead="PIT" leadVariant="solid" tone="accent">
+          <StatChip lead="PIT" leadVariant="solid" tone="accent" emphasized>
             {playerPitStops}
           </StatChip>
         )}
@@ -107,7 +107,7 @@ export const SessionFooter = observer(() => {
             lead="INC"
             limit={incidentLimit ?? undefined}
             valueDanger={isNearLimit}
-            emphasized={isNearLimit}
+            emphasized
           >
             {incidentLimit === null ? `${playerIncidents}x` : playerIncidents}
           </StatChip>
@@ -119,14 +119,14 @@ export const SessionFooter = observer(() => {
             tone={isNearPenalty ? 'danger' : 'accent'}
             lead="TO PEN"
             valueDanger={isNearPenalty}
-            emphasized={isNearPenalty}
+            emphasized
           >
             {incidentsToPenalty}
           </StatChip>
         )}
 
         {showIncidents && penaltyStatus && (
-          <StatChip lead="PEN" leadVariant="solid" tone="accent">
+          <StatChip lead="PEN" leadVariant="solid" tone="accent" emphasized>
             {penaltyStatus.served}
           </StatChip>
         )}
