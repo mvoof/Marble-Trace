@@ -650,4 +650,56 @@ describe('PitServiceWidgetStore — pit orders', () => {
       vi.useRealTimers();
     });
   });
+
+  describe('when the repair runs out in the stall', () => {
+    const setStall = (options: {
+      inPitStall: boolean;
+      repairLeftS?: number;
+      optRepairLeftS?: number;
+    }) => {
+      runInAction(() => {
+        rootStore.player.pitService = {
+          inPitStall: options.inPitStall,
+          serviceActive: options.inPitStall,
+          flags: 0,
+          towTimeS: 0,
+          repairLeftS: options.repairLeftS ?? 0,
+          optRepairLeftS: options.optRepairLeftS ?? 0,
+        } as never;
+      });
+    };
+
+    beforeEach(() => {
+      rootStore.pitServiceWidget.init();
+    });
+
+    it('says the repair is done once both countdowns reach zero', () => {
+      setStall({ inPitStall: true, repairLeftS: 12, optRepairLeftS: 4 });
+
+      expect(rootStore.pitServiceWidget.panel.isRepairDone).toBe(false);
+
+      setStall({ inPitStall: true, optRepairLeftS: 1 });
+
+      expect(rootStore.pitServiceWidget.panel.isRepairDone).toBe(false);
+
+      setStall({ inPitStall: true });
+
+      expect(rootStore.pitServiceWidget.panel.isRepairDone).toBe(true);
+    });
+
+    it('says nothing on a stop without a repair', () => {
+      setStall({ inPitStall: true });
+
+      expect(rootStore.pitServiceWidget.panel.isRepairDone).toBe(false);
+    });
+
+    it('forgets the repair once the car leaves the stall', () => {
+      setStall({ inPitStall: true, repairLeftS: 5 });
+      setStall({ inPitStall: true });
+      setStall({ inPitStall: false });
+      setStall({ inPitStall: true });
+
+      expect(rootStore.pitServiceWidget.panel.isRepairDone).toBe(false);
+    });
+  });
 });

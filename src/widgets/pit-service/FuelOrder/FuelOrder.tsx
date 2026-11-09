@@ -156,7 +156,10 @@ export const FuelOrder = observer(() => {
 
       {calculated !== null && (
         <span className={styles.calc}>
-          CALC {wholeUnits(calculated, units.unitSystem)}
+          CALC{' '}
+          <span className={styles.calcValue}>
+            {wholeUnits(calculated, units.unitSystem)}
+          </span>
         </span>
       )}
 

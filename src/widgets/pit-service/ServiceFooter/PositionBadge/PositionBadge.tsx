@@ -5,9 +5,13 @@ import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
 import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-context';
 
+import { StatChip } from '@shared/ui/StatChip/StatChip';
 import styles from './PositionBadge.module.scss';
 
 interface PositionBadgeProps {
+  /** Stops made this session, the chip's lead as `#n` — the footer has no room for the word. */
+  stops: number;
+  className?: string;
   useLivePositions: boolean;
   classPositionInMulticlass: boolean;
   showProjectedPosition: boolean;
@@ -21,6 +25,8 @@ interface PositionBadgeProps {
  */
 export const PositionBadge = observer(
   ({
+    stops,
+    className,
     useLivePositions,
     classPositionInMulticlass,
     showProjectedPosition,
@@ -59,17 +65,31 @@ export const PositionBadge = observer(
           ? position + lost
           : Math.min(position + lost, total);
 
+    const stopLabel = `#${stops}`;
+
     if (position === null) {
-      return null;
+      return (
+        <StatChip
+          lead={stopLabel}
+          leadKind="number"
+          tone="muted"
+          className={className}
+        />
+      );
     }
 
     return (
-      <span className={styles.position}>
+      <StatChip
+        lead={stopLabel}
+        leadKind="number"
+        tone="muted"
+        className={className}
+      >
         P{position}
         {projected !== null && projected > position && (
-          <span className={styles.projected}> → P{projected}</span>
+          <span className={styles.projected}>→{projected}</span>
         )}
-      </span>
+      </StatChip>
     );
   }
 );

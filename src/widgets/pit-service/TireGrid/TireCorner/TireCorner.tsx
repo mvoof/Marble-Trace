@@ -25,7 +25,7 @@ const PUNCTURE_BLINK: BlinkCycle = { stepMs: 600, steps: 2 };
 const MIN_FILL_PCT = 5;
 // Heavier and larger than an inline icon: it is read at a glance over a busy
 // tread, not next to a label.
-const CHECK_SIZE = 30;
+const CHECK_SIZE = 22;
 const CHECK_STROKE = 3.2;
 
 interface TireCornerProps {

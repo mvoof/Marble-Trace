@@ -54,6 +54,9 @@ export class PitPanelState {
    */
   stoodInStall = false;
 
+  /** A repair countdown has run during the current stop in the stall. */
+  repairSeenThisStop = false;
+
   private revealTimer: ReturnType<typeof setTimeout> | null = null;
   private lastOnPitRoad = false;
   /** Where the local stop clock was last set from a frame: seconds, and when. */
@@ -252,7 +255,27 @@ export class PitPanelState {
   handleStallChange(inPitStall: boolean) {
     if (inPitStall) {
       this.stoodInStall = true;
+      this.repairSeenThisStop = false;
     }
+  }
+
+  /** Called when a repair countdown starts running with the car in its stall. */
+  handleRepairRunning() {
+    this.repairSeenThisStop = true;
+  }
+
+  /**
+   * The repair this stop needed has run out while the car still stands in its
+   * stall — the moment the driver may go. A stop with no repair never says so.
+   */
+  get isRepairDone(): boolean {
+    const service = this.store.root.player.pitService;
+    const repairLeftS =
+      (service?.repairLeftS ?? 0) + (service?.optRepairLeftS ?? 0);
+
+    return (
+      this.repairSeenThisStop && this.store.isInPitStall && repairLeftS <= 0
+    );
   }
 
   private setStopElapsed(seconds: number) {
@@ -284,6 +307,7 @@ export class PitPanelState {
     this.lingering = false;
     this.lastOnPitRoad = false;
     this.stoodInStall = false;
+    this.repairSeenThisStop = false;
     this.clockAnchor = null;
     this.stopElapsedS = 0;
   }

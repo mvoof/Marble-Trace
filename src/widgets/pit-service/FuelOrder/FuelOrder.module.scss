@@ -10,13 +10,11 @@
   height: ws(16);
   padding: 0 sp(xs);
   margin: 0;
-  // `appearance: none` leaves the UA's 2px outset button border in place, which
-  // reads as a heavy frame the moment interact mode turns the row into a button.
-  border: none;
+  // The chips' hairline frame, in place of the UA's 2px outset button border.
+  border: 1px solid $chip-border;
   border-radius: radius(sm);
-  // Transparent so the panel's own dark background stays the track; only the
-  // fill adds color.
-  background: transparent;
+  // The tank's track: the chips' darkest ground, so only the fill adds color.
+  background: $chip-value-dark;
   font: inherit;
   color: inherit;
   text-align: left;
@@ -30,13 +28,9 @@
 
 .fuelClickable {
   cursor: ew-resize;
-  // A hairline in the same weight as the tire corners, so the clickable rows of
-  // the panel look like one family rather than a button dropped into a readout.
-  outline: 1px solid $widget-border-subtle;
-  outline-offset: -1px;
 
   &:hover {
-    outline-color: $widget-border-default;
+    border-color: $widget-border-default;
   }
 
   // The UA focus ring is a two-tone 2px halo — far too loud for a row this
@@ -53,7 +47,7 @@
   top: 0;
   bottom: 0;
   left: 0;
-  background: rgba($race-blue, 0.45);
+  background: rgba($chip-info, 0.45);
 }
 
 // The order, stacked on top of the tank rather than measured from the left
@@ -63,7 +57,8 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  background: rgba($race-green, 0.45);
+  border-left: 1px solid rgba($chip-positive, 0.6);
+  background: rgba($chip-positive, 0.5);
 }
 
 .icon {
@@ -72,10 +67,16 @@
 }
 
 .calc {
-  font-family: $font-mono;
   font-size: fs(xxxs);
-  color: $widget-label;
-  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: $chip-neutral-text;
+  font-weight: 800;
+}
+
+.calcValue {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
 }
 
@@ -121,7 +122,7 @@
 }
 
 .added {
-  color: $race-green;
+  color: $chip-positive;
 }
 
 // The tank is at the brim: nothing more can be ordered, and the row says so

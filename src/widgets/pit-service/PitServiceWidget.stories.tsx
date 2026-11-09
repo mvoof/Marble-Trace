@@ -26,6 +26,8 @@ interface StoryArgs {
   fuelCalculated?: number;
   repairLeftS?: number;
   optRepairLeftS?: number;
+  /** A repair ran this stop and has run out. */
+  repairDone?: boolean;
   changeFronts?: boolean;
   changeRears?: boolean;
   inPitStall?: boolean;
@@ -76,6 +78,10 @@ const meta: Meta<StoryArgs> = {
         store.player.updatePitService(
           mockPitService({ ...store.player.pitService, ...service })
         );
+      }
+
+      if (args.repairDone === true) {
+        store.pitServiceWidget.panel.handleRepairRunning();
       }
 
       if (args.distToBoxM !== undefined) {
@@ -129,6 +135,12 @@ export const RepairsUnderWay: Story = {
 
 // A fill the driver typed in rather than the one the calculation asked for, so
 // the two numbers disagree on screen.
+// The repair the stop needed has run out and the car may leave.
+export const RepairDone: Story = {
+  parameters: previewScenario('pit-service'),
+  args: { repairDone: true },
+};
+
 export const ManualFuelOrder: Story = {
   parameters: previewScenario('pit-service'),
   args: { fuelOrdered: 40, fuelCalculated: 34.2 },
