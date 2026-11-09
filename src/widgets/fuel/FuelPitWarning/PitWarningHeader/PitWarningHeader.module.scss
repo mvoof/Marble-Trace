@@ -1,42 +1,23 @@
 .pitWarningHeader {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: baseline;
+  gap: sp(xs);
+  margin-bottom: sp(xs);
+  padding-bottom: sp(xs);
+  border-bottom: 1px solid $chip-danger-border;
 }
 
-.pitWarningHeaderLabel {
-  font-family: $font-mono;
-  font-size: fs(xxs);
-  color: $widget-status-warning;
-  letter-spacing: 0.1em;
-  font-weight: 400;
+// The range on the block's red ground: its lead a shade of it, not grey.
+.lapChip {
+  --chip-lead-bg: #{rgba($chip-danger, 0.1)};
+  --chip-lead-text: #{$table-dim-text};
+
+  --chip-border: #{$chip-danger-border};
 }
 
-.pitWarningWindow {
-  font-family: $font-mono;
-  font-size: fs(xs);
+// The window's closing lap supports the opening lap rather than competing.
+.lapRangeEnd {
   font-weight: 600;
-  color: $widget-text-primary;
-}
-
-// Closing lap supports the opening lap rather than competing with it.
-.pitWarningWindowEnd {
-  color: $widget-text-secondary;
-  font-weight: 400;
-}
-
-// Replaces the lap range once there is no lap left to name, so it has to read
-// louder than the range it stands in for.
-.pitWarningNow {
-  font-family: $font-mono;
-  font-size: fs(sm);
-  font-weight: 700;
-  color: $widget-status-danger;
-  letter-spacing: 0.06em;
-}
-
-.pitWarningSeparator {
-  height: 1px;
-  background: rgba(255, 255, 255, $opacity-faint);
-  margin: sp(xs) 0 sp(sm);
+  color: $chip-text-muted;
 }

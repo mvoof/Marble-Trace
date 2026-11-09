@@ -1,102 +1,122 @@
-// Columns mirror an even stat grid below, so the headline cell lines up with
-// the two middle stat cells instead of straddling their edges.
-//
-// Two shared rows — values, then labels — so the three cells read along the
-// same horizontals even though the headline is twice the size of its
-// neighbours. The surface sits on the row itself: one plate, not three.
+// 3 · 5 · 3 of eleven: the headline cell takes the middle, its two neighbours
+// the same width each, hairlines between them.
 .grid {
+  --laps-text: #{$chip-neutral-text};
+  --laps-ground: #{$chip-neutral-bg};
+  --laps-edge: #{$chip-neutral-border};
+  --laps-label: #{$table-dim-text};
+  --laps-cell: #{$table-bar-bg};
+
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  grid-template-rows: auto auto;
-  row-gap: sp(xxs);
-  margin: 0;
-  padding: sp(xs) 0 sp(sm);
-  background: $widget-surface-cell;
-  border-top: 1px solid $widget-border-subtle;
-  border-bottom: 1px solid $widget-border-subtle;
+  grid-template-columns: 3fr 5fr 3fr;
+  background: $table-row-bg;
+  border-bottom: 1px solid $chip-neutral-border;
 }
 
-.sideLeft,
-.main,
-.sideRight {
-  position: relative;
-  display: grid;
-  grid-row: span 2;
-  grid-template-rows: subgrid;
-  justify-items: start;
-  padding: 0 sp(sm);
+.lapsSafe {
+  --laps-text: #{$chip-positive};
+  --laps-ground: #{$chip-positive-bg};
+  --laps-edge: #{rgba($chip-positive, 0.4)};
 }
 
-.sideLeft::after,
-.main::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 1px;
-  background: $widget-border-subtle;
+.lapsWarning {
+  --laps-text: #{$chip-accent};
+  --laps-ground: #{$chip-accent-bg};
+  --laps-edge: #{rgba($chip-accent, 0.4)};
 }
 
-.sideRight {
-  justify-items: end;
+.lapsDanger {
+  --laps-text: #{$chip-danger};
+  --laps-ground: #{$chip-danger-bg};
+  --laps-edge: #{rgba($chip-danger, 0.6)};
+  --laps-label: #{$chip-danger-soft};
+  --laps-cell: #{rgba($chip-danger, 0.05)};
+}
+
+.side,
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: sp(sm);
+}
+
+.side + .main,
+.main + .side {
+  border-left: 1px solid $table-rule;
 }
 
 .main {
-  justify-items: center;
-  padding: 0;
-}
-
-// Values share a baseline; labels share the row below it.
-.sideValue,
-.mainValue {
-  align-self: last baseline;
-  font-family: $font-mono;
-  color: $widget-text-primary;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.sideValue {
-  font-size: fs(md);
-  font-weight: 700;
-  line-height: 1;
-}
-
-.mainValue {
-  font-size: fs(xxl);
-  font-weight: 800;
-  line-height: 0.9;
+  background: var(--laps-cell);
 }
 
 .sideLabel,
 .mainLabel {
-  align-self: start;
+  margin-bottom: ws(2);
+  font-family: $font-widget;
   font-size: wfs(9);
-  color: $widget-text-primary;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .sideLabel {
-  letter-spacing: 0.09em;
+  font-weight: 600;
+  color: $chip-text-muted;
 }
 
 .mainLabel {
-  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--laps-label);
+}
+
+.sideValue {
+  font-family: $font-mono;
+  font-size: wfs(14);
+  font-weight: 800;
+  line-height: 1.25;
+  color: $widget-text-primary;
 }
 
 .sideValueSafe {
-  color: $widget-status-positive;
+  color: $chip-positive;
 }
 
-.valueSafe {
-  color: $widget-status-positive;
+.sideValueDanger {
+  color: $chip-danger;
 }
 
-.valueDanger {
-  color: $widget-status-danger;
+.sideUnit,
+.sideUnitDim {
+  font-family: $font-mono;
+  font-size: wfs(9);
+  white-space: nowrap;
 }
 
-.valueWarning {
-  color: $widget-status-warning;
+.sideUnit {
+  color: $table-empty-text;
+}
+
+.sideUnitDim {
+  color: $chip-text-muted;
+}
+
+.lapsBox {
+  display: inline-flex;
+  align-items: center;
+  padding: ws(2) sp(md);
+  border: 1px solid var(--laps-edge);
+  border-radius: radius(sm);
+  background: var(--laps-ground);
+}
+
+.lapsValue {
+  font-family: $font-mono;
+  font-size: fs(xl);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--laps-text);
 }

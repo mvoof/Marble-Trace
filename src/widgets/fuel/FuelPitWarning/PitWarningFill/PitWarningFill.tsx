@@ -1,11 +1,14 @@
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel } from '@shared/lib/telemetry-format';
-import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
-import { WidgetValue } from '@shared/ui/WidgetValue/WidgetValue';
-import { NO_FUEL_DATA_PLACEHOLDER } from '@shared/lib/telemetry-format';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
+import { StatChip } from '@shared/ui/StatChip/StatChip';
+import {
+  formatFuel,
+  NO_FUEL_DATA_PLACEHOLDER,
+} from '@shared/lib/telemetry-format';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
+import { fuelUnitShort } from '../../fuel-utils';
 import styles from './PitWarningFill.module.scss';
 
 export const PitWarningFill = observer(() => {
@@ -22,38 +25,42 @@ export const PitWarningFill = observer(() => {
 
   return (
     <div className={styles.fill}>
-      <div className={styles.mainRow}>
-        <div className={styles.amountCell}>
-          <WidgetValue
-            className={styles.amount}
-            unitClassName={styles.amountUnit}
-            value={
+      <div className={styles.amountCell}>
+        <span className={styles.amountLabel}>FILL NOW</span>
+
+        <span className={styles.amount}>
+          <FixedDigits
+            className={styles.amountValue}
+            text={
               plan !== null
                 ? formatFuel(plan.fillNow, unitSystem)
                 : NO_FUEL_DATA_PLACEHOLDER
             }
           />
 
-          <WidgetLabel className={styles.amountLabel}>FILL NOW</WidgetLabel>
-        </div>
-
-        {isMultiStop && (
-          <span className={styles.stops}>
-            <span className={styles.stopsCount}>{plan.stops}</span> STOPS
-          </span>
-        )}
+          <span className={styles.amountUnit}>{fuelUnitShort(unitSystem)}</span>
+        </span>
       </div>
 
-      <div className={styles.footer}>
-        {isMultiStop && fuelToAdd !== null && (
-          <>
-            <span>TOTAL {formatFuel(fuelToAdd, unitSystem)}</span>
-
-            <span className={styles.footerDot}>·</span>
-          </>
+      <div className={styles.chips}>
+        {isMultiStop && (
+          <StatChip lead="STOPS" tone="neutral">
+            {plan.stops}
+          </StatChip>
         )}
 
-        <span>+1 LAP BUFFER</span>
+        {isMultiStop && fuelToAdd !== null && (
+          <StatChip lead="TOTAL" tone="neutral">
+            {formatFuel(fuelToAdd, unitSystem)}
+          </StatChip>
+        )}
+
+        <StatChip
+          lead="+1 LAP BUFFER"
+          leadKind="number"
+          tone="accent"
+          className={styles.bufferChip}
+        />
       </div>
     </div>
   );

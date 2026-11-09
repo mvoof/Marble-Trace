@@ -15,7 +15,7 @@ const drawAvgLine = (
   plotW: number
 ) => {
   ctx.strokeStyle = FUEL_COLORS.average;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
 
   ctx.setLineDash([5, 4]);
   ctx.beginPath();

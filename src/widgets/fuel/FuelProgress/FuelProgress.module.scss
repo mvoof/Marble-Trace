@@ -1,32 +1,51 @@
 .progressSection {
-  padding: 0 sp(md) sp(sm);
+  padding: sp(xs) sp(md);
+  background: $table-head-bg;
+  border-bottom: 1px solid $table-row-rule;
 }
 
-.progressWrap {
+// A tray one pixel inside its edge, so the fill never touches the frame.
+.track {
+  --fill-from: #{$chip-lic-b};
+  --fill-to: #{$chip-positive};
+
   position: relative;
-  height: ws(14);
-  background: rgba(255, 255, 255, $opacity-faint);
-  border: 1px solid rgba(255, 255, 255, $opacity-subtle);
-  border-radius: 2px;
+  height: ws(8);
+  padding: 1px;
   overflow: hidden;
+  border: 1px solid $chip-neutral-border;
+  border-radius: 2px;
+  background: $chip-value-dark;
+  box-sizing: border-box;
 }
 
-.progressBar {
+.trackWarning {
+  --fill-from: #{$chip-lic-c};
+  --fill-to: #{$chip-accent};
+}
+
+.trackDanger {
+  --fill-from: #{$chip-danger};
+  --fill-to: #{$chip-danger};
+
+  border-color: $chip-danger-border;
+}
+
+.fill {
+  width: calc(var(--progress, 0) * 100%);
+  height: 100%;
+  border-radius: 1px;
+  background: linear-gradient(90deg, var(--fill-from), var(--fill-to));
+}
+
+.quarters {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, $widget-status-info, $widget-status-info);
-  width: calc(var(--progress, 0) * 100%);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  pointer-events: none;
 }
 
-.progressLabelMax {
-  position: absolute;
-  right: sp(xs);
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1;
-  font-family: $font-mono;
-  font-size: fs(xxxs);
-  color: $widget-text-primary;
-  letter-spacing: 0.5px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+.quarter:not(:last-child) {
+  border-right: 1px solid rgba($table-rule, 0.8);
 }

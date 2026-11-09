@@ -1,11 +1,6 @@
 .fill {
   display: flex;
-  flex-direction: column;
-}
-
-.mainRow {
-  display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: sp(sm);
 }
@@ -13,60 +8,52 @@
 .amountCell {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: sp(xxs);
   min-width: 0;
 }
 
-// Primary, not danger: red on the block's red tint is the worst contrast pair
-// in the widget, and the surrounding border already carries the urgency.
+.amountLabel {
+  font-family: $font-widget;
+  font-size: wfs(9);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: $chip-danger-soft;
+}
+
 .amount {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
   font-family: $font-mono;
-  font-size: fs(xxxl);
-  font-weight: 700;
-  color: $widget-text-primary;
-  line-height: 0.9;
   white-space: nowrap;
+}
+
+// Primary, not danger: red on the block's red tint is the worst contrast pair
+// in the widget, and the block's own edge already carries the urgency.
+.amountValue {
+  font-size: wfs(24);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: $widget-text-primary;
 }
 
 .amountUnit {
-  font-size: fs(md);
-  font-weight: 500;
-  color: $widget-text-secondary;
-  margin-left: sp(xxs);
-}
-
-.amountLabel {
-  font-family: $font-mono;
-  font-size: wfs(9);
-  color: $widget-text-primary;
-  letter-spacing: 0.09em;
-}
-
-.stops {
-  font-family: $font-mono;
   font-size: fs(xxs);
-  color: $widget-text-secondary;
-  white-space: nowrap;
-}
-
-.stopsCount {
-  font-size: fs(md);
   font-weight: 700;
-  color: $widget-text-primary;
+  color: $chip-accent;
 }
 
-.footer {
+.chips {
   display: flex;
-  gap: sp(sm);
-  margin-top: sp(sm);
-  padding-top: sp(xs);
-  border-top: 1px solid rgba(255, 255, 255, $opacity-faint);
-  font-family: $font-mono;
-  font-size: fs(xxxs);
-  color: $widget-text-secondary;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: sp(xxs);
 }
 
-.footerDot {
-  opacity: 0.4;
+// The buffer is a note on the amount, not a state: the chip's own ground with
+// the accent written on it.
+.bufferChip {
+  --chip-lead-bg: transparent;
+
+  --chip-edge: #{$chip-accent-bg};
 }

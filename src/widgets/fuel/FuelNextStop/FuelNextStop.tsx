@@ -1,7 +1,8 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
+import { StatChip } from '@shared/ui/StatChip/StatChip';
 import { NO_TIME_DATA_PLACEHOLDER } from '@shared/lib/telemetry-format';
 import { computeNextStopForecast, formatCountdown } from '../fuel-utils';
 import styles from './FuelNextStop.module.scss';
@@ -11,6 +12,7 @@ import type { FuelWidgetSettings } from '../settings-schema';
 
 const NO_LAP_PLACEHOLDER = '--';
 
+/** The footer bar: the laps the next window spans and the time until it opens. */
 export const FuelNextStop = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { lapTiming } = usePlayerStore();
@@ -37,37 +39,38 @@ export const FuelNextStop = observer(() => {
     return null;
   }
 
-  const lapText =
-    forecast.targetLap !== null
-      ? `LAP ${forecast.targetLap}`
-      : `LAP ${NO_LAP_PLACEHOLDER}`;
-
   // The countdown is the one reading here that is not derivable from the rest
   // of the widget — the laps to the window are just LAPS LEFT shifted by the
   // warning margin, so only the absolute lap range and the clock are shown.
-  const countdownText =
-    forecast.secondsUntil !== null
-      ? formatCountdown(forecast.secondsUntil)
-      : NO_TIME_DATA_PLACEHOLDER;
-
-  const countdownClass =
-    forecast.secondsUntil !== null ? styles.countdown : styles.countdownEmpty;
+  const hasCountdown = forecast.secondsUntil !== null;
 
   return (
     <div className={styles.nextStop}>
-      <WidgetLabel className={styles.label}>NEXT PIT WINDOW</WidgetLabel>
+      <span className={styles.label}>NEXT PIT</span>
 
-      <span className={styles.window}>
-        {lapText}
+      <div className={styles.chips}>
+        <StatChip lead="LAP" tone="positive">
+          {forecast.targetLap ?? NO_LAP_PLACEHOLDER}
 
-        {forecast.windowEndLap !== null && (
-          <span className={styles.lapRangeEnd}>–{forecast.windowEndLap}</span>
-        )}
+          {forecast.windowEndLap !== null && (
+            <span className={styles.lapRangeEnd}>–{forecast.windowEndLap}</span>
+          )}
+        </StatChip>
 
-        <span className={styles.separator}>·</span>
-
-        <span className={countdownClass}>{countdownText}</span>
-      </span>
+        <StatChip
+          lead="EST"
+          tone="accent"
+          className={hasCountdown ? styles.countdown : styles.countdownEmpty}
+        >
+          <FixedDigits
+            text={
+              forecast.secondsUntil !== null
+                ? formatCountdown(forecast.secondsUntil)
+                : NO_TIME_DATA_PLACEHOLDER
+            }
+          />
+        </StatChip>
+      </div>
     </div>
   );
 });
