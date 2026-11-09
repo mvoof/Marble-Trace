@@ -72,9 +72,7 @@ export const FuelChart = observer(() => {
   return (
     <div className={styles.chartSection}>
       <div className={styles.chartHeader}>
-        <span className={styles.chartTitle}>
-          CONSUMPTION HISTORY ({unit}/LAP)
-        </span>
+        <span className={styles.chartTitle}>HISTORY ({unit}/LAP)</span>
 
         {avgAll !== null && (
           <span className={styles.chartLegend}>

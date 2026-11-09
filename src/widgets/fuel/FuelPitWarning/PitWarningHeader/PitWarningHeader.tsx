@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react-lite';
-import { Wrench } from 'lucide-react';
 
 import { StatChip } from '@shared/ui/StatChip/StatChip';
 import styles from './PitWarningHeader.module.scss';
@@ -17,7 +16,7 @@ export const PitWarningHeader = observer(() => {
 
   return (
     <div className={styles.pitWarningHeader}>
-      <StatChip icon={Wrench} lead="PIT WINDOW" tone="accent" />
+      <StatChip lead="PIT WINDOW" tone="accent" />
 
       {/* Once there is no lap left to name, the range gives way to a call
         louder than the range it stands in for. */}
