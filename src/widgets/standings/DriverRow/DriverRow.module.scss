@@ -335,11 +335,13 @@
   color: $widget-text-primary;
 }
 
+// Laps and the gap are white like every reading; only the opt-in
+// `dimSecondaryColumns` quiets them (`.cellDimmed`).
 .lapsCompleted {
   font-family: $font-mono;
   font-size: fs(xs);
   font-weight: 600;
-  color: $table-dim-text;
+  color: $widget-text-primary;
 }
 
 // Gap and interval — the leader and laps down are chips, written by the row.
@@ -350,13 +352,11 @@
   color: $table-empty-text;
 }
 
-// The gap to the leader reads quieter than the interval: the fight is with the
-// car ahead.
 .gapValue {
   font-family: $font-mono;
   font-size: fs(xs);
   font-weight: 600;
-  color: $table-dim-text;
+  color: $widget-text-primary;
 }
 
 .intervalValue {
