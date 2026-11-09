@@ -41,8 +41,8 @@ $chip-height: calc(#{wfs(16)} + #{sp(xxxs)} * 2 + 2px);
   display: flex;
   align-items: center;
   min-width: 0;
-  min-height: calc(#{$chip-height} + #{sp(xs)} * 2);
-  padding-block: sp(xs);
+  min-height: calc(#{$chip-height} + var(--lap-row-pad, #{sp(xs)}) * 2);
+  padding-block: var(--lap-row-pad, #{sp(xs)});
 }
 
 .lapCell {

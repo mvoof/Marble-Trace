@@ -12,6 +12,7 @@ import { useSimStore } from '@entities/sim/sim-context';
 import type { LapHistoryEntry } from '@shared/contracts/generated/bindings';
 import { averageValidLapTime, formatLapTimeOrDash } from './lap-log-utils';
 import { LapRow, type LapRowKind } from './LapRow/LapRow';
+import type { RowPadding } from '@shared/contracts/widget-choices';
 import type { LapLogVisibility, LapLogWidgetSettings } from './settings-schema';
 
 import styles from './LapLogWidget.module.scss';
@@ -29,6 +30,12 @@ const LIVE_ROW_COUNT = 1;
  * rows that fit the frame, counted from under the header, leave it one.
  */
 const FOOTER_ROW_COUNT = 1;
+
+const ROW_PADDING_CLASS: Record<RowPadding, string> = {
+  narrow: styles.rowPaddingNarrow,
+  medium: styles.rowPaddingMedium,
+  wide: styles.rowPaddingWide,
+};
 
 const entryKind = (entry: LapHistoryEntry): LapRowKind => {
   if (entry.isBest) {
@@ -53,7 +60,7 @@ const isShown = (visibility: LapLogVisibility, hasTime: boolean): boolean =>
  * only as tall as the laps it has, so the frame is a ceiling, not a size.
  */
 export const LapLogWidget = observer(() => {
-  const { paceLossBars, bestLapChip, averageFooter } =
+  const { paceLossBars, rowPadding, bestLapChip, averageFooter } =
     useWidgetSettings<LapLogWidgetSettings>('lap-log');
   const { lapHistory } = useBackendComputedStore();
   const { lapTiming } = usePlayerStore();
@@ -105,7 +112,7 @@ export const LapLogWidget = observer(() => {
         key={hasData ? 'laps' : 'empty'}
         className={styles.frame}
       >
-        <div className={styles.card}>
+        <div className={`${styles.card} ${ROW_PADDING_CLASS[rowPadding]}`}>
           <div className={styles.header}>
             <span className={styles.title}>LAP LOG</span>
 

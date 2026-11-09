@@ -32,7 +32,8 @@
   align-items: center;
   justify-content: space-between;
   gap: sp(xs);
-  padding: sp(xs) sp(md);
+  // The rows' padding, so the footer is one row tall whatever their height.
+  padding: var(--lap-row-pad) sp(md);
   background: $table-bar-bg;
   border-top: 1px solid $table-bar-border;
 }
@@ -83,6 +84,20 @@
     border-radius: inherit;
     pointer-events: none;
   }
+}
+
+// The row height setting: the tables' three paddings, read by the rows and the
+// footer alike.
+.rowPaddingNarrow {
+  --lap-row-pad: #{sp(xxxs)};
+}
+
+.rowPaddingMedium {
+  --lap-row-pad: #{sp(xxs)};
+}
+
+.rowPaddingWide {
+  --lap-row-pad: #{sp(xs)};
 }
 
 .lapList {

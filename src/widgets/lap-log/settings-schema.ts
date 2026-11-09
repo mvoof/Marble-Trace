@@ -4,6 +4,7 @@ import {
   defineSettings,
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
+import { ROW_PADDING } from '@shared/contracts/widget-choices';
 
 /** When a part of the log shows: always, once it has a time, or never. */
 const VISIBILITY = ['always', 'withTime', 'never'] as const;
@@ -14,6 +15,8 @@ export const LAP_LOG_SETTINGS = defineSettings('lapLog', {
    * delta written over it, instead of a chip.
    */
   paceLossBars: bool(false),
+  /** How tall a lap row is — the tables' three steps; the mockup's is wide. */
+  rowPadding: choice(ROW_PADDING, 'wide'),
   /** The BEST chip in the header. */
   bestLapChip: choice(VISIBILITY, 'always'),
   /** The AVG VALID footer. */
