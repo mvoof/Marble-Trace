@@ -139,3 +139,10 @@ $chip-height: calc(#{wfs(16)} + #{sp(xxxs)} * 2 + 2px);
 .deltaCell .plainEdge {
   --chip-edge: #{$chip-border};
 }
+
+.timeEmpty {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 800;
+  color: $table-empty-text;
+}

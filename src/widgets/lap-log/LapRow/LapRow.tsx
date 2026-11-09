@@ -16,6 +16,9 @@ export type LapRowKind = 'live' | 'best' | 'invalid' | 'lap';
 
 const EMPTY_DELTA = '-.---';
 
+/** A lap with no time: a dash where the time would be, INV beside it. */
+const EMPTY_TIME = '-';
+
 const ROW_CLASS: Record<LapRowKind, string> = {
   live: styles.rowLive,
   best: styles.rowBest,
@@ -100,7 +103,7 @@ export const LapRow = observer(
 
         <span className={`${styles.cell} ${styles.timeCell}`}>
           {kind === 'invalid' ? (
-            <StatChip lead="INV" leadVariant="solid" tone="danger" />
+            <span className={styles.timeEmpty}>{EMPTY_TIME}</span>
           ) : (
             <FixedDigits className={styles.time} text={time} />
           )}
@@ -121,7 +124,7 @@ export const LapRow = observer(
           )}
 
           {kind === 'invalid' && (
-            <span className={styles.deltaEmpty}>{EMPTY_DELTA}</span>
+            <StatChip lead="INV" leadVariant="solid" tone="danger" />
           )}
 
           {kind === 'lap' && (
