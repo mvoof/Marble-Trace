@@ -81,6 +81,10 @@
   & > * {
     padding-top: $space;
     padding-bottom: $space;
+    // At least a chip tall inside the padding (the cells are border-box), so
+    // every row is one height whichever chips it holds — the widget counts the
+    // rows it can fit from the first one.
+    min-height: calc(#{$chip-outer-height} + #{$space} * 2);
   }
 }
 

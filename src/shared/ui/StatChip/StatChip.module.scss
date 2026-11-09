@@ -22,6 +22,10 @@ $edge: var(--chip-edge, #{$chip-border});
   // one height whatever it holds.
   line-height: #{wfs(16)};
   white-space: nowrap;
+  // Set inline — in a cell's <span> — the chip would sit on the text's
+  // baseline and leave room for descenders under it, making a row with a chip
+  // taller than one without.
+  vertical-align: middle;
 }
 
 // Only a chip whose state asks for a look takes its color on the edge.
