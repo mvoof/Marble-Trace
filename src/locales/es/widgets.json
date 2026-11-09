@@ -913,6 +913,11 @@
       "showCleanCorners": "Curvas limpias",
       "showCleanCornersDesc": "Curvas sin incidentes necesarias para que la sesión deje de restar Safety Rating. Cero significa que ya estás igual o mejor."
     },
+    "lapLog": {
+      "moduleParameters": "Parámetros del módulo",
+      "paceLossBars": "Barras de pérdida de ritmo",
+      "paceLossBarsDesc": "La columna de delta muestra lo que cada vuelta perdió frente a tu mejor como una barra, con el delta encima, en lugar de un chip."
+    },
     "radio": {
       "moduleParameters": "Parámetros del módulo",
       "nameFormat": "Nombre",

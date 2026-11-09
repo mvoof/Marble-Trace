@@ -1,85 +1,134 @@
+// A chip's height — its 16px line, padding and edges — so a row is one height
+// whether its delta is a chip, a bar or a dash.
+$chip-height: calc(#{wfs(16)} + #{sp(xxxs)} * 2 + 2px);
+
+// The timing table's row: lap · time · delta in the mockup's 3 · 5 · 4, ruled
+// between the columns, the state marked on the left edge.
 .row {
   display: grid;
-  grid-template-columns: ws(36) auto 1fr;
-  gap: sp(xxs);
-  align-items: baseline;
-  padding: sp(xxxs) sp(xs);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  background: transparent;
+  grid-template-columns: 3fr 5fr 4fr;
+  align-items: stretch;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid $table-row-rule;
+  background: $table-row-bg;
+
+  &:nth-child(even) {
+    background: $table-row-bg-alt;
+  }
+
+  &:last-child {
+    border-bottom: 0;
+  }
 }
 
-.rowLive {
-  background: $widget-tint-positive-subtle;
-}
-.rowBest {
-  background: $widget-tint-best-lap;
+.rowLive,
+.rowLive:nth-child(even) {
+  border-left-color: $chip-positive;
+  background: rgba($chip-positive, 0.32);
 }
 
-.lapNum {
-  font-family: $font-mono;
-  font-size: fs(xxxs);
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  color: $widget-text-secondary;
+.rowBest,
+.rowBest:nth-child(even) {
+  border-left-color: $chip-special-edge;
+  background: rgba($chip-special-edge, 0.16);
+}
+
+.rowInvalid,
+.rowInvalid:nth-child(even) {
+  border-left-color: $chip-pit;
+  background: $chip-danger-ground;
+}
+
+.cell {
   display: flex;
-  align-items: baseline;
-  gap: sp(xxxs);
+  align-items: center;
+  min-width: 0;
+  min-height: calc(#{$chip-height} + #{sp(xs)} * 2);
+  padding-block: sp(xs);
 }
 
-.lapNumLive {
-  color: $widget-status-positive;
-}
-.lapNumBest {
-  color: $widget-text-best-lap;
-}
-
-.lapTime {
+.lapCell {
+  padding-inline: sp(sm) sp(xxs);
+  border-right: 1px solid $table-rule;
   font-family: $font-mono;
-  font-size: fs(md);
+  font-size: fs(xxs);
   font-weight: 700;
+  color: $chip-text-muted;
+
+  .rowLive & {
+    font-weight: 800;
+    color: $chip-positive;
+  }
+
+  .rowBest & {
+    font-weight: 800;
+    color: $chip-special;
+  }
+}
+
+.timeCell {
+  padding-inline: sp(md);
+  border-right: 1px solid $table-rule;
+}
+
+.time {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 800;
+  letter-spacing: -0.025em;
   color: $widget-text-primary;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-}
 
-.lapTimeBest {
-  color: $widget-text-best-lap;
-}
-
-.lapTimeInvalid {
-  color: $widget-status-danger;
-  font-size: fs(xxxs);
+  .rowBest & {
+    color: $chip-special;
+  }
 }
 
 .deltaCell {
-  display: flex;
-  align-items: baseline;
-  gap: sp(xxs);
+  position: relative;
   justify-content: flex-end;
+  padding-inline: sp(sm);
 }
 
-.delta {
+.deltaEmpty {
   font-family: $font-mono;
-  font-size: fs(xs);
+  font-size: fs(xxs);
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  min-width: 0;
-  color: $widget-text-secondary;
+  color: $table-empty-text;
 }
 
-.deltaAhead {
-  color: $widget-status-positive;
+// The pace-loss bar: the delta column filled from its right edge by how much
+// the lap lost, the delta written over it.
+.bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
 }
 
-.deltaBehind {
-  color: $widget-status-danger;
+.barClose {
+  background: rgba($chip-accent, 0.25);
 }
 
-.deltaNeutral {
-  color: $widget-status-warning;
+.barLost {
+  background: rgba($chip-danger, 0.25);
 }
 
-.deltaBest {
-  color: $widget-text-best-lap;
+.deltaText {
+  position: relative;
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 700;
+}
+
+.lossGained {
+  color: $chip-positive;
+}
+
+.lossClose {
+  color: $chip-accent;
+}
+
+.lossLost {
+  color: $chip-danger;
 }

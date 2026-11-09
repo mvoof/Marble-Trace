@@ -24,6 +24,8 @@ interface StoryArgs {
    * naming a scenario does — the base's own history is kept.
    */
   history?: LapHistoryEntry[];
+  /** The widget setting: the delta column as bars of the time lost. */
+  paceLossBars?: boolean;
 }
 
 /** Three laps in a row with no time on any of them — an out-lap and two spins. */
@@ -37,7 +39,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/LapLogWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: LapLogWidget,
-    size: { width: 220, height: 260 },
+    size: { width: 264, height: 384 },
     seed: (store, args, scenarioId) => {
       // A scenario states the whole lap — its timing, its delta and its log.
       // The knobs below are the other base: what a story states when no
@@ -122,4 +124,9 @@ export const AllInvalid: Story = {
     bestLapTime: 0,
     history: INVALID_LAPS,
   },
+};
+
+/** The delta column as bars of the time each lap lost to the best. */
+export const PaceLossBars: Story = {
+  args: { ...WithHistory.args, paceLossBars: true },
 };

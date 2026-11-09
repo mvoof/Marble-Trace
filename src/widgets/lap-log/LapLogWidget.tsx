@@ -1,19 +1,43 @@
 import { observer } from 'mobx-react-lite';
+
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { NoDataPlaceholder } from '@shared/ui/NoDataPlaceholder/NoDataPlaceholder';
+import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
+import { StatChip } from '@shared/ui/StatChip/StatChip';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSimStore } from '@entities/sim/sim-context';
 import { formatLapTime } from '@shared/lib/telemetry-format';
-import { formatDelta, getDeltaState } from '@shared/lib/delta-utils';
-import { LapRow } from './LapRow/LapRow';
+import type { LapHistoryEntry } from '@shared/contracts/generated/bindings';
+import { averageValidLapTime } from './lap-log-utils';
+import { LapRow, type LapRowKind } from './LapRow/LapRow';
+import type { LapLogWidgetSettings } from './settings-schema';
+
 import styles from './LapLogWidget.module.scss';
 
 const HISTORY_SHOW_SIZE = 8;
 
+const entryKind = (entry: LapHistoryEntry): LapRowKind => {
+  if (entry.isBest) {
+    return 'best';
+  }
+
+  if (entry.lapTime === null) {
+    return 'invalid';
+  }
+
+  return 'lap';
+};
+
+/**
+ * The lap being driven over the last eight, as a timing table: the best lap
+ * in the header, each lap's loss to it in a chip — or, as a setting, a bar —
+ * and the mean of the timed laps under them.
+ */
 export const LapLogWidget = observer(() => {
-  const { lapHistory, lastCompletedLap: _lastCompleted } =
-    useBackendComputedStore();
+  const { paceLossBars } = useWidgetSettings<LapLogWidgetSettings>('lap-log');
+  const { lapHistory } = useBackendComputedStore();
   const { lapTiming } = usePlayerStore();
   const sim = useSimStore();
 
@@ -22,51 +46,57 @@ export const LapLogWidget = observer(() => {
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
   const visibleHistory = lapHistory.slice(0, HISTORY_SHOW_SIZE);
+  const { average, count } = averageValidLapTime(visibleHistory);
 
   const hasData = sim.isConnected && lapTiming != null;
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={0}>
       <div className={styles.header}>
-        <span className={styles.headerTitle}>LAP HISTORY</span>
+        <span className={styles.title}>LAP LOG</span>
 
-        <div className={styles.headerBest}>
-          <span className={styles.headerBestLabel}>BEST</span>
-
-          <span className={styles.headerBestTime}>
-            {formatLapTime(bestLapTime)}
-          </span>
-        </div>
+        <StatChip
+          lead="BEST"
+          tone="special"
+          emphasized
+          className={styles.bestChip}
+        >
+          <FixedDigits text={formatLapTime(bestLapTime)} />
+        </StatChip>
       </div>
 
       {!hasData ? (
         <NoDataPlaceholder />
       ) : (
         <>
-          <LapRow
-            lapLabel={`L${lapNum ?? '--'}`}
-            time={formatLapTime(currentLapTime)}
-            isLive
-          />
-
-          {visibleHistory.map((entry) => (
+          <div>
             <LapRow
-              key={entry.lapNum}
-              lapLabel={`L${entry.lapNum}`}
-              time={
-                entry.lapTime !== null ? formatLapTime(entry.lapTime) : null
-              }
-              deltaLabel={entry.isBest ? '★ BEST' : formatDelta(entry.delta)}
-              deltaVariant={
-                entry.isBest
-                  ? 'best'
-                  : entry.delta !== null
-                    ? getDeltaState(entry.delta)
-                    : undefined
-              }
-              isBest={entry.isBest}
+              kind="live"
+              lapNum={lapNum}
+              time={formatLapTime(currentLapTime)}
             />
-          ))}
+
+            {visibleHistory.map((entry) => (
+              <LapRow
+                key={entry.lapNum}
+                kind={entryKind(entry)}
+                lapNum={entry.lapNum}
+                time={formatLapTime(entry.lapTime)}
+                delta={entry.delta}
+                paceLossBars={paceLossBars}
+              />
+            ))}
+          </div>
+
+          <div className={styles.footer}>
+            <span className={styles.footerLabel}>
+              AVG VALID ({count} {count === 1 ? 'LAP' : 'LAPS'})
+            </span>
+
+            <StatChip>
+              <FixedDigits text={formatLapTime(average)} />
+            </StatChip>
+          </div>
         </>
       )}
     </WidgetPanel>

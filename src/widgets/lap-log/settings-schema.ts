@@ -1,4 +1,15 @@
-import { defineSettings } from '@shared/lib/widget-settings-dsl';
+import {
+  bool,
+  defineSettings,
+  type SettingsOf,
+} from '@shared/lib/widget-settings-dsl';
 
-/** The lap log has nothing of its own to set; only the frame's settings. */
-export const LAP_LOG_SETTINGS = defineSettings('lapLog', {});
+export const LAP_LOG_SETTINGS = defineSettings('lapLog', {
+  /**
+   * The delta column drawn as a bar of the time lost to the best lap, the
+   * delta written over it, instead of a chip.
+   */
+  paceLossBars: bool(false),
+});
+
+export type LapLogWidgetSettings = SettingsOf<typeof LAP_LOG_SETTINGS.shape>;

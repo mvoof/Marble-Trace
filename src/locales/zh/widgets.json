@@ -913,6 +913,11 @@
       "showCleanCorners": "干净弯道",
       "showCleanCornersDesc": "本节不再降低安全评级之前需要无事故跑完的弯道数。为零表示已持平或上升。"
     },
+    "lapLog": {
+      "moduleParameters": "模块参数",
+      "paceLossBars": "节奏损失条",
+      "paceLossBarsDesc": "差值列以条形显示每圈比最佳圈慢了多少，差值写在条上，而不是用标签。"
+    },
     "radio": {
       "moduleParameters": "模块参数",
       "nameFormat": "姓名",

@@ -913,6 +913,11 @@
       "showCleanCorners": "Clean corners",
       "showCleanCornersDesc": "Corners to drive without an incident before this session stops costing Safety Rating. Zero means it is level or better already."
     },
+    "lapLog": {
+      "moduleParameters": "Module parameters",
+      "paceLossBars": "Pace loss bars",
+      "paceLossBarsDesc": "The delta column shows how much each lap lost to your best as a bar, the delta written over it, instead of a chip."
+    },
     "radio": {
       "moduleParameters": "Module parameters",
       "nameFormat": "Name",

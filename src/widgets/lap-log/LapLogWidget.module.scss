@@ -1,46 +1,45 @@
+// The table's bar: the same ground, rule and padding as the standings header.
 .header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: baseline;
-  padding: sp(xxs) sp(xs);
-  border-bottom: 1px solid $widget-border-subtle;
-}
-
-.headerLeft {
-  display: flex;
-  align-items: baseline;
   gap: sp(xs);
+  padding: sp(xs) sp(md);
+  background: $table-bar-bg;
+  border-bottom: 1px solid $table-bar-border;
 }
 
-.headerTitle {
+.title {
   font-family: $font-widget;
   font-size: fs(xxxs);
-  font-weight: 300;
-  letter-spacing: 1px;
-  color: $widget-text-primary;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  color: $widget-text-primary;
 }
 
-.headerBest {
+// BEST over the best lap, both in the best-lap purple; its caption a step
+// under the chip's own.
+.bestChip {
+  --chip-lead-size: #{wfs(9)};
+  --chip-value-text: #{$chip-special};
+}
+
+.footer {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: space-between;
   gap: sp(xs);
+  padding: sp(xs) sp(md);
+  background: $table-bar-bg;
+  border-top: 1px solid $table-bar-border;
 }
 
-.headerBestLabel {
+.footerLabel {
   font-family: $font-widget;
   font-size: fs(xxxs);
-  font-weight: 300;
-  letter-spacing: 1px;
-  color: $widget-text-primary;
-  text-transform: uppercase;
-}
-
-.headerBestTime {
-  font-family: $font-mono;
-  font-size: fs(xs);
   font-weight: 700;
-  color: $widget-text-best-lap;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: $chip-text-muted;
 }
