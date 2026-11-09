@@ -1,8 +1,7 @@
 // Driver row — grid layout for strict column alignment
 // Columns: pos | car# | name+badges(1fr) | lic? | iR? | gap
 .driverRow {
-  --chip-line: #{$table-row-chip-line};
-  --chip-pad-y: 0;
+  --chip-line: #{$table-chip-line};
   // The chips are notes on the driver: a weight under the position, the number
   // and the name, and the readings in the secondary white, so the row reads
   // by who first.
@@ -155,10 +154,9 @@
 .driverCarNumber {
   font-size: fs(xs);
   font-weight: 800;
-  // One height with the row's chips: their line and their two edges.
-  line-height: calc(#{$table-row-chip-line} + 2px);
+  line-height: 1.25;
   font-family: $font-mono;
-  padding: 0 sp(xxs);
+  padding: sp(xxxs) sp(xxs);
   border-radius: radius(sm);
   white-space: nowrap;
 
@@ -188,11 +186,6 @@
   font-family: $font-widget;
   font-weight: 800;
   font-size: fs(sm);
-  // Inter keeps more room over its capitals than under its descenders, so a
-  // centred line box sits the ink low; lifted, the name's capitals and
-  // descenders are centred in the row as the chips are.
-  position: relative;
-  top: $name-ink-lift;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
