@@ -15,7 +15,7 @@
   gap: sp(xs);
   min-width: 0;
   // Centred in a column narrower than a long label, the row would spill out
-  // on both sides; capped, the label ellipsises instead.
+  // on both sides; capped, the label wraps instead.
   max-width: 100%;
 }
 
@@ -30,11 +30,15 @@
   font-family: $font-widget;
   font-size: fs(lg);
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.1;
   color: $widget-text-primary;
-  white-space: nowrap;
+  // "Partly Cloudy" is wider than a narrow column; cut, it no longer says what
+  // the sky is, so it breaks between its words onto a second line instead.
+  overflow-wrap: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .airTemp {

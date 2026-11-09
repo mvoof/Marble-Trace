@@ -28,7 +28,7 @@
 .statLabel {
   font-size: fs(xxxs);
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   color: $widget-text-secondary;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -81,18 +81,18 @@
   }
 
   .statLabel {
-    font-size: fs(xxs);
+    font-size: fs(xxxs);
   }
 
   .statValue {
-    font-size: fs(lg);
+    font-size: fs(md);
 
     &.statValueCompact {
-      font-size: fs(md);
+      font-size: fs(sm);
     }
   }
 
   .statUnit {
-    font-size: fs(xxs);
+    font-size: fs(xxxs);
   }
 }
