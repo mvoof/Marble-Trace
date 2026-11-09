@@ -239,3 +239,15 @@
 .f2Player {
   color: $widget-status-caution;
 }
+
+// A status — PIT, IN, OUT, TOW — in the bars' look: its label light on a deep
+// shade of its color, framed in it.
+.statusChip {
+  @include chip-muted-solid;
+}
+
+// A filled chip with no value drops its edge; a status keeps its frame, so it
+// is one height with the chips beside it.
+.driverRow .statusChip {
+  border-width: 1px;
+}

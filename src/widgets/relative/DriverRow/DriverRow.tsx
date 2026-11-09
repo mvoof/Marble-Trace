@@ -232,7 +232,9 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
           <StatChip
             key={chip.status}
             lead={chip.label}
+            leadVariant="solid"
             tone={chip.tone}
+            className={styles.statusChip}
             emphasized
           >
             {chip.status === 'tow' && driver.isPlayer && player.isTowing ? (
