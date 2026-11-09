@@ -2,8 +2,8 @@
 
 import { StatChip } from '@shared/ui/StatChip/StatChip';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
-import { formatLapTime } from '@shared/lib/telemetry-format';
 import { usePlayerStore } from '@entities/player/player-context';
+import { formatLapTimeOrDash } from '../sector-matrix-format';
 
 import styles from './SectorFooter.module.scss';
 
@@ -17,7 +17,7 @@ export const SectorFooter = observer(() => {
   return (
     <div className={styles.footer}>
       <StatChip lead="LAST" className={styles.chip}>
-        <FixedDigits text={formatLapTime(lastLapTime)} />
+        <FixedDigits text={formatLapTimeOrDash(lastLapTime)} />
       </StatChip>
 
       <StatChip
@@ -26,7 +26,7 @@ export const SectorFooter = observer(() => {
         emphasized
         className={`${styles.chip} ${styles.bestChip}`}
       >
-        <FixedDigits text={formatLapTime(bestLapTime)} />
+        <FixedDigits text={formatLapTimeOrDash(bestLapTime)} />
       </StatChip>
     </div>
   );

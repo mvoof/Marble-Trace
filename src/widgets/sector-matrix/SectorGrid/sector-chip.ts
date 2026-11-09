@@ -4,8 +4,8 @@ import {
   getDeltaState,
 } from '@shared/lib/delta-utils';
 import type { StatChipTone } from '@shared/ui/StatChip/StatChip';
+import { EMPTY_VALUE } from '../sector-matrix-format';
 
-const PENDING_TIME = '--.---';
 const LIVE_TEXT = 'LIVE';
 
 /**
@@ -125,14 +125,14 @@ export const sectorChipStateOf = ({
   if (isFuture) {
     return {
       kind: hasTime ? 'upcoming' : 'empty',
-      displayTime: hasTime ? formatSectorTime(sectorTime) : PENDING_TIME,
+      displayTime: hasTime ? formatSectorTime(sectorTime) : EMPTY_VALUE,
       delta: null,
     };
   }
 
   return {
     kind: bankedKindOf(delta),
-    displayTime: hasTime ? formatSectorTime(sectorTime) : PENDING_TIME,
+    displayTime: hasTime ? formatSectorTime(sectorTime) : EMPTY_VALUE,
     delta: deltaChipOf(delta),
   };
 };

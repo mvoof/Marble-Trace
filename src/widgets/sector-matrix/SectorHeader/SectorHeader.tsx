@@ -2,11 +2,11 @@
 
 import { StatChip } from '@shared/ui/StatChip/StatChip';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
-import { formatLapTime } from '@shared/lib/telemetry-format';
 import { getGameDelta } from '@shared/lib/delta-utils';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
 import type { SectorMatrixWidgetSettings } from '../settings-schema';
+import { formatLapTimeOrDash } from '../sector-matrix-format';
 
 import styles from './SectorHeader.module.scss';
 
@@ -39,7 +39,7 @@ export const SectorHeader = observer(() => {
 
         <FixedDigits
           className={styles.lapTime}
-          text={formatLapTime(currentLapTime)}
+          text={formatLapTimeOrDash(currentLapTime)}
         />
       </div>
 
@@ -50,7 +50,7 @@ export const SectorHeader = observer(() => {
           emphasized
           className={styles.predChip}
         >
-          <FixedDigits text={formatLapTime(predictedTime)} />
+          <FixedDigits text={formatLapTimeOrDash(predictedTime)} />
         </StatChip>
       )}
     </div>

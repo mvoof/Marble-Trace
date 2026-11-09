@@ -54,7 +54,6 @@ export const SectorProgress = observer(({ sectors }: Props) => {
           lead={`S${sectorNumber}/${fills.length}`}
           leadKind="number"
           tone="muted"
-          size="xs"
           className={styles.counter}
         />
       </div>

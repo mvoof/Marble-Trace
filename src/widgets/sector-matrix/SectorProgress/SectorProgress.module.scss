@@ -44,14 +44,14 @@
 
 .percent {
   font-family: $font-mono;
-  font-size: fs(xxxs);
+  font-size: fs(xs);
   font-weight: 800;
   color: $widget-text-primary;
 }
 
 .caption {
   font-family: $font-widget;
-  font-size: wfs(9);
+  font-size: fs(xxxs);
   font-weight: 600;
   letter-spacing: 0.05em;
   color: $chip-text-muted;
