@@ -26,9 +26,10 @@ import type {
   OverlayModes,
   VoiceCrewSettings,
 } from '@shared/contracts/generated/bindings';
-import type {
-  FuelAdjustStep,
-  PitStrategy,
+import {
+  DEFAULT_PRESSURE_ADJUST_STEP_KPA,
+  type FuelAdjustStep,
+  type PitStrategy,
 } from '@shared/contracts/pit-strategy';
 import type { SettingsLockReason } from '@shared/settings-schema/types';
 
@@ -79,6 +80,7 @@ export const DEFAULT_APP_SETTINGS = {
   pitAutoTires: false,
   pitAutoTireWearThreshold: 60,
   pitFuelAdjustStep: 1 as FuelAdjustStep,
+  pitPressureAdjustStep: DEFAULT_PRESSURE_ADJUST_STEP_KPA,
   // Stream chat source. A channel is a property of the account, not of a
   // layout — the same reasoning as steeringLock above. Keeping it here also
   // means one connection serves every layout instead of reconnecting on each
@@ -160,6 +162,7 @@ export const pitStrategyOf = (settings: AppSettings): PitStrategy => ({
   pitAutoTires: settings.pitAutoTires,
   pitAutoTireWearThreshold: settings.pitAutoTireWearThreshold,
   pitFuelAdjustStep: settings.pitFuelAdjustStep,
+  pitPressureAdjustStep: settings.pitPressureAdjustStep,
 });
 
 /** What the backend's chat commands run with (`set_chat_commands`). */
@@ -493,6 +496,10 @@ export class AppSettingsStore {
 
   setPitFuelAdjustStep(value: FuelAdjustStep) {
     this.appSettings.pitFuelAdjustStep = value;
+  }
+
+  setPitPressureAdjustStep(kpa: number) {
+    this.appSettings.pitPressureAdjustStep = kpa;
   }
 
   /** Any of the voice crew's settings, from the Crew tab. */

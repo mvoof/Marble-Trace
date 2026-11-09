@@ -24,5 +24,6 @@ export const pitAutoConfigOf = (
   fuelStepLiters:
     strategy.pitFuelAdjustStep *
     (unitSystem === 'metric' ? LITERS_PER_STEP_METRIC : LITERS_PER_GALLON),
+  pressureStepKpa: strategy.pitPressureAdjustStep,
   widgetOnScreen,
 });

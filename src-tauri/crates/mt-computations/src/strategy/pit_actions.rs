@@ -42,6 +42,8 @@ pub struct PitActionInput<'a> {
     pub compounds: &'a [i32],
     /// One press of the fuel step keys, already in liters.
     pub fuel_step_l: f32,
+    /// One press of the tire pressure keys and buttons, in kPa.
+    pub pressure_step_kpa: f32,
 }
 
 /// What one action sends, and which halves of the stop it takes from auto mode.
@@ -72,6 +74,12 @@ pub fn resolve(action: PitAction, input: &PitActionInput<'_>) -> Option<ManualOr
         PitAction::SetFuel { liters } => Some(set_fuel(input, liters)),
         PitAction::ToggleAllTires => Some(toggle_all_tires(input.service)),
         PitAction::ToggleTire { corner } => Some(toggle_tire(input.service, corner)),
+        PitAction::PressureStepUp { corners } => {
+            step_pressure(input.service, corners, input.pressure_step_kpa)
+        }
+        PitAction::PressureStepDown { corners } => {
+            step_pressure(input.service, corners, -input.pressure_step_kpa)
+        }
         PitAction::CycleCompound => cycle_compound(input),
         PitAction::ToggleFastRepair => Some(unclaimed(if input.service.fast_repair {
             PitCommandKind::ClearFastRepair
@@ -221,6 +229,36 @@ fn toggle_tire(service: &PitServiceFrame, corner: TireCorner) -> ManualOrder {
     claimed(order, TIRES_CLAIM)
 }
 
+/// The lowest pressure a step sends: zero is the SDK's "keep what is ordered",
+/// so a step down never reaches it.
+const MIN_STEPPED_PRESSURE_KPA: i32 = 1;
+
+/// Each corner in the set at the pressure the sim holds for it, moved by one
+/// step. The SDK has no pressure without the change: a corner stepped is a
+/// corner ordered. `None` while the sim reports no pressure for any of them.
+fn step_pressure(
+    service: &PitServiceFrame,
+    corners: TireSet,
+    step_kpa: f32,
+) -> Option<ManualOrder> {
+    let order: PitOrder = TireCorner::ALL
+        .iter()
+        .filter(|corner| corners.contains(**corner))
+        .filter_map(|corner| {
+            let pressure = ordered_pressure(service, *corner)?;
+            let stepped = ((pressure + step_kpa).round() as i32).max(MIN_STEPPED_PRESSURE_KPA);
+
+            Some(request(corner_kind(*corner), stepped))
+        })
+        .collect();
+
+    if order.is_empty() {
+        return None;
+    }
+
+    Some(claimed(order, TIRES_CLAIM))
+}
+
 fn toggle_all_tires(service: &PitServiceFrame) -> ManualOrder {
     let all_ordered = TireCorner::ALL
         .iter()
@@ -342,6 +380,7 @@ mod tests {
             planned_fuel_l: planned,
             compounds: &[],
             fuel_step_l: 1.0,
+            pressure_step_kpa: 1.0,
         }
     }
 
@@ -657,6 +696,68 @@ mod tests {
             )),
             vec![(PitCommandKind::ClearTires, 0)]
         );
+    }
+
+    #[test]
+    fn steps_the_pressure_the_sim_holds_and_orders_the_corner() {
+        let held = PitServiceFrame {
+            lf_pressure: Some(165.4),
+            rf_pressure: Some(170.0),
+            ..service()
+        };
+        let mut two_kpa_step = input(&held, None);
+        two_kpa_step.pressure_step_kpa = 2.0;
+        let lf = TireSet {
+            lf: true,
+            ..TireSet::NONE
+        };
+
+        assert_eq!(
+            requests(resolve(
+                PitAction::PressureStepUp { corners: lf },
+                &two_kpa_step
+            )),
+            vec![(PitCommandKind::Lf, 167)]
+        );
+        assert_eq!(
+            requests(resolve(
+                PitAction::PressureStepDown {
+                    corners: TireSet::ALL
+                },
+                &two_kpa_step
+            )),
+            vec![(PitCommandKind::Lf, 163), (PitCommandKind::Rf, 168)]
+        );
+    }
+
+    #[test]
+    fn a_step_down_never_reaches_the_keep_value_and_needs_a_pressure() {
+        let low = PitServiceFrame {
+            lf_pressure: Some(1.0),
+            ..service()
+        };
+        let lf = TireSet {
+            lf: true,
+            ..TireSet::NONE
+        };
+
+        assert_eq!(
+            requests(resolve(
+                PitAction::PressureStepDown { corners: lf },
+                &input(&low, None)
+            )),
+            vec![(PitCommandKind::Lf, 1)]
+        );
+        assert!(resolve(
+            PitAction::PressureStepUp {
+                corners: TireSet {
+                    rr: true,
+                    ..TireSet::NONE
+                }
+            },
+            &input(&low, None)
+        )
+        .is_none());
     }
 
     #[test]

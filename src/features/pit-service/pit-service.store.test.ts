@@ -207,6 +207,24 @@ describe('PitServiceWidgetStore — pit orders', () => {
     ]);
   });
 
+  it('steps one corner pressure up or down, naming only that corner', () => {
+    const order = rootStore.pitServiceWidget.order;
+
+    order.stepPressure('lr', 'up');
+    order.stepPressure('rf', 'down');
+
+    expect(sentActions()).toEqual([
+      {
+        kind: 'pressureStepUp',
+        corners: { lf: false, rf: false, lr: true, rr: false },
+      },
+      {
+        kind: 'pressureStepDown',
+        corners: { lf: false, rf: true, lr: false, rr: false },
+      },
+    ]);
+  });
+
   describe('reveal after a command', () => {
     beforeEach(() => {
       rootStore.pitServiceWidget.init();

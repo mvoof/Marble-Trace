@@ -397,6 +397,7 @@ mod tests {
             auto_tires: true,
             tire_wear_threshold_pct: 60.0,
             fuel_step_liters: 1.0,
+            pressure_step_kpa: 1.0,
             widget_on_screen: true,
         }
     }

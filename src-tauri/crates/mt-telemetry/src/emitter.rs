@@ -538,6 +538,7 @@ pub(crate) fn send_manual_action(
         planned_fuel_l: state.planned_fuel_l,
         compounds,
         fuel_step_l: state.config.pit_auto.fuel_step_liters,
+        pressure_step_kpa: state.config.pit_auto.pressure_step_kpa,
     };
     let Some(order) = pit_actions::resolve(action, &input) else {
         return (None, false);

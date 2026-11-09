@@ -22,6 +22,9 @@ pub struct PitAutoConfig {
     /// One press of the fuel step keys, in liters — main converts the step the
     /// driver picked from the unit on display.
     pub fuel_step_liters: f32,
+    /// One press of the tire pressure keys and buttons, in kPa — main converts
+    /// the step the driver picked from the unit on display.
+    pub pressure_step_kpa: f32,
     pub widget_on_screen: bool,
 }
 

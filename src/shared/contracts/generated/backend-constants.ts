@@ -50,25 +50,25 @@ export const SOURCE_TICK_HZ = 60;
 /**
  * Shown for a car whose class the sim reported without a colour.
  */
-export const DEFAULT_CLASS_COLOR = '#888888';
+export const DEFAULT_CLASS_COLOR = "#888888";
 
 /**
  * The intent and reply key of a question the driver wrote into the voice
  * pack: `question.<id>`.
  */
-export const VOICE_QUESTION_PREFIX = 'question.';
+export const VOICE_QUESTION_PREFIX = "question.";
 
 /**
  * What a pack's `defaults` names for an intent the engineer asks to say
  * again with its value, rather than taking one.
  */
-export const VOICE_ASK_WHEN_UNSAID = 'ask';
+export const VOICE_ASK_WHEN_UNSAID = "ask";
 
 /**
  * A step of a question that sends one of the sim's chat macros; its
  * value is the macro's slot.
  */
-export const VOICE_CHAT_MACRO_ACTION = 'chat.macro';
+export const VOICE_CHAT_MACRO_ACTION = "chat.macro";
 
 /**
  * The sim's chat macro slots run from 1 to this.

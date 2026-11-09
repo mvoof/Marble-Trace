@@ -160,3 +160,49 @@
 .puncture[data-blink-step='1'] {
   outline-color: rgba($race-red, 0.6);
 }
+
+// Holds the corner and, in interact mode, the pressure steps beside its tread.
+.cornerFrame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  > .corner {
+    flex: 1 1 auto;
+  }
+}
+
+// Level with the tread, in the room the narrow tread leaves at each side.
+.step {
+  appearance: none;
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: ws(18);
+  height: ws(24);
+  margin: 0;
+  padding: 0;
+  border: 1px solid $chip-border;
+  border-radius: radius(sm);
+  background: $chip-neutral-bg;
+  color: $chip-text;
+  transform: translateY(-50%);
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba($chip-info, 0.5);
+    background: $chip-info-bg;
+    color: $chip-info;
+  }
+}
+
+.stepDown {
+  left: sp(xxs);
+}
+
+.stepUp {
+  right: sp(xxs);
+}

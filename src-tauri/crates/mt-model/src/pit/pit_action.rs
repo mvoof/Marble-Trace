@@ -125,6 +125,15 @@ pub enum PitAction {
     ToggleTire {
         corner: TireCorner,
     },
+    /// One step of `pitPressureAdjustStep` up from the pressure the sim holds
+    /// for each of these corners. Setting a pressure is how the SDK orders a
+    /// corner, so every corner stepped is also changed.
+    PressureStepUp {
+        corners: TireSet,
+    },
+    PressureStepDown {
+        corners: TireSet,
+    },
     /// The next compound the session lists, wrapping at the end.
     CycleCompound,
     ToggleFastRepair,

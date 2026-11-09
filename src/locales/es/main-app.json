@@ -306,7 +306,9 @@
       "autoTiresDesc": "El modo automático pide las ruedas desgastadas por debajo del umbral de abajo, una a una.",
       "autoTireWearThreshold": "Cambiar un neumático con un {{percent}}% de dibujo restante",
       "fuelAdjustStep": "Paso de la tecla de combustible",
-      "fuelAdjustStepDesc": "Cuánto añade o quita una pulsación de las teclas de subir y bajar combustible, en la unidad que lees: litros en métrico, galones en imperial."
+      "fuelAdjustStepDesc": "Cuánto añade o quita una pulsación de las teclas de subir y bajar combustible, en la unidad que lees: litros en métrico, galones en imperial.",
+      "pressureAdjustStep": "Paso de presión de neumáticos",
+      "pressureAdjustStepDesc": "Cuánto cambia la presión de un neumático cada pulsación de los botones y teclas de presión. Fijar una presión también pide el cambio de ese neumático: el simulador no tiene presión sin cambio."
     },
     "carLength": {
       "title": "Coche",
@@ -668,6 +670,8 @@
       "pitServiceTireLr": "Cambiar el neumático trasero izquierdo",
       "pitServiceTireRr": "Cambiar el neumático trasero derecho",
       "pitServiceTireCompound": "Pasar al siguiente compuesto de neumático",
+      "pitServicePressurePlus": "Subir un paso la presión de todos los neumáticos (y pedir su cambio)",
+      "pitServicePressureMinus": "Bajar un paso la presión de todos los neumáticos (y pedir su cambio)",
       "pitServiceFastRepair": "Usar una reparación rápida",
       "pitServiceWindshield": "Limpiar el parabrisas (gasta un tear-off)",
       "widgetToggleVisibility": "Mostrar u ocultar «{{widget}}»"

@@ -28,6 +28,8 @@ interface StoryArgs {
   optRepairLeftS?: number;
   /** A repair ran this stop and has run out. */
   repairDone?: boolean;
+  /** Interact mode: the orders and the pressure steps take clicks. */
+  interactMode?: boolean;
   changeFronts?: boolean;
   changeRears?: boolean;
   inPitStall?: boolean;
@@ -78,6 +80,13 @@ const meta: Meta<StoryArgs> = {
         store.player.updatePitService(
           mockPitService({ ...store.player.pitService, ...service })
         );
+      }
+
+      if (args.interactMode === true) {
+        store.appSettings.applyOverlayModes({
+          dragMode: false,
+          interactMode: true,
+        });
       }
 
       if (args.repairDone === true) {
@@ -139,6 +148,13 @@ export const RepairsUnderWay: Story = {
 export const RepairDone: Story = {
   parameters: previewScenario('pit-service'),
   args: { repairDone: true },
+};
+
+// Interact mode: every order takes a click, and each tread has its pressure
+// steps beside it.
+export const InteractMode: Story = {
+  parameters: previewScenario('pit-service'),
+  args: { interactMode: true },
 };
 
 export const ManualFuelOrder: Story = {
