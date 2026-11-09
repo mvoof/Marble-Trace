@@ -85,7 +85,7 @@ const DeltaCell = observer(({ delta, paceLossBars }: DeltaCellProps) => {
 export const LapRow = observer(
   ({ kind, lapNum, time, delta = null, paceLossBars = false }: LapRowProps) => {
     return (
-      <div className={`${styles.row} ${ROW_CLASS[kind]}`}>
+      <div className={`${styles.row} ${ROW_CLASS[kind]}`} data-lap-row>
         <span className={`${styles.cell} ${styles.lapCell}`}>
           L{lapNum ?? EMPTY_VALUE}
         </span>

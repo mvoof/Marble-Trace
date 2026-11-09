@@ -182,6 +182,16 @@ describe('v7 — table frames widened with their columns', () => {
     );
   });
 
+  it('gives a lap log frame its design height at the frame scale', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([instance('lap-log', LAP_LOG_V6_DEFAULT_WIDTH)])
+    );
+
+    const frame = widgetsOf(migrated)[0]['frame'] as { height: number };
+
+    expect(frame.height).toBe(LAP_LOG_MANIFEST.designHeight);
+  });
+
   it('keeps the text size of a lap log frame the driver resized', () => {
     const migrated = v7WiderTableColumns.migrate(
       fileWith([instance('lap-log', 300)])

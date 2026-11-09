@@ -52,7 +52,7 @@
       "description": "Tiempos por sector: progreso, delta de cada sector, ÚLTIMA y MEJOR."
     },
     "lap-log": {
-      "description": "Las últimas 8 vueltas con su tiempo y delta frente a tu mejor vuelta."
+      "description": "Vueltas recientes: tiempo y delta a tu mejor. Más alto, más vueltas."
     },
     "engine-panel": {
       "description": "Temperaturas, presiones y los ajustes internos que expone el coche."
@@ -916,7 +916,17 @@
     "lapLog": {
       "moduleParameters": "Parámetros del módulo",
       "paceLossBars": "Barras de pérdida de ritmo",
-      "paceLossBarsDesc": "La columna de delta muestra lo que cada vuelta perdió frente a tu mejor como una barra, con el delta encima, en lugar de un chip."
+      "paceLossBarsDesc": "La columna de delta muestra lo que cada vuelta perdió frente a tu mejor como una barra, con el delta encima, en lugar de un chip.",
+      "bestLapChip": "Chip de mejor vuelta",
+      "bestLapChipDesc": "El chip BEST en la cabecera: siempre, solo cuando ya hay mejor vuelta, o nunca.",
+      "bestLapChip_always": "Siempre",
+      "bestLapChip_withTime": "Con tiempo",
+      "bestLapChip_never": "Nunca",
+      "averageFooter": "Pie con la media",
+      "averageFooterDesc": "El pie AVG VALID: siempre, solo cuando una vuelta tiene tiempo, o nunca.",
+      "averageFooter_always": "Siempre",
+      "averageFooter_withTime": "Con tiempo",
+      "averageFooter_never": "Nunca"
     },
     "radio": {
       "moduleParameters": "Parámetros del módulo",

@@ -13,7 +13,8 @@ use mt_model::computed::lap_log::{LapHistoryEntry, LapLogFrame, LastCompletedLap
 use mt_model::contract::capabilities::Capabilities;
 use serde::{Deserialize, Serialize};
 
-const HISTORY_SIZE: usize = 12;
+/// Enough laps to fill a lap log stretched over a full-height screen.
+const HISTORY_SIZE: usize = 50;
 
 /// The session's lap log, kept across a restart.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
@@ -559,7 +560,7 @@ mod tests {
             last_completed_lap: None,
         };
 
-        for lap in 1..=13_i32 {
+        for lap in 1..=(HISTORY_SIZE as i32 + 1) {
             let last = if lap == 1 { -1.0 } else { 80.0 + lap as f32 };
             p(&mut s, lap, last, 81.0);
             frame = p(&mut s, lap + 1, 80.0 + lap as f32, 81.0);

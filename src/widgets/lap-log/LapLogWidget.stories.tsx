@@ -39,7 +39,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/LapLogWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: LapLogWidget,
-    size: { width: 264, height: 384 },
+    size: { width: 264, height: 389 },
     seed: (store, args, scenarioId) => {
       // A scenario states the whole lap — its timing, its delta and its log.
       // The knobs below are the other base: what a story states when no

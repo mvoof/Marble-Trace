@@ -52,7 +52,7 @@
       "description": "Sector-by-sector timing with progress bar, live delta per sector, LAST and BEST."
     },
     "lap-log": {
-      "description": "Last 8 laps with time and delta vs personal best. Best lap highlighted."
+      "description": "Recent laps: time and delta to your best. A taller widget shows more laps."
     },
     "engine-panel": {
       "description": "Liquid temperatures, pressures and the in-car adjustments the car exposes."
@@ -916,7 +916,17 @@
     "lapLog": {
       "moduleParameters": "Module parameters",
       "paceLossBars": "Pace loss bars",
-      "paceLossBarsDesc": "The delta column shows how much each lap lost to your best as a bar, the delta written over it, instead of a chip."
+      "paceLossBarsDesc": "The delta column shows how much each lap lost to your best as a bar, the delta written over it, instead of a chip.",
+      "bestLapChip": "Best lap chip",
+      "bestLapChipDesc": "The BEST chip in the header: always, only once there is a best lap, or never.",
+      "bestLapChip_always": "Always",
+      "bestLapChip_withTime": "With a time",
+      "bestLapChip_never": "Never",
+      "averageFooter": "Average footer",
+      "averageFooterDesc": "The AVG VALID footer: always, only once a lap has a time, or never.",
+      "averageFooter_always": "Always",
+      "averageFooter_withTime": "With a time",
+      "averageFooter_never": "Never"
     },
     "radio": {
       "moduleParameters": "Module parameters",

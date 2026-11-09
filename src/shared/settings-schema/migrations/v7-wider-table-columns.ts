@@ -26,17 +26,29 @@ import { asObject, mapEveryStoredWidget, type StoredBlobWidget } from '../blob';
  * Fuel moved the same way: its design width became the redesign mockup's card,
  * 306 instead of 240, and its frame widens by that ratio so the text keeps its
  * size — a default 240 frame comes out at 306. The lap log moved with it: its
- * design width became its mockup card, 264 instead of 220.
+ * design width became its mockup card, 264 instead of 220, and its height
+ * stopped following its laps — a taller frame now shows more of them — so the
+ * height it had on disk, never its own, gives way to its design height of 389
+ * at the frame's scale.
  */
 
 type TableSettings = Record<string, unknown>;
 
 // The widgets whose design width moved, in v6 and in v7, frozen.
-const DESIGN_WIDTH_REBASES: Readonly<
-  Record<string, { before: number; after: number }>
-> = {
+interface DesignWidthRebase {
+  before: number;
+  after: number;
+  /**
+   * The design height of a widget whose height used to follow its content and
+   * now is the frame's: the stored height meant nothing, so the frame takes
+   * this one at its new scale.
+   */
+  fitHeight?: number;
+}
+
+const DESIGN_WIDTH_REBASES: Readonly<Record<string, DesignWidthRebase>> = {
   fuel: { before: 240, after: 306 },
-  'lap-log': { before: 220, after: 264 },
+  'lap-log': { before: 220, after: 264, fitHeight: 389 },
 };
 
 type WidthOf = (settings: TableSettings) => number;
@@ -299,10 +311,19 @@ const rebasedSize = (
   }
 
   const ratio = rebase.after / rebase.before;
+  const nextWidth = Math.round(width * ratio);
+
+  if (rebase.fitHeight !== undefined) {
+    return {
+      ...size,
+      width: nextWidth,
+      height: Math.round((nextWidth / rebase.after) * rebase.fitHeight),
+    };
+  }
 
   return {
     ...size,
-    width: Math.round(width * ratio),
+    width: nextWidth,
     ...(isPositive(height) ? { height: Math.round(height * ratio) } : {}),
   };
 };
